@@ -501,9 +501,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get penSettingsTitle => 'ペン入力設定';
 
   @override
-  String get penSettingsPalmRejectionSection => 'パームリジェクション';
-
-  @override
   String get penSettingsPalmRejectionTitle => 'パームリジェクション';
 
   @override
@@ -2185,7 +2182,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tipsSaveSlotAutoSaveDesc =>
-      '自動保存は最大3件です。大事な時点のデータを残したいときは手動保存を使い、後から保存データの一覧で選んで読み込めます。';
+      '自動保存は最大3件です。大事な時点のデータはセーブスロットに保存し、後から保存データの一覧で選んで読み込めます。';
 
   @override
   String get tipsQuickToolSwipeTitle => '早替えツールは上スワイプで並び替えできる';
@@ -2958,11 +2955,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return '$count フレームの書き出しが完了しました。';
-  }
-
-  @override
-  String exportSaveLocationLabel(String fileName) {
-    return '保存先：アプリ内（$fileName）';
   }
 
   @override

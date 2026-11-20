@@ -404,11 +404,13 @@ class AutofillPresetService extends ChangeNotifier {
         ),
     ];
     final tones = await TransferCopyRecord.read(TransferCopyRecord.tones);
+    // Keep transfer identity compatible with records written before localized
+    // sample names. The flag only controls how the saved name is displayed.
     Object? contentOf(AutofillPreset p) => [
-      p.nameCustomized,
       for (final part in p.parts)
         part.toJson()
           ..remove('id')
+          ..remove('nameCustomized')
           ..['toneId'] = part.toneId == null
               ? null
               : tones.origin(part.toneId!),

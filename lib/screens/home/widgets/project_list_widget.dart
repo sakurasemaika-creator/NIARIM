@@ -454,20 +454,13 @@ class ProjectListWidget extends StatelessWidget {
             // つまみが出ていた。丸い印は、自分でスクロールするときと同じく
             // 残りの高さに入る大きさにする（低い画面・大きな文字で、作り方の
             // 案内が浮かぶボタンの下へ押し出されない）。
-            SliverLayoutBuilder(
-              builder: (context, constraints) => SliverFillRemaining(
-                hasScrollBody: false,
-                child: _emptyState(
-                  l10n,
-                  hiddenByFavorites: hiddenByFavorites,
-                  hasFavorites: hasFavorites,
-                  scrollable: false,
-                  fitIn: Size(
-                    constraints.crossAxisExtent,
-                    constraints.viewportMainAxisExtent -
-                        constraints.precedingScrollExtent,
-                  ),
-                ),
+            EmptyStateSliver(
+              builder: (size) => _emptyState(
+                l10n,
+                hiddenByFavorites: hiddenByFavorites,
+                hasFavorites: hasFavorites,
+                scrollable: false,
+                fitIn: size,
               ),
             ),
           ],

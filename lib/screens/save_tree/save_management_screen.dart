@@ -709,7 +709,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                           ),
                           if (hasData) ...[
                             const SizedBox(height: 3),
-                            Text(
+                            messageText(
                               formatSaveTime(
                                 node!.savedAt,
                                 AppLocalizations.of(context)!.localeName,

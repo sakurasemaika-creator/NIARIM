@@ -6,6 +6,40 @@ import '../config/font_fallback.dart';
 import '../config/accent_text_theme.dart';
 import '../utils/line_break.dart';
 
+/// Centers an empty state in the space after its header. When the contents
+/// need more room, the outer scroll view can scroll through the full height.
+class EmptyStateSliver extends StatelessWidget {
+  const EmptyStateSliver({
+    super.key,
+    required this.builder,
+    this.clearance = 0,
+  });
+
+  final Widget Function(Size availableSize) builder;
+  final double clearance;
+
+  @override
+  Widget build(BuildContext context) => SliverLayoutBuilder(
+    builder: (context, constraints) {
+      final availableHeight = math.max(
+        0.0,
+        constraints.viewportMainAxisExtent -
+            constraints.precedingScrollExtent -
+            clearance,
+      );
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.only(bottom: clearance),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: availableHeight),
+            child: builder(Size(constraints.crossAxisExtent, availableHeight)),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 /// 一覧画面が空のときに表示する共通プレースホルダー。円形の色付き
 /// アイコンバッジ・くらむぼんの太字タイトル・淡色の補足文という構成を、
 /// プロジェクト一覧・共有一覧・ゴミ箱一覧・作品一覧・素材一覧など

@@ -49,11 +49,11 @@ void main() {
       ..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf'));
     await loader.load();
   });
-  test('five fold modes on the reference zigzag and tapered wave', () async {
-    final hair = brushExtensionPresets().singleWhere(
-      (b) => b.id == 'Brush0023',
-    );
-    for (final entry in base.modeNames.entries) {
+  final hair = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0023');
+  final zigzag = zigzagStrand();
+  final wave = taperedWave();
+  for (final entry in base.modeNames.entries) {
+    test('${entry.value} on the reference zigzag and tapered wave', () async {
       final ribbon = hair.copyWith(
         size: 64,
         outlineWidth: 2.5,
@@ -64,20 +64,16 @@ void main() {
       await base.capture(
         ribbon,
         'reference_zigzag_${entry.value}',
-        input: zigzagStrand(),
+        input: zigzag,
       );
-      // Image 1 of the reference uses pressure and the ordinary taper.
       await base.capture(
         hair.copyWith(size: 64, outlineWidth: 2.5, foldMode: entry.key),
         'reference_wave_${entry.value}',
-        input: taperedWave(),
+        input: wave,
       );
-    }
-  }, timeout: const Timeout(Duration(minutes: 5)));
+    }, timeout: const Timeout(Duration(minutes: 5)));
+  }
   test('the three fold sliders change the fold line independently', () async {
-    final hair = brushExtensionPresets().singleWhere(
-      (b) => b.id == 'Brush0023',
-    );
     final ribbon = hair.copyWith(
       size: 64,
       outlineWidth: 2.5,

@@ -496,9 +496,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get penSettingsTitle => '笔输入设置';
 
   @override
-  String get penSettingsPalmRejectionSection => '防误触';
-
-  @override
   String get penSettingsPalmRejectionTitle => '防误触';
 
   @override
@@ -2166,7 +2163,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tipsSaveSlotAutoSaveTitle => '区分使用存档槽和自动保存';
 
   @override
-  String get tipsSaveSlotAutoSaveDesc => '最多保留 3 个自动保存版本。重要版本可手动保存，之后从保存列表中读取。';
+  String get tipsSaveSlotAutoSaveDesc =>
+      '最多保留 3 个自动保存版本。重要版本可保存到存档槽，之后从保存列表中读取。';
 
   @override
   String get tipsQuickToolSwipeTitle => '快捷工具可以用上滑手势重新排序';
@@ -2928,11 +2926,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return '已完成$count帧的导出。';
-  }
-
-  @override
-  String exportSaveLocationLabel(String fileName) {
-    return '保存位置：应用内（$fileName）';
   }
 
   @override
@@ -10928,9 +10921,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get penSettingsTitle => '筆輸入設定';
 
   @override
-  String get penSettingsPalmRejectionSection => '防誤觸';
-
-  @override
   String get penSettingsPalmRejectionTitle => '防誤觸';
 
   @override
@@ -12598,7 +12588,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get tipsSaveSlotAutoSaveTitle => '區分使用存檔槽和自動儲存';
 
   @override
-  String get tipsSaveSlotAutoSaveDesc => '最多保留 3 個自動儲存版本。重要版本可手動儲存，之後從儲存列表讀取。';
+  String get tipsSaveSlotAutoSaveDesc =>
+      '最多保留 3 個自動儲存版本。重要版本可儲存到存檔槽，之後從儲存列表讀取。';
 
   @override
   String get tipsQuickToolSwipeTitle => '快捷工具可以用上滑手勢重新排序';
@@ -13360,11 +13351,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String exportCompleteFramesBody(int count) {
     return '已完成$count影格的匯出。';
-  }
-
-  @override
-  String exportSaveLocationLabel(String fileName) {
-    return '儲存位置：App內（$fileName）';
   }
 
   @override

@@ -282,7 +282,7 @@ void main() {
       find.byType(ExportCompleteDialog),
       findsOneWidget,
       reason: tester
-          .widgetList<Text>(find.byType(Text))
+          .widgetList<Text>(find.bySubtype<Text>())
           .map((t) => t.data)
           .join(' / '),
     );

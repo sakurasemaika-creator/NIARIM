@@ -5339,11 +5339,11 @@ class _OutgoingSharesList extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(child: top),
           if (!loadFailed)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child:
+            EmptyStateSliver(
+              builder: (size) =>
                   _filteredLibraryEmptyState(
                     context,
+                    fitIn: size,
                     searchQuery: searchQuery,
                     favoritesOnly: showFavoritesOnly,
                     hiddenByFavorites:
@@ -5358,6 +5358,7 @@ class _OutgoingSharesList extends StatelessWidget {
                     icon: Icons.file_present_outlined,
                     title: _shareCollectionEmptyText(context),
                     scrollable: false,
+                    fitIn: size,
                   ),
             ),
         ],
@@ -5898,34 +5899,12 @@ class _FolderableList<T> extends StatelessWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               if (header != null) SliverToBoxAdapter(child: header!),
-              if (hasHeader) ...[
-                SliverToBoxAdapter(child: _folderChips(context, countByFolder)),
-                const SliverToBoxAdapter(child: Divider(height: 1)),
-              ],
-              // 下に浮くボタンの分の余白は、空の表示の中に取る（残りの高さを
-              // 埋めるだけで、中身の方が高いときだけスクロールする）。外に
-              // 足すと、何も無いのにその分スクロールでき、画面いっぱいに
-              // 近いスクロールバーのつまみが出ていた。
-              SliverLayoutBuilder(
-                builder: (context, constraints) {
-                  final reserve = reserveForFloatingActions
-                      ? 88 + MediaQuery.paddingOf(context).bottom
-                      : 0.0;
-                  return SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: reserve),
-                      child: emptyState!(
-                        Size(
-                          constraints.crossAxisExtent,
-                          constraints.viewportMainAxisExtent -
-                              constraints.precedingScrollExtent -
-                              reserve,
-                        ),
-                      ),
-                    ),
-                  );
-                },
+              EmptyStateSliver(
+                clearance: reserveForFloatingActions
+                    ? bottomClearance ??
+                          88 + MediaQuery.paddingOf(context).bottom
+                    : 0,
+                builder: emptyState!,
               ),
             ],
           );
@@ -7198,25 +7177,9 @@ class _TrashTabState extends State<_TrashTab> {
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(child: widget.header),
-              SliverLayoutBuilder(
-                builder: (context, constraints) {
-                  final reserve = 88 + MediaQuery.paddingOf(context).bottom;
-                  final availableHeight =
-                      (constraints.viewportMainAxisExtent -
-                              constraints.precedingScrollExtent -
-                              reserve)
-                          .clamp(0.0, double.infinity)
-                          .toDouble();
-                  return SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: reserve),
-                      child: emptyFor(
-                        Size(constraints.crossAxisExtent, availableHeight),
-                      ),
-                    ),
-                  );
-                },
+              EmptyStateSliver(
+                clearance: 88 + MediaQuery.paddingOf(context).bottom,
+                builder: emptyFor,
               ),
             ],
           );

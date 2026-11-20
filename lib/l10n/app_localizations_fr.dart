@@ -535,9 +535,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get penSettingsTitle => 'Réglages de saisie au stylet';
 
   @override
-  String get penSettingsPalmRejectionSection => 'Rejet de la paume';
-
-  @override
   String get penSettingsPalmRejectionTitle => 'Rejet de la paume';
 
   @override
@@ -2306,7 +2303,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsSaveSlotAutoSaveDesc =>
-      'NIARIM conserve jusqu’à 3 sauvegardes automatiques. Utilisez une sauvegarde manuelle pour garder une version importante et la charger plus tard depuis la liste.';
+      'NIARIM conserve jusqu’à 3 sauvegardes automatiques. Utilisez un emplacement de sauvegarde pour garder une version importante et la charger plus tard depuis la liste.';
 
   @override
   String get tipsQuickToolSwipeTitle =>
@@ -3131,11 +3128,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return '$count image(s) exportée(s).';
-  }
-
-  @override
-  String exportSaveLocationLabel(String fileName) {
-    return 'Enregistré dans : stockage de l’application ($fileName)';
   }
 
   @override

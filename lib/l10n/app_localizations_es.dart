@@ -535,9 +535,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get penSettingsTitle => 'Ajustes de entrada de lápiz';
 
   @override
-  String get penSettingsPalmRejectionSection => 'Rechazo de palma';
-
-  @override
   String get penSettingsPalmRejectionTitle => 'Rechazo de palma';
 
   @override
@@ -2313,7 +2310,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsSaveSlotAutoSaveDesc =>
-      'Se conservan hasta 3 guardados automáticos. Usa el guardado manual para conservar una versión importante y cargarla más adelante desde la lista.';
+      'NIARIM conserva hasta 3 guardados automáticos. Usa una ranura de guardado para conservar una versión importante y cargarla más adelante desde la lista.';
 
   @override
   String get tipsQuickToolSwipeTitle =>
@@ -3135,11 +3132,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return 'Se exportaron $count fotograma(s).';
-  }
-
-  @override
-  String exportSaveLocationLabel(String fileName) {
-    return 'Guardado en: almacenamiento de la app ($fileName)';
   }
 
   @override

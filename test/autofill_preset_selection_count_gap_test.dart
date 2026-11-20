@@ -10,6 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/l10n/autofill_names.dart';
 import 'package:niarim/screens/autofill/autofill_preset_screen.dart';
 import 'package:niarim/services/autofill_preset_service.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -70,7 +71,9 @@ void main() {
               .element(find.byType(AutofillPresetScreen))
               .read<AutofillPresetService>()
               .presets;
-          await tester.longPress(find.text(presets.first.name).first);
+          await tester.longPress(
+            find.text(presets.first.displayName(l10n)).first,
+          );
           await tester.pump(const Duration(milliseconds: 400));
           tester.takeException();
           final duplicate = find.descendant(

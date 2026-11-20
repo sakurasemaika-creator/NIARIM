@@ -23,7 +23,9 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('実CanvasAreaのマジックワンドで同色の非連結領域を分離選択し、タップ側だけ移動する', (tester) async {
+  testWidgets('実CanvasAreaのマジックワンドで同色の非連結領域を分離選択し、タップ側だけ選択境界の内側で移動する', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(480, 360);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -107,14 +109,14 @@ void main() {
           _shot(boundaryKey, '${out.path}/selection_magicwand_01_selected.png'),
     );
 
-    // 選択された左領域内を掴み、0,+22移動。
+    // 選択された左領域内を掴み、0,+8移動。境界の外側はそのまま。
     final move = await tester.startGesture(
       at(30, 33),
       kind: PointerDeviceKind.touch,
     );
     await tester.pump();
     expect(_read(tm, key, 96, 80), orderedEquals(before));
-    await move.moveTo(at(30, 55));
+    await move.moveTo(at(30, 41));
     await tester.pump(const Duration(milliseconds: 40));
     expect(undo.undoCount, 0);
     expect(_read(tm, key, 96, 80), orderedEquals(before));
@@ -129,15 +131,18 @@ void main() {
     final expected = Uint8List.fromList(before);
     for (var y = 25; y < 41; y++) {
       for (var x = 22; x < 38; x++) {
-        final si = (y * 96 + x) * 4, di = ((y + 22) * 96 + x) * 4;
-        expected.setRange(di, di + 4, before, si);
-        expected.fillRange(si, si + 4, 0);
+        final start = (y * 96 + x) * 4;
+        if (y < 33) {
+          expected.fillRange(start, start + 4, 0);
+        } else {
+          expected.setRange(start, start + 4, before, start - 8 * 96 * 4);
+        }
       }
     }
     expect(
       actual,
       orderedEquals(expected),
-      reason: '同色でも非連結の右領域は1byteも変えず、タップした連結領域だけ移動すること',
+      reason: '同色でも非連結の右領域は変えず、選択境界に収まる画素だけを移動すること',
     );
 
     undo.undo();

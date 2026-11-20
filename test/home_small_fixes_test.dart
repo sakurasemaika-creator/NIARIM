@@ -399,8 +399,8 @@ void main() {
 
   // 起動画面へ戻る矢印は左下の浮かぶボタンになり、上のバーの左には無い。
   // 上のバーの左端の部品（題・検索の種類の切り替え・検索欄）は、どの幅でも
-  // 画面の端から16px離す（端に貼り付かない）。
-  testWidgets('the top bar starts 16px from the edge on small phones', (
+  // 画面の端から12px離す（端に貼り付かない）。
+  testWidgets('the top bar starts 12px from the edge on small phones', (
     tester,
   ) async {
     await _openHome(tester, size: const Size(412, 844));
@@ -421,7 +421,7 @@ void main() {
     for (final width in [412.0, 399.0, 360.0, 320.0]) {
       tester.view.physicalSize = Size(width, 844);
       await _frames(tester, 4);
-      expect(titleLeft(), closeTo(16, 0.5), reason: 'title ${width}px');
+      expect(titleLeft(), closeTo(12, 0.5), reason: 'title ${width}px');
     }
     tester.view.physicalSize = const Size(412, 844);
     await _frames(tester, 4);
@@ -433,7 +433,7 @@ void main() {
       await _frames(tester, 4);
       expect(
         tester.getRect(toggle).left,
-        closeTo(16, 0.5),
+        closeTo(12, 0.5),
         reason: 'toggle ${width}px',
       );
     }
@@ -451,7 +451,7 @@ void main() {
       await _frames(tester, 4);
       expect(
         tester.getRect(field).left,
-        greaterThanOrEqualTo(16 - 0.5),
+        greaterThanOrEqualTo(12 - 0.5),
         reason: 'Works ${width}px',
       );
     }

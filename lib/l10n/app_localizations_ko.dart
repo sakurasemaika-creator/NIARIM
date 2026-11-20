@@ -503,9 +503,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get penSettingsTitle => '펜 입력 설정';
 
   @override
-  String get penSettingsPalmRejectionSection => '손바닥 터치 방지';
-
-  @override
   String get penSettingsPalmRejectionTitle => '손바닥 터치 방지';
 
   @override
@@ -2190,7 +2187,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsSaveSlotAutoSaveDesc =>
-      '자동 저장본은 최대 3개까지 보관됩니다. 중요한 버전은 수동 저장을 사용해 보관하고 나중에 저장 목록에서 불러오세요.';
+      '자동 저장본은 최대 3개까지 보관됩니다. 중요한 버전은 저장 슬롯에 보관하고 나중에 저장 목록에서 불러오세요.';
 
   @override
   String get tipsQuickToolSwipeTitle => '빠른 도구는 위로 스와이프해서 재배열할 수 있어요';
@@ -2973,11 +2970,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return '$count개 프레임의 내보내기가 완료되었습니다.';
-  }
-
-  @override
-  String exportSaveLocationLabel(String fileName) {
-    return '저장 위치: 앱 내부（$fileName）';
   }
 
   @override

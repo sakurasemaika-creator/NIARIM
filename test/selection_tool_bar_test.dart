@@ -211,6 +211,8 @@ void main() {
     expect(tester.getRect(canvas), canvasBounds);
     expect(tester.getRect(selectAll), selectAllBounds);
 
+    expect(find.byTooltip(l10n.canvasInvertSelectionTooltip), findsOneWidget);
+
     // 選択範囲ができたら画面下部に変形量のスライダーが出る。
     expect(
       find.byType(SelectionTransformSliders),

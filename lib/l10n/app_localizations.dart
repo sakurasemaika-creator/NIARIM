@@ -1019,12 +1019,6 @@ abstract class AppLocalizations {
   /// **'ペン入力設定'**
   String get penSettingsTitle;
 
-  /// No description provided for @penSettingsPalmRejectionSection.
-  ///
-  /// In ja, this message translates to:
-  /// **'パームリジェクション'**
-  String get penSettingsPalmRejectionSection;
-
   /// No description provided for @penSettingsPalmRejectionTitle.
   ///
   /// In ja, this message translates to:
@@ -4002,7 +3996,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsSaveSlotAutoSaveDesc.
   ///
   /// In ja, this message translates to:
-  /// **'自動保存は最大3件です。大事な時点のデータを残したいときは手動保存を使い、後から保存データの一覧で選んで読み込めます。'**
+  /// **'自動保存は最大3件です。大事な時点のデータはセーブスロットに保存し、後から保存データの一覧で選んで読み込めます。'**
   String get tipsSaveSlotAutoSaveDesc;
 
   /// No description provided for @tipsQuickToolSwipeTitle.
@@ -5444,12 +5438,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{count} フレームの書き出しが完了しました。'**
   String exportCompleteFramesBody(int count);
-
-  /// No description provided for @exportSaveLocationLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'保存先：アプリ内（{fileName}）'**
-  String exportSaveLocationLabel(String fileName);
 
   /// No description provided for @exportSaveLocationHint.
   ///

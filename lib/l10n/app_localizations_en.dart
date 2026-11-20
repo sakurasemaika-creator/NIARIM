@@ -520,9 +520,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get penSettingsTitle => 'Pen Input Settings';
 
   @override
-  String get penSettingsPalmRejectionSection => 'Palm Rejection';
-
-  @override
   String get penSettingsPalmRejectionTitle => 'Palm rejection';
 
   @override
@@ -2273,7 +2270,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsSaveSlotAutoSaveDesc =>
-      'Up to 3 autosaves are kept. Use a manual save to keep an important version and load it later from the save list.';
+      'NIARIM keeps up to 3 autosaves. Use a save slot to keep an important version and load it later from the save list.';
 
   @override
   String get tipsQuickToolSwipeTitle =>
@@ -3084,11 +3081,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return 'Exported $count frame(s).';
-  }
-
-  @override
-  String exportSaveLocationLabel(String fileName) {
-    return 'Saved to: In-app storage ($fileName)';
   }
 
   @override

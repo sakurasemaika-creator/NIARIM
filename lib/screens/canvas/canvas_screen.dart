@@ -3704,6 +3704,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   tooltip: l10n.canvasSelectionRevertTooltip,
                   onTap: _cancelSelectionTransformAndExit,
                 ),
+                if (_hasActiveSelection)
+                  chip(
+                    icon: Icons.invert_colors_outlined,
+                    label: l10n.canvasInvertSelectionTooltip,
+                    onTap: () => setState(() => _invertSelectionToken++),
+                  ),
               ],
             ),
             const SizedBox(height: 4),
@@ -3970,13 +3976,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final showsEnclosedMode =
         _currentTool == DrawingTool.lasso &&
         _currentSubTool == PenSubTool.lassoFill;
-    final showsInvertSelection =
-        _isSelectionToolActive &&
-        _hasActiveSelection &&
-        !_selectionEditingGivesWay(desktop);
     final showsTextHint = _currentTool == DrawingTool.text;
-    final hasToolActions =
-        showsEnclosedMode || showsInvertSelection || showsTextHint;
+    final hasToolActions = showsEnclosedMode || showsTextHint;
     final toolActions = Align(
       alignment: AlignmentDirectional.centerStart,
       child: FittedBox(
@@ -4000,16 +4001,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
               Switch(
                 value: _lassoFillEnclosedMode,
                 onChanged: (v) => setState(() => _lassoFillEnclosedMode = v),
-              ),
-            ],
-            // 範囲選択中にのみ使える「選択範囲を反転」ボタン。
-            if (showsInvertSelection) ...[
-              const SizedBox(width: 8),
-              _topBarIconButton(
-                context,
-                Icons.invert_colors_outlined,
-                onPressed: () => setState(() => _invertSelectionToken++),
-                tooltip: l10n.canvasInvertSelectionTooltip,
               ),
             ],
             // テキストツール選択中：キャンバスタップでテキスト入力ダイアログを表示する旨を示すラベル

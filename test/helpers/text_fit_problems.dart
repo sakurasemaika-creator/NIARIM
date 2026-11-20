@@ -16,7 +16,7 @@ final RegExp _latinOrHangul = RegExp(r'[A-Za-zÀ-ÖØ-öø-ÿœŒ가-힯]');
 /// - [data]が偽なら、`maxLines`を超えて切れている・箱より高い／広い
 ///   （はみ出した分が描かれない）ものも数える。
 List<String> textFitProblems(RenderParagraph p, {bool data = false}) {
-  final text = p.text.toPlainText();
+  final text = p.text.toPlainText(includeSemanticsLabels: false);
   final heading = p.text.style?.fontFamily == 'Kuramubon';
   final wordLetter = heading ? _latinOrHangul : _latin;
   final out = <String>[];
@@ -29,7 +29,25 @@ List<String> textFitProblems(RenderParagraph p, {bool data = false}) {
     strutStyle: p.strutStyle,
     textWidthBasis: p.textWidthBasis,
     textHeightBehavior: p.textHeightBehavior,
-  )..layout(maxWidth: p.softWrap ? p.constraints.maxWidth : double.infinity);
+  );
+  final placeholders = <PlaceholderDimensions>[];
+  p.visitChildren((child) {
+    final box = child as RenderBox;
+    final span = (box.parentData! as TextParentData).span!;
+    placeholders.add(
+      PlaceholderDimensions(
+        size: box.size,
+        alignment: span.alignment,
+        baseline: span.baseline,
+        baselineOffset: span.baseline == null
+            ? null
+            : box.getDistanceToBaseline(span.baseline!, onlyReal: true),
+      ),
+    );
+  });
+  painter
+    ..setPlaceholderDimensions(placeholders)
+    ..layout(maxWidth: p.softWrap ? p.constraints.maxWidth : double.infinity);
   final lines = painter.computeLineMetrics();
   final shown = p.maxLines == null
       ? lines.length

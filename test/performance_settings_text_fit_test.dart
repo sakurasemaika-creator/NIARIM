@@ -23,6 +23,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/performance_settings_screen.dart';
+import 'package:niarim/screens/settings/widgets/settings_value_tile.dart';
 import 'package:niarim/services/performance_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/action_beside_or_below.dart';
@@ -327,7 +328,11 @@ void main() {
       var row = 'other';
       (node.context as Element?)?.visitAncestorElements((a) {
         final type = a.widget.runtimeType.toString();
-        if (type == '_SwitchRow' || type == '_ValueTile') {
+        if (a.widget case final SettingsValueTile tile) {
+          row = 'SettingsValueTile ${tile.title}';
+          return false;
+        }
+        if (type == '_SwitchRow') {
           row = '$type ${(a.widget as dynamic).title}';
           return false;
         }
@@ -359,8 +364,8 @@ void main() {
         '_SwitchRow ${l.perfSettingsShowNextOnionTitle}',
         '_RadioRow<QualityLevel>',
         '_RadioRow<SaveMode>',
-        '_ValueTile ${l.perfSettingsUndoLimitTitle}',
-        '_ValueTile ${l.perfSettingsTrashAutoDeleteTitle}',
+        'SettingsValueTile ${l.perfSettingsUndoLimitTitle}',
+        'SettingsValueTile ${l.perfSettingsTrashAutoDeleteTitle}',
       ])
         if (stops[row] != 1) '«$row»で${stops[row] ?? 0}か所止まる',
     ];

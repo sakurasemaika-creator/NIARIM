@@ -227,15 +227,19 @@ void main() {
       if (!loadBody.contains(slotName)) {
         problems.add('読み込みの確認の要約: $loadBody');
       }
-      await tester.tap(
-        find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.widgetWithText(
-            FilledButton,
-            l10n.saveTreeRestoreAction,
-          ),
-        ),
+      final restore = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.widgetWithText(FilledButton, l10n.saveTreeRestoreAction),
       );
+      for (
+        var i = 0;
+        i < 60 && tester.widget<FilledButton>(restore).onPressed == null;
+        i++
+      ) {
+        await settleIo(tester, 1);
+      }
+      expect(tester.widget<FilledButton>(restore).onPressed, isNotNull);
+      await tester.tap(restore);
       await settleIo(tester, 10);
       final notice = snackText(tester);
       if (notice != l10n.saveTreeRestoredSnackbar(slotName)) {
