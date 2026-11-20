@@ -286,9 +286,17 @@ void main() {
       await cancel(tester, l10n);
 
       // スロット2（保存・メモあり）を読み込む確認。
-      final load = find.byTooltip(l10n.saveTreeSlotLoadTooltip).at(1);
+      final load = find.descendant(
+        of: find.byKey(const ValueKey('manual-save-slot-1')),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is IconButton &&
+              widget.tooltip == l10n.saveTreeSlotLoadTooltip,
+        ),
+      );
       await tester.ensureVisible(load);
-      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(tester.widget<IconButton>(load).onPressed, isNotNull);
       await tester.tap(load);
       await settleIo(tester, 3);
       expect(

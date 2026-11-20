@@ -103,6 +103,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
                 itemBuilder: (context, slotIndex) {
                   final node = bySlot[slotIndex];
                   return _GameSaveSlotTile(
+                    key: ValueKey('manual-save-slot-$slotIndex'),
                     projectId: projectId,
                     slotIndex: slotIndex,
                     memo: saveService.slotDisplayMemoOf(projectId, slotIndex),
@@ -570,6 +571,7 @@ class _GameSaveSlotTile extends StatelessWidget {
   final bool listUnread;
 
   const _GameSaveSlotTile({
+    super.key,
     required this.projectId,
     required this.slotIndex,
     required this.memo,
