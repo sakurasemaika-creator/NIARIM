@@ -3894,3 +3894,20 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
 - D018 合成モード25種・プリズム：test：`blend_math_test`ほか（下）。判定：testの範囲でOK、ピッカーの見本の実画面は未確認。
 - D019 自動操作・自動塗り・保存：自動操作だけのオーロラホログラムは消える作り（D012）。自動塗りの組み込みの名前の7言語化（DISC107の修正）の回帰はDISC537（niatraの読み直しで複製が足される）とDISC548の追加（選択の行のtestが保存の名前で探す）。判定：要修正（DISC537）。
 - test：フィルター・選択・髪の折り畳み以外の描画エンジン・GPTの修正に結び付くtest 98ファイル（`test/engine/`の描画フィルター・墨溜まり・縁取り・ドット絵・水彩・プリズム・背景馴染ませ・自動線画、`filter_*`・`effect_filter_*`・`selection_*`・`sphere_shading_canvas_e2e`・`filter_selection_lens_mask_e2e`・`generated_layer_clipping`・`layer_pixels_replace`ほか）を`643cc267`で流した：540件成功・1件失敗。失敗は`selection_tool_bar_test`（スマホ320×720で全選択の後にキャンバスの矩形が上52px→100pxへ動く。`e57a8fc8`・`69cd8dd0`では成功、`e4d3c5b7`で失敗＝`e4d3c5b7`の余白の変更が原因。実画面の360×740でも、全選択すると上に1段〔◐のボタン〕が出て紙が48px下がり縮む＝DISC502の狭い画面での再発、DISC565）。
+
+## D020〜D021 — 作品広場のAI申告・ミュート・バックエンド（二巡目）
+
+### D020〜D021 二巡目（2026-11-20、Claude・S50、App `4f92188f`のLinuxデバッグビルド・testは記録時の最新`f09082e1`、`backend/`は`f7368541`）— 判定：D020は見本のデータとtestの範囲でOK（要修正は既存のDISC538。DISC539はtestでは直った）、D021は未達（実環境が無い・ルートごとの照合が残る）
+
+- D020 実画面（ja、1280×800、マウス、APIの接続先なし＝見本のデータ）：
+  - 表示フィルター（一覧の左上の調整の印）に「AIで生成した画像・動画を使用した作品を表示しない」のスイッチがあり、保存すると覚える（`shots-r1/cm-3`〜`cm-5`）。見本のデータにはAI申告の作品が無く、隠れる様子は実画面では確かめられない（`containsGenerativeAiImageOrVideo`が真の見本は無い）。新着・ランキング・フォロー中（リポストを含む）・縦画面・作者・詳細・ブックマークで隠すことは`community_filter_surfaces_test`ほか（下）で確かめた。
+  - 非表示設定（上部バーの斜線の目）に「非表示ワード登録」「非表示タグ登録」「ミュートしたユーザー」（「ミュートしても相手に通知は送られません。」）。「新規追加」で「約」を登録して保存すると、新着の「雨上がりの約束」2件と「約束の夏休み」が「この作品は非表示対象です」の札（斜線の目）に替わり、ランキングの7位・10位も同じ札になる（`cm-9`・`cm-10`）。投稿者名「あにめ工房ミラ」の「夜明けの冒険」は隠れない（題だけが対象、説明の文どおり）。ゴミ箱で消して保存すると元に戻る（`cm-13`）。
+  - 投稿の画面の「AI画像・AI動画使用」と「子ども向け」を選ばないと送れないこと・YouTubeへ同じ要求で送ることはA096の二巡目で確認済み（DISC426は直った）。投稿後の変更は`community_ai_flag_edit_test`（作者だけが変えられる）。
+  - 要修正（既存）：DISC538の追加（作品広場の左上の戻るで起動画面へ戻ると「作品をつくる」が効かない、`zz-0`〜`zz-2`）、DISC539（`e4d3c5b7`の後、仏語・390pxの上部バーの「Notifications」「Aide」の押せる高さ36px）は`f09082e1`でtestが通るようになった（下）。
+  - 気づいた点（DISCにしない）：隠した作品は一覧から消えるのではなく「この作品は非表示対象です」の札として場所が残る（ランキングの順位の数字も残る）。D020の文の「disappears」と食い違うが、所有者がどちらを望むかは記録に無い。表示フィルターのスイッチの名前は1280×800のダイアログで「…表示しな / い」と最後の1字だけが次の行になる。
+  - 未確認：APIのある環境（他人・本人・非公開・削除・ブロックの状態、再取得）、7言語・スマホの幅・文字2倍の実画面、保存した設定の起動し直し（`SharedPreferences`の読み込みはtestで確認）。
+- D021 バックエンド/API：
+  - `backend/src/api/handler.ts`のルートは`f7368541`で57（一巡目の22、D021の追加チェックの時点の49から増えた）。増えたのは報酬・ミッション・ログインボーナス・Play・アカウント削除・ブロック・YouTubeのチャンネル・コメント・再生の状態など。
+  - A098・A099の二巡目（`643cc267`）：backendの単体test 418件・DynamoDB Localのtest 13件・型検査0件・`cdk synth`が成功。自分の作品・自分の通報は断る、フォロワー・フォロー中・ブックマークの一覧は本人だけ（`forbidden`）。
+  - 未達：57ルートを1本ずつ、匿名・本人・他人・無効なトークン/ID/URLで比べる表はまだ無い（A098は単体testとコードで、ルートごとの表は作っていない）。デプロイした実環境・Google/YouTube/FCM/AdMob/Playの実際の応答・並行実行・再試行は、この環境では確かめられない（実の資格情報を使わない決まり）。
+- test：`community_ai_flag_edit_test`（9）・`community_content_filter_dialog_test`（23）・`community_content_filter_l10n_contract_test`（1）・`community_filter_dialog_contrast_test`（2）・`community_filter_dialog_layout_test`（1）・`community_filter_surfaces_test`（11）・`community_mute_filter_test`（10）・`community_mute_wording_l10n_test`（3）・`community_header_quality_test`（2）・`community_post_upload_cancel_test`（7）を記録時の最新`f09082e1`で69件すべて成功。`community_header_quality_test`は`643cc267`ではDISC539で失敗していたが、`191ae39b`（作品広場の画面の余白の見直し）の後は通る（DISC539は直った見込み。仏語・390pxの実画面は未確認）。
