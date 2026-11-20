@@ -3551,3 +3551,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：A093の28本を`643cc267`で167件成功・6件省略・1件失敗（`community_header_quality_test`、A090のDISC539と同じ）。
 - 未確認（実機）：実際の再生・音・一時停止、動画の終わりのループ・次への自動スクロール、再生できない・削除された動画、スマホのスワイプ、7言語・文字2倍、360pxでのダイアログとプレビュー。
 - 画像：`shots-r1/r2a093-*`（backup-pending）。
+
+## A094 — Google認証・アカウント切替
+
+### A094 二巡目（2026-11-20、Claude・S50、App `643cc267`、コードとtest）— 判定：OK〔実機・実APIは未確認〕（一巡目のDISC418〜421・423は直った）
+
+- Linuxではログインできないので、コードとtestで確かめた。
+- DISC418は直った（コード）：`GoogleAuthService.backendIdToken`はトークンの`exp`を読み、期限が切れていれば送る前に取り直す（`_isExpired`）。`NiarimApiClient`は401のとき`refreshRejectedBackendIdToken`で同じアカウントのトークンを取り直して1回だけ送り直し、同時の401は1回の取り直しにまとめる。
+- DISC419は直った（コード）：「自分の投稿」の`_switchOrAddGoogleAccount`は選択画面の前に`signOut()`しない（呼び出しが無い）。選択を取り消すと前のアカウントのまま。
+- DISC420は直った（コード）：「YouTube情報を更新」の失敗は`CommunityChannelRefreshLabels.failed`＝`communityChannelRefreshRetry`（例外の文を入れない7言語の文）。`communityChannelRefreshFailed(error)`はlib配下で使われていない。
+- DISC421は直った（コード）：求める範囲は`youtube.upload`と`youtube.readonly`（`google_auth_service.dart`27〜32行）。実際の同意の画面・Googleの審査は未確認。
+- DISC423は直った：`community_account_boundary_widget_test`が成功。
+- test：A094の40本を`643cc267`で357件成功・9件省略・1件失敗（`community_header_quality_test`、A090のDISC539で、認証とは別の上部バーの押せる所）。
+- 未確認（実機・実API）：Googleのログイン・選択画面・2つのアカウントの切り替え、`youtube.upload`・`youtube.readonly`の許可と拒否、IDトークンの期限切れ・取り消し、オフライン、ログに個人の情報が出ないこと。
