@@ -1116,53 +1116,58 @@ class _TreeView extends StatelessWidget {
         alignment: Alignment.center,
         // 長い言語・大きな文字でも、見出しと案内を画面の端に付けない。
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                color: scheme.primaryContainer,
-                shape: BoxShape.circle,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 88,
+                height: 88,
+                decoration: BoxDecoration(
+                  color: scheme.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.account_tree_outlined,
+                  size: 40,
+                  color: AccentTextTheme.of(context),
+                ),
               ),
-              child: Icon(
-                Icons.account_tree_outlined,
-                size: 40,
-                color: AccentTextTheme.of(context),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.saveTreeEmptyTitle,
-              textAlign: TextAlign.center,
-              style: localizedHeadingStyle(
-                context,
-                TextStyle(fontWeight: FontWeight.w600, color: scheme.onSurface),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text.rich(
-              TextSpan(
-                children: [
-                  // 上部の「保存」は、入らない幅ではアイコンだけになるので、
-                  // 案内にもそのアイコンを添える。
-                  WidgetSpan(
-                    alignment: PlaceholderAlignment.middle,
-                    child: Icon(
-                      Icons.save,
-                      size: 14,
-                      color: scheme.onSurfaceVariant,
-                    ),
+              const SizedBox(height: 20),
+              Text(
+                l10n.saveTreeEmptyTitle,
+                textAlign: TextAlign.center,
+                style: localizedHeadingStyle(
+                  context,
+                  TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
                   ),
-                  const TextSpan(text: ' '),
-                  TextSpan(text: l10n.saveTreeEmptyHint),
-                ],
+                ),
               ),
-              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    // 上部の「保存」は、入らない幅ではアイコンだけになるので、
+                    // 案内にもそのアイコンを添える。
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Icon(
+                        Icons.save,
+                        size: 14,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const TextSpan(text: ' '),
+                    TextSpan(text: l10n.saveTreeEmptyHint),
+                  ],
+                ),
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       );
     }

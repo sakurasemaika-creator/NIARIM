@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/niapro_serializer.dart';
 import 'package:niarim/models/project.dart';
+import 'package:niarim/models/scene.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -91,7 +92,9 @@ void main() {
           updatedAt: DateTime.utc(2026),
           totalWorkSeconds: 0,
         ),
-        scenes: const [],
+        scenes: const [
+          Scene(id: 'Scene0001', index: 0, frames: [Frame(index: 0)]),
+        ],
         tileData: const {},
       ),
     );

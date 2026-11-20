@@ -5768,7 +5768,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get referenceWindowSelectImageButton => '选择图片';
 
   @override
-  String get workspaceDockPanelSection => '桌面模式下默认打开的面板';
+  String get workspaceDockPanelSection => 'PC模式下默认打开的面板';
 
   @override
   String get workspaceDockPanelHint =>
@@ -16136,7 +16136,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get referenceWindowSelectImageButton => '選擇圖片';
 
   @override
-  String get workspaceDockPanelSection => '桌面模式下預設開啟的面板';
+  String get workspaceDockPanelSection => 'PC模式下預設開啟的面板';
 
   @override
   String get workspaceDockPanelHint =>

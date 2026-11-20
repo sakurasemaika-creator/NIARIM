@@ -2451,7 +2451,7 @@
   "canvasEditMenuReferenceWindowSubtitle": "浮窗顯示參考圖片",
   "referenceWindowTitle": "參考視窗",
   "referenceWindowSelectImageButton": "選擇圖片",
-  "workspaceDockPanelSection": "桌面模式下預設開啟的面板",
+  "workspaceDockPanelSection": "PC模式下預設開啟的面板",
   "workspaceDockPanelHint": "在PC/DeX模式下，選中的多個面板可以同時展開固定顯示（手機版為避免誤觸總是以全部隱藏開始）。",
   "workspaceDockPanelBrush": "筆刷",
   "workspaceDockPanelColorPicker": "取色器",

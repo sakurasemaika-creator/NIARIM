@@ -14,6 +14,7 @@ import 'package:niarim/engine/niatra_serializer.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/home_list_filters.dart';
 import 'package:niarim/models/project.dart';
+import 'package:niarim/models/scene.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
@@ -307,7 +308,9 @@ class _App {
               updatedAt: DateTime.utc(2026),
               totalWorkSeconds: 0,
             ),
-            scenes: const [],
+            scenes: const [
+              Scene(id: 'Scene0001', index: 0, frames: [Frame(index: 0)]),
+            ],
             tileData: const {},
           ),
         );

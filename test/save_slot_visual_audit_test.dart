@@ -9,6 +9,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/save_tree/save_management_screen.dart';
 import 'package:niarim/screens/save_tree/widgets/save_thumbnail_capture.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
@@ -25,8 +26,7 @@ void main() {
 
   testWidgets('セーブスロット全主要操作をSP/PCで実キャプチャ監査する', (tester) async {
     SharedPreferences.setMockInitialValues({
-      // Keep the complete five-slot layout visible in SP, independently
-      // of the host CPU core count. Other slot tests use the medium preset.
+      // Keep the same five slots regardless of the host CPU core count.
       'quality_level': 'low',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
@@ -179,9 +179,19 @@ void main() {
       final writes = buttons(l10n.saveTreeSlotWriteTooltip);
       final loads = buttons(l10n.saveTreeSlotLoadTooltip);
       final deletes = buttons(l10n.saveTreeSlotDeleteTooltip);
-      expect(writes.evaluate().length, saveService.slotMax);
-      expect(loads.evaluate().length, saveService.slotMax);
-      expect(deletes.evaluate().length, saveService.slotMax);
+      final scrollable = find.descendant(
+        of: find.byType(SaveManagementScreen),
+        matching: find.byType(Scrollable),
+      );
+      for (var index = 0; index < saveService.slotMax; index++) {
+        final slot = find.byKey(ValueKey('manual-save-slot-$index'));
+        await tester.scrollUntilVisible(slot, 120, scrollable: scrollable);
+        for (final action in [writes, loads, deletes]) {
+          expect(find.descendant(of: slot, matching: action), findsOneWidget);
+        }
+      }
+      tester.state<ScrollableState>(scrollable).position.jumpTo(0);
+      await settle();
       expect(tester.widget<IconButton>(loads.first).onPressed, isNotNull);
       expect(tester.widget<IconButton>(loads.at(1)).onPressed, isNull);
       expect(tester.widget<IconButton>(deletes.first).onPressed, isNotNull);
@@ -323,8 +333,13 @@ void main() {
       appRouter.go('/save-tree/${project.id}?entry=quickSave');
       await settle();
       final quickLoads = buttons(l10n.saveTreeSlotLoadTooltip);
-      expect(tester.widget<IconButton>(quickLoads.first).onPressed, isNull);
-      await capture('${prefix}_07_quick_save_load_disabled');
+      expect(tester.widget<IconButton>(quickLoads.first).onPressed, isNotNull);
+      await tester.tap(quickLoads.first);
+      await settle();
+      expectDialogContains(l10n.saveTreeRestoreAction);
+      expectDialogContains(comment);
+      await capture('${prefix}_07_quick_save_load_confirmation');
+      await cancelDialog();
 
       appRouter.go('/save-tree/${project.id}?entry=timeline');
       await settle();

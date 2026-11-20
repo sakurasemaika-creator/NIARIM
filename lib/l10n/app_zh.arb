@@ -2451,7 +2451,7 @@
   "canvasEditMenuReferenceWindowSubtitle": "悬浮显示参考图片",
   "referenceWindowTitle": "参考窗口",
   "referenceWindowSelectImageButton": "选择图片",
-  "workspaceDockPanelSection": "桌面模式下默认打开的面板",
+  "workspaceDockPanelSection": "PC模式下默认打开的面板",
   "workspaceDockPanelHint": "在PC/DeX模式下，选中的多个面板可以同时展开固定显示（手机版为避免误触总是以全部隐藏开始）。",
   "workspaceDockPanelBrush": "画笔",
   "workspaceDockPanelColorPicker": "取色器",

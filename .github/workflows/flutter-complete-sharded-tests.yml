@@ -13,6 +13,8 @@ on:
       - "test/app_smoke_test.dart"
       - "test/app_web_reference_export_exact_test.dart"
       - "test/save_dialog_hint_warning_test.dart"
+      - "test/save_slot_visual_audit_test.dart"
+      - "lib/screens/save_tree/**"
       - "test/community_work_card_layout_test.dart"
       - "test/canvas_timeline_position_test.dart"
       - "test/canvas_panel_screenshot_audit_test.dart"

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/autosave_service.dart';
 import '../../../services/project_service.dart';
+import '../../../widgets/menu_card.dart';
 import '../../../widgets/responsive.dart';
 import '../../../widgets/typing_dialog_inset.dart';
 import 'save_display_name.dart';
@@ -74,7 +75,7 @@ class _AutosaveListState extends State<AutosaveList> {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         children: [
           for (final slot in slots)
-            Card(
+            MenuCard(
               child: ListTile(
                 enabled: !_loading,
                 leading: const Icon(Icons.history),
