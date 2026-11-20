@@ -3648,3 +3648,22 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`custom_automation_manager_dialog_lifecycle_test`・`home_share_intent_feedback_test`・`home_widget_cell_size_test`・`brush_fold_mode_lifecycle_test`・`brush_pressure_profile_lifecycle_test`・起動の失敗と回復の8本・`stroke_pointer_lifecycle_test`・`custom_automation_dialog_lifecycle_test`・`korean_word_joiner_semantics_test`・`toast_contract_test`・`saved_niashare_share_notice_test`を`643cc267`で217件成功。
 - 未確認（実機）：コールド・ウォームの起動、再開、回転、低メモリ・プロセスの終了からの戻り、ウィジェットの追加と大きさの変更、共有・`.niashare`のタップと「アプリで開く」の候補、動画の書き出しのコーデック、R8のリリースのインストール、DeX・低性能端末。
 - 画像：`shots-r1/r2a100-*`（backup-pending）。
+
+## A101 — App横断accessibility・表示matrix締め
+
+### A101 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルドとtest）— 判定：要修正（新DISC542〜545、DISC538の追加。一巡目のDISC435は直った）
+
+- 環境：Linux debug、スマホ幅390×844・文字2倍（GTKの文字の倍率）、仏語と韓国語（プロフィールの写し`prof/r2a101fr`で`language`だけを変えた）、マウス・キーボード。テーマは読み込んだ緑のテーマ。
+- 一巡目のDISC435は直った：`text_scale_layout_test`（1.3倍・2倍で31の画面を巡回）が最後まで走って成功。
+- 一巡目の既知の再確認：DISC414は直った（390pxで浮かぶプレビューを出したまま絞り込みのダイアログを開くと、プレビューは隠れる、`shots-r1/r2a101-0506`）。DISC183は直った（韓国語・2倍のフォント管理で、名前は「JetBrainsMono- / ExtraLight」とハイフンで折れ、操作は名前の下の行）。DISC430はA097で直ったのを確認。DISC417はA093で確認済みの残り（ja）。DISC416はA093。DISC193〜197・199はこの項目では自作の暗いテーマを当てていない。DISC198はA095で残りを記録。DISC122（容量削減の画面名、韓国語2倍で「용량 확보」が入る）は今回の幅では起きない。DISC074は所有者の判断待ち（`accent_text_screens_test`は成功）。
+- 新DISC542：作品広場のカードの向きの印（「横画面」）が、仏語・韓国語の390px・文字2倍で語の途中で折れる。仏語は「Horizonta / l」、韓国語は「가로 화 / 면」（`r2a101-02`・`r2a101-0708`）。`community_work_card.dart`の`CommunityWorkOrientation`は`FittedBox(scaleDown)`の中に`ConstrainedBox(maxWidth: constraints.maxWidth)`を置くので、`Text`が欄の幅で先に折り返し、縮める前に2行になる。同じカードの見本データの印は「Données fict…」と省略記号で切れる（上部には全文がある）。
+- 新DISC543：作品広場の絞り込みのダイアログで、仏語・390px・文字2倍のとき、ドロップダウンの選んだ値が1行目だけになり後ろが見えない。「Toutes les dates」「Toutes les durées」が「Toutes les」とだけ出る（`r2a101-0304`）。`community_screen.dart`の`DropdownButtonFormField`（`isExpanded: true`）の`Text`が2行に折れ、欄の高さで切られる。韓国語では全文が入る。
+- 新DISC544：浮かぶプレビューの「詳細へ」（仏語「Détails」）のボタンが本文の書体（白光明朝）で描かれる。`community_floating_preview.dart`の`detailStyle`は`textTheme.labelLarge`（本文の書体）に太字を重ねたもので、テーマのボタンの書式（`buttonLabelStyle`＝くらむぼん）を使っていない（`r2a101-05`）。2026-10-26の`3b9acd83`からの既存。書体の決まり（ボタンはくらむぼん）に反する。
+- 新DISC545（`e4d3c5b7`の回帰）：`dialog_text_scale_audit_test`（文字1.3倍でダイアログ・シートを開いて回る）が落ちる。使い捨ての写し（作品広場へ移るときの段を記録）で、`/community`と`/premium`へ移るときに`_CommunityScreenState.build`の`measure`（`community_screen.dart:1235`）で`dart:ui/math.dart`の`clampDouble`のアサーションが出る。`e4d3c5b7`で上部の題の幅が`titleBelowActions ? width - 32 : inlineWidth`になり、前の`clamp(1.0, …)`が外れたため、幅が32px未満の段で`TextPainter.layout`に負の`maxWidth`が渡る。`e4d3c5b7^`では成功、`e4d3c5b7`で失敗（worktreeで1本ずつ）。リリースではアサーションが無いが、デバッグでは画面の組み立ての例外になり、見張りのtestも落ちたまま。
+- DISC538の追加：作品広場の左上の戻る（`communityBackToSplashButton`、`context.go('/')`）で起動画面へ戻った後も、起動画面の2つのボタンが押しても動かない（韓国語・390px、`r2a101-1011`・`r2a101-1314`、アプリを起動し直すと直る）。ホームの戻ると同じ原因（`splash_screen.dart`の`_openingDestination`が`await context.push`の終わりを待ったまま）。
+- 既存DISC111（韓国語の語の途中の折れ、todo）は残る：設定の項目の説明（「실행 취소 횟 / 수」「길게 누르 / 기」「도 / 구와」「패널 배 / 치」「아 / 래로」「부위 / 별로」「위젯 색 / 상」「배경 / 색」）、容量削減の「미사용 소재 일괄 삭 / 제」、フォント管理の検索欄のヒント「검 / 색…」（`r2a101-1718`・`r2a101-21`・`r2a101-23`）。
+- OK：設定の画面でTabは上部バー（戻る・ヘルプ・検索）→項目の順に進み、フォーカスは行の灰色で見える。
+- 気づいた点（DISCにしない）：見本データの日本語の題（「夜明けの冒険」）は韓国語の表示で「険」だけが豆腐になる（韓国語の見出しの書体の並びに無い字。Linuxにはその字を持つ書体が無い。Androidは端末の書体で出るはず）。
+- test：`dialog_text_scale_audit_test`（上のDISC545で1件失敗）・`save_screens_app_bar_fit_test`・`korean_word_joiner_semantics_test`・`text_scale_layout_test`・`accent_text_color_test`・`accent_text_screens_test`・`app_bar_title_fit_or_hide_test`・`home_display_matrix_test`を`643cc267`で58件成功・1件失敗。
+- 未確認：全画面×7言語×文字1.0/1.3/2.0の目視（今回は仏語・韓国語の390px・2倍で作品広場・設定・容量削減・フォント管理）、TalkBack・スイッチ操作（Androidのみ）、自作の暗いテーマでのDISC193〜199。
+- 画像：`shots-r1/r2a101-*`（backup-pending）。記録：`logs/a101-tests.txt`・`a101-probe.txt`・`a101-bis-*.txt`。
