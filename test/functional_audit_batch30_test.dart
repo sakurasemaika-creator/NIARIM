@@ -23,7 +23,7 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('実CanvasAreaの投げ縄選択で囲んだ赤図形だけを移動し外の青図形は全RGBA不変', (tester) async {
+  testWidgets('実CanvasAreaの投げ縄で囲んだ赤図形だけを移動し範囲外の全RGBAを保つ', (tester) async {
     tester.view.physicalSize = const Size(480, 360);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -54,7 +54,7 @@ void main() {
     final before = _read(tm, key, 96, 80);
 
     final providers = await tester.runAsync(buildAppProviders);
-    var active = false;
+    Uint8List? selectionMask;
     final boundaryKey = GlobalKey();
     await tester.pumpWidget(
       MultiProvider(
@@ -77,7 +77,7 @@ void main() {
                     currentTool: DrawingTool.selectLasso,
                     currentFrame: 0,
                     sceneId: scene.id,
-                    onSelectionActiveChanged: (v) => active = v,
+                    onSelectionMaskChanged: (mask) => selectionMask = mask,
                   ),
                 ),
               ),
@@ -110,7 +110,8 @@ void main() {
     }
     await g.up();
     await tester.pump();
-    expect(active, isTrue, reason: '投げ縄Pointer操作で選択マスクが確定すること');
+    expect(selectionMask, isNotNull, reason: '投げ縄Pointer操作で選択マスクが確定すること');
+    final mask = Uint8List.fromList(selectionMask!);
     await tester.runAsync(
       () => _shot(boundaryKey, '${out.path}/selection_lasso_01_selected.png'),
     );
@@ -135,15 +136,30 @@ void main() {
 
     final actual = _read(tm, key, 96, 80);
     final expected = Uint8List.fromList(before);
-    // 赤矩形だけ+20,+10移動。元を透明化し新位置へコピー。
+    // 赤矩形を+20,+10動かし、元の境界に入る画素だけを描く。
+    var moved = 0;
+    var clipped = 0;
     for (var y = 30; y < 39; y++) {
       for (var x = 30; x < 39; x++) {
-        final si = (y * 96 + x) * 4;
-        final di = ((y + 10) * 96 + (x + 20)) * 4;
-        expected.setRange(di, di + 4, before, si);
-        expected.fillRange(si, si + 4, 0);
+        final source = y * 96 + x;
+        final destination = (y + 10) * 96 + (x + 20);
+        expect(mask[source], isNot(0));
+        if (mask[destination] != 0) {
+          expected.setRange(
+            destination * 4,
+            destination * 4 + 4,
+            before,
+            source * 4,
+          );
+          moved++;
+        } else {
+          clipped++;
+        }
+        expected.fillRange(source * 4, source * 4 + 4, 0);
       }
     }
+    expect(moved, greaterThan(0));
+    expect(clipped, greaterThan(0));
     expect(
       actual,
       orderedEquals(expected),

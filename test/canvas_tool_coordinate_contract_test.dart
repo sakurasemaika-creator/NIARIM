@@ -77,7 +77,7 @@ void main() {
       'updated[idx] = canvasPos;',
       '_handleRulerMove(canvasPos);',
       '_handleBucketMove(event.pointer, canvasPos);',
-      '_subToolStrokePoints.add(canvasPos)',
+      '_subToolStrokePoints = [..._subToolStrokePoints, canvasPos]',
       '_handleFingerMove(canvasPos);',
       '_handleBlurMosaicMove(canvasPos);',
     ]) {
