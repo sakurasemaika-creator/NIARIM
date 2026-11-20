@@ -3694,3 +3694,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`home_works_large_collection_test`・`keep_together_text_relayout_cost_test`・`performance_settings_text_fit_test`・`save_tree_large_branch_stress_test`・`brush_size_memory_test`・`home_resize_scroll_memory_test`・`save_tree_lazy_list_test`・`startup_failure_recovery_test`を`643cc267`で51件成功。
 - 未確認（実機）：低・中・高の端末での起動時間・フレーム時間・メモリ、長い動画の書き出し・取り消し・再試行、多数のレイヤー・素材、裏へ回ってから戻る、APKの大きさ（R8・`shrinkResources`後）。
 - 画像：`shots-r1/r2a103-*`（backup-pending）。
+
+## A104 — App保守性・テスト・CI品質
+
+### A104 二巡目（2026-11-20、Claude・S50、App `643cc267`と`origin/dev_branch`のワークフロー、GitHub Actionsの実行）— 判定：要修正（新DISC548、既存DISC437は所有者の判断待ち）
+
+- 一巡目に落ちていたtestは直った：`direct_service_coverage_batch10_test`（DISC345）・`watermark_copy_name_tile_test`（DISC346）・`rewards_tabs_fit_test`（DISC405）・`app_smoke_test`（DISC406）がA104の対象の契約のtest 29本と一緒に`643cc267`で成功。DISC422・423・427・428・435・436はA095〜A102で成功を確認。
+- 手元の結果：上の33本で198件成功・2件失敗。失敗は`project_favorite_delete_guard_test`の「favorite file write denial retains off/on」の2件で、testが`chmod`で書き込みを禁じたファイルに書けることを期待するが、この環境はroot（`id -u`＝0）でchmodを無視するため（CLAUDE.mdの注意と同じ）。製品の不具合ではない。
+- `flutter analyze`は0件（A103）。libのTODO・FIXME・HACKは0件。
+- 既存DISC437（所有者の判断待ち）：`origin/dev_branch`のワークフローは114本、`one-shot`は26本で、うち25本が`push`等で自動起動し、12本が`git push`する（例：`one-shot-regenerate-l10n.yml`・`one-shot-prelaunch-dart-format.yml`）。一巡目の後の掃除（`bd7ffc6a`）で63本から減ったが、残りは同じ作り。
+- 新DISC548：全件のtestのワークフロー（`flutter-complete-sharded-tests.yml`、8つのshard）が、2026-11-20の実行57〜72回（`0ff63b77`〜`e4d3c5b7`）ですべて失敗している。最新の`e4d3c5b7`（run 44706382736）は8つのうち6つのshardが失敗。shard 0の失敗は`home_title_fit_test`（4つのタブ・7言語の題）・`l10n_unused_key_test`（DISC547）・`requested_ui_all_captures_test`。静的解析のjobは成功。dev_branchへ修正を入れ続けているのに、全件の回帰の見張りが赤いまま。
+- 気づいた点（DISCにしない）：`build-apk.yml`は`workflow_dispatch`に加えて、自分のファイルが変わった`dev_branch`へのpushでも起動する（`675d85e7`、2026-11-17）。CLAUDE.mdの「手動実行のみ」と食い違う（説明の更新が要る）。
+- 未確認：CIの各shardの失敗の全件（shard 0以外のログは開いていない）、`tool/`のスクリプトの再現性。
+- 記録：`logs/a104-tests.txt`（scratchpad、backup-pending）。
