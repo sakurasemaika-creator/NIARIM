@@ -2873,3 +2873,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 要修正（既存DISC268の残り、資料）：CLAUDE.mdの「繰り返し踏んだ地雷」の「`monetization_gate.dart`を一時的に書き換えたら必ず元に戻すこと」（1918〜1924行、`isMonetizationEnabled`・キャンペーン文言）は、lib配下にもう無いファイルと関数の説明のまま。DISC268で直したのは「人間の実操作が必要な項目」1だけだった。
 - 未確認：Premiumでの記録・下書き・保存・取り消し・読み込み・書き出し・ショートカット（実機の購入か特典が要る）。
 - 画像：`shots-r1/r2a043-*`（backup-pending）。
+
+## A044 — 自動操作の実行範囲・安全性・組込
+
+### A044 二巡目（2026-11-20、Claude・S50、App `9c06dd69`）— 判定：OK（testとコード。Premiumの実操作はこの環境では不可）
+
+- 一巡目：OK（testとコード、Premiumの実操作は不可）。
+- 一巡目からの変更：`custom_automation_filter_runner.dart`は記録したフィルターを当てる前に元のレイヤーを読み直し、無ければ「Recorded filter source layer is unavailable」、ロック中なら「Recorded filter source layer is locked」で止める（38〜40行。DISC309と同じ考え方で、記録したフィルターの適用〔`recorded_filter_apply_service.dart`の43行〕と同じ決まり）。Routeに挙げた`lib/models/custom_automation_presets.dart`は今は無く、公式の手順は`custom_automation_builtin_presets.dart`にある。
+- test：全体回帰 `44641695291` で`custom_automation_executor_test`・`custom_automation_frame_scope_test`・`custom_automation_builtin_refresh_test`・`custom_automation_digital_lineart_step_evidence_test`・`custom_automation_labels_test`・`automation_presets_tips_sync_test`・`niatra_transfer_automation_names_test`・`services/filter_custom_replay_test`は成功。
+- 未確認：Premiumでの実行（今のコマ・範囲・全コマ、繰り返し、途中の失敗と取り消し、ロックしたレイヤーでの知らせの文）。A043と同じく、手元でPremiumを有効にする道が無い。
