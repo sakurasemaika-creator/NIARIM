@@ -1138,6 +1138,7 @@ class _HomeScreenState extends State<HomeScreen>
           key: _scaffoldKey,
           appBar: AppBar(
             automaticallyImplyLeading: false,
+            titleSpacing: 16,
             // 起動画面へ戻る矢印は上のバーに置かず、左下の浮かぶボタンに
             // する（どのタブでも同じ場所、所有者の指定）。
             title: _isSearching

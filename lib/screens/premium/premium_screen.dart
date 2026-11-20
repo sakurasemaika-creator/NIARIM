@@ -192,11 +192,30 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     ),
                   ),
                 ],
+                if (premium.purchasePending)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Row(
+                        children: [
+                          const ExcludeSemantics(
+                            child: SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(child: Text(l10n.premiumCheckoutPending)),
+                        ],
+                      ),
+                    ),
+                  ),
                 if (premium.purchaseError != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Text(
-                      premium.purchaseError!,
+                      _purchaseErrorText(l10n, premium.purchaseError!),
                       style: TextStyle(fontSize: 12, color: scheme.error),
                     ),
                   ),
@@ -222,15 +241,19 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 const SizedBox(height: 16),
                 Center(
                   child: TextButton(
-                    onPressed: premium.storeAvailable
+                    onPressed:
+                        premium.storeAvailable && !premium.purchasePending
                         ? () async {
-                            await premium.restorePurchases();
+                            var message = l10n.premiumRestoredSnackbar;
+                            try {
+                              await premium.restorePurchases();
+                            } catch (_) {
+                              message = l10n.premiumRestoreFailed;
+                            }
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(l10n.premiumRestoredSnackbar),
-                                ),
-                              );
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(SnackBar(content: Text(message)));
                             }
                           }
                         : null,
@@ -244,6 +267,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
       ),
     );
   }
+
+  String _purchaseErrorText(AppLocalizations l10n, String error) =>
+      error == PremiumService.checkoutStartFailed
+      ? l10n.premiumCheckoutStartFailed
+      : error;
 
   String _formatDate(DateTime d) =>
       '${d.year}/${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}';
@@ -669,7 +697,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   final ok = await premium.buy(productId);
                   if (!ok && context.mounted && premium.purchaseError != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(premium.purchaseError!)),
+                      SnackBar(
+                        content: Text(
+                          _purchaseErrorText(l10n, premium.purchaseError!),
+                        ),
+                      ),
                     );
                   }
                 },
@@ -747,16 +779,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     ],
                   ),
                 ),
-                if (busy)
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: scheme.primary,
-                    ),
-                  )
-                else if (price != null)
+                if (price != null)
                   Flexible(
                     child: Text(
                       price,

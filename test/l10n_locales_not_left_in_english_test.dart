@@ -33,6 +33,7 @@ const _sameInLocale = <String, Set<String>>{
   'es': {
     'assetTagManga',
     'assetTagPixelArt',
+    'autofillSamplePartIris', // 虹彩はこの言語でも Iris と表記する。
     'blendModeColor',
     'blendModeNormal',
     'brushSettingsMixingOff',
@@ -70,6 +71,7 @@ const _sameInLocale = <String, Set<String>>{
     'assetTagPixelArt',
     'assetTagTexture',
     'autofillPartGradientTypeLabel',
+    'autofillSamplePartIris', // 虹彩はこの言語でも Iris と表記する。
     'blendModeExclusion',
     'blendModeNormal',
     'blendModeSaturation',

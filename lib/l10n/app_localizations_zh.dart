@@ -1040,6 +1040,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumPlanSectionTitle => '套餐';
 
   @override
+  String get premiumCheckoutPending => '正在通过 Google Play 办理购买手续。';
+
+  @override
+  String get premiumCheckoutStartFailed => '无法打开 Google Play 购买页面。请重新选择方案。';
+
+  @override
+  String get premiumRestoreFailed => '未能恢复购买记录，请重试。';
+
+  @override
   String get premiumStoreUnavailable => '无法加载商店的购买信息。请检查网络连接后重试。';
 
   @override
@@ -11461,6 +11470,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get premiumPlanSectionTitle => '方案';
+
+  @override
+  String get premiumCheckoutPending => '正在透過 Google Play 辦理購買手續。';
+
+  @override
+  String get premiumCheckoutStartFailed => '無法開啟 Google Play 購買頁面。請重新選擇方案。';
+
+  @override
+  String get premiumRestoreFailed => '無法還原購買紀錄，請再試一次。';
 
   @override
   String get premiumStoreUnavailable => '無法載入商店的購買資訊。請檢查網路連線後再試一次。';

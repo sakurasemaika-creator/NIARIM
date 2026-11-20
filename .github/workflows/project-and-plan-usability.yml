@@ -29,6 +29,8 @@ on:
       - 'lib/screens/rewards/reward_unlock_screen.dart'
       - 'test/l10n_locales_not_left_in_english_test.dart'
       - 'test/visual/project_and_plan_capture_test.dart'
+      - 'lib/services/premium_service.dart'
+      - 'test/premium_checkout_retry_test.dart'
       - 'test/premium_screen_price_test.dart'
       - '.github/workflows/project-and-plan-usability.yml'
   workflow_dispatch:
@@ -58,7 +60,7 @@ jobs:
           flutter test --no-pub --reporter expanded
           test/home_a003_visual_findings_test.dart test/home_small_fixes_test.dart
           test/home_filtered_empty_states_test.dart test/empty_state_placeholder_test.dart
-          test/premium_screen_price_test.dart test/premium_comparison_table_test.dart
+          test/premium_screen_price_test.dart test/premium_comparison_table_test.dart test/premium_checkout_retry_test.dart
           test/new_project_inputs_test.dart test/background_color_picker_test.dart
           test/l10n_locales_not_left_in_english_test.dart test/help_topic_search_text_test.dart
       - name: Verify project selection, card hit targets and quick tool controls

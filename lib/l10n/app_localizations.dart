@@ -1995,6 +1995,24 @@ abstract class AppLocalizations {
   /// **'プラン'**
   String get premiumPlanSectionTitle;
 
+  /// No description provided for @premiumCheckoutPending.
+  ///
+  /// In ja, this message translates to:
+  /// **'Google Playで購入手続き中です。'**
+  String get premiumCheckoutPending;
+
+  /// No description provided for @premiumCheckoutStartFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'Google Playの購入画面を開けませんでした。もう一度プランを選んでください。'**
+  String get premiumCheckoutStartFailed;
+
+  /// No description provided for @premiumRestoreFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'購入を復元できませんでした。もう一度お試しください。'**
+  String get premiumRestoreFailed;
+
   /// No description provided for @premiumStoreUnavailable.
   ///
   /// In ja, this message translates to:

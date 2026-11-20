@@ -1109,6 +1109,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get premiumPlanSectionTitle => 'Formules';
 
   @override
+  String get premiumCheckoutPending => 'Achat en cours sur Google Play.';
+
+  @override
+  String get premiumCheckoutStartFailed =>
+      'Impossible d’ouvrir la page d’achat de Google Play. Sélectionnez à nouveau une formule.';
+
+  @override
+  String get premiumRestoreFailed =>
+      'Impossible de restaurer les achats. Veuillez réessayer.';
+
+  @override
   String get premiumStoreUnavailable =>
       'Impossible de charger les informations d’achat de la boutique. Vérifiez votre connexion et réessayez.';
 

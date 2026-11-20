@@ -71,7 +71,7 @@ class _ExportCompleteDialogState extends State<ExportCompleteDialog> {
                   Expanded(
                     child: SelectableText(
                       widget.file.uri.pathSegments.last,
-                      style: theme.textTheme.titleSmall?.copyWith(
+                      style: theme.textTheme.bodyLarge?.copyWith(
                         color: theme.colorScheme.onSurface,
                       ),
                     ),

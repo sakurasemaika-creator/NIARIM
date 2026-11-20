@@ -1053,6 +1053,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumPlanSectionTitle => 'プラン';
 
   @override
+  String get premiumCheckoutPending => 'Google Playで購入手続き中です。';
+
+  @override
+  String get premiumCheckoutStartFailed =>
+      'Google Playの購入画面を開けませんでした。もう一度プランを選んでください。';
+
+  @override
+  String get premiumRestoreFailed => '購入を復元できませんでした。もう一度お試しください。';
+
+  @override
   String get premiumStoreUnavailable =>
       'ストアから購入情報を取得できませんでした。通信を確認して再試行してください。';
 

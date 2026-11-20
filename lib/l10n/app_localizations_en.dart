@@ -1084,6 +1084,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumPlanSectionTitle => 'Plans';
 
   @override
+  String get premiumCheckoutPending => 'Google Play checkout is in progress.';
+
+  @override
+  String get premiumCheckoutStartFailed =>
+      'Google Play checkout could not open. Select a plan to try again.';
+
+  @override
+  String get premiumRestoreFailed =>
+      'Purchases could not be restored. Please try again.';
+
+  @override
   String get premiumStoreUnavailable =>
       'Could not load purchase information from the store. Check your connection and try again.';
 

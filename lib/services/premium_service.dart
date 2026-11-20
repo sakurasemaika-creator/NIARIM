@@ -18,14 +18,18 @@ import '../utils/tolerant_preferences.dart';
 /// サーバー検証された購入、またはサーバー発行の有効なコイン権限のみ。
 /// 日付やビルドフラグによる全ユーザーへの自動無料開放は行わない。
 class PremiumService extends ChangeNotifier {
+  PremiumService([this._store]);
+
+  static const checkoutStartFailed = 'Google Playの購入画面を開けませんでした';
+
   // ストアに登録するサブスクリプション商品ID
   static const String monthlyProductId = 'niarim_premium_monthly';
   static const String yearlyProductId = 'niarim_premium_yearly';
   static const Set<String> _productIds = {monthlyProductId, yearlyProductId};
 
   // Billing Clientをサポートしない環境のテストで初期化しないよう遅延生成する。
-  InAppPurchase? _iapInstance;
-  InAppPurchase get _iap => _iapInstance ??= InAppPurchase.instance;
+  final InAppPurchase? _store;
+  InAppPurchase get _iap => _store ?? InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   bool _isPremium = false;
@@ -472,8 +476,9 @@ class PremiumService extends ChangeNotifier {
   bool _storeAvailable = false;
   bool get storeAvailable => _storeAvailable;
 
-  bool _purchasePending = false;
-  bool get purchasePending => _purchasePending;
+  final _pendingProductIds = <String>{};
+  bool _openingCheckout = false;
+  bool get purchasePending => _openingCheckout || _pendingProductIds.isNotEmpty;
 
   String? _purchaseError;
   String? get purchaseError => _purchaseError;
@@ -500,7 +505,9 @@ class PremiumService extends ChangeNotifier {
   bool _loadingStoreProducts = false;
 
   Future<void> refreshStoreProducts() async {
-    if (!supportsMobilePluginRuntime || _loadingStoreProducts || _disposed) {
+    if ((_store == null && !supportsMobilePluginRuntime) ||
+        _loadingStoreProducts ||
+        _disposed) {
       return;
     }
     _loadingStoreProducts = true;
@@ -548,6 +555,7 @@ class PremiumService extends ChangeNotifier {
   /// 戻り値は購入フローの開始に成功したかどうか。実際の購入完了・失敗結果は
   /// purchaseStream経由で非同期に届き、isPremiumへ反映される。
   Future<bool> buy(String productId) async {
+    if (_disposed || purchasePending) return false;
     if (_boundGoogleAuth?.account == null ||
         _playVerifier == null ||
         _playPreflight == null) {
@@ -560,33 +568,45 @@ class PremiumService extends ChangeNotifier {
       notifyListeners();
       return false;
     }
-    // Do not charge a user if the NIARIM server cannot verify Play purchases.
-    final startingAccount = _boundGoogleAuth?.account?.id;
-    bool backendReady;
-    try {
-      backendReady = await _playPreflight!();
-    } catch (_) {
-      backendReady = false;
-    }
-    if (!backendReady ||
-        startingAccount == null ||
-        startingAccount != _boundGoogleAuth?.account?.id) {
-      _purchaseError = '購入検証サーバーが利用できないため購入を開始できません';
-      notifyListeners();
-      return false;
-    }
     final product = _products.where((p) => p.id == productId).firstOrNull;
     if (product == null) {
       _purchaseError = '商品情報を取得できませんでした';
       notifyListeners();
       return false;
     }
+
+    final startingAccount = _boundGoogleAuth!.account!.id;
+    _openingCheckout = true;
     _purchaseError = null;
-    _purchasePending = true;
     notifyListeners();
-    final param = PurchaseParam(productDetails: product);
-    // サブスクリプションもin_app_purchaseではbuyNonConsumableを使用する。
-    return _iap.buyNonConsumable(purchaseParam: param);
+    try {
+      // Keep both plans disabled while checking the account with the backend.
+      final ready = await Future<bool>.sync(
+        _playPreflight!,
+      ).onError((_, _) => false);
+      if (_disposed) return false;
+      if (!ready || _boundGoogleAuth?.account?.id != startingAccount) {
+        _purchaseError = '購入検証サーバーが利用できないため購入を開始できません';
+        return false;
+      }
+      if (_pendingProductIds.isNotEmpty) return false;
+      _pendingProductIds.add(productId);
+      final started = await _iap.buyNonConsumable(
+        purchaseParam: PurchaseParam(productDetails: product),
+      );
+      if (!started) {
+        _pendingProductIds.remove(productId);
+        _purchaseError = checkoutStartFailed;
+      }
+      return started;
+    } catch (_) {
+      _pendingProductIds.remove(productId);
+      _purchaseError = checkoutStartFailed;
+      return false;
+    } finally {
+      _openingCheckout = false;
+      if (!_disposed) notifyListeners();
+    }
   }
 
   /// 購入の復元（機種変更・再インストール時）。
@@ -601,11 +621,13 @@ class PremiumService extends ChangeNotifier {
       bool verifiedAndReadyToAcknowledge = false;
       switch (purchase.status) {
         case PurchaseStatus.pending:
-          _purchasePending = true;
+          if (_productIds.contains(purchase.productID)) {
+            _pendingProductIds.add(purchase.productID);
+          }
           break;
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
-          _purchasePending = false;
+          _pendingProductIds.remove(purchase.productID);
           final verifier = _playVerifier;
           final accountId = _boundGoogleAuth?.account?.id;
           final purchaseToken =
@@ -654,11 +676,11 @@ class PremiumService extends ChangeNotifier {
           }
           break;
         case PurchaseStatus.error:
-          _purchasePending = false;
+          _pendingProductIds.remove(purchase.productID);
           _purchaseError = purchase.error?.message ?? '購入処理に失敗しました';
           break;
         case PurchaseStatus.canceled:
-          _purchasePending = false;
+          _pendingProductIds.remove(purchase.productID);
           break;
       }
       if (purchase.pendingCompletePurchase && verifiedAndReadyToAcknowledge) {

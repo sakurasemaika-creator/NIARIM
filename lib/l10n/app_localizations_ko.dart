@@ -1056,6 +1056,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumPlanSectionTitle => '플랜';
 
   @override
+  String get premiumCheckoutPending => 'Google Play 구매 절차가 진행 중입니다.';
+
+  @override
+  String get premiumCheckoutStartFailed =>
+      'Google Play 결제 화면을 열 수 없습니다. 요금제를 다시 선택해 주세요.';
+
+  @override
+  String get premiumRestoreFailed => '구매 내역을 복원할 수 없습니다. 다시 시도해 주세요.';
+
+  @override
   String get premiumStoreUnavailable =>
       '스토어에서 구매 정보를 불러오지 못했습니다. 연결을 확인하고 다시 시도해 주세요.';
 

@@ -15,10 +15,48 @@ class _Store extends PremiumService {
   @override
   final List<ProductDetails> products;
 
+  bool _busy = false;
+  @override
+  bool get purchasePending => _busy;
+  void beginCheckout() {
+    _busy = true;
+    notifyListeners();
+  }
+
   int retries = 0;
 
   @override
   Future<void> refreshStoreProducts() async => retries++;
+}
+
+class _UnavailableCheckout extends _Store {
+  _UnavailableCheckout()
+    : super(
+        storeAvailable: true,
+        products: [
+          ProductDetails(
+            id: PremiumService.monthlyProductId,
+            title: 'Monthly',
+            description: '',
+            price: '€4',
+            rawPrice: 4,
+            currencyCode: 'EUR',
+          ),
+        ],
+      );
+
+  @override
+  String? purchaseError;
+
+  @override
+  Future<bool> buy(String productId) async {
+    purchaseError = PremiumService.checkoutStartFailed;
+    notifyListeners();
+    return false;
+  }
+
+  @override
+  Future<void> restorePurchases() => Future.error(StateError('Store offline'));
 }
 
 void main() {
@@ -54,16 +92,14 @@ void main() {
           currencyCode: 'EUR',
         );
 
-    final words = await show(
-      tester,
-      _Store(
-        storeAvailable: true,
-        products: [
-          product(PremiumService.monthlyProductId, '4,49 €', 4.49),
-          product(PremiumService.yearlyProductId, '45,99 €', 45.99),
-        ],
-      ),
+    final store = _Store(
+      storeAvailable: true,
+      products: [
+        product(PremiumService.monthlyProductId, '4,49 €', 4.49),
+        product(PremiumService.yearlyProductId, '45,99 €', 45.99),
+      ],
     );
+    final words = await show(tester, store);
     expect(find.text('4,49 €'), findsOneWidget);
     expect(find.text('45,99 €'), findsOneWidget);
     expect(find.text(words.premiumYearlyOriginalPrice), findsNothing);
@@ -81,6 +117,38 @@ void main() {
           ),
         );
     expect(row, hasLength(1));
+
+    store.beginCheckout();
+    await tester.pump();
+    final status = find.text(words.premiumCheckoutPending);
+    await tester.ensureVisible(status);
+    await tester.pump();
+    expect(status, findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(
+      find.ancestor(
+        of: status,
+        matching: find.byWidgetPredicate(
+          (w) => w is Semantics && w.properties.liveRegion == true,
+        ),
+      ),
+      findsOneWidget,
+    );
+    for (final price in ['4,49 €', '45,99 €']) {
+      final card = find.ancestor(
+        of: find.text(price),
+        matching: find.byType(InkWell),
+      );
+      expect(tester.widget<InkWell>(card).onTap, isNull);
+    }
+    expect(
+      tester
+          .widget<TextButton>(
+            find.widgetWithText(TextButton, words.premiumRestorePurchases),
+          )
+          .onPressed,
+      isNull,
+    );
   });
 
   testWidgets(
@@ -113,6 +181,31 @@ void main() {
         find.text(words.premiumPlanSectionTitle).hitTestable(),
         findsOneWidget,
       );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'shows the localized retry guidance when checkout or restore fails',
+    (tester) async {
+      final words = await show(tester, _UnavailableCheckout());
+      final restore = find.widgetWithText(
+        TextButton,
+        words.premiumRestorePurchases,
+      );
+      await tester.ensureVisible(restore);
+      await tester.tap(restore);
+      await tester.pumpAndSettle();
+      expect(find.text(words.premiumRestoreFailed), findsOneWidget);
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      final monthly = find.text('€4');
+      await tester.ensureVisible(monthly);
+      await tester.tap(monthly);
+      await tester.pumpAndSettle();
+      expect(find.text(words.premiumCheckoutStartFailed), findsWidgets);
+      expect(find.text(PremiumService.checkoutStartFailed), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
