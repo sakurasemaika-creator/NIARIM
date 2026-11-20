@@ -2958,3 +2958,8 @@ A051までに記録された新規指摘のうち、DISC491〜521を照合した
 - ローカル検証はタイムライン・キャンバス・保存関連98件、共有・引き継ぎ28件、素材・復元25件、ドック12件が各実行で成功。Flutter静的解析は指摘0件。
 - Android・DeX実機、Androidでの音声・動画メタデータ計測、共有ファイルの受け取りは未確認。
 - ドック・タイムラインのGitHub Actionsは [44691538392](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44691538392) と [44693157113](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44693157113) が成功。先行SHAの全体CI [44691051446](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44691051446) は一部失敗。追加のテスト修正 `eab65a0`・`05953b7` が反映され、最新SHAの全体CIは [44694678452](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44694678452) で確認できる。
+
+### A066（二巡目、Claude・S50、2026-11-20、App `ec135568`、判定：OK）
+
+- 一巡目のDISC355（ゴミ箱の「コピー」の貼り付けが元の場所へ戻る）は文が合った：確認は「元の場所に復元」、知らせは「元の一覧に復元しました」。DISC356（自動削除を選び直すと確認なしで消す）は件数つきの確認・キャンセル・知らせになり、行に残りの日数が出る。DISC358（ゴミ箱のタブの貼り付け）は案内の文だけになった。
+- フォルダの複製・フォルダのゴミ箱の行と完全削除の確認はOK。DISC357（戻した作品一覧のフォルダの確認に件数が無い）は直った：testが成功（40本・264件）。
