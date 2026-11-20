@@ -3439,3 +3439,18 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`privacy_policy_ai_clause_test`・`l10n_locales_not_left_in_english_test`・`font_license_test`・`community_playback_privacy_actions_test`・`community_ranking_privacy_visibility_test`・`ported_code_license_test`・`l10n_hardcoded_text_guard_test`を`1740d395`で34件成功。アプリとWebの条文の一致を見るtestは無い。
 - 未確認：7言語の全条文のアプリとWebの一致（第4条の語以外）、オフライン、文字2倍・360px、ストアに載せるプライバシーポリシーのURL。
 - 画像：`shots-r1/r2a085-*`（backup-pending）。
+
+## A086 — ヘルプ /help・文脈help・検索
+
+### A086 二巡目（2026-11-20、Claude・S50、App `1740d395`のLinuxデバッグビルド）— 判定：OK（一巡目のDISC397・398・399は直った）
+
+- 環境：ja、1280×800、マウス、使い捨てのプロフィール（r2a069tの写し）。
+- DISC397は直った：設定→ジェスチャー設定の「？」→「使い方」の「ヘルプ」タブに「ジェスチャー設定」の項目が開いた状態で出て、その上に「すべての項目を表示」がある。押すと全部の項目（先頭は「使い方を見る」、次に「基本の操作」「ペンツール」…）の一覧になる（`shots-r1/r2a086-02`・`03`）。
+- DISC398は直った：1行の説明（「エンドマーク」「ジェスチャー設定」）も左寄せで、2行の説明と本文の始まりがそろう（`r2a086-02`・`05`）。
+- 検索「MP4」で「エンドマーク」「動画書き出し（MP4・WebM・GIF・AVI）」「特典の期限が切れたら」が出て、×で消せる。ヘルプの「エンドマーク」の本文は今の名前（`ec135568`）。
+- DISC399は直った：`brush_extension_settings_test`が成功（折り畳みのスイッチ4つ）。
+- DISC066：`community_no_hardcoded_text_test`は成功（`canvas_screen.dart`の`_buildDesktopMenuBar`は無くなった）。PC専用の作業画面の残りはA011・A029に記録（所有者の判断待ち）。
+- 気づいた点（DISCにしない）：「ジェスチャー設定」の項目は「2本指タップ・3本指タップ・2本指スワイプ・長押し」と書き、画面にある「4本指以上のタップ」と「長押しスポイト」に触れない。
+- test：`brush_extension_settings_test`・`community_no_hardcoded_text_test`・`app_tutorial_test`・`help_topic_search_text_test`・`menu_surface_ink_test`・`search_typed_apostrophe_test`・`storage_screen_focus_after_change_test`・`help_filter_names_test`を`1740d395`で85件成功。
+- 未確認：77項目すべての本文と今の操作の一致（読んだのは数項目）、図・リンク、7言語・文字2倍・360px、キーボードだけでの操作。
+- 画像：`shots-r1/r2a086-*`（backup-pending）。
