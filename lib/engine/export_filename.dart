@@ -38,11 +38,11 @@ String exportFilenameStem(
   final safeName = _reserved.hasMatch(name) ? '_$name' : name;
   final frame = frameIndex == null
       ? ''
-      : '_F${(frameIndex + 1).toString().padLeft(3, '0')}';
+      : ' F${(frameIndex + 1).toString().padLeft(3, '0')}';
   final local = time.toLocal();
   String two(int value) => value.toString().padLeft(2, '0');
   final date =
       '${local.year.toString().padLeft(4, '0')}${two(local.month)}${two(local.day)}';
   final clock = '${two(local.hour)}${two(local.minute)}${two(local.second)}';
-  return '$safeName${frame}_$date-$clock';
+  return '$safeName$frame $date-$clock';
 }

@@ -313,7 +313,7 @@ void main() {
       final output = await export(ExportEngine(), paintedTiles(), true);
 
       expect(File(output).readAsBytesSync(), _fullVideo);
-      expect(File(output).uri.pathSegments.last, startsWith("Studio 2's reel_"));
+      expect(File(output).uri.pathSegments.last, startsWith("Studio 2's reel "));
       expect(exportedNames(), [File(output).uri.pathSegments.last]);
       expect(File(output).parent.path, exportsDir().path);
       expect(frameFoldersLeft(framesFolder), isFalse);

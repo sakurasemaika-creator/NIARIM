@@ -291,7 +291,7 @@ void main() {
         .file;
     expect(
       exported.uri.pathSegments.last,
-      matches(RegExp(r'^月明かりの谷_\d{8}-\d{6}\.gif$')),
+      matches(RegExp(r'^月明かりの谷 \d{8}-\d{6}\.gif$')),
     );
     expect(exported.readAsBytesSync().take(3), [
       71,
