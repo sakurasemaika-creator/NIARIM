@@ -293,7 +293,10 @@ void main() {
         exportHeight: 64,
       ),
     );
-    final sceneId = ps.scenesOf(project!.id).first.id;
+    final firstScene = ps.scenesOf(project!.id).first;
+    final sceneId = firstScene.id;
+    final secondScene = ps.addScene(project.id);
+    ps.setSceneFrameCount(project.id, secondScene.id, 4);
     final tm = ps.tileManagerOf(project.id);
 
     const frameColors = <(int, int, int)>[
@@ -387,6 +390,20 @@ void main() {
     await tester.tap(find.byIcon(Icons.skip_next));
     await settle();
     expect(find.text(l10n.widgetArtworkFrameNumberLabel(4)), findsOneWidget);
+
+    final frameZero = find.byKey(const ValueKey('widgetFrameStripCell0'));
+    final strip = find.ancestor(of: frameZero, matching: find.byType(ListView));
+    for (final scene in [secondScene, firstScene]) {
+      await tester.tap(find.widgetWithText(ChoiceChip, scene.displayName));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.widgetArtworkFrameNumberLabel(1)), findsOneWidget);
+      expect(
+        tester.getCenter(frameZero).dx,
+        closeTo(tester.getCenter(strip).dx, 1),
+      );
+      await tester.tap(find.byIcon(Icons.skip_next));
+      await tester.pumpAndSettle();
+    }
 
     // 1フレーム戻る（fast_rewind）→3枚目（青）になる。
     await tester.tap(find.byIcon(Icons.fast_rewind));

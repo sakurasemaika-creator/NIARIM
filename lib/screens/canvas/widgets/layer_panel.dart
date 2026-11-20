@@ -162,6 +162,7 @@ class _LayerPanelState extends State<LayerPanel> {
   bool _showSearch = false;
   String _searchQuery = '';
   final _searchController = TextEditingController();
+  final _searchFocus = FocusNode();
 
   // レイヤーサムネイル更新用（サムネイルはペンを離した瞬間に
   // 現在レイヤーのみ更新する。全レイヤー一括更新はしない）。
@@ -176,6 +177,7 @@ class _LayerPanelState extends State<LayerPanel> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -347,13 +349,22 @@ class _LayerPanelState extends State<LayerPanel> {
                 _showSearch ? Icons.search_off : Icons.search,
                 size: 18,
               ),
-              onPressed: () => setState(() {
-                _showSearch = !_showSearch;
-                if (!_showSearch) {
-                  _searchQuery = '';
-                  _searchController.clear();
+              onPressed: () {
+                setState(() {
+                  _showSearch = !_showSearch;
+                  if (!_showSearch) {
+                    _searchQuery = '';
+                    _searchController.clear();
+                  }
+                });
+                if (_showSearch) {
+                  // The toolbar can move into the scroll view when the field
+                  // opens. Focus the field once it is attached there.
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted && _showSearch) _searchFocus.requestFocus();
+                  });
                 }
-              }),
+              },
               tooltip: l10n.creativePanelSearchTooltip,
             ),
           ],
@@ -364,7 +375,7 @@ class _LayerPanelState extends State<LayerPanel> {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: TextField(
             controller: _searchController,
-            autofocus: true,
+            focusNode: _searchFocus,
             style: const TextStyle(fontSize: 13),
             decoration: InputDecoration(
               isDense: true,

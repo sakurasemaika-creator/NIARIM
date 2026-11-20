@@ -856,10 +856,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(
-                          Icons.delete,
-                          color: ThemeService.activeColorScheme.error,
-                        ),
+                        icon: const Icon(Icons.delete),
                         tooltip: l10n.commonDelete,
                         onPressed: () async {
                           if (!await confirmDelete(

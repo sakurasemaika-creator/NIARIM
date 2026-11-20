@@ -10,6 +10,7 @@ import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
+import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/screens/canvas/widgets/stamp_panel.dart';
 import 'package:niarim/screens/canvas/widgets/tone_panel.dart';
@@ -171,6 +172,89 @@ void main() {
     await tester.pumpAndSettle();
     expect(input, findsNothing);
     expect(filters.visibleFilters.length, visibleBefore);
+  });
+
+  testWidgets('layer search takes focus before accepting keyboard input', (
+    tester,
+  ) async {
+    final screenFocus = FocusNode();
+    addTearDown(screenFocus.dispose);
+    var selectAllCalls = 0;
+    const l10n = Locale('ja');
+    final labels = lookupAppLocalizations(l10n);
+    for (final height in [400.0, 200.0]) {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: (await tester.runAsync(buildAppProviders))!,
+          child: MaterialApp(
+            locale: l10n,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: TypingAwareShortcuts(
+                screenFocus: screenFocus,
+                bindings: {
+                  const SingleActivator(
+                    LogicalKeyboardKey.keyA,
+                    control: true,
+                  ): () =>
+                      selectAllCalls++,
+                },
+                child: Focus(
+                  focusNode: screenFocus,
+                  child: SizedBox(
+                    width: 260,
+                    height: height,
+                    child: LayerPanel(
+                      dockedMode: true,
+                      projectId: 'none',
+                      sceneId: 'none',
+                      frameIndex: 0,
+                      onClose: () {},
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      screenFocus.requestFocus();
+      await tester.pumpAndSettle();
+      final toggle = find.byTooltip(labels.creativePanelSearchTooltip);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      final input = find.byType(TextField);
+      expect(TypingAwareShortcuts.isTyping, isTrue);
+      expect(tester.testTextInput.hasAnyClients, isTrue);
+      tester.testTextInput.enterText('ink');
+      await tester.pump();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      final controller = tester.widget<TextField>(input).controller!;
+      expect(controller.text, 'ink');
+      expect(
+        controller.selection,
+        const TextSelection(baseOffset: 0, extentOffset: 3),
+      );
+      expect(selectAllCalls, 0);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(input, findsNothing);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(input).controller!.text, isEmpty);
+      expect(TypingAwareShortcuts.isTyping, isTrue);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      expect(selectAllCalls, 1);
+      selectAllCalls = 0;
+    }
   });
 
   for (final kind in [PointerDeviceKind.touch, PointerDeviceKind.mouse]) {

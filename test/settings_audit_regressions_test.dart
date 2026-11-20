@@ -199,7 +199,21 @@ void main() {
     await tap(tester, find.widgetWithText(TextButton, ja.commonCancel));
     await tester.ensureVisible(load);
     await tap(tester, load);
-    await tap(tester, find.byTooltip(ja.commonRename));
+    final rename = find.byTooltip(ja.commonRename);
+    final delete = find.byTooltip(ja.commonDelete);
+    Color? iconColor(Finder button) {
+      final element = tester.element(
+        find.descendant(of: button, matching: find.byType(Icon)),
+      );
+      return (element.widget as Icon).color ?? IconTheme.of(element).color;
+    }
+
+    expect(iconColor(delete), iconColor(rename));
+    await tap(tester, delete);
+    expect(find.text(ja.confirmDeleteNamedBody('Left layout')), findsOneWidget);
+    await tap(tester, find.widgetWithText(TextButton, ja.commonCancel));
+    expect(presets.presets.single.name, 'Left layout');
+    await tap(tester, rename);
     await tester.enterText(field, ' Renamed layout ');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();

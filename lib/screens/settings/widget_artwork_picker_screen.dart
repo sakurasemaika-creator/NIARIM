@@ -320,7 +320,7 @@ class _WidgetArtworkFramePickerScreenState
     extends State<WidgetArtworkFramePickerScreen> {
   String? _sceneId;
   int _highlighted = 0;
-  final _stripScroll = ScrollController();
+  final _stripScroll = ScrollController(keepScrollOffset: false);
   static const _stripItemExtent = 56.0;
 
   // タイムラインモードの再生バー（_TimelineScreenState._togglePlay等）と
@@ -471,11 +471,17 @@ class _WidgetArtworkFramePickerScreenState
                           return ChoiceChip(
                             label: Text(s.displayName),
                             selected: s.id == sceneId,
-                            onSelected: (_) => setState(() {
-                              _stopPlaying();
-                              _sceneId = s.id;
-                              _highlighted = 0;
-                            }),
+                            onSelected: (_) {
+                              if (s.id == sceneId) {
+                                _jumpTo(0, total);
+                                return;
+                              }
+                              setState(() {
+                                _stopPlaying();
+                                _sceneId = s.id;
+                                _highlighted = 0;
+                              });
+                            },
                           );
                         },
                       ),
@@ -596,6 +602,9 @@ class _WidgetArtworkFramePickerScreenState
                         return Stack(
                           children: [
                             ListView.builder(
+                              // A new scene starts at frame zero with its own
+                              // scroll position, even during an active scroll.
+                              key: ValueKey(scene.id),
                               controller: _stripScroll,
                               scrollDirection: Axis.horizontal,
                               padding: EdgeInsets.symmetric(
