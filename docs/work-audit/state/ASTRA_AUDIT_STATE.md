@@ -3010,3 +3010,18 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`functional_audit_batch22〜26_test`・`time_change_strict_evidence_test`・`timeline_frame_paste_test`・`timeline_no_overflow_test`・`timeline_preview_controls_test`を`9e8124f0`で58件成功。最初のクリックが効かないこと、削除の確認の文と取り消しの食い違いを見るtestは無い。
 - 未確認：シーンを替えたときの印、長いコメントの吹き出し、空のコメント、フレームの挿入・並べ替え・切り取りと貼り付けでの印、狭い画面・文字2倍のダイアログ、Androidでの最初のタップ。
 - 画像：`shots-r1/r2a053-*`（backup-pending）。
+
+## A054 — 演出フィルターtrack・管理
+
+### A054 二巡目（2026-11-20、Claude・S50、App `9e8124f0`のLinuxデバッグビルド）— 判定：要修正（既存DISC518の残り。新DISCなし）
+
+- 環境：ja、1280×800、マウス、PCのタイムライン、作品10のシーン「ShotA (コピー 3)」（119コマ、「色調整（彩度+77）」F7〜F18）。
+- 追加：上部バーの演出フィルター→シート（各行に入切・複製・🗑・並べ替えのつまみ）→追加→「フィルターを追加」（フェード・ガウスぼかし・レンズぼかし・モザイク・色収差・ノイズ・セピア・アニメ調・レトロアニメ・ブラウン管・動くノイズ・雨・単色化フィルター・色調整…）→ガウスぼかし→F1〜F12の行が足され、タイムラインに「ガウス…」の行。
+- 一巡目のDISC344は直った：行を開き（開始・終了・強度）強度を1回ドラッグ（5→11）→シートを閉じて上部バーの取り消し1回→開き直すと5。
+- DISC343は直った：強度を8にしてシートを閉じ、タイムラインを出ないまま`kill -9`→起動し直すと、ガウスぼかしF1〜F12・強度8のまま、プレビューの1コマ目もぼけている。
+- DISC316は二巡目のA038で実画面で直っていたので、ここではくり返さない。
+- DISC518の残り（新しいDISCにしない）：複製した行の🗑→「「ガウスぼかし」を削除しますか？この操作は取り消せません。」→削除→上部バーの取り消しで行が戻る（`timeline_screen.dart`9819行付近の`confirmDelete(itemName: …)`のまま）。A053のタイムスタンプ・長さを縮める確認と同じ。
+- 気づいた点（DISCにしない）：複製した行の名前が元と同じ「ガウスぼかし」で、タイムラインの行も「ガウス…」が2つ並び見分けにくい（一巡目と同じ）。取り消しの直後はプレビューが一度1つ分だけぼけ、3秒ほどで2つ分になる（描き直しの遅れ）。
+- test：`effect_filter_from_draw_filters_test`・`effect_filter_non_square_test`・`timeline_effect_filter_header_fit_test`・`engine/vhs_filter_integration_test`・`engine/watercolor_border_test`・`ink_pool_filter_test`・`pixel_art_dither_toggle_test`・`functional_audit_batch2_test`・`visual_reaudit_export_camera_test`を`9e8124f0`で93件成功（ほかの`functional_audit_batch24`・`time_change_strict_evidence`・`timeline_frame_paste`・`timeline_preview_controls`はA053の実行で成功）。
+- 未確認：全14種の各パラメーターの最小・最大、範囲の前後のコマでの見え方、重なったときの並べ替えのドラッグ、入切、書き出した静止画との見比べ、時間で変わるフィルター（雨・動くノイズ・VHS）の再生と書き出し（Androidの実機）。
+- 画像：`shots-r1/r2a054-*`（backup-pending）。
