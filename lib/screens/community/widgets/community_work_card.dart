@@ -398,12 +398,19 @@ class CommunityWorkOrientation extends StatelessWidget {
         child: Tooltip(
           message: label,
           excludeFromSemantics: true,
-          child: Text(
-            label,
-            key: ValueKey('community-orientation-${work.id}'),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelSmall,
+          child: LayoutBuilder(
+            builder: (context, constraints) => FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+                child: Text(
+                  label,
+                  key: ValueKey('community-orientation-${work.id}'),
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+              ),
+            ),
           ),
         ),
       ),

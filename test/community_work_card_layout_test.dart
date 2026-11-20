@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/l10n/community_plaza_labels.dart';
@@ -151,6 +152,27 @@ void main() {
                 );
                 expect(menu, findsOneWidget, reason: scope);
                 final menuRect = tester.getRect(menu);
+                final orientation = find.byKey(
+                  const ValueKey('community-orientation-fixture'),
+                );
+                final orientationRect = tester.getRect(orientation);
+                expect(
+                  orientationRect.right,
+                  lessThanOrEqualTo(buttonRect.left + 1),
+                  reason: '$scope orientation must precede the actions',
+                );
+                expect(
+                  orientationRect.height,
+                  lessThanOrEqualTo(49),
+                  reason: '$scope orientation must fit in the action row',
+                );
+                expect(
+                  tester
+                      .renderObject<RenderParagraph>(orientation)
+                      .didExceedMaxLines,
+                  isFalse,
+                  reason: '$scope orientation must show the full label',
+                );
                 // ︙はカードの右端に寄せる。押せる所（丸の外へ6px）がカードの
                 // 中に収まる分だけ離す（DISC240：カードの余白4px＋右の余白
                 // 6px＋ボタンと丸の差4px）。
