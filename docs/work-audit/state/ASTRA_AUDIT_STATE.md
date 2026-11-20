@@ -2781,3 +2781,20 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：全体回帰 `44641695291` で`autofill_batch_runner_integration_test`・`autofill_check_mode_test`・`autofill_engine_smart_update_test`・`engine/autofill_line_gap_test`・`autofill_preset_selection_sheet_test`は成功。
 - 未確認：色だけ更新・形状を更新して塗るの違い、孤立した領域、線画を変えた後の更新、パーツが無いときの知らせ、プリセットの欠け、スマホ390×844、ほかの言語のパーツ名（DISC107）。
 - 画像：`shots-r1/r2a036-*`（backup-pending）。
+
+## A037 — 描画フィルター管理・適用共通
+
+### A037 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：OK
+
+- 一巡目の指摘（Linux debug、ja、1280×800、PCの形）：
+  - DISC312・DISC149は直った：起動して初めて設定/編集→「フィルター」を開くと、左のドックに一覧（ガウスぼかし・レンズぼかし…）が出て、何も選ばれず、キャンバスにプレビューも出ない。
+  - DISC307は直った：範囲を選んでガウスぼかしを「適用」して戻ると、選択範囲の表示（水色・枠・つまみ）が残り、範囲の中の線だけがぼける。「全解除」してからもう一度開くと「選択範囲の中だけに適用されます」の文が無く、プレビューはレイヤー全体をぼかす（キャンセルした）。
+  - DISC308は直った：設定/編集→「フレーム複数選択」で「全選択」（120/120フレーム選択中）→×で閉じてからガウスぼかしを開くと、題は「ガウスぼかし」、ボタンは「適用」（フレーム数が付かない）。
+  - DISC309は直った：レイヤーの設定で「ロック」をオンにして「適用」を押すと「このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。」が出て、絵は変わらない。
+  - DISC310は直った：組み込みの︙は「複製」だけ。複製すると「ガウスぼかし（コピー）」ができ、その︙は「複製・名前変更・削除」。名前変更で空白だけは「保存」が押せず、「blurA」と打ってEnterで変わる。削除は「「blurA」を削除しますか？この操作は取り消せません。」の確認の後に消える。
+  - DISC311は明るいテーマでは直った（調整の帯のスライダーのまだ動かせる側の線が灰色で見える）。DISC313は全回帰でフィルターのtestが成功。
+  - DISC294（フィルターの🔍）は直った：検索欄にフォーカスが入り、打つと絞り込み、Escで閉じる。DISC271の終点も直っている（A036）。
+- そのほか：PCでもフィルターを選ぶと調整の間はドックとツールバーを隠して下の段に「キャンセル・適用」を出す作り（`filter_immersive_policy.dart`の`shouldUseImmersiveFilterUi`、コードのコメント「on desktop as well as on phones」）。CLAUDE.mdの「スマホのフィルター調整中は調整モード（`_showFilterPanel && !isDesktop`）」の記述は今の作りと食い違う。ロック中の知らせは下の段のボタンの上に重なって出る（4秒ほど）。
+- test：全体回帰 `44641695291` で`filter_edit_undo_group_test`・`filter_settings_persistence_test`・`generated_filter_redo_test`・`filter0025_default_test`・`filter_selection_lens_mask_e2e_test`・`filter_panel_production_ui_contract_test`・`filter_edit_undo_routing_e2e_test`・`canvas_pc_filter_menu_list_test`・`services/filter_custom_replay_test`・`engine/filter_premultiplied_validity_test`・`layer_pixels_replace_test`は成功。
+- 未確認：暗いテーマのスライダー（DISC311）、レイヤーを作るフィルター（縁取り・墨溜まり・自動線画）の適用・取り消し・やり直し、二度押し、不透明度ロック、3コマのうち1つがロック、スマホ390×844の調整モード、色調整から足した自作のフィルター。
+- 画像：`shots-r1/r2a037-*`（backup-pending）。
