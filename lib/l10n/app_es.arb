@@ -1657,7 +1657,7 @@
   "saveTreeTimelineActionChoiceBody": "Elige si quieres sobrescribir esta partida guardada con el contenido actual, o reanudar el trabajo desde aquí.",
   "saveTreeOverwriteAction": "Sobrescribir",
   "saveTreeOverwriteConfirmBody": "Se perderán los datos guardados en ese momento. ¿Continuar?",
-  "saveTreeProjectDetailResumeBody": "¿Reanudar el trabajo desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Para conservarlos, cancela por ahora y guarda primero en otra ranura (o en otra rama del árbol).",
+  "saveTreeProjectDetailResumeBody": "¿Reanudar el trabajo desde este guardado?\n\nSe sobrescribirá el trabajo actual. Si quieres conservarlo, guárdalo manualmente primero.",
   "saveTreeLoadFailedSnackbar": "No se pudieron cargar los datos guardados",
   "saveTreeRestoredSnackbar": "Datos guardados cargados ({name})",
   "@saveTreeRestoredSnackbar": {

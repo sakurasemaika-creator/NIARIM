@@ -21,6 +21,7 @@ import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/save_tree/save_management_screen.dart';
 import 'package:niarim/screens/save_tree/widgets/autosave_list.dart';
+import 'package:niarim/screens/save_tree/widgets/save_restore_dialog.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/autosave_service.dart';
 import 'package:niarim/services/material_service.dart';
@@ -347,8 +348,23 @@ void main() {
         matching: find.byType(ListTile),
       );
       expect(autoItems, findsNWidgets(2));
+      await settleIo(tester, 16);
+      final thumbnails = find.descendant(
+        of: find.byType(AutosaveList),
+        matching: find.byType(SavedThumbnail),
+      );
+      final first = tester.widget<SavedThumbnail>(thumbnails.first).bytes;
+      final second = tester.widget<SavedThumbnail>(thumbnails.last).bytes;
+      expect(first, isNotNull);
+      expect(second, isNotNull);
+      expect(first, isNot(orderedEquals(second!)));
       await tester.tap(autoItems.at(1));
-      await settleIo(tester);
+      await settleIo(tester, 16);
+      final preview = find.byKey(const ValueKey('saveRestorePreview'));
+      expect(
+        tester.widget<SavedThumbnail>(preview).bytes,
+        orderedEquals(second),
+      );
       await tester.tap(
         find.widgetWithText(FilledButton, l10n.saveTreeRestoreAction),
       );
@@ -377,7 +393,8 @@ void main() {
       } else {
         await tester.tap(find.byTooltip(l10n.saveTreeSlotLoadTooltip).first);
       }
-      await settleIo(tester);
+      await settleIo(tester, 16);
+      expect(tester.widget<SavedThumbnail>(preview).bytes, isNotNull);
       await tester.tap(
         find.widgetWithText(FilledButton, l10n.saveTreeRestoreAction),
       );

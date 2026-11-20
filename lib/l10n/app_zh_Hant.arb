@@ -1657,7 +1657,7 @@
   "saveTreeTimelineActionChoiceBody": "請選擇是用目前內容「覆蓋儲存」這個存檔，還是「從此處繼續作業」。",
   "saveTreeOverwriteAction": "覆蓋儲存",
   "saveTreeOverwriteConfirmBody": "該時間點的存檔資料將會消失，確定嗎？",
-  "saveTreeProjectDetailResumeBody": "要從這份存檔繼續作業嗎？\n\n目前資料將被覆蓋。如需保留，請先取消，再儲存到其他存檔槽（樹狀模式下儲存到其他分支）。",
+  "saveTreeProjectDetailResumeBody": "要從這份存檔繼續作業嗎？\n\n目前的進度將被覆蓋。如需保留，請先手動儲存。",
   "saveTreeLoadFailedSnackbar": "存檔資料讀取失敗",
   "saveTreeRestoredSnackbar": "已讀取存檔資料（{name}）",
   "@saveTreeRestoredSnackbar": {

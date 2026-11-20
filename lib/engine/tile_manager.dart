@@ -393,8 +393,11 @@ class TileManager {
   /// タイルキャッシュ：直前の呼び出しからそのレイヤーのタイルに変更が
   /// 無ければ、全タイルの再デコード・再合成を省略しキャッシュ済み画像の
   /// clone()を返す（呼び出し元は返された画像を自由にdispose()できる）。
-  Future<ui.Image> compositeLayerToImage(String layerId) async {
-    final cached = _compositeCache[layerId];
+  Future<ui.Image> compositeLayerToImage(
+    String layerId, {
+    ui.Size? rasterSize,
+  }) async {
+    final cached = rasterSize == null ? _compositeCache[layerId] : null;
     if (cached != null) {
       _touchCache(layerId, cached); // LRU順を更新（末尾へ移動）
       return cached.clone();
@@ -403,6 +406,16 @@ class TileManager {
     final revision = _rasterRevision;
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
+    final width = rasterSize?.width.toInt() ?? canvasWidth;
+    final height = rasterSize?.height.toInt() ?? canvasHeight;
+    final paint = ui.Paint();
+    if (rasterSize != null) {
+      canvas.scale(width / canvasWidth, height / canvasHeight);
+      canvas.clipRect(
+        ui.Rect.fromLTWH(0, 0, canvasWidth.toDouble(), canvasHeight.toDouble()),
+      );
+      paint.filterQuality = ui.FilterQuality.medium;
+    }
     final layerTiles = _tiles[layerId];
     if (layerTiles != null) {
       // 【不具合修正】entriesを直接for-inすると、このループ内のawait
@@ -424,15 +437,19 @@ class TileManager {
         canvas.drawImage(
           img,
           ui.Offset(tx * tileSize.toDouble(), ty * tileSize.toDouble()),
-          ui.Paint(),
+          paint,
         );
         img.dispose();
       }
     }
     final picture = recorder.endRecording();
-    final image = await picture.toImage(canvasWidth, canvasHeight);
-    picture.dispose();
-    if (revision != _rasterRevision) return image;
+    final ui.Image image;
+    try {
+      image = await picture.toImage(width, height);
+    } finally {
+      picture.dispose();
+    }
+    if (rasterSize != null || revision != _rasterRevision) return image;
     final handle = image.clone();
     _compositeCache.remove(layerId)?.dispose();
     _touchCache(layerId, image);

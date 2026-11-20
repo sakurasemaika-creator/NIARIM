@@ -7758,7 +7758,7 @@ abstract class AppLocalizations {
   /// No description provided for @saveTreeProjectDetailResumeBody.
   ///
   /// In ja, this message translates to:
-  /// **'このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。残したい場合は、一旦キャンセルして先に別のセーブスロット（ツリー方式では別の分岐）へセーブしてください。'**
+  /// **'このセーブデータから作業を再開しますか？\n\n現在の作業は上書きされます。残すには、先に手動でセーブしてください。'**
   String get saveTreeProjectDetailResumeBody;
 
   /// No description provided for @saveTreeLoadFailedSnackbar.

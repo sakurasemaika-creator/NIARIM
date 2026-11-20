@@ -50,6 +50,7 @@ const _captures = <String, List<String>>{
   'radialVignette': ['radialVignette'],
   'rainNoise': ['rainNoise'],
   'roughLayerRescue': ['roughLayerRescue'],
+  'saveSlotAutoSave': ['saveSlotAutoSave'],
   'sepiaVignette': ['sepiaVignette'],
   'seriesPresetFolder': ['seriesPresetFolder'],
   'sphereShading': ['sphereShading'],

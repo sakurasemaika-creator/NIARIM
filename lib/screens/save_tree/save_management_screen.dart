@@ -22,6 +22,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import 'save_tree_screen.dart';
 import 'widgets/autosave_list.dart';
+import 'widgets/save_restore_dialog.dart';
 import 'widgets/save_thumbnail_capture.dart';
 import 'widgets/save_delete_feedback.dart';
 import 'widgets/save_display_name.dart';
@@ -449,61 +450,26 @@ class _GameStyleSlotScreenState extends State<_GameStyleSlotScreen> {
     SaveNode node,
   ) async {
     final l10n = AppLocalizations.of(context)!;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        // 狭い画面では左右の空きを縮め、スロットの題の語を途中で折らない。
-        // 大きな文字の低い画面では入らないので、スクロールする（文字2倍の
-        // 320pxで、中身が最大295pxはみ出していた）。
-        insetPadding: dialogInsetPadding(ctx),
-        scrollable: true,
-        title: Text(l10n.saveTreeRestoreAction),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // 韓国語の語は、1行に入れば途中で折らない。
-            messageText(l10n.saveTreeProjectDetailResumeBody),
-            const SizedBox(height: 14),
-            _SlotConfirmationSummary(slotIndex: node.slotIndex, node: node),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.saveTreeRestoreAction),
-          ),
-        ],
-      ),
+    final name = slotSaveName(
+      l10n,
+      saveService.slotDisplayMemoOf(projectId, node.slotIndex),
+      node.slotIndex,
     );
-    if (ok != true || !context.mounted) return;
-
-    final data = await saveService.loadNode(projectId, node.id);
-    if (!context.mounted) return;
-    if (data == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)));
-      return;
-    }
+    final data = await confirmSavedVersion(
+      context,
+      projectId: projectId,
+      name: name,
+      time: formatSaveTime(node.savedAt, l10n.localeName),
+      slotLabel: l10n.saveTreeSlotLabel(node.slotIndex + 1),
+      read: () => saveService.loadNode(projectId, node.id),
+    );
+    if (!context.mounted || data == null) return;
 
     context.read<ProjectService>().useSavedVersion(projectId, data);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          l10n.saveTreeRestoredSnackbar(
-            slotSaveName(
-              l10n,
-              saveService.slotDisplayMemoOf(projectId, node.slotIndex),
-              node.slotIndex,
-            ),
-          ),
-        ),
+        content: Text(l10n.saveTreeRestoredSnackbar(name)),
         // Shared SnackBarThemeData already removes the thick shadow.
         // Keep this intentionally smaller corner radius.
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

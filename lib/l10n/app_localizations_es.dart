@@ -4513,7 +4513,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get saveTreeProjectDetailResumeBody =>
-      '¿Reanudar el trabajo desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Para conservarlos, cancela por ahora y guarda primero en otra ranura (o en otra rama del árbol).';
+      '¿Reanudar el trabajo desde este guardado?\n\nSe sobrescribirá el trabajo actual. Si quieres conservarlo, guárdalo manualmente primero.';
 
   @override
   String get saveTreeLoadFailedSnackbar =>

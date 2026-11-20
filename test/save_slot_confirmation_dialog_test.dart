@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
@@ -66,7 +67,7 @@ void main() {
 
     Future<void> expectConfirmationSummary({
       required String title,
-      required String thumbnailPath,
+      String? thumbnailPath,
       required String savedAtText,
       required String comment,
     }) async {
@@ -87,13 +88,21 @@ void main() {
         find.descendant(of: dialog, matching: find.text(title)),
         findsWidgets,
       );
+      await settle(rounds: 12);
       final imageFinder = find.descendant(
         of: dialog,
         matching: find.byType(Image),
       );
       expect(imageFinder, findsOneWidget);
       final image = tester.widget<Image>(imageFinder);
-      expect(fileImageOf(image).file.path, thumbnailPath);
+      if (thumbnailPath != null) {
+        expect(fileImageOf(image).file.path, thumbnailPath);
+      } else {
+        final memory = image.image as MemoryImage;
+        final preview = img.decodePng(memory.bytes)!;
+        final paper = preview.getPixel(10, 10);
+        expect([paper.r, paper.g, paper.b], [120, 80, 157]);
+      }
 
       // Image.file の非同期デコードまで進める。壊れたPNGや誤ったパスなら
       // errorBuilder の image_outlined に落ちるため、RawImage の存在まで確認する。
@@ -145,7 +154,7 @@ void main() {
       () => saveService.saveToSlot(
         projectId: project.id,
         slotIndex: 0,
-        project: project,
+        project: project.copyWith(backgroundColor: 0xFF78509D),
         scenes: projectService.scenesOf(project.id),
         tileManager: projectService.tileManagerOf(project.id),
         comment: comment,
@@ -202,7 +211,6 @@ void main() {
     await settle();
     await expectConfirmationSummary(
       title: l10n.saveTreeRestoreAction,
-      thumbnailPath: node.thumbnailPath!,
       savedAtText: savedAtText,
       comment: comment,
     );

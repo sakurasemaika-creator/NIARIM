@@ -138,6 +138,8 @@ class LayerCompositor {
   /// layers are composited onto the paper, so blend modes act on it as on
   /// any layer below (a Linear Dodge or Screen layer brightens the paper,
   /// as in other painting apps); without one, onto transparency.
+  /// [rasterSize] keeps thumbnail rendering at a bounded pixel size while
+  /// applying the drawing's transforms and masks in canvas coordinates.
   static Future<ui.Image> composite(
     TileManager tileManager,
     List<Layer> layers,
@@ -149,9 +151,13 @@ class LayerCompositor {
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
     int? paperColor,
     List<LayerMaskGroup> maskGroups = const [],
+    ui.Size? rasterSize,
   }) async {
+    final rasterWidth = rasterSize?.width.toInt() ?? width;
+    final rasterHeight = rasterSize?.height.toInt() ?? height;
     var recorder = ui.PictureRecorder();
-    var canvas = ui.Canvas(recorder);
+    var canvas = ui.Canvas(recorder)
+      ..scale(rasterWidth / width, rasterHeight / height);
     final masking = _MaskGroupDrawer(maskGroups, width, height);
     if (paperColor != null && (paperColor >>> 24) == 0xFF) {
       canvas.drawRect(
@@ -180,7 +186,10 @@ class LayerCompositor {
         // 正の値へ反転してしまうため、ここだけ現在までの合成結果と対象レイヤー
         // をRGBAへ落としてW3Cのalpha合成式で本当の減算を行う。
         final backdropPicture = recorder.endRecording();
-        final backdrop = await backdropPicture.toImage(width, height);
+        final backdrop = await backdropPicture.toImage(
+          rasterWidth,
+          rasterHeight,
+        );
         backdropPicture.dispose();
 
         final source = await _renderLayerIsolated(
@@ -193,12 +202,13 @@ class LayerCompositor {
           height,
           keyframeOf,
           groupKeyframeOf,
+          rasterSize,
         );
         final subtracted = await _blendImages(
           backdrop,
           source,
-          width,
-          height,
+          rasterWidth,
+          rasterHeight,
           layer.blendMode,
         );
         backdrop.dispose();
@@ -207,6 +217,7 @@ class LayerCompositor {
         recorder = ui.PictureRecorder();
         canvas = ui.Canvas(recorder);
         canvas.drawImage(subtracted, ui.Offset.zero, ui.Paint());
+        canvas.scale(rasterWidth / width, rasterHeight / height);
         subtracted.dispose();
         continue;
       }
@@ -222,6 +233,7 @@ class LayerCompositor {
         height,
         keyframeOf,
         groupKeyframeOf,
+        rasterSize: rasterSize,
         // Inside a masked group the layers are drawn on one GPU layer, so
         // a mode only the CPU can blend takes its nearest GPU mode.
         blendModeOverride: masking.isOpen && _requiresCpuBlend(layer.blendMode)
@@ -232,9 +244,11 @@ class LayerCompositor {
     masking.close(canvas);
 
     final picture = recorder.endRecording();
-    final image = await picture.toImage(width, height);
-    picture.dispose();
-    return image;
+    try {
+      return await picture.toImage(rasterWidth, rasterHeight);
+    } finally {
+      picture.dispose();
+    }
   }
 
   /// The layers as drawing commands rather than pixels: played back onto a
@@ -367,9 +381,13 @@ class LayerCompositor {
     int height,
     LayerKeyframe? Function(Layer layer)? keyframeOf,
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
+    ui.Size? rasterSize,
   ) async {
+    final rasterWidth = rasterSize?.width.toInt() ?? width;
+    final rasterHeight = rasterSize?.height.toInt() ?? height;
     final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
+    final canvas = ui.Canvas(recorder)
+      ..scale(rasterWidth / width, rasterHeight / height);
     await _drawLayer(
       canvas,
       tileManager,
@@ -382,11 +400,14 @@ class LayerCompositor {
       keyframeOf,
       groupKeyframeOf,
       blendModeOverride: ui.BlendMode.srcOver,
+      rasterSize: rasterSize,
     );
     final picture = recorder.endRecording();
-    final image = await picture.toImage(width, height);
-    picture.dispose();
-    return image;
+    try {
+      return await picture.toImage(rasterWidth, rasterHeight);
+    } finally {
+      picture.dispose();
+    }
   }
 
   static Future<void> _drawLayer(
@@ -401,8 +422,12 @@ class LayerCompositor {
     LayerKeyframe? Function(Layer layer)? keyframeOf,
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf, {
     ui.BlendMode? blendModeOverride,
+    ui.Size? rasterSize,
   }) async {
-    final img = await tileManager.compositeLayerToImage(keyOf(layer));
+    final img = await tileManager.compositeLayerToImage(
+      keyOf(layer),
+      rasterSize: rasterSize,
+    );
     final opacityByte = (layer.opacity.clamp(0, 100) * 255 / 100).round();
     final layerPaint = ui.Paint()
       ..color = ui.Color.fromARGB(opacityByte, 255, 255, 255)
@@ -436,20 +461,30 @@ class LayerCompositor {
     }
 
     final rect = ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
+    void drawImage(ui.Image image, ui.Paint paint) {
+      if (rasterSize == null) {
+        canvas.drawImage(image, ui.Offset.zero, paint);
+      } else {
+        canvas.drawImageRect(
+          image,
+          ui.Offset.zero & rasterSize,
+          rect,
+          paint..filterQuality = ui.FilterQuality.low,
+        );
+      }
+    }
+
     if (layer.hasClipping) {
       final clipSourceId = findClipSourceLayerId(layers, index);
       if (clipSourceId != null) {
         final clipSourceLayer = layers.firstWhere((l) => l.id == clipSourceId);
         final clipImg = await tileManager.compositeLayerToImage(
           keyOf(clipSourceLayer),
+          rasterSize: rasterSize,
         );
         canvas.saveLayer(rect, layerPaint);
-        canvas.drawImage(clipImg, ui.Offset.zero, ui.Paint());
-        canvas.drawImage(
-          img,
-          ui.Offset.zero,
-          ui.Paint()..blendMode = ui.BlendMode.srcIn,
-        );
+        drawImage(clipImg, ui.Paint());
+        drawImage(img, ui.Paint()..blendMode = ui.BlendMode.srcIn);
         final mask = layer.mask;
         if (mask != null) drawLayerMask(canvas, mask, width, height);
         canvas.restore();
@@ -465,7 +500,7 @@ class LayerCompositor {
       // The mask moves with the layer: it is drawn inside the layer's own
       // transform, then the masked layer blends as one.
       canvas.saveLayer(rect, layerPaint);
-      canvas.drawImage(img, ui.Offset.zero, ui.Paint());
+      drawImage(img, ui.Paint());
       drawLayerMask(canvas, mask, width, height);
       canvas.restore();
       if (hasTransform) canvas.restore();
@@ -473,7 +508,7 @@ class LayerCompositor {
       return;
     }
 
-    canvas.drawImage(img, ui.Offset.zero, layerPaint);
+    drawImage(img, layerPaint);
     if (hasTransform) canvas.restore();
     img.dispose();
   }

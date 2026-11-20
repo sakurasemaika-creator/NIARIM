@@ -4513,7 +4513,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get saveTreeProjectDetailResumeBody =>
-      'Reprendre le travail à partir de cette sauvegarde ?\n\nLes données actuelles seront remplacées. Pour les conserver, annulez puis enregistrez-les dans un autre emplacement (ou dans une autre branche en mode arborescent).';
+      'Reprendre le travail depuis cette sauvegarde ?\n\nLe travail actuel sera remplacé. Pour le conserver, sauvegardez-le d’abord manuellement.';
 
   @override
   String get saveTreeLoadFailedSnackbar =>

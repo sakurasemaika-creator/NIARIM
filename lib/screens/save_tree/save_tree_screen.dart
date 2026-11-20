@@ -32,6 +32,7 @@ import 'widgets/save_list_feedback.dart';
 import 'widgets/save_rename_button.dart';
 import 'widgets/save_screen_app_bar.dart';
 import 'widgets/save_slot_title.dart';
+import 'widgets/save_restore_dialog.dart';
 import 'widgets/save_thumbnail_capture.dart';
 import '../../utils/file_failure_reason.dart';
 
@@ -427,10 +428,11 @@ Future<void> _handleSaveNodeRestore(
   SaveTreeEntryMode entryMode,
   SaveNode node, {
   required VoidCallback onOverwrite,
-  required Future<void> Function() onResume,
+  required ValueChanged<NiaproData> onResume,
 }) async {
   final l10n = AppLocalizations.of(context)!;
-  final nodeTitle = saveNameOf(l10n, context.read<SaveTreeService>(), node);
+  final saves = context.read<SaveTreeService>();
+  final nodeTitle = saveNameOf(l10n, saves, node);
   if (entryMode == SaveTreeEntryMode.timeline) {
     final choice = await showDialog<_SaveNodeChoice>(
       context: context,
@@ -475,46 +477,20 @@ Future<void> _handleSaveNodeRestore(
       if (ok == true) onOverwrite();
       return;
     }
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.saveTreeRestoreAction),
-        content: Text(l10n.saveTreeProjectDetailResumeBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.saveTreeRestoreAction),
-          ),
-        ],
-      ),
-    );
-    if (ok == true) await onResume();
-    return;
   }
-  // プロジェクト詳細画面から：シンプルな「ここから作業を再開する」か
-  // 「キャンセルして閉じる」のみ（上書きの概念はここにはない）。
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(l10n.saveTreeRestoreAction),
-      content: Text(l10n.saveTreeProjectDetailResumeBody),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, false),
-          child: Text(l10n.commonCancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          child: Text(l10n.saveTreeRestoreAction),
-        ),
-      ],
-    ),
+  final data = await confirmSavedVersion(
+    context,
+    projectId: node.projectId,
+    name: nodeTitle,
+    time: node.isTreeMode && givenSaveName(node.comment) == null
+        ? null
+        : formatSaveTime(node.savedAt, l10n.localeName),
+    slotLabel: node.isTreeMode
+        ? null
+        : l10n.saveTreeSlotLabel(node.slotIndex + 1),
+    read: () => saves.loadNode(node.projectId, node.id),
   );
-  if (ok == true) await onResume();
+  if (context.mounted && data != null) onResume(data);
 }
 
 // ─────────────────────────────────────────────
@@ -743,20 +719,12 @@ class _SlotView extends StatelessWidget {
       entryMode,
       node,
       onOverwrite: () => _showSlotSaveDialog(context, node.slotIndex, node),
-      onResume: () => _doRestore(context, node),
+      onResume: (data) => _doRestore(context, node, data),
     );
   }
 
-  Future<void> _doRestore(BuildContext context, SaveNode node) async {
+  void _doRestore(BuildContext context, SaveNode node, NiaproData data) {
     final l10n = AppLocalizations.of(context)!;
-    final data = await saveService.loadNode(projectId, node.id);
-    if (!context.mounted) return;
-    if (data == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)));
-      return;
-    }
     context.read<ProjectService>().useSavedVersion(projectId, data);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -1349,7 +1317,7 @@ class _TreeView extends StatelessWidget {
           node,
           onOverwrite: () =>
               _showTreeSaveDialog(context, projectId, saveService, node.id),
-          onResume: () => _doRestore(context, node),
+          onResume: (data) => _doRestore(context, node, data),
         );
         break;
       case 'delete':
@@ -1364,16 +1332,8 @@ class _TreeView extends StatelessWidget {
     }
   }
 
-  Future<void> _doRestore(BuildContext context, SaveNode node) async {
+  void _doRestore(BuildContext context, SaveNode node, NiaproData data) {
     final l10n = AppLocalizations.of(context)!;
-    final data = await saveService.loadNode(projectId, node.id);
-    if (!context.mounted) return;
-    if (data == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)));
-      return;
-    }
     context.read<ProjectService>().useSavedVersion(projectId, data);
     // 「セーブ・ロードした地点から次の枝が伸びる」という設計上、復元した
     // ノードをそのまま選択状態にする。三点メニューの「復元」は行の

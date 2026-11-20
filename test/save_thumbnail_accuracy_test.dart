@@ -3,6 +3,9 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/engine/tile_manager.dart';
+import 'package:niarim/models/layer.dart';
 import 'package:niarim/screens/save_tree/widgets/save_thumbnail_capture.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
@@ -155,6 +158,54 @@ void main() {
       );
       expect(slotFile.readAsBytesSync(), orderedEquals(png));
       expect(treeFile.readAsBytesSync(), orderedEquals(png));
+
+      final fromArchive = (await tester.runAsync(() async {
+        final archived = (await saves.loadNode(id, slot.id))!;
+        return captureSavedThumbnail(archived);
+      }))!;
+      expect(fromArchive, orderedEquals(png));
+
+      // An extended canvas remains sparse, including when a layer requires
+      // CPU blending with the backdrop.
+      final largeProject = project.copyWith(
+        exportWidth: 3840,
+        exportHeight: 2160,
+        drawingAreaScale: 10,
+      );
+      final wideTile = Uint8List(
+        TileManager.tileSize * TileManager.tileSize * 4,
+      );
+      for (var i = 0; i < wideTile.length; i += 4) {
+        wideTile[i] = 16;
+        wideTile[i + 2] = 32;
+        wideTile[i + 3] = 255;
+      }
+      final wideArchive = NiaproData(
+        project: largeProject,
+        scenes: [
+          scene.copyWith(
+            frames: [
+              scene.frames.first.copyWith(
+                layers: [layer.copyWith(blendMode: LayerBlendMode.subtract)],
+              ),
+            ],
+          ),
+        ],
+        tileData: {
+          key: {'0,0': wideTile},
+        },
+      );
+      final widePng = (await tester.runAsync(
+        () => captureSavedThumbnail(wideArchive),
+      ))!;
+      expect(
+        await tester.runAsync(() => _pixel(widePng, 0, 0)),
+        const ui.Color(0xFF0B8D2A),
+      );
+      expect(
+        await tester.runAsync(() => _pixel(widePng, 180, 80)),
+        const ui.Color(0xFF1B8D4A),
+      );
 
       final out = Directory('build/save-slot-visual-audit')
         ..createSync(recursive: true);
