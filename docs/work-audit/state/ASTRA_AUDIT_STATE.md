@@ -3358,3 +3358,23 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`home_widget_artwork_picker_test`・`community_account_boundary_widget_test`・`home_widget_cell_size_test`・`home_widget_service_test`・`home_widget_shortcut_design_test`・`premium_lock_widget_test`・`shared_empty_folder_widget_test`・`widget_artwork_picker_parity_test`・`widget_settings_theme_foreground_test`・`widget_test`・`admob_all_routes_visual_matrix_test`・`all_routes_screenshot_audit_test`・`app_bar_title_fit_or_hide_test`・`toast_contract_test`を`1740d395`で76件成功。シーンを替えた後の帯の位置を見るtestは無い。
 - 未確認（実機）：ウィジェットの画像が選んだフレームと同じになること、作品を描き直して保存した後の更新、大量の作品。
 - 画像：`shots-r1/r2a080-*`（backup-pending）。
+
+## A081 — テーマ・外観・救済との連携
+
+### A081 二巡目（2026-11-20、Claude・S50、App `1740d395`のLinuxデバッグビルド）— 判定：OK（一巡目のDISC377〜383は直った。DISC198はこの画面では直った）
+
+- 環境：ja、1280×800（一部360×780）、マウス、使い捨てのプロフィール（r2a069tの写し）、ファイルの読み込みはD-Busのportal（GTKのファイル選択）。設定→「テーマ・外観」。
+- DISC377は直った：「アクセントカラー」の色の選択で緑を押してEsc→保存`theme_current_json`の`accentColor`が緑（0xFF5CFF68）。「更新マーク色」で紫を押して幕（ダイアログの外）を押す→`updateMarkColor`が紫で保存。起動し直しても「Red L2」（名前を変えた組み込み）は緑の差し色と紫の更新マークのまま。変えた役目の色だけが変わる。差し色を白の上で読めない緑にすると上部バーの右に「テーマをもとに戻す」が出て、右端から8pxの空きがある（DISC383の救済ボタンの余白）。
+- DISC378は直った：組み込みの「レッド（ライト）」の︙→「名前変更」、欄を消して空白だけにすると「保存」が押せず、Enterでも閉じない。「Red L2」と打ってEnter→名前が変わり保存される。「現在の設定を新しいテーマとして保存」も同じ（空白は保存できず、「Mine」＋Enterで一覧の末尾に足される）。
+- DISC379は直った：組み込みテーマの︙は「編集・名前変更・複製・共有カードを書き出す・書き出し（.niatheme）・リセット」で「削除」が無い。自作の「Mine」の︙→「削除」→確認「「Mine」を削除しますか？この操作は取り消せません。」→キャンセルで残り、削除で一覧と保存から消える。
+- DISC380は直った：中身が「not json at all」の`.niatheme`は「テーマのファイルではないか、ファイルが壊れています。」、色の欠けたファイル・色が文字列のファイルは「テーマに必要な色や設定が不足しているか、形式が正しくありません。」（例外の英文は出ない）。
+- DISC381は直った：文字色を透明・背景を白にした`.niatheme`は一覧の末尾に「読めない色」として足され、今の配色は変わらず「文字が見えにくいテーマを一覧に追加しました。現在の配色で表示しています。」と出る。普通の`.niatheme`（レッド（ダーク））は読み込むと当たり「.niathemeを読み込みました」。
+- DISC382は直った：名前変更・テーマ名のダイアログの入力欄に、マウスを乗せなくても差し色の枠がある。
+- DISC383は直った：360×780で一覧の行は名前を上の行に1行で出し、見本・星・︙・つまみを下に並べる（「レッド（ダーク）」「オレンジ（ライト）」は語の途中で折れない）。
+- DISC198：この画面のメニューの「削除」はメニューの文字色になった（赤くない）。ほかの画面の残りはA077・A082に記録。
+- DISC106・128・221・231・237（見本一覧の7言語・模型のはみ出し・救済のダイアログの320px・中国語の書体・組み込みテーマ名の言語）は、test（`theme_preview_gallery_l10n_test`・`theme_preview_gallery_text_fit_test`・`theme_rescue_dialog_inset_test`・`theme_rescue_dialog_chinese_font_test`・`theme_preset_adopt_test`）で確かめた。実画面は日本語だけ。
+- 気づいた点（DISCにしない）：読み込んだ「レッド（ダーク）」は組み込みの「レッド（ダーク）」と同じ名前で一覧に並ぶ（見本の色で見分けはつく）。「現在の設定を新しいテーマとして保存」は保存したテーマへ切り替えない（今の配色はそのまま）。組み込みテーマ名の訳は`lib/l10n/theme_preset_labels.dart`の手書きの表（ARBではない）。
+- 操作の誤り（製品の不具合ではない）：知らせが出ている間に読み込みのボタンを押し損ね、ファイル選択が開かないまま打ったパスが「新しいテーマとして保存」の名前に入った。そのテーマは削除した。
+- test：A081の27本を`1740d395`で144件成功（`theme_settings_repair_test`・`theme_contrast_rescue_test`・`home_matrix2_theme_*`の3本ほか）。
+- 未確認：実機のタッチ、Androidの共有での書き出し（.niathemeと共有カード）、7言語・文字2倍の一覧の実画面、「色の詳細設定」の中の色を1つずつ。
+- 画像：`shots-r1/r2a081-*`（backup-pending）。
