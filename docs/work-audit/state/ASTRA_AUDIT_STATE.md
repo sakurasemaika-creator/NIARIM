@@ -1072,6 +1072,15 @@ status: dev_branchどおりtodo（Route状態は変えない）
 - ユーザーへ確認：キャンバスのスライダーで変えた太さ・不透明度はブラシに保存されない（切り替えると戻る）。ブラシごとに覚えるかは仕様の判断。
 - 未確認（環境なし）：筆圧4種・混色の描き味。
 
+### A014 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：OK（DISC067は所有者の判断待ち）
+
+- 一巡目：OK（既知のDISC067・254・255）。
+- DISC067の今の振る舞い（実画面、Linux debug、ja、1280×800）：ペンを太さ40・不透明度36%にして消しゴムへ替えると、消しゴムは同じ40/36%から始まる。消しゴムを110/62%にしてペンへ戻すと40/36%（ペンのブラシに漏れない）、もう一度消しゴムにすると110/62%。起動し直すとペンは40/36%、消しゴムは太さ110は残るが不透明度は36%（ペンの値）に戻る（`canvas_screen.dart`の`_setBrushSize`は`rememberToolThickness`で太さだけ保存、`_setBrushOpacity`はその場だけ）。消しゴムとペンが値を共有する問題は無くなったが、ツールの不透明度だけ起動し直すと戻る。どちらにするかはDISC067の所有者の判断と合わせて決める。
+- 一巡目の指摘の確認：既定の高さのドックでも、カラーピッカーの透明色のボタン（市松模様）が切れずに出る。
+- test：全体回帰 `44641695291` で`brush_tip_settings_test`・`brush_rotation_density_scatter_test`・`brush_extension_settings_test`・`brush_mixing_mode_settings_test`・`brush_preset_fidelity_test`・`editable_slider_value_input_test`・`brush_size_memory_canvas_test`・`labeled_slider_layout_test`は成功。
+- 未確認：DISC254（色の輪の切り替えの読み上げ）・DISC255（横向きのスマホの浮かぶカラーピッカー）、混色3種・ピクセル・入り抜き・縁のゆらぎの描き比べ、スマホ・仏語、筆圧・傾き（ペンが要る）。
+- 画像：`shots-r1/r2a014-*`（backup-pending）。
+
 ## A015 — 消しゴム・透明色（Opusブランチの証跡）
 
 status: dev_branchどおりtodo（Route状態は変えない）
