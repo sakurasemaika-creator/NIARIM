@@ -3621,3 +3621,17 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - App側：A098の対象のtest 40本（APIの契約・再試行・アカウントの境目・ブックマーク・リポスト・ミッション・報酬・規約の表示ほか）を`643cc267`で391件成功・18件スキップ（Googleの9件はクライアントIDの指定が無いとき、`home_bookmark_matrix_test`の9件は画像の出力先を渡さないとき）。Googleの9件はA096で指定付きで成功。一巡目の基準で落ちていた`home_bookmark_states_test`も今は成功。
 - 未確認（実環境）：デプロイしたAPIの401・403・404・429・500の実際の応答、ページ送り、条件付き更新と並行実行、再試行、Google・YouTubeのトークンの実際の検証、アカウント削除の実際の消し込み（DynamoDB Localでは確認）。
 - 記録：`logs/a098-vitest.txt`・`a098-tsc.txt`・`a098-ddblocal.txt`・`a098-tests.txt`（scratchpad、backup-pending）。
+
+## A099 — ランキング集計・push配信・インフラ
+
+### A099 二巡目（2026-11-20、Claude・S50、App `643cc267`の`backend/`）— 判定：OK〔cdk synth・単体test〕（一巡目のDISC431・DISC432は直った。デプロイした実環境は未確認）
+
+- 環境：`backend/`で`npx cdk synth -q -c googleClientId=… -c youtubeApiKey=…`（仮の値）が成功。広告収益の集計を含めた形も、仮の`admobReportOAuthSecretArn`・`rewardedAdCountryLayerArn`を渡して別の出力先に作った（`scratchpad/cdkout-a099b`）。AWSへのデプロイ・実データは無い。
+- 一巡目のDISC431は直った：テンプレートにLambdaは4つ（API 10秒・予約公開30秒・アカウント削除40秒〔一巡目の後に追加〕・広告収益の集計60秒〔設定したときだけ〕）と、CDKのログ保持用の関数。4つとも`Custom::LogRetention`で`RetentionInDays: 30`（`niarim-backend-stack.ts`の`FUNCTION_LOG_RETENTION`）。
+- 一巡目のDISC432は直った：DynamoDBのストリームの`EventSourceMapping`は`MaximumRetryAttempts: 4`・`MaximumRecordAgeInSeconds: 900`・`ReportBatchItemFailures`に加えて、`DestinationConfig.OnFailure`が非公開のS3バケット（AES256・公開のブロック4つ・7日で消えるライフサイクル・SSLでない通信を拒否するバケットポリシー）。APIの関数の権限はそのバケットへの`PutObject`と`ListBucket`だけ（自分のアカウントの条件付き）。`backend/README.md`の「ストリーム処理の失敗を確認・再処理する」に確かめ方と再処理の手順がある。
+- 容量：テーブル15/15、GSI 6本で計8/8（GSI2・GSI4が2、GSI3・GSI3AllStates・GSI6Scheduled・GSI7が1）、合計23/23で無料枠25以内。TTL有効。
+- 定期実行：予約公開とアカウント削除が1分ごと、広告収益の集計が毎日20:15（UTC）。YouTubeの統計の取得（`src/batch/statsUpdate.ts`）は`132f0a58`でやめていて、スタックに載っていない（ランキングはNIARIMのブックマーク数）。
+- 気づいた点（DISCにしない）：READMEの保持期間の文は「API・予約公開・広告収益集計」で、後から足したアカウント削除の関数（同じく30日）を挙げていない。CDKのログ保持用の関数自身のロググループは保持期間を持たない（CDKの既定、出力は少ない）。
+- test：backendの単体test 418件・DynamoDB Localのtest 13件（A098で実行）、App側の`community_ranking_layout_test`・`community_ranking_privacy_visibility_test`・`creator_ranking_mission_l10n_test`・`creator_ranking_mission_labels_test`・`push_notification_service_test`を`643cc267`で34件成功。
+- 未確認（実環境）：デプロイ、予約公開・通知の実際の遅れと重複、FCMの無効なトークンの掃除、IAMの実際の権限、タイムアウトでの失敗、失敗の記録がS3に実際に入ること。
+- 記録：`logs/a099-synth.txt`・`a099-synth2.txt`・`a099-tests.txt`（scratchpad、backup-pending）。
