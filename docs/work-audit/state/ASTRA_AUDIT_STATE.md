@@ -3667,3 +3667,17 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`dialog_text_scale_audit_test`（上のDISC545で1件失敗）・`save_screens_app_bar_fit_test`・`korean_word_joiner_semantics_test`・`text_scale_layout_test`・`accent_text_color_test`・`accent_text_screens_test`・`app_bar_title_fit_or_hide_test`・`home_display_matrix_test`を`643cc267`で58件成功・1件失敗。
 - 未確認：全画面×7言語×文字1.0/1.3/2.0の目視（今回は仏語・韓国語の390px・2倍で作品広場・設定・容量削減・フォント管理）、TalkBack・スイッチ操作（Androidのみ）、自作の暗いテーマでのDISC193〜199。
 - 画像：`shots-r1/r2a101-*`（backup-pending）。記録：`logs/a101-tests.txt`・`a101-probe.txt`・`a101-bis-*.txt`。
+
+## A102 — App7言語・用語・意味・format
+
+### A102 二巡目（2026-11-20、Claude・S50、App `643cc267`のARB・testとLinuxデバッグビルド）— 判定：要修正（新DISC546・547。一巡目のDISC436とDISC394は直った）
+
+- 環境：Linux debug、1280×800、仏語（プロフィールの写し`prof/r2a101fr`）、マウス。ARBは`lib/l10n/app_*.arb`を読んだ。
+- 一巡目のDISC436は直った：作業画面の設定の「Charger un espace de travail」で保存した「ws2」を選ぶと、確認は「Le chargement de « ws2 » remplacera …」で、« »の内側はU+00A0（ARBも`« {name} »`の内側がU+00A0、`shots-r1/r2a102-10c`）。韓国語は「「{name}」을(를)…」。`l10n_french_typography_test`・`l10n_quote_marks_test`が成功。
+- 既存のDISC394は直った：`font_coverage_test`が成功（部分フォントに足りない字が無い）。
+- OK：仏語のホームの詳細表示の日付は「Modifié le 20/11/2026 08:20」（`r2a102-03c`）。韓国語の容量削減の大きさは「2.6MB」「248.4GB」（A101）。
+- 新DISC546：仏語で同じ単位（コマ毎秒）の書き方が5通りある。ホームの詳細の行は「12ips · 10s」（`homeProjectMeta`、数と単位の間に空白なし）、PCのステータスバーは「{fps} i/s」（`pcStatusFps`）、書き出しの欄は「IPS」（`exportFpsLabel`）、設定は「FPS」（`settingsBasicSubtitle`・`settingsDefaultFps`）、ヘルプは「fps」（`helpNewProjectDesc`）。秒も「10s」と空白なし（仏語の組版では数と単位の間に改行しない空白）。
+- 新DISC547（test、`1b10d63f`・`e9b7f86e`の後）：l10nの見張りが3件落ちる。（1）`l10n_locales_not_left_in_english_test`のes・fr：`autofillSamplePartIris`が英語と同じ「Iris」（西・仏でも正しい語。`1b10d63f`〔DISC107、組み込みの自動塗りの名前を7言語に〕で足したキーが許可の一覧に無い）。（2）`l10n_unused_key_test`：`exportSaveLocationLabel`（ja「保存先：アプリ内（{fileName}）」）がどこからも使われていない（`e9b7f86e`〔2026-11-20、書き出しの後に作品一覧のタブを開く〕で最後の参照が外れた）。一巡目は未使用が66件で基準の失敗の内だったが、その後0件まで片付き、今は1件。
+- test：A102の対象のl10nのtest 21本を`643cc267`で216件成功・3件失敗（上のDISC547）。
+- 未確認：全キーの意味・語調の逆翻訳による照合、ほかの画面の日付・時刻・数の書き方（en・es・zhの実画面）、Webの規約・ストアの文との一致（Wの項目）。
+- 画像：`shots-r1/r2a102-*`（backup-pending）。
