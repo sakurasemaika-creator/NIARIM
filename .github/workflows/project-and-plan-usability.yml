@@ -48,6 +48,8 @@ jobs:
           lib/screens/help/help_screen.dart lib/screens/project/new_project_screen.dart lib/screens/export/export_screen.dart
           lib/screens/canvas/widgets/canvas_icon_button.dart
           lib/screens/canvas/widgets/toolbar_widget.dart lib/widgets/collection_action_controls.dart
+      - name: Verify choosing a format and opening export help from the timeline
+        run: flutter test --no-pub --reporter expanded test/app_web_reference_export_exact_test.dart
       - run: >
           flutter test --no-pub --reporter expanded
           test/home_a003_visual_findings_test.dart test/home_small_fixes_test.dart
@@ -69,8 +71,6 @@ jobs:
           test/brush_management_test.dart test/shared_asset_card_language_test.dart
           test/niatra_transfer_saved_keys_test.dart test/niatra_transfer_keeps_this_device_test.dart
       - run: flutter test --no-pub --reporter expanded test/startup_unreadable_projects_folder_test.dart --name 'Home'
-      - name: Verify choosing a format and opening export help from the timeline
-        run: flutter test --no-pub --reporter expanded test/app_web_reference_export_exact_test.dart
       - name: Capture Japanese project and plan screens on mobile and desktop
         run: flutter test --no-pub --dart-define=NIARIM_CAPTURE_PROJECT_AND_PLAN=true test/visual/project_and_plan_capture_test.dart
       - uses: actions/upload-artifact@v4

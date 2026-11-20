@@ -226,9 +226,6 @@ void main() {
     tester.view.physicalSize = const Size(960, 1707);
     await tester.pump(const Duration(milliseconds: 500));
     await capture(tester);
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(ExportScreen)),
-    )!;
     final gif = find.widgetWithText(
       RadioListTile<ExportFormat>,
       l10n.exportFormatGif,
