@@ -73,7 +73,7 @@ it("retains discarded notification records with scoped access and expiry", () =>
           Action: "s3:PutObject",
           Condition: { StringEquals: { "s3:ResourceAccount": "123456789012" } },
           Effect: "Allow",
-          Resource: { "Fn::Join": ["", [bucketArn, "/aws/lambda/*"]] },
+          Resource: { "Fn::Join": ["", [bucketArn, "/*"]] },
         },
       ]),
     },

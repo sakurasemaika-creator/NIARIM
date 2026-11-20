@@ -369,10 +369,11 @@ export class NiarimBackendStack extends Stack {
             resourceArns: [notificationFailures.bucketArn],
             conditions,
           }).applyBefore(mapping);
+          // Lambda validates PutObject at the destination bucket scope.
           iam.Grant.addToPrincipal({
             grantee: handler,
             actions: ["s3:PutObject"],
-            resourceArns: [notificationFailures.arnForObjects("aws/lambda/*")],
+            resourceArns: [notificationFailures.arnForObjects("*")],
             conditions,
           }).applyBefore(mapping);
           return { destination: notificationFailures.bucketArn };
