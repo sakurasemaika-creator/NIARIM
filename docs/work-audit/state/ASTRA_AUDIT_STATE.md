@@ -3564,3 +3564,17 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - DISC423は直った：`community_account_boundary_widget_test`が成功。
 - test：A094の40本を`643cc267`で357件成功・9件省略・1件失敗（`community_header_quality_test`、A090のDISC539で、認証とは別の上部バーの押せる所）。
 - 未確認（実機・実API）：Googleのログイン・選択画面・2つのアカウントの切り替え、`youtube.upload`・`youtube.readonly`の許可と拒否、IDトークンの期限切れ・取り消し、オフライン、ログに個人の情報が出ないこと。
+
+## A095 — 自分の作品（直接遷移）
+
+### A095 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルド）— 判定：要修正（既存DISC198。一巡目のDISC422・DISC423は直った）
+
+- 環境：ja、1280×800、マウス、テーマは読み込んだ緑のテーマ、見本のデータ（Googleは未接続、自分の作品4件）。作品広場の浮かぶボタン「自分の投稿」から開いた。
+- 一巡目のDISC422は直った：アカウントの欄・管理のボタン・作品のカードが1つのスクロールにまとまり、カードの長押しで「1件選択中」、続けて別のカードを押すと「2件選択中」になる。`app_bar_title_fit_or_hide_test`の「自分の投稿：選んでいる間の件数は、7言語×320/360/412px×文字1.0/1.3/2.0のどれでも隠さず切らない」が成功。
+- 一巡目のDISC423は直った：`community_account_boundary_widget_test`（タグのダイアログとアカウントの切り替え）が成功。
+- OK：2件を選んで「一括非公開」→確認なしで2件が非公開の印になり「完了: 2件 / 失敗: 0件」。同じ2件を「一括公開」で戻すと4件とも公開中に戻る（どちらも何度でも戻せる操作）。作品の設定（カードの右下のボタン）→「NIARIM作品広場からこの作品を削除」で確認のダイアログが出て、キャンセルで閉じる（作品は残る）。
+- 既存：DISC198はこの画面で残る。作品の設定の「NIARIM作品広場からこの作品を削除」の文字・アイコンと、確認の「削除」の塗りが`colorScheme.error`の赤（`community_work_settings_screen.dart:374`・`:624`）。ログインのダイアログの「この端末ではGoogleログインを使えません」も赤の文字（`community_my_works_screen.dart:326`）。
+- DISC193〜197・DISC199（メニューの面の文字色）：カードは`MenuCard`（`community_my_works_screen.dart:747`、`community_work_settings_screen.dart:455`ほか）。この項目では本文とメニューの文字色が違う自作テーマを当てていない（A013・A091と同じ扱い）。
+- test：`community_account_boundary_widget_test`・`community_my_works_controls_test`・`community_ranking_privacy_visibility_test`・`five_fixes_screenshot_test`・`app_bar_title_fit_or_hide_test`・`community_post_publish_contract_test`・`community_secondary_pull_to_refresh_test`を`643cc267`で30件成功。
+- 未確認：APIのある環境（読み込み・失敗・再試行・公開の切り替えの失敗の巻き戻し・YouTube側の状態の差〔非公開・削除・予約〕）、2つのアカウントの切り替えの実画面、7言語・文字2倍・360pxの実画面（testで見ている）。
+- 画像：`shots-r1/r2a095-*`（backup-pending）。
