@@ -3507,3 +3507,18 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：A090の26本を`643cc267`で171件成功・15件省略・1件失敗（DISC539）。
 - 未確認：APIのある環境（読み込み中・失敗・空・オフライン・再試行・ページ送り）、ログインした状態、絞り込みの結果、7言語・文字2倍・360pxの実画面。
 - 画像：`shots-r1/r2a090-*`（backup-pending）。
+
+## A091 — 作品詳細 /community/work/:id
+
+### A091 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルド）— 判定：要修正（新DISC540、既存DISC198が残る。一巡目のDISC409・411は直った、DISC410は通報・ブロックの実装で決着）
+
+- 環境：ja、1280×800、マウス、使い捨てのプロフィール、APIの接続先なし（見本のデータ）、ログインなし。
+- DISC411は直った：新着のカードを押すと浮かぶプレビューは右下に出て（`shots-r1/r2a091-01`）、左上の絞り込み・並び順のボタンを隠さない。動画の無い作品では「YouTube動画が連携されていません」と×・「詳細へ」・拡大だけで、再生・一時停止は出ない。
+- DISC409は直った：自分の作品（見本の「あにめ工房ミラ」の「雨上がりの約束」）の詳細は公開状態・AI使用のスイッチとタグ・YouTube・リポスト・ブックマークで、「通報」「ブロック」が無い（`r2a091-02`・`03`）。
+- DISC410（通報・ブロックが準備中）：`0b8dfdd5`（Add Work Plaza moderation）で通報・ブロック・ミュートが作られた（`community_moderation.dart`）。他人の作品（「夜明けの冒険／inkdrop」）の詳細の下に「通報」「ミュートする」。ミュートは確認「このユーザーをミュートしますか？…相手に通知は送られません。」が出る（`r2a091-07`）。通報はAPIとログインがあるときだけ理由の欄のダイアログを出して送る。実際の送信・取り消し・ブロックの一覧は未確認（APIが要る）。
+- 要修正（新、DISC540）：APIの接続先が無い（見本のデータの）ビルドで「通報」を押すと、何も開かず「操作を完了できませんでした。時間をおいてもう一度お試しください。」とだけ出る（`r2a091-05`）。`_canModerate`は`service.api == null`のとき`communityModerationFailed`を出す。時間をおいても送れることは無く、見本の作品なので送れないこと・ログインが要ることのどちらも言わない（ログインなしでAPIがあるときは「ログイン」を促す文）。
+- DISC198（既存、残る）：作品の詳細のタグのメニューの「削除」の確認のボタンが`colorScheme.error`の赤（`community_work_detail_screen.dart`354・454行）。
+- 気づいた点（DISCにしない）：作品の詳細では動画が無いのに下の再生の操作（0.0s・前・戻し・再生・送り・次・長さ）が並ぶ。浮かぶプレビューが右下の動画ボタン（浮かぶボタン）に重なる。
+- test：`community_preview_responsive_test`・`community_preview_size_test`・`community_work_detail_actions_fit_test`・`community_detail_metadata_test`・`app_smoke_test`・`community_ai_flag_edit_test`・`community_playback_privacy_actions_test`・`community_post_publish_contract_test`・`community_store_sync_test`・`community_tag_limit_ui_test`・`community_work_time_date_l10n_test`を`643cc267`で95件成功（一巡目に落ちた`community_preview_responsive_test`も成功）。
+- 未確認：他人の非公開・削除済み・ブロック済み・不正なIDの詳細、再生と大きさのドラッグ、ブックマーク・リポスト・タグの連打と失敗の巻き戻し、通報・ブロックの送信（APIが要る）、7言語・文字2倍・360px。
+- 画像：`shots-r1/r2a091-*`（backup-pending）。
