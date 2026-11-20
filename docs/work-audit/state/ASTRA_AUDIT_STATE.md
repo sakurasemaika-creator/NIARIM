@@ -3378,3 +3378,18 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：A081の27本を`1740d395`で144件成功（`theme_settings_repair_test`・`theme_contrast_rescue_test`・`home_matrix2_theme_*`の3本ほか）。
 - 未確認：実機のタッチ、Androidの共有での書き出し（.niathemeと共有カード）、7言語・文字2倍の一覧の実画面、「色の詳細設定」の中の色を1つずつ。
 - 画像：`shots-r1/r2a081-*`（backup-pending）。
+
+## A082 — watermark画像/文字管理
+
+### A082 二巡目（2026-11-20、Claude・S50、App `1740d395`のLinuxデバッグビルド、Premiumの中はコードとtest）— 判定：要修正（新DISC534、既存DISC198が残る。一巡目のDISC384・385は直った）
+
+- 環境：ja、1280×800、マウス、使い捨てのプロフィール（r2a069tの写し、無料会員）。設定→「ウォーターマーク」。Premiumの中（追加・編集・削除の画面、タイムラインの透かしの編集）はLinuxで開けないので、コード（`1740d395`）とtestで確かめた。
+- 無料会員：設定の行に錠の印、押すと「NIARIM Premium／自分のウォーターマークを追加・編集」と「プレミアム会員の詳細を見る」「特典の詳細を見る（無料）」「閉じる」（`shots-r1/r2a082-02`）。
+- DISC384は直った（コード）：`WatermarkService.addWatermark`は画像を`instantiateImageCodec`で1コマ読んでから写し、保存に失敗したら登録とファイルを戻す。画面の`_addImageWatermark`は失敗を捕まえて「`watermarkImageImportFailed`」の知らせを出す（無いファイルも同じ道）。文字の透かしは前後の空白を除いて空なら「追加」を押せない。
+- DISC385は直った（コード）：一覧のタイルの見本（`_WatermarkPreview`）は、タイムラインへ置くときと同じ`rasterizeWatermark`（影・縁取りを`_applyEffects`で焼く）で描く。
+- DISC386（置いた後の編集・削除の扱い）：`0b8dfdd5`で、タイムラインの透かしの編集（角度・大きさ）は元の設定を読まず、置いた画素をそのまま変形するようになった（`_transformPlacedWatermark`）。元の透かしを消しても不透明度・表示範囲・角度・大きさの変更は効き、設定を変えても置いた透かしは変わらない（置いた時の内容のまま）。一巡目の「突然新しい内容になる」「変更を黙って捨てる」はなくなった。置いた透かしを元の設定に合わせて作り直す手段は無い（仕様の判断のまま）。
+- 要修正（新、DISC534）：その変形が透かし自身ではなくキャンバスの中心を軸に拡大・回転する。置いた透かしは右下の隅（画像は右下から16px、文字は下の端の右寄せ）にあるので、大きさを25%から50%にすると、1280×720のキャンバスで正方形の画像の透かしの中心は(1107,544)から(1574,728)へ動き、ほぼ全部がキャンバスの外へ出る。キャンバスの外の画素はその場で捨てられる（`picture.toImage(canvasWidth, canvasHeight)`）ので、大きさを25%へ戻しても透かしは戻らない。角度を変えると右下の透かしがキャンバスの中心の周りを回って別の場所へ動く。置くとき（`rasterizeWatermark`）は透かし自身の中心で回し、右下に置いたまま大きさを変えていた。編集のtestは無い。
+- DISC198（既存、残る）：一覧のタイルの削除のアイコンが`ThemeService.activeColorScheme.error`の赤（`watermark_settings_screen.dart`720行）。
+- test：`niatra_transfer_watermarks_test`・`watermark_copy_name_tile_test`・`premium_all_entry_points_test`・`premium_production_entry_wiring_test`・`direct_service_coverage_batch08_test`を`1740d395`で26件成功。置いた透かしの角度・大きさの編集を見るtestは無い。
+- 未確認：Premiumの中の実操作（実機・購入の確認つき）、書き出した動画の透かしと見本の一致、7言語・文字2倍・360pxの一覧、キャンペーン中の扱い。DISC534の実画面での見え方と取り消しで戻るか。
+- 画像：`shots-r1/r2a082-*`（backup-pending）。
