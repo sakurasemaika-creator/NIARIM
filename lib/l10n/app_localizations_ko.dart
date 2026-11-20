@@ -1469,11 +1469,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '씬이나 프레임에 적용할 수 있는 영상 효과（블러·색조 보정·글로우·픽셀 아트 등）입니다. 손그림 자체는 바꾸지 않고, 연출로서 화면 전체의 느낌을 조정하고 싶을 때 사용합니다. 그리기 필터 중 톤 커브(프리셋과 강도)·레벨 보정·선명하게·언샤프 마스크·비네트(색·범위·농도)·수채 경계도 여러 프레임에 같은 효과를 한 번에 줄 수 있도록 연출 필터에 들어 있습니다. 픽셀 아트는 배색 방식（색을 지정하지 않음·색을 지정함·색 수를 지정함·팔레트에서 선택）도 고를 수 있습니다. 색을 제한하면, 한 가지 색으로는 원래 색과 먼 곳을 사용할 수 있는 색 중 두세 가지를 규칙적으로 배치해(디더링) 원래 색에 가깝게 하며, 이 배치는 프레임이 바뀌어도 움직이지 않습니다. 윤곽 부분은 또렷하게 유지합니다. 디더링은 스위치로 켜고 끌 수 있으며, 끄면 가장 가까운 한 가지 색으로 칠합니다. 연출 필터는 여러 개를 겹쳐서 적용할 수 있으며, 그 적용 순서는 타임라인상의 배열 순서를 따릅니다. 필터 목록을 드래그로 재배열하면 실제로 화면에 반영되는 순서도 바뀝니다. 필름의 입자감 같은 노이즈를 프레임마다 변화시키며 적용하는 연출 필터입니다. 강도·양（노이즈가 올라가는 밀도）·입자 크기를 슬라이더로 조정할 수 있습니다. 같은 프레임으로 돌아오면 같은 입자 모양이 되므로 스크러빙 중에는 깜빡이지 않고, 재생하면 입자가 움직이는 것처럼 보입니다. 화면에 내리는 비를 표현하는 연출 필터입니다. 내리는 정도（빗방울 수）·속도·빗방울 크기·바람 방향 각도를 슬라이더로 조정할 수 있습니다. 각 빗방울은 프레임이 진행될수록 일정한 속도로 계속 내리므로 자연스러운 비의 움직임이 됩니다.';
 
   @override
-  String get helpEndCardTitle => '엔드카드(엔드 로고)';
+  String get helpEndCardTitle => '엔드마크';
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 엔드 마크는 MP4, WebM, AVI 끝에 붙는 5초 로고입니다. 혜택이 유효하면 작품별로 표시 여부를 바꿀 수 있습니다. 만료 후에도 설정이 저장되며 GIF에는 붙지 않습니다.';
+      'NIARIM 엔드마크는 MP4, WebM, AVI 끝에 붙는 5초 로고입니다. 혜택이 유효하면 작품별로 표시 여부를 바꿀 수 있습니다. 만료 후에도 설정이 저장되며 GIF에는 붙지 않습니다.';
 
   @override
   String get helpAutoSaveTitle => '자동 저장';
@@ -1536,7 +1536,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'MP4, WebM, GIF, AVI로 내보낼 수 있습니다. 90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 내보내기 FPS를 바꿔도 재생 시간은 유지됩니다. 내보내기 전에 길이와 엔드 마크를 확인할 수 있습니다.';
+      'MP4, WebM, GIF, AVI로 내보낼 수 있습니다. 90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 내보내기 FPS를 바꿔도 재생 시간은 유지됩니다. 내보내기 전에 길이와 엔드마크를 확인할 수 있습니다.';
 
   @override
   String get helpTransparentWebmTitle => '투명 WebM';
@@ -1567,7 +1567,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpPremiumExpiryDesc =>
-      '90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 프레임 추가·복제에는 90초 제한이 적용됩니다. 편집 기록이 남아 있으면 실행 취소와 다시 실행으로 삭제한 프레임을 복구할 수 있습니다. 엔드 마크 혜택 만료 후 새로 내보내는 MP4·WebM·AVI 끝에는 5초간 NIARIM 로고가 표시됩니다. GIF와 이미 내보낸 파일에는 영향이 없습니다. 내보내기 시작 시의 조건이 완료될 때까지 적용됩니다. 배치한 워터마크, 적용한 색 보정, 자동 작업의 결과는 남습니다. 저장한 자동 작업을 다시 실행하려면 유효한 혜택이 필요합니다.';
+      '90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 프레임 추가·복제에는 90초 제한이 적용됩니다. 편집 기록이 남아 있으면 실행 취소와 다시 실행으로 삭제한 프레임을 복구할 수 있습니다. 엔드마크 혜택 만료 후 새로 내보내는 MP4·WebM·AVI 끝에는 5초간 NIARIM 로고가 표시됩니다. GIF와 이미 내보낸 파일에는 영향이 없습니다. 내보내기 시작 시의 조건이 완료될 때까지 적용됩니다. 배치한 워터마크, 적용한 색 보정, 자동 작업의 결과는 남습니다. 저장한 자동 작업을 다시 실행하려면 유효한 혜택이 필요합니다.';
 
   @override
   String get helpPerformanceSettingsTitle => '성능 설정';
@@ -2040,11 +2040,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '모자이크로 해상도를 낮춘 뒤 색수차를 겹치면, 오래된 브라운관 TV로 보는 듯한 거친 질감을 연출할 수 있습니다. 브라운관 필터 단독과는 또 다른 질감을 만들 수 있습니다.';
 
   @override
-  String get tipsEndCardWatermarkTitle => '워터마크는 나의 서명, 엔드카드는 별개';
+  String get tipsEndCardWatermarkTitle => '워터마크는 나의 서명, 엔드마크는 별개';
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      '동영상에 자신의 서명이나 마크를 넣고 싶을 때는 워터마크 기능을 사용하세요. 엔드카드는 모든 동영상 끝에 자동으로 표시되는 앱 자체 로고로, 무료 회원은 변경할 수 없습니다. 프리미엄 회원은 숨기거나 자신의 동영상·이미지로 교체할 수 있습니다. 엔드카드를 사용하지 않고 나만의 마무리를 만들고 싶다면, 이미지 레이어 추가와 페이드 인/아웃을 조합해 비슷한 연출을 직접 만들 수 있습니다.';
+      '동영상에 자신의 서명이나 마크를 넣고 싶을 때는 워터마크 기능을 사용하세요. 엔드마크는 MP4, WebM, AVI 파일 끝에 붙는 NIARIM 로고입니다. 프리미엄 또는 엔드마크 편집 혜택을 이용하면 작품별로 표시하거나 숨길 수 있습니다. GIF에는 붙지 않습니다. 엔드마크를 사용하지 않고 나만의 마무리를 만들고 싶다면, 이미지 레이어 추가와 페이드 인/아웃을 조합해 비슷한 연출을 직접 만들 수 있습니다.';
 
   @override
   String get tipsVerticalPixelFontTitle => '실사 영상×손그림으로 「실사×애니메이션」 만들기';
@@ -2851,10 +2851,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportStartButton => '내보내기 시작';
 
   @override
-  String get timelineHideEndCard => '엔드 마크 숨기기';
+  String get timelineHideEndCard => '엔드마크 숨기기';
 
   @override
-  String get timelineShowEndCard => '엔드 마크 표시';
+  String get timelineShowEndCard => '엔드마크 표시';
 
   @override
   String get exportCurrentConditions => '현재 조건으로 내보내기';
@@ -2917,12 +2917,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String exportOutputWithoutEndCard(String duration) {
-    return '본편 $duration(엔드 마크 없음)';
+    return '본편 $duration(엔드마크 없음)';
   }
 
   @override
   String exportOutputWithEndCard(String duration) {
-    return '본편 $duration + NIARIM 엔드 마크(5초)';
+    return '본편 $duration + NIARIM 엔드마크(5초)';
   }
 
   @override
@@ -5233,7 +5233,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineEndCardHiddenLabel => '숨김';
 
   @override
-  String get timelineEndCardTrackLabel => '엔드카드 트랙';
+  String get timelineEndCardTrackLabel => '엔드마크 트랙';
 
   @override
   String get timelineMarkerTrackLabel => '타임스탬프';
@@ -5554,7 +5554,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get licenseTermsArt4Body =>
-      '1. 사용자가 본 앱을 이용하여 제작한 일러스트·애니메이션 등의 콘텐츠（프로젝트 데이터·내보낸 이미지·동영상 등을 포함합니다. 이하「제작 콘텐츠」라 합니다）에 관한 저작권 기타 권리는, 법령상 인정되는 범위 내에서 해당 콘텐츠에 대해 권리를 가진 사용자 또는 제3자에게 귀속됩니다.\n2. 본 앱은 제작 콘텐츠를 개발자의 서버로 전송·수집·동기화하는 기능을 제공하지 않습니다. 프로젝트 데이터는 원칙적으로 사용자의 단말기 내에만 저장됩니다（사용자가 스스로의 의사로 작품 광장 기능을 이용하여 제작 콘텐츠를 게시하는 경우의 취급에 대해서는 제12조에 따릅니다）.\n3. 무료판·프리미엄판 중 어느 것을 이용하여 제작한 경우라도, 본 앱의 이용 요금이나 에디션을 이유로 개발자가 제작 콘텐츠의 상업적 이용을 제한하는 일은 없습니다（무료판·프리미엄판의 차이는 엔드카드 표시나 내보내기 시간 상한 등 기능 면에 한정됩니다）.\n4. 전항에도 불구하고, 사용자가 본 앱에 추가한 폰트·이미지·소재 등 제3자가 권리를 가진 것에 대해서는 각각의 이용 조건（제5조）에 따라야 합니다.';
+      '1. 사용자가 본 앱을 이용하여 제작한 일러스트·애니메이션 등의 콘텐츠（프로젝트 데이터·내보낸 이미지·동영상 등을 포함합니다. 이하「제작 콘텐츠」라 합니다）에 관한 저작권 기타 권리는, 법령상 인정되는 범위 내에서 해당 콘텐츠에 대해 권리를 가진 사용자 또는 제3자에게 귀속됩니다.\n2. 본 앱은 제작 콘텐츠를 개발자의 서버로 전송·수집·동기화하는 기능을 제공하지 않습니다. 프로젝트 데이터는 원칙적으로 사용자의 단말기 내에만 저장됩니다（사용자가 스스로의 의사로 작품 광장 기능을 이용하여 제작 콘텐츠를 게시하는 경우의 취급에 대해서는 제12조에 따릅니다）.\n3. 무료판·프리미엄판 중 어느 것을 이용하여 제작한 경우라도, 본 앱의 이용 요금이나 에디션을 이유로 개발자가 제작 콘텐츠의 상업적 이용을 제한하는 일은 없습니다（무료판·프리미엄판의 차이는 엔드마크 표시나 내보내기 시간 상한 등 기능 면에 한정됩니다）.\n4. 전항에도 불구하고, 사용자가 본 앱에 추가한 폰트·이미지·소재 등 제3자가 권리를 가진 것에 대해서는 각각의 이용 조건（제5조）에 따라야 합니다.';
 
   @override
   String get licenseTermsArt5Title => '제5조（내장 폰트·추가 소재에 관하여）';
@@ -5710,14 +5710,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspaceTimelinePreviewLabel => '미리보기';
 
   @override
-  String get workspaceEndCardSection => '엔드카드';
+  String get workspaceEndCardSection => '엔드마크';
 
   @override
   String get workspaceEndCardHint =>
-      '작품별 설정이 없고 엔드 마크 혜택이 유효할 때 적용되는 기본값입니다. 혜택이 만료되어도 설정은 저장됩니다.';
+      '작품별 설정이 없고 엔드마크 혜택이 유효할 때 적용되는 기본값입니다. 혜택이 만료되어도 설정은 저장됩니다.';
 
   @override
-  String get workspaceEndCardDefaultHiddenTitle => '기본적으로 엔드 마크 숨기기';
+  String get workspaceEndCardDefaultHiddenTitle => '기본적으로 엔드마크 숨기기';
 
   @override
   String get tipsTransparentColorTitle => '투명색은 단순한 지우개가 아니라 펜처럼 쓸 수 있다';
@@ -9051,7 +9051,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockMonth => '개월';
 
   @override
-  String get rewardUnlockEndCardEdit => '엔드 카드 편집 및 삭제';
+  String get rewardUnlockEndCardEdit => '엔드마크 편집 및 삭제';
 
   @override
   String get rewardUnlockWatermark => '내 워터마크 추가 및 편집';

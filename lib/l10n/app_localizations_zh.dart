@@ -1449,11 +1449,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '可应用于场景或帧的画面效果（模糊、色调校正、辉光、像素画等）。在不改变手绘画面本身的前提下，作为演出手段调整整个画面观感时使用。绘画滤镜中的色调曲线（预设与强度）、色阶、锐化、USM锐化、暗角（颜色、范围、浓度）、水彩边界也收录在演出滤镜中，可以一次对多个帧施加相同的效果。像素画也可以选择配色方式（不指定颜色、指定颜色、指定颜色数、从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动）来接近原色，这种排列在帧与帧之间不会移动；轮廓处保持清晰。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。 演出滤镜可以叠加应用多个，其应用顺序依照时间轴上的排列顺序。拖动滤镜列表重新排序后，实际反映到画面上的顺序也会随之改变。 一种演出滤镜，会逐帧改变类似胶片颗粒感的噪点。可以用滑块调整强度、数量（噪点出现的密度）和颗粒大小。回到同一帧时噪点形态相同（拖动时不会闪烁），播放时颗粒则会呈现出跳动的效果。 用来表现画面中降雨的演出滤镜。可以用滑块调整降雨强度（雨滴数量）、速度、雨滴大小和风向角度。每滴雨都会随着帧数推进以恒定速度持续下落，呈现自然的降雨效果。';
 
   @override
-  String get helpEndCardTitle => '片尾卡（片尾标志）';
+  String get helpEndCardTitle => '片尾标记';
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 片尾标志是 MP4、WebM 和 AVI 末尾的 5 秒标志。权益有效时可按作品切换显示。到期后仍保留设置。GIF 不添加标志。';
+      'NIARIM 片尾标记是 MP4、WebM 和 AVI 末尾的 5 秒标志。权益有效时可按作品切换显示。到期后仍保留设置。GIF 不添加标志。';
 
   @override
   String get helpAutoSaveTitle => '自动保存';
@@ -1539,14 +1539,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpPremiumEntryDesc =>
-      '时长延长权益有效时，最长可制作和导出2小时。到期后作品仍会保留，可导出保留调色的开头90秒。片尾标志取决于开始导出时有效的权益。';
+      '时长延长权益有效时，最长可制作和导出2小时。到期后作品仍会保留，可导出保留调色的开头90秒。片尾标记取决于开始导出时有效的权益。';
 
   @override
   String get helpPremiumExpiryTitle => '权益到期后';
 
   @override
   String get helpPremiumExpiryDesc =>
-      '完整导出超过90秒的作品需要高级会员或时长延长权益。你也可以导出开头90秒。 添加和复制帧时适用 90 秒上限。编辑记录仍在时，可以通过撤销与重做恢复已删除的帧。片尾标志权益到期后，新导出的 MP4、WebM 和 AVI 末尾会添加 5 秒 NIARIM 标志。GIF 和已导出的文件不受影响。导出开始时的条件适用到处理结束。已放置的水印、已应用的调色和自动操作结果都会保留。再次运行已保存的自动操作需要有效权益。';
+      '完整导出超过90秒的作品需要高级会员或时长延长权益。你也可以导出开头90秒。 添加和复制帧时适用 90 秒上限。编辑记录仍在时，可以通过撤销与重做恢复已删除的帧。片尾标记权益到期后，新导出的 MP4、WebM 和 AVI 末尾会添加 5 秒 NIARIM 标志。GIF 和已导出的文件不受影响。导出开始时的条件适用到处理结束。已放置的水印、已应用的调色和自动操作结果都会保留。再次运行已保存的自动操作需要有效权益。';
 
   @override
   String get helpPerformanceSettingsTitle => '性能设置';
@@ -2018,11 +2018,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '先用马赛克降低分辨率，再叠加色差效果，能营造出像在看老式显像管电视般的粗糙质感，与单独使用显像管滤镜的效果又有所不同。';
 
   @override
-  String get tipsEndCardWatermarkTitle => '水印是你的签名，片尾卡是另一回事';
+  String get tipsEndCardWatermarkTitle => '水印是你的签名，片尾标记是另一回事';
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      '想在视频中加入自己的签名或标记时，请使用水印功能。片尾卡是应用自动显示在每个视频结尾的自带Logo，免费会员无法更改；高级会员可以隐藏它，或替换成自己的视频、图片。如果不想使用片尾卡而想自制专属的结尾效果，只需添加图片图层并配合淡入淡出，就能自行还原类似的效果。';
+      '想在视频中加入自己的签名或标记时，请使用水印功能。片尾标记是导出的 MP4、WebM 和 AVI 视频末尾的 NIARIM 标志。高级会员或片尾标记编辑权益有效时，可以为每部作品设置显示或隐藏。GIF 不添加片尾标记。如果不想使用片尾标记而想自制专属的结尾效果，只需添加图片图层并配合淡入淡出，就能自行还原类似的效果。';
 
   @override
   String get tipsVerticalPixelFontTitle => '实拍视频×手绘作画，打造“实拍×动画”';
@@ -2816,10 +2816,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportStartButton => '开始导出';
 
   @override
-  String get timelineHideEndCard => '隐藏片尾标志';
+  String get timelineHideEndCard => '隐藏片尾标记';
 
   @override
-  String get timelineShowEndCard => '显示片尾标志';
+  String get timelineShowEndCard => '显示片尾标记';
 
   @override
   String get exportCurrentConditions => '按当前条件导出';
@@ -2874,12 +2874,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String exportOutputWithoutEndCard(String duration) {
-    return '正片 $duration（无片尾标志）';
+    return '正片 $duration（无片尾标记）';
   }
 
   @override
   String exportOutputWithEndCard(String duration) {
-    return '正片 $duration  +  NIARIM 片尾标志（5 秒）';
+    return '正片 $duration  +  NIARIM 片尾标记（5 秒）';
   }
 
   @override
@@ -5146,7 +5146,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineEndCardHiddenLabel => '隐藏';
 
   @override
-  String get timelineEndCardTrackLabel => '片尾卡轨道';
+  String get timelineEndCardTrackLabel => '片尾标记轨道';
 
   @override
   String get timelineMarkerTrackLabel => '时间戳';
@@ -5465,7 +5465,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get licenseTermsArt4Body =>
-      '1. 用户使用本应用制作的插画、动画等内容（包括项目数据、导出的图片、视频等，以下称“创作内容”）所涉及的著作权及其他权利，在法令允许的范围内，归属于对该内容享有权利的用户或第三方。\n2. 本应用未提供将创作内容发送、收集或同步至开发者服务器的功能。项目数据原则上仅保存在用户设备内（用户自行选择使用作品广场功能发布创作内容时的处理方式，参见第12条）。\n3. 无论使用免费版还是高级版制作，开发者均不会以本应用的使用费用或版本为由限制创作内容的商业使用（免费版与高级版的区别仅限于片尾卡显示、导出时长上限等功能方面）。\n4. 尽管有前项规定，用户添加至本应用中的字体、图片、素材等由第三方享有权利的内容，仍需遵守第5条规定的各自使用条件。';
+      '1. 用户使用本应用制作的插画、动画等内容（包括项目数据、导出的图片、视频等，以下称“创作内容”）所涉及的著作权及其他权利，在法令允许的范围内，归属于对该内容享有权利的用户或第三方。\n2. 本应用未提供将创作内容发送、收集或同步至开发者服务器的功能。项目数据原则上仅保存在用户设备内（用户自行选择使用作品广场功能发布创作内容时的处理方式，参见第12条）。\n3. 无论使用免费版还是高级版制作，开发者均不会以本应用的使用费用或版本为由限制创作内容的商业使用（免费版与高级版的区别仅限于片尾标记显示、导出时长上限等功能方面）。\n4. 尽管有前项规定，用户添加至本应用中的字体、图片、素材等由第三方享有权利的内容，仍需遵守第5条规定的各自使用条件。';
 
   @override
   String get licenseTermsArt5Title => '第5条（内置字体、追加素材相关规定）';
@@ -5621,13 +5621,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceTimelinePreviewLabel => '预览';
 
   @override
-  String get workspaceEndCardSection => '片尾卡';
+  String get workspaceEndCardSection => '片尾标记';
 
   @override
-  String get workspaceEndCardHint => '片尾标志权益有效且作品没有单独设置时，使用此默认设置。权益到期后仍会保留此设置。';
+  String get workspaceEndCardHint => '片尾标记权益有效且作品没有单独设置时，使用此默认设置。权益到期后仍会保留此设置。';
 
   @override
-  String get workspaceEndCardDefaultHiddenTitle => '默认隐藏片尾标志';
+  String get workspaceEndCardDefaultHiddenTitle => '默认隐藏片尾标记';
 
   @override
   String get tipsTransparentColorTitle => '透明色不只是橡皮擦，可以像画笔一样使用';
@@ -8892,7 +8892,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockMonth => '个月';
 
   @override
-  String get rewardUnlockEndCardEdit => '编辑或移除片尾卡';
+  String get rewardUnlockEndCardEdit => '编辑或移除片尾标记';
 
   @override
   String get rewardUnlockWatermark => '添加和编辑自定义水印';
@@ -11812,11 +11812,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '可套用於場景或影格的畫面效果（模糊、色調校正、光暈、像素畫等）。在不改變手繪畫面本身的前提下，作為演出手段調整整個畫面觀感時使用。繪畫濾鏡中的色調曲線（預設與強度）、色階、銳化、USM銳化、暗角（顏色、範圍、濃度）、水彩邊界也收錄在演出濾鏡中，可以一次對多個影格套用相同的效果。像素畫也可以選擇配色方式（不指定顏色、指定顏色、指定顏色數、從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動）來接近原色，這種排列在影格之間不會移動；輪廓處保持清晰。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。 演出濾鏡可以疊加套用多個，其套用順序依照時間軸上的排列順序。拖曳濾鏡清單重新排序後，實際反映到畫面上的順序也會隨之改變。 一種演出濾鏡，會逐影格改變類似膠片顆粒感的雜訊。可以用滑桿調整強度、數量（雜訊出現的密度）和顆粒大小。回到同一影格時雜訊形態相同（拖曳時不會閃爍），播放時顆粒則會呈現出跳動的效果。 用來表現畫面中降雨的演出濾鏡。可以用滑桿調整降雨強度（雨滴數量）、速度、雨滴大小和風向角度。每滴雨都會隨著影格數推進以固定速度持續落下，呈現自然的降雨效果。';
 
   @override
-  String get helpEndCardTitle => '片尾卡（片尾標誌）';
+  String get helpEndCardTitle => '片尾標記';
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 片尾標誌是 MP4、WebM 和 AVI 末尾的 5 秒標誌。權益有效時可依作品切換顯示。到期後仍保留設定。GIF 不會加上標誌。';
+      'NIARIM 片尾標記是 MP4、WebM 和 AVI 末尾的 5 秒標誌。權益有效時可依作品切換顯示。到期後仍保留設定。GIF 不會加上標誌。';
 
   @override
   String get helpAutoSaveTitle => '自動儲存';
@@ -11902,14 +11902,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpPremiumEntryDesc =>
-      '延長片長權益有效時，最長可製作和匯出2小時。到期後作品仍會保留，可匯出保留調色的開頭90秒。片尾標誌取決於開始匯出時有效的權益。';
+      '延長片長權益有效時，最長可製作和匯出2小時。到期後作品仍會保留，可匯出保留調色的開頭90秒。片尾標記取決於開始匯出時有效的權益。';
 
   @override
   String get helpPremiumExpiryTitle => '權益到期後';
 
   @override
   String get helpPremiumExpiryDesc =>
-      '完整匯出超過90秒的作品需要高級會員或延長片長權益。你也可以匯出開頭90秒。 新增和複製影格時適用 90 秒上限。編輯記錄仍在時，可以透過復原與重做還原已刪除的影格。片尾標誌權益到期後，新匯出的 MP4、WebM 和 AVI 末尾會加上 5 秒 NIARIM 標誌。GIF 和已匯出的檔案不受影響。匯出開始時的條件適用到處理結束。已放置的浮水印、已套用的調色和自動操作結果都會保留。再次執行已儲存的自動操作需要有效權益。';
+      '完整匯出超過90秒的作品需要高級會員或延長片長權益。你也可以匯出開頭90秒。 新增和複製影格時適用 90 秒上限。編輯記錄仍在時，可以透過復原與重做還原已刪除的影格。片尾標記權益到期後，新匯出的 MP4、WebM 和 AVI 末尾會加上 5 秒 NIARIM 標誌。GIF 和已匯出的檔案不受影響。匯出開始時的條件適用到處理結束。已放置的浮水印、已套用的調色和自動操作結果都會保留。再次執行已儲存的自動操作需要有效權益。';
 
   @override
   String get helpPerformanceSettingsTitle => '效能設定';
@@ -12381,11 +12381,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '先用馬賽克降低解析度，再疊加色差效果，能營造出像在看老式映像管電視般的粗糙質感，與單獨使用映像管濾鏡的效果又有所不同。';
 
   @override
-  String get tipsEndCardWatermarkTitle => '浮水印是你的簽名，片尾卡是另一回事';
+  String get tipsEndCardWatermarkTitle => '浮水印是你的簽名，片尾標記是另一回事';
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      '想在影片中加入自己的簽名或標記時，請使用浮水印功能。片尾卡是應用程式自動顯示在每支影片結尾的自帶Logo，免費會員無法更改；進階會員可以隱藏它，或替換成自己的影片、圖片。如果不想使用片尾卡而想自製專屬的結尾效果，只要新增圖片圖層並搭配淡入淡出，就能自行還原類似的效果。';
+      '想在影片中加入自己的簽名或標記時，請使用浮水印功能。片尾標記是匯出的 MP4、WebM 和 AVI 影片末尾的 NIARIM 標誌。進階會員或片尾標記編輯權益有效時，可以依作品設定顯示或隱藏。GIF 不會加上片尾標記。如果不想使用片尾標記而想自製專屬的結尾效果，只要新增圖片圖層並搭配淡入淡出，就能自行還原類似的效果。';
 
   @override
   String get tipsVerticalPixelFontTitle => '實拍影片×手繪作畫，打造「實拍×動畫」';
@@ -13179,10 +13179,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get exportStartButton => '開始匯出';
 
   @override
-  String get timelineHideEndCard => '隱藏片尾標誌';
+  String get timelineHideEndCard => '隱藏片尾標記';
 
   @override
-  String get timelineShowEndCard => '顯示片尾標誌';
+  String get timelineShowEndCard => '顯示片尾標記';
 
   @override
   String get exportCurrentConditions => '依目前條件匯出';
@@ -13237,12 +13237,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String exportOutputWithoutEndCard(String duration) {
-    return '正片 $duration（無片尾標誌）';
+    return '正片 $duration（無片尾標記）';
   }
 
   @override
   String exportOutputWithEndCard(String duration) {
-    return '正片 $duration  +  NIARIM 片尾標誌（5 秒）';
+    return '正片 $duration  +  NIARIM 片尾標記（5 秒）';
   }
 
   @override
@@ -15509,7 +15509,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineEndCardHiddenLabel => '隱藏';
 
   @override
-  String get timelineEndCardTrackLabel => '片尾卡軌道';
+  String get timelineEndCardTrackLabel => '片尾標記軌道';
 
   @override
   String get timelineMarkerTrackLabel => '時間戳記';
@@ -15828,7 +15828,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get licenseTermsArt4Body =>
-      '1. 使用者利用本應用程式製作之插畫、動畫等內容（包括專案資料、匯出之圖片、影片等，以下稱「創作內容」）所涉及之著作權及其他權利，於法令允許之範圍內，歸屬於就該內容享有權利之使用者或第三方。\n2. 本應用程式未提供將創作內容傳送、蒐集或同步至開發者伺服器之功能。專案資料原則上僅保存於使用者裝置內（使用者自行選擇利用作品廣場功能發布創作內容時之處理方式，請參見第12條）。\n3. 無論使用免費版或進階版製作，開發者均不會以本應用程式之使用費用或版本為由限制創作內容之商業使用（免費版與進階版之差異僅限於片尾卡顯示、匯出時長上限等功能面向）。\n4. 縱有前項規定，使用者新增至本應用程式中之字型、圖片、素材等由第三方享有權利之內容，仍應遵守第5條所定各自之使用條件。';
+      '1. 使用者利用本應用程式製作之插畫、動畫等內容（包括專案資料、匯出之圖片、影片等，以下稱「創作內容」）所涉及之著作權及其他權利，於法令允許之範圍內，歸屬於就該內容享有權利之使用者或第三方。\n2. 本應用程式未提供將創作內容傳送、蒐集或同步至開發者伺服器之功能。專案資料原則上僅保存於使用者裝置內（使用者自行選擇利用作品廣場功能發布創作內容時之處理方式，請參見第12條）。\n3. 無論使用免費版或進階版製作，開發者均不會以本應用程式之使用費用或版本為由限制創作內容之商業使用（免費版與進階版之差異僅限於片尾標記顯示、匯出時長上限等功能面向）。\n4. 縱有前項規定，使用者新增至本應用程式中之字型、圖片、素材等由第三方享有權利之內容，仍應遵守第5條所定各自之使用條件。';
 
   @override
   String get licenseTermsArt5Title => '第5條（內建字型、新增素材相關規定）';
@@ -15984,13 +15984,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceTimelinePreviewLabel => '預覽';
 
   @override
-  String get workspaceEndCardSection => '片尾卡';
+  String get workspaceEndCardSection => '片尾標記';
 
   @override
-  String get workspaceEndCardHint => '片尾標誌權益有效且作品沒有個別設定時，會套用此預設。權益到期後仍會保留設定。';
+  String get workspaceEndCardHint => '片尾標記權益有效且作品沒有個別設定時，會套用此預設。權益到期後仍會保留設定。';
 
   @override
-  String get workspaceEndCardDefaultHiddenTitle => '預設隱藏片尾標誌';
+  String get workspaceEndCardDefaultHiddenTitle => '預設隱藏片尾標記';
 
   @override
   String get tipsTransparentColorTitle => '透明色不只是橡皮擦，可以像畫筆一樣使用';
@@ -19257,7 +19257,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockMonth => '個月';
 
   @override
-  String get rewardUnlockEndCardEdit => '編輯或移除片尾卡';
+  String get rewardUnlockEndCardEdit => '編輯或移除片尾標記';
 
   @override
   String get rewardUnlockWatermark => '新增和編輯自訂浮水印';

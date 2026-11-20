@@ -1536,11 +1536,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Un efecto visual (desenfoque, corrección de color, resplandor, pixelado, etc.) que puedes aplicar a una escena o fotograma. Úsalo cuando quieras ajustar el aspecto general de la pantalla como un toque de dirección, sin cambiar el dibujo hecho a mano en sí. De los filtros de dibujo, Curva de tonos (un ajuste predefinido y su fuerza), Niveles, Enfoque, Máscara de enfoque, Viñeta (color, alcance y densidad) y Borde de acuarela también son filtros de efecto, para aplicar el mismo efecto a muchos fotogramas a la vez. El filtro de pixel art también permite elegir un modo de color (sin límite, especificar colores, especificar el número de colores o elegir desde una paleta). Cuando los colores están limitados, las zonas a las que ningún color permitido se acerca se forman con dos o tres colores permitidos en un patrón regular (tramado) que no se mueve de un fotograma a otro; los bordes se mantienen nítidos. El tramado se puede desactivar para rellenar cada punto con el color más cercano. Se pueden apilar varios filtros de efecto, y se aplican en el orden en que aparecen en la línea de tiempo. Arrastrar para reordenar la lista de filtros también cambia el orden en que se aplican realmente en pantalla. Un filtro de efecto que aplica un ruido tipo grano de película, cambiándolo fotograma a fotograma. La intensidad, la cantidad (densidad del ruido) y el tamaño del grano se pueden ajustar con controles deslizantes. Volver al mismo fotograma reproduce el mismo grano (sin parpadeo al desplazarte), mientras que al reproducir el grano parece moverse. Un filtro de efecto que muestra lluvia cayendo por la pantalla. La intensidad (número de gotas), la velocidad, el tamaño de gota y el ángulo del viento se pueden ajustar con controles deslizantes. Cada gota sigue cayendo a velocidad constante conforme avanza el fotograma, dando un movimiento de lluvia natural.';
 
   @override
-  String get helpEndCardTitle => 'Tarjeta final (logotipo de cierre)';
+  String get helpEndCardTitle => 'Marca final';
 
   @override
   String get helpEndCardDesc =>
-      'El logo final de NIARIM dura cinco segundos y se añade a MP4, WebM y AVI. Puedes ocultarlo por proyecto mientras el beneficio esté activo. El ajuste se conserva al caducar. Los GIF no lo incluyen.';
+      'La marca final de NIARIM dura cinco segundos y se añade a MP4, WebM y AVI. Puedes ocultarla por proyecto mientras el beneficio esté activo. El ajuste se conserva al caducar. Los GIF no la incluyen.';
 
   @override
   String get helpAutoSaveTitle => 'Guardado automático';
@@ -2142,11 +2142,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkTitle =>
-      'La marca de agua es tu firma; la tarjeta final es otra cosa';
+      'La marca de agua es tu firma; la marca final es otra cosa';
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      'Usa la función de marca de agua cuando quieras añadir tu propia firma o marca a un vídeo. La tarjeta final es el logotipo propio de la app que aparece automáticamente al final de cada vídeo; los miembros gratuitos no pueden cambiarlo. Los miembros premium pueden ocultarlo o sustituirlo por su propio vídeo o imagen. Si quieres un cierre personalizado sin usar la tarjeta final, puedes recrear un efecto similar añadiendo una capa de imagen con entrada/salida de fundido.';
+      'Usa la función de marca de agua cuando quieras añadir tu propia firma o marca a un vídeo. La marca final es el logotipo de NIARIM que se añade al final de las exportaciones en MP4, WebM y AVI. Con Premium o el beneficio de edición de la marca final, puedes mostrarla u ocultarla por proyecto. Los GIF no la incluyen. Si quieres un cierre personalizado sin usar la marca final, puedes recrear un efecto similar añadiendo una capa de imagen con entrada/salida de fundido.';
 
   @override
   String get tipsVerticalPixelFontTitle =>
@@ -3004,10 +3004,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportStartButton => 'Iniciar exportación';
 
   @override
-  String get timelineHideEndCard => 'Ocultar logo final';
+  String get timelineHideEndCard => 'Ocultar la marca final';
 
   @override
-  String get timelineShowEndCard => 'Mostrar logo final';
+  String get timelineShowEndCard => 'Mostrar la marca final';
 
   @override
   String get exportCurrentConditions => 'Exportar con estas condiciones';
@@ -3074,12 +3074,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String exportOutputWithoutEndCard(String duration) {
-    return 'Vídeo principal $duration (sin logo final)';
+    return 'Vídeo principal $duration (sin marca final)';
   }
 
   @override
   String exportOutputWithEndCard(String duration) {
-    return 'Vídeo principal $duration + logo final de NIARIM (5 segundos)';
+    return 'Vídeo principal $duration + marca final de NIARIM (5 segundos)';
   }
 
   @override
@@ -5512,7 +5512,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineEndCardHiddenLabel => 'Oculto';
 
   @override
-  String get timelineEndCardTrackLabel => 'Pista de tarjeta final';
+  String get timelineEndCardTrackLabel => 'Pista de la marca final';
 
   @override
   String get timelineMarkerTrackLabel => 'Marcas de tiempo';
@@ -5844,7 +5844,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get licenseTermsArt4Body =>
-      '1. Los derechos de autor y demás derechos relativos a las ilustraciones, animaciones y demás contenidos que el usuario cree mediante la Aplicación (incluidos los datos de proyecto, las imágenes y vídeos exportados, etc.; en adelante, el «Contenido creado») corresponden, en la medida permitida por la ley, al usuario o al tercero titular de los derechos sobre dicho contenido.\n2. La Aplicación no ofrece ninguna función para transmitir, recopilar o sincronizar el Contenido creado con los servidores del desarrollador. Los datos de proyecto se almacenan, en principio, únicamente en el dispositivo del usuario (en cuanto al tratamiento aplicable cuando el usuario, por decisión propia, publica Contenido creado mediante la función de la Plaza de Obras, véase el artículo 12).\n3. Con independencia de si el Contenido creado se elaboró con la versión gratuita o con la versión premium, el desarrollador no restringirá su uso comercial en función de la tarifa de uso de la Aplicación o de la edición utilizada (las diferencias entre la versión gratuita y la premium se limitan a aspectos funcionales como la visualización de la tarjeta final o el límite de duración de exportación).\n4. No obstante lo dispuesto en el párrafo anterior, las fuentes, imágenes, materiales y demás elementos que el usuario añada a la Aplicación y sobre los que terceros posean derechos quedarán sujetos a sus respectivas condiciones de uso (artículo 5).';
+      '1. Los derechos de autor y demás derechos relativos a las ilustraciones, animaciones y demás contenidos que el usuario cree mediante la Aplicación (incluidos los datos de proyecto, las imágenes y vídeos exportados, etc.; en adelante, el «Contenido creado») corresponden, en la medida permitida por la ley, al usuario o al tercero titular de los derechos sobre dicho contenido.\n2. La Aplicación no ofrece ninguna función para transmitir, recopilar o sincronizar el Contenido creado con los servidores del desarrollador. Los datos de proyecto se almacenan, en principio, únicamente en el dispositivo del usuario (en cuanto al tratamiento aplicable cuando el usuario, por decisión propia, publica Contenido creado mediante la función de la Plaza de Obras, véase el artículo 12).\n3. Con independencia de si el Contenido creado se elaboró con la versión gratuita o con la versión premium, el desarrollador no restringirá su uso comercial en función de la tarifa de uso de la Aplicación o de la edición utilizada (las diferencias entre la versión gratuita y la premium se limitan a aspectos funcionales como la visualización de la marca final o el límite de duración de exportación).\n4. No obstante lo dispuesto en el párrafo anterior, las fuentes, imágenes, materiales y demás elementos que el usuario añada a la Aplicación y sobre los que terceros posean derechos quedarán sujetos a sus respectivas condiciones de uso (artículo 5).';
 
   @override
   String get licenseTermsArt5Title =>
@@ -6018,7 +6018,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get workspaceTimelinePreviewLabel => 'Vista previa';
 
   @override
-  String get workspaceEndCardSection => 'Tarjeta final';
+  String get workspaceEndCardSection => 'Marca final';
 
   @override
   String get workspaceEndCardHint =>
@@ -9591,7 +9591,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockMonth => 'meses';
 
   @override
-  String get rewardUnlockEndCardEdit => 'Editar o quitar la tarjeta final';
+  String get rewardUnlockEndCardEdit => 'Editar o quitar la marca final';
 
   @override
   String get rewardUnlockWatermark => 'Añadir y editar tu propia marca de agua';

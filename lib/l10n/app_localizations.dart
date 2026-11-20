@@ -2760,7 +2760,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpEndCardTitle.
   ///
   /// In ja, this message translates to:
-  /// **'エンドカード'**
+  /// **'エンドマーク'**
   String get helpEndCardTitle;
 
   /// No description provided for @helpEndCardDesc.
@@ -3744,13 +3744,13 @@ abstract class AppLocalizations {
   /// No description provided for @tipsEndCardWatermarkTitle.
   ///
   /// In ja, this message translates to:
-  /// **'自分の署名はウォーターマーク、エンドカードは別物'**
+  /// **'自分の署名はウォーターマーク、エンドマークは別物'**
   String get tipsEndCardWatermarkTitle;
 
   /// No description provided for @tipsEndCardWatermarkDesc.
   ///
   /// In ja, this message translates to:
-  /// **'動画に自分の署名や透かしを入れたいときはウォーターマーク機能を使います。エンドカードは動画の最後に自動で表示されるアプリ側のロゴで、無料会員は変更できません。プレミアム会員なら非表示にしたり、自分の動画・画像に差し替えたりできます。エンドカードを使わず自分だけの締めくくりを作りたいときは、画像レイヤーの追加とフェードイン・アウトを組み合わせれば同じような演出を自作できます。'**
+  /// **'動画に自分の署名や透かしを入れたいときはウォーターマーク機能を使います。エンドマークはMP4・WebM・AVIの末尾に付くNIARIMのロゴです。プレミアム会員またはエンドマーク編集の特典を利用中は、作品ごとに表示・非表示を切り替えられます。GIFには付きません。エンドマークを使わず自分だけの締めくくりを作りたいときは、画像レイヤーの追加とフェードイン・アウトを組み合わせれば同じような演出を自作できます。'**
   String get tipsEndCardWatermarkDesc;
 
   /// No description provided for @tipsVerticalPixelFontTitle.
@@ -9444,7 +9444,7 @@ abstract class AppLocalizations {
   /// No description provided for @timelineEndCardTrackLabel.
   ///
   /// In ja, this message translates to:
-  /// **'エンドカードトラック'**
+  /// **'エンドマークトラック'**
   String get timelineEndCardTrackLabel;
 
   /// No description provided for @timelineMarkerTrackLabel.
@@ -10026,7 +10026,7 @@ abstract class AppLocalizations {
   /// No description provided for @licenseTermsArt4Body.
   ///
   /// In ja, this message translates to:
-  /// **'1. ユーザーが本アプリを利用して作成したイラスト・アニメーション等のコンテンツ（プロジェクトデータ・書き出した画像・動画等を含みます。以下「作成コンテンツ」といいます。）に関する著作権その他の権利は、法令上認められる範囲において、当該コンテンツについて権利を有するユーザーまたは第三者に帰属します。\n2. 本アプリは、作成コンテンツを開発者のサーバーへ送信・収集・同期する機能を提供していません。プロジェクトデータは、原則としてユーザーの端末内にのみ保存されます。（ユーザーが自らの意思で作品広場機能を利用して作成コンテンツを投稿する場合の取扱いについては、第12条によります。）\n3. 無料版・プレミアム版のいずれを利用して作成した場合であっても、本アプリの利用料金やエディションを理由として、開発者が作成コンテンツの商用利用を制限することはありません。（無料版・プレミアム版の違いは、エンドカード表示や書き出し時間の上限等の機能面に限られます。）\n4. 前項にかかわらず、ユーザーが本アプリに追加したフォント・画像・素材等、第三者が権利を有するものについては、それぞれの利用条件（第5条）に従う必要があります。'**
+  /// **'1. ユーザーが本アプリを利用して作成したイラスト・アニメーション等のコンテンツ（プロジェクトデータ・書き出した画像・動画等を含みます。以下「作成コンテンツ」といいます。）に関する著作権その他の権利は、法令上認められる範囲において、当該コンテンツについて権利を有するユーザーまたは第三者に帰属します。\n2. 本アプリは、作成コンテンツを開発者のサーバーへ送信・収集・同期する機能を提供していません。プロジェクトデータは、原則としてユーザーの端末内にのみ保存されます。（ユーザーが自らの意思で作品広場機能を利用して作成コンテンツを投稿する場合の取扱いについては、第12条によります。）\n3. 無料版・プレミアム版のいずれを利用して作成した場合であっても、本アプリの利用料金やエディションを理由として、開発者が作成コンテンツの商用利用を制限することはありません。（無料版・プレミアム版の違いは、エンドマーク表示や書き出し時間の上限等の機能面に限られます。）\n4. 前項にかかわらず、ユーザーが本アプリに追加したフォント・画像・素材等、第三者が権利を有するものについては、それぞれの利用条件（第5条）に従う必要があります。'**
   String get licenseTermsArt4Body;
 
   /// No description provided for @licenseTermsArt5Title.
@@ -10296,7 +10296,7 @@ abstract class AppLocalizations {
   /// No description provided for @workspaceEndCardSection.
   ///
   /// In ja, this message translates to:
-  /// **'エンドカード'**
+  /// **'エンドマーク'**
   String get workspaceEndCardSection;
 
   /// No description provided for @workspaceEndCardHint.
@@ -16200,7 +16200,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockEndCardEdit.
   ///
   /// In ja, this message translates to:
-  /// **'エンドカード編集・削除'**
+  /// **'エンドマーク編集・削除'**
   String get rewardUnlockEndCardEdit;
 
   /// No description provided for @rewardUnlockWatermark.

@@ -1502,7 +1502,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'A visual effect (blur, color correction, glow, pixel art, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Of the drawing filters, Tone Curve (a preset and its strength), Levels, Sharpen, Unsharp Mask, Vignette (color, range and density) and Watercolor Edge are effect filters too, so the same effect can be applied to many frames at once. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors in a regular pattern (dithering) that stays in place from frame to frame; edges stay crisp. Dithering can be switched off, to fill each dot with the nearest single color. Multiple effect filters can be stacked, and they\'re applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they\'re actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.';
 
   @override
-  String get helpEndCardTitle => 'End Card (End Logo)';
+  String get helpEndCardTitle => 'End Mark';
 
   @override
   String get helpEndCardDesc =>
@@ -2102,11 +2102,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkTitle =>
-      'Watermark is for your signature, End Card is separate';
+      'Watermark is for your signature, End Mark is separate';
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      'Use the watermark feature when you want to add your own signature or mark to a video. The end card is the app\'s own logo shown automatically at the end of every video; free members can\'t change it. Premium members can hide it or replace it with their own video or image. If you want a custom closing without using the end card, you can recreate a similar effect yourself by adding an image layer with a fade in/out.';
+      'Use the watermark feature when you want to add your own signature or mark to a video. The end mark is the NIARIM logo added to the end of MP4, WebM, and AVI exports. Premium membership or the end mark editing benefit lets you show or hide it per project. GIFs do not include it. If you want a custom closing without using the end mark, you can recreate a similar effect yourself by adding an image layer with a fade in/out.';
 
   @override
   String get tipsVerticalPixelFontTitle =>
@@ -5428,7 +5428,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineEndCardHiddenLabel => 'Hidden';
 
   @override
-  String get timelineEndCardTrackLabel => 'End Card Track';
+  String get timelineEndCardTrackLabel => 'End Mark Track';
 
   @override
   String get timelineMarkerTrackLabel => 'Timestamps';
@@ -5753,7 +5753,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt4Body =>
-      '1. Copyright and other rights relating to illustrations, animations, and other content created by users using the App (including project data, exported images, videos, etc.; hereinafter “Created Content”) belong, to the extent permitted by law, to the user or third party who holds rights in such content.\n2. The App does not provide any function to transmit, collect, or synchronize Created Content to the developer\'s servers. Project data is, in principle, stored only on the user\'s device (see Article 12 for the handling that applies when a user chooses to post Created Content using the Work Plaza feature).\n3. Regardless of whether the free version or the premium version is used to create it, the developer will not restrict commercial use of Created Content based on the App\'s usage fee or edition (the differences between the free and premium versions are limited to functional aspects such as the display of the end card and the upper limit on export time).\n4. Notwithstanding the preceding paragraph, fonts, images, materials, and other items that users add to the App and for which third parties hold rights are subject to the respective terms of use described in Article 5.';
+      '1. Copyright and other rights relating to illustrations, animations, and other content created by users using the App (including project data, exported images, videos, etc.; hereinafter “Created Content”) belong, to the extent permitted by law, to the user or third party who holds rights in such content.\n2. The App does not provide any function to transmit, collect, or synchronize Created Content to the developer\'s servers. Project data is, in principle, stored only on the user\'s device (see Article 12 for the handling that applies when a user chooses to post Created Content using the Work Plaza feature).\n3. Regardless of whether the free version or the premium version is used to create it, the developer will not restrict commercial use of Created Content based on the App\'s usage fee or edition (the differences between the free and premium versions are limited to functional aspects such as the display of the end mark and the upper limit on export time).\n4. Notwithstanding the preceding paragraph, fonts, images, materials, and other items that users add to the App and for which third parties hold rights are subject to the respective terms of use described in Article 5.';
 
   @override
   String get licenseTermsArt5Title =>
@@ -5920,7 +5920,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workspaceTimelinePreviewLabel => 'Preview';
 
   @override
-  String get workspaceEndCardSection => 'End Card';
+  String get workspaceEndCardSection => 'End Mark';
 
   @override
   String get workspaceEndCardHint =>
@@ -9448,7 +9448,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockMonth => 'months';
 
   @override
-  String get rewardUnlockEndCardEdit => 'Edit / remove end card';
+  String get rewardUnlockEndCardEdit => 'Edit / remove end mark';
 
   @override
   String get rewardUnlockWatermark => 'Add and edit your own watermark';

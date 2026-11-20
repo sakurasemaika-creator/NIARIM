@@ -1530,11 +1530,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Un effet visuel (flou, correction des couleurs, lueur, pixellisation, etc.) que vous pouvez appliquer à une scène ou une image. Utilisez-le lorsque vous voulez ajuster l’apparence globale de l’écran comme une touche de mise en scène, sans changer le dessin fait main lui-même. Parmi les filtres de dessin, Courbe de tons (un préréglage et son intensité), Niveaux, Netteté, Masque flou, Vignettage (couleur, étendue et densité) et Bord aquarelle existent aussi en filtres d’effet, pour appliquer le même effet à plusieurs images d’un coup. Le filtre pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs spécifiées, nombre de couleurs spécifié, ou choix depuis une palette). Quand les couleurs sont limitées, les zones dont aucune couleur permise n’est proche sont faites de deux ou trois couleurs permises selon un motif régulier (tramage) qui reste en place d’une image à l’autre ; les contours restent nets. Le tramage peut être désactivé pour remplir chaque point de la couleur la plus proche. Plusieurs filtres d’effet peuvent être superposés, et ils s’appliquent dans l’ordre où ils apparaissent sur la timeline. Glisser pour réorganiser la liste des filtres change aussi l’ordre réellement appliqué à l’écran. Un filtre d’effet qui applique un bruit façon grain de pellicule, en le faisant changer image par image. Intensité, quantité (densité du bruit) et taille du grain se règlent avec des curseurs. Revenir à la même image reproduit le même grain (pas de scintillement en scrubbing), tandis que la lecture donne l’impression que le grain bouge. Un filtre d’effet qui fait tomber de la pluie à l’écran. Intensité (nombre de gouttes), vitesse, taille des gouttes et angle du vent se règlent avec des curseurs. Chaque goutte continue de tomber à une vitesse constante à mesure que l’image avance, pour un mouvement de pluie naturel.';
 
   @override
-  String get helpEndCardTitle => 'Carte de fin (logo de fin)';
+  String get helpEndCardTitle => 'Marque de fin';
 
   @override
   String get helpEndCardDesc =>
-      'Le logo final NIARIM de cinq secondes est ajouté aux exports MP4, WebM et AVI. Vous pouvez le masquer par projet tant que l’avantage est actif. Le réglage est conservé après expiration. Les GIF sont exclus.';
+      'La marque de fin NIARIM de cinq secondes est ajoutée aux exports MP4, WebM et AVI. Vous pouvez la masquer par projet tant que l’avantage est actif. Le réglage est conservé après expiration. Les GIF sont exclus.';
 
   @override
   String get helpAutoSaveTitle => 'Enregistrement automatique';
@@ -1629,7 +1629,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpPremiumExpiryDesc =>
-      'L’export intégral d’un projet de plus de 90 secondes nécessite Premium ou l’avantage de durée étendue. Vous pouvez exporter les 90 premières secondes. La limite de 90 secondes s’applique à l’ajout ou à la duplication d’images. Tant que l’historique est disponible, Annuler et Rétablir permettent de récupérer des images supprimées. Après expiration de l’avantage du logo de fin, les nouvelles exportations MP4, WebM et AVI se terminent par cinq secondes de logo NIARIM. Les GIF et les fichiers déjà exportés sont préservés. Les conditions de départ s’appliquent jusqu’à la fin de l’exportation. Les filigranes posés, les corrections appliquées et les résultats des automatisations sont conservés. Un avantage actif est nécessaire pour relancer une automatisation enregistrée.';
+      'L’export intégral d’un projet de plus de 90 secondes nécessite Premium ou l’avantage de durée étendue. Vous pouvez exporter les 90 premières secondes. La limite de 90 secondes s’applique à l’ajout ou à la duplication d’images. Tant que l’historique est disponible, Annuler et Rétablir permettent de récupérer des images supprimées. Après expiration de l’avantage lié à la marque de fin, les nouvelles exportations MP4, WebM et AVI se terminent par cinq secondes de logo NIARIM. Les GIF et les fichiers déjà exportés sont préservés. Les conditions de départ s’appliquent jusqu’à la fin de l’exportation. Les filigranes posés, les corrections appliquées et les résultats des automatisations sont conservés. Un avantage actif est nécessaire pour relancer une automatisation enregistrée.';
 
   @override
   String get helpPerformanceSettingsTitle => 'Réglages de performance';
@@ -2136,11 +2136,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkTitle =>
-      'Le filigrane, c’est votre signature ; la carte de fin, autre chose';
+      'Le filigrane, c’est votre signature ; la marque de fin, autre chose';
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      'Utilisez le filigrane pour ajouter votre propre signature ou marque à une vidéo. La carte de fin est le logo de l’application affiché automatiquement à la fin de chaque vidéo ; les membres gratuits ne peuvent pas la modifier. Les membres premium peuvent la masquer ou la remplacer par leur propre vidéo ou image. Pour une conclusion personnalisée sans utiliser la carte de fin, vous pouvez recréer un effet similaire en ajoutant un calque image avec un fondu d’entrée/sortie.';
+      'Utilisez le filigrane pour ajouter votre propre signature ou marque à une vidéo. La marque de fin est le logo NIARIM ajouté à la fin des exports MP4, WebM et AVI. Avec Premium ou l’avantage de modification de la marque de fin, vous pouvez l’afficher ou la masquer pour chaque projet. Les GIF ne l’incluent pas. Pour une conclusion personnalisée sans utiliser la marque de fin, vous pouvez recréer un effet similaire en ajoutant un calque image avec un fondu d’entrée/sortie.';
 
   @override
   String get tipsVerticalPixelFontTitle =>
@@ -3002,10 +3002,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exportStartButton => 'Démarrer l’export';
 
   @override
-  String get timelineHideEndCard => 'Masquer le logo final';
+  String get timelineHideEndCard => 'Masquer la marque de fin';
 
   @override
-  String get timelineShowEndCard => 'Afficher le logo final';
+  String get timelineShowEndCard => 'Afficher la marque de fin';
 
   @override
   String get exportCurrentConditions => 'Exporter avec ces conditions';
@@ -3071,12 +3071,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String exportOutputWithoutEndCard(String duration) {
-    return 'Vidéo principale $duration (sans logo final)';
+    return 'Vidéo principale $duration (sans marque de fin)';
   }
 
   @override
   String exportOutputWithEndCard(String duration) {
-    return 'Vidéo principale $duration + logo final NIARIM (5 secondes)';
+    return 'Vidéo principale $duration + marque de fin NIARIM (5 secondes)';
   }
 
   @override
@@ -5519,7 +5519,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineEndCardHiddenLabel => 'Masqué';
 
   @override
-  String get timelineEndCardTrackLabel => 'Piste de la carte de fin';
+  String get timelineEndCardTrackLabel => 'Piste de la marque de fin';
 
   @override
   String get timelineMarkerTrackLabel => 'Horodatages';
@@ -5850,7 +5850,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get licenseTermsArt4Body =>
-      '1. Les droits d’auteur et autres droits relatifs aux illustrations, animations et autres contenus créés par l’utilisateur au moyen de l’Application (y compris les données de projet, les images et vidéos exportées, etc. ; ci-après le « Contenu créé ») appartiennent, dans la mesure permise par la loi, à l’utilisateur ou au tiers titulaire des droits sur ce contenu.\n2. L’Application ne fournit aucune fonction permettant de transmettre, collecter ou synchroniser le Contenu créé vers les serveurs du développeur. Les données de projet sont, en principe, stockées uniquement sur l’appareil de l’utilisateur (pour le traitement applicable lorsque l’utilisateur choisit de publier du Contenu créé au moyen de la fonction Place des œuvres, voir l’article 12).\n3. Que le Contenu créé ait été réalisé avec la version gratuite ou la version premium, le développeur ne restreindra pas son utilisation commerciale en raison des frais d’utilisation de l’Application ou de l’édition utilisée (les différences entre la version gratuite et la version premium se limitent à des aspects fonctionnels tels que l’affichage de la carte de fin ou la limite de durée d’exportation).\n4. Nonobstant le paragraphe précédent, les polices, images, matériaux et autres éléments ajoutés par l’utilisateur à l’Application et sur lesquels des tiers détiennent des droits restent soumis à leurs conditions d’utilisation respectives (article 5).';
+      '1. Les droits d’auteur et autres droits relatifs aux illustrations, animations et autres contenus créés par l’utilisateur au moyen de l’Application (y compris les données de projet, les images et vidéos exportées, etc. ; ci-après le « Contenu créé ») appartiennent, dans la mesure permise par la loi, à l’utilisateur ou au tiers titulaire des droits sur ce contenu.\n2. L’Application ne fournit aucune fonction permettant de transmettre, collecter ou synchroniser le Contenu créé vers les serveurs du développeur. Les données de projet sont, en principe, stockées uniquement sur l’appareil de l’utilisateur (pour le traitement applicable lorsque l’utilisateur choisit de publier du Contenu créé au moyen de la fonction Place des œuvres, voir l’article 12).\n3. Que le Contenu créé ait été réalisé avec la version gratuite ou la version premium, le développeur ne restreindra pas son utilisation commerciale en raison des frais d’utilisation de l’Application ou de l’édition utilisée (les différences entre la version gratuite et la version premium se limitent à des aspects fonctionnels tels que l’affichage de la marque de fin ou la limite de durée d’exportation).\n4. Nonobstant le paragraphe précédent, les polices, images, matériaux et autres éléments ajoutés par l’utilisateur à l’Application et sur lesquels des tiers détiennent des droits restent soumis à leurs conditions d’utilisation respectives (article 5).';
 
   @override
   String get licenseTermsArt5Title =>
@@ -6023,15 +6023,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get workspaceTimelinePreviewLabel => 'Aperçu';
 
   @override
-  String get workspaceEndCardSection => 'Carte de fin';
+  String get workspaceEndCardSection => 'Marque de fin';
 
   @override
   String get workspaceEndCardHint =>
-      'Ce réglage par défaut s’applique aux projets sans réglage spécifique tant que l’avantage du logo de fin est actif. Votre préférence est conservée après expiration.';
+      'Ce réglage par défaut s’applique aux projets sans réglage spécifique tant que l’avantage lié à la marque de fin est actif. Votre préférence est conservée après expiration.';
 
   @override
   String get workspaceEndCardDefaultHiddenTitle =>
-      'Masquer le logo de fin par défaut';
+      'Masquer la marque de fin par défaut';
 
   @override
   String get tipsTransparentColorTitle =>
@@ -9614,7 +9614,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockMonth => 'mois';
 
   @override
-  String get rewardUnlockEndCardEdit => 'Modifier / retirer la carte de fin';
+  String get rewardUnlockEndCardEdit => 'Modifier / retirer la marque de fin';
 
   @override
   String get rewardUnlockWatermark =>
