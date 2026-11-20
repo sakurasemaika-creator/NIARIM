@@ -2895,3 +2895,18 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：全体回帰 `44641695291` で`canvas_timeline_position_test`・`timeline_preview_controls_test`・`timeline_focus_return_test`・`timeline_pc_workspace_test`・`final_remaining_strict_evidence_test`は成功。
 - 未確認：複数のシーンをまたぐ往復、全画面・プレビューの大きさのつまみ、無い作品のID、空の作品、スマホ390×844、音声・動画の停止（ffmpeg・音声が要る）。
 - 画像：`shots-r1/r2a045-*`（backup-pending）。
+
+## A046 — シーンタブ・操作
+
+### A046 二巡目（2026-11-20、Claude・S50、App `9c06dd69`のLinuxデバッグビルド）— 判定：要修正（新DISC515・DISC516、既存DISC198）
+
+- 一巡目の指摘（Linux debug、ja、1280×800、PCのタイムライン）：
+  - DISC326は直った：シーンの︙→「シーン名変更」で欄を空にするとEnterでも「変更」でも決まらず（「変更」は押せない）、空白だけでも同じ。「  ShotA  」と打ってEnterで「ShotA」に変わる（前後の空白は外れる）。
+  - DISC327は直った：「ShotA」を2回「複製」すると「ShotA (コピー)」「ShotA (コピー 2)」、「ShotA (コピー)」を複製すると「ShotA (コピー 3)」。
+- 削除：「「ShotA (コピー 3)」を削除しますか？」（シーン内の全フレーム・共通レイヤー・テキスト素材…を含むすべてのデータが削除されます）→「削除」で消え、取り消しで戻る。
+- 要修正（新、DISC515）：タイムラインの上のシーンのチップを1回押しても何も起きない（切り替わらず、名前の変更も開かない）。2回続けて押すと切り替わる。左の「シーン」の一覧は1回で切り替わる。`timeline_screen.dart`の3600行あたりは、外側の`GestureDetector`の`onTap`に名前の変更、`onDoubleTap`に切り替えを置き、中の`ChoiceChip`に`onSelected: (_) {}`を渡しているため、1回押しは`ChoiceChip`が取って外側の`onTap`まで届かない（CLAUDE.mdの「タップを観測したいだけの親をGestureDetectorで作らない」と同じ形）。
+- 要修正（新、DISC516）：シーンの「複製」で、範囲で持つレイヤー（共通レイヤー・テキスト・画像・動画の素材）が写らない。「ShotA」には1〜5コマの「共通4」の列があるのに、「ShotA (コピー)」「(コピー 2)」「(コピー 3)」には無い。`project_service.dart`の`duplicateScene`（1542行〜）はコマのレイヤーのうち`isRangeLayerType`のものを外して写し、`Scene`の`groups`・`stack`・`markers`・各列の名前も渡していない。
+- 既存DISC198：シーンの︙の「シーン削除」と、演出フィルターの一覧の🗑が赤い。
+- test：全体回帰 `44641695291` で`timeline_preview_controls_test`・`timeline_frame_paste_test`・`timeline_track_label_test`・`timeline_pc_workspace_test`は成功。チップの1回押しとシーンの複製の範囲のレイヤーは見張っていない。
+- 未確認：シーンの追加・複数選択・コピー／切り取り／貼り付け・並べ替えと取り消し・とても長い名前・スマホ。
+- 画像：`shots-r1/r2a046-*`（backup-pending）。
