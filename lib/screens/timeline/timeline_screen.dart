@@ -303,6 +303,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // スライダーやプレビュー上のドラッグで調整できるようにするため。
   // モーダルのシートだとプレビューが隠れる）。重なり順の編集も同じ場所に出す。
   String? _editingMaterialId;
+  ({Layer before, UndoManager undo})? _materialDrag;
   bool _showStackOrder = false;
   // 編集中の素材の描かれている範囲（プレビューの枠の位置合わせ用）。
   // 全画素を走査するので、素材か文字が変わったときだけ求め直す。
@@ -743,6 +744,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   @override
   void dispose() {
+    _finishMaterialDrag(deferred: true);
     _stopTimelineDrag(snap: false);
     _screenFocus.dispose();
     ImmersiveMode.exitWorkspace();
@@ -2136,6 +2138,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// Opens the edit panel for material [layerId], showing a frame where it
   /// is on screen so it can be seen (and dragged) in the preview.
   void _openMaterialEditor(String layerId) {
+    _finishMaterialDrag();
     final ps = context.read<ProjectService>();
     final home = ps.homeOf(widget.projectId, layerId);
     final layer = home == null
@@ -2158,7 +2161,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
     });
   }
 
+  void _finishMaterialDrag({bool deferred = false}) {
+    final drag = _materialDrag;
+    _materialDrag = null;
+    if (drag == null) return;
+    final projectId = widget.projectId;
+    final projects = _projectService;
+    void record() => recordTimelineMaterialEdit(
+      projects: projects,
+      undo: drag.undo,
+      projectId: projectId,
+      before: drag.before,
+    );
+    if (deferred) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => record());
+    } else {
+      record();
+    }
+  }
+
   void _closeEditPanels() {
+    _finishMaterialDrag();
     setState(() {
       _editingMaterialId = null;
       _showStackOrder = false;
@@ -2339,6 +2362,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
       found.home.sceneId,
     );
     return MaterialTransformGizmo(
+      key: ValueKey('material-gizmo-${layer.id}'),
+      onChangeEnd: _finishMaterialDrag,
       canvasWidth: tm.canvasWidth,
       canvasHeight: tm.canvasHeight,
       contentBounds: _editingBounds,
@@ -2348,11 +2373,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
           : CameraEngine().valueAt(cameraKeyframes, frameIndex),
       onChanged: (next) {
         final current = _editingMaterial(ps);
-        if (current == null) return;
+        if (current == null || current.layer.id != layer.id) return;
+        final previous = materialTransformAt(current.layer, frameIndex);
+        if (previous.x == next.x &&
+            previous.y == next.y &&
+            previous.scale == next.scale &&
+            previous.rotation == next.rotation) {
+          return;
+        }
+        final undo = context.read<UndoManager?>();
+        if (undo != null) _materialDrag ??= (before: current.layer, undo: undo);
         ps.updateLayer(
           projectId: widget.projectId,
           sceneId: current.home.sceneId,
           frameIndex: current.home.frameIndex,
+          recordUndo: false,
           layer: current.layer.copyWith(
             keyframes: editMaterialTransform(
               current.layer,
@@ -3599,24 +3634,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             GestureDetector(
-                              onTap: () {
-                                if (_isSceneMultiSelect) {
-                                  if (_selectedSceneIds.contains(scene.id)) {
-                                    setState(() {
-                                      _selectedSceneIds.remove(scene.id);
-                                      if (_selectedSceneIds.isEmpty) {
-                                        _isSceneMultiSelect = false;
-                                      }
-                                    });
-                                  }
-                                  // 未選択シーンは何もしない
-                                } else {
-                                  _showRenameSceneDialog(scene);
-                                }
-                              },
-                              onDoubleTap: _isSceneMultiSelect
-                                  ? null
-                                  : () => _selectTimelineScene(scene),
                               // 長押し：シーン内フレームを全選択し、フレーム複数選択モードへ
                               // 移行する（フレーム一覧と操作体系を統一）。
                               // シーン自体の複数選択（移動・削除）は上部の「選択」ボタンから行う。
@@ -3691,7 +3708,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     ],
                                   ),
                                   selected: isSelected,
-                                  onSelected: (_) {},
+                                  onSelected: (_) {
+                                    if (!_isSceneMultiSelect) {
+                                      _selectTimelineScene(scene);
+                                      return;
+                                    }
+                                    setState(() {
+                                      _selectedSceneIds.remove(scene.id);
+                                      if (_selectedSceneIds.isEmpty) {
+                                        _isSceneMultiSelect = false;
+                                      }
+                                    });
+                                  },
                                 ),
                               ),
                             ),
@@ -3732,6 +3760,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   void _selectTimelineScene(Scene scene) {
     if (_selectedSceneId == scene.id) return;
+    _finishMaterialDrag();
     if (_isPlaying) _togglePlay();
     _stopTimelineDrag(snap: false);
     setState(() {
@@ -4395,6 +4424,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                                   projectId: widget.projectId,
                                                   sceneId: frameListSceneId,
                                                   frameIndex: index,
+                                                  tileManager: projectService
+                                                      .tileManagerOf(
+                                                        widget.projectId,
+                                                      ),
                                                   layers: projectService
                                                       .layersOf(
                                                         widget.projectId,
@@ -11310,6 +11343,7 @@ class _TimelineFrameThumbnail extends StatefulWidget {
   final String sceneId;
   final int frameIndex;
   final List<Layer> layers;
+  final TileManager tileManager;
 
   /// The project's background: blend modes act on it.
   final int backgroundColor;
@@ -11318,6 +11352,7 @@ class _TimelineFrameThumbnail extends StatefulWidget {
     required this.projectId,
     required this.sceneId,
     required this.frameIndex,
+    required this.tileManager,
     required this.layers,
     required this.backgroundColor,
   });
@@ -11330,23 +11365,55 @@ class _TimelineFrameThumbnail extends StatefulWidget {
 class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
   ui.Image? _image;
   int _renderRequest = 0;
+  bool _refreshScheduled = false;
 
   @override
   void initState() {
     super.initState();
+    widget.tileManager.addLayerContentListener(_layerChanged);
     _generate();
   }
 
   @override
   void didUpdateWidget(covariant _TimelineFrameThumbnail old) {
     super.didUpdateWidget(old);
-    if (old.projectId != widget.projectId ||
+    if (old.tileManager != widget.tileManager) {
+      old.tileManager.removeLayerContentListener(_layerChanged);
+      widget.tileManager.addLayerContentListener(_layerChanged);
+    }
+    if (old.tileManager != widget.tileManager ||
+        old.projectId != widget.projectId ||
         old.sceneId != widget.sceneId ||
         old.frameIndex != widget.frameIndex ||
         old.backgroundColor != widget.backgroundColor ||
         !listEquals(old.layers, widget.layers)) {
       _generate();
     }
+  }
+
+  void _layerChanged(String key) {
+    if (_refreshScheduled) return;
+    final frame = widget;
+    final projects = context.read<ProjectService>();
+    if (!frame.layers.any(
+      (layer) =>
+          projects.tileKeyFor(
+            frame.projectId,
+            frame.sceneId,
+            frame.frameIndex,
+            layer.id,
+          ) ==
+          key,
+    )) {
+      return;
+    }
+    _refreshScheduled = true;
+    final binding = WidgetsBinding.instance;
+    binding.addPostFrameCallback((_) {
+      _refreshScheduled = false;
+      if (mounted) _generate();
+    });
+    binding.ensureVisualUpdate();
   }
 
   Future<void> _generate() async {
@@ -11356,7 +11423,7 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
     final project = ps.projects
         .where((p) => p.id == frame.projectId)
         .firstOrNull;
-    final tileManager = ps.tileManagerOf(frame.projectId);
+    final tileManager = frame.tileManager;
     final drawW = tileManager.canvasWidth;
     final drawH = tileManager.canvasHeight;
     if (drawW <= 0 || drawH <= 0) return;
@@ -11424,6 +11491,7 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
 
   @override
   void dispose() {
+    widget.tileManager.removeLayerContentListener(_layerChanged);
     _image?.dispose();
     super.dispose();
   }

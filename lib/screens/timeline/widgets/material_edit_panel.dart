@@ -38,6 +38,44 @@ const List<int> _textColours = [
   0xFF8E8E93,
 ];
 
+/// Records the result of a slider or preview drag as one edit.
+void recordTimelineMaterialEdit({
+  required ProjectService projects,
+  required UndoManager undo,
+  required String projectId,
+  required Layer before,
+}) {
+  final home = projects.homeOf(projectId, before.id);
+  if (home == null) return;
+  final after = projects
+      .layersOf(projectId, home.sceneId, home.frameIndex)
+      .where((layer) => layer.id == before.id)
+      .firstOrNull;
+  if (after == null || identical(after, before)) return;
+
+  void apply(Layer layer) {
+    final home = projects.homeOf(projectId, layer.id);
+    if (home == null) return;
+    projects.updateLayer(
+      projectId: projectId,
+      sceneId: home.sceneId,
+      frameIndex: home.frameIndex,
+      layer: layer,
+      recordUndo: false,
+    );
+  }
+
+  undo.push(
+    ProjectEditUndoAction(
+      'Edit timeline material',
+      () => apply(before),
+      () => apply(after),
+      retainedMaterialIds: {?before.materialId, ?after.materialId},
+    ),
+    projectId: projectId,
+  );
+}
+
 /// Edits one timeline material (a text, an image or a video) in place of the
 /// timeline's tracks, with the preview above it in view: the text and its
 /// look, where it is (move, scale, turn about the X, Y and Z axes, with
@@ -167,37 +205,13 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     _beforeSlider = null;
     final undo = _undo;
     if (previous == null || undo == null) return;
-    final home = _projects.homeOf(projectId, previous.id);
-    if (home == null) return;
-    final current = _projects
-        .layersOf(projectId, home.sceneId, home.frameIndex)
-        .where((layer) => layer.id == previous.id)
-        .firstOrNull;
-    if (current == null || identical(current, previous)) return;
     final projects = _projects;
-
-    void apply(Layer layer) {
-      final home = projects.homeOf(projectId, layer.id);
-      if (home == null) return;
-      projects.updateLayer(
-        projectId: projectId,
-        sceneId: home.sceneId,
-        frameIndex: home.frameIndex,
-        layer: layer,
-        recordUndo: false,
-      );
-    }
-
-    void record() => undo.push(
-      ProjectEditUndoAction(
-        'Edit timeline material',
-        () => apply(previous),
-        () => apply(current),
-        retainedMaterialIds: {?current.materialId, ?previous.materialId},
-      ),
+    void record() => recordTimelineMaterialEdit(
+      projects: projects,
+      undo: undo,
       projectId: projectId,
+      before: previous,
     );
-
     if (duringBuild) {
       WidgetsBinding.instance.addPostFrameCallback((_) => record());
     } else {
@@ -947,7 +961,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
                   onPressed: () async {
                     final ok = await confirmDelete(
                       context,
-                      itemName: layer.name,
+                      message: l10n.layerPanelDeleteConfirmTitle(layer.name),
                     );
                     if (ok && mounted) widget.onDelete();
                   },

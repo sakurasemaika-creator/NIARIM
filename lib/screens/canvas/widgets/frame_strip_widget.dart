@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../engine/layer_compositor.dart';
+import '../../../engine/tile_manager.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/layer.dart';
 import '../../../services/premium_service.dart';
@@ -355,6 +356,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   Widget build(BuildContext context) {
     final service = context.watch<ProjectService>();
     final total = service.frameCount(widget.projectId, widget.sceneId);
+    final tiles = service.tileManagerOf(widget.projectId);
     final scheme = Theme.of(context).colorScheme;
     final project = service.projects
         .where((p) => p.id == widget.projectId)
@@ -433,6 +435,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                   projectId: widget.projectId,
                                   sceneId: widget.sceneId,
                                   frameIndex: index,
+                                  tileManager: tiles,
                                   layers: service.layersOf(
                                     widget.projectId,
                                     widget.sceneId,
@@ -571,6 +574,7 @@ class _FrameThumbnail extends StatefulWidget {
   final String projectId;
   final String sceneId;
   final int frameIndex;
+  final TileManager tileManager;
   final List<Layer> layers;
 
   /// The project's opaque background, when the strip shows it (not the
@@ -581,6 +585,7 @@ class _FrameThumbnail extends StatefulWidget {
     required this.projectId,
     required this.sceneId,
     required this.frameIndex,
+    required this.tileManager,
     required this.layers,
     this.backgroundColor,
   });
@@ -591,22 +596,56 @@ class _FrameThumbnail extends StatefulWidget {
 class _FrameThumbnailState extends State<_FrameThumbnail> {
   ui.Image? _image;
   int _renderRequest = 0;
+  bool _refreshScheduled = false;
   @override
   void initState() {
     super.initState();
+    widget.tileManager.addLayerContentListener(_layerChanged);
+    widget.tileManager.addStrokeCommitListener(_layerChanged);
     _generate();
   }
 
   @override
   void didUpdateWidget(covariant _FrameThumbnail old) {
     super.didUpdateWidget(old);
-    if (old.projectId != widget.projectId ||
+    if (old.tileManager != widget.tileManager) {
+      old.tileManager.removeLayerContentListener(_layerChanged);
+      old.tileManager.removeStrokeCommitListener(_layerChanged);
+      widget.tileManager.addLayerContentListener(_layerChanged);
+      widget.tileManager.addStrokeCommitListener(_layerChanged);
+    }
+    if (old.tileManager != widget.tileManager ||
+        old.projectId != widget.projectId ||
         old.sceneId != widget.sceneId ||
         old.frameIndex != widget.frameIndex ||
         old.backgroundColor != widget.backgroundColor ||
         !listEquals(old.layers, widget.layers)) {
       _generate();
     }
+  }
+
+  void _layerChanged(String key) {
+    if (_refreshScheduled) return;
+    final frame = widget;
+    final projects = context.read<ProjectService>();
+    final usesLayer = frame.layers.any(
+      (layer) =>
+          projects.tileKeyFor(
+            frame.projectId,
+            frame.sceneId,
+            frame.frameIndex,
+            layer.id,
+          ) ==
+          key,
+    );
+    if (!usesLayer) return;
+    _refreshScheduled = true;
+    final binding = WidgetsBinding.instance;
+    binding.addPostFrameCallback((_) {
+      _refreshScheduled = false;
+      if (mounted) _generate();
+    });
+    binding.ensureVisualUpdate();
   }
 
   Future<void> _generate() async {
@@ -616,7 +655,7 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
     final project = ps.projects
         .where((p) => p.id == frame.projectId)
         .firstOrNull;
-    final tileManager = ps.tileManagerOf(frame.projectId);
+    final tileManager = frame.tileManager;
     final drawW = tileManager.canvasWidth;
     final drawH = tileManager.canvasHeight;
     if (drawW <= 0 || drawH <= 0) return;
@@ -667,6 +706,8 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
 
   @override
   void dispose() {
+    widget.tileManager.removeLayerContentListener(_layerChanged);
+    widget.tileManager.removeStrokeCommitListener(_layerChanged);
     _image?.dispose();
     super.dispose();
   }

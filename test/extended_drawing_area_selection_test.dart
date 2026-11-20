@@ -231,8 +231,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 120));
     await tester.tap(selectTool.first);
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.byType(ToolbarWidget), findsNothing);
-    expect(find.byType(FrameStripWidget), findsNothing);
+    expect(find.byType(ToolbarWidget).hitTestable(), findsNothing);
+    expect(find.byType(FrameStripWidget).hitTestable(), findsNothing);
     await capture('select_tool_active');
 
     final lasso = await tester.startGesture(

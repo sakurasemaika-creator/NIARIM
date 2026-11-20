@@ -136,7 +136,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           ),
                         ),
                         SizedBox(
-                          width: 36,
+                          width: 47,
                           child: EditableSliderValue(
                             text: '${widget.brushSize.round()}',
                             textAlign: TextAlign.center,
@@ -172,7 +172,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           ),
                         ),
                         SizedBox(
-                          width: 36,
+                          width: 47,
                           child: EditableSliderValue(
                             text: '${widget.opacity}%',
                             textAlign: TextAlign.center,

@@ -511,6 +511,25 @@ void main() {
     },
   );
 
+  testWidgets('one tap on a scene chip switches the timeline', (tester) async {
+    await openTimeline(
+      tester,
+      project: const Size(160, 90),
+      screen: const Size(390, 844),
+      pc: false,
+      fraction: .4,
+      setUpProject: (projects, id) {
+        final scene = projects.addScene(id);
+        projects.renameScene(id, scene.id, 'Second cut');
+      },
+    );
+    final chip = find.widgetWithText(ChoiceChip, 'Second cut');
+    expect(tester.widget<ChoiceChip>(chip).selected, isFalse);
+    await tester.tap(chip);
+    await tester.pump();
+    expect(tester.widget<ChoiceChip>(chip).selected, isTrue);
+  });
+
   testWidgets('scene copies number old and new names in the scene menu', (
     tester,
   ) async {

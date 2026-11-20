@@ -213,11 +213,11 @@ void main() {
     await tester.tap(selectTool.first);
     await tester.pump(const Duration(milliseconds: 300));
     expect(
-      find.byType(ToolbarWidget),
+      find.byType(ToolbarWidget).hitTestable(),
       findsNothing,
       reason: 'バー表示中はツールバーを畳むこと',
     );
-    expect(find.byType(FrameStripWidget), findsNothing);
+    expect(find.byType(FrameStripWidget).hitTestable(), findsNothing);
     await capture('select_tool_active');
 
     // ── 投げ縄で描いた線の一部を囲む ─────────────────────────────────

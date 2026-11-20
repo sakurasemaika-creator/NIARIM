@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../../../config/font_fallback.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/theme_service.dart';
+import '../../../utils/app_error_reporter.dart';
 import '../../../widgets/docked_panel_scope.dart';
 
 /// Owns the image for the canvas session. Dock moves and folds may rebuild the
@@ -15,11 +17,13 @@ import '../../../widgets/docked_panel_scope.dart';
 class ReferenceImageController extends ChangeNotifier {
   Uint8List? _bytes;
   bool _loading = false;
+  bool _loadFailed = false;
   bool _disposed = false;
 
   Future<void> pickImage() async {
     if (_loading || _disposed) return;
     _loading = true;
+    _loadFailed = false;
     notifyListeners();
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -32,7 +36,21 @@ class ReferenceImageController extends ChangeNotifier {
       if (bytes == null && picked.path != null) {
         bytes = await File(picked.path!).readAsBytes();
       }
-      if (bytes != null && !_disposed) _bytes = bytes;
+      if (bytes == null || bytes.isEmpty) {
+        _loadFailed = true;
+        return;
+      }
+      final codec = await ui.instantiateImageCodec(bytes);
+      try {
+        final frame = await codec.getNextFrame();
+        frame.image.dispose();
+        if (!_disposed) _bytes = bytes;
+      } finally {
+        codec.dispose();
+      }
+    } catch (error, stack) {
+      _loadFailed = true;
+      AppErrorReporter.record(error, stack);
     } finally {
       _loading = false;
       if (!_disposed) notifyListeners();
@@ -78,6 +96,18 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
       listenable: controller,
       builder: (context, _) {
         final bytes = controller._bytes;
+        Widget? errorNotice() => controller._loadFailed
+            ? Semantics(
+                liveRegion: true,
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Text(
+                    l10n.thumbnailImageLoadFailed,
+                    style: TextStyle(fontSize: 12, color: scheme.error),
+                  ),
+                ),
+              )
+            : null;
         final content = ColoredBox(
           color: scheme.surfaceContainerHighest,
           child: SizedBox.expand(
@@ -127,6 +157,7 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                     icon: const Icon(Icons.add_photo_alternate_outlined),
                   ),
                 ),
+              ?errorNotice(),
               Expanded(child: content),
             ],
           );
@@ -205,6 +236,7 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                       ),
                     ),
                   ),
+                  ?errorNotice(),
                   Expanded(child: content),
                   Align(
                     alignment: Alignment.bottomRight,

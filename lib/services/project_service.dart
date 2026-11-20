@@ -1533,12 +1533,8 @@ class ProjectService extends ChangeNotifier {
     return scene;
   }
 
-  /// シーンを複製し、複製元の直後へ挿入する（シーンのコピー）。
-  /// 全フレームのレイヤー構成・描画データ（タイル）を複製する。表示範囲
-  /// レイヤー（common・timelineImage・timelineVideo・watermark）はホームが
-  /// 別フレーム/シーンに存在する参照であり、シーン単位の複製対象では
-  /// ないため除外する（duplicateFrame()と同じ方針）。カメラキーフレーム・
-  /// 演出フィルター・音声クリップは実体を持たない設定値のためそのまま複製する。
+  /// Duplicates a scene's frames, local material and editing metadata.
+  /// Project-wide layers are still shared with the original scene.
   Scene? duplicateScene(String projectId, String sceneId, {String? name}) {
     if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       return editTimeline(
@@ -1557,40 +1553,83 @@ class ProjectService extends ChangeNotifier {
     final newSceneId = 'Scene${n.toString().padLeft(4, '0')}';
     final tm = _tileManagers[projectId];
 
-    final newFrames = <Frame>[];
-    for (final frame in source.frames) {
-      final sourceLayers = frame.layers
-          .where(
-            (l) => !isRangeLayerType(l.type) && l.type != LayerType.selection,
-          )
-          .toList();
-      final idMap = {
-        for (final layer in sourceLayers) layer.id: _nextLayerId(projectId),
-      };
-      final newLayers = sourceLayers.map((l) {
-        final newId = idMap[l.id]!;
-        if (tm != null) {
-          tm.copyLayer(
-            frameLayerKey(sceneId, frame.index, l.id),
-            frameLayerKey(newSceneId, frame.index, newId),
-          );
-        }
-        return l.copyWith(id: newId, parentFolderId: idMap[l.parentFolderId]);
-      }).toList();
-      newFrames.add(
-        Frame(index: frame.index, layers: newLayers, hold: frame.hold),
-      );
+    final idMap = <String, String>{};
+    bool copiesLayer(Layer layer) =>
+        layer.type != LayerType.selection &&
+        (!isRangeLayerType(layer.type) ||
+            (layer.rangeMode != LayerRangeMode.allFrames &&
+                (layer.rangeMode != LayerRangeMode.sceneRange ||
+                    (layer.rangeSceneId ?? sceneId) == sceneId)));
+    final sceneLayers = <int, List<Layer>>{
+      for (final frame in source.frames)
+        frame.index: frame.layers.where(copiesLayer).toList(),
+    };
+    // A layer targeted at this scene can have data in another scene.
+    final externalLayers = layersOf(projectId, sceneId, 0).where((layer) {
+      final home = homeOf(projectId, layer.id);
+      return home != null &&
+          home.sceneId != sceneId &&
+          layer.rangeMode == LayerRangeMode.sceneRange &&
+          layer.rangeSceneId == sceneId;
+    });
+    sceneLayers[0]?.addAll(externalLayers);
+    for (final layer in sceneLayers.values.expand((layers) => layers)) {
+      idMap.putIfAbsent(layer.id, () => _nextLayerId(projectId));
     }
 
-    final newScene = Scene(
+    final newFrames = <Frame>[
+      for (final frame in source.frames)
+        frame.copyWith(
+          layers: [
+            for (final layer in sceneLayers[frame.index]!)
+              layer.copyWith(
+                id: idMap[layer.id]!,
+                parentFolderId: idMap[layer.parentFolderId],
+                rangeSceneId: layer.rangeSceneId == sceneId
+                    ? newSceneId
+                    : layer.rangeSceneId,
+              ),
+          ],
+        ),
+    ];
+    for (final frame in source.frames) {
+      for (final layer in sceneLayers[frame.index]!) {
+        tm?.copyLayer(
+          tileKeyFor(projectId, sceneId, frame.index, layer.id),
+          frameLayerKey(newSceneId, frame.index, idMap[layer.id]!),
+        );
+      }
+    }
+
+    final globallySharedIds = {
+      for (final layer in layersOf(projectId, sceneId, 0))
+        if (isRangeLayerType(layer.type) &&
+            layer.rangeMode == LayerRangeMode.allFrames)
+          layer.id,
+    };
+    final newScene = source.copyWith(
       id: newSceneId,
       index: sourceIdx + 1,
-      frames: newFrames,
       name: name ?? source.name,
-      cameraKeyframes: source.cameraKeyframes,
-      effectFilters: source.effectFilters,
-      audioClips: source.audioClips,
+      frames: newFrames,
+      groups: [
+        for (final group in source.groups)
+          group.copyWith(
+            memberLayerIds: [
+              for (final id in group.memberLayerIds)
+                if (idMap[id] case final String copiedId)
+                  copiedId
+                else if (globallySharedIds.contains(id))
+                  id,
+            ],
+          ),
+      ],
     );
+    for (final frame in newFrames) {
+      for (final layer in frame.layers) {
+        _registerHomeIfNeeded(projectId, newSceneId, frame.index, layer);
+      }
+    }
     scenes.insert(sourceIdx + 1, newScene);
     final reindexed = scenes
         .asMap()
@@ -3024,64 +3063,89 @@ class ProjectService extends ChangeNotifier {
     if (scene.frames.length <= 1) return;
     if (frameIndex < 0 || frameIndex >= scene.frames.length) return;
 
-    // 削除位置より後ろのフレームはindexが1つずつ前へ詰まる。描画データは
-    // frameLayerKey(sceneId, frameIndex, layerId)でTileManagerに保存されて
-    // いるため、indexの変更に合わせてタイルデータも付け替える（先頭側から
-    // 順に処理することで、まだ移動していない位置への上書きを避ける）。
+    final newLength = scene.frames.length - 1;
     final tm = _tileManagers[projectId];
-    final removed = scene.frames[frameIndex];
-    if (tm != null) {
-      for (final layer in removed.layers) {
-        final key = frameLayerKey(sceneId, frameIndex, layer.id);
-        tm.removeLayer(key);
-      }
-      for (int i = frameIndex + 1; i < scene.frames.length; i++) {
-        for (final layer in scene.frames[i].layers) {
-          tm.renameKey(
-            frameLayerKey(sceneId, i, layer.id),
-            frameLayerKey(sceneId, i - 1, layer.id),
-          );
+    final keptLayers = List.generate(newLength, (_) => <Layer>[]);
+    final movedHomes = <({String oldKey, String newKey})>[];
+
+    for (var oldIndex = 0; oldIndex < scene.frames.length; oldIndex++) {
+      final deleted = oldIndex == frameIndex;
+      final newIndex = oldIndex > frameIndex ? oldIndex - 1 : oldIndex;
+      for (var layer in scene.frames[oldIndex].layers) {
+        final oldKey = frameLayerKey(sceneId, oldIndex, layer.id);
+        var target = newIndex;
+        if (isRangeLayerType(layer.type)) {
+          if (layer.rangeMode == LayerRangeMode.frameRange) {
+            final start = (layer.rangeStart ?? 1) - 1;
+            final end = (layer.rangeEnd ?? start + 1) - 1;
+            final range = _shiftRangeAfterFrameRemoval(start, end, frameIndex);
+            if (range == null) {
+              tm?.removeLayer(oldKey);
+              continue;
+            }
+            layer = layer.copyWith(
+              rangeStart: range.start + 1,
+              rangeEnd: range.end + 1,
+            );
+            if (deleted) target = range.start.clamp(0, newLength - 1);
+          } else if (deleted) {
+            target = frameIndex.clamp(0, newLength - 1);
+          }
+        } else if (deleted) {
+          tm?.removeLayer(oldKey);
+          continue;
+        }
+
+        keptLayers[target].add(layer);
+        final newKey = frameLayerKey(sceneId, target, layer.id);
+        if (oldKey != newKey) {
+          if (deleted) {
+            movedHomes.add((oldKey: oldKey, newKey: newKey));
+          } else {
+            tm?.renameKey(oldKey, newKey);
+          }
         }
       }
     }
-
-    final newFrames = List<Frame>.from(scene.frames)..removeAt(frameIndex);
-    final reindexed = newFrames
-        .asMap()
-        .entries
-        .map((e) => e.value.copyWith(index: e.key))
-        .toList();
+    for (final home in movedHomes) {
+      tm?.renameKey(home.oldKey, home.newKey);
+    }
+    final reindexed = [
+      for (var i = 0; i < newLength; i++)
+        scene.frames[i < frameIndex ? i : i + 1].copyWith(
+          index: i,
+          layers: keptLayers[i],
+        ),
+    ];
+    final effects = [
+      for (final effect in scene.effectFilters)
+        if (_shiftRangeAfterFrameRemoval(
+              effect.startFrame,
+              effect.endFrame,
+              frameIndex,
+            )
+            case final range?)
+          effect.copyWith(startFrame: range.start, endFrame: range.end),
+    ];
     scenes[sceneIdx] = _remapFrameAnchors(scene, reindexed, (index) {
       if (index == frameIndex) return null;
       return index > frameIndex ? index - 1 : index;
-    });
-
-    // 表示範囲レイヤーのホーム位置インデックスも合わせて更新する。
-    // 削除されたフレーム自体がホームだったレイヤーは実データごと消滅するため
-    // インデックスから除去し、それより後ろのフレームがホームだったレイヤーは
-    // インデックスを1つ前へ詰める。
-    final homes = _layerHomes[projectId];
-    if (homes != null) {
-      final toRemove = <String>[];
-      final toShift = <String>[];
-      homes.forEach((layerId, home) {
-        if (home.sceneId != sceneId) return;
-        if (home.frameIndex == frameIndex) {
-          toRemove.add(layerId);
-        } else if (home.frameIndex > frameIndex) {
-          toShift.add(layerId);
-        }
-      });
-      for (final id in toRemove) {
-        homes.remove(id);
-      }
-      for (final id in toShift) {
-        final h = homes[id]!;
-        homes[id] = (sceneId: h.sceneId, frameIndex: h.frameIndex - 1);
-      }
-    }
+    }).copyWith(effectFilters: effects);
+    _layerHomes[projectId] = buildLayerHomeIndex(scenes);
     _syncDurationToFrameCount(projectId);
     notifyListeners();
+  }
+
+  ({int start, int end})? _shiftRangeAfterFrameRemoval(
+    int start,
+    int end,
+    int removed,
+  ) {
+    if (start == removed && end == removed) return null;
+    return (
+      start: start > removed ? start - 1 : start,
+      end: end >= removed ? end - 1 : end,
+    );
   }
 
   /// シーンのフレーム数を[targetCount]へ一括で揃える（タイムラインの

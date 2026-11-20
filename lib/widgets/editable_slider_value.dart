@@ -18,7 +18,6 @@ class EditableSliderValue extends StatelessWidget {
   final bool isInt;
   final ValueChanged<num> onChanged;
   final TextAlign? textAlign;
-  final double editIconRight;
 
   const EditableSliderValue({
     super.key,
@@ -32,39 +31,29 @@ class EditableSliderValue extends StatelessWidget {
     this.unit,
     this.isInt = true,
     this.textAlign,
-    this.editIconRight = -11,
   });
 
   @override
   Widget build(BuildContext context) {
-    // 数値部分がタップ可能なことは初見で気付きにくいため、右側に小さな
-    // 鉛筆マークを添える。周囲の多くの呼び出し元は固定幅のSizedBoxで
-    // 数値表示を包んでいるため、レイアウト幅は変えずにStack+Positioned
-    // （clipBehavior: none）でマークを右側へわずかにはみ出させる形にして
-    // いる（呼び出し元すべての幅を広げる変更は影響範囲が大きすぎるため）。
     return GestureDetector(
-      // 割り当てられた欄のどこを押しても開く。既定だと数字の字の上だけが
-      // 押せる範囲になり、1桁の値では幅数pxしか無かった。
       behavior: HitTestBehavior.opaque,
       onTap: () => _showInputDialog(context),
-      child: Stack(
-        clipBehavior: Clip.none,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: textAlign == TextAlign.right
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [
-          Text(text, style: style, textAlign: textAlign),
-          Positioned(
-            right: editIconRight,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: Icon(
-                Icons.edit,
-                size: 9,
-                color:
-                    (style?.color ??
-                            Theme.of(context).colorScheme.onSurfaceVariant)
-                        .withValues(alpha: 0.7),
-              ),
-            ),
+          Flexible(
+            child: Text(text, style: style, textAlign: textAlign),
+          ),
+          const SizedBox(width: 2),
+          Icon(
+            Icons.edit,
+            size: 9,
+            color:
+                (style?.color ?? Theme.of(context).colorScheme.onSurfaceVariant)
+                    .withValues(alpha: 0.7),
           ),
         ],
       ),

@@ -3,6 +3,11 @@ import 'helpers/project_storage.dart';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/filter_engine.dart';
+import 'package:niarim/engine/undo_manager.dart';
+import 'package:niarim/models/effect_filter_instance.dart';
+import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/scene_stack.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -97,6 +102,116 @@ void main() {
       reason: '旧F3（青）がindex2へ正しく前詰めされること',
     );
   });
+
+  test(
+    'scene copy and frame deletion preserve local material and ranges',
+    () async {
+      final projects = ProjectService();
+      final history = UndoManager();
+      projects.setUndoManager(history);
+      addTearDown(projects.dispose);
+      addTearDown(history.dispose);
+      await projects.init();
+      final project = await projects.createProject(
+        name: 'Scene range audit',
+        fps: 1,
+        durationSeconds: 1,
+        backgroundColor: 0,
+        exportWidth: 16,
+        exportHeight: 12,
+      );
+      final id = project.id;
+      final source = projects.scenesOf(id).single.id;
+      for (var i = 0; i < 4; i++) {
+        projects.addFrame(id, source);
+      }
+      final common = projects
+          .addLayer(
+            projectId: id,
+            sceneId: source,
+            frameIndex: 1,
+            type: LayerType.common,
+            name: 'Shared drawing',
+          )
+          .copyWith(
+            rangeMode: LayerRangeMode.frameRange,
+            rangeStart: 2,
+            rangeEnd: 4,
+          );
+      projects.updateLayer(
+        projectId: id,
+        sceneId: source,
+        frameIndex: 1,
+        layer: common,
+      );
+      final tiles = projects.tileManagerOf(id);
+      final originalKey = projects.tileKeyFor(id, source, 1, common.id);
+      tiles.setPixel(
+        tiles.getOrCreateTile(originalKey, 0, 0),
+        0,
+        0,
+        255,
+        0,
+        0,
+        255,
+      );
+
+      projects.addLayerGroup(id, source, 'Group', [common.id]);
+      final stack = SceneStack(
+        order: [stackTrackKey(StackTrackKind.image, 0), kStackFrame],
+      );
+      projects.updateSceneStack(id, source, stack);
+      projects.addTimelineMarker(id, source, 2, 'Beat');
+      projects.addEffectFilter(
+        id,
+        source,
+        const EffectFilterInstance(
+          id: 'blur',
+          type: EffectFilterType.gaussianBlur,
+          startFrame: 1,
+          endFrame: 3,
+        ),
+      );
+
+      final copy = projects.duplicateScene(id, source)!;
+      final duplicated = copy.frames[1].layers.singleWhere(
+        (layer) => layer.name == common.name,
+      );
+      expect(duplicated.id, isNot(common.id));
+      expect(copy.groups.single.memberLayerIds, [duplicated.id]);
+      expect(copy.stack.order, stack.order);
+      expect(copy.markers.single.frameIndex, 2);
+      final duplicateKey = projects.tileKeyFor(id, copy.id, 2, duplicated.id);
+      expect(tiles.getPixelColorAt(duplicateKey, 0, 0)?.toARGB32(), 0xffff0000);
+
+      projects.removeFrame(id, source, 1);
+      final scene = projects.sceneOf(id, source)!;
+      final moved = projects
+          .layersOf(id, source, 1)
+          .singleWhere((l) => l.id == common.id);
+      expect((moved.rangeStart, moved.rangeEnd), (2, 3));
+      expect(
+        projects.layersOf(id, source, 3).any((l) => l.id == common.id),
+        isFalse,
+      );
+      expect(
+        (
+          scene.effectFilters.single.startFrame,
+          scene.effectFilters.single.endFrame,
+        ),
+        (1, 2),
+      );
+      final homeKey = projects.tileKeyFor(id, source, 2, common.id);
+      expect(tiles.getPixelColorAt(homeKey, 0, 0)?.toARGB32(), 0xffff0000);
+
+      history.undo(projectId: id);
+      expect(projects.sceneOf(id, source)!.frames.length, 5);
+      expect(projects.sceneOf(id, source)!.effectFilters.single.endFrame, 3);
+      history.redo(projectId: id);
+      expect(projects.sceneOf(id, source)!.frames.length, 4);
+      expect(tiles.getPixelColorAt(homeKey, 0, 0)?.toARGB32(), 0xffff0000);
+    },
+  );
 }
 
 List<int> _framePixel(

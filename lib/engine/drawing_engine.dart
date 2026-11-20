@@ -1169,6 +1169,7 @@ class DrawingEngine {
                       .clamp(0, 255);
             coverage[coveragePos] = desiredAlpha;
             if (watercolor != null) {
+              if (pixelMode) tileManager.markPaintedPixel(tile, coveragePos);
               watercolor.cover(
                 tile,
                 tx,
@@ -1191,6 +1192,9 @@ class DrawingEngine {
               }
             }
             if (incrementalAlpha <= 0) continue;
+            if (pixelMode && !isEraser) {
+              tileManager.markPaintedPixel(tile, coveragePos);
+            }
 
             if (isEraser) {
               tileManager.erasePixel(tile, px, py, incrementalAlpha);

@@ -528,7 +528,7 @@ class ThemeService extends ChangeNotifier {
     // 現在の色は「一覧のどれか」とは限らないため、保存したJSONから復元する。
     final currentJson = prefs.readString(_prefsCurrentJsonKey);
     final restoredCurrent = readSavedJsonList(
-      [if (currentJson != null) currentJson],
+      [?currentJson],
       AppThemePreset.fromJson,
       onSkipped: () => storedDataIsValid = false,
       listKey: _prefsCurrentJsonKey,

@@ -299,6 +299,7 @@ void main() {
     await tester.pump();
     expect(texts().single.keyframes.single.rotationY, 40);
 
+    final beforeDrag = undo.undoCount;
     final gizmo = find.byType(MaterialTransformGizmo);
     await tester.ensureVisible(gizmo);
     final start = tester.getCenter(gizmo) + const Offset(0, 6);
@@ -315,6 +316,13 @@ void main() {
     expect(moved.y.abs(), lessThan(3));
     // The turn set with the slider is kept by the drag.
     expect(moved.rotationY, 40);
+    expect(undo.undoCount, beforeDrag + 1);
+    undo.undo();
+    await tester.pump();
+    expect(texts().single.keyframes.single.x, 0);
+    undo.redo();
+    await tester.pump();
+    expect(texts().single.keyframes.single.x, moved.x);
 
     // ── Mask: an ellipse ──
     await capture('02_position_dragged');

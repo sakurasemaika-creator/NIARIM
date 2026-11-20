@@ -167,7 +167,7 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
                 _keyframes
                     .where(
                       (k) =>
-                          k.frameIndex != kf.frameIndex &&
+                          (isNew || k.frameIndex != kf.frameIndex) &&
                           k.frameIndex != newKf.frameIndex,
                     )
                     .toList()
@@ -382,7 +382,8 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final maxFrame = (widget.totalFrames - 1).clamp(0, 1 << 30);
+    final frameCount = widget.totalFrames.clamp(1, 1 << 30);
+    final frameNumber = (_kf.frameIndex + 1).clamp(1, frameCount);
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.91,
@@ -456,13 +457,14 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
               children: [
                 _row(
                   l10n.layerKeyframeFrameLabel,
-                  _kf.frameIndex.toDouble(),
-                  0,
-                  maxFrame.toDouble(),
-                  maxFrame + 1,
-                  (v) =>
-                      setState(() => _kf = _kf.copyWith(frameIndex: v.round())),
-                  'F${_kf.frameIndex + 1}',
+                  frameNumber.toDouble(),
+                  1,
+                  frameCount.toDouble(),
+                  frameCount - 1,
+                  (v) => setState(
+                    () => _kf = _kf.copyWith(frameIndex: v.round() - 1),
+                  ),
+                  'F$frameNumber',
                   isInt: true,
                 ),
                 _row(

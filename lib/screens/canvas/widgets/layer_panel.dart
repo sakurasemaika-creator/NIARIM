@@ -562,9 +562,11 @@ class _LayerPanelState extends State<LayerPanel> {
                   },
                   itemBuilder: (context, index) {
                     final layer = layers[index];
-                    final isSelected = _selectedFolderId == null
+                    // The selected background identifies the drawing layer.
+                    // A folder chosen for adding children has its own accent.
+                    final isSelected = widget.currentLayerId == null
                         ? index == _selectedIndex
-                        : layer.id == _selectedFolderId;
+                        : layer.id == widget.currentLayerId;
                     final isChecked = _selectedIds.contains(layer.id);
                     final depth = _depthOf(layer, layers);
                     return TwoFingerVerticalSwipeDetector(
@@ -619,6 +621,9 @@ class _LayerPanelState extends State<LayerPanel> {
                                             )
                                         ? Icons.expand_more
                                         : Icons.chevron_right,
+                                    color: layer.id == _selectedFolderId
+                                        ? Theme.of(context).colorScheme.primary
+                                        : null,
                                     size: 16,
                                   ),
                                 ),

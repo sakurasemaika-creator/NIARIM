@@ -23,6 +23,7 @@ class MaterialTransformGizmo extends StatefulWidget {
     required this.canvasHeight,
     required this.value,
     required this.onChanged,
+    this.onChangeEnd,
     this.contentBounds,
     this.camera,
     this.color,
@@ -43,6 +44,7 @@ class MaterialTransformGizmo extends StatefulWidget {
 
   /// Called while dragging with the material's new move, scale and Z turn.
   final ValueChanged<LayerKeyframe> onChanged;
+  final VoidCallback? onChangeEnd;
   final Color? color;
 
   @override
@@ -261,7 +263,10 @@ class _MaterialTransformGizmoState extends State<MaterialTransformGizmo> {
                   (r) => r
                     ..onStart = _onStart
                     ..onUpdate = _onUpdate
-                    ..onEnd = (_) => _drag = null,
+                    ..onEnd = (_) {
+                      _drag = null;
+                      widget.onChangeEnd?.call();
+                    },
                 ),
           },
           child: CustomPaint(size: _box, painter: _GizmoPainter(g, color)),

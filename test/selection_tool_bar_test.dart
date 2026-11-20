@@ -17,6 +17,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/toolbar_item.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/frame_strip_widget.dart';
 import 'package:niarim/screens/canvas/widgets/selection_transform_sliders.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
@@ -147,11 +148,17 @@ void main() {
     expect(find.text(l10n.canvasSelectAllButton), findsNothing);
     expect(find.byType(FrameStripWidget), findsOneWidget);
 
+    final canvas = find.byType(CanvasArea);
+    final canvasBounds = tester.getRect(canvas);
     final selectTool = find.byIcon(Icons.highlight_alt);
     await tester.ensureVisible(selectTool.first);
     await tester.pump(const Duration(milliseconds: 120));
     await tester.tap(selectTool.first);
     await tester.pump(const Duration(milliseconds: 300));
+
+    expect(tester.getRect(canvas), canvasBounds);
+    final selectAll = find.text(l10n.canvasSelectAllButton);
+    final selectAllBounds = tester.getRect(selectAll);
 
     // 1段目：自由変形／メッシュ変形／変形キャンセル、2段目：全選択／全解除／変形適用。
     for (final label in [
@@ -182,12 +189,12 @@ void main() {
     expect(find.byType(SelectionTransformSliders), findsNothing);
     // バーが出ている間はツールバーとフレーム一覧を畳む。
     expect(
-      find.byType(ToolbarWidget),
+      find.byType(ToolbarWidget).hitTestable(),
       findsNothing,
       reason: '選択ツールのバー表示中はツールバーを畳むこと',
     );
     expect(
-      find.byType(FrameStripWidget),
+      find.byType(FrameStripWidget).hitTestable(),
       findsNothing,
       reason: '選択ツールのバー表示中はフレーム一覧を畳むこと',
     );
@@ -200,6 +207,9 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 50));
     }
+
+    expect(tester.getRect(canvas), canvasBounds);
+    expect(tester.getRect(selectAll), selectAllBounds);
 
     // 選択範囲ができたら画面下部に変形量のスライダーが出る。
     expect(

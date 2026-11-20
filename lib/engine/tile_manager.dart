@@ -143,6 +143,21 @@ class TileManager {
   void removeLayerContentListener(void Function(String layerId) listener) =>
       _layerContentListeners.remove(listener);
 
+  final List<void Function(String layerId)> _strokeCommitListeners = [];
+
+  /// A tile-by-tile edit has finished and previews may render its final pixels.
+  void notifyStrokeCommitted(String layerId) {
+    for (final listener in List.of(_strokeCommitListeners)) {
+      listener(layerId);
+    }
+  }
+
+  void addStrokeCommitListener(void Function(String layerId) listener) =>
+      _strokeCommitListeners.add(listener);
+
+  void removeStrokeCommitListener(void Function(String layerId) listener) =>
+      _strokeCommitListeners.remove(listener);
+
   void _touchCache(String layerId, ui.Image image) {
     // 既存エントリを削除してから再挿入することでLRU順（末尾=最新）を保つ
     _compositeCache.remove(layerId);
@@ -195,6 +210,7 @@ class TileManager {
   bool get isRecordingUndo => _recordingUndo;
   String? _recordingLayerId;
   final Map<String, Uint8List?> _undoBefore = {};
+  final Map<Uint8List, Uint8List> _paintedPixels = {};
   // 記録中の操作に不透明度ロックをかけるか（[beginUndoRecording]）。
   bool _recordingLocksOpacity = false;
   Uint8List? _recordingSelection;
@@ -855,6 +871,7 @@ class TileManager {
     assert(selection == null || selection.length == canvasWidth * canvasHeight);
     _recordingSelection = selection;
     _undoBefore.clear();
+    _paintedPixels.clear();
     // 記録の前に作った見え方（ロックの有無が違う）を使い回さない。
     _invalidateComposite(layerId);
   }
@@ -871,8 +888,17 @@ class TileManager {
     return (layerId: layerId, tileKeys: _undoBefore.keys.toSet());
   }
 
-  /// Applies a stroke post-process to pixels changed in the current undo
-  /// recording. Earlier paint is excluded from the input and kept in the tile.
+  /// Records brush coverage even when painting leaves an identical color.
+  void markPaintedPixel(Uint8List tile, int pixelIndex) {
+    if (!_recordingUndo) return;
+    final coverage = _paintedPixels.putIfAbsent(
+      tile,
+      () => Uint8List(tileSize * tileSize),
+    );
+    coverage[pixelIndex] = 1;
+  }
+
+  /// Includes only the stroke's pixels in a color post-process.
   void transformRecordingPixels(Uint8List Function(Uint8List) transform) {
     final layerId = _recordingLayerId;
     if (!_recordingUndo || layerId == null) return;
@@ -880,11 +906,13 @@ class TileManager {
       final tile = _tiles[layerId]?[entry.key];
       if (tile == null) continue;
       final before = entry.value;
+      final painted = _paintedPixels[tile];
       final changed = <int>[];
       for (var i = 0; i < tile.length; i += 4) {
         // Cleared pixels have no color left to transform.
         if (tile[i + 3] == 0) continue;
-        if (before == null ||
+        if (painted?[i ~/ 4] == 1 ||
+            before == null ||
             tile[i] != before[i] ||
             tile[i + 1] != before[i + 1] ||
             tile[i + 2] != before[i + 2] ||
@@ -925,6 +953,7 @@ class TileManager {
   endUndoRecording() {
     final restricted = _recordingLocksOpacity || _recordingSelection != null;
     _recordingUndo = false;
+    _paintedPixels.clear();
     final layerId = _recordingLayerId;
     _recordingLayerId = null;
     if (layerId != null && restricted && _undoBefore.isNotEmpty) {
@@ -974,6 +1003,7 @@ class TileManager {
     final layerId = _recordingLayerId;
     final before = Map<String, Uint8List?>.from(_undoBefore);
     _recordingUndo = false;
+    _paintedPixels.clear();
     _recordingLocksOpacity = false;
     _recordingSelection = null;
     _recordingLayerId = null;

@@ -172,7 +172,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // Non-destructive color adjustment preview is drawn on the actual canvas.
   ui.Image? _colorAdjustCanvasPreview;
   int _canvasContentRevision = 0;
-  final _canvasAreaKey = GlobalKey(debugLabel: 'Canvas drawing area');
+  final _canvasAreaKey = GlobalKey<CanvasAreaState>(
+    debugLabel: 'Canvas drawing area',
+  );
   final _navigatorViewport = ValueNotifier<Rect?>(null);
   CanvasViewRequest? _navigatorViewRequest;
   // The canvas selection (drawing filters apply only inside it) and the
@@ -1599,6 +1601,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
         homeButtonKey: Key('canvasNotFoundHome'),
       );
     }
+    final maxFrame = projects.frameCount(project.id, _currentSceneId) - 1;
+    _currentFrame = _currentFrame.clamp(0, maxFrame < 0 ? 0 : maxFrame);
+    _selectedFrameIndices.removeWhere((frame) => frame > maxFrame);
     // A layer can disappear from this frame after moving the playhead, a
     // range edit, removal, or Undo. Keep drawing and the panel on the same ID.
     final layers = projects.layersOf(
@@ -1961,7 +1966,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                                 _currentTool ==
                                                     DrawingTool.meshTransform
                                                 ? _meshCancelBar(context)
-                                                : _selectionToolBar(context),
+                                                : _buildSelectionControls(
+                                                    context,
+                                                    dockRowConstraints
+                                                        .maxHeight,
+                                                  ),
                                           ),
                                         ),
                                       ),
@@ -2014,71 +2023,43 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         ),
                       ),
                     ),
-                    // ブラシサイズ／不透明度スライダーは、サイズ・不透明度が実際に
-                    // 意味を持つツール使用中のみ表示する。バケツ・スポイト・選択系・
-                    // 変形・テキスト・図形ツールではブラシ設定が描画結果に影響しない
-                    // ため非表示にし、縦スペースをキャンバスへ還元する。
-                    // 選択範囲があるときは、変形量を数値で指定するスライダーを
-                    // 画面下部へ出す（ハンドルのドラッグと同じ操作を、
-                    // 細かく指定したいとき用）。ブラシ設定スライダーは
-                    // 選択ツール中は出ないので場所は競合しない。
+                    // Keep the drawing viewport stable when a tool hides the
+                    // brush row or temporarily folds the lower rails.
                     if (colorAdjusting)
                       _colorAdjustPanel(bottomBar: true)
                     else if (filterAdjusting)
                       _filterPanel(bottomBar: true)
-                    else if (_isSelectionToolActive &&
-                        _hasActiveSelection &&
-                        !selectionEditingHidden)
-                      SelectionTransformSliders(
-                        moveX: _selectionMoveX,
-                        moveY: _selectionMoveY,
-                        scale: _selectionScale,
-                        rotateDeg: _selectionRotateDeg,
-                        maxMove: _selectionSliderMaxMove(context),
-                        onChanged: ({moveX, moveY, scale, rotateDeg}) =>
-                            setState(() {
-                              _selectionMoveX = moveX ?? _selectionMoveX;
-                              _selectionMoveY = moveY ?? _selectionMoveY;
-                              _selectionScale = scale ?? _selectionScale;
-                              _selectionRotateDeg =
-                                  rotateDeg ?? _selectionRotateDeg;
-                            }),
-                        onCommit: () => setState(() {
-                          _selectionTransformCommitValues = (
-                            moveX: _selectionMoveX,
-                            moveY: _selectionMoveY,
-                            scale: _selectionScale,
-                            rotateDeg: _selectionRotateDeg,
-                          );
-                          _selectionTransformCommitToken++;
-                          _resetSelectionSliders();
-                        }),
-                      ),
-                    if (!immersiveAdjusting && _usesBrushSize(_currentTool))
-                      BrushSizeSlider(
-                        brushSize: _toolBrushSize ?? _brushSize,
-                        opacity: _toolBrushOpacity ?? _brushOpacity,
-                        // 変えた太さ・不透明度は、操作の終わりにブラシ
-                        // ごとの覚えとして保存する。
-                        onChangeEnd: () => context
-                            .read<BrushService>()
-                            .commitRememberedValues(),
-                        onSizeChanged: (v) {
-                          _setBrushSize(v, remember: true);
-                          _recordCanvasAutomation(
-                            'canvas.brushSize',
-                            'Brush size',
-                            args: {'value': v},
-                          );
-                        },
-                        onOpacityChanged: (v) {
-                          _setBrushOpacity(v, remember: true);
-                          _recordCanvasAutomation(
-                            'canvas.brushOpacity',
-                            'Brush opacity',
-                            args: {'value': v},
-                          );
-                        },
+                    else
+                      Visibility(
+                        visible: _usesBrushSize(_currentTool),
+                        maintainSize: true,
+                        maintainAnimation: true,
+                        maintainState: true,
+                        child: BrushSizeSlider(
+                          brushSize: _toolBrushSize ?? _brushSize,
+                          opacity: _toolBrushOpacity ?? _brushOpacity,
+                          // 変えた太さ・不透明度は、操作の終わりにブラシ
+                          // ごとの覚えとして保存する。
+                          onChangeEnd: () => context
+                              .read<BrushService>()
+                              .commitRememberedValues(),
+                          onSizeChanged: (v) {
+                            _setBrushSize(v, remember: true);
+                            _recordCanvasAutomation(
+                              'canvas.brushSize',
+                              'Brush size',
+                              args: {'value': v},
+                            );
+                          },
+                          onOpacityChanged: (v) {
+                            _setBrushOpacity(v, remember: true);
+                            _recordCanvasAutomation(
+                              'canvas.brushOpacity',
+                              'Brush opacity',
+                              args: {'value': v},
+                            );
+                          },
+                        ),
                       ),
                     // メッシュ変形中は分割数のスライダーだけを画面下部へ出す
                     // （自由変形＝分割数1のときは何も出さない）。
@@ -2098,30 +2079,34 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 16→22pxへ）。フルの48px（Material推奨タップ領域）まで
                     // 広げると常時表示のバーとして描画領域を圧迫しすぎるため、
                     // 誤タップしにくくなる範囲での妥協値としている。
-                    if (!isDesktop &&
-                        !_isSelectionToolActive &&
-                        !immersiveAdjusting)
-                      Tooltip(
-                        message: AppLocalizations.of(
-                          context,
-                        )!.canvasToolbarToggleTooltip,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () =>
-                              setState(() => _showToolbar = !_showToolbar),
-                          child: Container(
-                            height: 28,
-                            alignment: Alignment.center,
-                            color: Colors.transparent,
-                            child: Icon(
-                              _showToolbar
-                                  ? Icons.keyboard_arrow_down
-                                  : Icons.keyboard_arrow_up,
-                              size: 22,
-                              color: Theme.of(context).colorScheme.onSurface,
-                              shadows: CanvasIconButton.foregroundShadows(
-                                Theme.of(context).colorScheme.onSurface,
-                                Theme.of(context).colorScheme,
+                    if (!isDesktop && !immersiveAdjusting)
+                      Visibility(
+                        visible: !_isSelectionToolActive,
+                        maintainSize: true,
+                        maintainAnimation: true,
+                        maintainState: true,
+                        child: Tooltip(
+                          message: AppLocalizations.of(
+                            context,
+                          )!.canvasToolbarToggleTooltip,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () =>
+                                setState(() => _showToolbar = !_showToolbar),
+                            child: Container(
+                              height: 28,
+                              alignment: Alignment.center,
+                              color: Colors.transparent,
+                              child: Icon(
+                                _showToolbar
+                                    ? Icons.keyboard_arrow_down
+                                    : Icons.keyboard_arrow_up,
+                                size: 22,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                shadows: CanvasIconButton.foregroundShadows(
+                                  Theme.of(context).colorScheme.onSurface,
+                                  Theme.of(context).colorScheme,
+                                ),
                               ),
                             ),
                           ),
@@ -2129,11 +2114,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     // デスクトップでは左側（左利きモードでは右側）の常設縦レールとして
                     // 表示するため、下部の横並びバーはモバイルレイアウトのみで表示する。
-                    if (_showToolbar &&
-                        !isDesktop &&
-                        !_isSelectionToolActive &&
-                        !immersiveAdjusting)
-                      _buildToolbarWidget(vertical: false),
+                    if (_showToolbar && !isDesktop && !immersiveAdjusting)
+                      Visibility(
+                        visible: !_isSelectionToolActive,
+                        maintainSize: true,
+                        maintainAnimation: true,
+                        maintainState: true,
+                        child: _buildToolbarWidget(vertical: false),
+                      ),
                     if (_frameMultiSelectMode && !immersiveAdjusting)
                       _buildFrameMultiSelectBar(),
                     // フレーム一覧の折りたたみ用ハンドル（描画領域を
@@ -2143,63 +2131,73 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     //
                     // 選択ツール使用中は、キャンバス左下の操作バーへ集中できるよう
                     // ツールバー・フレーム一覧ごと畳む（開閉ハンドルも隠す）。
-                    if (!_isSelectionToolActive && !immersiveAdjusting)
-                      Tooltip(
-                        message: AppLocalizations.of(
-                          context,
-                        )!.canvasFrameStripToggleTooltip,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => setState(
-                            () => _showFrameStrip = !_showFrameStrip,
-                          ),
-                          child: Container(
-                            height: 28,
-                            alignment: Alignment.center,
-                            color: Colors.transparent,
-                            child: Icon(
-                              _showFrameStrip
-                                  ? Icons.keyboard_arrow_down
-                                  : Icons.keyboard_arrow_up,
-                              size: 22,
-                              // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
-                              // ToolbarWidgetの色連動と同じ方針）。
-                              color: Theme.of(context).colorScheme.onSurface,
-                              shadows: CanvasIconButton.foregroundShadows(
-                                Theme.of(context).colorScheme.onSurface,
-                                Theme.of(context).colorScheme,
+                    if (!immersiveAdjusting)
+                      Visibility(
+                        visible: !_isSelectionToolActive,
+                        maintainSize: true,
+                        maintainAnimation: true,
+                        maintainState: true,
+                        child: Tooltip(
+                          message: AppLocalizations.of(
+                            context,
+                          )!.canvasFrameStripToggleTooltip,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => setState(
+                              () => _showFrameStrip = !_showFrameStrip,
+                            ),
+                            child: Container(
+                              height: 28,
+                              alignment: Alignment.center,
+                              color: Colors.transparent,
+                              child: Icon(
+                                _showFrameStrip
+                                    ? Icons.keyboard_arrow_down
+                                    : Icons.keyboard_arrow_up,
+                                size: 22,
+                                // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
+                                // ToolbarWidgetの色連動と同じ方針）。
+                                color: Theme.of(context).colorScheme.onSurface,
+                                shadows: CanvasIconButton.foregroundShadows(
+                                  Theme.of(context).colorScheme.onSurface,
+                                  Theme.of(context).colorScheme,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    if (_showFrameStrip &&
-                        !_isSelectionToolActive &&
-                        !immersiveAdjusting)
-                      FrameStripWidget(
-                        currentFrame: _currentFrame,
-                        projectId: widget.projectId,
-                        sceneId: _currentSceneId,
-                        showTransparency:
-                            _canvasBackground == CanvasBackground.transparent,
-                        onFrameSelected: (idx) {
-                          setState(() => _currentFrame = idx);
-                          _recordCanvasAutomation(
-                            'canvas.selectFrame',
-                            'Frame ${idx + 1}',
-                            args: {'frame': idx},
-                            changesFrame: true,
-                          );
-                        },
-                        multiSelectMode: _frameMultiSelectMode,
-                        selectedFrames: _selectedFrameIndices,
-                        onFrameToggle: (idx) => setState(() {
-                          if (_selectedFrameIndices.contains(idx)) {
-                            _selectedFrameIndices.remove(idx);
-                          } else {
-                            _selectedFrameIndices.add(idx);
-                          }
-                        }),
+                    if (_showFrameStrip && !immersiveAdjusting)
+                      Visibility(
+                        visible: !_isSelectionToolActive,
+                        maintainSize: true,
+                        maintainAnimation: true,
+                        maintainState: true,
+                        child: FrameStripWidget(
+                          currentFrame: _currentFrame,
+                          projectId: widget.projectId,
+                          sceneId: _currentSceneId,
+                          showTransparency:
+                              _canvasBackground == CanvasBackground.transparent,
+                          onFrameSelected: (idx) {
+                            setState(() => _currentFrame = idx);
+                            _recordCanvasAutomation(
+                              'canvas.selectFrame',
+                              'Frame ${idx + 1}',
+                              args: {'frame': idx},
+                              changesFrame: true,
+                            );
+                          },
+                          multiSelectMode: _frameMultiSelectMode,
+                          selectedFrames: _selectedFrameIndices,
+                          onFrameToggle: (idx) => setState(() {
+                            if (_selectedFrameIndices.contains(idx)) {
+                              _selectedFrameIndices.remove(idx);
+                            } else {
+                              _selectedFrameIndices.add(idx);
+                            }
+                          }),
+                        ),
                       ),
                   ],
                 ),
@@ -3120,7 +3118,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final tiles = context.read<ProjectService>().tileManagerOf(
       widget.projectId,
     );
-    if (tiles.isRecordingUndo) return;
+    if (tiles.isRecordingUndo ||
+        _canvasAreaKey.currentState?.isShapePreviewActive == true) {
+      return;
+    }
     final projects = context.read<ProjectService>();
     final history = context.read<UndoManager>();
     final id = widget.projectId;
@@ -3556,6 +3557,50 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   /// The space between the top bar's buttons, against mis-taps.
   static const double _topBarGap = 10;
+
+  Widget _buildSelectionControls(BuildContext context, double canvasHeight) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_hasActiveSelection)
+          Material(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(8),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 320,
+                maxHeight: canvasHeight / 3,
+              ),
+              child: SelectionTransformSliders(
+                moveX: _selectionMoveX,
+                moveY: _selectionMoveY,
+                scale: _selectionScale,
+                rotateDeg: _selectionRotateDeg,
+                maxMove: _selectionSliderMaxMove(context),
+                onChanged: ({moveX, moveY, scale, rotateDeg}) => setState(() {
+                  _selectionMoveX = moveX ?? _selectionMoveX;
+                  _selectionMoveY = moveY ?? _selectionMoveY;
+                  _selectionScale = scale ?? _selectionScale;
+                  _selectionRotateDeg = rotateDeg ?? _selectionRotateDeg;
+                }),
+                onCommit: () => setState(() {
+                  _selectionTransformCommitValues = (
+                    moveX: _selectionMoveX,
+                    moveY: _selectionMoveY,
+                    scale: _selectionScale,
+                    rotateDeg: _selectionRotateDeg,
+                  );
+                  _selectionTransformCommitToken++;
+                  _resetSelectionSliders();
+                }),
+              ),
+            ),
+          ),
+        _selectionToolBar(context),
+      ],
+    );
+  }
 
   /// 選択ツール使用中にキャンバス左下へ固定で出す操作バー。
   ///

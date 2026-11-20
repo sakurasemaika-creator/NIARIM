@@ -68,7 +68,7 @@ typedef SelectionTransformValues = ({
 /// ウィジェットの実サイズ（[size]）とプロジェクトの書き出しアスペクト比が
 /// 一致しない場合は中央揃えでレターボックス表示になる（拡張表示範囲が
 /// OFFの場合）。この矩形は`_CanvasPainter.paint()`での実際の描画と、
-/// `_CanvasAreaState`側でのポインター座標→プロジェクトピクセル座標への
+/// `CanvasAreaState`側でのポインター座標→プロジェクトピクセル座標への
 /// 変換の両方から参照される、単一の計算元（ロジックの二重化・乖離を防ぐ）。
 /// キャンバス描画エリアの「枠外」を塗る色（プロジェクトの描画内容の
 /// 外側・レターボックス部分）。_CanvasPainterの背景塗りと、
@@ -615,7 +615,7 @@ class CanvasArea extends StatefulWidget {
   });
 
   @override
-  State<CanvasArea> createState() => _CanvasAreaState();
+  State<CanvasArea> createState() => CanvasAreaState();
 }
 
 class _BucketGesture {
@@ -627,7 +627,7 @@ class _BucketGesture {
   bool released = false;
 }
 
-class _CanvasAreaState extends State<CanvasArea> {
+class CanvasAreaState extends State<CanvasArea> {
   final TransformationController _transformController =
       TransformationController();
   final InputHandler _inputHandler = InputHandler();
@@ -794,6 +794,8 @@ class _CanvasAreaState extends State<CanvasArea> {
   Offset? _shapeStart;
   Offset? _shapeEnd;
 
+  bool get isShapePreviewActive => _shapeStart != null;
+
   // ─── 移動ツール ───────────────────────────────────────────────────────
   Offset? _moveStart;
   Offset _moveDelta = Offset.zero;
@@ -902,18 +904,23 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   @override
-  void didUpdateWidget(CanvasArea old) {
-    super.didUpdateWidget(old);
+  void didUpdateWidget(CanvasArea oldWidget) {
+    super.didUpdateWidget(oldWidget);
     final projectId = widget.project?.id;
     final managerChanged =
-        old.project?.id != projectId ||
+        oldWidget.project?.id != projectId ||
         (projectId != null &&
             !identical(_tileManager, _projects.tileManagerOf(projectId)));
     final targetChanged =
         managerChanged ||
-        old.currentFrame != widget.currentFrame ||
-        old.sceneId != widget.sceneId ||
-        old.currentLayerId != widget.currentLayerId;
+        oldWidget.currentFrame != widget.currentFrame ||
+        oldWidget.sceneId != widget.sceneId ||
+        oldWidget.currentLayerId != widget.currentLayerId;
+    if (isShapePreviewActive &&
+        (targetChanged || widget.currentTool != DrawingTool.shape)) {
+      _shapeStart = null;
+      _shapeEnd = null;
+    }
     if (_bucketGesture != null &&
         (targetChanged || widget.currentTool != DrawingTool.bucket)) {
       _cancelBucket();
@@ -932,7 +939,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _initEngine();
     }
     _drawingEngine.isEraser = _erasing;
-    if (old.contentRevision != widget.contentRevision) {
+    if (oldWidget.contentRevision != widget.contentRevision) {
       // The temporary filter/colour preview has just been committed to
       // TileManager. Reload both the active layer and surrounding composition.
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -941,8 +948,8 @@ class _CanvasAreaState extends State<CanvasArea> {
         _recomposeSurroundings(force: true);
       });
     }
-    if (old.currentLayerPreview != widget.currentLayerPreview ||
-        old.currentLayerPreviewBlendMode !=
+    if (oldWidget.currentLayerPreview != widget.currentLayerPreview ||
+        oldWidget.currentLayerPreviewBlendMode !=
             widget.currentLayerPreviewBlendMode) {
       // A filter preview in a CPU-only mode (Prism's Linear Dodge) is
       // shown exactly too, once blended.
@@ -950,19 +957,19 @@ class _CanvasAreaState extends State<CanvasArea> {
         if (mounted) _scheduleExactBlend();
       });
     }
-    if (old.background != widget.background ||
-        old.project?.backgroundColor != widget.project?.backgroundColor) {
+    if (oldWidget.background != widget.background ||
+        oldWidget.project?.backgroundColor != widget.project?.backgroundColor) {
       _recomposeSurroundings(force: true);
     }
-    if (old.activeRuler != widget.activeRuler) {
+    if (oldWidget.activeRuler != widget.activeRuler) {
       _rulerEngine.setActiveRuler(widget.activeRuler);
     }
-    if (old.onionSkinSettings != widget.onionSkinSettings ||
-        old.currentFrame != widget.currentFrame) {
+    if (oldWidget.onionSkinSettings != widget.onionSkinSettings ||
+        oldWidget.currentFrame != widget.currentFrame) {
       _buildOnionImages();
     }
-    if (old.filterLensMask != widget.filterLensMask) {
-      old.filterLensMask?.removeListener(_onLensMaskChanged);
+    if (oldWidget.filterLensMask != widget.filterLensMask) {
+      oldWidget.filterLensMask?.removeListener(_onLensMaskChanged);
       widget.filterLensMask?.addListener(_onLensMaskChanged);
       _abandonLensMaskEdit();
       _onLensMaskChanged();
@@ -976,15 +983,17 @@ class _CanvasAreaState extends State<CanvasArea> {
       _clearSelectionMask(notifyAlways: true);
     }
     _recomposeSurroundings(
-      force: frameChanged || old.autofillCheckMode != widget.autofillCheckMode,
+      force:
+          frameChanged ||
+          oldWidget.autofillCheckMode != widget.autofillCheckMode,
     );
 
     // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ──────────────────
     final enteredMeshTransform =
-        old.currentTool != DrawingTool.meshTransform &&
+        oldWidget.currentTool != DrawingTool.meshTransform &&
         widget.currentTool == DrawingTool.meshTransform;
     final leftMeshTransform =
-        old.currentTool == DrawingTool.meshTransform &&
+        oldWidget.currentTool == DrawingTool.meshTransform &&
         widget.currentTool != DrawingTool.meshTransform;
     if (enteredMeshTransform ||
         (targetChanged && widget.currentTool == DrawingTool.meshTransform)) {
@@ -992,20 +1001,20 @@ class _CanvasAreaState extends State<CanvasArea> {
       _beginMeshTransform();
     }
     if (widget.currentTool == DrawingTool.meshTransform &&
-        old.meshDensity != widget.meshDensity) {
+        oldWidget.meshDensity != widget.meshDensity) {
       _applyMeshDensity(widget.meshDensity);
     }
-    if (old.meshRotateDeg != widget.meshRotateDeg) {
-      _applyMeshRotateDelta(widget.meshRotateDeg - old.meshRotateDeg);
+    if (oldWidget.meshRotateDeg != widget.meshRotateDeg) {
+      _applyMeshRotateDelta(widget.meshRotateDeg - oldWidget.meshRotateDeg);
     }
-    if (old.meshScaleValue != widget.meshScaleValue &&
-        old.meshScaleValue != 0) {
-      _applyMeshScaleDelta(widget.meshScaleValue / old.meshScaleValue);
+    if (oldWidget.meshScaleValue != widget.meshScaleValue &&
+        oldWidget.meshScaleValue != 0) {
+      _applyMeshScaleDelta(widget.meshScaleValue / oldWidget.meshScaleValue);
     }
-    if (old.meshCommitToken != widget.meshCommitToken) {
+    if (oldWidget.meshCommitToken != widget.meshCommitToken) {
       _commitMeshTransform();
     }
-    if (old.meshCancelToken != widget.meshCancelToken) {
+    if (oldWidget.meshCancelToken != widget.meshCancelToken) {
       _cancelMeshTransform();
     }
     // ツール切替ボタンなど、確定・キャンセルのトークンを経由せずツールが
@@ -1017,7 +1026,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
 
     final cancelling =
-        old.selectionTransformCancelToken !=
+        oldWidget.selectionTransformCancelToken !=
         widget.selectionTransformCancelToken;
     if (cancelling) {
       final session = _selectionSession;
@@ -1030,13 +1039,13 @@ class _CanvasAreaState extends State<CanvasArea> {
       _resetSelectionTransform();
     } else {
       final committing =
-          old.selectionTransformCommitToken !=
+          oldWidget.selectionTransformCommitToken !=
           widget.selectionTransformCommitToken;
       final valuesChanged =
-          old.selectionMoveX != widget.selectionMoveX ||
-          old.selectionMoveY != widget.selectionMoveY ||
-          old.selectionScale != widget.selectionScale ||
-          old.selectionRotateDeg != widget.selectionRotateDeg;
+          oldWidget.selectionMoveX != widget.selectionMoveX ||
+          oldWidget.selectionMoveY != widget.selectionMoveY ||
+          oldWidget.selectionScale != widget.selectionScale ||
+          oldWidget.selectionRotateDeg != widget.selectionRotateDeg;
       if (committing || valuesChanged) {
         _applySliderTransform(
           (committing ? widget.selectionTransformCommitValues : null) ??
@@ -1060,17 +1069,18 @@ class _CanvasAreaState extends State<CanvasArea> {
       }
     }
 
-    if (old.invertSelectionToken != widget.invertSelectionToken) {
+    if (oldWidget.invertSelectionToken != widget.invertSelectionToken) {
       _invertSelectionMask();
     }
-    if (old.selectAllSelectionToken != widget.selectAllSelectionToken) {
+    if (oldWidget.selectAllSelectionToken != widget.selectAllSelectionToken) {
       _selectAllSelectionMask();
     }
-    if (!cancelling && old.clearSelectionToken != widget.clearSelectionToken) {
+    if (!cancelling &&
+        oldWidget.clearSelectionToken != widget.clearSelectionToken) {
       _clearSelectionMask(notifyAlways: true);
     }
     final view = widget.viewRequest;
-    if (view != null && view.serial != old.viewRequest?.serial) {
+    if (view != null && view.serial != oldWidget.viewRequest?.serial) {
       // ビルド中に変換を変えると、変換を描くAnimatedBuilderとステータスバーの
       // 作り直しがビルド中に起きるので、次のフレームで行う。
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2377,8 +2387,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     // Only real tile edits that reached Undo become mission candidates.
     // Pan, eyedropper, selection preview, taps and scrubbing are excluded.
     final project = widget.project;
-    if (project != null && snapshot.before.isNotEmpty) {
-      context.read<ProjectService>().recordConfirmedEdit(project.id);
+    if (snapshot.before.isNotEmpty) {
+      _tileManager.notifyStrokeCommitted(layerKey);
+      if (project != null) _projects.recordConfirmedEdit(project.id);
     }
   }
 
@@ -3118,12 +3129,41 @@ class _CanvasAreaState extends State<CanvasArea> {
       }
       _beginTileUndo(paints: false);
       tiles.replaceLayerPixels(key, pixels);
-      if (transformedMask != null && identical(_selectionMask, mask)) {
-        _setSelectionMask(transformedMask, w, h);
+      final afterMask = transformedMask;
+      final updatesMask =
+          mask != null && afterMask != null && identical(_selectionMask, mask);
+      if (updatesMask) {
+        _setSelectionMask(afterMask, w, h);
       }
       _scheduleComposite();
       _markLineartDirtyIfNeeded();
-      _finishTileUndo();
+      _finishTileUndo(
+        wrap: updatesMask
+            ? (action) {
+                void restore(
+                  Uint8List expected,
+                  Uint8List replacement,
+                  VoidCallback apply,
+                ) {
+                  apply();
+                  if (mounted &&
+                      identical(tiles, _tileManager) &&
+                      key == _tileKeyFor(_layerId) &&
+                      identical(_selectionMask, expected)) {
+                    _setSelectionMask(replacement, w, h);
+                  }
+                }
+
+                return app_undo.ProjectEditUndoAction(
+                  action.description,
+                  () => restore(afterMask, mask, action.undo),
+                  () => restore(mask, afterMask, action.redo),
+                  undoFrame: action.frameForHistory(redo: false),
+                  redoFrame: action.frameForHistory(redo: true),
+                );
+              }
+            : null,
+      );
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
     } finally {
@@ -5456,7 +5496,7 @@ class _CanvasPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // ポインター座標→プロジェクトピクセル座標への変換
-    // （_CanvasAreaState._widgetLocalToCanvasPixel）と同じ計算元を使う。
+    // （CanvasAreaState._widgetLocalToCanvasPixel）と同じ計算元を使う。
     final drawingRect = canvasDrawingRectFor(size, project);
 
     // 「枠外」の塗りつぶしは、この描画全体を包む親側（canvas_screen.dart）が
