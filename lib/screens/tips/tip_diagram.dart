@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../widgets/keep_together_text.dart';
 import 'tip_diagram_data.dart';
+import 'tip_screen_capture.dart';
 
 /// A localized diagram with a highlighted control or region for each step.
 class TipDiagram extends StatelessWidget {
@@ -12,11 +13,13 @@ class TipDiagram extends StatelessWidget {
     required this.steps,
     required this.height,
     required this.isComparison,
+    this.captures = const [],
   });
 
   final List<TipDiagramStep> steps;
   final double height;
   final bool isComparison;
+  final List<TipScreenCapture> captures;
 
   @override
   Widget build(BuildContext context) {
@@ -48,45 +51,47 @@ class TipDiagram extends StatelessWidget {
             width: double.infinity,
             child: Padding(
               padding: const EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  for (var i = 0; i < steps.length; i++) ...[
-                    if (i > 0)
-                      ExcludeSemantics(
-                        child: SizedBox(
-                          height: 18,
-                          child: isComparison
-                              ? null
-                              : Icon(
-                                  Icons.arrow_downward_rounded,
-                                  color: scheme.onSurfaceVariant,
-                                  size: 16,
+              child: captures.isNotEmpty
+                  ? TipScreenCaptures(frames: captures)
+                  : Column(
+                      children: [
+                        for (var i = 0; i < steps.length; i++) ...[
+                          if (i > 0)
+                            ExcludeSemantics(
+                              child: SizedBox(
+                                height: 18,
+                                child: isComparison
+                                    ? null
+                                    : Icon(
+                                        Icons.arrow_downward_rounded,
+                                        color: scheme.onSurfaceVariant,
+                                        size: 16,
+                                      ),
+                              ),
+                            ),
+                          Expanded(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: scheme.surface,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
                                 ),
-                        ),
-                      ),
-                    Expanded(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: scheme.surface,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
+                                child: _stepContent(
+                                  scheme,
+                                  i,
+                                  stacked: stacked,
+                                  largeText: largeText,
+                                ),
+                              ),
+                            ),
                           ),
-                          child: _stepContent(
-                            scheme,
-                            i,
-                            stacked: stacked,
-                            largeText: largeText,
-                          ),
-                        ),
-                      ),
+                        ],
+                      ],
                     ),
-                  ],
-                ],
-              ),
             ),
           ),
         );

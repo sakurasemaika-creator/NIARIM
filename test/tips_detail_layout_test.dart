@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/screens/tips/tip_capture_data.dart';
 import 'package:niarim/screens/tips/tip_diagram.dart';
 import 'package:niarim/screens/tips/tip_diagram_data.dart';
+import 'package:niarim/screens/tips/tip_screen_capture.dart';
 import 'package:niarim/screens/tips/tips_screen.dart';
 import 'package:niarim/services/theme_service.dart';
 
@@ -89,11 +92,9 @@ void main() {
     expect(tester.getRect(title).bottom, lessThan(tester.getRect(diagram).top));
     final illustration = find.descendant(
       of: diagram,
-      matching: find.byWidgetPredicate(
-        (widget) => widget is CustomPaint && widget.size == const Size(112, 64),
-      ),
+      matching: find.byType(Image),
     );
-    expect(tester.getRect(illustration.first).width, closeTo(112, 1));
+    expect(tester.getRect(illustration).width, greaterThan(112));
 
     // A swipe starting on the title should move the whole content.
     final before = tester.getTopLeft(diagram).dy;
@@ -103,6 +104,80 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(diagram).dy, lessThan(before - 80));
+  });
+
+  test(
+    'every tip page has bundled screenshots with valid annotations',
+    () async {
+      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      final assets = manifest.listAssets().toSet();
+      const image = Rect.fromLTWH(0, 0, 1, 1);
+      for (final topic in TipTopic.values) {
+        for (
+          var page = 0;
+          page < (topic.illustrateByParagraph ? 4 : 1);
+          page++
+        ) {
+          final captures = tipCaptures(topic, page, l10n);
+          expect(captures, isNotEmpty, reason: '$topic page ${page + 1}');
+          for (final capture in captures) {
+            expect(assets, contains(capture.asset));
+            expect(capture.size.isEmpty, isFalse);
+            for (final focus in capture.focus) {
+              expect(focus.isEmpty, isFalse);
+              expect(image.intersect(focus), focus, reason: capture.asset);
+            }
+          }
+        }
+      }
+    },
+  );
+
+  testWidgets('save captures follow the workflow and open full-screen', (
+    tester,
+  ) async {
+    await mount(tester, const Size(390, 844));
+    await open(tester, l10n.tipsSaveSlotAutoSaveTitle);
+    final viewer = find.byType(TipScreenCaptures);
+    final frames = tester.widget<TipScreenCaptures>(viewer).frames;
+    expect(frames.map((frame) => frame.label), [
+      l10n.saveDataManualTab,
+      l10n.helpAutoSaveTitle,
+      l10n.saveTreeRestoreAction,
+      l10n.timelinePreviewPlaceholder,
+    ]);
+    final next = find.byKey(const ValueKey('tipNextCapture'));
+    final previous = find.byKey(const ValueKey('tipPreviousCapture'));
+    expect(tester.widget<IconButton>(previous).onPressed, isNull);
+    for (final (index, frame) in frames.indexed) {
+      expect(
+        find.descendant(of: viewer, matching: find.text(frame.label)),
+        findsOneWidget,
+      );
+      final picture = tester.widget<Image>(
+        find.descendant(of: viewer, matching: find.byType(Image)),
+      );
+      expect((picture.image as AssetImage).assetName, frame.asset);
+      if (index < frames.length - 1) {
+        await tester.tap(next);
+        await tester.pumpAndSettle();
+      }
+    }
+    expect(tester.widget<IconButton>(next).onPressed, isNull);
+    await tester.tap(find.byTooltip(l10n.canvasViewZoomIn));
+    await tester.pumpAndSettle();
+    expect(find.byType(InteractiveViewer), findsOneWidget);
+    final zoom = find.byType(Dialog).last;
+    expect(
+      find.descendant(of: zoom, matching: find.text(frames.last.label)),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.descendant(of: zoom, matching: find.byIcon(Icons.close)),
+    );
+    await tester.pumpAndSettle();
+    expect(viewer, findsOneWidget);
+    expect(find.text(frames.last.label), findsOneWidget);
   });
 
   for (final size in [const Size(390, 844), const Size(1280, 800)]) {
@@ -187,6 +262,7 @@ void main() {
                               steps: topic.steps(words, page),
                               height: height,
                               isComparison: topic.isComparison,
+                              captures: tipCaptures(topic, page, words),
                             ),
                           ),
                     ],
@@ -237,7 +313,7 @@ void main() {
       await open(tester, l10n.tipsAutofillManualPartColorTitle);
       final next = find.descendant(
         of: dialog,
-        matching: find.byIcon(Icons.chevron_right),
+        matching: find.byKey(const ValueKey('tipNextTextPage')),
       );
       final paragraphs = l10n.tipsAutofillManualPartColorDesc.split('\n');
       expect(paragraphs, hasLength(4));

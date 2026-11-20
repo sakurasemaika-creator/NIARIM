@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../l10n/app_localizations.dart';
 import 'tip_diagram.dart';
 import 'tip_diagram_data.dart';
+import 'tip_capture_data.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
@@ -804,9 +805,15 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
             ),
             const SizedBox(height: 8),
             TipDiagram(
+              key: ValueKey((widget.tip.topic, index)),
               steps: widget.tip.topic.steps(l10n, index),
               height: dialogHeight * .60,
               isComparison: widget.tip.topic.isComparison,
+              captures: tipCaptures(
+                widget.tip.topic,
+                widget.tip.topic.illustrateByParagraph ? index : 0,
+                l10n,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
@@ -895,6 +902,7 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                               style: TextStyle(color: scheme.onSurfaceVariant),
                             ),
                           IconButton(
+                            key: const ValueKey('tipNextTextPage'),
                             tooltip: words.nextPageTooltip,
                             onPressed: _page == totalPages - 1
                                 ? null
