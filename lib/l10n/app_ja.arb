@@ -1775,6 +1775,39 @@
   "autofillGradientTypeLinear": "直線",
   "autofillGradientTypeRadialCenterOut": "放射：中央→外側",
   "autofillGradientTypeRadialOutCenter": "放射：外側→中央",
+  "autofillSampleGray": "グレー単色の下塗り",
+  "autofillSampleLead": "主人公",
+  "autofillSampleHeroine": "ヒロイン",
+  "autofillSamplePartUnderpaint": "下塗り",
+  "autofillSamplePartHair": "髪",
+  "autofillSamplePartSkin": "肌",
+  "autofillSamplePartTop": "トップス",
+  "autofillSamplePartBottom": "ボトムス",
+  "autofillSamplePartShoes": "シューズ",
+  "autofillSamplePartRibbon": "リボン",
+  "autofillSamplePartEyeWhite": "白目",
+  "autofillSamplePartPupil": "瞳孔",
+  "autofillSamplePartIris": "瞳",
+  "autofillSamplePartCatchlight": "瞳キャッチライト",
+  "autofillSamplePartShadow": "{part}{number}影",
+  "autofillSamplePartHighlight": "{part}ハイライト",
+  "@autofillSamplePartShadow": {
+    "placeholders": {
+      "part": {
+        "type": "String"
+      },
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@autofillSamplePartHighlight": {
+    "placeholders": {
+      "part": {
+        "type": "String"
+      }
+    }
+  },
   "autofillPresetScreenTitle": "自動塗り設定",
   "autofillPresetSearchHint": "設定を検索",
   "autofillPresetEmptyFavorites": "お気に入りの設定がありません",

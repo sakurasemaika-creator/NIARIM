@@ -3864,6 +3864,58 @@ class AppLocalizationsJa extends AppLocalizations {
   String get autofillGradientTypeRadialOutCenter => '放射：外側→中央';
 
   @override
+  String get autofillSampleGray => 'グレー単色の下塗り';
+
+  @override
+  String get autofillSampleLead => '主人公';
+
+  @override
+  String get autofillSampleHeroine => 'ヒロイン';
+
+  @override
+  String get autofillSamplePartUnderpaint => '下塗り';
+
+  @override
+  String get autofillSamplePartHair => '髪';
+
+  @override
+  String get autofillSamplePartSkin => '肌';
+
+  @override
+  String get autofillSamplePartTop => 'トップス';
+
+  @override
+  String get autofillSamplePartBottom => 'ボトムス';
+
+  @override
+  String get autofillSamplePartShoes => 'シューズ';
+
+  @override
+  String get autofillSamplePartRibbon => 'リボン';
+
+  @override
+  String get autofillSamplePartEyeWhite => '白目';
+
+  @override
+  String get autofillSamplePartPupil => '瞳孔';
+
+  @override
+  String get autofillSamplePartIris => '瞳';
+
+  @override
+  String get autofillSamplePartCatchlight => '瞳キャッチライト';
+
+  @override
+  String autofillSamplePartShadow(String part, int number) {
+    return '$part$number影';
+  }
+
+  @override
+  String autofillSamplePartHighlight(String part) {
+    return '$partハイライト';
+  }
+
+  @override
   String get autofillPresetScreenTitle => '自動塗り設定';
 
   @override

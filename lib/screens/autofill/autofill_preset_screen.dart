@@ -12,6 +12,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../l10n/autofill_names.dart';
+import '../../l10n/creative_preset_labels.dart';
 import '../../models/autofill_gradient.dart';
 import '../../models/autofill_preset.dart';
 import '../../models/layer.dart' show LayerBlendMode, LayerType;
@@ -107,10 +109,20 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   // Providerのアサーション例外が発生し、プリセット詳細画面へ遷移できなく
   // なる。build()内でのみ一度取得し、以降はフィルタ処理を純粋な関数にして
   // コールバックへは確定済みの値（preset自体）だけを渡す。
-  List<AutofillPreset> _filter(List<AutofillPreset> presets) {
+  List<AutofillPreset> _filter(
+    List<AutofillPreset> presets,
+    AppLocalizations l10n,
+  ) {
     var list = _searchQuery.isEmpty
         ? presets
-        : presets.where((p) => p.name.contains(_searchQuery)).toList();
+        : presets
+              .where(
+                (p) => p
+                    .displayName(l10n)
+                    .toLowerCase()
+                    .contains(_searchQuery.toLowerCase()),
+              )
+              .toList();
     if (_showFavoritesOnly) list = list.where((p) => p.isFavorite).toList();
     return list;
   }
@@ -250,7 +262,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final filtered = _filter(context.watch<AutofillPresetService>().presets);
+    final filtered = _filter(
+      context.watch<AutofillPresetService>().presets,
+      l10n,
+    );
     return Scaffold(
       appBar: AppBar(
         title: _isSearching
@@ -371,7 +386,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                               SharedAssetCardService.exportSettings(
                                 context,
                                 kind: 'autofill',
-                                name: preset.name,
+                                name: preset.displayName(l10n),
                                 settings: {
                                   ...preset.toJson(),
                                   'thumbnailPath': preset.thumbnailPath == null
@@ -455,12 +470,14 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         .toList();
     // ブラシ・作品の複製・引き継ぎで足す複製と同じ形の名前（同じ名前が
     // あれば番号を付ける）。
-    final taken = {for (final p in service.presets) p.name};
+    final taken = {
+      for (final p in service.presets) ...[p.name, p.displayName(l10n)],
+    };
     final copies = [
       for (final p in selected)
-        p.copyWithNewId(
+        _materializePresetNames(p, l10n).copyWithNewId(
           id: 'p_${DateTime.now().microsecondsSinceEpoch}_${p.id}',
-          name: _takeCopyName(l10n, p.name, taken),
+          name: _takeCopyName(l10n, p.displayName(l10n), taken),
           isFavorite: false,
         ),
     ];
@@ -476,16 +493,34 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     });
   }
 
+  // Duplicated and imported presets belong to the user. Keep the names
+  // shown at creation even once they no longer carry the shipped IDs.
+  AutofillPreset _materializePresetNames(
+    AutofillPreset preset,
+    AppLocalizations l10n,
+  ) => preset.copyWith(
+    name: preset.displayName(l10n),
+    parts: [
+      for (final part in preset.parts)
+        if (AutofillPresetService.hasDefaultPartName(part))
+          part.copyWith(name: part.displayName(l10n), nameCustomized: true)
+        else
+          part,
+    ],
+  );
+
   /// クリップボードの内容を新しいIDで貼り付ける（何度でも繰り返せる）。
   void _bulkPaste() {
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<AutofillPresetService>();
-    final taken = {for (final p in service.presets) p.name};
+    final taken = {
+      for (final p in service.presets) ...[p.name, p.displayName(l10n)],
+    };
     for (final p in _presetClipboard) {
       service.addPreset(
         p.copyWithNewId(
           id: 'p_${DateTime.now().microsecondsSinceEpoch}_${p.id}',
-          name: _takeCopyName(l10n, p.name, taken),
+          name: _takeCopyName(l10n, p.displayName(l10n), taken),
         ),
       );
     }
@@ -553,6 +588,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   /// 書き出しと共有がまだ終わっていないときは何もせずfalseを返す。
   Future<bool> _exportPresets(List<AutofillPreset> presets) async {
     if (presets.isEmpty) return true;
+    final l10n = AppLocalizations.of(context)!;
     final ran = await ExportShareService.runExclusive(
       _niafillExportKey,
       () async {
@@ -561,12 +597,14 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         final files = <XFile>[];
         try {
           final dir = await getTemporaryDirectory();
+          final names = <String>{};
           for (final preset in presets) {
-            final safeName = preset.name.replaceAll(
-              RegExp(r'[\\/:*?"<>|]'),
-              '_',
-            );
-            final file = File('${dir.path}/$safeName.niafill');
+            final safeName = preset
+                .displayName(l10n)
+                .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+            final fileName = uniqueNumberedName(safeName, names);
+            names.add(fileName);
+            final file = File('${dir.path}/$fileName.niafill');
             await file.writeAsString(jsonEncode(preset.toJson()));
             files.add(XFile(file.path));
           }
@@ -614,11 +652,15 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             : (utf8.decode(bytes), null);
 
         final json = jsonDecode(content) as Map<String, dynamic>;
-        final preset = AutofillPreset.fromJson(json).copyWith(
-          id: 'p_${DateTime.now().microsecondsSinceEpoch}_$imported',
-          thumbnailPath: null,
-          isFavorite: false,
-        );
+        final preset =
+            _materializePresetNames(
+              AutofillPreset.fromJson(json),
+              l10n,
+            ).copyWith(
+              id: 'p_${DateTime.now().microsecondsSinceEpoch}_$imported',
+              thumbnailPath: null,
+              isFavorite: false,
+            );
         await service.addPreset(preset);
         if (thumbnail != null) {
           await service.setPresetThumbnailBytes(preset.id, thumbnail);
@@ -661,19 +703,22 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             ? l10n.autofillPresetNewDialogTitle
             : l10n.autofillPresetRenameDialogTitle,
         labelText: l10n.autofillPresetNameLabel,
-        initialName: preset?.name ?? '',
+        initialName: preset?.displayName(l10n) ?? '',
         cancelLabel: l10n.commonCancel,
         confirmLabel: preset == null ? l10n.commonCreate : l10n.commonChange,
         onSubmit: (name) {
-          final uniqueName = uniqueNumberedName(
-            name,
-            service.presets.where((p) => p.id != preset?.id).map((p) => p.name),
-          );
+          if (name == preset?.displayName(l10n)) return Future<void>.value();
+          final uniqueName = uniqueNumberedName(name, [
+            for (final p in service.presets)
+              if (p.id != preset?.id) ...[p.name, p.displayName(l10n)],
+          ]);
           if (preset != null) {
             final current = service.presets.firstWhere(
               (p) => p.id == preset.id,
             );
-            return service.updatePreset(current.copyWith(name: uniqueName));
+            return service.updatePreset(
+              current.copyWith(name: uniqueName, nameCustomized: true),
+            );
           }
           return service.addPreset(
             AutofillPreset(
@@ -699,7 +744,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.autofillPresetDeleteConfirmTitle(preset.name)),
+        title: Text(
+          l10n.autofillPresetDeleteConfirmTitle(preset.displayName(l10n)),
+        ),
         scrollable: true,
         content: usage == null ? null : messageText(usage),
         actions: [
@@ -967,7 +1014,7 @@ class _PresetCard extends StatelessWidget {
                             .toList(),
                       ),
               ),
-        title: Text(preset.name),
+        title: Text(preset.displayName(l10n)),
         subtitle: Text(
           l10n.autofillPresetPartsCount(preset.parts.length),
           style: const TextStyle(fontSize: 11),
@@ -1138,10 +1185,6 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     if (pickedColor != null) onPicked(pickedColor);
   }
 
-  List<AutofillPart> get _filteredParts => _partSearchQuery.isEmpty
-      ? _preset.parts
-      : _preset.parts.where((p) => p.name.contains(_partSearchQuery)).toList();
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -1162,7 +1205,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 ),
                 onChanged: (v) => setState(() => _partSearchQuery = v),
               )
-            : Text(_preset.name),
+            : Text(_preset.displayName(l10n)),
         actions: [
           // 検索・並び替え・お気に入り登録に対応
           IconButton(
@@ -1193,7 +1236,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 child: Text(
                   l10n.autofillPartUnconfiguredBanner(
                     unconfigured.length,
-                    unconfigured.map((p) => p.name).join('・'),
+                    unconfigured.map((p) => p.displayName(l10n)).join('・'),
                   ),
                   style: TextStyle(
                     color: ThemeService.activeColorScheme.error,
@@ -1215,6 +1258,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
 
   Widget _partListBody() {
     final l10n = AppLocalizations.of(context)!;
+    final query = _partSearchQuery.toLowerCase();
+    final filteredParts = query.isEmpty
+        ? _preset.parts
+        : _preset.parts
+              .where((p) => p.displayName(l10n).toLowerCase().contains(query))
+              .toList();
     return _preset.parts.isEmpty
         ? Center(
             child: Text(
@@ -1230,8 +1279,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         : _partSearchQuery.isNotEmpty
         ? ListView.builder(
             padding: const EdgeInsets.only(bottom: 80),
-            itemCount: _filteredParts.length,
-            itemBuilder: (context, index) => _partTile(_filteredParts[index]),
+            itemCount: filteredParts.length,
+            itemBuilder: (context, index) => _partTile(filteredParts[index]),
           )
         : ReorderableListView.builder(
             padding: const EdgeInsets.only(bottom: 80),
@@ -1323,7 +1372,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         text: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(part.name),
+            Text(part.displayName(l10n)),
             if (!isConfigured)
               Text(
                 l10n.autofillPartToneUnselected,
@@ -1359,10 +1408,10 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 final usage = _partUsageWarning(context, [part]);
                 final message = usage == null
                     ? null
-                    : '${l10n.confirmDeleteNamedBody(part.name)}\n\n$usage';
+                    : '${l10n.confirmDeleteNamedBody(part.displayName(l10n))}\n\n$usage';
                 if (!await confirmDelete(
                       context,
-                      itemName: part.name,
+                      itemName: part.displayName(l10n),
                       message: message,
                     ) ||
                     !mounted) {
@@ -1401,20 +1450,23 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         title: part == null
             ? l10n.autofillPartAddDialogTitle
             : l10n.autofillPartRenameDialogTitle,
-        initialName: part?.name ?? '',
+        initialName: part?.displayName(l10n) ?? '',
         labelText: l10n.autofillPartNameLabel,
         cancelLabel: l10n.commonCancel,
         confirmLabel: part == null
             ? l10n.autofillPartAddButton
             : l10n.commonChange,
         onSubmit: (name) async {
-          final uniqueName = uniqueNumberedName(
-            name,
-            _preset.parts.where((p) => p.id != part?.id).map((p) => p.name),
-          );
+          if (name == part?.displayName(l10n)) return;
+          final uniqueName = uniqueNumberedName(name, [
+            for (final p in _preset.parts)
+              if (p.id != part?.id) ...[p.name, p.displayName(l10n)],
+          ]);
           final parts = [
             for (final item in _preset.parts)
-              item.id == part?.id ? item.copyWith(name: uniqueName) : item,
+              item.id == part?.id
+                  ? item.copyWith(name: uniqueName, nameCustomized: true)
+                  : item,
             if (part == null)
               AutofillPart(
                 id: 'part_${DateTime.now().microsecondsSinceEpoch}',
@@ -1452,11 +1504,16 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) {
-          final tones = context.watch<ToneService>().tones;
+          final toneService = ctx.watch<ToneService>();
+          final selectedTone = toneService.tones
+              .where((tone) => tone.id == current.toneId)
+              .firstOrNull;
           final lineColorModeLabels = _lineColorModeLabels(l10n);
           final blendModeLabels = _blendModeLabels(l10n);
           return AlertDialog(
-            title: Text(l10n.autofillPartDetailDialogTitle(part.name)),
+            title: Text(
+              l10n.autofillPartDetailDialogTitle(part.displayName(l10n)),
+            ),
             content: SizedBox(
               width: 340,
               child: SingleChildScrollView(
@@ -1924,19 +1981,21 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: TonePreviewThumb(
-                          tone: tones
-                              .where((t) => t.id == current.toneId)
-                              .firstOrNull,
+                          tone: selectedTone,
                           color: Color(current.color),
                           size: 32,
                           shape: BoxShape.rectangle,
                         ),
                         title: Text(
-                          tones
-                                  .where((t) => t.id == current.toneId)
-                                  .firstOrNull
-                                  ?.name ??
-                              l10n.autofillPartToneUnselected,
+                          selectedTone == null
+                              ? l10n.autofillPartToneUnselected
+                              : creativePresetLabel(
+                                  l10n,
+                                  selectedTone.name,
+                                  builtIn: toneService.isBuiltIn(
+                                    selectedTone.id,
+                                  ),
+                                ),
                           style: const TextStyle(fontSize: 13),
                         ),
                         trailing: const Icon(Icons.chevron_right, size: 18),
@@ -1990,9 +2049,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 child: Text(l10n.commonCancel),
               ),
               FilledButton(
-                onPressed:
-                    current.useTone &&
-                        !tones.any((tone) => tone.id == current.toneId)
+                onPressed: current.useTone && selectedTone == null
                     ? null
                     : () {
                         final parts = _preset.parts
@@ -2096,7 +2153,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      tone.name,
+                                      creativePresetLabel(
+                                        l10n,
+                                        tone.name,
+                                        builtIn: toneService.isBuiltIn(tone.id),
+                                      ),
                                       style: localizedHeadingStyle(
                                         context,
                                         const TextStyle(fontSize: 10),
@@ -2175,7 +2236,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               setStopAt(i, isOutCenter ? 1 - t : t);
 
           return AlertDialog(
-            title: Text(l10n.autofillPartGradientDialogTitle(part.name)),
+            title: Text(
+              l10n.autofillPartGradientDialogTitle(part.displayName(l10n)),
+            ),
             content: SizedBox(
               width: 320,
               child: SingleChildScrollView(

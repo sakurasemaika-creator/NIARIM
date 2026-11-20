@@ -3886,6 +3886,58 @@ class AppLocalizationsKo extends AppLocalizations {
   String get autofillGradientTypeRadialOutCenter => '방사형: 바깥쪽→중앙';
 
   @override
+  String get autofillSampleGray => '회색 밑칠';
+
+  @override
+  String get autofillSampleLead => '주인공';
+
+  @override
+  String get autofillSampleHeroine => '여주인공';
+
+  @override
+  String get autofillSamplePartUnderpaint => '밑칠';
+
+  @override
+  String get autofillSamplePartHair => '머리카락';
+
+  @override
+  String get autofillSamplePartSkin => '피부';
+
+  @override
+  String get autofillSamplePartTop => '상의';
+
+  @override
+  String get autofillSamplePartBottom => '하의';
+
+  @override
+  String get autofillSamplePartShoes => '신발';
+
+  @override
+  String get autofillSamplePartRibbon => '리본';
+
+  @override
+  String get autofillSamplePartEyeWhite => '눈 흰자';
+
+  @override
+  String get autofillSamplePartPupil => '동공';
+
+  @override
+  String get autofillSamplePartIris => '홍채';
+
+  @override
+  String get autofillSamplePartCatchlight => '눈 하이라이트';
+
+  @override
+  String autofillSamplePartShadow(String part, int number) {
+    return '$part 그림자 $number';
+  }
+
+  @override
+  String autofillSamplePartHighlight(String part) {
+    return '$part 하이라이트';
+  }
+
+  @override
   String get autofillPresetScreenTitle => '자동 채색 설정';
 
   @override

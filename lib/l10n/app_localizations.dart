@@ -7119,6 +7119,102 @@ abstract class AppLocalizations {
   /// **'放射：外側→中央'**
   String get autofillGradientTypeRadialOutCenter;
 
+  /// No description provided for @autofillSampleGray.
+  ///
+  /// In ja, this message translates to:
+  /// **'グレー単色の下塗り'**
+  String get autofillSampleGray;
+
+  /// No description provided for @autofillSampleLead.
+  ///
+  /// In ja, this message translates to:
+  /// **'主人公'**
+  String get autofillSampleLead;
+
+  /// No description provided for @autofillSampleHeroine.
+  ///
+  /// In ja, this message translates to:
+  /// **'ヒロイン'**
+  String get autofillSampleHeroine;
+
+  /// No description provided for @autofillSamplePartUnderpaint.
+  ///
+  /// In ja, this message translates to:
+  /// **'下塗り'**
+  String get autofillSamplePartUnderpaint;
+
+  /// No description provided for @autofillSamplePartHair.
+  ///
+  /// In ja, this message translates to:
+  /// **'髪'**
+  String get autofillSamplePartHair;
+
+  /// No description provided for @autofillSamplePartSkin.
+  ///
+  /// In ja, this message translates to:
+  /// **'肌'**
+  String get autofillSamplePartSkin;
+
+  /// No description provided for @autofillSamplePartTop.
+  ///
+  /// In ja, this message translates to:
+  /// **'トップス'**
+  String get autofillSamplePartTop;
+
+  /// No description provided for @autofillSamplePartBottom.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボトムス'**
+  String get autofillSamplePartBottom;
+
+  /// No description provided for @autofillSamplePartShoes.
+  ///
+  /// In ja, this message translates to:
+  /// **'シューズ'**
+  String get autofillSamplePartShoes;
+
+  /// No description provided for @autofillSamplePartRibbon.
+  ///
+  /// In ja, this message translates to:
+  /// **'リボン'**
+  String get autofillSamplePartRibbon;
+
+  /// No description provided for @autofillSamplePartEyeWhite.
+  ///
+  /// In ja, this message translates to:
+  /// **'白目'**
+  String get autofillSamplePartEyeWhite;
+
+  /// No description provided for @autofillSamplePartPupil.
+  ///
+  /// In ja, this message translates to:
+  /// **'瞳孔'**
+  String get autofillSamplePartPupil;
+
+  /// No description provided for @autofillSamplePartIris.
+  ///
+  /// In ja, this message translates to:
+  /// **'瞳'**
+  String get autofillSamplePartIris;
+
+  /// No description provided for @autofillSamplePartCatchlight.
+  ///
+  /// In ja, this message translates to:
+  /// **'瞳キャッチライト'**
+  String get autofillSamplePartCatchlight;
+
+  /// No description provided for @autofillSamplePartShadow.
+  ///
+  /// In ja, this message translates to:
+  /// **'{part}{number}影'**
+  String autofillSamplePartShadow(String part, int number);
+
+  /// No description provided for @autofillSamplePartHighlight.
+  ///
+  /// In ja, this message translates to:
+  /// **'{part}ハイライト'**
+  String autofillSamplePartHighlight(String part);
+
   /// No description provided for @autofillPresetScreenTitle.
   ///
   /// In ja, this message translates to:

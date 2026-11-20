@@ -14,6 +14,7 @@ import '../../../engine/layer_keyframe_engine.dart';
 import '../../../engine/tile_manager.dart' show frameLayerKey;
 import '../../../engine/undo_manager.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../l10n/autofill_names.dart';
 import '../../../l10n/creative_preset_labels.dart';
 import '../../../models/layer.dart' as model;
 import '../../../models/layer_keyframe.dart';
@@ -2736,7 +2737,7 @@ class _LayerPanelState extends State<LayerPanel> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                         child: Text(
-                          preset.name,
+                          preset.displayName(l10n),
                           style: localizedHeadingStyle(
                             context,
                             const TextStyle(fontWeight: FontWeight.bold),
@@ -2759,7 +2760,7 @@ class _LayerPanelState extends State<LayerPanel> {
                               ),
                             ),
                           ),
-                          title: Text(part.name),
+                          title: Text(part.displayName(l10n)),
                           selected: lineartLayer.partId == part.id,
                           onTap: () {
                             context.read<ProjectService>().assignAutofillPart(

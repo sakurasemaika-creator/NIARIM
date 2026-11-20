@@ -30,7 +30,11 @@ void main() {
 
   final l10n = lookupAppLocalizations(const Locale('en'));
 
-  Future<BuildContext> open(WidgetTester tester, {ThemeData? theme}) async {
+  Future<BuildContext> open(
+    WidgetTester tester, {
+    ThemeData? theme,
+    ValueNotifier<Locale>? locale,
+  }) async {
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
@@ -40,15 +44,21 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     final providers = (await tester.runAsync(buildAppProviders))!;
+    final language = locale ?? ValueNotifier(const Locale('en'));
+    addTearDown(language.dispose);
     await tester.pumpWidget(
       MultiProvider(
         providers: providers,
-        child: MaterialApp(
-          theme: theme,
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const AutofillPresetScreen(),
+        child: ValueListenableBuilder<Locale>(
+          valueListenable: language,
+          builder: (context, value, child) => MaterialApp(
+            theme: theme,
+            locale: value,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: child,
+          ),
+          child: const AutofillPresetScreen(),
         ),
       ),
     );
@@ -72,6 +82,27 @@ void main() {
     await tester.tap(find.text(action).hitTestable());
     await tester.pumpAndSettle();
   }
+
+  testWidgets('language changes translate only shipped preset names', (
+    tester,
+  ) async {
+    final locale = ValueNotifier(const Locale('en'));
+    await open(tester, locale: locale);
+    expect(find.text(l10n.autofillSampleGray), findsOneWidget);
+    await presetMenu(tester, l10n.autofillSampleLead, l10n.commonRename);
+    await tester.enterText(find.byType(TextField), '主人公');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    locale.value = const Locale('fr');
+    await tester.pumpAndSettle();
+    final french = lookupAppLocalizations(locale.value);
+    expect(find.text(french.autofillSampleGray), findsOneWidget);
+    expect(find.text(l10n.autofillSampleGray), findsNothing);
+    expect(find.text(french.autofillSampleLead), findsNothing);
+    expect(find.text('主人公'), findsOneWidget);
+    expect(find.text(preset.name), findsOneWidget);
+  });
 
   test(
     'legacy duplicate part IDs are separated while the first lookup is preserved',

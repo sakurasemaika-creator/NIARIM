@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../l10n/autofill_names.dart';
 import '../models/autofill_preset.dart';
 import '../config/font_fallback.dart';
 import 'action_beside_or_below.dart';
@@ -154,7 +155,7 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
                             final preset = allPresets[i];
                             return CheckboxListTile(
                               value: selected.contains(preset.id),
-                              title: Text(preset.name),
+                              title: Text(preset.displayName(l10n)),
                               subtitle: Text(
                                 l10n.autofillPresetSelectionPartCount(
                                   preset.parts.length,

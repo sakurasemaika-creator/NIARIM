@@ -192,6 +192,22 @@ class AutofillPresetService extends ChangeNotifier {
     ),
   ];
 
+  static final _samplesById = {
+    for (final preset in _defaultPresets()) preset.id: preset,
+  };
+  static final _samplePartsById = {
+    for (final preset in _samplesById.values)
+      for (final part in preset.parts) part.id: part,
+  };
+
+  // Older saves do not record who named an item. The shipped ID and name
+  // together identify untouched default labels.
+  static bool hasDefaultPresetName(AutofillPreset preset) =>
+      !preset.nameCustomized && _samplesById[preset.id]?.name == preset.name;
+
+  static bool hasDefaultPartName(AutofillPart part) =>
+      !part.nameCustomized && _samplePartsById[part.id]?.name == part.name;
+
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey);
@@ -232,14 +248,24 @@ class AutofillPresetService extends ChangeNotifier {
   /// パーツ数がそれより多い場合は既にユーザーが手を加えたとみなし触らない。
   bool _upgradeSampleContent() {
     var changed = false;
-    final defaults = {for (final p in _defaultPresets()) p.id: p};
     for (int i = 0; i < _presets.length; i++) {
       final preset = _presets[i];
-      final fresh = defaults[preset.id];
+      final fresh = _samplesById[preset.id];
       if (fresh == null) continue;
       if (preset.parts.length <= 7 &&
-          preset.parts.length < fresh.parts.length) {
-        _presets[i] = preset.copyWith(parts: fresh.parts);
+          preset.parts.length < fresh.parts.length &&
+          hasDefaultPresetName(preset)) {
+        // Keep saved parts when filling out early samples, including any
+        // user-supplied names or settings on an existing part.
+        final existing = {for (final part in preset.parts) part.id: part};
+        final defaults = {for (final part in fresh.parts) part.id};
+        _presets[i] = preset.copyWith(
+          parts: [
+            for (final part in fresh.parts) existing[part.id] ?? part,
+            for (final part in preset.parts)
+              if (!defaults.contains(part.id)) part,
+          ],
+        );
         changed = true;
       }
     }
@@ -379,6 +405,7 @@ class AutofillPresetService extends ChangeNotifier {
     ];
     final tones = await TransferCopyRecord.read(TransferCopyRecord.tones);
     Object? contentOf(AutofillPreset p) => [
+      p.nameCustomized,
       for (final part in p.parts)
         part.toJson()
           ..remove('id')

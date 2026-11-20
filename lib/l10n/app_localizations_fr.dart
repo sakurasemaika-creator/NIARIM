@@ -4100,6 +4100,58 @@ class AppLocalizationsFr extends AppLocalizations {
       'Radial : extérieur → centre';
 
   @override
+  String get autofillSampleGray => 'Sous-couche grise';
+
+  @override
+  String get autofillSampleLead => 'Personnage principal';
+
+  @override
+  String get autofillSampleHeroine => 'Héroïne';
+
+  @override
+  String get autofillSamplePartUnderpaint => 'Sous-couche';
+
+  @override
+  String get autofillSamplePartHair => 'Cheveux';
+
+  @override
+  String get autofillSamplePartSkin => 'Peau';
+
+  @override
+  String get autofillSamplePartTop => 'Haut';
+
+  @override
+  String get autofillSamplePartBottom => 'Bas';
+
+  @override
+  String get autofillSamplePartShoes => 'Chaussures';
+
+  @override
+  String get autofillSamplePartRibbon => 'Ruban';
+
+  @override
+  String get autofillSamplePartEyeWhite => 'Blanc de l’œil';
+
+  @override
+  String get autofillSamplePartPupil => 'Pupille';
+
+  @override
+  String get autofillSamplePartIris => 'Iris';
+
+  @override
+  String get autofillSamplePartCatchlight => 'Reflet de l’œil';
+
+  @override
+  String autofillSamplePartShadow(String part, int number) {
+    return '$part – ombre $number';
+  }
+
+  @override
+  String autofillSamplePartHighlight(String part) {
+    return '$part – reflet';
+  }
+
+  @override
   String get autofillPresetScreenTitle => 'Réglages de remplissage auto';
 
   @override

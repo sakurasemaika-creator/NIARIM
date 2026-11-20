@@ -4,6 +4,7 @@ import 'layer.dart' show LayerBlendMode;
 class AutofillPreset {
   final String id;
   final String name;
+  final bool nameCustomized;
   final String? thumbnailPath;
   final List<AutofillPart> parts;
   final bool isFavorite;
@@ -11,6 +12,7 @@ class AutofillPreset {
   const AutofillPreset({
     required this.id,
     required this.name,
+    this.nameCustomized = false,
     this.thumbnailPath,
     this.parts = const [],
     this.isFavorite = false,
@@ -22,6 +24,7 @@ class AutofillPreset {
   AutofillPreset copyWith({
     String? id,
     String? name,
+    bool? nameCustomized,
     Object? thumbnailPath = _sentinel,
     List<AutofillPart>? parts,
     bool? isFavorite,
@@ -29,6 +32,9 @@ class AutofillPreset {
     return AutofillPreset(
       id: id ?? this.id,
       name: name ?? this.name,
+      nameCustomized:
+          nameCustomized ??
+          (this.nameCustomized || (name != null && name != this.name)),
       thumbnailPath: thumbnailPath == _sentinel
           ? this.thumbnailPath
           : thumbnailPath as String?,
@@ -55,6 +61,7 @@ class AutofillPreset {
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
+    if (nameCustomized) 'nameCustomized': true,
     'thumbnailPath': thumbnailPath,
     'parts': parts.map((p) => p.toJson()).toList(),
     'isFavorite': isFavorite,
@@ -63,6 +70,7 @@ class AutofillPreset {
   factory AutofillPreset.fromJson(Map<String, dynamic> j) => AutofillPreset(
     id: j['id'] as String,
     name: j['name'] as String,
+    nameCustomized: j['nameCustomized'] == true,
     thumbnailPath: j['thumbnailPath'] as String?,
     parts: (j['parts'] as List<dynamic>? ?? const [])
         .map((e) => AutofillPart.fromJson(e as Map<String, dynamic>))
@@ -81,6 +89,7 @@ enum AutofillLineColorMode {
 class AutofillPart {
   final String id;
   final String name;
+  final bool nameCustomized;
   // ARGB int値（例: 0xFFFF0000 = 赤）。gradientが設定されている場合は
   // グラデーションが優先され、colorは使用されない。
   final int color;
@@ -129,6 +138,7 @@ class AutofillPart {
   const AutofillPart({
     required this.id,
     required this.name,
+    this.nameCustomized = false,
     required this.color,
     this.gradient,
     this.opacity = 100,
@@ -157,6 +167,7 @@ class AutofillPart {
   AutofillPart copyWith({
     String? id,
     String? name,
+    bool? nameCustomized,
     int? color,
     Object? gradient = _sentinel,
     int? opacity,
@@ -178,6 +189,9 @@ class AutofillPart {
     return AutofillPart(
       id: id ?? this.id,
       name: name ?? this.name,
+      nameCustomized:
+          nameCustomized ??
+          (this.nameCustomized || (name != null && name != this.name)),
       color: color ?? this.color,
       gradient: identical(gradient, _sentinel)
           ? this.gradient
@@ -208,6 +222,7 @@ class AutofillPart {
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
+    if (nameCustomized) 'nameCustomized': true,
     'color': color,
     'gradient': gradient?.toJson(),
     'opacity': opacity,
@@ -230,6 +245,7 @@ class AutofillPart {
   factory AutofillPart.fromJson(Map<String, dynamic> j) => AutofillPart(
     id: j['id'] as String,
     name: j['name'] as String,
+    nameCustomized: j['nameCustomized'] == true,
     color: j['color'] as int,
     gradient: j['gradient'] == null
         ? null

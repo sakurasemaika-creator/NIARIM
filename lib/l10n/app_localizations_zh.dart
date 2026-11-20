@@ -3834,6 +3834,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autofillGradientTypeRadialOutCenter => '放射：外侧→中央';
 
   @override
+  String get autofillSampleGray => '灰色底色';
+
+  @override
+  String get autofillSampleLead => '主角';
+
+  @override
+  String get autofillSampleHeroine => '女主角';
+
+  @override
+  String get autofillSamplePartUnderpaint => '底色';
+
+  @override
+  String get autofillSamplePartHair => '头发';
+
+  @override
+  String get autofillSamplePartSkin => '皮肤';
+
+  @override
+  String get autofillSamplePartTop => '上衣';
+
+  @override
+  String get autofillSamplePartBottom => '下装';
+
+  @override
+  String get autofillSamplePartShoes => '鞋子';
+
+  @override
+  String get autofillSamplePartRibbon => '丝带';
+
+  @override
+  String get autofillSamplePartEyeWhite => '眼白';
+
+  @override
+  String get autofillSamplePartPupil => '瞳孔';
+
+  @override
+  String get autofillSamplePartIris => '虹膜';
+
+  @override
+  String get autofillSamplePartCatchlight => '眼睛高光';
+
+  @override
+  String autofillSamplePartShadow(String part, int number) {
+    return '$part阴影$number';
+  }
+
+  @override
+  String autofillSamplePartHighlight(String part) {
+    return '$part高光';
+  }
+
+  @override
   String get autofillPresetScreenTitle => '自动上色设置';
 
   @override
@@ -14202,6 +14254,58 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get autofillGradientTypeRadialOutCenter => '放射：外側→中央';
+
+  @override
+  String get autofillSampleGray => '灰色底色';
+
+  @override
+  String get autofillSampleLead => '主角';
+
+  @override
+  String get autofillSampleHeroine => '女主角';
+
+  @override
+  String get autofillSamplePartUnderpaint => '底色';
+
+  @override
+  String get autofillSamplePartHair => '頭髮';
+
+  @override
+  String get autofillSamplePartSkin => '皮膚';
+
+  @override
+  String get autofillSamplePartTop => '上衣';
+
+  @override
+  String get autofillSamplePartBottom => '下裝';
+
+  @override
+  String get autofillSamplePartShoes => '鞋子';
+
+  @override
+  String get autofillSamplePartRibbon => '絲帶';
+
+  @override
+  String get autofillSamplePartEyeWhite => '眼白';
+
+  @override
+  String get autofillSamplePartPupil => '瞳孔';
+
+  @override
+  String get autofillSamplePartIris => '虹膜';
+
+  @override
+  String get autofillSamplePartCatchlight => '眼睛高光';
+
+  @override
+  String autofillSamplePartShadow(String part, int number) {
+    return '$part陰影$number';
+  }
+
+  @override
+  String autofillSamplePartHighlight(String part) {
+    return '$part高光';
+  }
 
   @override
   String get autofillPresetScreenTitle => '自動上色設定';
