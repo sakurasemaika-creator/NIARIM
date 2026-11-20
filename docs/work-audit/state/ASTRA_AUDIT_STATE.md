@@ -3593,3 +3593,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`community_post_publish_contract_test`・`community_post_recovery_contract_test`・`community_pending_deleted_recovery_contract_test`・`youtube_thumbnail_service_test`・`community_post_copy_button_test`・`community_post_upload_cancel_test`・`community_shorts_youtube_playback_test`・`home_bookmark_youtube_playback_test`・`community_filter_surfaces_test`・`exported_work_thumbnail_choice_test`・`project_thumbnail_choice_test`・`community_api_test`・`coin_authenticated_client_contract_test`を`643cc267`で87件成功（Googleの9件はスキップ、上の指定で別に9件成功）。
 - 未確認（実機・実API）：動画の選択（ファイルの選択・取り消し）、実際のアップロードの進み具合・途中の通信断・クォータ超過、YouTube Studioでの申告の表示、YouTubeの公開状態と作品広場の公開の組み合わせ、登録の失敗→再試行、強制終了からの復旧、Googleの同意画面と審査、7言語・文字2倍・360pxの実画面。
 - 画像：`shots-r1/r2a096-*`（backup-pending）。
+
+## A097 — follow通知・push・既読
+
+### A097 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルド）— 判定：OK（一巡目のDISC428〜430は直った。プッシュ通知は実機。既存DISC074の通知の行のアイコンの色は所有者の判断待ちのまま）
+
+- 環境：ja、1280×800、マウス、Google未接続・接続先なし。Linuxにはプッシュ通知（Firebase）が無い。作品広場の上部バーのベルから「通知」を開いた。
+- 一巡目のDISC429は直った：ログインしていないとき、通知の画面は「作品広場の通知を見るには、Googleアカウントでログインしてください。」と「Googleアカウントを連携」だけを出し、「通知はありません」は出さない（`shots-r1/r2a097-01`）。ボタンは「自分の投稿」のアカウントの欄へ移る。読み込みの失敗（理由と「再試行」、その下に端末の節目の知らせ）はコードと`community_secondary_pull_to_refresh_test`で確認。
+- 一巡目のDISC430は直った：通知の設定（「この端末のプッシュ通知」と「作品の投稿・公開通知」の2つ。個別の通知はe88fe320・aa9c8cceで終了）で親を切ると、子のスイッチはオンの位置のまま灰色の押せない見た目になり、押しても変わらない（`r2a097-0607`）。親を戻すと差し色のオンに戻る。`theme_settings_repair_test`の「disabled switches fall back to the disabled colors even when selected」が成功。
+- 一巡目のDISC428は直った：プロフィールの写し（ブラシ41件などの保存あり）で`brush_grouped_presets_v1`・`tone_grouped_presets_v1`・`stamp_grouped_presets_v1`に文字列`"yes"`を入れて起動すると、起動の画面まで普通に出る（起動の失敗の画面は出ない、`r2a097-09`）。読み方は寛容（値は書き換えない）。`startup_failure_recovery_test`（lib配下の全キーに別の型の値・`prefs.getXxx(`が残っていない）が成功。
+- 既存DISC074（所有者の判断待ち）：通知の行の先頭のアイコンは差し色（`community_follow_notifications_screen.dart:270`・`:401`の`scheme.primary`）で、案Aの文字・アイコン色ではない。案Aを使う画面の範囲は所有者の判断待ち（CLAUDE.mdのDISC074の段落）。
+- test：`community_milestone_account_boundary_test`・`community_milestone_store_test`・`community_notice_preferences_test`・`push_notification_service_test`・`startup_failure_recovery_test`・`community_secondary_pull_to_refresh_test`・`community_work_time_date_l10n_test`・`theme_settings_repair_test`を`643cc267`で47件成功。
+- 未確認（実機・実API）：通知の一覧の実データ（0件・多件・ページ送り・取り直し）、通知のタップで開く画面、プッシュ通知の受信・タップ・トークンの登録と更新と失効、Android 13以降の許可の拒否、7言語・文字2倍・360pxの実画面。
+- 画像：`shots-r1/r2a097-*`（backup-pending）。
