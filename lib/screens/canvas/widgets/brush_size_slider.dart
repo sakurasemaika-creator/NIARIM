@@ -53,7 +53,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
       scheme,
     );
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 2),
       color: Colors.transparent,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -70,12 +70,12 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                   Text(
                     '${widget.brushSize.round()}',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 12,
                       color: fgColor,
                       shadows: shadows,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Icon(
                     Icons.opacity,
                     size: 12,
@@ -86,20 +86,24 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                   Text(
                     '${widget.opacity}%',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 12,
                       color: fgColor,
                       shadows: shadows,
                     ),
                   ),
-                  const Spacer(),
-                  Text(
-                    l10n.canvasBrushSliderToggleLabel,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: fgColorVariant,
-                      shadows: variantShadows,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.canvasBrushSliderToggleLabel,
+                      textAlign: TextAlign.end,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: fgColorVariant,
+                        shadows: variantShadows,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 3),
                   Icon(
                     _expanded
                         ? Icons.keyboard_arrow_up

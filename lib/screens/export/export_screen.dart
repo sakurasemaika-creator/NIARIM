@@ -133,7 +133,7 @@ class _ExportScreenState extends State<ExportScreen> {
     return desktopCentered(
       context,
       SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -142,6 +142,7 @@ class _ExportScreenState extends State<ExportScreen> {
               child: Text(
                 l10n.exportPresetSection,
                 style: TextStyle(
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                   fontFamily: headingFontFamilyFor(locale),
                   fontFamilyFallback: headingFontFallbackFor(locale),
@@ -202,55 +203,54 @@ class _ExportScreenState extends State<ExportScreen> {
               child: Text(
                 l10n.exportFormatSection,
                 style: TextStyle(
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                   fontFamily: headingFontFamilyFor(locale),
                   fontFamilyFallback: headingFontFallbackFor(locale),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 9),
             RadioGroup<ExportFormat>(
               groupValue: _format,
               onChanged: (v) => setState(() => _format = v!),
               child: Column(
+                spacing: 7,
                 children: [
                   for (final (format, title, description) in formats)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: RadioListTile<ExportFormat>(
-                        value: format,
-                        selected: _format == format,
-                        selectedTileColor: colors.surfaceContainerHigh,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: _format == format
-                                ? colors.primary
-                                : colors.outlineVariant,
-                          ),
+                    RadioListTile<ExportFormat>(
+                      value: format,
+                      selected: _format == format,
+                      selectedTileColor: colors.surfaceContainerHigh,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: _format == format
+                              ? colors.primary
+                              : colors.outlineVariant,
                         ),
-                        title: Text(
-                          title,
-                          style: TextStyle(
-                            color: colors.onSurface,
-                            fontFamily: headingFontFamilyFor(locale),
-                            fontFamilyFallback: headingFontFallbackFor(locale),
-                          ),
+                      ),
+                      title: Text(
+                        title,
+                        style: TextStyle(
+                          color: colors.onSurface,
+                          fontFamily: headingFontFamilyFor(locale),
+                          fontFamilyFallback: headingFontFallbackFor(locale),
                         ),
-                        subtitle: Text(
-                          description,
-                          style: TextStyle(
-                            color: colors.onSurfaceVariant,
-                            fontFamily: bodyFontFamilyFor(locale),
-                            fontFamilyFallback: bodyFontFallbackFor(locale),
-                          ),
+                      ),
+                      subtitle: Text(
+                        description,
+                        style: TextStyle(
+                          color: colors.onSurfaceVariant,
+                          fontFamily: bodyFontFamilyFor(locale),
+                          fontFamilyFallback: bodyFontFallbackFor(locale),
                         ),
                       ),
                     ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             if (project != null)
               Text(
                 '${project.exportWidth} × ${project.exportHeight} px · ${l10n.pcStatusFps(_fps)}',
@@ -586,10 +586,8 @@ class _ExportScreenState extends State<ExportScreen> {
   Future<void> _showCompleteDialog(String outputPath, int totalFrames) async {
     final destination = await showDialog<ExportDestination>(
       context: context,
-      builder: (_) => ExportCompleteDialog(
-        file: File(outputPath),
-        frames: totalFrames,
-      ),
+      builder: (_) =>
+          ExportCompleteDialog(file: File(outputPath), frames: totalFrames),
     );
     if (!mounted || destination == null) return;
     context.go(switch (destination) {

@@ -237,7 +237,7 @@ class CommunityWorkCard extends StatelessWidget {
                 else
                   AspectRatio(aspectRatio: 16 / 9, child: thumbnail),
                 Padding(
-                  padding: contentPadding,
+                  padding: const EdgeInsets.fromLTRB(6, 3, 6, 0),
                   child: Text(
                     isUnavailable
                         ? CommunityPlazaLabels.of(
@@ -392,7 +392,7 @@ class CommunityWorkOrientation extends StatelessWidget {
         ? l10n.communityShortsBadge
         : l10n.communityLandscapeBadge;
     return Padding(
-      padding: const EdgeInsetsDirectional.only(start: 6, end: 2),
+      padding: const EdgeInsetsDirectional.only(start: 4, end: 1),
       child: Align(
         alignment: AlignmentDirectional.centerStart,
         child: Tooltip(

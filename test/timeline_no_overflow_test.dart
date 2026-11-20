@@ -8,6 +8,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -197,6 +198,31 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
       expectPlaybackPlacement();
       expect(tester.takeException(), isNull, reason: 'width $width');
+    }
+
+    tester.view.physicalSize = const Size(840, 1710);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(tester.takeException(), isNull, reason: '280 logical pixels');
+    expect(find.byIcon(Icons.help_outline).hitTestable(), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('timelineMoreMenu')).hitTestable(),
+      findsOneWidget,
+    );
+
+    // Switch modes on the open editor, as when moving a window to DeX.
+    await tester.tap(find.byIcon(Icons.fast_forward));
+    await tester.pump();
+    final settings = context.read<SettingsService>();
+    for (final (pc, size) in [
+      (true, const Size(1280, 920)),
+      (false, const Size(320, 640)),
+    ]) {
+      tester.view.physicalSize = size * 3;
+      await tester.runAsync(() => settings.setForcePcMode(pc));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(tester.takeException(), isNull, reason: 'PC mode $pc');
+      expect(find.text('2/12'), findsOneWidget, reason: 'PC mode $pc');
     }
   }, timeout: const Timeout(Duration(seconds: 120)));
 }

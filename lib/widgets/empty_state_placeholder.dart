@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../config/font_fallback.dart';
@@ -47,6 +49,8 @@ class EmptyStatePlaceholder extends StatelessWidget {
   /// 画面の下の帯（ジェスチャーの帯・ボタンの帯）の高さ。
   double _floatingButtonsClearance(BuildContext context) =>
       clearFloatingButtons ? 88 + MediaQuery.paddingOf(context).bottom : 0;
+
+  static const double _maxTextWidth = 432;
 
   /// 中央にそろえた文。韓国語は語（空白で区切った単位）の途中で折り返さない
   /// （「프로젝트가 없습니／다」と切れていた）。描く文にだけ語結合子を入れ、
@@ -149,7 +153,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
           text: keepKoreanWordsTogether(text),
           style: base.merge(style),
         )
-        ..layout(maxWidth: maxWidth - 48);
+        ..layout(maxWidth: math.min(_maxTextWidth, math.max(0, maxWidth - 48)));
       return painter.height;
     }
 
@@ -198,7 +202,10 @@ class EmptyStatePlaceholder extends StatelessWidget {
         SizedBox(height: _badgeGap(badge)),
         Semantics(
           header: true,
-          child: _centredText(title, _titleStyle(context, scheme)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _maxTextWidth),
+            child: _centredText(title, _titleStyle(context, scheme)),
+          ),
         ),
         if (actionFirst && action != null) ...[
           const SizedBox(height: 16),
@@ -206,7 +213,10 @@ class EmptyStatePlaceholder extends StatelessWidget {
         ],
         if (hint != null) ...[
           SizedBox(height: actionFirst ? 16 : 8),
-          _centredText(hint!, _hintStyle(scheme)),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _maxTextWidth),
+            child: _centredText(hint!, _hintStyle(scheme)),
+          ),
         ],
         if (!actionFirst && action != null) ...[
           const SizedBox(height: 16),

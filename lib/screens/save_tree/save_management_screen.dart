@@ -634,15 +634,15 @@ class _GameSaveSlotTile extends StatelessWidget {
                   Expanded(
                     child: ActionBesideOrBelow(
                       actionFirst: true,
-                      gap: 14,
-                      spacing: 10,
+                      gap: 12,
+                      spacing: 9,
                       minTextWidth: widestSlotTitleWidth(
                         context,
                         localizedHeadingStyle(context, _slotTitleStyle),
                       ),
                       action: _SlotThumbnail(
                         node: node,
-                        size: 58,
+                        size: 60,
                         listUnread: listUnread,
                       ),
                       text: Column(
@@ -657,7 +657,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                               _slotTitleStyle,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 5),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -715,7 +715,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                                 AppLocalizations.of(context)!.localeName,
                               ),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 13,
                                 color: scheme.onSurfaceVariant,
                               ),
                             ),
@@ -725,7 +725,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                             messageText(
                               l10n.saveTreeNoDataLabel,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 13,
                                 color: scheme.onSurfaceVariant,
                               ),
                             ),
@@ -748,8 +748,8 @@ class _GameSaveSlotTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
+                  horizontal: 13,
+                  vertical: 11,
                 ),
                 child: stacked
                     ? Column(

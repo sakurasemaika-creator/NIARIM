@@ -457,7 +457,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   bool _timelineDragScrolled = false;
 
   double get _timelineOffset =>
-      _frameScrollCtrl.hasClients ? _frameScrollCtrl.offset : 0;
+      _frameScrollCtrl.positions.singleOrNull?.pixels ?? 0;
 
   void _startTimelineDrag(double globalX) {
     _stopTimelineDrag(snap: false);
@@ -605,8 +605,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
     // Seeking updates the preview immediately, so move the rows in the same
     // frame. Defer only when the list hasn't finished layout.
-    if (_frameScrollCtrl.hasClients &&
-        _frameScrollCtrl.position.hasContentDimensions &&
+    if ((_frameScrollCtrl.positions.singleOrNull?.hasContentDimensions ??
+            false) &&
         WidgetsBinding.instance.schedulerPhase !=
             SchedulerPhase.persistentCallbacks) {
       _centerFrameInList();
@@ -618,13 +618,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _centerFrameInList() {
-    if (!_frameScrollCtrl.hasClients ||
-        !_frameScrollCtrl.position.hasContentDimensions) {
-      return;
-    }
+    final position = _frameScrollCtrl.positions.singleOrNull;
+    if (position == null || !position.hasContentDimensions) return;
     final target = (_currentFrame * _cellW).clamp(
       0.0,
-      _frameScrollCtrl.position.maxScrollExtent,
+      position.maxScrollExtent,
     );
     if (target != _timelineOffset) _jumpTimelineTo(target);
   }
@@ -729,16 +727,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   void _syncFrom(ScrollController source, {bool updatePlayhead = true}) {
     if (_syncingScroll) return;
-    if (!source.hasClients) return;
+    // The old and new workspace can briefly share controllers while the
+    // viewport switches between phone and PC layouts.
+    final sourcePosition = source.positions.singleOrNull;
+    if (sourcePosition == null) return;
     _syncingScroll = true;
-    final offset = source.offset;
+    final offset = sourcePosition.pixels;
     for (final ctrl in _trackScrollCtrls) {
-      if (ctrl != source &&
-          ctrl.hasClients &&
-          ctrl.position.hasContentDimensions) {
-        final target = offset.clamp(0.0, ctrl.position.maxScrollExtent);
-        if (target != ctrl.offset) ctrl.jumpTo(target);
-      }
+      if (ctrl == source) continue;
+      final position = ctrl.positions.singleOrNull;
+      if (position == null || !position.hasContentDimensions) continue;
+      final target = offset.clamp(0.0, position.maxScrollExtent);
+      if (target != position.pixels) position.jumpTo(target);
     }
     _syncingScroll = false;
     if (updatePlayhead && !_jumpingTimeline && _frameScrollCtrl.hasClients) {
@@ -2487,63 +2487,83 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ?.name ??
         l10n.timelineDefaultProjectName;
     final undoManager = context.watch<UndoManager>();
+    final backToCanvas = IconButton(
+      icon: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.arrow_back),
+          Icon(Icons.palette_outlined, size: 18),
+        ],
+      ),
+      tooltip: l10n.timelineBackToCanvasTooltip,
+      onPressed: _saveAndGoToCanvas,
+    );
+    final title = Text(
+      projectName,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: localizedHeadingStyle(
+        context,
+        const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+      ),
+    );
+    final home = IconButton(
+      icon: const Icon(Icons.home_outlined),
+      tooltip: l10n.timelineBackToProjectListTooltip,
+      onPressed: _confirmBackToProjectList,
+    );
+    final actions = <Widget>[
+      IconButton(
+        icon: const Icon(Icons.undo),
+        tooltip: l10n.commonUndo,
+        onPressed: undoManager.canUndo
+            ? () => _applyHistory(redo: false)
+            : null,
+      ),
+      IconButton(
+        icon: const Icon(Icons.redo),
+        tooltip: l10n.commonRedo,
+        onPressed: undoManager.canRedo ? () => _applyHistory(redo: true) : null,
+      ),
+      // 三点メニュー（保存ボタン・プロジェクト保存ボタンはセーブツリー
+      // （設定によってはセーブスロット）と役割が被っていた
+      // ため削除し、セーブツリー/スロット・自動塗り実行・書き出しの
+      // 3項目のみに整理した）。
+      _moreMenu(l10n),
+      const HelpButton(topic: 'タイムライン'),
+    ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Row(
-        children: [
-          // キャンバスモードへ戻るボタン：矢印＋パレットアイコンの組み合わせで
-          // 「戻る」と「戻り先はキャンバス（描画）モード」の両方を一目で
-          // 表せるようにする。プロジェクト名の直前（左側）に置く。
-          IconButton(
-            icon: const Row(
-              mainAxisSize: MainAxisSize.min,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // The back button has two glyphs. Give the project name a full row
+          // whenever the controls themselves take up the available width.
+          if (constraints.maxWidth < 304) {
+            return Column(
               children: [
-                Icon(Icons.arrow_back),
-                Icon(Icons.palette_outlined, size: 18),
+                Row(
+                  children: [
+                    backToCanvas,
+                    Expanded(child: title),
+                    home,
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: actions,
+                ),
               ],
-            ),
-            tooltip: l10n.timelineBackToCanvasTooltip,
-            onPressed: _saveAndGoToCanvas,
-          ),
-          Expanded(
-            child: Text(
-              projectName,
-              overflow: TextOverflow.ellipsis,
-              style: localizedHeadingStyle(
-                context,
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-            ),
-          ),
-          // プロジェクト一覧へ戻るボタン。上記のキャンバスへ戻るボタンと
-          // 位置を入れ替え、家アイコンにしてプロジェクト一覧＝ホームである
-          // ことをわかりやすくしている。
-          IconButton(
-            icon: const Icon(Icons.home_outlined),
-            tooltip: l10n.timelineBackToProjectListTooltip,
-            onPressed: _confirmBackToProjectList,
-          ),
-          IconButton(
-            icon: const Icon(Icons.undo),
-            tooltip: l10n.commonUndo,
-            onPressed: undoManager.canUndo
-                ? () => _applyHistory(redo: false)
-                : null,
-          ),
-          IconButton(
-            icon: const Icon(Icons.redo),
-            tooltip: l10n.commonRedo,
-            onPressed: undoManager.canRedo
-                ? () => _applyHistory(redo: true)
-                : null,
-          ),
-          // 三点メニュー（保存ボタン・プロジェクト保存ボタンはセーブツリー
-          // （設定によってはセーブスロット）と役割が被っていた
-          // ため削除し、セーブツリー/スロット・自動塗り実行・書き出しの
-          // 3項目のみに整理した）。
-          _moreMenu(l10n),
-          const HelpButton(topic: 'タイムライン'),
-        ],
+            );
+          }
+          return Row(
+            children: [
+              backToCanvas,
+              Expanded(child: title),
+              home,
+              ...actions,
+            ],
+          );
+        },
       ),
     );
   }
@@ -2608,7 +2628,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// プレビュー欄の操作（フレーム数・全画面）の大きさと、欄の端からの距離。
   static const double _previewControlSize = 48;
-  static const double _previewControlInset = 0;
+  static const double _previewControlInset = 8;
 
   /// プロジェクトの縦横比（書き出しの大きさ。分からなければ16:9）。
   double _previewAspect(ProjectService ps) {
@@ -2872,7 +2892,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final projectFps = project?.fps ?? 24;
     final fps = projectFps > 0 ? projectFps : 24;
     final timeColor = Theme.of(context).colorScheme.onSurfaceVariant;
-    final timeStyle = TextStyle(fontSize: 11, color: timeColor);
+    final timeStyle = TextStyle(fontSize: 12, color: timeColor);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),

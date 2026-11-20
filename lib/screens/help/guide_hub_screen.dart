@@ -23,17 +23,26 @@ class GuideHubScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final tabs = TabBar(
+      tabs: [
+        Tab(text: l10n.tipsScreenTitle),
+        Tab(text: l10n.helpScreenTitle),
+      ],
+    );
     return DefaultTabController(
       length: 2,
       initialIndex: initialTab,
       child: Scaffold(
         appBar: AppBar(
           title: FitOrHideTitle(guideHubTitle(context)),
-          bottom: TabBar(
-            tabs: [
-              Tab(text: l10n.tipsScreenTitle),
-              Tab(text: l10n.helpScreenTitle),
-            ],
+          bottom: PreferredSize(
+            preferredSize: tabs.preferredSize,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: tabs,
+              ),
+            ),
           ),
         ),
         body: TabBarView(

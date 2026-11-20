@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/responsive.dart';
 import '../../widgets/menu_card.dart';
 
 /// 利用規約・ライセンス画面。
@@ -108,8 +109,10 @@ class LicenseScreen extends StatelessWidget {
       // 規約・ライセンス本文自体が説明そのものであり、対応する専用の
       // ヘルプ項目が存在しないため、ヘルプアイコンは表示しない。
       appBar: AppBar(title: FitOrHideTitle(l10n.licenseScreenTitle)),
-      body: SafeArea(
-        child: ListView(
+      body: desktopCentered(
+        context,
+        maxWidth: 680,
+        ListView(
           padding: const EdgeInsets.all(16),
           children: [
             _SectionTitle(l10n.licenseSectionTerms),

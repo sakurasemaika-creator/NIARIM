@@ -364,7 +364,13 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
   Widget _buildPlayerSurface(BuildContext context) {
     if (!CommunityYoutubePlayer.isValidVideoId(widget.videoId)) {
       return Center(
-        child: Text(AppLocalizations.of(context)!.communityPlayerNotLinked),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Text(
+            AppLocalizations.of(context)!.communityPlayerNotLinked,
+            textAlign: TextAlign.center,
+          ),
+        ),
       );
     }
     final debugBuilder = CommunityYoutubePlayer.debugPlayerBuilder;

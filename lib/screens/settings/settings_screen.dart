@@ -332,7 +332,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               )
             : ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 children: [
                   for (final e in filtered)
                     _item(e.icon, e.title, e.subtitle, e.onTap, e.accent),
@@ -392,8 +392,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     VoidCallback onTap,
     Color accent,
   ) {
+    final textScale = MediaQuery.textScalerOf(context).scale(15) / 15;
+    final showBadge =
+        (MediaQuery.sizeOf(context).width - 32) / textScale >= 160;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Material(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),
@@ -405,32 +408,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
             child: Row(
               children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        accent.withValues(alpha: 0.22),
-                        accent.withValues(alpha: 0.1),
-                      ],
+                if (showBadge) ...[
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          accent.withValues(alpha: 0.22),
+                          accent.withValues(alpha: 0.1),
+                        ],
+                      ),
+                    ),
+                    // 淡い下地は差し色、アイコンは背景の上の差し色＝アクセントの
+                    // 文字・アイコン色（明るい差し色でも読めるように）。
+                    child: Icon(
+                      icon,
+                      color: AccentTextTheme.of(context),
+                      size: 21,
                     ),
                   ),
-                  // 淡い下地は差し色、アイコンは背景の上の差し色＝アクセントの
-                  // 文字・アイコン色（明るい差し色でも読めるように）。
-                  child: Icon(
-                    icon,
-                    color: AccentTextTheme.of(context),
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 14),
+                  const SizedBox(width: 11),
+                ],
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -441,23 +446,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           context,
                           const TextStyle(
                             fontWeight: FontWeight.w700,
-                            fontSize: 14,
+                            fontSize: 15,
+                            height: 1.3,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         subtitle,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 13,
+                          height: 1.35,
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 Icon(
                   Icons.chevron_right,
+                  size: 20,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ],

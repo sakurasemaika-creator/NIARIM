@@ -375,7 +375,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       body: desktopCentered(
         context,
         SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -386,7 +386,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               SizedBox(height: 48, child: _buildSeekBar(flat)),
               // メディアプレイヤー風：中央の再生ボタンをテーマカラーの円で強調する
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 6),
+                padding: const EdgeInsets.symmetric(vertical: 5),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(28),
@@ -468,7 +468,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               if (project.tags.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 8),
+                  padding: const EdgeInsets.only(bottom: 9),
                   child: Text(
                     l10n.projectDetailTagsQuickAction,
                     style: localizedHeadingStyle(
@@ -496,13 +496,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ],
               const SizedBox(height: 24),
               Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 8),
+                padding: const EdgeInsets.only(bottom: 9),
                 child: Text(
                   l10n.projectDetailInfoSectionTitle,
                   style: localizedHeadingStyle(
                     context,
                     TextStyle(
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -510,6 +510,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 ),
               ),
               MenuCard(
+                margin: EdgeInsets.zero,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(

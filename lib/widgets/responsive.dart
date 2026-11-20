@@ -41,8 +41,8 @@ bool canShowPanTool(BuildContext context, {bool listen = true}) {
   return size.width > size.height;
 }
 
-/// 設定画面等のリスト系コンテンツをPC/DeXモードで中央寄せ・横幅制限する。
-/// スマホの狭い画面ではそのまま全幅表示する。
+/// 設定画面等のリスト系コンテンツを、広い画面で中央に配置する。
+/// 幅の上限はタッチ操作のタブレットにも適用する。
 ///
 /// あわせて、Android標準のジェスチャーナビゲーション/戻るボタン等の
 /// システムUIとアプリ内のボタン・テキストが重なる不具合対策として
@@ -54,7 +54,9 @@ Widget desktopCentered(
   Widget child, {
   double maxWidth = 720,
 }) {
-  if (!isWideScreen(context)) return SafeArea(child: child);
+  if (MediaQuery.sizeOf(context).width <= maxWidth) {
+    return SafeArea(child: child);
+  }
   return SafeArea(
     child: Align(
       alignment: Alignment.topCenter,

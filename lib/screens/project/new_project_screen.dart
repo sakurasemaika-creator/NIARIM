@@ -343,7 +343,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
       body: desktopCentered(
         context,
         SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -359,12 +359,13 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 'FPS',
                 style: localizedHeadingStyle(
                   context,
-                  const TextStyle(fontWeight: FontWeight.bold),
+                  const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
+                runSpacing: 4,
                 children: fpsOptions
                     .map(
                       (fps) => ChoiceChip(
@@ -382,13 +383,17 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               // （Rowに並べていた頃は、英・西・仏語の大きな文字ではみ出した）。
               Wrap(
                 alignment: WrapAlignment.spaceBetween,
+                spacing: 8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
                     l10n.newProjectSizeLabel,
                     style: localizedHeadingStyle(
                       context,
-                      const TextStyle(fontWeight: FontWeight.bold),
+                      const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   TextButton.icon(

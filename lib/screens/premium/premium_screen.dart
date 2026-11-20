@@ -270,58 +270,64 @@ class _PremiumScreenState extends State<PremiumScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: scheme.primary,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: scheme.primary.withValues(alpha: 0.4),
-                      blurRadius: 10,
-                    ),
-                  ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final badge = ExcludeSemantics(
+                child: CircleAvatar(
+                  radius: 23,
+                  backgroundColor: scheme.primary,
+                  foregroundColor: scheme.onPrimary,
+                  child: const Icon(Icons.workspace_premium_rounded, size: 25),
                 ),
-                child: Icon(
-                  Icons.workspace_premium_rounded,
-                  color: scheme.onPrimary,
-                  size: 26,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+              );
+              final copy = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 6,
+                children: [
+                  Semantics(
+                    header: true,
+                    child: Text(
                       l10n.premiumHeroTitle,
                       style: localizedHeadingStyle(
                         context,
                         TextStyle(
                           fontSize: 20,
+                          height: 1.24,
                           fontWeight: FontWeight.bold,
                           color: scheme.onSurface,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.premiumHeroSubtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.5,
-                        color: scheme.onSurfaceVariant,
-                      ),
+                  ),
+                  Text(
+                    l10n.premiumHeroSubtitle,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.5,
+                      color: scheme.onSurfaceVariant,
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                ],
+              );
+              final textScale = MediaQuery.textScalerOf(context).scale(20) / 20;
+              if ((constraints.maxWidth - 58) / textScale < 190) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 10,
+                  children: [badge, copy],
+                );
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 12,
+                children: [
+                  badge,
+                  Expanded(child: copy),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
               final stacked =

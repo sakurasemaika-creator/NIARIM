@@ -6,6 +6,7 @@ import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/app_tutorial.dart';
 import '../../utils/name_collation.dart';
+import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
 
 class HelpScreen extends StatefulWidget {
@@ -650,11 +651,12 @@ class _HelpScreenState extends State<HelpScreen> {
       appBar: widget.embedded
           ? null
           : AppBar(title: FitOrHideTitle(l10n.helpScreenTitle)),
-      body: SafeArea(
-        child: Column(
+      body: desktopCentered(
+        context,
+        Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
               child: TextField(
                 controller: _searchController,
                 focusNode: _searchFocus,
@@ -728,7 +730,7 @@ class _HelpScreenState extends State<HelpScreen> {
                         return Padding(
                           key: ValueKey(entry.topicKey),
                           padding: EdgeInsets.symmetric(
-                            horizontal: 12,
+                            horizontal: 16,
                             vertical: 4,
                           ),
                           child: Material(
@@ -775,14 +777,14 @@ class _HelpScreenState extends State<HelpScreen> {
                                   context,
                                   const TextStyle(
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 14,
+                                    fontSize: 15,
                                   ),
                                 ),
                               ),
                               subtitle: Text(
                                 entry.category,
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 12,
                                   color: scheme.onSurfaceVariant,
                                 ),
                               ),
@@ -825,7 +827,7 @@ class _TutorialEntry extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final accentText = AccentTextTheme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Material(
         color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),
@@ -857,12 +859,12 @@ class _TutorialEntry extends StatelessWidget {
             l10n.helpTutorialButton,
             style: localizedHeadingStyle(
               context,
-              const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
             ),
           ),
           subtitle: Text(
             l10n.helpTutorialSubtitle,
-            style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
           ),
           trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
         ),

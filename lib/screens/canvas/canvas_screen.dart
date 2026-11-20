@@ -3924,6 +3924,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
     final desktop = isWideScreen(context);
+    final showsEnclosedMode =
+        _currentTool == DrawingTool.lasso &&
+        _currentSubTool == PenSubTool.lassoFill;
+    final showsInvertSelection =
+        _isSelectionToolActive &&
+        _hasActiveSelection &&
+        !_selectionEditingGivesWay(desktop);
+    final showsTextHint = _currentTool == DrawingTool.text;
+    final hasToolActions =
+        showsEnclosedMode || showsInvertSelection || showsTextHint;
     final toolActions = Align(
       alignment: AlignmentDirectional.centerStart,
       child: FittedBox(
@@ -3932,8 +3942,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // 投げ縄塗り選択中：囲って塗るモードスイッチ
-            if (_currentTool == DrawingTool.lasso &&
-                _currentSubTool == PenSubTool.lassoFill) ...[
+            if (showsEnclosedMode) ...[
               const SizedBox(width: 8),
               Text(
                 l10n.canvasLassoEnclosedLabel,
@@ -3951,9 +3960,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ],
             // 範囲選択中にのみ使える「選択範囲を反転」ボタン。
-            if (_isSelectionToolActive &&
-                _hasActiveSelection &&
-                !_selectionEditingGivesWay(desktop)) ...[
+            if (showsInvertSelection) ...[
               const SizedBox(width: 8),
               _topBarIconButton(
                 context,
@@ -3963,7 +3970,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ],
             // テキストツール選択中：キャンバスタップでテキスト入力ダイアログを表示する旨を示すラベル
-            if (_currentTool == DrawingTool.text)
+            if (showsTextHint)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
@@ -3982,139 +3989,175 @@ class _CanvasScreenState extends State<CanvasScreen> {
         ),
       ),
     );
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      child: Row(
-        children: [
-          // プロジェクト一覧へ戻るボタンはタイムラインモード側へ移した。
-          // キャンバスモードの画面左上（元は戻るボタンの
-          // 位置）にはUndo/Redoを配置する。
-          _topBarIconButton(
-            context,
-            Icons.undo,
-            onPressed: () => _applyArtworkHistory(redo: false),
-            tooltip: l10n.commonUndo,
-          ),
-          const SizedBox(width: _topBarGap),
-          _topBarIconButton(
-            context,
-            Icons.redo,
-            onPressed: () => _applyArtworkHistory(redo: true),
-            tooltip: l10n.commonRedo,
-          ),
-          Expanded(child: toolActions),
-          if (desktop)
-            PopupMenuButton<CanvasViewAction>(
-              tooltip: l10n.canvasViewActions,
-              icon: const Icon(Icons.fit_screen_outlined, size: 22),
-              onSelected: (action) => setState(() {
-                _navigatorViewRequest = CanvasViewRequest(
-                  (_navigatorViewRequest?.serial ?? 0) + 1,
-                  action,
-                );
-              }),
-              itemBuilder: (_) => [
-                for (final item in [
-                  (CanvasViewAction.fit, l10n.pcViewFit),
-                  (CanvasViewAction.actualPixels, l10n.canvasViewActualPixels),
-                  (CanvasViewAction.zoomIn, l10n.canvasViewZoomIn),
-                  (CanvasViewAction.zoomOut, l10n.canvasViewZoomOut),
-                  (CanvasViewAction.rotateLeft, l10n.canvasViewRotateLeft),
-                  (CanvasViewAction.rotateRight, l10n.canvasViewRotateRight),
-                  (
-                    CanvasViewAction.resetRotation,
-                    l10n.canvasViewResetRotation,
-                  ),
-                ])
-                  PopupMenuItem(value: item.$1, child: Text(item.$2)),
-              ],
-            ),
-          if (desktop)
-            PopupMenuButton<CanvasDockPanel>(
-              key: const Key('desktopWindowVisibilityMenu'),
-              tooltip: AppLocalizations.of(
-                context,
-              )!.pcWorkspaceLayoutScreenTitle,
-              icon: const Icon(Icons.view_sidebar_outlined, size: 22),
-              onSelected: (panel) =>
-                  _setDesktopPanelVisible(panel, !_desktopPanelVisible(panel)),
-              itemBuilder: (_) => [
-                for (final p in CanvasDockPanel.values)
-                  CheckedPopupMenuItem<CanvasDockPanel>(
-                    value: p,
-                    checked: _desktopPanelVisible(p),
-                    child: Text(_dockTitle(p)),
-                  ),
-                const PopupMenuDivider(),
-                PopupMenuItem(
-                  onTap: _openDesktopWorkspaceSettings,
-                  child: Text(l10n.workspacePcLayoutButton),
-                ),
-              ],
-            ),
-          // 設定/編集メニュー（背景色・オニオンスキン・
-          // フィルター・フレーム範囲選択を集約）。
-          _topBarIconButton(
-            context,
-            Icons.settings,
-            onPressed: () => _showEditMenu(context),
-            tooltip: l10n.canvasSettingsMenuTooltip,
-          ),
-          const SizedBox(width: _topBarGap),
-          // 定規・ヘルプはツールバー内へ移設したため、この右上には
-          // プロジェクト一覧へ戻るホームボタンを設置する
-          // （タイムライン画面の同ボタンと同じ挙動：保存して戻る／
-          // 保存せず戻るを選べる確認ダイアログを経由する）。
-          _topBarIconButton(
-            context,
-            Icons.home_outlined,
-            iconSize: 27,
-            longPressTooltip: !desktop,
-            onPressed: _confirmBackToProjectList,
-            tooltip: l10n.timelineBackToProjectListTooltip,
-          ),
-          const SizedBox(width: _topBarGap),
-          // Direction cue beside the timeline symbol, sharing one hit target.
-          // CanvasIconButton keeps both glyphs transparent and theme-colored.
-          CanvasIconButton(
-            key: const Key('canvasTimelineModeButton'),
-            iconSize: 26,
-            iconWidth: 46,
-            padding: 11,
-            outlinedIconBuilder: (color, outline) => Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.movie_filter_outlined,
-                  size: 25,
-                  color: color,
-                  shadows: CanvasIconButton.outlineShadows(outline),
-                ),
-                const SizedBox(width: 2),
-                Icon(
-                  Icons.arrow_forward,
-                  size: 19,
-                  color: color,
-                  shadows: CanvasIconButton.outlineShadows(outline),
-                ),
-              ],
-            ),
-            onPressed: () => _runAutomationBlockedAction(
-              () => context.go(
-                Uri(
-                  path: '/timeline/${widget.projectId}',
-                  queryParameters: {
-                    'scene': _currentSceneId,
-                    'frame': '$_currentFrame',
-                  },
-                ).toString(),
-              ),
-            ),
-            tooltip: l10n.canvasTimelineModeTooltip,
-            longPressTooltip: false,
-          ),
-        ],
+    final history = <Widget>[
+      // プロジェクト一覧へ戻るボタンはタイムラインモード側へ移した。
+      // キャンバスモードの画面左上（元は戻るボタンの
+      // 位置）にはUndo/Redoを配置する。
+      _topBarIconButton(
+        context,
+        Icons.undo,
+        onPressed: () => _applyArtworkHistory(redo: false),
+        tooltip: l10n.commonUndo,
       ),
+      _topBarIconButton(
+        context,
+        Icons.redo,
+        onPressed: () => _applyArtworkHistory(redo: true),
+        tooltip: l10n.commonRedo,
+      ),
+    ];
+    final tools = <Widget>[
+      if (desktop)
+        PopupMenuButton<CanvasViewAction>(
+          tooltip: l10n.canvasViewActions,
+          icon: const Icon(Icons.fit_screen_outlined, size: 22),
+          onSelected: (action) => setState(() {
+            _navigatorViewRequest = CanvasViewRequest(
+              (_navigatorViewRequest?.serial ?? 0) + 1,
+              action,
+            );
+          }),
+          itemBuilder: (_) => [
+            for (final item in [
+              (CanvasViewAction.fit, l10n.pcViewFit),
+              (CanvasViewAction.actualPixels, l10n.canvasViewActualPixels),
+              (CanvasViewAction.zoomIn, l10n.canvasViewZoomIn),
+              (CanvasViewAction.zoomOut, l10n.canvasViewZoomOut),
+              (CanvasViewAction.rotateLeft, l10n.canvasViewRotateLeft),
+              (CanvasViewAction.rotateRight, l10n.canvasViewRotateRight),
+              (CanvasViewAction.resetRotation, l10n.canvasViewResetRotation),
+            ])
+              PopupMenuItem(value: item.$1, child: Text(item.$2)),
+          ],
+        ),
+      if (desktop)
+        PopupMenuButton<CanvasDockPanel>(
+          key: const Key('desktopWindowVisibilityMenu'),
+          tooltip: AppLocalizations.of(context)!.pcWorkspaceLayoutScreenTitle,
+          icon: const Icon(Icons.view_sidebar_outlined, size: 22),
+          onSelected: (panel) =>
+              _setDesktopPanelVisible(panel, !_desktopPanelVisible(panel)),
+          itemBuilder: (_) => [
+            for (final p in CanvasDockPanel.values)
+              CheckedPopupMenuItem<CanvasDockPanel>(
+                value: p,
+                checked: _desktopPanelVisible(p),
+                child: Text(_dockTitle(p)),
+              ),
+            const PopupMenuDivider(),
+            PopupMenuItem(
+              onTap: _openDesktopWorkspaceSettings,
+              child: Text(l10n.workspacePcLayoutButton),
+            ),
+          ],
+        ),
+      // 設定/編集メニュー（背景色・オニオンスキン・
+      // フィルター・フレーム範囲選択を集約）。
+      _topBarIconButton(
+        context,
+        Icons.settings,
+        onPressed: () => _showEditMenu(context),
+        tooltip: l10n.canvasSettingsMenuTooltip,
+      ),
+      // 定規・ヘルプはツールバー内へ移設したため、この右上には
+      // プロジェクト一覧へ戻るホームボタンを設置する
+      // （タイムライン画面の同ボタンと同じ挙動：保存して戻る／
+      // 保存せず戻るを選べる確認ダイアログを経由する）。
+      _topBarIconButton(
+        context,
+        Icons.home_outlined,
+        iconSize: 27,
+        longPressTooltip: !desktop,
+        onPressed: _confirmBackToProjectList,
+        tooltip: l10n.timelineBackToProjectListTooltip,
+      ),
+      // Direction cue beside the timeline symbol, sharing one hit target.
+      // CanvasIconButton keeps both glyphs transparent and theme-colored.
+      CanvasIconButton(
+        key: const Key('canvasTimelineModeButton'),
+        iconSize: 26,
+        iconWidth: 46,
+        padding: 11,
+        outlinedIconBuilder: (color, outline) => Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.movie_filter_outlined,
+              size: 25,
+              color: color,
+              shadows: CanvasIconButton.outlineShadows(outline),
+            ),
+            const SizedBox(width: 2),
+            Icon(
+              Icons.arrow_forward,
+              size: 19,
+              color: color,
+              shadows: CanvasIconButton.outlineShadows(outline),
+            ),
+          ],
+        ),
+        onPressed: () => _runAutomationBlockedAction(
+          () => context.go(
+            Uri(
+              path: '/timeline/${widget.projectId}',
+              queryParameters: {
+                'scene': _currentSceneId,
+                'frame': '$_currentFrame',
+              },
+            ).toString(),
+          ),
+        ),
+        tooltip: l10n.canvasTimelineModeTooltip,
+        longPressTooltip: false,
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Four 48px action targets and the 68px mode-switch target.
+        final controlsWidth = 4 * 48.0 + 68 + (desktop ? 2 * 48 : 0);
+        if (constraints.maxWidth < controlsWidth + 8) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [...history, ...tools],
+                ),
+                toolActions,
+              ],
+            ),
+          );
+        }
+        final remaining = constraints.maxWidth - controlsWidth;
+        final inset = remaining >= 46 ? 8.0 : 4.0;
+        final gap = math.min(_topBarGap, (remaining - inset * 2) / 3);
+        final textScale = MediaQuery.textScalerOf(context).scale(12) / 12;
+        final toolActionsBelow =
+            hasToolActions && remaining - inset * 2 - gap * 3 < 160 * textScale;
+        final toolbar = Row(
+          children: [
+            history[0],
+            SizedBox(width: gap),
+            history[1],
+            Expanded(
+              child: toolActionsBelow ? const SizedBox.shrink() : toolActions,
+            ),
+            for (var i = 0; i < tools.length; i++) ...[
+              if (i > 0 && i >= tools.length - 2) SizedBox(width: gap),
+              tools[i],
+            ],
+          ],
+        );
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: inset, vertical: 2),
+          child: toolActionsBelow
+              ? Column(children: [toolbar, toolActions])
+              : toolbar,
+        );
+      },
     );
   }
 

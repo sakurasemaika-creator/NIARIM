@@ -89,8 +89,8 @@ class ExportPresetSelector extends StatelessWidget {
             style: textStyle.copyWith(color: foreground),
           );
           if (glyph == null) return text;
-          final icon = Icon(glyph, color: foreground);
-          if (labelWidths[label]! + 32 <= constraints.maxWidth - 16) {
+          final icon = Icon(glyph, size: 22, color: foreground);
+          if (labelWidths[label]! + 30 <= constraints.maxWidth - 24) {
             return Row(
               children: [
                 Expanded(child: text),
@@ -122,7 +122,10 @@ class ExportPresetSelector extends StatelessWidget {
               PopupMenuItem<ExportPreset>(
                 key: ValueKey('exportPresetOption-${entry.key.name}'),
                 value: entry.key,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 child: content(
                   entry.value,
                   entry.key == value ? Icons.check : null,
@@ -141,8 +144,8 @@ class ExportPresetSelector extends StatelessWidget {
               constraints: const BoxConstraints(minHeight: 48),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 12,
+                  horizontal: 12,
+                  vertical: 10,
                 ),
                 child: content(labels[value]!, Icons.expand_more),
               ),

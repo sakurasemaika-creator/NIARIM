@@ -9,6 +9,7 @@ import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/responsive.dart';
 import '../../widgets/keep_together_text.dart';
 
 /// ヘルプ（機能の説明）とは別に、「こうすると便利」という活用方法を
@@ -78,11 +79,12 @@ class _TipsScreenState extends State<TipsScreen> {
       appBar: widget.embedded
           ? null
           : AppBar(title: FitOrHideTitle(l10n.tipsScreenTitle)),
-      body: SafeArea(
-        child: Column(
+      body: desktopCentered(
+        context,
+        Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
               child: TextField(
                 controller: _searchController,
                 // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
@@ -116,7 +118,7 @@ class _TipsScreenState extends State<TipsScreen> {
                       ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
                         final category = categories[index];
@@ -129,10 +131,10 @@ class _TipsScreenState extends State<TipsScreen> {
                                 children: [
                                   Icon(
                                     category.icon,
-                                    size: 18,
+                                    size: 19,
                                     color: AccentTextTheme.of(context),
                                   ),
-                                  const SizedBox(width: 6),
+                                  const SizedBox(width: 8),
                                   // 1行に入らない名前（仏語・西語・大きな文字）は
                                   // 折り返す（幅を決めずに並べていたので、行が
                                   // 画面の外へはみ出していた）。韓国語の語は、
@@ -143,7 +145,7 @@ class _TipsScreenState extends State<TipsScreen> {
                                       style: localizedHeadingStyle(
                                         context,
                                         TextStyle(
-                                          fontSize: 14,
+                                          fontSize: 15,
                                           fontWeight: FontWeight.bold,
                                           color: AccentTextTheme.of(context),
                                         ),
@@ -583,7 +585,7 @@ class _TipListTile extends StatelessWidget {
             builder: (_) => _TipDetailDialog(tip: tip),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
             child: Row(
               children: [
                 Container(
@@ -616,12 +618,18 @@ class _TipListTile extends StatelessWidget {
                       context,
                       const TextStyle(
                         fontWeight: FontWeight.w600,
-                        fontSize: 13,
+                        fontSize: 14,
+                        height: 1.3,
                       ),
                     ),
                   ),
                 ),
-                Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+                const SizedBox(width: 6),
+                Icon(
+                  Icons.chevron_right,
+                  size: 20,
+                  color: scheme.onSurfaceVariant,
+                ),
               ],
             ),
           ),

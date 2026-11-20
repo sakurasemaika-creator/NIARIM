@@ -1064,6 +1064,7 @@ class ThemeService extends ChangeNotifier {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
+        titleSpacing: 12,
         // 画面名（AppBarタイトル）がデフォルトフォント（Roboto等の端末標準）
         // で表示されてしまう不具合を修正。ThemeData.fontFamily='HakkouMincho'
         // をルートで設定していても、appBarTheme.titleTextStyleへ独自の

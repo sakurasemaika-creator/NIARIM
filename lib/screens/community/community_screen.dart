@@ -1238,23 +1238,62 @@ class _CommunityScreenState extends State<CommunityScreen>
       return size;
     }
 
-    final titleWidth = (width - 216).clamp(1.0, double.infinity);
-    final titleSize = measure(
+    // The title can use the full band below the actions when the translated
+    // name or the selected text scale makes the inline slot too narrow.
+    const titleGap = 12.0;
+    final leadingWidth = width < 280 ? 48.0 : 56.0;
+    const actionWidth = 48.0;
+    // Leave space for the bookmarks tab's extra action so switching tabs
+    // never changes the position of the page title.
+    const actionCount = 4;
+    final inlineWidth =
+        (width - leadingWidth - actionWidth * actionCount - titleGap * 2).clamp(
+          1.0,
+          double.infinity,
+        );
+    final titleBelowActions =
+        measure(l10n.communityScreenTitle, titleStyle).width > inlineWidth;
+    final titleWidth = titleBelowActions ? width - 32 : inlineWidth;
+    final titleHeight = measure(
       l10n.communityScreenTitle,
       titleStyle,
       maxWidth: titleWidth,
-    );
+    ).height;
     final showSampleNotice = !communityService.isBackendConnected;
     final sampleStyle = theme.textTheme.labelMedium!.copyWith(
       color: foreground,
     );
     final sampleHeight = showSampleNotice
         ? measure(
-            l10n.communitySampleBadge,
-            sampleStyle,
-            maxWidth: titleWidth,
-          ).height
+                l10n.communitySampleBadge,
+                sampleStyle,
+                maxWidth: titleWidth,
+              ).height +
+              2
         : 0.0;
+    final titleBlock = Padding(
+      padding: titleBelowActions
+          ? const EdgeInsets.fromLTRB(16, 3, 16, 9)
+          : EdgeInsets.zero,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Semantics(
+            header: true,
+            child: Text(l10n.communityScreenTitle, style: titleStyle),
+          ),
+          if (showSampleNotice) ...[
+            const SizedBox(height: 2),
+            Text(
+              l10n.communitySampleBadge,
+              key: const Key('communitySampleNotice'),
+              style: sampleStyle,
+            ),
+          ],
+        ],
+      ),
+    );
     final labels = [
       l10n.communityTabNew,
       l10n.communityTabRanking,
@@ -1664,27 +1703,14 @@ class _CommunityScreenState extends State<CommunityScreen>
         titleTextStyle: titleStyle,
         iconTheme: IconThemeData(color: foreground),
         actionsIconTheme: IconThemeData(color: foreground),
-        toolbarHeight: (titleSize.height + sampleHeight + 16)
-            .clamp(kToolbarHeight, double.infinity)
-            .toDouble(),
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.communityScreenTitle,
-              softWrap: true,
-              maxLines: 3,
-              overflow: TextOverflow.visible,
-            ),
-            if (showSampleNotice)
-              Text(
-                l10n.communitySampleBadge,
-                key: const Key('communitySampleNotice'),
-                style: sampleStyle,
-              ),
-          ],
-        ),
+        titleSpacing: titleGap,
+        leadingWidth: leadingWidth,
+        toolbarHeight: titleBelowActions
+            ? 48
+            : (titleHeight + sampleHeight + 16)
+                  .clamp(kToolbarHeight, double.infinity)
+                  .toDouble(),
+        title: titleBelowActions ? null : titleBlock,
         actions: [
           AnimatedBuilder(
             animation: _tabController,
@@ -1711,68 +1737,76 @@ class _CommunityScreenState extends State<CommunityScreen>
           const HelpButton(topic: '作品広場'),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              const iconSize = 24.0;
-              const labelGap = 8.0;
-              // Reserve breathing room in every cell, including at large
-              // accessibility text scales and in longer translations. All
-              // five tabs change modes together so their look stays uniform.
-              const horizontalBreathingRoom = 16.0;
-              final tabWidth = constraints.maxWidth / labels.length;
-              final showLabels = labels.every(
-                (label) =>
-                    iconSize +
-                        labelGap +
-                        measure(label, labelStyle).width +
-                        horizontalBreathingRoom <=
-                    tabWidth,
-              );
-              return TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                labelPadding: EdgeInsets.zero,
-                labelStyle: labelStyle,
-                unselectedLabelStyle: labelStyle,
-                labelColor: selected,
-                unselectedLabelColor: unselected,
-                indicatorColor: selected,
-                tabs: [
-                  for (var i = 0; i < labels.length; i++)
-                    Tab(
-                      key: Key('communityTab$i'),
-                      height: 48,
-                      child: SizedBox(
-                        key: Key('communityTabWidth$i'),
-                        width: tabWidth,
-                        child: Tooltip(
-                          message: labels[i],
-                          triggerMode: TooltipTriggerMode.longPress,
-                          child: Center(
-                            child: showLabels
-                                ? Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(tabIcons[i], size: iconSize),
-                                      const SizedBox(width: labelGap),
-                                      Text(
-                                        labels[i],
-                                        maxLines: 1,
-                                        softWrap: false,
-                                        overflow: TextOverflow.clip,
-                                      ),
-                                    ],
-                                  )
-                                : Icon(tabIcons[i], size: iconSize),
+          preferredSize: Size.fromHeight(
+            48 + (titleBelowActions ? titleHeight + sampleHeight + 12 : 0),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (titleBelowActions) titleBlock,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  const iconSize = 24.0;
+                  const labelGap = 8.0;
+                  // Reserve breathing room in every cell, including at large
+                  // accessibility text scales and in longer translations. All
+                  // five tabs change modes together so their look stays uniform.
+                  const horizontalBreathingRoom = 16.0;
+                  final tabWidth = constraints.maxWidth / labels.length;
+                  final showLabels = labels.every(
+                    (label) =>
+                        iconSize +
+                            labelGap +
+                            measure(label, labelStyle).width +
+                            horizontalBreathingRoom <=
+                        tabWidth,
+                  );
+                  return TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    labelPadding: EdgeInsets.zero,
+                    labelStyle: labelStyle,
+                    unselectedLabelStyle: labelStyle,
+                    labelColor: selected,
+                    unselectedLabelColor: unselected,
+                    indicatorColor: selected,
+                    tabs: [
+                      for (var i = 0; i < labels.length; i++)
+                        Tab(
+                          key: Key('communityTab$i'),
+                          height: 48,
+                          child: SizedBox(
+                            key: Key('communityTabWidth$i'),
+                            width: tabWidth,
+                            child: Tooltip(
+                              message: labels[i],
+                              triggerMode: TooltipTriggerMode.longPress,
+                              child: Center(
+                                child: showLabels
+                                    ? Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(tabIcons[i], size: iconSize),
+                                          const SizedBox(width: labelGap),
+                                          Text(
+                                            labels[i],
+                                            maxLines: 1,
+                                            softWrap: false,
+                                            overflow: TextOverflow.clip,
+                                          ),
+                                        ],
+                                      )
+                                    : Icon(tabIcons[i], size: iconSize),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                ],
-              );
-            },
+                    ],
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ),
