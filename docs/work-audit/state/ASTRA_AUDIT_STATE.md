@@ -3635,3 +3635,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：backendの単体test 418件・DynamoDB Localのtest 13件（A098で実行）、App側の`community_ranking_layout_test`・`community_ranking_privacy_visibility_test`・`creator_ranking_mission_l10n_test`・`creator_ranking_mission_labels_test`・`push_notification_service_test`を`643cc267`で34件成功。
 - 未確認（実環境）：デプロイ、予約公開・通知の実際の遅れと重複、FCMの無効なトークンの掃除、IAMの実際の権限、タイムアウトでの失敗、失敗の記録がS3に実際に入ること。
 - 記録：`logs/a099-synth.txt`・`a099-synth2.txt`・`a099-tests.txt`（scratchpad、backup-pending）。
+
+## A100 — Android・補助platform・ライフサイクル・配布
+
+### A100 二巡目（2026-11-20、Claude・S50、App `643cc267`のコード・testとLinuxデバッグビルド）— 判定：OK〔コード・test〕（一巡目のDISC433・DISC434は直った。Androidの実機は未確認）
+
+- 環境：Androidの実機・エミュレーターは無い。`AndroidManifest.xml`・`build.gradle.kts`・`MainActivity.kt`・`lib/services/share_intent_service.dart`・`home_screen.dart`を読み、関連のtestを流した。Linuxでは強制終了（`kill -9`）の後の起動を2つのプロフィールで確かめた（起動の画面まで普通に出る、`shots-r1/r2a100-01`）。
+- 一巡目のDISC433は直った：`.niashare`を開くVIEWのフィルターは2つ。1つ目は専用のMIME（`application/vnd.niarim.niashare`）だけ。2つ目は`scheme="content"`・`host="*"`・`mimeType="*/*"`・`pathPattern=".*\\.niashare"`・`pathSuffix=".niashare"`で、`host`があるのでパスの条件が効き、`.niashare`で終わる`content:`のURIだけに当たる（`file:`は外れた）。
+- 一巡目のDISC434は直った：`ShareIntentService.readUriBytes`は`FILE_TOO_LARGE`を`SharedFileReadFailure.tooLarge`、それ以外の失敗を`unreadable`として投げ、ホームはそれぞれの理由を知らせる。`file:`のURIも開く前に大きさを確かめる。`home_share_intent_feedback_test`の「cold and warm share intents explain read failures and clean up」が、冷たい起動の大きすぎ・起動中の読めない・上限を超える端末のファイル・取り消しの後の一時ファイルの片付けを確かめる。
+- ほか：`allowBackup="false"`（バックアップ・データ移行の規則あり）、`usesCleartextTraffic="false"`とネットワークの設定、権限はインターネットと通知だけ、リリースはR8（`isMinifyEnabled = true`）、minSdk 24・compileSdk 36。
+- 気づいた点（DISCにしない、実機で要確認）：`pathSuffix`はAndroid 12（API 31）から。minSdk 24の端末（Android 7〜11）では`pathPattern=".*\\.niashare"`だけが効き、Androidの`PatternMatcher`は`.*`の後で後戻りしないため、パスの途中に別の「.」がある（例：`作品 v1.2.niashare`）と当たらない可能性がある。その場合は専用のMIMEでないと「アプリで開く」の候補に出ない。
+- test：`custom_automation_manager_dialog_lifecycle_test`・`home_share_intent_feedback_test`・`home_widget_cell_size_test`・`brush_fold_mode_lifecycle_test`・`brush_pressure_profile_lifecycle_test`・起動の失敗と回復の8本・`stroke_pointer_lifecycle_test`・`custom_automation_dialog_lifecycle_test`・`korean_word_joiner_semantics_test`・`toast_contract_test`・`saved_niashare_share_notice_test`を`643cc267`で217件成功。
+- 未確認（実機）：コールド・ウォームの起動、再開、回転、低メモリ・プロセスの終了からの戻り、ウィジェットの追加と大きさの変更、共有・`.niashare`のタップと「アプリで開く」の候補、動画の書き出しのコーデック、R8のリリースのインストール、DeX・低性能端末。
+- 画像：`shots-r1/r2a100-*`（backup-pending）。
