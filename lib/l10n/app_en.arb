@@ -1851,7 +1851,7 @@
   "layerPanelNewLayerButton": "Normal layer",
   "layerPanelNewFolderButton": "New folder",
   "layerPanelImportImageButton": "Import image",
-  "layerPanelDefaultLayerName": "Layer{n}",
+  "layerPanelDefaultLayerName": "Layer {n}",
   "@layerPanelDefaultLayerName": {
     "placeholders": {
       "n": {

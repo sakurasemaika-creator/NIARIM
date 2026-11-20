@@ -1830,7 +1830,7 @@
   "layerPanelNewLayerButton": "Calque normal",
   "layerPanelNewFolderButton": "Nouveau dossier",
   "layerPanelImportImageButton": "Importer une image",
-  "layerPanelDefaultLayerName": "Calque{n}",
+  "layerPanelDefaultLayerName": "Calque {n}",
   "@layerPanelDefaultLayerName": {
     "placeholders": {
       "n": {

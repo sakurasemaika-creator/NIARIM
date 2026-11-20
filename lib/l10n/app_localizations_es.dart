@@ -4849,7 +4849,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String layerPanelDefaultLayerName(int n) {
-    return 'Capa$n';
+    return 'Capa $n';
   }
 
   @override

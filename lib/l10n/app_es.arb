@@ -1830,7 +1830,7 @@
   "layerPanelNewLayerButton": "Capa normal",
   "layerPanelNewFolderButton": "Nueva carpeta",
   "layerPanelImportImageButton": "Importar imagen",
-  "layerPanelDefaultLayerName": "Capa{n}",
+  "layerPanelDefaultLayerName": "Capa {n}",
   "@layerPanelDefaultLayerName": {
     "placeholders": {
       "n": {

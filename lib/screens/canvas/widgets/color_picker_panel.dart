@@ -15,7 +15,6 @@ import '../../../models/color_palette.dart';
 import '../../../services/export_share_service.dart';
 import '../../../services/palette_service.dart';
 import '../../../widgets/confirm_delete.dart';
-import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/export_share_feedback.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/name_entry_dialog.dart';
@@ -26,7 +25,6 @@ import 'hsv_color_wheel.dart';
 import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
-import '../../../widgets/typing_dialog_inset.dart';
 import '../../../utils/file_failure_reason.dart';
 
 /// カラーピッカーパネル。
@@ -629,40 +627,16 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               title: Text(l10n.commonRename),
               onTap: () {
                 Navigator.pop(ctx);
-                final ctrl = TextEditingController(text: palette.name);
-                showDialog(
+                showDialog<void>(
                   context: context,
-                  builder: (dctx) => DisposeOnUnmount(
-                    controller: ctrl,
-                    builder: (dctx) => AlertDialog(
-                      insetPadding: typingDialogInsetPadding(dctx),
-                      title: Text(l10n.commonRename),
-                      content: TextField(
-                        controller: ctrl,
-                        autofocus: true,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(dctx),
-                          child: Text(l10n.commonCancel),
-                        ),
-                        FilledButton(
-                          onPressed: () {
-                            if (ctrl.text.isNotEmpty) {
-                              paletteService.renamePalette(
-                                palette.id,
-                                ctrl.text,
-                              );
-                            }
-                            Navigator.pop(dctx);
-                          },
-                          child: Text(l10n.commonChange),
-                        ),
-                      ],
-                    ),
+                  builder: (_) => NameEntryDialog(
+                    title: l10n.commonRename,
+                    labelText: l10n.colorPickerPaletteNameLabel,
+                    confirmLabel: l10n.commonChange,
+                    cancelLabel: l10n.commonCancel,
+                    initialName: palette.name,
+                    onSubmit: (name) =>
+                        paletteService.renamePalette(palette.id, name),
                   ),
                 );
               },

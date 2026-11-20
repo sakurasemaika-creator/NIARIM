@@ -98,6 +98,29 @@ void main() {
     imgAfter.dispose();
   });
 
+  test(
+    'in-flight composite cannot restore a tile invalidated by a stroke',
+    () async {
+      final tm = TileManager(canvasWidth: 512, canvasHeight: 8);
+      addTearDown(tm.dispose);
+      final oldTile = tm.getOrCreateTile('layer', 0, 0);
+      tm.setPixel(oldTile, 0, 0, 255, 0, 0, 255);
+      final inFlight = tm.compositeLayerToImage('layer');
+
+      final updatedTile = tm.getOrCreateTile('layer', 0, 0);
+      tm.setPixel(updatedTile, 200, 0, 0, 0, 255, 255);
+      final nextTile = tm.getOrCreateTile('layer', 1, 0);
+      tm.setPixel(nextTile, 8, 0, 0, 0, 255, 255);
+      (await inFlight).dispose();
+
+      final current = await tm.compositeLayerToImage('layer');
+      addTearDown(current.dispose);
+      for (final x in [200, 264]) {
+        expect(await pixelAt(current, x, 0, 512), const ui.Color(0xff0000ff));
+      }
+    },
+  );
+
   test('replaceLayerPixelsはキャッシュを無効化し新しいデータを反映する', () async {
     final tm = TileManager(canvasWidth: 4, canvasHeight: 4);
     final tile = tm.getOrCreateTile('layerA', 0, 0);

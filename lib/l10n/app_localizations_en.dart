@@ -4772,7 +4772,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String layerPanelDefaultLayerName(int n) {
-    return 'Layer$n';
+    return 'Layer $n';
   }
 
   @override

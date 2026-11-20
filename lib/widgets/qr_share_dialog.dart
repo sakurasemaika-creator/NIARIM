@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -28,61 +27,75 @@ class QrShareDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return AlertDialog(
-      // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
-      // AlertDialogの`icon:`スロットへ入れると、Flutterが
-      // タイトルを強制的に中央寄せにするため（dialog.dartの
-      // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
-      // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
-      title: Row(
-        children: [
-          Expanded(child: Text(title)),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            iconSize: 18,
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-            icon: const Icon(Icons.close),
-          ),
-        ],
-      ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.all(12),
-              color: ThemeService.activeColorScheme.onSurface,
-              child: QrImageView(
-                data: payload,
-                version: QrVersions.auto,
-                size: 240,
-                backgroundColor: ThemeService.activeColorScheme.onSurface,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const inset = EdgeInsets.symmetric(horizontal: 24, vertical: 24);
+        const contentPadding = EdgeInsets.fromLTRB(24, 20, 24, 24);
+        final qrSize =
+            (constraints.maxWidth -
+                    inset.horizontal -
+                    contentPadding.horizontal)
+                .clamp(0.0, 264.0);
+        return AlertDialog(
+          insetPadding: inset,
+          contentPadding: contentPadding,
+          // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
+          // AlertDialogの`icon:`スロットへ入れると、Flutterが
+          // タイトルを強制的に中央寄せにするため（dialog.dartの
+          // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
+          // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
+          title: Row(
+            children: [
+              Expanded(child: Text(title)),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                iconSize: 18,
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                onPressed: () =>
+                    Navigator.of(context, rootNavigator: true).pop(),
+                icon: const Icon(Icons.close),
               ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Bound both dimensions before AlertDialog measures its content.
+                SizedBox.square(
+                  dimension: qrSize,
+                  child: QrImageView(
+                    data: payload,
+                    version: QrVersions.auto,
+                    padding: const EdgeInsets.all(12),
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.qrShareHint,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              l10n.qrShareHint,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12),
+          ),
+          actions: [
+            TextButton.icon(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: payload));
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.qrShareCopiedSnackbar)),
+                  );
+                }
+              },
+              icon: const Icon(Icons.copy_outlined),
+              label: Text(l10n.qrShareCopyButton),
             ),
           ],
-        ),
-      ),
-      actions: [
-        TextButton.icon(
-          onPressed: () async {
-            await Clipboard.setData(ClipboardData(text: payload));
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.qrShareCopiedSnackbar)),
-              );
-            }
-          },
-          icon: const Icon(Icons.copy_outlined),
-          label: Text(l10n.qrShareCopyButton),
-        ),
-      ],
+        );
+      },
     );
   }
 }

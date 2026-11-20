@@ -4853,7 +4853,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String layerPanelDefaultLayerName(int n) {
-    return 'Calque$n';
+    return 'Calque $n';
   }
 
   @override

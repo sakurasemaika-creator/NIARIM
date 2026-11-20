@@ -384,6 +384,7 @@ class TileManager {
       return cached.clone();
     }
 
+    final revision = _rasterRevision;
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     final layerTiles = _tiles[layerId];
@@ -403,7 +404,7 @@ class TileManager {
         final ty = int.parse(parts[1]);
         final pixels = _viewOf(layerId, entry.key, entry.value);
         if (pixels == null) continue;
-        final img = await _tileImage(layerId, entry.key, pixels);
+        final img = await _tileImage(layerId, entry.key, pixels, revision);
         canvas.drawImage(
           img,
           ui.Offset(tx * tileSize.toDouble(), ty * tileSize.toDouble()),
@@ -415,8 +416,11 @@ class TileManager {
     final picture = recorder.endRecording();
     final image = await picture.toImage(canvasWidth, canvasHeight);
     picture.dispose();
+    if (revision != _rasterRevision) return image;
+    final handle = image.clone();
+    _compositeCache.remove(layerId)?.dispose();
     _touchCache(layerId, image);
-    return image.clone();
+    return handle;
   }
 
   /// 合成に使うタイルの画素。不透明度ロックで記録中の操作が触れたタイルは、
@@ -505,7 +509,11 @@ class TileManager {
     String layerId,
     String tileKey,
     Uint8List pixels,
+    int revision,
   ) async {
+    // A composite may still hold a tile from before a write or replacement.
+    // Its decoded tiles must not populate the current cache.
+    if (revision != _rasterRevision) return _tileToImage(pixels);
     final cacheKey = _tileImageKey(layerId, tileKey);
     final cached = _tileImageCache[cacheKey];
     if (cached != null) {
@@ -513,6 +521,7 @@ class TileManager {
       return cached.clone();
     }
     final image = await _tileToImage(pixels);
+    if (revision != _rasterRevision) return image;
     final handle = image.clone();
     _touchTileImage(cacheKey, image);
     return handle;
