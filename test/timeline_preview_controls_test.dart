@@ -23,6 +23,7 @@ import 'package:niarim/models/autofill_preset.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/models/effect_filter_instance.dart';
+import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_preview_navigator.dart';
 import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
@@ -215,6 +216,45 @@ void main() {
       },
     );
   }
+
+  testWidgets('first Home click works as soon as the canvas is laid out', (
+    tester,
+  ) async {
+    await openTimeline(
+      tester,
+      project: const Size(160, 90),
+      screen: const Size(1280, 800),
+      pc: true,
+      fraction: .4,
+    );
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    await tester.tap(
+      find.byKey(const Key('pcCommandBackToCanvas')),
+      kind: PointerDeviceKind.mouse,
+    );
+
+    final canvas = find.byType(CanvasScreen);
+    for (
+      var attempt = 0;
+      attempt < 100 && canvas.evaluate().isEmpty;
+      attempt++
+    ) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      await tester.pump();
+    }
+    expect(canvas, findsOneWidget);
+    final home = find.descendant(
+      of: canvas,
+      matching: find.byTooltip(l10n.timelineBackToProjectListTooltip),
+    );
+    // The outgoing timeline transition has not been pumped to completion.
+    await tester.tapAt(tester.getCenter(home), kind: PointerDeviceKind.mouse);
+    await tester.pump();
+    expect(find.text(l10n.timelineBackToProjectListDialogBody), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('320px timeline opens export without scrolling the toolbar', (
     tester,

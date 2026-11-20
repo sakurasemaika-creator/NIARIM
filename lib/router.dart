@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import 'services/ad_modal_visibility_observer.dart';
@@ -37,8 +38,24 @@ import 'screens/settings/privacy_policy_screen.dart';
 import 'screens/settings/error_log_screen.dart';
 import 'screens/settings/storage_screen.dart';
 import 'widgets/ad_banner_mock_widget.dart';
+import 'widgets/menu_surface.dart';
 import 'screens/settings/widget_settings_screen.dart';
 import 'screens/settings/widget_artwork_picker_screen.dart';
+
+// The Canvas and Timeline are two modes of the same workspace. Finish the
+// route replacement immediately so the outgoing modal barrier cannot cover
+// the new toolbar after it has been painted.
+NoTransitionPage<void> _workspacePage(GoRouterState state, Widget child) =>
+    NoTransitionPage<void>(
+      key: state.pageKey,
+      name: state.name ?? state.path,
+      arguments: <String, String>{
+        ...state.pathParameters,
+        ...state.uri.queryParameters,
+      },
+      restorationId: state.pageKey.value,
+      child: MenuSurfaceRouteScope(child: AdMockPageFrame(child: child)),
+    );
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -51,7 +68,9 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/home',
       builder: (context, state) => AdMockPageFrame(
-        child: HomeScreen(openWorks: state.uri.queryParameters['tab'] == 'works'),
+        child: HomeScreen(
+          openWorks: state.uri.queryParameters['tab'] == 'works',
+        ),
       ),
     ),
     GoRoute(
@@ -102,8 +121,9 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/canvas/:id',
-      builder: (context, state) => AdMockPageFrame(
-        child: CanvasScreen(
+      pageBuilder: (context, state) => _workspacePage(
+        state,
+        CanvasScreen(
           projectId: state.pathParameters['id']!,
           initialSceneId: state.uri.queryParameters['scene'],
           initialFrame:
@@ -113,8 +133,9 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/timeline/:id',
-      builder: (context, state) => AdMockPageFrame(
-        child: TimelineScreen(
+      pageBuilder: (context, state) => _workspacePage(
+        state,
+        TimelineScreen(
           projectId: state.pathParameters['id']!,
           initialSceneId: state.uri.queryParameters['scene'],
           initialFrame:

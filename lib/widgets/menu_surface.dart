@@ -57,7 +57,7 @@ class MenuSurface extends StatelessWidget {
 }
 
 /// 画面（ページ）の移り変わりを Flutter の既定のまま行い、画面の中身の
-/// いちばん外側に [_MenuSurfaceRouteScope] を置く。
+/// いちばん外側に [MenuSurfaceRouteScope] を置く。
 ///
 /// ダイアログ（`showDialog`）・ボトムシート（`showModalBottomSheet`）は、
 /// 開いた所から画面までの [InheritedTheme] を写して中身を包む
@@ -93,7 +93,7 @@ class MenuSurfacePageTransitionsBuilder extends PageTransitionsBuilder {
     context,
     animation,
     secondaryAnimation,
-    _MenuSurfaceRouteScope(child: child),
+    MenuSurfaceRouteScope(child: child),
   );
 }
 
@@ -118,15 +118,15 @@ final PageTransitionsTheme menuSurfacePageTransitionsTheme =
 /// ポップアップメニューの項目名はテーマ（`popupMenuTheme.labelTextStyle`）で
 /// メニューの文字色になっていて、ドロップダウンの一覧は画面の書式で並べて
 /// 用紙の色の上に出す（下地だけメニューの面にすると読めなくなる）。
-class _MenuSurfaceRouteScope extends InheritedTheme {
-  const _MenuSurfaceRouteScope({required super.child});
+class MenuSurfaceRouteScope extends InheritedTheme {
+  const MenuSurfaceRouteScope({super.key, required super.child});
 
   @override
   Widget wrap(BuildContext context, Widget child) =>
       _RouteMenuSurface(child: child);
 
   @override
-  bool updateShouldNotify(_MenuSurfaceRouteScope oldWidget) => false;
+  bool updateShouldNotify(MenuSurfaceRouteScope oldWidget) => false;
 }
 
 class _RouteMenuSurface extends StatelessWidget {
