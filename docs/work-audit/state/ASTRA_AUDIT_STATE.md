@@ -3681,3 +3681,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：A102の対象のl10nのtest 21本を`643cc267`で216件成功・3件失敗（上のDISC547）。
 - 未確認：全キーの意味・語調の逆翻訳による照合、ほかの画面の日付・時刻・数の書き方（en・es・zhの実画面）、Webの規約・ストアの文との一致（Wの項目）。
 - 画像：`shots-r1/r2a102-*`（backup-pending）。
+
+## A103 — App性能・安定性・資産サイズ
+
+### A103 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルドとtest）— 判定：OK〔test・静的・Linuxの実画面〕／実機の性能は未確認
+
+- 環境：Linux debug、1280×800、ja、マウス。プロフィールの写し`prof/r2a103`の書き出し先（`Documents/niarim/exports`）に、同じPNGへのハードリンクで5,000件を足して5,006件にした（終わった後に消した）。
+- 既存のDISC178は直っている：5,006件でも作品一覧のタブは押して1秒以内に一覧が出て、画面は止まらない（`shots-r1/r2a103-0102`）。
+- 既存のDISC182は直っている：長押しで「1件選択中」がすぐ出る。「全選択」を押した直後の画面で「5006件選択中」が出ている（`r2a103-0506`）。切り取り・コピーは作品一覧では1件ずつの作りで、2件以上のときは押せない理由（`homeSelectionOneAtATime`）の吹き出しを出す（`home_screen.dart`1636行のコメントのとおり）。
+- 既存のDISC428はA097で確認（型の違う移行の印でも起動できる）。
+- `flutter analyze`は0件（`643cc267`）。アセットは47MBで、うち書体が42MB（同梱の書体と部分フォント）、使い方の図3.4MB。
+- test：`home_works_large_collection_test`・`keep_together_text_relayout_cost_test`・`performance_settings_text_fit_test`・`save_tree_large_branch_stress_test`・`brush_size_memory_test`・`home_resize_scroll_memory_test`・`save_tree_lazy_list_test`・`startup_failure_recovery_test`を`643cc267`で51件成功。
+- 未確認（実機）：低・中・高の端末での起動時間・フレーム時間・メモリ、長い動画の書き出し・取り消し・再試行、多数のレイヤー・素材、裏へ回ってから戻る、APKの大きさ（R8・`shrinkResources`後）。
+- 画像：`shots-r1/r2a103-*`（backup-pending）。
