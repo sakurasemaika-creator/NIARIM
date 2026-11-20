@@ -120,6 +120,23 @@ void main() {
             .isEmpty) {
           problems.add('typing「$first」does not find that tip');
         }
+        await tester.enterText(find.byType(TextField), 'no-result-§§§');
+        await tester.pumpAndSettle();
+        expect(find.text(l10n.helpNoResults), findsOneWidget);
+        await tester.tap(find.byTooltip(l10n.projectListClearSearch));
+        await tester.pumpAndSettle();
+        expect(find.text(l10n.helpNoResults), findsNothing);
+        expect(
+          tester.widget<TextField>(find.byType(TextField)).controller?.text,
+          isEmpty,
+        );
+        expect(
+          find.descendant(
+            of: find.byType(ListView),
+            matching: find.text(first),
+          ),
+          findsOneWidget,
+        );
       } finally {
         FlutterError.onError = onError;
       }

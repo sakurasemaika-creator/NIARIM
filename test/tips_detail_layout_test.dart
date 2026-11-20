@@ -8,6 +8,7 @@ import 'package:niarim/screens/tips/tips_screen.dart';
 import 'package:niarim/services/theme_service.dart';
 
 import 'helpers/load_app_fonts.dart';
+import 'helpers/paragraph_lines.dart';
 
 void main() {
   const japanese = Locale('ja');
@@ -18,7 +19,12 @@ void main() {
     matching: find.byType(TipDiagram),
   );
 
-  Future<void> mount(WidgetTester tester, Size size, {double scale = 1}) async {
+  Future<void> mount(
+    WidgetTester tester,
+    Size size, {
+    double scale = 1,
+    Locale locale = japanese,
+  }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = size;
     tester.platformDispatcher.textScaleFactorTestValue = scale;
@@ -27,10 +33,10 @@ void main() {
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     await tester.pumpWidget(
       MaterialApp(
-        locale: japanese,
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        theme: ThemeService().themeDataFor(japanese),
+        theme: ThemeService().themeDataFor(locale),
         home: const TipsScreen(),
       ),
     );
@@ -53,6 +59,51 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('the final Japanese word wraps as a unit', (tester) async {
+    await loadAppFonts(tester);
+    await mount(tester, const Size(390, 844));
+    await open(tester, l10n.tipsClipDuplicateTitle);
+    final title = find.descendant(
+      of: dialog,
+      matching: find.text(l10n.tipsClipDuplicateTitle),
+    );
+    final paragraph = tester.renderObject<RenderParagraph>(
+      find.descendant(of: title, matching: find.byType(RichText)),
+    );
+    expect(ParagraphLines(paragraph).lines.last, endsWith('できる'));
+  });
+
+  testWidgets('a long Tips title has room above the diagram at 200%', (
+    tester,
+  ) async {
+    const french = Locale('fr');
+    final words = lookupAppLocalizations(french);
+    await loadAppFonts(tester);
+    await mount(tester, const Size(320, 720), scale: 2, locale: french);
+    await open(tester, words.tipsClipDuplicateTitle);
+    final title = find.descendant(
+      of: dialog,
+      matching: find.text(words.tipsClipDuplicateTitle),
+    );
+    expect(tester.getRect(title).bottom, lessThan(tester.getRect(diagram).top));
+    final illustration = find.descendant(
+      of: diagram,
+      matching: find.byWidgetPredicate(
+        (widget) => widget is CustomPaint && widget.size == const Size(112, 64),
+      ),
+    );
+    expect(tester.getRect(illustration.first).width, closeTo(112, 1));
+
+    // A swipe starting on the title should move the whole content.
+    final before = tester.getTopLeft(diagram).dy;
+    await tester.dragFrom(
+      tester.getTopLeft(title) + const Offset(25, 35),
+      const Offset(0, -130),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(diagram).dy, lessThan(before - 80));
+  });
 
   for (final size in [const Size(390, 844), const Size(1280, 800)]) {
     testWidgets(

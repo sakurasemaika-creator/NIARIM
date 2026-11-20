@@ -22,107 +22,154 @@ class TipDiagram extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final scaler = MediaQuery.textScalerOf(context);
-    final diagramHeight = math.max(height, scaler.scale(90) * 3 + 86);
     final largeText = scaler.scale(14) > 18;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: scheme.outlineVariant),
-      ),
-      child: SizedBox(
-        height: diagramHeight,
-        width: double.infinity,
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            children: [
-              for (var i = 0; i < steps.length; i++) ...[
-                if (i > 0)
-                  ExcludeSemantics(
-                    child: SizedBox(
-                      height: 18,
-                      child: isComparison
-                          ? null
-                          : Icon(
-                              Icons.arrow_downward_rounded,
-                              color: scheme.onSurfaceVariant,
-                              size: 16,
-                            ),
-                    ),
-                  ),
-                Expanded(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: scheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      child: Row(
-                        children: [
-                          if (!isComparison) ...[
-                            CircleAvatar(
-                              radius: 12,
-                              backgroundColor: scheme.primaryContainer,
-                              foregroundColor: scheme.onPrimaryContainer,
-                              child: Text(
-                                '${i + 1}',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final stacked = constraints.maxWidth < 340 && scaler.scale(14) >= 21;
+        // Leave room for three lines of text and the full-size illustration in
+        // each stacked card. All tips use the same spacing at a given width.
+        final minHeight = stacked
+            ? (scaler.scale(14) * 1.25 * 3 + 82) * 3 + 56
+            : 0.0;
+        final diagramHeight = math.max(
+          height,
+          math.max(minHeight, scaler.scale(90) * 3 + 86),
+        );
+
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: scheme.outlineVariant),
+          ),
+          child: SizedBox(
+            height: diagramHeight,
+            width: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  for (var i = 0; i < steps.length; i++) ...[
+                    if (i > 0)
+                      ExcludeSemantics(
+                        child: SizedBox(
+                          height: 18,
+                          child: isComparison
+                              ? null
+                              : Icon(
+                                  Icons.arrow_downward_rounded,
+                                  color: scheme.onSurfaceVariant,
+                                  size: 16,
                                 ),
-                                textScaler: TextScaler.noScaling,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          Expanded(
-                            flex: 5,
-                            child: messageText(
-                              steps[i].$3,
-                              keepLineStarts: true,
-                              style: TextStyle(
-                                fontSize: 14,
-                                height: 1.25,
-                                fontWeight: FontWeight.w600,
-                                color: scheme.onSurface,
-                              ),
-                            ),
+                        ),
+                      ),
+                    Expanded(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: scheme.surface,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
                           ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            flex: largeText ? 3 : 4,
-                            child: ExcludeSemantics(
-                              child: _Miniature(
-                                kind: steps[i].$1,
-                                icon: steps[i].$2,
-                              ),
-                            ),
+                          child: _stepContent(
+                            scheme,
+                            i,
+                            stacked: stacked,
+                            largeText: largeText,
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
-            ],
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _stepContent(
+    ColorScheme scheme,
+    int index, {
+    required bool stacked,
+    required bool largeText,
+  }) {
+    final (kind, icon, caption) = steps[index];
+    final number = [
+      if (!isComparison) ...[
+        CircleAvatar(
+          radius: 12,
+          backgroundColor: scheme.primaryContainer,
+          foregroundColor: scheme.onPrimaryContainer,
+          child: Text(
+            '${index + 1}',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            textScaler: TextScaler.noScaling,
           ),
         ),
+        const SizedBox(width: 8),
+      ],
+    ];
+    final label = messageText(
+      caption,
+      keepLineStarts: true,
+      style: TextStyle(
+        fontSize: 14,
+        height: 1.25,
+        fontWeight: FontWeight.w600,
+        color: scheme.onSurface,
       ),
+    );
+    final illustration = ExcludeSemantics(
+      child: _Miniature(
+        kind: kind,
+        icon: icon,
+        alignment: stacked ? Alignment.center : AlignmentDirectional.centerEnd,
+      ),
+    );
+
+    if (stacked) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            children: [
+              ...number,
+              Expanded(child: label),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Flexible(child: illustration),
+        ],
+      );
+    }
+    return Row(
+      children: [
+        ...number,
+        Expanded(flex: 5, child: label),
+        const SizedBox(width: 8),
+        Flexible(flex: largeText ? 3 : 4, child: illustration),
+      ],
     );
   }
 }
 
 class _Miniature extends StatelessWidget {
-  const _Miniature({required this.kind, required this.icon});
+  const _Miniature({
+    required this.kind,
+    required this.icon,
+    required this.alignment,
+  });
 
   final TipDiagramKind kind;
   final IconData icon;
+  final AlignmentGeometry alignment;
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +177,8 @@ class _Miniature extends StatelessWidget {
     final painter = _MiniaturePainter(kind, scheme);
     final target = painter.target;
     return Align(
-      alignment: Alignment.centerRight,
+      alignment: alignment,
+      heightFactor: 1,
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: SizedBox(

@@ -40,12 +40,29 @@ List<(String title, String description)> allTipEntries(AppLocalizations l10n) {
 
 class _TipsScreenState extends State<TipsScreen> {
   final _searchController = TextEditingController();
+  final _searchFocus = FocusNode();
+  final _resultsScroll = ScrollController(keepScrollOffset: false);
   String _searchQuery = '';
 
   @override
   void dispose() {
+    _resultsScroll.dispose();
+    _searchFocus.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _updateSearch(String value) {
+    if (_resultsScroll.hasClients && _resultsScroll.offset != 0) {
+      _resultsScroll.jumpTo(0);
+    }
+    setState(() => _searchQuery = value);
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    _updateSearch('');
+    _searchFocus.requestFocus();
   }
 
   List<_TipCategory> _buildCategories(AppLocalizations l10n) =>
@@ -87,6 +104,8 @@ class _TipsScreenState extends State<TipsScreen> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
               child: TextField(
                 controller: _searchController,
+                focusNode: _searchFocus,
+                textInputAction: TextInputAction.search,
                 // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
                 // 文字色（テーマの入力欄はメニューの色で塗りメニューの文字色）。
                 style: TextStyle(color: scheme.onSurface),
@@ -97,6 +116,13 @@ class _TipsScreenState extends State<TipsScreen> {
                   // 仏語・文字2倍で「Rechercher une a…」と切れた）。
                   hintMaxLines: 4,
                   prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchQuery.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: l10n.projectListClearSearch,
+                          icon: const Icon(Icons.clear),
+                          onPressed: _clearSearch,
+                        ),
                   prefixIconColor: scheme.onSurfaceVariant,
                   filled: true,
                   fillColor: scheme.surfaceContainerLow,
@@ -106,18 +132,28 @@ class _TipsScreenState extends State<TipsScreen> {
                   ),
                   isDense: true,
                 ),
-                onChanged: (v) => setState(() => _searchQuery = v),
+                onChanged: _updateSearch,
               ),
             ),
             Expanded(
               child: categories.isEmpty
                   ? Center(
-                      child: Text(
-                        l10n.helpNoResults,
-                        style: TextStyle(color: scheme.onSurfaceVariant),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            l10n.helpNoResults,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: scheme.onSurfaceVariant),
+                          ),
+                        ),
                       ),
                     )
                   : ListView.builder(
+                      controller: _resultsScroll,
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
@@ -569,6 +605,7 @@ class _TipListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final showBadge = MediaQuery.textScalerOf(context).scale(14) < 21;
     return Padding(
       padding: EdgeInsets.only(bottom: 6),
       child: Material(
@@ -588,25 +625,27 @@ class _TipListTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
             child: Row(
               children: [
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(9),
-                    gradient: LinearGradient(
-                      colors: [
-                        scheme.tertiary.withValues(alpha: 0.25),
-                        scheme.tertiary.withValues(alpha: 0.1),
-                      ],
+                if (showBadge) ...[
+                  Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(9),
+                      gradient: LinearGradient(
+                        colors: [
+                          scheme.tertiary.withValues(alpha: 0.25),
+                          scheme.tertiary.withValues(alpha: 0.1),
+                        ],
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.lightbulb_outline,
+                      color: scheme.tertiary,
+                      size: 16,
                     ),
                   ),
-                  child: Icon(
-                    Icons.lightbulb_outline,
-                    color: scheme.tertiary,
-                    size: 16,
-                  ),
-                ),
-                const SizedBox(width: 10),
+                  const SizedBox(width: 10),
+                ],
                 Expanded(
                   // 韓国語の語は、1行に入れば途中で折らない（「부 / 위별로」と
                   // 折れた）。長音符・小さいかな・閉じ括弧で行を始めない
@@ -738,18 +777,19 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
 
     Widget buildPage(int index) {
       return SingleChildScrollView(
+        primary: false,
         padding: const EdgeInsets.fromLTRB(16, 48, 16, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: double.infinity,
-              height: titleHeight,
-              child: SingleChildScrollView(
-                primary: false,
+            ConstrainedBox(
+              constraints: BoxConstraints(minHeight: titleHeight),
+              child: Semantics(
+                header: true,
                 child: messageText(
                   widget.tip.title,
                   keepLineStarts: true,
+                  keepLastPhrase: true,
                   style: localizedHeadingStyle(
                     context,
                     TextStyle(
