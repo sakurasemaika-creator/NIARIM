@@ -183,9 +183,9 @@ void main() {
         }
       }
     }
-    // 戻るボタンが下に移り、幅320pxでも日本語のタイトルが入る。
-    expect(shown, contains('tab0 ja 320 x2.0'));
-    expect(hidden, contains('tab2 es 320 x2.0'));
+    // 幅320px・文字2倍の日本語の「プロジェクト」は戻る・表示サイズ・検索・
+    // メニューのボタンの間に入らない（以前は「プロ…」と切れていた）。
+    expect(hidden, contains('tab0 ja 320 x2.0'));
     semantics.dispose();
     await _close(tester);
   });
