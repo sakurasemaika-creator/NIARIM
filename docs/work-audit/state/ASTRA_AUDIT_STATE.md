@@ -3393,3 +3393,20 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`niatra_transfer_watermarks_test`・`watermark_copy_name_tile_test`・`premium_all_entry_points_test`・`premium_production_entry_wiring_test`・`direct_service_coverage_batch08_test`を`1740d395`で26件成功。置いた透かしの角度・大きさの編集を見るtestは無い。
 - 未確認：Premiumの中の実操作（実機・購入の確認つき）、書き出した動画の透かしと見本の一致、7言語・文字2倍・360pxの一覧、キャンペーン中の扱い。DISC534の実画面での見え方と取り消しで戻るか。
 - 画像：`shots-r1/r2a082-*`（backup-pending）。
+
+## A083 — 引き継ぎ .niatra
+
+### A083 二巡目（2026-11-20、Claude・S50、App `1740d395`のLinuxデバッグビルド）— 判定：OK（一巡目のDISC387〜391は直った。DISC297・069・380も確認）
+
+- 環境：ja、1280×800、マウス、使い捨てのプロフィール（r2a069tの写し、作品が多い）、ファイル選択はD-Busのportal。設定→「引き継ぎ（.niatra）」。
+- DISC389は直った：「全選択」で7項目と作品の全部に印が付き、「全解除」で作品の印も外れて「書き出し」が押せなくなる（`shots-r1/r2a083-02`・`03`）。
+- DISC390は直った：作品の行に名前の下へ日時、フォルダの中の作品はフォルダ名も出る（「Scene」が3つ並んでも「2026年11月2日 10:07:00」「Storyboards · 2026年11月12日」「Episode 1 · 2026年11月14日」で見分けられる。フォルダは直上の1つだけ）。
+- DISC387は直った：一巡目の`partial.niatra`（設定・テーマ・ブラシは正しく、作品の`Projects/bad.niashare`だけ壊れている）を読み込むと「引き継ぎファイルを読み込めませんでした。」で、保存`shared_preferences.json`は読み込む前と1バイトも変わらない（テーマ・FPS・ブラシそのまま）。
+- DISC388は直った：中身が「garbage」の`broken.niatra`も「引き継ぎファイルを読み込めませんでした。」（例外の英文は出ない）。どちらも何が悪いか（作品のファイルが壊れている等）までは言わない。
+- 普通の`.niatra`（以前の`A.niatra`）は読み込むと「.niatraファイルを読み込みました」で、テーマ・FPS・画質・ブラシ・パレット・サイズのプリセット等が入る。読み込む前の確認・取り込む内容の一覧は無い（一巡目と同じ。仕様の判断）。
+- DISC391は直った（コード）：書き出しは`enrichExport`の後に`ArchiveSecurity.validateFileSize`で128MBを確かめ、読み込みは端末ではファイルの大きさ（`picked.size`）を先に確かめてからパスで読む（`withData`はWebだけ）。128MBを超えるファイルの実操作は未確認。
+- DISC297は直った：`niatra_transfer_conflict_test`が成功。DISC069・DISC380はA063・A081で確認済み。
+- test：A083の27本を`1740d395`で180件成功。
+- 未確認：実機の共有での往復（Linuxは共有に対応していない）、128MBを超えるファイル、悪意のあるZIPの実操作（`archive_security`のtestは成功）、7言語・文字2倍・360px、旧版のファイル。
+- A082の証跡の座標の訂正：正方形の画像の透かしの中心は(1104,544)で、大きさ50%で(1568,728)へ動く（A082の証跡の本文の(1107,544)→(1574,728)は計算の誤り。DISC534の本文は正しい）。
+- 画像：`shots-r1/r2a083-*`（backup-pending）。
