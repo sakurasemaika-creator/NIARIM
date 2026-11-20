@@ -189,6 +189,7 @@
   "bucketSettingsUnderLineHint": "扩展部分不会直接覆盖线稿，而是在保持线条外观的同时，将填充色绘制到现有像素的背后，减少线条抗锯齿边缘处出现的缝隙。",
   "bucketSettingsUnderLineDisabledHint": "当“扩展”为0px时无效果。",
   "fontCatalogSearchHint": "按字体名称搜索...（共{count}种字体）",
+  "fontCatalogCategories": "字体分类",
   "fontCatalogAll": "全部",
   "fontCatalogNoResults": "未找到匹配的字体",
   "rulerPanelTitle": "标尺",

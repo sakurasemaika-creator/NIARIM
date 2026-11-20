@@ -599,6 +599,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get fontCatalogCategories => 'Font categories';
+
+  @override
   String get fontCatalogAll => 'All';
 
   @override

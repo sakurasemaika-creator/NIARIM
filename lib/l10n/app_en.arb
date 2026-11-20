@@ -189,6 +189,7 @@
   "bucketSettingsUnderLineHint": "Instead of painting over the line art directly, the expanded fill blends in behind existing pixels, keeping the line's appearance while closing gaps in its anti-aliased edges.",
   "bucketSettingsUnderLineDisabledHint": "Has no effect while “Expand” is 0px.",
   "fontCatalogSearchHint": "Search by font name... ({count} fonts)",
+  "fontCatalogCategories": "Font categories",
   "fontCatalogAll": "All",
   "fontCatalogNoResults": "No matching fonts found",
   "rulerPanelTitle": "Ruler",

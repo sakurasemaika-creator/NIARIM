@@ -119,13 +119,17 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     super.dispose();
   }
 
-  void _fit(Size viewport) {
+  double _fitScale(Size viewport) {
     final widthScale = viewport.width / workspaceWidth;
     final heightScale = viewport.height / workspaceHeight;
-    final scale = (widthScale < heightScale ? widthScale : heightScale).clamp(
-      0.25,
+    return (widthScale < heightScale ? widthScale : heightScale).clamp(
+      0.05,
       1.0,
     );
+  }
+
+  void _fit(Size viewport) {
+    final scale = _fitScale(viewport);
     _transform.value = Matrix4.diagonal3Values(scale, scale, 1);
   }
 
@@ -200,7 +204,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                   key: const Key('pcWorkspaceInteractivePreview'),
                   transformationController: _transform,
                   constrained: false,
-                  minScale: 0.25,
+                  minScale: _fitScale(viewport).clamp(0.05, 0.25),
                   maxScale: 2,
                   boundaryMargin: const EdgeInsets.all(260),
                   child: SizedBox(

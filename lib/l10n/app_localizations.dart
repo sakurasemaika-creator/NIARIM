@@ -1157,6 +1157,12 @@ abstract class AppLocalizations {
   /// **'フォント名で検索...（全{count}書体）'**
   String fontCatalogSearchHint(int count);
 
+  /// No description provided for @fontCatalogCategories.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォントの分類'**
+  String get fontCatalogCategories;
+
   /// No description provided for @fontCatalogAll.
   ///
   /// In ja, this message translates to:

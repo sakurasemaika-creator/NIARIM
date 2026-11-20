@@ -290,6 +290,7 @@
       }
     }
   },
+  "fontCatalogCategories": "フォントの分類",
   "fontCatalogAll": "すべて",
   "fontCatalogNoResults": "該当するフォントが見つかりません",
   "rulerPanelTitle": "定規",

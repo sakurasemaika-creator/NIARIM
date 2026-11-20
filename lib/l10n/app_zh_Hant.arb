@@ -189,6 +189,7 @@
   "bucketSettingsUnderLineHint": "擴張部分不會直接覆蓋線稿，而是在保持線條外觀的同時，將填色繪製到現有像素的背後，減少線條反鋸齒邊緣處出現的縫隙。",
   "bucketSettingsUnderLineDisabledHint": "當「擴張」為0px時無效果。",
   "fontCatalogSearchHint": "以字型名稱搜尋...（共{count}種字型）",
+  "fontCatalogCategories": "字型分類",
   "fontCatalogAll": "全部",
   "fontCatalogNoResults": "找不到相符的字型",
   "rulerPanelTitle": "尺規",

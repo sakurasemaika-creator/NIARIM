@@ -189,6 +189,7 @@
   "bucketSettingsUnderLineHint": "Au lieu de peindre par-dessus le trait, l’extension se fond derrière les pixels existants : l’apparence du trait est conservée tout en comblant les interstices de ses bords anticrénelés.",
   "bucketSettingsUnderLineDisabledHint": "Sans effet lorsque « Extension » est à 0 px.",
   "fontCatalogSearchHint": "Rechercher par nom de police... ({count} polices)",
+  "fontCatalogCategories": "Catégories de polices",
   "fontCatalogAll": "Toutes",
   "fontCatalogNoResults": "Aucune police correspondante trouvée",
   "rulerPanelTitle": "Règle",

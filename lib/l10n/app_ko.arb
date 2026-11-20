@@ -189,6 +189,7 @@
   "bucketSettingsUnderLineHint": "확장된 부분을 선화 위에 그대로 덮지 않고, 선의 모습은 유지한 채 기존 픽셀 뒤쪽으로 채우기 색을 밀어 넣습니다. 선의 안티에일리어싱 부분에 틈이 잘 생기지 않습니다.",
   "bucketSettingsUnderLineDisabledHint": "「확장」이 0px이면 효과가 없습니다.",
   "fontCatalogSearchHint": "폰트 이름으로 검색...（총 {count}종）",
+  "fontCatalogCategories": "글꼴 분류",
   "fontCatalogAll": "전체",
   "fontCatalogNoResults": "해당하는 폰트를 찾을 수 없습니다",
   "rulerPanelTitle": "자",

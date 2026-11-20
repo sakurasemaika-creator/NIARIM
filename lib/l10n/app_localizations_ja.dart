@@ -578,6 +578,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get fontCatalogCategories => 'フォントの分類';
+
+  @override
   String get fontCatalogAll => 'すべて';
 
   @override

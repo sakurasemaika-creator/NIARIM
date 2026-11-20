@@ -293,6 +293,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
         // 高さが分かるときは、入る大きさの印にする（画面の高さで決めた
         // 大きさより大きくはしない）。
         var badge = screenBadge;
+        var actionFirst = false;
         if (constraints.hasBoundedHeight && constraints.hasBoundedWidth) {
           final fits = _badgeThatFits(
             context,
@@ -301,6 +302,12 @@ class EmptyStatePlaceholder extends StatelessWidget {
             scheme,
           );
           if (fits < badge) badge = fits;
+          actionFirst = _actionFirst(
+            context,
+            constraints.maxWidth,
+            constraints.maxHeight - clearance,
+            scheme,
+          );
         }
         return SingleChildScrollView(
           child: ConstrainedBox(
@@ -314,7 +321,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
             ),
             child: Padding(
               padding: EdgeInsets.only(bottom: clearance),
-              child: _content(context, scheme, badge),
+              child: _content(context, scheme, badge, actionFirst: actionFirst),
             ),
           ),
         );

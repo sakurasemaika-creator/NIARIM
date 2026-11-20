@@ -189,6 +189,7 @@
   "bucketSettingsUnderLineHint": "En vez de pintar sobre el dibujo de líneas, la expansión se combina detrás de los píxeles existentes: la línea conserva su aspecto mientras se cierran los huecos en sus bordes suavizados.",
   "bucketSettingsUnderLineDisabledHint": "No tiene efecto cuando «Expansión» es 0 px.",
   "fontCatalogSearchHint": "Buscar por nombre de fuente... ({count} fuentes)",
+  "fontCatalogCategories": "Categorías de fuentes",
   "fontCatalogAll": "Todas",
   "fontCatalogNoResults": "No se encontraron fuentes coincidentes",
   "rulerPanelTitle": "Regla",

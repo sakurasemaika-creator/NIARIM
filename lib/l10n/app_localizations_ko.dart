@@ -581,6 +581,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get fontCatalogCategories => '글꼴 분류';
+
+  @override
   String get fontCatalogAll => '전체';
 
   @override

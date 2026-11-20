@@ -572,6 +572,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get fontCatalogCategories => '字体分类';
+
+  @override
   String get fontCatalogAll => '全部';
 
   @override
@@ -10995,6 +10998,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String fontCatalogSearchHint(int count) {
     return '以字型名稱搜尋...（共$count種字型）';
   }
+
+  @override
+  String get fontCatalogCategories => '字型分類';
 
   @override
   String get fontCatalogAll => '全部';

@@ -11,7 +11,7 @@ import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../utils/file_size_label.dart';
-import '../../utils/line_break.dart';
+import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/fit_or_icon_tab_bar.dart';
@@ -79,6 +79,7 @@ class _DownloadedFontsTab extends StatefulWidget {
 
 class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
     with AutomaticKeepAliveClientMixin {
+  final _searchKey = GlobalKey();
   String _query = '';
   bool _favoritesOnly = false;
 
@@ -92,6 +93,16 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
     final service = context.watch<FontService>();
     final scheme = Theme.of(context).colorScheme;
     var fonts = service.fonts;
+    if (fonts.isEmpty) {
+      return desktopCentered(
+        context,
+        EmptyStatePlaceholder(
+          icon: Icons.font_download_outlined,
+          title: l10n.fontEmptyTitle,
+          hint: l10n.fontEmptyHint,
+        ),
+      );
+    }
     if (_favoritesOnly) fonts = fonts.where((f) => f.isFavorite).toList();
     if (_query.isNotEmpty) {
       fonts = fonts.where((f) => f.displayName.contains(_query)).toList();
@@ -103,132 +114,115 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
         return a.displayName.compareTo(b.displayName);
       });
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-          // 「お気に入りのみ」は名前つきのチップが行の4割に入るときだけ
-          // 名前を出し、入らなければ星だけにする（判断3：文字は縮めない。
-          // 名前は長押し・ホバーの吹き出しと読み上げ）。名前つきのままだと、
-          // 大きな文字で検索欄が細くなり、ヒントが語の途中で折れて切れた。
-          child: LayoutBuilder(
-            builder: (context, box) => Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
-                    // 文字色（テーマの入力欄はメニューの色で塗りメニューの文字色）。
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: l10n.fontDownloadedSearchHint,
-                      hintStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+    return desktopCentered(
+      context,
+      LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxHeight < 320;
+          final search = Padding(
+            key: _searchKey,
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            // 「お気に入りのみ」は名前つきのチップが行の4割に入るときだけ
+            // 名前を出し、入らなければ星だけにする（判断3：文字は縮めない。
+            // 名前は長押し・ホバーの吹き出しと読み上げ）。名前つきのままだと、
+            // 大きな文字で検索欄が細くなり、ヒントが語の途中で折れて切れた。
+            child: LayoutBuilder(
+              builder: (context, box) => Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
+                      // 文字色（テーマの入力欄はメニューの色で塗りメニューの文字色）。
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
-                      // 入らないヒントは行を増やして全部出す（「…」で切らない）。
-                      hintMaxLines: 4,
-                      prefixIcon: const Icon(Icons.search),
-                      prefixIconColor: Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant,
-                      filled: true,
-                      fillColor: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerLow,
-                      isDense: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    onChanged: (v) => setState(() => _query = v),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: box.maxWidth * 0.4),
-                  child: FirstThatFits(
-                    children: [
-                      FilterChip(
-                        label: Text(
-                          l10n.homeFavoritesOnly,
-                          style: localizedHeadingStyle(
-                            context,
-                            const TextStyle(),
-                          ),
+                      decoration: InputDecoration(
+                        hintText: compact
+                            ? l10n.commonSearch
+                            : l10n.fontDownloadedSearchHint,
+                        hintStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
-                        selected: _favoritesOnly,
-                        onSelected: (v) => setState(() => _favoritesOnly = v),
-                      ),
-                      FilterChip(
-                        label: Icon(
-                          _favoritesOnly ? Icons.star : Icons.star_outline,
-                          size: 18,
-                          semanticLabel: l10n.homeFavoritesOnly,
+                        // 入らないヒントは行を増やして全部出す（「…」で切らない）。
+                        hintMaxLines: compact ? 1 : 4,
+                        prefixIcon: const Icon(Icons.search),
+                        prefixIconColor: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant,
+                        filled: true,
+                        fillColor: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerLow,
+                        isDense: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
                         ),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 2),
-                        showCheckmark: false,
-                        tooltip: l10n.homeFavoritesOnly,
-                        selected: _favoritesOnly,
-                        onSelected: (v) => setState(() => _favoritesOnly = v),
                       ),
-                    ],
+                      onChanged: (v) => setState(() => _query = v),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
-          child: desktopCentered(
-            context,
-            sorted.isEmpty
-                ? Center(
-                    // 画面の端に文を接しさせない。
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 88,
-                            height: 88,
-                            decoration: BoxDecoration(
-                              color: scheme.primaryContainer,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.font_download_outlined,
-                              size: 40,
-                              color: AccentTextTheme.of(context),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            keepKoreanWordsTogether(l10n.fontEmptyTitle),
-                            semanticsLabel: l10n.fontEmptyTitle,
-                            textAlign: TextAlign.center,
+                  const SizedBox(width: 8),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: box.maxWidth * 0.4),
+                    child: FirstThatFits(
+                      children: [
+                        FilterChip(
+                          label: Text(
+                            l10n.homeFavoritesOnly,
                             style: localizedHeadingStyle(
                               context,
-                              const TextStyle(fontWeight: FontWeight.bold),
+                              const TextStyle(),
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.fontEmptyHint,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: scheme.onSurfaceVariant,
-                              fontSize: 12,
-                            ),
+                          selected: _favoritesOnly,
+                          onSelected: (v) => setState(() => _favoritesOnly = v),
+                        ),
+                        FilterChip(
+                          label: Icon(
+                            _favoritesOnly ? Icons.star : Icons.star_outline,
+                            size: 18,
+                            semanticLabel: l10n.homeFavoritesOnly,
                           ),
-                        ],
-                      ),
+                          labelPadding: const EdgeInsets.symmetric(
+                            horizontal: 2,
+                          ),
+                          showCheckmark: false,
+                          tooltip: l10n.homeFavoritesOnly,
+                          selected: _favoritesOnly,
+                          onSelected: (v) => setState(() => _favoritesOnly = v),
+                        ),
+                      ],
                     ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(8),
+                  ),
+                ],
+              ),
+            ),
+          );
+          return CustomScrollView(
+            slivers: [
+              if (compact)
+                SliverToBoxAdapter(child: search)
+              else
+                PinnedHeaderSliver(
+                  child: ColoredBox(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: search,
+                  ),
+                ),
+              if (sorted.isEmpty)
+                EmptyStateSliver(
+                  builder: (size) => EmptyStatePlaceholder(
+                    icon: Icons.search_off_outlined,
+                    title: l10n.fontCatalogNoResults,
+                    scrollable: false,
+                    fitIn: size,
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.all(8),
+                  sliver: SliverList.builder(
                     itemCount: sorted.length,
                     itemBuilder: (context, index) {
                       final f = sorted[index];
@@ -344,9 +338,11 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                       );
                     },
                   ),
-          ),
-        ),
-      ],
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -389,65 +385,35 @@ class _ImportFontTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
     return desktopCentered(
       context,
-      Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  color: scheme.primaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.upload_file_outlined,
-                  size: 40,
-                  color: AccentTextTheme.of(context),
+      LayoutBuilder(
+        builder: (context, constraints) {
+          final compact =
+              constraints.maxHeight <
+              140 + MediaQuery.textScalerOf(context).scale(16) * 3;
+          return EmptyStatePlaceholder(
+            icon: Icons.upload_file_outlined,
+            title: compact ? l10n.fontSettingsTabImport : l10n.fontImportTitle,
+            hint: compact
+                ? '${l10n.fontImportTitle}\n${l10n.fontImportFormats}'
+                : l10n.fontImportFormats,
+            action: FilledButton.icon(
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                // 韓国語の見出しは語の途中で折らない（読み上げは元の文）。
-                keepKoreanWordsTogether(l10n.fontImportTitle),
-                semanticsLabel: l10n.fontImportTitle,
+              icon: const Icon(Icons.add),
+              label: Text(
+                l10n.fontSelectFileButton,
                 textAlign: TextAlign.center,
-                style: localizedHeadingStyle(
-                  context,
-                  const TextStyle(fontWeight: FontWeight.bold),
-                ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                l10n.fontImportFormats,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
-              ),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                // 大きな文字で2行になっても、文字がボタンの縁に届かない
-                // よう上下に余白を取る（既定は文字の倍率に合わせて0まで減る）。
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                ),
-                icon: const Icon(Icons.add),
-                label: Text(
-                  l10n.fontSelectFileButton,
-                  textAlign: TextAlign.center,
-                ),
-                onPressed: () => _addFont(context),
-              ),
-            ],
-          ),
-        ),
+              onPressed: () => _addFont(context),
+            ),
+          );
+        },
       ),
     );
   }

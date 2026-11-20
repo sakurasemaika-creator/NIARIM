@@ -614,6 +614,9 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get fontCatalogCategories => 'Catégories de polices';
+
+  @override
   String get fontCatalogAll => 'Toutes';
 
   @override

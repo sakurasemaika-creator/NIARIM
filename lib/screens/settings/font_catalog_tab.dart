@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/downloadable_font.dart';
 import '../../services/font_service.dart';
+import '../../widgets/responsive.dart';
+import '../../widgets/empty_state_placeholder.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 
 /// 「探してDL」タブの中身。Google Fontsの全ファミリー
 /// （約2000書体）を検索・カテゴリ絞り込みで探し、ダウンロードボタンで
@@ -21,6 +24,7 @@ class FontCatalogTab extends StatefulWidget {
 
 class _FontCatalogTabState extends State<FontCatalogTab>
     with AutomaticKeepAliveClientMixin {
+  final _searchKey = GlobalKey();
   String _query = '';
   String? _category; // null = すべて
   final Set<String> _downloadingIds = {};
@@ -42,97 +46,181 @@ class _FontCatalogTabState extends State<FontCatalogTab>
       return e.displayName.toLowerCase().contains(_query.toLowerCase());
     }).toList();
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-          child: TextField(
-            // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
-            // 文字色（テーマの入力欄はメニューの色で塗りメニューの文字色）。
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-            decoration: InputDecoration(
-              hintText: l10n.fontCatalogSearchHint(catalog.length),
-              hintStyle: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              // 入らないヒントは行を増やして全部出す（「…」で切らない）。
-              hintMaxLines: 4,
-              prefixIcon: const Icon(Icons.search),
-              prefixIconColor: Theme.of(context).colorScheme.onSurfaceVariant,
-              filled: true,
-              fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
-              isDense: true,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            onChanged: (v) => setState(() => _query = v),
-          ),
-        ),
-        const SizedBox(height: 8),
-        // 分類のチップの行。高さはチップに合わせる（36pxに決めていた頃は、
-        // 大きな文字でチップの上下が切れた）。
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
+    return desktopCentered(
+      context,
+      LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxHeight < 320;
+          final header = Column(
+            key: _searchKey,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _categoryChip(null, l10n.fontCatalogAll),
-              for (final category in kFontCategories)
-                Padding(
-                  padding: const EdgeInsets.only(left: 6),
-                  child: _categoryChip(
-                    category,
-                    fontCategoryLabel(l10n, category),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                child: TextField(
+                  // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
+                  // 文字色（テーマの入力欄はメニューの色で塗りメニューの文字色）。
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: compact
+                        ? l10n.commonSearch
+                        : l10n.fontCatalogSearchHint(catalog.length),
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    // 入らないヒントは行を増やして全部出す（「…」で切らない）。
+                    hintMaxLines: compact ? 1 : 4,
+                    prefixIcon: const Icon(Icons.search),
+                    prefixIconColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
+                    filled: true,
+                    fillColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerLow,
+                    isDense: true,
+                    contentPadding: compact
+                        ? const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          )
+                        : null,
+                    suffixIcon: compact
+                        ? IconButton(
+                            tooltip: l10n.fontCatalogCategories,
+                            onPressed: () => _showCategories(l10n),
+                            icon: Icon(
+                              Icons.filter_list,
+                              color: _category == null
+                                  ? scheme.onSurfaceVariant
+                                  : scheme.primary,
+                            ),
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  onChanged: (v) => setState(() => _query = v),
+                ),
+              ),
+              if (!compact) ...[
+                const SizedBox(height: 8),
+                // 分類のチップの行。高さはチップに合わせる（36pxに決めていた頃は、
+                // 大きな文字でチップの上下が切れた）。
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    children: [
+                      _categoryChip(null, l10n.fontCatalogAll),
+                      for (final category in kFontCategories)
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(start: 6),
+                          child: _categoryChip(
+                            category,
+                            fontCategoryLabel(l10n, category),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 8),
+            ],
+          );
+          return CustomScrollView(
+            slivers: [
+              if (compact)
+                SliverToBoxAdapter(child: header)
+              else
+                PinnedHeaderSliver(
+                  child: ColoredBox(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: header,
+                  ),
+                ),
+              if (filtered.isEmpty)
+                EmptyStateSliver(
+                  builder: (size) => EmptyStatePlaceholder(
+                    icon: Icons.search_off_outlined,
+                    title: l10n.fontCatalogNoResults,
+                    scrollable: false,
+                    fitIn: size,
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.all(8),
+                  sliver: SliverList.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final entry = filtered[index];
+                      return Card(
+                        elevation: 1,
+                        shadowColor: ThemeService.activeColorScheme.shadow
+                            .withValues(alpha: 0.15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        color: scheme.surfaceContainerLow,
+                        child: ListTile(
+                          leading: const Icon(Icons.font_download_outlined),
+                          title: Text(entry.displayName),
+                          subtitle: Text(
+                            l10n.fontCatalogEntrySubtitle(
+                              fontCategoryLabel(l10n, entry.category),
+                              entry.license,
+                            ),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                          trailing: _downloadTrailing(context, service, entry),
+                        ),
+                      );
+                    },
                   ),
                 ),
             ],
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _showCategories(AppLocalizations l10n) async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetContext) => ScrollableSheetBody(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: RadioGroup<String>(
+            groupValue: _category ?? '',
+            onChanged: (value) => Navigator.pop(sheetContext, value),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile(value: '', title: Text(l10n.fontCatalogAll)),
+                for (final category in kFontCategories)
+                  RadioListTile(
+                    value: category,
+                    title: Text(fontCategoryLabel(l10n, category)),
+                  ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: 8),
-        Expanded(
-          child: filtered.isEmpty
-              ? Center(
-                  child: Text(
-                    l10n.fontCatalogNoResults,
-                    style: TextStyle(color: scheme.onSurfaceVariant),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final entry = filtered[index];
-                    return Card(
-                      elevation: 1,
-                      shadowColor: ThemeService.activeColorScheme.shadow
-                          .withValues(alpha: 0.15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      color: scheme.surfaceContainerLow,
-                      child: ListTile(
-                        leading: const Icon(Icons.font_download_outlined),
-                        title: Text(entry.displayName),
-                        subtitle: Text(
-                          l10n.fontCatalogEntrySubtitle(
-                            fontCategoryLabel(l10n, entry.category),
-                            entry.license,
-                          ),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                        trailing: _downloadTrailing(context, service, entry),
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
+      ),
     );
+    if (!mounted || selected == null) return;
+    setState(() => _category = selected.isEmpty ? null : selected);
   }
 
   Widget _categoryChip(String? category, String label) {
