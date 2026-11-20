@@ -3536,3 +3536,18 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`community_my_works_controls_test`・`community_own_following_pull_to_refresh_test`・`community_secondary_pull_to_refresh_test`・`community_shorts_live_state_test`・`community_content_filter_dialog_test`・`app_bar_title_fit_or_hide_test`・`app_smoke_test`・`community_bookmarks_hidden_message_test`・`five_fixes_screenshot_test`を`643cc267`で87件成功。
 - 未確認：APIのある環境（読み込み・失敗・ページ送り・フォローの失敗の巻き戻し）、作品が0件・多数の作者、ミュートの解除、7言語・文字2倍・360px。
 - 画像：`shots-r1/r2a092-*`（backup-pending）。
+
+## A093 — フローティングpreview・shorts viewer
+
+### A093 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルド）— 判定：要修正（既存DISC417が残る、DISC539〔A090〕のtestの失敗。一巡目のDISC411・414・415・416は直った）
+
+- 環境：ja、1280×800、マウス・キーボード、使い捨てのプロフィール、APIの接続先なし（見本のデータ）。動画は流れない（Linux）。
+- DISC414は直った：浮かぶプレビューを出したまま表示フィルターのダイアログ・並び順のメニューを開くと、プレビューは消え（幕の上に出ない、`shots-r1/r2a093-02`・`04`右）、閉じると戻る。
+- DISC416は直った：並び順のメニューの「縦画面のみ」→「縦画面モードで見る」で開くショートの表示で、ホイール1目盛り・↓・PageDownで次の作品、↑で前の作品へ移る（`r2a093-15`〜`21`）。
+- DISC415は直った（test）：`community_shorts_live_state_test`が成功（ショートを開くとプレビューを閉じる、上に画面が積まれると止まり戻ると再開）。Linuxでは動画が流れないので音の重なりは実画面で見ていない。
+- DISC417が残る（既存）：表示フィルターのダイアログの「AIで生成した画像・動画を使用した作品を表示しな／い」で「い」1字だけが次の行へ落ちる（1280×800、`r2a093-02c`）。`community_screen.dart`の`SwitchListTile`の`title`は`messageText(...)`になったが、行頭に1字だけ残る形は防いでいない。
+- DISC411はA091で確認済み（右下に出る・動画が無ければ再生の印なし）。
+- 気づいた点（DISCにしない）：右下に出る浮かぶプレビューが右下の「自分の投稿」の浮かぶボタンを覆い、プレビューを閉じるまで押せない（プレビューの真ん中をドラッグしても動かなかった）。
+- test：A093の28本を`643cc267`で167件成功・6件省略・1件失敗（`community_header_quality_test`、A090のDISC539と同じ）。
+- 未確認（実機）：実際の再生・音・一時停止、動画の終わりのループ・次への自動スクロール、再生できない・削除された動画、スマホのスワイプ、7言語・文字2倍、360pxでのダイアログとプレビュー。
+- 画像：`shots-r1/r2a093-*`（backup-pending）。
