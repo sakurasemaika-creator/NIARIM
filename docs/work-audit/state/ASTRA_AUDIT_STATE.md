@@ -3857,3 +3857,16 @@ D001.1〜34と同じく、同じ機能を見たA・W系列の二巡目の判定�
 - D001.64 所有者の判断10件：A003〜A006・A066の二巡目とこの回の実画面（ゴミ箱の操作の位置・フォルダは中身ごとゴミ箱・共有の切り替え・画面名・作品名2行・貼り付けの内訳・トースト5秒・簡体字の括弧・詳細の日時・7言語）。判定：OK（Aの範囲）、残りはDISC494〜496（Discoveryで確認）。
 - D001.65 公式Webのオパール・ミッションの表：W007（OK）・W016〜W021。判定：要修正（DISC554〜556・DISC535）。表の読み上げの実操作（DISC236）は未確認。
 - D001.66〜D001.75（この回に登録）：D001.66はA094・A099・W035〜W040（DISC487・563）、D001.67はA059〜A061、D001.68はA063〜A064（DISC528・529）、D001.69はA091（DISC540）、D001.70はA098・A099、D001.71はA037、D001.72はこの回のDiscoveryの気づいた点とDISC548に加えて`e4d3c5b7`の回帰（DISC539・DISC564〜566、`191ae39b`・`f09082e1`の後も残る）で要修正、D001.73はA087（DISC536）、D001.74はA081（OK）、D001.75はW013（二巡目OK）に照らした。判定はそれぞれのA・W・DISCに合わせ、子TODOの固有の条件（例：D001.66の公開環境でのGoogle認証の削除、D001.70の実AdMobの報告）は未確認。
+
+## D002 — 全フィルター inventory（二巡目）
+
+### D002 二巡目（2026-11-20、Claude・S50、App `643cc267`〔製品 `4f92188f`〕のLinuxデバッグビルド）— 判定：棚卸しを更新（子TODO D002.1〜D002.52を登録）。描画フィルター26種は実画面で開いて確かめた。個々の全条件は未確認が残る
+
+- 棚卸し：描画フィルターは`FilterKind`の26種、演出フィルターは`EffectFilterType`の26種。質感変更（`auroraHologram`、6つの土台・線画を残す）と、ノイズの中の「フィルムグレイン・ノイズ・VHSノイズ」、色調調整の「色反転」も含めた。名前だけで処理の無い種類は無い（どの種類も`filter_engine.dart`の処理へつながる）。1対象=1子TODOとしてD002.1〜D002.26（描画）・D002.27〜D002.52（演出）を登録した。
+- 実画面（Linux debug、en、1280×800、PCの形、作品2の線5本のコマ、無料会員）：フィルターの窓で名前を検索して開き、調整の画面（キャンバスへのプレビュー・設定・「この設定を保存」「保存した設定を当てる」・取り消し/やり直し・Cancel/Apply）を撮った（`shots-r1/fd-01`〜`26`・`fe-*`）。
+  - 開いてプレビューが設定どおりに出た：Gaussian Blur・Lens Blur・Anime Style・Outline（線が太い黒の縁取り）・Sharpen・Unsharp Mask・Vignette（周りが暗い）・Noise（フィルムグレイン/ノイズ/VHSの切り替え）・Retro Anime・CRT・Threshold・Fisheye（円のつまみ）・Chromatic Aberration・Lens Distortion（ペン・消しゴム・バケツでレンズの範囲を描く）・Pixel Art（ブロックの大きさ/ドットの数）・Mosaic・Texture（6つの土台・線を残す）・Background Blend（光の向きの自動）・Ink Pooling・Auto line art（下に線の見本）・Sphere Shading（円のつまみ・影と光を別に/一緒に）・Watercolor Edge。
+  - Tone Curve・Levelsは無料会員ではPremiumの案内（「Learn about Premium membership」「Learn about bonus benefits」「Close」）が出る（`FilterKind`の鍵の印どおり）。
+  - Color Adjustはフィルターの一覧には無く、設定/編集の「色調調整」から使う（A038の二巡目でOK）。
+  - Prism：白い紙の上の黒い線では、プレビューも「Apply」の結果も真っ白で線が見えなくなる（レイヤーが6色の帯をぼかした加算の光に変わり、白の上では白のまま）。取り消し1回で線が戻る。Tipsの「質感・プリズム・VHSは複製レイヤーで試す」のとおりの作りで、DISCにしない（気づいた点：白い紙の上ではプレビューで何も見えないので、何が起きるか分からない）。
+- test：フィルター・選択・髪の折り畳み以外の描画エンジン・GPTの修正に結び付くtest 98ファイル（`test/engine/`の描画フィルター・墨溜まり・縁取り・ドット絵・水彩・プリズム・背景馴染ませ・自動線画、`filter_*`・`effect_filter_*`・`selection_*`・`sphere_shading_canvas_e2e`・`filter_selection_lens_mask_e2e`・`generated_layer_clipping`・`layer_pixels_replace`ほか）を`643cc267`で流した：540件成功・1件失敗。失敗は`selection_tool_bar_test`（スマホ320×720で全選択の後にキャンバスの矩形が上52px→100pxへ動く。`e57a8fc8`・`69cd8dd0`では成功、`e4d3c5b7`で失敗＝`e4d3c5b7`の余白の変更が原因。実画面の360×740でも、全選択すると上に1段〔◐のボタン〕が出て紙が48px下がり縮む＝DISC502の狭い画面での再発、DISC565）。
+- 未確認：各フィルターの適用→取り消し→やり直しと保存・再読込、全設定の境界値、選択範囲・不透明度ロック・ロック中の断り（A037・A038の二巡目でガウスぼかし・色調調整だけ確認）、7言語・スマホの調整モード・文字2倍、Premiumの中、演出フィルター26種の1件ずつの実画面（A054の二巡目は管理・スライダーの取り消し・削除の確認まで）、Visual evidenceのBEFORE/SETTINGS/AFTERの3枚組。

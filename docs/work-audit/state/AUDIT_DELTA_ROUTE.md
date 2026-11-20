@@ -456,6 +456,214 @@ status: todo。Web `cb43385`（送信の内容と添付の形式の検証）・`
 
 特に実処理がUI値を無視していないこと、名称だけのdead filterがないことを確認。
 
+## D002.1 — 描画フィルター「ガウスぼかし」（`FilterKind.gaussianBlur`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006。
+
+## D002.2 — 描画フィルター「レンズぼかし」（`FilterKind.lensBlur`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006。
+
+## D002.3 — 描画フィルター「アニメ風加工」（`FilterKind.animeStyle`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.4 — 描画フィルター「縁取り」（`FilterKind.outline`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D010。
+
+## D002.5 — 描画フィルター「トーンカーブ」（`FilterKind.toneCurve`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D008。
+
+## D002.6 — 描画フィルター「レベル補正」（`FilterKind.levels`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D009。
+
+## D002.7 — 描画フィルター「シャープ」（`FilterKind.sharpen`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.8 — 描画フィルター「アンシャープマスク」（`FilterKind.unsharpMask`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.9 — 描画フィルター「周辺減光」（`FilterKind.vignette`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+
+## D002.10 — 描画フィルター「フィルムグレイン（ノイズ・VHSノイズの設定を含む）」（`FilterKind.noise`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+
+## D002.11 — 描画フィルター「レトロアニメ」（`FilterKind.retroAnime`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+
+## D002.12 — 描画フィルター「ブラウン管」（`FilterKind.crt`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+
+## D002.13 — 描画フィルター「色調調整（色反転を含む）」（`FilterKind.colorAdjust`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.14 — 描画フィルター「二値化」（`FilterKind.threshold`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.15 — 描画フィルター「魚眼レンズ」（`FilterKind.fisheye`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D013。
+
+## D002.16 — 描画フィルター「色収差」（`FilterKind.chromaticAberration`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D013。
+
+## D002.17 — 描画フィルター「眼鏡断層」（`FilterKind.lensDistortion`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D014。
+
+## D002.18 — 描画フィルター「ドット絵」（`FilterKind.pixelate`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D015。
+
+## D002.19 — 描画フィルター「モザイク」（`FilterKind.mosaic`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D015。
+
+## D002.20 — 描画フィルター「質感変更（質感偏光・6つの土台）」（`FilterKind.auroraHologram`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.21 — 描画フィルター「背景馴染ませ」（`FilterKind.backgroundBlend`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D016。
+
+## D002.22 — 描画フィルター「墨溜まり」（`FilterKind.inkPool`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D016。
+
+## D002.23 — 描画フィルター「自動線画」（`FilterKind.autoLineart`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D017。
+
+## D002.24 — 描画フィルター「プリズム」（`FilterKind.prism`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006・D018。
+
+## D002.25 — 描画フィルター「球体陰影」（`FilterKind.sphereShading`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D005。
+
+## D002.26 — 描画フィルター「水彩境界」（`FilterKind.watercolorBorder`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.27 — 演出フィルター「フェード」（`EffectFilterType.fade`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.28 — 演出フィルター「ガウスぼかし」（`EffectFilterType.gaussianBlur`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.29 — 演出フィルター「レンズぼかし」（`EffectFilterType.lensBlur`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.30 — 演出フィルター「モザイク」（`EffectFilterType.mosaic`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.31 — 演出フィルター「色収差」（`EffectFilterType.chromaticAberration`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.32 — 演出フィルター「ノイズ」（`EffectFilterType.noise`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.33 — 演出フィルター「セピア」（`EffectFilterType.sepia`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.34 — 演出フィルター「アニメ調」（`EffectFilterType.animeStyle`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.35 — 演出フィルター「レトロアニメ」（`EffectFilterType.retroAnime`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.36 — 演出フィルター「ブラウン管」（`EffectFilterType.crt`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.37 — 演出フィルター「動くノイズ」（`EffectFilterType.animatedNoise`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.38 — 演出フィルター「雨」（`EffectFilterType.rain`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.39 — 演出フィルター「単色化フィルター」（`EffectFilterType.monochrome`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.40 — 演出フィルター「色調調整」（`EffectFilterType.colorAdjust`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.41 — 演出フィルター「二値化」（`EffectFilterType.threshold`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.42 — 演出フィルター「魚眼レンズ」（`EffectFilterType.fisheye`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.43 — 演出フィルター「ドット絵」（`EffectFilterType.pixelate`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.44 — 演出フィルター「質感変更」（`EffectFilterType.auroraHologram`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.45 — 演出フィルター「墨溜まり」（`EffectFilterType.inkPool`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.46 — 演出フィルター「VHSノイズ」（`EffectFilterType.vhsNoise`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.47 — 演出フィルター「トーンカーブ」（`EffectFilterType.toneCurve`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.48 — 演出フィルター「レベル補正」（`EffectFilterType.levels`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.49 — 演出フィルター「シャープ」（`EffectFilterType.sharpen`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.50 — 演出フィルター「アンシャープマスク」（`EffectFilterType.unsharpMask`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.51 — 演出フィルター「周辺減光」（`EffectFilterType.vignette`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.52 — 演出フィルター「水彩境界」（`EffectFilterType.watercolorBorder`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
 ## D003 — 範囲選択の対象レイヤー
 
 - 作業レイヤーのみ
