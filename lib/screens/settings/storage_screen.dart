@@ -1435,9 +1435,8 @@ class _StorageScreenState extends State<StorageScreen> {
   /// 上下の余白は0）。ボタンは表示の詰め方（VisualDensity）の分だけ上下の
   /// 余白を減らす（PC〔Linux 等〕の詰めた表示は8pxずつで、文字2倍では字と
   /// 縁の間が2〜4pxになった）ので、減らされる分を足しておく。高さの低い
-  /// 画面（横向き・分割の窓）では、ボタンの段が画面に入る方を優先して上下の
-  /// 余白を足さない（ダイアログのボタンの段はスクロールしないので、足すと段が
-  /// はみ出した）。左右は既定と同じく文字の大きさで縮める。
+  /// 画面（横向き・分割の窓）では、警告と操作欄を続けて読めるように、上下の
+  /// 余白を足さない。左右は既定と同じく文字の大きさで縮める。
   EdgeInsetsGeometry _eraseButtonPadding(BuildContext context) {
     final squeezed = math.max(
       0.0,
@@ -1458,15 +1457,9 @@ class _StorageScreenState extends State<StorageScreen> {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        insetPadding: MediaQuery.sizeOf(ctx).height < 320
-            ? const EdgeInsets.symmetric(horizontal: 20, vertical: 8)
-            : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-        constraints: const BoxConstraints(maxWidth: 560),
-        scrollable: true,
-        title: Text(l10n.storageEraseAllConfirmTitle),
-        content: messageText(l10n.storageEraseAllConfirmBody),
-        actions: [
+      builder: (ctx) {
+        final compact = MediaQuery.sizeOf(ctx).height < 320;
+        final actions = [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(l10n.commonCancel),
@@ -1474,10 +1467,7 @@ class _StorageScreenState extends State<StorageScreen> {
           FilledButton(
             style: FilledButton.styleFrom(
               padding: _eraseButtonPadding(ctx),
-              // 名前が折れたときの上下の余白は_eraseButtonPaddingが取る（表示の
-              // 詰め方・高さの低い画面に合わせて）。テーマのラベルの余白
-              // （buttonLabelRoomBuilder）も取ると二重になり、高さの低い画面では
-              // ボタンの段がはみ出した。
+              // The custom padding already accounts for wrapped labels.
               foregroundBuilder: (context, states, child) =>
                   child ?? const SizedBox.shrink(),
             ),
@@ -1488,8 +1478,41 @@ class _StorageScreenState extends State<StorageScreen> {
               textAlign: TextAlign.center,
             ),
           ),
-        ],
-      ),
+        ];
+        final warning = messageText(l10n.storageEraseAllConfirmBody);
+        return AlertDialog(
+          insetPadding: compact
+              ? const EdgeInsets.symmetric(horizontal: 20, vertical: 8)
+              : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+          constraints: const BoxConstraints(maxWidth: 560),
+          scrollable: true,
+          titlePadding: compact
+              ? const EdgeInsets.fromLTRB(16, 12, 16, 0)
+              : null,
+          contentPadding: compact
+              ? const EdgeInsets.fromLTRB(16, 8, 16, 12)
+              : null,
+          title: Text(l10n.storageEraseAllConfirmTitle),
+          // Tall action labels can leave only one line of warning visible in a
+          // short window. Give the warning and buttons the same scroll area.
+          content: compact
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    warning,
+                    const SizedBox(height: 12),
+                    Wrap(
+                      alignment: WrapAlignment.end,
+                      spacing: 8,
+                      children: actions,
+                    ),
+                  ],
+                )
+              : warning,
+          actions: compact ? null : actions,
+        );
+      },
     );
     if (confirmed != true || !mounted) return false;
     _projectListOutdated = true;

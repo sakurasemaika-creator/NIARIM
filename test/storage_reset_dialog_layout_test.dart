@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
@@ -78,6 +79,39 @@ void main() {
           await tester.tap(erase);
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull, reason: profile);
+          if (size.height == 220 && scale == 2) {
+            final dialog = find.byType(AlertDialog);
+            final viewport = find.descendant(
+              of: dialog,
+              matching: find.byType(Scrollable),
+            );
+            final title = find.text(l10n.storageEraseAllConfirmTitle);
+            final body = find.text(l10n.storageEraseAllConfirmBody);
+            final viewportRect = tester.getRect(viewport);
+            expect(
+              viewportRect.contains(
+                tester.getTopLeft(title) + const Offset(1, 1),
+              ),
+              isTrue,
+              reason: profile,
+            );
+            expect(
+              tester.getBottomLeft(title).dy,
+              lessThanOrEqualTo(viewportRect.bottom),
+              reason: profile,
+            );
+            final bodyText = tester.renderObject<RenderParagraph>(
+              find.descendant(of: body, matching: find.byType(RichText)),
+            );
+            expect(
+              viewportRect.bottom - tester.getTopLeft(body).dy,
+              greaterThanOrEqualTo(bodyText.preferredLineHeight),
+              reason: 'The warning starts on screen in $profile',
+            );
+            await tester.drag(viewport, const Offset(0, -180));
+            await tester.pumpAndSettle();
+            expect(tester.getTopLeft(body).dy, lessThan(viewportRect.top));
+          }
           final confirm = find.widgetWithText(
             FilledButton,
             l10n.storageEraseAllButton,
