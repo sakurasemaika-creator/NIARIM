@@ -48,7 +48,7 @@ void recordTimelineMaterialEdit({
   final home = projects.homeOf(projectId, before.id);
   if (home == null) return;
   final after = projects
-      .layersOf(projectId, home.sceneId, home.frameIndex)
+      .storedLayersOf(projectId, home.sceneId, home.frameIndex)
       .where((layer) => layer.id == before.id)
       .firstOrNull;
   if (after == null || identical(after, before)) return;
@@ -177,7 +177,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     final home = _projects.homeOf(widget.projectId, widget.layerId);
     if (home == null) return null;
     final layer = _projects
-        .layersOf(widget.projectId, home.sceneId, home.frameIndex)
+        .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
         .where((l) => l.id == widget.layerId)
         .firstOrNull;
     if (layer == null) return null;

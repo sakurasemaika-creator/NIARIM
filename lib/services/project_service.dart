@@ -1728,17 +1728,24 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Data stored on a frame, including range layers whose home is currently
+  /// outside their visible span. Use this for editing the stored layer.
+  List<Layer> storedLayersOf(String projectId, String sceneId, int frameIndex) {
+    final scene = sceneOf(projectId, sceneId);
+    if (scene == null || frameIndex < 0 || frameIndex >= scene.frames.length) {
+      return const [];
+    }
+    return List.unmodifiable(scene.frames[frameIndex].layers);
+  }
+
   /// 指定フレームで実際に表示すべきレイヤー一覧を返す。このフレームに物理的に
   /// 存在するレイヤー（先頭側）に加え、他のフレームがホーム位置となっている
   /// 表示範囲レイヤー（共通・タイムライン素材・ウォーターマーク）のうち、
   /// 表示範囲がこのフレームを含むものを末尾へ動的に合成する（
   /// 表示範囲内のフレームのみレイヤーパレット・キャンバスへ表示）。
   List<Layer> layersOf(String projectId, String sceneId, int frameIndex) {
-    final scene = sceneOf(projectId, sceneId);
-    if (scene == null || frameIndex >= scene.frames.length) return [];
-    final ownLayers = scene.frames[frameIndex].layers;
-    final homes = _layerHomes[projectId];
-    if (homes == null || homes.isEmpty) return List.unmodifiable(ownLayers);
+    final ownLayers = storedLayersOf(projectId, sceneId, frameIndex);
+    final homes = _layerHomes[projectId] ?? const <String, LayerHome>{};
     return List.unmodifiable(
       resolveFrameLayers(
         _scenes[projectId] ?? const [],
@@ -2175,7 +2182,7 @@ class ProjectService extends ChangeNotifier {
     final home =
         _layerHomes[projectId]?[layerId] ??
         (sceneId: sceneId, frameIndex: frameIndex);
-    final layers = layersOf(projectId, home.sceneId, home.frameIndex);
+    final layers = storedLayersOf(projectId, home.sceneId, home.frameIndex);
     final removedIndex = layers.indexWhere((l) => l.id == layerId);
     if (removedIndex < 0) return;
     if (layers[removedIndex].type == LayerType.folder &&
@@ -2264,10 +2271,11 @@ class ProjectService extends ChangeNotifier {
   }) {
     final tm = tileManagerOf(projectId);
     final key = tileKeyFor(projectId, sceneId, frameIndex, layerId);
-    final layerBefore = layersOf(
+    final home = homeOf(projectId, layerId);
+    final layerBefore = storedLayersOf(
       projectId,
-      sceneId,
-      frameIndex,
+      home?.sceneId ?? sceneId,
+      home?.frameIndex ?? frameIndex,
     ).where((layer) => layer.id == layerId).firstOrNull;
     // Never take over a recording someone else (a stroke, a selection
     // transform) has open on this tile manager.

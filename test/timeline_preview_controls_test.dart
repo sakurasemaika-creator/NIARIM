@@ -16,6 +16,7 @@ import 'package:niarim/engine/undo_manager.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/layer_keyframe.dart';
 import 'package:niarim/models/timeline_marker.dart';
 import 'package:niarim/widgets/keyframe_preview.dart';
 import 'package:niarim/models/autofill_preset.dart';
@@ -1209,6 +1210,37 @@ void main() {
             .map((text) => text.data ?? text.semanticsLabel)
             .join(' / '),
       );
+      ps.updateLayer(
+        projectId: id,
+        sceneId: scene,
+        frameIndex: 0,
+        layer: common.copyWith(rangeStart: 2, rangeEnd: 2),
+      );
+      await pumpRealAsync(tester, const Duration(milliseconds: 200));
+      expect(area().currentFrame, 0);
+      expect(area().currentLayerId, isNot(common.id));
+      expect(commonRow, findsNothing);
+      await stroke();
+      expect(
+        tm
+            .exportAll()[tileKey(0, common.id)]
+            ?.values
+            .expand((bytes) => bytes)
+            .toList(),
+        originalCommonPixels,
+      );
+
+      ps.updateLayer(
+        projectId: id,
+        sceneId: scene,
+        frameIndex: 0,
+        layer: common,
+      );
+      await pumpRealAsync(tester, const Duration(milliseconds: 200));
+      await tester.tap(commonRow);
+      await tester.pump();
+      expect(area().currentLayerId, common.id);
+
       final center = tester.getCenter(canvas);
       final left = await tester.startGesture(center - const Offset(40, 0));
       final right = await tester.startGesture(center + const Offset(40, 0));
@@ -1405,7 +1437,7 @@ void main() {
     int savedStart(String clip) => clip == 'drag-audio'
         ? ps.audioClipsOf(id, scene).single.startFrame
         : ps
-                  .layersOf(id, scene, 2)
+                  .storedLayersOf(id, scene, 2)
                   .singleWhere((l) => l.id == clip)
                   .rangeStart! -
               1;
@@ -1680,6 +1712,110 @@ void main() {
     await tester.pump();
     expect(viewport.value!.center.dx, lessThan(panned));
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('material scale reaches the thumbnail on its own home frame', (
+    tester,
+  ) async {
+    late String sceneId;
+    late Layer material;
+    final id = await openTimeline(
+      tester,
+      project: const Size(160, 90),
+      screen: const Size(1280, 800),
+      pc: true,
+      fraction: .4,
+      setUpProject: (projects, id) {
+        sceneId = projects.scenesOf(id).single.id;
+        projects.setSceneFrameCount(id, sceneId, 5);
+        material = projects
+            .addLayer(
+              projectId: id,
+              sceneId: sceneId,
+              frameIndex: 2,
+              type: LayerType.timelineImage,
+              name: 'Blue shape',
+            )
+            .copyWith(
+              rangeMode: LayerRangeMode.frameRange,
+              rangeStart: 3,
+              rangeEnd: 4,
+            );
+        projects.updateLayer(
+          projectId: id,
+          sceneId: sceneId,
+          frameIndex: 2,
+          layer: material,
+        );
+        final tiles = projects.tileManagerOf(id);
+        final key = projects.tileKeyFor(id, sceneId, 2, material.id);
+        final pixels = Uint8List(tiles.canvasWidth * tiles.canvasHeight * 4);
+        for (
+          var y = tiles.canvasHeight ~/ 2 - 24;
+          y < tiles.canvasHeight ~/ 2 + 24;
+          y++
+        ) {
+          for (
+            var x = tiles.canvasWidth ~/ 2 - 32;
+            x < tiles.canvasWidth ~/ 2 + 32;
+            x++
+          ) {
+            final offset = (y * tiles.canvasWidth + x) * 4;
+            pixels[offset + 2] = 255;
+            pixels[offset + 3] = 255;
+          }
+        }
+        tiles.replaceLayerPixels(key, pixels);
+      },
+    );
+
+    Future<int> bluePixels(int frame) async {
+      final thumbnail = find
+          .descendant(
+            of: find.byKey(ValueKey('timelineFrameCell$frame')),
+            matching: find.byType(RawImage),
+          )
+          .first;
+      final image = tester.renderObject<RenderImage>(thumbnail).image!.clone();
+      return (await tester.runAsync(() async {
+        try {
+          final bytes = (await image.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          ))!;
+          var area = 0;
+          for (var offset = 0; offset < bytes.lengthInBytes; offset += 4) {
+            if (bytes.getUint8(offset + 2) > 127 &&
+                bytes.getUint8(offset) < 64) {
+              area++;
+            }
+          }
+          return area;
+        } finally {
+          image.dispose();
+        }
+      }))!;
+    }
+
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    final fullSize = await bluePixels(2);
+    expect(fullSize, greaterThan(30));
+    expect(await bluePixels(3), fullSize);
+    final projects = tester
+        .element(find.byType(TimelineScreen))
+        .read<ProjectService>();
+    projects.updateLayer(
+      projectId: id,
+      sceneId: sceneId,
+      frameIndex: 2,
+      layer: material.copyWith(
+        keyframes: const [LayerKeyframe(frameIndex: 2, scale: .5)],
+      ),
+    );
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    final scaled = await bluePixels(2);
+    expect(scaled, greaterThan(0));
+    expect(scaled, lessThan(fullSize ~/ 2));
+    expect(await bluePixels(3), scaled);
   });
 
   for (final (route, key) in const [

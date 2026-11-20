@@ -1,8 +1,11 @@
 import 'helpers/project_storage.dart';
 
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
+import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/engine/filter_engine.dart';
 import 'package:niarim/engine/undo_manager.dart';
 import 'package:niarim/models/effect_filter_instance.dart';
@@ -210,6 +213,44 @@ void main() {
       history.redo(projectId: id);
       expect(projects.sceneOf(id, source)!.frames.length, 4);
       expect(tiles.getPixelColorAt(homeKey, 0, 0)?.toARGB32(), 0xffff0000);
+
+      final narrower = moved.copyWith(rangeStart: 3, rangeEnd: 3);
+      projects.updateLayer(
+        projectId: id,
+        sceneId: source,
+        frameIndex: 1,
+        layer: narrower,
+      );
+      expect(projects.storedLayersOf(id, source, 1), contains(narrower));
+      expect(projects.layersOf(id, source, 1), isNot(contains(narrower)));
+      expect(
+        projects.stackedLayersOf(id, source, 1).layers,
+        isNot(contains(narrower)),
+      );
+      expect(projects.layersOf(id, source, 2), contains(narrower));
+      expect(tiles.getPixelColorAt(homeKey, 0, 0)?.toARGB32(), 0xffff0000);
+
+      projects.removeEffectFilter(id, source, 'blur');
+      final engine = ExportEngine();
+      Future<img.Pixel> firstExportedPixel(int frame) async {
+        final file = await engine.exportFrameImage(
+          scenes: projects.scenesOf(id),
+          tileManager: tiles,
+          sceneId: source,
+          frameIndex: frame,
+          drawingWidth: tiles.canvasWidth,
+          drawingHeight: tiles.canvasHeight,
+          width: 16,
+          height: 12,
+          backgroundColor: 0,
+          asJpeg: false,
+        );
+        return img.decodePng(await File(file).readAsBytes())!.getPixel(0, 0);
+      }
+
+      expect((await firstExportedPixel(1)).a, 0);
+      final visible = await firstExportedPixel(2);
+      expect((visible.r, visible.a), (255, 255));
     },
   );
 }

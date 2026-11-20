@@ -2128,7 +2128,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final home = ps.homeOf(widget.projectId, id);
     if (home == null || home.sceneId != _selectedSceneId) return null;
     final layer = ps
-        .layersOf(widget.projectId, home.sceneId, home.frameIndex)
+        .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
         .where((l) => l.id == id)
         .firstOrNull;
     if (layer == null) return null;
@@ -2144,7 +2144,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final layer = home == null
         ? null
         : ps
-              .layersOf(widget.projectId, home.sceneId, home.frameIndex)
+              .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
               .where((l) => l.id == layerId)
               .firstOrNull;
     setState(() {
@@ -4128,14 +4128,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 },
               ),
             ListTile(
-              leading: Icon(
-                Icons.delete,
-                color: ThemeService.activeColorScheme.error,
-              ),
-              title: Text(
-                l10n.timelineSceneDeleteMenuItem,
-                style: TextStyle(color: ThemeService.activeColorScheme.error),
-              ),
+              leading: const Icon(Icons.delete_outline),
+              title: Text(l10n.timelineSceneDeleteMenuItem),
               // シーンが1件のみの場合は削除不可
               onTap: scenes.length > 1
                   ? () {
@@ -6170,7 +6164,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 final home = ps.homeOf(widget.projectId, layer.id);
                 if (home == null) return;
                 final current = ps
-                    .layersOf(widget.projectId, home.sceneId, home.frameIndex)
+                    .storedLayersOf(
+                      widget.projectId,
+                      home.sceneId,
+                      home.frameIndex,
+                    )
                     .where((item) => item.id == layer.id)
                     .firstOrNull;
                 if (current == null) return;
@@ -6210,7 +6208,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       PremiumFeature.watermark,
                     ) ||
                     !ps
-                        .layersOf(
+                        .storedLayersOf(
                           widget.projectId,
                           home.sceneId,
                           home.frameIndex,
@@ -7784,7 +7782,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         projectService.homeOf(widget.projectId, clip.id) ??
         (sceneId: sceneId, frameIndex: _currentFrame);
     final sourceLayer = projectService
-        .layersOf(widget.projectId, home.sceneId, home.frameIndex)
+        .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
         .where((l) => l.id == clip.id)
         .firstOrNull;
     if (sourceLayer == null) return;
@@ -8168,7 +8166,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           projectService.homeOf(widget.projectId, clip.id) ??
           (sceneId: sceneId, frameIndex: _currentFrame);
       final layer = projectService
-          .layersOf(widget.projectId, home.sceneId, home.frameIndex)
+          .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
           .where((l) => l.id == clip.id)
           .firstOrNull;
       if (layer == null) return;
@@ -9815,11 +9813,7 @@ class _EffectFilterSheet extends StatelessWidget {
               onPressed: () => _duplicate(context, e, effects),
             ),
             IconButton(
-              icon: Icon(
-                Icons.delete,
-                size: 18,
-                color: ThemeService.activeColorScheme.error,
-              ),
+              icon: const Icon(Icons.delete_outline, size: 18),
               tooltip: l10n.commonDelete,
               onPressed: () async {
                 if (!await confirmDelete(
@@ -11439,9 +11433,9 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
           ps.tileKeyFor(frame.projectId, frame.sceneId, frame.frameIndex, l.id),
       drawW,
       drawH,
-      keyframeOf: (l) => l.keyframes.isEmpty
+      keyframeOf: (layer) => layer.keyframes.isEmpty
           ? null
-          : LayerKeyframeEngine().valueAt(l.keyframes, frame.frameIndex),
+          : materialTransformAt(layer, frame.frameIndex),
       groupKeyframeOf: (l) {
         final group = ps.groupContainingLayer(
           frame.projectId,

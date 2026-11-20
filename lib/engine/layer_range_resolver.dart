@@ -64,7 +64,11 @@ List<Layer> resolveFrameLayers(
   int frameIndex,
   List<Layer> ownLayers,
 ) {
-  if (homes.isEmpty) return ownLayers;
+  final visibleOwn = ownLayers.where((layer) {
+    if (!isRangeLayerType(layer.type)) return true;
+    final homeSceneId = homes[layer.id]?.sceneId ?? sceneId;
+    return rangeAppliesToFrame(layer, homeSceneId, sceneId, frameIndex);
+  }).toList();
   final ownIds = ownLayers.map((l) => l.id).toSet();
   final extra = <Layer>[];
   for (final entry in homes.entries) {
@@ -77,8 +81,8 @@ List<Layer> resolveFrameLayers(
       extra.add(layer);
     }
   }
-  if (extra.isEmpty) return ownLayers;
-  return [...ownLayers, ...extra];
+  if (extra.isEmpty && visibleOwn.length == ownLayers.length) return ownLayers;
+  return [...visibleOwn, ...extra];
 }
 
 /// レイヤーのTileManager合成キーを解決する。表示範囲レイヤーは表示中の

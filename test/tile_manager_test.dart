@@ -290,7 +290,10 @@ void main() {
 
     tm.beginUndoRecording(layer);
     final tile = tm.getOrCreateTile(layer, 0, 0);
-    tm.blendPixel(tile, 2, 1, 0, 0, 255, 255);
+    // Painting the same red still covers this pixel. The untouched red
+    // next to it must remain red after palette conversion.
+    tm.markPaintedPixel(tile, TileManager.tileSize + 2);
+    tm.blendPixel(tile, 2, 1, 255, 0, 0, 255);
     tm.blendPixel(tile, 3, 1, 0, 0, 255, 128);
     tm.transformRecordingPixels(
       (pixels) => const PixelArtEngine().convert(
