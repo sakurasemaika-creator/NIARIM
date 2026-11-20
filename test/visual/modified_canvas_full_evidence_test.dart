@@ -255,7 +255,8 @@ void main() {
       await shot('04_pc_filter_immersive_live_preview');
       await tester.tap(find.byKey(const ValueKey('filter-cancel-button')));
       await settle();
-      expect(find.byType(MenuBar), findsOneWidget);
+      expect(find.byType(MenuBar), findsNothing);
+      expect(find.byType(ToolbarWidget), findsOneWidget);
       await shot('05_pc_filter_returns_to_workspace');
       // Multiple distinct filter families use the identical immersive
       // editing chrome and restoration behavior; catalog already shows all
@@ -272,7 +273,8 @@ void main() {
         await shot(caseItem.label);
         await tester.tap(find.byKey(const ValueKey('filter-cancel-button')));
         await settle();
-        expect(find.byType(MenuBar), findsOneWidget);
+        expect(find.byType(MenuBar), findsNothing);
+        expect(find.byType(ToolbarWidget), findsOneWidget);
       }
 
       await settings.setDefaultDockedPanels({CanvasDockPanel.colorAdjust});

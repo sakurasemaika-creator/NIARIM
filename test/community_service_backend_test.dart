@@ -77,6 +77,42 @@ void main() {
     expect(service.isLoading, isFalse);
   });
 
+  test(
+    'blocked works disappear from cached discovery, search and ranking',
+    () async {
+      final client = MockClient((request) async {
+        if (request.method == 'POST' && request.url.path == '/blocks') {
+          return http.Response('{"ok":true}', 201, headers: jsonHeaders);
+        }
+        return http.Response(
+          jsonEncode({
+            'works': [
+              work('one', 'Blocked author'),
+              {...work('two', 'Another author'), 'authorId': 'user_2'},
+            ],
+          }),
+          200,
+          headers: jsonHeaders,
+        );
+      });
+      final service = CommunityService(api: api(client));
+      addTearDown(service.dispose);
+      await service.refreshFromBackend();
+      await service.refreshSearch(query: '', tagMode: false, exact: false);
+      await service.fetchRanking(RankingPeriod.bookmarks);
+      await service.setAuthorBlocked('user_1', true);
+
+      for (final works in [
+        service.latestPageWorks,
+        service.searchedWorks,
+        service.rankedWorks,
+        service.discoverableWorks,
+      ]) {
+        expect(works.map((work) => work.id), ['two']);
+      }
+    },
+  );
+
   test('取得に失敗しても手元の一覧は消さず、理由を残す', () async {
     var succeed = true;
     final client = MockClient((request) async {

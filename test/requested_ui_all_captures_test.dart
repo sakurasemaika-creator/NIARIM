@@ -409,11 +409,8 @@ void main() {
     });
     await navigate('/home');
     await navigate('/canvas/${colored.id}');
-    expect(
-      find.byType(MenuBar),
-      findsOneWidget,
-      reason: 'The desktop canvas must show File/Layer/View/Settings menus.',
-    );
+    expect(find.byType(MenuBar), findsNothing);
+    expect(find.byIcon(Icons.save_outlined), findsWidgets);
     expect(find.byKey(const Key('canvasTimelineModeButton')), findsOneWidget);
     // The panel body previously cast an 8dp solid-looking black shadow
     // inside each PC dock window. Docked panels fill their window without a

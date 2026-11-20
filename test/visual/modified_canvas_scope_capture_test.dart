@@ -222,7 +222,8 @@ void main() {
       await shot('04_pc_filter_immersive_live_preview');
       await tester.tap(find.byKey(const ValueKey('filter-cancel-button')));
       await settle();
-      expect(find.byType(MenuBar), findsOneWidget);
+      expect(find.byType(MenuBar), findsNothing);
+      expect(find.byType(ToolbarWidget), findsOneWidget);
       await shot('05_pc_filter_returns_to_workspace');
 
       await settings.setDefaultDockedPanels({CanvasDockPanel.colorAdjust});

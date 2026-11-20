@@ -179,6 +179,7 @@ class CommunityService extends ChangeNotifier {
   List<CommunityWork> get searchedWorks => [
     for (final work in _works)
       if (_searchIds.contains(work.id) &&
+          !isAuthorBlocked(work.authorId) &&
           work.isNiarimPublished &&
           !work.isUnavailable)
         work,
@@ -186,6 +187,7 @@ class CommunityService extends ChangeNotifier {
   List<CommunityWork> get latestPageWorks => [
     for (final work in _works)
       if (_latestIds.contains(work.id) &&
+          !isAuthorBlocked(work.authorId) &&
           work.isNiarimPublished &&
           !work.isUnavailable)
         work,
@@ -705,7 +707,8 @@ class CommunityService extends ChangeNotifier {
   /// The viewer's bookmarks, newest first, as their filters allow.
   /// Their own works remain visible even when hidden from other viewers.
   List<CommunityWork> get bookmarkedWorksForViewer => [
-    for (final id in bookmarkedIdsNewestFirst) ?byId(id),
+    for (final id in bookmarkedIdsNewestFirst)
+      if (byId(id) case final work? when !isAuthorBlocked(work.authorId)) work,
   ];
 
   List<String> get bookmarkedIdsNewestFirst =>
@@ -719,8 +722,14 @@ class CommunityService extends ChangeNotifier {
   // Keep the raw discoverable slots, including muted works, so ranking
   // positions do not shift when a viewer mutes an author or keyword.
   // Individual feeds/author lists apply the viewer's filters separately.
-  List<CommunityWork> get discoverableWorks =>
-      _works.where((w) => w.isNiarimPublished && !w.isUnavailable).toList();
+  List<CommunityWork> get discoverableWorks => _works
+      .where(
+        (w) =>
+            w.isNiarimPublished &&
+            !w.isUnavailable &&
+            !isAuthorBlocked(w.authorId),
+      )
+      .toList();
 
   /// Whether a work may appear in public discovery surfaces for the
   /// current viewer. Owner-only management screens intentionally bypass this.
@@ -771,7 +780,9 @@ class CommunityService extends ChangeNotifier {
   List<CommunityWork> get rankedWorks => [
     for (final id in _rankingIds)
       if (byId(id) case final work?
-          when work.isNiarimPublished && !work.isUnavailable)
+          when work.isNiarimPublished &&
+              !work.isUnavailable &&
+              !isAuthorBlocked(work.authorId))
         work,
   ];
 
@@ -1919,7 +1930,10 @@ class CommunityService extends ChangeNotifier {
       }
     }
     for (final r in _reposts) {
-      if (!_favoriteAuthorIds.contains(r.reposterId)) continue;
+      if (!_favoriteAuthorIds.contains(r.reposterId) ||
+          isAuthorBlocked(r.reposterId)) {
+        continue;
+      }
       final work = byId(r.workId);
       if (work == null || !isDiscoverableForViewer(work)) {
         continue;
@@ -2063,6 +2077,7 @@ class CommunityService extends ChangeNotifier {
         .where(
           (w) =>
               ids.contains(w.id) &&
+              !isAuthorBlocked(w.authorId) &&
               (w.isUnavailable || isOwnWork(w) || w.isNiarimPublished),
         )
         .toList();
