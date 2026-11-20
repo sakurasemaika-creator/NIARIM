@@ -3522,3 +3522,17 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`community_preview_responsive_test`・`community_preview_size_test`・`community_work_detail_actions_fit_test`・`community_detail_metadata_test`・`app_smoke_test`・`community_ai_flag_edit_test`・`community_playback_privacy_actions_test`・`community_post_publish_contract_test`・`community_store_sync_test`・`community_tag_limit_ui_test`・`community_work_time_date_l10n_test`を`643cc267`で95件成功（一巡目に落ちた`community_preview_responsive_test`も成功）。
 - 未確認：他人の非公開・削除済み・ブロック済み・不正なIDの詳細、再生と大きさのドラッグ、ブックマーク・リポスト・タグの連打と失敗の巻き戻し、通報・ブロックの送信（APIが要る）、7言語・文字2倍・360px。
 - 画像：`shots-r1/r2a091-*`（backup-pending）。
+
+## A092 — 作者作品（直接遷移）
+
+### A092 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルド）— 判定：要修正（新DISC541。一巡目のDISC412は直った、DISC413は規約の文の変更で決着したが今の画面と食い違う）
+
+- 環境：ja、1280×800、マウス、使い捨てのプロフィール、APIの接続先なし（見本のデータ）。
+- DISC412は直った：自分の作者の画面（見本の「あにめ工房ミラ」）は「4作品　フォロー0人 ›　フォロワー4人 ›」で、どちらも押せる。「フォロワー4人」→「フォロワー」の画面に「ペン先ラボ」「コマ撮り部」「inkdrop」「よあけスタジオ」（`shots-r1/r2a092-01`・`02`）。上に「作品」「ブックマーク」のタブ。
+- 他人の作者の画面（inkdrop）は「4作品　フォロー1人　フォロワー2人」がただの文で、ブックマークのタブも無い（`r2a092-03`）。他人の非公開の一覧は出ない。「フォロー」とミュートのボタン。
+- DISC413（規約の公開の切り替え）：`e88fe320`（11-18 14:23）で利用規約第12条8が「フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。…」に変わり、切り替えの約束は消えた。
+- 要修正（新、DISC541）：その37分後の`6ef4edad`（11-18 15:01「Restore private follower access」）で自分のフォロワーの一覧（名前つき）が戻ったが、規約（アプリの7言語と、A085で一致を確かめたWebの規約）は「フォロワーの氏名・表示名や一覧は表示せず」のまま。実画面でも自分のフォロワーの表示名の一覧が出る。
+- 案Aの文字色（DISC074の一部）：自分の作者の画面の「フォロー0人 ›」「フォロワー4人 ›」は差し色の緑。この使い捨てのプロフィールのテーマは「アクセントの文字・アイコン色」を指定していない（差し色と同じ）ので見分けられない（未確認）。
+- test：`community_my_works_controls_test`・`community_own_following_pull_to_refresh_test`・`community_secondary_pull_to_refresh_test`・`community_shorts_live_state_test`・`community_content_filter_dialog_test`・`app_bar_title_fit_or_hide_test`・`app_smoke_test`・`community_bookmarks_hidden_message_test`・`five_fixes_screenshot_test`を`643cc267`で87件成功。
+- 未確認：APIのある環境（読み込み・失敗・ページ送り・フォローの失敗の巻き戻し）、作品が0件・多数の作者、ミュートの解除、7言語・文字2倍・360px。
+- 画像：`shots-r1/r2a092-*`（backup-pending）。
