@@ -3470,3 +3470,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：A087の9本＋`tips_detail_layout_test`（`2a2f2470`で追加）を`643cc267`で98件成功。図の送りのキー操作を見るtestは無い。
 - 未確認：67件すべての説明と今の操作の一致（読んだのは数件）、「実制作へ適用」の道、7言語・文字2倍・360px、スワイプ（タッチ）、拡大の画面での図の送り。
 - 画像：`shots-r1/r2a087-*`（backup-pending）。
+
+## A088 — Premium /premium・ロックUI
+
+### A088 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルド）— 判定：OK〔購入の実操作は未確認〕（一巡目のDISC401〜403は直った）
+
+- 環境：ja、1280×800、マウス、使い捨てのプロフィール（無料会員）。Linuxはストアにつながらない。ホームの引き出し→「契約状態」（「無料会員」「特典情報の確認にはログインが必要です」）→「プレミアム会員について詳しく見る」。
+- DISC401は直った：「プラン」に円の固定値が出ない。「ストアから購入情報を取得できませんでした。通信を確認して再試行してください。」と「再試行」、「年額プラン」「月額プラン」は名前だけ（価格・取り消し線・「おすすめ」の印なし）。`premium_screen_price_test`（ユーロの価格・未接続で円が出ず再試行）が成功。
+- DISC403は直った：知らせは利用者向けの文（「実機・ストア審査環境」を言わない）で、エラーの色ではない。価格の無いプランのカードは影が無く（`elevation: 0`）、読み上げでも押せない扱いで、押しても何も起きない。「購入を復元」は押せない色。
+- DISC402は直った：上の紹介「公式エンドマークの表示切り替え」と比較表「公式エンドマーク」がそろう（英語「Show or hide the official end mark」「Official End Mark」、韓国語「공식 엔드마크」）。比較表に「自動操作（操作記録）」もある。
+- 気づいた点（DISCにしない）：上の紹介の機能の欄のキー名は`premiumHeroHighlightWatermark`のまま（中身はエンドマーク、表示には影響なし）。
+- test：`premium_all_entry_points_test`・`premium_coin_account_isolation_test`・`premium_comparison_table_test`・`premium_expiry_video_output_test`・`premium_lock_widget_test`・`premium_play_verification_policy_test`・`premium_production_entry_wiring_test`・`premium_screen_price_test`を`643cc267`で26件成功。
+- 未確認：購入・取り消し・復元・失敗・期限（sandbox）、購入の途中の表示、7言語・文字2倍・360pxの比較表、各ロックの入口の全部（ウォーターマークの錠はA082で確認）。
+- 画像：`shots-r1/r2a088-*`（backup-pending）。
