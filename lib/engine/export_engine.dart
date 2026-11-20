@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
@@ -105,6 +106,37 @@ class ExportTiming {
       ((index * 100 / outputFps).round() -
           ((index - 1) * 100 / outputFps).round()) *
       10;
+}
+
+Uint8List _encodeGifFrames(
+  ({String path, int width, int height, int frameCount, ExportTiming timing})
+  request,
+) {
+  final (:path, :width, :height, :frameCount, :timing) = request;
+  final encoder = img.GifEncoder();
+  final input = File(path).openSync();
+  final frameBytes = width * height * 4;
+  try {
+    for (var index = 0; index < frameCount; index++) {
+      final rgba = input.readSync(frameBytes);
+      if (rgba.length != frameBytes) {
+        throw const FileSystemException('Incomplete GIF frame data');
+      }
+      encoder.addFrame(
+        img.Image.fromBytes(
+          width: width,
+          height: height,
+          bytes: rgba.buffer,
+          bytesOffset: rgba.offsetInBytes,
+          numChannels: 4,
+        ),
+        duration: frameCount == 1 ? null : timing.gifDelayMs(index + 1) ~/ 10,
+      );
+    }
+    return encoder.finish()!;
+  } finally {
+    input.closeSync();
+  }
 }
 
 class ExportEngine {
@@ -533,7 +565,7 @@ class ExportEngine {
     }
   }
 
-  /// Remove the temporary folder of frame PNGs a video export wrote, whether
+  /// Remove an export’s temporary frame folder, whether
   /// the export finished, failed or was cancelled. A folder that cannot be
   /// removed is cleared when the next export of the same kind starts; it must
   /// not turn a finished export into a failure.
@@ -699,63 +731,79 @@ class ExportEngine {
     ExportProgressCallback? onProgress,
     ExportCancelToken? cancelToken,
   }) async {
-    // image v4: アニメーションGIFはimg.Imageにフレームを追加する
-    img.Image? gifImage;
     final timing = ExportTiming(
       sourceFps: sourceFps ?? fps,
       outputFps: fps,
       maxSeconds: maxSeconds,
     );
     final totalFrames = timing.outputFrames(scenes);
-    int index = 0;
+    if (totalFrames == 0) {
+      throw StateError('GIF export needs at least one frame');
+    }
     final layerHomes = buildLayerHomeIndex(scenes);
+    final tmpDir = await getTemporaryDirectory();
+    final framesDir = _newFramesDir(tmpDir, 'gif_export_frames');
+    final input = File('${framesDir.path}/frames.rgba');
 
-    for (final (:scene, :frame) in timing.samples(scenes)) {
+    try {
+      // Stage the frames on disk so long exports do not retain every RGBA
+      // frame in memory or copy the full animation to the encoding isolate.
+      final frames = await input.open(mode: FileMode.write);
+      try {
+        int index = 0;
+        for (final (:scene, :frame) in timing.samples(scenes)) {
+          if (cancelToken?.isCancelled == true) {
+            throw const ExportCancelledException();
+          }
+          final rgba = await renderFrame(
+            layers: resolveFrameLayers(
+              scenes,
+              layerHomes,
+              scene.id,
+              frame.index,
+              frame.layers,
+            ),
+            tileManager: tileManager,
+            sceneId: scene.id,
+            scene: scene,
+            frameIndex: frame.index,
+            drawingWidth: drawingWidth,
+            drawingHeight: drawingHeight,
+            width: width,
+            height: height,
+            backgroundColor: backgroundColor,
+            cameraKeyframes: scene.cameraKeyframes,
+            effectFilters: scene.effectFilters,
+            layerHomes: layerHomes,
+            groups: scene.groups,
+          );
+          await frames.writeFrom(rgba);
+          onProgress?.call(++index, totalFrames);
+        }
+      } finally {
+        await frames.close();
+      }
+
       if (cancelToken?.isCancelled == true) {
         throw const ExportCancelledException();
       }
-      final rgba = await renderFrame(
-        layers: resolveFrameLayers(
-          scenes,
-          layerHomes,
-          scene.id,
-          frame.index,
-          frame.layers,
-        ),
-        tileManager: tileManager,
-        sceneId: scene.id,
-        scene: scene,
-        frameIndex: frame.index,
-        drawingWidth: drawingWidth,
-        drawingHeight: drawingHeight,
+      final gifBytes = await compute(_encodeGifFrames, (
+        path: input.path,
         width: width,
         height: height,
-        backgroundColor: backgroundColor,
-        cameraKeyframes: scene.cameraKeyframes,
-        effectFilters: scene.effectFilters,
-        layerHomes: layerHomes,
-        groups: scene.groups,
-      );
-      final imgFrame = img.Image.fromBytes(
-        width: width,
-        height: height,
-        bytes: rgba.buffer,
-        numChannels: 4,
-      );
-      imgFrame.frameDuration = timing.gifDelayMs(index + 1);
-      if (gifImage == null) {
-        gifImage = imgFrame;
-      } else {
-        gifImage.addFrame(imgFrame);
+        frameCount: totalFrames,
+        timing: timing,
+      ), debugLabel: 'Encode export GIF');
+      final exportsDir = await ExportEngine.exportsDir();
+      if (cancelToken?.isCancelled == true) {
+        throw const ExportCancelledException();
       }
-      onProgress?.call(++index, totalFrames);
+      final outputPath = _freshOutputPath(exportsDir, 'niarim', 'gif');
+      await _publishImageExport(outputPath, gifBytes);
+      return outputPath;
+    } finally {
+      _removeFrames(framesDir);
     }
-
-    final gifBytes = img.encodeGif(gifImage!);
-    final exportsDir = await ExportEngine.exportsDir();
-    final outputPath = _freshOutputPath(exportsDir, 'niarim', 'gif');
-    await _publishImageExport(outputPath, gifBytes);
-    return outputPath;
   }
 
   Future<void> _publishImageExport(String path, List<int> bytes) async {

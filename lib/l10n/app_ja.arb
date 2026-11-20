@@ -1226,6 +1226,7 @@
     }
   },
   "exportInProgressTitle": "書き出し中",
+  "exportGifEncoding": "GIFを生成しています",
   "exportCancelledSnackbar": "書き出しをキャンセルしました",
   "exportCancelHint": "最終処理中のため、完了後にキャンセルを反映します",
   "exportOutdatedAutofillTitle": "自動塗りが最新ではありません",

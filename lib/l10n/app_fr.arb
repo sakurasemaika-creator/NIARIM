@@ -930,6 +930,7 @@
   "exportProjectNotFoundError": "Projet introuvable",
   "exportFailedError": "Échec de l’export : {error}",
   "exportInProgressTitle": "Export en cours",
+  "exportGifEncoding": "Encodage du GIF…",
   "exportCancelledSnackbar": "Export annulé",
   "exportCancelHint": "Finalisation en cours — l’annulation sera appliquée une fois terminée",
   "exportOutdatedAutofillTitle": "Le coloriage automatique n’est pas à jour",

@@ -930,6 +930,7 @@
   "exportProjectNotFoundError": "未找到项目",
   "exportFailedError": "导出失败：{error}",
   "exportInProgressTitle": "正在导出",
+  "exportGifEncoding": "正在编码 GIF…",
   "exportCancelledSnackbar": "已取消导出",
   "exportCancelHint": "正在进行最终处理，完成后将反映取消操作",
   "exportOutdatedAutofillTitle": "自动上色不是最新状态",

@@ -2896,6 +2896,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportInProgressTitle => '正在导出';
 
   @override
+  String get exportGifEncoding => '正在编码 GIF…';
+
+  @override
   String get exportCancelledSnackbar => '已取消导出';
 
   @override
@@ -13259,6 +13262,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get exportInProgressTitle => '匯出中';
+
+  @override
+  String get exportGifEncoding => '正在編碼 GIF…';
 
   @override
   String get exportCancelledSnackbar => '已取消匯出';

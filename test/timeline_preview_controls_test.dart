@@ -231,6 +231,56 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('system Back keeps the export dialog until GIF completion', (
+    tester,
+  ) async {
+    await openTimeline(
+      tester,
+      project: const Size(320, 480),
+      screen: const Size(1280, 800),
+      pc: true,
+      fraction: .4,
+    );
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    await tester.tap(find.byKey(const Key('pcCommandExport')));
+    await tester.pumpAndSettle();
+    final custom = find.text(l10n.exportPresetCustom);
+    await tester.tap(custom);
+    await tester.pumpAndSettle();
+    final gif = find.text(l10n.exportFormatGif);
+    await tester.ensureVisible(gif);
+    await tester.tap(gif);
+    await tester.pumpAndSettle();
+    final start = find.text(l10n.exportStartButton);
+    await tester.ensureVisible(start);
+    await tester.tap(start);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final progress = find.byType(ProgressDialog);
+    expect(progress, findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pump();
+    expect(progress, findsOneWidget);
+    expect(find.text(l10n.commonCancel).hitTestable(), findsOneWidget);
+    expect(find.byType(ExportScreen), findsOneWidget);
+
+    final encoding = find.text(l10n.exportGifEncoding);
+    final completed = find.text(l10n.exportCompleteTitle);
+    final deadline = Stopwatch()..start();
+    bool showedEncoding = false;
+    while (completed.evaluate().isEmpty &&
+        deadline.elapsed < const Duration(seconds: 20)) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 20));
+      showedEncoding |= encoding.evaluate().isNotEmpty;
+    }
+    expect(showedEncoding, isTrue, reason: 'the encoding phase was painted');
+    expect(completed, findsOneWidget);
+    expect(progress, findsNothing);
+    expect(find.byType(ExportScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final scenario in ['success', 'unreadable frame', 'cancel']) {
     testWidgets('timeline batch auto-fill: $scenario', (tester) async {
       final presets = _FailingAutofillPresets();

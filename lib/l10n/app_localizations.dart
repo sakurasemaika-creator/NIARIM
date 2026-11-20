@@ -5379,6 +5379,12 @@ abstract class AppLocalizations {
   /// **'書き出し中'**
   String get exportInProgressTitle;
 
+  /// No description provided for @exportGifEncoding.
+  ///
+  /// In ja, this message translates to:
+  /// **'GIFを生成しています'**
+  String get exportGifEncoding;
+
   /// No description provided for @exportCancelledSnackbar.
   ///
   /// In ja, this message translates to:

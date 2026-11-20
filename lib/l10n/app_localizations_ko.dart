@@ -2939,6 +2939,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportInProgressTitle => '내보내는 중';
 
   @override
+  String get exportGifEncoding => 'GIF 인코딩 중…';
+
+  @override
   String get exportCancelledSnackbar => '내보내기를 취소했습니다';
 
   @override

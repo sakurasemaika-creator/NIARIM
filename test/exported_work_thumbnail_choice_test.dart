@@ -70,6 +70,36 @@ void main() {
     },
   );
 
+  test(
+    'animated GIF cover contains only the first frame at cover size',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final temp = Directory.systemTemp.createTempSync('gif_cover_test_');
+      const channel = MethodChannel('plugins.flutter.io/path_provider');
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(channel, (_) async => temp.path);
+      addTearDown(() {
+        messenger.setMockMethodCallHandler(channel, null);
+        temp.deleteSync(recursive: true);
+      });
+      final first = image_codec.Image(width: 490, height: 720);
+      final last = image_codec.Image(width: 490, height: 720);
+      image_codec.fill(first, color: image_codec.ColorRgb8(255, 0, 0));
+      image_codec.fill(last, color: image_codec.ColorRgb8(0, 0, 255));
+      first.addFrame(last);
+      final gif = File('${temp.path}/animated.gif')
+        ..writeAsBytesSync(image_codec.encodeGif(first));
+      final result = await ExportedWorkCoverStore.ensureCached(gif);
+      final cover = image_codec.decodeImage(
+        await File(result['imagePath'] as String).readAsBytes(),
+      )!;
+      expect((cover.numFrames, cover.width, cover.height), (1, 286, 420));
+      final pixel = cover.getPixel(cover.width ~/ 2, cover.height ~/ 2);
+      expect((pixel.r, pixel.g, pixel.b), (255, 0, 0));
+    },
+  );
+
   testWidgets('Exported card exposes a three-dot thumbnail action', (
     tester,
   ) async {

@@ -2925,6 +2925,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get exportInProgressTitle => '書き出し中';
 
   @override
+  String get exportGifEncoding => 'GIFを生成しています';
+
+  @override
   String get exportCancelledSnackbar => '書き出しをキャンセルしました';
 
   @override

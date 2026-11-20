@@ -3098,6 +3098,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportInProgressTitle => 'Exportando';
 
   @override
+  String get exportGifEncoding => 'Codificando GIF…';
+
+  @override
   String get exportCancelledSnackbar => 'Exportación cancelada';
 
   @override

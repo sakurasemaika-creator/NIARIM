@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/layer.dart';
@@ -290,7 +291,15 @@ void main() {
       );
       // The end of the file is there (not cut at the half written by the
       // probe before the real write).
-      if (extension == '.gif') expect(bytes.last, 0x3B);
+      if (extension == '.gif') {
+        expect(bytes.last, 0x3B);
+        final gif = img.decodeGif(bytes)!;
+        expect(gif.numFrames, 2);
+        expect(gif.frames.map((frame) => frame.frameDuration), [500, 500]);
+        expect(root.listSync().whereType<Directory>().map((d) => d.path), [
+          documents.path,
+        ]);
+      }
       if (extension == '.png') {
         expect(
           ascii.decode(bytes.sublist(bytes.length - 8, bytes.length - 4)),

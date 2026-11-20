@@ -930,6 +930,7 @@
   "exportProjectNotFoundError": "Project not found",
   "exportFailedError": "Export failed: {error}",
   "exportInProgressTitle": "Exporting",
+  "exportGifEncoding": "Encoding GIF…",
   "exportCancelledSnackbar": "Export cancelled",
   "exportCancelHint": "Finishing the final step — cancellation will apply once it's done",
   "exportOutdatedAutofillTitle": "Auto-fill is not up to date",

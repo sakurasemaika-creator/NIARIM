@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_video/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as image_codec;
 import 'package:path_provider/path_provider.dart';
@@ -85,7 +86,23 @@ class ExportedWorkCoverStore {
     Uint8List sourceBytes, {
     bool preferJpeg = false,
   }) async {
-    final source = image_codec.decodeImage(sourceBytes);
+    final optimized = await compute(_compressCoverImage, (
+      bytes: sourceBytes,
+      preferJpeg: preferJpeg,
+    ), debugLabel: 'Compress exported work cover');
+    final output = await _newCacheFile('custom', preferJpeg ? 'jpg' : 'png');
+    await output.writeAsBytes(optimized, flush: true);
+    return output.path;
+  }
+
+  static Uint8List _compressCoverImage(
+    ({Uint8List bytes, bool preferJpeg}) request,
+  ) {
+    final decoder = image_codec.findDecoderForData(request.bytes);
+    final source = decoder?.decode(
+      request.bytes,
+      frame: decoder is image_codec.GifDecoder ? 0 : null,
+    );
     if (source == null || source.width <= 0 || source.height <= 0) {
       throw const FormatException('Unsupported thumbnail image');
     }
@@ -102,12 +119,9 @@ class ExportedWorkCoverStore {
         : source;
     // JPEG exports stay JPEG; preserving their lossy compression avoids
     // converting a small photo into a much larger lossless PNG.
-    final optimized = preferJpeg
+    return request.preferJpeg
         ? image_codec.encodeJpg(result, quality: 82)
         : image_codec.encodePng(result, level: 6);
-    final output = await _newCacheFile('custom', preferJpeg ? 'jpg' : 'png');
-    await output.writeAsBytes(optimized, flush: true);
-    return output.path;
   }
 
   static String _quote(String path) {

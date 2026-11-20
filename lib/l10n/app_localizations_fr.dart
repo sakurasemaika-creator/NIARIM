@@ -3094,6 +3094,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exportInProgressTitle => 'Export en cours';
 
   @override
+  String get exportGifEncoding => 'Encodage du GIF…';
+
+  @override
   String get exportCancelledSnackbar => 'Export annulé';
 
   @override

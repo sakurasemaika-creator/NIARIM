@@ -40,7 +40,8 @@ class _ExportScreenState extends State<ExportScreen> {
   bool _startingExport = false;
   double _progress = 0;
   String? _error;
-  void Function(void Function())? _progressDialogSetState;
+  DialogRoute<void>? _progressRoute;
+  VoidCallback? _refreshProgressDialog;
   // 誤タップ対応のキャンセルボタン。フレーム生成中のみ
   // 実際に中断できる（最終エンコード処理自体は安全に中断する手段がない
   // ため、その段階でのキャンセルは処理完了後に出力ファイルを破棄する形で
@@ -382,7 +383,7 @@ class _ExportScreenState extends State<ExportScreen> {
       void onProgress(int current, int total) {
         if (!mounted) return;
         _progress = current / total;
-        _progressDialogSetState?.call(() {});
+        _refreshProgressDialog?.call();
       }
 
       // Capture the output conditions once before rendering the first frame.
@@ -504,27 +505,45 @@ class _ExportScreenState extends State<ExportScreen> {
   /// プログレスバー下部へ正方形広告を表示、処理完了時に自動消去）。
   void _showProgressDialog() {
     final l10n = AppLocalizations.of(context)!;
-    showDialog(
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final route = DialogRoute<void>(
       context: context,
+      themes: InheritedTheme.capture(from: context, to: navigator.context),
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
-          _progressDialogSetState = setDialogState;
-          return ProgressDialog(
-            title: l10n.exportInProgressTitle,
-            progress: _progress,
-            subtitle: _format.name.toUpperCase(),
-            onCancel: () {
-              _cancelToken?.cancel();
-              setDialogState(() {});
-            },
-            cancelHint: _cancelToken?.isCancelled == true
-                ? l10n.exportCancelHint
-                : null,
+          _refreshProgressDialog = () {
+            if (ctx.mounted) setDialogState(() {});
+          };
+          return PopScope<void>(
+            canPop: false,
+            child: ProgressDialog(
+              title: l10n.exportInProgressTitle,
+              progress: _progress,
+              subtitle: _format == ExportFormat.gif && _progress >= 1
+                  ? l10n.exportGifEncoding
+                  : _format.name.toUpperCase(),
+              onCancel: () {
+                _cancelToken?.cancel();
+                _refreshProgressDialog?.call();
+              },
+              cancelHint: _cancelToken?.isCancelled == true
+                  ? l10n.exportCancelHint
+                  : null,
+            ),
           );
         },
       ),
-    ).whenComplete(() => _progressDialogSetState = null);
+    );
+    _progressRoute = route;
+    unawaited(
+      navigator.push(route).whenComplete(() {
+        if (identical(_progressRoute, route)) {
+          _progressRoute = null;
+          _refreshProgressDialog = null;
+        }
+      }),
+    );
   }
 
   void _showCancelledSnackBar() {
@@ -535,8 +554,12 @@ class _ExportScreenState extends State<ExportScreen> {
   }
 
   void _closeProgressDialog() {
-    _progressDialogSetState = null;
-    if (mounted) Navigator.of(context, rootNavigator: true).pop();
+    final route = _progressRoute;
+    _progressRoute = null;
+    _refreshProgressDialog = null;
+    if (route != null && route.isActive) {
+      route.navigator?.removeRoute(route);
+    }
   }
 
   Future<bool?> _confirmOutdatedAutofill() {
