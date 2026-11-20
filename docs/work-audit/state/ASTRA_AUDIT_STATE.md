@@ -3494,3 +3494,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 要修正（新、DISC537）：`niatra_transfer_reread_holder_test`の「the copy added for the other device's version of an autofill preset with the same ID stays its holder when the same file, in which an earlier preset has the same content, is read twice」が落ちる。同じ.niatraを2回読み込むと、2回目に自動塗りのプリセット「Hair (コピー 3)」が足され、`autofill_presets`・`transfer_copies.autofill_parts`・`transfer_copies.autofill_presets`が書き換わり、「Hair (コピー 3)」を足した知らせが出る（期待はどれも空）。別の作業コピーで`1b10d63f~1`では成功、`1b10d63f`（DISC107の修正「Localize built-in Autofill names and preserve user names」）で失敗することを確かめた。`643cc267`で3回とも失敗。A083（`1740d395`）では成功していた。
 - test：A089の31本を`643cc267`で432件成功・1件失敗（上のDISC537）。
 - 未確認（実機）：同意の画面（EEA・英国・スイス）、オフラインと遅い通信での起動の待ち時間、バナー・リワード広告の読み込み・失敗・SSV、画面の回転。
+
+## A090 — 作品広場 /community・一覧
+
+### A090 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルド）— 判定：要修正（新DISC538・DISC539〔どちらも今日のcommitの回帰〕、DISC407の残り。DISC408は直った）
+
+- 環境：ja、1280×800、マウス、使い捨てのプロフィール、APIの接続先なし（見本のデータ）。
+- 要修正（新、DISC538）：起動画面→「作品をつくる」→ホームの左下の戻る矢印で起動画面へ戻ると、起動画面の「作品広場」「作品をつくる」がどちらも押しても何も起きなくなる（起動し直すまで。`shots-r1/r2a090-10`〜`14`、2回とも同じ）。起動し直して最初に「作品広場」を押すと開く。`splash_screen.dart`の`_openDestination`（`93076e24`〔DISC491・492の修正〕で入った二度押しの守り）は`await context.push(route)`が終わるまで`_openingDestination`を真のままにするが、ホームの戻る矢印（`homeBackToSplashFab`）は`context.go('/')`で履歴を置き換えるので、`push`の待ちが終わらず守りが外れない。
+- DISC407は直った（一部）：新着のカードの右上と上部バーの題の下に「見本データ」が出る。ランキングの「大きいサムネイル」のカードにも出る。残り：ランキングの「横長リスト」（既定）のカードには印が無い（上部バーの題の下だけ、`r2a090-21c`）。
+- DISC408は直った：ランキングを昇順にすると順位の数字と金・銀・銅の印が消える（横長リスト・大きいサムネイルの両方、`r2a090-22`・`24`）。降順では「1」「2」「3」の印。
+- 要修正（新、DISC539）：`community_header_quality_test`の「plaza title and controls preserve configured colors and complete labels」が落ちる：仏語・390pxで上部バーの「Notifications」「Aide」の押せる所の高さが36px（`Rect.fromLTRB(246,0,294,36)`・`(342,0,390,36)`、期待は48×48）。別の作業コピーで`1740d395`と`e4d3c5b7~1`は成功、`e4d3c5b7`（「Refine NIARIM spacing and responsive typography across screens」、`community_screen.dart`を210行変更）で失敗。
+- test：A090の26本を`643cc267`で171件成功・15件省略・1件失敗（DISC539）。
+- 未確認：APIのある環境（読み込み中・失敗・空・オフライン・再試行・ページ送り）、ログインした状態、絞り込みの結果、7言語・文字2倍・360pxの実画面。
+- 画像：`shots-r1/r2a090-*`（backup-pending）。
