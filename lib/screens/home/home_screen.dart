@@ -4556,32 +4556,39 @@ class _HomeCollectionSortHeader extends StatelessWidget {
   );
 }
 
-/// Library actions can wrap without taking space from the route title.
-class _LibraryListControls extends StatelessWidget {
-  const _LibraryListControls({required this.sort});
+class _LibraryFavoritesFilter extends StatelessWidget {
+  const _LibraryFavoritesFilter({
+    required this.chipKey,
+    required this.selected,
+    required this.onSelected,
+  });
 
-  final Widget sort;
+  final Key chipKey;
+  final bool selected;
+  final ValueChanged<bool> onSelected;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    child: LayoutBuilder(
-      builder: (context, constraints) => OverflowBar(
-        alignment: MainAxisAlignment.end,
-        overflowAlignment: OverflowBarAlignment.end,
-        spacing: 8,
-        overflowSpacing: 4,
-        children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: constraints.maxWidth < 400 ? 96 : constraints.maxWidth,
-            ),
-            child: sort,
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return ChipFocusRing(
+      builder: (context, focusSide) => FilterChip(
+        key: chipKey,
+        side: focusSide,
+        label: Text(
+          AppLocalizations.of(context)!.homeFavoritesOnly,
+          style: TextStyle(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            color: selected ? scheme.onPrimary : null,
           ),
-        ],
+        ),
+        selectedColor: scheme.primary,
+        checkmarkColor: scheme.onPrimary,
+        selected: selected,
+        onSelected: onSelected,
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// [ProjectSortMode]に従って並び替えたリストを返す。共有一覧・ゴミ箱一覧
@@ -5711,13 +5718,16 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
       // タブの並び順。以前は表示も切り替えも無かった）。
       body: Column(
         children: [
-          _LibraryListControls(
-            sort: SortModeControl(
-              sortByName: _sortByName,
-              sortAscending: _sortAscending,
-              onSortByNameChanged: _setSortByName,
-              onToggleDirection: _toggleSortDirection,
+          _HomeCollectionSortHeader(
+            leading: _LibraryFavoritesFilter(
+              chipKey: const Key('sharedFolderFavoritesOnlyFilter'),
+              selected: _favoritesOnly,
+              onSelected: (value) => setState(() => _favoritesOnly = value),
             ),
+            sortByName: _sortByName,
+            sortAscending: _sortAscending,
+            onSortByNameChanged: _setSortByName,
+            onToggleDirection: _toggleSortDirection,
           ),
           Expanded(
             child: items.isEmpty
@@ -7591,26 +7601,11 @@ class _WorksTabState extends State<_WorksTab>
           child: _FolderableList<File>(
             key: ValueKey(('works-list', widget.viewMode)),
             header: _HomeCollectionSortHeader(
-              leading: ChipFocusRing(
-                builder: (context, focusSide) => FilterChip(
-                  key: const Key('worksFavoritesOnlyFilter'),
-                  side: focusSide,
-                  label: Text(
-                    l10n.homeFavoritesOnly,
-                    style: TextStyle(
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                      color: _showFavoritesOnly
-                          ? Theme.of(context).colorScheme.onPrimary
-                          : null,
-                    ),
-                  ),
-                  selectedColor: Theme.of(context).colorScheme.primary,
-                  checkmarkColor: Theme.of(context).colorScheme.onPrimary,
-                  selected: _showFavoritesOnly,
-                  onSelected: (value) =>
-                      setState(() => _showFavoritesOnly = value),
-                ),
+              leading: _LibraryFavoritesFilter(
+                chipKey: const Key('worksFavoritesOnlyFilter'),
+                selected: _showFavoritesOnly,
+                onSelected: (value) =>
+                    setState(() => _showFavoritesOnly = value),
               ),
               sortByName: _sortByName,
               sortAscending: _sortAscending,
@@ -7887,13 +7882,16 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
       ),
       body: Column(
         children: [
-          _LibraryListControls(
-            sort: SortModeControl(
-              sortByName: _sortByName,
-              sortAscending: _sortAscending,
-              onSortByNameChanged: _setSortByName,
-              onToggleDirection: _toggleSortDirection,
+          _HomeCollectionSortHeader(
+            leading: _LibraryFavoritesFilter(
+              chipKey: const Key('worksFolderFavoritesOnlyFilter'),
+              selected: _favoritesOnly,
+              onSelected: (value) => setState(() => _favoritesOnly = value),
             ),
+            sortByName: _sortByName,
+            sortAscending: _sortAscending,
+            onSortByNameChanged: _setSortByName,
+            onToggleDirection: _toggleSortDirection,
           ),
           Expanded(
             child: FutureBuilder<ExportedFileListing>(

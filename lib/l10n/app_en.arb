@@ -2673,7 +2673,6 @@
   "communityFloatingPreviewResizeTooltip": "Resize preview",
   "communityFloatingPreviewMoveHint": "Drag to move. Alt + arrow keys also move the preview.",
   "communityFloatingPreviewCompactHint": "Open Details to view this work.",
-  "communityReportComingSoonSnackbar": "Reporting is coming soon. Nothing was actually sent.",
   "communityAuthorWorksCount": "{count} works",
   "@communityAuthorWorksCount": {
     "placeholders": {

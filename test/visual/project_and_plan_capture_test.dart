@@ -23,10 +23,12 @@ void main() {
     testWidgets('project creation and plan comparison at width $width', (
       tester,
     ) async {
-      final temp = Directory.systemTemp.createTempSync('niarim-project-visual-');
+      final temp = Directory.systemTemp.createTempSync(
+        'niarim-project-visual-',
+      );
       const channel = MethodChannel('plugins.flutter.io/path_provider');
-      final messenger = TestDefaultBinaryMessengerBinding
-          .instance.defaultBinaryMessenger;
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
       messenger.setMockMethodCallHandler(channel, (_) async => temp.path);
       addTearDown(() {
         messenger.setMockMethodCallHandler(channel, null);

@@ -11475,12 +11475,6 @@ abstract class AppLocalizations {
   /// **'この作品は詳細画面で確認できます。'**
   String get communityFloatingPreviewCompactHint;
 
-  /// No description provided for @communityReportComingSoonSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'通報機能は準備中です。実際には送信されません。'**
-  String get communityReportComingSoonSnackbar;
-
   /// No description provided for @communityAuthorWorksCount.
   ///
   /// In ja, this message translates to:

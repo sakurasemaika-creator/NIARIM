@@ -639,7 +639,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     child: DecoratedBox(
                       position: DecorationPosition.foreground,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).colorScheme.outline),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
                       ),
                       child: FramePreviewBackground(
                         backgroundColor: _backgroundColor.toARGB32(),
@@ -650,7 +652,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               ),
               const SizedBox(height: 6),
               Semantics(
-                label: l10n.newProjectExportSizeInfo('$_exportWidth×$_exportHeight'),
+                label: l10n.newProjectExportSizeInfo(
+                  '$_exportWidth×$_exportHeight',
+                ),
                 excludeSemantics: true,
                 child: Text(
                   '$_exportWidth×$_exportHeight',

@@ -212,10 +212,11 @@ void main() {
         );
         await tester.tap(star.first);
         await io();
-        await leaveFolder();
-        await tester.tap(find.byKey(const Key('worksFavoritesOnlyFilter')));
+        final filter = find.byKey(const Key('worksFolderFavoritesOnlyFilter'));
+        await tester.tap(filter);
         await io();
-        await enterFolder(workBox);
+        expect(find.textContaining('alpha'), findsWidgets);
+        expect(find.textContaining('beta'), findsNothing);
         await tester.tap(find.byTooltip(l10n.colorPickerFavoriteRemove).first);
         await io();
         await expectWayOut(
@@ -225,8 +226,6 @@ void main() {
           'beta',
         );
         await leaveFolder();
-        await tester.tap(find.byKey(const Key('worksFavoritesOnlyFilter')));
-        await io();
 
         // 共有：「alp」で探してフォルダへ入り、当たった作品の名前が変わると
         // 残りの Beta も検索で隠れる。

@@ -6703,10 +6703,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ouvrez Détails pour voir cette œuvre.';
 
   @override
-  String get communityReportComingSoonSnackbar =>
-      'Le signalement arrive bientôt. Rien n’a réellement été envoyé.';
-
-  @override
   String communityAuthorWorksCount(int count) {
     return '$count œuvres';
   }

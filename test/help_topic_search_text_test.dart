@@ -43,38 +43,39 @@ void main() {
     });
   }
 
-  testWidgets('multiple keywords search across fields and clear returns focus', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('ja'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const HelpScreen(),
-      ),
-    );
-    final field = find.byType(TextField);
-    final l10n = AppLocalizations.of(tester.element(field))!;
-    final tutorial = find.byKey(const Key('helpTutorialButton'));
-    final eraser = find.text(l10n.helpEraserToolTitle);
-    for (final query in ['消しゴム　ツール', '  ﾂｰﾙ   消しゴム  ']) {
-      await tester.enterText(field, query);
+  testWidgets(
+    'multiple keywords search across fields and clear returns focus',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const HelpScreen(),
+        ),
+      );
+      final field = find.byType(TextField);
+      final l10n = AppLocalizations.of(tester.element(field))!;
+      final tutorial = find.byKey(const Key('helpTutorialButton'));
+      final eraser = find.text(l10n.helpEraserToolTitle);
+      for (final query in ['消しゴム　ツール', '  ﾂｰﾙ   消しゴム  ']) {
+        await tester.enterText(field, query);
+        await tester.pumpAndSettle();
+        expect(eraser, findsOneWidget);
+      }
+      await tester.enterText(field, '消しゴム missing-zzzz');
       await tester.pumpAndSettle();
-      expect(eraser, findsOneWidget);
-    }
-    await tester.enterText(field, '消しゴム missing-zzzz');
-    await tester.pumpAndSettle();
-    expect(find.text(l10n.helpNoResults), findsOneWidget);
-    await tester.tap(find.byTooltip(l10n.projectListClearSearch));
-    await tester.pumpAndSettle();
-    expect(tester.widget<TextField>(field).focusNode!.hasFocus, isTrue);
-    expect(tester.widget<TextField>(field).controller!.text, isEmpty);
-    expect(tutorial, findsOneWidget);
-    await tester.enterText(field, '　 ');
-    await tester.pumpAndSettle();
-    expect(tutorial, findsOneWidget);
-  });
+      expect(find.text(l10n.helpNoResults), findsOneWidget);
+      await tester.tap(find.byTooltip(l10n.projectListClearSearch));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(field).focusNode!.hasFocus, isTrue);
+      expect(tester.widget<TextField>(field).controller!.text, isEmpty);
+      expect(tutorial, findsOneWidget);
+      await tester.enterText(field, '　 ');
+      await tester.pumpAndSettle();
+      expect(tutorial, findsOneWidget);
+    },
+  );
 
   testWidgets('an unknown topic is searched as it is', (tester) async {
     await tester.pumpWidget(

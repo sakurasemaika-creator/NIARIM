@@ -2652,7 +2652,6 @@
   "communityFloatingPreviewResizeTooltip": "Cambiar el tamaño de la vista previa",
   "communityFloatingPreviewMoveHint": "Arrastra para mover. También puedes usar Alt + las flechas.",
   "communityFloatingPreviewCompactHint": "Abre Detalles para ver esta obra.",
-  "communityReportComingSoonSnackbar": "La función de denuncia estará disponible próximamente. No se ha enviado nada.",
   "communityAuthorWorksCount": "{count} obras",
   "@communityAuthorWorksCount": {
     "placeholders": {

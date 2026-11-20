@@ -138,6 +138,7 @@ class NiatraSerializer {
     // The last thickness used on this device, independent of saved brush presets.
     'tool_thickness_',
     'community.pendingUpload.',
+    'community.postingTerms.',
     'community.ownerByAccount.',
     'community.savedSearches.v1',
     'community.searchHistory.v1',

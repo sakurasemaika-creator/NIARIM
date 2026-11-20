@@ -264,8 +264,8 @@ class _TonePanelState extends State<TonePanel> {
                             children: [
                               Tooltip(
                                 message: tone.isFavorite
-                                  ? l10n.colorPickerFavoriteRemove
-                                  : l10n.colorPickerFavoriteAdd,
+                                    ? l10n.colorPickerFavoriteRemove
+                                    : l10n.colorPickerFavoriteAdd,
                                 child: GestureDetector(
                                   onTap: () =>
                                       toneService.toggleFavorite(tone.id),
@@ -275,7 +275,9 @@ class _TonePanelState extends State<TonePanel> {
                                         : Icons.star_outline,
                                     size: 14,
                                     color: tone.isFavorite
-                                        ? ThemeService.activeColorScheme.tertiary
+                                        ? ThemeService
+                                              .activeColorScheme
+                                              .tertiary
                                         : ThemeService
                                               .activeColorScheme
                                               .onSurfaceVariant,

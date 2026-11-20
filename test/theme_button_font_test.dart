@@ -242,7 +242,10 @@ void main() {
       final problems = <String>[
         if (style.fontFamily != headingFontFamilyFor(locale))
           '「${l10n.commonAdd}」is drawn in ${style.fontFamily}',
-        if (!listEquals(style.fontFamilyFallback, headingFontFallbackFor(locale)))
+        if (!listEquals(
+          style.fontFamilyFallback,
+          headingFontFallbackFor(locale),
+        ))
           '「${l10n.commonAdd}」falls back to ${style.fontFamilyFallback}',
         // ラベルの色・大きさはボタンの決まりのまま（色は前景色、大きさは
         // labelLarge と同じ）。

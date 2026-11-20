@@ -6351,10 +6351,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityFloatingPreviewCompactHint => '이 작품은 상세 화면에서 볼 수 있습니다.';
 
   @override
-  String get communityReportComingSoonSnackbar =>
-      '신고 기능은 준비 중입니다. 실제로 전송되지 않습니다.';
-
-  @override
   String communityAuthorWorksCount(int count) {
     return '작품 $count개';
   }

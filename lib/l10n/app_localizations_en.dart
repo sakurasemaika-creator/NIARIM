@@ -6584,10 +6584,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Open Details to view this work.';
 
   @override
-  String get communityReportComingSoonSnackbar =>
-      'Reporting is coming soon. Nothing was actually sent.';
-
-  @override
   String communityAuthorWorksCount(int count) {
     return '$count works';
   }

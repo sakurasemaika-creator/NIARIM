@@ -69,7 +69,8 @@ void main() {
     final brush = tester
         .element(find.byType(BrushPanel))
         .read<BrushService>()
-        .brushes.first;
+        .brushes
+        .first;
     final menu = find.descendant(
       of: find.byKey(ValueKey(brush.id)),
       matching: find.byIcon(Icons.more_vert),

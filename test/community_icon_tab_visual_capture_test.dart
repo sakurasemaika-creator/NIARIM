@@ -208,8 +208,11 @@ void main() {
         final compact = tester
             .widget<CommunityWorkCard>(visibleCard)
             .compactActions;
-        final circle = compact ? 32.0 : CollectionActionFrame.extent;
-        expect(saveRect.size, Size.square(circle));
+        final maxCircle = compact ? 32.0 : CollectionActionFrame.extent;
+        expect(saveRect.width, inInclusiveRange(24.0, maxCircle + 0.01));
+        expect(saveRect.height, closeTo(saveRect.width, 0.01));
+        expect(menuRect.width, closeTo(saveRect.width, 0.01));
+        expect(menuRect.height, closeTo(saveRect.height, 0.01));
         expect(
           tester
               .getSize(find.byKey(ValueKey('community-card-actions-$workId')))

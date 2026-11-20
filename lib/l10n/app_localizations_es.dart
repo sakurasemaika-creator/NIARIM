@@ -6697,10 +6697,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Abre Detalles para ver esta obra.';
 
   @override
-  String get communityReportComingSoonSnackbar =>
-      'La función de denuncia estará disponible próximamente. No se ha enviado nada.';
-
-  @override
   String communityAuthorWorksCount(int count) {
     return '$count obras';
   }

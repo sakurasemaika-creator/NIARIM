@@ -295,9 +295,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
       widget.authorId,
       includeHidden: isSelf,
     );
-    // 「作品」タブの一覧・縦画面モードにのみ「総合/縦画面のみ/横画面のみ」
-    // 絞り込みを適用する。投稿数の表示（works.length）は絞り込みの影響を
-    // 受けない総数のままにする。
+    // 投稿数の表示（works.length）は絞り込みの影響を受けない総数のままにする。
     final sortedWorks = _sortWorks(_videoTypeFilter.apply(works));
     final filteredWorks = sortedWorks.take(_visibleWorks).toList();
     final moreAuthorPages = communityService.hasMoreAuthor(widget.authorId);
@@ -307,11 +305,10 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final followerCount = communityService.followerCountOf(widget.authorId);
     final followingCount = communityService.followingCountOf(widget.authorId);
     final bookmarkedIds = communityService.bookmarkedIds;
-    final bookmarkedWorks = isSelf
-        ? _videoTypeFilter.apply(
-            communityService.bookmarkedWorksOf(widget.authorId),
-          )
+    final savedWorks = isSelf
+        ? communityService.bookmarkedWorksOf(widget.authorId)
         : const <CommunityWork>[];
+    final bookmarkedWorks = _videoTypeFilter.apply(savedWorks);
 
     Widget socialCount(String key, String label, Widget screen) {
       if (!isSelf) {
@@ -634,7 +631,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                       // 読み込めていないか、今は公開されて
                                       // いない）。
                                       child: Text(
-                                        bookmarkedIds.isEmpty
+                                        savedWorks.isNotEmpty
+                                            ? l10n.communityNoWorksMessage
+                                            : bookmarkedIds.isEmpty
                                             ? l10n.communityBookmarksEmptyMessage
                                             : l10n.communityBookmarksHiddenMessage,
                                         textAlign: TextAlign.center,

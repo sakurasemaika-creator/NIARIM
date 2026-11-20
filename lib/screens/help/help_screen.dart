@@ -637,6 +637,9 @@ class _HelpScreenState extends State<HelpScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final searchLabelStyle = TextStyle(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
     final entries = _buildEntries(l10n);
     final query = foldName(_searchQuery).trim();
     final filtered = _filtered(entries, query);
@@ -663,9 +666,8 @@ class _HelpScreenState extends State<HelpScreen> {
                 ),
                 decoration: InputDecoration(
                   labelText: l10n.helpSearchHint,
-                  labelStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  labelStyle: searchLabelStyle,
+                  floatingLabelStyle: searchLabelStyle,
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _searchQuery.isEmpty
                       ? null
@@ -702,7 +704,9 @@ class _HelpScreenState extends State<HelpScreen> {
                           l10n.helpNoResults,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),

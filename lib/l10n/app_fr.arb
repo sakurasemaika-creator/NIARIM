@@ -2652,7 +2652,6 @@
   "communityFloatingPreviewResizeTooltip": "Redimensionner l’aperçu",
   "communityFloatingPreviewMoveHint": "Faites glisser pour déplacer l’aperçu, ou utilisez Alt + les flèches.",
   "communityFloatingPreviewCompactHint": "Ouvrez Détails pour voir cette œuvre.",
-  "communityReportComingSoonSnackbar": "Le signalement arrive bientôt. Rien n’a réellement été envoyé.",
   "communityAuthorWorksCount": "{count} œuvres",
   "@communityAuthorWorksCount": {
     "placeholders": {

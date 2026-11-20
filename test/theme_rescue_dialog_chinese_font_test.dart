@@ -212,8 +212,9 @@ void main() {
         '$tag: ${rescuePixels.length ~/ 4} dialog pixels, '
         '$differing channel values differ',
       );
-      final rescueBody =
-          ThemeService.rescueThemeDataFor(locale).textTheme.bodyMedium!;
+      final rescueBody = ThemeService.rescueThemeDataFor(
+        locale,
+      ).textTheme.bodyMedium!;
       expect(rescueBody.fontFamily, 'NotoSerifSCSubset');
       expect(rescueFonts, isNotEmpty);
       expect(rescueFonts, referenceFonts);

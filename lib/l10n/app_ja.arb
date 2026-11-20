@@ -3120,7 +3120,6 @@
   "communityFloatingPreviewResizeTooltip": "プレビューのサイズを変更",
   "communityFloatingPreviewMoveHint": "ドラッグで移動できます。Alt＋矢印キーでも移動できます。",
   "communityFloatingPreviewCompactHint": "この作品は詳細画面で確認できます。",
-  "communityReportComingSoonSnackbar": "通報機能は準備中です。実際には送信されません。",
   "communityAuthorWorksCount": "{count}作品",
   "@communityAuthorWorksCount": {
     "placeholders": {

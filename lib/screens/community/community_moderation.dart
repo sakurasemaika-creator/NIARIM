@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
+import '../../widgets/typing_dialog_inset.dart';
 
 Future<void> reportCommunityContent(
   BuildContext context, {
@@ -168,6 +169,7 @@ class _CommunityReportDialogState extends State<_CommunityReportDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
+      insetPadding: typingDialogInsetPadding(context),
       title: Text(widget.title),
       scrollable: true,
       content: TextField(

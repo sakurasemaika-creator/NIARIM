@@ -311,6 +311,15 @@ void main() {
           );
         }
         await tapVisible(submit);
+        final agree = find.text(l10n.communityPostingTermsAgree);
+        for (var i = 0; agree.evaluate().isEmpty && i < 30; i++) {
+          await pumpRealAsync(tester, const Duration(milliseconds: 40));
+        }
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(requests, 0);
+        expect(agree.hitTestable(), findsOneWidget);
+        await tester.tap(agree);
+        await tester.pump();
         for (var i = 0; !uploadStarted && i < 30; i++) {
           await pumpRealAsync(tester, const Duration(milliseconds: 40));
         }

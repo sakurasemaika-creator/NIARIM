@@ -270,8 +270,8 @@ class _StampPanelState extends State<StampPanel> {
                             children: [
                               Tooltip(
                                 message: stamp.isFavorite
-                                  ? l10n.colorPickerFavoriteRemove
-                                  : l10n.colorPickerFavoriteAdd,
+                                    ? l10n.colorPickerFavoriteRemove
+                                    : l10n.colorPickerFavoriteAdd,
                                 child: GestureDetector(
                                   onTap: () =>
                                       stampService.toggleFavorite(stamp.id),
@@ -281,7 +281,9 @@ class _StampPanelState extends State<StampPanel> {
                                         : Icons.star_outline,
                                     size: 14,
                                     color: stamp.isFavorite
-                                        ? ThemeService.activeColorScheme.tertiary
+                                        ? ThemeService
+                                              .activeColorScheme
+                                              .tertiary
                                         : ThemeService
                                               .activeColorScheme
                                               .onSurfaceVariant,

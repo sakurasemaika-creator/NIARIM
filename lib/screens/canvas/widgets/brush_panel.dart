@@ -296,18 +296,21 @@ class _BrushPanelState extends State<BrushPanel> {
                             children: [
                               Tooltip(
                                 message: brush.isFavorite
-                                  ? l10n.colorPickerFavoriteRemove
-                                  : l10n.colorPickerFavoriteAdd,
+                                    ? l10n.colorPickerFavoriteRemove
+                                    : l10n.colorPickerFavoriteAdd,
                                 child: GestureDetector(
-                                  onTap: () =>
-                                      brushService.toggleFavoriteBrush(brush.id),
+                                  onTap: () => brushService.toggleFavoriteBrush(
+                                    brush.id,
+                                  ),
                                   child: Icon(
                                     brush.isFavorite
                                         ? Icons.star
                                         : Icons.star_outline,
                                     size: 14,
                                     color: brush.isFavorite
-                                        ? ThemeService.activeColorScheme.tertiary
+                                        ? ThemeService
+                                              .activeColorScheme
+                                              .tertiary
                                         : ThemeService
                                               .activeColorScheme
                                               .onSurfaceVariant,

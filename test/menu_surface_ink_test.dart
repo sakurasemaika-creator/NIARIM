@@ -313,7 +313,8 @@ void main() {
     for (final screen in const [HelpScreen(), TipsScreen()]) {
       await _pump(tester, themes, screen);
       final field = find.byType(TextField).first;
-      final hint = tester.widget<TextField>(field).decoration!.hintText!;
+      final decoration = tester.widget<TextField>(field).decoration!;
+      final hint = decoration.labelText ?? decoration.hintText!;
       final wrong = <String>[
         if (!_sameInk(_painted(tester, find.text(hint)), _darkMenu.textColor))
           'hint ${_painted(tester, find.text(hint))}',
@@ -328,6 +329,10 @@ void main() {
       ];
       await tester.enterText(field, 'abc');
       await tester.pump();
+      if (decoration.labelText != null &&
+          !_sameInk(_painted(tester, find.text(hint)), _darkMenu.textColor)) {
+        wrong.add('floating label ${_painted(tester, find.text(hint))}');
+      }
       if (_fieldInk(tester, field) != _darkMenu.textColor) {
         wrong.add('typed ${_fieldInk(tester, field)}');
       }

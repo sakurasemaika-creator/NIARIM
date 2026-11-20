@@ -67,7 +67,10 @@ void main() {
     expect(tester.getSize(whiteFill), const Size(40, 40));
 
     expect(tester.getSemantics(white).label, 'White');
-    expect(tester.getSemantics(white).flagsCollection.isSelected, Tristate.isTrue);
+    expect(
+      tester.getSemantics(white).flagsCollection.isSelected,
+      Tristate.isTrue,
+    );
     expect(tester.getSemantics(transparent).label, 'Transparent');
     expect(tester.getSize(black), const Size(48, 48));
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);

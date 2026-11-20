@@ -6317,9 +6317,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityFloatingPreviewCompactHint => 'この作品は詳細画面で確認できます。';
 
   @override
-  String get communityReportComingSoonSnackbar => '通報機能は準備中です。実際には送信されません。';
-
-  @override
   String communityAuthorWorksCount(int count) {
     return '$count作品';
   }
