@@ -2882,3 +2882,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 一巡目からの変更：`custom_automation_filter_runner.dart`は記録したフィルターを当てる前に元のレイヤーを読み直し、無ければ「Recorded filter source layer is unavailable」、ロック中なら「Recorded filter source layer is locked」で止める（38〜40行。DISC309と同じ考え方で、記録したフィルターの適用〔`recorded_filter_apply_service.dart`の43行〕と同じ決まり）。Routeに挙げた`lib/models/custom_automation_presets.dart`は今は無く、公式の手順は`custom_automation_builtin_presets.dart`にある。
 - test：全体回帰 `44641695291` で`custom_automation_executor_test`・`custom_automation_frame_scope_test`・`custom_automation_builtin_refresh_test`・`custom_automation_digital_lineart_step_evidence_test`・`custom_automation_labels_test`・`automation_presets_tips_sync_test`・`niatra_transfer_automation_names_test`・`services/filter_custom_replay_test`は成功。
 - 未確認：Premiumでの実行（今のコマ・範囲・全コマ、繰り返し、途中の失敗と取り消し、ロックしたレイヤーでの知らせの文）。A043と同じく、手元でPremiumを有効にする道が無い。
+
+## A045 — タイムライン /timeline/:id・往復
+
+### A045 二巡目（2026-11-20、Claude・S50、App `9c06dd69`のLinuxデバッグビルド）— 判定：OK
+
+- 一巡目の指摘（Linux debug、ja、1280×800、PCの形、120コマの作品）：
+  - DISC324は直った：キャンバスで4コマ目を選んで上部バーの「タイムラインへ」を押すと、タイムラインは4/120（コマの4が赤い枠、下の帯「フレーム 4/120」）。タイムラインで9コマ目を押して「キャンバスへ」で戻ると、キャンバスは9コマ目（帯の枠も9）。
+  - DISC325は直った：細い線のコマ（2〜5・7コマ目の上の端の線）が、タイムラインのコマの一覧とキャンバスのコマの帯の両方の縮小画像に途切れずに出る。
+- 既知のDISC066：今のビルドではキャンバスにもタイムラインにも、外すと決めた文字のメニューバー（ファイル・レイヤー・表示・設定）は無い（キャンバスの上部バーは取り消し・やり直し・全体表示・窓の一覧・設定/編集・ホーム・タイムラインへ。タイムラインは［シーン・素材｜プレビュー｜詳細］と全幅のタイムライン）。
+- そのほか：タイムラインの「先頭へ」で1/120、再生して約2.8秒で止めると35/120（12fpsどおり）で、コマの一覧も今のコマを追う。演出フィルター「色調整…」の列が出る（A038で足したもの）。今のコマの赤い枠は太く、上の端すれすれの細い線は枠に隠れる（気づいた点）。
+- test：全体回帰 `44641695291` で`canvas_timeline_position_test`・`timeline_preview_controls_test`・`timeline_focus_return_test`・`timeline_pc_workspace_test`・`final_remaining_strict_evidence_test`は成功。
+- 未確認：複数のシーンをまたぐ往復、全画面・プレビューの大きさのつまみ、無い作品のID、空の作品、スマホ390×844、音声・動画の停止（ffmpeg・音声が要る）。
+- 画像：`shots-r1/r2a045-*`（backup-pending）。
