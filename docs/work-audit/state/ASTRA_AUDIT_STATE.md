@@ -3483,3 +3483,14 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`premium_all_entry_points_test`・`premium_coin_account_isolation_test`・`premium_comparison_table_test`・`premium_expiry_video_output_test`・`premium_lock_widget_test`・`premium_play_verification_policy_test`・`premium_production_entry_wiring_test`・`premium_screen_price_test`を`643cc267`で26件成功。
 - 未確認：購入・取り消し・復元・失敗・期限（sandbox）、購入の途中の表示、7言語・文字2倍・360pxの比較表、各ロックの入口の全部（ウォーターマークの錠はA082で確認）。
 - 画像：`shots-r1/r2a088-*`（backup-pending）。
+
+## A089 — 広告・収益化gate
+
+### A089 二巡目（2026-11-20、Claude・S50、App `643cc267`）— 判定：要修正（新DISC537〔`1b10d63f`の回帰〕。一巡目のDISC404〜406は直った。広告の実表示は実機）
+
+- DISC404は直った（コード）：広告の枠が画面に置かれた。`app.dart`の`AdPersistentRootFrame`と`router.dart`の各画面の`AdMockPageFrame`が、無料会員で`AdvertisingService.shouldShowAds`のとき上にバナーの枠（`AdMobLiveSlot`）を出し、Premium・コインの「すべての広告なし」・画面ごとの特典・キーボードが開いている間は出さない。キャンバス・タイムラインでは編集中に特典が切れても枠を出さない（絵が動かないように）。Linuxの実画面はSDKが無く枠は出ない。比較表の「広告：あり／なし」と特典交換の広告なしに意味がある作りになった。実際の配信は実機。
+- DISC405は直った：`rewards_tabs_fit_test`（韓国語を含む7言語・320/360px・文字1.3/2.0倍）が成功。
+- DISC406は直った：`app_smoke_test`が全件成功（一巡目で落ちた引き出しの設定・起動画面への戻る・有料会員の画面・フォルダの中・タイムラインの再生も、既知の作品広場の4件も成功）。
+- 要修正（新、DISC537）：`niatra_transfer_reread_holder_test`の「the copy added for the other device's version of an autofill preset with the same ID stays its holder when the same file, in which an earlier preset has the same content, is read twice」が落ちる。同じ.niatraを2回読み込むと、2回目に自動塗りのプリセット「Hair (コピー 3)」が足され、`autofill_presets`・`transfer_copies.autofill_parts`・`transfer_copies.autofill_presets`が書き換わり、「Hair (コピー 3)」を足した知らせが出る（期待はどれも空）。別の作業コピーで`1b10d63f~1`では成功、`1b10d63f`（DISC107の修正「Localize built-in Autofill names and preserve user names」）で失敗することを確かめた。`643cc267`で3回とも失敗。A083（`1740d395`）では成功していた。
+- test：A089の31本を`643cc267`で432件成功・1件失敗（上のDISC537）。
+- 未確認（実機）：同意の画面（EEA・英国・スイス）、オフラインと遅い通信での起動の待ち時間、バナー・リワード広告の読み込み・失敗・SSV、画面の回転。
