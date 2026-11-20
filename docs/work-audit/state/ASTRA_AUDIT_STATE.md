@@ -2558,3 +2558,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：全体回帰 `44641695291` で`background_color_picker_test`・`brush_outline_canvas_eyedropper_contract_test`・`color_picker_mode_pill_fit_test`・`color_wheel_corner_layout_test`・`canvas_typing_aware_keys_test`は成功。
 - 未確認：RGB・不透明度のスライダーの値、複数レイヤーでのスポイト、画像からのスポイト（portal）、長押しのスポイト（指）、読み上げ。
 - 画像：`shots-r1/r2a016-*`（backup-pending）。
+
+## A017 — パレット・ドット絵パレット・QR
+
+### A017 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：要修正（新DISC499・DISC500、既存DISC198）
+
+- 一巡目の指摘：DISC280は直った（Linux debug、ja、1280×800、自動のPCの形。色の窓の「新しいパレット」は`NameEntryDialog`で、空白だけでは「作成」が押せずEnterでも何も起きない。「   Warm」でEnterを押すと前後の空白を除いた「Warm」ができる）。DISC281は直った（レイヤーの窓を長押しで選択の状態にし、窓を1280×560の低い窓で本体約110pxまで低くしても、全選択・全解除・1件選択中の段・レイヤーの行・目・非表示の段が1つのスクロールに入り、はみ出しの縞も記録も無い）。
+- 既知のDISC：DISC198はパレットでも直っていない（パレットの︙のシートの「削除」の字とアイコンが(186,26,26)の赤。`color_picker_panel.dart`の`ThemeService.activeColorScheme.error`、681〜685行）。
+- 新しい指摘（DISC499）：パレットの︙の「名前変更」のダイアログは`NameEntryDialog`ではない素の`TextField`。Enterでは確定せず欄からフォーカスが外れるだけで、空白だけ（「   」）でも「変更」が押せ、名前が空白のパレット（チップに印だけ）ができる（`ctrl.text.isNotEmpty`だけを見て前後の空白を除かない）。DISC280が直したのは新規作成だけ。
+- 新しい指摘（DISC500）：パレットの︙→「共有する」→「QRコードで共有」で、幕だけが出てダイアログが描かれない（数秒待っても同じ。Escで閉じる）。描画の木ではダイアログの箱が`size: MISSING`。`QrShareDialog`は`AlertDialog`（中身を`IntrinsicWidth`で測る）の中に`QrImageView`（`LayoutBuilder`）を置いていて、同じ版のチェックアウトで部品だけを出すと「LayoutBuilder does not support returning intrinsic dimensions.」と「RenderBox was not laid out: RenderIntrinsicWidth」になる。その後のエラーの記録には`semantics.parentDataDirty`の失敗・「Looking up a deactivated widget's ancestor is unsafe」・`RawTooltipState`のticker・ホームへ戻ったときの`homeFloatingActions`の同じGlobalKeyが続き、20件の記録が埋まる（QRを開かずにキャンバスからホームへ戻るだけではどれも出ない）。`QrShareDialog`はドット絵パレット（`pixel_art_palette_picker_dialog.dart`）とワークスペースの設定（`workspace_settings_screen.dart`）でも使う。リリースのビルドでは確かめていない（アサーションが無いので描かれる可能性がある）。QrShareDialogを出すtestは無い。
+- そのほか：現在の色をパレットへ足す・同じ色を2回足せる（重複は許す作り）・長押しで色を1つ消す（確認なし）・パレットの色と順序はキャンバスを開き直しても起動し直しても残る。「QRコードのテキストを貼り付け」に「hello not a palette」を入れて「読み込む」と「読み込みに失敗しました。テキストが正しいか確認してください」で、何も足されない。
+- test：全体回帰 `44641695291` で`palette_service_test`・`layer_panel_add_sheet_and_range_dialog_test`・`desktop_dock_content_viewport_test`・`menu_surface_ink_test`は成功。
+- 未確認：ドット絵パレットの編集・選択（フィルターの項目で見る）、ファイルの書き出し・読み込み（portalが要る）、大きすぎるQR、お気に入りの削除保護の実操作、並べ替え、スマホ・仏語。
+- 画像：`shots-r1/r2a017-*`（backup-pending）。
