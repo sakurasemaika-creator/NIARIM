@@ -3911,3 +3911,17 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
   - A098・A099の二巡目（`643cc267`）：backendの単体test 418件・DynamoDB Localのtest 13件・型検査0件・`cdk synth`が成功。自分の作品・自分の通報は断る、フォロワー・フォロー中・ブックマークの一覧は本人だけ（`forbidden`）。
   - 未達：57ルートを1本ずつ、匿名・本人・他人・無効なトークン/ID/URLで比べる表はまだ無い（A098は単体testとコードで、ルートごとの表は作っていない）。デプロイした実環境・Google/YouTube/FCM/AdMob/Playの実際の応答・並行実行・再試行は、この環境では確かめられない（実の資格情報を使わない決まり）。
 - test：`community_ai_flag_edit_test`（9）・`community_content_filter_dialog_test`（23）・`community_content_filter_l10n_contract_test`（1）・`community_filter_dialog_contrast_test`（2）・`community_filter_dialog_layout_test`（1）・`community_filter_surfaces_test`（11）・`community_mute_filter_test`（10）・`community_mute_wording_l10n_test`（3）・`community_header_quality_test`（2）・`community_post_upload_cancel_test`（7）を記録時の最新`f09082e1`で69件すべて成功。`community_header_quality_test`は`643cc267`ではDISC539で失敗していたが、`191ae39b`（作品広場の画面の余白の見直し）の後は通る（DISC539は直った見込み。仏語・390pxの実画面は未確認）。
+
+## D022〜D024 — 選択・ブラシ・フィルターの組み合わせ・自作ブラシ・縁取りペン（二巡目）
+
+### D022〜D024 二巡目（2026-11-20、Claude・S50、App `4f92188f`のLinuxデバッグビルド・testは`643cc267`と記録時の最新`f09082e1`）— 判定：D022は要修正（DISC565）、D023・D024はAの二巡目とtestの範囲でOK、個々の全条件は未確認
+
+- D022 選択・ブラシ・フィルターの組み合わせ：
+  - 選択の対象レイヤーとフィルターの対象：選択範囲は描画フィルターを内側に限る（`filter_selection_test`・`filter_selection_lens_mask_e2e_test`が成功、D003）。
+  - フィルターの編集の取り消し/やり直しと全体の取り消し：`filter_edit_undo_group_test`・`filter_edit_undo_routing_e2e_test`が成功。実画面ではフィルターの編集中は専用の取り消し/やり直しが出て、Cancelで編集前に戻る（D007）。
+  - 選択の有無で画面の形が替わる：PC（1280×800）はDISC502が直ったまま、スマホの幅（360×740）では全選択で紙が約48px下がる（DISC565、`e4d3c5b7`の回帰）。要修正。
+  - 取り消し・やり直しで別のコマへ移った直後のキャンバスの絵（DISC524、A057の二巡目）はこの回では確かめていない（GPTの修正の後の再確認が残る）。
+  - 未確認：髪の折り畳みのブラシで選択範囲の中に描く、選択したまま別のレイヤー・コマへ移る、フィルターの適用→取り消し→もう一度適用の繰り返し、編集の途中で画面を離れて戻る、保存して起動し直した後の状態。
+- D023 ブラシの自作：A014（OK、太さ・不透明度・混色・先端・回転/密度/散布の設定のtest）とA027（フォルダ、DISC296は直った・DISC198が残る）の二巡目。ブラシの窓に「フォルダ」「新規」「読込」があり、作品2でプリセット11種を描き分けた（D025〜D027）。未確認：新規作成→全設定→描く→複製→削除の一連、読み込み・書き出し（.niabrush）、古い形式・壊れたデータ、7言語・スマホ・Visual。
+- D024 縁取りペン：髪・リボンのプリセット（縁取りつき）で、塗りの外側に一定の太さの縁取りが出て、入り抜きで外形だけが細る（`shots-r1/hair-*c`、縁取りは灰色の細線にならない）。`outline_erosion_test`・`outline_keep_overlap_test`・`outline_accent_test`（engine）が成功。未確認：普通のペンで縁取りをオンにする手順、線の太さ・浸食のしきい値・隙間のしきい値の境界、色・不透明度、新しいレイヤーへの差し込み、保存/復元、取り消し/やり直しの実画面、Visual。
+- test：上の各testは`643cc267`のフィルター・描画エンジン・選択の98ファイル（540件成功・1件失敗＝DISC565）に含まれる。
