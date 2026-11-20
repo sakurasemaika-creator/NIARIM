@@ -3345,3 +3345,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`home_widget_cell_size_test`・`home_widget_shortcut_design_test`・`community_account_boundary_widget_test`・`home_widget_artwork_picker_test`・`home_widget_service_test`・`premium_lock_widget_test`・`shared_empty_folder_widget_test`・`widget_artwork_picker_parity_test`・`widget_settings_theme_foreground_test`・`widget_test`を`1740d395`で40件成功。
 - 未確認（実機）：ウィジェットの配置・押したときの冷たい起動／温かい起動・戻る、色・言語・テーマの更新、マスの大きさの変更、ゴミ箱へ移した作品の画像がAndroidのウィジェットから消えること。
 - 画像：`shots-r1/r2a079-*`（backup-pending）。
+
+## A080 — widget作品・frame選択
+
+### A080 二巡目（2026-11-20、Claude・S50、App `1740d395`のLinuxデバッグビルド）— 判定：要修正（新DISC533）
+
+- 環境：ja、1280×800（一部390×844）、マウス、使い捨てのプロフィール（r2a069tの写し）。設定→「ウィジェット」→「表示する作品」。作品10は4シーン（ShotA・ShotA (コピー 2)・ShotA (コピー)・ShotA (コピー 3)、各119コマ前後）。
+- 作品を選ぶ画面：並び順（名前／更新日時）と向き、表示の大きさ、検索（フォルダの中も探し、カードにフォルダの道筋を出す）、「お気に入り」（一番上の階層のお気に入りだけ）、フォルダ（パンくずの家の印で戻る）、「作品を選んでいません」が動く。名前の昇順は「Episode 1、Missing thumbnail、Scene、Scene、scene 2、Scene10、Storyboards、The quick…、主人公…、作品2、作品10、空のフォルダ、애니…」（作品2が作品10より前）。
+- フレームを選ぶ画面：シーンのチップ、プレビュー、「N枚目のフレーム」、シークバー、最初・前・再生/一時停止・次・最後、サムネイルの帯、「選んだフレームに決定」。次へ・帯を押す・シークバー・再生（12fpsで進む）・一時停止は、プレビュー・文言・帯の印が合う。ShotA (コピー 3)の7枚目で決定→設定は「作品10／7枚目のフレーム」と三角の絵、保存は`sceneId: Scene0004`・`frameIndex: 6`。作品2を開いて決定せずに戻ると設定は変わらない。「作品を選んでいません」で設定は「作品を選ぶ」、保存は`projectId`・`sceneId`・`frameIndex`ともnull。
+- 要修正（新、DISC533）：シーンのチップを替えると、プレビュー・文言・シークバーは1枚目に戻るが、サムネイルの帯は前のシーンでいた位置（89枚目のあたり）のまま動かず、帯の真ん中の固定の枠は1枚目ではないコマを囲む（`shots-r1/r2a080-16`・`18`〜`20`、2回とも同じ）。帯の1枚目の印は画面の外。次へを押すと帯が2枚目へ動いて合う（`r2a080-21`・`22`）。
+- 気づいた点（DISCにしない）：作品を選ぶ画面の上部バーに画面名が無い（一巡目と同じ）。並び順は画面を開き直すと更新日時に戻る。設定の「表示する作品」はシーン名を出さない（作品10の7枚目とだけ出る）。390×844でも作品を選ぶ・フレームを選ぶ画面ははみ出さない（シーンのチップは横に送る）。
+- test：`home_widget_artwork_picker_test`・`community_account_boundary_widget_test`・`home_widget_cell_size_test`・`home_widget_service_test`・`home_widget_shortcut_design_test`・`premium_lock_widget_test`・`shared_empty_folder_widget_test`・`widget_artwork_picker_parity_test`・`widget_settings_theme_foreground_test`・`widget_test`・`admob_all_routes_visual_matrix_test`・`all_routes_screenshot_audit_test`・`app_bar_title_fit_or_hide_test`・`toast_contract_test`を`1740d395`で76件成功。シーンを替えた後の帯の位置を見るtestは無い。
+- 未確認（実機）：ウィジェットの画像が選んだフレームと同じになること、作品を描き直して保存した後の更新、大量の作品。
+- 画像：`shots-r1/r2a080-*`（backup-pending）。
