@@ -3454,3 +3454,19 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`brush_extension_settings_test`・`community_no_hardcoded_text_test`・`app_tutorial_test`・`help_topic_search_text_test`・`menu_surface_ink_test`・`search_typed_apostrophe_test`・`storage_screen_focus_after_change_test`・`help_filter_names_test`を`1740d395`で85件成功。
 - 未確認：77項目すべての本文と今の操作の一致（読んだのは数項目）、図・リンク、7言語・文字2倍・360px、キーボードだけでの操作。
 - 画像：`shots-r1/r2a086-*`（backup-pending）。
+
+## A087 — Tips /tips・カテゴリと詳細carousel
+
+### A087 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルド〔`2a2f2470`・`a4b3b66f`のTipsの作り直しを含む〕）— 判定：要修正（新DISC536。一巡目のDISC400は文のページでは直った）
+
+- ビルド：Tipsの図の作り直し（`2a2f2470` Illustrate every Tips page with a shared layout、`a4b3b66f` Improve Tips readability at larger text sizes）が入った`643cc267`で作り直した。
+- 環境：ja、1280×800、マウス、使い捨てのプロフィール（r2a069tの写し）。ホームの引き出し→「使い方」→「活用Tips」。
+- 一覧：カテゴリ（動画制作のコツ・制作を効率化するコツ…）と検索「Tipsを検索...」。「仮色」で「仮色で塗り分けて色更新するなら、線画は通常レイヤー1枚でOK」だけに絞れる。
+- 詳細：題・図（画面の写しに囲み、上に図の題、下に「‹ 1/3 ›」と拡大）・本文。文が複数ページのTipsは下に「‹ ●○○○ ›」。
+- DISC400は文のページでは直った：「仮色で塗り分けて…」（4ページ）で→キーを押すと2ページ目へ進み点も変わる（`shots-r1/r2a087-08`・`09`）。‹ ›と点も押せる。
+- 要修正（新、DISC536）：図の「‹ 1/3 ›」（図の送り）は←→キーで動かない。文が1ページの「タイムラインの素材は複製・移動・削除ができる」では、詳細を開いて→キーを押しても「1/3」のまま（`r2a087-03`）、›を押すと「2/3」になり、続けて→・←キーを押しても「2/3」のまま（`r2a087-05`・`06`）。←→キーは文のページ（`_goToPage`）にだけ割り当てられていて、`tip_screen_capture.dart`の図の送り（`tipPreviousCapture`・`tipNextCapture`）にはキーが無い。文が複数ページのTipsでは、←→キーは文のページを送り、2ページ目の図の「1/2」は送らない（2つの送りが重なる）。
+- 拡大：図の拡大のボタンで図だけの全画面になり、Escで詳細へ戻る（`r2a087-10`・`11`）。
+- DISC399はA086で確認済み（`brush_extension_settings_test`成功）。
+- test：A087の9本＋`tips_detail_layout_test`（`2a2f2470`で追加）を`643cc267`で98件成功。図の送りのキー操作を見るtestは無い。
+- 未確認：67件すべての説明と今の操作の一致（読んだのは数件）、「実制作へ適用」の道、7言語・文字2倍・360px、スワイプ（タッチ）、拡大の画面での図の送り。
+- 画像：`shots-r1/r2a087-*`（backup-pending）。
