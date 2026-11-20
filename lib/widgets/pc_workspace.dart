@@ -133,6 +133,7 @@ class PcToolButton extends StatelessWidget {
     this.size = 30,
     this.iconSize = 18,
     this.trailingIcon,
+    this.longPressTooltip = true,
   });
 
   final IconData icon;
@@ -140,6 +141,10 @@ class PcToolButton extends StatelessWidget {
   /// [icon]の右に小さく添えるアイコン（行き先の向きなど）。ボタンは横に広がる。
   final IconData? trailingIcon;
   final String tooltip;
+
+  /// Turn off the tooltip's competing long-press gesture for pen input.
+  /// Hover tooltips and the accessibility label remain available.
+  final bool longPressTooltip;
   final VoidCallback? onPressed;
   final bool selected;
 
@@ -153,33 +158,40 @@ class PcToolButton extends StatelessWidget {
     final colors = PcWorkspaceColors.of(context);
     final fg = onPane ? colors.onPane : colors.onChrome;
     final base = onPane ? colors.pane : colors.chrome;
+    final button = IconButton(
+      icon: trailingIcon == null
+          ? Icon(icon, size: iconSize)
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: iconSize),
+                const SizedBox(width: 2),
+                Icon(trailingIcon, size: iconSize * 0.75),
+              ],
+            ),
+      tooltip: longPressTooltip ? tooltip : null,
+      onPressed: onPressed,
+      isSelected: selected,
+      style: IconButton.styleFrom(
+        foregroundColor: fg,
+        disabledForegroundColor: fg.withValues(alpha: 0.35),
+        backgroundColor: selected ? colors.selectedOn(base) : null,
+        minimumSize: Size(trailingIcon == null ? size : size * 1.6, size),
+        fixedSize: Size(trailingIcon == null ? size : size * 1.6, size),
+        padding: EdgeInsets.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+      ),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 1),
-      child: IconButton(
-        icon: trailingIcon == null
-            ? Icon(icon, size: iconSize)
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, size: iconSize),
-                  const SizedBox(width: 2),
-                  Icon(trailingIcon, size: iconSize * 0.75),
-                ],
-              ),
-        tooltip: tooltip,
-        onPressed: onPressed,
-        isSelected: selected,
-        style: IconButton.styleFrom(
-          foregroundColor: fg,
-          disabledForegroundColor: fg.withValues(alpha: 0.35),
-          backgroundColor: selected ? colors.selectedOn(base) : null,
-          minimumSize: Size(trailingIcon == null ? size : size * 1.6, size),
-          fixedSize: Size(trailingIcon == null ? size : size * 1.6, size),
-          padding: EdgeInsets.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-        ),
-      ),
+      child: longPressTooltip
+          ? button
+          : Tooltip(
+              message: tooltip,
+              triggerMode: TooltipTriggerMode.manual,
+              child: button,
+            ),
     );
   }
 }

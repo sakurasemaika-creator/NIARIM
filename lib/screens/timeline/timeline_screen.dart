@@ -1936,6 +1936,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       leading: [
         PcToolButton(
           key: const ValueKey('pcCommandBackToCanvas'),
+          longPressTooltip: false,
           icon: Icons.arrow_back,
           trailingIcon: Icons.palette_outlined,
           tooltip: l10n.timelineBackToCanvasTooltip,
@@ -2013,6 +2014,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ),
         PcToolButton(
           key: const ValueKey('pcCommandUndo'),
+          longPressTooltip: false,
           icon: Icons.undo,
           tooltip: l10n.commonUndo,
           onPressed: undo.canUndo ? () => _applyHistory(redo: false) : null,

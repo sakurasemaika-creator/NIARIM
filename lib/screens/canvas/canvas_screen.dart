@@ -3497,6 +3497,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     required String tooltip,
     bool selected = false,
     double iconSize = 26,
+    bool longPressTooltip = true,
   }) {
     return CanvasIconButton(
       icon: icon,
@@ -3505,6 +3506,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       selected: selected,
       iconSize: iconSize,
       padding: (48 - iconSize) / 2,
+      longPressTooltip: longPressTooltip,
     );
   }
 
@@ -4067,6 +4069,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             context,
             Icons.home_outlined,
             iconSize: 27,
+            longPressTooltip: !desktop,
             onPressed: _confirmBackToProjectList,
             tooltip: l10n.timelineBackToProjectListTooltip,
           ),

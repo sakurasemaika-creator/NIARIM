@@ -136,6 +136,7 @@ void main() {
   for (final (screen, kind) in [
     (const Size(1280, 800), PointerDeviceKind.mouse),
     (const Size(390, 844), PointerDeviceKind.touch),
+    (const Size(1280, 800), PointerDeviceKind.stylus),
   ]) {
     testWidgets(
       'first timeline press after opening from details works with ${kind.name}',
@@ -144,7 +145,7 @@ void main() {
           tester,
           project: const Size(160, 90),
           screen: screen,
-          pc: kind == PointerDeviceKind.mouse,
+          pc: kind != PointerDeviceKind.touch,
           fraction: .4,
         );
         appRouter.go('/project/$id');
@@ -159,9 +160,16 @@ void main() {
           await cursor.addPointer(location: tester.getCenter(edit));
           addTearDown(cursor.removePointer);
         }
-        Future<void> press(Finder control) async {
+        Future<void> press(Finder control, {bool hold = true}) async {
           expect(control.hitTestable(), findsOneWidget);
-          if (cursor == null) {
+          if (kind == PointerDeviceKind.stylus && hold) {
+            final pen = await tester.startGesture(
+              tester.getCenter(control),
+              kind: kind,
+            );
+            await tester.pump(const Duration(milliseconds: 650));
+            await pen.up();
+          } else if (cursor == null) {
             await tester.tap(control, kind: kind);
           } else {
             final target = tester.getCenter(control);
@@ -174,7 +182,7 @@ void main() {
           await pumpRealAsync(tester, const Duration(milliseconds: 450));
         }
 
-        await press(edit);
+        await press(edit, hold: false);
         expect(find.byType(CanvasArea), findsOneWidget);
         await press(find.byKey(const Key('canvasTimelineModeButton')));
         final timeline = find.byType(TimelineScreen);
