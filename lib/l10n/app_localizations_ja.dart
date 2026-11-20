@@ -2054,7 +2054,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      'タイムスタンプはフレームにメモを残す機能です。登録時に色を選ぶと、フレームの上に小さな三角が表示されます。三角をタップするとメモが開き、フレーム番号をタップするとその位置に移動します。長押しでメモの編集や削除ができます。';
+      'タイムスタンプはフレームにメモを残す機能です。名前をタップするとそのフレームに移動し、メニューから編集・削除もできます。フレームの上にある三角からもメモを開けます。';
 
   @override
   String get tipsCommunityYoutubeTitle => '作品広場への投稿はYouTube経由です';
@@ -5868,6 +5868,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get workspacePcLayoutButton => 'PCレイアウト設定';
 
   @override
+  String get pcWorkspaceResizeGrip => 'ドラッグしてサイズを変更';
+
+  @override
   String get pcWorkspaceLayoutScreenTitle => 'PCレイアウト設定';
 
   @override
@@ -6389,6 +6392,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityShortsBadge => '縦画面';
+
+  @override
+  String get communityLandscapeBadge => '横画面';
 
   @override
   String get communityVideoTypeFilterTooltip => '動画の種類を絞り込む';

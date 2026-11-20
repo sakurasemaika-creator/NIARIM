@@ -2122,7 +2122,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      'A timestamp attaches a note to a frame. Choose a color when you add one and a small triangle appears above the frame. Tap the triangle to read the note, then tap the frame number to jump there. Touch and hold the triangle to edit or delete the note.';
+      'A timestamp attaches a note to a frame. Tap its name to jump to the frame and open the menu to edit or delete it. You can also tap the triangle above the frame to open the note.';
 
   @override
   String get tipsCommunityYoutubeTitle =>
@@ -6118,6 +6118,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workspacePcLayoutButton => 'PC layout settings';
 
   @override
+  String get pcWorkspaceResizeGrip => 'Drag to resize';
+
+  @override
   String get pcWorkspaceLayoutScreenTitle => 'PC layout settings';
 
   @override
@@ -6657,6 +6660,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityShortsBadge => 'Portrait';
+
+  @override
+  String get communityLandscapeBadge => 'Landscape';
 
   @override
   String get communityVideoTypeFilterTooltip => 'Filter by video type';

@@ -9,8 +9,10 @@ import 'community_work_counts.dart';
 import '../../../models/community_work.dart';
 import '../../../services/community_service.dart';
 import '../../../widgets/collection_action_controls.dart';
+import '../../canvas/widgets/canvas_icon_button.dart';
 import 'community_work_card.dart'
     show
+        CommunityWorkOrientation,
         communityThumbnailGradient,
         formatDurationLabel,
         toggleCommunityWorkVisibility;
@@ -25,6 +27,7 @@ class CommunityRankingWorkList extends StatelessWidget {
     required this.layout,
     this.periodScores = const {},
     this.showRanks = true,
+    this.rankNumbers,
     required this.bookmarkedIds,
     required this.onTapWork,
     required this.onToggleBookmark,
@@ -38,6 +41,7 @@ class CommunityRankingWorkList extends StatelessWidget {
   final Map<String, int> periodScores;
   final CommunityRankingLayout layout;
   final bool showRanks;
+  final Map<String, int>? rankNumbers;
   final Set<String> bookmarkedIds;
   final void Function(CommunityWork) onTapWork;
   final void Function(CommunityWork) onToggleBookmark;
@@ -57,7 +61,11 @@ class CommunityRankingWorkList extends StatelessWidget {
             CommunityRankingWorkCard(
               key: ValueKey('community-ranking-work-${works[i].id}'),
               work: works[i],
-              rank: showRanks ? i + 1 : null,
+              rank: showRanks
+                  ? rankNumbers == null
+                        ? i + 1
+                        : rankNumbers![works[i].id]
+                  : null,
               periodBookmarkCount: periodScores[works[i].id],
               layout: layout,
               isBookmarked: bookmarkedIds.contains(works[i].id),
@@ -134,7 +142,8 @@ class CommunityRankBadge extends StatelessWidget {
                 child: Text(
                   '$rank',
                   style: TextStyle(
-                    color: scheme.onSurface,
+                    color: ink,
+                    shadows: CanvasIconButton.outlineShadows(fill),
                     fontSize: small ? 16 : 19,
                     fontWeight: FontWeight.bold,
                   ),
@@ -152,6 +161,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
     required this.rank,
     required this.layout,
     this.periodBookmarkCount,
+    this.repostedByAuthorName,
     required this.isBookmarked,
     required this.onTap,
     required this.onBookmarkToggle,
@@ -165,10 +175,11 @@ class CommunityRankingWorkCard extends StatelessWidget {
   final int? rank;
   final CommunityRankingLayout layout;
   final int? periodBookmarkCount;
+  final String? repostedByAuthorName;
   final bool isBookmarked;
   final VoidCallback onTap;
   final VoidCallback onBookmarkToggle;
-  final VoidCallback onAuthorTap;
+  final VoidCallback? onAuthorTap;
   final VoidCallback? onVisibilityToggle;
   final bool isMuted;
   final bool isUnavailable;
@@ -307,7 +318,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     return Semantics(
-      button: !_obscured,
+      button: !_obscured && onAuthorTap != null,
       child: InkWell(
         key: ValueKey('community-author-${work.id}'),
         onTap: _obscured ? null : onAuthorTap,
@@ -358,47 +369,42 @@ class CommunityRankingWorkCard extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(0, 8, 4, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (rank case final place?) ...[
-                              CommunityRankBadge(
-                                rank: place,
-                                small: width < 400,
-                              ),
-                              const SizedBox(width: 4),
-                            ],
-                            Expanded(child: _title(context)),
-                          ],
-                        ),
-                        if (!_obscured) ...[
-                          const SizedBox(height: 4),
-                          _author(context),
-                          const SizedBox(height: 2),
-                          _counts(context),
-                        ],
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (rank case final place?) ...[
+                        CommunityRankBadge(rank: place, small: width < 400),
+                        const SizedBox(width: 4),
                       ],
-                    ),
+                      Expanded(child: _title(context)),
+                    ],
                   ),
-                  // ︙とブックマークは押せる所（48×48）が重ならない縦の並び。
-                  SizedBox(
-                    width: 40,
-                    child: CollectionActionRow(
-                      direction: Axis.vertical,
+                  if (!_obscured) ...[
+                    _author(context),
+                    _counts(context),
+                    if (repostedByAuthorName case final author?)
+                      Text(
+                        AppLocalizations.of(
+                          context,
+                        )!.communityRepostedByBadge(author),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                  ],
+                  if (!isUnavailable)
+                    CollectionTileActions(
+                      leading: _obscured
+                          ? null
+                          : CommunityWorkOrientation(work: work),
                       children: [
-                        if (onVisibilityToggle != null) _menu(context),
                         if (!_obscured) _bookmark(context),
+                        if (onVisibilityToggle != null) _menu(context),
                       ],
                     ),
-                  ),
                 ],
               ),
             ),

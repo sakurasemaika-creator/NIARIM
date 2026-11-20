@@ -211,6 +211,34 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('PC timeline pane handles resize and move panes', (tester) async {
+    await openTimeline(tester, size: const Size(1280, 800));
+    final bin = find.byKey(const ValueKey('pcTimelineBin'));
+    final monitor = find.byKey(const ValueKey('pcProgramMonitor'));
+    final tracks = find.byKey(const ValueKey('pcTimelineTracks'));
+    final oldWidth = tester.getSize(bin).width;
+    final oldHeight = tester.getSize(tracks).height;
+    await tester.drag(
+      find.byKey(const ValueKey('pcTimelineBinSplitter')),
+      const Offset(72, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getSize(bin).width, greaterThan(oldWidth));
+    await tester.drag(
+      find.byKey(const ValueKey('pcTimelineRowSplitter')),
+      const Offset(0, -50),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getSize(tracks).height, greaterThan(oldHeight));
+    final grip = tester.getCenter(
+      find.byKey(const ValueKey('pcTimelineGrip.bin')),
+    );
+    await tester.dragFrom(grip, tester.getCenter(monitor) - grip);
+    await tester.pumpAndSettle();
+    expect(tester.getRect(bin).left, greaterThan(tester.getRect(monitor).left));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Ctrl + wheel zooms the timeline, the wheel alone scrolls', (
     tester,
   ) async {

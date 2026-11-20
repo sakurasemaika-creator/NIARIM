@@ -2156,7 +2156,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      'Un horodatage ajoute une note à une image. Choisissez une couleur à sa création pour afficher un petit triangle au-dessus de l’image. Touchez le triangle pour lire la note, puis le numéro d’image pour accéder à cette position. Appuyez longuement sur le triangle pour modifier ou supprimer la note.';
+      'Un horodatage ajoute une note à une image. Touchez son nom pour atteindre l’image et ouvrir le menu de modification ou de suppression. Le triangle au-dessus de l’image ouvre également la note.';
 
   @override
   String get tipsCommunityYoutubeTitle =>
@@ -6223,6 +6223,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get workspacePcLayoutButton => 'Réglages de disposition PC';
 
   @override
+  String get pcWorkspaceResizeGrip => 'Faites glisser pour redimensionner';
+
+  @override
   String get pcWorkspaceLayoutScreenTitle => 'Réglages de disposition PC';
 
   @override
@@ -6776,6 +6779,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityShortsBadge => 'Vertical';
+
+  @override
+  String get communityLandscapeBadge => 'Horizontal';
 
   @override
   String get communityVideoTypeFilterTooltip => 'Filtrer par type de vidéo';

@@ -30,11 +30,13 @@ extension VideoTypeFilterX on VideoTypeFilter {
 class VideoTypeFilterButton extends StatelessWidget {
   final VideoTypeFilter value;
   final ValueChanged<VideoTypeFilter> onChanged;
+  final bool compact;
 
   const VideoTypeFilterButton({
     super.key,
     required this.value,
     required this.onChanged,
+    this.compact = false,
   });
 
   @override
@@ -43,6 +45,13 @@ class VideoTypeFilterButton extends StatelessWidget {
     return PopupMenuButton<VideoTypeFilter>(
       tooltip: l10n.communityVideoTypeFilterTooltip,
       onSelected: onChanged,
+      icon: compact
+          ? Icon(
+              value == VideoTypeFilter.all
+                  ? Icons.filter_alt_outlined
+                  : Icons.filter_alt,
+            )
+          : null,
       itemBuilder: (_) => [
         for (final type in VideoTypeFilter.values)
           CheckedPopupMenuItem<VideoTypeFilter>(
@@ -51,28 +60,30 @@ class VideoTypeFilterButton extends StatelessWidget {
             child: Text(type.label(l10n)),
           ),
       ],
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.filter_alt_outlined, size: 18),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  value.label(l10n),
-                  style: const TextStyle(fontSize: 12),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+      child: compact
+          ? null
+          : ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.filter_alt_outlined, size: 18),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        value.label(l10n),
+                        style: const TextStyle(fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const Icon(Icons.arrow_drop_down, size: 18),
+                  ],
                 ),
               ),
-              const Icon(Icons.arrow_drop_down, size: 18),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

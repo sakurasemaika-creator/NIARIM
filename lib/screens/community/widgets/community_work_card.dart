@@ -11,7 +11,8 @@ import 'package:provider/provider.dart';
 
 import '../../../models/community_work.dart';
 import 'community_work_counts.dart';
-import 'community_ranking_work_list.dart' show CommunityRankBadge;
+import 'community_ranking_work_list.dart'
+    show CommunityRankBadge, CommunityRankingLayout, CommunityRankingWorkCard;
 
 String formatDurationLabel(int seconds) {
   final m = seconds ~/ 60;
@@ -213,17 +214,6 @@ class CommunityWorkCard extends StatelessWidget {
                       child: badge(formatDurationLabel(work.durationSeconds)),
                     ),
                   ),
-                if (work.isShort && !obscured)
-                  Positioned(
-                    left: 6,
-                    bottom: 6,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: (thumbnail.maxWidth - 18) * .48,
-                      ),
-                      child: badge(l10n.communityShortsBadge),
-                    ),
-                  ),
               ],
             );
           },
@@ -316,6 +306,9 @@ class CommunityWorkCard extends StatelessWidget {
                   CollectionTileActions(
                     key: ValueKey('community-card-actions-${work.id}'),
                     compact: compactActions,
+                    leading: obscured
+                        ? null
+                        : CommunityWorkOrientation(work: work),
                     children: [
                       // 読み上げの名前は丸の中に置く（丸の外に箱を
                       // 置くと、その箱が丸の外の帯を押しても断る）。
@@ -387,6 +380,37 @@ class CommunityWorkCard extends StatelessWidget {
   }
 }
 
+class CommunityWorkOrientation extends StatelessWidget {
+  const CommunityWorkOrientation({super.key, required this.work});
+
+  final CommunityWork work;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final label = work.isShort
+        ? l10n.communityShortsBadge
+        : l10n.communityLandscapeBadge;
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: 6, end: 2),
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Tooltip(
+          message: label,
+          excludeFromSemantics: true,
+          child: Text(
+            label,
+            key: ValueKey('community-orientation-${work.id}'),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// The same hide/unhide action is used by grid cards and both ranking
 /// layouts. Persisted filters remain unchanged when changing the layout.
 Future<void> toggleCommunityWorkVisibility(
@@ -435,6 +459,7 @@ class CommunityWorkGrid extends StatelessWidget {
   final double bottomPadding;
   final CollectionViewSize viewSize;
   final Map<String, int> periodScores;
+  final bool detail;
 
   const CommunityWorkGrid({
     super.key,
@@ -448,16 +473,49 @@ class CommunityWorkGrid extends StatelessWidget {
     this.bottomPadding = 12,
     this.viewSize = CollectionViewSize.medium,
     this.periodScores = const {},
+    this.detail = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final service = context.watch<CommunityService>();
+    final padding = EdgeInsets.fromLTRB(8, 0, 8, bottomPadding);
+    if (detail) {
+      return ListView.separated(
+        primary: false,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: padding,
+        itemCount: works.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 8),
+        itemBuilder: (context, index) {
+          final work = works[index];
+          final unavailable = work.isUnavailable || !work.isNiarimPublished;
+          return CommunityRankingWorkCard(
+            key: ValueKey('community-detail-${work.id}'),
+            work: work,
+            rank: rankNumbers?[work.id],
+            layout: CommunityRankingLayout.horizontal,
+            periodBookmarkCount: periodScores[work.id],
+            isBookmarked: bookmarkedIds.contains(work.id),
+            isMuted: !unavailable && service.isWorkMuted(work),
+            isUnavailable: unavailable,
+            repostedByAuthorName: repostedByNames?[work.id],
+            onTap: () => onTapWork(work),
+            onBookmarkToggle: () => onToggleBookmark(work),
+            onAuthorTap: onTapAuthor == null ? null : () => onTapAuthor!(work),
+            onVisibilityToggle: unavailable
+                ? null
+                : () => toggleCommunityWorkVisibility(context, work),
+          );
+        },
+      );
+    }
     return GridView.builder(
       primary: false,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(8, 0, 8, bottomPadding),
+      padding: padding,
       gridDelegate: collectionTileGridDelegate(
         context,
         viewSize.tileExtent,

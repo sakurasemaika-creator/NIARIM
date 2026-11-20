@@ -8,8 +8,6 @@ import '../../l10n/community_plaza_labels.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
-import '../../utils/name_collation.dart';
-import '../../widgets/checked_menu_item.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import '../../widgets/collection_tile_layout.dart';
 import '../../widgets/sort_mode_control.dart';
@@ -23,6 +21,7 @@ import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_top_edge_refresh.dart';
 import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
+import 'widgets/community_list_controls.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 
@@ -134,23 +133,17 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   bool _loadingMoreWorks = false;
 
   CollectionViewSize? _chosenViewSize;
+  bool _detail = false;
   CollectionViewSize get _viewSize =>
       _chosenViewSize ?? defaultTileSizeFor(MediaQuery.sizeOf(context).width);
   bool _sortByName = false;
   bool _sortAscending = false;
 
-  bool get _needsCompleteList => _sortByName || _sortAscending;
+  bool get _needsCompleteList =>
+      _sortByName || _sortAscending || _videoTypeFilter != VideoTypeFilter.all;
 
-  List<CommunityWork> _sortWorks(Iterable<CommunityWork> works) {
-    final byName = nameComparator<CommunityWork>((work) => work.title);
-    return works.toList()..sort((a, b) {
-      final order = _sortByName
-          ? byName(a, b)
-          : a.postedAt.compareTo(b.postedAt);
-      if (order == 0) return a.id.compareTo(b.id);
-      return _sortAscending ? order : -order;
-    });
-  }
+  List<CommunityWork> _sortWorks(Iterable<CommunityWork> works) =>
+      sortCommunityWorks(works, byName: _sortByName, ascending: _sortAscending);
 
   void _updateSort({bool? byName, bool? ascending}) {
     setState(() {
@@ -315,7 +308,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final followingCount = communityService.followingCountOf(widget.authorId);
     final bookmarkedIds = communityService.bookmarkedIds;
     final bookmarkedWorks = isSelf
-        ? communityService.bookmarkedWorksOf(widget.authorId)
+        ? _videoTypeFilter.apply(
+            communityService.bookmarkedWorksOf(widget.authorId),
+          )
         : const <CommunityWork>[];
 
     Widget socialCount(String key, String label, Widget screen) {
@@ -365,6 +360,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     Widget workGrid(List<CommunityWork> visibleWorks) => CommunityWorkGrid(
       works: visibleWorks,
       viewSize: _viewSize,
+      detail: _detail,
       bookmarkedIds: bookmarkedIds,
       onTapWork: openWork,
       onToggleBookmark: toggleBookmark,
@@ -451,30 +447,26 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                 ),
               ],
             ),
-          PopupMenuButton<CollectionViewSize>(
+          CommunityWorkViewButton(
             key: const Key('communityAuthorViewSize'),
-            icon: const Icon(Icons.view_module),
-            tooltip: l10n.homeViewModeTooltip,
-            position: PopupMenuPosition.under,
-            onSelected: (size) => setState(() => _chosenViewSize = size),
-            itemBuilder: (_) => [
-              MenuSectionHeading<CollectionViewSize>(l10n.homeViewSizeHeading),
-              for (final size in CollectionViewSize.values)
-                checkedMenuItem(
-                  context,
-                  value: size,
-                  checked: _viewSize == size,
-                  label: switch (size) {
-                    CollectionViewSize.large => l10n.homeViewModeLarge,
-                    CollectionViewSize.medium => l10n.homeViewModeMedium,
-                    CollectionViewSize.small => l10n.homeViewModeSmall,
-                  },
-                ),
-            ],
+            detail: _detail,
+            size: _viewSize,
+            onChanged: (mode) => setState(() {
+              _detail = mode == CommunityWorkView.detail;
+              _chosenViewSize = mode.tileSize ?? _chosenViewSize;
+            }),
           ),
           VideoTypeFilterButton(
+            compact: true,
             value: _videoTypeFilter,
-            onChanged: (v) => setState(() => _videoTypeFilter = v),
+            onChanged: (value) {
+              setState(() {
+                _videoTypeFilter = value;
+                _visibleWorks = CommunityService.pageSize;
+              });
+              if (_authorWorksScroll.hasClients) _authorWorksScroll.jumpTo(0);
+              if (_needsCompleteList) unawaited(_loadMoreAuthorWorks());
+            },
           ),
           if (_videoTypeFilter == VideoTypeFilter.shortOnly)
             IconButton(

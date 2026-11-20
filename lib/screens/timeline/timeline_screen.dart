@@ -101,6 +101,8 @@ import 'widgets/stack_order_panel.dart';
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image, text }
 
+enum _PcTimelineArea { bin, monitor, inspector, tracks }
+
 enum _TimelineToolbarAction { watermark }
 
 enum _TimelineSelection { scenes, frames, clips }
@@ -350,6 +352,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
   static const double _frameWBase = 36.0;
   double _frameWidthScale = 1.0;
   double? _pcUpperHeight;
+  bool _pcTracksAbove = false;
+  final _pcPaneOrder = [
+    _PcTimelineArea.bin,
+    _PcTimelineArea.monitor,
+    _PcTimelineArea.inspector,
+  ];
   double _pcBinWidth = 260;
   double _pcInspectorWidth = 340;
   bool _pcShowBin = true;
@@ -1341,11 +1349,74 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   // ─── PC/DeXモードの作業画面 ───────────────────────────────────────────
 
-  /// PC/DeXモード専用のタイムライン。上から、上部バー（スマホと同じボタン）・
-  /// ［シーンと素材｜プレビュー｜詳細］・横幅いっぱいのタイムライン・
-  /// ステータスバーを並べる。素材の編集パネルは右の「詳細」に出るので、
-  /// 編集中もタイムラインが隠れない（スマホでは編集パネルがタイムラインの
-  /// 場所に入れ替わる）。
+  Widget _pcTimelineGrip(_PcTimelineArea area, String title) {
+    final colors = PcWorkspaceColors.of(context);
+    return Draggable<_PcTimelineArea>(
+      key: ValueKey('pcTimelineGrip.${area.name}'),
+      data: area,
+      maxSimultaneousDrags: 1,
+      dragAnchorStrategy: pointerDragAnchorStrategy,
+      feedback: Material(
+        color: colors.paneHeader,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: colors.accentFill),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          child: Text(title, style: TextStyle(color: colors.onPane)),
+        ),
+      ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.grab,
+        child: Tooltip(
+          message: AppLocalizations.of(context)!.commonMove,
+          child: SizedBox(
+            width: 24,
+            height: PcDockColumn.headerHeight,
+            child: Icon(Icons.drag_indicator, size: 18, color: colors.onPane),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _pcTimelineDropArea(_PcTimelineArea area, Widget child) {
+    return DragTarget<_PcTimelineArea>(
+      key: ValueKey('pcTimelineDrop.${area.name}'),
+      onWillAcceptWithDetails: (details) => details.data != area,
+      onAcceptWithDetails: (details) => setState(() {
+        if (details.data == _PcTimelineArea.tracks ||
+            area == _PcTimelineArea.tracks) {
+          _pcTracksAbove = !_pcTracksAbove;
+          return;
+        }
+        final a = _pcPaneOrder.indexOf(area);
+        final b = _pcPaneOrder.indexOf(details.data);
+        _pcPaneOrder[a] = details.data;
+        _pcPaneOrder[b] = area;
+      }),
+      builder: (context, candidates, _) => Stack(
+        fit: StackFit.expand,
+        children: [
+          child,
+          if (candidates.isNotEmpty)
+            IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// PCのパネルは横に交換でき、全幅のタイムラインは上下を入れ替えられる。
   Widget _buildPcTimelineWorkspace(AppLocalizations l10n) {
     return Column(
       children: [
@@ -1354,16 +1425,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               const minUpper = 220.0;
-              const minLower = 180.0;
+              const minTracks = 180.0;
               final maxUpper = math.max(
                 minUpper,
-                constraints.maxHeight - minLower - PcDockColumn.splitterHeight,
+                constraints.maxHeight - minTracks - PcDockColumn.splitterHeight,
               );
               final upper = (_pcUpperHeight ?? constraints.maxHeight * 0.55)
                   .clamp(minUpper, maxUpper);
-              // プレビューに360pxを残せないほど狭い窓では、左右の区画を狭める。
+              final panes = _pcPaneOrder
+                  .where(
+                    (pane) => switch (pane) {
+                      _PcTimelineArea.bin => _pcShowBin,
+                      _PcTimelineArea.inspector => _pcShowInspector,
+                      _ => true,
+                    },
+                  )
+                  .toList();
               final sides =
-                  constraints.maxWidth - 360 - PcDockSplitter.width * 2;
+                  constraints.maxWidth -
+                  360 -
+                  PcDockSplitter.width * (panes.length - 1);
               final wanted =
                   (_pcShowBin ? _pcBinWidth : 0) +
                   (_pcShowInspector ? _pcInspectorWidth : 0);
@@ -1372,117 +1453,111 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   : 1.0;
               final binWidth = math.max(180.0, _pcBinWidth * scale);
               final inspectorWidth = math.max(240.0, _pcInspectorWidth * scale);
-              return Column(
-                children: [
-                  SizedBox(
-                    height: upper,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+              void adjust(_PcTimelineArea pane, double delta) {
+                switch (pane) {
+                  case _PcTimelineArea.bin:
+                    _pcBinWidth = (binWidth + delta).clamp(180.0, 480.0);
+                  case _PcTimelineArea.inspector:
+                    _pcInspectorWidth = (inspectorWidth + delta).clamp(
+                      240.0,
+                      560.0,
+                    );
+                  case _PcTimelineArea.monitor:
+                  case _PcTimelineArea.tracks:
+                    break;
+                }
+              }
+
+              final mainPanes = SizedBox(
+                key: const ValueKey('pcTimelineUpperPanes'),
+                height: upper,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var i = 0; i < panes.length; i++) ...[
+                      if (i > 0)
+                        PcDockSplitter(
+                          key: ValueKey(
+                            panes[i - 1] == _PcTimelineArea.bin
+                                ? 'pcTimelineBinSplitter'
+                                : panes[i] == _PcTimelineArea.inspector
+                                ? 'pcTimelineInspectorSplitter'
+                                : 'pcTimelineSplitter.$i',
+                          ),
+                          onDrag: (dx) => setState(() {
+                            adjust(panes[i - 1], dx);
+                            adjust(panes[i], -dx);
+                          }),
+                        ),
+                      switch (panes[i]) {
+                        _PcTimelineArea.bin => SizedBox(
+                          key: const ValueKey('pcTimelineBinSlot'),
+                          width: binWidth,
+                          child: _pcTimelineDropArea(
+                            _PcTimelineArea.bin,
+                            _buildPcTimelineBin(l10n),
+                          ),
+                        ),
+                        _PcTimelineArea.inspector => SizedBox(
+                          key: const ValueKey('pcTimelineInspectorSlot'),
+                          width: inspectorWidth,
+                          child: _pcTimelineDropArea(
+                            _PcTimelineArea.inspector,
+                            _buildPcTimelineDetails(l10n),
+                          ),
+                        ),
+                        _ => Expanded(
+                          key: const ValueKey('pcTimelineMonitorSlot'),
+                          child: _pcTimelineDropArea(
+                            _PcTimelineArea.monitor,
+                            _buildPcProgramMonitor(l10n),
+                          ),
+                        ),
+                      },
+                    ],
+                  ],
+                ),
+              );
+              final tracks = Expanded(
+                key: const ValueKey('pcTimelineTracksSlot'),
+                child: _pcTimelineDropArea(
+                  _PcTimelineArea.tracks,
+                  Material(
+                    key: const ValueKey('pcTimelineTracks'),
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: Column(
                       children: [
-                        if (_pcShowBin) ...[
-                          SizedBox(
-                            width: binWidth,
-                            child: PcDockColumn(
-                              key: const ValueKey('pcTimelineBin'),
-                              panes: [
-                                PcPane(
-                                  id: 'bin',
-                                  fill: true,
-                                  minLayoutHeight: 0,
-                                  tabs: [
-                                    PcPaneTab(
-                                      id: 'scenes',
-                                      title: l10n.helpSceneTitle,
-                                      icon: Icons.movie_outlined,
-                                      child: _buildPcSceneBin(l10n),
-                                    ),
-                                    PcPaneTab(
-                                      id: 'materials',
-                                      title: l10n.storageCategoryMaterials,
-                                      icon: Icons.perm_media_outlined,
-                                      child: _buildPcMaterialBin(l10n),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                        if (_isSceneCursorActive || _isFrameCursorActive)
+                          _buildTimelinePlacementToolbar(l10n)
+                        else if (_timelineSelection case final selection?)
+                          _buildSelectionToolbar(l10n, selection),
+                        Row(
+                          children: [
+                            _pcTimelineGrip(
+                              _PcTimelineArea.tracks,
+                              l10n.helpTimelineTitle,
                             ),
-                          ),
-                          PcDockSplitter(
-                            key: const ValueKey('pcTimelineBinSplitter'),
-                            onDrag: (dx) => setState(
-                              () => _pcBinWidth = (binWidth + dx).clamp(
-                                180.0,
-                                480.0,
-                              ),
-                            ),
-                          ),
-                        ],
-                        Expanded(child: _buildPcProgramMonitor(l10n)),
-                        if (_pcShowInspector) ...[
-                          PcDockSplitter(
-                            key: const ValueKey('pcTimelineInspectorSplitter'),
-                            onDrag: (dx) => setState(
-                              () => _pcInspectorWidth = (inspectorWidth - dx)
-                                  .clamp(240.0, 560.0),
-                            ),
-                          ),
-                          SizedBox(
-                            width: inspectorWidth,
-                            child: PcDockColumn(
-                              key: const ValueKey('pcTimelineInspector'),
-                              panes: [
-                                PcPane(
-                                  id: 'inspector',
-                                  fill: true,
-                                  minLayoutHeight: 0,
-                                  tabs: [
-                                    PcPaneTab(
-                                      id: 'inspector',
-                                      title: _showStackOrder
-                                          ? l10n.timelineStackOrderTitle
-                                          : l10n.pcPaneInspector,
-                                      icon: _showStackOrder
-                                          ? Icons.layers_outlined
-                                          : Icons.tune,
-                                      child: _buildPcInspector(l10n),
-                                      onClose: _isEditPanelOpen
-                                          ? _closeEditPanels
-                                          : null,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                            Expanded(child: _buildSceneTabs()),
+                          ],
+                        ),
+                        ..._buildTimelineTracks(l10n),
                       ],
                     ),
                   ),
+                ),
+              );
+              return Column(
+                children: [
+                  if (_pcTracksAbove) tracks else mainPanes,
                   PcRowSplitter(
                     key: const ValueKey('pcTimelineRowSplitter'),
                     onDrag: (dy) => setState(
-                      () => _pcUpperHeight = (upper + dy).clamp(
-                        minUpper,
-                        maxUpper,
-                      ),
+                      () =>
+                          _pcUpperHeight = (upper + (_pcTracksAbove ? -dy : dy))
+                              .clamp(minUpper, maxUpper),
                     ),
                   ),
-                  Expanded(
-                    child: Material(
-                      key: const ValueKey('pcTimelineTracks'),
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      child: Column(
-                        children: [
-                          if (_isSceneCursorActive || _isFrameCursorActive)
-                            _buildTimelinePlacementToolbar(l10n)
-                          else if (_timelineSelection case final selection?)
-                            _buildSelectionToolbar(l10n, selection),
-                          _buildSceneTabs(),
-                          ..._buildTimelineTracks(l10n),
-                        ],
-                      ),
-                    ),
-                  ),
+                  if (_pcTracksAbove) mainPanes else tracks,
                 ],
               );
             },
@@ -1492,6 +1567,58 @@ class _TimelineScreenState extends State<TimelineScreen> {
       ],
     );
   }
+
+  Widget _buildPcTimelineBin(AppLocalizations l10n) => PcDockColumn(
+    key: const ValueKey('pcTimelineBin'),
+    panes: [
+      PcPane(
+        id: 'bin',
+        fill: true,
+        minLayoutHeight: 0,
+        leading: _pcTimelineGrip(_PcTimelineArea.bin, l10n.helpSceneTitle),
+        tabs: [
+          PcPaneTab(
+            id: 'scenes',
+            title: l10n.helpSceneTitle,
+            icon: Icons.movie_outlined,
+            child: _buildPcSceneBin(l10n),
+          ),
+          PcPaneTab(
+            id: 'materials',
+            title: l10n.storageCategoryMaterials,
+            icon: Icons.perm_media_outlined,
+            child: _buildPcMaterialBin(l10n),
+          ),
+        ],
+      ),
+    ],
+  );
+
+  Widget _buildPcTimelineDetails(AppLocalizations l10n) => PcDockColumn(
+    key: const ValueKey('pcTimelineInspector'),
+    panes: [
+      PcPane(
+        id: 'inspector',
+        fill: true,
+        minLayoutHeight: 0,
+        leading: _pcTimelineGrip(
+          _PcTimelineArea.inspector,
+          l10n.pcPaneInspector,
+        ),
+        tabs: [
+          PcPaneTab(
+            id: 'inspector',
+            title: _showStackOrder
+                ? l10n.timelineStackOrderTitle
+                : l10n.pcPaneInspector,
+            icon: _showStackOrder ? Icons.layers_outlined : Icons.tune,
+            child: _buildPcInspector(l10n),
+            onClose: _isEditPanelOpen ? _closeEditPanels : null,
+          ),
+        ],
+      ),
+    ],
+  );
 
   /// 再生位置の時刻（分:秒:フレーム）。
   static String _timecode(int frame, int fps) {
@@ -1527,6 +1654,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
             child: Row(
               children: [
+                _pcTimelineGrip(_PcTimelineArea.monitor, l10n.pcPaneProgram),
                 Icon(Icons.live_tv_outlined, size: 14, color: colors.onPane),
                 const SizedBox(width: 5),
                 Text(
@@ -4347,7 +4475,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     children: [
                                       if (markerHeight > 0)
                                         SizedBox(
-                                          height: markerHeight,
+                                          height: markerHeight + 4,
                                           child: timestamps[index] == null
                                               ? null
                                               : _buildMarkerPin(
@@ -4356,8 +4484,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         ),
                                       Expanded(
                                         child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 4,
+                                          padding: EdgeInsets.only(
+                                            top: markerHeight > 0 ? 0 : 4,
+                                            bottom: 4,
                                           ),
                                           child: frame,
                                         ),
@@ -6324,46 +6453,56 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             child: Tooltip(
                               message: '$label · $seconds',
                               excludeFromSemantics: true,
-                              child: TextButton(
-                                key: ValueKey(
-                                  'timelineTimestampName-${marker.id}',
-                                ),
-                                onPressed: () =>
-                                    _seekToTimestamp(marker.frameIndex),
-                                style: TextButton.styleFrom(
-                                  backgroundColor: selected
-                                      ? colors.primaryContainer
-                                      : colors.surfaceContainerLow,
-                                  foregroundColor: selected
-                                      ? colors.onPrimaryContainer
-                                      : colors.onSurface,
-                                  minimumSize: Size.zero,
-                                  maximumSize: const Size.fromWidth(220),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
+                              child: _timestampMenu(
+                                [marker],
+                                (context, controller, _) => TextButton(
+                                  key: ValueKey(
+                                    'timelineTimestampName-${marker.id}',
                                   ),
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  textStyle: theme.textTheme.labelSmall,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.arrow_drop_down,
-                                      color: color,
-                                      size: 16,
+                                  onPressed: () {
+                                    final wasOpen = controller.isOpen;
+                                    _seekToTimestamp(marker.frameIndex);
+                                    if (wasOpen) {
+                                      controller.close();
+                                    } else {
+                                      controller.open();
+                                    }
+                                  },
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: selected
+                                        ? colors.primaryContainer
+                                        : colors.surfaceContainerLow,
+                                    foregroundColor: selected
+                                        ? colors.onPrimaryContainer
+                                        : colors.onSurface,
+                                    minimumSize: Size.zero,
+                                    maximumSize: const Size.fromWidth(220),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
                                     ),
-                                    Flexible(
-                                      child: Text(
-                                        label,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    textStyle: theme.textTheme.labelSmall,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.arrow_drop_down,
+                                        color: color,
+                                        size: 16,
                                       ),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(seconds),
-                                  ],
+                                      Flexible(
+                                        child: Text(
+                                          label,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(seconds),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -6397,19 +6536,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
-  /// フレーム上の三角からメモを開く。長押しで編集・削除へ進む。
-  Widget _buildMarkerPin(List<TimelineMarker> markers) {
-    final frame = markers.first.frameIndex;
-    final labels = [
-      for (final marker in markers)
-        marker.comment.isEmpty ? 'F${frame + 1}' : marker.comment,
-    ];
+  String _timestampLabel(TimelineMarker marker) => marker.comment.trim().isEmpty
+      ? 'F${marker.frameIndex + 1}'
+      : marker.comment.trim();
+
+  Widget _timestampMenu(
+    List<TimelineMarker> markers,
+    MenuAnchorChildBuilder builder,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final sceneId = _selectedSceneId;
+    final frame = markers.first.frameIndex;
     return MenuAnchor(
       style: MenuStyle(
-        minimumSize: WidgetStatePropertyAll(const Size(100, 0)),
+        minimumSize: const WidgetStatePropertyAll(Size(100, 0)),
         maximumSize: WidgetStatePropertyAll(
-          Size(math.min(300, MediaQuery.sizeOf(context).width - 24), 210),
+          Size(math.min(320, MediaQuery.sizeOf(context).width - 16), 280),
         ),
       ),
       menuChildren: [
@@ -6417,24 +6560,92 @@ class _TimelineScreenState extends State<TimelineScreen> {
           onPressed: () => _seekToTimestamp(frame),
           child: Text('F${frame + 1}'),
         ),
-        for (final (i, marker) in markers.indexed)
+        for (final marker in markers)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.arrow_drop_down,
-                  color: marker.color == null
-                      ? scheme.primary
-                      : Color(marker.color!),
-                ),
-                Flexible(child: Text(labels[i])),
-              ],
+            padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 4, 0),
+            child: SizedBox(
+              width: math.min(274, MediaQuery.sizeOf(context).width - 54),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.arrow_drop_down,
+                    color: marker.color == null
+                        ? scheme.primary
+                        : Color(marker.color!),
+                  ),
+                  Expanded(
+                    child: Text(
+                      _timestampLabel(marker),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  // Use menu items so keyboard navigation and dismissal work
+                  // the same way as the frame jump above.
+                  MenuItemButton(
+                    key: ValueKey('timelineTimestampEdit-${marker.id}'),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(44, 44),
+                      maximumSize: const Size(44, 44),
+                      padding: EdgeInsets.zero,
+                    ),
+                    onPressed: () => _showEditMarkerDialog(marker),
+                    child: Tooltip(
+                      message: l10n.commonEdit,
+                      child: Icon(
+                        Icons.edit_outlined,
+                        semanticLabel: l10n.commonEdit,
+                      ),
+                    ),
+                  ),
+                  MenuItemButton(
+                    key: ValueKey('timelineTimestampDelete-${marker.id}'),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(44, 44),
+                      maximumSize: const Size(44, 44),
+                      padding: EdgeInsets.zero,
+                    ),
+                    onPressed: sceneId == null
+                        ? null
+                        : () => _deleteTimestamp(sceneId, marker),
+                    child: Tooltip(
+                      message: l10n.commonDelete,
+                      child: Icon(
+                        Icons.delete_outline,
+                        color: scheme.error,
+                        semanticLabel: l10n.commonDelete,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
       ],
-      builder: (context, controller, _) => Semantics(
+      builder: builder,
+    );
+  }
+
+  Future<bool> _deleteTimestamp(String sceneId, TimelineMarker marker) async {
+    if (!await confirmDelete(context, itemName: _timestampLabel(marker)) ||
+        !mounted) {
+      return false;
+    }
+    context.read<ProjectService>().removeTimelineMarker(
+      widget.projectId,
+      sceneId,
+      marker.id,
+    );
+    return true;
+  }
+
+  Widget _buildMarkerPin(List<TimelineMarker> markers) {
+    final frame = markers.first.frameIndex;
+    final labels = markers.map(_timestampLabel).toList();
+    final scheme = Theme.of(context).colorScheme;
+    return _timestampMenu(
+      markers,
+      (context, controller, _) => Semantics(
         button: true,
         label: labels.join('\n'),
         child: GestureDetector(
@@ -6449,19 +6660,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
           },
           onLongPress: () => _editMarkerAtFrame(markers, labels),
           onSecondaryTap: () => _editMarkerAtFrame(markers, labels),
-          child: Center(
+          child: Align(
+            alignment: Alignment.bottomCenter,
             child: FittedBox(
               fit: BoxFit.scaleDown,
+              alignment: Alignment.bottomCenter,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   for (final marker in markers.take(3))
-                    Icon(
-                      Icons.arrow_drop_down,
-                      size: markers.length == 1 ? 23 : 17,
-                      color: marker.color == null
-                          ? scheme.primary
-                          : Color(marker.color!),
+                    ClipPath(
+                      clipper: const _TimestampTriangle(),
+                      child: SizedBox(
+                        width: markers.length == 1 ? 24 : 13,
+                        height: markers.length == 1 ? 19 : 15,
+                        child: ColoredBox(
+                          color: marker.color == null
+                              ? scheme.primary
+                              : Color(marker.color!),
+                        ),
+                      ),
                     ),
                   if (markers.length > 3)
                     Icon(
@@ -6595,13 +6813,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   icon: Icon(Icons.delete, color: scheme.error),
                   tooltip: l10n.commonDelete,
                   onPressed: () async {
-                    if (!await confirmDelete(ctx) || !ctx.mounted) return;
-                    projects.removeTimelineMarker(
-                      widget.projectId,
-                      sceneId,
-                      marker.id,
-                    );
-                    Navigator.pop(ctx);
+                    if (await _deleteTimestamp(sceneId, marker) &&
+                        ctx.mounted) {
+                      Navigator.pop(ctx);
+                    }
                   },
                 ),
               TextButton(
@@ -11219,4 +11434,17 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
     if (image == null) return const SizedBox.shrink();
     return RawImage(image: image, fit: BoxFit.cover);
   }
+}
+
+class _TimestampTriangle extends CustomClipper<Path> {
+  const _TimestampTriangle();
+
+  @override
+  Path getClip(Size size) => Path()
+    ..lineTo(size.width, 0)
+    ..lineTo(size.width / 2, size.height)
+    ..close();
+
+  @override
+  bool shouldReclip(_TimestampTriangle oldClipper) => false;
 }

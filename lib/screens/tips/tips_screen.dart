@@ -726,34 +726,47 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  widget.tip.title,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    fontFamily: 'Kuramubon',
-                                    fontFamilyFallback: kHeadingFontFallback,
-                                    color: AccentTextTheme.of(context),
-                                  ),
-                                ),
-                                if (capture != null) ...[
-                                  const SizedBox(height: 12),
-                                  Center(
-                                    child: ConstrainedBox(
-                                      constraints: BoxConstraints(
-                                        maxHeight: dialogHeight * .48,
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Image.asset(
-                                          capture,
-                                          fit: BoxFit.contain,
-                                          semanticLabel: widget.tip.title,
-                                        ),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height:
+                                      MediaQuery.textScalerOf(
+                                        context,
+                                      ).scale(15) *
+                                      4.2,
+                                  child: SingleChildScrollView(
+                                    primary: false,
+                                    child: Text(
+                                      widget.tip.title,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        height: 1.4,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: 'Kuramubon',
+                                        fontFamilyFallback:
+                                            kHeadingFontFallback,
+                                        color: AccentTextTheme.of(context),
                                       ),
                                     ),
                                   ),
-                                ],
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: dialogHeight * .36,
+                                  child: capture == null
+                                      ? null
+                                      : ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          child: Image.asset(
+                                            capture,
+                                            fit: BoxFit.contain,
+                                            alignment: Alignment.center,
+                                            semanticLabel: widget.tip.title,
+                                          ),
+                                        ),
+                                ),
                                 const SizedBox(height: 12),
                                 Text(
                                   _textPages[index],

@@ -263,22 +263,33 @@ class CollectionTileActions extends StatelessWidget {
     super.key,
     required this.children,
     this.compact = false,
+    this.leading,
   });
 
   final List<Widget> children;
   final bool compact;
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
-    if (children.isEmpty) return const SizedBox.shrink();
+    if (children.isEmpty && leading == null) return const SizedBox.shrink();
     return SizedBox(
       height: CollectionActionFrame.targetExtent,
       child: LayoutBuilder(
         builder: (context, constraints) {
+          if (children.isEmpty) return leading!;
           final count = children.length;
+          final labelSpace = leading == null
+              ? 0.0
+              : math.min(
+                  constraints.maxWidth * .38,
+                  (constraints.maxWidth -
+                          CollectionActionFrame.targetExtent * count)
+                      .clamp(28.0, 68.0),
+                );
           final width = math.min(
             CollectionActionFrame.targetExtent,
-            constraints.maxWidth / count,
+            (constraints.maxWidth - labelSpace) / count,
           );
           if (width <= CollectionActionRow.gap) return const SizedBox.shrink();
           final preferredExtent = compact ? 32.0 : CollectionActionFrame.extent;
@@ -290,16 +301,27 @@ class CollectionTileActions extends StatelessWidget {
           final edge = count == 1
               ? spare / 2
               : spare - CollectionActionRow.gap / 2;
-          return Padding(
-            padding: EdgeInsetsDirectional.only(end: edge),
-            child: Align(
-              alignment: AlignmentDirectional.centerEnd,
-              child: CollectionActionRow(
-                buttonExtent: extent,
-                targetWidth: width,
-                children: children,
+          final actions = CollectionActionRow(
+            buttonExtent: extent,
+            targetWidth: width,
+            children: children,
+          );
+          if (leading == null) {
+            return Padding(
+              padding: EdgeInsetsDirectional.only(end: edge),
+              child: Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: actions,
               ),
-            ),
+            );
+          }
+          return Row(
+            children: [
+              Expanded(child: leading!),
+              SizedBox(width: edge),
+              actions,
+              SizedBox(width: edge),
+            ],
           );
         },
       ),

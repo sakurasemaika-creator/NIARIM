@@ -2162,7 +2162,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      'Una marca de tiempo añade una nota a un fotograma. Elige un color al crearla y aparecerá un triángulo pequeño encima del fotograma. Toca el triángulo para leer la nota y el número de fotograma para ir a esa posición. Mantén pulsado el triángulo para editar o eliminar la nota.';
+      'Una marca de tiempo añade una nota a un fotograma. Toca su nombre para saltar al fotograma y abrir el menú para editarla o eliminarla. También puedes tocar el triángulo sobre el fotograma para abrir la nota.';
 
   @override
   String get tipsCommunityYoutubeTitle =>
@@ -6216,6 +6216,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get workspacePcLayoutButton => 'Ajustes de diseño para PC';
 
   @override
+  String get pcWorkspaceResizeGrip => 'Arrastra para cambiar el tamaño';
+
+  @override
   String get pcWorkspaceLayoutScreenTitle => 'Ajustes de diseño para PC';
 
   @override
@@ -6771,6 +6774,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityShortsBadge => 'Vertical';
+
+  @override
+  String get communityLandscapeBadge => 'Horizontal';
 
   @override
   String get communityVideoTypeFilterTooltip => 'Filtrar por tipo de vídeo';

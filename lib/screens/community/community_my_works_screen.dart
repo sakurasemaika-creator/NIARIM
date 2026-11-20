@@ -23,11 +23,14 @@ import 'widgets/community_work_counts.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/menu_card.dart';
-import '../../widgets/checked_menu_item.dart';
+import '../../widgets/sort_mode_control.dart';
 import '../../widgets/collection_action_controls.dart';
 import '../../widgets/collection_tile_layout.dart';
 import '../../utils/responsive_tile_defaults.dart';
-import 'widgets/community_work_card.dart' show communityThumbnailGradient;
+import 'widgets/community_work_card.dart'
+    show CommunityWorkOrientation, communityThumbnailGradient;
+import 'widgets/community_list_controls.dart';
+import 'widgets/video_type_filter.dart';
 
 /// Owner hub opened from the community square.
 ///
@@ -58,6 +61,36 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   bool _selectionMode = false;
   bool _bulkBusy = false;
   CollectionViewSize? _viewSize;
+  bool _detail = false;
+  bool _sortByName = false;
+  bool _sortAscending = false;
+  VideoTypeFilter _filter = VideoTypeFilter.all;
+
+  bool get _needsCompleteOwnList =>
+      _sortByName || _sortAscending || _filter != VideoTypeFilter.all;
+
+  void _updateListControls({
+    bool? byName,
+    bool? ascending,
+    VideoTypeFilter? filter,
+  }) {
+    setState(() {
+      _sortByName = byName ?? _sortByName;
+      _sortAscending = ascending ?? _sortAscending;
+      _filter = filter ?? _filter;
+      _visibleOwnCount = CommunityService.pageSize;
+      if (filter != null) {
+        _selectedIds.clear();
+        _selectionMode = false;
+      }
+    });
+    if (_worksScrollController.hasClients) _worksScrollController.jumpTo(0);
+    final service = context.read<CommunityService>();
+    if (!_loadingWorks && _needsCompleteOwnList && service.hasMoreOwn) {
+      unawaited(_loadMoreOwnerWorks());
+    }
+  }
+
   final ScrollController _worksScrollController = ScrollController();
   bool _loadingMoreOwnWorks = false;
   int _visibleOwnCount = CommunityService.pageSize;
@@ -83,40 +116,43 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   }
 
   Future<void> _loadMoreOwnerWorks() async {
-    if (_loadingMoreOwnWorks) {
+    if (_loadingMoreOwnWorks || _loadingWorks) {
       return;
     }
     final generation = _ownerLoadGeneration;
     final accountId = context.read<GoogleAuthService>().account?.id;
     setState(() => _loadingMoreOwnWorks = true);
+    final service = context.read<CommunityService>();
     try {
-      final page = await context.read<CommunityService>().loadMoreOwnWorks();
-      if (!mounted ||
-          generation != _ownerLoadGeneration ||
-          accountId != context.read<GoogleAuthService>().account?.id ||
-          page == null) {
-        return;
-      }
-      setState(() {
-        _ownerWorks = [
-          ...?_ownerWorks,
-          for (final w in page.works)
-            if (!(_ownerWorks?.any((old) => old.id == w.workId) ?? false))
-              w.toCommunityWork(),
-        ];
-        _youtubePrivacyById = {
-          ..._youtubePrivacyById,
-          for (final work in page.works)
-            if (work.youtubePrivacyStatus != null)
-              work.workId: work.youtubePrivacyStatus!,
-        };
-        _scheduledPublishById = {
-          ..._scheduledPublishById,
-          for (final work in page.works)
-            if (work.scheduledPublishAt != null)
-              work.workId: work.scheduledPublishAt!,
-        };
-      });
+      do {
+        final page = await service.loadMoreOwnWorks();
+        if (!mounted ||
+            generation != _ownerLoadGeneration ||
+            accountId != context.read<GoogleAuthService>().account?.id ||
+            page == null) {
+          return;
+        }
+        setState(() {
+          _ownerWorks = [
+            ...?_ownerWorks,
+            for (final w in page.works)
+              if (!(_ownerWorks?.any((old) => old.id == w.workId) ?? false))
+                w.toCommunityWork(),
+          ];
+          _youtubePrivacyById = {
+            ..._youtubePrivacyById,
+            for (final work in page.works)
+              if (work.youtubePrivacyStatus != null)
+                work.workId: work.youtubePrivacyStatus!,
+          };
+          _scheduledPublishById = {
+            ..._scheduledPublishById,
+            for (final work in page.works)
+              if (work.scheduledPublishAt != null)
+                work.workId: work.scheduledPublishAt!,
+          };
+        });
+      } while (_needsCompleteOwnList && service.hasMoreOwn);
     } catch (error) {
       if (mounted && generation == _ownerLoadGeneration) {
         setState(() => _worksError = error);
@@ -243,6 +279,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
           generation == _ownerLoadGeneration &&
           auth.account?.id == requestedAccountId) {
         setState(() => _loadingWorks = false);
+        if (_needsCompleteOwnList && community.hasMoreOwn) {
+          unawaited(_loadMoreOwnerWorks());
+        }
       }
     }
   }
@@ -607,6 +646,104 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final deleted = _youtubePrivacyById[work.id] == 'deleted';
     final selected = _selectedIds.contains(work.id);
     final title = work.title.isEmpty ? work.id : work.title;
+    final thumbnail = Stack(
+      fit: StackFit.expand,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: communityThumbnailGradient(
+                scheme,
+                work.thumbnailColorIndex,
+              ),
+            ),
+          ),
+          child: !deleted && work.thumbnailUrl.startsWith('https://')
+              ? Image.network(
+                  work.thumbnailUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stack) =>
+                      const SizedBox.shrink(),
+                )
+              : null,
+        ),
+        if (_selectionMode)
+          Align(
+            alignment: AlignmentDirectional.topEnd,
+            child: Checkbox(
+              key: ValueKey('communityMyWorksSelect-${work.id}'),
+              value: selected,
+              onChanged: _bulkBusy ? null : (_) => _toggleSelected(work.id),
+            ),
+          )
+        else
+          Align(
+            alignment: AlignmentDirectional.topStart,
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: CircleAvatar(
+                radius: 12,
+                backgroundColor: scheme.surface,
+                child: Icon(_visibilityIcon(work), size: 15),
+              ),
+            ),
+          ),
+      ],
+    );
+    final details = <Widget>[
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: collectionTileCaptionStyle(context),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: Text(
+          '${_visibilityLabel(l10n, work)}  •  ${l10n.communityYoutubeVideoIdLabel(work.id)}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+      ),
+      if (!deleted && !work.isUnavailable)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: CommunityWorkCounts(
+                work: work,
+                compact: true,
+                fontSize: 10,
+              ),
+            ),
+          ),
+        ),
+      if (_selectionMode)
+        CollectionTileActions.selectionSpace
+      else
+        CollectionTileActions(
+          compact: size == CollectionViewSize.small,
+          leading: deleted ? null : CommunityWorkOrientation(work: work),
+          children: [
+            CollectionActionFrame(
+              child: IconButton(
+                key: ValueKey('communityMyWorksSettings-${work.id}'),
+                tooltip: l10n.communityMyWorksSettingsTitle,
+                onPressed: () => _openWorkSettings(work),
+                padding: EdgeInsets.zero,
+                iconSize: CollectionActionFrame.glyphSize,
+                icon: const Icon(Icons.build_outlined),
+              ),
+            ),
+          ],
+        ),
+    ];
     return MenuCard(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
@@ -629,110 +766,35 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
             });
           }
         },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: communityThumbnailGradient(
-                          scheme,
-                          work.thumbnailColorIndex,
-                        ),
-                      ),
+        child: _detail
+            ? IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.sizeOf(context).width < 400 ? 104 : 168,
+                      child: thumbnail,
                     ),
-                    child: !deleted && work.thumbnailUrl.startsWith('https://')
-                        ? Image.network(
-                            work.thumbnailUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stack) =>
-                                const SizedBox.shrink(),
-                          )
-                        : null,
-                  ),
-                  if (_selectionMode)
-                    Align(
-                      alignment: AlignmentDirectional.topEnd,
-                      child: Checkbox(
-                        key: ValueKey('communityMyWorksSelect-${work.id}'),
-                        value: selected,
-                        onChanged: _bulkBusy
-                            ? null
-                            : (_) => _toggleSelected(work.id),
-                      ),
-                    )
-                  else
-                    Align(
-                      alignment: AlignmentDirectional.topStart,
+                    Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: CircleAvatar(
-                          radius: 12,
-                          backgroundColor: scheme.surface,
-                          child: Icon(_visibilityIcon(work), size: 15),
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: details,
                         ),
                       ),
                     ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: collectionTileCaptionStyle(context),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Text(
-                '${_visibilityLabel(l10n, work)}  •  ${l10n.communityYoutubeVideoIdLabel(work.id)}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
-            ),
-            if (!deleted && !work.isUnavailable)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: CommunityWorkCounts(
-                      work: work,
-                      compact: true,
-                      fontSize: 10,
-                    ),
-                  ),
+                  ],
                 ),
-              ),
-            if (_selectionMode)
-              CollectionTileActions.selectionSpace
-            else
-              CollectionTileActions(
-                compact: size == CollectionViewSize.small,
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  CollectionActionFrame(
-                    child: IconButton(
-                      key: ValueKey('communityMyWorksSettings-${work.id}'),
-                      tooltip: l10n.communityMyWorksSettingsTitle,
-                      onPressed: () => _openWorkSettings(work),
-                      padding: EdgeInsets.zero,
-                      iconSize: CollectionActionFrame.glyphSize,
-                      icon: const Icon(Icons.build_outlined),
-                    ),
-                  ),
+                  Expanded(child: thumbnail),
+                  ...details,
                 ],
               ),
-          ],
-        ),
       ),
     );
   }
@@ -759,20 +821,32 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final ownerId = usingBackendOwnerList && hasCurrentOwnerState
         ? communityService.currentUserId
         : null;
-    final works = usingBackendOwnerList
+    final allWorks = usingBackendOwnerList
         ? [
             for (final w
                 in (hasCurrentOwnerState ? _ownerWorks : null) ??
                     const <CommunityWork>[])
               communityService.byId(w.id) ?? w,
           ]
-        : (communityService.worksByAuthor(
-                kDummySelfAuthorId,
-                includeHidden: true,
-              )..sort((a, b) => b.postedAt.compareTo(a.postedAt)))
-              .take(_visibleOwnCount)
-              .toList();
+        : communityService.worksByAuthor(
+            kDummySelfAuthorId,
+            includeHidden: true,
+          );
 
+    final sorting =
+        usingBackendOwnerList &&
+        _needsCompleteOwnList &&
+        (_loadingWorks || _loadingMoreOwnWorks);
+    final sorted = sortCommunityWorks(
+      _filter.apply(allWorks),
+      byName: _sortByName,
+      ascending: _sortAscending,
+    );
+    final works = sorting
+        ? const <CommunityWork>[]
+        : usingBackendOwnerList
+        ? sorted
+        : sorted.take(_visibleOwnCount).toList();
     final viewSize =
         _viewSize ?? defaultTileSizeFor(MediaQuery.sizeOf(context).width);
     return Scaffold(
@@ -783,24 +857,13 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
             ? _SelectionCountTitle(_selectedIds.length)
             : FitOrHideTitle(l10n.communityMyWorksTitle),
         actions: [
-          PopupMenuButton<CollectionViewSize>(
-            tooltip: l10n.homeViewModeTooltip,
-            icon: const Icon(Icons.grid_view_rounded),
-            onSelected: (size) => setState(() => _viewSize = size),
-            itemBuilder: (context) => [
-              MenuSectionHeading<CollectionViewSize>(l10n.homeViewSizeHeading),
-              for (final size in CollectionViewSize.values)
-                checkedMenuItem(
-                  context,
-                  value: size,
-                  checked: viewSize == size,
-                  label: switch (size) {
-                    CollectionViewSize.large => l10n.homeViewModeLarge,
-                    CollectionViewSize.medium => l10n.homeViewModeMedium,
-                    CollectionViewSize.small => l10n.homeViewModeSmall,
-                  },
-                ),
-            ],
+          CommunityWorkViewButton(
+            detail: _detail,
+            size: viewSize,
+            onChanged: (value) => setState(() {
+              _detail = value == CommunityWorkView.detail;
+              _viewSize = value.tileSize ?? _viewSize;
+            }),
           ),
           IconButton(
             tooltip: l10n.communityReloadTooltip,
@@ -1043,6 +1106,34 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                         ],
                       ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SortModeControl(
+                              dateLabel: l10n.communityAuthorSortPosted,
+                              sortByName: _sortByName,
+                              sortAscending: _sortAscending,
+                              onSortByNameChanged: (value) =>
+                                  _updateListControls(
+                                    byName: value,
+                                    ascending: value,
+                                  ),
+                              onToggleDirection: () => _updateListControls(
+                                ascending: !_sortAscending,
+                              ),
+                            ),
+                          ),
+                          VideoTypeFilterButton(
+                            compact: true,
+                            value: _filter,
+                            onChanged: (value) =>
+                                _updateListControls(filter: value),
+                          ),
+                        ],
+                      ),
+                    ),
                     if (_worksError != null &&
                         usingBackendOwnerList &&
                         hasCurrentOwnerState)
@@ -1086,7 +1177,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            usingBackendOwnerList && _loadingWorks
+                            sorting || (usingBackendOwnerList && _loadingWorks)
                                 ? l10n.communityMyWorksLoading
                                 : l10n.communityEmptyState,
                             textAlign: TextAlign.center,
@@ -1100,16 +1191,24 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
               else ...[
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  sliver: SliverGrid.builder(
-                    gridDelegate: collectionTileGridDelegate(
-                      context,
-                      viewSize.tileExtent,
-                      actionBandHeight: CollectionActionFrame.targetExtent,
-                    ),
-                    itemCount: works.length,
-                    itemBuilder: (context, index) =>
-                        _workTile(context, l10n, works[index], viewSize),
-                  ),
+                  sliver: _detail
+                      ? SliverList.separated(
+                          itemCount: works.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) =>
+                              _workTile(context, l10n, works[index], viewSize),
+                        )
+                      : SliverGrid.builder(
+                          gridDelegate: collectionTileGridDelegate(
+                            context,
+                            viewSize.tileExtent,
+                            actionBandHeight:
+                                CollectionActionFrame.targetExtent,
+                          ),
+                          itemCount: works.length,
+                          itemBuilder: (context, index) =>
+                              _workTile(context, l10n, works[index], viewSize),
+                        ),
                 ),
                 SliverToBoxAdapter(
                   child: Padding(

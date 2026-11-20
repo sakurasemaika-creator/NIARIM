@@ -10,9 +10,11 @@ import '../../widgets/collection_tile_layout.dart';
 import 'community_edit_feedback.dart';
 import 'community_error_text.dart';
 import 'widgets/community_work_card.dart';
+import 'widgets/community_list_controls.dart';
+import 'widgets/video_type_filter.dart';
 
 /// 閲覧フィルターとブックマーク日時順を反映する公開作品一覧。
-class CommunityBookmarkedTab extends StatelessWidget {
+class CommunityBookmarkedTab extends StatefulWidget {
   const CommunityBookmarkedTab({
     super.key,
     required this.onBrowseWorks,
@@ -25,6 +27,19 @@ class CommunityBookmarkedTab extends StatelessWidget {
   final CollectionViewSize viewSize;
 
   @override
+  State<CommunityBookmarkedTab> createState() => _CommunityBookmarkedTabState();
+}
+
+enum _BookmarkOrder { saved, posted, name }
+
+class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
+  CollectionViewSize? _size;
+  bool _detail = false;
+  _BookmarkOrder _order = _BookmarkOrder.saved;
+  bool _ascending = false;
+  VideoTypeFilter _filter = VideoTypeFilter.all;
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
@@ -34,7 +49,15 @@ class CommunityBookmarkedTab extends StatelessWidget {
     final textForeground = scheme.onSurface;
     final bodyForeground = scheme.onSurfaceVariant;
     final service = context.watch<CommunityService>();
-    final works = service.bookmarkedWorksForViewer;
+    final savedWorks = service.bookmarkedWorksForViewer;
+    final filtered = _filter.apply(savedWorks);
+    final works = _order == _BookmarkOrder.saved
+        ? (_ascending ? filtered.reversed.toList() : filtered)
+        : sortCommunityWorks(
+            filtered,
+            byName: _order == _BookmarkOrder.name,
+            ascending: _ascending,
+          );
     final canReload =
         service.isBackendConnected && service.currentUserId != null;
     final loading = canReload && service.isSocialLoading;
@@ -70,7 +93,7 @@ class CommunityBookmarkedTab extends StatelessWidget {
 
     final scroll = LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
-        controller: scrollController,
+        controller: widget.scrollController,
         physics: canReload ? const AlwaysScrollableScrollPhysics() : null,
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -84,7 +107,7 @@ class CommunityBookmarkedTab extends StatelessWidget {
                   ? MainAxisAlignment.center
                   : MainAxisAlignment.start,
               children: [
-                if (works.isEmpty) ...[
+                if (savedWorks.isEmpty) ...[
                   if (loading)
                     CircularProgressIndicator(color: foreground)
                   else
@@ -142,7 +165,7 @@ class CommunityBookmarkedTab extends StatelessWidget {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: foreground,
                         ),
-                        onPressed: onBrowseWorks,
+                        onPressed: widget.onBrowseWorks,
                         icon: const Icon(Icons.explore_outlined),
                         label: Text(l10n.communityTabNew),
                       ),
@@ -185,8 +208,68 @@ class CommunityBookmarkedTab extends StatelessWidget {
                         ],
                       ),
                     ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      children: [
+                        PopupMenuButton<_BookmarkOrder>(
+                          tooltip: l10n.communitySortLabel,
+                          icon: const Icon(Icons.sort),
+                          onSelected: (order) => setState(() {
+                            _order = order;
+                            _ascending = order == _BookmarkOrder.name;
+                          }),
+                          itemBuilder: (_) => [
+                            for (final order in _BookmarkOrder.values)
+                              CheckedPopupMenuItem(
+                                value: order,
+                                checked: order == _order,
+                                child: Text(switch (order) {
+                                  _BookmarkOrder.saved =>
+                                    l10n.communityAuthorTabBookmarks,
+                                  _BookmarkOrder.posted =>
+                                    l10n.communityAuthorSortPosted,
+                                  _BookmarkOrder.name => l10n.homeSortFieldName,
+                                }),
+                              ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            _ascending
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                          ),
+                          tooltip: _ascending
+                              ? l10n.homeSortDirectionAscTooltip
+                              : l10n.homeSortDirectionDescTooltip,
+                          onPressed: () =>
+                              setState(() => _ascending = !_ascending),
+                        ),
+                        VideoTypeFilterButton(
+                          compact: true,
+                          value: _filter,
+                          onChanged: (value) => setState(() => _filter = value),
+                        ),
+                        CommunityWorkViewButton(
+                          detail: _detail,
+                          size: _size ?? widget.viewSize,
+                          onChanged: (value) => setState(() {
+                            _detail = value == CommunityWorkView.detail;
+                            _size = value.tileSize ?? _size;
+                          }),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (works.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(l10n.communityNoWorksMessage),
+                    ),
                   CommunityWorkGrid(
-                    viewSize: viewSize,
+                    viewSize: _size ?? widget.viewSize,
+                    detail: _detail,
                     works: works,
                     bookmarkedIds: service.bookmarkedIds,
                     onTapWork: (work) =>

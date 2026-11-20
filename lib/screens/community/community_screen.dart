@@ -31,21 +31,21 @@ import '../../services/community_notice.dart';
 import 'community_my_works_screen.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
+import 'widgets/community_list_controls.dart';
 import 'widgets/video_type_filter.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/color_contrast.dart';
 import '../../widgets/collection_tile_layout.dart';
 import '../../utils/responsive_tile_defaults.dart';
-import '../../widgets/checked_menu_item.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/menu_surface.dart';
 
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
-enum _RankingSort { views, bookmarks }
+enum _RankingSort { posted, bookmarks }
 
-enum _PlazaSort { newest, views, bookmarks }
+enum _PlazaSort { newest, name, bookmarks }
 
 enum _PostDateFilter { all, today, thisWeek, thisMonth, thisYear, custom }
 
@@ -185,6 +185,13 @@ class _CommunityScreenState extends State<CommunityScreen>
   final List<Map<String, dynamic>> _searchHistory = [];
   String _searchAccount = 'guest';
   _PlazaSort _plazaSort = _PlazaSort.newest;
+  bool _plazaSortAscending = false;
+  bool _plazaSortChosen = false;
+  bool _showDetails = false;
+  VideoTypeFilter _rankingFilter = VideoTypeFilter.all;
+
+  bool get _ascendingRankingScore =>
+      _sort == _RankingSort.bookmarks && _sortAscending;
   late final TabController _tabController;
   _RankingPeriod _period = _RankingPeriod.allTime;
   _RankingSort _sort = _RankingSort.bookmarks;
@@ -271,7 +278,8 @@ class _CommunityScreenState extends State<CommunityScreen>
             ? service.latestPageWorks
             : service.discoverableWorks,
       ).length,
-      1 => _rankingWorks(service.discoverableWorks).length,
+      1 =>
+        _rankingFilter.apply(_rankingWorks(service.discoverableWorks)).length,
       2 => _applySearch(service.favoriteAuthorWorks).length,
       _ => _applySearch(
         service.isBackendConnected
@@ -304,7 +312,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       0 => _newArrivals(
         service.isBackendConnected ? service.latestPageWorks : all,
       ).length,
-      1 => _rankingWorks(all).length,
+      1 => _rankingFilter.apply(_rankingWorks(all)).length,
       2 => _applySearch(service.favoriteAuthorWorks).length,
       _ => _applySearch(
         service.isBackendConnected
@@ -335,7 +343,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             case 1:
               await service.loadMoreRanking(
                 _apiRankingPeriod,
-                ascending: _sortAscending,
+                ascending: _ascendingRankingScore,
                 sortBookmarks: true,
               );
             case 2:
@@ -427,34 +435,27 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   Widget _tileSizeButton(AppLocalizations l10n, {bool ranking = false}) =>
-      PopupMenuButton<CollectionViewSize>(
+      CommunityWorkViewButton(
         key: Key(
           ranking
               ? 'communityRankingTileSizeButton'
               : 'communityTileSizeButton',
         ),
         tooltip: l10n.communityTileSize,
-        icon: const Icon(Icons.grid_view_rounded),
-        position: PopupMenuPosition.under,
-        onSelected: (size) async {
-          setState(() => _chosenTileSize = size);
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString(_tileSizeKey, size.name);
+        detail: !ranking && _showDetails,
+        allowDetail: !ranking,
+        size: _tileSize,
+        onChanged: (view) async {
+          final size = view.tileSize;
+          setState(() {
+            if (!ranking) _showDetails = view == CommunityWorkView.detail;
+            if (size != null) _chosenTileSize = size;
+          });
+          if (size != null) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString(_tileSizeKey, size.name);
+          }
         },
-        itemBuilder: (context) => [
-          MenuSectionHeading<CollectionViewSize>(l10n.homeViewSizeHeading),
-          for (final size in CollectionViewSize.values)
-            checkedMenuItem(
-              context,
-              value: size,
-              checked: size == _tileSize,
-              label: switch (size) {
-                CollectionViewSize.large => l10n.homeViewModeLarge,
-                CollectionViewSize.medium => l10n.homeViewModeMedium,
-                CollectionViewSize.small => l10n.homeViewModeSmall,
-              },
-            ),
-        ],
       );
 
   Future<void> _loadRankingLayout() async {
@@ -782,11 +783,20 @@ class _CommunityScreenState extends State<CommunityScreen>
   Future<void> _fetchRanking() async {
     final service = context.read<CommunityService>();
     if (!service.isBackendConnected) return;
+    final period = _apiRankingPeriod;
+    final order = _sort;
     await service.fetchRanking(
-      _apiRankingPeriod,
-      ascending: _sortAscending,
+      period,
+      ascending: _ascendingRankingScore,
       sortBookmarks: true,
     );
+    if (order != _RankingSort.posted) return;
+    while (mounted &&
+        _apiRankingPeriod == period &&
+        _sort == order &&
+        service.hasMoreRanking) {
+      if (!await service.loadMoreRanking(period, sortBookmarks: true)) break;
+    }
   }
 
   /// Refresh the selected tab only; other tab requests, scroll positions and
@@ -983,17 +993,23 @@ class _CommunityScreenState extends State<CommunityScreen>
     }).toList();
   }
 
-  List<CommunityWork> _newArrivals(List<CommunityWork> allWorks) {
-    final sorted = [...allWorks];
-    sorted.sort(switch (_plazaSort) {
-      _PlazaSort.newest => (a, b) => b.postedAt.compareTo(a.postedAt),
-      _PlazaSort.views => (a, b) => b.viewCount.compareTo(a.viewCount),
-      _PlazaSort.bookmarks => (a, b) => b.bookmarkCount.compareTo(
-        a.bookmarkCount,
-      ),
+  List<CommunityWork> _sortPlazaWorks(List<CommunityWork> works) {
+    if (_plazaSort != _PlazaSort.bookmarks) {
+      return sortCommunityWorks(
+        works,
+        byName: _plazaSort == _PlazaSort.name,
+        ascending: _plazaSortAscending,
+      );
+    }
+    return [...works]..sort((a, b) {
+      final direction = _plazaSortAscending ? 1 : -1;
+      final order = a.bookmarkCount.compareTo(b.bookmarkCount);
+      return order == 0 ? a.id.compareTo(b.id) : direction * order;
     });
-    return _applySearch(sorted);
   }
+
+  List<CommunityWork> _newArrivals(List<CommunityWork> works) =>
+      _sortPlazaWorks(_applySearch(works));
 
   Duration? _periodWindow(_RankingPeriod period) => switch (period) {
     _RankingPeriod.allTime => null,
@@ -1018,9 +1034,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final window = _periodWindow(_period);
     final now = DateTime.now();
     double scoreOf(CommunityWork w) {
-      final metric = _sort == _RankingSort.views
-          ? w.viewCount
-          : w.bookmarkCount;
+      final metric = w.bookmarkCount;
       if (window == null) return metric.toDouble();
       final age = now.difference(w.postedAt);
       final windowSeconds = window.inSeconds.toDouble();
@@ -1032,7 +1046,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       return metric * weight;
     }
 
-    final direction = _sortAscending ? 1 : -1;
+    final direction = _ascendingRankingScore ? 1 : -1;
     filtered.sort((a, b) => direction * scoreOf(a).compareTo(scoreOf(b)));
     return filtered.take(50).toList();
   }
@@ -1344,6 +1358,16 @@ class _CommunityScreenState extends State<CommunityScreen>
         );
       }
 
+      final screenWidth = MediaQuery.sizeOf(context).width;
+      final showDirectionButton = tab != 3 || screenWidth >= 338;
+      final directionLabel = _plazaSortAscending
+          ? l10n.homeSortDirectionAscTooltip
+          : l10n.homeSortDirectionDescTooltip;
+      void toggleDirection() => setState(() {
+        _plazaSortAscending = !_plazaSortAscending;
+        _plazaSortChosen = true;
+        _resetPage(tab);
+      });
       return Padding(
         key: const Key('communitySearchRow'),
         padding: const EdgeInsets.fromLTRB(8, 20, 8, 8),
@@ -1429,6 +1453,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                   tooltip: l10n.communitySortLabel,
                   icon: const Icon(Icons.sort),
                   onSelected: (value) {
+                    if (value == 'direction') {
+                      toggleDirection();
+                      return;
+                    }
                     if (value == 'shorts') {
                       _openShortsMode(allWorks);
                       return;
@@ -1443,10 +1471,13 @@ class _CommunityScreenState extends State<CommunityScreen>
                             )];
                       } else {
                         _plazaSort = switch (value) {
-                          'views' => _PlazaSort.views,
+                          'name' => _PlazaSort.name,
                           'bookmarks' => _PlazaSort.bookmarks,
                           _ => _PlazaSort.newest,
                         };
+                        _plazaSortAscending = _plazaSort == _PlazaSort.name;
+                        _plazaSortChosen = true;
+                        _resetPage(tab);
                       }
                     });
                   },
@@ -1459,6 +1490,15 @@ class _CommunityScreenState extends State<CommunityScreen>
                       value: 'bookmarks',
                       child: Text(l10n.communityRankingSortBookmarks),
                     ),
+                    PopupMenuItem(
+                      value: 'name',
+                      child: Text(l10n.homeSortFieldName),
+                    ),
+                    if (!showDirectionButton)
+                      PopupMenuItem(
+                        value: 'direction',
+                        child: Text(directionLabel),
+                      ),
                     const PopupMenuDivider(),
                     for (final type in VideoTypeFilter.values)
                       CheckedPopupMenuItem(
@@ -1473,6 +1513,17 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ),
                   ],
                 ),
+                if (showDirectionButton)
+                  IconButton(
+                    key: const Key('communityPlazaSortDirection'),
+                    icon: Icon(
+                      _plazaSortAscending
+                          ? Icons.arrow_upward
+                          : Icons.arrow_downward,
+                    ),
+                    tooltip: directionLabel,
+                    onPressed: toggleDirection,
+                  ),
                 _tileSizeButton(l10n),
                 const Spacer(),
                 if (tab == 3) ...[
@@ -1570,7 +1621,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                   SizedBox(
                     // Long translations would otherwise expand the button
                     // beyond 132px on narrow 320px phones.
-                    width: MediaQuery.sizeOf(context).width < 360 ? 72 : 132,
+                    width: (screenWidth - (showDirectionButton ? 258 : 210))
+                        .clamp(72.0, 132.0),
                     child: FilledButton(
                       key: const Key('communitySearchButton'),
                       onPressed: _runSearch,
@@ -1800,6 +1852,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                         searchRowFor(0),
                         CommunityWorkGrid(
                           viewSize: _tileSize,
+                          detail: _showDetails,
                           works: works,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -1857,27 +1910,48 @@ class _CommunityScreenState extends State<CommunityScreen>
                       child: Row(
                         children: [
                           Expanded(
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 4,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                ChoiceChip(
-                                  avatar: const Icon(Icons.bookmark, size: 16),
-                                  label: Text(
-                                    l10n.communityRankingSortBookmarks,
-                                  ),
-                                  selected: _sort == _RankingSort.bookmarks,
-                                  onSelected: (_) {
-                                    setState(() {
-                                      _sort = _RankingSort.bookmarks;
-                                      _resetPage(1);
-                                    });
-                                    _fetchRanking();
-                                  },
+                            child: Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: PopupMenuButton<_RankingSort>(
+                                tooltip: l10n.communitySortLabel,
+                                icon: Icon(
+                                  _sort == _RankingSort.bookmarks
+                                      ? Icons.bookmark_outline
+                                      : Icons.calendar_today_outlined,
                                 ),
-                              ],
+                                onSelected: (sort) {
+                                  if (sort == _sort) return;
+                                  setState(() {
+                                    _sort = sort;
+                                    _sortAscending = false;
+                                    _resetPage(1);
+                                  });
+                                  unawaited(_fetchRanking());
+                                },
+                                itemBuilder: (_) => [
+                                  CheckedPopupMenuItem(
+                                    value: _RankingSort.bookmarks,
+                                    checked: _sort == _RankingSort.bookmarks,
+                                    child: Text(
+                                      l10n.communityRankingSortBookmarks,
+                                    ),
+                                  ),
+                                  CheckedPopupMenuItem(
+                                    value: _RankingSort.posted,
+                                    checked: _sort == _RankingSort.posted,
+                                    child: Text(l10n.communityAuthorSortPosted),
+                                  ),
+                                ],
+                              ),
                             ),
+                          ),
+                          VideoTypeFilterButton(
+                            compact: true,
+                            value: _rankingFilter,
+                            onChanged: (value) => setState(() {
+                              _rankingFilter = value;
+                              _resetPage(1);
+                            }),
                           ),
                           IconButton(
                             icon: Icon(
@@ -1893,7 +1967,9 @@ class _CommunityScreenState extends State<CommunityScreen>
                                 _sortAscending = !_sortAscending;
                                 _resetPage(1);
                               });
-                              _fetchRanking();
+                              if (_sort == _RankingSort.bookmarks) {
+                                _fetchRanking();
+                              }
                             },
                           ),
                           PopupMenuButton<CommunityRankingLayout>(
@@ -1938,7 +2014,24 @@ class _CommunityScreenState extends State<CommunityScreen>
                     ),
                     Builder(
                       builder: (context) {
-                        final ranked = _visible(_rankingWorks(allWorks), 1);
+                        final allRanked = _rankingWorks(allWorks);
+                        final rankNumbers = _ascendingRankingScore
+                            ? null
+                            : {
+                                for (var i = 0; i < allRanked.length; i++)
+                                  allRanked[i].id: i + 1,
+                              };
+                        final filtered = _rankingFilter.apply(allRanked);
+                        final ranked = _visible(
+                          _sort == _RankingSort.posted
+                              ? sortCommunityWorks(
+                                  filtered,
+                                  byName: false,
+                                  ascending: _sortAscending,
+                                )
+                              : filtered,
+                          1,
+                        );
                         if (ranked.isEmpty) return _buildSearchEmptyState(l10n);
                         if (_rankingLayout ==
                             CommunityRankingLayout.largeThumbnail) {
@@ -1946,12 +2039,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                             key: const Key('communityRankingWorkList'),
                             works: ranked,
                             viewSize: _tileSize,
-                            rankNumbers: _sortAscending
-                                ? null
-                                : {
-                                    for (var i = 0; i < ranked.length; i++)
-                                      ranked[i].id: i + 1,
-                                  },
+                            rankNumbers: rankNumbers,
                             periodScores:
                                 communityService.periodRankingBookmarkCounts,
                             bookmarkedIds: bookmarkedIds,
@@ -1970,7 +2058,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                           layout: _rankingLayout,
                           works: ranked,
                           // Smallest-first responses do not carry global ranks.
-                          showRanks: !_sortAscending,
+                          showRanks: !_ascendingRankingScore,
+                          rankNumbers: rankNumbers,
                           periodScores:
                               communityService.periodRankingBookmarkCounts,
                           bookmarkedIds: bookmarkedIds,
@@ -1996,8 +2085,11 @@ class _CommunityScreenState extends State<CommunityScreen>
             Builder(
               builder: (context) {
                 final feed = communityService.favoriteAuthorFeed;
+                final filtered = _applySearch(
+                  feed.map((item) => item.work).toList(),
+                );
                 final works = _visible(
-                  _applySearch(feed.map((e) => e.work).toList()),
+                  _plazaSortChosen ? _sortPlazaWorks(filtered) : filtered,
                   2,
                 );
                 final repostedByNames = {
@@ -2045,6 +2137,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                         searchRowFor(2),
                         CommunityWorkGrid(
                           viewSize: _tileSize,
+                          detail: _showDetails,
                           works: works,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -2067,16 +2160,16 @@ class _CommunityScreenState extends State<CommunityScreen>
             ),
             Builder(
               builder: (context) {
+                final filtered = _applySearch(
+                  communityService.isBackendConnected
+                      ? communityService.searchReady
+                            ? communityService.searchedWorks
+                            : communityService.latestPageWorks
+                      : allWorks,
+                  includeQuery: true,
+                );
                 final works = _visible(
-                  _applySearch(
-                    (communityService.isBackendConnected
-                            ? communityService.searchReady
-                                  ? communityService.searchedWorks
-                                  : communityService.latestPageWorks
-                            : allWorks)
-                        .toList(),
-                    includeQuery: true,
-                  ),
+                  _plazaSortChosen ? _sortPlazaWorks(filtered) : filtered,
                   3,
                 );
                 return _pullToRefresh(
@@ -2091,6 +2184,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                         else
                           CommunityWorkGrid(
                             viewSize: _tileSize,
+                            detail: _showDetails,
                             works: works,
                             bookmarkedIds: bookmarkedIds,
                             onTapWork: _openFloatingPreview,

@@ -2058,7 +2058,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      '타임스탬프는 프레임에 메모를 남깁니다. 등록할 때 색상을 선택하면 프레임 위에 작은 삼각형이 표시됩니다. 삼각형을 탭하면 메모를 읽을 수 있고 프레임 번호를 탭하면 그 위치로 이동합니다. 삼각형을 길게 눌러 메모를 편집하거나 삭제할 수 있습니다.';
+      '타임스탬프는 프레임에 메모를 남깁니다. 이름을 탭하면 해당 프레임으로 이동하며 메뉴에서 편집하거나 삭제할 수 있습니다. 프레임 위의 삼각형을 탭해도 메모가 열립니다.';
 
   @override
   String get tipsCommunityYoutubeTitle => '작품 광장 게시는 YouTube를 통해 이루어집니다';
@@ -5900,6 +5900,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspacePcLayoutButton => 'PC 레이아웃 설정';
 
   @override
+  String get pcWorkspaceResizeGrip => '드래그하여 크기 조절';
+
+  @override
   String get pcWorkspaceLayoutScreenTitle => 'PC 레이아웃 설정';
 
   @override
@@ -6424,6 +6427,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityShortsBadge => '세로 화면';
+
+  @override
+  String get communityLandscapeBadge => '가로 화면';
 
   @override
   String get communityVideoTypeFilterTooltip => '동영상 종류로 좁혀보기';

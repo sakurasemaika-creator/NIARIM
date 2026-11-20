@@ -329,8 +329,10 @@ class PcPane {
     this.movable = false,
     this.collapsed,
     this.onCollapsedChanged,
+    this.leading,
   });
 
+  final Widget? leading;
   final String id;
   final List<PcPaneTab> tabs;
   final bool fill;
@@ -387,7 +389,7 @@ class PcDockColumn extends StatefulWidget {
   /// 列の窓がすべてたたまれたときの列の幅（窓ごとに広げるボタンだけを
   /// 縦に並べた細い帯）。
   static const double foldedWidth = 52;
-  static const double splitterHeight = 5;
+  static const double splitterHeight = 10;
   static const double minContentHeight = 120;
 
   @override
@@ -757,6 +759,7 @@ class _PcDockPaneView extends StatelessWidget {
             ),
             child: Row(
               children: [
+                ?pane.leading,
                 Expanded(
                   child: pane.movable
                       ? _draggableHeader(context, tabs, active, titleStyle)
@@ -843,7 +846,23 @@ class _PcDockPaneView extends StatelessWidget {
       child: SizedBox.expand(
         child: Align(
           alignment: AlignmentDirectional.centerStart,
-          child: Row(mainAxisSize: MainAxisSize.min, children: tabs),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 3),
+                child: Tooltip(
+                  message: AppLocalizations.of(context)!.commonMove,
+                  child: Icon(
+                    Icons.drag_indicator,
+                    size: 16,
+                    color: colors.onPane,
+                  ),
+                ),
+              ),
+              ...tabs,
+            ],
+          ),
         ),
       ),
     );
@@ -970,12 +989,38 @@ class _PcSplitter extends StatelessWidget {
         child: SizedBox(
           height: vertical ? PcDockColumn.splitterHeight : null,
           width: vertical ? null : PcDockSplitter.width,
-          child: Center(
-            child: Container(
-              height: vertical ? 1 : null,
-              width: vertical ? null : 1,
-              color: colors.divider,
-            ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned.fill(
+                child: Center(
+                  child: Container(
+                    height: vertical ? 1 : double.infinity,
+                    width: vertical ? double.infinity : 1,
+                    color: colors.divider,
+                  ),
+                ),
+              ),
+              Tooltip(
+                message: AppLocalizations.of(context)!.pcWorkspaceResizeGrip,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: colors.paneHeader,
+                    border: Border.all(color: colors.mutedOnPane),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: SizedBox(
+                    width: vertical ? 34 : 7,
+                    height: vertical ? 7 : 34,
+                    child: Icon(
+                      vertical ? Icons.more_horiz : Icons.more_vert,
+                      size: 7,
+                      color: colors.onPane,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -990,7 +1035,7 @@ class PcDockSplitter extends StatelessWidget {
   final ValueChanged<double> onDrag;
   final VoidCallback? onDragEnd;
 
-  static const double width = 6;
+  static const double width = 10;
 
   @override
   Widget build(BuildContext context) =>

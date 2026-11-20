@@ -2036,7 +2036,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      '时间戳可以在帧上留下备注。添加时选择颜色，帧上方就会显示一个小三角。点按三角可查看备注，再点按帧编号可跳转到该位置。长按三角可编辑或删除备注。';
+      '时间戳可以在帧上留下备注。点按名称可跳到对应帧，并在菜单中编辑或删除。点按帧上方的三角形也可打开备注。';
 
   @override
   String get tipsCommunityYoutubeTitle => '投稿到作品广场需要通过YouTube';
@@ -5809,6 +5809,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspacePcLayoutButton => 'PC布局设置';
 
   @override
+  String get pcWorkspaceResizeGrip => '拖动以调整大小';
+
+  @override
   String get pcWorkspaceLayoutScreenTitle => 'PC布局设置';
 
   @override
@@ -6326,6 +6329,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityShortsBadge => '竖屏';
+
+  @override
+  String get communityLandscapeBadge => '横屏';
 
   @override
   String get communityVideoTypeFilterTooltip => '按视频类型筛选';
@@ -12375,7 +12381,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      '時間戳記可以在影格上留下備註。新增時選擇顏色，影格上方就會顯示一個小三角形。點一下三角形可查看備註，再點一下影格編號可跳至該位置。長按三角形可編輯或刪除備註。';
+      '時間戳記可以在影格上留下備註。點一下名稱可跳到對應影格，並從選單編輯或刪除。點一下影格上方的三角形也可開啟備註。';
 
   @override
   String get tipsCommunityYoutubeTitle => '投稿到作品廣場需要透過YouTube';
@@ -16148,6 +16154,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspacePcLayoutButton => 'PC版面設定';
 
   @override
+  String get pcWorkspaceResizeGrip => '拖曳以調整大小';
+
+  @override
   String get pcWorkspaceLayoutScreenTitle => 'PC版面設定';
 
   @override
@@ -16665,6 +16674,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityShortsBadge => '直向';
+
+  @override
+  String get communityLandscapeBadge => '橫向';
 
   @override
   String get communityVideoTypeFilterTooltip => '依影片類型篩選';

@@ -795,10 +795,15 @@ void main() {
         tester.getCenter(frame).dx,
         closeTo(tester.getCenter(outline).dx, .5),
       );
+      final pin = find.byKey(const Key('timelineTimestamp-36'));
+      expect(pin, findsOneWidget);
       expect(
-        find.byKey(const Key('timelineTimestamp-36')).hitTestable(),
-        findsOneWidget,
+        tester.getRect(pin).bottom,
+        closeTo(tester.getRect(frame).top, .5),
       );
+      expect(tester.getSize(frame).height, 40);
+      expect(find.byIcon(Icons.edit_outlined), findsWidgets);
+      expect(find.byIcon(Icons.delete_outline), findsWidgets);
       if (!pc) {
         expect(
           tester
@@ -843,9 +848,16 @@ void main() {
       expect(find.text('Second marker'), findsNWidgets(2));
       await tester.tap(find.widgetWithText(MenuItemButton, 'F2'));
       await tester.pumpAndSettle();
-      await tester.longPress(stamp);
+      final first = ps
+          .timelineMarkersOf(id, sceneId)
+          .singleWhere((m) => m.comment == 'First marker');
+      await tester.tap(
+        find.byKey(ValueKey('timelineTimestampName-${first.id}')),
+      );
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(SimpleDialogOption, 'First marker'));
+      await tester.tap(
+        find.byKey(ValueKey('timelineTimestampEdit-${first.id}')),
+      );
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Edited marker');
       const blue = 0xFF387AC4;
@@ -860,13 +872,14 @@ void main() {
         'Second marker',
       });
 
-      await tester.longPress(stamp);
-      await tester.pumpAndSettle();
+      final second = markers.singleWhere((m) => m.comment == 'Second marker');
       await tester.tap(
-        find.widgetWithText(SimpleDialogOption, 'Second marker'),
+        find.byKey(ValueKey('timelineTimestampName-${second.id}')),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip(l10n.commonDelete).last);
+      await tester.tap(
+        find.byKey(ValueKey('timelineTimestampDelete-${second.id}')),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
       await tester.pumpAndSettle();

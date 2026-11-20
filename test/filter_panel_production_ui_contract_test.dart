@@ -85,20 +85,16 @@ void main() {
     final l10n = AppLocalizations.of(tester.element(find.byType(FilterPanel)))!;
 
     Future<void> openMenu(String id) async {
-      await tester.tap(find.byKey(ValueKey('filter-menu-$id')));
+      await tester.longPress(find.byKey(ValueKey('filter-card-$id')));
       await tester.pumpAndSettle();
     }
 
     final favorite = tester.getRect(
       find.byKey(const ValueKey('filter-favorite-Filter0001')),
     );
-    final menu = tester.getRect(
-      find.byKey(const ValueKey('filter-menu-Filter0001')),
-    );
+    expect(find.byKey(const ValueKey('filter-menu-Filter0001')), findsNothing);
     final preview = tester.getRect(find.byType(FilterSamplePreview).first);
-    expect(favorite.right, lessThanOrEqualTo(menu.left));
-    expect(menu.top, greaterThanOrEqualTo(preview.bottom));
-    expect(menu.center.dy, closeTo(favorite.center.dy, 4));
+    expect(favorite.top, greaterThanOrEqualTo(preview.bottom));
 
     await openMenu('Filter0001');
     expect(find.text(l10n.commonRename), findsNothing);

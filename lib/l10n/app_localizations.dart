@@ -3774,7 +3774,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsTimelineMarkerDesc.
   ///
   /// In ja, this message translates to:
-  /// **'タイムスタンプはフレームにメモを残す機能です。登録時に色を選ぶと、フレームの上に小さな三角が表示されます。三角をタップするとメモが開き、フレーム番号をタップするとその位置に移動します。長押しでメモの編集や削除ができます。'**
+  /// **'タイムスタンプはフレームにメモを残す機能です。名前をタップするとそのフレームに移動し、メニューから編集・削除もできます。フレームの上にある三角からもメモを開けます。'**
   String get tipsTimelineMarkerDesc;
 
   /// No description provided for @tipsCommunityYoutubeTitle.
@@ -10641,6 +10641,12 @@ abstract class AppLocalizations {
   /// **'PCレイアウト設定'**
   String get workspacePcLayoutButton;
 
+  /// No description provided for @pcWorkspaceResizeGrip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドラッグしてサイズを変更'**
+  String get pcWorkspaceResizeGrip;
+
   /// No description provided for @pcWorkspaceLayoutScreenTitle.
   ///
   /// In ja, this message translates to:
@@ -11600,6 +11606,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'縦画面'**
   String get communityShortsBadge;
+
+  /// No description provided for @communityLandscapeBadge.
+  ///
+  /// In ja, this message translates to:
+  /// **'横画面'**
+  String get communityLandscapeBadge;
 
   /// No description provided for @communityVideoTypeFilterTooltip.
   ///

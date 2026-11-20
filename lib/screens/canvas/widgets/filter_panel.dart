@@ -1002,6 +1002,42 @@ class _FilterPanelState extends State<FilterPanel> {
         onClose: () => _setSearchShown(false),
       );
 
+  Future<void> _showFilterActions(
+    FilterService service,
+    FilterDef filter,
+    AppLocalizations l10n,
+  ) async {
+    final action = await showDialog<_FilterCardAction>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: Text(filterDisplayName(l10n, filter)),
+        children: [
+          SimpleDialogOption(
+            onPressed: () =>
+                Navigator.pop(dialogContext, _FilterCardAction.duplicate),
+            child: Text(l10n.commonDuplicate),
+          ),
+          if (!service.isBuiltIn(filter.id)) ...[
+            SimpleDialogOption(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, _FilterCardAction.rename),
+              child: Text(l10n.commonRename),
+            ),
+            if (!filter.isFavorite)
+              SimpleDialogOption(
+                onPressed: () =>
+                    Navigator.pop(dialogContext, _FilterCardAction.delete),
+                child: Text(l10n.commonDelete),
+              ),
+          ],
+        ],
+      ),
+    );
+    if (mounted && action != null) {
+      await _manageFilter(action, service, filter, l10n);
+    }
+  }
+
   Future<void> _manageFilter(
     _FilterCardAction action,
     FilterService service,
@@ -1129,6 +1165,12 @@ class _FilterPanelState extends State<FilterPanel> {
                       onTap: locked
                           ? null
                           : () => _chooseFilter(service, filter),
+                      onLongPress: locked
+                          ? null
+                          : () => _showFilterActions(service, filter, l10n),
+                      onSecondaryTap: locked
+                          ? null
+                          : () => _showFilterActions(service, filter, l10n),
                     ),
                   ),
                   PositionedDirectional(
@@ -1153,36 +1195,6 @@ class _FilterPanelState extends State<FilterPanel> {
                             size: 15,
                           ),
                         ),
-                        if (!locked)
-                          PopupMenuButton<_FilterCardAction>(
-                            key: ValueKey('filter-menu-${filter.id}'),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(minWidth: 164),
-                            style: IconButton.styleFrom(
-                              minimumSize: const Size(36, 40),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            icon: const Icon(Icons.more_vert, size: 20),
-                            onSelected: (action) =>
-                                _manageFilter(action, service, filter, l10n),
-                            itemBuilder: (_) => [
-                              PopupMenuItem(
-                                value: _FilterCardAction.duplicate,
-                                child: Text(l10n.commonDuplicate),
-                              ),
-                              if (!builtIn) ...[
-                                PopupMenuItem(
-                                  value: _FilterCardAction.rename,
-                                  child: Text(l10n.commonRename),
-                                ),
-                                PopupMenuItem(
-                                  value: _FilterCardAction.delete,
-                                  enabled: !filter.isFavorite,
-                                  child: Text(l10n.commonDelete),
-                                ),
-                              ],
-                            ],
-                          ),
                         if (!builtIn)
                           InkWell(
                             onTap: () => SharedAssetCardService.exportSettings(
