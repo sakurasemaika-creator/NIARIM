@@ -3950,5 +3950,12 @@
   "canvasViewActualPixels": "實際大小",
   "canvasViewRotateLeft": "向左旋轉",
   "canvasViewRotateRight": "向右旋轉",
-  "canvasViewResetRotation": "重設旋轉"
+  "canvasViewResetRotation": "重設旋轉",
+  "projectDetailShowPlaybackControls": "顯示播放控制",
+  "projectDetailHidePlaybackControls": "隱藏播放控制",
+  "filterSaveSettings": "儲存此設定",
+  "filterLoadSettings": "套用已儲存的設定",
+  "filterSettingsName": "設定名稱",
+  "filterSettingsEmpty": "此濾鏡沒有已儲存的設定。",
+  "filterSettingsSaved": "已儲存濾鏡設定"
 }

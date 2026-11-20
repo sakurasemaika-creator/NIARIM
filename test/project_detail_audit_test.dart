@@ -470,20 +470,56 @@ void main() {
     }
 
     final track = checkAlignment();
+    expect(track.center.dy - tester.getRect(preview).bottom, 24);
     await tester.tapAt(Offset(track.right - 1, track.center.dy));
     await settleIo(tester);
     expect(tester.widget<Text>(counter).data, '2/2');
 
     await tester.tap(find.byKey(const Key('projectDetailFullscreenButton')));
     await settle(tester);
+    final fullscreen = find.byKey(const Key('projectDetailFullscreenImage'));
+    final exit = find.byKey(const Key('projectDetailFullscreenExit'));
+    final transport = find.byKey(const Key('projectDetailFullscreenTransport'));
+    final artworkImage = find.descendant(
+      of: artwork(),
+      matching: find.byType(RawImage),
+    );
+    final artworkRect = tester.getRect(artworkImage);
+    final fullscreenRect = tester.getRect(fullscreen);
+    expect(fullscreenRect, const Rect.fromLTWH(0, 0, 390, 844));
+    expect(artworkRect.size, const Size(390, 195));
+    expect(slider, findsNothing);
+    expect(counter, findsNothing);
+    expect(exit, findsNothing);
+
+    await tester.tap(fullscreen);
+    await settle(tester);
+    expect(tester.getRect(artworkImage), artworkRect);
+    expect(tester.getRect(fullscreen), fullscreenRect);
+    expect(tester.getRect(transport).bottom, fullscreenRect.bottom - 14);
     final fullTrack = checkAlignment();
     await tester.tapAt(Offset(fullTrack.left + 1, fullTrack.center.dy));
     await settleIo(tester);
     expect(tester.widget<Text>(counter).data, '1/2');
+    expect(exit, findsOneWidget);
+
+    await tester.tap(fullscreen);
+    await settle(tester);
+    expect(exit, findsNothing);
+    expect(slider, findsNothing);
+    expect(tester.getRect(artworkImage), artworkRect);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await settle(tester);
+    expect(exit, findsOneWidget);
 
     tester.view.physicalSize = const Size(640, 190);
     await settle(tester);
     checkAlignment();
+    expect(tester.getSize(fullscreen), const Size(640, 190));
+    expect(transport.hitTestable(), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settle(tester);
+    expect(fullscreen, findsNothing);
     expect(tester.takeException(), isNull);
   });
 

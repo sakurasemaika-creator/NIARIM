@@ -6324,5 +6324,12 @@
   "canvasViewActualPixels": "等倍表示",
   "canvasViewRotateLeft": "左に回転",
   "canvasViewRotateRight": "右に回転",
-  "canvasViewResetRotation": "回転を戻す"
+  "canvasViewResetRotation": "回転を戻す",
+  "projectDetailShowPlaybackControls": "再生メニューを表示",
+  "projectDetailHidePlaybackControls": "再生メニューを非表示",
+  "filterSaveSettings": "この設定を保存する",
+  "filterLoadSettings": "保存済みの設定を適用する",
+  "filterSettingsName": "設定の名前",
+  "filterSettingsEmpty": "このフィルターの保存済み設定はありません。",
+  "filterSettingsSaved": "フィルター設定を保存しました"
 }

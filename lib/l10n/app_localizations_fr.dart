@@ -11431,4 +11431,27 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasViewResetRotation => 'Réinitialiser la rotation';
+
+  @override
+  String get projectDetailShowPlaybackControls =>
+      'Afficher les commandes de lecture';
+
+  @override
+  String get projectDetailHidePlaybackControls =>
+      'Masquer les commandes de lecture';
+
+  @override
+  String get filterSaveSettings => 'Enregistrer ces réglages';
+
+  @override
+  String get filterLoadSettings => 'Appliquer les réglages enregistrés';
+
+  @override
+  String get filterSettingsName => 'Nom des réglages';
+
+  @override
+  String get filterSettingsEmpty => 'Aucun réglage enregistré pour ce filtre.';
+
+  @override
+  String get filterSettingsSaved => 'Réglages du filtre enregistrés';
 }

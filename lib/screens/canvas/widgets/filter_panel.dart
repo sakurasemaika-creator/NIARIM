@@ -547,8 +547,14 @@ class _FilterPanelState extends State<FilterPanel> {
     widget.onCanvasPreviewChanged?.call(null);
   }
 
-  void _chooseFilter(FilterService service, FilterDef filter) {
-    if (_applying || service.currentFilter?.id == filter.id) return;
+  void _chooseFilter(
+    FilterService service,
+    FilterDef filter, {
+    bool reload = false,
+  }) {
+    if (_applying || (!reload && service.currentFilter?.id == filter.id)) {
+      return;
+    }
     _clearPendingPreview();
     _autoLineartBaseGraph = null;
     _autoLineartPreviewGraph = null;
@@ -793,10 +799,10 @@ class _FilterPanelState extends State<FilterPanel> {
         height: current == null
             ? 520
             : instantInvert
-            ? 148
-            : collapsed
             ? 196
-            : 520,
+            : collapsed
+            ? 244
+            : 578,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: _outlinedOverCanvas(
@@ -826,6 +832,7 @@ class _FilterPanelState extends State<FilterPanel> {
                   if (!collapsed && !instantInvert)
                     Expanded(child: _editControls(l10n, service, current)),
                   const SizedBox(height: 6),
+                  _settingsPresetButtons(l10n, service, current),
                   _actionRow(l10n, service, current),
                 ],
               ],
@@ -887,6 +894,7 @@ class _FilterPanelState extends State<FilterPanel> {
                     child: _editControls(l10n, service, current),
                   ),
                 const SizedBox(height: 4),
+                _settingsPresetButtons(l10n, service, current),
                 _actionRow(l10n, service, current),
               ],
             ],
@@ -964,14 +972,19 @@ class _FilterPanelState extends State<FilterPanel> {
       if (!FilterDef.hasKnownKind(data)) {
         throw const FormatException('Unknown filter');
       }
-      final filter = FilterDef.fromJson(data).copyWith(
-        id: 'custom_${DateTime.now().microsecondsSinceEpoch}',
-        isFavorite: false,
-      );
-      if (mounted) {
-        final service = context.read<FilterService>();
-        service.addFilter(filter);
-        service.clearCurrentFilter();
+      if (!mounted) return;
+      final filter = FilterDef.fromJson(data);
+      final service = context.read<FilterService>();
+      if (filter.isSettingsPreset) {
+        await service.saveSettingsPreset(filter, filter.name);
+      } else {
+        service.addFilter(
+          filter.copyWith(
+            id: 'custom_${DateTime.now().microsecondsSinceEpoch}',
+            isFavorite: false,
+          ),
+          select: false,
+        );
       }
     } catch (error) {
       if (mounted) {
@@ -1396,6 +1409,124 @@ class _FilterPanelState extends State<FilterPanel> {
         ),
       ).clipListInk(),
     );
+  }
+
+  Widget _settingsPresetButtons(
+    AppLocalizations l10n,
+    FilterService service,
+    FilterDef current,
+  ) => Row(
+    children: [
+      Expanded(
+        child: TextButton(
+          key: const ValueKey('filter-save-settings'),
+          onPressed: _applying
+              ? null
+              : () => _saveSettingsPreset(l10n, service, current),
+          child: Text(l10n.filterSaveSettings, textAlign: TextAlign.center),
+        ),
+      ),
+      Expanded(
+        child: TextButton(
+          key: const ValueKey('filter-load-settings'),
+          onPressed: _applying
+              ? null
+              : () => _showSavedSettings(l10n, service, current),
+          child: Text(l10n.filterLoadSettings, textAlign: TextAlign.center),
+        ),
+      ),
+    ],
+  );
+
+  Future<void> _saveSettingsPreset(
+    AppLocalizations l10n,
+    FilterService service,
+    FilterDef current,
+  ) async {
+    var saved = false;
+    await showDialog<void>(
+      context: context,
+      builder: (_) => NameEntryDialog(
+        title: l10n.filterSaveSettings,
+        labelText: l10n.filterSettingsName,
+        confirmLabel: l10n.commonSave,
+        cancelLabel: l10n.commonCancel,
+        failureText: (error) => fileFailureReason(l10n, error),
+        showsProgress: true,
+        onSubmit: (name) async {
+          await service.saveSettingsPreset(current, name);
+          saved = true;
+        },
+      ),
+    );
+    if (!mounted || !saved) return;
+    ScaffoldMessenger.maybeOf(
+      context,
+    )?.showSnackBar(SnackBar(content: Text(l10n.filterSettingsSaved)));
+  }
+
+  Future<void> _showSavedSettings(
+    AppLocalizations l10n,
+    FilterService service,
+    FilterDef current,
+  ) async {
+    final candidates = service.savedSettingsFor(current.kind).where((preset) {
+      if (!_isInstantColorInvert(current)) return true;
+      return preset.toneCurvePreset == ToneCurvePreset.invert &&
+          preset.toneCurvePoints.isEmpty &&
+          preset.toneCurveRedPoints.isEmpty &&
+          preset.toneCurveGreenPoints.isEmpty &&
+          preset.toneCurveBluePoints.isEmpty;
+    }).toList();
+    final chosen = await showDialog<FilterDef>(
+      context: context,
+      builder: (dialog) => AlertDialog(
+        title: Text(l10n.filterLoadSettings),
+        content: candidates.isEmpty
+            ? Text(l10n.filterSettingsEmpty)
+            : SizedBox(
+                width: 360,
+                height: math.min(
+                  candidates.length * 82.0,
+                  MediaQuery.sizeOf(dialog).height * .45,
+                ),
+                child: ListView.builder(
+                  itemCount: candidates.length,
+                  itemBuilder: (_, index) {
+                    final preset = candidates[index];
+                    return ListTile(
+                      key: ValueKey('filter-saved-settings-${preset.id}'),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 4,
+                      ),
+                      leading: FilterSamplePreview(
+                        preset,
+                        width: 82,
+                        height: 52,
+                      ),
+                      title: Text(
+                        filterDisplayName(l10n, preset),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onTap: () => Navigator.pop(dialog, preset),
+                    );
+                  },
+                ),
+              ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialog),
+            child: Text(l10n.commonCancel),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || chosen == null || service.currentFilter?.id != current.id) {
+      return;
+    }
+    _chooseFilter(service, chosen, reload: true);
   }
 
   /// Undo / Redo of the filter's settings, Apply, and auto line art's

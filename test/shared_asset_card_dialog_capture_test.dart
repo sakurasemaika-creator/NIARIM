@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -163,6 +164,8 @@ void main() {
               id: 'filter-sample',
               name: 'やわらかいぼかし',
               kind: FilterKind.gaussianBlur,
+              strength: 12,
+              isSettingsPreset: true,
             ).toJson(),
             'automation' => CustomAutomation(
               id: 'automation-sample',
@@ -223,6 +226,19 @@ void main() {
           key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
       await tester.runAsync(() async {
         expect((await SharedAssetCardService.inspect(file)).kind, kind);
+        if (kind == 'filter') {
+          final payload = await SharedAssetCardService.readSettingsFile(
+            file.path,
+            kind: 'filter',
+          );
+          final restored = FilterDef.fromJson(
+            jsonDecode(payload) as Map<String, dynamic>,
+          );
+          expect(
+            (restored.name, restored.strength, restored.isSettingsPreset),
+            ('やわらかいぼかし', 12.0, true),
+          );
+        }
         if (const {'brush', 'stamp', 'tone'}.contains(kind)) {
           final card = img.decodePng(await file.readAsBytes())!;
           final stroke = img.copyCrop(

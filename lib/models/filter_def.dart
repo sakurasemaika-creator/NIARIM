@@ -121,6 +121,7 @@ class FilterDef {
   final String name;
   final FilterKind kind;
   final bool isFavorite;
+  final bool isSettingsPreset;
   final double strength;
   final NoiseStyle noiseStyle;
   final int noiseSeed;
@@ -276,6 +277,7 @@ class FilterDef {
     required this.name,
     required this.kind,
     this.isFavorite = false,
+    this.isSettingsPreset = false,
     this.strength = 8,
     this.noiseStyle = NoiseStyle.filmGrain,
     this.noiseSeed = 1984,
@@ -419,6 +421,7 @@ class FilterDef {
     String? name,
     FilterKind? kind,
     bool? isFavorite,
+    bool? isSettingsPreset,
     double? strength,
     NoiseStyle? noiseStyle,
     int? noiseSeed,
@@ -522,6 +525,7 @@ class FilterDef {
       name: name ?? this.name,
       kind: kind ?? this.kind,
       isFavorite: isFavorite ?? this.isFavorite,
+      isSettingsPreset: isSettingsPreset ?? this.isSettingsPreset,
       strength: strength ?? this.strength,
       noiseStyle: noiseStyle ?? this.noiseStyle,
       noiseSeed: noiseSeed ?? this.noiseSeed,
@@ -642,6 +646,7 @@ class FilterDef {
     'name': name,
     'kind': kind.name,
     'isFavorite': isFavorite,
+    if (isSettingsPreset) 'isSettingsPreset': true,
     'strength': strength,
     'noiseStyle': noiseStyle.name,
     'noiseSeed': noiseSeed,
@@ -765,6 +770,7 @@ class FilterDef {
           throw FormatException('Unknown filter kind: ${_kindName(j)}'),
     ),
     isFavorite: j['isFavorite'] as bool? ?? false,
+    isSettingsPreset: j['isSettingsPreset'] == true,
     strength: (j['strength'] as num?)?.toDouble() ?? 8,
     // One-time compatibility for snapshots written before noiseStyle existed.
     // New definitions and rendering never depend on a preset ID.

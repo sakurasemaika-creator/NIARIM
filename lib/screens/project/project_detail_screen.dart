@@ -36,6 +36,7 @@ import '../../config/font_fallback.dart';
 import '../../utils/duplicate_name.dart';
 import '../../utils/file_size_label.dart';
 import '../../utils/folder_tree.dart';
+import '../../utils/immersive_mode.dart';
 import '../../utils/work_time_label.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../home/widgets/project_list_widget.dart' show niashareKey;
@@ -74,7 +75,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   // プレビューと再生コントロールのみを全画面表示する
   // （タイムラインモードのプレビュー全画面化と同等の機能）。
   bool _isPreviewFullscreen = false;
-  final _fullscreenPageScroll = ScrollController();
+  bool _showFullscreenControls = false;
+  final _fullscreenPreviewFocus = FocusNode();
 
   @override
   void initState() {
@@ -92,7 +94,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   void dispose() {
     ExportShareService.running.removeListener(_onShareRunningChanged);
     _timer?.cancel();
-    _fullscreenPageScroll.dispose();
+    if (_isPreviewFullscreen) ImmersiveMode.exitWorkspace();
+    _fullscreenPreviewFocus.dispose();
     _previewImage?.dispose();
     super.dispose();
   }
@@ -251,85 +254,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       );
     }
 
-    // プレビュー全画面化中：プレビューと再生コントロールのみを全画面表示する
-    // （タイムラインモードのプレビュー全画面化と同等）。
     if (_isPreviewFullscreen) {
-      final theme = context.watch<ThemeService>().current;
-      void exitFullscreen() => setState(() => _isPreviewFullscreen = false);
-      Widget exitButton() => IconButton(
-        key: const Key('projectDetailFullscreenExit'),
-        autofocus: true,
-        constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-        visualDensity: VisualDensity.standard,
-        icon: Icon(Icons.fullscreen_exit, color: theme.textColor),
-        tooltip: l10n.projectDetailFullscreenCloseTooltip,
-        onPressed: exitFullscreen,
-      );
-      Widget preview() => KeyedSubtree(
-        key: const Key('projectDetailFullscreenImage'),
-        child: _buildPreviewImage(
-          project,
-          totalFrames: flat.length,
-          showOverlayButtons: false,
-        ),
-      );
-      Widget transport() => SizedBox(
-        key: const Key('projectDetailFullscreenTransport'),
-        height: 48,
-        child: _buildPlaybackBar(projectService, flat, project),
-      );
-      Widget fullscreenControls() =>
-          Row(children: [exitButton(), _buildFullscreenLoopButton()]);
-      return PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, _) {
-          if (!didPop && mounted) exitFullscreen();
-        },
-        child: Scaffold(
-          backgroundColor: theme.panelBgColor,
-          body: SafeArea(
-            child: Focus(
-              canRequestFocus: false,
-              onKeyEvent: (_, event) {
-                if (event is KeyDownEvent &&
-                    event.logicalKey == LogicalKeyboardKey.escape) {
-                  exitFullscreen();
-                  return KeyEventResult.handled;
-                }
-                return KeyEventResult.ignored;
-              },
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  if (constraints.maxHeight < 208) {
-                    return SingleChildScrollView(
-                      controller: _fullscreenPageScroll,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          fullscreenControls(),
-                          SizedBox(height: 64, child: preview()),
-                          SizedBox(height: 48, child: _buildSeekBar(flat)),
-                          transport(),
-                        ],
-                      ),
-                    );
-                  }
-                  // The frame counter lives on the image; there is no
-                  // second status row consuming preview height.
-                  return Column(
-                    children: [
-                      fullscreenControls(),
-                      Expanded(child: preview()),
-                      SizedBox(height: 48, child: _buildSeekBar(flat)),
-                      transport(),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-      );
+      return _buildFullscreenPreview(projectService, flat, project);
     }
 
     return _lastPage = Scaffold(
@@ -453,7 +379,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 aspectRatio: 16 / 9,
                 child: _buildPreviewImage(project, totalFrames: flat.length),
               ),
-              _buildSeekBar(flat),
+              SizedBox(height: 48, child: _buildSeekBar(flat)),
               // メディアプレイヤー風：中央の再生ボタンをテーマカラーの円で強調する
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 6),
@@ -667,12 +593,196 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  /// Preview with the current frame counter inside its bottom-left corner.
-  /// This overlay is visible in both embedded and fullscreen modes.
+  void _setPreviewFullscreen(bool fullscreen) {
+    setState(() {
+      _isPreviewFullscreen = fullscreen;
+      _showFullscreenControls = false;
+    });
+    if (fullscreen) {
+      ImmersiveMode.enterFullscreenPreview();
+    } else {
+      ImmersiveMode.exitWorkspace();
+    }
+  }
+
+  void _toggleFullscreenControls() {
+    setState(() => _showFullscreenControls = !_showFullscreenControls);
+    if (!_showFullscreenControls) _fullscreenPreviewFocus.requestFocus();
+  }
+
+  Widget _buildFullscreenPreview(
+    ProjectService projectService,
+    List<_FlatFrame> flat,
+    Project project,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final menuColor = theme.colorScheme.surface.withValues(alpha: .94);
+    void exitFullscreen() => _setPreviewFullscreen(false);
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) exitFullscreen();
+      },
+      child: Scaffold(
+        body: CallbackShortcuts(
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.escape): exitFullscreen,
+          },
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxHeight < 208;
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  FocusableActionDetector(
+                    focusNode: _fullscreenPreviewFocus,
+                    autofocus: true,
+                    actions: {
+                      ActivateIntent: CallbackAction<ActivateIntent>(
+                        onInvoke: (_) {
+                          _toggleFullscreenControls();
+                          return null;
+                        },
+                      ),
+                    },
+                    child: Semantics(
+                      button: true,
+                      label: _showFullscreenControls
+                          ? l10n.projectDetailHidePlaybackControls
+                          : l10n.projectDetailShowPlaybackControls,
+                      child: GestureDetector(
+                        key: const Key('projectDetailFullscreenImage'),
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _toggleFullscreenControls,
+                        child: _buildPreviewImage(
+                          project,
+                          totalFrames: flat.length,
+                          fullscreen: true,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (_showFullscreenControls) ...[
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Material(
+                        color: menuColor,
+                        child: SafeArea(
+                          bottom: false,
+                          child: Row(
+                            children: [
+                              IconButton(
+                                key: const Key('projectDetailFullscreenExit'),
+                                icon: const Icon(Icons.fullscreen_exit),
+                                tooltip:
+                                    l10n.projectDetailFullscreenCloseTooltip,
+                                onPressed: exitFullscreen,
+                              ),
+                              _buildFullscreenLoopButton(),
+                              if (compact) ...[
+                                const Spacer(),
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.only(
+                                    end: 8,
+                                  ),
+                                  child: _buildFrameCounter(flat.length),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Material(
+                        color: menuColor,
+                        child: SafeArea(
+                          top: false,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 14),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (!compact)
+                                  Padding(
+                                    padding: const EdgeInsetsDirectional.only(
+                                      start: 8,
+                                      top: 6,
+                                    ),
+                                    child: Align(
+                                      alignment:
+                                          AlignmentDirectional.centerStart,
+                                      child: _buildFrameCounter(flat.length),
+                                    ),
+                                  ),
+                                SizedBox(
+                                  height: compact ? 32 : 40,
+                                  child: _buildSeekBar(flat),
+                                ),
+                                SizedBox(
+                                  key: const Key(
+                                    'projectDetailFullscreenTransport',
+                                  ),
+                                  height: 48,
+                                  child: _buildPlaybackBar(
+                                    projectService,
+                                    flat,
+                                    project,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFrameCounter(int totalFrames) {
+    final theme = context.watch<ThemeService>().current;
+    final frame = totalFrames == 0
+        ? 0
+        : _frameIndex.clamp(0, totalFrames - 1) + 1;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.menuBgColor.withValues(alpha: .85),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Text(
+          '$frame/$totalFrames',
+          key: const Key('projectDetailFrameCounter'),
+          style: TextStyle(
+            color: theme.menuTextColor,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The preview fits the original artwork ratio, including in fullscreen.
   Widget _buildPreviewImage(
     Project project, {
     required int totalFrames,
-    bool showOverlayButtons = true,
+    bool fullscreen = false,
   }) {
     final l10n = AppLocalizations.of(context)!;
     final theme = context.watch<ThemeService>().current;
@@ -680,7 +790,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     // 敷く（16:9の枠いっぱいに背景色を塗ると、縦長の絵の左右まで絵の一部に
     // 見え、透明の作品は何も見えなかった）。
     final image = ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: fullscreen ? BorderRadius.zero : BorderRadius.circular(8),
       child: ColoredBox(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         child: FramePreviewBackground(
@@ -701,36 +811,16 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         ),
       ),
     );
-    final currentFrame = totalFrames == 0
-        ? 0
-        : _frameIndex.clamp(0, totalFrames - 1) + 1;
     return Stack(
       key: const Key('projectDetailPreviewArea'),
       children: [
         Positioned.fill(child: image),
-        Positioned(
-          left: 8,
-          bottom: 8,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: theme.menuBgColor.withValues(alpha: 0.85),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Text(
-                '$currentFrame/$totalFrames',
-                key: const Key('projectDetailFrameCounter'),
-                style: TextStyle(
-                  color: theme.menuTextColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+        if (!fullscreen) ...[
+          Positioned(
+            left: 8,
+            bottom: 8,
+            child: _buildFrameCounter(totalFrames),
           ),
-        ),
-        if (showOverlayButtons)
           Positioned(
             right: 4,
             top: 4,
@@ -751,10 +841,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   size: 20,
                 ),
                 tooltip: l10n.projectDetailFullscreenTooltip,
-                onPressed: () => setState(() => _isPreviewFullscreen = true),
+                onPressed: () => _setPreviewFullscreen(true),
               ),
             ),
           ),
+        ],
       ],
     );
   }

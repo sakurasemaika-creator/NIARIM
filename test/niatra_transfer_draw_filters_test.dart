@@ -83,6 +83,46 @@ void main() {
 
   const blurs = [FilterKind.gaussianBlur, FilterKind.lensBlur];
 
+  test(
+    'named filter settings round-trip without duplicating or saving drafts',
+    () async {
+      SharedPreferences.setMockInitialValues({'language': 'ja'});
+      final sender = await TransferDevice.start();
+      final service = sender.filter;
+      service.selectFilter('Filter0001');
+      await service.saveSettingsPreset(
+        service.currentFilter!.copyWith(strength: 3),
+        '弱いぼかし',
+      );
+      await service.saveSettingsPreset(
+        service.currentFilter!.copyWith(strength: 15),
+        '夕焼け用',
+      );
+      final before = service.savedSettingsFor(FilterKind.gaussianBlur);
+      service.selectFilter(before.first.id);
+      service.updateFilterParams(before.first.id, strength: 19);
+      expect(service.currentFilter!.strength, 19);
+      service.undoFilterEdit();
+      expect(service.currentFilter!.strength, 3);
+      service.redoFilterEdit();
+      expect(service.currentFilter!.strength, 19);
+      final bytes = await sender.export();
+
+      SharedPreferences.setMockInitialValues({'language': 'ja'});
+      final receiver = await TransferDevice.start();
+      await receiver.import(bytes, nextDir());
+      await receiver.import(bytes, nextDir());
+      final restarted = await _resume(await _snapshot());
+      final restored = restarted.filter.savedSettingsFor(
+        FilterKind.gaussianBlur,
+      );
+      expect(restored.map((f) => (f.name, f.strength, f.isSettingsPreset)), [
+        ('弱いぼかし', 3.0, true),
+        ('夕焼け用', 15.0, true),
+      ]);
+    },
+  );
+
   test('a built-in filter tuned on the other device takes those values where '
       'it is as shipped here; where both devices tuned it, this device keeps '
       'its values and no copy is added; a custom filter changed later over '

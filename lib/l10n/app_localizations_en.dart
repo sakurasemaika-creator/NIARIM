@@ -11258,4 +11258,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canvasViewResetRotation => 'Reset rotation';
+
+  @override
+  String get projectDetailShowPlaybackControls => 'Show playback controls';
+
+  @override
+  String get projectDetailHidePlaybackControls => 'Hide playback controls';
+
+  @override
+  String get filterSaveSettings => 'Save these settings';
+
+  @override
+  String get filterLoadSettings => 'Apply saved settings';
+
+  @override
+  String get filterSettingsName => 'Settings name';
+
+  @override
+  String get filterSettingsEmpty =>
+      'There are no saved settings for this filter.';
+
+  @override
+  String get filterSettingsSaved => 'Filter settings saved';
 }

@@ -3985,5 +3985,12 @@
   "canvasViewActualPixels": "Actual size",
   "canvasViewRotateLeft": "Rotate left",
   "canvasViewRotateRight": "Rotate right",
-  "canvasViewResetRotation": "Reset rotation"
+  "canvasViewResetRotation": "Reset rotation",
+  "projectDetailShowPlaybackControls": "Show playback controls",
+  "projectDetailHidePlaybackControls": "Hide playback controls",
+  "filterSaveSettings": "Save these settings",
+  "filterLoadSettings": "Apply saved settings",
+  "filterSettingsName": "Settings name",
+  "filterSettingsEmpty": "There are no saved settings for this filter.",
+  "filterSettingsSaved": "Filter settings saved"
 }

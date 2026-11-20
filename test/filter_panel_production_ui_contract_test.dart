@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/pump_real_async.dart';
 
 Future<void> _tapFilterCard(WidgetTester tester, Finder card) async {
   await Scrollable.ensureVisible(tester.element(card), alignment: 0.5);
@@ -52,6 +53,114 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(pathProviderChannel, null);
   });
+
+  testWidgets(
+    'named settings show thumbnails and are recalled without changing the saved copy',
+    (tester) async {
+      final providers = (await tester.runAsync(buildAppProviders))!;
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers,
+          child: MaterialApp(
+            locale: Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: Center(
+                child: FilterPanel(
+                  projectId: '',
+                  sceneId: '',
+                  layerId: null,
+                  frameIndex: 0,
+                  onClose: _doNothing,
+                  onCanvasPreviewChanged: (image) => image?.dispose(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final context = tester.element(find.byType(FilterPanel));
+      final service = context.read<FilterService>();
+      final l10n = AppLocalizations.of(context)!;
+      await _tapFilterCard(
+        tester,
+        find.byKey(const ValueKey('filter-card-Filter0001')),
+      );
+      final dialog = find.byType(AlertDialog);
+      final save = find.byKey(const ValueKey('filter-save-settings'));
+      final load = find.byKey(const ValueKey('filter-load-settings'));
+      await tester.tap(load);
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.filterSettingsEmpty), findsOneWidget);
+      await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
+      await tester.pumpAndSettle();
+      expect(dialog, findsNothing, reason: 'closed empty settings list');
+
+      for (final (name, strength) in [('弱いぼかし', 3.0), ('夕焼け用', 18.0)]) {
+        service.updateFilterParams('Filter0001', strength: strength);
+        await tester.pump();
+        expect(
+          save.hitTestable(),
+          findsOneWidget,
+          reason: 'open save for $name',
+        );
+        await tester.tap(save);
+        await tester.pumpAndSettle();
+        expect(dialog, findsOneWidget, reason: 'name dialog for $name');
+        await tester.enterText(find.byType(TextField), name);
+        await tester.pump();
+        await tester.tap(find.widgetWithText(FilledButton, l10n.commonSave));
+        await pumpRealAsync(tester, const Duration(milliseconds: 400));
+        await tester.pumpAndSettle();
+        expect(dialog, findsNothing, reason: 'saved $name');
+      }
+      expect(service.savedSettingsFor(FilterKind.gaussianBlur).length, 2);
+      await tester.tap(load);
+      await tester.pumpAndSettle();
+      final thumbnails = find.descendant(
+        of: dialog,
+        matching: find.byType(FilterSamplePreview),
+      );
+      expect(thumbnails, findsNWidgets(2));
+      for (var attempt = 0; attempt < 20; attempt++) {
+        if (find
+                .descendant(of: thumbnails, matching: find.byType(RawImage))
+                .evaluate()
+                .length ==
+            2) {
+          break;
+        }
+        await pumpRealAsync(tester, const Duration(milliseconds: 100));
+      }
+      expect(
+        find.descendant(of: thumbnails, matching: find.byType(RawImage)),
+        findsNWidgets(2),
+      );
+      expect(
+        find.descendant(of: dialog, matching: find.text('夕焼け用')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.descendant(of: dialog, matching: find.text('弱いぼかし')),
+      );
+      await tester.pumpAndSettle();
+      final id = service.currentFilter!.id;
+      expect(service.currentFilter!.strength, 3);
+      service.updateFilterParams(id, strength: 26);
+      await tester.pumpAndSettle();
+      expect(service.currentFilter!.strength, 26);
+      await tester.tap(load);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(of: dialog, matching: find.text('弱いぼかし')),
+      );
+      await tester.pumpAndSettle();
+      expect(service.currentFilter!.strength, 3);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('gallery duplicates, renames and deletes custom filters', (
     tester,

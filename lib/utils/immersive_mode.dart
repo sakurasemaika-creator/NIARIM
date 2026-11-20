@@ -14,6 +14,11 @@ class ImmersiveMode {
     );
   }
 
+  /// 全画面再生ではシステムバーの領域までプレビューに使う。
+  static void enterFullscreenPreview() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
+
   /// ホーム画面など通常の画面へ戻る際に、標準のナビゲーションバー表示へ
   /// 戻す。
   static void exitWorkspace() {

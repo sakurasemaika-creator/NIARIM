@@ -10465,4 +10465,25 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get canvasViewResetRotation => '回転を戻す';
+
+  @override
+  String get projectDetailShowPlaybackControls => '再生メニューを表示';
+
+  @override
+  String get projectDetailHidePlaybackControls => '再生メニューを非表示';
+
+  @override
+  String get filterSaveSettings => 'この設定を保存する';
+
+  @override
+  String get filterLoadSettings => '保存済みの設定を適用する';
+
+  @override
+  String get filterSettingsName => '設定の名前';
+
+  @override
+  String get filterSettingsEmpty => 'このフィルターの保存済み設定はありません。';
+
+  @override
+  String get filterSettingsSaved => 'フィルター設定を保存しました';
 }

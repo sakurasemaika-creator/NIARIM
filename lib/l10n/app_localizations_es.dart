@@ -11419,4 +11419,28 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get canvasViewResetRotation => 'Restablecer giro';
+
+  @override
+  String get projectDetailShowPlaybackControls =>
+      'Mostrar controles de reproducción';
+
+  @override
+  String get projectDetailHidePlaybackControls =>
+      'Ocultar controles de reproducción';
+
+  @override
+  String get filterSaveSettings => 'Guardar estos ajustes';
+
+  @override
+  String get filterLoadSettings => 'Aplicar ajustes guardados';
+
+  @override
+  String get filterSettingsName => 'Nombre de los ajustes';
+
+  @override
+  String get filterSettingsEmpty =>
+      'No hay ajustes guardados para este filtro.';
+
+  @override
+  String get filterSettingsSaved => 'Ajustes del filtro guardados';
 }

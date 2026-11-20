@@ -18452,6 +18452,48 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'回転を戻す'**
   String get canvasViewResetRotation;
+
+  /// No description provided for @projectDetailShowPlaybackControls.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生メニューを表示'**
+  String get projectDetailShowPlaybackControls;
+
+  /// No description provided for @projectDetailHidePlaybackControls.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生メニューを非表示'**
+  String get projectDetailHidePlaybackControls;
+
+  /// No description provided for @filterSaveSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'この設定を保存する'**
+  String get filterSaveSettings;
+
+  /// No description provided for @filterLoadSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存済みの設定を適用する'**
+  String get filterLoadSettings;
+
+  /// No description provided for @filterSettingsName.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定の名前'**
+  String get filterSettingsName;
+
+  /// No description provided for @filterSettingsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフィルターの保存済み設定はありません。'**
+  String get filterSettingsEmpty;
+
+  /// No description provided for @filterSettingsSaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター設定を保存しました'**
+  String get filterSettingsSaved;
 }
 
 class _AppLocalizationsDelegate

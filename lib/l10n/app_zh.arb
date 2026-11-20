@@ -3950,5 +3950,12 @@
   "canvasViewActualPixels": "实际大小",
   "canvasViewRotateLeft": "向左旋转",
   "canvasViewRotateRight": "向右旋转",
-  "canvasViewResetRotation": "重置旋转"
+  "canvasViewResetRotation": "重置旋转",
+  "projectDetailShowPlaybackControls": "显示播放控制",
+  "projectDetailHidePlaybackControls": "隐藏播放控制",
+  "filterSaveSettings": "保存此设置",
+  "filterLoadSettings": "应用已保存的设置",
+  "filterSettingsName": "设置名称",
+  "filterSettingsEmpty": "此滤镜暂无已保存的设置。",
+  "filterSettingsSaved": "已保存滤镜设置"
 }

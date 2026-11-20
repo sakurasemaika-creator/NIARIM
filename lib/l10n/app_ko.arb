@@ -3950,5 +3950,12 @@
   "canvasViewActualPixels": "실제 크기",
   "canvasViewRotateLeft": "왼쪽으로 회전",
   "canvasViewRotateRight": "오른쪽으로 회전",
-  "canvasViewResetRotation": "회전 초기화"
+  "canvasViewResetRotation": "회전 초기화",
+  "projectDetailShowPlaybackControls": "재생 컨트롤 표시",
+  "projectDetailHidePlaybackControls": "재생 컨트롤 숨기기",
+  "filterSaveSettings": "이 설정 저장",
+  "filterLoadSettings": "저장한 설정 적용",
+  "filterSettingsName": "설정 이름",
+  "filterSettingsEmpty": "이 필터에 저장된 설정이 없습니다.",
+  "filterSettingsSaved": "필터 설정을 저장했습니다"
 }

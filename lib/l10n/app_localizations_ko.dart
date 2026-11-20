@@ -10521,4 +10521,25 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get canvasViewResetRotation => '회전 초기화';
+
+  @override
+  String get projectDetailShowPlaybackControls => '재생 컨트롤 표시';
+
+  @override
+  String get projectDetailHidePlaybackControls => '재생 컨트롤 숨기기';
+
+  @override
+  String get filterSaveSettings => '이 설정 저장';
+
+  @override
+  String get filterLoadSettings => '저장한 설정 적용';
+
+  @override
+  String get filterSettingsName => '설정 이름';
+
+  @override
+  String get filterSettingsEmpty => '이 필터에 저장된 설정이 없습니다.';
+
+  @override
+  String get filterSettingsSaved => '필터 설정을 저장했습니다';
 }

@@ -88,6 +88,7 @@ Uint8List filterSamplePixels(FilterDef settings) {
 /// are shown with an example setting instead, so the card still tells what
 /// they do.
 FilterDef _illustrative(FilterDef filter) {
+  if (filter.isSettingsPreset) return filter;
   switch (filter.kind) {
     case FilterKind.toneCurve
         when filter.toneCurvePreset == ToneCurvePreset.linear &&

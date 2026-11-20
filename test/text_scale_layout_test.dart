@@ -142,6 +142,10 @@ void main() {
           }
           await tester.tap(fullscreen);
           await tester.pumpAndSettle();
+          await tester.tap(
+            find.byKey(const Key('projectDetailFullscreenImage')),
+          );
+          await tester.pumpAndSettle();
           for (final size in [
             const Size(1080, 660),
             const Size(960, 660),

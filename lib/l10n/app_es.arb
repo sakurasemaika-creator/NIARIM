@@ -3950,5 +3950,12 @@
   "canvasViewActualPixels": "Tamaño real",
   "canvasViewRotateLeft": "Girar a la izquierda",
   "canvasViewRotateRight": "Girar a la derecha",
-  "canvasViewResetRotation": "Restablecer giro"
+  "canvasViewResetRotation": "Restablecer giro",
+  "projectDetailShowPlaybackControls": "Mostrar controles de reproducción",
+  "projectDetailHidePlaybackControls": "Ocultar controles de reproducción",
+  "filterSaveSettings": "Guardar estos ajustes",
+  "filterLoadSettings": "Aplicar ajustes guardados",
+  "filterSettingsName": "Nombre de los ajustes",
+  "filterSettingsEmpty": "No hay ajustes guardados para este filtro.",
+  "filterSettingsSaved": "Ajustes del filtro guardados"
 }

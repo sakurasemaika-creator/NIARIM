@@ -40,6 +40,10 @@ class FilterService extends ChangeNotifier {
   FilterDef? _colorNoiseProfile;
   final List<FilterDef> _filters = [];
   String? _currentFilterId;
+  FilterDef? _presetDraft;
+  Future<void>? _lastStateWrite;
+  Future<void>? _pendingPresetWrite;
+  bool _disposed = false;
   String _searchQuery = '';
   bool _favoritesOnly = false;
   final List<_FilterEditStep> _filterEditUndo = [];
@@ -50,7 +54,19 @@ class FilterService extends ChangeNotifier {
   List<FilterDef> get filters =>
       List.unmodifiable(_filters.where((f) => !_isMergedNoisePreset(f)));
   FilterDef? get currentFilter =>
+      _presetDraft ??
       _filters.where((f) => f.id == _currentFilterId).firstOrNull;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  List<FilterDef> savedSettingsFor(FilterKind kind) => [
+    for (final filter in _filters)
+      if (filter.kind == kind && !isBuiltIn(filter.id)) filter,
+  ];
   String get searchQuery => _searchQuery;
   bool get favoritesOnly => _favoritesOnly;
   bool get canUndoFilterEdit => _filterEditUndo.isNotEmpty;
@@ -283,18 +299,20 @@ class FilterService extends ChangeNotifier {
       var migratedFilterState = false;
       _filters.addAll(
         // 1件ずつ読む（読めない1件で起動を止めない）。
-        readSavedJsonList<FilterDef?>(raw, (json) {
-          // A filter kind that has been removed from the app is dropped
-          // rather than shown as some other filter under its old name.
-          if (!FilterDef.hasKnownKind(json)) {
-            migratedFilterState = true;
-            return null;
-          }
-          final saved = FilterDef.fromJson(json);
-          final filter = _upToDate(saved);
-          if (!identical(filter, saved)) migratedFilterState = true;
-          return filter;
-        },
+        readSavedJsonList<FilterDef?>(
+          raw,
+          (json) {
+            // A filter kind that has been removed from the app is dropped
+            // rather than shown as some other filter under its old name.
+            if (!FilterDef.hasKnownKind(json)) {
+              migratedFilterState = true;
+              return null;
+            }
+            final saved = FilterDef.fromJson(json);
+            final filter = _upToDate(saved);
+            if (!identical(filter, saved)) migratedFilterState = true;
+            return filter;
+          },
           onSkipped: () => intact = false,
           listKey: _prefsKey,
         ).whereType<FilterDef>(),
@@ -329,6 +347,7 @@ class FilterService extends ChangeNotifier {
       (f) => f.id == genericNoiseFilterId,
     );
     _currentFilterId = null;
+    _presetDraft = null;
   }
 
   /// [filter] read the way this version reads a filter saved by an older
@@ -369,7 +388,14 @@ class FilterService extends ChangeNotifier {
     return next;
   }
 
-  Future<void> _persist() async {
+  Future<void> _persist() {
+    final write = _writeState(_pendingPresetWrite);
+    _lastStateWrite = _settled(write);
+    return write;
+  }
+
+  Future<void> _writeState(Future<void>? pendingPreset) async {
+    if (pendingPreset != null) await pendingPreset;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setSavedJsonList(
       _prefsKey,
@@ -381,10 +407,77 @@ class FilterService extends ChangeNotifier {
     }
   }
 
+  static Future<void> _settled(Future<void> write) =>
+      write.then<void>((_) {}, onError: (Object _, StackTrace _) {});
+
+  /// A named snapshot in the same library used by transfer and sharing.
+  Future<void> saveSettingsPreset(FilterDef source, String name) {
+    // Sliders and other quick edits keep their usual write timing. Wait for
+    // them before saving a named snapshot, and hold later writes until its
+    // success or failure has been reflected in the service.
+    final write = Future.wait<void>([
+      ?_lastStateWrite,
+      ?_pendingPresetWrite,
+    ]).then((_) => _saveSettingsPreset(source, name));
+    late final Future<void> settled;
+    settled = _settled(write).whenComplete(() {
+      if (identical(_pendingPresetWrite, settled)) _pendingPresetWrite = null;
+    });
+    _pendingPresetWrite = settled;
+    return write;
+  }
+
+  Future<void> _saveSettingsPreset(FilterDef source, String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) throw ArgumentError.value(name, 'name');
+    final prefs = await SharedPreferences.getInstance();
+    final baseId = 'custom_${DateTime.now().microsecondsSinceEpoch}';
+    var id = baseId;
+    for (var suffix = 2; _filters.any((f) => f.id == id); suffix++) {
+      id = '${baseId}_$suffix';
+    }
+    final preset = source.copyWith(
+      id: id,
+      name: uniqueNumberedName(trimmed, _filters.map((f) => f.name)),
+      isFavorite: false,
+      isSettingsPreset: true,
+    );
+    try {
+      final saved = await prefs.setSavedJsonList(_prefsKey, [
+        for (final filter in _filters) jsonEncode(filter.toJson()),
+        jsonEncode(preset.toJson()),
+      ]);
+      if (!saved) throw StateError('Could not save the filter settings');
+    } catch (_) {
+      await prefs.reload();
+      rethrow;
+    }
+    _filters.add(preset);
+    if (!_disposed) notifyListeners();
+  }
+
+  FilterDef? _filterForEdit(String id) => _presetDraft?.id == id
+      ? _presetDraft
+      : _filters.where((f) => f.id == id).firstOrNull;
+
+  FilterDef _editableFilterAt(int index) {
+    final stored = _filters[index];
+    return _presetDraft?.id == stored.id ? _presetDraft! : stored;
+  }
+
+  void _storeEditedFilter(int index, FilterDef filter) {
+    if (filter.isSettingsPreset && filter.id == _currentFilterId) {
+      _presetDraft = filter;
+    } else {
+      _filters[index] = filter;
+      _persist();
+    }
+  }
+
   /// One Noise tile restores distinct settings for film, color, and VHS.
   /// The old IDs remain readable for earlier saved and recorded operations.
   void selectNoiseStyle(String id, NoiseStyle style) {
-    final filter = _filters.where((f) => f.id == id).firstOrNull;
+    final filter = _filterForEdit(id);
     if (filter == null || filter.kind != FilterKind.noise) return;
     if (filter.noiseStyle == style) return;
     if (id != genericNoiseFilterId) {
@@ -438,6 +531,7 @@ class FilterService extends ChangeNotifier {
 
   void selectFilter(String id) {
     _currentFilterId = id;
+    _presetDraft = null;
     _filterEditUndo.clear();
     _filterEditRedo.clear();
     notifyListeners();
@@ -446,6 +540,7 @@ class FilterService extends ChangeNotifier {
   void clearCurrentFilter() {
     if (_currentFilterId == null) return;
     _currentFilterId = null;
+    _presetDraft = null;
     notifyListeners();
   }
 
@@ -551,7 +646,7 @@ class FilterService extends ChangeNotifier {
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
-    final before = _filters[idx];
+    final before = _editableFilterAt(idx);
     final after = before.copyWith(
       strength: strength,
       noiseStyle:
@@ -662,9 +757,8 @@ class FilterService extends ChangeNotifier {
       _pushUndo(_FilterEditStep.settings(before));
       _editGroupRecorded = _editGroupDepth > 0;
     }
-    _filters[idx] = after;
+    _storeEditedFilter(idx, after);
     notifyListeners();
-    _persist();
   }
 
   /// Moves what [id]'s filter shows on the canvas (see [filterCanvasGizmoFor])
@@ -676,7 +770,7 @@ class FilterService extends ChangeNotifier {
     int canvasWidth,
     int canvasHeight,
   ) {
-    final filter = _filters.where((f) => f.id == id).firstOrNull;
+    final filter = _filterForEdit(id);
     if (filter == null || canvasWidth <= 0 || canvasHeight <= 0) return;
     final x = gizmo.center.dx / canvasWidth * 100;
     final y = gizmo.center.dy / canvasHeight * 100;
@@ -750,9 +844,8 @@ class FilterService extends ChangeNotifier {
       step.undo!();
       _filterEditRedo.add(step);
     } else {
-      _filterEditRedo.add(_FilterEditStep.settings(_filters[idx]));
-      _filters[idx] = settings;
-      _persist();
+      _filterEditRedo.add(_FilterEditStep.settings(_editableFilterAt(idx)));
+      _storeEditedFilter(idx, settings);
     }
     notifyListeners();
   }
@@ -768,9 +861,8 @@ class FilterService extends ChangeNotifier {
       step.redo!();
       _filterEditUndo.add(step);
     } else {
-      _filterEditUndo.add(_FilterEditStep.settings(_filters[idx]));
-      _filters[idx] = settings;
-      _persist();
+      _filterEditUndo.add(_FilterEditStep.settings(_editableFilterAt(idx)));
+      _storeEditedFilter(idx, settings);
     }
     notifyListeners();
   }
@@ -878,7 +970,10 @@ class FilterService extends ChangeNotifier {
 
   void addFilter(FilterDef filter, {bool select = true}) {
     _filters.add(filter);
-    if (select) _currentFilterId = filter.id;
+    if (select) {
+      _currentFilterId = filter.id;
+      _presetDraft = null;
+    }
     notifyListeners();
     _persist();
   }
@@ -917,7 +1012,10 @@ class FilterService extends ChangeNotifier {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0 || _filters[idx].isFavorite) return false;
     _filters.removeAt(idx);
-    if (_currentFilterId == id) _currentFilterId = _filters.firstOrNull?.id;
+    if (_currentFilterId == id) {
+      _currentFilterId = _filters.firstOrNull?.id;
+      _presetDraft = null;
+    }
     notifyListeners();
     _persist();
     return true;

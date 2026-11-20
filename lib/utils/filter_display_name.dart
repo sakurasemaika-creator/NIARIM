@@ -6,6 +6,7 @@ import 'duplicate_name.dart';
 /// Built-ins use the app's language. Custom names are kept as entered, and
 /// copies use the localized copy suffix and number.
 String filterDisplayName(AppLocalizations l10n, FilterDef filter) {
+  if (filter.isSettingsPreset) return filter.name;
   final copy = copyNameParts(filter.name);
   final name = FilterService.usesBuiltInName(filter)
       ? _kindName(l10n, filter)

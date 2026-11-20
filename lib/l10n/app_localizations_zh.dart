@@ -10344,6 +10344,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get canvasViewResetRotation => '重置旋转';
+
+  @override
+  String get projectDetailShowPlaybackControls => '显示播放控制';
+
+  @override
+  String get projectDetailHidePlaybackControls => '隐藏播放控制';
+
+  @override
+  String get filterSaveSettings => '保存此设置';
+
+  @override
+  String get filterLoadSettings => '应用已保存的设置';
+
+  @override
+  String get filterSettingsName => '设置名称';
+
+  @override
+  String get filterSettingsEmpty => '此滤镜暂无已保存的设置。';
+
+  @override
+  String get filterSettingsSaved => '已保存滤镜设置';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -20688,4 +20709,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasViewResetRotation => '重設旋轉';
+
+  @override
+  String get projectDetailShowPlaybackControls => '顯示播放控制';
+
+  @override
+  String get projectDetailHidePlaybackControls => '隱藏播放控制';
+
+  @override
+  String get filterSaveSettings => '儲存此設定';
+
+  @override
+  String get filterLoadSettings => '套用已儲存的設定';
+
+  @override
+  String get filterSettingsName => '設定名稱';
+
+  @override
+  String get filterSettingsEmpty => '此濾鏡沒有已儲存的設定。';
+
+  @override
+  String get filterSettingsSaved => '已儲存濾鏡設定';
 }
