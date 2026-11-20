@@ -2862,3 +2862,14 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：全体回帰 `44641695291` で`frame_strip_gesture_test`・`frame_strip_mode_button_source_test`・`frame_strip_square_ratio_test`・`canvas_timeline_position_test`は成功。やり直しの後の取り消しで今のコマを戻すことは見張っていない。
 - 未確認：1400×1300の窓（DISC276はA013で確認）、複数のシーン、時間の上限（無料・Premium）、コマの複数選択・複製・削除の取り消し、スマホの帯。
 - 画像：`shots-r1/r2a042-*`（backup-pending）。
+
+## A043 — カスタム自動操作・管理・記録
+
+### A043 二巡目（2026-11-20、Claude・S50、App `9c06dd69`のLinuxデバッグビルド）— 判定：要修正（既存DISC268の残り・資料）。Premiumの実操作はこの環境では不可
+
+- 一巡目のDISC323は直った（コード）：`custom_automation_interaction_capture_test`・`custom_automation_management_capture_test`は`ThemeService().themeData`と`loadAppFonts`で撮る。全体回帰 `44641695291` で両方とも成功。
+- 無料の利用者（Linux debug、ja、1280×800、PCの形）：設定/編集→「自動操作」（鍵の印）を押すと「NIARIM Premium／自動操作」の案内が出て、「自動操作の作成・編集・実行は、プレミアム会員または自動操作の特典を利用中にできます。」と「プレミアム会員の詳細を見る」「特典の詳細を見る（無料）」「閉じる」（`4cd9c7c3`の機能名入りの案内）。×で閉じる。
+- Premiumを手元で有効にする道は無い（`premium_service.dart`の`isPremium`はPlayの購入の確認か、Googleアカウントに結び付いたサーバーのコイン特典だけ。デバッグ用の定義も無い）ので、記録・停止・並べ替え・名前の変更・削除の実操作はできない。testの`custom_automation_service_test`・`custom_automation_draft_reorder_test`・`custom_automation_discrete_step_test`・`custom_automation_manager_dialog_lifecycle_test`・`custom_automation_executor_test`・`custom_automation_frame_scope_test`・`premium_all_entry_points_test`は全体回帰で成功。
+- 要修正（既存DISC268の残り、資料）：CLAUDE.mdの「繰り返し踏んだ地雷」の「`monetization_gate.dart`を一時的に書き換えたら必ず元に戻すこと」（1918〜1924行、`isMonetizationEnabled`・キャンペーン文言）は、lib配下にもう無いファイルと関数の説明のまま。DISC268で直したのは「人間の実操作が必要な項目」1だけだった。
+- 未確認：Premiumでの記録・下書き・保存・取り消し・読み込み・書き出し・ショートカット（実機の購入か特典が要る）。
+- 画像：`shots-r1/r2a043-*`（backup-pending）。
