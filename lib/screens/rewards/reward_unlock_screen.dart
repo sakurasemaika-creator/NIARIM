@@ -65,6 +65,30 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   Map<String, dynamic>? _officialPremiumQuote;
   Map<String, dynamic>? _officialAnnualPremiumQuote;
 
+  bool get _annualPremiumAvailable =>
+      _officialAnnualPremiumQuote?['enabled'] == true &&
+      _officialAnnualPremiumQuote?['priceCoins'] ==
+          CoinBenefitPriceCatalog.yearlyPremiumCoins &&
+      _officialAnnualPremiumQuote?['priceVersion'] ==
+          CoinBenefitPriceCatalog.version;
+
+  bool get _fullPremiumDurationAvailable =>
+      _rewardState?['redemptionEnabled'] == true &&
+      (_duration.unit != CoinDurationUnit.month ||
+          _duration.amount < 12 ||
+          _annualPremiumAvailable);
+
+  bool get _individualRedemptionAvailable =>
+      _rewardState?['individualRedemptionEnabled'] == true;
+
+  bool get _canRedeemSelectedBenefits =>
+      _individualRedemptionAvailable &&
+      _selected.isNotEmpty &&
+      !_selected.contains(CoinUnlockTarget.fullPremium) &&
+      !_selected.contains(CoinUnlockTarget.communityPostQuota) &&
+      !(_selected.contains(CoinUnlockTarget.allAds) &&
+          _placementTargets.any(_selected.contains));
+
   /// Only a matching, enabled server quote can authorize spending coins.
   Map<String, dynamic>? get _selectedFullPremiumQuote {
     if (_duration.unit != CoinDurationUnit.month) return null;
@@ -404,7 +428,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     if (_redeemBusy ||
         _selected.length != 1 ||
         !_selected.contains(CoinUnlockTarget.fullPremium) ||
-        _rewardState?['redemptionEnabled'] != true) {
+        !_fullPremiumDurationAvailable) {
       return;
     }
     final accountId = context.read<GoogleAuthService>().account?.id;
@@ -514,11 +538,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   }
 
   Future<void> _redeemSelectedBenefits() async {
-    if (_redeemBusy ||
-        _selected.isEmpty ||
-        _selected.contains(CoinUnlockTarget.fullPremium) ||
-        _selected.contains(CoinUnlockTarget.communityPostQuota) ||
-        _rewardState?['individualRedemptionEnabled'] != true) {
+    if (_redeemBusy || !_canRedeemSelectedBenefits) {
       return;
     }
     final accountId = context.read<GoogleAuthService>().account?.id;
@@ -529,11 +549,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         .where((target) => _selected.contains(target))
         .map((target) => target.name)
         .toList(growable: false);
-    final duration = _duration.unit.name;
-    final count = _duration.amount;
+    final selectedDuration = _duration;
+    final duration = selectedDuration.unit.name;
+    final count = selectedDuration.amount;
     final expected = _selected.fold<int>(
       0,
-      (sum, target) => sum + CoinBenefitPriceCatalog.cost(target, _duration),
+      (sum, target) =>
+          sum + CoinBenefitPriceCatalog.cost(target, selectedDuration),
     );
     if (expected <= 0) return;
     final labels = RewardUnlockLabels.of(context);
@@ -565,15 +587,16 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         );
         return;
       }
-      final period = coinUnlockDurationLabel(l10n, _duration);
+      final period = coinUnlockDurationLabel(l10n, selectedDuration);
       final amount = l10n.coinAmount(price);
+      final selectedLabels = targets.map((target) => labels[target]).join('\n');
       final confirm = await showDialog<bool>(
         context: context,
         builder: (dialog) => AlertDialog(
           scrollable: true,
           title: Text(labels['redeem']),
           content: keepTogetherWords(
-            '${targets.length} · $period · $amount',
+            '$selectedLabels\n\n$period · $amount',
             keep: [period, amount],
           ),
           actions: [
@@ -935,6 +958,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final referencePrice = enabled
         ? CoinBenefitPriceCatalog.cost(target, _duration)
         : null;
+    final availableInApp = target == CoinUnlockTarget.fullPremium
+        ? _fullPremiumDurationAvailable
+        : _individualRedemptionAvailable;
     final hasSubscription = context.read<PremiumService>().hasPurchasedPremium;
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
@@ -944,6 +970,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       price = messageText(t['notReady'], style: bodySmall);
     } else if (officialPrice != null) {
       price = Text(l10n.coinAmount(officialPrice), style: bodySmall);
+    } else if (availableInApp) {
+      price = Text(l10n.coinAmount(referencePrice!), style: bodySmall);
     } else {
       // 数＋単位は途中で行を変えない（「…・70コ」「イン」と切れた）。
       final amount = l10n.coinAmount(referencePrice!);
@@ -1038,13 +1066,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       0,
       (sum, target) => sum + CoinBenefitPriceCatalog.cost(target, _duration),
     );
-    final premiumActiveFromPlay = context
-        .watch<PremiumService>()
-        .hasVerifiedPlayPremium;
+    final premium = context.watch<PremiumService>();
+    final fullPremiumSelected =
+        _selected.length == 1 &&
+        _selected.contains(CoinUnlockTarget.fullPremium);
     final fullPremiumQuote = _selectedFullPremiumQuote;
     final serverPrice =
-        _selected.length == 1 &&
-            _selected.contains(CoinUnlockTarget.fullPremium) &&
+        fullPremiumSelected &&
             fullPremiumQuote?['enabled'] == true &&
             fullPremiumQuote?['priceCoins'] ==
                 CoinBenefitPriceCatalog.cost(
@@ -1055,6 +1083,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ? fullPremiumQuote!['priceCoins'] as int
         : null;
     final balance = _rewardState?['balanceCoins'];
+    final individualOffer = _canRedeemSelectedBenefits && !premium.isPremium;
+    final fullPremiumOffer =
+        fullPremiumSelected &&
+        _fullPremiumDurationAvailable &&
+        !premium.hasVerifiedPlayPremium;
+    final canRedeem =
+        !_redeemBusy &&
+        balance is int &&
+        balance >= (serverPrice ?? referenceTotal);
     final rewardCoins = _rewardState?['rewardedCoinsPerCompletion'];
     final rewardDailyLimit = _rewardState?['rewardedDailyLimit'];
     final rewardDailyRemaining = _rewardState?['rewardedDailyRemaining'];
@@ -1241,6 +1278,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       // つなぐと、長い言語・大きな文字で単語の途中で切れた）。
                       if (serverPrice == null &&
                           quote == null &&
+                          !individualOffer &&
+                          !fullPremiumOffer &&
                           _selected.isNotEmpty)
                         messageText(
                           l10n.rewardUnlockFixedPrice,
@@ -1268,37 +1307,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       const SizedBox(height: 8),
                       OutlinedButton(
                         key: const Key('rewardRedeemButton'),
-                        onPressed:
-                            serverPrice != null &&
-                                _rewardState?['redemptionEnabled'] == true &&
-                                balance is int &&
-                                balance >= serverPrice &&
-                                !premiumActiveFromPlay &&
-                                !_redeemBusy
-                            ? _redeemFullPremium
-                            : _selected.length == 1 &&
-                                  _selected.contains(
-                                    CoinUnlockTarget.fullPremium,
-                                  ) &&
-                                  _rewardState?['redemptionEnabled'] == true &&
-                                  balance is int &&
-                                  balance >= referenceTotal &&
-                                  !premiumActiveFromPlay &&
-                                  !_redeemBusy
-                            ? _redeemFlexibleFullPremium
-                            : _selected.isNotEmpty &&
-                                  !_selected.contains(
-                                    CoinUnlockTarget.fullPremium,
-                                  ) &&
-                                  !_selected.contains(
-                                    CoinUnlockTarget.communityPostQuota,
-                                  ) &&
-                                  _rewardState?['individualRedemptionEnabled'] ==
-                                      true &&
-                                  balance is int &&
-                                  balance >= referenceTotal &&
-                                  !context.watch<PremiumService>().isPremium &&
-                                  !_redeemBusy
+                        onPressed: canRedeem && fullPremiumOffer
+                            ? (serverPrice != null
+                                  ? _redeemFullPremium
+                                  : _redeemFlexibleFullPremium)
+                            : canRedeem && individualOffer
                             ? _redeemSelectedBenefits
                             : null,
                         child: messageText(t['redeem']),

@@ -58,6 +58,10 @@ on:
         description: "AWSへデプロイする（事前にSecrets・OIDCロールの設定が必要）"
         type: boolean
         default: false
+      activate_opal_redemption:
+        description: "単品特典・年間コンプリートパックのオパール交換を有効化する"
+        type: boolean
+        default: false
 
 defaults:
   run:
@@ -140,6 +144,8 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
       - name: Block unsafe CDK drift against live reward configuration
         shell: bash
+        env:
+          NIARIM_ACTIVATE_OPAL_REDEMPTION: ${{ inputs.activate_opal_redemption }}
         run: |
           set -euo pipefail
           # Deploy role itself cannot read Lambda configuration. Temporarily

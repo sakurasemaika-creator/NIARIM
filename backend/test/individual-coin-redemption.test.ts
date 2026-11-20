@@ -104,6 +104,28 @@ describe("fail closed individual benefit redemption",()=>{
     expect(send.mock.calls.map(([command])=>command.constructor))
       .toEqual([GetCommand]);
   });
+  it.each([
+    ["canvasAds", ["allAds"]],
+    ["allAds", ["projectListAds", "canvasAds", "timelineAds", "processingAds"]],
+  ] as const)("checks existing ad coverage in the %s debit transaction", async (
+    target, overlapping,
+  ) => {
+    enable();
+    await redeemIndividualCoins("Naccount", { ...input(), targets: [target] });
+    const transaction = send.mock.calls.find(
+      ([command]) => command instanceof TransactWriteCommand,
+    )?.[0] as TransactWriteCommand;
+    const checks = transaction.input.TransactItems!
+      .map(item => item.ConditionCheck)
+      .filter(check => check?.Key?.sk?.startsWith("ENTITLEMENT#"));
+    expect(checks.map(check => check?.Key?.sk)).toEqual([
+      "ENTITLEMENT#fullPremium",
+      ...overlapping.map(name => `ENTITLEMENT#${name}`),
+    ]);
+    for (const check of checks) {
+      expect(check?.ConditionExpression).toContain("expiresAtEpochMs <= :now");
+    }
+  });
   it("refuses to charge an account with an active verified Play Premium term",async()=>{
     enable();
     vi.mocked(getUser).mockResolvedValueOnce({

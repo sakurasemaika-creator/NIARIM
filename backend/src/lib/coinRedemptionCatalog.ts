@@ -1,5 +1,6 @@
 import { badRequest } from "./response";
 import {
+  AD_PLACEMENT_BENEFITS,
   COIN_BENEFIT_PRICE_VERSION,
   finalBenefitCostCoins,
   finalBenefitCoins,
@@ -8,9 +9,7 @@ import {
 } from "./coinBenefitProposal";
 
 /**
- * Authenticated, read-only catalog previews.
- * These figures are not spendable offers. The only current redeemable
- * route remains fullPremium/month/1 after independent approval.
+ * Read-only prices. The API attaches current redemption availability.
  */
 const targets = new Set<BenefitPriceTarget>([
   "endCardEdit", "watermark", "toneCurve", "levelAdjustment",
@@ -93,9 +92,8 @@ export function catalogSelectionQuote(query: Record<string,string|undefined>) {
     badRequest("フルPremiumと個別特典は同時に指定できません",
       "REDEMPTION_OVERLAPPING_BUNDLE");
   }
-  if (chosen.includes("allAds") && chosen.some(target=>[
-    "projectListAds","canvasAds","timelineAds","processingAds",
-  ].includes(target))) {
+  if (chosen.includes("allAds") &&
+      AD_PLACEMENT_BENEFITS.some(target => chosen.includes(target))) {
     badRequest("全広告非表示と個別の広告非表示は重複できません",
       "REDEMPTION_OVERLAPPING_ADS");
   }

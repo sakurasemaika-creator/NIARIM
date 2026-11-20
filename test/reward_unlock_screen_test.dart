@@ -75,6 +75,106 @@ class _RewardAds extends AdvertisingService {
   }) async => available;
 }
 
+class _ExchangeApi extends CommunityApi {
+  _ExchangeApi(super.client);
+
+  bool annualEnabled = false;
+  int balance = 600000;
+  final redemptions = <String>[];
+  final entitlements = <Map<String, Object>>[];
+
+  @override
+  Future<Map<String, dynamic>> myRewardState() async => {
+    'balanceCoins': balance,
+    'redemptionEnabled': true,
+    'individualRedemptionEnabled': true,
+    'entitlements': entitlements,
+  };
+
+  @override
+  Future<Map<String, dynamic>> fullPremiumCoinQuote({int months = 1}) async {
+    final enabled = months == 1 || annualEnabled;
+    final amount = months == 12 ? 550000 : 55000;
+    return {
+      'enabled': enabled,
+      'priceCoins': enabled ? amount : null,
+      'catalogPriceCoins': amount,
+      'priceVersion': enabled ? CoinBenefitPriceCatalog.version : null,
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> selectedBenefitCoinQuote({
+    required List<String> targets,
+    required String duration,
+    required int quantity,
+  }) async {
+    expect(targets, ['toneCurve']);
+    expect(duration, 'hour');
+    expect(quantity, 1);
+    return {
+      'enabled': true,
+      'priceCoins': 2160,
+      'catalogPriceCoins': 2160,
+      'priceVersion': CoinBenefitPriceCatalog.version,
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> redeemSelectedBenefitCoins({
+    required List<String> targets,
+    required String duration,
+    required int quantity,
+    required String requestId,
+    required String priceVersion,
+  }) async {
+    expect(targets, ['toneCurve']);
+    expect(duration, 'hour');
+    expect(quantity, 1);
+    expect(priceVersion, CoinBenefitPriceCatalog.version);
+    _redeem('toneCurve', 2160, const Duration(hours: 1));
+    return {'redeemed': true};
+  }
+
+  @override
+  Future<Map<String, dynamic>> redeemFullPremiumCoins({
+    required String requestId,
+    required String priceVersion,
+    int months = 1,
+  }) async {
+    expect(annualEnabled, isTrue);
+    expect(months, 12);
+    expect(priceVersion, CoinBenefitPriceCatalog.version);
+    _redeem('fullPremium', 550000, const Duration(days: 365));
+    return {'redeemed': true};
+  }
+
+  void _redeem(String feature, int price, Duration duration) {
+    redemptions.add(feature);
+    balance -= price;
+    entitlements.add({
+      'feature': feature,
+      'status': 'active',
+      'expiresAtEpochMs': DateTime.now().add(duration).millisecondsSinceEpoch,
+    });
+  }
+}
+
+Future<void> _selectTwelveMonths(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('rewardDurationButton')));
+  await tester.pumpAndSettle();
+  final monthly = find.byType(ExpansionTile).last;
+  await tester.tap(
+    find.descendant(of: monthly, matching: find.byType(ListTile)).first,
+  );
+  await tester.pumpAndSettle();
+  final twelve = find.byKey(const ValueKey('rewardDuration_month_12'));
+  await tester.ensureVisible(twelve);
+  await tester.pumpAndSettle();
+  await tester.tap(twelve);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('shows unavailable ads and allows retries and consecutive ads', (
     tester,
@@ -164,19 +264,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final picker = find.byKey(const Key('rewardDurationButton'));
-    await tester.tap(picker);
-    await tester.pumpAndSettle();
-    final monthly = find.byType(ExpansionTile).last;
-    await tester.tap(
-      find.descendant(of: monthly, matching: find.byType(ListTile)).first,
-    );
-    await tester.pumpAndSettle();
-    final twelve = find.byKey(const ValueKey('rewardDuration_month_12'));
-    await tester.ensureVisible(twelve);
-    await tester.pumpAndSettle();
-    await tester.tap(twelve);
-    await tester.pumpAndSettle();
+    await _selectTwelveMonths(tester);
 
     final full = find.byKey(const ValueKey('rewardFeature_fullPremium'));
     await tester.ensureVisible(full);
@@ -209,6 +297,102 @@ void main() {
     premium.dispose();
     settings.dispose();
     auth.dispose();
+  });
+
+  testWidgets('redeems a single feature and an annual pack only from '
+      'enabled offers', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final client = NiarimApiClient(baseUrl: 'https://example.invalid');
+    final api = _ExchangeApi(client);
+    final auth = _RewardAuth();
+    final premium = PremiumService()..bindGoogleAuth(auth);
+    final community = CommunityService(api: api);
+    final settings = SettingsService();
+    addTearDown(client.close);
+    addTearDown(community.dispose);
+    addTearDown(settings.dispose);
+    addTearDown(auth.dispose);
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<PremiumService>.value(value: premium),
+          ChangeNotifierProvider<SettingsService>.value(value: settings),
+          ChangeNotifierProvider<GoogleAuthService>.value(value: auth),
+          ChangeNotifierProvider<CommunityService>.value(value: community),
+        ],
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: RewardUnlockScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final duration = find.byKey(const Key('rewardDurationButton'));
+    final toneCurve = find.byKey(const ValueKey('rewardFeature_toneCurve'));
+    final fullPremium = find.byKey(const ValueKey('rewardFeature_fullPremium'));
+    final redeem = find.byKey(const Key('rewardRedeemButton'));
+    final list = find.byType(Scrollable).first;
+    Future<void> reveal(Finder finder) async {
+      await tester.scrollUntilVisible(finder, 250, scrollable: list);
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> confirm() async {
+        final previousCount = api.redemptions.length;
+      await tester.tap(redeem);
+      await tester.pumpAndSettle();
+        expect(api.redemptions.length, previousCount);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(FilledButton),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await reveal(toneCurve);
+    await tester.tap(toneCurve);
+    await tester.pumpAndSettle();
+    await reveal(redeem);
+    await confirm();
+    expect(api.redemptions, ['toneCurve']);
+    expect(api.balance, 597840);
+    expect(premium.isFeatureAvailable(PremiumFeature.toneCurve), isTrue);
+    expect(premium.isFeatureAvailable(PremiumFeature.levelAdjustment), isFalse);
+
+    await tester.drag(list, const Offset(0, 850));
+    await tester.pumpAndSettle();
+    await reveal(toneCurve);
+    await tester.tap(toneCurve);
+    await tester.pumpAndSettle();
+    await tester.drag(list, const Offset(0, 550));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(duration);
+    await _selectTwelveMonths(tester);
+    await reveal(fullPremium);
+    await tester.tap(fullPremium);
+    await tester.pumpAndSettle();
+    await reveal(redeem);
+    expect(tester.widget<OutlinedButton>(redeem).onPressed, isNull);
+
+    api.annualEnabled = true;
+    await tester.drag(list, const Offset(0, 1600));
+    await tester.pumpAndSettle();
+    final refresh = find.widgetWithIcon(TextButton, Icons.refresh);
+    await tester.tap(refresh);
+    await tester.pumpAndSettle();
+    await reveal(redeem);
+    expect(tester.widget<OutlinedButton>(redeem).onPressed, isNotNull);
+    await confirm();
+    expect(api.redemptions, ['toneCurve', 'fullPremium']);
+    expect(api.balance, 47840);
+    expect(premium.hasCoinPremium, isTrue);
+    await tester.pumpWidget(const SizedBox.shrink());
+      premium.dispose();
   });
 
   testWidgets(

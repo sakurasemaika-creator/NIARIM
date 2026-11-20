@@ -22,7 +22,7 @@ type IndividualBenefit = Exclude<BenefitPriceTarget, "fullPremium">;
 export type BenefitDuration = "hour" | "day" | "week" | "month";
 const durationIndex = { hour: 0, day: 1, week: 2, month: 3 } as const;
 
-const adPlacements = [
+export const AD_PLACEMENT_BENEFITS = [
   "projectListAds", "canvasAds", "timelineAds", "processingAds",
 ] as const;
 
@@ -35,7 +35,7 @@ const productionBenefits = [
 const comparableBenefits = [...productionBenefits, "allAds"] as const;
 
 export const INDIVIDUAL_BENEFITS: readonly IndividualBenefit[] = [
-  ...productionBenefits, ...adPlacements,
+  ...productionBenefits, ...AD_PLACEMENT_BENEFITS,
 ];
 
 export function comparableBenefitsUnitCoins(duration: BenefitDuration): number {
@@ -67,7 +67,7 @@ export function finalBenefitCostCoins(
 export function isBundledPremiumCheaperForAllDurations(): boolean {
   return (["hour", "day", "week", "month"] as const).every(duration =>
     finalBenefitCoins("fullPremium", duration) < comparableBenefitsUnitCoins(duration) &&
-    finalBenefitCoins("allAds", duration) < adPlacements.reduce(
+    finalBenefitCoins("allAds", duration) < AD_PLACEMENT_BENEFITS.reduce(
       (sum, target) => sum + finalBenefitCoins(target, duration), 0,
     ),
   );

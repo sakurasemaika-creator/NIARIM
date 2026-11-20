@@ -53,7 +53,10 @@ vi.mock("../src/lib/dynamo", async (original) => {
   };
 });
 import { Keys } from "../src/lib/dynamo";
-import { COIN_BENEFIT_PRICE_VERSION } from "../src/lib/coinBenefitProposal";
+import {
+  AD_PLACEMENT_BENEFITS, COIN_BENEFIT_PRICE_VERSION, INDIVIDUAL_BENEFITS,
+  finalBenefitCostCoins,
+} from "../src/lib/coinBenefitProposal";
 import { redeemIndividualCoins } from "../src/lib/individualCoinRedemption";
 import { redeemCoins } from "../src/api/routes/coinRedemption";
 import { getMyRewardState } from "../src/api/routes/rewardState";
@@ -262,6 +265,65 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       });
       expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(100000);
       expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(1890);
+    }, 30_000);
+
+    it("redeems every single benefit and debits overlapping ad coverage only once", async () => {
+      const individualOwner = "N" + "c".repeat(32);
+      const initialBalance = 100_000;
+      await localDdb.send(new PutCommand({
+        TableName: table,
+        Item: {
+          ...Keys.user(individualOwner), itemType: "USER", membershipTier: "free",
+        },
+      }));
+      await localDdb.send(new PutCommand({
+        TableName: table,
+        Item: {
+          ...Keys.coinWallet(individualOwner), itemType: "COIN_WALLET",
+          balanceCoins: initialBalance, redeemedCoins: 0,
+        },
+      }));
+      let total = 0;
+      for (const target of INDIVIDUAL_BENEFITS) {
+        const input = {
+          ...individualInput(randomUUID(), [target]), duration: "hour",
+        };
+        const expected = finalBenefitCostCoins(target, "hour", 1);
+        const reply = await redeemIndividualCoins(individualOwner, input);
+        expect(JSON.parse(reply.body ?? "{}")).toMatchObject({
+          redeemed: true, costCoins: expected, targets: [target],
+        });
+        expect((await get(Keys.rewardEntitlement(individualOwner, target)))?.status)
+          .toBe("active");
+        expect(await get(Keys.rewardEntitlement(other, target))).toBeUndefined();
+        total += expected;
+      }
+
+      const allAds = individualInput(randomUUID(), ["allAds"]);
+      await expect(redeemIndividualCoins(individualOwner, allAds))
+        .rejects.toMatchObject({ code: "REDEMPTION_STATE_CHANGED" });
+      expect(await get(Keys.coinTransaction(individualOwner, "redeem-" + allAds.requestId)))
+        .toBeUndefined();
+      expect((await get(Keys.coinWallet(individualOwner)))?.balanceCoins)
+        .toBe(initialBalance - total);
+
+      for (const target of AD_PLACEMENT_BENEFITS) {
+        await localDdb.send(new UpdateCommand({
+          TableName: table, Key: Keys.rewardEntitlement(individualOwner, target),
+          UpdateExpression: "SET expiresAtEpochMs = :expired",
+          ExpressionAttributeValues: { ":expired": Date.now() - 1000 },
+        }));
+      }
+      const reply = await redeemIndividualCoins(individualOwner, allAds);
+      const allAdsPrice = finalBenefitCostCoins("allAds", "week", 1);
+      expect(JSON.parse(reply.body ?? "{}")).toMatchObject({
+        redeemed: true, costCoins: allAdsPrice, targets: ["allAds"],
+      });
+      await expect(redeemIndividualCoins(
+        individualOwner, individualInput(randomUUID(), ["canvasAds"]),
+      )).rejects.toMatchObject({ code: "REDEMPTION_STATE_CHANGED" });
+      expect((await get(Keys.coinWallet(individualOwner)))?.balanceCoins)
+        .toBe(initialBalance - total - allAdsPrice);
     }, 30_000);
 
   },

@@ -6,7 +6,9 @@ import { ddb,Keys,tableName } from "./dynamo";
 import { getUser } from "./auth";
 import { badRequest,conflict,forbidden,ok } from "./response";
 import { catalogSelectionQuote } from "./coinRedemptionCatalog";
-import { COIN_BENEFIT_PRICE_VERSION } from "./coinBenefitProposal";
+import {
+  AD_PLACEMENT_BENEFITS, COIN_BENEFIT_PRICE_VERSION,
+} from "./coinBenefitProposal";
 
 /**
  * Atomic redemption pipeline for selected individual benefits.
@@ -159,6 +161,28 @@ export async function redeemIndividualCoins(
     })),
   ));
   const expiresAtByTarget:Record<string,number>={};
+  const coveredAdTargets = quote.targets.includes("allAds")
+    ? AD_PLACEMENT_BENEFITS
+    : AD_PLACEMENT_BENEFITS.some(target => quote.targets.includes(target))
+      ? ["allAds"] as const
+      : [];
+  const exclusiveEntitlementChecks = ["fullPremium", ...coveredAdTargets]
+    .map(target => ({
+      ConditionCheck: {
+        TableName: tableName(),
+        Key: Keys.rewardEntitlement(niarimUserId, target),
+        ConditionExpression:
+          "attribute_not_exists(itemType) OR " +
+          "(itemType = :type AND (#status = :active AND " +
+          "expiresAtEpochMs <= :now))",
+        ExpressionAttributeNames: { "#status": "status" },
+        ExpressionAttributeValues: {
+          ":type": "REWARD_ENTITLEMENT",
+          ":active": "active",
+          ":now": now,
+        },
+      },
+    }));
   const entitlementWrites=quote.targets.map((target,index)=>{
     const previous=prior[index].Item;
     if (previous?.status==="paused") {
@@ -238,22 +262,8 @@ export async function redeemIndividualCoins(
             ":user":"USER",":free":"free",":now":now,
           },
         }},
-        // Guard against a concurrent fullPremium purchase that would grant
-        // these rights at the same moment. The preflight read alone is not
-        // sufficient to prevent a double charge.
-        {ConditionCheck:{
-          TableName:tableName(),
-          Key:Keys.rewardEntitlement(niarimUserId,"fullPremium"),
-          ConditionExpression:
-            "attribute_not_exists(itemType) OR " +
-            "(itemType = :type AND (#status = :active AND " +
-            "expiresAtEpochMs <= :now))",
-          ExpressionAttributeNames:{"#status":"status"},
-          ExpressionAttributeValues:{
-            ":type":"REWARD_ENTITLEMENT",
-            ":active":"active",":now":now,
-          },
-        }},
+        // Check covering rights in the same transaction as the debit.
+        ...exclusiveEntitlementChecks,
         {Put:{
           TableName:tableName(),
           Item:{

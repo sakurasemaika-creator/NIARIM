@@ -52,10 +52,18 @@ const exactValues = {
   ADMOB_REWARDED_AD_UNIT_ID: "admobRewardedAdUnitId",
 };
 const conflicts = [];
+const opalActivation = process.env.NIARIM_ACTIVATE_OPAL_REDEMPTION === "true";
+const opalActivationFlags = new Set([
+  "COIN_INDIVIDUAL_REDEMPTION_REVIEW_APPROVED",
+  "COIN_INDIVIDUAL_RIGHTS_CONSUMERS_APPROVED",
+  "COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED",
+]);
 for (const [env, key] of Object.entries(booleanFlags)) {
   const expected = context[key] === "true" ? "true" : "false";
   const current = deployed[env] ?? "false";
-  if (current !== expected) conflicts.push(env);
+  const activating = opalActivation && opalActivationFlags.has(env) &&
+    current === "false" && expected === "true";
+  if (current !== expected && !activating) conflicts.push(env);
 }
 for (const [env, key] of Object.entries(exactValues)) {
   const expected = String(context[key] ?? "");
@@ -88,7 +96,8 @@ if (conflicts.length) {
   process.exit(1);
 }
 console.log(
-  "PASS: CDK context matches all " +
+  "PASS: checked " +
   (Object.keys(booleanFlags).length + Object.keys(exactValues).length) +
-  " protected live coin/reward settings (no secret values logged).",
+  " protected live coin/reward settings (no secret values logged)." +
+  (opalActivation ? " Explicit Opal redemption activation is permitted." : ""),
 );
