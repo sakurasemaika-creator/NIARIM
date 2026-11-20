@@ -9,6 +9,7 @@ import 'package:niarim/models/layer.dart';
 import 'package:niarim/screens/autofill/autofill_preset_screen.dart';
 import 'package:niarim/services/autofill_preset_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/menu_action_label.dart';
 import 'package:niarim/widgets/name_entry_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,7 +30,7 @@ void main() {
 
   final l10n = lookupAppLocalizations(const Locale('en'));
 
-  Future<BuildContext> open(WidgetTester tester) async {
+  Future<BuildContext> open(WidgetTester tester, {ThemeData? theme}) async {
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
@@ -43,6 +44,7 @@ void main() {
       MultiProvider(
         providers: providers,
         child: MaterialApp(
+          theme: theme,
           locale: const Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -181,6 +183,64 @@ void main() {
       expect(presets.findPart(part.id), isNotNull);
     },
   );
+
+  testWidgets('preset and part delete controls use the dark surface colors', (
+    tester,
+  ) async {
+    const menuInk = Color(0xffe8e0ff);
+    const error = Color(0xff741620);
+    final theme = ThemeData(
+      colorScheme: const ColorScheme.dark(error: error),
+      popupMenuTheme: const PopupMenuThemeData(
+        iconColor: menuInk,
+        textStyle: TextStyle(color: menuInk),
+      ),
+    );
+    final context = await open(tester, theme: theme);
+    final row = find.widgetWithText(ListTile, preset.name);
+    await tester.tap(
+      find.descendant(of: row, matching: find.byType(PopupMenuButton<String>)),
+    );
+    await tester.pumpAndSettle();
+
+    final action = find.widgetWithText(MenuActionLabel, l10n.commonDelete);
+    final menuIcon = find.descendant(
+      of: action,
+      matching: find.byIcon(Icons.delete_outline),
+    );
+    expect(tester.widget<Icon>(menuIcon).color, menuInk);
+    final label = find.descendant(
+      of: action,
+      matching: find.text(l10n.commonDelete),
+    );
+    final rename = find.text(l10n.commonRename).hitTestable();
+    expect(
+      DefaultTextStyle.of(tester.element(label)).style.color,
+      DefaultTextStyle.of(tester.element(rename)).style.color,
+    );
+    expect(tester.widget<Text>(label).style?.color, isNull);
+    await tester.tap(label);
+    await tester.pumpAndSettle();
+    final confirm = find.widgetWithText(FilledButton, l10n.commonDelete);
+    expect(tester.widget<FilledButton>(confirm).style?.backgroundColor, isNull);
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
+    await tester.pumpAndSettle();
+
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    final partDelete = find.byTooltip(l10n.commonDelete);
+    final partIcon = find.descendant(
+      of: partDelete,
+      matching: find.byIcon(Icons.delete),
+    );
+    expect(tester.widget<Icon>(partIcon).color, isNull);
+    await tester.tap(partDelete);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.confirmDeleteNamedBody(part.name)), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+    await tester.pumpAndSettle();
+    expect(context.read<AutofillPresetService>().findPart(part.id), isNull);
+  });
 
   testWidgets(
     'preset and part names validate on Enter, and missing tones cannot be applied',

@@ -28,7 +28,6 @@ import 'package:niarim/screens/save_tree/widgets/save_display_name.dart'
     show formatSaveTime;
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
-import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -191,6 +190,7 @@ void main() {
     String language, {
     required bool tree,
     bool saved = false,
+    bool useSaveTreeScreen = false,
   }) async {
     if (!fontsLoaded) {
       await loadAppFonts(tester);
@@ -234,7 +234,18 @@ void main() {
         ),
       );
     }
-    appRouter.push('/save-tree/${project.id}');
+    if (useSaveTreeScreen) {
+      Navigator.of(home).push<void>(
+        MaterialPageRoute(
+          builder: (_) => SaveTreeScreen(
+            projectId: project.id,
+            entryMode: SaveTreeEntryMode.projectDetail,
+          ),
+        ),
+      );
+    } else {
+      appRouter.push('/save-tree/${project.id}');
+    }
     await settleIo(tester, 6);
     tester.takeException();
     return (project.id, node);
@@ -319,32 +330,13 @@ void main() {
 
     testWidgets('the save tree screen slot dialog shows its whole hint and '
         'keeps the warning words whole ($tag)', (tester) async {
-      final (id, node) = await openSaveScreen(
+      final (_, node) = await openSaveScreen(
         tester,
         language,
         tree: false,
         saved: true,
+        useSaveTreeScreen: true,
       );
-      final providers = (await tester.runAsync(buildAppProviders))!;
-      await tester.pumpWidget(
-        MultiProvider(
-          providers: providers,
-          child: Builder(
-            builder: (context) => MaterialApp(
-              locale: locale,
-              theme: context.watch<ThemeService>().themeDataFor(locale),
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              supportedLocales: AppLocalizations.supportedLocales,
-              home: SaveTreeScreen(
-                projectId: id,
-                entryMode: SaveTreeEntryMode.projectDetail,
-              ),
-            ),
-          ),
-        ),
-      );
-      await settleIo(tester, 6);
-      tester.takeException();
       final write = find.byTooltip(l10n.saveTreeSlotWriteTooltip).first;
       await tester.ensureVisible(write);
       await tester.pump();

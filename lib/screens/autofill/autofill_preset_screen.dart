@@ -42,6 +42,7 @@ import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../widgets/menu_surface.dart';
+import '../../widgets/menu_action_label.dart';
 import '../../widgets/menu_card.dart';
 import '../../utils/file_failure_reason.dart';
 
@@ -192,7 +193,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           tooltip: l10n.autofillPresetExportMenuItem,
         ),
         IconButton(
-          icon: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+          icon: const Icon(Icons.delete),
           onPressed: () => _bulkDelete(filtered),
           tooltip: l10n.commonDelete,
         ),
@@ -707,9 +708,6 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
             onPressed: () {
               // 削除されるパーツを使用中の線画レイヤーへ更新マークを伝播（対応プリセット消失前に通知）
               final ps = context.read<ProjectService>();
@@ -789,14 +787,8 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             ),
             if (path != null)
               ListTile(
-                leading: Icon(
-                  Icons.delete_outline,
-                  color: ThemeService.activeColorScheme.error,
-                ),
-                title: Text(
-                  l10n.autofillThumbnailDeleteButton,
-                  style: TextStyle(color: ThemeService.activeColorScheme.error),
-                ),
+                leading: const Icon(Icons.delete_outline),
+                title: Text(l10n.autofillThumbnailDeleteButton),
                 onTap: () {
                   Navigator.pop(ctx);
                   _confirmRemoveThumbnail(preset);
@@ -850,9 +842,6 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
             onPressed: () {
               context.read<AutofillPresetService>().clearPresetThumbnail(
                 preset.id,
@@ -1031,11 +1020,9 @@ class _PresetCard extends StatelessWidget {
                       ),
                       PopupMenuItem(
                         value: 'delete',
-                        child: Text(
-                          l10n.commonDelete,
-                          style: TextStyle(
-                            color: ThemeService.activeColorScheme.error,
-                          ),
+                        child: MenuActionLabel(
+                          icon: Icons.delete_outline,
+                          label: l10n.commonDelete,
                         ),
                       ),
                     ],
@@ -1366,11 +1353,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               onPressed: () => _showEditPartDialog(part),
             ),
             IconButton(
-              icon: Icon(
-                Icons.delete,
-                size: 18,
-                color: ThemeService.activeColorScheme.error,
-              ),
+              icon: const Icon(Icons.delete, size: 18),
               tooltip: l10n.commonDelete,
               onPressed: () async {
                 final usage = _partUsageWarning(context, [part]);
@@ -2595,10 +2578,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                 ),
                               ),
                               IconButton(
-                                icon: Icon(
+                                icon: const Icon(
                                   Icons.delete_outline,
                                   size: 18,
-                                  color: ThemeService.activeColorScheme.error,
                                 ),
                                 tooltip: l10n.commonDelete,
                                 onPressed: gradient.colors.length <= 2
