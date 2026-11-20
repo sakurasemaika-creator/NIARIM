@@ -2725,3 +2725,13 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：全体回帰 `44641695291` で`layer_panel_action_row_test`・`layer_panel_add_sheet_and_range_dialog_test`・`reorder_index_test`・`layer_pixels_replace_test`・`canvas_pinch_gesture_test`は成功。
 - 未確認：追加メニューの全種類、レイヤーの検索、名前の変更・複製・コピー・貼り付け、30枚以上のスクロール、たたんだフォルダ、保存して起動し直した後。
 - 画像：`shots-r1/r2a031-*`（backup-pending）。
+
+## A032 — レイヤーblend/opacity/clipping/明度→alpha
+
+### A032 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：OK
+
+- 一巡目の指摘：DISC304は直った（Linux debug、ja、1280×800、PCの形、ペン太さ5。レイヤー1〔赤の面と黒の線〕の上に足したレイヤー3に、赤の面と白い紙をまたぐ黒い横線を描く。レイヤーの設定で「クリッピング」をオンにすると、白い紙の上の線はすぐ消え、赤の面の上だけに残る〔紙の上の区間の黒い画素329→86、残りはレイヤー1の楕円の線〕。オフにすると描き直さずにすぐ線全体が戻る〔329〕）。
+- そのほか：レイヤー3の不透明度を50%にすると、白い紙の上の黒い線は(127,127,127)になる。クリッピングのスイッチを押すとレイヤーの設定の画面は閉じる。
+- test：全体回帰 `44641695291` で`canvas_blend_mode_display_test`・`generated_layer_clipping_test`・`layer_compositor_test`・`niapro_blend_mode_roundtrip_test`・`engine/blend_math_test`は成功。
+- 未確認：合成モードの描き比べ（乗算・加算・スクリーン・リニアライト等の描いている間と確定後）、明度で透過（カラー・グレー）、下と結合・表示を結合、フォルダの中のクリッピング、それぞれの取り消し。
+- 画像：`shots-r1/r2a032-*`（backup-pending）。
