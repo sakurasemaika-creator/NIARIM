@@ -4193,7 +4193,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineDurationShrinkConfirmBody =>
-      '잘려나갈 범위의 프레임에는 그림 내용이나 레이어 추가 등의 변경 사항이 있습니다. 계속 진행하면 해당 프레임은 복구할 수 없습니다. 정말로 삭제하시겠습니까?';
+      '장면을 줄이면 새 범위 밖의 프레임과 그 안의 그림 및 레이어가 삭제됩니다. 삭제하시겠습니까?';
 
   @override
   String get timelineCanvasSizeDragHint =>

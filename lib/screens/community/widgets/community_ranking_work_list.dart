@@ -304,12 +304,13 @@ class CommunityRankingWorkCard extends StatelessWidget {
           : work.title,
       maxLines: large ? 2 : 2,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        color: scheme.onSurface,
-        fontFamily: 'Kuramubon',
-        fontFamilyFallback: kHeadingFontFallback,
-        fontSize: large ? 19 : 17,
-        fontWeight: FontWeight.bold,
+      style: localizedHeadingStyle(
+        context,
+        TextStyle(
+          color: scheme.onSurface,
+          fontSize: large ? 19 : 17,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -334,11 +335,9 @@ class CommunityRankingWorkCard extends StatelessWidget {
                         : work.authorName),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: scheme.onSurfaceVariant,
-                fontSize: 12,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+              style: localizedHeadingStyle(
+                context,
+                TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
               ),
             ),
           ),

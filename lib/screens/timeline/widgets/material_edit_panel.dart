@@ -937,11 +937,12 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
                         ? timelineTextName(_textCtrl.text, layer.name)
                         : layer.name,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

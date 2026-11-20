@@ -74,13 +74,15 @@ class EmptyStatePlaceholder extends StatelessWidget {
     return MediaQuery.sizeOf(context).height / (scale < 1 ? 1 : scale) < 480;
   }
 
-  TextStyle _titleStyle(ColorScheme scheme) => TextStyle(
-    color: scheme.onSurface,
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    fontFamily: 'Kuramubon',
-    fontFamilyFallback: kHeadingFontFallback,
-  );
+  TextStyle _titleStyle(BuildContext context, ColorScheme scheme) =>
+      localizedHeadingStyle(
+        context,
+        TextStyle(
+          color: scheme.onSurface,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      );
 
   TextStyle _hintStyle(ColorScheme scheme) =>
       TextStyle(color: scheme.onSurfaceVariant, fontSize: 14);
@@ -152,7 +154,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
     }
 
     final texts =
-        heightOf(title, _titleStyle(scheme)) +
+        heightOf(title, _titleStyle(context, scheme)) +
         (hint == null ? 0 : 8 + heightOf(hint!, _hintStyle(scheme))) +
         // 操作のボタン（高さ48の押せる所）の分。大きな文字（1.5倍より上）
         // では、ボタンの名前が2行に折れることがある（仏語の「Effacer la
@@ -196,7 +198,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
         SizedBox(height: _badgeGap(badge)),
         Semantics(
           header: true,
-          child: _centredText(title, _titleStyle(scheme)),
+          child: _centredText(title, _titleStyle(context, scheme)),
         ),
         if (actionFirst && action != null) ...[
           const SizedBox(height: 16),

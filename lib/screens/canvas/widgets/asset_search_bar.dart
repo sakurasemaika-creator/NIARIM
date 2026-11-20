@@ -176,10 +176,9 @@ class _AssetSearchBarState extends State<AssetSearchBar> {
                               child: FilterChip(
                                 label: Text(
                                   tag,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontFamily: 'Kuramubon',
-                                    fontFamilyFallback: kHeadingFontFallback,
+                                  style: localizedHeadingStyle(
+                                    context,
+                                    const TextStyle(fontSize: 11),
                                   ),
                                 ),
                                 selected: _isSelected(tag),

@@ -185,12 +185,13 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
                 Expanded(
                   child: Text(
                     l10n.canvasPreviewNavigatorTitle,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: theme.menuTextColor,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: localizedHeadingStyle(
+                      context,
+                      TextStyle(
+                        fontSize: 11,
+                        color: theme.menuTextColor,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

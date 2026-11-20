@@ -1,7 +1,9 @@
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/tile_manager.dart';
@@ -10,6 +12,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/selection_transform_sliders.dart';
+import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/editable_slider_value.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/project_storage.dart';
+import 'helpers/pump_real_async.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -100,6 +104,52 @@ void main() {
             Offset(x / width * drawing.width, y / height * drawing.height);
       }
 
+      Future<Uint8List> imagePixels(ui.Image source) async {
+        final image = source.clone();
+        return (await tester.runAsync(() async {
+          try {
+            final data = (await image.toByteData(
+              format: ui.ImageByteFormat.rawRgba,
+            ))!;
+            return Uint8List.fromList(data.buffer.asUint8List());
+          } finally {
+            image.dispose();
+          }
+        }))!;
+      }
+
+      Future<Uint8List> thumbnailPixels() async {
+        final thumbnail = find.descendant(
+          of: find.byKey(const ValueKey('frameStripCell0')),
+          matching: find.byType(RawImage),
+        );
+        return imagePixels(tester.widget<RawImage>(thumbnail).image!);
+      }
+
+      Future<Uint8List> selectionPixels() async {
+        final paints = tester.widgetList<CustomPaint>(
+          find.descendant(
+            of: find.byType(CanvasArea),
+            matching: find.byType(CustomPaint),
+          ),
+        );
+        final dynamic painter = paints
+            .map((paint) => paint.painter)
+            .firstWhere(
+              (painter) => painter.runtimeType.toString() == '_CanvasPainter',
+            );
+        return imagePixels(painter.selectionOverlayImage as ui.Image);
+      }
+
+      Future<void> historyKey(LogicalKeyboardKey key) async {
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+        await tester.sendKeyEvent(key);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+        await pumpRealAsync(tester, const Duration(milliseconds: 180));
+      }
+
+      await pumpRealAsync(tester, const Duration(milliseconds: 240));
+      final initialThumbnail = await thumbnailPixels();
       final l10n = lookupAppLocalizations(const Locale('ja'));
       await tester.tap(find.byIcon(Icons.highlight_alt).hitTestable().first);
       await tester.pump(const Duration(milliseconds: 350));
@@ -199,10 +249,15 @@ void main() {
         reason: 'the hit target follows the restored mask',
       );
 
+      await pumpRealAsync(tester, const Duration(milliseconds: 240));
+      expect(await thumbnailPixels(), isNot(orderedEquals(initialThumbnail)));
+
       await tester.tap(
         find.text(l10n.canvasSelectionRevertButton).hitTestable(),
       );
       await tester.pumpAndSettle();
+      await pumpRealAsync(tester, const Duration(milliseconds: 240));
+      expect(await thumbnailPixels(), orderedEquals(initialThumbnail));
       expect(alpha(47, 42), 0);
       expect(alpha(27, 30), 255);
       expect(alpha(33, 38), 255);
@@ -216,6 +271,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       await tester.pumpAndSettle();
       await selectLasso();
+      await pumpRealAsync(tester, const Duration(milliseconds: 160));
+      final originalMask = await selectionPixels();
+      final originalDrawing = Uint8List.fromList(tiles.getTile(key, 0, 0)!);
       await tester.tap(
         find.text(l10n.canvasSelectionFreeTransform).hitTestable(),
       );
@@ -263,6 +321,50 @@ void main() {
         warped[(30 * TileManager.tileSize + 27) * 4 + 3],
         lessThan(expected),
       );
+      final warpedMask = await selectionPixels();
+      final warpedDrawing = Uint8List.fromList(warped);
+      expect(warpedMask, isNot(orderedEquals(originalMask)));
+      await historyKey(LogicalKeyboardKey.keyZ);
+      expect(await selectionPixels(), orderedEquals(originalMask));
+      expect(tiles.getTile(key, 0, 0), orderedEquals(originalDrawing));
+      await historyKey(LogicalKeyboardKey.keyY);
+      expect(await selectionPixels(), orderedEquals(warpedMask));
+      expect(tiles.getTile(key, 0, 0), orderedEquals(warpedDrawing));
+
+      tester.widget<ToolbarWidget>(find.byType(ToolbarWidget)).onShapeTap();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.canvasShapeRect).hitTestable());
+      await tester.pumpAndSettle();
+
+      final rect1 = await tester.startGesture(
+        at(11, 62),
+        kind: PointerDeviceKind.mouse,
+      );
+      await rect1.moveTo(at(34, 81));
+      await rect1.up();
+      await pumpRealAsync(tester, const Duration(milliseconds: 160));
+      final firstRectangle = Uint8List.fromList(tiles.getTile(key, 0, 0)!);
+      expect(firstRectangle, isNot(orderedEquals(warpedDrawing)));
+      final undoBeforeSecond = history.undoCount;
+      final rect2 = await tester.startGesture(
+        at(46, 61),
+        kind: PointerDeviceKind.mouse,
+      );
+      await rect2.moveTo(at(65, 80));
+      await tester.pump();
+      await historyKey(LogicalKeyboardKey.keyZ);
+      expect(history.undoCount, undoBeforeSecond);
+      expect(tiles.getTile(key, 0, 0), orderedEquals(firstRectangle));
+      await rect2.moveTo(at(71, 86));
+      await rect2.up();
+      await pumpRealAsync(tester, const Duration(milliseconds: 160));
+      final bothRectangles = Uint8List.fromList(tiles.getTile(key, 0, 0)!);
+      expect(bothRectangles, isNot(orderedEquals(firstRectangle)));
+      expect(history.undoCount, undoBeforeSecond + 1);
+      await historyKey(LogicalKeyboardKey.keyZ);
+      expect(tiles.getTile(key, 0, 0), orderedEquals(firstRectangle));
+      await historyKey(LogicalKeyboardKey.keyY);
+      expect(tiles.getTile(key, 0, 0), orderedEquals(bothRectangles));
       expect(history.canUndoFor(project.id), isTrue);
       expect(tester.takeException(), isNull);
     },

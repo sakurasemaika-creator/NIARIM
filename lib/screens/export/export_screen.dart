@@ -529,8 +529,9 @@ class _ExportScreenState extends State<ExportScreen> {
 
   void _showCancelledSnackBar() {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l10n.exportCancelledSnackbar)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.exportCancelledSnackbar)));
   }
 
   void _closeProgressDialog() {
@@ -578,11 +579,9 @@ class _ExportScreenState extends State<ExportScreen> {
             // 必要があることを明示する。
             Text(
               l10n.exportSaveLocationLabel(fileName),
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+              style: localizedHeadingStyle(
+                context,
+                const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 4),

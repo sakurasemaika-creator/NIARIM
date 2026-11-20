@@ -512,11 +512,12 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                       children: [
                         Text(
                           widget.authorName,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
+                          style: localizedHeadingStyle(
+                            context,
+                            const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 4),

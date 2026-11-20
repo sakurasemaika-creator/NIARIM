@@ -68,14 +68,15 @@ class _MenuSectionHeadingState<T> extends State<MenuSectionHeading<T>> {
         padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 12, 4),
         child: Text(
           widget.label,
-          style: TextStyle(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color:
-                theme.popupMenuTheme.textStyle?.color ??
-                theme.colorScheme.onSurface,
+          style: localizedHeadingStyle(
+            context,
+            TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color:
+                  theme.popupMenuTheme.textStyle?.color ??
+                  theme.colorScheme.onSurface,
+            ),
           ),
         ),
       ),

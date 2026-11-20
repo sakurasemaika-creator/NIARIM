@@ -36,10 +36,9 @@ class AssetPanelActions extends StatelessWidget {
       ),
       (Icons.file_upload_outlined, l10n.creativePanelImportButton, onImport),
     ];
-    const labelStyle = TextStyle(
-      fontSize: 11,
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
+    final labelStyle = localizedHeadingStyle(
+      context,
+      const TextStyle(fontSize: 11),
     );
     return Align(
       alignment: AlignmentDirectional.centerStart,

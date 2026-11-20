@@ -421,11 +421,7 @@ class _BrushPanelState extends State<BrushPanel> {
       child: ChoiceChip(
         label: Text(
           label,
-          style: const TextStyle(
-            fontSize: 11,
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-          ),
+          style: localizedHeadingStyle(context, const TextStyle(fontSize: 11)),
         ),
         selected: selected,
         onSelected: (_) => onTap(),
@@ -724,11 +720,9 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
         children: [
           Text(
             _brush.name,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
+            style: localizedHeadingStyle(
+              context,
+              const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 16),
@@ -989,10 +983,9 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     return ExpansionTile(
       title: Text(
         title,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
+        style: localizedHeadingStyle(
+          context,
+          const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       initiallyExpanded: initiallyExpanded,

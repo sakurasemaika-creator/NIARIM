@@ -105,10 +105,9 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                     const SizedBox(height: 16),
                     Text(
                       l10n.materialEmptyTitle,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                     const SizedBox(height: 4),

@@ -1368,14 +1368,15 @@ class _HomeScreenState extends State<HomeScreen>
                                   side: focusSide,
                                   label: Text(
                                     l10n.homeFavoritesOnly,
-                                    style: TextStyle(
-                                      fontFamily: 'Kuramubon',
-                                      fontFamilyFallback: kHeadingFontFallback,
-                                      color: _showFavoritesOnly
-                                          ? Theme.of(
-                                              context,
-                                            ).colorScheme.onPrimary
-                                          : null,
+                                    style: localizedHeadingStyle(
+                                      context,
+                                      TextStyle(
+                                        color: _showFavoritesOnly
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.onPrimary
+                                            : null,
+                                      ),
                                     ),
                                   ),
                                   selectedColor: Theme.of(
@@ -3413,10 +3414,9 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 child: Text(
                   folder.name,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontSize: 13),
                   ),
                 ),
               ),
@@ -3977,11 +3977,9 @@ class _HomeTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final selected = scheme.primary;
-    final labelStyle = const TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
+    final labelStyle = localizedHeadingStyle(
+      context,
+      const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
     );
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -4311,12 +4309,13 @@ class _SharedScreenState extends State<SharedScreen>
                 side: focusSide,
                 label: Text(
                   l10n.homeFavoritesOnly,
-                  style: TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                    color: _showFavoritesOnly
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : null,
+                  style: localizedHeadingStyle(
+                    context,
+                    TextStyle(
+                      color: _showFavoritesOnly
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : null,
+                    ),
                   ),
                 ),
                 selectedColor: Theme.of(context).colorScheme.primary,
@@ -4576,10 +4575,9 @@ class _LibraryFavoritesFilter extends StatelessWidget {
         side: focusSide,
         label: Text(
           AppLocalizations.of(context)!.homeFavoritesOnly,
-          style: TextStyle(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-            color: selected ? scheme.onPrimary : null,
+          style: localizedHeadingStyle(
+            context,
+            TextStyle(color: selected ? scheme.onPrimary : null),
           ),
         ),
         selectedColor: scheme.primary,
@@ -4814,10 +4812,9 @@ Widget _receivedShareProjectTile(
   final selectedTap = selecting
       ? () => selection!.onToggle(selectionId)
       : () => context.push('/project/${project.id}');
-  final captionStyle = const TextStyle(
-    fontFamily: 'Kuramubon',
-    fontFamilyFallback: kHeadingFontFallback,
-    height: kWrappedNameLineHeight,
+  final captionStyle = localizedHeadingStyle(
+    context,
+    const TextStyle(height: kWrappedNameLineHeight),
   );
   // 絵の無い作品の表紙は、プロジェクトのタブと同じく作品の用紙（透明なら
   // 市松模様）に、用紙で読める色の印を置く。用紙は作品の色なので、テーマの
@@ -5480,10 +5477,9 @@ class _OutgoingSharesList extends StatelessWidget {
               breakAtFileSeparators: true,
               copyMarks: copyMarkParts(entry.name),
               keepJapaneseLineStarts: true,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-                height: kWrappedNameLineHeight,
+              style: localizedHeadingStyle(
+                context,
+                const TextStyle(height: kWrappedNameLineHeight),
               ),
             ),
             subtitle: Text(subtitle),
@@ -6912,10 +6908,9 @@ class _TrashTabState extends State<_TrashTab> {
         breakAtFileSeparators: true,
         copyMarks: copyMarkParts(title),
         keepJapaneseLineStarts: true,
-        style: const TextStyle(
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
-          height: kWrappedNameLineHeight,
+        style: localizedHeadingStyle(
+          context,
+          const TextStyle(height: kWrappedNameLineHeight),
         ),
       ),
       // 狭い幅・大きな文字でも、移した日・数と単位（「10秒」）の途中で
@@ -8556,10 +8551,9 @@ class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
             ),
             child: Text(
               l10n.homeFirstLaunchStart,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-                fontWeight: FontWeight.bold,
+              style: localizedHeadingStyle(
+                context,
+                const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ),

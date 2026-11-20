@@ -1273,8 +1273,10 @@ class _CommunityScreenState extends State<CommunityScreen>
         theme.inputDecorationTheme.fillColor ?? scheme.surfaceContainerLow;
     Widget searchRowFor(int tab) {
       final headingStyle = theme.textTheme.titleSmall?.copyWith(
-        fontFamily: 'Kuramubon',
-        fontFamilyFallback: kHeadingFontFallback,
+        fontFamily: headingFontFamilyFor(Localizations.maybeLocaleOf(context)),
+        fontFamilyFallback: headingFontFallbackFor(
+          Localizations.maybeLocaleOf(context),
+        ),
       );
 
       Widget accordion({
@@ -2232,11 +2234,9 @@ class _CommunityScreenState extends State<CommunityScreen>
             const SizedBox(height: 16),
             Text(
               l10n.communityFavoriteAuthorsEmptyTitle,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+              style: localizedHeadingStyle(
+                context,
+                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 8),
@@ -2437,8 +2437,12 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
       title: Text(
         title,
         style: theme.textTheme.titleSmall?.copyWith(
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
+          fontFamily: headingFontFamilyFor(
+            Localizations.maybeLocaleOf(context),
+          ),
+          fontFamilyFallback: headingFontFallbackFor(
+            Localizations.maybeLocaleOf(context),
+          ),
         ),
       ),
       children: [
@@ -2653,8 +2657,12 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               Text(
                 l10n.communityPostPeriodTitle,
                 style: theme.textTheme.titleSmall?.copyWith(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                  fontFamily: headingFontFamilyFor(
+                    Localizations.maybeLocaleOf(context),
+                  ),
+                  fontFamilyFallback: headingFontFallbackFor(
+                    Localizations.maybeLocaleOf(context),
+                  ),
                 ),
               ),
               MenuSurface(
@@ -2694,8 +2702,12 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               Text(
                 l10n.communityDurationFilterTitle,
                 style: theme.textTheme.titleSmall?.copyWith(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                  fontFamily: headingFontFamilyFor(
+                    Localizations.maybeLocaleOf(context),
+                  ),
+                  fontFamilyFallback: headingFontFallbackFor(
+                    Localizations.maybeLocaleOf(context),
+                  ),
                 ),
               ),
               MenuSurface(
@@ -2771,8 +2783,12 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                       ? l10n.communityMinimumViews
                       : l10n.communityMinimumBookmarks,
                   style: theme.textTheme.titleSmall?.copyWith(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                    fontFamily: headingFontFamilyFor(
+                      Localizations.maybeLocaleOf(context),
+                    ),
+                    fontFamilyFallback: headingFontFallbackFor(
+                      Localizations.maybeLocaleOf(context),
+                    ),
                   ),
                 ),
                 MenuSurface(
@@ -2842,8 +2858,12 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                     Text(
                       l10n.communityMutedAuthors,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                        fontFamily: headingFontFamilyFor(
+                          Localizations.maybeLocaleOf(context),
+                        ),
+                        fontFamilyFallback: headingFontFallbackFor(
+                          Localizations.maybeLocaleOf(context),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),

@@ -437,11 +437,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
+                        style: localizedHeadingStyle(
+                          context,
+                          const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -512,11 +513,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(
                   l10n.settingsBasicSheetTitle,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -616,10 +615,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // 描画領域初期値
                 Text(
                   l10n.settingsDrawingAreaTitle,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 4),

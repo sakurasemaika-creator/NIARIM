@@ -82,11 +82,12 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
                           child: ActionBesideOrBelow(
                             text: Text(
                               l10n.autofillPresetSelectionTitle,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
+                              style: localizedHeadingStyle(
+                                context,
+                                const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                             action: FirstThatFits(

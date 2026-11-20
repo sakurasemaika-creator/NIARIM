@@ -139,13 +139,13 @@ class _TipsScreenState extends State<TipsScreen> {
                                   Flexible(
                                     child: messageText(
                                       category.title,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Kuramubon',
-                                        fontFamilyFallback:
-                                            kHeadingFontFallback,
-                                        color: AccentTextTheme.of(context),
+                                      style: localizedHeadingStyle(
+                                        context,
+                                        TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: AccentTextTheme.of(context),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -591,11 +591,12 @@ class _TipListTile extends StatelessWidget {
                   child: messageText(
                     tip.title,
                     keepLineStarts: true,
-                    style: const TextStyle(
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ),
@@ -737,14 +738,14 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                                     primary: false,
                                     child: Text(
                                       widget.tip.title,
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        height: 1.4,
-                                        fontWeight: FontWeight.w700,
-                                        fontFamily: 'Kuramubon',
-                                        fontFamilyFallback:
-                                            kHeadingFontFallback,
-                                        color: AccentTextTheme.of(context),
+                                      style: localizedHeadingStyle(
+                                        context,
+                                        TextStyle(
+                                          fontSize: 15,
+                                          height: 1.4,
+                                          fontWeight: FontWeight.w700,
+                                          color: AccentTextTheme.of(context),
+                                        ),
                                       ),
                                     ),
                                   ),

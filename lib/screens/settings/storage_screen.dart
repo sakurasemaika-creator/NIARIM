@@ -520,10 +520,9 @@ class _StorageScreenState extends State<StorageScreen> {
   }) {
     final title = Text(
       text,
-      style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        fontFamily: 'Kuramubon',
-        fontFamilyFallback: kHeadingFontFallback,
+      style: localizedHeadingStyle(
+        context,
+        const TextStyle(fontWeight: FontWeight.bold),
       ),
     );
     // 印が無い間も印の幅を取っておく（印が出ると見出しの幅が狭まって2行に

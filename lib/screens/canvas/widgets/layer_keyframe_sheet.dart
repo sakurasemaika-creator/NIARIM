@@ -217,11 +217,12 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
                 Expanded(
                   child: Text(
                     l10n.layerKeyframeSheetTitle(widget.layerName),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -407,11 +408,12 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
                 Expanded(
                   child: Text(
                     l10n.layerKeyframeEditTitle(_kf.frameIndex + 1),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

@@ -133,6 +133,58 @@ void main() {
     return created.id;
   }
 
+  for (final (screen, kind) in [
+    (const Size(1280, 800), PointerDeviceKind.mouse),
+    (const Size(390, 844), PointerDeviceKind.touch),
+  ]) {
+    testWidgets(
+      'first timeline press after opening from details works with ${kind.name}',
+      (tester) async {
+        final id = await openTimeline(
+          tester,
+          project: const Size(160, 90),
+          screen: screen,
+          pc: kind == PointerDeviceKind.mouse,
+          fraction: .4,
+        );
+        appRouter.go('/project/$id');
+        await pumpRealAsync(tester, const Duration(milliseconds: 400));
+        final l10n = lookupAppLocalizations(const Locale('ja'));
+        final edit = find.text(l10n.projectDetailStartEditButton);
+        await tester.ensureVisible(edit);
+        final cursor = kind == PointerDeviceKind.mouse
+            ? await tester.createGesture(kind: kind)
+            : null;
+        if (cursor == null) {
+          await tester.tap(edit, kind: kind);
+        } else {
+          final position = tester.getCenter(edit);
+          await cursor.addPointer(location: position);
+          await cursor.down(position);
+          await cursor.up();
+        }
+        await pumpRealAsync(tester, const Duration(milliseconds: 450));
+        expect(find.byType(CanvasArea), findsOneWidget);
+
+        final timeline = find.byKey(const Key('canvasTimelineModeButton'));
+        expect(timeline.hitTestable(), findsOneWidget);
+        if (cursor != null) {
+          final target = tester.getCenter(timeline);
+          await cursor.moveTo(target);
+          await tester.pump(const Duration(seconds: 1));
+          await cursor.down(target);
+          await cursor.up();
+          await cursor.removePointer();
+        } else {
+          await tester.tap(timeline, kind: kind);
+        }
+        await pumpRealAsync(tester, const Duration(milliseconds: 500));
+        expect(find.byType(TimelineScreen), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('320px timeline opens export without scrolling the toolbar', (
     tester,
   ) async {

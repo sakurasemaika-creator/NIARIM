@@ -124,14 +124,15 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   // そろえた明朝だった）。
                   Text(
                     'NIARIM',
-                    style: TextStyle(
-                      color: scheme.onPrimary,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.5,
-                      height: 1.5,
+                    style: localizedHeadingStyle(
+                      context,
+                      TextStyle(
+                        color: scheme.onPrimary,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.5,
+                        height: 1.5,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -193,10 +194,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                     ),
               title: Text(
                 RewardNavigationLabels.of(context)['hub'],
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
+                style: localizedHeadingStyle(context, const TextStyle()),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -209,10 +207,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
               leading: drawerIcon(Icons.workspace_premium_outlined),
               title: Text(
                 RewardNavigationLabels.of(context)['membership'],
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
+                style: localizedHeadingStyle(context, const TextStyle()),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -225,10 +220,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
               leading: drawerIcon(Icons.menu_book_outlined),
               title: Text(
                 guideHubTitle(context),
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
+                style: localizedHeadingStyle(context, const TextStyle()),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -240,10 +232,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
               leading: drawerIcon(Icons.settings_outlined),
               title: Text(
                 l10n.homeDrawerSettings,
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
+                style: localizedHeadingStyle(context, const TextStyle()),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -255,10 +244,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
               leading: drawerIcon(Icons.cleaning_services_outlined),
               title: Text(
                 l10n.homeDrawerStorage,
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
+                style: localizedHeadingStyle(context, const TextStyle()),
               ),
               onTap: () {
                 Navigator.pop(context);

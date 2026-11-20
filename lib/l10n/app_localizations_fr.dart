@@ -4429,7 +4429,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineDurationShrinkConfirmBody =>
-      'Les images qui seront supprimées contiennent des modifications (dessin, calques ajoutés, etc.). Si vous continuez, ces images ne pourront pas être récupérées. Voulez-vous vraiment les supprimer ?';
+      'Raccourcir la scène supprimera les images hors de la nouvelle plage, ainsi que leurs dessins et calques. Les supprimer ?';
 
   @override
   String get timelineCanvasSizeDragHint =>

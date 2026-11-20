@@ -91,11 +91,9 @@ class _PolicyBody extends StatelessWidget {
               children: [
                 Text(
                   sections[i].$1,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                   ),
                 ),
                 const SizedBox(height: 2),

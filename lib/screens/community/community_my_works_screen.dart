@@ -1061,8 +1061,12 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                         key: const Key('communityMyWorksManagementHeading'),
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
-                              fontFamily: 'Kuramubon',
-                              fontFamilyFallback: kHeadingFontFallback,
+                              fontFamily: headingFontFamilyFor(
+                                Localizations.maybeLocaleOf(context),
+                              ),
+                              fontFamilyFallback: headingFontFallbackFor(
+                                Localizations.maybeLocaleOf(context),
+                              ),
                             ),
                       ),
                     ),

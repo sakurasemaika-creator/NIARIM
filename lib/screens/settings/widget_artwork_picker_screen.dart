@@ -141,10 +141,9 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Text(
                     folder.name,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(fontSize: 13),
                     ),
                   ),
                 ),
@@ -257,9 +256,9 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
                         FilterChip(
                           label: Text(
                             l10n.homeFavoritesOnly,
-                            style: const TextStyle(
-                              fontFamily: 'Kuramubon',
-                              fontFamilyFallback: kHeadingFontFallback,
+                            style: localizedHeadingStyle(
+                              context,
+                              const TextStyle(),
                             ),
                           ),
                           selected: _showFavoritesOnly,

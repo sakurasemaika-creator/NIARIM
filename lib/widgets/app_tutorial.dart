@@ -210,12 +210,13 @@ class _TutorialPageView extends StatelessWidget {
       children: [
         Text(
           page.title,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-            color: scheme.onSurface,
+          style: localizedHeadingStyle(
+            context,
+            TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurface,
+            ),
           ),
         ),
         if (page.lead != null) ...[
@@ -320,13 +321,14 @@ class _StepBadge extends StatelessWidget {
       decoration: BoxDecoration(color: scheme.primary, shape: BoxShape.circle),
       child: Text(
         '$number',
-        style: TextStyle(
-          fontSize: size * 0.55,
-          height: 1,
-          fontWeight: FontWeight.w700,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
-          color: scheme.onPrimary,
+        style: localizedHeadingStyle(
+          context,
+          TextStyle(
+            fontSize: size * 0.55,
+            height: 1,
+            fontWeight: FontWeight.w700,
+            color: scheme.onPrimary,
+          ),
         ),
       ),
     );
@@ -609,8 +611,10 @@ class _HomeFigure extends StatelessWidget {
     final accentText = AccentTextTheme.of(context);
     const small = TextStyle(fontSize: 10, height: 1.2);
     final heading = small.copyWith(
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
+      fontFamily: headingFontFamilyFor(Localizations.maybeLocaleOf(context)),
+      fontFamilyFallback: headingFontFallbackFor(
+        Localizations.maybeLocaleOf(context),
+      ),
     );
     Widget row(double barWidth) => Padding(
       padding: const EdgeInsets.all(2),
@@ -1093,11 +1097,12 @@ class _HelpFigure extends StatelessWidget {
                               l10n.homeDrawerTutorial,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
-                                color: scheme.onSurface,
+                              style: localizedHeadingStyle(
+                                context,
+                                TextStyle(
+                                  fontSize: 10,
+                                  color: scheme.onSurface,
+                                ),
                               ),
                             ),
                           ),

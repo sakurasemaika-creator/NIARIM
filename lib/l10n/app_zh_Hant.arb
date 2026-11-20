@@ -1613,7 +1613,7 @@
   "timelineDurationFramesLabel": "影格數",
   "timelineDurationSecondsLabel": "秒數",
   "timelineDurationShrinkConfirmTitle": "確定要縮短嗎？",
-  "timelineDurationShrinkConfirmBody": "將被裁掉範圍內的影格中，含有繪製內容或新增圖層等變更。繼續操作後，這些影格將無法復原。確定要刪除嗎？",
+  "timelineDurationShrinkConfirmBody": "縮短場景會刪除新範圍之外的影格及其中的繪製內容和圖層。要刪除嗎？",
   "timelineCanvasSizeDragHint": "拖曳框內可移動位置，拖曳四角可調整大小（接近原始尺寸時會自動吸附）",
   "timelineCanvasSizeAngleLabel": "角度",
   "saveTreeSaveAsChildHint": "將儲存為所選節點的子節點。",

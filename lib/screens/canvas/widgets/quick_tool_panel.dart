@@ -98,10 +98,9 @@ class QuickToolPanel extends StatelessWidget {
       children: [
         messageText(
           l10n.quickToolPanelTitle,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+          style: localizedHeadingStyle(
+            context,
+            const TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
         const Divider(),
@@ -414,11 +413,7 @@ class _QuickToolRows {
   static const double _deleteSize = kMinInteractiveDimension;
   static const Size _handleSize = Size(32, kMinInteractiveDimension);
 
-  static const _nameStyle = TextStyle(
-    fontSize: 13,
-    fontFamily: 'Kuramubon',
-    fontFamilyFallback: kHeadingFontFallback,
-  );
+  static const _nameStyle = TextStyle(fontSize: 13);
 
   /// 番号の書式（ListTileの先頭の既定〔labelSmall・onSurfaceVariant〕に
   /// 大きさを足したもの。名前の上の行に置いても同じに描く）。
@@ -462,7 +457,7 @@ class _QuickToolRows {
         (ListTileTheme.of(context).titleTextStyle ??
                 Theme.of(context).textTheme.titleMedium ??
                 const TextStyle())
-            .merge(_nameStyle);
+            .merge(localizedHeadingStyle(context, _nameStyle));
     final painter = TextPainter(
       text: name is KeepTogetherText
           ? name.joinedSpan(style)
@@ -487,7 +482,10 @@ class _QuickToolRows {
     required VoidCallback onDelete,
   }) {
     // 韓国語の語・数と単位は、1行に入れば途中で折らない。
-    final name = messageText(label, style: _nameStyle);
+    final name = messageText(
+      label,
+      style: localizedHeadingStyle(context, _nameStyle),
+    );
     final beside =
         unavailable == null && _lineWidthOf(name, label) <= _nameWidthBeside;
     final badge = SizedBox(

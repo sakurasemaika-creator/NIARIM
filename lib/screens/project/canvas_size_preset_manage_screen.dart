@@ -55,11 +55,12 @@ class CanvasSizePresetManageScreen extends StatelessWidget {
                       const SizedBox(height: 20),
                       Text(
                         l10n.canvasSizePresetEmpty,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                          color: Theme.of(context).colorScheme.onSurface,
+                        style: localizedHeadingStyle(
+                          context,
+                          TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -132,8 +133,12 @@ class _PresetTile extends StatelessWidget {
                     Text(
                       preset.name,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                        fontFamily: headingFontFamilyFor(
+                          Localizations.maybeLocaleOf(context),
+                        ),
+                        fontFamilyFallback: headingFontFallbackFor(
+                          Localizations.maybeLocaleOf(context),
+                        ),
                       ),
                     ),
                     Text(

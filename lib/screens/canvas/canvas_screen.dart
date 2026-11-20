@@ -3364,10 +3364,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
             children: [
               Text(
                 AppLocalizations.of(context)!.newProjectBackgroundColorLabel,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 12),
@@ -4155,6 +4154,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
             tooltip: l10n.canvasTimelineModeTooltip,
+            longPressTooltip: false,
           ),
         ],
       ),
@@ -5035,30 +5035,27 @@ class _CanvasScreenState extends State<CanvasScreen> {
             children: [
               Text(
                 l10n.canvasHelpRotationTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               Text(l10n.canvasHelpRotationBody),
               const SizedBox(height: 8),
               Text(
                 l10n.canvasHelpTatechuyokoTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               Text(l10n.canvasHelpTatechuyokoBody),
               const SizedBox(height: 8),
               Text(
                 l10n.canvasHelpRubyTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               Text(l10n.canvasHelpRubyBody('{漢字|かんじ}')),

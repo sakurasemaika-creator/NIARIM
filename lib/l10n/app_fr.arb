@@ -1613,7 +1613,7 @@
   "timelineDurationFramesLabel": "Images",
   "timelineDurationSecondsLabel": "Secondes",
   "timelineDurationShrinkConfirmTitle": "Raccourcir quand même ?",
-  "timelineDurationShrinkConfirmBody": "Les images qui seront supprimées contiennent des modifications (dessin, calques ajoutés, etc.). Si vous continuez, ces images ne pourront pas être récupérées. Voulez-vous vraiment les supprimer ?",
+  "timelineDurationShrinkConfirmBody": "Raccourcir la scène supprimera les images hors de la nouvelle plage, ainsi que leurs dessins et calques. Les supprimer ?",
   "timelineCanvasSizeDragHint": "Faites glisser l’intérieur du cadre pour le déplacer, ou un coin pour le redimensionner (s’aligne près de la taille d’origine)",
   "timelineCanvasSizeAngleLabel": "Angle",
   "saveTreeSaveAsChildHint": "Sera enregistré comme enfant du nœud sélectionné.",

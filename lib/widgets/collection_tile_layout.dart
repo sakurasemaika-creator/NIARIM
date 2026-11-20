@@ -191,15 +191,17 @@ int collectionTileColumnCount(
   return math.max(1, math.min(fit(extents.large), medium - 1));
 }
 
-TextStyle collectionTileCaptionStyle(BuildContext context) => TextStyle(
-  fontSize: 12,
-  color:
-      Theme.of(context).popupMenuTheme.textStyle?.color ??
-      Theme.of(context).colorScheme.onSurface,
-  fontWeight: FontWeight.w600,
-  fontFamily: 'Kuramubon',
-  fontFamilyFallback: kHeadingFontFallback,
-);
+TextStyle collectionTileCaptionStyle(BuildContext context) =>
+    localizedHeadingStyle(
+      context,
+      TextStyle(
+        fontSize: 12,
+        color:
+            Theme.of(context).popupMenuTheme.textStyle?.color ??
+            Theme.of(context).colorScheme.onSurface,
+        fontWeight: FontWeight.w600,
+      ),
+    );
 
 /// [locationRow]が真なら、名前の下の場所の行（検索の結果が入っている
 /// フォルダ）の高さも足す。

@@ -181,10 +181,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   children: [
                     Text(
                       l10n.colorPickerTitle,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -499,10 +498,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       ),
                     Text(
                       p.name,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(fontSize: 10),
                       ),
                     ),
                   ],

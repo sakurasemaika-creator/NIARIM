@@ -4428,7 +4428,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timelineDurationShrinkConfirmBody =>
-      'Los fotogramas que se recortarán contienen cambios, como contenido dibujado o capas añadidas. Si continúas, esos fotogramas no se podrán recuperar. ¿Seguro que quieres eliminarlos?';
+      'Al acortar la escena, se eliminarán los fotogramas fuera del nuevo intervalo, incluidos sus dibujos y capas. ¿Eliminarlos?';
 
   @override
   String get timelineCanvasSizeDragHint =>

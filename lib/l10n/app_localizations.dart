@@ -7620,7 +7620,7 @@ abstract class AppLocalizations {
   /// No description provided for @timelineDurationShrinkConfirmBody.
   ///
   /// In ja, this message translates to:
-  /// **'カットされる範囲のフレームには、描画内容やレイヤー追加などの変更が加えられています。この操作を行うと、それらのフレームは元に戻せなくなります。本当に削除してよいですか？'**
+  /// **'短くすると、範囲外になるフレームとその描画・レイヤーが削除されます。削除しますか？'**
   String get timelineDurationShrinkConfirmBody;
 
   /// No description provided for @timelineCanvasSizeDragHint.

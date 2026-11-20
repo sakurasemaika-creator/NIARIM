@@ -39,10 +39,7 @@ Future<void> showAssetTagDialog(
             insetPadding: typingDialogInsetPadding(ctx),
             title: Text(
               l10n.creativePanelTagsLabel,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
+              style: localizedHeadingStyle(context, const TextStyle()),
             ),
             content: SingleChildScrollView(
               child: Column(

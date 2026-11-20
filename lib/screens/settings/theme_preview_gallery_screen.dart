@@ -455,11 +455,9 @@ class _ThemeSampleScreen extends StatelessWidget {
               child: Text(
                 label,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: c.onPrimary,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                  fontWeight: FontWeight.bold,
+                style: headingStyleFor(
+                  _locale,
+                  TextStyle(color: c.onPrimary, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -684,19 +682,12 @@ class _ThemeSampleScreen extends StatelessWidget {
     final foreground = preset.buttonTextColor;
     // Like the real splash tiles: Kuramubon labels, up to three lines, and
     // both tiles grow to the taller one instead of clipping long languages.
-    TextStyle titleStyle(Color color) => TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.bold,
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
-      color: color,
+    TextStyle titleStyle(Color color) => headingStyleFor(
+      _locale,
+      TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
     );
-    TextStyle subtitleStyle(Color color) => TextStyle(
-      fontSize: 12,
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
-      color: color,
-    );
+    TextStyle subtitleStyle(Color color) =>
+        headingStyleFor(_locale, TextStyle(fontSize: 12, color: color));
     // Like the real splash tiles: they widen with the text size (up to
     // twice), so a long word such as "Animation" stays on one line.
     final tileWidth =
@@ -944,11 +935,9 @@ class _ThemeSampleScreen extends StatelessWidget {
       (Icons.share_outlined, l.homeTabShared),
       (Icons.delete_outline, l.homeTabTrash),
     ];
-    const labelStyle = TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
+    final labelStyle = headingStyleFor(
+      _locale,
+      const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
     );
     const iconSize = 24.0;
     const gap = 8.0;
@@ -1066,11 +1055,9 @@ class _ThemeSampleScreen extends StatelessWidget {
             Flexible(
               child: Text(
                 l.homeSortFieldUpdated,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                  fontWeight: FontWeight.w500,
+                style: headingStyleFor(
+                  _locale,
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -1111,11 +1098,12 @@ class _ThemeSampleScreen extends StatelessWidget {
                     ),
                     child: Text(
                       l.homeFavoritesOnly,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                      style: headingStyleFor(
+                        _locale,
+                        const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
@@ -1138,11 +1126,12 @@ class _ThemeSampleScreen extends StatelessWidget {
                       const SizedBox(height: 13),
                       Text(
                         l.projectListEmptyTitle,
-                        style: const TextStyle(
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
+                        style: headingStyleFor(
+                          _locale,
+                          const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -1207,11 +1196,9 @@ class _ThemeSampleScreen extends StatelessWidget {
   /// of its own under them.
   Widget _communityHeader(ColorScheme c) => LayoutBuilder(
     builder: (context, box) {
-      const titleStyle = TextStyle(
-        fontFamily: 'Kuramubon',
-        fontFamilyFallback: kHeadingFontFallback,
-        fontSize: 20,
-        fontWeight: FontWeight.w800,
+      final titleStyle = headingStyleFor(
+        _locale,
+        const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
       );
       final title = keepKoreanWordsTogether(l.communityScreenTitle);
       final scaler = MediaQuery.textScalerOf(context);
@@ -1432,11 +1419,9 @@ class _ThemeSampleScreen extends StatelessWidget {
               l.themePreviewSampleArtist,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 10,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-                color: c.onSurfaceVariant,
+              style: headingStyleFor(
+                _locale,
+                TextStyle(fontSize: 10, color: c.onSurfaceVariant),
               ),
             ),
             const SizedBox(height: 14),
@@ -1877,11 +1862,12 @@ class _ThemeSampleScreen extends StatelessWidget {
                     l.themePreviewSampleProjectName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: headingStyleFor(
+                      _locale,
+                      const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
@@ -2068,12 +2054,13 @@ class _ThemeSampleScreen extends StatelessWidget {
                       const SizedBox(width: 5),
                       Text(
                         'Scene1',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: c.onPrimary,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                          fontWeight: FontWeight.bold,
+                        style: headingStyleFor(
+                          _locale,
+                          TextStyle(
+                            fontSize: 11,
+                            color: c.onPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -2097,10 +2084,9 @@ class _ThemeSampleScreen extends StatelessWidget {
                   icon: _mockTool(c, Icons.movie_filter_outlined),
                   iconWidth: 28,
                   label: l.timelineFrameTrackLabel,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: headingStyleFor(
+                    _locale,
+                    const TextStyle(fontSize: 10),
                   ),
                 ),
                 ...List.generate(
@@ -2263,11 +2249,9 @@ class _ThemeSampleScreen extends StatelessWidget {
     String label,
     int index,
   ) {
-    final labelStyle = TextStyle(
-      fontSize: 8,
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
-      color: c.onSurface,
+    final labelStyle = headingStyleFor(
+      _locale,
+      TextStyle(fontSize: 8, color: c.onSurface),
     );
     // The rows grow with the text size instead of clipping the names.
     final line = TextPainter(
@@ -2355,11 +2339,9 @@ class _ThemeSampleScreen extends StatelessWidget {
         Center(
           child: LayoutBuilder(
             builder: (context, box) {
-              const titleStyle = TextStyle(
-                fontSize: 21,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-                fontWeight: FontWeight.w700,
+              final titleStyle = headingStyleFor(
+                _locale,
+                const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
               );
               final title = keepKoreanWordsTogether(l.exportCompleteTitle);
               final word = _widestWord(context, title, titleStyle);
@@ -2434,11 +2416,9 @@ class _ThemeSampleScreen extends StatelessWidget {
                                   l.exportBackToProjectsButton,
                                 ),
                                 semanticsLabel: l.exportBackToProjectsButton,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontFamily: 'Kuramubon',
-                                  fontFamilyFallback: kHeadingFontFallback,
-                                  color: accentText,
+                                style: headingStyleFor(
+                                  _locale,
+                                  TextStyle(fontSize: 12, color: accentText),
                                 ),
                               ),
                             ),
@@ -2453,10 +2433,9 @@ class _ThemeSampleScreen extends StatelessWidget {
                               ),
                               child: Text(
                                 l.commonShare,
-                                style: TextStyle(
-                                  fontFamily: 'Kuramubon',
-                                  fontFamilyFallback: kHeadingFontFallback,
-                                  color: c.onPrimary,
+                                style: headingStyleFor(
+                                  _locale,
+                                  TextStyle(color: c.onPrimary),
                                 ),
                               ),
                             ),
@@ -2757,10 +2736,9 @@ class _ThemeSampleScreen extends StatelessWidget {
     children: [
       Text(
         l.exportPresetSection,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
+        style: headingStyleFor(
+          _locale,
+          const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       const SizedBox(height: 8),
@@ -2770,10 +2748,9 @@ class _ThemeSampleScreen extends StatelessWidget {
       const SizedBox(height: 24),
       Text(
         l.exportFormatSection,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
+        style: headingStyleFor(
+          _locale,
+          const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       const SizedBox(height: 8),
@@ -2802,11 +2779,12 @@ class _ThemeSampleScreen extends StatelessWidget {
                   children: [
                     Text(
                       option.value.$1,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: headingStyleFor(
+                        _locale,
+                        const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -3335,10 +3313,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     appBar: AppBar(
       title: Text(
         l.themePreviewSampleArtist,
-        style: const TextStyle(
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
-        ),
+        style: headingStyleFor(_locale, const TextStyle()),
       ),
       actions: [
         Icon(Icons.filter_alt_outlined, color: c.onSurface),
@@ -3405,11 +3380,12 @@ class _ThemeSampleScreen extends StatelessWidget {
                   children: [
                     Text(
                       l.themePreviewSampleArtist,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: headingStyleFor(
+                        _locale,
+                        const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),

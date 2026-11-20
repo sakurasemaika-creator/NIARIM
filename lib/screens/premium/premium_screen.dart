@@ -73,12 +73,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
                             Expanded(
                               child: Text(
                                 l10n.premiumActiveLabel,
-                                style: TextStyle(
-                                  color: scheme.onPrimary,
-                                  fontSize: 16,
-                                  fontFamily: 'Kuramubon',
-                                  fontFamilyFallback: kHeadingFontFallback,
-                                  fontWeight: FontWeight.w700,
+                                style: localizedHeadingStyle(
+                                  context,
+                                  TextStyle(
+                                    color: scheme.onPrimary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
                             ),
@@ -139,12 +140,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
               ],
               Text(
                 l10n.premiumVsTitle,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                  color: scheme.onSurface,
+                style: localizedHeadingStyle(
+                  context,
+                  TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: scheme.onSurface,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -162,12 +164,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     header: true,
                     child: Text(
                       l10n.premiumPlanSectionTitle,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                        color: scheme.onSurface,
+                      style: localizedHeadingStyle(
+                        context,
+                        TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: scheme.onSurface,
+                        ),
                       ),
                     ),
                   ),
@@ -295,12 +298,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   children: [
                     Text(
                       l10n.premiumHeroTitle,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                        color: scheme.onSurface,
+                      style: localizedHeadingStyle(
+                        context,
+                        TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: scheme.onSurface,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -526,11 +530,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   l10n.premiumComparisonFeature,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                    color: scheme.onSurface,
+                  style: localizedHeadingStyle(
+                    context,
+                    TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: scheme.onSurface,
+                    ),
                   ),
                 ),
               ),
@@ -541,11 +546,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 child: Text(
                   l10n.premiumComparisonFree,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                    color: scheme.onSurfaceVariant,
+                  style: localizedHeadingStyle(
+                    context,
+                    TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
@@ -563,11 +569,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     Text(
                       l10n.premiumComparisonPremium,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                        color: scheme.onPrimaryContainer,
+                      style: localizedHeadingStyle(
+                        context,
+                        TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: scheme.onPrimaryContainer,
+                        ),
                       ),
                     ),
                   ],
@@ -707,12 +714,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
                               Flexible(
                                 child: Text(
                                   l10n.premiumPlanRecommendedBadge,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: scheme.onPrimaryContainer,
-                                    fontWeight: FontWeight.w700,
-                                    fontFamily: 'Kuramubon',
-                                    fontFamilyFallback: kHeadingFontFallback,
+                                  style: localizedHeadingStyle(
+                                    context,
+                                    TextStyle(
+                                      fontSize: 12,
+                                      color: scheme.onPrimaryContainer,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -721,12 +729,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
                         ),
                       Text(
                         title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                          fontSize: 15,
-                          color: scheme.onSurface,
+                        style: localizedHeadingStyle(
+                          context,
+                          TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: scheme.onSurface,
+                          ),
                         ),
                       ),
                     ],

@@ -1661,11 +1661,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 const SizedBox(width: 5),
                 Text(
                   l10n.pcPaneProgram,
-                  style: TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                    fontSize: 12,
-                    color: colors.onPane,
+                  style: localizedHeadingStyle(
+                    context,
+                    TextStyle(fontSize: 12, color: colors.onPane),
                   ),
                 ),
                 const Spacer(),
@@ -1849,11 +1847,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
           project?.name ?? l10n.timelineDefaultProjectName,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-            fontSize: 14,
-            color: colors.onPane,
+          style: localizedHeadingStyle(
+            context,
+            TextStyle(fontSize: 14, color: colors.onPane),
           ),
         ),
         const SizedBox(height: 8),
@@ -1947,11 +1943,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
               projectName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-                fontSize: 13,
-                color: colors.onChrome,
+              style: localizedHeadingStyle(
+                context,
+                TextStyle(fontSize: 13, color: colors.onChrome),
               ),
             ),
           ),
@@ -2507,11 +2501,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: Text(
               projectName,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+              style: localizedHeadingStyle(
+                context,
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -3009,10 +3001,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 Flexible(
                   child: Text(
                     label,
-                    style: const TextStyle(
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    ),
+                    style: localizedHeadingStyle(context, const TextStyle()),
                   ),
                 ),
               ],
@@ -3033,10 +3022,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               Flexible(
                 child: Text(
                   l10n.timelineAddWatermarkTooltip,
-                  style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
+                  style: localizedHeadingStyle(context, const TextStyle()),
                 ),
               ),
               if (!canUseWatermark) ...[
@@ -3269,10 +3255,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
               padding: const EdgeInsets.all(12),
               child: Text(
                 l10n.timelineWatermarkSelectTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -3677,11 +3662,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         ),
                                       Text(
                                         scene.displayName,
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          fontFamily: 'Kuramubon',
-                                          fontFamilyFallback:
-                                              kHeadingFontFallback,
+                                        style: localizedHeadingStyle(
+                                          context,
+                                          const TextStyle(fontSize: 11),
                                         ),
                                       ),
                                       // シーン内に自動塗り未更新のフレームがある場合の警告アイコン
@@ -5004,11 +4987,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
           Flexible(
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 9,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              style: localizedHeadingStyle(
+                context,
+                TextStyle(
+                  fontSize: 9,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -5336,12 +5320,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 clip.label,
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  color:
-                                      ThemeService.activeColorScheme.onSurface,
-                                  fontFamily: 'Kuramubon',
-                                  fontFamilyFallback: kHeadingFontFallback,
+                                style: localizedHeadingStyle(
+                                  context,
+                                  TextStyle(
+                                    fontSize: 9,
+                                    color: ThemeService
+                                        .activeColorScheme
+                                        .onSurface,
+                                  ),
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -6037,11 +6023,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Text(
                     layer.name,
-                    style: TextStyle(
-                      fontSize: 9,
-                      color: ThemeService.activeColorScheme.onSurface,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: localizedHeadingStyle(
+                      context,
+                      TextStyle(
+                        fontSize: 9,
+                        color: ThemeService.activeColorScheme.onSurface,
+                      ),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -6658,7 +6645,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Future<bool> _deleteTimestamp(String sceneId, TimelineMarker marker) async {
-    if (!await confirmDelete(context, itemName: _timestampLabel(marker)) ||
+    final l10n = AppLocalizations.of(context)!;
+    if (!await confirmDelete(
+          context,
+          message: l10n.layerPanelDeleteConfirmTitle(_timestampLabel(marker)),
+        ) ||
         !mounted) {
       return false;
     }
@@ -8812,11 +8803,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                   child: Text(
                     l10n.timelineAutofillTargetLabel,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ),
@@ -9676,11 +9668,9 @@ class _EffectFilterSheet extends StatelessWidget {
             child: ActionBesideOrBelow(
               text: Text(
                 l10n.timelineEffectFilterLabel,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
               action: FilledButton.icon(
@@ -9787,11 +9777,7 @@ class _EffectFilterSheet extends StatelessWidget {
         leading: Icon(_typeIcons[e.type], size: 20),
         title: Text(
           _displayName(l10n, e),
-          style: const TextStyle(
-            fontSize: 13,
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-          ),
+          style: localizedHeadingStyle(context, const TextStyle(fontSize: 13)),
         ),
         subtitle: Text(
           [
@@ -9818,7 +9804,9 @@ class _EffectFilterSheet extends StatelessWidget {
               onPressed: () async {
                 if (!await confirmDelete(
                   context,
-                  itemName: _displayName(l10n, e),
+                  message: l10n.layerPanelDeleteConfirmTitle(
+                    _displayName(l10n, e),
+                  ),
                 )) {
                   return;
                 }
@@ -10973,11 +10961,12 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     _c.trackType == _ClipTrackType.audio
                         ? l10n.helpAudioClipTitle
                         : _c.label,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -11185,11 +11174,12 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                 Expanded(
                   child: Text(
                     l10n.timelineCameraKfTitle(_kf.frameIndex + 1),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

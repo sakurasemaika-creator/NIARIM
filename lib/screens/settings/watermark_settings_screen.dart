@@ -105,11 +105,12 @@ class WatermarkSettingsScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     Text(
                       l10n.watermarkEmptyTitle,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: localizedHeadingStyle(
+                        context,
+                        TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -829,11 +830,7 @@ class _WatermarkName extends StatelessWidget {
 
   final String name;
 
-  static const _style = TextStyle(
-    fontSize: 12,
-    fontFamily: 'Kuramubon',
-    fontFamilyFallback: kHeadingFontFallback,
-  );
+  static const _style = TextStyle(fontSize: 12);
 
   @override
   Widget build(BuildContext context) {
@@ -841,7 +838,7 @@ class _WatermarkName extends StatelessWidget {
     if (copy == null) {
       return Text(
         name,
-        style: _style,
+        style: localizedHeadingStyle(context, _style),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       );
@@ -854,14 +851,19 @@ class _WatermarkName extends StatelessWidget {
       children: [
         Text(
           copy.name,
-          style: _style,
+          style: localizedHeadingStyle(context, _style),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: AlignmentDirectional.centerStart,
-          child: Text(mark, style: _style, maxLines: 1, softWrap: false),
+          child: Text(
+            mark,
+            style: localizedHeadingStyle(context, _style),
+            maxLines: 1,
+            softWrap: false,
+          ),
         ),
       ],
     );

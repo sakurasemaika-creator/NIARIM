@@ -43,7 +43,7 @@
 /// システムフォントが受け持つ（現状と同じ挙動のため後退は無い）。
 library;
 
-import 'dart:ui' show Locale;
+import 'package:flutter/widgets.dart';
 
 /// 本文用フォント（白光明朝）の代替フォント列。
 ///
@@ -117,3 +117,12 @@ List<String> headingFontFallbackFor(Locale? locale) =>
     _usesUnifiedHeadingFont(locale)
     ? bodyFontFallbackFor(locale)
     : kHeadingFontFallback;
+
+/// Keeps the visual settings of a heading and applies the supplied locale.
+TextStyle headingStyleFor(Locale? locale, TextStyle style) => style.copyWith(
+  fontFamily: headingFontFamilyFor(locale),
+  fontFamilyFallback: headingFontFallbackFor(locale),
+);
+
+TextStyle localizedHeadingStyle(BuildContext context, TextStyle style) =>
+    headingStyleFor(Localizations.maybeLocaleOf(context), style);

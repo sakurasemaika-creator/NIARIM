@@ -4359,7 +4359,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineDurationShrinkConfirmBody =>
-      'The frames that will be cut contain changes such as drawn content or added layers. If you continue, those frames cannot be recovered. Are you sure you want to delete them?';
+      'Shortening the scene will remove frames outside the new range, including their drawings and layers. Remove them?';
 
   @override
   String get timelineCanvasSizeDragHint =>

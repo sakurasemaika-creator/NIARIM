@@ -101,10 +101,9 @@ class _ProgressDialogState extends State<ProgressDialog> {
           children: [
             Text(
               widget.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+              style: localizedHeadingStyle(
+                context,
+                const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 16),
@@ -150,12 +149,13 @@ class _ProgressDialogState extends State<ProgressDialog> {
                           const SizedBox(width: 4),
                           Text(
                             l10n.progressDialogTipLabel,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Kuramubon',
-                              fontFamilyFallback: kHeadingFontFallback,
-                              color: AccentTextTheme.of(context),
+                            style: localizedHeadingStyle(
+                              context,
+                              TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AccentTextTheme.of(context),
+                              ),
                             ),
                           ),
                         ],
@@ -163,11 +163,12 @@ class _ProgressDialogState extends State<ProgressDialog> {
                       const SizedBox(height: 4),
                       Text(
                         tip.$1,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
+                        style: localizedHeadingStyle(
+                          context,
+                          const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 2),

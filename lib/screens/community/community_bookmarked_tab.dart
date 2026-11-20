@@ -125,12 +125,13 @@ class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
                     child: Text(
                       title,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: textForeground,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: localizedHeadingStyle(
+                        context,
+                        TextStyle(
+                          color: textForeground,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

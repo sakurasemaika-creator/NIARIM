@@ -4137,7 +4137,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineDurationShrinkConfirmBody =>
-      '将被裁掉的范围内的帧中，含有绘制内容或新增图层等更改。继续操作后，这些帧将无法恢复。确定要删除吗？';
+      '缩短场景会删除新范围之外的帧及其中的绘制内容和图层。要删除吗？';
 
   @override
   String get timelineCanvasSizeDragHint => '拖动框内可移动位置，拖动四角可调整大小（在接近原始尺寸时会自动吸附）';
@@ -14499,7 +14499,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineDurationShrinkConfirmBody =>
-      '將被裁掉範圍內的影格中，含有繪製內容或新增圖層等變更。繼續操作後，這些影格將無法復原。確定要刪除嗎？';
+      '縮短場景會刪除新範圍之外的影格及其中的繪製內容和圖層。要刪除嗎？';
 
   @override
   String get timelineCanvasSizeDragHint => '拖曳框內可移動位置，拖曳四角可調整大小（接近原始尺寸時會自動吸附）';

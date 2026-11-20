@@ -201,8 +201,12 @@ class _PremiumBannerDialog extends StatelessWidget {
                     title,
                     style: theme.textTheme.headlineSmall?.copyWith(
                       color: colors.onPrimaryContainer,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                      fontFamily: headingFontFamilyFor(
+                        Localizations.maybeLocaleOf(context),
+                      ),
+                      fontFamilyFallback: headingFontFallbackFor(
+                        Localizations.maybeLocaleOf(context),
+                      ),
                     ),
                   ),
                 ],

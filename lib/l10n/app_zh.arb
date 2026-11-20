@@ -1613,7 +1613,7 @@
   "timelineDurationFramesLabel": "帧数",
   "timelineDurationSecondsLabel": "秒数",
   "timelineDurationShrinkConfirmTitle": "确定要缩短吗？",
-  "timelineDurationShrinkConfirmBody": "将被裁掉的范围内的帧中，含有绘制内容或新增图层等更改。继续操作后，这些帧将无法恢复。确定要删除吗？",
+  "timelineDurationShrinkConfirmBody": "缩短场景会删除新范围之外的帧及其中的绘制内容和图层。要删除吗？",
   "timelineCanvasSizeDragHint": "拖动框内可移动位置，拖动四角可调整大小（在接近原始尺寸时会自动吸附）",
   "timelineCanvasSizeAngleLabel": "角度",
   "saveTreeSaveAsChildHint": "将保存为所选节点的子节点。",

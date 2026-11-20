@@ -97,11 +97,12 @@ class ThemeSettingsScreen extends StatelessWidget {
                                 AppLocalizations.of(
                                   context,
                                 )!.themePreviewCardTitle,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Kuramubon',
-                                  fontFamilyFallback: kHeadingFontFallback,
+                                style: localizedHeadingStyle(
+                                  context,
+                                  const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -158,10 +159,9 @@ class ThemeSettingsScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
               child: Text(
                 l10n.themeColorCustomizeSection,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -317,10 +317,9 @@ class ThemeSettingsScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
               child: Text(
                 l10n.themePresetSection,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -387,11 +386,12 @@ class ThemeSettingsScreen extends StatelessWidget {
                               final name = messageText(
                                 themePresetLabel(entry.value, locale),
                                 keepLineStarts: true,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                  fontFamily: 'Kuramubon',
-                                  fontFamilyFallback: kHeadingFontFallback,
+                                style: localizedHeadingStyle(
+                                  context,
+                                  const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               );
                               final swatch = _PresetColorSwatch(
@@ -832,11 +832,12 @@ class _ColorCustomizeTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     label,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ),

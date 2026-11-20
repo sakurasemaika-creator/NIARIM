@@ -866,11 +866,7 @@ class _SlotSaveFailureTextState extends State<_SlotSaveFailureText> {
 }
 
 /// スロットの表示の、スロットの題の書式（見出しの書体）。
-const _slotTileTitleStyle = TextStyle(
-  fontWeight: FontWeight.w600,
-  fontFamily: 'Kuramubon',
-  fontFamilyFallback: kHeadingFontFallback,
-);
+const _slotTileTitleStyle = TextStyle(fontWeight: FontWeight.w600);
 
 class _SlotTile extends StatelessWidget {
   final String projectId;
@@ -928,7 +924,7 @@ class _SlotTile extends StatelessWidget {
                 spacing: 10,
                 minTextWidth: widestSlotTitleWidth(
                   context,
-                  _slotTileTitleStyle,
+                  localizedHeadingStyle(context, _slotTileTitleStyle),
                 ),
                 action: _SaveNodeThumbnail(
                   node: node,
@@ -941,7 +937,10 @@ class _SlotTile extends StatelessWidget {
                     KeepTogetherText(
                       l10n.saveTreeSlotLabel(slotIndex + 1),
                       keep: [l10n.saveTreeSlotLabel(slotIndex + 1)],
-                      style: _slotTileTitleStyle,
+                      style: localizedHeadingStyle(
+                        context,
+                        _slotTileTitleStyle,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Row(
@@ -1132,11 +1131,9 @@ class _TreeView extends StatelessWidget {
             Text(
               l10n.saveTreeEmptyTitle,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-                color: scheme.onSurface,
+              style: localizedHeadingStyle(
+                context,
+                TextStyle(fontWeight: FontWeight.w600, color: scheme.onSurface),
               ),
             ),
             const SizedBox(height: 8),

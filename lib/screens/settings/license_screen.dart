@@ -213,11 +213,9 @@ class _SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
+        style: localizedHeadingStyle(
+          context,
+          const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
     );
@@ -258,11 +256,9 @@ class _TermsBody extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -307,11 +303,9 @@ class _FontCredit extends StatelessWidget {
             ),
             Text(
               name,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 15,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+              style: localizedHeadingStyle(
+                context,
+                const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
               ),
             ),
             Text(

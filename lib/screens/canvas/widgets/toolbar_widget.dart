@@ -503,10 +503,9 @@ class ToolbarWidget extends StatelessWidget {
                           leading: const Icon(Icons.tune, size: 18),
                           title: Text(
                             l10n.bucketSettingsTitle,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontFamily: 'Kuramubon',
-                              fontFamilyFallback: kHeadingFontFallback,
+                            style: localizedHeadingStyle(
+                              context,
+                              const TextStyle(fontSize: 13),
                             ),
                           ),
                           childrenPadding: const EdgeInsets.fromLTRB(

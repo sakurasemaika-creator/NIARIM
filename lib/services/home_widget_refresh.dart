@@ -93,6 +93,7 @@ Future<void> _writeWidgetContent(
         icon: shortcutWidgetIcon(kind),
         label: shortcutWidgetLabel(l10n, kind),
         subLabel: shortcutWidgetSubLabel(l10n, kind),
+        locale: Locale(l10n.localeName.split('_').first),
         colors: shortcutWidgetColors(widgets, kind),
         foreground: shortcutWidgetForeground(widgets, theme, kind),
         shape: shape,

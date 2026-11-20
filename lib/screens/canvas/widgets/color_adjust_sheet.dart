@@ -353,11 +353,12 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                         l10n.canvasColorAdjustTitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
+                        style: localizedHeadingStyle(
+                          context,
+                          const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ),

@@ -355,12 +355,11 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'FPS',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 8),
@@ -387,10 +386,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 children: [
                   Text(
                     l10n.newProjectSizeLabel,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                   TextButton.icon(
@@ -703,10 +701,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                                   : l10n.newProjectDurationLabelWithPremiumHint(
                                       maxDurationText,
                                     ),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
+                              style: localizedHeadingStyle(
+                                context,
+                                const TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
@@ -790,10 +787,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               const SizedBox(height: 24),
               Text(
                 l10n.newProjectBackgroundColorLabel,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 8),
@@ -807,10 +803,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 contentPadding: EdgeInsets.zero,
                 title: Text(
                   l10n.newProjectDrawingAreaTitle,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 subtitle: Text(l10n.newProjectDrawingAreaSubtitle),
@@ -821,10 +816,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 const SizedBox(height: 8),
                 LabeledSlider(
                   label: l10n.newProjectScaleLabel,
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  labelStyle: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   min: 1.0,
                   max: 10.0,

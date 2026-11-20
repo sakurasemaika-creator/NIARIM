@@ -293,10 +293,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                   FilterChip(
                     label: Text(
                       l10n.homeFavoritesOnly,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
+                      style: localizedHeadingStyle(context, const TextStyle()),
                     ),
                     selected: _showFavoritesOnly,
                     onSelected: (v) => setState(() => _showFavoritesOnly = v),
@@ -330,11 +327,12 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                             _showFavoritesOnly
                                 ? l10n.autofillPresetEmptyFavorites
                                 : l10n.autofillPresetEmpty,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Kuramubon',
-                              fontFamilyFallback: kHeadingFontFallback,
-                              color: Theme.of(context).colorScheme.onSurface,
+                            style: localizedHeadingStyle(
+                              context,
+                              TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -2055,10 +2053,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     padding: const EdgeInsets.all(12),
                     child: Text(
                       l10n.autofillPartToneLabel,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -2117,11 +2114,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       tone.name,
-                                      style: const TextStyle(
-                                        fontSize: 10,
-                                        fontFamily: 'Kuramubon',
-                                        fontFamilyFallback:
-                                            kHeadingFontFallback,
+                                      style: localizedHeadingStyle(
+                                        context,
+                                        const TextStyle(fontSize: 10),
                                       ),
                                       textAlign: TextAlign.center,
                                       maxLines: 2,

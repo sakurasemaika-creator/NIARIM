@@ -197,12 +197,13 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                           Expanded(
                             child: Text(
                               l10n.referenceWindowTitle,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: theme.menuTextColor,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
+                              style: localizedHeadingStyle(
+                                context,
+                                TextStyle(
+                                  fontSize: 11,
+                                  color: theme.menuTextColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),

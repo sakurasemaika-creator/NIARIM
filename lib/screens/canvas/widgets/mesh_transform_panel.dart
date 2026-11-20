@@ -53,11 +53,9 @@ class MeshTransformPanel extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: Text(
               l10n.meshTransformPanelTitle,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+              style: localizedHeadingStyle(
+                context,
+                const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
             ),
           ),

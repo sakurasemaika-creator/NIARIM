@@ -375,10 +375,9 @@ class _TonePanelState extends State<TonePanel> {
         child: ChoiceChip(
           label: Text(
             label,
-            style: const TextStyle(
-              fontSize: 11,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
+            style: localizedHeadingStyle(
+              context,
+              const TextStyle(fontSize: 11),
             ),
           ),
           selected: selected,
@@ -565,11 +564,9 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
           children: [
             Text(
               l10n.toneEditTitle,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+              style: localizedHeadingStyle(
+                context,
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 12),

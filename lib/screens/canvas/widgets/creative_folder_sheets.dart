@@ -51,10 +51,9 @@ void showFolderManagementSheet(
                   children: [
                     Text(
                       l10n.folderManagementTitle,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                     const Spacer(),
@@ -218,10 +217,9 @@ void showMoveToCreativeFolderSheet(
               padding: const EdgeInsets.all(16),
               child: Text(
                 l10n.folderMoveToTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),

@@ -95,10 +95,9 @@ class AssetListHeaderRow extends StatelessWidget {
                 title!,
                 maxLines: 1,
                 softWrap: false,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),

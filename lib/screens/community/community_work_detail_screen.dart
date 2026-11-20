@@ -676,11 +676,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
               ),
               Text(
                 work.title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               CommunityWorkDescription(
@@ -712,12 +710,13 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                             child: Text(
                               work.authorName,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AccentTextTheme.of(context),
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
+                              style: localizedHeadingStyle(
+                                context,
+                                TextStyle(
+                                  fontSize: 14,
+                                  color: AccentTextTheme.of(context),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
@@ -1092,11 +1091,12 @@ class _NiarimVisibilitySwitch extends StatelessWidget {
                   children: [
                     Text(
                       l10n.communityVisibilityCardTitle,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -1157,11 +1157,12 @@ class _AiImageVideoSwitch extends StatelessWidget {
                   children: [
                     Text(
                       l10n.communityContainsGenerativeAiImageVideo,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 2),

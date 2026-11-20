@@ -647,7 +647,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                       spacing: 10,
                       minTextWidth: widestSlotTitleWidth(
                         context,
-                        _slotTitleStyle,
+                        localizedHeadingStyle(context, _slotTitleStyle),
                       ),
                       action: _SlotThumbnail(
                         node: node,
@@ -661,7 +661,10 @@ class _GameSaveSlotTile extends StatelessWidget {
                           KeepTogetherText(
                             l10n.saveTreeSlotLabel(slotIndex + 1),
                             keep: [l10n.saveTreeSlotLabel(slotIndex + 1)],
-                            style: _slotTitleStyle,
+                            style: localizedHeadingStyle(
+                              context,
+                              _slotTitleStyle,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Row(
@@ -866,8 +869,4 @@ Future<Uint8List?> _generateThumbnail(ProjectService ps, String projectId) =>
     captureSaveThumbnail(ps, projectId);
 
 /// スロットの題の書式（見出しの書体）。
-const _slotTitleStyle = TextStyle(
-  fontWeight: FontWeight.w700,
-  fontFamily: 'Kuramubon',
-  fontFamilyFallback: kHeadingFontFallback,
-);
+const _slotTitleStyle = TextStyle(fontWeight: FontWeight.w700);

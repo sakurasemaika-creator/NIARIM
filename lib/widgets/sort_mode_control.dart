@@ -31,11 +31,9 @@ class SortModeControl extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final dateFieldLabel = dateLabel ?? l10n.homeSortFieldUpdated;
     final fieldLabel = sortByName ? l10n.homeSortFieldName : dateFieldLabel;
-    const fieldStyle = TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
+    final fieldStyle = localizedHeadingStyle(
+      context,
+      const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
     );
 
     return LayoutBuilder(

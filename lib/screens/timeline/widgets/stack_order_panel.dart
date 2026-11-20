@@ -711,11 +711,12 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
                     Expanded(
                       child: Text(
                         l10n.timelineStackOrderTitle,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
+                        style: localizedHeadingStyle(
+                          context,
+                          const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),

@@ -324,10 +324,9 @@ class _LayerPanelState extends State<LayerPanel> {
                   l10n.layerPanelTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -709,10 +708,9 @@ class _LayerPanelState extends State<LayerPanel> {
                           maxLines: 1,
                           softWrap: false,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
+                          style: localizedHeadingStyle(
+                            context,
+                            const TextStyle(fontSize: 12),
                           ),
                         ),
                         subtitle: layer.type == model.LayerType.common
@@ -1425,10 +1423,9 @@ class _LayerPanelState extends State<LayerPanel> {
               padding: const EdgeInsets.all(12),
               child: Text(
                 editingLayerLabel(l10n, layer),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -1937,10 +1934,9 @@ class _LayerPanelState extends State<LayerPanel> {
                 padding: const EdgeInsets.all(12),
                 child: Text(
                   editingLayerLabel(l10n, layer),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -2450,30 +2446,27 @@ class _LayerPanelState extends State<LayerPanel> {
             children: [
               Text(
                 l10n.autofillPartBlendModeLabel,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               Text(l10n.layerPanelHelpBlendModeBody),
               const SizedBox(height: 8),
               Text(
                 l10n.layerPanelClippingBadge,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               Text(l10n.layerPanelHelpClippingBody),
               const SizedBox(height: 8),
               Text(
                 l10n.layerPanelCommonLayerLabel,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               Text(l10n.layerPanelHelpCommonLayerBody),
@@ -2733,10 +2726,9 @@ class _LayerPanelState extends State<LayerPanel> {
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                         child: Text(
                           preset.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
+                          style: localizedHeadingStyle(
+                            context,
+                            const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),

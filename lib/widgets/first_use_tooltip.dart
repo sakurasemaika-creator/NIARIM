@@ -257,11 +257,9 @@ class _FirstUseCard extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       l10n.firstUseTipOperationGuideTitle,
-                      style: TextStyle(
-                        color: scheme.onPrimary,
-                        fontSize: 14,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: localizedHeadingStyle(
+                        context,
+                        TextStyle(color: scheme.onPrimary, fontSize: 14),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -297,11 +295,12 @@ class _FirstUseCard extends StatelessWidget {
                             // ボタンのラベルはくらむぼん（説明文は白光明朝）。
                             Text(
                               l10n.commonClose,
-                              style: TextStyle(
-                                color: scheme.onPrimary,
-                                fontSize: 15,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
+                              style: localizedHeadingStyle(
+                                context,
+                                TextStyle(
+                                  color: scheme.onPrimary,
+                                  fontSize: 15,
+                                ),
                               ),
                             ),
                           ],

@@ -771,11 +771,12 @@ class _HelpScreenState extends State<HelpScreen> {
                               // 項目名用フォント（くらむぼん）。
                               title: Text(
                                 entry.title,
-                                style: const TextStyle(
-                                  fontFamily: 'Kuramubon',
-                                  fontFamilyFallback: kHeadingFontFallback,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
+                                style: localizedHeadingStyle(
+                                  context,
+                                  const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ),
                               subtitle: Text(
@@ -854,11 +855,9 @@ class _TutorialEntry extends StatelessWidget {
           ),
           title: Text(
             l10n.helpTutorialButton,
-            style: const TextStyle(
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
+            style: localizedHeadingStyle(
+              context,
+              const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
             ),
           ),
           subtitle: Text(

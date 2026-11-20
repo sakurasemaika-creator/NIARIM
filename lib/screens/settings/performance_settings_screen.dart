@@ -106,7 +106,10 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
               ]),
             ),
             children: [
-              Text(l10n.perfSettingsQualitySection, style: _sectionStyle),
+              Text(
+                l10n.perfSettingsQualitySection,
+                style: localizedHeadingStyle(context, _sectionStyle),
+              ),
               const SizedBox(height: 8),
               // 選択状態と変更通知はRadioGroupがまとめて持つ
               // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
@@ -151,14 +154,15 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                                     ),
                                     semanticsLabel:
                                         l10n.premiumPlanRecommendedBadge,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Kuramubon',
-                                      fontFamilyFallback: kHeadingFontFallback,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimaryContainer,
+                                    style: localizedHeadingStyle(
+                                      context,
+                                      TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimaryContainer,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -176,7 +180,10 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
               const Divider(height: 32),
               // アプリの容量・重さに影響する設定（旧・設定画面「詳細」カテゴリから
               // 移設。品質プリセットとは独立して常に変更可能）。
-              Text(l10n.perfSettingsCapacitySection, style: _sectionStyle),
+              Text(
+                l10n.perfSettingsCapacitySection,
+                style: localizedHeadingStyle(context, _sectionStyle),
+              ),
               SizedBox(height: 8),
               Card(
                 elevation: 1,
@@ -215,11 +222,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
               const Divider(height: 32),
               Text(
                 l10n.perfSettingsCurrentSettingsSection,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 8),
@@ -317,10 +322,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 const SizedBox(height: 8),
                 Text(
                   l10n.perfSettingsSaveModeLabel,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 // 選択状態と変更通知はRadioGroupがまとめて持つ
@@ -372,7 +376,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
         final painter = TextPainter(
           text: TextSpan(
             text: word,
-            style: DefaultTextStyle.of(context).style.merge(_sectionStyle),
+            style: DefaultTextStyle.of(
+              context,
+            ).style.merge(localizedHeadingStyle(context, _sectionStyle)),
           ),
           textDirection: Directionality.of(context),
           textScaler: MediaQuery.textScalerOf(context),
@@ -694,7 +700,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
   }) {
     return LabeledSlider(
       label: label,
-      labelStyle: _sliderHeadingStyle,
+      labelStyle: localizedHeadingStyle(context, _sliderHeadingStyle),
       min: 1,
       max: 10,
       divisions: 9,
@@ -752,20 +758,11 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
 }
 
 /// 品質・容量の節の見出し。
-const _sectionStyle = TextStyle(
-  fontSize: 16,
-  fontWeight: FontWeight.bold,
-  fontFamily: 'Kuramubon',
-  fontFamilyFallback: kHeadingFontFallback,
-);
+const _sectionStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
 /// スライダーの項目名（オニオンスキン枚数・スロット数）。他の小見出しと
 /// 同じ太字の見出しフォント。
-const _sliderHeadingStyle = TextStyle(
-  fontWeight: FontWeight.bold,
-  fontFamily: 'Kuramubon',
-  fontFamilyFallback: kHeadingFontFallback,
-);
+const _sliderHeadingStyle = TextStyle(fontWeight: FontWeight.bold);
 
 /// スロット数スライダー：ドラッグ中はプレビュー表示のみ、指を離した時点で変更フローを起動
 class _SlotCountSlider extends StatefulWidget {
@@ -821,7 +818,7 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
     final l10n = AppLocalizations.of(context)!;
     return LabeledSlider(
       label: widget.label,
-      labelStyle: _sliderHeadingStyle,
+      labelStyle: localizedHeadingStyle(context, _sliderHeadingStyle),
       min: 1,
       max: 20,
       divisions: 19,

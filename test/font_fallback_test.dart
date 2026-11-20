@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/config/font_fallback.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 
 Future<void> loadFont(String family, String path) async {
   final loader = FontLoader(family)
@@ -107,35 +108,56 @@ void main() {
     );
   });
 
-  testWidgets('コード中で直接くらむぼんを指定した箇所もテーマから代替フォントを継承する', (
-    WidgetTester tester,
+  testWidgets('visible heading styles follow ja, ko and both Chinese locales', (
+    tester,
   ) async {
-    // アプリ全体で187箇所ある`TextStyle(fontFamily: 'Kuramubon')`のような
-    // 直接指定は、fontFamilyFallbackを書いていなくても祖先のテキスト
-    // スタイルから継承される。テーマ側の並びが正しければ全箇所が
-    // 自動的に補われる、という前提を固定する。
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(
-          textTheme: const TextTheme(
-            bodyMedium: TextStyle(
-              fontFamily: 'HakkouMincho',
-              fontFamilyFallback: kBodyFontFallback,
+    for (final (locale, family) in [
+      (const Locale('ja'), 'Kuramubon'),
+      (const Locale('ko'), 'NotoSerifKRSubset'),
+      (const Locale('zh'), 'NotoSerifSCSubset'),
+      (
+        const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+        'NotoSerifSCSubset',
+      ),
+    ]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Text(
+                inDelaOnly,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+              ),
             ),
           ),
         ),
-        home: const Scaffold(
-          body: Text(inDelaOnly, style: TextStyle(fontFamily: 'Kuramubon')),
-        ),
-      ),
-    );
-    final richText = tester.widget<RichText>(find.byType(RichText).first);
-    final resolved = (richText.text as TextSpan).style!;
-    expect(resolved.fontFamily, 'Kuramubon');
-    expect(
-      resolved.fontFamilyFallback,
-      kBodyFontFallback,
-      reason: '直接指定した箇所が代替フォント列を引き継げていない',
-    );
+      );
+      final actual = tester.widget<Text>(find.text(inDelaOnly)).style!;
+      expect(actual.fontFamily, family, reason: locale.toLanguageTag());
+      expect(actual.fontFamilyFallback, headingFontFallbackFor(locale));
+      expect(actual.fontSize, 18);
+      expect(actual.fontWeight, FontWeight.w700);
+    }
+  });
+
+  test('app heading styles go through the locale-aware resolver', () {
+    final forced = RegExp(r"""fontFamily\s*:\s*['"]Kuramubon['"]""");
+    final overrides = Directory('lib')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where(
+          (file) =>
+              file.path.endsWith('.dart') &&
+              forced.hasMatch(file.readAsStringSync()),
+        )
+        .map((file) => file.path)
+        .toList();
+    expect(overrides, isEmpty);
   });
 }

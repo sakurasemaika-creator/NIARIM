@@ -412,23 +412,19 @@ class _SplashActionButton extends StatefulWidget {
   static const double _iconGap = 12;
   static const int _maxLines = 3;
 
-  // Both home-entry tiles explicitly use the bundled Kuramubon font,
-  // including the smaller community subtitle, not an inherited default.
-  static TextStyle _labelStyle(Color color) => TextStyle(
-    color: color,
-    fontSize: 18,
-    fontWeight: FontWeight.bold,
-    fontFamily: 'Kuramubon',
-    fontFamilyFallback: kHeadingFontFallback,
-  );
+  // The home-entry tiles and the community subtitle use the heading
+  // typeface for the app language, including for width calculations.
+  static TextStyle _labelStyle(BuildContext context, Color color) =>
+      localizedHeadingStyle(
+        context,
+        TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold),
+      );
 
-  static TextStyle _subLabelStyle(Color color) => TextStyle(
-    color: color,
-    fontSize: 12,
-    fontWeight: FontWeight.normal,
-    fontFamily: 'Kuramubon',
-    fontFamilyFallback: kHeadingFontFallback,
-  );
+  static TextStyle _subLabelStyle(BuildContext context, Color color) =>
+      localizedHeadingStyle(
+        context,
+        TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.normal),
+      );
 
   /// タイルの幅。OSの文字サイズの倍率（2倍まで）に合わせて広げる。
   static double widthFor(BuildContext context) =>
@@ -465,8 +461,12 @@ class _SplashActionButton extends StatefulWidget {
     }
 
     var content =
-        _iconSize + _iconGap + measure(label, _labelStyle(Colors.white));
-    if (sub != null) content += measure(sub, _subLabelStyle(Colors.white));
+        _iconSize +
+        _iconGap +
+        measure(label, _labelStyle(context, Colors.white));
+    if (sub != null) {
+      content += measure(sub, _subLabelStyle(context, Colors.white));
+    }
     return math.max(width, content + _padding.vertical);
   }
 
@@ -546,7 +546,10 @@ class _SplashActionButtonState extends State<_SplashActionButton> {
                       widget.label,
                       semanticsLabel: plainSemanticsLabel(widget.label),
                       textAlign: TextAlign.center,
-                      style: _SplashActionButton._labelStyle(foreground),
+                      style: _SplashActionButton._labelStyle(
+                        context,
+                        foreground,
+                      ),
                       maxLines: _SplashActionButton._maxLines,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -555,7 +558,10 @@ class _SplashActionButtonState extends State<_SplashActionButton> {
                         widget.subLabel!,
                         semanticsLabel: plainSemanticsLabel(widget.subLabel!),
                         textAlign: TextAlign.center,
-                        style: _SplashActionButton._subLabelStyle(foreground),
+                        style: _SplashActionButton._subLabelStyle(
+                          context,
+                          foreground,
+                        ),
                         maxLines: _SplashActionButton._maxLines,
                         overflow: TextOverflow.ellipsis,
                       ),

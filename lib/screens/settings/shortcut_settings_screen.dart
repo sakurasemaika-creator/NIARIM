@@ -165,7 +165,10 @@ class ShortcutSettingsScreen extends StatelessWidget {
                               // 韓国語の語は、1行に入れば途中で折らない。
                               final name = messageText(
                                 label,
-                                style: _nameStyle,
+                                style: localizedHeadingStyle(
+                                  context,
+                                  _nameStyle,
+                                ),
                               );
                               final chipWidth = _KeyChip.widthOf(
                                 context,
@@ -229,10 +232,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
   }
 
   /// 一覧の行の名前の書式（行の題の書式に重ねる）。
-  static const _nameStyle = TextStyle(
-    fontFamily: 'Kuramubon',
-    fontFamilyFallback: kHeadingFontFallback,
-  );
+  static const _nameStyle = TextStyle();
 
   /// 一覧の行の名前[name]（文は[label]）の、折り返せないいちばん広い語の幅
   /// （行の題の書式で）。
@@ -241,7 +241,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
         (ListTileTheme.of(context).titleTextStyle ??
                 Theme.of(context).textTheme.titleMedium ??
                 const TextStyle())
-            .merge(_nameStyle);
+            .merge(localizedHeadingStyle(context, _nameStyle));
     final painter = TextPainter(
       text: name is KeepTogetherText
           ? name.joinedSpan(style)
@@ -283,16 +283,18 @@ class ShortcutSettingsScreen extends StatelessWidget {
   }
 
   /// 足すシートの題（キーの組[combo]を埋めた文。[_sentenceWithCombo]）。
-  static Widget _chooseActionTitle(AppLocalizations l10n, String combo) =>
-      _sentenceWithCombo(
-        l10n.shortcutChooseActionTitle,
-        combo,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
-        ),
-      );
+  static Widget _chooseActionTitle(
+    BuildContext context,
+    AppLocalizations l10n,
+    String combo,
+  ) => _sentenceWithCombo(
+    l10n.shortcutChooseActionTitle,
+    combo,
+    style: localizedHeadingStyle(
+      context,
+      const TextStyle(fontWeight: FontWeight.bold),
+    ),
+  );
 
   /// キーの組[combo]を埋めた文（[sentence]で作る。足すシートの題・すでに
   /// 割り当てられているときの確かめの本文）。
@@ -376,16 +378,13 @@ class ShortcutSettingsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               // 題の中のキーの組は修飾キーの「+」の後だけで折り返し、韓国語の
               // 語は途中で折らない（[_chooseActionTitle]）。
-              child: _chooseActionTitle(l10n, captured.comboLabel),
+              child: _chooseActionTitle(context, l10n, captured.comboLabel),
             ),
             const Divider(height: 1),
             ListTile(
               title: Text(
                 l10n.shortcutActionTypeTool,
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
+                style: localizedHeadingStyle(context, const TextStyle()),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
@@ -396,10 +395,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
             ListTile(
               title: Text(
                 l10n.shortcutActionTypeCommand,
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
+                style: localizedHeadingStyle(context, const TextStyle()),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {

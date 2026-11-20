@@ -86,8 +86,10 @@ class ExportedWorkCard extends StatelessWidget {
     final background = theme.cardTheme.color ?? theme.colorScheme.surface;
     final titleStyle = theme.textTheme.bodyLarge!.copyWith(
       color: foreground,
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
+      fontFamily: headingFontFamilyFor(Localizations.maybeLocaleOf(context)),
+      fontFamilyFallback: headingFontFallbackFor(
+        Localizations.maybeLocaleOf(context),
+      ),
       height: kWrappedNameLineHeight,
     );
     final detailStyle = theme.textTheme.bodySmall!.copyWith(

@@ -27,10 +27,7 @@ Future<void> showMissionCompletionDialog(
       scrollable: true,
       title: Text(
         l10n.missionCompletedTitle,
-        style: const TextStyle(
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
-        ),
+        style: localizedHeadingStyle(context, const TextStyle()),
       ),
       content: KeepTogetherText(
         [

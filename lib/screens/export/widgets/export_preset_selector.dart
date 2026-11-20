@@ -29,8 +29,12 @@ class ExportPresetSelector extends StatelessWidget {
                 theme.textTheme.labelLarge ??
                 const TextStyle(fontSize: 14))
             .copyWith(
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
+              fontFamily: headingFontFamilyFor(
+                Localizations.maybeLocaleOf(context),
+              ),
+              fontFamilyFallback: headingFontFallbackFor(
+                Localizations.maybeLocaleOf(context),
+              ),
             );
     final measureStyle = MediaQuery.boldTextOf(context)
         ? textStyle.copyWith(fontWeight: FontWeight.bold)
@@ -66,10 +70,7 @@ class ExportPresetSelector extends StatelessWidget {
                   value: entry.key,
                   label: Text(
                     entry.value,
-                    style: const TextStyle(
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    ),
+                    style: localizedHeadingStyle(context, const TextStyle()),
                   ),
                 ),
             ],

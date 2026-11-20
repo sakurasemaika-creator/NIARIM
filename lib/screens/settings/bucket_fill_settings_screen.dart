@@ -135,12 +135,13 @@ class BucketFillSettingsScreen extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              style: localizedHeadingStyle(
+                context,
+                TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),

@@ -517,13 +517,13 @@ class _ShortsPage extends StatelessWidget {
                                         work.authorName,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: AccentTextTheme.of(context),
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'Kuramubon',
-                                          fontFamilyFallback:
-                                              kHeadingFontFallback,
+                                        style: localizedHeadingStyle(
+                                          context,
+                                          TextStyle(
+                                            color: AccentTextTheme.of(context),
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                       Text(

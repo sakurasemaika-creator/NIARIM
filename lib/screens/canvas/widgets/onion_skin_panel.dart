@@ -97,10 +97,9 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
               children: [
                 Text(
                   l10n.onionSkinTitle,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 const Spacer(),
@@ -305,11 +304,9 @@ class _OnionSideSection extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+              style: localizedHeadingStyle(
+                context,
+                const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
               ),
             ),
             const Spacer(),

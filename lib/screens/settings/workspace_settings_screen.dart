@@ -351,10 +351,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                   children: [
                     Text(
                       l10n.workspaceTimelineTrackHeightLabel,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(fontSize: 13),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -376,11 +375,12 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           l10n.workspaceTimelinePreviewLabel,
-                          style: TextStyle(
-                            fontSize: 9,
-                            color: ThemeService.activeColorScheme.onSurface,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
+                          style: localizedHeadingStyle(
+                            context,
+                            TextStyle(
+                              fontSize: 9,
+                              color: ThemeService.activeColorScheme.onSurface,
+                            ),
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -510,12 +510,13 @@ class WorkspaceSettingsScreen extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         text,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        style: localizedHeadingStyle(
+          context,
+          TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );
@@ -572,10 +573,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Text(
                 l10n.workspaceShareSelectTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -1014,10 +1014,9 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
               padding: const EdgeInsets.all(16),
               child: Text(
                 l10n.workspaceOverwriteSelectTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),

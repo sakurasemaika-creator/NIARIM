@@ -917,11 +917,9 @@ class _FilterPanelState extends State<FilterPanel> {
                 : l10n.filterPanelTitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
+            style: localizedHeadingStyle(
+              context,
+              const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
         ),
@@ -1262,11 +1260,9 @@ class _FilterPanelState extends State<FilterPanel> {
             filterDisplayName(l10n, current),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
+            style: localizedHeadingStyle(
+              context,
+              const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
         ),

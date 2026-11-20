@@ -46,11 +46,9 @@ class RulerPanel extends StatelessWidget {
               children: [
                 Text(
                   l10n.rulerPanelTitle,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                 ),
                 const Spacer(),
@@ -221,11 +219,9 @@ class RulerPanel extends StatelessWidget {
       leading: Icon(icon, size: 18, color: isActive ? accentText : null),
       title: Text(
         label,
-        style: TextStyle(
-          fontSize: 12,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
-          color: isActive ? accentText : null,
+        style: localizedHeadingStyle(
+          context,
+          TextStyle(fontSize: 12, color: isActive ? accentText : null),
         ),
       ),
       selected: isActive,

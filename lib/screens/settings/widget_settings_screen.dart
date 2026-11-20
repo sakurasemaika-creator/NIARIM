@@ -231,10 +231,9 @@ class WidgetSettingsScreen extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 2),
     child: Text(
       text,
-      style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        fontFamily: 'Kuramubon',
-        fontFamilyFallback: kHeadingFontFallback,
+      style: localizedHeadingStyle(
+        context,
+        const TextStyle(fontWeight: FontWeight.bold),
       ),
     ),
   );
