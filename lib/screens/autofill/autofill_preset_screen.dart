@@ -31,6 +31,8 @@ import '../../widgets/keep_together_text.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/export_share_feedback.dart';
 import '../../widgets/first_that_fits.dart';
+import '../../widgets/empty_state_placeholder.dart';
+import '../../widgets/responsive.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/image_eyedropper_dialog.dart';
@@ -262,6 +264,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    const gutter = 16.0;
     final filtered = _filter(
       context.watch<AutofillPresetService>().presets,
       l10n,
@@ -290,8 +293,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Column(
+      body: desktopCentered(
+        context,
+        Column(
           children: [
             if (_isSelectionMode)
               Container(
@@ -303,7 +307,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                 child: _selectionBar(l10n, filtered),
               ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.fromLTRB(gutter, 6, gutter, 2),
               child: Row(
                 children: [
                   FilterChip(
@@ -319,53 +323,16 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             ),
             Expanded(
               child: filtered.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 88,
-                            height: 88,
-                            decoration: BoxDecoration(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.primaryContainer,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.palette_outlined,
-                              size: 40,
-                              color: AccentTextTheme.of(context),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            _showFavoritesOnly
-                                ? l10n.autofillPresetEmptyFavorites
-                                : l10n.autofillPresetEmpty,
-                            style: localizedHeadingStyle(
-                              context,
-                              TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            l10n.autofillPresetEmptyHint,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
+                  ? EmptyStatePlaceholder(
+                      icon: Icons.palette_outlined,
+                      title: _showFavoritesOnly
+                          ? l10n.autofillPresetEmptyFavorites
+                          : l10n.autofillPresetEmpty,
+                      hint: l10n.autofillPresetEmptyHint,
+                      clearFloatingButtons: true,
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.fromLTRB(gutter, 8, gutter, 88),
                       itemCount: filtered.length,
                       itemBuilder: (context, index) {
                         final preset = filtered[index];
@@ -420,10 +387,13 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: l10n.commonAdd,
-        onPressed: _showAddOrImportChoice,
-        child: const Icon(Icons.add),
+      floatingActionButton: desktopCenteredFloatingAction(
+        context,
+        FloatingActionButton(
+          tooltip: l10n.commonAdd,
+          onPressed: _showAddOrImportChoice,
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
@@ -957,126 +927,144 @@ class _PresetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final thumbnail = Container(
+      width: 48,
+      height: 48,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      // サムネイル画像が設定されている場合はそれを優先表示し、未設定の
+      // 場合のみパーツの色（最大4色）をグリッド表示する
+      // （サムネイル画像削除時は既定の色表示へ戻る）。
+      child: preset.thumbnailPath != null
+          ? Image.file(
+              File(preset.thumbnailPath!),
+              fit: BoxFit.cover,
+              // 保存は512x512、ここでの表示は48px。一覧に並ぶぶん
+              // だけ効くので表示画素数へ落としてデコードする。
+              cacheWidth: (48 * MediaQuery.devicePixelRatioOf(context)).round(),
+              errorBuilder: (_, _, _) =>
+                  const Icon(Icons.broken_image, size: 24),
+            )
+          : preset.parts.isEmpty
+          ? const Icon(Icons.palette, size: 24)
+          : GridView.count(
+              crossAxisCount: 2,
+              padding: const EdgeInsets.all(4),
+              mainAxisSpacing: 2,
+              crossAxisSpacing: 2,
+              children: preset.parts
+                  .take(4)
+                  .map(
+                    (p) => Container(
+                      decoration: BoxDecoration(
+                        color: Color(p.color),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+    );
+    final actions = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: Icon(
+            preset.isFavorite ? Icons.star : Icons.star_border,
+            color: preset.isFavorite
+                ? ThemeService.activeColorScheme.tertiary
+                : null,
+          ),
+          onPressed: onToggleFavorite,
+          tooltip: preset.isFavorite
+              ? l10n.colorPickerFavoriteRemove
+              : l10n.colorPickerFavoriteAdd,
+        ),
+        PopupMenuButton<String>(
+          onSelected: (v) {
+            if (v == 'edit') onEdit();
+            if (v == 'thumbnail') onSetThumbnail();
+            if (v == 'export') onExport();
+            if (v == 'exportCard') onExportCard();
+            if (v == 'delete') onDelete();
+          },
+          itemBuilder: (_) => [
+            PopupMenuItem(value: 'edit', child: Text(l10n.commonRename)),
+            PopupMenuItem(
+              value: 'thumbnail',
+              child: Text(l10n.autofillThumbnailMenuItem),
+            ),
+            PopupMenuItem(
+              value: 'export',
+              // 前の書き出しと共有が終わるまでは選べない。
+              enabled: !ExportShareService.isRunning(_niafillExportKey),
+              child: Text(l10n.autofillPresetExportMenuItem),
+            ),
+            PopupMenuItem(
+              value: 'exportCard',
+              child: Text(l10n.shareCardExportMenu),
+            ),
+            PopupMenuItem(
+              value: 'delete',
+              child: MenuActionLabel(
+                icon: Icons.delete_outline,
+                label: l10n.commonDelete,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       color: isSelected
           ? Theme.of(
               context,
             ).colorScheme.primaryContainer.withValues(alpha: 0.4)
           : null,
-      child: ListTile(
-        onLongPress: onLongPress,
-        leading: isSelectionMode
-            ? Icon(
-                isSelected ? Icons.check_circle : Icons.circle_outlined,
-                color: isSelected ? AccentTextTheme.of(context) : null,
-              )
-            : Container(
-                width: 48,
-                height: 48,
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(10),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final stacked =
+              !isSelectionMode &&
+              constraints.maxWidth <
+                  MediaQuery.textScalerOf(context).scale(16) * 14;
+          final row = ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+            onLongPress: onLongPress,
+            leading: isSelectionMode
+                ? Icon(
+                    isSelected ? Icons.check_circle : Icons.circle_outlined,
+                    color: isSelected ? AccentTextTheme.of(context) : null,
+                  )
+                : stacked
+                ? null
+                : thumbnail,
+            title: messageText(preset.displayName(l10n)),
+            subtitle: messageText(
+              l10n.autofillPresetPartsCount(preset.parts.length),
+              style: const TextStyle(fontSize: 13),
+            ),
+            trailing: isSelectionMode || stacked ? null : actions,
+            onTap: onTap,
+          );
+          if (!stacked) return row;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              row,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 0, 8, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [thumbnail, actions],
                 ),
-                // サムネイル画像が設定されている場合はそれを優先表示し、未設定の
-                // 場合のみパーツの色（最大4色）をグリッド表示する
-                // （サムネイル画像削除時は既定の色表示へ戻る）。
-                child: preset.thumbnailPath != null
-                    ? Image.file(
-                        File(preset.thumbnailPath!),
-                        fit: BoxFit.cover,
-                        // 保存は512x512、ここでの表示は48px。一覧に並ぶぶん
-                        // だけ効くので表示画素数へ落としてデコードする。
-                        cacheWidth:
-                            (48 * MediaQuery.devicePixelRatioOf(context))
-                                .round(),
-                        errorBuilder: (_, _, _) =>
-                            const Icon(Icons.broken_image, size: 24),
-                      )
-                    : preset.parts.isEmpty
-                    ? const Icon(Icons.palette, size: 24)
-                    : GridView.count(
-                        crossAxisCount: 2,
-                        padding: const EdgeInsets.all(4),
-                        mainAxisSpacing: 2,
-                        crossAxisSpacing: 2,
-                        children: preset.parts
-                            .take(4)
-                            .map(
-                              (p) => Container(
-                                decoration: BoxDecoration(
-                                  color: Color(p.color),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
               ),
-        title: Text(preset.displayName(l10n)),
-        subtitle: Text(
-          l10n.autofillPresetPartsCount(preset.parts.length),
-          style: const TextStyle(fontSize: 11),
-        ),
-        trailing: isSelectionMode
-            ? null
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      preset.isFavorite ? Icons.star : Icons.star_border,
-                      color: preset.isFavorite
-                          ? ThemeService.activeColorScheme.tertiary
-                          : null,
-                    ),
-                    onPressed: onToggleFavorite,
-                    tooltip: preset.isFavorite
-                        ? l10n.colorPickerFavoriteRemove
-                        : l10n.colorPickerFavoriteAdd,
-                  ),
-                  PopupMenuButton<String>(
-                    onSelected: (v) {
-                      if (v == 'edit') onEdit();
-                      if (v == 'thumbnail') onSetThumbnail();
-                      if (v == 'export') onExport();
-                      if (v == 'exportCard') onExportCard();
-                      if (v == 'delete') onDelete();
-                    },
-                    itemBuilder: (_) => [
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Text(l10n.commonRename),
-                      ),
-                      PopupMenuItem(
-                        value: 'thumbnail',
-                        child: Text(l10n.autofillThumbnailMenuItem),
-                      ),
-                      PopupMenuItem(
-                        value: 'export',
-                        // 前の書き出しと共有が終わるまでは選べない。
-                        enabled: !ExportShareService.isRunning(
-                          _niafillExportKey,
-                        ),
-                        child: Text(l10n.autofillPresetExportMenuItem),
-                      ),
-                      PopupMenuItem(
-                        value: 'exportCard',
-                        child: Text(l10n.shareCardExportMenu),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: MenuActionLabel(
-                          icon: Icons.delete_outline,
-                          label: l10n.commonDelete,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-        onTap: onTap,
+            ],
+          );
+        },
       ),
     );
   }

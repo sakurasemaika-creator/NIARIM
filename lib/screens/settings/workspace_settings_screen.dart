@@ -62,7 +62,8 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               child: Text(
                 l10n.workspaceToolbarEditHint,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 13,
+                  height: 1.4,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -225,7 +226,8 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               child: Text(
                 l10n.workspacePcModeHint,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 13,
+                  height: 1.4,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -271,7 +273,8 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               child: Text(
                 l10n.workspaceDockPanelHint,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 13,
+                  height: 1.4,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -330,7 +333,8 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               child: Text(
                 l10n.workspaceTimelineHint,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 13,
+                  height: 1.4,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -406,7 +410,8 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               child: Text(
                 l10n.workspaceEndCardHint,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 13,
+                  height: 1.4,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -448,7 +453,8 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               child: Text(
                 l10n.workspaceSaveHint,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 13,
+                  height: 1.4,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),

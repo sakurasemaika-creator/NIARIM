@@ -11,7 +11,7 @@ import '../../widgets/labeled_slider.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
-import '../../config/accent_text_theme.dart';
+import 'widgets/settings_value_tile.dart';
 import '../../widgets/fit_or_hide_title.dart';
 
 class GestureSettingsScreen extends StatelessWidget {
@@ -34,6 +34,7 @@ class GestureSettingsScreen extends StatelessWidget {
           padding: EdgeInsets.all(16),
           children: [
             Card(
+              margin: EdgeInsets.zero,
               elevation: 1,
               shadowColor: ThemeService.activeColorScheme.shadow.withValues(
                 alpha: 0.15,
@@ -86,7 +87,7 @@ class GestureSettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 8),
+              padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 l10n.gestureHoldEyedropperSection,
                 style: localizedHeadingStyle(
@@ -100,6 +101,7 @@ class GestureSettingsScreen extends StatelessWidget {
               ),
             ),
             Card(
+              margin: EdgeInsets.zero,
               elevation: 1,
               shadowColor: ThemeService.activeColorScheme.shadow.withValues(
                 alpha: 0.15,
@@ -114,7 +116,7 @@ class GestureSettingsScreen extends StatelessWidget {
                     title: Text(l10n.gestureHoldEyedropperTitle),
                     subtitle: Text(
                       l10n.gestureHoldEyedropperHint,
-                      style: const TextStyle(fontSize: 11),
+                      style: const TextStyle(fontSize: 13, height: 1.4),
                     ),
                     value: settings.holdEyedropperEnabled,
                     onChanged: usesHoldEyedropper
@@ -167,18 +169,9 @@ class GestureSettingsScreen extends StatelessWidget {
     List<GestureAction>? options,
   }) {
     final choices = options ?? _defaultOptions;
-    return ListTile(
-      title: Text(title),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            _label(context, current),
-            style: TextStyle(color: AccentTextTheme.of(context)),
-          ),
-          Icon(Icons.chevron_right, color: AccentTextTheme.of(context)),
-        ],
-      ),
+    return SettingsValueTile(
+      title: title,
+      value: _label(context, current),
       onTap: () => showModalBottomSheet(
         context: context,
         // 選択肢は既定で9件あり、1件あたり約56dpなので約504dp必要になる。

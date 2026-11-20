@@ -1,3 +1,4 @@
+import 'widgets/settings_value_tile.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -170,7 +171,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                           ),
                           subtitle: Text(
                             _qualityDesc(l10n, level),
-                            style: const TextStyle(fontSize: 12),
+                            style: const TextStyle(fontSize: 13, height: 1.45),
                           ),
                         ),
                       )
@@ -196,7 +197,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 color: Theme.of(context).colorScheme.surfaceContainerLow,
                 child: Column(
                   children: [
-                    _ValueTile(
+                    SettingsValueTile(
                       title: l10n.perfSettingsUndoLimitTitle,
                       subtitle: l10n.perfSettingsUndoLimitSubtitle,
                       value: l10n.perfSettingsUndoLimitValue(
@@ -205,7 +206,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                       onTap: () => _showUndoLimitDialog(context, settings),
                     ),
                     const Divider(height: 1),
-                    _ValueTile(
+                    SettingsValueTile(
                       title: l10n.perfSettingsTrashAutoDeleteTitle,
                       subtitle: l10n.perfSettingsTrashAutoDeleteSubtitle,
                       value: settings.trashAutoDeleteDays == 0
@@ -835,72 +836,6 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
 /// 元の文）。
 Text _keepWords(String text, {TextStyle? style}) =>
     Text(keepKoreanWordsTogether(text), semanticsLabel: text, style: style);
-
-/// 項目名・説明と今の値の行（押すと選ぶダイアログを開く）。値は右端に
-/// 置き、並べると項目名・説明が語の途中で折れるときは説明の下へ回す。
-class _ValueTile extends StatelessWidget {
-  const _ValueTile({
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onTap,
-  });
-
-  final String title;
-  final String subtitle;
-  final String value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final tileTheme = ListTileTheme.of(context);
-    final titleStyle =
-        tileTheme.titleTextStyle ??
-        theme.listTileTheme.titleTextStyle ??
-        theme.textTheme.bodyLarge;
-    final subtitleStyle =
-        tileTheme.subtitleTextStyle ??
-        theme.listTileTheme.subtitleTextStyle ??
-        theme.textTheme.bodyMedium?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
-        );
-    // 押すと選ぶダイアログを開く行なので、読み上げではボタンとして伝える
-    // （ListTileと同じ）。
-    return MergeSemantics(
-      child: Semantics(
-        button: true,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: ActionBesideOrBelow(
-              minTextFraction: 0,
-              text: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    keepKoreanWordsTogether(title),
-                    semanticsLabel: title,
-                    style: titleStyle,
-                  ),
-                  Text(subtitle, style: subtitleStyle),
-                ],
-              ),
-              action: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(value, style: theme.textTheme.labelLarge),
-                  const Icon(Icons.chevron_right),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 /// 項目名とスイッチの行。並べると項目名が語の途中で折れるときは、スイッチを
 /// 項目名の下（行の終わりの側）へ回す。行のどこを押しても切り替わる。

@@ -5,11 +5,12 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/help_button.dart';
 import 'widgets/pressure_curve_graph.dart';
 import 'widgets/pressure_curve_try_draw.dart';
 import '../../config/font_fallback.dart';
-import '../../config/accent_text_theme.dart';
+import 'widgets/settings_value_tile.dart';
 import '../../widgets/fit_or_hide_title.dart';
 
 /// ペン入力設定。
@@ -48,8 +49,8 @@ class PenSettingsScreen extends StatelessWidget {
         ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _sectionLabel(context, l10n.penSettingsPalmRejectionSection),
             Card(
+              margin: EdgeInsets.zero,
               elevation: 1,
               shadowColor: ThemeService.activeColorScheme.shadow.withValues(
                 alpha: 0.15,
@@ -62,7 +63,7 @@ class PenSettingsScreen extends StatelessWidget {
                 title: Text(l10n.penSettingsPalmRejectionTitle),
                 subtitle: Text(
                   l10n.penSettingsPalmRejectionHint,
-                  style: const TextStyle(fontSize: 11),
+                  style: const TextStyle(fontSize: 13, height: 1.4),
                 ),
                 value: settings.palmRejectionEnabled,
                 onChanged: settings.setPalmRejectionEnabled,
@@ -73,39 +74,20 @@ class PenSettingsScreen extends StatelessWidget {
             Text(
               l10n.penSettingsCurveHint,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 13,
+                height: 1.4,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 8),
-            SegmentedButton<PenPressureCurve>(
-              segments: [
-                ButtonSegment(
-                  value: PenPressureCurve.weak,
-                  label: Text(l10n.penSettingsCurveWeak),
-                ),
-                ButtonSegment(
-                  value: PenPressureCurve.normal,
-                  label: Text(l10n.penSettingsCurveNormal),
-                ),
-                ButtonSegment(
-                  value: PenPressureCurve.strong,
-                  label: Text(l10n.penSettingsCurveStrong),
-                ),
-                ButtonSegment(
-                  value: PenPressureCurve.custom,
-                  label: Text(l10n.penSettingsCurveCustom),
-                ),
-              ],
-              selected: {settings.penPressureCurve},
-              onSelectionChanged: (v) => settings.setPenPressureCurve(v.first),
-            ),
+            _curveSelector(context, settings, l10n),
             if (settings.penPressureCurve == PenPressureCurve.custom) ...[
               const SizedBox(height: 8),
               Text(
                 l10n.penSettingsCustomGraphHint,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 13,
+                  height: 1.4,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -132,7 +114,8 @@ class PenSettingsScreen extends StatelessWidget {
             Text(
               l10n.penSettingsPerBrushNote,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 13,
+                height: 1.4,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
@@ -141,6 +124,7 @@ class PenSettingsScreen extends StatelessWidget {
             SizedBox(height: 20),
             _sectionLabel(context, l10n.penSettingsButtonSection),
             Card(
+              margin: EdgeInsets.zero,
               elevation: 1,
               shadowColor: ThemeService.activeColorScheme.shadow.withValues(
                 alpha: 0.15,
@@ -173,9 +157,71 @@ class PenSettingsScreen extends StatelessWidget {
     );
   }
 
+  Widget _curveSelector(
+    BuildContext context,
+    SettingsService settings,
+    AppLocalizations l10n,
+  ) {
+    final labels = {
+      PenPressureCurve.weak: l10n.penSettingsCurveWeak,
+      PenPressureCurve.normal: l10n.penSettingsCurveNormal,
+      PenPressureCurve.strong: l10n.penSettingsCurveStrong,
+      PenPressureCurve.custom: l10n.penSettingsCurveCustom,
+    };
+    final theme = Theme.of(context);
+    final style =
+        theme.segmentedButtonTheme.style?.textStyle?.resolve({}) ??
+        theme.textTheme.labelLarge;
+    final painter = TextPainter(
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      locale: Localizations.localeOf(context),
+      maxLines: 1,
+    );
+    var widest = 0.0;
+    for (final label in labels.values) {
+      painter
+        ..text = TextSpan(text: label, style: style)
+        ..layout();
+      if (painter.width > widest) widest = painter.width;
+    }
+    painter.dispose();
+
+    const horizontalPadding = 8.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // All horizontal segments have the same width. Fit the widest
+        // translated label with equal padding on both sides of every segment.
+        final fits =
+            (widest.ceil() + 2 * horizontalPadding) * labels.length <=
+            constraints.maxWidth;
+        return SegmentedButton<PenPressureCurve>(
+          direction: fits ? Axis.horizontal : Axis.vertical,
+          showSelectedIcon: !fits,
+          style: SegmentedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: 8,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(fits ? 24 : 16),
+            ),
+          ),
+          segments: [
+            for (final entry in labels.entries)
+              ButtonSegment(value: entry.key, label: Text(entry.value)),
+          ],
+          selected: {settings.penPressureCurve},
+          onSelectionChanged: (values) =>
+              settings.setPenPressureCurve(values.single),
+        );
+      },
+    );
+  }
+
   Widget _sectionLabel(BuildContext context, String text) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text,
         style: localizedHeadingStyle(
@@ -196,21 +242,12 @@ class PenSettingsScreen extends StatelessWidget {
     GestureAction current,
     ValueChanged<GestureAction> onChanged,
   ) {
-    return ListTile(
-      title: Text(title),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            _actionLabel(context, current),
-            style: TextStyle(color: AccentTextTheme.of(context)),
-          ),
-          Icon(Icons.chevron_right, color: AccentTextTheme.of(context)),
-        ],
-      ),
+    return SettingsValueTile(
+      title: title,
+      value: _actionLabel(context, current),
       onTap: () => showModalBottomSheet(
         context: context,
-        builder: (ctx) => SafeArea(
+        builder: (ctx) => ScrollableSheetBody(
           // 選択状態と変更通知はRadioGroupがまとめて持つ
           // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
           child: RadioGroup<GestureAction>(

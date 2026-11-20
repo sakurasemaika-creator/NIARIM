@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
+import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -49,7 +50,8 @@ class BucketFillSettingsScreen extends StatelessWidget {
             Text(
               l10n.bucketSettingsToleranceHint,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 13,
+                height: 1.45,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
@@ -79,7 +81,8 @@ class BucketFillSettingsScreen extends StatelessWidget {
             Text(
               l10n.bucketSettingsExpandHint,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 13,
+                height: 1.45,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
@@ -94,6 +97,7 @@ class BucketFillSettingsScreen extends StatelessWidget {
             ),
             SizedBox(height: 8),
             Card(
+              margin: EdgeInsets.zero,
               elevation: 1,
               shadowColor: ThemeService.activeColorScheme.shadow.withValues(
                 alpha: 0.15,
@@ -108,7 +112,7 @@ class BucketFillSettingsScreen extends StatelessWidget {
                   settings.bucketExpandPx == 0
                       ? '${l10n.bucketSettingsUnderLineHint}\n${l10n.bucketSettingsUnderLineDisabledHint}'
                       : l10n.bucketSettingsUnderLineHint,
-                  style: const TextStyle(fontSize: 11),
+                  style: const TextStyle(fontSize: 13, height: 1.45),
                 ),
                 value: settings.bucketFillUnderLine,
                 onChanged: (v) => settings.setBucketFillUnderLine(v),
@@ -129,25 +133,22 @@ class BucketFillSettingsScreen extends StatelessWidget {
   }) {
     return Padding(
       // 値の右の鉛筆マークは右へはみ出して描かれるので、そのぶん空ける。
-      padding: const EdgeInsets.only(left: 4, right: 14, bottom: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              text,
-              style: localizedHeadingStyle(
-                context,
-                TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
+      padding: const EdgeInsetsDirectional.only(end: 10, bottom: 6),
+      child: ActionBesideOrBelow(
+        gap: 12,
+        spacing: 4,
+        text: Text(
+          text,
+          style: localizedHeadingStyle(
+            context,
+            TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(width: 8),
-          value,
-        ],
+        ),
+        action: value,
       ),
     );
   }

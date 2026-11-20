@@ -493,7 +493,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                             ),
                             child: Builder(
                               builder: (context) => DefaultTextStyle(
-                                style: DefaultTextStyle.of(context).style,
+                                style: DefaultTextStyle.of(
+                                  context,
+                                ).style.copyWith(height: 1.3),
                                 textAlign: TextAlign.center,
                                 child: Text(text),
                               ),

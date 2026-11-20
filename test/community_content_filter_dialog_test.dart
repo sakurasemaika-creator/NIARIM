@@ -12,9 +12,12 @@ import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/load_app_fonts.dart';
 
 /// Muted words and tags are managed as independent rows. Draft edits are
 /// persisted together on Save and discarded on Cancel.
@@ -23,6 +26,7 @@ void main() {
     CommunityService service, {
     Locale locale = const Locale('ja'),
     Widget? home,
+    ThemeData? theme,
   }) => MultiProvider(
     providers: [
       ChangeNotifierProvider<CommunityService>.value(value: service),
@@ -35,6 +39,7 @@ void main() {
     ],
     child: MaterialApp(
       locale: locale,
+      theme: theme,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: home ?? const CommunityScreen(),
@@ -91,7 +96,12 @@ void main() {
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       final sample = CommunityService();
       addTearDown(sample.dispose);
-      await tester.pumpWidget(host(sample, locale: locale));
+      await loadAppFonts(tester);
+      final theme = ThemeService();
+      addTearDown(theme.dispose);
+      await tester.pumpWidget(
+        host(sample, locale: locale, theme: theme.themeDataFor(locale)),
+      );
       await tester.pumpAndSettle();
 
       final label = l10nOf(tester).communitySampleBadge;
@@ -102,6 +112,13 @@ void main() {
         tester.getRect(header).bottom,
         lessThanOrEqualTo(tester.getRect(find.byType(AppBar)).bottom),
       );
+      final toolbar = tester.getRect(find.byType(AppBar));
+      final back = find.byKey(const Key('communityBackToSplashButton'));
+      final filters = find.byKey(const Key('communityMuteSettingsButton'));
+      for (final action in [back, filters]) {
+        expect(action.hitTestable(), findsOneWidget);
+        expect(tester.getRect(action).top, greaterThanOrEqualTo(toolbar.top));
+      }
       expect(find.text(label), findsWidgets);
       expect(tester.takeException(), isNull);
     });

@@ -112,12 +112,13 @@ class ShortcutSettingsScreen extends StatelessWidget {
         Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 15, 16, 12),
               // 韓国語の語は、1行に入れば途中で折らない（「도 / 구」と折れた）。
               child: messageText(
                 l10n.shortcutSettingsHint,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 13,
+                  height: 1.45,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -146,7 +147,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
                         final b = bindings[index];
                         return MenuCard(
                           margin: const EdgeInsets.symmetric(
-                            horizontal: 12,
+                            horizontal: 16,
                             vertical: 4,
                           ),
                           // キーのチップが1行で項目名の前に入らない幅（大きな
@@ -219,14 +220,17 @@ class ShortcutSettingsScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _startAddFlow(context, service),
-        icon: const Icon(Icons.add),
-        label: Text(l10n.commonAdd),
-        // テーマ側のFAB共通形状（CircleBorder）を、拡張FAB本来の横長
-        // カプセル形状（StadiumBorder）へ上書きする（community_screen.dart
-        // の投稿ボタンと同じ理由）。
-        shape: const StadiumBorder(),
+      floatingActionButton: desktopCenteredFloatingAction(
+        context,
+        FloatingActionButton.extended(
+          onPressed: () => _startAddFlow(context, service),
+          icon: const Icon(Icons.add),
+          label: Text(l10n.commonAdd),
+          // テーマ側のFAB共通形状（CircleBorder）を、拡張FAB本来の横長
+          // カプセル形状（StadiumBorder）へ上書きする（community_screen.dart
+          // の投稿ボタンと同じ理由）。
+          shape: const StadiumBorder(),
+        ),
       ),
     );
   }

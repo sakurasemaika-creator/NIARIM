@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/settings_service.dart';
 import '../../../config/accent_text_theme.dart';
+import '../../../widgets/action_beside_or_below.dart';
 
 /// 筆圧カーブの「試し書きコーナー」：適用前に
 /// 実際にこの設定で描いてみて、太さの変化を確認できる小さな描画エリア。
@@ -55,20 +56,23 @@ class _PressureCurveTryDrawState extends State<PressureCurveTryDraw> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                l10n.pressureTryDrawHint,
-                style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
-              ),
+        ActionBesideOrBelow(
+          gap: 10,
+          spacing: 2,
+          text: Text(
+            l10n.pressureTryDrawHint,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.4,
+              color: scheme.onSurfaceVariant,
             ),
-            TextButton(
-              onPressed: _points.isEmpty ? null : _clear,
-              child: Text(l10n.pressureTryDrawClear),
-            ),
-          ],
+          ),
+          action: TextButton(
+            onPressed: _points.isEmpty ? null : _clear,
+            child: Text(l10n.pressureTryDrawClear),
+          ),
         ),
+        const SizedBox(height: 4),
         Listener(
           onPointerDown: _addPoint,
           onPointerMove: _addPoint,

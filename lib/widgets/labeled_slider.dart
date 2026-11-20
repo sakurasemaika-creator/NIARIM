@@ -68,7 +68,7 @@ class LabeledSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final valueTextStyle = valueStyle ?? const TextStyle(fontSize: 12);
+    final valueTextStyle = valueStyle ?? const TextStyle(fontSize: 13);
     final shown = valueText;
     return Padding(
       padding: padding,
@@ -92,7 +92,9 @@ class LabeledSlider extends StatelessWidget {
                   Flexible(
                     child: Text(
                       label,
-                      style: labelStyle ?? const TextStyle(fontSize: 12),
+                      style:
+                          labelStyle ??
+                          const TextStyle(fontSize: 13, height: 1.35),
                     ),
                   ),
                   ?labelTrailing,
@@ -104,7 +106,7 @@ class LabeledSlider extends StatelessWidget {
                   ? EditableSliderValue(
                       text: shown,
                       style: valueTextStyle,
-                      textAlign: TextAlign.right,
+                      textAlign: TextAlign.end,
                       title: label,
                       value: value,
                       min: min,
@@ -119,7 +121,7 @@ class LabeledSlider extends StatelessWidget {
                   : Text(
                       shown,
                       style: valueTextStyle,
-                      textAlign: TextAlign.right,
+                      textAlign: TextAlign.end,
                     ),
             ),
           ),

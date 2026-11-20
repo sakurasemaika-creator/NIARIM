@@ -70,6 +70,9 @@ class CommunityWorkCard extends StatelessWidget {
     this.onMuteToggle,
   });
 
+  static double _metadataHeight(BuildContext context) =>
+      MediaQuery.textScalerOf(context).scale(11).clamp(11.0, 22.0) + 29;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -123,17 +126,20 @@ class CommunityWorkCard extends StatelessWidget {
         ),
       ),
     );
-    const contentPadding = EdgeInsets.symmetric(horizontal: 6);
+    const contentPadding = EdgeInsets.symmetric(horizontal: 8);
+    final titleHeight = collectionTileNameHeight(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 200;
         final thumbnail = LayoutBuilder(
           key: ValueKey('community-thumbnail-${work.id}'),
           builder: (context, thumbnail) {
-            final maxBadgeWidth = (thumbnail.maxWidth - 66).clamp(
-              1.0,
-              double.infinity,
-            );
+            final badgeWidth =
+                thumbnail.maxWidth - (rankNumber == null ? 12 : 46);
+            final badgeHeight =
+                MediaQuery.textScalerOf(context).scale(10) * 1.5 + 6;
+            final showThumbnailBadge =
+                !obscured && (repostedByAuthorName != null || isSample);
             return Stack(
               children: [
                 if (obscured)
@@ -181,12 +187,14 @@ class CommunityWorkCard extends StatelessWidget {
                     top: 4,
                     child: CommunityRankBadge(rank: rank, small: true),
                   ),
-                if (!obscured && (repostedByAuthorName != null || isSample))
+                if (showThumbnailBadge)
                   PositionedDirectional(
-                    end: 4,
-                    top: 4,
+                    end: 6,
+                    top: 6,
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: maxBadgeWidth),
+                      constraints: BoxConstraints(
+                        maxWidth: badgeWidth.clamp(1.0, double.infinity),
+                      ),
                       child: badge(
                         repostedByAuthorName != null
                             ? l10n.communityRepostedByBadge(
@@ -200,12 +208,14 @@ class CommunityWorkCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                // The upper menu is a 48dp touch target. On
-                // 120dp tiles a bottom-right duration chip would
-                // overlap it, so favor a clear thumbnail.
-                if (!obscured && thumbnail.maxWidth >= 148)
-                  Positioned(
-                    right: 6,
+                if (!obscured &&
+                    thumbnail.maxWidth >= 148 &&
+                    thumbnail.maxHeight >=
+                        (showThumbnailBadge
+                            ? badgeHeight * 2 + 16
+                            : badgeHeight + 12))
+                  PositionedDirectional(
+                    end: 6,
                     bottom: 6,
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
@@ -223,9 +233,10 @@ class CommunityWorkCard extends StatelessWidget {
           color: cardColor,
           surfaceTintColor: Colors.transparent,
           clipBehavior: Clip.antiAlias,
-          elevation: 1,
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: scheme.outlineVariant),
           ),
           child: InkWell(
             onTap: obscured ? null : onTap,
@@ -237,18 +248,26 @@ class CommunityWorkCard extends StatelessWidget {
                 else
                   AspectRatio(aspectRatio: 16 / 9, child: thumbnail),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(6, 3, 6, 0),
-                  child: Text(
-                    isUnavailable
-                        ? CommunityPlazaLabels.of(
-                            context,
-                          ).unavailablePlaceholder
-                        : isMuted
-                        ? CommunityPlazaLabels.of(context).mutedPlaceholder
-                        : work.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: collectionTileCaptionStyle(context),
+                  padding: const EdgeInsets.fromLTRB(8, 5, 8, 0),
+                  child: SizedBox(
+                    height: titleHeight,
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(
+                        isUnavailable
+                            ? CommunityPlazaLabels.of(
+                                context,
+                              ).unavailablePlaceholder
+                            : isMuted
+                            ? CommunityPlazaLabels.of(context).mutedPlaceholder
+                            : work.title,
+                        maxLines: kCollectionTileNameLines,
+                        overflow: TextOverflow.ellipsis,
+                        style: collectionTileCaptionStyle(
+                          context,
+                        ).copyWith(color: textColor),
+                      ),
+                    ),
                   ),
                 ),
                 if (!obscured)
@@ -262,11 +281,7 @@ class CommunityWorkCard extends StatelessWidget {
                         onTap: onAuthorTap,
                         behavior: HitTestBehavior.opaque,
                         child: SizedBox(
-                          height:
-                              MediaQuery.textScalerOf(
-                                context,
-                              ).scale(11).clamp(11.0, 22.0) +
-                              29,
+                          height: _metadataHeight(context),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -278,7 +293,7 @@ class CommunityWorkCard extends StatelessWidget {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 11,
                                       color: detailColor,
                                     ),
                                   ),
@@ -292,7 +307,7 @@ class CommunityWorkCard extends StatelessWidget {
                                     work: work,
                                     periodBookmarks: periodBookmarks,
                                     compact: constraints.maxWidth < 160,
-                                    fontSize: 10,
+                                    fontSize: 11,
                                   ),
                                 ),
                               ),
@@ -398,18 +413,15 @@ class CommunityWorkOrientation extends StatelessWidget {
         child: Tooltip(
           message: label,
           excludeFromSemantics: true,
-          child: LayoutBuilder(
-            builder: (context, constraints) => FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: AlignmentDirectional.centerStart,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: constraints.maxWidth),
-                child: Text(
-                  label,
-                  key: ValueKey('community-orientation-${work.id}'),
-                  style: Theme.of(context).textTheme.labelSmall,
-                ),
-              ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              label,
+              key: ValueKey('community-orientation-${work.id}'),
+              maxLines: 1,
+              softWrap: false,
+              style: Theme.of(context).textTheme.labelSmall,
             ),
           ),
         ),
@@ -526,7 +538,9 @@ class CommunityWorkGrid extends StatelessWidget {
       gridDelegate: collectionTileGridDelegate(
         context,
         viewSize.tileExtent,
-        actionBandHeight: CollectionActionFrame.targetExtent,
+        actionBandHeight:
+            CollectionActionFrame.targetExtent +
+            CommunityWorkCard._metadataHeight(context),
       ),
       itemCount: works.length,
       itemBuilder: (context, index) {

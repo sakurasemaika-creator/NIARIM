@@ -1209,6 +1209,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final width = MediaQuery.sizeOf(context).width;
     final scaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
+    final horizontalInsets = MediaQuery.paddingOf(context).horizontal;
     final barBackground = opaqueOver(
       theme.appBarTheme.backgroundColor ?? scheme.surface,
       opaqueOver(theme.scaffoldBackgroundColor, Colors.black),
@@ -1219,7 +1220,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         theme.tabBarTheme.unselectedLabelColor ?? scheme.onSurfaceVariant;
     final titleStyle =
         (theme.appBarTheme.titleTextStyle ?? theme.textTheme.titleLarge!)
-            .copyWith(color: foreground);
+            .copyWith(color: foreground, inherit: false);
     final labelStyle =
         theme.tabBarTheme.labelStyle ?? theme.textTheme.titleSmall!;
     Size measure(
@@ -1247,13 +1248,17 @@ class _CommunityScreenState extends State<CommunityScreen>
     // never changes the position of the page title.
     const actionCount = 4;
     final inlineWidth =
-        (width - leadingWidth - actionWidth * actionCount - titleGap * 2).clamp(
-          1.0,
-          double.infinity,
-        );
+        (width -
+                horizontalInsets -
+                leadingWidth -
+                actionWidth * actionCount -
+                titleGap * 2)
+            .clamp(1.0, double.infinity);
     final titleBelowActions =
         measure(l10n.communityScreenTitle, titleStyle).width > inlineWidth;
-    final titleWidth = titleBelowActions ? width - 32 : inlineWidth;
+    final titleWidth = titleBelowActions
+        ? (width - horizontalInsets - 32).clamp(1.0, double.infinity)
+        : inlineWidth;
     final titleHeight = measure(
       l10n.communityScreenTitle,
       titleStyle,
@@ -1262,6 +1267,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final showSampleNotice = !communityService.isBackendConnected;
     final sampleStyle = theme.textTheme.labelMedium!.copyWith(
       color: foreground,
+      inherit: false,
     );
     final sampleHeight = showSampleNotice
         ? measure(
@@ -1686,6 +1692,8 @@ class _CommunityScreenState extends State<CommunityScreen>
       );
     }
 
+    const tabHeight = 48.0;
+    const indicatorWeight = 3.0;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -1738,7 +1746,9 @@ class _CommunityScreenState extends State<CommunityScreen>
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(
-            48 + (titleBelowActions ? titleHeight + sampleHeight + 12 : 0),
+            tabHeight +
+                indicatorWeight +
+                (titleBelowActions ? titleHeight + sampleHeight + 12 : 0),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1771,11 +1781,12 @@ class _CommunityScreenState extends State<CommunityScreen>
                     labelColor: selected,
                     unselectedLabelColor: unselected,
                     indicatorColor: selected,
+                    indicatorWeight: indicatorWeight,
                     tabs: [
                       for (var i = 0; i < labels.length; i++)
                         Tab(
                           key: Key('communityTab$i'),
-                          height: 48,
+                          height: tabHeight,
                           child: SizedBox(
                             key: Key('communityTabWidth$i'),
                             width: tabWidth,

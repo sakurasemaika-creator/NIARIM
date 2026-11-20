@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/l10n/autofill_names.dart';
 import 'package:niarim/models/autofill_preset.dart';
 import 'package:niarim/screens/autofill/autofill_preset_screen.dart';
 import 'package:niarim/services/autofill_preset_service.dart';
@@ -134,7 +135,9 @@ void main() {
             continue;
           }
           // 長押しで選ぶ（選択の行が出る）。
-          await tester.longPress(find.text(presets.first.name).first);
+          await tester.longPress(
+            find.text(presets.first.displayName(l10n)).first,
+          );
           await tester.pump(const Duration(milliseconds: 400));
           final error = tester.takeException();
           if (error != null) {
@@ -220,7 +223,7 @@ void main() {
         .element(find.byType(AutofillPresetScreen))
         .read<AutofillPresetService>()
         .presets;
-    await tester.longPress(find.text(presets.first.name).first);
+    await tester.longPress(find.text(presets.first.displayName(l10n)).first);
     await tester.pump(const Duration(milliseconds: 400));
     expect(tester.takeException(), isNull);
 

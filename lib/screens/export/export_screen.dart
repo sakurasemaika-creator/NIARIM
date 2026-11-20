@@ -251,16 +251,32 @@ class _ExportScreenState extends State<ExportScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            if (project != null)
-              Text(
-                '${project.exportWidth} × ${project.exportHeight} px · ${l10n.pcStatusFps(_fps)}',
+            DefaultTextStyle.merge(
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+                height: 1.45,
               ),
-            Text(
-              appendEndCard
-                  ? l10n.exportOutputWithEndCard(duration)
-                  : l10n.exportOutputWithoutEndCard(duration),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 3,
+                children: [
+                  if (project != null)
+                    Text(
+                      '${project.exportWidth} × ${project.exportHeight} px · ${l10n.pcStatusFps(_fps)}',
+                      style: TextStyle(
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  Text(
+                    appendEndCard
+                        ? l10n.exportOutputWithEndCard(duration)
+                        : l10n.exportOutputWithoutEndCard(duration),
+                  ),
+                  Text(l10n.exportKeepsPlaybackTime),
+                ],
+              ),
             ),
-            Text(l10n.exportKeepsPlaybackTime),
             if (needsLongExport) ...[
               Text(l10n.exportLongProjectNote),
               Align(

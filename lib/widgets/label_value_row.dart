@@ -153,7 +153,8 @@ class LabelValueRow extends StatelessWidget {
       );
       if (beside) {
         return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
           children: [
             labelText,
             SizedBox(width: gap),
@@ -163,6 +164,7 @@ class LabelValueRow extends StatelessWidget {
       }
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 4,
         children: [labelText, valueText],
       );
     },

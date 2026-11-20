@@ -1,3 +1,4 @@
+import 'widgets/settings_value_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -394,7 +395,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   ) {
     final textScale = MediaQuery.textScalerOf(context).scale(15) / 15;
     final showBadge =
-        (MediaQuery.sizeOf(context).width - 32) / textScale >= 160;
+        (MediaQuery.sizeOf(context).width - 32) / textScale >= 198;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
@@ -408,7 +409,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
             child: Row(
               children: [
                 if (showBadge) ...[
@@ -434,7 +435,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       size: 21,
                     ),
                   ),
-                  const SizedBox(width: 11),
+                  const SizedBox(width: 12),
                 ],
                 Expanded(
                   child: Column(
@@ -456,7 +457,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         subtitle,
                         style: TextStyle(
                           fontSize: 13,
-                          height: 1.35,
+                          height: 1.42,
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -528,19 +529,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                ListTile(
-                  title: Text(l10n.settingsDefaultFps),
-                  subtitle: Text(l10n.settingsDefaultFpsSubtitle),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${settings.defaultFps} fps',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const Icon(Icons.chevron_right),
-                    ],
-                  ),
+                SettingsValueTile(
+                  title: l10n.settingsDefaultFps,
+                  subtitle: l10n.settingsDefaultFpsSubtitle,
+                  value: '${settings.defaultFps} fps',
                   onTap: () async {
                     // 新規プロジェクト作成画面のFPS選択肢と統一（8/12/24のみ）。
                     final selected = await showDialog<int>(
@@ -570,18 +562,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }
                   },
                 ),
-                ListTile(
-                  title: Text(l10n.settingsLanguage),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _languageLabel(l10n, settings.language),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const Icon(Icons.chevron_right),
-                    ],
-                  ),
+                SettingsValueTile(
+                  title: l10n.settingsLanguage,
+                  value: _languageLabel(l10n, settings.language),
                   onTap: () async {
                     // 対応言語：日本語・English・简体中文・한국어・繁體中文・
                     // Français・Español。

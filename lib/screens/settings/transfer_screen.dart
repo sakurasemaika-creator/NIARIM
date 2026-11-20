@@ -41,6 +41,7 @@ import '../../services/workspace_preset_service.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/transfer_merge.dart';
 import '../../widgets/export_share_feedback.dart';
+import '../../widgets/first_that_fits.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -97,6 +98,15 @@ class _TransferScreenState extends State<TransferScreen> {
       for (final folder in projectService.folders) folder.id: folder.name,
     };
     final lastSaved = DateFormat.yMMMd(l10n.localeName).add_jms();
+    void selectAll() => setState(() {
+      _items.updateAll((_, _) => true);
+      _selectedProjectIds.addAll(projectIds);
+    });
+    void deselectAll() => setState(() {
+      _items.updateAll((_, _) => false);
+      _selectedProjectIds.clear();
+    });
+
     return Scaffold(
       // topicはヘルプ画面側の項目タイトル（日本語固定の内部検索キー）と
       // 一致させる必要があるため翻訳しない。
@@ -113,17 +123,10 @@ class _TransferScreenState extends State<TransferScreen> {
         top: false,
         child: Align(
           heightFactor: 1,
-          child: ConstrainedBox(
-            // PC/DeXでは本文（desktopCentered）と同じ幅にそろえる。
-            constraints: BoxConstraints(
-              maxWidth: isWideScreen(context) ? 720 : double.infinity,
-            ),
+          child: SizedBox(
+            width: 720,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              // OSの文字サイズ設定（textScaler）を大きくすると、4つの
-              // ボタンが1行に収まらずRenderFlexオーバーフローになっていた
-              // ため、Wrapで折り返せるようにする（Spacerは使えないので、
-              // 「読み込み」とそれ以外の間隔はspacingで表現する）。
               child: Wrap(
                 alignment: WrapAlignment.end,
                 spacing: 8,
@@ -133,24 +136,6 @@ class _TransferScreenState extends State<TransferScreen> {
                   TextButton(
                     onPressed: _isBusy ? null : _import,
                     child: Text(l10n.transferImport),
-                  ),
-                  TextButton(
-                    onPressed: _isBusy
-                        ? null
-                        : () => setState(() {
-                            _items.updateAll((_, _) => true);
-                            _selectedProjectIds.addAll(projectIds);
-                          }),
-                    child: Text(l10n.homeSelectionAllSelect),
-                  ),
-                  TextButton(
-                    onPressed: _isBusy
-                        ? null
-                        : () => setState(() {
-                            _items.updateAll((_, _) => false);
-                            _selectedProjectIds.clear();
-                          }),
-                    child: Text(l10n.homeSelectionAllDeselect),
                   ),
                   FilledButton.icon(
                     onPressed:
@@ -176,23 +161,114 @@ class _TransferScreenState extends State<TransferScreen> {
       ),
       body: desktopCentered(
         context,
-        Column(
+        ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           children: [
+            Text(
+              l10n.transferInstructionHint,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.45,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 8),
+            FirstThatFits(
+              children: [
+                Row(
+                  spacing: 8,
+                  children: [
+                    TextButton(
+                      onPressed: _isBusy ? null : selectAll,
+                      child: Text(l10n.homeSelectionAllSelect),
+                    ),
+                    TextButton(
+                      onPressed: _isBusy ? null : deselectAll,
+                      child: Text(l10n.homeSelectionAllDeselect),
+                    ),
+                  ],
+                ),
+                Wrap(
+                  spacing: 4,
+                  children: [
+                    IconButton(
+                      tooltip: l10n.homeSelectionAllSelect,
+                      onPressed: _isBusy ? null : selectAll,
+                      icon: const Icon(Icons.select_all),
+                    ),
+                    IconButton(
+                      tooltip: l10n.homeSelectionAllDeselect,
+                      onPressed: _isBusy ? null : deselectAll,
+                      icon: const Icon(Icons.deselect),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Card(
+              margin: EdgeInsets.zero,
+              elevation: 1,
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                alpha: 0.15,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: Column(
+                children: [
+                  for (final key in _items.keys) ...[
+                    if (key != _items.keys.first) const Divider(height: 1),
+                    CheckboxListTile(
+                      title: Text(_itemLabel(l10n, key)),
+                      value: _items[key],
+                      // 書き出し・読み込みの間は選び直せない（作品の
+                      // 選択と同じ。途中で変えた項目が今の処理に
+                      // 入ったか分からなくなる）。
+                      onChanged: _isBusy
+                          ? null
+                          : (v) => setState(() => _items[key] = v!),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.transferProjectsSectionTitle,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              padding: const EdgeInsets.only(top: 5, bottom: 8),
               child: Text(
-                l10n.transferInstructionHint,
+                l10n.transferProjectsHint,
                 style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                children: [
-                  Card(
+            // 保存先を読めなかったときは知らせて読み直せるようにし、
+            // 「プロジェクトがありません。」とは言わない（引き継げる
+            // 作品が無いように見える）。
+            Consumer<ProjectService>(
+              builder: (context, projectService, _) =>
+                  projectService.projectsLoadFailed
+                  ? ProjectsLoadFailureNotice(
+                      key: const Key('transferProjectsLoadFailed'),
+                      onRetry: projectService.retryLoadProjects,
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            Consumer<ProjectService>(
+              builder: (context, projectService, _) {
+                if (projects.isEmpty) {
+                  if (projectService.projectsLoadFailed) {
+                    return const SizedBox.shrink();
+                  }
+                  return Card(
+                    margin: EdgeInsets.zero,
                     elevation: 1,
                     shadowColor: ThemeService.activeColorScheme.shadow
                         .withValues(alpha: 0.15),
@@ -200,126 +276,56 @@ class _TransferScreenState extends State<TransferScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     color: Theme.of(context).colorScheme.surfaceContainerLow,
-                    child: Column(
-                      children: [
-                        for (final key in _items.keys) ...[
-                          if (key != _items.keys.first)
-                            const Divider(height: 1),
-                          CheckboxListTile(
-                            title: Text(_itemLabel(l10n, key)),
-                            value: _items[key],
-                            // 書き出し・読み込みの間は選び直せない（作品の
-                            // 選択と同じ。途中で変えた項目が今の処理に
-                            // 入ったか分からなくなる）。
-                            onChanged: _isBusy
-                                ? null
-                                : (v) => setState(() => _items[key] = v!),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Text(
-                      l10n.transferProjectsSectionTitle,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
-                    child: Text(
-                      l10n.transferProjectsHint,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        l10n.transferProjectsEmpty,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
+                  );
+                }
+                return Card(
+                  margin: EdgeInsets.zero,
+                  elevation: 1,
+                  shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                    alpha: 0.15,
                   ),
-                  // 保存先を読めなかったときは知らせて読み直せるようにし、
-                  // 「プロジェクトがありません。」とは言わない（引き継げる
-                  // 作品が無いように見える）。
-                  Consumer<ProjectService>(
-                    builder: (context, projectService, _) =>
-                        projectService.projectsLoadFailed
-                        ? ProjectsLoadFailureNotice(
-                            key: const Key('transferProjectsLoadFailed'),
-                            onRetry: projectService.retryLoadProjects,
-                          )
-                        : const SizedBox.shrink(),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  Consumer<ProjectService>(
-                    builder: (context, projectService, _) {
-                      if (projects.isEmpty) {
-                        if (projectService.projectsLoadFailed) {
-                          return const SizedBox.shrink();
-                        }
-                        return Card(
-                          elevation: 1,
-                          shadowColor: ThemeService.activeColorScheme.shadow
-                              .withValues(alpha: 0.15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                  color: Theme.of(context).colorScheme.surfaceContainerLow,
+                  child: Column(
+                    children: [
+                      for (final p in projects) ...[
+                        if (p != projects.first) const Divider(height: 1),
+                        CheckboxListTile(
+                          key: ValueKey('transfer-project-${p.id}'),
+                          title: Text(p.name),
+                          subtitle: Text(
+                            [
+                              ?folderNames[p.folderId],
+                              lastSaved.format(p.updatedAt.toLocal()),
+                            ].join(' · '),
                           ),
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerLow,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Text(
-                              l10n.transferProjectsEmpty,
-                              style: TextStyle(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                      return Card(
-                        elevation: 1,
-                        shadowColor: ThemeService.activeColorScheme.shadow
-                            .withValues(alpha: 0.15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          value: selectedProjectIds.contains(p.id),
+                          onChanged: _isBusy
+                              ? null
+                              : (v) => setState(() {
+                                  if (v == true) {
+                                    _selectedProjectIds.add(p.id);
+                                  } else {
+                                    _selectedProjectIds.remove(p.id);
+                                  }
+                                }),
                         ),
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerLow,
-                        child: Column(
-                          children: [
-                            for (final p in projects) ...[
-                              if (p != projects.first) const Divider(height: 1),
-                              CheckboxListTile(
-                                key: ValueKey('transfer-project-${p.id}'),
-                                title: Text(p.name),
-                                subtitle: Text(
-                                  [
-                                    ?folderNames[p.folderId],
-                                    lastSaved.format(p.updatedAt.toLocal()),
-                                  ].join(' · '),
-                                ),
-                                value: selectedProjectIds.contains(p.id),
-                                onChanged: _isBusy
-                                    ? null
-                                    : (v) => setState(() {
-                                        if (v == true) {
-                                          _selectedProjectIds.add(p.id);
-                                        } else {
-                                          _selectedProjectIds.remove(p.id);
-                                        }
-                                      }),
-                              ),
-                            ],
-                          ],
-                        ),
-                      );
-                    },
+                      ],
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
           ],
         ),

@@ -67,3 +67,19 @@ Widget desktopCentered(
     ),
   );
 }
+
+/// Align a trailing floating action with the end of [desktopCentered] content.
+Widget desktopCenteredFloatingAction(
+  BuildContext context,
+  Widget child, {
+  double maxWidth = 720,
+}) {
+  final availableWidth =
+      MediaQuery.sizeOf(context).width -
+      MediaQuery.paddingOf(context).horizontal;
+  final inset = ((availableWidth - maxWidth) / 2).clamp(0.0, double.infinity);
+  return Padding(
+    padding: EdgeInsetsDirectional.only(end: inset),
+    child: child,
+  );
+}
