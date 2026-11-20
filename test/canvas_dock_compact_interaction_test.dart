@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/pump_real_async.dart';
 
 class _ReferencePicker extends FilePicker {
   @override
@@ -164,7 +165,9 @@ void main() {
 
     FilePicker.platform = _ReferencePicker();
     await tester.tap(find.text(l10n.referenceWindowSelectImageButton));
-    await tester.pumpAndSettle();
+    for (var attempt = 0; image.evaluate().isEmpty && attempt < 40; attempt++) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 50));
+    }
     expect(find.descendant(of: dock, matching: image), findsOneWidget);
     final original = tester.widget<Image>(image).image;
 
