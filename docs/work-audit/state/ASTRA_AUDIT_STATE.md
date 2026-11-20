@@ -710,6 +710,14 @@ status: Opusのブランチで2026-10-17にdoneと判定した記録。統合後
 - テスト：`project_grid_view_size_test`（新規。10幅で大＞中＞小のカード幅、スマホ5幅で1・2・3列、300〜2560pxで以前から違っていた幅の列数が不変、390pxの大のフォルダのアイコンが90px超・中小46px）。修正前のコードで3件中2件、アイコンの大きさを戻すと1件が失敗することを確認。`home_navigation_state_test`の「マウス・ペンでタグ検索へ切り替えても打ち続けられる」（修正前は失敗）。
 - 判定：A004の機能・挙動・継続性は現在のHEADでPASS、見た目は上の修正でPASS。Route状態は`current_id`のA003がユーザーの判断待ちのため、dev_branchどおりA004 todoのまま（A003を閉じた後にdoneへ）。証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A004 （A004_recheck）。
 
+### A004 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：要修正（DISC494）
+
+- 一巡目の指摘：DISC126（名前に替えるとZ→A）は直った（更新日時は新しい順↓、名前に替えるとA→Z↑）。DISC262（選ぶと一覧が64pxずれる）は直った（詳細表示で長押ししても行の位置は変わらず、続けて押した下の行が選ばれる。選ぶ操作の行は一覧の下）。DISC263（小・中のタイルで丸が絵を覆う）は直った（PC 1280の小9列・中6列で星と︙は絵の下）。DISC266（背の低い窓で左下のカードが浮かぶボタンの下）は直った（1280×600でタイル・詳細とも末尾まで送るとどのカードも浮かぶボタンに隠れない）。
+- 実画面（Linux debug・Xvfb、一巡目と同じ保存：入れ子のフォルダ・同じ名前4件・長い名前・壊れた／無い表紙）：PC ja 1280×800・1280×600、簡体字360×780（一巡目で未確認）で検索の一致なし「没有与“xyzq”匹配的作品」と「清除搜索」、並び順の文言。
+- test：全体回帰 `44641695291` でホームのtest（`home_library_sort_layout_test`・`home_selection_toolbar_layout_test`・`project_grid_view_size_test`・`home_list_end_bottom_bar_test`・`home_display_matrix_test`・`home_matrix2_*`ほか）は成功。
+- 要修正（DISC494）：中国語・韓国語で、同じ一覧のフォルダ名はくらむぼん、作品名は明朝。
+- 画像：`shots-r1/r2a004-*`（backup-pending）。
+
 ## A005 — プロジェクト単体・複数選択・クリップボード（Opusブランチの証跡）
 
 status: Opusのブランチで2026-10-23に実操作・修正・再検証した記録（製品修正 App `14c53d7`、証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A005）。同日dev_branchへ統合した後のRoute状態はAUDIT_ROUTE.mdに従う（A005 todo。A005の監査で現在のHEADで再確認してから再利用する）。
