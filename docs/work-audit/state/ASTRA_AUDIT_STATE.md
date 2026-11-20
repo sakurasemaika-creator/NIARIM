@@ -2547,3 +2547,14 @@ Webに上流 `9bdbeb392e6bedd9823a7051e8fc38fa655a5929`（1commit/refresh-2026-s
 [S36証跡ZIP](https://drive.google.com/file/d/1-IUL4cwkpiw94u7LL8QoNBeLFO4WLTrB/view) 保存。1328303B/SHA256 `b8efc154ea7c7e04ecc0c08e80d1689fa524dbe405e82be249ec3bfe664176ff`、metadata/rawSHA/CRC/全335hash一致。修正前反例・21原本/59操作・回帰/実入力・差分と復元helperを収録。
 
 S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1d683ee44701103bd0d7168e6d432444` をdev_branchへ通常反映し、remote ref・単一親/tree/14差分blob・364 Dart/8fontビルド入力・State5 mirror・local cleanを照合済み。[独立CI](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/42582600001) のstorage-cache-regressions job129044687322でformat4file0差分、analyze0、実EACCES部分失敗/再試行を含む10件PASS。save-regressionsの既存serializer format失敗とfull-gatesのglobal format失敗/全suite未完了は残り、CI全体greenではない。次はDISC059の全reset/exportsの所有境界を優先し、DISC058取得失敗/性能・DISC048導線・DISC057期間・legacy/重複操作・typingとWeb Deltaを続ける。全面監査/Visual closureは未完了。
+
+## A016 — カラーピッカー・スポイト
+
+### A016 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：OK
+
+- 一巡目の指摘：DISC278は直った（Linux debug、ja、1280×800、スポイトで何も描いていない所を押すと、色の窓の題の見本が透明、HEXが「00000000」、不透明度が0%になる）。DISC279は直った（HEXの欄に「ZZZ12」と打つと「12」だけ入る〔16進以外は受け付けない〕、「ff」でEnterは前の色「00000000」へ戻る、「ff0000」でEnterは「FF0000」）。
+- 既知のDISC：DISC255は直った（浮かぶカラーピッカーは、スマホ360×640でも、強制スマホの横向き640×360でも画面の中に収まり、中身はスクロールする）。DISC254（HSV/RGBの切り替えの読み上げ）はLinuxで読み上げを確かめられない。
+- 注：自動の判定では、横向きでマウスがあるとPCの形になる（`responsive.dart`の`isWideScreen`）。Linuxの640×360ではPCの形のドックに小さな色の輪が出る。横向きのスマホ（指だけ）は強制スマホで確かめた。
+- test：全体回帰 `44641695291` で`background_color_picker_test`・`brush_outline_canvas_eyedropper_contract_test`・`color_picker_mode_pill_fit_test`・`color_wheel_corner_layout_test`・`canvas_typing_aware_keys_test`は成功。
+- 未確認：RGB・不透明度のスライダーの値、複数レイヤーでのスポイト、画像からのスポイト（portal）、長押しのスポイト（指）、読み上げ。
+- 画像：`shots-r1/r2a016-*`（backup-pending）。
