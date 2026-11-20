@@ -9158,11 +9158,12 @@ class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
     final cropTop = (cropY - unionTop) * scale;
     final cropW = newW * scale;
     final cropH = newH * scale;
+    const handleRadius = _handleSize / 2;
 
     Widget cornerHandle(_CropCorner corner, double left, double top) =>
         Positioned(
-          left: left - _handleSize / 2,
-          top: top - _handleSize / 2,
+          left: left,
+          top: top,
           width: _handleSize,
           height: _handleSize,
           child: GestureDetector(
@@ -9196,100 +9197,109 @@ class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              width: boxW,
-              height: boxH,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // 回転前のキャンバスの外接矩形（回転時のみ薄く表示する参考枠）。
-                  if (angle != 0)
+            // The full handles must be inside the Stack's hit-test bounds,
+            // including when the crop touches the edge of the artwork.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: SizedBox(
+                width: boxW + _handleSize,
+                height: boxH + _handleSize,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // 回転前のキャンバスの外接矩形（回転時のみ薄く表示する参考枠）。
+                    if (angle != 0)
+                      Positioned(
+                        left: refLeft + handleRadius,
+                        top: refTop + handleRadius,
+                        width: refBoxW,
+                        height: refBoxH,
+                        child: IgnorePointer(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: scheme.outline.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     Positioned(
-                      left: refLeft,
-                      top: refTop,
-                      width: refBoxW,
-                      height: refBoxH,
+                      left: artworkLeft + handleRadius,
+                      top: artworkTop + handleRadius,
+                      width: artworkW,
+                      height: artworkH,
                       child: IgnorePointer(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: scheme.outline.withValues(alpha: 0.5),
+                        child: Transform.rotate(
+                          angle: angle * math.pi / 180,
+                          child: _TimelinePreview(
+                            backgroundColor: _projectBackgroundOf(
+                              ps,
+                              widget.projectId,
+                            ),
+                            tileManager: ps.tileManagerOf(widget.projectId),
+                            layers: ps
+                                .stackedLayersOf(
+                                  widget.projectId,
+                                  widget.sceneId,
+                                  widget.frameIndex,
+                                )
+                                .layers,
+                            sceneId: widget.sceneId,
+                            frameIndex: widget.frameIndex,
+                            cameraKeyframes: ps.cameraKeyframesOf(
+                              widget.projectId,
+                              widget.sceneId,
+                            ),
+                            effectFilters: ps.effectFiltersOf(
+                              widget.projectId,
+                              widget.sceneId,
+                            ),
+                            layerHomes: ps.layerHomesOf(widget.projectId),
+                            groups: ps.layerGroupsOf(
+                              widget.projectId,
+                              widget.sceneId,
                             ),
                           ),
                         ),
                       ),
                     ),
-                  Positioned(
-                    left: artworkLeft,
-                    top: artworkTop,
-                    width: artworkW,
-                    height: artworkH,
-                    child: IgnorePointer(
-                      child: Transform.rotate(
-                        angle: angle * math.pi / 180,
-                        child: _TimelinePreview(
-                          backgroundColor: _projectBackgroundOf(
-                            ps,
-                            widget.projectId,
-                          ),
-                          tileManager: ps.tileManagerOf(widget.projectId),
-                          layers: ps
-                              .stackedLayersOf(
-                                widget.projectId,
-                                widget.sceneId,
-                                widget.frameIndex,
-                              )
-                              .layers,
-                          sceneId: widget.sceneId,
-                          frameIndex: widget.frameIndex,
-                          cameraKeyframes: ps.cameraKeyframesOf(
-                            widget.projectId,
-                            widget.sceneId,
-                          ),
-                          effectFilters: ps.effectFiltersOf(
-                            widget.projectId,
-                            widget.sceneId,
-                          ),
-                          layerHomes: ps.layerHomesOf(widget.projectId),
-                          groups: ps.layerGroupsOf(
-                            widget.projectId,
-                            widget.sceneId,
+                    // 新キャンバスサイズの範囲を示す枠。枠内をドラッグすると位置
+                    // （cropX/cropY）を、四隅のハンドルをドラッグするとサイズ
+                    // （newW/newH）を変更できる。
+                    Positioned(
+                      left: cropLeft + handleRadius,
+                      top: cropTop + handleRadius,
+                      width: cropW,
+                      height: cropH,
+                      child: GestureDetector(
+                        onPanUpdate: (d) => _dragMove(d.delta / scale),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: markColor, width: 2),
+                            color: markColor.withValues(alpha: 0.15),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  // 新キャンバスサイズの範囲を示す枠。枠内をドラッグすると位置
-                  // （cropX/cropY）を、四隅のハンドルをドラッグするとサイズ
-                  // （newW/newH）を変更できる。
-                  Positioned(
-                    left: cropLeft,
-                    top: cropTop,
-                    width: cropW,
-                    height: cropH,
-                    child: GestureDetector(
-                      onPanUpdate: (d) => _dragMove(d.delta / scale),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: markColor, width: 2),
-                          color: markColor.withValues(alpha: 0.15),
-                        ),
-                      ),
+                    cornerHandle(_CropCorner.topLeft, cropLeft, cropTop),
+                    cornerHandle(
+                      _CropCorner.topRight,
+                      cropLeft + cropW,
+                      cropTop,
                     ),
-                  ),
-                  cornerHandle(_CropCorner.topLeft, cropLeft, cropTop),
-                  cornerHandle(_CropCorner.topRight, cropLeft + cropW, cropTop),
-                  cornerHandle(
-                    _CropCorner.bottomLeft,
-                    cropLeft,
-                    cropTop + cropH,
-                  ),
-                  cornerHandle(
-                    _CropCorner.bottomRight,
-                    cropLeft + cropW,
-                    cropTop + cropH,
-                  ),
-                ],
+                    cornerHandle(
+                      _CropCorner.bottomLeft,
+                      cropLeft,
+                      cropTop + cropH,
+                    ),
+                    cornerHandle(
+                      _CropCorner.bottomRight,
+                      cropLeft + cropW,
+                      cropTop + cropH,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -11191,7 +11201,14 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                     ),
                     tooltip: l10n.commonDelete,
                     onPressed: () async {
-                      if (!await confirmDelete(context)) return;
+                      if (!await confirmDelete(
+                        context,
+                        message: l10n.layerPanelDeleteConfirmTitle(
+                          l10n.timelineCameraKfTitle(widget.kf.frameIndex + 1),
+                        ),
+                      )) {
+                        return;
+                      }
                       if (!context.mounted) return;
                       Navigator.pop(context);
                       widget.onDelete!();

@@ -1329,6 +1329,43 @@ class SaveTreeService extends ChangeNotifier {
     // スロット方式の場合、選択ノードにスロット番号を再割り当て
     List<SaveNode> newNodes;
     if (!newIsTreeMode) {
+      final slotMax = newSlotMax ?? _slotMax;
+      final previousOwners = <int, String>{};
+      for (final node in all) {
+        if (node.slotIndex >= 0) {
+          previousOwners.putIfAbsent(node.slotIndex, () => node.id);
+        }
+      }
+      final keptSlots = {
+        for (final entry in keep.asMap().entries)
+          if (previousOwners[entry.value.slotIndex] == entry.value.id)
+            entry.value.slotIndex: entry.key,
+      };
+      // Carry each save's memo to its new slot. Keep independent labels on
+      // empty slots if those slots still exist and stay empty.
+      int? newSlotOf(int oldSlot) {
+        if (previousOwners.containsKey(oldSlot)) return keptSlots[oldSlot];
+        return oldSlot >= keep.length && oldSlot < slotMax ? oldSlot : null;
+      }
+
+      final memos = _slotMemosByProject[projectId] ?? const <int, String>{};
+      _slotMemosByProject[projectId] = {
+        for (final entry in memos.entries)
+          if (newSlotOf(entry.key) case final int slot) slot: entry.value,
+      };
+      final memoTimes = _slotMemoTimes[projectId] ?? const <int, DateTime>{};
+      _slotMemoTimes[projectId] = {
+        for (final entry in memoTimes.entries)
+          if (newSlotOf(entry.key) case final int slot) slot: entry.value,
+      };
+      final edits = _memosEditedUnread[projectId];
+      if (edits != null) {
+        _memosEditedUnread[projectId] = {
+          for (final oldSlot in edits)
+            if (newSlotOf(oldSlot) case final int slot) slot,
+        };
+      }
+
       newNodes = keep.asMap().entries.map((e) {
         return SaveNode(
           id: e.value.id,
@@ -1339,7 +1376,7 @@ class SaveTreeService extends ChangeNotifier {
           slotIndex: e.key,
         );
       }).toList();
-      if (newSlotMax != null) _slotMax = newSlotMax;
+      _slotMax = slotMax;
     } else {
       newNodes = keep
           .map(
@@ -1381,7 +1418,20 @@ class SaveTreeService extends ChangeNotifier {
     final archived = _archivedByProject[projectId];
     if (archived == null || archived.isEmpty) return;
     _nodesByProject.putIfAbsent(projectId, () => []);
-    _nodesByProject[projectId]!.addAll(archived);
+    _nodesByProject[projectId]!.addAll(
+      archived.map(
+        (node) => node.isTreeMode
+            ? node
+            : SaveNode(
+                id: node.id,
+                projectId: node.projectId,
+                savedAt: node.savedAt,
+                comment: node.comment,
+                thumbnailPath: node.thumbnailPath,
+                parentId: node.parentId,
+              ),
+      ),
+    );
     _archivedByProject[projectId] = [];
     notifyListeners();
     unawaited(_persist(projectId));

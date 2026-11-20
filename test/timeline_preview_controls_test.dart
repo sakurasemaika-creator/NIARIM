@@ -155,31 +155,54 @@ void main() {
         final cursor = kind == PointerDeviceKind.mouse
             ? await tester.createGesture(kind: kind)
             : null;
-        if (cursor == null) {
-          await tester.tap(edit, kind: kind);
-        } else {
-          final position = tester.getCenter(edit);
-          await cursor.addPointer(location: position);
-          await cursor.down(position);
-          await cursor.up();
-        }
-        await pumpRealAsync(tester, const Duration(milliseconds: 450));
-        expect(find.byType(CanvasArea), findsOneWidget);
-
-        final timeline = find.byKey(const Key('canvasTimelineModeButton'));
-        expect(timeline.hitTestable(), findsOneWidget);
         if (cursor != null) {
-          final target = tester.getCenter(timeline);
-          await cursor.moveTo(target);
-          await tester.pump(const Duration(seconds: 1));
-          await cursor.down(target);
-          await cursor.up();
-          await cursor.removePointer();
-        } else {
-          await tester.tap(timeline, kind: kind);
+          await cursor.addPointer(location: tester.getCenter(edit));
+          addTearDown(cursor.removePointer);
         }
-        await pumpRealAsync(tester, const Duration(milliseconds: 500));
-        expect(find.byType(TimelineScreen), findsOneWidget);
+        Future<void> press(Finder control) async {
+          expect(control.hitTestable(), findsOneWidget);
+          if (cursor == null) {
+            await tester.tap(control, kind: kind);
+          } else {
+            final target = tester.getCenter(control);
+            await cursor.moveTo(target);
+            await tester.pump(const Duration(milliseconds: 650));
+            await cursor.down(target);
+            await tester.pump(const Duration(milliseconds: 30));
+            await cursor.up();
+          }
+          await pumpRealAsync(tester, const Duration(milliseconds: 450));
+        }
+
+        await press(edit);
+        expect(find.byType(CanvasArea), findsOneWidget);
+        await press(find.byKey(const Key('canvasTimelineModeButton')));
+        final timeline = find.byType(TimelineScreen);
+        expect(timeline, findsOneWidget);
+        final history = tester.element(timeline).read<UndoManager>();
+        var undone = false;
+        history.push(
+          ProjectEditUndoAction('Timeline action', () => undone = true, () {}),
+          projectId: id,
+        );
+        await tester.pump();
+        await press(find.byTooltip(l10n.commonUndo).hitTestable().first);
+        expect(undone, isTrue);
+        await press(
+          find.byTooltip(l10n.timelineBackToCanvasTooltip).hitTestable().first,
+        );
+        expect(find.byType(CanvasArea), findsOneWidget);
+        await press(
+          find
+              .byTooltip(l10n.timelineBackToProjectListTooltip)
+              .hitTestable()
+              .first,
+        );
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(
+          find.text(l10n.timelineBackToProjectListDialogBody),
+          findsOneWidget,
+        );
         expect(tester.takeException(), isNull);
       },
     );
@@ -396,6 +419,68 @@ void main() {
     expect(find.byKey(const Key('timelinePreviewLoopButton')), findsNothing);
   }
 
+  for (final (screen, pointer) in [
+    (const Size(1280, 800), PointerDeviceKind.mouse),
+    (const Size(320, 640), PointerDeviceKind.touch),
+  ]) {
+    testWidgets(
+      'DISC525: every canvas resize corner is draggable with ${pointer.name}',
+      (tester) async {
+        await openTimeline(
+          tester,
+          project: const Size(1280, 720),
+          screen: screen,
+          pc: pointer == PointerDeviceKind.mouse,
+          fraction: .4,
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(TimelineScreen)),
+        )!;
+        final dimensions = find.byKey(
+          const ValueKey('canvasSizeDimensionsText'),
+        );
+        for (final (corner, inward) in [
+          ('topLeft', const Offset(1, 1)),
+          ('topRight', const Offset(-1, 1)),
+          ('bottomLeft', const Offset(1, -1)),
+          ('bottomRight', const Offset(-1, -1)),
+        ]) {
+          for (final outside in [false, true]) {
+            await tester.tap(find.byKey(const ValueKey('timelineMoreMenu')));
+            await tester.pumpAndSettle();
+            await tester.tap(
+              find.descendant(
+                of: find.byType(PopupMenuItem<String>),
+                matching: find.text(l10n.timelineCanvasSizeChangeMenuItem),
+              ),
+            );
+            await tester.pumpAndSettle();
+            expect(tester.widget<Text>(dimensions).data, '1280 × 720 px');
+            final handle = find.byKey(ValueKey('canvasSizeCorner_$corner'));
+            final center = tester.getCenter(handle);
+            final start = center - (outside ? inward * 5 : Offset.zero);
+            final drag = await tester.startGesture(start, kind: pointer);
+            await drag.moveBy(inward * 24);
+            await tester.pump();
+            await drag.moveBy(inward * 14);
+            await drag.up();
+            await tester.pumpAndSettle();
+            expect(
+              tester.widget<Text>(dimensions).data,
+              isNot('1280 × 720 px'),
+              reason: '$corner, outside: $outside',
+            );
+            await tester.tap(
+              find.widgetWithText(TextButton, l10n.commonCancel),
+            );
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull);
+          }
+        }
+      },
+    );
+  }
+
   testWidgets('edited timeline dialogs finish closing with live controllers', (
     tester,
   ) async {
@@ -405,6 +490,10 @@ void main() {
       screen: const Size(1280, 800),
       pc: true,
       fraction: 0.4,
+      setUpProject: (projects, id) {
+        final scene = projects.scenesOf(id).single;
+        projects.addTimelineMarker(id, scene.id, 10, 'Keep with Undo');
+      },
     );
     final timeline = find.byType(TimelineScreen);
     final service = tester.element(timeline).read<ProjectService>();
@@ -436,12 +525,25 @@ void main() {
     );
     await tester.pump();
     await tester.tap(confirm);
-    await tester.pump();
-    await tester.pumpAndSettle();
+    await pumpRealAsync(tester, const Duration(milliseconds: 350));
+    expect(find.text(l10n.timelineDurationShrinkConfirmBody), findsOneWidget);
+    expect(l10n.timelineDurationShrinkConfirmBody, isNot(contains('元に戻せ')));
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+    await pumpRealAsync(tester, const Duration(milliseconds: 350));
     expect(tester.takeException(), isNull);
     expect(timeline, findsOneWidget);
     expect(service.frameCount(id, sceneId), 8);
     expect(await frameCountSaved(tester, id, 8), isTrue);
+    final history = tester.element(timeline).read<UndoManager>();
+    history.undo(projectId: id);
+    expect(service.frameCount(id, sceneId), 12);
+    expect(
+      service.timelineMarkersOf(id, sceneId).single.comment,
+      'Keep with Undo',
+    );
+    history.redo(projectId: id);
+    await tester.pumpAndSettle();
+    expect(service.frameCount(id, sceneId), 8);
 
     final layer = service.addLayer(
       projectId: id,
@@ -497,7 +599,14 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(timeline, findsOneWidget);
 
-    await tester.runAsync(() => service.saveProject(id));
+    // The queued autosaves use the widget test's clock and real file I/O.
+    var saved = false;
+    final save = service.saveProject(id).then((_) => saved = true);
+    for (var attempt = 0; !saved && attempt < 50; attempt++) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 40));
+    }
+    expect(saved, isTrue);
+    await save;
     final reopened = ProjectService();
     addTearDown(reopened.dispose);
     await tester.runAsync(reopened.init);
@@ -785,6 +894,30 @@ void main() {
       find.text(l10n.timelineCameraFrameAlreadyHasKeyframe),
       findsOneWidget,
     );
+    await tester.tap(moving);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.byTooltip(l10n.commonDelete),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        l10n.layerPanelDeleteConfirmTitle(l10n.timelineCameraKfTitle(5)),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+    await tester.pumpAndSettle();
+    expect(ps.cameraKeyframesOf(id, sceneId).map((key) => key.frameIndex), [0]);
+    history.undo(projectId: id);
+    await tester.pumpAndSettle();
+    expect(ps.cameraKeyframesOf(id, sceneId).map((key) => key.frameIndex), [
+      0,
+      4,
+    ]);
     expect(tester.takeException(), isNull);
   });
 
@@ -953,12 +1086,22 @@ void main() {
         find.byKey(ValueKey('timelineTimestampDelete-${second.id}')),
       );
       await tester.pumpAndSettle();
+      expect(
+        find.text(l10n.layerPanelDeleteConfirmTitle('Second marker')),
+        findsOneWidget,
+      );
       await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
       await tester.pumpAndSettle();
       final remaining = ps.timelineMarkersOf(id, sceneId).single;
       expect(remaining.comment, 'Edited marker');
       expect(remaining.color, blue);
       expect(TimelineMarker.fromJson(remaining.toJson()).color, blue);
+      context.read<UndoManager>().undo(projectId: id);
+      await tester.pump();
+      expect(
+        ps.timelineMarkersOf(id, sceneId).map((marker) => marker.id),
+        contains(second.id),
+      );
       expect(
         TimelineMarker.fromJson({
           'id': 'old',
@@ -1031,6 +1174,26 @@ void main() {
     expect(strength(), greaterThan(5));
     expect(history.undoCount, baseline + 1);
     history.undo(projectId: id);
+    expect(strength(), 5);
+    await animate();
+    final deleteEffect = find.descendant(
+      of: tile,
+      matching: find.byTooltip(l10n.commonDelete),
+    );
+    await tester.ensureVisible(deleteEffect);
+    await tester.tap(deleteEffect);
+    await animate();
+    expect(
+      find.text(
+        l10n.layerPanelDeleteConfirmTitle(l10n.timelineEffectTypeGaussianBlur),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+    await animate();
+    expect(ps.effectFiltersOf(id, sceneId), isEmpty);
+    history.undo(projectId: id);
+    await animate();
     expect(strength(), 5);
     expect(tester.takeException(), isNull);
   });

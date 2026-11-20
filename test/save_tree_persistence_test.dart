@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -123,6 +124,79 @@ void main() {
       expect(cleared.slotMemoOf(p.id, 3), '塗り前');
     },
   );
+
+  for (final archive in [true, false]) {
+    test(
+      'DISC526: save mode compacts the matching memos (archive=$archive)',
+      () async {
+        final (ps, p) = await project();
+        final service = SaveTreeService()..setSlotMax(4);
+        final discarded = await slot(
+          service,
+          ps,
+          p,
+          1,
+          comment: 'Older snapshot',
+        );
+        final first = await slot(service, ps, p, 0, comment: 'First snapshot');
+        final third = await slot(service, ps, p, 2, comment: 'Third snapshot');
+        expect(await service.setSlotMemo(p.id, 0, ''), isTrue);
+        expect(
+          await service.setSlotMemo(p.id, 1, 'Discarded slot memo'),
+          isTrue,
+        );
+        expect(
+          await service.setSlotMemo(p.id, 2, 'Renamed third slot'),
+          isTrue,
+        );
+        expect(
+          await service.setSlotMemo(p.id, 3, 'Empty slot outside limit'),
+          isTrue,
+        );
+        Map<String, dynamic> storedTimes() =>
+            (jsonDecode(index(p).readAsStringSync()) as Map)['slotMemoTimes']
+                as Map<String, dynamic>;
+        final before = storedTimes();
+
+        expect(
+          await service.applyModeChange(
+            projectId: p.id,
+            keepIds: [first.id, third.id],
+            archive: archive,
+            newIsTreeMode: false,
+            newSlotMax: 2,
+          ),
+          isTrue,
+        );
+        expect(storedTimes(), {'0': before['0'], '1': before['2']});
+
+        final reopened = await restart(slots: 2);
+        expect(reopened.getNodes(p.id).map((n) => (n.slotIndex, n.id)), [
+          (0, first.id),
+          (1, third.id),
+        ]);
+        expect(reopened.slotDisplayMemoOf(p.id, 0), '');
+        expect(reopened.slotDisplayMemoOf(p.id, 1), 'Renamed third slot');
+        expect(reopened.slotMemoOf(p.id, 2), isNull);
+        expect(reopened.slotMemoOf(p.id, 3), isNull);
+        expect(await reopened.loadNode(p.id, third.id), isNotNull);
+        if (archive) {
+          expect(reopened.getArchivedNodes(p.id).single.id, discarded.id);
+          reopened.setTreeMode(true);
+          reopened.restoreArchive(p.id);
+          final restored = reopened
+              .getNodes(p.id)
+              .singleWhere((n) => n.id == discarded.id);
+          expect(restored.isTreeMode, isTrue);
+          expect(restored.comment, 'Older snapshot');
+          expect(await reopened.loadNode(p.id, restored.id), isNotNull);
+        } else {
+          expect(reopened.getArchivedNodes(p.id), isEmpty);
+          expect(await reopened.loadNode(p.id, discarded.id), isNull);
+        }
+      },
+    );
+  }
 
   test('tree saves keep their parent after a restart', () async {
     final (ps, p) = await project();

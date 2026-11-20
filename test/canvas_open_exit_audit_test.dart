@@ -1,14 +1,17 @@
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' hide UndoManager;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/undo_manager.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/material_asset.dart';
 import 'package:niarim/router.dart';
@@ -165,6 +168,95 @@ void main() {
     await settleIo(tester, 2);
     expect(tiles.exportAll()[commonKey], isNull);
     expect(tiles.exportAll()[nextKey], isNotEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('DISC524: history jumps publish only the new frame layers', (
+    tester,
+  ) async {
+    final (service: projects, :id) = await open(
+      tester,
+      size: const Size(1280, 800),
+    );
+    final sceneId = projects.scenesOf(id).single.id;
+    final tiles = projects.tileManagerOf(id);
+    final history = tester.element(find.byType(HomeScreen)).read<UndoManager>();
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    const colors = [
+      [220, 30, 40, 255],
+      [30, 60, 220, 255],
+    ];
+    for (var frame = 0; frame < colors.length; frame++) {
+      final below = projects.addLayer(
+        projectId: id,
+        sceneId: sceneId,
+        frameIndex: frame,
+        type: LayerType.normal,
+        name: 'Color $frame',
+        insertIndex: 1,
+      );
+      final key = projects.tileKeyFor(id, sceneId, frame, below.id);
+      tiles.getOrCreateTile(key, 0, 0).setRange(0, 4, colors[frame]);
+      tiles.markDirty(key, 0, 0);
+    }
+    history.push(
+      ProjectEditUndoAction(
+        'Edit across frames',
+        () {},
+        () {},
+        undoFrame: (sceneId: sceneId, frameIndex: 1),
+        redoFrame: (sceneId: sceneId, frameIndex: 0),
+      ),
+      projectId: id,
+    );
+    appRouter.go('/canvas/$id');
+    await settleIo(tester);
+
+    final area = find.byType(CanvasArea);
+    Future<int?> displayedColor() async {
+      final dynamic painter = tester
+          .widgetList<CustomPaint>(
+            find.descendant(of: area, matching: find.byType(CustomPaint)),
+          )
+          .map((widget) => widget.painter)
+          .firstWhere(
+            (painter) => painter.runtimeType.toString() == '_CanvasPainter',
+          );
+      final image = (painter.belowImage as ui.Image?)?.clone();
+      if (image == null) return null;
+      return tester.runAsync(() async {
+        try {
+          final bytes = (await image.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          ))!;
+          return bytes.getUint32(0);
+        } finally {
+          image.dispose();
+        }
+      });
+    }
+
+    expect(await displayedColor(), 0xdc1e28ff);
+    for (final (button, frame, color, previous) in [
+      (l10n.commonUndo, 1, 0x1e3cdcff, 0xdc1e28ff),
+      (l10n.commonRedo, 0, 0xdc1e28ff, 0x1e3cdcff),
+    ]) {
+      await tester.tap(find.byTooltip(button));
+      await tester.pump();
+      expect(tester.widget<CanvasArea>(area).currentFrame, frame);
+      expect(await displayedColor(), isNot(previous));
+      await settleIo(tester, 3);
+      expect(await displayedColor(), color);
+    }
+
+    // Switch back while the intermediate frame is still compositing.
+    await tester.tap(find.byTooltip(l10n.commonUndo));
+    await tester.pump();
+    await tester.tap(find.byTooltip(l10n.commonRedo));
+    await tester.pump();
+    await settleIo(tester, 3);
+    expect(tester.widget<CanvasArea>(area).currentFrame, 0);
+    expect(await displayedColor(), 0xdc1e28ff);
     expect(tester.takeException(), isNull);
   });
 

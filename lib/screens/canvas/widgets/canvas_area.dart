@@ -749,6 +749,8 @@ class CanvasAreaState extends State<CanvasArea> {
   Map<int, ui.Image> _onionImagesView = const {};
   bool _isCompositing = false;
   bool _isComposingSurroundings = false;
+  bool _forceSurroundingsAfterCurrent = false;
+  int _layerTargetRevision = 0;
 
   // 現在フレームのレイヤー一覧（レイヤーパネル順・先頭が最前面）。
   // ProjectServiceの変更を検知して合成し直すために保持する。
@@ -925,7 +927,10 @@ class CanvasAreaState extends State<CanvasArea> {
         (targetChanged || widget.currentTool != DrawingTool.bucket)) {
       _cancelBucket();
     }
-    if (managerChanged) {
+    if (targetChanged) {
+      // The next frame can arrive while the previous frame is rasterizing.
+      // Drop its display caches and reject any results still in flight.
+      _layerTargetRevision++;
       _compositeImage?.dispose();
       _compositeImage = null;
       _belowImage?.dispose();
@@ -935,11 +940,15 @@ class CanvasAreaState extends State<CanvasArea> {
       _exactBlend?.dispose();
       _exactBlend = null;
       _exactBlendKey = null;
+      _selectionLayerOverlayImage?.dispose();
+      _selectionLayerOverlayImage = null;
       _layers = const [];
+    }
+    if (managerChanged) {
       _initEngine();
     }
     _drawingEngine.isEraser = _erasing;
-    if (oldWidget.contentRevision != widget.contentRevision) {
+    if (!targetChanged && oldWidget.contentRevision != widget.contentRevision) {
       // The temporary filter/colour preview has just been committed to
       // TileManager. Reload both the active layer and surrounding composition.
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -976,17 +985,16 @@ class CanvasAreaState extends State<CanvasArea> {
     }
     // フレーム・シーン・現在レイヤーが変わった場合は現在レイヤー画像も
     // 合成し直す（他のレイヤー変更検知は_recomposeSurroundings内で行う）。
-    final frameChanged = targetChanged;
-    if (frameChanged) {
-      _scheduleComposite();
+    if (targetChanged) {
       // 選択範囲はフレームごとの一時状態のため、フレーム切替時にクリアする
       _clearSelectionMask(notifyAlways: true);
     }
     _recomposeSurroundings(
       force:
-          frameChanged ||
+          targetChanged ||
           oldWidget.autofillCheckMode != widget.autofillCheckMode,
     );
+    if (targetChanged) _scheduleComposite();
 
     // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ──────────────────
     final enteredMeshTransform =
@@ -4572,9 +4580,16 @@ class CanvasAreaState extends State<CanvasArea> {
     }
     _isCompositing = true;
     _compositePending = false;
+    final targetRevision = _layerTargetRevision;
     _composeCurrentLayerImage().then((img) {
       if (!mounted) {
         img.dispose();
+        return;
+      }
+      if (targetRevision != _layerTargetRevision) {
+        img.dispose();
+        _isCompositing = false;
+        _scheduleComposite();
         return;
       }
       setState(() {
@@ -4610,12 +4625,18 @@ class CanvasAreaState extends State<CanvasArea> {
     }
     if (_isRefreshingSelectionLayerOverlay) return;
     _isRefreshingSelectionLayerOverlay = true;
+    final targetRevision = _layerTargetRevision;
     final img = await _tileManager.compositeLayerToImage(
       _tileKeyFor(selectionLayer.id),
     );
     _isRefreshingSelectionLayerOverlay = false;
     if (!mounted) {
       img.dispose();
+      return;
+    }
+    if (targetRevision != _layerTargetRevision) {
+      img.dispose();
+      _refreshSelectionLayerOverlay();
       return;
     }
     setState(() {
@@ -4655,9 +4676,14 @@ class CanvasAreaState extends State<CanvasArea> {
     return frame.image;
   }
 
-  Future<ui.Image> _composeAutofillCheckLayers(List<Layer> layers) async {
-    final w = _tileManager.canvasWidth;
-    final h = _tileManager.canvasHeight;
+  Future<ui.Image> _composeAutofillCheckLayers(
+    TileManager manager,
+    List<Layer> layers,
+    String Function(Layer) keyOf,
+    AutofillCheckMode checkMode,
+  ) async {
+    final w = manager.canvasWidth;
+    final h = manager.canvasHeight;
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     var partIndex = 0;
@@ -4667,10 +4693,8 @@ class CanvasAreaState extends State<CanvasArea> {
       if (layer.type != LayerType.autoFill) continue;
       final effectiveOpacity = inheritedLayerOpacity(layer, byId);
       if (effectiveOpacity == 0) continue;
-      final raw = await _tileManager.compositeLayerToImage(
-        _tileKeyFor(layer.id),
-      );
-      final color = autofillCheckColor(widget.autofillCheckMode, partIndex++);
+      final raw = await manager.compositeLayerToImage(keyOf(layer));
+      final color = autofillCheckColor(checkMode, partIndex++);
       final preview = await _autofillCheckImage(raw, color);
       raw.dispose();
       final opacity = (effectiveOpacity * 255 / 100).round();
@@ -4690,15 +4714,18 @@ class CanvasAreaState extends State<CanvasArea> {
   Future<void> _recomposeSurroundings({bool force = false}) async {
     final project = widget.project;
     if (project == null) return;
-    if (_isComposingSurroundings) return;
+    if (_isComposingSurroundings) {
+      _forceSurroundingsAfterCurrent |= force;
+      return;
+    }
     final ps = context.read<ProjectService>();
+    final sceneId = widget.sceneId;
+    final frame = widget.currentFrame;
+    final manager = _tileManager;
+    final targetRevision = _layerTargetRevision;
     // Drawn in the scene's 重なり順 (a timeline text in front of the
     // drawing, a video behind it), as in the timeline and the export.
-    final layers = ps.displayLayersOf(
-      project.id,
-      widget.sceneId,
-      widget.currentFrame,
-    );
+    final layers = ps.displayLayersOf(project.id, sceneId, frame);
     if (!force && _sameLayerList(_layers, layers)) return;
     String? clipOf(List<Layer> list) {
       final index = list.indexWhere((layer) => layer.id == _layerId);
@@ -4713,33 +4740,31 @@ class CanvasAreaState extends State<CanvasArea> {
     _isComposingSurroundings = true;
 
     final idx = layers.indexWhere((l) => l.id == _layerId);
-    final w = _tileManager.canvasWidth;
-    final h = _tileManager.canvasHeight;
+    final w = manager.canvasWidth;
+    final h = manager.canvasHeight;
+    String keyOf(Layer layer) =>
+        ps.tileKeyFor(project.id, sceneId, frame, layer.id);
     LayerKeyframe? groupKf(Layer layer) {
-      final group = ps.groupContainingLayer(
-        project.id,
-        widget.sceneId,
-        layer.id,
-      );
+      final group = ps.groupContainingLayer(project.id, sceneId, layer.id);
       if (group == null || group.keyframes.isEmpty) return null;
-      return _layerKeyframeEngine.valueAt(group.keyframes, widget.currentFrame);
+      return _layerKeyframeEngine.valueAt(group.keyframes, frame);
     }
 
     final checkMode = widget.autofillCheckMode;
     final belowImg = checkMode == AutofillCheckMode.normal
         ? await LayerCompositor.composite(
-            _tileManager,
+            manager,
             layers,
-            (l) => _tileKeyFor(l.id),
+            keyOf,
             w,
             h,
             shouldRender: (_, i) => i > idx,
-            keyframeOf: _keyframeOf,
+            keyframeOf: (l) => _keyframeOf(l, frame),
             groupKeyframeOf: groupKf,
             // The paper takes part in the blending, as in the export.
             paperColor: _paperColor,
           )
-        : await _composeAutofillCheckLayers(layers);
+        : await _composeAutofillCheckLayers(manager, layers, keyOf, checkMode);
     if (!mounted) {
       belowImg.dispose();
       _isComposingSurroundings = false;
@@ -4748,13 +4773,13 @@ class CanvasAreaState extends State<CanvasArea> {
     // The whole list, drawing only the layers above: a layer clipped to the
     // current layer (or to one below it) finds its clipping base there.
     final abovePicture = await LayerCompositor.compositeToPicture(
-      _tileManager,
+      manager,
       layers,
-      (l) => _tileKeyFor(l.id),
+      keyOf,
       w,
       h,
       shouldRender: (_, i) => i < idx,
-      keyframeOf: _keyframeOf,
+      keyframeOf: (l) => _keyframeOf(l, frame),
       groupKeyframeOf: groupKf,
     );
     if (!mounted) {
@@ -4763,24 +4788,27 @@ class CanvasAreaState extends State<CanvasArea> {
       _isComposingSurroundings = false;
       return;
     }
+    final pending = _forceSurroundingsAfterCurrent;
+    _forceSurroundingsAfterCurrent = false;
+    _isComposingSurroundings = false;
+    if (targetRevision != _layerTargetRevision) {
+      belowImg.dispose();
+      abovePicture.dispose();
+      _recomposeSurroundings(force: true);
+      return;
+    }
     setState(() {
       _belowImage?.dispose();
       _belowImage = belowImg;
       _abovePicture?.dispose();
       _abovePicture = abovePicture;
-      _isComposingSurroundings = false;
     });
     _scheduleExactBlend();
     // レイヤー一覧が変わった（追加・削除・並び替え・レイヤー切替）ため、
     // 選択レイヤーのオーバーレイも合わせて確認し直す。
     _refreshSelectionLayerOverlay();
     // 合成中にさらに変更があった場合に備えて再チェック
-    final latest = ps.displayLayersOf(
-      project.id,
-      widget.sceneId,
-      widget.currentFrame,
-    );
-    if (!_sameLayerList(_layers, latest)) _recomposeSurroundings();
+    _recomposeSurroundings(force: pending);
   }
 
   /// The paper colour when the canvas shows the project's background (not
@@ -4853,7 +4881,7 @@ class CanvasAreaState extends State<CanvasArea> {
           opacityPercent: opacity,
         )
         .then((image) {
-          if (!mounted) {
+          if (!mounted || _exactBlendInputs != inputs) {
             image.dispose();
             return;
           }
