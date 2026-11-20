@@ -1581,40 +1581,46 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
   ) {
     return desktopCentered(
       context,
-      Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              l10n.saveTreeChangeExceedMessage,
-              style: const TextStyle(fontSize: 14),
+      ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+        children: [
+          messageText(
+            l10n.saveTreeChangeExceedMessage,
+            style: const TextStyle(fontSize: 14, height: 1.45),
+          ),
+          const SizedBox(height: 8),
+          messageText(
+            l10n.saveTreeKeepableCountLabel(_limit),
+            style: localizedHeadingStyle(
+              context,
+              const TextStyle(fontSize: 14),
             ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.saveTreeKeepableCountLabel(_limit),
-              style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          FilledButton(
+            onPressed: () {
+              _autoSelectLatest(nodes);
+              _showDiscardDialog(context, nodes);
+            },
+            child: messageText(
+              l10n.saveTreeKeepLatestButton(_limit),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: () {
-                _autoSelectLatest(nodes);
-                _showDiscardDialog(context, nodes);
-              },
-              child: Text(l10n.saveTreeKeepLatestButton(_limit)),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: () => setState(() => _showSelectionList = true),
+            child: messageText(
+              l10n.saveTreeSelectDataButton,
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () => setState(() => _showSelectionList = true),
-              child: Text(l10n.saveTreeSelectDataButton),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(l10n.commonCancel),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.commonCancel),
+          ),
+        ],
       ),
     );
   }
@@ -1625,66 +1631,70 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
     List<SaveNode> nodes,
   ) {
     final limitReached = _selectedIds.length >= _limit;
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text(
-            l10n.saveTreeSelectedCountLabel(_selectedIds.length, _limit),
-            style: TextStyle(
-              fontSize: 12,
-              color: limitReached
-                  ? ThemeService.activeColorScheme.tertiary
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
+    return desktopCentered(
+      context,
+      Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Semantics(
+              liveRegion: true,
+              child: messageText(
+                l10n.saveTreeSelectedCountLabel(_selectedIds.length, _limit),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: limitReached
+                      ? ThemeService.activeColorScheme.tertiary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
           ),
-        ),
-        const Divider(),
-        Expanded(
-          child: _initialIsTreeMode
-              ? _SelectableTreeView(
-                  projectId: widget.projectId,
-                  nodes: nodes,
-                  saveService: widget.saveService,
-                  selectedIds: _selectedIds,
-                  limitReached: limitReached,
-                  onToggle: _toggleNode,
-                )
-              : _SelectableSlotView(
-                  projectId: widget.projectId,
-                  saveService: widget.saveService,
-                  nodes: nodes,
-                  slotMax: widget.saveService.slotMax,
-                  selectedIds: _selectedIds,
-                  limitReached: limitReached,
-                  onToggle: _toggleNode,
-                ),
-        ),
-        const Divider(),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => setState(() => _showSelectionList = false),
-                  child: Text(l10n.saveTreeBackButton),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton(
-                  onPressed:
-                      _selectedIds.length >= _effectiveLimit(nodes.length)
-                      ? () => _showDiscardDialog(context, nodes)
-                      : null,
-                  child: Text(l10n.saveTreeNextButton),
-                ),
-              ),
-            ],
+          const Divider(height: 1),
+          Expanded(
+            child: _initialIsTreeMode
+                ? _SelectableTreeView(
+                    nodes: nodes,
+                    selectedIds: _selectedIds,
+                    limitReached: limitReached,
+                    onToggle: _toggleNode,
+                  )
+                : _SelectableSlotView(
+                    projectId: widget.projectId,
+                    saveService: widget.saveService,
+                    nodes: nodes,
+                    slotMax: widget.saveService.slotMax,
+                    selectedIds: _selectedIds,
+                    limitReached: limitReached,
+                    onToggle: _toggleNode,
+                  ),
           ),
-        ),
-      ],
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => setState(() => _showSelectionList = false),
+                    child: Text(l10n.saveTreeBackButton),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed:
+                        _selectedIds.length >= _effectiveLimit(nodes.length)
+                        ? () => _showDiscardDialog(context, nodes)
+                        : null,
+                    child: Text(l10n.saveTreeNextButton),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1793,17 +1803,13 @@ class _SelectableSlotView extends StatelessWidget {
 
 // ─── 選択可能ツリービュー ───
 class _SelectableTreeView extends StatelessWidget {
-  final String projectId;
   final List<SaveNode> nodes;
-  final SaveTreeService saveService;
   final Set<String> selectedIds;
   final bool limitReached;
   final ValueChanged<String> onToggle;
 
   const _SelectableTreeView({
-    required this.projectId,
     required this.nodes,
-    required this.saveService,
     required this.selectedIds,
     required this.limitReached,
     required this.onToggle,
@@ -1817,24 +1823,32 @@ class _SelectableTreeView extends StatelessWidget {
     if (roots.isEmpty) {
       return Center(child: Text(l10n.saveTreeEmptyTitle));
     }
-    // 親子関係を1回の走査で平坦化してからListView.builderへ渡す。
-    // 再帰でColumnを入れ子にしていた頃は、全ノードのListTileとCheckboxを
-    // 毎回のbuild（＝チェックを1つ付け外しするたび）で作り直していた。
+    // Traverse in the same parent-first order without recursing through long chains.
     final rows = <({SaveNode node, int depth})>[];
-    void flatten(SaveNode node, int depth) {
-      rows.add((node: node, depth: depth));
-      for (final child in childrenIndex[node.id] ?? const <SaveNode>[]) {
-        flatten(child, depth + 1);
+    final pending = [for (final root in roots.reversed) (node: root, depth: 0)];
+    while (pending.isNotEmpty) {
+      final row = pending.removeLast();
+      rows.add(row);
+      final children = childrenIndex[row.node.id] ?? const <SaveNode>[];
+      for (final child in children.reversed) {
+        pending.add((node: child, depth: row.depth + 1));
       }
     }
 
-    for (final root in roots) {
-      flatten(root, 0);
-    }
-    return ListView.builder(
-      itemCount: rows.length,
-      itemBuilder: (context, i) =>
-          _buildNode(context, l10n, rows[i].node, rows[i].depth),
+    return LayoutBuilder(
+      builder: (context, viewport) {
+        // Reserve most of the row for its checkbox, name, and date.
+        final maxIndent = (viewport.maxWidth * 0.2).clamp(0.0, 64.0);
+        return ListView.builder(
+          itemCount: rows.length,
+          itemBuilder: (context, i) => _buildNode(
+            context,
+            l10n,
+            rows[i].node,
+            (rows[i].depth * 16.0).clamp(0.0, maxIndent),
+          ),
+        );
+      },
     );
   }
 
@@ -1842,19 +1856,20 @@ class _SelectableTreeView extends StatelessWidget {
     BuildContext context,
     AppLocalizations l10n,
     SaveNode node,
-    int depth,
+    double indent,
   ) {
     final isSelected = selectedIds.contains(node.id);
     final isDisabled = limitReached && !isSelected;
     return Padding(
-      padding: EdgeInsets.only(left: depth * 24.0),
+      padding: EdgeInsetsDirectional.only(start: indent),
       child: ListTile(
+        contentPadding: const EdgeInsetsDirectional.only(start: 8, end: 16),
         enabled: !isDisabled,
         leading: Checkbox(
           value: isSelected,
           onChanged: isDisabled ? null : (_) => onToggle(node.id),
         ),
-        title: Text(
+        title: messageText(
           givenSaveName(node.comment) ?? l10n.saveTreeNodeDefaultTitle,
           style: TextStyle(
             color: isDisabled
@@ -1897,7 +1912,11 @@ class _DiscardChoiceDialogState extends State<_DiscardChoiceDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: Text(l10n.saveTreeDiscardDialogTitle),
+      scrollable: true,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      constraints: const BoxConstraints(maxWidth: 520),
+      title: messageText(l10n.saveTreeDiscardDialogTitle),
+      contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
       // 選択状態と変更通知はRadioGroupがまとめて持つ（各RadioListTileの
       // groupValue/onChangedはFlutter 3.32で非推奨になった）。
       content: RadioGroup<bool>(
@@ -1908,18 +1927,28 @@ class _DiscardChoiceDialogState extends State<_DiscardChoiceDialog> {
           children: [
             RadioListTile<bool>(
               value: true,
-              title: Text(l10n.saveTreeArchiveOptionTitle),
-              subtitle: Text(
+              titleAlignment: ListTileTitleAlignment.top,
+              contentPadding: const EdgeInsetsDirectional.only(
+                start: 4,
+                end: 12,
+              ),
+              title: messageText(l10n.saveTreeArchiveOptionTitle),
+              subtitle: messageText(
                 l10n.saveTreeArchiveOptionSubtitle,
-                style: const TextStyle(fontSize: 11),
+                style: const TextStyle(fontSize: 13, height: 1.4),
               ),
             ),
             RadioListTile<bool>(
               value: false,
-              title: Text(l10n.saveTreeDeleteOptionTitle),
-              subtitle: Text(
+              titleAlignment: ListTileTitleAlignment.top,
+              contentPadding: const EdgeInsetsDirectional.only(
+                start: 4,
+                end: 12,
+              ),
+              title: messageText(l10n.saveTreeDeleteOptionTitle),
+              subtitle: messageText(
                 l10n.saveTreeDeleteOptionSubtitle(widget.discardCount),
-                style: const TextStyle(fontSize: 11),
+                style: const TextStyle(fontSize: 13, height: 1.4),
               ),
             ),
           ],
@@ -1932,7 +1961,13 @@ class _DiscardChoiceDialogState extends State<_DiscardChoiceDialog> {
         ),
         FilledButton(
           onPressed: () => widget.onConfirm(_archive),
-          child: Text(l10n.saveTreeApplyChangeButton),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+          child: messageText(
+            l10n.saveTreeApplyChangeButton,
+            textAlign: TextAlign.center,
+          ),
         ),
       ],
     );

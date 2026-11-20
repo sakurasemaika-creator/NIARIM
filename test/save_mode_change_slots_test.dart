@@ -23,6 +23,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/load_app_fonts.dart';
 
 /// 保存方式・スロット数を変えたとき、保存がスロットの画面から消えないこと。
 /// 以前は（1）ツリー方式からスロット方式へ変える（保存がスロット数以下で
@@ -67,7 +68,11 @@ void main() {
   late ProjectService projects;
   late GlobalKey<NavigatorState> navKey;
 
-  Future<void> open(WidgetTester tester, {required bool tree}) async {
+  Future<void> open(
+    WidgetTester tester, {
+    required bool tree,
+    Locale locale = const Locale('ja'),
+  }) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -83,8 +88,8 @@ void main() {
             saves = context.read<SaveTreeService>();
             return MaterialApp(
               navigatorKey: navKey,
-              theme: context.watch<ThemeService>().themeData,
-              locale: const Locale('ja'),
+              theme: context.watch<ThemeService>().themeDataFor(locale),
+              locale: locale,
               supportedLocales: AppLocalizations.supportedLocales,
               localizationsDelegates: const [
                 AppLocalizations.delegate,
@@ -206,6 +211,83 @@ void main() {
       if (n.slotIndex >= 0 && n.slotIndex < slotMax)
         s.slotDisplayMemoOf(id, n.slotIndex) ?? '',
   ]..sort();
+
+  testWidgets('short windows and deep histories keep save choices reachable', (
+    tester,
+  ) async {
+    const locale = Locale('fr');
+    final l10n = lookupAppLocalizations(locale);
+    await loadAppFonts(tester);
+    await open(tester, tree: true, locale: locale);
+    tester.view.physicalSize = const Size(520, 300);
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    final project = await newProject(tester, 'Croquis');
+    SaveNode? deepest;
+    for (var number = 1; number <= 18; number++) {
+      deepest = await save(
+        tester,
+        project,
+        'Planche $number',
+        parent: deepest?.id,
+      );
+    }
+    final keep = deepest!;
+    final flow = showSaveModeChangeFlowIfNeeded(
+      context: navKey.currentContext!,
+      projectId: project.id,
+      projectName: project.name,
+      saveService: saves,
+      newIsTreeMode: false,
+      newSlotMax: 1,
+    );
+    await settleIo(tester, 3);
+    expect(tester.takeException(), isNull);
+    final choose = find.text(l10n.saveTreeSelectDataButton);
+    await tester.scrollUntilVisible(choose, 140);
+    await tester.pumpAndSettle();
+    final chooseButton = find
+        .ancestor(of: choose, matching: find.byType(OutlinedButton))
+        .hitTestable();
+    expect(chooseButton, findsOneWidget);
+    await tester.tap(chooseButton);
+    await tester.pumpAndSettle();
+
+    tester.view.physicalSize = const Size(320, 700);
+    await tester.pumpAndSettle();
+    final finalSave = find.text(keep.comment!);
+    await tester.scrollUntilVisible(finalSave, 320);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(finalSave.hitTestable(), findsOneWidget);
+    final tile = find.ancestor(of: finalSave, matching: find.byType(ListTile));
+    expect(tester.getRect(tile).left, lessThanOrEqualTo(64));
+    await tester.tap(finalSave);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.saveTreeSelectedCountLabel(1, 1)), findsOneWidget);
+
+    await tester.tap(find.text(l10n.saveTreeNextButton));
+    await tester.pumpAndSettle();
+    tester.view.physicalSize = const Size(520, 300);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    final archive = find.text(l10n.saveTreeArchiveOptionTitle);
+    final delete = find.text(l10n.saveTreeDeleteOptionTitle);
+    await tester.ensureVisible(delete);
+    await tester.pumpAndSettle();
+    expect(delete.hitTestable(), findsOneWidget);
+    await tester.ensureVisible(archive);
+    await tester.pumpAndSettle();
+    expect(archive.hitTestable(), findsOneWidget);
+    final confirm = find.text(l10n.saveTreeApplyChangeButton).hitTestable();
+    expect(confirm, findsOneWidget);
+    await tester.tap(confirm);
+    await settleIo(tester);
+    expect(await tester.runAsync(() => flow), isTrue);
+    expect(saves.getNodes(project.id).map((node) => node.id), [keep.id]);
+    expect(saves.getArchivedNodes(project.id), hasLength(17));
+  });
 
   testWidgets(
     'shortening Trash retention reviews and purges projects and files',
