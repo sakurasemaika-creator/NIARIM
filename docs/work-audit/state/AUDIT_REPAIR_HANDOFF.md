@@ -2637,3 +2637,8 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - 期待：「Calque 1」（en「Layer 1」、es「Capa 1」）。
   - 実際：「Calque1」。ARBの`layerPanelDefaultLayerName`が「Calque{n}」「Layer{n}」「Capa{n}」。
   - 証跡：`shots-r1/r2a011-f1.png`（backup-pending）。
+
+### A012（二巡目、Claude・S50、2026-11-20、App `2939841e`、判定：要修正〔既存DISC497・DISC275〕）
+
+- 一巡目のDISC274（線の途中のCtrl+Z）は直り、DISC081（右クリックの点）も直った。51%の黒の色はキャンバスで正しい。ロック中のレイヤーへ描くと理由の知らせが出る。
+- 残り：DISC275（ロックの切り替えが取り消しの履歴に入り、Ctrl+Zで外れる。要件の判断待ち）。DISC497（太さ49の線が描いた直後は512px目までしか出ない。A009で登録）。
