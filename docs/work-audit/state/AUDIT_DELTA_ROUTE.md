@@ -862,7 +862,7 @@ Works:
 - author can set/unset at posting and later on own work.
 - AI-use hidden setting is applied across new/ranking/following/repost/Shorts/other surfaces.
 - mute title and mute tag registration.
-- muted title/word/tag disappears from all applicable feed routes.
+- muted title/word/tag disappears from all applicable feed routes.（所有者の判断 2026-11-20：一覧から消さず「この作品は非表示対象です」のカードだけを残す。今の作りのまま）
 - SharedPreferences restore uses trim/lowercase/empty filtering.
 - do not filter author’s own management view.
 
