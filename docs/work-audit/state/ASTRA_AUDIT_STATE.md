@@ -2702,3 +2702,15 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：全体回帰 `44641695291` で`canvas_viewport_transform_test`・`canvas_background_layer_architecture_test`・`extended_drawing_area_selection_test`・`background_color_picker_test`は成功。
 - 未確認：背景の色の変更（白・黒・透明・ベージュ）、描画領域を広げた作品、起動し直した後の表示、スマホ390×844、ピンチ・2本指の回転・トラックパッド（Androidが要る）。
 - 画像：`shots-r1/r2a029-*`（backup-pending）。
+
+## A030 — 参考画像・プレビューナビゲータ
+
+### A030 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：要修正（新DISC506）
+
+- 一巡目の指摘：DISC300は直った（Linux debug、ja、1280×800、PCの形。「表示」→「キャンバスプレビュー」の窓に絵が出る。線を描くと窓にも出る。2コマ目へ替えると窓は空のコマになり、戻すと元の絵。Ctrl＋ホイールで拡大すると見えている範囲が枠で出て、枠をドラッグするとキャンバスの表示がその位置へ動く。窓を押してもその位置へ動く）。一巡目に落ちていた`requested_ui_all_captures_test`は全体回帰 `44641695291` で成功（DISC066そのものは所有者の判断待ちのまま、A029）。
+- 資料ウィンドウ（D-Busのportalの中で起動）：PCでは右のドックに入り「画像を選択」。400×300と6000×4000のPNGを選ぶとどちらも窓に収まって出る。ホイールで画像を拡大できる。選ぶ画面を閉じる（キャンセル）と前の画像のまま。窓を縦長（800×1200）にしてスマホの形へ移るとドックの窓は閉じ、設定/編集→資料ウィンドウで浮かぶ窓として開くと同じ画像が残る。浮かぶ窓は題をつかんで動かせ、下のツールバーの上で止まる。
+- 要修正（新、DISC506）：画像として読めないファイル（拡張子は.pngで中身は文字）を選ぶと、前の画像が消えて、窓に赤い×と「Exception: Invalid image data」が出る（debug）。`reference_window.dart`は選んだファイルのバイト列をそのまま`Image.memory`に渡し、`errorBuilder`も読めるかの確かめも無い。リリースでは何も出ない空の窓になると見込まれる（確かめていない）。
+- そのほか：選んだ画像はメモリにだけあり、作品にも設定にも残らない（起動し直すと空。仕様の記述は見つからないので指摘にはしない）。D-Busの無い起動では「画像を選択」が未処理の例外になる（Linuxの環境の制約、CLAUDE.mdの通り）。
+- test：全体回帰 `44641695291` で`canvas_menu_sheets_reachability_test`・`final_remaining_strict_evidence_test`・`requested_ui_all_captures_test`は成功。
+- 未確認：浮かぶ窓の大きさの変更（角のつまみ）、Androidの画像選択・HEIC、画面の回転（Androidが要る）。
+- 画像：`shots-r1/r2a030-*`（backup-pending）。
