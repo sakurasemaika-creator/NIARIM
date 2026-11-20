@@ -3682,6 +3682,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             Wrap(
               spacing: 4,
               runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 // 自由変形とメッシュ変形は同じ仕組みの分割数違い
                 // （4隅だけか、格子状に細かく分けるか）。
@@ -3705,10 +3706,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   onTap: _cancelSelectionTransformAndExit,
                 ),
                 if (_hasActiveSelection)
-                  chip(
-                    icon: Icons.invert_colors_outlined,
-                    label: l10n.canvasInvertSelectionTooltip,
-                    onTap: () => setState(() => _invertSelectionToken++),
+                  IconButton.filledTonal(
+                    icon: const Icon(Icons.invert_colors_outlined, size: 20),
+                    tooltip: l10n.canvasInvertSelectionTooltip,
+                    onPressed: () => setState(() => _invertSelectionToken++),
                   ),
               ],
             ),

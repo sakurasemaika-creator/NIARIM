@@ -211,7 +211,16 @@ void main() {
     expect(tester.getRect(canvas), canvasBounds);
     expect(tester.getRect(selectAll), selectAllBounds);
 
-    expect(find.byTooltip(l10n.canvasInvertSelectionTooltip), findsOneWidget);
+    final invert = find.byTooltip(l10n.canvasInvertSelectionTooltip);
+    expect(invert, findsOneWidget);
+    expect(
+      tester.getCenter(invert).dy,
+      closeTo(
+        tester.getCenter(find.byTooltip(l10n.canvasSelectionFreeTransform)).dy,
+        0.5,
+      ),
+      reason: 'Invert fits beside the transform buttons on a 320 px phone.',
+    );
 
     // 選択範囲ができたら画面下部に変形量のスライダーが出る。
     expect(

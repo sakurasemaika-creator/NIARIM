@@ -27,6 +27,7 @@ on:
       - "test/home_landscape_side_insets_test.dart"
       - "test/home_small_fixes_test.dart"
       - "test/home_title_fit_test.dart"
+      - "test/selection_tool_bar_test.dart"
       - "test/home_shared_folder_paste_flow_test.dart"
       - "test/startup_unreadable_projects_folder_test.dart"
       - "lib/screens/canvas/widgets/hsv_color_wheel.dart"
