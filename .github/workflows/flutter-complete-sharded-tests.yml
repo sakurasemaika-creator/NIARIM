@@ -11,6 +11,7 @@ on:
       - ".github/workflows/flutter-complete-sharded-tests.yml"
       - "test/floating_action_button_visual_capture_test.dart"
       - "test/app_smoke_test.dart"
+      - "test/app_web_reference_export_exact_test.dart"
       - "test/save_dialog_hint_warning_test.dart"
       - "test/community_work_card_layout_test.dart"
       - "test/canvas_timeline_position_test.dart"
