@@ -3606,3 +3606,18 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`community_milestone_account_boundary_test`・`community_milestone_store_test`・`community_notice_preferences_test`・`push_notification_service_test`・`startup_failure_recovery_test`・`community_secondary_pull_to_refresh_test`・`community_work_time_date_l10n_test`・`theme_settings_repair_test`を`643cc267`で47件成功。
 - 未確認（実機・実API）：通知の一覧の実データ（0件・多件・ページ送り・取り直し）、通知のタップで開く画面、プッシュ通知の受信・タップ・トークンの登録と更新と失効、Android 13以降の許可の拒否、7言語・文字2倍・360pxの実画面。
 - 画像：`shots-r1/r2a097-*`（backup-pending）。
+
+## A098 — App backend全API契約・認可
+
+### A098 二巡目（2026-11-20、Claude・S50、App `643cc267`の`backend/`とApp側のtest）— 判定：OK〔単体test・DynamoDB Local・コード〕／デプロイした実環境は未確認
+
+- 環境：`backend/`で`npm ci`→`npx vitest run`・`npx tsc --noEmit`。AWS・Google・YouTubeの実環境は無い（未デプロイ）。
+- backendの単体test：64ファイル・418件成功、DynamoDB Localの4ファイル（12件）は指定なしでスキップ。型検査はエラー0。
+- DynamoDB Localのtestも流した（一巡目は未確認）：配布元（CloudFront）はこの環境のネットワークで断られるので、Maven Centralから`com.amazonaws:DynamoDBLocal:2.6.1`と依存（sqlite4javaのネイティブを含む）を取り、`java -Djava.library.path=lib -cp "lib/*" …ServerRunner -inMemory -port 8000`で起動して`NIARIM_DYNAMODB_LOCAL_TESTS=1`で4ファイル13件成功（`account-erasure`〔一巡目の後に足されたアカウント削除、f4118200〕・`admob-ssv`・`coin-redemption`・`rewarded-ad`）。
+- ルート（`backend/src/api/handler.ts`）：一巡目の22から増え、作品・タグ・通報・ブロック・ブックマーク・リポスト・フォロー・プッシュのトークンに加えて、報酬・ミッション・ログインボーナス・Play・アカウント削除（`/account-deletion/verify`・`submit`・`status`、Googleの本人確認は5分以内に取った・nonceが一致・メール確認済みのIDトークンだけ）が並ぶ。
+- 既存のDISC409（サーバー側）：自分の作品・自分自身の通報は`badRequest`で断る（`routes/reports.ts:56`・`:63`）。自分のブロックも断る。
+- 既存のDISC413（サーバー側）：フォロワー・フォロー中・ブックマークの一覧は本人だけが読める（`follows.ts:166`・`:203`・`bookmarks.ts:201`、他人は`forbidden`）。作品のブックマークした人の一覧のAPIは無くなった（`getWorkBookmarkers`はどこにも無い）。規約の文との食い違い（フォロワーの一覧）はDISC541（A092）。
+- 既存のDISC421：アプリはYouTubeの権限を`youtube.upload`と`youtube.readonly`の両方を求める（`google_auth_service.dart:28-31`）。実際の同意画面・Googleの審査は未確認。
+- App側：A098の対象のtest 40本（APIの契約・再試行・アカウントの境目・ブックマーク・リポスト・ミッション・報酬・規約の表示ほか）を`643cc267`で391件成功・18件スキップ（Googleの9件はクライアントIDの指定が無いとき、`home_bookmark_matrix_test`の9件は画像の出力先を渡さないとき）。Googleの9件はA096で指定付きで成功。一巡目の基準で落ちていた`home_bookmark_states_test`も今は成功。
+- 未確認（実環境）：デプロイしたAPIの401・403・404・429・500の実際の応答、ページ送り、条件付き更新と並行実行、再試行、Google・YouTubeのトークンの実際の検証、アカウント削除の実際の消し込み（DynamoDB Localでは確認）。
+- 記録：`logs/a098-vitest.txt`・`a098-tsc.txt`・`a098-ddblocal.txt`・`a098-tests.txt`（scratchpad、backup-pending）。
