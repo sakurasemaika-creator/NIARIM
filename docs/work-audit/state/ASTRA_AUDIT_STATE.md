@@ -3037,3 +3037,13 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`premium_all_entry_points_test`・`premium_expiry_video_output_test`・`export_video_failure_cleanup_test`・`premium_production_entry_wiring_test`・`l10n_known_typos_test`・`shared_asset_card_dialog_capture_test`・`direct_service_coverage_batch10_test`を`9e8124f0`で31件成功。呼び名のそろいを見るtestは無い。
 - 止められているもの（A043と同じ）：プレミアム・特典の状態はこの環境で作れないので、表示・非表示の切り替え・既定・期限切れの実操作は未確認。動画・GIFの書き出しはLinuxにffmpegが無く、エンドマークの尺・画質・最後のフレームは実機で確かめる。
 - 画像：`shots-r1/r2a055-*`（backup-pending）。
+
+## A056 — タイムラインのwatermark適用・再編集
+
+### A056 二巡目（2026-11-20、Claude・S50、App `9e8124f0`のLinuxデバッグビルド）— 判定：一部確認（DISCなし。プレミアムの状態は環境で止められている）
+
+- 環境：ja、1280×800、マウス、無料会員、PCのタイムライン（作品10）。
+- 一巡目のDISC346は直った：`watermark_copy_name_tile_test`（複製の名前の印の2件を含む）・`niatra_transfer_watermarks_test`・`direct_service_coverage_batch08_test`が`9e8124f0`で16件成功。
+- OK：⊕→「＋ウォーターマーク」（🔒）→「NIARIM Premium／自分のウォーターマークを追加・編集」の案内（「自分のウォーターマークの追加・編集は、プレミアム会員またはウォーターマークの特典を利用中にできます。」、プレミアム会員の詳細・特典の詳細・閉じる）。
+- 止められているもの（A043と同じ）：`premium_service.dart`にデバッグ用のプレミアムの切り替えは無く、この環境でプレミアム・特典の状態を作れない。一覧からの追加、位置・大きさ・不透明度・色・縁・影・範囲の編集、削除、保存と開き直し、書き出しとの一致（DISC385・DISC386を含む）は実機で確かめる。
+- 画像：`shots-r1/r2a056-*`（backup-pending）。
