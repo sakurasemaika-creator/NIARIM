@@ -2892,7 +2892,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpCommunityDesc.
   ///
   /// In ja, this message translates to:
-  /// **'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」「検索」「ブックマーク」の5タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品は作品広場の「ブックマーク」タブにまとめて表示されるほか、自分の作者ページの「ブックマーク」タブでも確認できます。不適切な作品の通報と投稿者のブロックは準備中です。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にする非表示ワードと、作品広場で作品に設定されたタグだけを対象にする非表示タグを「新規追加」から1件ずつ登録し、ペンで編集、ゴミ箱で削除できます。カンマや#は不要です。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。'**
+  /// **'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」「検索」「ブックマーク」の5タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品は作品広場の「ブックマーク」タブにまとめて表示されるほか、自分の作者ページの「ブックマーク」タブでも確認できます。投稿や投稿者を通報できます。ミュートは自分の表示だけに、ブロックはログイン中の双方の表示に反映します。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にする非表示ワードと、作品広場で作品に設定されたタグだけを対象にする非表示タグを「新規追加」から1件ずつ登録し、ペンで編集、ゴミ箱で削除できます。カンマや#は不要です。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。'**
   String get helpCommunityDesc;
 
   /// No description provided for @helpWatermarkEntryTitle.
@@ -10122,7 +10122,7 @@ abstract class AppLocalizations {
   /// No description provided for @licenseTermsArt12Body.
   ///
   /// In ja, this message translates to:
-  /// **'1. 本アプリは、ユーザーが作成したアニメーション作品を、ユーザー自身のGoogleアカウントを通じてYouTubeへ投稿し、「作品広場」上で公開・閲覧できる機能（以下「本コミュニティ機能」といいます。）を任意で提供します。作品の閲覧・作成自体は、本コミュニティ機能を利用しなくても行えます。\n2. 投稿された動画ファイル本体はYouTube上に保存され、開発者のサーバーには保存されません。一方、投稿作品の識別・表示に必要な情報（YouTube動画ID、タイトル、統計情報、通報情報等）、および投稿・通報・ブロック機能の利用にあたり発行されるNIARIM User ID（Googleアカウントとは別に本アプリ内部で発行する識別子）は、開発者のサーバーで管理します。\n3. 本コミュニティ機能のうち、作品の投稿、通報およびユーザーのブロックには、Googleアカウントによるログインが必要です。\n4. 投稿できる作品数には1日あたりの上限があります。（無料会員・プレミアム会員で上限が異なります。）当該上限は、運営上の都合により変更されることがあります。\n5. ユーザーは、他のユーザーが投稿した作品のうち、法令もしくは公序良俗に違反する、または第3条各号に該当するおそれがあると考えるものについて、本アプリ内の通報機能を通じて開発者に報告できます。開発者は、通報の内容を確認のうえ、合理的な理由に基づき当該作品の一覧からの非表示その他の必要な措置を講じることがあります。虚偽の通報または通報機能の濫用は禁止します。\n6. ユーザーが投稿を削除した場合、または本アプリにおけるGoogleアカウント連携を解除した場合、当該投稿に対応するYouTube動画が削除されることがあります。また、YouTube側で動画が非公開または削除された場合、当該作品は作品広場上でも表示されなくなります。\n7. 本コミュニティ機能の利用にあたっては、本規約に加えてYouTubeの利用規約およびコミュニティガイドラインが適用されます。\n8. ユーザーは、他のユーザーをフォローし、他のユーザーの作品をブックマークまたはリポストできます。フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。\n9. 作品に付けるタグは、投稿者以外のユーザーも追加・削除できます。投稿者は、自分の作品のタグをロックして他のユーザーによる編集を禁止できます。ユーザーは、他人を誹謗中傷するタグ、作品の内容と無関係なタグその他不適切なタグを付けてはなりません。開発者は、不適切なタグを削除することがあります。\n10. 開発者は、本人の作品の投稿・公開やミッション達成などに関する通知を、本アプリ内の通知一覧に表示します。端末の通知が許可されている場合は、プッシュ通知が送信されることがあります。プッシュ通知は本アプリまたは端末の設定から無効にできます。\n11. ユーザーは、本コミュニティ機能を、他のユーザーへの嫌がらせ、宣伝・勧誘、その他本来の目的（作品の公開と閲覧）から外れる目的で利用してはなりません。ブロック機能を利用した場合、ブロックした相手の作品は自分の一覧に表示されなくなります。'**
+  /// **'1. 本アプリは、ユーザーが作成したアニメーション作品を、ユーザー自身のGoogleアカウントを通じてYouTubeへ投稿し、「作品広場」上で公開・閲覧できる機能（以下「本コミュニティ機能」といいます。）を任意で提供します。作品の閲覧・作成自体は、本コミュニティ機能を利用しなくても行えます。\n2. 投稿された動画ファイル本体はYouTube上に保存され、開発者のサーバーには保存されません。一方、投稿作品の識別・表示に必要な情報（YouTube動画ID、タイトル、統計情報、通報情報等）、および投稿・通報・ブロック機能の利用にあたり発行されるNIARIM User ID（Googleアカウントとは別に本アプリ内部で発行する識別子）は、開発者のサーバーで管理します。\n3. 本コミュニティ機能のうち、作品の投稿、通報およびユーザーのブロックには、Googleアカウントによるログインが必要です。\n4. 投稿できる作品数には1日あたりの上限があります。（無料会員・プレミアム会員で上限が異なります。）当該上限は、運営上の都合により変更されることがあります。\n5. ユーザーは、他のユーザーが投稿した作品のうち、法令もしくは公序良俗に違反する、または第3条各号に該当するおそれがあると考えるものについて、本アプリ内の通報機能を通じて開発者に報告できます。開発者は、通報の内容を確認のうえ、合理的な理由に基づき当該作品の一覧からの非表示その他の必要な措置を講じることがあります。虚偽の通報または通報機能の濫用は禁止します。\n6. ユーザーが投稿を削除した場合、または本アプリにおけるGoogleアカウント連携を解除した場合、当該投稿に対応するYouTube動画が削除されることがあります。また、YouTube側で動画が非公開または削除された場合、当該作品は作品広場上でも表示されなくなります。\n7. 本コミュニティ機能の利用にあたっては、本規約に加えてYouTubeの利用規約およびコミュニティガイドラインが適用されます。\n8. ユーザーは、他のユーザーをフォローし、他のユーザーの作品をブックマークまたはリポストできます。フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。\n9. 作品に付けるタグは、投稿者以外のユーザーも追加・削除できます。投稿者は、自分の作品のタグをロックして他のユーザーによる編集を禁止できます。ユーザーは、他人を誹謗中傷するタグ、作品の内容と無関係なタグその他不適切なタグを付けてはなりません。開発者は、不適切なタグを削除することがあります。\n10. 開発者は、本人の作品の投稿・公開やミッション達成などに関する通知を、本アプリ内の通知一覧に表示します。端末の通知が許可されている場合は、プッシュ通知が送信されることがあります。プッシュ通知は本アプリまたは端末の設定から無効にできます。\n11. ユーザーは、本コミュニティ機能を、他のユーザーへの嫌がらせ、宣伝・勧誘、その他本来の目的（作品の公開と閲覧）から外れる目的で利用してはなりません。 ミュートは自分の表示だけに反映されます。ブロックすると、作品広場にログイン中の双方に相手の投稿が表示されなくなります。どちらの操作でも相手に通知は送られません。'**
   String get licenseTermsArt12Body;
 
   /// No description provided for @licenseTermsArt13Title.
@@ -13092,19 +13092,19 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedAuthors.
   ///
   /// In ja, this message translates to:
-  /// **'非表示にしたユーザー'**
+  /// **'ミュートしたユーザー'**
   String get communityMutedAuthors;
 
   /// No description provided for @communityMutedAuthorsEmpty.
   ///
   /// In ja, this message translates to:
-  /// **'非表示にしたユーザーはいません'**
+  /// **'ミュートしたユーザーはいません'**
   String get communityMutedAuthorsEmpty;
 
   /// No description provided for @communityUnmuteAuthor.
   ///
   /// In ja, this message translates to:
-  /// **'このユーザーの非表示を解除する'**
+  /// **'ミュートを解除'**
   String get communityUnmuteAuthor;
 
   /// No description provided for @communityMyWorksManagementHeading.
@@ -14412,37 +14412,37 @@ abstract class AppLocalizations {
   /// No description provided for @communityMuteShort.
   ///
   /// In ja, this message translates to:
-  /// **'非表示'**
+  /// **'ミュート'**
   String get communityMuteShort;
 
   /// No description provided for @communityMuteConfirmTitle.
   ///
   /// In ja, this message translates to:
-  /// **'このユーザーを非表示にしますか？'**
+  /// **'このユーザーをミュートしますか？'**
   String get communityMuteConfirmTitle;
 
   /// No description provided for @communityMuteConfirmBody.
   ///
   /// In ja, this message translates to:
-  /// **'非表示にするとこのユーザーの作品は表示されなくなります。'**
+  /// **'ミュートすると、このユーザーの投稿が自分の画面に表示されなくなります。'**
   String get communityMuteConfirmBody;
 
   /// No description provided for @communityMuteConfirmAction.
   ///
   /// In ja, this message translates to:
-  /// **'非表示にする'**
+  /// **'ミュートする'**
   String get communityMuteConfirmAction;
 
   /// No description provided for @communityUnmuteConfirmTitle.
   ///
   /// In ja, this message translates to:
-  /// **'このユーザーの非表示を解除しますか？'**
+  /// **'このユーザーのミュートを解除しますか？'**
   String get communityUnmuteConfirmTitle;
 
   /// No description provided for @communityUnmuteConfirmAction.
   ///
   /// In ja, this message translates to:
-  /// **'非表示を解除する'**
+  /// **'ミュートを解除'**
   String get communityUnmuteConfirmAction;
 
   /// No description provided for @communityMuteNo.
@@ -14454,13 +14454,13 @@ abstract class AppLocalizations {
   /// No description provided for @communityMuteDone.
   ///
   /// In ja, this message translates to:
-  /// **'このユーザーを非表示にしました'**
+  /// **'このユーザーをミュートしました'**
   String get communityMuteDone;
 
   /// No description provided for @communityUnmuteDone.
   ///
   /// In ja, this message translates to:
-  /// **'このユーザーの非表示を解除しました'**
+  /// **'このユーザーのミュートを解除しました'**
   String get communityUnmuteDone;
 
   /// No description provided for @communityFollowerMilestone.
@@ -14958,7 +14958,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialPage6Step1.
   ///
   /// In ja, this message translates to:
-  /// **'画面右上の？で、その画面の説明を見られます'**
+  /// **'ホームの「ヘルプ」で機能の説明を検索できます'**
   String get tutorialPage6Step1;
 
   /// No description provided for @tutorialPage6Step2.
@@ -14976,7 +14976,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpTutorialSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'はじめに表示した使い方を、もう一度見ます'**
+  /// **'イラスト付きの使い方ガイドを開きます'**
   String get helpTutorialSubtitle;
 
   /// No description provided for @settingsTipsResetTitle.
@@ -15180,7 +15180,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityPlazaMutePrivacyNotice.
   ///
   /// In ja, this message translates to:
-  /// **'※非表示にしても相手には伝わりません。'**
+  /// **'ミュートしても相手に通知は送られません。'**
   String get communityPlazaMutePrivacyNotice;
 
   /// No description provided for @communityPostVisibilityHeading.
@@ -18326,6 +18326,126 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'アカウント削除ページを開けませんでした。'**
   String get settingsAccountDeletionLinkFailed;
+
+  /// No description provided for @communityReportAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'ユーザーを通報'**
+  String get communityReportAuthor;
+
+  /// No description provided for @communityReportReason.
+  ///
+  /// In ja, this message translates to:
+  /// **'通報理由（運営のみ閲覧）'**
+  String get communityReportReason;
+
+  /// No description provided for @communityReportSend.
+  ///
+  /// In ja, this message translates to:
+  /// **'通報を送信'**
+  String get communityReportSend;
+
+  /// No description provided for @communityReportSent.
+  ///
+  /// In ja, this message translates to:
+  /// **'運営に通報を送信しました'**
+  String get communityReportSent;
+
+  /// No description provided for @communityModerationSaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更を保存しました'**
+  String get communityModerationSaved;
+
+  /// No description provided for @communityModerationFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作を完了できませんでした。時間をおいてもう一度お試しください。'**
+  String get communityModerationFailed;
+
+  /// No description provided for @communityBlockAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロックする'**
+  String get communityBlockAuthor;
+
+  /// No description provided for @communityUnblockAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロックを解除'**
+  String get communityUnblockAuthor;
+
+  /// No description provided for @communityBlockPrivacyNotice.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場にログインしている間、お互いの投稿が表示されなくなります。相手に通知は送られません。'**
+  String get communityBlockPrivacyNotice;
+
+  /// No description provided for @communityBlockedUsers.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロックしたユーザー'**
+  String get communityBlockedUsers;
+
+  /// No description provided for @communityBlockedUsersEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロックしたユーザーはいません'**
+  String get communityBlockedUsersEmpty;
+
+  /// No description provided for @communityPostingTermsPrompt.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場に投稿する前に、利用規約をご確認ください。'**
+  String get communityPostingTermsPrompt;
+
+  /// No description provided for @communityPostingTermsAgree.
+  ///
+  /// In ja, this message translates to:
+  /// **'同意して続ける'**
+  String get communityPostingTermsAgree;
+
+  /// No description provided for @canvasViewActions.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスの表示'**
+  String get canvasViewActions;
+
+  /// No description provided for @canvasViewZoomIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'拡大'**
+  String get canvasViewZoomIn;
+
+  /// No description provided for @canvasViewZoomOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'縮小'**
+  String get canvasViewZoomOut;
+
+  /// No description provided for @canvasViewActualPixels.
+  ///
+  /// In ja, this message translates to:
+  /// **'等倍表示'**
+  String get canvasViewActualPixels;
+
+  /// No description provided for @canvasViewRotateLeft.
+  ///
+  /// In ja, this message translates to:
+  /// **'左に回転'**
+  String get canvasViewRotateLeft;
+
+  /// No description provided for @canvasViewRotateRight.
+  ///
+  /// In ja, this message translates to:
+  /// **'右に回転'**
+  String get canvasViewRotateRight;
+
+  /// No description provided for @canvasViewResetRotation.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転を戻す'**
+  String get canvasViewResetRotation;
 }
 
 class _AppLocalizationsDelegate

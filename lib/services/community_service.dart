@@ -450,6 +450,7 @@ class CommunityService extends ChangeNotifier {
   final Set<String> _mutedWords = {};
   final Set<String> _mutedTags = {};
   final Set<String> _mutedAuthorIds = {};
+  final Set<String> _blockedAuthorIds = {};
   final Set<String> _mutedWorkIds = {};
   final Set<String> _alwaysVisibleWorkIds = {};
   final Set<String> _temporaryVisibleWorkIds = {};
@@ -459,10 +460,43 @@ class CommunityService extends ChangeNotifier {
   Set<String> get mutedTags => Set.unmodifiable(_mutedTags);
   Set<String> get mutedAuthorIds => Set.unmodifiable(_mutedAuthorIds);
   bool isAuthorMuted(String authorId) => _mutedAuthorIds.contains(authorId);
+  bool isAuthorBlocked(String id) => _blockedAuthorIds.contains(id);
+
+  Future<Set<String>> loadBlockedAuthors() async {
+    final client = api;
+    if (client == null) return const {};
+    final revision = _accountRevision;
+    final ids = await _awaitInAccount(client.blockedAuthors(), revision);
+    _blockedAuthorIds
+      ..clear()
+      ..addAll(ids);
+    notifyListeners();
+    return ids;
+  }
+
+  Future<void> setAuthorBlocked(String id, bool blocked) async {
+    final client = api;
+    if (client == null) throw StateError('Community API unavailable');
+    await _awaitInAccount(
+      client.setAuthorBlocked(id, blocked),
+      _accountRevision,
+    );
+    if (blocked) {
+      _blockedAuthorIds.add(id);
+    } else {
+      _blockedAuthorIds.remove(id);
+    }
+    notifyListeners();
+    unawaited(refreshFromBackend());
+  }
+
   bool isWorkExplicitlyMuted(String id) => _mutedWorkIds.contains(id);
 
   /// Device-local view only. The server's ranking and publication remain intact.
   bool isWorkMuted(CommunityWork work) {
+    if (isAuthorBlocked(work.authorId) || isAuthorMuted(work.authorId)) {
+      return true;
+    }
     if (_temporaryVisibleWorkIds.contains(work.id) ||
         _alwaysVisibleWorkIds.contains(work.id)) {
       return false;
@@ -1201,6 +1235,7 @@ class CommunityService extends ChangeNotifier {
   void forgetOwner() {
     _accountRevision++;
     _currentUserId = null;
+    _blockedAuthorIds.clear();
     _milestoneEvents = [];
     _followerCounts.clear();
     _followingCounts.clear();

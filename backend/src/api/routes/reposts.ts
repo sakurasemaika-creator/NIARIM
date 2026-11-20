@@ -1,3 +1,4 @@
+import { blockedFromViewer, isBlockedBetween } from "./blocks";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import {
   GetCommand,
@@ -15,7 +16,7 @@ import { TABLE_ITEM_TYPE } from "../../lib/types";
 
 function isWorkPublic(work: WorkItem): boolean {
   return (
-    work.isNiarimPublished &&
+    work.isNiarimPublished && !work.moderationHidden &&
     work.youtubePrivacyStatus !== "private" &&
     work.youtubePrivacyStatus !== "deleted"
   );
@@ -52,6 +53,7 @@ export async function toggleRepost(
   if (!isWorkPublic(work) && !isReposted) {
     notFound("作品が見つかりません");
   }
+  if (!isReposted && await isBlockedBetween(auth.niarimUserId, work.authorId)) notFound();
   const now = new Date().toISOString();
 
   try {
@@ -130,6 +132,8 @@ export async function getUserReposts(
   event: APIGatewayProxyEventV2,
   userId: string,
 ) {
+  const blocked = await blockedFromViewer(event);
+  if (blocked.has(userId)) return ok({ userId, reposts: [], nextCursor: null });
   const result = await ddb.send(
     new QueryCommand({
       TableName: tableName(),
@@ -146,13 +150,13 @@ export async function getUserReposts(
   const works = await Promise.all(
     records.map((r) =>
       ddb.send(
-        new GetCommand({ TableName: tableName(), Key: Keys.work(r.workId) }),
+        new GetCommand({ TableName: tableName(), Key: Keys.work(r.workId), ConsistentRead: true }),
       ),
     ),
   );
   const reposts = records.flatMap((record, i) => {
     const work = works[i].Item as WorkItem | undefined;
-    return work && isWorkPublic(work)
+    return work && isWorkPublic(work) && !blocked.has(work.authorId)
       ? [{ repostedAt: record.repostedAt, work: toPublicWork(work) }]
       : [];
   });

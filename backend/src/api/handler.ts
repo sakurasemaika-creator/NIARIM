@@ -42,7 +42,7 @@ import { updateWork } from "./routes/worksUpdate";
 import { deleteWork } from "./routes/worksDelete";
 import { updateTags } from "./routes/tags";
 import { createReport } from "./routes/reports";
-import { createBlock } from "./routes/blocks";
+import { createBlock, deleteBlock, getMyBlocks } from "./routes/blocks";
 import {
   toggleBookmark,
   getUserBookmarks,
@@ -97,7 +97,7 @@ const routes: Route[] = [
   route("GET", "/ranking/visibility", (e) => getRankingVisibility(e)),
   route("GET", "/ranking/{period}", (e, p) => getRanking(e, p.period)),
   route("GET", "/works/latest", (e) => getLatestWorks(e)),
-  route("GET", "/works/{id}/playback-status", (_e, p) => getPlaybackStatus(p.id)),
+  route("GET", "/works/{id}/playback-status", (e, p) => getPlaybackStatus(p.id, e)),
   route("GET", "/works/{id}/metadata", (e, p) => getWorkMetadata(e, p.id)),
   route("PATCH", "/works/{id}/metadata", (e, p) => updateWorkMetadata(e, p.id)),
   route("GET", "/works/{id}/youtube-comments", (e, p) => getYoutubeComments(e, p.id)),
@@ -150,7 +150,9 @@ const routes: Route[] = [
   route("DELETE", "/works/{id}", (e, p) => deleteWork(e, p.id)),
   route("PATCH", "/works/{id}/tags", (e, p) => updateTags(e, p.id)),
   route("POST", "/reports", (e) => createReport(e)),
+  route("GET", "/me/blocks", (e) => getMyBlocks(e)),
   route("POST", "/blocks", (e) => createBlock(e)),
+  route("DELETE", "/blocks/{id}", (e, p) => deleteBlock(e, p.id)),
   route("POST", "/works/{id}/bookmark", (e, p) => toggleBookmark(e, p.id)),
   route("POST", "/works/{id}/repost", (e, p) => toggleRepost(e, p.id)),
   route("POST", "/users/{id}/follow", (e, p) => toggleFollow(e, p.id)),

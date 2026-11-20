@@ -1,3 +1,4 @@
+import { blockedFromViewer, isBlockedBetween } from "./blocks";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import {
   GetCommand,
@@ -18,7 +19,7 @@ import { recordMissionAchievement } from "../../lib/missionNotifications";
 
 function isWorkPublic(work: WorkItem): boolean {
   return (
-    work.isNiarimPublished &&
+    work.isNiarimPublished && !work.moderationHidden &&
     work.youtubePrivacyStatus !== "private" &&
     work.youtubePrivacyStatus !== "deleted"
   );
@@ -69,6 +70,7 @@ export async function toggleBookmark(
   }
   const work = rawWork as WorkItem;
   const isPublic = isWorkPublic(work);
+  if (!isBookmarked && await isBlockedBetween(auth.niarimUserId, work.authorId)) notFound();
   // 非公開作品はIDを知っていても新規ブックマークできない。既に公開中に
   // ブックマークしていた作品が後から非公開になった場合は、利用者が自分の
   // 記録を解除できなくなるのを避けるため解除だけ許可する。作者本人は
@@ -212,11 +214,12 @@ export async function getUserBookmarks(
     }),
   );
   const bookmarks = (result.Items ?? []) as BookmarkItem[];
+  const blocked = await blockedFromViewer(event);
 
   const works = await Promise.all(
     bookmarks.map((b) =>
       ddb.send(
-        new GetCommand({ TableName: tableName(), Key: Keys.work(b.workId) }),
+        new GetCommand({ TableName: tableName(), Key: Keys.work(b.workId), ConsistentRead: true }),
       ),
     ),
   );
@@ -226,7 +229,7 @@ export async function getUserBookmarks(
   const bookmarkWorks = works.map((result, index) => {
     const raw = result.Item;
     if (raw?.itemType === TABLE_ITEM_TYPE.Work &&
-        isWorkPublic(raw as WorkItem)) {
+        isWorkPublic(raw as WorkItem) && !blocked.has((raw as WorkItem).authorId)) {
       return toPublicWork(raw as WorkItem);
     }
     return toUnavailableWork(bookmarks[index].workId);

@@ -1,3 +1,4 @@
+import 'community_moderation.dart';
 import '../../utils/tolerant_preferences.dart';
 import '../../config/accent_text_theme.dart';
 
@@ -2807,6 +2808,12 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                     icon: const Icon(Icons.person_off_outlined),
                     label: Text(l10n.communityMutedAuthors),
                   ),
+                  if (context.watch<CommunityService>().isBackendConnected)
+                    TextButton.icon(
+                      icon: const Icon(Icons.block),
+                      onPressed: () => manageCommunityBlocks(context),
+                      label: Text(l10n.communityBlockedUsers),
+                    ),
                 ],
               ),
             ],

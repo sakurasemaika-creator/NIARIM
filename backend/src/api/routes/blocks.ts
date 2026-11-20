@@ -1,60 +1,124 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { PutCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, QueryCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
-import { authenticate, getUser } from "../../lib/auth";
-import { badRequest, created, notFound } from "../../lib/response";
+import { authenticate } from "../../lib/auth";
+import { badRequest, created, notFound, ok } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import type { BlockItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 
-interface CreateBlockRequestBody {
-  blockedUserId: string;
+const readViewer = (event: APIGatewayProxyEventV2) => {
+  const header = event.headers?.authorization ?? event.headers?.Authorization;
+  return header ? authenticate(header) : null;
+};
+
+function inboundKey(blockerId: string, blockedId: string) {
+  return { pk: Keys.user(blockedId).pk, sk: `BLOCKED_BY#${blockerId}` };
 }
 
-/**
- * `POST /blocks`（9章）。ブロックはログイン必須。ブロックした相手の
- * 作品をNIARIM内の一覧・ランキングから自分に対してのみ非表示にする
- * （相手への通知・メッセージ送信は発生しない、端末/アカウント側の
- * ローカルなフィルタリング。22.2節の届出義務の境界の内側）。
- *
- * 実際のフィルタリングは各一覧系エンドポイント（ranking.ts・
- * worksLatest.ts等）で、呼び出し元が自分のブロック一覧を別途取得し
- * クライアント側で除外するか、`GET`系エンドポイントに
- * `blockerId`クエリパラメータを付けてLambda側で除外する方式のいずれか
- * を想定する（初期実装ではクライアント側フィルタで十分。ブロック件数は
- * 通常少数のため一覧取得APIのレスポンスサイズへの影響は小さい）。
- */
-export async function createBlock(event: APIGatewayProxyEventV2) {
-  const auth = await authenticate(
-    event.headers["authorization"] ?? event.headers["Authorization"],
-  );
-  const body = parseBody(event.body);
+export async function blockedFromViewer(event: APIGatewayProxyEventV2): Promise<Set<string>> {
+  const viewer = await readViewer(event);
+  const ids = new Set<string>();
+  if (!viewer) return ids;
+  let cursor: Record<string, unknown> | undefined;
+  do {
+    const page = await ddb.send(new QueryCommand({
+      TableName: tableName(),
+      ConsistentRead: true,
+      KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+      ExpressionAttributeValues: { ":pk": Keys.user(viewer.niarimUserId).pk, ":prefix": "BLOCK" },
+      ExclusiveStartKey: cursor,
+    }));
+    for (const row of (page.Items ?? []) as BlockItem[]) {
+      if (row.itemType !== TABLE_ITEM_TYPE.Block) continue;
+      if (row.blockerId === viewer.niarimUserId) ids.add(row.blockedId);
+      if (row.blockedId === viewer.niarimUserId) ids.add(row.blockerId);
+    }
+    cursor = page.LastEvaluatedKey;
+  } while (cursor);
+  return ids;
+}
 
-  if (body.blockedUserId === auth.niarimUserId) {
-    badRequest("自分自身をブロックすることはできません");
+// Direct reads also recognize older outbound records that had no mirror row.
+export async function isBlockedBetween(first: string, second: string): Promise<boolean> {
+  if (first === second) return false;
+  const rows = await Promise.all([
+    Keys.block(first, second), Keys.block(second, first),
+  ].map(Key => ddb.send(new GetCommand({ TableName: tableName(), Key, ConsistentRead: true }))));
+  return rows.some(row => row.Item?.itemType === TABLE_ITEM_TYPE.Block);
+}
+
+export async function isBlockedForViewer(event: APIGatewayProxyEventV2, authorId: string) {
+  const viewer = await readViewer(event);
+  return viewer ? isBlockedBetween(viewer.niarimUserId, authorId) : false;
+}
+
+function userId(value: unknown): string {
+  if (typeof value !== "string" || !/^N[0-9a-f]{32}$/.test(value)) {
+    badRequest("blockedUserIdの形式が不正です");
   }
-  if (!await getUser(body.blockedUserId)) notFound("アカウントが見つかりません");
+  return value;
+}
 
-  const now = new Date().toISOString();
-  const block: BlockItem = {
-    itemType: TABLE_ITEM_TYPE.Block,
-    ...Keys.block(auth.niarimUserId, body.blockedUserId),
-    blockerId: auth.niarimUserId,
-    blockedId: body.blockedUserId,
-    createdAt: now,
-  };
-
-  await ddb.send(new PutCommand({ TableName: tableName(), Item: block }));
+export async function createBlock(event: APIGatewayProxyEventV2) {
+  const auth = await authenticate(event.headers?.authorization ?? event.headers?.Authorization);
+  const blockedId = userId(parseJsonObject(event.body).blockedUserId);
+  const blockerId = auth.niarimUserId;
+  if (blockerId === blockedId) badRequest("自分自身をブロックすることはできません");
+  const TableName = tableName();
+  const target = await ddb.send(new GetCommand({
+    TableName, Key: Keys.user(blockedId), ConsistentRead: true,
+  }));
+  if (target.Item?.itemType !== TABLE_ITEM_TYPE.User || target.Item.erasureReceipt) {
+    notFound("アカウントが見つかりません");
+  }
+  const record = { itemType: TABLE_ITEM_TYPE.Block, blockerId, blockedId, createdAt: new Date().toISOString() };
+  await ddb.send(new TransactWriteCommand({
+    TransactItems: [
+      ...[blockerId, blockedId].map(id => ({
+        ConditionCheck: {
+          TableName, Key: Keys.user(id),
+          ConditionExpression: "itemType = :type AND attribute_not_exists(erasureReceipt)",
+          ExpressionAttributeValues: { ":type": TABLE_ITEM_TYPE.User },
+        },
+      })),
+      ...[Keys.block(blockerId, blockedId), inboundKey(blockerId, blockedId)].map(Key => ({
+        Put: { TableName, Item: { ...Key, ...record } },
+      })),
+    ],
+  }));
+  // No notifications are emitted for either write.
   return created({ ok: true });
 }
 
-function parseBody(raw: string | undefined): CreateBlockRequestBody {
-  const body = parseJsonObject(raw);
-  if (
-    typeof body.blockedUserId !== "string" ||
-    !/^N[0-9a-f]{32}$/.test(body.blockedUserId)
-  ) {
-    badRequest("blockedUserIdの形式が不正です");
-  }
-  return { blockedUserId: body.blockedUserId };
+export async function deleteBlock(event: APIGatewayProxyEventV2, target: string) {
+  const auth = await authenticate(event.headers?.authorization ?? event.headers?.Authorization);
+  const blockedId = userId(target);
+  const blockerId = auth.niarimUserId;
+  const TableName = tableName();
+  await ddb.send(new TransactWriteCommand({
+    TransactItems: [Keys.block(blockerId, blockedId), inboundKey(blockerId, blockedId)]
+      .map(Key => ({ Delete: { TableName, Key } })),
+  }));
+  return ok({ ok: true });
+}
+
+export async function getMyBlocks(event: APIGatewayProxyEventV2) {
+  const auth = await authenticate(event.headers?.authorization ?? event.headers?.Authorization);
+  const blockedUserIds: string[] = [];
+  let cursor: Record<string, unknown> | undefined;
+  do {
+    const page = await ddb.send(new QueryCommand({
+      TableName: tableName(),
+      ConsistentRead: true,
+      KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+      ExpressionAttributeValues: { ":pk": Keys.user(auth.niarimUserId).pk, ":prefix": "BLOCK#" },
+      ExclusiveStartKey: cursor,
+    }));
+    for (const row of (page.Items ?? []) as BlockItem[]) {
+      if (row.itemType === TABLE_ITEM_TYPE.Block) blockedUserIds.push(row.blockedId);
+    }
+    cursor = page.LastEvaluatedKey;
+  } while (cursor);
+  return ok({ blockedUserIds });
 }

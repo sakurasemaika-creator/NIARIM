@@ -1542,7 +1542,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」「検索」「ブックマーク」の5タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品は作品広場の「ブックマーク」タブにまとめて表示されるほか、自分の作者ページの「ブックマーク」タブでも確認できます。不適切な作品の通報と投稿者のブロックは準備中です。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にする非表示ワードと、作品広場で作品に設定されたタグだけを対象にする非表示タグを「新規追加」から1件ずつ登録し、ペンで編集、ゴミ箱で削除できます。カンマや#は不要です。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。';
+      'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」「検索」「ブックマーク」の5タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品は作品広場の「ブックマーク」タブにまとめて表示されるほか、自分の作者ページの「ブックマーク」タブでも確認できます。投稿や投稿者を通報できます。ミュートは自分の表示だけに、ブロックはログイン中の双方の表示に反映します。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にする非表示ワードと、作品広場で作品に設定されたタグだけを対象にする非表示タグを「新規追加」から1件ずつ登録し、ペンで編集、ゴミ箱で削除できます。カンマや#は不要です。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。';
 
   @override
   String get helpWatermarkEntryTitle => 'ウォーターマーク';
@@ -5579,7 +5579,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get licenseTermsArt12Body =>
-      '1. 本アプリは、ユーザーが作成したアニメーション作品を、ユーザー自身のGoogleアカウントを通じてYouTubeへ投稿し、「作品広場」上で公開・閲覧できる機能（以下「本コミュニティ機能」といいます。）を任意で提供します。作品の閲覧・作成自体は、本コミュニティ機能を利用しなくても行えます。\n2. 投稿された動画ファイル本体はYouTube上に保存され、開発者のサーバーには保存されません。一方、投稿作品の識別・表示に必要な情報（YouTube動画ID、タイトル、統計情報、通報情報等）、および投稿・通報・ブロック機能の利用にあたり発行されるNIARIM User ID（Googleアカウントとは別に本アプリ内部で発行する識別子）は、開発者のサーバーで管理します。\n3. 本コミュニティ機能のうち、作品の投稿、通報およびユーザーのブロックには、Googleアカウントによるログインが必要です。\n4. 投稿できる作品数には1日あたりの上限があります。（無料会員・プレミアム会員で上限が異なります。）当該上限は、運営上の都合により変更されることがあります。\n5. ユーザーは、他のユーザーが投稿した作品のうち、法令もしくは公序良俗に違反する、または第3条各号に該当するおそれがあると考えるものについて、本アプリ内の通報機能を通じて開発者に報告できます。開発者は、通報の内容を確認のうえ、合理的な理由に基づき当該作品の一覧からの非表示その他の必要な措置を講じることがあります。虚偽の通報または通報機能の濫用は禁止します。\n6. ユーザーが投稿を削除した場合、または本アプリにおけるGoogleアカウント連携を解除した場合、当該投稿に対応するYouTube動画が削除されることがあります。また、YouTube側で動画が非公開または削除された場合、当該作品は作品広場上でも表示されなくなります。\n7. 本コミュニティ機能の利用にあたっては、本規約に加えてYouTubeの利用規約およびコミュニティガイドラインが適用されます。\n8. ユーザーは、他のユーザーをフォローし、他のユーザーの作品をブックマークまたはリポストできます。フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。\n9. 作品に付けるタグは、投稿者以外のユーザーも追加・削除できます。投稿者は、自分の作品のタグをロックして他のユーザーによる編集を禁止できます。ユーザーは、他人を誹謗中傷するタグ、作品の内容と無関係なタグその他不適切なタグを付けてはなりません。開発者は、不適切なタグを削除することがあります。\n10. 開発者は、本人の作品の投稿・公開やミッション達成などに関する通知を、本アプリ内の通知一覧に表示します。端末の通知が許可されている場合は、プッシュ通知が送信されることがあります。プッシュ通知は本アプリまたは端末の設定から無効にできます。\n11. ユーザーは、本コミュニティ機能を、他のユーザーへの嫌がらせ、宣伝・勧誘、その他本来の目的（作品の公開と閲覧）から外れる目的で利用してはなりません。ブロック機能を利用した場合、ブロックした相手の作品は自分の一覧に表示されなくなります。';
+      '1. 本アプリは、ユーザーが作成したアニメーション作品を、ユーザー自身のGoogleアカウントを通じてYouTubeへ投稿し、「作品広場」上で公開・閲覧できる機能（以下「本コミュニティ機能」といいます。）を任意で提供します。作品の閲覧・作成自体は、本コミュニティ機能を利用しなくても行えます。\n2. 投稿された動画ファイル本体はYouTube上に保存され、開発者のサーバーには保存されません。一方、投稿作品の識別・表示に必要な情報（YouTube動画ID、タイトル、統計情報、通報情報等）、および投稿・通報・ブロック機能の利用にあたり発行されるNIARIM User ID（Googleアカウントとは別に本アプリ内部で発行する識別子）は、開発者のサーバーで管理します。\n3. 本コミュニティ機能のうち、作品の投稿、通報およびユーザーのブロックには、Googleアカウントによるログインが必要です。\n4. 投稿できる作品数には1日あたりの上限があります。（無料会員・プレミアム会員で上限が異なります。）当該上限は、運営上の都合により変更されることがあります。\n5. ユーザーは、他のユーザーが投稿した作品のうち、法令もしくは公序良俗に違反する、または第3条各号に該当するおそれがあると考えるものについて、本アプリ内の通報機能を通じて開発者に報告できます。開発者は、通報の内容を確認のうえ、合理的な理由に基づき当該作品の一覧からの非表示その他の必要な措置を講じることがあります。虚偽の通報または通報機能の濫用は禁止します。\n6. ユーザーが投稿を削除した場合、または本アプリにおけるGoogleアカウント連携を解除した場合、当該投稿に対応するYouTube動画が削除されることがあります。また、YouTube側で動画が非公開または削除された場合、当該作品は作品広場上でも表示されなくなります。\n7. 本コミュニティ機能の利用にあたっては、本規約に加えてYouTubeの利用規約およびコミュニティガイドラインが適用されます。\n8. ユーザーは、他のユーザーをフォローし、他のユーザーの作品をブックマークまたはリポストできます。フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。\n9. 作品に付けるタグは、投稿者以外のユーザーも追加・削除できます。投稿者は、自分の作品のタグをロックして他のユーザーによる編集を禁止できます。ユーザーは、他人を誹謗中傷するタグ、作品の内容と無関係なタグその他不適切なタグを付けてはなりません。開発者は、不適切なタグを削除することがあります。\n10. 開発者は、本人の作品の投稿・公開やミッション達成などに関する通知を、本アプリ内の通知一覧に表示します。端末の通知が許可されている場合は、プッシュ通知が送信されることがあります。プッシュ通知は本アプリまたは端末の設定から無効にできます。\n11. ユーザーは、本コミュニティ機能を、他のユーザーへの嫌がらせ、宣伝・勧誘、その他本来の目的（作品の公開と閲覧）から外れる目的で利用してはなりません。 ミュートは自分の表示だけに反映されます。ブロックすると、作品広場にログイン中の双方に相手の投稿が表示されなくなります。どちらの操作でも相手に通知は送られません。';
 
   @override
   String get licenseTermsArt13Title => '第13条（準拠法・裁判管轄）';
@@ -7185,13 +7185,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityPostPeriodChooseRange => '日付を選ぶ';
 
   @override
-  String get communityMutedAuthors => '非表示にしたユーザー';
+  String get communityMutedAuthors => 'ミュートしたユーザー';
 
   @override
-  String get communityMutedAuthorsEmpty => '非表示にしたユーザーはいません';
+  String get communityMutedAuthorsEmpty => 'ミュートしたユーザーはいません';
 
   @override
-  String get communityUnmuteAuthor => 'このユーザーの非表示を解除する';
+  String get communityUnmuteAuthor => 'ミュートを解除';
 
   @override
   String get communityMyWorksManagementHeading => '作品管理';
@@ -7932,31 +7932,31 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityMutedTagsEmpty => '非表示タグはありません';
 
   @override
-  String get communityMuteShort => '非表示';
+  String get communityMuteShort => 'ミュート';
 
   @override
-  String get communityMuteConfirmTitle => 'このユーザーを非表示にしますか？';
+  String get communityMuteConfirmTitle => 'このユーザーをミュートしますか？';
 
   @override
-  String get communityMuteConfirmBody => '非表示にするとこのユーザーの作品は表示されなくなります。';
+  String get communityMuteConfirmBody => 'ミュートすると、このユーザーの投稿が自分の画面に表示されなくなります。';
 
   @override
-  String get communityMuteConfirmAction => '非表示にする';
+  String get communityMuteConfirmAction => 'ミュートする';
 
   @override
-  String get communityUnmuteConfirmTitle => 'このユーザーの非表示を解除しますか？';
+  String get communityUnmuteConfirmTitle => 'このユーザーのミュートを解除しますか？';
 
   @override
-  String get communityUnmuteConfirmAction => '非表示を解除する';
+  String get communityUnmuteConfirmAction => 'ミュートを解除';
 
   @override
   String get communityMuteNo => 'いいえ';
 
   @override
-  String get communityMuteDone => 'このユーザーを非表示にしました';
+  String get communityMuteDone => 'このユーザーをミュートしました';
 
   @override
-  String get communityUnmuteDone => 'このユーザーの非表示を解除しました';
+  String get communityUnmuteDone => 'このユーザーのミュートを解除しました';
 
   @override
   String communityFollowerMilestone(String count) {
@@ -8301,7 +8301,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tutorialPage6Title => '困ったときは';
 
   @override
-  String get tutorialPage6Step1 => '画面右上の？で、その画面の説明を見られます';
+  String get tutorialPage6Step1 => 'ホームの「ヘルプ」で機能の説明を検索できます';
 
   @override
   String get tutorialPage6Step2 => 'はじめて使う機能では、短い説明が出ます';
@@ -8311,7 +8311,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'この使い方は、ホームの右上のメニューの「使い方」にある「使い方を見る」から、いつでも見直せます';
 
   @override
-  String get helpTutorialSubtitle => 'はじめに表示した使い方を、もう一度見ます';
+  String get helpTutorialSubtitle => 'イラスト付きの使い方ガイドを開きます';
 
   @override
   String get settingsTipsResetTitle => '機能の説明をもう一度表示';
@@ -8450,7 +8450,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityPlazaSearchTab => '検索';
 
   @override
-  String get communityPlazaMutePrivacyNotice => '※非表示にしても相手には伝わりません。';
+  String get communityPlazaMutePrivacyNotice => 'ミュートしても相手に通知は送られません。';
 
   @override
   String get communityPostVisibilityHeading => 'YouTubeでの公開範囲';
@@ -10401,4 +10401,65 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsAccountDeletionLinkFailed => 'アカウント削除ページを開けませんでした。';
+
+  @override
+  String get communityReportAuthor => 'ユーザーを通報';
+
+  @override
+  String get communityReportReason => '通報理由（運営のみ閲覧）';
+
+  @override
+  String get communityReportSend => '通報を送信';
+
+  @override
+  String get communityReportSent => '運営に通報を送信しました';
+
+  @override
+  String get communityModerationSaved => '変更を保存しました';
+
+  @override
+  String get communityModerationFailed => '操作を完了できませんでした。時間をおいてもう一度お試しください。';
+
+  @override
+  String get communityBlockAuthor => 'ブロックする';
+
+  @override
+  String get communityUnblockAuthor => 'ブロックを解除';
+
+  @override
+  String get communityBlockPrivacyNotice =>
+      '作品広場にログインしている間、お互いの投稿が表示されなくなります。相手に通知は送られません。';
+
+  @override
+  String get communityBlockedUsers => 'ブロックしたユーザー';
+
+  @override
+  String get communityBlockedUsersEmpty => 'ブロックしたユーザーはいません';
+
+  @override
+  String get communityPostingTermsPrompt => '作品広場に投稿する前に、利用規約をご確認ください。';
+
+  @override
+  String get communityPostingTermsAgree => '同意して続ける';
+
+  @override
+  String get canvasViewActions => 'キャンバスの表示';
+
+  @override
+  String get canvasViewZoomIn => '拡大';
+
+  @override
+  String get canvasViewZoomOut => '縮小';
+
+  @override
+  String get canvasViewActualPixels => '等倍表示';
+
+  @override
+  String get canvasViewRotateLeft => '左に回転';
+
+  @override
+  String get canvasViewRotateRight => '右に回転';
+
+  @override
+  String get canvasViewResetRotation => '回転を戻す';
 }

@@ -105,6 +105,7 @@ export interface WorkItem {
 
   // 13章：NIARIM側の独立した公開/非公開設定。
   isNiarimPublished: boolean;
+  moderationHidden?: boolean;
   // 13章：YouTube側の状態。強制非表示の判定に使う
   // （'private'または'deleted'のとき強制非表示）。
   youtubePrivacyStatus: YoutubePrivacyStatus;
@@ -260,7 +261,8 @@ export interface ReportItem {
   itemType: typeof TABLE_ITEM_TYPE.Report;
   pk: string;
   sk: string;
-  workId: string;
+  workId?: string;
+  targetId?: string;
   reporterId: string;
   reason: string;
   status: ReportStatus;

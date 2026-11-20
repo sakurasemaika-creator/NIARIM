@@ -16,6 +16,7 @@ import '../../widgets/sort_mode_control.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'community_edit_feedback.dart';
+import 'community_moderation.dart';
 import 'community_following_list_screen.dart';
 import 'community_followers_screen.dart';
 import 'widgets/community_shorts_viewer.dart';
@@ -422,6 +423,34 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
             : null,
         title: FitOrHideTitle(widget.authorName),
         actions: [
+          if (!isSelf && communityService.isBackendConnected)
+            PopupMenuButton<bool>(
+              onSelected: (report) {
+                if (report) {
+                  reportCommunityContent(context, authorId: widget.authorId);
+                } else {
+                  confirmCommunityBlock(
+                    context,
+                    widget.authorId,
+                    blocked: !communityService.isAuthorBlocked(widget.authorId),
+                  );
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: true,
+                  child: Text(l10n.communityReportAuthor),
+                ),
+                PopupMenuItem(
+                  value: false,
+                  child: Text(
+                    communityService.isAuthorBlocked(widget.authorId)
+                        ? l10n.communityUnblockAuthor
+                        : l10n.communityBlockAuthor,
+                  ),
+                ),
+              ],
+            ),
           PopupMenuButton<CollectionViewSize>(
             key: const Key('communityAuthorViewSize'),
             icon: const Icon(Icons.view_module),

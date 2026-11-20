@@ -21,7 +21,7 @@ export function toPublicWork(item: WorkWithProjectMetadata) {
       item.containsGenerativeAiImageOrVideo ?? false,
     tags: item.tags,
     lockedTags: item.lockedTags,
-    isNiarimPublished: item.isNiarimPublished,
+    isNiarimPublished: item.isNiarimPublished && !item.moderationHidden,
     projectFps: item.projectFps ?? 0,
     projectFrameCount: item.projectFrameCount ?? 0,
     projectWorkSeconds: item.projectWorkSeconds ?? 0,

@@ -1,3 +1,5 @@
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import { isBlockedForViewer } from "./blocks";
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { TABLE_ITEM_TYPE, type WorkItem } from "../../lib/types";
@@ -9,7 +11,7 @@ import { ok } from "../../lib/response";
  * ID disappears from videos.list, say unavailable rather than guessing.
  * Network/quota failures are unknown, NEVER "deleted".
  */
-export async function getPlaybackStatus(workId: string) {
+export async function getPlaybackStatus(workId: string, event?: APIGatewayProxyEventV2) {
   if (!/^[a-zA-Z0-9_-]{1,64}$/.test(workId)) {
     return ok({ status: "unavailable" });
   }
@@ -24,8 +26,9 @@ export async function getPlaybackStatus(workId: string) {
     return ok({ status: "unavailable" });
   }
   const work = raw as WorkItem;
+  if (event && await isBlockedForViewer(event, work.authorId)) return ok({ status: "unavailable" });
   if (work.youtubePrivacyStatus === "deleted") return ok({ status: "deleted" });
-  if (!work.isNiarimPublished || work.youtubePrivacyStatus === "private") {
+  if (work.moderationHidden || !work.isNiarimPublished || work.youtubePrivacyStatus === "private") {
     return ok({ status: "private" });
   }
 

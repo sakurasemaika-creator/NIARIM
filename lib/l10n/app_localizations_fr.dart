@@ -1608,7 +1608,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Publiez vos animations et illustrations dans la communauté sous forme de vidéos YouTube, et parcourez les œuvres des autres utilisateurs. Basculez entre les onglets « Nouveautés », « Classement » et « Abonnements », et effectuez une recherche par titre d’œuvre ou nom du créateur. Passez en mode recherche par tag pour filtrer les œuvres par tag : n’importe quel utilisateur (pas seulement le créateur) peut ajouter ou retirer des tags, mais un tag verrouillé par le créateur ne peut être retiré que par lui, et toucher un tag filtre instantanément les œuvres correspondantes. Toucher une carte d’œuvre ouvre une fenêtre d’aperçu flottante déplaçable et redimensionnable, pour continuer à naviguer sur d’autres écrans pendant la lecture. Le bouton « Voir les détails » ouvre l’écran de détails de l’œuvre (créateur, date de publication, modification des tags, mise en favori, republication, etc.). Toucher le bouton « Suivre » à côté du nom d’un créateur l’ajoute à vos abonnements : l’onglet « Abonnements » regroupe alors uniquement les publications de ce créateur, triées par date. Vous seul pouvez consulter les listes des personnes que vous suivez et des œuvres que vous avez mises en favori. L’identité et la liste de vos abonnés sont masquées. Le nombre d’abonnements et d’abonnés est affiché. Suivre une personne, mettre une œuvre en favori ou la repartager ne déclenche aucune notification individuelle à l’autre utilisateur concernant cette action. Vous pouvez repartager l’œuvre de n’importe qui d’autre (sauf la vôtre) avec le bouton « Repartager » ; lorsqu’un créateur que vous suivez repartage l’œuvre de quelqu’un d’autre, cette œuvre apparaît aussi dans votre onglet « Abonnements », triée selon la date la plus récente — sa date de publication d’origine ou sa date de republication (la carte affiche « Repartagé par… »). Les œuvres mises en favori apparaissent regroupées dans l’onglet « Favoris » de l’écran d’accueil, ainsi que dans l’onglet « Favoris » de votre propre page de créateur. Le signalement des œuvres inappropriées et le blocage des créateurs arrivent bientôt. Les vidéos verticales peuvent être visionnées en « mode vertical », qui les enchaîne comme un flux de vidéos courtes. Le nombre de publications par jour est limité : 1 par jour pour les membres gratuits, 3 par jour pour les membres Premium. Le bouton des filtres d’affichage en haut à droite (l’icône d’œil barré) permet de masquer les œuvres que vous ne souhaitez pas voir. Vous pouvez masquer les œuvres marquées « Contient des images ou vidéos générées par IA », et ajouter des titres masqués (comparés uniquement au titre de l’œuvre) et des tags masqués (comparés uniquement aux tags de la Place des œuvres), un par un avec « Ajouter ». Modifiez avec le crayon ou supprimez avec la corbeille ; aucune virgule ni # nécessaire. Ces filtres s’appliquent aux onglets « Nouveautés », « Classement » et « Abonnements » (repartages compris), au mode vertical, aux pages des créateurs, aux détails des œuvres et aux favoris. La mention « Contient des images ou vidéos générées par IA » est déclarée par l’auteur au moment de la publication, et lui seul peut la modifier ensuite (depuis « Mes publications » ou l’écran de détails de l’œuvre).';
+      'Publiez vos animations et illustrations dans la communauté sous forme de vidéos YouTube, et parcourez les œuvres des autres utilisateurs. Basculez entre les onglets « Nouveautés », « Classement » et « Abonnements », et effectuez une recherche par titre d’œuvre ou nom du créateur. Passez en mode recherche par tag pour filtrer les œuvres par tag : n’importe quel utilisateur (pas seulement le créateur) peut ajouter ou retirer des tags, mais un tag verrouillé par le créateur ne peut être retiré que par lui, et toucher un tag filtre instantanément les œuvres correspondantes. Toucher une carte d’œuvre ouvre une fenêtre d’aperçu flottante déplaçable et redimensionnable, pour continuer à naviguer sur d’autres écrans pendant la lecture. Le bouton « Voir les détails » ouvre l’écran de détails de l’œuvre (créateur, date de publication, modification des tags, mise en favori, republication, etc.). Toucher le bouton « Suivre » à côté du nom d’un créateur l’ajoute à vos abonnements : l’onglet « Abonnements » regroupe alors uniquement les publications de ce créateur, triées par date. Vous seul pouvez consulter les listes des personnes que vous suivez et des œuvres que vous avez mises en favori. L’identité et la liste de vos abonnés sont masquées. Le nombre d’abonnements et d’abonnés est affiché. Suivre une personne, mettre une œuvre en favori ou la repartager ne déclenche aucune notification individuelle à l’autre utilisateur concernant cette action. Vous pouvez repartager l’œuvre de n’importe qui d’autre (sauf la vôtre) avec le bouton « Repartager » ; lorsqu’un créateur que vous suivez repartage l’œuvre de quelqu’un d’autre, cette œuvre apparaît aussi dans votre onglet « Abonnements », triée selon la date la plus récente — sa date de publication d’origine ou sa date de republication (la carte affiche « Repartagé par… »). Les œuvres mises en favori apparaissent regroupées dans l’onglet « Favoris » de l’écran d’accueil, ainsi que dans l’onglet « Favoris » de votre propre page de créateur. Vous pouvez signaler des œuvres ou des comptes. Le masquage agit sur votre affichage seulement. Le blocage masque les publications des deux comptes lorsqu’ils sont connectés. Les vidéos verticales peuvent être visionnées en « mode vertical », qui les enchaîne comme un flux de vidéos courtes. Le nombre de publications par jour est limité : 1 par jour pour les membres gratuits, 3 par jour pour les membres Premium. Le bouton des filtres d’affichage en haut à droite (l’icône d’œil barré) permet de masquer les œuvres que vous ne souhaitez pas voir. Vous pouvez masquer les œuvres marquées « Contient des images ou vidéos générées par IA », et ajouter des titres masqués (comparés uniquement au titre de l’œuvre) et des tags masqués (comparés uniquement aux tags de la Place des œuvres), un par un avec « Ajouter ». Modifiez avec le crayon ou supprimez avec la corbeille ; aucune virgule ni # nécessaire. Ces filtres s’appliquent aux onglets « Nouveautés », « Classement » et « Abonnements » (repartages compris), au mode vertical, aux pages des créateurs, aux détails des œuvres et aux favoris. La mention « Contient des images ou vidéos générées par IA » est déclarée par l’auteur au moment de la publication, et lui seul peut la modifier ensuite (depuis « Mes publications » ou l’écran de détails de l’œuvre).';
 
   @override
   String get helpWatermarkEntryTitle => 'Filigrane';
@@ -5909,7 +5909,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get licenseTermsArt12Body =>
-      '1. L’Application propose, à titre facultatif, une fonction permettant à l’utilisateur de publier, via son propre compte Google, les animations qu’il a créées sur YouTube, puis de les publier et de les consulter sur la « Place des œuvres » (la « Fonction Communautaire »). Il est possible de consulter et de créer des œuvres sans utiliser la Fonction Communautaire.\n2. Le fichier vidéo lui-même est stocké sur YouTube, et non sur les serveurs du développeur. En revanche, les informations nécessaires à l’identification et à l’affichage des œuvres publiées (identifiant de la vidéo YouTube, titre, statistiques, informations de signalement, etc.), ainsi que l’identifiant utilisateur NIARIM délivré lors de l’utilisation des fonctions de publication, de signalement et de blocage (un identifiant délivré au sein de l’Application, distinct du compte Google), sont gérés sur les serveurs du développeur.\n3. La publication d’œuvres, le signalement et le blocage d’autres utilisateurs dans le cadre de la Fonction Communautaire nécessitent une connexion via un compte Google.\n4. Le nombre d’œuvres pouvant être publiées est soumis à une limite quotidienne (différente entre les membres gratuits et les membres premium). Cette limite peut être modifiée pour des raisons d’exploitation.\n5. Si un utilisateur estime qu’une œuvre publiée par un autre utilisateur enfreint la loi ou les bonnes mœurs, ou pourrait relever de l’un des points de l’article 3, il peut la signaler au développeur via la fonction de signalement de l’Application. Après examen du signalement, le développeur pourra, pour un motif raisonnable, prendre les mesures nécessaires, telles que le retrait de l’œuvre des listes. Les signalements mensongers et l’usage abusif de la fonction de signalement sont interdits.\n6. Si un utilisateur supprime une publication, ou dissocie son compte Google de l’Application, la vidéo YouTube correspondante pourra être supprimée. De même, si la vidéo est rendue privée ou supprimée du côté de YouTube, l’œuvre cessera également d’être affichée sur la Place des œuvres.\n7. L’utilisation de la Fonction Communautaire est soumise, en plus des présentes Conditions, aux Conditions d’utilisation et aux Règles de la communauté de YouTube.\n8. Les utilisateurs peuvent s’abonner à d’autres utilisateurs et mettre en favori ou repartager les œuvres d’autres utilisateurs. Vous seul pouvez consulter les listes des personnes que vous suivez et des œuvres que vous avez mises en favori. L’identité et la liste de vos abonnés sont masquées. Le nombre d’abonnements et d’abonnés est affiché. Suivre une personne, mettre une œuvre en favori ou la repartager ne déclenche aucune notification individuelle à l’autre utilisateur concernant cette action.\n9. Les tags attachés à une œuvre peuvent être ajoutés ou supprimés par des utilisateurs autres que l’auteur. L’auteur peut verrouiller les tags de sa propre œuvre afin d’en interdire la modification par d’autres utilisateurs. Les utilisateurs ne doivent pas ajouter de tags diffamatoires, de tags sans rapport avec le contenu de l’œuvre, ni de tags inappropriés de quelque autre nature. Le développeur peut supprimer les tags inappropriés.\n10. Le développeur affiche dans la liste des notifications de l’Application des avis sur l’enregistrement et la publication de vos œuvres, les objectifs de mission atteints et les événements similaires. Si votre appareil autorise les notifications, l’Application peut envoyer des notifications push. Vous pouvez les désactiver dans les paramètres de l’Application ou de l’appareil.\n11. Les utilisateurs ne doivent pas utiliser la Fonction Communautaire pour harceler d’autres utilisateurs, à des fins publicitaires ou de démarchage, ni pour tout autre objectif étranger à sa finalité (publier et consulter des œuvres). Si vous utilisez la fonction de blocage, les œuvres de l’utilisateur bloqué n’apparaîtront plus dans vos listes.';
+      '1. L’Application propose, à titre facultatif, une fonction permettant à l’utilisateur de publier, via son propre compte Google, les animations qu’il a créées sur YouTube, puis de les publier et de les consulter sur la « Place des œuvres » (la « Fonction Communautaire »). Il est possible de consulter et de créer des œuvres sans utiliser la Fonction Communautaire.\n2. Le fichier vidéo lui-même est stocké sur YouTube, et non sur les serveurs du développeur. En revanche, les informations nécessaires à l’identification et à l’affichage des œuvres publiées (identifiant de la vidéo YouTube, titre, statistiques, informations de signalement, etc.), ainsi que l’identifiant utilisateur NIARIM délivré lors de l’utilisation des fonctions de publication, de signalement et de blocage (un identifiant délivré au sein de l’Application, distinct du compte Google), sont gérés sur les serveurs du développeur.\n3. La publication d’œuvres, le signalement et le blocage d’autres utilisateurs dans le cadre de la Fonction Communautaire nécessitent une connexion via un compte Google.\n4. Le nombre d’œuvres pouvant être publiées est soumis à une limite quotidienne (différente entre les membres gratuits et les membres premium). Cette limite peut être modifiée pour des raisons d’exploitation.\n5. Si un utilisateur estime qu’une œuvre publiée par un autre utilisateur enfreint la loi ou les bonnes mœurs, ou pourrait relever de l’un des points de l’article 3, il peut la signaler au développeur via la fonction de signalement de l’Application. Après examen du signalement, le développeur pourra, pour un motif raisonnable, prendre les mesures nécessaires, telles que le retrait de l’œuvre des listes. Les signalements mensongers et l’usage abusif de la fonction de signalement sont interdits.\n6. Si un utilisateur supprime une publication, ou dissocie son compte Google de l’Application, la vidéo YouTube correspondante pourra être supprimée. De même, si la vidéo est rendue privée ou supprimée du côté de YouTube, l’œuvre cessera également d’être affichée sur la Place des œuvres.\n7. L’utilisation de la Fonction Communautaire est soumise, en plus des présentes Conditions, aux Conditions d’utilisation et aux Règles de la communauté de YouTube.\n8. Les utilisateurs peuvent s’abonner à d’autres utilisateurs et mettre en favori ou repartager les œuvres d’autres utilisateurs. Vous seul pouvez consulter les listes des personnes que vous suivez et des œuvres que vous avez mises en favori. L’identité et la liste de vos abonnés sont masquées. Le nombre d’abonnements et d’abonnés est affiché. Suivre une personne, mettre une œuvre en favori ou la repartager ne déclenche aucune notification individuelle à l’autre utilisateur concernant cette action.\n9. Les tags attachés à une œuvre peuvent être ajoutés ou supprimés par des utilisateurs autres que l’auteur. L’auteur peut verrouiller les tags de sa propre œuvre afin d’en interdire la modification par d’autres utilisateurs. Les utilisateurs ne doivent pas ajouter de tags diffamatoires, de tags sans rapport avec le contenu de l’œuvre, ni de tags inappropriés de quelque autre nature. Le développeur peut supprimer les tags inappropriés.\n10. Le développeur affiche dans la liste des notifications de l’Application des avis sur l’enregistrement et la publication de vos œuvres, les objectifs de mission atteints et les événements similaires. Si votre appareil autorise les notifications, l’Application peut envoyer des notifications push. Vous pouvez les désactiver dans les paramètres de l’Application ou de l’appareil.\n11. Les utilisateurs ne doivent pas utiliser la Fonction Communautaire pour harceler d’autres utilisateurs, à des fins publicitaires ou de démarchage, ni pour tout autre objectif étranger à sa finalité (publier et consulter des œuvres). Le masquage change uniquement votre affichage. Le blocage masque les publications des deux comptes lorsqu’ils sont connectés à la Place des œuvres. Aucune notification n’est envoyée.';
 
   @override
   String get licenseTermsArt13Title =>
@@ -8847,7 +8847,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tutorialPage6Step1 =>
-      'Touchez ? en haut à droite d’un écran pour lire son aide.';
+      'Retrouvez les explications sur les fonctionnalités dans l’aide de l’écran d’accueil.';
 
   @override
   String get tutorialPage6Step2 =>
@@ -8858,7 +8858,8 @@ class AppLocalizationsFr extends AppLocalizations {
       'Revoyez ce guide depuis le menu en haut à droite de l’accueil : « Mode d’emploi », puis « Voir le guide ».';
 
   @override
-  String get helpTutorialSubtitle => 'Revoir le guide de démarrage';
+  String get helpTutorialSubtitle =>
+      'Ouvrir le guide illustré de prise en main';
 
   @override
   String get settingsTipsResetTitle => 'Réafficher les explications';
@@ -11361,4 +11362,68 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get settingsAccountDeletionLinkFailed =>
       'Impossible d’ouvrir la page de suppression du compte.';
+
+  @override
+  String get communityReportAuthor => 'Signaler ce compte';
+
+  @override
+  String get communityReportReason =>
+      'Motif du signalement (visible uniquement par la modération)';
+
+  @override
+  String get communityReportSend => 'Envoyer le signalement';
+
+  @override
+  String get communityReportSent => 'Signalement envoyé à la modération';
+
+  @override
+  String get communityModerationSaved => 'Modifications enregistrées';
+
+  @override
+  String get communityModerationFailed =>
+      'Impossible de terminer cette action. Réessayez plus tard.';
+
+  @override
+  String get communityBlockAuthor => 'Bloquer ce compte';
+
+  @override
+  String get communityUnblockAuthor => 'Débloquer ce compte';
+
+  @override
+  String get communityBlockPrivacyNotice =>
+      'Une fois connectés, vous ne verrez plus vos publications respectives sur la Place des œuvres. Aucune notification ne sera envoyée.';
+
+  @override
+  String get communityBlockedUsers => 'Comptes bloqués';
+
+  @override
+  String get communityBlockedUsersEmpty => 'Vous n’avez bloqué aucun compte.';
+
+  @override
+  String get communityPostingTermsPrompt =>
+      'Consultez les conditions d’utilisation avant de publier sur la Place des œuvres.';
+
+  @override
+  String get communityPostingTermsAgree => 'Accepter et continuer';
+
+  @override
+  String get canvasViewActions => 'Affichage de la toile';
+
+  @override
+  String get canvasViewZoomIn => 'Agrandir';
+
+  @override
+  String get canvasViewZoomOut => 'Réduire';
+
+  @override
+  String get canvasViewActualPixels => 'Taille réelle';
+
+  @override
+  String get canvasViewRotateLeft => 'Tourner à gauche';
+
+  @override
+  String get canvasViewRotateRight => 'Tourner à droite';
+
+  @override
+  String get canvasViewResetRotation => 'Réinitialiser la rotation';
 }

@@ -56,24 +56,14 @@ Keep a control. Record start/end date, locale, store surface, variant, impressio
 
 ## KPI ladder
 
-Discovery:
-- Search impressions / store impressions
-- Search terms or acquisition source where available
-- Web organic landing sessions by locale
+Use only the metrics exposed by Google Play Console for the first release:
 
-Conversion:
-- Product page view rate
-- Store listing conversion to install
-- Screenshot / product-page experiment lift
+- Store listing visitors and acquisitions.
+- Acquisition source and store listing conversion when the console reports them.
+- Store listing experiment results when available.
+- Retention and uninstall metrics provided by the console.
 
-Quality after acquisition:
-- First project creation
-- First drawing action
-- First animation/timeline action
-- Export completion
-- D1 / D7 retention where available
-
-A keyword that increases installs but produces materially worse activation or retention is not automatically a win.
+Use comparable periods for each experiment, and leave unavailable metrics blank.
 
 ## App Store specific
 
@@ -103,3 +93,10 @@ Before a public store release:
 - Confirm support/privacy/marketing URLs use the final branded production domain.
 - Check App Store / Play Console previews for truncation in every locale.
 - After release, establish a baseline before changing multiple acquisition assets at once.
+
+
+## 初回リリースの運用方針
+
+- 配布先は日本。対象年齢は13歳以上。掲載情報、コンテンツレーティング、広告、作品広場に関する Play Console の回答は、配布ビルドと公開環境の実態に合わせる。
+- 利用状況の把握には Play Console が提供する指標を使用する。独自の行動計測や獲得経路を追跡する SDK は追加しない。
+- 作品広場の投稿は、リリース回数にかかわらず投稿者の公開設定を使う。YouTube上で非公開・削除済みの作品と、運営により掲載を停止された作品は広場に表示しない。

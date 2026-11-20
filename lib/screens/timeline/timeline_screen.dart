@@ -3206,46 +3206,51 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// [layer]の角度・大きさ・不透明度の変更をピクセルへ反映し直す
-  /// （タイムラインでウォーターマークをタップして編集した際に呼ばれる）。
-  Future<Uint8List?> _rasterizeWatermarkForEdit(
+  /// Transform the embedded pixels, independently of the source preset.
+  Future<Uint8List?> _transformPlacedWatermark(
+    ProjectService projects,
     Layer layer, {
+    required String sceneId,
+    required int frameIndex,
     required double angle,
     required double scale,
   }) async {
-    if (!mounted ||
-        !context.read<PremiumService>().isFeatureAvailable(
-          PremiumFeature.watermark,
-        )) {
-      if (mounted) {
-        showPremiumBanner(context, feature: PremiumFeature.watermark);
-      }
-      return null;
-    }
-    final watermarkService = context.read<WatermarkService>();
-    final asset = watermarkService.assets
-        .where((a) => a.id == layer.watermarkAssetId)
-        .firstOrNull;
-    if (asset == null || !mounted) return null;
-    final projectService = context.read<ProjectService>();
-    final tileManager = projectService.tileManagerOf(widget.projectId);
-    final w = tileManager.canvasWidth;
-    final h = tileManager.canvasHeight;
-    final pixels = await _rasterizeWatermark(
-      asset,
-      w,
-      h,
-      angle: angle,
-      scale: scale,
+    final tiles = projects.tileManagerOf(widget.projectId);
+    final key = projects.tileKeyFor(
+      widget.projectId,
+      sceneId,
+      frameIndex,
+      layer.id,
     );
-    if (pixels == null || !mounted) return null;
-    if (!context.read<PremiumService>().isFeatureAvailable(
-      PremiumFeature.watermark,
-    )) {
-      showPremiumBanner(context, feature: PremiumFeature.watermark);
-      return null;
+    final source = await tiles.compositeLayerToImage(key);
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    final center = Offset(tiles.canvasWidth / 2, tiles.canvasHeight / 2);
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate((angle - layer.watermarkAngle) * math.pi / 180);
+    canvas.scale(scale / layer.watermarkScale);
+    canvas.translate(-center.dx, -center.dy);
+    canvas.drawImage(
+      source,
+      Offset.zero,
+      Paint()..filterQuality = FilterQuality.high,
+    );
+    final picture = recorder.endRecording();
+    source.dispose();
+    try {
+      final image = await picture.toImage(
+        tiles.canvasWidth,
+        tiles.canvasHeight,
+      );
+      try {
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        return data?.buffer.asUint8List();
+      } finally {
+        image.dispose();
+      }
+    } finally {
+      picture.dispose();
     }
-    return pixels;
   }
 
   Future<Uint8List?> _rasterizeWatermark(
@@ -5994,37 +5999,70 @@ class _TimelineScreenState extends State<TimelineScreen> {
             FilledButton(
               onPressed: () async {
                 Navigator.pop(ctx);
-                final pixels = await _rasterizeWatermarkForEdit(
-                  layer,
-                  angle: angle,
-                  scale: scale,
-                );
-                if (pixels == null || !mounted) return;
-                final currentHome = ps.homeOf(widget.projectId, layer.id);
-                if (currentHome == null) return;
+                if (!mounted ||
+                    !context.read<PremiumService>().isFeatureAvailable(
+                      PremiumFeature.watermark,
+                    )) {
+                  return;
+                }
+                final home = ps.homeOf(widget.projectId, layer.id);
+                if (home == null) return;
                 final current = ps
-                    .layersOf(
-                      widget.projectId,
-                      currentHome.sceneId,
-                      currentHome.frameIndex,
-                    )
+                    .layersOf(widget.projectId, home.sceneId, home.frameIndex)
                     .where((item) => item.id == layer.id)
                     .firstOrNull;
                 if (current == null) return;
+                final updated = current.copyWith(
+                  watermarkAngle: angle,
+                  watermarkScale: scale,
+                  opacity: (opacity * 100).round(),
+                  rangeMode: loop
+                      ? LayerRangeMode.allFrames
+                      : LayerRangeMode.currentScene,
+                );
+                if (angle == current.watermarkAngle &&
+                    scale == current.watermarkScale) {
+                  ps.updateLayer(
+                    projectId: widget.projectId,
+                    sceneId: home.sceneId,
+                    frameIndex: home.frameIndex,
+                    layer: updated,
+                  );
+                  return;
+                }
+                if (!current.watermarkScale.isFinite ||
+                    current.watermarkScale <= 0) {
+                  return;
+                }
+                final pixels = await _transformPlacedWatermark(
+                  ps,
+                  current,
+                  sceneId: home.sceneId,
+                  frameIndex: home.frameIndex,
+                  angle: angle,
+                  scale: scale,
+                );
+                if (pixels == null ||
+                    !mounted ||
+                    !context.read<PremiumService>().isFeatureAvailable(
+                      PremiumFeature.watermark,
+                    ) ||
+                    !ps
+                        .layersOf(
+                          widget.projectId,
+                          home.sceneId,
+                          home.frameIndex,
+                        )
+                        .contains(current)) {
+                  return;
+                }
                 ps.replaceLayerPixels(
                   projectId: widget.projectId,
-                  sceneId: currentHome.sceneId,
-                  frameIndex: currentHome.frameIndex,
+                  sceneId: home.sceneId,
+                  frameIndex: home.frameIndex,
                   layerId: layer.id,
                   pixels: pixels,
-                  updatedLayer: current.copyWith(
-                    watermarkAngle: angle,
-                    watermarkScale: scale,
-                    opacity: (opacity * 100).round(),
-                    rangeMode: loop
-                        ? LayerRangeMode.allFrames
-                        : LayerRangeMode.currentScene,
-                  ),
+                  updatedLayer: updated,
                 );
               },
               child: Text(l10n.commonOk),

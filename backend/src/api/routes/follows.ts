@@ -1,3 +1,4 @@
+import { isBlockedBetween } from "./blocks";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import {
   GetCommand,
@@ -37,6 +38,9 @@ export async function toggleFollow(
     new GetCommand({ TableName: tableName(), Key: followerKey }),
   );
   const isFollowing = Boolean(existing.Item);
+  if (!isFollowing && await isBlockedBetween(auth.niarimUserId, targetId)) {
+    forbidden();
+  }
   const now = new Date().toISOString();
 
   try {

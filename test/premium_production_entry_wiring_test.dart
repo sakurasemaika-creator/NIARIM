@@ -96,13 +96,12 @@ void main() {
     ).readAsStringSync();
 
     expect(source, contains('Future<void> _addWatermarkLayer('));
-    expect(source, contains('Future<Uint8List?> _rasterizeWatermarkForEdit('));
+    expect(source, contains('Future<Uint8List?> _transformPlacedWatermark('));
     final edit = source.substring(
-      source.indexOf('final pixels = await _rasterizeWatermarkForEdit('),
+      source.indexOf('final pixels = await _transformPlacedWatermark('),
     );
-    final stopOnFailure = edit.indexOf(
-      'if (pixels == null || !mounted) return;',
-    );
+    final stopOnFailure = edit.indexOf('if (pixels == null ||');
+    expect(edit, contains('.isFeatureAvailable('));
     final write = edit.indexOf('ps.replaceLayerPixels(');
     expect(stopOnFailure, greaterThanOrEqualTo(0));
     expect(write, greaterThan(stopOnFailure));

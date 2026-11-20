@@ -12,6 +12,7 @@ import { bookmarkPeriodPartition, isBookmarkPeriod } from "../../lib/periodBookm
 import type { BookmarkPeriod } from "../../lib/periodBookmarkRanking";
 import type { WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
+import { blockedFromViewer } from "./blocks";
 import { toPublicWork } from "./_publicWork";
 
 const TOP_LIMIT = 50;
@@ -34,11 +35,12 @@ export async function getRanking(event: APIGatewayProxyEventV2, period: string) 
     badRequest("ランキングのページカーソルが不正です", "INVALID_PAGE_CURSOR");
   }
   const ascending = qp.ascending === "true";
+  const blocked = await blockedFromViewer(event);
   if (period === "all" || period === "bookmarks") {
-    return getBookmarkRanking(offset, limit, ascending);
+    return getBookmarkRanking(offset, limit, ascending, blocked);
   }
   if (isBookmarkPeriod(period)) {
-    return getPeriodBookmarkRanking(period, offset, limit, ascending);
+    return getPeriodBookmarkRanking(period, offset, limit, ascending, blocked);
   }
   badRequest("ランキング期間が不正です", "INVALID_RANKING_PERIOD");
 }
@@ -46,7 +48,7 @@ export async function getRanking(event: APIGatewayProxyEventV2, period: string) 
 function published(work: WorkItem | undefined): work is WorkItem {
   return Boolean(work &&
     work.itemType === TABLE_ITEM_TYPE.Work &&
-    work.isNiarimPublished &&
+    work.isNiarimPublished && !work.moderationHidden &&
     (work.youtubePrivacyStatus === "public" ||
      work.youtubePrivacyStatus === "unlisted"));
 }
@@ -75,7 +77,7 @@ async function publicWorksById(workIds: string[]): Promise<Map<string,WorkItem>>
 }
 
 async function getPeriodBookmarkRanking(
-  period: BookmarkPeriod, offset: number, limit: number, ascending: boolean,
+  period: BookmarkPeriod, offset: number, limit: number, ascending: boolean, blocked: Set<string>,
 ) {
   const now=new Date();
   const windowId=currentWindowId(period,now);
@@ -102,7 +104,7 @@ async function getPeriodBookmarkRanking(
     const byId=await publicWorksById([...new Set(valid.map(x=>x.workId))]);
     for(const entry of valid) {
       const work=byId.get(entry.workId);
-      if(!work)continue;
+      if(!work || blocked.has(work.authorId))continue;
       collected.push({...toPublicWork(work),periodBookmarkCount:entry.score});
       if(collected.length>=TOP_LIMIT)break;
     }
@@ -134,10 +136,14 @@ export async function getRankingVisibility(event: APIGatewayProxyEventV2) {
     badRequest("作品ID一覧が不正です", "INVALID_RANKING_VISIBILITY_IDS");
   }
   const works = await publicWorksById(ids);
-  return ok({visibility: Object.fromEntries(ids.map(id => [id, works.has(id)]))});
+  const blocked = await blockedFromViewer(event);
+  return ok({visibility: Object.fromEntries(ids.map(id => {
+    const work = works.get(id);
+    return [id, !!work && !blocked.has(work.authorId)];
+  }))});
 }
 
-export async function getAllTimePublicWorks(): Promise<WorkItem[]> {
+export async function getAllTimePublicWorks(blocked = new Set<string>()): Promise<WorkItem[]> {
   const collected: WorkItem[] = [];
   let nextKey: Record<string,string|number>|undefined;
   // GSI2 can lag publication changes. NEVER expose cached GSI metadata
@@ -159,7 +165,7 @@ export async function getAllTimePublicWorks(): Promise<WorkItem[]> {
           /^[A-Za-z0-9_-]{11}$/.test(id)))]);
     for(const candidate of candidates) {
       const actual=byId.get(candidate.workId);
-      if(actual)collected.push(actual);
+      if(actual && !blocked.has(actual.authorId))collected.push(actual);
       if(collected.length>=TOP_LIMIT)break;
     }
     nextKey=result.LastEvaluatedKey as Record<string,string|number>|undefined;
@@ -168,8 +174,8 @@ export async function getAllTimePublicWorks(): Promise<WorkItem[]> {
   return collected;
 }
 
-async function getBookmarkRanking(offset:number,limit:number,ascending:boolean) {
-  const ordered = await getAllTimePublicWorks();
+async function getBookmarkRanking(offset:number,limit:number,ascending:boolean,blocked:Set<string>) {
+  const ordered = await getAllTimePublicWorks(blocked);
   const sorted = ascending ? [...ordered].reverse() : ordered;
   const page = sorted.slice(offset, offset+limit);
   return ok({

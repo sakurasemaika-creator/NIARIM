@@ -197,6 +197,7 @@ class TileManager {
   final Map<String, Uint8List?> _undoBefore = {};
   // 記録中の操作に不透明度ロックをかけるか（[beginUndoRecording]）。
   bool _recordingLocksOpacity = false;
+  Uint8List? _recordingSelection;
 
   TileManager({
     required this.canvasWidth,
@@ -423,12 +424,46 @@ class TileManager {
   /// 同じ見え方にする。nullは何も描かない）。
   Uint8List? _viewOf(String layerId, String tileKey, Uint8List pixels) {
     if (!_recordingUndo ||
-        !_recordingLocksOpacity ||
         layerId != _recordingLayerId ||
         !_undoBefore.containsKey(tileKey)) {
       return pixels;
     }
-    return opacityLocked(pixels, _undoBefore[tileKey]);
+    return _restrictedPixels(pixels, _undoBefore[tileKey], tileKey);
+  }
+
+  Uint8List? _restrictedPixels(
+    Uint8List? after,
+    Uint8List? before,
+    String tileKey,
+  ) {
+    final locked = _recordingLocksOpacity
+        ? opacityLocked(after, before)
+        : after;
+    final selection = _recordingSelection;
+    if (selection == null || (before == null && locked == null)) return locked;
+    final coordinates = tileKey.split(",");
+    final tileX = int.parse(coordinates.first);
+    final tileY = int.parse(coordinates.last);
+    final output = locked == null
+        ? Uint8List(tileSize * tileSize * 4)
+        : Uint8List.fromList(locked);
+    var nonempty = false;
+    for (var y = 0; y < tileSize; y++) {
+      for (var x = 0; x < tileSize; x++) {
+        final worldX = tileX * tileSize + x;
+        final worldY = tileY * tileSize + y;
+        final offset = (y * tileSize + x) * 4;
+        if (worldX >= canvasWidth ||
+            worldY >= canvasHeight ||
+            selection[worldY * canvasWidth + worldX] == 0) {
+          for (var channel = 0; channel < 4; channel++) {
+            output[offset + channel] = before?[offset + channel] ?? 0;
+          }
+        }
+        nonempty |= output[offset + 3] != 0;
+      }
+    }
+    return nonempty ? output : null;
   }
 
   /// 不透明度ロック：操作後のタイル[after]（乗算済みRGBA、nullは透明）を、
@@ -800,10 +835,16 @@ class TileManager {
   /// [lockOpacity]が真なら、この操作に不透明度ロックをかける：記録中の
   /// 合成（[compositeLayerToImage]）は[opacityLocked]をかけた見え方になり、
   /// [endUndoRecording]で触れたタイルへ実際にかける。
-  void beginUndoRecording(String layerId, {bool lockOpacity = false}) {
+  void beginUndoRecording(
+    String layerId, {
+    bool lockOpacity = false,
+    Uint8List? selection,
+  }) {
     _recordingUndo = true;
     _recordingLayerId = layerId;
     _recordingLocksOpacity = lockOpacity;
+    assert(selection == null || selection.length == canvasWidth * canvasHeight);
+    _recordingSelection = selection;
     _undoBefore.clear();
     // 記録の前に作った見え方（ロックの有無が違う）を使い回さない。
     _invalidateComposite(layerId);
@@ -873,16 +914,19 @@ class TileManager {
   /// Undo記録を終了し、変更前後のタイルスナップショットを返す（変更が無ければ空）。
   ({Map<String, Uint8List?> before, Map<String, Uint8List?> after})
   endUndoRecording() {
-    final locksOpacity = _recordingLocksOpacity;
+    final restricted = _recordingLocksOpacity || _recordingSelection != null;
     _recordingUndo = false;
-    _recordingLocksOpacity = false;
     final layerId = _recordingLayerId;
     _recordingLayerId = null;
+    if (layerId != null && restricted && _undoBefore.isNotEmpty) {
+      _restrictTouchedTiles(layerId);
+    }
+    _recordingLocksOpacity = false;
+    _recordingSelection = null;
     if (layerId == null || _undoBefore.isEmpty) {
       _undoBefore.clear();
       return (before: const {}, after: const {});
     }
-    if (locksOpacity) _lockTouchedTiles(layerId);
     final after = <String, Uint8List?>{};
     for (final key in _undoBefore.keys) {
       final current = _tiles[layerId]?[key];
@@ -894,10 +938,14 @@ class TileManager {
   }
 
   /// 不透明度ロックの操作を終えるとき、触れたタイルへロックを実際にかける。
-  void _lockTouchedTiles(String layerId) {
+  void _restrictTouchedTiles(String layerId) {
     final layerMap = _tiles.putIfAbsent(layerId, () => {});
     for (final entry in _undoBefore.entries) {
-      final locked = opacityLocked(layerMap[entry.key], entry.value);
+      final locked = _restrictedPixels(
+        layerMap[entry.key],
+        entry.value,
+        entry.key,
+      );
       if (locked == null) {
         layerMap.remove(entry.key);
       } else {
@@ -918,6 +966,7 @@ class TileManager {
     final before = Map<String, Uint8List?>.from(_undoBefore);
     _recordingUndo = false;
     _recordingLocksOpacity = false;
+    _recordingSelection = null;
     _recordingLayerId = null;
     _undoBefore.clear();
     if (layerId == null || before.isEmpty) return;

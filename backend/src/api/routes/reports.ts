@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
-import { authenticate } from "../../lib/auth";
+import { authenticate, getUser } from "../../lib/auth";
 import { badRequest, created, notFound } from "../../lib/response";
 import { reserveReportQuota } from "../../lib/reportQuota";
 import { parseJsonObject } from "../../lib/request";
@@ -9,14 +9,15 @@ import type { ReportItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 
 interface CreateReportRequestBody {
-  workId: string;
+  workId?: string;
+  authorId?: string;
   reason: string;
 }
 
 function isWorkPublic(work: WorkItem): boolean {
   return (
     work.itemType === TABLE_ITEM_TYPE.Work &&
-    work.isNiarimPublished &&
+    work.isNiarimPublished && !work.moderationHidden &&
     work.youtubePrivacyStatus !== "private" &&
     work.youtubePrivacyStatus !== "deleted"
   );
@@ -42,25 +43,35 @@ export async function createReport(event: APIGatewayProxyEventV2) {
   );
   const body = parseBody(event.body);
 
-  const workResult = await ddb.send(
-    new GetCommand({ TableName: tableName(), Key: Keys.work(body.workId) }),
-  );
-  const work = workResult.Item as WorkItem | undefined;
-  if (!work || !isWorkPublic(work)) {
-    notFound("作品が見つかりません");
+  let targetId = body.authorId;
+  if (body.workId) {
+    const workResult = await ddb.send(new GetCommand({
+      TableName: tableName(), Key: Keys.work(body.workId), ConsistentRead: true,
+    }));
+    const work = workResult.Item as WorkItem | undefined;
+    if (!work || !isWorkPublic(work)) {
+      notFound("作品が見つかりません");
+    }
+    if (work.authorId === auth.niarimUserId) {
+      badRequest("自分の作品は通報できません");
+    }
+    targetId = work.authorId;
+  } else if (!targetId || !await getUser(targetId)) {
+    notFound("アカウントが見つかりません");
   }
-
-  if (work.authorId === auth.niarimUserId) {
-    badRequest("自分の作品は通報できません");
-  }
-
+  if (!targetId) notFound("アカウントが見つかりません");
+  if (targetId === auth.niarimUserId) badRequest("自分自身は通報できません");
   await reserveReportQuota(auth.niarimUserId);
 
   const now = new Date().toISOString();
   const report: ReportItem = {
     itemType: TABLE_ITEM_TYPE.Report,
-    ...Keys.report(body.workId, auth.niarimUserId, now),
+    ...(body.workId ? Keys.report(body.workId, auth.niarimUserId, now) : {
+      pk: Keys.user(targetId).pk,
+      sk: `REPORT#${auth.niarimUserId}#${now}`,
+    }),
     workId: body.workId,
+    targetId,
     reporterId: auth.niarimUserId,
     reason: body.reason,
     status: "pending",
@@ -69,17 +80,27 @@ export async function createReport(event: APIGatewayProxyEventV2) {
     gsi7sk: now,
   };
 
-  await ddb.send(new PutCommand({ TableName: tableName(), Item: report }));
+  const TableName = tableName();
+  await ddb.send(new TransactWriteCommand({ TransactItems: [
+    ...[auth.niarimUserId, targetId].map(id => ({
+      ConditionCheck: {
+        TableName, Key: Keys.user(id),
+        ConditionExpression: "itemType = :type AND attribute_not_exists(erasureReceipt)",
+        ExpressionAttributeValues: { ":type": TABLE_ITEM_TYPE.User },
+      },
+    })),
+    { Put: { TableName, Item: report } },
+  ] }));
   return created({ ok: true });
 }
 
 function parseBody(raw: string | undefined): CreateReportRequestBody {
   const body = parseJsonObject(raw);
-  if (
-    typeof body.workId !== "string" ||
-    !/^[A-Za-z0-9_-]{11}$/.test(body.workId)
-  ) {
-    badRequest("workIdの形式が不正です");
+  const { workId, authorId } = body;
+  const isWork = typeof workId === "string" && /^[A-Za-z0-9_-]{11}$/.test(workId);
+  const isAuthor = typeof authorId === "string" && /^N[0-9a-f]{32}$/.test(authorId);
+  if (!((isWork && authorId === undefined) || (isAuthor && workId === undefined))) {
+    badRequest("有効な通報対象を1件指定してください");
   }
   if (!body.reason || typeof body.reason !== "string" || !body.reason.trim()) {
     badRequest("reasonは必須です");
@@ -87,5 +108,5 @@ function parseBody(raw: string | undefined): CreateReportRequestBody {
   const reason = body.reason.trim();
   if (reason.length > 1000)
     badRequest("reasonは1000文字以内で指定してください");
-  return { workId: body.workId, reason };
+  return { workId: isWork ? workId : undefined, authorId: isAuthor ? authorId : undefined, reason };
 }

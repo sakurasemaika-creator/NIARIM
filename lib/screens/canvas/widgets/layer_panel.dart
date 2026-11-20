@@ -1910,13 +1910,17 @@ class _LayerPanelState extends State<LayerPanel> {
     // previous one (a scale change after an opacity change keeps the new
     // opacity), and the sliders show what was last set.
     var latest = layer;
-    void update(model.Layer Function(model.Layer) updater) {
+    void update(
+      model.Layer Function(model.Layer) updater, {
+      bool recordUndo = true,
+    }) {
       latest = updater(latest);
       context.read<ProjectService>().updateLayer(
         projectId: widget.projectId,
         sceneId: widget.sceneId,
         frameIndex: widget.frameIndex,
         layer: latest,
+        recordUndo: recordUndo,
       );
     }
 
@@ -2068,7 +2072,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 title: Text(l10n.layerPanelLockLabel),
                 value: latest.isLocked,
                 onChanged: (v) {
-                  update((l) => l.copyWith(isLocked: v));
+                  update((l) => l.copyWith(isLocked: v), recordUndo: false);
                   Navigator.pop(ctx);
                 },
               ),
@@ -2076,7 +2080,10 @@ class _LayerPanelState extends State<LayerPanel> {
                 title: Text(l10n.layerPanelOpacityLockLabel),
                 value: latest.opacityLocked,
                 onChanged: (v) {
-                  update((l) => l.copyWith(opacityLocked: v));
+                  update(
+                    (l) => l.copyWith(opacityLocked: v),
+                    recordUndo: false,
+                  );
                   Navigator.pop(ctx);
                 },
               ),

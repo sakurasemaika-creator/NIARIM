@@ -6,6 +6,7 @@ import { decodePageCursor, encodePageCursor, requestedPageSize } from "../../lib
 import { authenticate, tryAuthenticate } from "../../lib/auth";
 import type { WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
+import { isBlockedBetween } from "./blocks";
 import { toPublicWork } from "./_publicWork";
 
 async function allWorksForAuthor(authorId: string, event: APIGatewayProxyEventV2) {
@@ -89,7 +90,10 @@ export async function getAuthorWorks(
   const caller = await tryAuthenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
-  const includeHidden = caller?.niarimUserId === authorId;
+  if (caller && await isBlockedBetween(caller.niarimUserId, authorId)) {
+    return ok({ authorId, works: [], nextCursor: null });
+  }
+  const includeHidden = caller?.niarimUserId === authorId && event.queryStringParameters?.public !== "true";
 
   const qp = event.queryStringParameters ?? {};
   const scope = `author|${authorId}|public`;
@@ -106,7 +110,14 @@ export async function getAuthorWorks(
           ExclusiveStartKey: decodePageCursor(qp.cursor, scope),
         }),
       );
-  const works = includeHidden ? (result as { works: WorkItem[] }).works : (result as { Items?: Record<string, unknown>[] }).Items as WorkItem[] | undefined ?? [];
+  let works = includeHidden ? (result as { works: WorkItem[] }).works : (result as { Items?: Record<string, unknown>[] }).Items as WorkItem[] | undefined ?? [];
+  const publicWorks = includeHidden ? [] : await Promise.all(works.map(async hint => {
+    const reply = await ddb.send(new GetCommand({ TableName: tableName(), Key: Keys.work(hint.workId), ConsistentRead: true }));
+    const work = reply.Item as WorkItem | undefined;
+    return work?.itemType === TABLE_ITEM_TYPE.Work && work.authorId === authorId && work.isNiarimPublished && !work.moderationHidden &&
+      (work.youtubePrivacyStatus === "public" || work.youtubePrivacyStatus === "unlisted") ? work : null;
+  }));
+  if (!includeHidden) works = publicWorks.filter((work): work is WorkItem => work !== null);
   return ok({
     authorId,
     works: includeHidden ? works.map(toOwnerWork) : works.map(toPublicWork),

@@ -18,6 +18,7 @@ import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
 import 'community_author_works_screen.dart';
 import 'community_error_text.dart';
+import 'community_moderation.dart';
 import 'community_edit_feedback.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
@@ -255,12 +256,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
         ),
       ),
     );
-  }
-
-  void _showComingSoonSnackbar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showAddTagDialog(CommunityService communityService, String workId) {
@@ -892,32 +887,35 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
               ),
               if (!isOwner) ...[
                 const SizedBox(height: 8),
-                Row(
+                Wrap(
+                  spacing: 8,
                   children: [
-                    Expanded(
-                      child: TextButton.icon(
-                        onPressed: () => _showComingSoonSnackbar(
-                          l10n.communityReportComingSoonSnackbar,
-                        ),
-                        icon: const Icon(Icons.flag_outlined, size: 18),
-                        label: Text(l10n.communityWorkDetailReportButton),
-                      ),
+                    TextButton.icon(
+                      onPressed: () =>
+                          reportCommunityContent(context, workId: work.id),
+                      icon: const Icon(Icons.flag_outlined, size: 18),
+                      label: Text(l10n.communityWorkDetailReportButton),
                     ),
-                    Expanded(
-                      child: TextButton.icon(
-                        onPressed: () => confirmCommunityAuthorMute(
+                    TextButton.icon(
+                      onPressed: () => confirmCommunityAuthorMute(
+                        context,
+                        communityService,
+                        work.authorId,
+                        mute: true,
+                      ),
+                      icon: const Icon(Icons.visibility_off_outlined, size: 18),
+                      label: Text(l10n.communityMuteConfirmAction),
+                    ),
+                    if (communityService.isBackendConnected)
+                      TextButton.icon(
+                        onPressed: () => confirmCommunityBlock(
                           context,
-                          communityService,
                           work.authorId,
-                          mute: true,
+                          blocked: true,
                         ),
-                        icon: const Icon(
-                          Icons.visibility_off_outlined,
-                          size: 18,
-                        ),
-                        label: Text(l10n.communityMuteConfirmAction),
+                        icon: const Icon(Icons.block, size: 18),
+                        label: Text(l10n.communityBlockAuthor),
                       ),
-                    ),
                   ],
                 ),
               ],

@@ -8,6 +8,7 @@ import { ok } from "../../lib/response";
 import { decodePageCursor, encodePageCursor, requestedPageSize } from "../../lib/pagination";
 import type { WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
+import { blockedFromViewer } from "./blocks";
 import { toPublicWork } from "./_publicWork";
 
 /**
@@ -25,6 +26,7 @@ export async function getLatestWorks(event: APIGatewayProxyEventV2) {
   const exact = qp.exact === "true";
   const scope = `latest|${query}|${tagMode}|${exact}`;
   let key = decodePageCursor(qp.cursor, scope);
+  const blocked = await blockedFromViewer(event);
   const works: WorkItem[] = [];
   // Bound Lambda read cost even for a rare query with few matches.
   let more = true;
@@ -44,7 +46,7 @@ export async function getLatestWorks(event: APIGatewayProxyEventV2) {
     const active = await currentPublicWorks(candidates);
     for (const candidate of candidates) {
       const work = active.get(candidate.workId);
-      if (work && matchesSearch(work, query, tagMode, exact)) works.push(work);
+      if (work && !blocked.has(work.authorId) && matchesSearch(work, query, tagMode, exact)) works.push(work);
     }
     key = result.LastEvaluatedKey;
     more = Boolean(key);
@@ -79,7 +81,7 @@ async function currentPublicWorks(candidates: WorkItem[]): Promise<Map<string, W
     for (const raw of result.Responses?.[table] ?? []) {
       const work = raw as WorkItem;
       if (work.itemType === TABLE_ITEM_TYPE.Work &&
-          work.isNiarimPublished &&
+          work.isNiarimPublished && !work.moderationHidden &&
           (work.youtubePrivacyStatus === "public" ||
            work.youtubePrivacyStatus === "unlisted")) {
         visible.set(work.workId, work);

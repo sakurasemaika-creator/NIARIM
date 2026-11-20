@@ -163,6 +163,12 @@ async function eraseRow(row: Row, accountId: string) {
   if (row.itemType === TABLE_ITEM_TYPE.Block && row.blockedId === accountId) {
     return remove(rowKey(row), "blockedId", accountId);
   }
+  if (row.itemType === TABLE_ITEM_TYPE.Block && row.blockerId === accountId) {
+    return remove(rowKey(row), "blockerId", accountId);
+  }
+  if (row.itemType === TABLE_ITEM_TYPE.Report && row.targetId === accountId) {
+    return remove(rowKey(row), "targetId", accountId);
+  }
   if ((row.itemType === TABLE_ITEM_TYPE.Report || row.itemType === TABLE_ITEM_TYPE.ReportCounter) &&
       row.reporterId === accountId) {
     return remove(rowKey(row), "reporterId", accountId);
@@ -258,7 +264,7 @@ export async function handler(_event: unknown, context: Context): Promise<void> 
       ExclusiveStartKey: cursor,
       FilterExpression:
         "pk = :userKey OR niarimUserId = :id OR authorId = :id OR " +
-        "#owner = :id OR reporterId = :id OR blockedId = :id OR targetId = :id OR followerId = :id",
+        "#owner = :id OR reporterId = :id OR blockedId = :id OR blockerId = :id OR targetId = :id OR followerId = :id",
       ExpressionAttributeNames: { "#owner": "owner" },
       ExpressionAttributeValues: { ":userKey": Keys.user(accountId).pk, ":id": accountId },
     }));

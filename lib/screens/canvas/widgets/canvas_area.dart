@@ -1935,7 +1935,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     // 定規外の点が残らないようにする。透視定規はRulerEngine側で最初の点を
     // anchorとして扱うため、この呼び出しで既存仕様も維持される。
     final point = _toCanvasPoint(_rawToStrokePoint(event));
-    _beginTileUndo();
+    _beginTileUndo(clipToSelection: true);
     _strokePointer = event.pointer;
     _lastStrokeContact = point;
     _lastStrokeScreenPosition = event.localPosition;
@@ -2258,6 +2258,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _tileManager.beginUndoRecording(
         layerKey,
         lockOpacity: _recordingLocksOpacity,
+        selection: _recordingSelection,
       );
       _drawingEngine.replayCurrentStrokeWithFinalFade();
     }
@@ -2292,7 +2293,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// [paints]は絵を描き加える操作か（移動・変形は偽）。描き加える操作は、
   /// レイヤーの不透明度ロックが入っていれば透明な所へ描かず、各画素の
   /// 不透明度を変えない（[TileManager.opacityLocked]）。
-  void _beginTileUndo({bool paints = true}) {
+  void _beginTileUndo({bool paints = true, bool clipToSelection = false}) {
     _undoRecordingLayerKey = _tileKeyFor(_layerId);
     _undoRecordingFrame = (
       sceneId: widget.sceneId,
@@ -2302,13 +2303,16 @@ class _CanvasAreaState extends State<CanvasArea> {
         paints &&
         (_layers.where((l) => l.id == _layerId).firstOrNull?.opacityLocked ??
             false);
+    _recordingSelection = clipToSelection ? _selectionMask : null;
     _tileManager.beginUndoRecording(
       _undoRecordingLayerKey!,
       lockOpacity: _recordingLocksOpacity,
+      selection: _recordingSelection,
     );
   }
 
   bool _recordingLocksOpacity = false;
+  Uint8List? _recordingSelection;
 
   /// 今のペン・消しゴムのストロークを描いている指（無ければnull）。
   int? _strokePointer;
@@ -3827,7 +3831,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   final FilterEngine _filterEngine = FilterEngine();
 
   void _handleBlurMosaicDown(Offset canvasPos) {
-    _beginTileUndo();
+    _beginTileUndo(clipToSelection: true);
     _warpLastPos = canvasPos;
     _applyBlurMosaic(canvasPos);
   }
@@ -3902,7 +3906,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         final dist = math.sqrt(
           (x - cx) * (x - cx) + (y - cy) * (y - cy).toDouble(),
         );
-        if (dist > radius) continue;
+        if (dist > radius || _recordingSelection?[y * w + x] == 0) continue;
         final tx = x ~/ TileManager.tileSize;
         final ty = y ~/ TileManager.tileSize;
         final tile = _tileManager.getOrCreateTile(key, tx, ty);

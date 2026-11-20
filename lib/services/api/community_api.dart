@@ -32,6 +32,32 @@ class CommunityApi {
 
   const CommunityApi(this._client);
 
+  Future<void> report({
+    String? workId,
+    String? authorId,
+    required String reason,
+  }) async {
+    await _client.postJson(
+      '/reports',
+      body: {'workId': ?workId, 'authorId': ?authorId, 'reason': reason},
+    );
+  }
+
+  Future<Set<String>> blockedAuthors() async {
+    final response = await _client.getJson('/me/blocks', authenticated: true);
+    final ids = response['blockedUserIds'];
+    if (ids is! List) throw const FormatException('Invalid block list');
+    return ids.whereType<String>().toSet();
+  }
+
+  Future<void> setAuthorBlocked(String authorId, bool blocked) async {
+    if (blocked) {
+      await _client.postJson('/blocks', body: {'blockedUserId': authorId});
+    } else {
+      await _client.deleteJson('/blocks/${Uri.encodeComponent(authorId)}');
+    }
+  }
+
   /// Existing list API remains available for callers needing only one page.
   Future<List<ApiWork>> latestWorks({int? limit, String? cursor}) async =>
       (await latestWorksPage(limit: limit, cursor: cursor)).works;
@@ -45,6 +71,7 @@ class CommunityApi {
   }) async {
     final json = await _client.getJson(
       '/works/latest',
+      authenticated: true,
       query: {
         if (limit != null) 'limit': '$limit',
         'cursor': ?cursor,
@@ -60,6 +87,7 @@ class CommunityApi {
   Future<Map<String, dynamic>> youtubeComments(String workId) =>
       _client.getJson(
         '/works/${Uri.encodeComponent(workId)}/youtube-comments',
+        authenticated: true,
         query: const {'limit': '100'},
       );
 
@@ -82,6 +110,7 @@ class CommunityApi {
   Future<CommunityPlaybackStatus> playbackStatus(String workId) async {
     final json = await _client.getJson(
       '/works/${Uri.encodeComponent(workId)}/playback-status',
+      authenticated: true,
     );
     return switch (json['status']) {
       'available' => CommunityPlaybackStatus.available,
@@ -101,6 +130,7 @@ class CommunityApi {
     }
     final json = await _client.getJson(
       '/ranking/visibility',
+      authenticated: true,
       query: {'ids': ids.join(',')},
     );
     final visibility = json['visibility'];
@@ -121,6 +151,7 @@ class CommunityApi {
   }) async {
     final json = await _client.getJson(
       '/ranking/${period.pathValue}',
+      authenticated: true,
       query: {
         'cursor': ?cursor,
         if (ascending) 'ascending': 'true',
@@ -470,8 +501,8 @@ class CommunityApi {
   }) async {
     final json = await _client.getJson(
       '/users/${Uri.encodeComponent(authorId)}/works',
-      authenticated: asOwner,
-      query: {'limit': '25', 'cursor': ?cursor},
+      authenticated: true,
+      query: {'limit': '25', 'cursor': ?cursor, if (!asOwner) 'public': 'true'},
     );
     return ApiWorkPage.fromJson(json);
   }
@@ -495,6 +526,7 @@ class CommunityApi {
   Future<ApiRepostPage> repostsOfPage(String userId, {String? cursor}) async {
     final json = await _client.getJson(
       '/users/${Uri.encodeComponent(userId)}/reposts',
+      authenticated: true,
       query: {'limit': '25', 'cursor': ?cursor},
     );
     return ApiRepostPage.fromJson(json);
@@ -554,6 +586,7 @@ class CommunityApi {
   Future<List<ApiRepost>> repostsOf(String userId) async {
     final json = await _client.getJson(
       '/users/${Uri.encodeComponent(userId)}/reposts',
+      authenticated: true,
     );
     return (json['reposts'] as List? ?? const [])
         .whereType<Map<String, dynamic>>()

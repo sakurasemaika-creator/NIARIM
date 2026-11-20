@@ -1,3 +1,4 @@
+import { isBlockedForViewer } from "./blocks";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
@@ -54,11 +55,12 @@ export async function getYoutubeComments(event: APIGatewayProxyEventV2, workId: 
     badRequest("コメントのページ指定が不正です", "INVALID_COMMENT_CURSOR");
   }
   const workRes = await ddb.send(new GetCommand({
-    TableName: tableName(), Key: Keys.work(workId),
+    TableName: tableName(), Key: Keys.work(workId), ConsistentRead: true,
   }));
   if (workRes.Item?.itemType !== TABLE_ITEM_TYPE.Work) notFound();
   const work = workRes.Item as WorkItem;
-  if (!work.isNiarimPublished ||
+  if (await isBlockedForViewer(event, work.authorId)) notFound();
+  if (work.moderationHidden || !work.isNiarimPublished ||
       work.youtubePrivacyStatus === "private" ||
       work.youtubePrivacyStatus === "deleted") {
     notFound();

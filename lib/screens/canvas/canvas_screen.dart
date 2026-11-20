@@ -48,7 +48,6 @@ import '../../engine/undo_manager.dart';
 import '../../engine/custom_automation_executor.dart';
 import '../../engine/filter_lens_mask.dart';
 import '../../l10n/app_localizations.dart';
-import '../../l10n/desktop_canvas_menu_labels.dart';
 import '../../models/bundled_fonts.dart';
 import '../../models/filter_canvas_gizmo.dart';
 import '../../models/filter_def.dart';
@@ -2103,8 +2102,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         !_isSelectionToolActive &&
                         !immersiveAdjusting)
                       Tooltip(
-                        message: AppLocalizations.of(context)!
-                            .canvasToolbarToggleTooltip,
+                        message: AppLocalizations.of(
+                          context,
+                        )!.canvasToolbarToggleTooltip,
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: () =>
@@ -2145,12 +2145,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // ツールバー・フレーム一覧ごと畳む（開閉ハンドルも隠す）。
                     if (!_isSelectionToolActive && !immersiveAdjusting)
                       Tooltip(
-                        message: AppLocalizations.of(context)!
-                            .canvasFrameStripToggleTooltip,
+                        message: AppLocalizations.of(
+                          context,
+                        )!.canvasFrameStripToggleTooltip,
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () =>
-                              setState(() => _showFrameStrip = !_showFrameStrip),
+                          onTap: () => setState(
+                            () => _showFrameStrip = !_showFrameStrip,
+                          ),
                           child: Container(
                             height: 28,
                             alignment: Alignment.center,
@@ -3919,89 +3921,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
     setState(_applyDesktopDockVisibilityPreferences);
   }
 
-  /// Desktop-only application menus, placed in the same top row as the
-  /// canvas action icons. Actions reuse the existing canvas handlers.
-  Widget _buildDesktopMenuBar() {
-    final l = AppLocalizations.of(context)!;
-    final titles = desktopCanvasMenuLabels(Localizations.localeOf(context));
-    final scheme = Theme.of(context).colorScheme;
-    return MenuBar(
-      style: MenuStyle(
-        backgroundColor: WidgetStatePropertyAll(
-          scheme.surface.withValues(alpha: 0),
-        ),
-        elevation: const WidgetStatePropertyAll(0),
-        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-      ),
-      children: [
-        SubmenuButton(
-          menuChildren: [
-            MenuItemButton(
-              onPressed: () => context
-                  .read<ProjectService>()
-                  .saveProjectManually(widget.projectId),
-              child: Text(l.commonSave),
-            ),
-            MenuItemButton(
-              onPressed: _confirmBackToProjectList,
-              child: Text(l.timelineBackToProjectListTooltip),
-            ),
-          ],
-          child: Text(titles.file),
-        ),
-        SubmenuButton(
-          menuChildren: [
-            MenuItemButton(
-              onPressed: () => _setDesktopPanelVisible(
-                CanvasDockPanel.layer,
-                !_showLayerPanel,
-              ),
-              child: Text(l.layerPanelTitle),
-            ),
-            MenuItemButton(
-              onPressed: _selectAllLayers,
-              child: Text(l.layerPanelSelectAll),
-            ),
-          ],
-          child: Text(titles.layer),
-        ),
-        SubmenuButton(
-          menuChildren: [
-            MenuItemButton(
-              onPressed: _toggleBackground,
-              child: Text(l.canvasEditMenuBackgroundToggle),
-            ),
-            MenuItemButton(
-              onPressed: () => _setDesktopPanelVisible(
-                CanvasDockPanel.canvasPreview,
-                !_showCanvasPreviewPanel,
-              ),
-              child: Text(l.canvasEditMenuPreviewNavigator),
-            ),
-            MenuItemButton(
-              onPressed: _openDesktopWorkspaceSettings,
-              child: Text(l.pcWorkspaceLayoutScreenTitle),
-            ),
-          ],
-          child: Text(titles.view),
-        ),
-        SubmenuButton(
-          menuChildren: [
-            MenuItemButton(
-              onPressed: () => _showEditMenu(context),
-              child: Text(l.canvasSettingsMenuTooltip),
-            ),
-            MenuItemButton(
-              onPressed: _openDesktopWorkspaceSettings,
-              child: Text(l.workspacePcLayoutButton),
-            ),
-          ],
-          child: Text(titles.settings),
-        ),
-      ],
-    );
-  }
-
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
     final desktop = isWideScreen(context);
@@ -4083,29 +4002,33 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: () => _applyArtworkHistory(redo: true),
             tooltip: l10n.commonRedo,
           ),
-          Expanded(
-            child: desktop
-                ? LayoutBuilder(
-                    builder: (context, constraints) {
-                      final inset = math.min(16.0, constraints.maxWidth);
-                      return Row(
-                        children: [
-                          SizedBox(width: inset),
-                          // MenuBar scrolls its own contents when constrained.
-                          // Leave the fixed actions outside that scroll area.
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: constraints.maxWidth - inset,
-                            ),
-                            child: _buildDesktopMenuBar(),
-                          ),
-                          Expanded(child: toolActions),
-                        ],
-                      );
-                    },
-                  )
-                : toolActions,
-          ),
+          Expanded(child: toolActions),
+          if (desktop)
+            PopupMenuButton<CanvasViewAction>(
+              tooltip: l10n.canvasViewActions,
+              icon: const Icon(Icons.fit_screen_outlined, size: 22),
+              onSelected: (action) => setState(() {
+                _navigatorViewRequest = CanvasViewRequest(
+                  (_navigatorViewRequest?.serial ?? 0) + 1,
+                  action,
+                );
+              }),
+              itemBuilder: (_) => [
+                for (final item in [
+                  (CanvasViewAction.fit, l10n.pcViewFit),
+                  (CanvasViewAction.actualPixels, l10n.canvasViewActualPixels),
+                  (CanvasViewAction.zoomIn, l10n.canvasViewZoomIn),
+                  (CanvasViewAction.zoomOut, l10n.canvasViewZoomOut),
+                  (CanvasViewAction.rotateLeft, l10n.canvasViewRotateLeft),
+                  (CanvasViewAction.rotateRight, l10n.canvasViewRotateRight),
+                  (
+                    CanvasViewAction.resetRotation,
+                    l10n.canvasViewResetRotation,
+                  ),
+                ])
+                  PopupMenuItem(value: item.$1, child: Text(item.$2)),
+              ],
+            ),
           if (desktop)
             PopupMenuButton<CanvasDockPanel>(
               key: const Key('desktopWindowVisibilityMenu'),
@@ -4122,6 +4045,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     checked: _desktopPanelVisible(p),
                     child: Text(_dockTitle(p)),
                   ),
+                const PopupMenuDivider(),
+                PopupMenuItem(
+                  onTap: _openDesktopWorkspaceSettings,
+                  child: Text(l10n.workspacePcLayoutButton),
+                ),
               ],
             ),
           // 設定/編集メニュー（背景色・オニオンスキン・

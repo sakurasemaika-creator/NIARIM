@@ -1,3 +1,4 @@
+import { isBlockedForViewer } from "./blocks";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import { GetCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
@@ -13,11 +14,12 @@ export const detailKey = (id: string) => ({ ...Keys.work(id), sk: "DETAIL" });
 export async function getWorkMetadata(event: APIGatewayProxyEventV2, workId: string) {
   if (!/^[A-Za-z0-9_-]{11}$/.test(workId)) notFound();
   const result = await ddb.send(new GetCommand({
-    TableName: tableName(), Key: Keys.work(workId),
+    TableName: tableName(), Key: Keys.work(workId), ConsistentRead: true,
   }));
   if (result.Item?.itemType !== TABLE_ITEM_TYPE.Work) notFound();
   const work = result.Item as WorkItem;
-  const accessible = work.isNiarimPublished &&
+  if (await isBlockedForViewer(event, work.authorId)) notFound();
+  const accessible = work.isNiarimPublished && !work.moderationHidden &&
     work.youtubePrivacyStatus !== "private" &&
     work.youtubePrivacyStatus !== "deleted";
   if (!accessible) {

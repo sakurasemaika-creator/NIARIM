@@ -1614,7 +1614,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Publica tus animaciones e ilustraciones en la comunidad como vídeos de YouTube y explora las obras de otros usuarios. Cambia entre las pestañas «Nuevas», «Ranking» y «Siguiendo», y busca por título de la obra o nombre del creador. Cambia al modo de búsqueda por etiquetas para filtrar obras por etiqueta: cualquier usuario (no solo el creador) puede añadir o quitar etiquetas, aunque las etiquetas bloqueadas por el creador solo él puede quitarlas, y tocar una etiqueta filtra al instante las obras con la misma etiqueta. Al tocar una tarjeta de obra se abre una ventana de vista previa flotante que se puede arrastrar y redimensionar, para seguir explorando otras pantallas mientras se reproduce. El botón «Ver detalles» abre la pantalla de detalles de la obra (creador, fecha de publicación, edición de etiquetas, marcador, republicación y más). Toca el botón «Seguir» junto al nombre de un creador para añadirlo a tus seguidos: la pestaña «Siguiendo» reúne entonces solo las publicaciones de ese creador, ordenadas por fecha. Solo tú puedes ver las listas de usuarios a los que sigues y de obras que has guardado. Las identidades y la lista de seguidores se mantienen ocultas. Se muestran las cifras de seguidos y seguidores. Seguir, guardar o republicar no envía al otro usuario una notificación individual sobre esa acción. Puedes republicar la obra de cualquier otra persona (excepto la tuya propia) con el botón «Republicar»; cuando un creador al que sigues republica la obra de otra persona, esa obra también aparece en tu pestaña «Siguiendo», ordenada según lo que sea más reciente —su fecha de publicación original o su fecha de republicación— (la tarjeta muestra «Republicado por…»). Las obras marcadas aparecen juntas en la pestaña «Guardadas» de la pantalla de inicio, y también en la pestaña «Marcadores» de tu propia página de creador. La denuncia de obras inapropiadas y el bloqueo de creadores llegarán pronto. Los vídeos verticales se pueden ver en «modo vertical», que los reproduce uno tras otro como un feed de vídeos cortos. Hay un límite diario de publicaciones: 1 al día para miembros gratuitos y 3 al día para miembros Premium. El botón de filtros de visualización de la parte superior derecha (el icono de un ojo tachado) te permite ocultar las obras que no quieras ver. Puedes ocultar las obras marcadas con «Contiene imágenes o vídeo de IA generativa» y añadir palabras ocultas del título (solo se comparan con el título de la obra) y etiquetas ocultas (solo se comparan con las etiquetas de la Plaza de Obras) de una en una con «Añadir nuevo». Edita con el lápiz o elimina con la papelera; no hacen falta comas ni #. Estos filtros se aplican a «Nuevas», «Ranking», «Siguiendo» (incluidas las republicaciones), el modo vertical, las páginas de los creadores, los detalles de las obras y los marcadores. «Contiene imágenes o vídeo de IA generativa» lo declara quien publica en el momento de publicar, y después solo esa persona puede cambiarlo (desde «Mis publicaciones» o la pantalla de detalles de la obra).';
+      'Publica tus animaciones e ilustraciones en la comunidad como vídeos de YouTube y explora las obras de otros usuarios. Cambia entre las pestañas «Nuevas», «Ranking» y «Siguiendo», y busca por título de la obra o nombre del creador. Cambia al modo de búsqueda por etiquetas para filtrar obras por etiqueta: cualquier usuario (no solo el creador) puede añadir o quitar etiquetas, aunque las etiquetas bloqueadas por el creador solo él puede quitarlas, y tocar una etiqueta filtra al instante las obras con la misma etiqueta. Al tocar una tarjeta de obra se abre una ventana de vista previa flotante que se puede arrastrar y redimensionar, para seguir explorando otras pantallas mientras se reproduce. El botón «Ver detalles» abre la pantalla de detalles de la obra (creador, fecha de publicación, edición de etiquetas, marcador, republicación y más). Toca el botón «Seguir» junto al nombre de un creador para añadirlo a tus seguidos: la pestaña «Siguiendo» reúne entonces solo las publicaciones de ese creador, ordenadas por fecha. Solo tú puedes ver las listas de usuarios a los que sigues y de obras que has guardado. Las identidades y la lista de seguidores se mantienen ocultas. Se muestran las cifras de seguidos y seguidores. Seguir, guardar o republicar no envía al otro usuario una notificación individual sobre esa acción. Puedes republicar la obra de cualquier otra persona (excepto la tuya propia) con el botón «Republicar»; cuando un creador al que sigues republica la obra de otra persona, esa obra también aparece en tu pestaña «Siguiendo», ordenada según lo que sea más reciente —su fecha de publicación original o su fecha de republicación— (la tarjeta muestra «Republicado por…»). Las obras marcadas aparecen juntas en la pestaña «Guardadas» de la pantalla de inicio, y también en la pestaña «Marcadores» de tu propia página de creador. Los vídeos verticales se pueden ver en «modo vertical», que los reproduce uno tras otro como un feed de vídeos cortos. Hay un límite diario de publicaciones: 1 al día para miembros gratuitos y 3 al día para miembros Premium. El botón de filtros de visualización de la parte superior derecha (el icono de un ojo tachado) te permite ocultar las obras que no quieras ver. Puedes ocultar las obras marcadas con «Contiene imágenes o vídeo de IA generativa» y añadir palabras ocultas del título (solo se comparan con el título de la obra) y etiquetas ocultas (solo se comparan con las etiquetas de la Plaza de Obras) de una en una con «Añadir nuevo». Edita con el lápiz o elimina con la papelera; no hacen falta comas ni #. Estos filtros se aplican a «Nuevas», «Ranking», «Siguiendo» (incluidas las republicaciones), el modo vertical, las páginas de los creadores, los detalles de las obras y los marcadores. «Contiene imágenes o vídeo de IA generativa» lo declara quien publica en el momento de publicar, y después solo esa persona puede cambiarlo (desde «Mis publicaciones» o la pantalla de detalles de la obra). Puedes denunciar obras y cuentas. Silenciar solo cambia lo que ves. El bloqueo oculta a ambas cuentas las publicaciones de la otra al iniciar sesión.';
 
   @override
   String get helpWatermarkEntryTitle => 'Marca de agua';
@@ -5904,7 +5904,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get licenseTermsArt12Body =>
-      '1. La Aplicación ofrece de forma opcional una función que permite al usuario publicar, a través de su propia cuenta de Google, las animaciones que ha creado en YouTube, y publicarlas y consultarlas en la «Plaza de Obras» (en adelante, la «Función Comunitaria»). Es posible ver y crear obras sin utilizar la Función Comunitaria.\n2. El archivo de vídeo en sí se almacena en YouTube, no en los servidores del desarrollador. En cambio, la información necesaria para identificar y mostrar las obras publicadas (ID del vídeo de YouTube, título, estadísticas, información de denuncias, etc.), así como el ID de usuario de NIARIM emitido para el uso de las funciones de publicación, denuncia y bloqueo (un identificador emitido dentro de la Aplicación, distinto de la cuenta de Google), se gestionan en los servidores del desarrollador.\n3. Para publicar obras, denunciar y bloquear a otros usuarios dentro de la Función Comunitaria es necesario haber iniciado sesión con una cuenta de Google.\n4. Existe un límite diario en el número de obras que se pueden publicar (el límite difiere entre los miembros gratuitos y los miembros premium). Dicho límite puede modificarse por razones operativas.\n5. Si un usuario considera que una obra publicada por otro usuario infringe la ley o el orden público, o puede estar comprendida en alguno de los supuestos del artículo 3, puede denunciarla al desarrollador a través de la función de denuncia de la Aplicación. Tras revisar el contenido de la denuncia, el desarrollador podrá adoptar, por razones justificadas, las medidas necesarias, como ocultar dicha obra de los listados. Quedan prohibidas las denuncias falsas y el uso abusivo de la función de denuncia.\n6. Si el usuario elimina una publicación, o desvincula su cuenta de Google de la Aplicación, el vídeo de YouTube correspondiente podrá eliminarse. Asimismo, si el vídeo se hace privado o se elimina en YouTube, la obra dejará también de mostrarse en la Plaza de Obras.\n7. El uso de la Función Comunitaria está sujeto, además de a estos Términos, a las Condiciones del Servicio y las Normas de la Comunidad de YouTube.\n8. Los usuarios pueden seguir a otros usuarios y marcar o republicar obras de otros usuarios. Solo tú puedes ver las listas de usuarios a los que sigues y de obras que has guardado. Las identidades y la lista de seguidores se mantienen ocultas. Se muestran las cifras de seguidos y seguidores. Seguir, guardar o republicar no envía al otro usuario una notificación individual sobre esa acción.\n9. Las etiquetas asociadas a una obra pueden ser añadidas o eliminadas por usuarios distintos del autor. El autor puede bloquear las etiquetas de su propia obra para impedir su edición por otros usuarios. Los usuarios no deben añadir etiquetas que difamen a terceros, etiquetas ajenas al contenido de la obra ni etiquetas inapropiadas de cualquier otro tipo. El desarrollador podrá eliminar las etiquetas inapropiadas.\n10. El desarrollador muestra avisos sobre el registro y la publicación de tus obras, los logros de misiones y eventos similares en la lista de notificaciones de la Aplicación. Si tu dispositivo permite las notificaciones, la Aplicación puede enviar notificaciones push. Puedes desactivar las notificaciones push en los ajustes de la Aplicación o del dispositivo.\n11. Los usuarios no deben utilizar la Función Comunitaria para acosar a otros usuarios, para publicidad o captación, ni para ningún otro fin ajeno a su finalidad prevista (publicar y ver obras). Si utilizas la función de bloqueo, las obras del usuario bloqueado dejarán de aparecer en tus listados.';
+      '1. La Aplicación ofrece de forma opcional una función que permite al usuario publicar, a través de su propia cuenta de Google, las animaciones que ha creado en YouTube, y publicarlas y consultarlas en la «Plaza de Obras» (en adelante, la «Función Comunitaria»). Es posible ver y crear obras sin utilizar la Función Comunitaria.\n2. El archivo de vídeo en sí se almacena en YouTube, no en los servidores del desarrollador. En cambio, la información necesaria para identificar y mostrar las obras publicadas (ID del vídeo de YouTube, título, estadísticas, información de denuncias, etc.), así como el ID de usuario de NIARIM emitido para el uso de las funciones de publicación, denuncia y bloqueo (un identificador emitido dentro de la Aplicación, distinto de la cuenta de Google), se gestionan en los servidores del desarrollador.\n3. Para publicar obras, denunciar y bloquear a otros usuarios dentro de la Función Comunitaria es necesario haber iniciado sesión con una cuenta de Google.\n4. Existe un límite diario en el número de obras que se pueden publicar (el límite difiere entre los miembros gratuitos y los miembros premium). Dicho límite puede modificarse por razones operativas.\n5. Si un usuario considera que una obra publicada por otro usuario infringe la ley o el orden público, o puede estar comprendida en alguno de los supuestos del artículo 3, puede denunciarla al desarrollador a través de la función de denuncia de la Aplicación. Tras revisar el contenido de la denuncia, el desarrollador podrá adoptar, por razones justificadas, las medidas necesarias, como ocultar dicha obra de los listados. Quedan prohibidas las denuncias falsas y el uso abusivo de la función de denuncia.\n6. Si el usuario elimina una publicación, o desvincula su cuenta de Google de la Aplicación, el vídeo de YouTube correspondiente podrá eliminarse. Asimismo, si el vídeo se hace privado o se elimina en YouTube, la obra dejará también de mostrarse en la Plaza de Obras.\n7. El uso de la Función Comunitaria está sujeto, además de a estos Términos, a las Condiciones del Servicio y las Normas de la Comunidad de YouTube.\n8. Los usuarios pueden seguir a otros usuarios y marcar o republicar obras de otros usuarios. Solo tú puedes ver las listas de usuarios a los que sigues y de obras que has guardado. Las identidades y la lista de seguidores se mantienen ocultas. Se muestran las cifras de seguidos y seguidores. Seguir, guardar o republicar no envía al otro usuario una notificación individual sobre esa acción.\n9. Las etiquetas asociadas a una obra pueden ser añadidas o eliminadas por usuarios distintos del autor. El autor puede bloquear las etiquetas de su propia obra para impedir su edición por otros usuarios. Los usuarios no deben añadir etiquetas que difamen a terceros, etiquetas ajenas al contenido de la obra ni etiquetas inapropiadas de cualquier otro tipo. El desarrollador podrá eliminar las etiquetas inapropiadas.\n10. El desarrollador muestra avisos sobre el registro y la publicación de tus obras, los logros de misiones y eventos similares en la lista de notificaciones de la Aplicación. Si tu dispositivo permite las notificaciones, la Aplicación puede enviar notificaciones push. Puedes desactivar las notificaciones push en los ajustes de la Aplicación o del dispositivo.\n11. Los usuarios no deben utilizar la Función Comunitaria para acosar a otros usuarios, para publicidad o captación, ni para ningún otro fin ajeno a su finalidad prevista (publicar y ver obras). Silenciar solo cambia lo que ves. Al bloquear, ambas cuentas dejan de ver las publicaciones de la otra al iniciar sesión en la Plaza de obras. Ninguna acción envía avisos.';
 
   @override
   String get licenseTermsArt13Title =>
@@ -8833,7 +8833,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tutorialPage6Step1 =>
-      'Toca ? arriba a la derecha para ver la ayuda de esa pantalla.';
+      'Busca explicaciones de las funciones en la Ayuda de la pantalla de inicio.';
 
   @override
   String get tutorialPage6Step2 =>
@@ -8844,7 +8844,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Vuelve a ver esta guía desde el menú de arriba a la derecha de Inicio: «Cómo se usa» y «Ver la guía».';
 
   @override
-  String get helpTutorialSubtitle => 'Vuelve a ver la guía de inicio';
+  String get helpTutorialSubtitle => 'Abrir la guía ilustrada de inicio';
 
   @override
   String get settingsTipsResetTitle => 'Volver a mostrar las explicaciones';
@@ -11350,4 +11350,68 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get settingsAccountDeletionLinkFailed =>
       'No se pudo abrir la página de eliminación de la cuenta.';
+
+  @override
+  String get communityReportAuthor => 'Denunciar esta cuenta';
+
+  @override
+  String get communityReportReason =>
+      'Motivo de la denuncia (solo visible para moderación)';
+
+  @override
+  String get communityReportSend => 'Enviar denuncia';
+
+  @override
+  String get communityReportSent => 'Denuncia enviada al equipo de moderación';
+
+  @override
+  String get communityModerationSaved => 'Cambios guardados';
+
+  @override
+  String get communityModerationFailed =>
+      'No se pudo completar la acción. Vuelve a intentarlo más tarde.';
+
+  @override
+  String get communityBlockAuthor => 'Bloquear esta cuenta';
+
+  @override
+  String get communityUnblockAuthor => 'Desbloquear esta cuenta';
+
+  @override
+  String get communityBlockPrivacyNotice =>
+      'Si habéis iniciado sesión, ninguno verá las publicaciones del otro en la Plaza de obras. No se enviará ninguna notificación.';
+
+  @override
+  String get communityBlockedUsers => 'Cuentas bloqueadas';
+
+  @override
+  String get communityBlockedUsersEmpty => 'No has bloqueado ninguna cuenta.';
+
+  @override
+  String get communityPostingTermsPrompt =>
+      'Revisa las condiciones de uso antes de publicar en la Plaza de obras.';
+
+  @override
+  String get communityPostingTermsAgree => 'Aceptar y continuar';
+
+  @override
+  String get canvasViewActions => 'Vista del lienzo';
+
+  @override
+  String get canvasViewZoomIn => 'Acercar';
+
+  @override
+  String get canvasViewZoomOut => 'Alejar';
+
+  @override
+  String get canvasViewActualPixels => 'Tamaño real';
+
+  @override
+  String get canvasViewRotateLeft => 'Girar a la izquierda';
+
+  @override
+  String get canvasViewRotateRight => 'Girar a la derecha';
+
+  @override
+  String get canvasViewResetRotation => 'Restablecer giro';
 }

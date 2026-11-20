@@ -85,10 +85,12 @@ void main() {
       expect(m.requests.single.url.toString(), isNot(contains('//works')));
     });
 
-    test('読み取り系はIDトークンを付けない（閲覧にログインを要求しない）', () async {
+    test('匿名で閲覧でき、ログイン中はブロック判定用のトークンを送る', () async {
       final m = mock((_) => {'works': []});
+      await apiWith(m.client).latestWorks();
       await apiWith(m.client, token: 'ID_TOKEN').latestWorks();
-      expect(m.requests.single.headers.containsKey('authorization'), isFalse);
+      expect(m.requests[0].headers.containsKey('authorization'), isFalse);
+      expect(m.requests[1].headers['authorization'], 'Bearer ID_TOKEN');
     });
 
     test('書き込み系はIDトークンをBearerで付ける', () async {
@@ -97,13 +99,15 @@ void main() {
       expect(m.requests.single.headers['authorization'], 'Bearer ID_TOKEN');
     });
 
-    test('本人として読むときだけ読み取り系にもトークンを付ける', () async {
+    test('他の作者の一覧では公開投稿だけを要求する', () async {
       final m = mock((_) => {'works': []});
       final api = apiWith(m.client, token: 'ID_TOKEN');
       await api.worksByAuthor('user_1');
       await api.worksByAuthor('user_1', asOwner: true);
-      expect(m.requests[0].headers.containsKey('authorization'), isFalse);
+      expect(m.requests[0].headers['authorization'], 'Bearer ID_TOKEN');
+      expect(m.requests[0].url.queryParameters['public'], 'true');
       expect(m.requests[1].headers['authorization'], 'Bearer ID_TOKEN');
+      expect(m.requests[1].url.queryParameters['public'], isNull);
     });
 
     test('パスに入るIDはURLエンコードする', () async {

@@ -1579,7 +1579,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work\'s detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator\'s name to follow them — the “Following” tab then gathers just that creator\'s posts in chronological order. Only you can view the lists of users you follow and works you have bookmarked. Follower identities and lists are hidden. Following and follower counts are displayed. Following, bookmarking, or reposting does not send the other user an individual notification about that action. You can repost anyone else\'s work (except your own) with the “Repost” button; when a creator you follow reposts someone else\'s work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on your own creator page. Reporting inappropriate works and blocking creators are coming soon. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members. The display filter button at the top right (the eye icon with a slash) lets you hide works you don\'t want to see. You can hide works marked “Contains generative-AI images or video”, and add hidden-title keywords (matched against work titles only) and hidden tags (matched only against Work Plaza tags), one entry at a time using “Add new”. Edit with the pencil or delete with the trash icon; no commas or # needed. These filters apply to New, Ranking, Following (including reposts), portrait mode, creator pages, work details, and bookmarks. “Contains generative-AI images or video” is declared by the poster when posting, and only the poster can change it afterwards (from “My posts” or the work\'s detail screen).';
+      'Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work\'s detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator\'s name to follow them — the “Following” tab then gathers just that creator\'s posts in chronological order. Only you can view the lists of users you follow and works you have bookmarked. Follower identities and lists are hidden. Following and follower counts are displayed. Following, bookmarking, or reposting does not send the other user an individual notification about that action. You can repost anyone else\'s work (except your own) with the “Repost” button; when a creator you follow reposts someone else\'s work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on your own creator page. You can report posts and creators. Muting affects your view only. Blocking hides each person’s posts from the other while signed in. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members. The display filter button at the top right (the eye icon with a slash) lets you hide works you don\'t want to see. You can hide works marked “Contains generative-AI images or video”, and add hidden-title keywords (matched against work titles only) and hidden tags (matched only against Work Plaza tags), one entry at a time using “Add new”. Edit with the pencil or delete with the trash icon; no commas or # needed. These filters apply to New, Ranking, Following (including reposts), portrait mode, creator pages, work details, and bookmarks. “Contains generative-AI images or video” is declared by the poster when posting, and only the poster can change it afterwards (from “My posts” or the work\'s detail screen).';
 
   @override
   String get helpWatermarkEntryTitle => 'Watermark';
@@ -5811,7 +5811,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt12Body =>
-      '1. The App optionally provides a feature that lets users post animation works they have created, via their own Google account, to YouTube, and publish and browse them on “the Work Plaza” (the “Community Feature”). Browsing and creating works is possible without using the Community Feature.\n2. The video files themselves are stored on YouTube, not on the developer\'s servers. However, the information needed to identify and display posted works (YouTube video ID, title, statistics, report information, etc.) and the NIARIM User ID issued for use of the posting, reporting, and blocking features (an identifier issued within the App, separate from the Google account) are managed on the developer\'s servers.\n3. Posting works, reporting, and blocking other users under the Community Feature require the user to be signed in with a Google account.\n4. There is a daily limit on the number of works that can be posted (the limit differs between free members and Premium members). This limit may be changed for operational reasons.\n5. If a user believes another user\'s posted work violates the law or public order and morals, or may fall under any item of Article 3, the user may report it to the developer through the App\'s reporting feature. After reviewing a report, the developer may take necessary measures, such as hiding the work from listings, for reasonable cause. False reports and abuse of the reporting feature are prohibited.\n6. If a user deletes a post, or disconnects their Google account from the App, the corresponding YouTube video may be deleted. If a video is made private or deleted on YouTube\'s side, the work will also stop being displayed on the Work Plaza.\n7. Use of the Community Feature is subject to YouTube\'s Terms of Service and Community Guidelines, in addition to these Terms.\n8. Users may follow other users and may bookmark or repost other users\' works. Only you can view the lists of users you follow and works you have bookmarked. Follower identities and lists are hidden. Following and follower counts are displayed. Following, bookmarking, or reposting does not send the other user an individual notification about that action.\n9. Tags attached to a work may be added or removed by users other than the poster. A poster may lock the tags on their own work to prohibit editing by other users. Users must not attach tags that defame others, tags unrelated to the content of the work, or otherwise inappropriate tags. The developer may remove inappropriate tags.\n10. The developer displays notices about your own work submissions, publications, mission achievements, and similar events in the App’s notification list. If your device allows notifications, the App may send push notifications. Push notifications can be disabled in the App or device settings.\n11. Users must not use the Community Feature to harass other users, for advertising or solicitation, or for any other purpose outside its intended purpose (publishing and viewing works). If you use the blocking feature, works by the user you blocked will no longer appear in your listings.';
+      '1. The App optionally provides a feature that lets users post animation works they have created, via their own Google account, to YouTube, and publish and browse them on “the Work Plaza” (the “Community Feature”). Browsing and creating works is possible without using the Community Feature.\n2. The video files themselves are stored on YouTube, not on the developer\'s servers. However, the information needed to identify and display posted works (YouTube video ID, title, statistics, report information, etc.) and the NIARIM User ID issued for use of the posting, reporting, and blocking features (an identifier issued within the App, separate from the Google account) are managed on the developer\'s servers.\n3. Posting works, reporting, and blocking other users under the Community Feature require the user to be signed in with a Google account.\n4. There is a daily limit on the number of works that can be posted (the limit differs between free members and Premium members). This limit may be changed for operational reasons.\n5. If a user believes another user\'s posted work violates the law or public order and morals, or may fall under any item of Article 3, the user may report it to the developer through the App\'s reporting feature. After reviewing a report, the developer may take necessary measures, such as hiding the work from listings, for reasonable cause. False reports and abuse of the reporting feature are prohibited.\n6. If a user deletes a post, or disconnects their Google account from the App, the corresponding YouTube video may be deleted. If a video is made private or deleted on YouTube\'s side, the work will also stop being displayed on the Work Plaza.\n7. Use of the Community Feature is subject to YouTube\'s Terms of Service and Community Guidelines, in addition to these Terms.\n8. Users may follow other users and may bookmark or repost other users\' works. Only you can view the lists of users you follow and works you have bookmarked. Follower identities and lists are hidden. Following and follower counts are displayed. Following, bookmarking, or reposting does not send the other user an individual notification about that action.\n9. Tags attached to a work may be added or removed by users other than the poster. A poster may lock the tags on their own work to prohibit editing by other users. Users must not attach tags that defame others, tags unrelated to the content of the work, or otherwise inappropriate tags. The developer may remove inappropriate tags.\n10. The developer displays notices about your own work submissions, publications, mission achievements, and similar events in the App’s notification list. If your device allows notifications, the App may send push notifications. Push notifications can be disabled in the App or device settings.\n11. Users must not use the Community Feature to harass other users, for advertising or solicitation, or for any other purpose outside its intended purpose (publishing and viewing works). Muting changes only what you see. Blocking hides each account’s posts from the other while signed in to Work Plaza. Neither action sends a notification.';
 
   @override
   String get licenseTermsArt13Title =>
@@ -7485,13 +7485,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityPostPeriodChooseRange => 'Select date range';
 
   @override
-  String get communityMutedAuthors => 'Hidden creators';
+  String get communityMutedAuthors => 'Muted creators';
 
   @override
-  String get communityMutedAuthorsEmpty => 'No hidden creators';
+  String get communityMutedAuthorsEmpty => 'No muted creators';
 
   @override
-  String get communityUnmuteAuthor => 'Show this creator again';
+  String get communityUnmuteAuthor => 'Unmute creator';
 
   @override
   String get communityMyWorksManagementHeading => 'Manage works';
@@ -8263,32 +8263,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityMutedTagsEmpty => 'No hidden tags';
 
   @override
-  String get communityMuteShort => 'Hide';
+  String get communityMuteShort => 'Mute';
 
   @override
-  String get communityMuteConfirmTitle => 'Hide this creator?';
+  String get communityMuteConfirmTitle => 'Mute this creator?';
 
   @override
   String get communityMuteConfirmBody =>
-      'This creator\'s works will be hidden.';
+      'This creator’s posts will be hidden from your view.';
 
   @override
-  String get communityMuteConfirmAction => 'Hide';
+  String get communityMuteConfirmAction => 'Mute creator';
 
   @override
-  String get communityUnmuteConfirmTitle => 'Show this creator again?';
+  String get communityUnmuteConfirmTitle => 'Unmute this creator?';
 
   @override
-  String get communityUnmuteConfirmAction => 'Show';
+  String get communityUnmuteConfirmAction => 'Unmute creator';
 
   @override
   String get communityMuteNo => 'No';
 
   @override
-  String get communityMuteDone => 'Creator hidden';
+  String get communityMuteDone => 'Creator muted';
 
   @override
-  String get communityUnmuteDone => 'Creator shown again';
+  String get communityUnmuteDone => 'Creator unmuted';
 
   @override
   String communityFollowerMilestone(String count) {
@@ -8693,7 +8693,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialPage6Step1 =>
-      'Tap ? at the top right of a screen to read about that screen.';
+      'Search for feature descriptions in Help on the Home screen.';
 
   @override
   String get tutorialPage6Step2 =>
@@ -8704,7 +8704,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'View this guide again from the menu at the top right of Home: “How to use”, then “View the guide”.';
 
   @override
-  String get helpTutorialSubtitle => 'See the getting-started guide again';
+  String get helpTutorialSubtitle =>
+      'Open the illustrated getting-started guide';
 
   @override
   String get settingsTipsResetTitle => 'Show feature tips again';
@@ -11190,4 +11191,68 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsAccountDeletionLinkFailed =>
       'Could not open the account deletion page.';
+
+  @override
+  String get communityReportAuthor => 'Report creator';
+
+  @override
+  String get communityReportReason =>
+      'Reason for reporting (visible only to moderators)';
+
+  @override
+  String get communityReportSend => 'Send report';
+
+  @override
+  String get communityReportSent => 'Report sent to the moderation team';
+
+  @override
+  String get communityModerationSaved => 'Changes saved';
+
+  @override
+  String get communityModerationFailed =>
+      'Could not complete this action. Try again later.';
+
+  @override
+  String get communityBlockAuthor => 'Block creator';
+
+  @override
+  String get communityUnblockAuthor => 'Unblock creator';
+
+  @override
+  String get communityBlockPrivacyNotice =>
+      'While signed in to Work Plaza, neither of you will see the other’s posts. The creator won’t be notified.';
+
+  @override
+  String get communityBlockedUsers => 'Blocked creators';
+
+  @override
+  String get communityBlockedUsersEmpty => 'You haven’t blocked any creators.';
+
+  @override
+  String get communityPostingTermsPrompt =>
+      'Review the Terms of Service before posting to Work Plaza.';
+
+  @override
+  String get communityPostingTermsAgree => 'Agree and continue';
+
+  @override
+  String get canvasViewActions => 'Canvas view';
+
+  @override
+  String get canvasViewZoomIn => 'Zoom in';
+
+  @override
+  String get canvasViewZoomOut => 'Zoom out';
+
+  @override
+  String get canvasViewActualPixels => 'Actual size';
+
+  @override
+  String get canvasViewRotateLeft => 'Rotate left';
+
+  @override
+  String get canvasViewRotateRight => 'Rotate right';
+
+  @override
+  String get canvasViewResetRotation => 'Reset rotation';
 }

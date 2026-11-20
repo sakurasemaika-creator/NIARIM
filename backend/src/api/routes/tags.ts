@@ -1,3 +1,4 @@
+import { isBlockedBetween } from "./blocks";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
@@ -56,11 +57,12 @@ export async function updateTags(
       notFound("作品が見つかりません");
     }
     const work = raw as WorkItem;
+    if (await isBlockedBetween(auth.niarimUserId, work.authorId)) notFound();
 
     const isOwner = work.authorId === auth.niarimUserId;
     if (
       !isOwner &&
-      (!work.isNiarimPublished ||
+      (work.moderationHidden || !work.isNiarimPublished ||
         work.youtubePrivacyStatus === "private" ||
         work.youtubePrivacyStatus === "deleted")
     ) {
