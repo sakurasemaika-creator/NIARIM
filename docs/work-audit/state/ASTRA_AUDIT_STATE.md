@@ -3221,3 +3221,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：容量削減の30本を`cf2f427e`で302件成功・1件失敗。失敗は`storage_cache_isolation_test`の「partial cache deletion reports failure and supports a later retry」で、testの前提（「This regression requires a real filesystem permission denial」＝`chmod 0555`のフォルダへの書き込みが断られること）が、rootで動くこの環境では成り立たない（rootは権限を無視する）。製品の不具合ではない（一般ユーザーで流すと確かめられる）。
 - 未確認：中身のあるキャッシュの削除、APIの失敗・大量のファイル（testで確認）、全データを削除の実行（写しのプロフィールでも行わない）、スマホの幅（390×844）、韓国語・中国語。
 - 画像：`shots-r1/r2a069-*`・`r2a069b-*`（backup-pending）。
+
+## A070 — 設定 /settings・基本設定
+
+### A070 二巡目（2026-11-20、Claude・S50、App `cf2f427e`のLinuxデバッグビルド）— 判定：OK（一巡目のDISC366・DISC367は直った）
+
+- 環境：ja・en、1280×800（文字1倍）と390×844（文字2倍）、マウス、プロフィール`r2a066`（確かめた後に言語・既定FPS・描画領域を元へ戻した）。
+- 一巡目のDISC366は直った：設定の「基本」の説明は「FPS・言語・描画領域」（英語も「FPS, language, drawing area」）。検索「背景色」はテーマ・外観（「テーマ配色・文字色・背景色」）だけが出て、基本は出ない。
+- 一巡目のDISC367は直った：基本設定のシートを開いたまま言語を「English」にすると、シートの見出し・項目もその場で「Basic Settings／Default FPS／Language／Default Drawing Area／Widen drawing area」になる（後ろの一覧も英語）。
+- OK：既定FPSを24・描画領域を広くするをオンにして起動し直すと英語のまま、新規プロジェクトの画面はFPS 24が選ばれ「Expand drawing area」がオン（保存の値も`default_fps: 24`・`default_drawing_area_enabled: true`）。設定の下の「利用規約・ライセンス」「プライバシーポリシー」を開いて戻ると、設定の同じ位置に戻る。390×844・文字2倍で設定の一覧と基本設定のシートがはみ出さない。
+- 気づいた点（DISCにしない）：言語の一覧に今の言語の印が無い（一巡目と同じ）。「ヘルプ・お問い合わせ」は押していない（メールを開くため）。
+- test：設定・基本設定の35本を`cf2f427e`で185件成功。
+- 未確認：ほかの5言語での基本設定、Androidでの言語の切り替え。
+- 画像：`shots-r1/r2a070-*`（backup-pending）。
