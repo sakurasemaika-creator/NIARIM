@@ -590,11 +590,14 @@ class _ExportScreenState extends State<ExportScreen> {
           ExportCompleteDialog(file: File(outputPath), frames: totalFrames),
     );
     if (!mounted || destination == null) return;
-    context.go(switch (destination) {
-      ExportDestination.works => '/home?tab=works',
-      ExportDestination.projects => '/home',
-      ExportDestination.canvas => '/canvas/${widget.projectId}',
-    });
+    switch (destination) {
+      case ExportDestination.works:
+        context.go('/home?tab=works');
+      case ExportDestination.projects:
+        context.go('/home');
+      case ExportDestination.canvas:
+        context.go('/canvas/${widget.projectId}');
+    }
   }
 }
 
