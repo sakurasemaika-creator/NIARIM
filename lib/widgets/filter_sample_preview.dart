@@ -20,10 +20,8 @@ const int kFilterSampleHeight = 84;
 const int _sampleCanvasWidth = 400;
 
 /// A small picture of what [filter] does with its current settings, for
-/// choosing a filter by its look: the filter run on a built-in sample (a
-/// small character with colour swatches and a grey ramp; line art for the
-/// filters that work on lines; slender leaves for プリズム; a sky behind the
-/// character for 背景馴染ませ), shown on white paper. Opaque straight RGBA,
+/// choosing a filter by its look. The filter is run on Moonlit Valley or on
+/// its linework or foreground layers, depending on the filter. Opaque RGBA,
 /// [kFilterSampleWidth] x [kFilterSampleHeight]. A plain function of its
 /// input, so it runs in a background isolate.
 Uint8List filterSamplePixels(FilterDef settings) {
@@ -211,136 +209,239 @@ class _FilterSamplePreviewState extends State<FilterSamplePreview> {
 
 typedef _Sample = ({Uint8List data, Uint8List? background, Uint8List? mask});
 
-/// The picture [kind] is shown on.
+/// Every card uses the same scene. Filters that need a transparent input, a
+/// background, or a selection use the corresponding part of the illustration.
 _Sample _sampleFor(FilterKind kind) {
   const w = kFilterSampleWidth, h = kFilterSampleHeight;
+  final valley = _Raster(w, h);
+  _paintValley(valley);
+
   switch (kind) {
     case FilterKind.inkPool:
-      // Thin line art with sharp and right-angled corners.
-      final art = _Raster(w, h);
-      const ink = 0xFF242739;
-      art.stroke([const Offset(14, 70), const Offset(40, 14)], 1.6, ink);
-      art.stroke([const Offset(40, 14), const Offset(66, 70)], 1.6, ink);
-      art.stroke([const Offset(24, 48), const Offset(56, 48)], 1.6, ink);
-      art.stroke([const Offset(80, 18), const Offset(124, 18)], 1.6, ink);
-      art.stroke([const Offset(102, 18), const Offset(102, 72)], 1.6, ink);
-      art.stroke([const Offset(80, 72), const Offset(124, 72)], 1.6, ink);
-      return (data: art.rgba, background: null, mask: null);
     case FilterKind.autoLineart:
-      // A rough sketch: each line drawn over a few times, a little apart.
-      final art = _Raster(w, h);
-      const pencil = 0xB0505868;
-      for (var k = 0; k < 3; k++) {
-        final o = (k - 1) * 1.6;
-        art.strokeCircle(Offset(46 + o, 40 - o * .5), 24 + k * .8, 1.2, pencil);
-        art.stroke(
-          [Offset(88, 16 + o), Offset(120, 30 - o), Offset(110, 70 + o)],
-          1.2,
-          pencil,
-        );
-      }
-      return (data: art.rgba, background: null, mask: null);
-    case FilterKind.prism:
-      // Slender leaves of dark red over the character on grey paper.
-      final leaves = _Raster(w, h);
-      leaves.leaf(const Offset(18, 40), 62, 14, 12, 0xFF4D0000);
-      leaves.leaf(const Offset(98, 46), 50, 11, -24, 0xFF4D0000);
-      final under = _Raster(w, h)..fill(0xFFA9A5A6);
-      _character(under);
-      return (data: leaves.rgba, background: under.rgba, mask: null);
-    case FilterKind.backgroundBlend:
-      final sky = _Raster(w, h);
-      for (var y = 0; y < h; y++) {
-        final t = y / (h - 1);
-        final c = _lerpColor(0xFF6FA8DC, 0xFFF4B26B, t);
-        for (var x = 0; x < w; x++) {
-          sky.set(x, y, c);
+      _paintMoonAndBirds(valley);
+      final lines = _Raster(w, h);
+      // The upper ridges supply both sharp corners and intersecting slopes.
+      for (final (points, _) in _valleyRidges.take(2)) {
+        if (kind == FilterKind.inkPool) {
+          lines.stroke(points, 1.6, 0xFF342A3E);
+        } else {
+          for (final dy in [-.9, 0.0, .9]) {
+            lines.stroke(
+              [for (final point in points) point.translate(0, dy)],
+              1.2,
+              0xB0342A3E,
+            );
+          }
         }
       }
-      final art = _Raster(w, h);
-      _character(art);
-      return (data: art.rgba, background: sky.rgba, mask: null);
+      return (data: lines.rgba, background: valley.rgba, mask: null);
+    case FilterKind.prism:
+    case FilterKind.backgroundBlend:
+    case FilterKind.outline:
+    case FilterKind.watercolorBorder:
+      final foreground = _Raster(w, h);
+      _paintMoonAndBirds(foreground);
+      // Prism adds light to the painted moon and birds beneath it.
+      if (kind == FilterKind.prism) _paintMoonAndBirds(valley);
+      return (data: foreground.rgba, background: valley.rgba, mask: null);
     default:
-      final art = _Raster(w, h);
-      _character(art);
-      Uint8List? mask;
-      if (kind == FilterKind.lensDistortion) {
-        // The lens over the face.
-        final lens = _Raster(w, h)..disc(const Offset(52, 36), 20, 0xFFFFFFFF);
-        mask = lens.rgba;
-      }
-      return (data: art.rgba, background: null, mask: mask);
+      _paintMoonAndBirds(valley);
+      final mask = kind == FilterKind.lensDistortion
+          ? (_Raster(w, h)..disc(_moonCenter, 15, 0xFFFFFFFF)).rgba
+          : null;
+      return (data: valley.rgba, background: null, mask: mask);
   }
 }
 
-/// A small character on a transparent layer: hair, a face, a shirt with a
-/// gradient, an outline; colour swatches and a grey ramp beside it.
-void _character(_Raster art) {
-  const ink = 0xFF242739;
-  art.polygon([
-    const Offset(30, 58),
-    const Offset(74, 58),
-    const Offset(86, 84),
-    const Offset(18, 84),
-  ], (x, y) => _lerpColor(0xFFE07AB8, 0xFF6A3FA8, ((x - 18) / 68).clamp(0, 1)));
-  art.stroke(
-    [
-      const Offset(30, 58),
-      const Offset(74, 58),
-      const Offset(86, 84),
-      const Offset(18, 84),
-      const Offset(30, 58),
-    ],
-    2,
-    ink,
-  );
-  art.disc(const Offset(52, 36), 22, 0xFFFFD8B4);
-  // Hair over the top of the head, cut in a zigzag fringe.
-  art.polygon([
-    for (var a = 0; a <= 12; a++)
-      Offset(
-        52 - 23 * math.cos(math.pi * a / 12),
-        34 - 23 * math.sin(math.pi * a / 12),
-      ),
-    const Offset(75, 38),
-    const Offset(64, 30),
-    const Offset(56, 37),
-    const Offset(44, 28),
-    const Offset(29, 38),
-  ], (_, _) => 0xFF34405A);
-  art.strokeCircle(const Offset(52, 36), 22, 2, ink);
-  art.disc(const Offset(45, 41), 2.2, ink);
-  art.disc(const Offset(59, 41), 2.2, ink);
-  art.stroke(
-    [const Offset(47, 49), const Offset(52, 52), const Offset(57, 49)],
-    1.6,
-    ink,
-  );
-  const swatches = [
-    0xFFE84A3C,
-    0xFF20B6D0,
-    0xFF4CAF50,
-    0xFF9C27B0,
-    0xFF2E7BE6,
-    0xFFF5D130,
-  ];
-  for (var k = 0; k < swatches.length; k++) {
-    final x = 94 + (k % 2) * 12.0, y = 14 + (k ~/ 2) * 12.0;
-    art.polygon([
-      Offset(x, y),
-      Offset(x + 11, y),
-      Offset(x + 11, y + 11),
-      Offset(x, y + 11),
-    ], (_, _) => swatches[k]);
-  }
-  // A grey ramp from black to white.
-  for (var y = 10; y < 78; y++) {
-    final v = ((y - 10) / 67 * 255).round();
-    for (var x = 122; x < 128; x++) {
-      art.set(x, y, 0xFF000000 | v << 16 | v << 8 | v);
+const _moonCenter = Offset(93.8, 26.1);
+const _moonRadius = 10.0;
+const _moonlight = 0xFFFFE4A9;
+const _moonShadow = 0xFF645274;
+
+/// Moonlit Valley, traced from the unmarked reference at thumbnail width.
+/// The extra height of the card continues the sky and foreground evenly.
+void _paintValley(_Raster art) {
+  for (var y = 0; y < art.height; y++) {
+    final t = ((y - 4.85) / 52).clamp(0.0, 1.0);
+    final color = _lerpColor(0xFF232B50, 0xFFB17489, t);
+    for (var x = 0; x < art.width; x++) {
+      art.set(x, y, color);
     }
   }
+  const starlight = 0xFFF7DCE5;
+  for (final star in _brightStars) {
+    art.disc(star, .72, starlight);
+  }
+  for (final star in _smallStars) {
+    art.disc(star, .43, starlight);
+  }
+  for (final (points, color) in _valleyRidges) {
+    art.fillBelow(points, color);
+  }
 }
+
+void _paintMoonAndBirds(_Raster art) {
+  final shadowCenter = _moonCenter.translate(3.9, -2.1);
+  final left = (_moonCenter.dx - _moonRadius).floor();
+  final right = (_moonCenter.dx + _moonRadius).ceil();
+  final top = (_moonCenter.dy - _moonRadius).floor();
+  final bottom = (_moonCenter.dy + _moonRadius).ceil();
+  for (var y = top; y <= bottom; y++) {
+    for (var x = left; x <= right; x++) {
+      final point = Offset(x + .5, y + .5);
+      final diskCoverage = _moonRadius + .5 - (point - _moonCenter).distance;
+      final shadow = (9.15 + .5 - (point - shadowCenter).distance).clamp(
+        0.0,
+        1.0,
+      );
+      // Both colours share the same outer edge of the lunar disk.
+      art._over(
+        x,
+        y,
+        _lerpColor(_moonlight, _moonShadow, shadow),
+        diskCoverage,
+      );
+    }
+  }
+  for (final bird in const [
+    Offset(31.9, 53.6),
+    Offset(35.3, 56.8),
+    Offset(39.1, 52.8),
+    Offset(44.2, 49.2),
+  ]) {
+    art.stroke(
+      [
+        bird.translate(-1.1, -.2),
+        bird.translate(.2, .5),
+        bird.translate(1.1, -.8),
+      ],
+      .55,
+      _moonlight,
+    );
+  }
+}
+
+const _brightStars = [
+  Offset(24.0, 6.4),
+  Offset(122.2, 9.4),
+  Offset(69.5, 13.2),
+  Offset(36.4, 13.7),
+  Offset(44.9, 15.8),
+  Offset(77.5, 16.0),
+  Offset(29.4, 18.1),
+  Offset(66.9, 18.6),
+  Offset(113.5, 23.8),
+  Offset(51.9, 24.4),
+  Offset(115.3, 28.9),
+  Offset(130.3, 29.2),
+  Offset(49.3, 34.1),
+  Offset(74.9, 34.6),
+  Offset(1.9, 35.0),
+  Offset(68.6, 35.7),
+  Offset(31.5, 39.3),
+  Offset(27.7, 41.1),
+  Offset(26.1, 43.2),
+  Offset(9.6, 43.7),
+];
+
+const _smallStars = [
+  Offset(48.3, 5.1),
+  Offset(119.3, 6.1),
+  Offset(96.8, 7.8),
+  Offset(83.9, 8.9),
+  Offset(11.8, 9.9),
+  Offset(95.4, 10.9),
+  Offset(69.0, 12.0),
+  Offset(121.0, 12.5),
+  Offset(22.5, 13.2),
+  Offset(12.2, 13.9),
+  Offset(59.0, 15.0),
+  Offset(73.0, 17.2),
+  Offset(18.6, 18.1),
+  Offset(74.0, 18.6),
+  Offset(115.3, 23.0),
+  Offset(69.1, 23.0),
+  Offset(65.8, 24.0),
+  Offset(115.8, 24.9),
+  Offset(35.9, 26.1),
+  Offset(28.4, 26.3),
+  Offset(108.7, 26.4),
+  Offset(2.1, 30.3),
+  Offset(120.3, 30.4),
+  Offset(54.7, 30.4),
+  Offset(52.6, 30.8),
+  Offset(59.6, 30.8),
+  Offset(25.8, 32.4),
+  Offset(82.0, 32.5),
+  Offset(17.8, 33.1),
+  Offset(104.6, 33.9),
+  Offset(113.4, 36.4),
+  Offset(11.3, 39.3),
+  Offset(64.8, 40.5),
+  Offset(61.5, 40.9),
+  Offset(5.9, 42.3),
+  Offset(10.3, 42.3),
+  Offset(28.0, 44.2),
+];
+
+const _valleyRidges = [
+  (
+    [
+      Offset(0, 55.6),
+      Offset(17.9, 41),
+      Offset(28.2, 47),
+      Offset(41.6, 32.7),
+      Offset(59.6, 47.7),
+      Offset(74, 38.3),
+      Offset(90.3, 50.5),
+      Offset(109.5, 33.6),
+      Offset(132, 53),
+    ],
+    0xFF8D648A,
+  ),
+  (
+    [
+      Offset(0, 58.4),
+      Offset(19.5, 49.6),
+      Offset(32.2, 54.1),
+      Offset(50.4, 44),
+      Offset(69.1, 53),
+      Offset(80.1, 47.7),
+      Offset(104, 58),
+      Offset(119.5, 49.4),
+      Offset(132, 56.6),
+    ],
+    0xFF535074,
+  ),
+  (
+    [
+      Offset(0, 64.5),
+      Offset(12.2, 60.8),
+      Offset(32, 64.5),
+      Offset(46.3, 53.1),
+      Offset(59.2, 61.2),
+      Offset(76.5, 57),
+      Offset(88.3, 63.9),
+      Offset(100.7, 58),
+      Offset(132, 64.2),
+    ],
+    0xFF363754,
+  ),
+  (
+    [
+      Offset(0, 70.4),
+      Offset(26.2, 72),
+      Offset(45, 66.1),
+      Offset(56.4, 68.9),
+      Offset(75.4, 64),
+      Offset(90.6, 70.4),
+      Offset(117, 67.1),
+      Offset(132, 70.8),
+    ],
+    0xFF232B45,
+  ),
+];
 
 int _lerpColor(int a, int b, double t) {
   int ch(int shift) {
@@ -357,14 +458,6 @@ class _Raster {
   final int width, height;
   final Uint8List rgba;
   _Raster(this.width, this.height) : rgba = Uint8List(width * height * 4);
-
-  void fill(int color) {
-    for (var y = 0; y < height; y++) {
-      for (var x = 0; x < width; x++) {
-        set(x, y, color);
-      }
-    }
-  }
 
   void set(int x, int y, int color) => _over(x, y, color, 1);
 
@@ -389,24 +482,6 @@ class _Raster {
     }
   }
 
-  void strokeCircle(Offset c, double r, double lineWidth, int color) {
-    final half = lineWidth / 2;
-    for (
-      var y = (c.dy - r - half - 1).floor();
-      y <= (c.dy + r + half + 1).ceil();
-      y++
-    ) {
-      for (
-        var x = (c.dx - r - half - 1).floor();
-        x <= (c.dx + r + half + 1).ceil();
-        x++
-      ) {
-        final d = ((Offset(x + .5, y + .5) - c).distance - r).abs();
-        _over(x, y, color, half + .5 - d);
-      }
-    }
-  }
-
   void stroke(List<Offset> points, double lineWidth, int color) {
     final half = lineWidth / 2;
     final xs = points.map((p) => p.dx), ys = points.map((p) => p.dy);
@@ -426,58 +501,33 @@ class _Raster {
     }
   }
 
-  /// A filled polygon, 4 x 4 samples a pixel, coloured by [color] at each
-  /// pixel.
-  void polygon(List<Offset> points, int Function(double x, double y) color) {
-    final xs = points.map((p) => p.dx), ys = points.map((p) => p.dy);
-    for (var y = ys.reduce(math.min).floor(); y <= ys.reduce(math.max); y++) {
-      for (var x = xs.reduce(math.min).floor(); x <= xs.reduce(math.max); x++) {
-        var inside = 0;
-        for (var sy = 0; sy < 4; sy++) {
-          for (var sx = 0; sx < 4; sx++) {
-            if (_inside(x + (sx + .5) / 4, y + (sy + .5) / 4, points)) {
-              inside++;
-            }
-          }
+  /// Fills below a left-to-right ridge spanning the raster. Four subpixel
+  /// samples per column smooth the silhouette against the layer behind it.
+  void fillBelow(List<Offset> ridge, int color) {
+    var segment = 0;
+    final edge = Float64List(4);
+    for (var x = 0; x < width; x++) {
+      for (var sample = 0; sample < edge.length; sample++) {
+        final px = x + (sample + .5) / edge.length;
+        while (px > ridge[segment + 1].dx) {
+          segment++;
         }
-        _over(x, y, color(x.toDouble(), y.toDouble()), inside / 16);
+        final a = ridge[segment], b = ridge[segment + 1];
+        edge[sample] = a.dy + (b.dy - a.dy) * (px - a.dx) / (b.dx - a.dx);
+      }
+      final top = edge.reduce(math.min).floor();
+      final bottom = edge.reduce(math.max).ceil();
+      for (var y = top; y < bottom; y++) {
+        var coverage = 0.0;
+        for (final edgeY in edge) {
+          coverage += (y + 1 - edgeY).clamp(0.0, 1.0);
+        }
+        _over(x, y, color, coverage / edge.length);
+      }
+      for (var y = bottom; y < height; y++) {
+        set(x, y, color);
       }
     }
-  }
-
-  /// A leaf of [length] and [breadth] at [centre], turned [degrees].
-  void leaf(
-    Offset centre,
-    double length,
-    double breadth,
-    double degrees,
-    int color,
-  ) {
-    final a = degrees * math.pi / 180;
-    final along = Offset(math.sin(a), -math.cos(a));
-    final across = Offset(math.cos(a), math.sin(a));
-    polygon([
-      for (var k = 0; k <= 16; k++)
-        centre +
-            along * (length / 2 * (1 - 2 * k / 16)) +
-            across * (breadth / 2 * math.sin(math.pi * k / 16)),
-      for (var k = 1; k < 16; k++)
-        centre +
-            along * (length / 2 * (-1 + 2 * k / 16)) -
-            across * (breadth / 2 * math.sin(math.pi * k / 16)),
-    ], (_, _) => color);
-  }
-
-  static bool _inside(double x, double y, List<Offset> polygon) {
-    var crossings = 0;
-    for (var k = 0; k < polygon.length; k++) {
-      final a = polygon[k], b = polygon[(k + 1) % polygon.length];
-      if ((a.dy <= y && b.dy > y) || (b.dy <= y && a.dy > y)) {
-        final t = (y - a.dy) / (b.dy - a.dy);
-        if (x < a.dx + t * (b.dx - a.dx)) crossings++;
-      }
-    }
-    return crossings.isOdd;
   }
 
   static double _toSegment(Offset p, Offset a, Offset b) {

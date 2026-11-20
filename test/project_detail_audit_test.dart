@@ -449,6 +449,44 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the seek track reaches both edges of the preview', (
+    tester,
+  ) async {
+    await open(tester, colors: const [Color(0xFFE53935), Color(0xFF1E88E5)]);
+    final preview = find.byKey(const Key('projectDetailPreviewArea'));
+    final slider = find.descendant(
+      of: find.byKey(const Key('projectDetailSeekBar')),
+      matching: find.byType(Slider),
+    );
+    final counter = find.byKey(const Key('projectDetailFrameCounter'));
+
+    Rect checkAlignment() {
+      final track = tester.getRect(slider);
+      final image = tester.getRect(preview);
+      expect(track.left, image.left);
+      expect(track.right, image.right);
+      expect(SliderTheme.of(tester.element(slider)).padding, EdgeInsets.zero);
+      return track;
+    }
+
+    final track = checkAlignment();
+    await tester.tapAt(Offset(track.right - 1, track.center.dy));
+    await settleIo(tester);
+    expect(tester.widget<Text>(counter).data, '2/2');
+
+    await tester.tap(find.byKey(const Key('projectDetailFullscreenButton')));
+    await settle(tester);
+    final fullTrack = checkAlignment();
+    await tester.tapAt(Offset(fullTrack.left + 1, fullTrack.center.dy));
+    await settleIo(tester);
+    expect(tester.widget<Text>(counter).data, '1/2');
+
+    tester.view.physicalSize = const Size(640, 190);
+    await settle(tester);
+    checkAlignment();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('the preview redraws after editing on another screen', (
     tester,
   ) async {

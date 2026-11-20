@@ -278,6 +278,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         height: 48,
         child: _buildPlaybackBar(projectService, flat, project),
       );
+      Widget fullscreenControls() =>
+          Row(children: [exitButton(), _buildFullscreenLoopButton()]);
       return PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) {
@@ -304,14 +306,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Row(
-                            children: [
-                              exitButton(),
-                              _buildFullscreenLoopButton(),
-                            ],
-                          ),
+                          fullscreenControls(),
                           SizedBox(height: 64, child: preview()),
-                          _buildSeekBar(flat),
+                          SizedBox(height: 48, child: _buildSeekBar(flat)),
                           transport(),
                         ],
                       ),
@@ -321,17 +318,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   // second status row consuming preview height.
                   return Column(
                     children: [
+                      fullscreenControls(),
                       Expanded(child: preview()),
-                      SizedBox(
-                        height: 48,
-                        child: Row(
-                          children: [
-                            exitButton(),
-                            _buildFullscreenLoopButton(),
-                            Expanded(child: _buildSeekBar(flat)),
-                          ],
-                        ),
-                      ),
+                      SizedBox(height: 48, child: _buildSeekBar(flat)),
                       transport(),
                     ],
                   );
@@ -791,7 +780,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  /// The loop toggle beside the seek bar of the fullscreen preview.
+  /// The loop toggle above the fullscreen preview.
   Widget _buildFullscreenLoopButton() {
     final l10n = AppLocalizations.of(context)!;
     return IconButton(
@@ -808,29 +797,29 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   /// 直接移動できる（タイムラインモードのプレビューと同等の機能）。
   Widget _buildSeekBar(List<_FlatFrame> flat) {
     final maxFrame = (flat.length - 1).clamp(0, 1 << 30);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: SliderTheme(
-        data: SliderTheme.of(context).copyWith(
-          trackHeight: 2,
-          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-        ),
-        // コマ送りボタンは再生ボタンの左右に既にあるため、シークバー自体には
-        // ±ボタンを表示しない（役割が重複するため）。
-        child: SteppedSlider(
-          value: _frameIndex.clamp(0, maxFrame).toDouble(),
-          min: 0,
-          max: maxFrame.toDouble(),
-          divisions: maxFrame > 0 ? maxFrame : null,
-          showSteppers: false,
-          onChanged: flat.isEmpty
-              ? null
-              : (v) {
-                  _timer?.cancel();
-                  setState(() => _isPlaying = false);
-                  _seekTo(context.read<ProjectService>(), flat, v.round());
-                },
-        ),
+    return SliderTheme(
+      data: SliderTheme.of(context).copyWith(
+        // Zero padding also overrides Slider's built-in horizontal track inset.
+        padding: EdgeInsets.zero,
+        trackHeight: 2,
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+      ),
+      // コマ送りボタンは再生ボタンの左右に既にあるため、シークバー自体には
+      // ±ボタンを表示しない（役割が重複するため）。
+      child: SteppedSlider(
+        key: const Key('projectDetailSeekBar'),
+        value: _frameIndex.clamp(0, maxFrame).toDouble(),
+        min: 0,
+        max: maxFrame.toDouble(),
+        divisions: maxFrame > 0 ? maxFrame : null,
+        showSteppers: false,
+        onChanged: flat.isEmpty
+            ? null
+            : (v) {
+                _timer?.cancel();
+                setState(() => _isPlaying = false);
+                _seekTo(context.read<ProjectService>(), flat, v.round());
+              },
       ),
     );
   }

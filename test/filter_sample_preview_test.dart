@@ -14,6 +14,15 @@ void main() {
   const w = kFilterSampleWidth, h = kFilterSampleHeight;
   final filters = FilterService.builtInFilters;
   final pictures = {for (final f in filters) f.id: filterSamplePixels(f)};
+  // An identity tone curve lets us inspect the same source the cards use.
+  final plain = filterSamplePixels(
+    const FilterDef(
+      id: 'plain',
+      name: 'plain',
+      kind: FilterKind.toneCurve,
+      toneCurvePoints: [0, 0, 1, 1],
+    ),
+  );
 
   int differing(List<int> a, List<int> b) {
     var n = 0;
@@ -29,28 +38,24 @@ void main() {
   }
 
   test('every filter shows its effect on the sample', () {
-    // The plain sample: a tone curve with a custom curve that changes
-    // nothing.
-    final plain = filterSamplePixels(
-      const FilterDef(
-        id: 'plain',
-        name: 'plain',
-        kind: FilterKind.toneCurve,
-        toneCurvePoints: [0, 0, 1, 1],
-      ),
-    );
     for (final f in filters) {
       final p = pictures[f.id]!;
       expect(p.length, w * h * 4);
-      // The line-art samples are pictures of their own.
-      if (f.kind == FilterKind.inkPool ||
-          f.kind == FilterKind.autoLineart ||
-          f.kind == FilterKind.prism ||
-          f.kind == FilterKind.backgroundBlend) {
-        continue;
-      }
       expect(differing(p, plain), greaterThan(40), reason: f.name);
     }
+  });
+
+  test('the sample moon shares one rim across the light and shadow', () {
+    List<int> pixel(int x, int y) {
+      final i = (y * w + x) * 4;
+      return plain.sublist(i, i + 4);
+    }
+
+    expect(pixel(87, 26), [255, 228, 169, 255]);
+    expect(pixel(99, 26), [100, 82, 116, 255]);
+    // The sky is visible immediately past the right and upper edges.
+    expect(pixel(105, 26), pixel(82, 26));
+    expect(pixel(96, 15), pixel(82, 15));
   });
 
   test('the sample follows the settings', () {
