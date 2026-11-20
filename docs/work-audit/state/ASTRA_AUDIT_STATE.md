@@ -3103,3 +3103,14 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`save_mode_change_slots_test`・`save_tree_persistence_test`・`save_tree_large_branch_stress_test`・`performance_settings_text_fit_test`ほか10本を`ec135568`で42件成功。最新N件を残したときのスロットのメモを見るtestは無い。
 - 未確認：「保存データを選択」で選ぶ画面の中身、完全に削除するを選んだとき、2つ目の作品でのキャンセル、ツリーの子の保存・展開・再開・上書き、ツリー→スロットで保存を選ぶとき、失敗時の巻き戻し、起動し直した後の見え方。
 - 画像：`shots-r1/r2a060-*`（backup-pending）。
+
+## A061 — autosave・ファイル形式・migration
+
+### A061 二巡目（2026-11-20、Claude・S50、App `ec135568`のLinuxデバッグビルド）— 判定：一部確認（DISCなし。一巡目のDISC351は直った）
+
+- 一巡目のDISC351は直った：`niatra_transfer_saved_keys_test`（端末ごとの通知の設定のキーの分類を含む）が成功。
+- DISC336（カメラ）・DISC340（タイムスタンプ）・DISC343（演出フィルター）はA052〜A054の二巡目で、強制終了して起動し直しても残ることを確かめた。DISC349はA058で直ったことを確かめた。
+- OK（自動保存）：作品2のキャンバスで斜めの線を1本描き、15秒後に`kill -9`→起動し直す→作品の詳細の縮小画像はまだ描く前の絵→「編集開始」で「自動保存から復元／この作品と内容が異なる自動保存があります。その内容で作品を開きますか？」（キャンセル・復元）→「復元」で描いた線が戻る。
+- test：保存の形式・引き継ぎ・素材の同梱・アーカイブの安全（zip-slip）・ホームの一覧など40本（`archive_security_test`・`niapro_*`・`niatra_*`・`font_share_bundle_test`・`layer_pixels_replace_test`ほか）を`ec135568`で303件成功。
+- 未確認（環境）：.niatra・.niashareの実物の書き出しと読み込み（Linuxは共有が無い）、古い版の保存の読み込み、書き込みの途中で落ちたときの置き換え、ディスク不足、Androidでのフォントの同梱。
+- 画像：`shots-r1/r2a061-*`（backup-pending）。
