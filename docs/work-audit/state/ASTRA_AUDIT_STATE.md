@@ -500,7 +500,7 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - 未確認（環境なし）: Android実機・低性能端末での起動時間・プロセスlifecycle。NATIVE系ID（A098等）で扱う。
 - Discovery: DISC001（初回起動の言語が端末言語に関係なく日本語）、DISC002（エラー記録を利用者が見る手段が無い）。
 
-### A001 二巡目（2026-11-19、Claude・S41、App `2939841e`・Web `a44daf4`）— 判定：要修正（DISC491）
+### A001 二巡目（2026-11-19、Claude・S50、App `2939841e`・Web `a44daf4`）— 判定：要修正（DISC491）
 
 - 範囲の変更（`a3121df7`以降）：`app.dart`（ホーム画面ウィジェットを焼き直す鍵に作品の状態、浮かぶプレビューの`obscured`）、`app_bootstrap.dart`（作品広場のAPIへ資格情報の更新・削除済みアカウントの受け取り）、`google_auth_service.dart`（IDトークンの期限切れの更新・`_disposed`）、`saved_list_reader.dart`（DISC070の`SavedListCarryOver`）。
 - test：起動の11本（`startup_service_contract`・`startup_settings_recovery`・`startup_failure_recovery`〔29段〕・`startup_unreadable_saved_lists`・`startup_saved_number_range`・`startup_unreadable_projects_folder`・`startup_trash_sweep_unavailable`・`saved_list_unreadable_carry_over`・`initial_language`・`google_auth_init_once`・`startup_failure_korean_line_break`）は161件成功・9件スキップ。スキップの9件は`--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`で9件成功。S49の残件だった`startup_unreadable_projects_folder_test`は、このHEADの手元では全件成功（CIの失敗は再現しない）。`flutter analyze`（範囲の8ファイル）0件。
@@ -550,7 +550,7 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - 修正（App `7c96013`・`b928b22`）：ロゴはボタンの基準幅に対する比（モノグラム0.6倍、PC・タブレット0.55倍、アプリ名0.9倍）。PC（isWideScreen）とタブレット（短辺600dp以上）は並び全体を画面幅の約8割まで拡大（2.2倍まで）。SPはボタン150pxのまま、間隔を余白に応じて最大64px。
 - 検証：`splash_layout_test`のPC行をPCモードで描画、84通り・336通りの全セルで「ロゴの幅・高さ＜ボタン」、PC/タブレット/SP縦横の比率テスト（変更前は落ちる）。全336画像を目視。実画面でPC 1280×800・1024×768・1920×1080、SP 390×844・360×640・横844×390・横568×320（証跡 A002_rebalance）。
 
-### A002 二巡目（2026-11-19、Claude・S41、App `2939841e`）— 判定：要修正（DISC492）
+### A002 二巡目（2026-11-19、Claude・S50、App `2939841e`）— 判定：要修正（DISC492）
 
 - 範囲の変更（`a3121df7`以降）：`splash_screen.dart`は変更なし。`router.dart`はキャンバス・タイムラインの初期シーン・コマ（A002の導線には関係しない）。`theme_rescue_button.dart`は救済のダイアログのテーマを言語ごと（`rescueThemeDataFor`）に。
 - test：`splash_layout_test`・`splash_gradient_test`・`home_widget_shortcut_design_test`・`theme_contrast_rescue_test`・`theme_rescue_dialog_chinese_font_test`・`theme_rescue_dialog_inset_test`の50件成功。
@@ -658,6 +658,14 @@ status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判
   - A069：容量削減の画面は`_reload`に例外処理が無く、集計（`computeBreakdown`）が失敗すると読み込み中のまま止まる（Linuxでは一時フォルダ＝/tmp全体を数えるため実際に10秒以上止まった。Androidの一時フォルダはアプリ専用で小さいので製品で同じ遅さにはならない）。
   - 監査担当のテスト：`app_web_reference_export_exact_test`は、dev_branchがキャンバスのタイムラインのボタンを`iconBuilder`（矢印つき、Key `canvasTimelineModeButton`）に変えたため、`icon == Icons.movie_filter_outlined`で探せず失敗（dev_branch `25723b3`単体でも同じ）。
 - 判定：A003の機能・挙動・継続性はこのHEADでPASS。見た目はユーザー指摘の3件を直したうえで、上の`contrastingForeground`の2か所がユーザーの判断待ちのため、A003はdev_branchのRoute状態どおりin_progressのまま（dev_branchのS9の正式色の対応表とあわせて閉じる）。証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A003 （A003_recheck）。
+
+### A003 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：OK（基準の操作）。正式なstatusはin_progressのまま
+
+- 実画面（Linux debug・Xvfb・ja）：作品120件の保存でPC 1280×800・スマホ390×844。4つのタブを替えても一覧のスクロール位置は保たれる。長押しで選んだ状態はタブを替えると解除。引き出しの5つのリンク（オパール・特典、契約状態、使い方、設定、容量削減）を開いて戻ると、ホームのスクロール位置のまま。検索（「102」で1件）→Escで閉じて元の一覧と位置。左下の矢印で起動画面。初回（新しい保存領域）は短い案内「手描きアニメーションを制作できます」が出て、Esc・外側のタップ・戻るでは閉じず（testの決まり）、「はじめる」で閉じて次の起動から出ない（A001の確認）。動きを減らす設定（GTKのアニメーションを切る）でタブは80ms以内に替わり、引き出しはEscで0.1秒以内に閉じて幕が残らない（DISC213・214）。
+- test：全体回帰 `44641695291`（App `04ba3f96`）で、ホームのtest（`home_matrix2_*`の9本、`home_landscape_side_insets_test`・`home_project_action_hit_test`・`home_reduced_motion_*`ほか）を含む6シャードが成功。失敗の2件はヘルプの検索欄（DISC493、A086の範囲）。GPTの戻りでDISC029・178・182は既存testで再確認済み。
+- 正式なstatusをdoneにしない理由：初回に図つきの使い方（6ページの`AppTutorial`）を出すか、今の短い案内のままかが、統合mergeで失われた項目（DISC014・048、DISC074の棚卸し）として決めた記録が無い（testは`758d7f56`で今の作りに合わせてある）。所有者の判断か、今の作りで良いという記録があればdoneにする。
+- 未確認：Android実機の指の操作・切り欠き（testで代える）。
+- 画像：`shots-r1/r2a003-*`（backup-pending）。
 
 ## A004 — プロジェクト一覧・検索・表示・ソート（Opusブランチの証跡）
 
