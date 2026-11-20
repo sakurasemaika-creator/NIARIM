@@ -2795,22 +2795,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportFormatMp4 => 'MP4';
 
   @override
-  String get exportFormatMp4Subtitle => '通用视频格式';
+  String get exportFormatMp4Subtitle => '发布或分享完成的视频。';
 
   @override
   String get exportFormatGif => 'GIF';
 
   @override
-  String get exportFormatGifSubtitle => '动态GIF';
+  String get exportFormatGifSubtitle => '循环播放一段无声短动画。';
 
   @override
-  String get exportFormatWebmSubtitle => '透明背景视频';
+  String get exportFormatWebmSubtitle => '保留透明背景，将动画叠加到其他视频上。';
 
   @override
   String get exportFormatAvi => 'AVI';
 
   @override
-  String get exportFormatAviSubtitle => '兼容性优先的视频格式（不支持透明）';
+  String get exportFormatAviSubtitle => '用于支持 Motion JPEG AVI 的编辑器，背景不透明。';
 
   @override
   String get exportStartButton => '开始导出';
@@ -13137,22 +13137,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get exportFormatMp4 => 'MP4';
 
   @override
-  String get exportFormatMp4Subtitle => '通用影片格式';
+  String get exportFormatMp4Subtitle => '發布或分享完成的影片。';
 
   @override
   String get exportFormatGif => 'GIF';
 
   @override
-  String get exportFormatGifSubtitle => '動態GIF';
+  String get exportFormatGifSubtitle => '循環播放一段無聲短動畫。';
 
   @override
-  String get exportFormatWebmSubtitle => '透明背景影片';
+  String get exportFormatWebmSubtitle => '保留透明背景，將動畫疊加到其他影片上。';
 
   @override
   String get exportFormatAvi => 'AVI';
 
   @override
-  String get exportFormatAviSubtitle => '相容性優先的影片格式（不支援透明）';
+  String get exportFormatAviSubtitle => '用於支援 Motion JPEG AVI 的剪輯軟體，背景不透明。';
 
   @override
   String get exportStartButton => '開始匯出';

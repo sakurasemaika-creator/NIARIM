@@ -2977,23 +2977,26 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exportFormatMp4 => 'MP4';
 
   @override
-  String get exportFormatMp4Subtitle => 'Format vidéo universel';
+  String get exportFormatMp4Subtitle =>
+      'Publier ou partager une vidéo terminée.';
 
   @override
   String get exportFormatGif => 'GIF';
 
   @override
-  String get exportFormatGifSubtitle => 'GIF animé';
+  String get exportFormatGifSubtitle =>
+      'Lire une courte animation en boucle, sans son.';
 
   @override
-  String get exportFormatWebmSubtitle => 'Vidéo à fond transparent';
+  String get exportFormatWebmSubtitle =>
+      'Superposer une animation à une autre vidéo sur fond transparent.';
 
   @override
   String get exportFormatAvi => 'AVI';
 
   @override
   String get exportFormatAviSubtitle =>
-      'Format vidéo à compatibilité étendue (sans transparence)';
+      'Pour les logiciels de montage qui acceptent les AVI Motion JPEG. Le fond est opaque.';
 
   @override
   String get exportStartButton => 'Démarrer l’export';

@@ -2933,23 +2933,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportFormatMp4 => 'MP4';
 
   @override
-  String get exportFormatMp4Subtitle => 'General-purpose video format';
+  String get exportFormatMp4Subtitle => 'Share or post a finished video.';
 
   @override
   String get exportFormatGif => 'GIF';
 
   @override
-  String get exportFormatGifSubtitle => 'Animated GIF';
+  String get exportFormatGifSubtitle => 'Loop a short animation without sound.';
 
   @override
-  String get exportFormatWebmSubtitle => 'Transparent background video';
+  String get exportFormatWebmSubtitle =>
+      'Layer the animation over another video with a transparent background.';
 
   @override
   String get exportFormatAvi => 'AVI';
 
   @override
   String get exportFormatAviSubtitle =>
-      'Legacy-compatible video format (no transparency)';
+      'Use in an editor that accepts Motion JPEG AVI. The background is opaque.';
 
   @override
   String get exportStartButton => 'Start Export';

@@ -2818,22 +2818,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get exportFormatMp4 => 'MP4';
 
   @override
-  String get exportFormatMp4Subtitle => '汎用動画形式';
+  String get exportFormatMp4Subtitle => '完成した動画を投稿・共有する';
 
   @override
   String get exportFormatGif => 'GIF';
 
   @override
-  String get exportFormatGifSubtitle => 'アニメーションGIF';
+  String get exportFormatGifSubtitle => '音のない短いアニメをくり返し再生する';
 
   @override
-  String get exportFormatWebmSubtitle => '透明背景動画';
+  String get exportFormatWebmSubtitle => '背景を透明にして、別の映像に重ねる';
 
   @override
   String get exportFormatAvi => 'AVI';
 
   @override
-  String get exportFormatAviSubtitle => '互換性重視の動画形式（透過非対応）';
+  String get exportFormatAviSubtitle => 'AVI対応の編集ソフトで使う（Motion JPEG・背景あり）';
 
   @override
   String get exportStartButton => '書き出し開始';

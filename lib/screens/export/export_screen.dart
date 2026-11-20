@@ -1,5 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
-
 import 'dart:async';
 import 'dart:io';
 
@@ -83,7 +81,7 @@ class _ExportScreenState extends State<ExportScreen> {
     return Scaffold(
       appBar: AppBar(
         title: FitOrHideTitle(l10n.exportScreenTitle),
-        actions: const [HelpButton(topic: '特典の期限が切れたら')],
+        actions: const [HelpButton(topic: '動画書き出し（MP4）')],
       ),
       body: _buildSettings(l10n),
     );
@@ -119,6 +117,18 @@ class _ExportScreenState extends State<ExportScreen> {
       settings?.endCardDefaultHiddenForPremium ?? true,
     );
     final verificationUnavailable = premium.benefitsVerificationUnavailable;
+    final locale = Localizations.localeOf(context);
+    final colors = Theme.of(context).colorScheme;
+    final formats = [
+      (ExportFormat.mp4, l10n.exportFormatMp4, l10n.exportFormatMp4Subtitle),
+      (ExportFormat.gif, l10n.exportFormatGif, l10n.exportFormatGifSubtitle),
+      (
+        ExportFormat.webm,
+        l10n.helpTransparentWebmTitle,
+        l10n.exportFormatWebmSubtitle,
+      ),
+      (ExportFormat.avi, l10n.exportFormatAvi, l10n.exportFormatAviSubtitle),
+    ];
     return desktopCentered(
       context,
       SingleChildScrollView(
@@ -126,20 +136,15 @@ class _ExportScreenState extends State<ExportScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_error != null)
-              Padding(
-                padding: EdgeInsets.only(bottom: 12),
-                child: Text(
-                  _error!,
-                  style: TextStyle(color: ThemeService.activeColorScheme.error),
+            Semantics(
+              header: true,
+              child: Text(
+                l10n.exportPresetSection,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: headingFontFamilyFor(locale),
+                  fontFamilyFallback: headingFontFallbackFor(locale),
                 ),
-              ),
-            Text(
-              l10n.exportPresetSection,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
               ),
             ),
             const SizedBox(height: 8),
@@ -163,11 +168,13 @@ class _ExportScreenState extends State<ExportScreen> {
                             children: [
                               Text(
                                 l10n.exportAdvancedSettings,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 13,
-                                  fontFamily: 'Kuramubon',
-                                  fontFamilyFallback: kHeadingFontFallback,
+                                  fontFamily: headingFontFamilyFor(locale),
+                                  fontFamilyFallback: headingFontFallbackFor(
+                                    locale,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -189,12 +196,15 @@ class _ExportScreenState extends State<ExportScreen> {
                     ),
             ),
             const SizedBox(height: 24),
-            Text(
-              l10n.exportFormatSection,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+            Semantics(
+              header: true,
+              child: Text(
+                l10n.exportFormatSection,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: headingFontFamilyFor(locale),
+                  fontFamilyFallback: headingFontFallbackFor(locale),
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -203,85 +213,65 @@ class _ExportScreenState extends State<ExportScreen> {
               onChanged: (v) => setState(() => _format = v!),
               child: Column(
                 children: [
-                  RadioListTile(
-                    title: Text(
-                      l10n.exportFormatMp4,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                  for (final (format, title, description) in formats)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: RadioListTile<ExportFormat>(
+                        value: format,
+                        selected: _format == format,
+                        selectedTileColor: colors.surfaceContainerHigh,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: _format == format
+                                ? colors.primary
+                                : colors.outlineVariant,
+                          ),
+                        ),
+                        title: Text(
+                          title,
+                          style: TextStyle(
+                            color: colors.onSurface,
+                            fontFamily: headingFontFamilyFor(locale),
+                            fontFamilyFallback: headingFontFallbackFor(locale),
+                          ),
+                        ),
+                        subtitle: Text(
+                          description,
+                          style: TextStyle(
+                            color: colors.onSurfaceVariant,
+                            fontFamily: bodyFontFamilyFor(locale),
+                            fontFamilyFallback: bodyFontFallbackFor(locale),
+                          ),
+                        ),
                       ),
                     ),
-                    subtitle: Text(
-                      l10n.exportFormatMp4Subtitle,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    value: ExportFormat.mp4,
-                  ),
-                  RadioListTile(
-                    title: Text(
-                      l10n.exportFormatGif,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    subtitle: Text(
-                      l10n.exportFormatGifSubtitle,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    value: ExportFormat.gif,
-                  ),
-                  RadioListTile(
-                    title: Text(
-                      l10n.helpTransparentWebmTitle,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    subtitle: Text(
-                      l10n.exportFormatWebmSubtitle,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    value: ExportFormat.webm,
-                  ),
-                  RadioListTile(
-                    title: Text(
-                      l10n.exportFormatAvi,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    subtitle: Text(
-                      l10n.exportFormatAviSubtitle,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    value: ExportFormat.avi,
-                  ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
+            if (project != null)
+              Text(
+                '${project.exportWidth} × ${project.exportHeight} px · ${l10n.pcStatusFps(_fps)}',
+              ),
             Text(
               appendEndCard
                   ? l10n.exportOutputWithEndCard(duration)
                   : l10n.exportOutputWithoutEndCard(duration),
             ),
             Text(l10n.exportKeepsPlaybackTime),
-            if (needsLongExport) Text(l10n.exportLongProjectNote),
+            if (needsLongExport) ...[
+              Text(l10n.exportLongProjectNote),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton(
+                  onPressed: () => context.push(
+                    '/help?topic=${Uri.encodeComponent('特典の期限が切れたら')}',
+                  ),
+                  child: Text(l10n.helpPremiumExpiryTitle),
+                ),
+              ),
+            ],
             if (premium.isCheckingBenefits)
               Text(l10n.exportBenefitsChecking)
             else if (verificationUnavailable) ...[
@@ -295,6 +285,14 @@ class _ExportScreenState extends State<ExportScreen> {
               ),
             ],
             const SizedBox(height: 12),
+            if (_error != null)
+              Semantics(
+                liveRegion: true,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(_error!, style: TextStyle(color: colors.error)),
+                ),
+              ),
             FilledButton.icon(
               onPressed:
                   _isExporting || _startingExport || premium.isCheckingBenefits
@@ -531,9 +529,8 @@ class _ExportScreenState extends State<ExportScreen> {
 
   void _showCancelledSnackBar() {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.exportCancelledSnackbar)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l10n.exportCancelledSnackbar)));
   }
 
   void _closeProgressDialog() {

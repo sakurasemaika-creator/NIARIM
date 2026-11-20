@@ -2829,22 +2829,23 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportFormatMp4 => 'MP4';
 
   @override
-  String get exportFormatMp4Subtitle => '범용 동영상 형식';
+  String get exportFormatMp4Subtitle => '완성한 영상을 게시하거나 공유할 때';
 
   @override
   String get exportFormatGif => 'GIF';
 
   @override
-  String get exportFormatGifSubtitle => '애니메이션 GIF';
+  String get exportFormatGifSubtitle => '소리 없는 짧은 애니메이션을 반복 재생할 때';
 
   @override
-  String get exportFormatWebmSubtitle => '투명 배경 동영상';
+  String get exportFormatWebmSubtitle => '배경을 투명하게 유지해 다른 영상 위에 겹칠 때';
 
   @override
   String get exportFormatAvi => 'AVI';
 
   @override
-  String get exportFormatAviSubtitle => '호환성 중심의 동영상 형식(투명도 미지원)';
+  String get exportFormatAviSubtitle =>
+      'Motion JPEG AVI를 지원하는 편집기에서 사용할 때 (불투명 배경)';
 
   @override
   String get exportStartButton => '내보내기 시작';

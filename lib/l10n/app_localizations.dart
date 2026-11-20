@@ -5190,7 +5190,7 @@ abstract class AppLocalizations {
   /// No description provided for @exportFormatMp4Subtitle.
   ///
   /// In ja, this message translates to:
-  /// **'汎用動画形式'**
+  /// **'完成した動画を投稿・共有する'**
   String get exportFormatMp4Subtitle;
 
   /// No description provided for @exportFormatGif.
@@ -5202,13 +5202,13 @@ abstract class AppLocalizations {
   /// No description provided for @exportFormatGifSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'アニメーションGIF'**
+  /// **'音のない短いアニメをくり返し再生する'**
   String get exportFormatGifSubtitle;
 
   /// No description provided for @exportFormatWebmSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'透明背景動画'**
+  /// **'背景を透明にして、別の映像に重ねる'**
   String get exportFormatWebmSubtitle;
 
   /// No description provided for @exportFormatAvi.
@@ -5220,7 +5220,7 @@ abstract class AppLocalizations {
   /// No description provided for @exportFormatAviSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'互換性重視の動画形式（透過非対応）'**
+  /// **'AVI対応の編集ソフトで使う（Motion JPEG・背景あり）'**
   String get exportFormatAviSubtitle;
 
   /// No description provided for @exportStartButton.
