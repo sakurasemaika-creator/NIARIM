@@ -3707,3 +3707,27 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 気づいた点（DISCにしない）：`build-apk.yml`は`workflow_dispatch`に加えて、自分のファイルが変わった`dev_branch`へのpushでも起動する（`675d85e7`、2026-11-17）。CLAUDE.mdの「手動実行のみ」と食い違う（説明の更新が要る）。
 - 未確認：CIの各shardの失敗の全件（shard 0以外のログは開いていない）、`tool/`のスクリプトの再現性。
 - 記録：`logs/a104-tests.txt`（scratchpad、backup-pending）。
+
+## W001〜W016 — Web共通・トップ・機能・作品広場・ヘルプ・お問い合わせ・規約
+
+### W001〜W016 二巡目（2026-11-20、Claude・S50、Web `c1182da`〔`origin/dev_branch` `aec066e`の製品の最新〕・App `643cc267`）— 判定：要修正（W001・W003・W004・W008・W010・W012・W015・W016）、OK（W002・W005・W006〔W006.01〜W006.09〕・W007・W009〔W009.01〜W009.76〕・W011・W013・W014）
+
+- 進め方：`round2/WEB_RESULTS_W001_W016.json`（エージェントの下書き、Web `a44daf4`）を出発点にした。下書きの後にWebの製品のコミットが11件入った（`c660ad2`〔`/coins/`→`/opals/`・ブラウザの言語に合わせる〕・`1a7eaae`〔ヘルプの訳を言語ごとに読む〕・`0f699fd`・`d39aa82`・`89b3716`・`f4e5aaa`〔書き出しの形式〕・`49730e9`・`dacd901`・`9940efd`・`c1182da`・`21c0daf`、45ファイル）。そのため`git archive`で`c1182da`を写し、`wrangler dev --local`（127.0.0.1:8801、公開APIの宛先は`http://127.0.0.1:9/`へ差し替え、`/api/community`は差し替えた応答、外への通信は遮断）とChromium（Playwright）で、下書きのスクリプト（`round2/web_w001_w016/scripts`、`/coins/`を`/opals/`へ直した写しを`scratchpad/wr2/a`）と追加の確認を流した。下書きの判定は、変わったファイルに当たる所を確かめ直し、新しい指摘の候補は全部この版で再現させてから採った。
+- 巡回：15ページ×8言語（`?lang`なし＋7言語）×PC 1280×800・SP 360×740（225状態）で、横のはみ出し0件。axe（WCAG 2.2 AA＋best-practice）の違反は下書きと同じ4種（color-contrast・landmark-unique・landmark-complementary-is-top-level・region）。color-contrastは436→540か所（トップの見本の注記#9f8290 11pxの3.4:1が増えた所）で、DISC474（所有者がピンクと白を保つ指定）の扱い。
+- W001（要修正）：既存DISC438の残り：SPのメニューを開いている間、裏の本文がスクロールする（/about/で0→600px）。新DISC549：SPのメニューを開いたままTabを押すと、フォーカスがメニューの裏の本文（「制作機能を見てみる」など、`main-nav`に覆われた所）へ出る（/・/about/）。気づいた点：リンクで移ると「Unexpected duplicate view-transition-name: niarim-brand」のコンソールのエラー（動きを減らさない設定）。
+- W002（OK）：既存DISC439は直ったまま（`c660ad2`で`?lang`の無いURLはAccept-Languageで言語を決め、`Vary: Accept-Language`・`Content-Language`・`<html lang>`・`canonical`〔`?lang=xx`〕と表示がそろう。ja-JP→日本語、fr-FR→仏語、de-DE→英語）。
+- W003（要修正）：既存DISC440の残り：PCのナビが2段になり高さ68pxのヘッダーからはみ出す（ja 1181・1201px、es 1441px以上、fr 1801px以上、/・/about/）。既存DISC441の残り：/faq/の末尾の「アプリをダウンロード」（`/?lang=ja#download`、配信準備中）。
+- W004（要修正）：新DISC550：トップの配色のボタン4つの名前（`aria-label`）が7言語とも「Palette 1〜4」（ja・frで確認）。
+- W005（OK）：DISC444は直ったまま。
+- W006（OK、W006.01〜W006.09もOK）：DISC445〜448は直ったまま（下書き）。書き出しの節は`d39aa82`・`89b3716`・`f4e5aaa`で書き換わり、「MP4・GIF・透過WebM・AVIの4形式、最大1920×1920、無料は1作品90秒・プレミアムか最大尺の特典で最長2時間、特典が無くても先頭90秒を書き出せる、静止画はPNG・JPEG」は、Appの`premium_service.dart:702-705`（無料90秒・Premium 7200秒）・`export_screen.dart`（90秒を超える作品）・`export_engine.dart`（webm・avi）と一致。気づいた点：`/features/#widget`へ直接入ると、4回に1回ほど節の見出しが上端から約250px下で止まる（画面の中には入る）。
+- W007（OK）：DISC449・450は直ったまま。
+- W008（要修正）：新DISC551：作品広場（/community/）でタブ（週間・月間・新着ほか）を一度切り替えると、カードがすべて不透明度0のまま出てこない（SP 360×740、ja・en、2秒待っても`opacity 0`・`is-visible`なし、`shots`のw008z-ja）。作品が無いときの「現在表示できる公開作品はありません」も同じく見えなくなる。動きを減らす設定では起きない。DISC451〜454は直ったまま。
+- W009（OK、W009.01〜W009.76もOK）：`node tools/sync-app-help.mjs <App 643cc267> --check`が「App and Web Help: 81 entries in 7 locales.」で一致。
+- W010（要修正）：既存DISC460の残り：英語の/community/に小文字の「NIARIM gallery」。DISC459は直ったまま。
+- W011（OK）。
+- W012（要修正）：新DISC552：`opal-ui-naming.js`の機械的な置き換えで文が崩れる。仏語は「pièce(s)」を全部「opale(s)」にするので、お問い合わせの添付の誤りの文が「Les opales jointes sont limitées à 20 Mo…」「Impossible de lire une opale jointe…」になる（辞書の`contact.error.attachmentTotal`・`attachmentRejected`）。ほかに西語「Cómo usar las ópalos」（ópaloは男性名詞）、韓国語「오팔으로」（正しくは「오팔로」）、題の小文字始まり（仏「opales et avantages | NIARIM」、西「ópalos y ventajas | NIARIM」）。DISC462〜464は直ったまま。
+- W013・W014（OK）：DISC465〜469は直ったまま。
+- W015（要修正）：既存DISC470の残り：規約第5条1項「本画面「使用フォントについて」に記載された」（en「on this screen under “About Fonts Used.”」）がWebのページでも「本画面」のまま。新DISC553：規約・ポリシーの最終更新日が、HTMLは「2026年11月18日」なのに、翻訳の辞書（`i18n-dict-ai-trust.js`の`updated`）が上書きして7言語とも「2026年9月4日」と出る。Appの`legalLastUpdated`は「2026年11月18日」。
+- W016（要修正）：既存DISC471（/privacy/にサイトのお問い合わせ・回数制限の情報の扱いが無い、法務の判断待ち）は直っていない（下書き）。最終更新日はDISC553。
+- 未確認：Safari・Firefox、実機（タッチ・IME）、読み上げ、本番のWorker・Durable Object・Resend、7言語の文の意味の一つずつの照合、規約の法的な意味。
+- 記録：`scratchpad/wr2/out/sweep.json`・`sweep-axe.log`、スクリプトと画像は`scratchpad/wr2/a`（backup-pending）。
