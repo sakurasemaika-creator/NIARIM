@@ -2539,6 +2539,13 @@ class _HomeScreenState extends State<HomeScreen>
         case ShortcutCommand.playPause:
         case ShortcutCommand.previousFrame:
         case ShortcutCommand.nextFrame:
+        case ShortcutCommand.canvasFit:
+        case ShortcutCommand.canvasActualPixels:
+        case ShortcutCommand.canvasZoomIn:
+        case ShortcutCommand.canvasZoomOut:
+        case ShortcutCommand.canvasRotateLeft:
+        case ShortcutCommand.canvasRotateRight:
+        case ShortcutCommand.canvasResetRotation:
         case null:
           // キャンバス・タイムライン専用の操作、または未割り当て。
           break;

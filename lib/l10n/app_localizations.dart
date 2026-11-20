@@ -3492,7 +3492,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsPressureCurveDesc.
   ///
   /// In ja, this message translates to:
-  /// **'設定画面の筆圧カーブは最大10点の制御点を自由に打てます。強弱の付き方が合わないと感じたら、自分の筆圧の癖に合わせて調整してみましょう。'**
+  /// **'設定画面の筆圧カーブは制御点を自由に打てます。強弱の付き方が合わないと感じたら、自分の筆圧の癖に合わせて調整してみましょう。'**
   String get tipsPressureCurveDesc;
 
   /// No description provided for @tipsExportFormatTitle.

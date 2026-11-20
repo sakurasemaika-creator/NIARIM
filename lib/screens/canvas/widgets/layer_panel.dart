@@ -1,6 +1,7 @@
 import 'package:niarim/services/theme_service.dart';
 
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -66,6 +67,7 @@ class LayerPanel extends StatefulWidget {
   // 値が変化するたびに全選択を実行する（メッシュ変形の確定/キャンセル
   // トークンと同じ「値の変化そのものをイベントとして使う」方式）。
   final int selectAllToken;
+  final Uint8List? selectionMask;
 
   const LayerPanel({
     super.key,
@@ -78,6 +80,7 @@ class LayerPanel extends StatefulWidget {
     this.currentLayerId,
     this.onLayerSelected,
     this.selectAllToken = 0,
+    this.selectionMask,
   });
 
   @override
@@ -1758,24 +1761,31 @@ class _LayerPanelState extends State<LayerPanel> {
       confirmLabel: l10n.commonCreate,
       onConfirm: (mode, start, end, rangeSceneId) {
         final ps = context.read<ProjectService>();
-        final created = ps.addLayer(
-          projectId: widget.projectId,
-          sceneId: widget.sceneId,
-          frameIndex: widget.frameIndex,
-          type: model.LayerType.common,
-          name: l10n.layerPanelDefaultCommonName(visible.length + 1),
-        );
-        ps.updateLayer(
-          projectId: widget.projectId,
-          sceneId: widget.sceneId,
-          frameIndex: widget.frameIndex,
-          layer: created.copyWith(
-            rangeMode: mode,
-            rangeStart: start,
-            rangeEnd: end,
-            rangeSceneId: rangeSceneId,
-          ),
-          recordUndo: false,
+        final created = ps.editTimeline(
+          widget.projectId,
+          'Add common layer',
+          () {
+            final created = ps.addLayer(
+              projectId: widget.projectId,
+              sceneId: widget.sceneId,
+              frameIndex: widget.frameIndex,
+              type: model.LayerType.common,
+              name: l10n.layerPanelDefaultCommonName(visible.length + 1),
+            );
+            ps.updateLayer(
+              projectId: widget.projectId,
+              sceneId: widget.sceneId,
+              frameIndex: widget.frameIndex,
+              layer: created.copyWith(
+                rangeMode: mode,
+                rangeStart: start,
+                rangeEnd: end,
+                rangeSceneId: rangeSceneId,
+              ),
+            );
+            return created;
+          },
+          changesTiles: false,
         );
         setState(() => _selectedIndex = 0);
         widget.onLayerSelected?.call(created.id);
@@ -1918,17 +1928,13 @@ class _LayerPanelState extends State<LayerPanel> {
     // previous one (a scale change after an opacity change keeps the new
     // opacity), and the sliders show what was last set.
     var latest = layer;
-    void update(
-      model.Layer Function(model.Layer) updater, {
-      bool recordUndo = true,
-    }) {
+    void update(model.Layer Function(model.Layer) updater) {
       latest = updater(latest);
       context.read<ProjectService>().updateLayer(
         projectId: widget.projectId,
         sceneId: widget.sceneId,
         frameIndex: widget.frameIndex,
         layer: latest,
-        recordUndo: recordUndo,
       );
     }
 
@@ -2079,7 +2085,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 title: Text(l10n.layerPanelLockLabel),
                 value: latest.isLocked,
                 onChanged: (v) {
-                  update((l) => l.copyWith(isLocked: v), recordUndo: false);
+                  update((l) => l.copyWith(isLocked: v));
                   Navigator.pop(ctx);
                 },
               ),
@@ -2087,10 +2093,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 title: Text(l10n.layerPanelOpacityLockLabel),
                 value: latest.opacityLocked,
                 onChanged: (v) {
-                  update(
-                    (l) => l.copyWith(opacityLocked: v),
-                    recordUndo: false,
-                  );
+                  update((l) => l.copyWith(opacityLocked: v));
                   Navigator.pop(ctx);
                 },
               ),
@@ -2229,9 +2232,7 @@ class _LayerPanelState extends State<LayerPanel> {
               // 明度で透過：下描きレイヤーに誤って線画を描いてしまった時などに、
               // 白い部分ほど透明になるようレイヤーの不透明度を作り直す
               // 色を保つ「カラー」と、輝度だけで単純に
-              // 透過させる「グレー」の2種類。元に戻せない操作のため、
-              // Undoには対応していない（このメニューの他の破壊的操作＝
-              // 結合と同様の扱い）。
+              // 透過させる「グレー」の2種類。画素の差分を履歴に残す。
               if (layer.type == model.LayerType.normal)
                 ListTile(
                   leading: const Icon(Icons.opacity),
@@ -2290,6 +2291,7 @@ class _LayerPanelState extends State<LayerPanel> {
       frameIndex: widget.frameIndex,
       layerId: layer.id,
       grayMode: grayMode,
+      selection: widget.selectionMask,
     );
     if (!mounted) return;
     setState(
@@ -2668,6 +2670,7 @@ class _LayerPanelState extends State<LayerPanel> {
       sceneId: widget.sceneId,
       frameIndex: widget.frameIndex,
       lineartLayer: lineartLayer,
+      selection: widget.selectionMask,
       mode: mode,
     );
     if (mounted) setState(() {});
@@ -2692,6 +2695,7 @@ class _LayerPanelState extends State<LayerPanel> {
       sceneId: widget.sceneId,
       frameIndex: widget.frameIndex,
       autofillLayer: autofillLayer,
+      selection: widget.selectionMask,
     );
     if (!context.mounted) return;
     setState(() {});
@@ -2868,6 +2872,7 @@ class _LayerPanelState extends State<LayerPanel> {
       frameIndex: widget.frameIndex,
       layerId: layer.id,
       pixels: byteData.buffer.asUint8List(),
+      selection: widget.selectionMask,
     );
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -2880,6 +2885,7 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   Future<void> _importImage(BuildContext context) async {
+    final selection = widget.selectionMask;
     final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
@@ -2929,26 +2935,27 @@ class _LayerPanelState extends State<LayerPanel> {
     rendered.dispose();
     if (byteData == null || !context.mounted) return;
 
-    final layer = projectService.addLayer(
-      projectId: widget.projectId,
-      sceneId: widget.sceneId,
-      frameIndex: widget.frameIndex,
-      type: model.LayerType.normal,
-      name: name,
-    );
-    tileManager.replaceLayerPixels(
-      frameLayerKey(widget.sceneId, widget.frameIndex, layer.id),
-      byteData.buffer.asUint8List(),
-    );
-    // addLayer時点のnotifyListenersはピクセル書き込み前のため、書き込み後に
-    // 再度更新を通知してキャンバス側の合成表示を最新化する（自動塗り適用と同じ手順）。
-    projectService.updateLayer(
-      projectId: widget.projectId,
-      sceneId: widget.sceneId,
-      frameIndex: widget.frameIndex,
-      layer: layer,
-      recordUndo: false,
-    );
+    if (!identical(
+      tileManager,
+      projectService.tileManagerOf(widget.projectId),
+    )) {
+      return;
+    }
+    projectService.editTimeline(widget.projectId, 'Import image layer', () {
+      final layer = projectService.addLayer(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: widget.frameIndex,
+        type: model.LayerType.normal,
+        name: name,
+      );
+      tileManager.replaceLayerPixels(
+        frameLayerKey(widget.sceneId, widget.frameIndex, layer.id),
+        byteData.buffer.asUint8List(),
+        selection: selection,
+      );
+      projectService.refreshDrawingHistory(widget.projectId);
+    });
     setState(() => _selectedIndex = 0);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(

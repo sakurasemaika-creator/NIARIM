@@ -2319,8 +2319,13 @@ class ProjectService extends ChangeNotifier {
     required String layerId,
     required Uint8List pixels,
     Layer? updatedLayer,
+    Uint8List? selection,
   }) {
     final tm = tileManagerOf(projectId);
+    if (selection != null &&
+        selection.length != tm.canvasWidth * tm.canvasHeight) {
+      return;
+    }
     final key = tileKeyFor(projectId, sceneId, frameIndex, layerId);
     final home = homeOf(projectId, layerId);
     final layerBefore = storedLayersOf(
@@ -2336,7 +2341,7 @@ class ProjectService extends ChangeNotifier {
         tm.recordingTouchedTiles == null &&
         !(_layersAddedInGroup?.contains('$projectId/$layerId') ?? false);
     if (record) tm.beginUndoRecording(key);
-    tm.replaceLayerPixels(key, pixels);
+    tm.replaceLayerPixels(key, pixels, selection: selection);
     final snapshot = record
         ? tm.endUndoRecording()
         : (
@@ -2394,6 +2399,7 @@ class ProjectService extends ChangeNotifier {
     required int frameIndex,
     required String layerId,
     required bool grayMode,
+    Uint8List? selection,
   }) async {
     final manager = tileManagerOf(projectId);
     final key = tileKeyFor(projectId, sceneId, frameIndex, layerId);
@@ -2402,6 +2408,7 @@ class ProjectService extends ChangeNotifier {
       grayMode: grayMode,
     );
     if (pixels == null ||
+        !identical(manager, tileManagerOf(projectId)) ||
         !layersOf(
           projectId,
           sceneId,
@@ -2415,6 +2422,7 @@ class ProjectService extends ChangeNotifier {
       frameIndex: frameIndex,
       layerId: layerId,
       pixels: pixels,
+      selection: selection,
     );
   }
 

@@ -126,6 +126,7 @@ class NiatraSerializer {
     'brush_grouped_presets_v1',
     'tone_grouped_presets_v1',
     'stamp_grouped_presets_v1',
+    'shortcut_canvas_view_defaults_added',
   };
 
   /// [deviceRecordKeys]と同じ記録で、キーの頭が決まっているもの（自動保存・
@@ -135,8 +136,9 @@ class NiatraSerializer {
   static const List<String> deviceRecordPrefixes = [
     TransferCopyRecord.keyPrefix,
     'autosave_',
-    // The last thickness used on this device, independent of saved brush presets.
+    // The last thickness and opacity used on this device, independent of saved brush presets.
     'tool_thickness_',
+    'tool_opacity_',
     'community.pendingUpload.',
     'community.postingTerms.',
     'community.ownerByAccount.',

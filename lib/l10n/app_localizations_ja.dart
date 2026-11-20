@@ -1888,7 +1888,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tipsPressureCurveDesc =>
-      '設定画面の筆圧カーブは最大10点の制御点を自由に打てます。強弱の付き方が合わないと感じたら、自分の筆圧の癖に合わせて調整してみましょう。';
+      '設定画面の筆圧カーブは制御点を自由に打てます。強弱の付き方が合わないと感じたら、自分の筆圧の癖に合わせて調整してみましょう。';
 
   @override
   String get tipsExportFormatTitle => '用途に合わせて書き出し形式を選ぶ';

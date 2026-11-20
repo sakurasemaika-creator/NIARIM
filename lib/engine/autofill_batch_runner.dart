@@ -31,6 +31,7 @@ Future<AutofillBatchResult> runAutofillForLayer({
   required int frameIndex,
   required Layer lineartLayer,
   required AutofillMode mode,
+  Uint8List? selection,
 }) async {
   final partId = lineartLayer.partId;
   if (partId == null) return AutofillBatchResult.skipped;
@@ -112,7 +113,8 @@ Future<AutofillBatchResult> runAutofillForLayer({
           part: part,
         ));
   projectService.editTimeline(projectId, 'Apply auto fill', () {
-    if (autofillLayer == null) {
+    final newFillLayer = autofillLayer == null;
+    if (newFillLayer) {
       final created = projectService.addLayer(
         projectId: projectId,
         sceneId: sceneId,
@@ -139,6 +141,7 @@ Future<AutofillBatchResult> runAutofillForLayer({
     tileManager.replaceLayerPixels(
       frameLayerKey(sceneId, frameIndex, fillLayer.id),
       result,
+      selection: selection,
     );
     projectService.updateLayer(
       projectId: projectId,
@@ -146,9 +149,13 @@ Future<AutofillBatchResult> runAutofillForLayer({
       frameIndex: frameIndex,
       layer: fillLayer.copyWith(
         partId: part.id,
-        needsAutofillUpdate: false,
-        opacity: part.opacity,
-        blendMode: part.blendMode,
+        needsAutofillUpdate: selection != null && fillLayer.needsAutofillUpdate,
+        opacity: selection == null || newFillLayer
+            ? part.opacity
+            : fillLayer.opacity,
+        blendMode: selection == null || newFillLayer
+            ? part.blendMode
+            : fillLayer.blendMode,
         opacityLocked: effectiveMode == AutofillMode.colorUpdate
             ? true
             : fillLayer.opacityLocked,
@@ -156,17 +163,23 @@ Future<AutofillBatchResult> runAutofillForLayer({
     );
 
     if (recoloredLineart != null) {
-      tileManager.replaceLayerPixels(lineartKey, recoloredLineart);
+      tileManager.replaceLayerPixels(
+        lineartKey,
+        recoloredLineart,
+        selection: selection,
+      );
     }
-    projectService.updateLayer(
-      projectId: projectId,
-      sceneId: sceneId,
-      frameIndex: frameIndex,
-      layer: lineartLayer.copyWith(
-        opacity: part.lineOpacity,
-        blendMode: part.blendMode,
-      ),
-    );
+    if (selection == null) {
+      projectService.updateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layer: lineartLayer.copyWith(
+          opacity: part.lineOpacity,
+          blendMode: part.blendMode,
+        ),
+      );
+    }
   });
   return AutofillBatchResult.applied;
 }
@@ -182,6 +195,7 @@ Future<AutofillBatchResult> runAutofillForOrphanedLayer({
   required String sceneId,
   required int frameIndex,
   required Layer autofillLayer,
+  Uint8List? selection,
 }) async {
   final partId = autofillLayer.partId;
   if (partId == null) return AutofillBatchResult.skipped;
@@ -216,9 +230,11 @@ Future<AutofillBatchResult> runAutofillForOrphanedLayer({
     frameIndex: frameIndex,
     layerId: autofillLayer.id,
     pixels: result,
+    selection: selection,
     updatedLayer: autofillLayer.copyWith(
       partId: part.id,
-      needsAutofillUpdate: false,
+      needsAutofillUpdate:
+          selection != null && autofillLayer.needsAutofillUpdate,
       opacityLocked: true,
     ),
   );

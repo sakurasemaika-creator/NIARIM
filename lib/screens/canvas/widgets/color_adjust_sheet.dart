@@ -200,6 +200,7 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
         frameIndex: widget.frameIndex,
         layerId: layerId,
         pixels: committed,
+        selection: widget.selectionMask,
       );
       widget.onApplied?.call();
       _cancel(); // The canvas replaces the temporary image with saved pixels.

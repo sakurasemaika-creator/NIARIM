@@ -134,7 +134,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   double? get _toolBrushSize =>
       _toolBrushSizes[_brushControlTarget] ??
       context.read<SettingsService>().toolThickness(_brushThicknessKey);
-  int? get _toolBrushOpacity => _toolBrushOpacities[_brushControlTarget];
+  int? get _toolBrushOpacity =>
+      _toolBrushOpacities[_brushControlTarget] ??
+      context.read<SettingsService>().toolOpacity(_brushThicknessKey);
 
   Color get _currentColor => context.read<BrushService>().currentColor;
   int _currentFrame = 0;
@@ -519,6 +521,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
       );
     } else {
       setState(() => _toolBrushOpacities[_brushControlTarget] = value);
+      if (remember) {
+        unawaited(
+          context.read<SettingsService>().rememberToolOpacity(
+            _brushThicknessKey,
+            value,
+          ),
+        );
+      }
     }
   }
 
@@ -816,6 +826,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       currentLayerId: _currentLayerId,
       handleCanvasStateCommand: _executeSemanticCanvasStateCommand,
       layerName: _generatedLayerName,
+      selection: _canvasSelectionMask,
     );
     if (activeLayerId != null && mounted) {
       setState(() => _currentLayerId = activeLayerId);
@@ -885,6 +896,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
           frameIndex: targetFrame,
           filterSnapshot: Map<String, Object?>.from(rawSnapshot),
           layerName: _generatedLayerName,
+          selection: _canvasSelectionMask,
         );
         if (generatedLayerId != null && mounted) {
           setState(() => _currentLayerId = generatedLayerId);
@@ -904,6 +916,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
           frameIndex: targetFrame,
           layerId: layerId,
           grayMode: step.args['grayMode'] == true,
+          selection: _canvasSelectionMask,
         );
         if (mounted) setState(() {});
       case 'canvas.selectFrame':
@@ -2189,6 +2202,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       onLayerSelected: (id) =>
                           setState(() => _currentLayerId = id),
                       selectAllToken: _layerSelectAllToken,
+                      selectionMask: _canvasSelectionMask,
                     ),
                   ),
                 if (_showColorPicker && !isDesktop)
@@ -2515,6 +2529,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       dockedMode: true,
       currentLayerId: _currentLayerId,
       selectAllToken: _layerSelectAllToken,
+      selectionMask: _canvasSelectionMask,
       onClose: () => _setDesktopPanelVisible(CanvasDockPanel.layer, false),
       onEditTextLayer: _onEditTextLayerTapped,
       onLayerSelected: (id) => setState(() => _currentLayerId = id),
@@ -3122,7 +3137,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// Prism's result goes on in Linear Dodge (the layer is switched to it
   /// when applied), so its preview is drawn that way too.
   model.LayerBlendMode? _filterCanvasPreviewBlendMode() =>
-      context.watch<FilterService>().currentFilter?.kind == FilterKind.prism
+      context.watch<FilterService>().currentFilter?.kind == FilterKind.prism &&
+          _canvasSelectionMask == null
       ? model.LayerBlendMode.linearDodge
       : null;
 
@@ -3422,6 +3438,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
     setState(() => _currentLayerId = copy.id);
   }
 
+  void _requestCanvasView(CanvasViewAction action) => setState(() {
+    _navigatorViewRequest = CanvasViewRequest(
+      (_navigatorViewRequest?.serial ?? 0) + 1,
+      action,
+    );
+  });
+
   void _toggleLayerPanel() =>
       _toggleDesktopOrMobileDockPanel(CanvasDockPanel.layer);
 
@@ -3456,6 +3479,26 @@ class _CanvasScreenState extends State<CanvasScreen> {
           result[b.activator] = _copyActiveLayer;
         case ShortcutCommand.paste:
           result[b.activator] = _pasteCopiedLayer;
+        case ShortcutCommand.canvasFit:
+          result[b.activator] = () => _requestCanvasView(CanvasViewAction.fit);
+        case ShortcutCommand.canvasActualPixels:
+          result[b.activator] = () =>
+              _requestCanvasView(CanvasViewAction.actualPixels);
+        case ShortcutCommand.canvasZoomIn:
+          result[b.activator] = () =>
+              _requestCanvasView(CanvasViewAction.zoomIn);
+        case ShortcutCommand.canvasZoomOut:
+          result[b.activator] = () =>
+              _requestCanvasView(CanvasViewAction.zoomOut);
+        case ShortcutCommand.canvasRotateLeft:
+          result[b.activator] = () =>
+              _requestCanvasView(CanvasViewAction.rotateLeft);
+        case ShortcutCommand.canvasRotateRight:
+          result[b.activator] = () =>
+              _requestCanvasView(CanvasViewAction.rotateRight);
+        case ShortcutCommand.canvasResetRotation:
+          result[b.activator] = () =>
+              _requestCanvasView(CanvasViewAction.resetRotation);
         case ShortcutCommand.cut:
         case ShortcutCommand.playPause:
         case ShortcutCommand.previousFrame:
@@ -4011,12 +4054,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         PopupMenuButton<CanvasViewAction>(
           tooltip: l10n.canvasViewActions,
           icon: const Icon(Icons.fit_screen_outlined, size: 22),
-          onSelected: (action) => setState(() {
-            _navigatorViewRequest = CanvasViewRequest(
-              (_navigatorViewRequest?.serial ?? 0) + 1,
-              action,
-            );
-          }),
+          onSelected: _requestCanvasView,
           itemBuilder: (_) => [
             for (final item in [
               (CanvasViewAction.fit, l10n.pcViewFit),
@@ -4941,6 +4979,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             ),
                           );
                   final tiles = ps.tileManagerOf(widget.projectId);
+                  final selection = _canvasSelectionMask;
                   final bytes = await rasterizeTextObject(
                     textObject,
                     tiles.canvasWidth,
@@ -4950,6 +4989,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   if (!mounted ||
                       !ctx.mounted ||
                       bytes == null ||
+                      !identical(tiles, ps.tileManagerOf(widget.projectId)) ||
+                      !identical(selection, _canvasSelectionMask) ||
                       frameIndex >= ps.frameCount(widget.projectId, sceneId)) {
                     return;
                   }
@@ -4964,6 +5005,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       frameIndex: frameIndex,
                       layerId: current.id,
                       pixels: bytes,
+                      selection: selection,
                       updatedLayer: current.copyWith(textObject: textObject),
                     );
                   } else {
@@ -4983,6 +5025,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           layer.id,
                         ),
                         bytes,
+                        selection: selection,
                       );
                       ps.updateLayer(
                         projectId: widget.projectId,

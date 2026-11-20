@@ -387,6 +387,9 @@ void main() {
 
     // ── The glasses filter starts from the selection ──
     await openFilterPanel();
+    final selection = tester
+        .widget<FilterPanel>(find.byType(FilterPanel))
+        .selectionMask!;
     await pickFilterCard(tester, _lensFilterId);
     await pumpRealAsync(tester, const Duration(milliseconds: 800));
     expect(fs.currentFilter!.kind, FilterKind.lensDistortion);
@@ -466,9 +469,22 @@ void main() {
     expect(coverageAt(140, 128), 0, reason: 'the next stripe');
     await capture('05_lens_area_painted');
 
-    // ── Applying bends only the lens area ──
+    // Paint a lens that crosses the selection boundary. Both parts remain
+    // editable in the lens mask, but only their intersection changes pixels.
     await tester.tap(find.text(l10n.filterLensMaskPen));
     await tester.pump();
+    final crossing = await tester.startGesture(
+      onScreen(60, 95),
+      kind: PointerDeviceKind.mouse,
+    );
+    for (var x = 70.0; x <= 160; x += 10) {
+      await crossing.moveTo(onScreen(x, 95));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await crossing.up();
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    expect(coverageAt(90, 95), greaterThan(0));
+    expect(coverageAt(145, 95), greaterThan(0));
     fs.updateFilterParams(fs.currentFilter!.id, strength: 100);
     await pumpRealAsync(tester, const Duration(milliseconds: 800));
     final area = Uint8List.fromList(lensMask().coverage!);
@@ -482,14 +498,18 @@ void main() {
         if (bent[i + c] != original[i + c]) changed = true;
       }
       if (!changed) continue;
-      if (area[p] > 0) {
+      if (area[p] > 0 && selection[p] != 0) {
         changedInside++;
       } else {
         changedElsewhere++;
       }
     }
     expect(changedInside, greaterThan(50), reason: 'the stripes bend');
-    expect(changedElsewhere, 0, reason: 'nothing outside the lens area');
+    expect(
+      changedElsewhere,
+      0,
+      reason: 'nothing outside the intersection of the lens and the selection',
+    );
     await capture('06_lens_applied');
     expectSelectionEditing(true, 'after the glasses filter is applied');
     expect(tester.takeException(), isNull);

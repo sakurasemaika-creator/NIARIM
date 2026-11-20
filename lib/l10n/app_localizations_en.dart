@@ -1935,7 +1935,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsPressureCurveDesc =>
-      'The pressure curve in settings lets you place up to 10 control points freely. If the strength response doesn\'t feel right, adjust it to match your own pressure habits.';
+      'The pressure curve in settings lets you place control points freely. If the strength response doesn\'t feel right, adjust it to match your own pressure habits.';
 
   @override
   String get tipsExportFormatTitle =>

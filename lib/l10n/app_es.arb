@@ -608,7 +608,7 @@
   "tipsBrushFavoriteTitle": "Marca tus pinceles favoritos para cambiarlos sin buscar",
   "tipsBrushFavoriteDesc": "Toca el icono de estrella de los pinceles que más usas para marcarlos como favoritos. El icono de estrella en la parte superior de la lista permite filtrar solo los favoritos, reduciendo el tiempo de búsqueda. Los pinceles favoritos no se pueden eliminar por error.",
   "tipsPressureCurveTitle": "Ajusta la curva de presión a tu propia mano",
-  "tipsPressureCurveDesc": "La curva de presión en ajustes te permite colocar libremente hasta 10 puntos de control. Si la respuesta de fuerza no te convence, ajústala a tus propios hábitos de presión.",
+  "tipsPressureCurveDesc": "La curva de presión en ajustes te permite colocar libremente puntos de control. Si la respuesta de fuerza no te convence, ajústala a tus propios hábitos de presión.",
   "tipsExportFormatTitle": "Elige el formato de exportación según el uso",
   "tipsExportFormatDesc": "GIF es ideal para publicar rápido en redes sociales; WebM transparente sirve para superponer sobre otro vídeo o mantener el fondo transparente; MP4 es para usarlo como vídeo normal. Elegir según el caso de uso facilita equilibrar tamaño de archivo y calidad.",
   "tipsGestureShortcutTitle": "Asigna un gesto a las acciones frecuentes",

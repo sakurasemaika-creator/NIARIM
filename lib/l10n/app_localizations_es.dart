@@ -1974,7 +1974,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsPressureCurveDesc =>
-      'La curva de presión en ajustes te permite colocar libremente hasta 10 puntos de control. Si la respuesta de fuerza no te convence, ajústala a tus propios hábitos de presión.';
+      'La curva de presión en ajustes te permite colocar libremente puntos de control. Si la respuesta de fuerza no te convence, ajústala a tus propios hábitos de presión.';
 
   @override
   String get tipsExportFormatTitle =>

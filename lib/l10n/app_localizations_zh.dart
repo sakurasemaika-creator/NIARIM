@@ -1871,7 +1871,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsPressureCurveDesc =>
-      '设置画面中的压感曲线最多可以自由添加10个控制点。如果觉得力度反馈不太合适，可以按照自己的下笔习惯来调整。';
+      '设置画面中的压感曲线可以自由添加控制点。如果觉得力度反馈不太合适，可以按照自己的下笔习惯来调整。';
 
   @override
   String get tipsExportFormatTitle => '根据用途选择导出格式';
@@ -12294,7 +12294,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsPressureCurveDesc =>
-      '設定畫面中的筆壓曲線最多可以自由加入10個控制點。如果覺得力道反應不太合適，可以依自己的下筆習慣來調整。';
+      '設定畫面中的筆壓曲線可以自由加入控制點。如果覺得力道反應不太合適，可以依自己的下筆習慣來調整。';
 
   @override
   String get tipsExportFormatTitle => '依用途選擇匯出格式';

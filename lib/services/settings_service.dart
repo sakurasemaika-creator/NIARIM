@@ -79,6 +79,16 @@ class SettingsService extends ChangeNotifier {
   // Five persistent visual sizes; applies to the toolbar's real hit cells.
   int _toolbarSizeLevel = 3;
   final _toolThickness = <String, double>{};
+  final _toolOpacities = <String, int>{};
+
+  int? toolOpacity(String tool) => _toolOpacities[tool];
+
+  Future<void> rememberToolOpacity(String tool, int value) async {
+    if (value < 0 || value > 100 || _toolOpacities[tool] == value) return;
+    _toolOpacities[tool] = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('tool_opacity_$tool', _toolOpacities[tool]!);
+  }
 
   double? toolThickness(String tool) => _toolThickness[tool];
 
@@ -740,7 +750,7 @@ class SettingsService extends ChangeNotifier {
   /// 筆圧カーブに応じて生の筆圧値（0.0〜1.0）を補正する（
   /// 筆圧カーブはアプリ全体に適用）。弱＝立ち上がりを緩やかに、
   /// 強＝立ち上がりを鋭くする指数カーブ。カスタムのみ、_customPressurePoints
-  /// （最大10点の制御点）を結ぶ折れ線で補間する。
+  /// を結ぶ折れ線で補間する。
   double applyPressureCurve(double rawPressure) {
     final p = rawPressure.clamp(0.0, 1.0);
     if (_penPressureCurve == PenPressureCurve.custom) {
@@ -757,24 +767,29 @@ class SettingsService extends ChangeNotifier {
   }
 
   double _evalCustomCurve(double x) {
-    final pts = _customPressurePoints;
-    for (int i = 0; i < pts.length - 1; i++) {
-      final a = pts[i];
-      final b = pts[i + 1];
-      if (x >= a.$1 && x <= b.$1) {
-        if (b.$1 == a.$1) return a.$2;
-        final t = (x - a.$1) / (b.$1 - a.$1);
-        return a.$2 + (b.$2 - a.$2) * t;
+    final points = _customPressurePoints;
+    if (x <= points.first.$1) return points.first.$2;
+    if (x >= points.last.$1) return points.last.$2;
+    var left = 0;
+    var right = points.length - 1;
+    while (right - left > 1) {
+      final middle = (left + right) ~/ 2;
+      if (x <= points[middle].$1) {
+        right = middle;
+      } else {
+        left = middle;
       }
     }
-    return pts.last.$2;
+    final (x0, y0) = points[left];
+    final (x1, y1) = points[right];
+    final t = (x - x0) / (x1 - x0);
+    return y0 + (y1 - y0) * t;
   }
 
   /// カスタム筆圧カーブの制御点（x=筆圧、y=反映される太さ・不透明度の
-  /// 倍率、いずれも0.0〜1.0）。x昇順に並べ、最大10点まで持てる。
+  /// 倍率、いずれも0.0〜1.0）。x昇順に並べる。yは自由に上げ下げできる。
   /// 先頭（x=0）・末尾（x=1）は常に存在し、xは動かせない
   /// （0〜1全域をカバーするため）。デフォルトは対角線（傾き1）の2点のみ。
-  static const int maxPressurePoints = 10;
   List<(double, double)> _customPressurePoints = const [(0.0, 0.0), (1.0, 1.0)];
   List<(double, double)> get customPressurePoints =>
       List.unmodifiable(_customPressurePoints);
@@ -813,11 +828,7 @@ class SettingsService extends ChangeNotifier {
 
   /// Adds an interior point when there is room between its neighbors.
   Future<void> addCustomPressurePoint(double x, double y) async {
-    if (!x.isFinite ||
-        !y.isFinite ||
-        _customPressurePoints.length >= maxPressurePoints) {
-      return;
-    }
+    if (!x.isFinite || !y.isFinite) return;
     final points = List<(double, double)>.from(_customPressurePoints);
     final next = points.indexWhere((point) => point.$1 > x);
     if (next <= 0 ||
@@ -892,6 +903,16 @@ class SettingsService extends ChangeNotifier {
       final value = prefs.readDouble(key);
       if (value != null && value.isFinite && value > 0) {
         _toolThickness[key.substring(prefix.length)] = value;
+      }
+    }
+    const opacityPrefix = 'tool_opacity_';
+    _toolOpacities.clear();
+    for (final key in prefs.getKeys().where(
+      (key) => key.startsWith(opacityPrefix),
+    )) {
+      final value = prefs.readInt(key);
+      if (value != null && value >= 0 && value <= 100) {
+        _toolOpacities[key.substring(opacityPrefix.length)] = value;
       }
     }
     _defaultFps = prefs.readInt('default_fps') ?? 12;
@@ -1094,12 +1115,18 @@ class SettingsService extends ChangeNotifier {
     final rawPoints = prefs.readStringList('pen_pressure_custom_points');
     if (rawPoints != null && rawPoints.length >= 4 && rawPoints.length.isEven) {
       final values = rawPoints.map((s) => double.tryParse(s)).toList();
-      if (values.every((v) => v != null)) {
+      if (values.every((v) => v != null && v.isFinite && v >= 0 && v <= 1)) {
         final points = <(double, double)>[];
         for (int i = 0; i < values.length; i += 2) {
           points.add((values[i]!, values[i + 1]!));
         }
-        _customPressurePoints = points;
+        final ordered = points.asMap().entries.every(
+          (entry) =>
+              entry.key == 0 || entry.value.$1 > points[entry.key - 1].$1,
+        );
+        if (ordered && points.first.$1 == 0 && points.last.$1 == 1) {
+          _customPressurePoints = points;
+        }
       }
     } else {
       // 旧バージョン（単一exponent値）からの引き継ぎ：以前の指数カーブの

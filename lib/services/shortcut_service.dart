@@ -15,6 +15,7 @@ import '../utils/transfer_merge.dart';
 /// 設定はキャンバス・タイムライン両モードで共通（アプリ全体で1セット）。
 class ShortcutService extends ChangeNotifier {
   static const _prefsKey = 'shortcut_bindings';
+  static const _canvasDefaultsKey = 'shortcut_canvas_view_defaults_added';
 
   final List<ShortcutBinding> _bindings = [];
 
@@ -41,10 +42,14 @@ class ShortcutService extends ChangeNotifier {
         ..._defaultUndoRedoBindings,
         ..._defaultClipboardBindings,
       ]);
+      if (prefs.readBool(_canvasDefaultsKey) != true) {
+        _bindings.add(_defaultCanvasFitBinding);
+      }
       // 保存が無い（初回）・空のときだけ既定を保存する。読めない値・
       // 読めない項目だけの保存は、既定の内容で動かすだけで書き換えない。
       if (raw == null ? !prefs.containsKey(_prefsKey) : raw.isEmpty) {
         await _persist();
+        await prefs.setBool(_canvasDefaultsKey, true);
       }
     } else {
       _bindings.addAll(saved);
@@ -59,9 +64,31 @@ class ShortcutService extends ChangeNotifier {
         }
       }
       // 読めない項目があった保存は、起動では書き換えない。
-      if (added && intact) await _persist();
+      final needsCanvasDefaults = prefs.readBool(_canvasDefaultsKey) != true;
+      if (needsCanvasDefaults &&
+          findConflict(_defaultCanvasFitBinding) == null &&
+          !_bindings.any(
+            (binding) =>
+                binding.id == _defaultCanvasFitBinding.id ||
+                binding.command == ShortcutCommand.canvasFit,
+          )) {
+        _bindings.add(_defaultCanvasFitBinding);
+        added = true;
+      }
+      if (intact) {
+        if (added) await _persist();
+        if (needsCanvasDefaults) await prefs.setBool(_canvasDefaultsKey, true);
+      }
     }
   }
+
+  static final _defaultCanvasFitBinding = ShortcutBinding(
+    id: 'default_canvas_fit',
+    label: 'Fit canvas',
+    keyId: LogicalKeyboardKey.digit0.keyId,
+    control: true,
+    command: ShortcutCommand.canvasFit,
+  );
 
   static final List<ShortcutBinding> _defaultUndoRedoBindings = [
     ShortcutBinding(
@@ -148,6 +175,7 @@ class ShortcutService extends ChangeNotifier {
       for (final binding in [
         ..._defaultUndoRedoBindings,
         ..._defaultClipboardBindings,
+        _defaultCanvasFitBinding,
       ])
         binding.id: jsonEncode(binding.toJson()),
     };

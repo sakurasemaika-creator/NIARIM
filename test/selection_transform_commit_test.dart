@@ -27,7 +27,7 @@ void main() {
   useTemporaryProjectStorage();
 
   testWidgets(
-    'selection reuses source pixels, tracks undo and cancels slider and handle transforms',
+    'selection transforms keep a fixed boundary, track undo and can be reverted',
     (tester) async {
       SharedPreferences.setMockInitialValues({
         firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
@@ -191,26 +191,24 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      await moveX(38);
+      await moveX(8);
       expect(alpha(27, 30), 0);
-      expect(alpha(65, 30), 255);
-      await moveX(38);
-      expect(alpha(65, 30), 0);
+      expect(alpha(35, 30), 255);
+      expect(alpha(41, 38), 0, reason: 'outside the original selection');
+      await moveX(8);
+      expect(alpha(35, 30), 0);
+      expect(alpha(43, 30), 0, reason: 'even the far destination is clipped');
       expect(alpha(80, 70), 255);
       history.undo(projectId: project.id);
       await tester.pumpAndSettle();
-      expect(alpha(65, 30), 255);
+      expect(alpha(35, 30), 255);
       history.redo(projectId: project.id);
       await tester.pumpAndSettle();
-      expect(alpha(65, 30), 0);
+      expect(alpha(35, 30), 0);
 
-      await moveX(-38);
-      expect(
-        alpha(65, 30),
-        255,
-        reason: 'fully off-canvas source remains recoverable',
-      );
-      await moveX(-38);
+      await moveX(-8);
+      expect(alpha(35, 30), 255, reason: 'the clipped source is recoverable');
+      await moveX(-8);
       expect(alpha(27, 30), 255);
       expect(alpha(33, 38), 255);
 
@@ -219,35 +217,29 @@ void main() {
           .first;
       await tester.tap(control);
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), '20');
+      await tester.enterText(find.byType(TextField), '5');
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
-      expect(alpha(47, 30), 255);
-      final handle = await tester.startGesture(
-        at(50, 34),
-        kind: PointerDeviceKind.mouse,
-      );
-      await handle.moveTo(at(50, 46));
-      await tester.pump();
-      await handle.up();
-      await tester.pumpAndSettle();
-      expect(alpha(47, 42), 255);
+      expect(alpha(32, 30), 255);
+      Future<void> moveHandle() async {
+        final handle = await tester.startGesture(
+          at(30, 34),
+          kind: PointerDeviceKind.mouse,
+        );
+        await handle.moveTo(at(30, 40));
+        await tester.pump();
+        await handle.up();
+        await tester.pumpAndSettle();
+      }
+
+      await moveHandle();
+      expect(alpha(32, 42), 255);
+      expect(alpha(38, 44), 0, reason: 'the handle cannot cross the boundary');
       history.undo(projectId: project.id);
       await tester.pumpAndSettle();
-      expect(alpha(47, 30), 255);
-      final handleAfterUndo = await tester.startGesture(
-        at(50, 34),
-        kind: PointerDeviceKind.mouse,
-      );
-      await handleAfterUndo.moveTo(at(50, 46));
-      await tester.pump();
-      await handleAfterUndo.up();
-      await tester.pumpAndSettle();
-      expect(
-        alpha(47, 42),
-        255,
-        reason: 'the hit target follows the restored mask',
-      );
+      expect(alpha(32, 30), 255);
+      await moveHandle();
+      expect(alpha(32, 42), 255);
 
       await pumpRealAsync(tester, const Duration(milliseconds: 240));
       expect(await thumbnailPixels(), isNot(orderedEquals(initialThumbnail)));
@@ -258,7 +250,7 @@ void main() {
       await tester.pumpAndSettle();
       await pumpRealAsync(tester, const Duration(milliseconds: 240));
       expect(await thumbnailPixels(), orderedEquals(initialThumbnail));
-      expect(alpha(47, 42), 0);
+      expect(alpha(32, 42), 0);
       expect(alpha(27, 30), 255);
       expect(alpha(33, 38), 255);
       expect(alpha(80, 70), 255);
@@ -322,8 +314,13 @@ void main() {
         lessThan(expected),
       );
       final warpedMask = await selectionPixels();
+      for (var i = 0; i < width * height; i++) {
+        if (originalMask[i * 4 + 3] != 0) continue;
+        final p = (i ~/ width * TileManager.tileSize + i % width) * 4;
+        expect(warped.sublist(p, p + 4), originalDrawing.sublist(p, p + 4));
+      }
       final warpedDrawing = Uint8List.fromList(warped);
-      expect(warpedMask, isNot(orderedEquals(originalMask)));
+      expect(warpedMask, orderedEquals(originalMask));
       await historyKey(LogicalKeyboardKey.keyZ);
       expect(await selectionPixels(), orderedEquals(originalMask));
       expect(tiles.getTile(key, 0, 0), orderedEquals(originalDrawing));
@@ -336,26 +333,36 @@ void main() {
       await tester.tap(find.text(l10n.canvasShapeRect).hitTestable());
       await tester.pumpAndSettle();
 
-      final rect1 = await tester.startGesture(
-        at(11, 62),
+      final outside = await tester.startGesture(
+        at(46, 61),
         kind: PointerDeviceKind.mouse,
       );
-      await rect1.moveTo(at(34, 81));
+      await outside.moveTo(at(65, 80));
+      await outside.up();
+      await pumpRealAsync(tester, const Duration(milliseconds: 160));
+      expect(history.undoCount, 1, reason: 'outside-only shape is not an edit');
+      expect(tiles.getTile(key, 0, 0), orderedEquals(warpedDrawing));
+
+      final rect1 = await tester.startGesture(
+        at(11, 29),
+        kind: PointerDeviceKind.mouse,
+      );
+      await rect1.moveTo(at(34, 38));
       await rect1.up();
       await pumpRealAsync(tester, const Duration(milliseconds: 160));
       final firstRectangle = Uint8List.fromList(tiles.getTile(key, 0, 0)!);
       expect(firstRectangle, isNot(orderedEquals(warpedDrawing)));
       final undoBeforeSecond = history.undoCount;
       final rect2 = await tester.startGesture(
-        at(46, 61),
+        at(26, 27),
         kind: PointerDeviceKind.mouse,
       );
-      await rect2.moveTo(at(65, 80));
+      await rect2.moveTo(at(45, 37));
       await tester.pump();
       await historyKey(LogicalKeyboardKey.keyZ);
       expect(history.undoCount, undoBeforeSecond);
       expect(tiles.getTile(key, 0, 0), orderedEquals(firstRectangle));
-      await rect2.moveTo(at(71, 86));
+      await rect2.moveTo(at(46, 34));
       await rect2.up();
       await pumpRealAsync(tester, const Duration(milliseconds: 160));
       final bothRectangles = Uint8List.fromList(tiles.getTile(key, 0, 0)!);

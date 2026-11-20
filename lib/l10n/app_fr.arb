@@ -608,7 +608,7 @@
   "tipsBrushFavoriteTitle": "Mettez vos pinceaux favoris en favori pour les retrouver sans chercher",
   "tipsBrushFavoriteDesc": "Touchez l’icône étoile des pinceaux que vous utilisez le plus pour les mettre en favori. L’icône étoile en haut de la liste permet de filtrer pour n’afficher que les favoris, réduisant le temps de recherche. Un pinceau en favori ne peut pas être supprimé par erreur.",
   "tipsPressureCurveTitle": "Ajustez la courbe de pression à votre main",
-  "tipsPressureCurveDesc": "La courbe de pression dans les réglages permet de placer librement jusqu’à 10 points de contrôle. Si la réponse en intensité ne vous convient pas, ajustez-la selon vos propres habitudes de pression.",
+  "tipsPressureCurveDesc": "La courbe de pression dans les réglages permet de placer librement des points de contrôle. Si la réponse en intensité ne vous convient pas, ajustez-la selon vos propres habitudes de pression.",
   "tipsExportFormatTitle": "Choisissez le format d’export selon l’usage",
   "tipsExportFormatDesc": "Le GIF convient pour publier facilement sur les réseaux sociaux, le WebM transparent pour superposer sur une autre vidéo ou garder un fond transparent, et le MP4 pour un usage vidéo classique. Choisir selon l’usage facilite l’équilibre entre taille de fichier et qualité.",
   "tipsGestureShortcutTitle": "Associez un geste aux actions fréquentes",

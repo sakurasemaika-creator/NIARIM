@@ -75,6 +75,32 @@ void main() {
       },
     );
 
+    test(
+      'more than ten points, flat sections and endpoint values persist',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final settings = SettingsService();
+        addTearDown(settings.dispose);
+        await settings.init();
+        await settings.setPenPressureCurve(PenPressureCurve.custom);
+        await settings.moveCustomPressurePoint(0, .5, .8);
+        for (var i = 1; i <= 16; i++) {
+          await settings.addCustomPressurePoint(i / 20, i % 3 == 0 ? .1 : .9);
+        }
+        await settings.moveCustomPressurePoint(17, .5, .2);
+        final restored = SettingsService();
+        addTearDown(restored.dispose);
+        await restored.init();
+        expect(restored.customPressurePoints, settings.customPressurePoints);
+        expect(restored.customPressurePoints, hasLength(18));
+        expect(restored.applyPressureCurve(0), .8);
+        expect(restored.applyPressureCurve(.075), .9);
+        expect(restored.applyPressureCurve(.15), closeTo(.1, 1e-10));
+        expect(restored.applyPressureCurve(.2), closeTo(.9, 1e-10));
+        expect(restored.applyPressureCurve(1), .2);
+      },
+    );
+
     test('previous curves with overlapping points remain editable', () async {
       SharedPreferences.setMockInitialValues({
         'pen_pressure_curve': 'custom',

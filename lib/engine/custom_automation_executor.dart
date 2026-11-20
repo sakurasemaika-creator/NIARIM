@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import '../models/custom_automation.dart';
@@ -39,6 +40,7 @@ class CustomAutomationExecutor {
     required String? currentLayerId,
     required AutomationToolHandler handleCanvasStateCommand,
     GeneratedLayerNamer? layerName,
+    Uint8List? selection,
   }) => projectService.editProjectWithAutomation(
     projectId,
     automation.name,
@@ -53,6 +55,7 @@ class CustomAutomationExecutor {
       currentLayerId: currentLayerId,
       handleCanvasStateCommand: handleCanvasStateCommand,
       layerName: layerName,
+      selection: selection,
     ),
   );
 
@@ -67,6 +70,7 @@ class CustomAutomationExecutor {
     required String? currentLayerId,
     required AutomationToolHandler handleCanvasStateCommand,
     GeneratedLayerNamer? layerName,
+    Uint8List? selection,
   }) async {
     if (!automation.isCanvasOnly) {
       throw const CustomAutomationExecutionException(
@@ -136,6 +140,7 @@ class CustomAutomationExecutor {
                 sourceLayerId: activeLayerId,
                 filter: filter,
                 layerName: layerName,
+                selection: selection,
               );
             case 'canvas.visibleCompositeToNewTop':
               final tm = projectService.tileManagerOf(projectId);
@@ -304,6 +309,7 @@ class CustomAutomationExecutor {
                   frameIndex: frameIndex,
                   layerId: layer.id,
                   grayMode: step.args['grayMode'] == true,
+                  selection: selection,
                 );
               } else {
                 final image = await tm.compositeLayerToImage(key);
@@ -319,6 +325,7 @@ class CustomAutomationExecutor {
                   sceneId: sceneId,
                   frameIndex: frameIndex,
                   layerId: layer.id,
+                  selection: selection,
                   pixels: applyColorTraceAdjust(
                     bytes.buffer.asUint8List(),
                     hueShift: (step.args['hue'] as num?)?.toDouble() ?? -10,

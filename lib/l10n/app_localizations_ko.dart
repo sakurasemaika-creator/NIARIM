@@ -1892,7 +1892,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsPressureCurveDesc =>
-      '설정 화면의 필압 곡선은 최대 10개의 제어점을 자유롭게 찍을 수 있습니다. 강약이 맞지 않는다고 느껴진다면 자신의 필압 습관에 맞춰 조정해 보세요.';
+      '설정 화면의 필압 곡선은 제어점을 자유롭게 찍을 수 있습니다. 강약이 맞지 않는다고 느껴진다면 자신의 필압 습관에 맞춰 조정해 보세요.';
 
   @override
   String get tipsExportFormatTitle => '용도에 맞춰 내보내기 형식을 고르기';

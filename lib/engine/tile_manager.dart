@@ -706,12 +706,20 @@ class TileManager {
 
   /// レイヤーの全ピクセルを、キャンバス全体サイズのRGBA8888バッファで置き換える。
   /// 自動塗りエンジンの結果書き戻しや transformLayer の内部実装で使用する。
-  void replaceLayerPixels(String layerId, Uint8List bytes) {
-    final oldLayerTiles = _tiles[layerId];
+  void replaceLayerPixels(
+    String layerId,
+    Uint8List bytes, {
+    Uint8List? selection,
+  }) {
     final recording = _recordingUndo && layerId == _recordingLayerId;
+    final mask = selection ?? (recording ? _recordingSelection : null);
+    if (mask != null && mask.length != canvasWidth * canvasHeight) return;
+    final oldLayerTiles = _tiles[layerId];
     final newLayerTiles = <String, Uint8List>{};
     for (int ty = 0; ty < tilesY; ty++) {
       for (int tx = 0; tx < tilesX; tx++) {
+        final key = _tileKey(tx, ty);
+        final oldTile = oldLayerTiles?[key];
         final tile = Uint8List(tileSize * tileSize * 4);
         bool hasContent = false;
         final originY = ty * tileSize;
@@ -722,8 +730,19 @@ class TileManager {
           final worldY = originY + y;
           final rowSrc = (worldY * canvasWidth + originX) * 4;
           final rowDst = (y * tileSize) * 4;
-          final byteLen = maxLocalX * 4;
-          tile.setRange(rowDst, rowDst + byteLen, bytes, rowSrc);
+          if (mask == null) {
+            tile.setRange(rowDst, rowDst + maxLocalX * 4, bytes, rowSrc);
+            continue;
+          }
+          for (int x = 0; x < maxLocalX; x++) {
+            final src = rowSrc + x * 4;
+            final dst = rowDst + x * 4;
+            if (mask[src ~/ 4] != 0) {
+              tile.setRange(dst, dst + 4, bytes, src);
+            } else if (oldTile != null) {
+              tile.setRange(dst, dst + 4, oldTile, dst);
+            }
+          }
         }
         for (int i = 3; i < tile.length; i += 4) {
           if (tile[i] != 0) {
@@ -731,18 +750,12 @@ class TileManager {
             break;
           }
         }
-        final key = _tileKey(tx, ty);
-        if (recording) {
-          final oldTile = oldLayerTiles?[key];
-          final changed = hasContent
-              ? (oldTile == null || !_tileBytesEqual(oldTile, tile))
-              : oldTile != null;
-          if (changed) _recordBeforeIfNeeded(layerId, key);
-        }
-        if (hasContent) {
-          newLayerTiles[key] = tile;
-          _dirtyTiles.add('$layerId:$key');
-        }
+        final changed = hasContent
+            ? oldTile == null || !_tileBytesEqual(oldTile, tile)
+            : oldTile != null;
+        if (changed && recording) _recordBeforeIfNeeded(layerId, key);
+        if (hasContent) newLayerTiles[key] = changed ? tile : oldTile!;
+        if (changed) _dirtyTiles.add('$layerId:$key');
       }
     }
     _tiles[layerId] = newLayerTiles;
@@ -995,6 +1008,7 @@ class TileManager {
   /// 不透明度ロックの操作を終えるとき、触れたタイルへロックを実際にかける。
   void _restrictTouchedTiles(String layerId) {
     final layerMap = _tiles.putIfAbsent(layerId, () => {});
+    final unchanged = <String>[];
     for (final entry in _undoBefore.entries) {
       final locked = _restrictedPixels(
         layerMap[entry.key],
@@ -1006,7 +1020,16 @@ class TileManager {
       } else {
         layerMap[entry.key] = locked;
       }
+      final before = entry.value;
+      if (locked == null
+          ? before == null
+          : before != null && _tileBytesEqual(before, locked)) {
+        unchanged.add(entry.key);
+      }
       _dirtyTiles.add('$layerId:${entry.key}');
+    }
+    for (final key in unchanged) {
+      _undoBefore.remove(key);
     }
     if (layerMap.isEmpty) _tiles.remove(layerId);
     _invalidateCache(layerId);

@@ -608,7 +608,7 @@
   "tipsBrushFavoriteTitle": "把常用筆刷加入我的最愛，切換時不用再找",
   "tipsBrushFavoriteDesc": "把常用的筆刷點擊清單中的星形圖示加入收藏。清單頂端的星形圖示可以篩選為只顯示收藏，減少尋找的麻煩。收藏中的筆刷無法被誤刪。",
   "tipsPressureCurveTitle": "把筆壓曲線調整成適合自己的手感",
-  "tipsPressureCurveDesc": "設定畫面中的筆壓曲線最多可以自由加入10個控制點。如果覺得力道反應不太合適，可以依自己的下筆習慣來調整。",
+  "tipsPressureCurveDesc": "設定畫面中的筆壓曲線可以自由加入控制點。如果覺得力道反應不太合適，可以依自己的下筆習慣來調整。",
   "tipsExportFormatTitle": "依用途選擇匯出格式",
   "tipsExportFormatDesc": "想輕鬆發到社群平台時用GIF匯出，想疊加到其他影片上或保留透明背景時用透明WebM，想作為一般影片使用時用MP4匯出。依用途區分使用，更容易在檔案大小與畫質之間取得平衡。",
   "tipsGestureShortcutTitle": "用手勢把常用操作變成一觸即達",

@@ -1967,7 +1967,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsPressureCurveDesc =>
-      'La courbe de pression dans les réglages permet de placer librement jusqu’à 10 points de contrôle. Si la réponse en intensité ne vous convient pas, ajustez-la selon vos propres habitudes de pression.';
+      'La courbe de pression dans les réglages permet de placer librement des points de contrôle. Si la réponse en intensité ne vous convient pas, ajustez-la selon vos propres habitudes de pression.';
 
   @override
   String get tipsExportFormatTitle =>

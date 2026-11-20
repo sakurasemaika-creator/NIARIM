@@ -1026,6 +1026,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
         case ShortcutCommand.paste:
           result[b.activator] = _pasteFromClipboard;
         case ShortcutCommand.toggleLayerPanel:
+        case ShortcutCommand.canvasFit:
+        case ShortcutCommand.canvasActualPixels:
+        case ShortcutCommand.canvasZoomIn:
+        case ShortcutCommand.canvasZoomOut:
+        case ShortcutCommand.canvasRotateLeft:
+        case ShortcutCommand.canvasRotateRight:
+        case ShortcutCommand.canvasResetRotation:
         case null:
           // 素材クリップ（動画・画像・音声）のコピー・切り取り・貼り付けは
           // タイムラインモードでは未対応。キャンバス専用の操作、または

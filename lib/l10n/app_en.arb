@@ -608,7 +608,7 @@
   "tipsBrushFavoriteTitle": "Favorite your go-to brushes to switch without hunting",
   "tipsBrushFavoriteDesc": "Tap the star icon on the brushes you use most to favorite them. The star icon at the top of the list lets you filter down to favorites only, cutting down on how long it takes to find one. Favorited brushes can't be deleted by accident.",
   "tipsPressureCurveTitle": "Tune the pressure curve to match your hand",
-  "tipsPressureCurveDesc": "The pressure curve in settings lets you place up to 10 control points freely. If the strength response doesn't feel right, adjust it to match your own pressure habits.",
+  "tipsPressureCurveDesc": "The pressure curve in settings lets you place control points freely. If the strength response doesn't feel right, adjust it to match your own pressure habits.",
   "tipsExportFormatTitle": "Pick the export format that fits your purpose",
   "tipsExportFormatDesc": "GIF export is great for casual posting to social media, transparent WebM is for layering over other video or keeping the background transparent, and MP4 is for a regular video file. Choosing per use case makes it easier to balance file size against quality.",
   "tipsGestureShortcutTitle": "Bind frequent actions to a gesture",

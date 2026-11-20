@@ -45,6 +45,13 @@ Map<ShortcutCommand, String> shortcutCommandLabels(AppLocalizations l10n) => {
   ShortcutCommand.copy: l10n.shortcutCommandCopy,
   ShortcutCommand.cut: l10n.shortcutCommandCut,
   ShortcutCommand.paste: l10n.shortcutCommandPaste,
+  ShortcutCommand.canvasFit: l10n.pcViewFit,
+  ShortcutCommand.canvasActualPixels: l10n.canvasViewActualPixels,
+  ShortcutCommand.canvasZoomIn: l10n.canvasViewZoomIn,
+  ShortcutCommand.canvasZoomOut: l10n.canvasViewZoomOut,
+  ShortcutCommand.canvasRotateLeft: l10n.canvasViewRotateLeft,
+  ShortcutCommand.canvasRotateRight: l10n.canvasViewRotateRight,
+  ShortcutCommand.canvasResetRotation: l10n.canvasViewResetRotation,
 };
 
 /// 一覧・確認・引き継ぎの知らせに出すショートカット名。

@@ -26,6 +26,7 @@ class CustomAutomationFilterRunner {
     required String sourceLayerId,
     required FilterDef filter,
     GeneratedLayerNamer? layerName,
+    Uint8List? selection,
   }) async {
     model.Layer editableSource() {
       final layer = projectService
@@ -126,6 +127,7 @@ class CustomAutomationFilterRunner {
         pixels: result,
         filter: filter,
         layerName: layerName,
+        selection: selection,
       );
     }
 
@@ -135,7 +137,8 @@ class CustomAutomationFilterRunner {
       frameIndex: frameIndex,
       layerId: sourceLayerId,
       pixels: result,
-      updatedLayer: filter.kind == FilterKind.prism
+      selection: selection,
+      updatedLayer: selection == null && filter.kind == FilterKind.prism
           ? sourceLayer.copyWith(blendMode: model.LayerBlendMode.linearDodge)
           : null,
     );
@@ -188,6 +191,7 @@ class CustomAutomationFilterRunner {
     required Uint8List pixels,
     required FilterDef filter,
     GeneratedLayerNamer? layerName,
+    Uint8List? selection,
   }) {
     final source = projectService
         .layersOf(projectId, sceneId, frameIndex)
@@ -216,7 +220,9 @@ class CustomAutomationFilterRunner {
       frameIndex,
       created.id,
     );
-    projectService.tileManagerOf(projectId).replaceLayerPixels(key, pixels);
+    projectService
+        .tileManagerOf(projectId)
+        .replaceLayerPixels(key, pixels, selection: selection);
     projectService.updateLayer(
       projectId: projectId,
       sceneId: sceneId,

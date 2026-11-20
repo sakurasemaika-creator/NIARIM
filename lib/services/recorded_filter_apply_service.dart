@@ -28,6 +28,7 @@ class RecordedFilterApplyService {
     required int frameIndex,
     required Map<String, Object?> filterSnapshot,
     GeneratedLayerNamer? layerName,
+    Uint8List? selection,
   }) async {
     final filter = parseSnapshot(filterSnapshot);
     final tileManager = projectService.tileManagerOf(projectId);
@@ -138,6 +139,7 @@ class RecordedFilterApplyService {
         filter: filter,
         pixels: result,
         layerName: layerName,
+        selection: selection,
       );
     }
 
@@ -147,7 +149,8 @@ class RecordedFilterApplyService {
       frameIndex: frameIndex,
       layerId: layerId,
       pixels: result,
-      updatedLayer: filter.kind == FilterKind.prism
+      selection: selection,
+      updatedLayer: selection == null && filter.kind == FilterKind.prism
           ? sourceLayer.copyWith(blendMode: model.LayerBlendMode.linearDodge)
           : null,
     );
@@ -169,6 +172,7 @@ class RecordedFilterApplyService {
     required FilterDef filter,
     required Uint8List pixels,
     GeneratedLayerNamer? layerName,
+    Uint8List? selection,
   }) {
     final tileManager = projectService.tileManagerOf(projectId);
     final before = projectService.layersOf(projectId, sceneId, frameIndex);
@@ -190,7 +194,7 @@ class RecordedFilterApplyService {
       frameIndex,
       created.id,
     );
-    tileManager.replaceLayerPixels(key, pixels);
+    tileManager.replaceLayerPixels(key, pixels, selection: selection);
     projectService.updateLayer(
       projectId: projectId,
       sceneId: sceneId,

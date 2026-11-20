@@ -22,7 +22,7 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('実CanvasAreaで矩形選択→移動→再移動→Undo/Redoし、選択外全画素と選択追従を確認する', (
+  testWidgets('実CanvasAreaで矩形選択→移動→再移動→Undo/Redoし、選択外全画素と固定された選択範囲を確認する', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(480, 360);
@@ -122,8 +122,8 @@ void main() {
     expect(undo.undoCount, 0, reason: 'the drag is a preview until release');
     await move1Gesture.up();
     await tester.pump();
-    // 元図形と重ならない移動先末端を観測し、ロールバックを成功扱いしない。
-    await _waitForPixelAlpha(tester, tm, key, 57, 47, 255);
+    // 選択範囲内の移動先を観測し、ロールバックを成功扱いしない。
+    await _waitForPixelAlpha(tester, tm, key, 46, 35, 255);
     expect(tester.takeException(), isNull);
     final moved1 = _readCanvas(tm, key, 96, 80);
     final expected1 = _translatedSelection(
@@ -148,37 +148,37 @@ void main() {
       () => _save(moved1, 96, 80, '${out.path}/selection_real_moved1.png'),
     );
 
-    // 3) 選択マスク自体も移動先へ追従していることを、移動先をもう一度掴んで確認。
+    // 3) 固定した選択範囲の中央を再び掴んで、同じ境界の内側のみ更新する。
     final move2Gesture = await tester.startGesture(
-      at(const Offset(60, 50)),
+      at(const Offset(30, 28)),
       kind: PointerDeviceKind.touch,
     );
     await tester.pump();
     expect(_readCanvas(tm, key, 96, 80), orderedEquals(moved1));
     expect(undo.undoCount, 1);
-    await move2Gesture.moveTo(at(const Offset(65, 50)));
+    await move2Gesture.moveTo(at(const Offset(35, 28)));
     await tester.pump(const Duration(milliseconds: 40));
     await move2Gesture.up();
     await tester.pump();
-    await _waitForPixelAlpha(tester, tm, key, 62, 47, 255);
+    await _waitForPixelAlpha(tester, tm, key, 46, 35, 255);
     expect(tester.takeException(), isNull);
     debugPrint('B20 stage 6: second drag completed');
     final moved2 = _readCanvas(tm, key, 96, 80);
     final expected2 = _translatedSelection(
-      moved1,
+      before,
       96,
       80,
-      left: 32,
-      top: 24,
-      right: 64,
-      bottom: 56,
-      dx: 5,
-      dy: 0,
+      left: 16,
+      top: 14,
+      right: 48,
+      bottom: 46,
+      dx: 21,
+      dy: 10,
     );
     expect(
       moved2,
       orderedEquals(expected2),
-      reason: '1回目の移動後も選択マスクが新位置へ追従し、2回目の移動対象になること',
+      reason: '2回目の操作でも元の矩形の外は全画素変わらないこと',
     );
     debugPrint('B20 stage 7: second move verified');
     await tester.runAsync(
@@ -365,7 +365,9 @@ Uint8List _translatedSelection(
   for (final p in selected) {
     final nx = p.$1 + dx;
     final ny = p.$2 + dy;
-    if (nx < 0 || ny < 0 || nx >= w || ny >= h || p.$6 == 0) continue;
+    if (nx < left || ny < top || nx >= right || ny >= bottom || p.$6 == 0) {
+      continue;
+    }
     final i = (ny * w + nx) * 4;
     _sourceOver(out, i, p.$3, p.$4, p.$5, p.$6);
   }

@@ -710,7 +710,7 @@ class _FilterPanelState extends State<FilterPanel> {
           background: _previewBackgroundBytes,
           frameIndex: widget.frameIndex,
         ),
-        filter.kind == FilterKind.lensDistortion ? null : selection,
+        selection,
       ));
       if (!mounted) return;
     }
@@ -1379,8 +1379,7 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
               const SizedBox(height: 6),
             ],
-            if (widget.selectionMask != null &&
-                current.kind != FilterKind.lensDistortion)
+            if (widget.selectionMask != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
@@ -3479,6 +3478,9 @@ class _FilterPanelState extends State<FilterPanel> {
       frameIndex,
       layerId,
     );
+    final mask = widget.selectionMask;
+    final selection = _canvasSelectionCoverage(tm);
+    if (mask != null && selection == null) return null;
     final image = await tm.compositeLayerToImage(key);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     image.dispose();
@@ -3486,7 +3488,6 @@ class _FilterPanelState extends State<FilterPanel> {
     final data = byteData.buffer.asUint8List();
 
     Uint8List result;
-    final selection = _canvasSelectionCoverage(tm);
     final canUseManualAutoLineart =
         filter.kind == FilterKind.autoLineart &&
         _autoLineartManualEdited &&
@@ -3584,15 +3585,14 @@ class _FilterPanelState extends State<FilterPanel> {
     }
 
     // A canvas selection keeps the filter inside it: a new layer is empty
-    // outside it, a layer changed in place keeps its pixels there. The
-    // glasses filter bends its own lens area instead.
-    if (selection != null && filter.kind != FilterKind.lensDistortion) {
+    // outside it, a layer changed in place keeps its pixels there.
+    if (selection != null) {
       result = filterGeneratesLayer(filter.kind)
           ? clearOutsideSelection(result, selection)
           : restrictToSelection(data, result, selection);
     }
 
-    if (!mounted) return null;
+    if (!mounted || !identical(mask, widget.selectionMask)) return null;
     final layer = _filterLayer(ps, frameIndex, layerId);
     if (layer == null) return null;
     if (layer.isLocked) throw const _FilterLayerLocked();
@@ -3639,7 +3639,8 @@ class _FilterPanelState extends State<FilterPanel> {
       frameIndex: frameIndex,
       layerId: layerId,
       pixels: result,
-      updatedLayer: _isPrism(filter)
+      selection: mask,
+      updatedLayer: selection == null && _isPrism(filter)
           ? layer.copyWith(blendMode: model.LayerBlendMode.linearDodge)
           : null,
     );

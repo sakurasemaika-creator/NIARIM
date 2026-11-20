@@ -14,6 +14,13 @@ enum ShortcutCommand {
   copy,
   cut,
   paste,
+  canvasFit,
+  canvasActualPixels,
+  canvasZoomIn,
+  canvasZoomOut,
+  canvasRotateLeft,
+  canvasRotateRight,
+  canvasResetRotation,
 }
 
 /// キーボード・左手デバイス用ショートカットの1件分の割り当て。

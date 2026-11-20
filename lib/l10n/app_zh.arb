@@ -608,7 +608,7 @@
   "tipsBrushFavoriteTitle": "把常用笔刷加入收藏，切换时不用再找",
   "tipsBrushFavoriteDesc": "把常用的笔刷点击列表中的星形图标加入收藏。列表顶部的星形图标可以筛选为只显示收藏，减少查找的麻烦。收藏中的笔刷无法被误删。",
   "tipsPressureCurveTitle": "把压感曲线调整成适合自己的手感",
-  "tipsPressureCurveDesc": "设置画面中的压感曲线最多可以自由添加10个控制点。如果觉得力度反馈不太合适，可以按照自己的下笔习惯来调整。",
+  "tipsPressureCurveDesc": "设置画面中的压感曲线可以自由添加控制点。如果觉得力度反馈不太合适，可以按照自己的下笔习惯来调整。",
   "tipsExportFormatTitle": "根据用途选择导出格式",
   "tipsExportFormatDesc": "想轻松发到社交平台时用GIF导出，想叠加到其他视频上或保留透明背景时用透明WebM，想作为普通视频使用时用MP4导出。按用途区分使用，更容易在文件大小和画质之间取得平衡。",
   "tipsGestureShortcutTitle": "用手势把常用操作变成一触即达",
