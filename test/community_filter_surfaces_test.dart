@@ -238,7 +238,7 @@ void main() {
     final l10n = lookupAppLocalizations(const Locale('ja'));
     final prefs = await SharedPreferences.getInstance();
     final discard = find.widgetWithText(
-      TextButton,
+      FilledButton,
       l10n.communityPostDiscardPending,
     );
     await tester.ensureVisible(discard);
@@ -323,9 +323,17 @@ void main() {
       expect(tester.widget<SwitchListTile>(aiSwitch).value, isTrue);
 
       // Changing it while the upload is retained is remembered too.
+      expect(tester.widget<SwitchListTile>(aiSwitch).onChanged, isNotNull);
+      final prefs = await SharedPreferences.getInstance();
       await tester.tap(aiSwitch);
       await tester.pumpAndSettle();
-      final prefs = await SharedPreferences.getInstance();
+      expect(tester.widget<SwitchListTile>(aiSwitch).value, isFalse);
+      // The switch callback persists asynchronously; wait for the plugin
+      // write to finish before checking the durable preference.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await prefs.reload();
       expect(
         prefs.getBool(
           'community.pendingUpload.containsGenerativeAiImageOrVideo',
