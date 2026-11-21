@@ -438,7 +438,10 @@ class _HomeScreenState extends State<HomeScreen>
       return;
     }
     final canGoUp = _projectScrollController.positions.any(
-      (p) => p.hasPixels && p.pixels > p.minScrollExtent + 0.5,
+      (p) =>
+          p.hasPixels &&
+          p.hasContentDimensions &&
+          p.pixels > p.minScrollExtent + 0.5,
     );
     if (canGoUp != _projectsCanGoUp) {
       setState(() => _projectsCanGoUp = canGoUp);
