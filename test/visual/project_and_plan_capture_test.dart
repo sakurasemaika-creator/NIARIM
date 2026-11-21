@@ -10,6 +10,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/screens/project/new_project_screen.dart';
 import 'package:niarim/widgets/frame_preview_background.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,7 +20,7 @@ import '../helpers/load_app_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  for (final width in [390, 1280]) {
+  for (final width in [320, 390, 1280]) {
     testWidgets('project creation and plan comparison at width $width', (
       tester,
     ) async {
@@ -84,6 +85,27 @@ void main() {
       await capture('home');
       await tester.tap(create);
       await tester.pumpAndSettle();
+      await capture('new-project');
+      if (width <= 390) {
+        tester.platformDispatcher.textScaleFactorTestValue = 2;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await tester.pumpAndSettle();
+        await capture('new-project-text-2x');
+        final createLabel = AppLocalizations.of(
+          tester.element(find.byType(NewProjectScreen)),
+        )!.commonCreate;
+        final createButton = find.widgetWithText(FilledButton, createLabel);
+        await tester.ensureVisible(createButton);
+        await tester.pumpAndSettle();
+        expect(
+          createButton.hitTestable(),
+          findsOneWidget,
+          reason: '$width / large-text create action',
+        );
+        expect(tester.takeException(), isNull, reason: '$width / large-text');
+        tester.platformDispatcher.clearTextScaleFactorTestValue();
+        await tester.pumpAndSettle();
+      }
       final transparent = find.byKey(const ValueKey<Color>(Colors.transparent));
       await tester.ensureVisible(transparent);
       await tester.tap(transparent);
@@ -97,10 +119,11 @@ void main() {
       appRouter.go('/premium');
       await tester.pumpAndSettle();
       await capture('premium');
-      if (width == 390) {
+      if (width <= 390) {
         tester.platformDispatcher.textScaleFactorTestValue = 2;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
         await tester.pumpAndSettle();
+        await capture('premium-text-2x');
       }
       final feature = find.text(words.premiumFeatureWatermark);
       await tester.ensureVisible(feature);

@@ -97,6 +97,27 @@ void main() {
               ),
             );
             await tester.pumpAndSettle();
+            final resizeHandle = find.byKey(
+              const Key('communityWorkDetailPreviewResizeHandle'),
+            );
+            expect(resizeHandle, findsOneWidget, reason: where);
+            final resizeTarget = tester.getSize(resizeHandle);
+            expect(
+              resizeTarget.width,
+              greaterThanOrEqualTo(48),
+              reason: '$where: preview resize target width',
+            );
+            expect(
+              resizeTarget.height,
+              greaterThanOrEqualTo(48),
+              reason: '$where: preview resize target height',
+            );
+            expect(
+              find.byTooltip(l.communityFloatingPreviewResizeTooltip),
+              findsOneWidget,
+              reason: '$where: preview resize tooltip',
+            );
+            expect(resizeHandle.hitTestable(), findsOneWidget, reason: where);
             for (final label in [
               l.communityWorkDetailViewOnYoutube,
               bookmarked

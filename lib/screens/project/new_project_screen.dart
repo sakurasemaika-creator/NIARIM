@@ -557,7 +557,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 Text(
                   l10n.newProjectMaxEdgeHint,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
@@ -637,7 +637,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               // 比率プレビュー：プリセットタップ・カスタム数値変更のどちらでも
               // 即座に連動する。
               SizedBox(
-                height: 90,
+                height: 112,
                 child: Center(
                   child: AspectRatio(
                     aspectRatio: _exportWidth / _exportHeight,
@@ -783,7 +783,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       Text(
                         _formatDuration(l10n, _durationSeconds),
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 12,
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -850,7 +850,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     '${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}',
                   ),
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),

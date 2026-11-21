@@ -643,22 +643,34 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                     onRetry: _checkPlaybackStatus,
                   ),
                 ),
-              GestureDetector(
-                onVerticalDragUpdate: (d) => setState(() {
-                  _previewHeight = (previewHeight + d.delta.dy).clamp(
-                    _minPreviewHeight,
-                    maxPreviewHeight,
-                  );
-                }),
-                child: Container(
-                  height: 20,
-                  alignment: Alignment.center,
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: scheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(2),
+              Semantics(
+                label: l10n.communityFloatingPreviewResizeTooltip,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.resizeUpDown,
+                  child: Tooltip(
+                    message: l10n.communityFloatingPreviewResizeTooltip,
+                    child: GestureDetector(
+                      key: const Key('communityWorkDetailPreviewResizeHandle'),
+                      behavior: HitTestBehavior.opaque,
+                      onVerticalDragUpdate: (d) => setState(() {
+                        _previewHeight = (previewHeight + d.delta.dy).clamp(
+                          _minPreviewHeight,
+                          maxPreviewHeight,
+                        );
+                      }),
+                      child: Container(
+                        width: double.infinity,
+                        height: 48,
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 48,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: scheme.outlineVariant,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -1083,7 +1095,7 @@ class _NiarimVisibilitySwitch extends StatelessWidget {
                       style: localizedHeadingStyle(
                         context,
                         const TextStyle(
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1093,9 +1105,9 @@ class _NiarimVisibilitySwitch extends StatelessWidget {
                       isPublished
                           ? l10n.communityVisibilityPublishedDesc
                           : l10n.communityVisibilityHiddenDesc,
-                      style: TextStyle(
-                        fontSize: 11,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: scheme.onSurfaceVariant,
+                        height: 1.4,
                       ),
                     ),
                   ],
@@ -1149,7 +1161,7 @@ class _AiImageVideoSwitch extends StatelessWidget {
                       style: localizedHeadingStyle(
                         context,
                         const TextStyle(
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1157,9 +1169,9 @@ class _AiImageVideoSwitch extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       l10n.communityContainsGenerativeAiImageVideoHelp,
-                      style: TextStyle(
-                        fontSize: 11,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: scheme.onSurfaceVariant,
+                        height: 1.4,
                       ),
                     ),
                   ],

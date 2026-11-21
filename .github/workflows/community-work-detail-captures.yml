@@ -1,0 +1,42 @@
+name: Community work detail responsive captures
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/screens/community/community_work_detail_screen.dart'
+      - 'test/community_work_detail_actions_fit_test.dart'
+      - 'test/visual/community_work_detail_capture_test.dart'
+      - '.github/workflows/community-work-detail-captures.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter gen-l10n
+      - name: Analyze the detail screen and capture test
+        run: >-
+          flutter analyze --no-pub
+          lib/screens/community/community_work_detail_screen.dart
+          test/community_work_detail_actions_fit_test.dart
+          test/visual/community_work_detail_capture_test.dart
+      - name: Capture Japanese, French, Chinese and desktop layouts
+        run: flutter test --no-pub --reporter expanded test/visual/community_work_detail_capture_test.dart
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: community-work-detail-responsive-captures
+          path: build/community-work-detail-captures/*.png
+          if-no-files-found: warn
+          retention-days: 14
