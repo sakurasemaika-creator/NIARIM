@@ -1149,7 +1149,7 @@ class _ToolbarPreview extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final iconScale = SettingsService.toolbarIconScaleForLevel(sizeLevel);
     return Container(
-      height: 48 * (iconScale > 1 ? iconScale : 1),
+      height: 48,
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8),
@@ -1169,8 +1169,8 @@ class _ToolbarPreview extends StatelessWidget {
                 children: [
                   for (final id in visible)
                     SizedBox(
-                      width: 40 * iconScale,
-                      height: 40 * iconScale,
+                      width: 48,
+                      height: 48,
                       child: Center(
                         child: Tooltip(
                           message: id.label(l10n),
