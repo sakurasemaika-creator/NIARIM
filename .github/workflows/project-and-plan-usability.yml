@@ -8,6 +8,7 @@ on:
       - 'lib/widgets/korean_words_text.dart'
       - 'lib/widgets/button_label_room.dart'
       - 'test/korean_words_text_long_latin_test.dart'
+      - 'test/home_a003_visual_findings_test.dart'
       - 'lib/screens/premium/premium_screen.dart'
       - 'lib/widgets/empty_state_placeholder.dart'
       - 'lib/widgets/background_color_picker.dart'
