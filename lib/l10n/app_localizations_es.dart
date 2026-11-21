@@ -7212,7 +7212,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get customAutomationTitle => 'Automatizaciones';
+  String get customAutomationTitle => 'Macros';
 
   @override
   String get customAutomationAdd => 'Añadir automatización';
