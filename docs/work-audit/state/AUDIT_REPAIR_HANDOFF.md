@@ -3302,3 +3302,25 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - **DISC438・440・441・460・549・551・560**。Web `e2f50df`。モバイルメニューへTabを閉じ込めて背景のスクロールを止め、Escで開閉ボタンへフォーカスを戻す。PCのナビが折り返したときはヘッダーの高さを内容に合わせる。FAQのCTAは公開設定に従い「配信情報」を表示。英語はWork Plazaに統一。作品広場の動的カード一覧の透明化と、アカウント削除画面の淡い背景に載る差し色を修正。ブラウザーによるレイアウト・コントラスト・実キーの確認はCIの結果待ち。
 - **DISC562**。Webのdev_branchスモークに全 `tests/*.test.mjs` とモバイルメニュー回帰を追加。Node 36件、オパール価格と日本語見出しの契約チェックはローカルで成功。Prettierは129ファイルが未整形。一括整形の試行で用意済みのストア文言・オパール・書体・キャプチャの契約テストが失敗したため、整形の項目は未完。
 - **継続確認**。DISC548の最新全体CIとWebのブラウザー回帰、DISC561のCLS測定が残る。DISC541（本人のフォロワー一覧と規約）・DISC557（公開する正規ドメイン）および法務確認が必要なDISC563は判断待ち。今回の5つの判断から追加の公開・法務上の判断は推定していない。
+
+## 2026-11-21 GPT追記 — 最新CIの追跡・DISC557 owner decision確認
+
+### App / dev_branch
+
+- 2026-11-21時点で、前回成功Run 44842831973は 21da274a099b4596182b2312e8b20c61a5d116ad を対象とする。現在の製品HEADではない。以後15コミット進んだ 96b5d2ddc11da89cdf38ddb51483f095b4ef197b までの変更を含めて再検証する必要がある。
+- フルテストWorkflowのpush対象が限定的で、最近の lib/・test/ 変更を拾わない構成だったため、lib/**・test/**・tool/**・integration_test/**・依存関係・l10n・Android関連を対象に追加した。製品コードの変更ではなく、今後の回帰検証漏れを防ぐCI設定変更。
+- 現在の8分割フルテストRun 44849144613は 381b2936d70c9700f4d865fcdb616714eee1e02c を対象に起動したが、確認時点では各jobがqueued。これが成功するまでは最新コードのCI合格と扱わない。
+- 前回Runの22 skippedはartifact内ログで合計を再確認。shard 4が15、shard 5が5、shard 0が2。expanded reporterのログだけではskip対象と理由を確定できなかったため、4つの関連テストファイルをJSON reporterで再実行する診断Workflowを追加した。Run 44850417055は確認時点でqueued。skipを失敗とは扱わず、理由が分かるまで未分類のまま残す。
+- 最新App HEADは 4c5906193d19c21cfd78368079c3faceec116051（診断Workflow追加後）。正式監査の状態ファイル・coverageの判定値は変更していない。
+
+### Web / dev_branch — 本番操作の停止
+
+- Web側の今回の差分は .github/workflows/home-width-sweep.yml と tests/home-cls-audit.mjs のみ。比較元 7b228a5 からの3コミットで public/**・src/** は変更していない。CLS診断は英語1440px/1280px、仏語1440px、日本語1440pxを低速ネットワーク・キャッシュ無効で測定し、CLS 0.1以下を予算とする。
+- push後、CloudflareのWorker niarim-web のproduction deployment履歴に、2026-11-21 01:22〜01:24 UTCの4件のwrangler deploymentが記録された。各deployment履歴のversion配分は100%。今回のpushがproduction build/deploymentを誘発した可能性が高い。ロールバックは行っていない。
+- production反映は既存の作業承認に含まれていないため、明示的な追加承認があるまでWebへのpush・deploy・rollbackを行わない。読み取り専用の確認のみ継続する。
+
+### Owner decisionの再取得
+
+- DISC557：2026-11-13の明示決定は、NIARIMサイトの正式なサブドメインを niarim.miranima-studio.com とし、canonicalは https://niarim.miranima-studio.com/ を維持すること。ルートの miranima-studio.com をサイトURLとして追加しない。現在確認したWebトップのHTMLはcanonicalとog:urlに niarim-web.niarim.workers.dev を使用しており、owner decisionと不一致。コード修正は必要だが、上記の理由でWeb pushを停止中。
+- DISC541：過去の会話から確認できた明示決定は「電話番号認証でユーザーを減らしたくない」のみ。フォロワー一覧の公開範囲やポリシー文言を決めた証拠は見つからないため、未決のまま維持する。
+- DISC563：ポリシー第7条6項の本人操作による削除・削除後の記録について、法務判断待ち。GPT側で内容を推定して確定しない。
