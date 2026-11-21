@@ -205,6 +205,16 @@ void main() {
     expect(find.text(plain.title), findsOneWidget);
   });
 
+  Future<void> pumpPostFixture(WidgetTester tester) async {
+    await tester.pumpWidget(postFixture());
+    // CommunityPostScreen restores the pending-upload record asynchronously
+    // from SharedPreferences. Let that read complete before locating controls.
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 30)),
+    );
+    await tester.pumpAndSettle();
+  }
+
   Widget postFixture() => MultiProvider(
     providers: [
       ChangeNotifierProvider<CommunityService>(
@@ -233,8 +243,7 @@ void main() {
       videoKey: 'abcde123456',
       titleKey: 'Pending artwork title',
     });
-    await tester.pumpWidget(postFixture());
-    await tester.pumpAndSettle();
+    await pumpPostFixture(tester);
     final l10n = lookupAppLocalizations(const Locale('ja'));
     final prefs = await SharedPreferences.getInstance();
     final discard = find.widgetWithText(
@@ -271,8 +280,7 @@ void main() {
   testWidgets('YouTube privacy defaults to unlisted and changes by tap', (
     tester,
   ) async {
-    await tester.pumpWidget(postFixture());
-    await tester.pumpAndSettle();
+    await pumpPostFixture(tester);
     final group = find.byType(RadioGroup<String>);
     expect(tester.widget<RadioGroup<String>>(group).groupValue, 'unlisted');
     for (final (key, value) in [
@@ -297,8 +305,7 @@ void main() {
         'community.pendingUpload.youtubePrivacyStatus': 'public',
         'community.pendingUpload.containsGenerativeAiImageOrVideo': true,
       });
-      await tester.pumpWidget(postFixture());
-      await tester.pumpAndSettle();
+      await pumpPostFixture(tester);
       final privacy = find.byType(RadioGroup<String>);
       final unlisted = find.byKey(const Key('communityPostYouTubeUnlisted'));
       expect(tester.widget<RadioGroup<String>>(privacy).groupValue, 'public');
