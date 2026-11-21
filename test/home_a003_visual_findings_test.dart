@@ -572,10 +572,13 @@ void main() {
     final paragraph = _paragraph(tester, rowText);
     final lines = ParagraphLines(paragraph);
     expect(lines.lines.length, lessThanOrEqualTo(2));
+    final tile = tester.widget<ListTile>(row);
+    expect(tile.trailing, isNull);
+    expect(tile.subtitle, isA<Column>());
     final actions = tester.widget<CollectionActionRow>(
       find.byType(CollectionActionRow),
     );
-    expect(actions.direction, Axis.vertical);
+    expect(actions.direction, Axis.horizontal);
     expect(lines.visible.replaceAll(RegExp('[\\u200B\\u2060]'), ''), name);
     expect(lines.charsOutsideWidth(), isEmpty);
     expect(lines.lineEdgeViolations(), isEmpty);
@@ -612,6 +615,8 @@ void main() {
     expect(row, findsOneWidget);
     final paragraph = _paragraph(tester, rowText);
     final lines = ParagraphLines(paragraph);
+    final tile = tester.widget<ListTile>(row);
+    expect(tile.trailing, isA<CollectionActionRow>());
     final actions = tester.widget<CollectionActionRow>(
       find.byType(CollectionActionRow),
     );
