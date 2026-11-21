@@ -3443,3 +3443,16 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - コミット：修正 `de4efb27`、回帰 `4ac1e079`。
 - CI：専用のCommunity verification Run `44881223069` とFlutter regression Run `44881226017` は確認時点でqueued/pending。最新HEAD `886ff269` のFlutter regression Run `44881246086` もpending。成功扱いにはしない。
 - 追加制約：NIARIM-webはこの作業では変更していない。Cloudflare読み取りで2026-11-21 07:25:06 UTCに `wrangler` 由来の新しいデプロイ（version `6735f180-3e51-4e2d-9d5c-2483847c0340`、traffic 100%）を確認。Webの `dev_branch` HEADは `a42ba227`。このデプロイは本作業セッションから実行しておらず、Web側の追加push・deploy・rollbackは停止継続。
+
+
+### 2026-11-21 GPT追記 — 最新HEAD回帰ゲートと残Discoveryの状態
+
+- 最新App `dev_branch` HEAD：`9fe876ccac57295089d616c8b779ffc614b9f19c`。
+- Flutter complete regression Run `44881480066` は同HEADを対象にpending。確認時点でjobs未生成。成功とは扱わない。先行Run `44881394744`（38f3f66）、`44881420898`（407c174）、`44881458325`（5d70dd6）は後続pushでcancelled。最新HEADのRunが終わるまで追加の製品コードpushを控える。
+- CI concurrency：一度 `queue: max` にして旧HEADのRunを大量に保留させたが、最新HEADだけを合格判定すればよい監査用途には不適切と判断。GitHubの既定のsingle pendingに戻し、`cancel-in-progress: false` で実行中のRunは維持し、古いpendingだけを最新へ置き換える。ワークフローに意図をコメントとして明記。
+- DISC145：Unicode Latin/結合文字/数字のgrapheme単位折り返し、複製印付き名の回帰、仏語Storyboards・200%・太字の再現テストを追加。CI・実機確認待ち。
+- DISC155：13系統の既存回帰と長文処理を再確認。仏語「Automatisations」と西語「Automatizaciones」は、キャンバス編集メニューで利用可能幅より単語自体が長いケースとしてテストログ上に残る。単語内改行・翻訳短縮・専用の文字サイズ調整のどれを採るかは所有者判断待ち。文言を独断で変更しない。
+- DISC189：仏語の「Revenir sans sauvegarde manuelle」への短縮と7言語のダイアログ回帰が既存実装として存在。最新全体CIで再確認待ち。
+- DISC190相当の永久削除確認ラベル：`trashConfirmLabelText` を `KoreanWordsText` にし、長いラテン文字列の折り返しと元の読み上げラベルを検査する回帰を追加済み。最新全体CI待ち。
+- DISC537/538/548/564〜566：移行重複の識別、作品広場戻り時のプレビュー遮蔽、選択件数・テキスト検索、空表示スラバー、全選択時のキャンバス枠、保存日時の語分割に対する修正・回帰が現HEADに含まれる。最新全体CI待ち。DISC538はプレビューを閉じてから起動画面へ戻り、作成ボタンを押す統合テストを追加。
+- Web：`NIARIM-web/dev_branch` HEAD `a42ba22715f5270cc17a5015e268483e88479d04`。Cloudflareに2026-11-21 07:25:06 UTC、wrangler由来のversion `6735f180-3e51-4e2d-9d5c-2483847c0340`、traffic 100%のdeploymentが記録されている。本作業セッションではWebを変更・デプロイしていない。既存の停止判断どおりWebのpush/deploy/rollbackを行わない。
