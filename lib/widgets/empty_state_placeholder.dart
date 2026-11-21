@@ -7,7 +7,7 @@ import '../config/accent_text_theme.dart';
 import '../utils/line_break.dart';
 
 /// Centers an empty state in the space after its header. When the contents
-/// need more room, the outer scroll view can scroll through the full height.
+/// need more room, the remaining viewport scrolls without moving the header.
 class EmptyStateSliver extends StatelessWidget {
   const EmptyStateSliver({
     super.key,
