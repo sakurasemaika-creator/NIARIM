@@ -206,7 +206,7 @@ void main() {
       final displayed = paragraph.text!.toPlainText(
         includeSemanticsLabels: false,
       );
-      expect(displayed, contains('\\u200B'));
+      expect(displayed, contains('\u200B'));
       expect(displayed, contains('copy'));
       expect(displayed, contains('2'));
       expect(paragraph.text!.semanticsLabel, name);
@@ -223,5 +223,4 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-
 }
