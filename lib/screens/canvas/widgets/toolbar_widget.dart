@@ -209,46 +209,48 @@ class ToolbarWidget extends StatelessWidget {
                 SnackBar(content: Text(l10n.toolbarStampColorLockedSnackbar)),
               )
             : onColorTap,
-        child: SizedBox(
-          width: 48,
-          height: 48,
-          child: Center(
-            child: Transform.scale(
-              scale: iconScale,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: currentColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: outlineColor, width: 2),
-                    ),
-                  ),
-                  if (isStampSelected)
+        child: Stack(
+          alignment: Alignment.center,
+          fit: StackFit.expand,
+          children: [
+            Center(
+              child: Transform.scale(
+                scale: iconScale,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
                     Container(
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
+                        color: currentColor,
                         shape: BoxShape.circle,
                         border: Border.all(color: outlineColor, width: 2),
                       ),
-                      child: Icon(
-                        Icons.block,
-                        color: ThemeService.activeColorScheme.error,
-                        size: 20,
-                        shadows: CanvasIconButton.foregroundShadows(
-                          Theme.of(context).colorScheme.error,
-                          Theme.of(context).colorScheme,
+                    ),
+                    if (isStampSelected)
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: outlineColor, width: 2),
+                        ),
+                        child: Icon(
+                          Icons.block,
+                          color: ThemeService.activeColorScheme.error,
+                          size: 20,
+                          shadows: CanvasIconButton.foregroundShadows(
+                            Theme.of(context).colorScheme.error,
+                            Theme.of(context).colorScheme,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
       _borderedIconButton(
