@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/help/help_screen.dart';
+import 'package:niarim/screens/help/guide_hub_screen.dart';
+import 'package:niarim/screens/tips/tips_screen.dart';
 
 /// A screen's help button opens Help on its own topic. The topic is an
 /// internal Japanese key, so it is not put in the search box: the box stays
@@ -141,6 +143,54 @@ void main() {
       expect(tester.widget<TextField>(field).focusNode!.hasFocus, isTrue);
       expect(find.byKey(const Key('helpTutorialButton')), findsOneWidget);
       expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'switching between Tips and Help preserves the query and open topic in each tab',
+    (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          locale: Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: GuideHubScreen(),
+        ),
+      );
+      final words = AppLocalizations.of(
+        tester.element(find.byType(GuideHubScreen)),
+      )!;
+      final helpSearch = find.descendant(
+        of: find.byType(HelpScreen),
+        matching: find.byType(TextField),
+      );
+      final tipsSearch = find.descendant(
+        of: find.byType(TipsScreen),
+        matching: find.byType(TextField),
+      );
+      final tipsTab = find.widgetWithText(Tab, words.tipsScreenTitle);
+      final helpTab = find.widgetWithText(Tab, words.helpScreenTitle);
+      await tester.enterText(helpSearch, words.helpPressureCurveTitle);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(ExpansionTile, words.helpPressureCurveTitle),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(tipsTab);
+      await tester.pumpAndSettle();
+      await tester.enterText(tipsSearch, 'レイヤー');
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pumpAndSettle();
+      await tester.tap(helpTab);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(helpSearch).controller!.text,
+        words.helpPressureCurveTitle,
+      );
+      expect(find.text(words.helpPressureCurveDesc), findsOneWidget);
+      await tester.tap(tipsTab);
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(tipsSearch).controller!.text, 'レイヤー');
     },
   );
 

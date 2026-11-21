@@ -25,7 +25,11 @@ class HelpScreen extends StatefulWidget {
   State<HelpScreen> createState() => _HelpScreenState();
 }
 
-class _HelpScreenState extends State<HelpScreen> {
+class _HelpScreenState extends State<HelpScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   final _searchController = TextEditingController();
   final _searchFocus = FocusNode();
   final _resultsScroll = ScrollController(keepScrollOffset: false);
@@ -653,6 +657,7 @@ class _HelpScreenState extends State<HelpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final l10n = AppLocalizations.of(context)!;
     final searchLabelStyle = TextStyle(
       color: Theme.of(context).colorScheme.onSurfaceVariant,

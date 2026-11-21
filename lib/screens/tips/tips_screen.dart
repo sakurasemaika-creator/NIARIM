@@ -39,7 +39,11 @@ List<(String title, String description)> allTipEntries(AppLocalizations l10n) {
   ).expand((c) => c.tips).map((t) => (t.title, t.description)).toList();
 }
 
-class _TipsScreenState extends State<TipsScreen> {
+class _TipsScreenState extends State<TipsScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   final _searchController = TextEditingController();
   final _searchFocus = FocusNode();
   final _resultsScroll = ScrollController(keepScrollOffset: false);
@@ -81,6 +85,7 @@ class _TipsScreenState extends State<TipsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final categories = _buildCategories(l10n)
