@@ -5,6 +5,8 @@ on:
     branches: [dev_branch]
     paths:
       - 'lib/screens/community/community_work_detail_screen.dart'
+      - 'lib/screens/community/widgets/community_work_counts.dart'
+      - 'test/community_work_counts_layout_test.dart'
       - 'test/community_work_detail_actions_fit_test.dart'
       - 'test/visual/community_work_detail_capture_test.dart'
       - '.github/workflows/community-work-detail-captures.yml'
@@ -31,8 +33,11 @@ jobs:
           lib/screens/community/community_work_detail_screen.dart
           test/community_work_detail_actions_fit_test.dart
           test/visual/community_work_detail_capture_test.dart
+          test/community_work_counts_layout_test.dart
       - name: Capture Japanese, French, Chinese and desktop layouts
         run: flutter test --no-pub --reporter expanded test/visual/community_work_detail_capture_test.dart
+      - name: Verify localized work-count grouping
+        run: flutter test --no-pub --reporter expanded test/community_work_counts_layout_test.dart
       - uses: actions/upload-artifact@v4
         if: always()
         with:
