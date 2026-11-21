@@ -34,7 +34,6 @@ class EmptyStateSliver extends StatelessWidget {
           constraints.maxHeight - clearance,
         );
         return SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
             padding: EdgeInsets.only(bottom: clearance),
             child: ConstrainedBox(
