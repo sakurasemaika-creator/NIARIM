@@ -128,6 +128,25 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('section spacing adapts to narrow phones without changing '
+      'regular phone spacing', (tester) async {
+    await open(tester);
+    Finder sectionGaps(double height) => find.byWidgetPredicate(
+      (widget) => widget is SizedBox && widget.height == height,
+    );
+
+    tester.view.physicalSize = const Size(320, 640);
+    await tester.pumpAndSettle();
+    expect(sectionGaps(20), findsNWidgets(6));
+    expect(sectionGaps(24), findsNothing);
+
+    tester.view.physicalSize = const Size(390, 844);
+    await tester.pumpAndSettle();
+    expect(sectionGaps(20), findsNothing);
+    expect(sectionGaps(24), findsNWidgets(6));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('saving a custom size: no blank names, Enter saves, the '
       'screen keeps working', (tester) async {
     final settings = await open(tester);
