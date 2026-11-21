@@ -861,6 +861,7 @@ class ProjectListWidget extends StatelessWidget {
         folder.name,
         copyMarks: copyMarkParts(folder.name),
         keepJapaneseLineStarts: true,
+        breakLongLatinWords: true,
         style: const TextStyle(
           fontWeight: FontWeight.w600,
           height: kWrappedNameLineHeight,
