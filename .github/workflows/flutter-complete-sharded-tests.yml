@@ -63,7 +63,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: niarim-full-shards-${{ github.ref }}-${{ github.sha }}
+  group: niarim-full-shards-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   analyze:

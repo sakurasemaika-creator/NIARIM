@@ -499,7 +499,8 @@ void main() {
       final expected = switch (scenario) {
         'success' => l10n.timelineAutofillCompleteSnackbar(3),
         'unreadable frame' =>
-          '${l10n.timelineAutofillFailedFrames(1)} ${l10n.timelineAutofillFileError}',
+          '${l10n.timelineAutofillFailedFrames(1)} '
+          '${l10n.timelineAutofillFileError}',
         _ => l10n.timelineAutofillBatchCancelled,
       };
       final notice = find.text(expected);
