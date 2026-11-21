@@ -398,8 +398,8 @@ void main() {
   });
 
   // 起動画面へ戻る矢印は左下の浮かぶボタンになり、上のバーの左には無い。
-  // 上のバーの左端の部品（題・検索の種類の切り替え・検索欄）は、どの幅でも
-  // 画面の端から12px離す（2026-11-21の最新レイアウト基準）。
+  // Projectsタブの題・検索種別切替は小画面で12px、他タブの検索欄は
+  // 16pxを保つ。タブごとのAppBar titleSpacingが混ざらないことを確認する。
   testWidgets('the top bar starts 12px from the edge on small phones', (
     tester,
   ) async {
