@@ -854,7 +854,7 @@ class ProjectListWidget extends StatelessWidget {
         if (_searchLocation(context, folder.parentFolderId)
             case final location?)
           AppLocalizations.of(context)!.projectListInFolder(location),
-      ].join('\\n'),
+      ].join('\n'),
       when: folder.createdAt,
       localeName: AppLocalizations.of(context)!.localeName,
     );
