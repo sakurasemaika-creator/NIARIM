@@ -245,11 +245,17 @@ void main() {
     WidgetTester tester,
     Finder target,
   ) async {
-    await Scrollable.ensureVisible(
-      tester.element(target),
-      alignment: 0.5,
+    final viewport = tester.renderObject<RenderBox>(
+      find.byType(Viewport).first,
     );
+    await tester.ensureVisible(target);
     await tester.pumpAndSettle();
+    final targetBox = tester.renderObject<RenderBox>(target);
+    debugPrint(
+      'post-form hit-test viewport=${tester.view.physicalSize} '
+      'viewportSize=${viewport.size} '
+      'targetRect=${targetBox.localToGlobal(Offset.zero) & targetBox.size}',
+    );
   }
 
   testWidgets('discard confirmation preserves a pending upload on cancel', (
@@ -265,7 +271,7 @@ void main() {
     final l10n = lookupAppLocalizations(const Locale('ja'));
     final prefs = await SharedPreferences.getInstance();
     final discard = find.widgetWithText(
-      FilledButton,
+      TextButton,
       l10n.communityPostDiscardPending,
     );
     await revealForTap(tester, discard);
