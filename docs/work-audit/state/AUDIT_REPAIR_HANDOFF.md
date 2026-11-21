@@ -3470,3 +3470,11 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
   - Project DetailのtapAtは現行テストでawait済み。これにより旧Guarded function conflictの直接原因は除去されている。
 - 最新App HEAD：`e62f3ac66d3932c89e47fdc55b73784703f22a31`。Flutter regression Run `44881977745` はpending。Community filters Run `44881977706`、Premium lock Run `44881975048`、Filter capture matrix Run `44881975074`、Audit policy guard Run `44881977844` はqueued。まだいずれも成功判定しない。
 - 旧Runの失敗を現行HEADの失敗として扱わず、上記Runで再検証する。追加の製品コード変更はテスト結果を確認してから行う。
+
+
+### 2026-11-21 GPT追記 — 最新の監査ゲート失敗の原因と修正
+
+- Audit policy guard Run `44882138875` は、`docs/work-audit/state/AUDIT_REPAIR_HANDOFF.md` が変更されたpushのコミットメッセージに `[audit-state]` または `[audit-policy-approved]` が付いていなかったため失敗。ポリシー本文の不正変更ではなく、監査状態ファイルの変更理由を示すコミットタグ不足。
+- Community filters verification Run `44881977706` は `test/community_filter_surfaces_test.dart` の投稿画面テスト3件が失敗。ログでは `CommunityPostScreen._restorePendingUpload()` のSharedPreferences非同期復元完了前にテストがUI要素を検索・操作していた。破棄ボタンがまだ存在せず、公開/限定公開ラジオのタップも実際の画面に届かず、保留中の公開設定が未復元のまま判定されていた。
+- 対応：投稿画面の共通テストfixture起動処理で、SharedPreferencesの復元処理完了を待ってからpumpAndSettleし、破棄・公開設定・AI開示の各テストを同じ初期化順に統一する。
+- 検証状態：修正後のCommunity filters専用Runと最新HEADのFlutter回帰CIを待つ。未実行・未成功のテストを完了扱いにしない。
