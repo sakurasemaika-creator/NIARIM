@@ -9,6 +9,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,7 @@ void main() {
       });
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(pathChannel, (call) async => temp.path);
+      SharedPreferences.setMockInitialValues(<String, Object>{});
 
       final providers = (await tester.runAsync(buildAppProviders))!;
       final router = GoRouter(
