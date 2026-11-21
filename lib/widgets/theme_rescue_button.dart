@@ -182,7 +182,6 @@ class ThemeRescueButton extends StatelessWidget {
           ),
         ),
       ),
-    ),
     );
   }
 }
