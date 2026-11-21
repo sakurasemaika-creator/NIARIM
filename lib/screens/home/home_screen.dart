@@ -165,7 +165,6 @@ class _ClipboardNoticeTextState extends State<_ClipboardNoticeText> {
   @override
   void initState() {
     super.initState();
-    _measureAfterFrame();
   }
 
   @override
