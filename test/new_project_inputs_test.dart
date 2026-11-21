@@ -132,9 +132,7 @@ void main() {
       'regular phone spacing', (tester) async {
     await open(tester);
     List<double?> sectionGapHeights() => List.generate(6, (index) {
-      final gap = find.byKey(
-        ValueKey('new-project-section-gap-${index + 1}'),
-      );
+      final gap = find.byKey(ValueKey('new-project-section-gap-${index + 1}'));
       expect(gap, findsOneWidget);
       return tester.widget<SizedBox>(gap).height;
     });

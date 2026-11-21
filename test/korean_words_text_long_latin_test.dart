@@ -93,11 +93,7 @@ void main() {
             final where = '${locale.toLanguageTag()} ${width}px x$scale';
             expect(displayed, contains('\u200B'), reason: where);
             expect(_semanticsLabel(paragraph.text), _longName, reason: where);
-            expect(
-              _lineCount(paragraph),
-              greaterThan(1),
-              reason: where,
-            );
+            expect(_lineCount(paragraph), greaterThan(1), reason: where);
             expect(
               paragraph.size.width,
               lessThanOrEqualTo(width + 0.5),
@@ -126,10 +122,7 @@ void main() {
       const MaterialApp(
         home: SizedBox(
           width: 320,
-          child: KoreanWordsText(
-            'My Folder',
-            breakLongLatinWords: true,
-          ),
+          child: KoreanWordsText('My Folder', breakLongLatinWords: true),
         ),
       ),
     );
@@ -164,10 +157,7 @@ void main() {
                   name,
                   breakLongLatinWords: true,
                   keepJapaneseLineStarts: true,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -217,10 +207,7 @@ void main() {
                   copyMarks: ['(copy 2)'],
                   breakLongLatinWords: true,
                   keepJapaneseLineStarts: true,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),

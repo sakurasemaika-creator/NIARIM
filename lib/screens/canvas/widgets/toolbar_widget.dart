@@ -314,11 +314,7 @@ class ToolbarWidget extends StatelessWidget {
         if (identical(item, spacer))
           spacer
         else
-          SizedBox(
-            width: 48,
-            height: 48,
-            child: Center(child: item),
-          ),
+          SizedBox(width: 48, height: 48, child: Center(child: item)),
     ];
     return Container(
       height: vertical ? null : 48,

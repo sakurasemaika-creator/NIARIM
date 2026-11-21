@@ -341,10 +341,10 @@ void main() {
     }
 
     Future<void> confirm() async {
-        final previousCount = api.redemptions.length;
+      final previousCount = api.redemptions.length;
       await tester.tap(redeem);
       await tester.pumpAndSettle();
-        expect(api.redemptions.length, previousCount);
+      expect(api.redemptions.length, previousCount);
       await tester.tap(
         find.descendant(
           of: find.byType(AlertDialog),
@@ -392,7 +392,7 @@ void main() {
     expect(api.balance, 47840);
     expect(premium.hasCoinPremium, isTrue);
     await tester.pumpWidget(const SizedBox.shrink());
-      premium.dispose();
+    premium.dispose();
   });
 
   testWidgets(

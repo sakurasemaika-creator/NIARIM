@@ -40,9 +40,9 @@ Future<void> _captureProjectDetail(
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
   final directory = Directory('build/project-detail-ui-captures')
     ..createSync(recursive: true);
-  File('${directory.path}/$name.png').writeAsBytesSync(
-    bytes!.buffer.asUint8List(),
-  );
+  File(
+    '${directory.path}/$name.png',
+  ).writeAsBytesSync(bytes!.buffer.asUint8List());
   image.dispose();
 }
 
@@ -144,14 +144,9 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final providers = (await tester.runAsync(buildAppProviders))!;
-    final app = MultiProvider(
-      providers: providers,
-      child: const NiarimApp(),
-    );
+    final app = MultiProvider(providers: providers, child: const NiarimApp());
     await tester.pumpWidget(
-      captureKey == null
-          ? app
-          : RepaintBoundary(key: captureKey, child: app),
+      captureKey == null ? app : RepaintBoundary(key: captureKey, child: app),
     );
     await settle(tester);
     final context = tester.element(find.byType(Scaffold).first);

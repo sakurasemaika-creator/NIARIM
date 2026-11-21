@@ -33,9 +33,7 @@ class TipsScreen extends StatefulWidget {
 /// 10秒おきにランダム表示するTips用に、全カテゴリのTipsをタイトル・説明の
 /// ペアへ平坦化して返す。Tips画面本体（[_TipsScreenState._buildCategories]）
 /// と同じ一覧を参照するため、内容を追加・変更してもここでの二重管理は不要。
-List<(TipTopic, String, String)> allTipTopicEntries(
-  AppLocalizations l10n,
-) {
+List<(TipTopic, String, String)> allTipTopicEntries(AppLocalizations l10n) {
   return _buildTipCategories(l10n)
       .expand((category) => category.tips)
       .map((tip) => (tip.topic, tip.title, tip.description))
@@ -43,9 +41,7 @@ List<(TipTopic, String, String)> allTipTopicEntries(
 }
 
 List<(String title, String description)> allTipEntries(AppLocalizations l10n) {
-  return allTipTopicEntries(l10n)
-      .map((entry) => (entry.$2, entry.$3))
-      .toList();
+  return allTipTopicEntries(l10n).map((entry) => (entry.$2, entry.$3)).toList();
 }
 
 class _TipsScreenState extends State<TipsScreen>
@@ -720,10 +716,7 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
   /// A screenshot and the explanation that belongs to it form one page.
   /// Split at sentence boundaries first, then at clause/word boundaries only
   /// when a topic has more screenshots than complete sentences.
-  static List<String> _splitDescriptionToPageCount(
-    String text,
-    int pageCount,
-  ) {
+  static List<String> _splitDescriptionToPageCount(String text, int pageCount) {
     if (pageCount <= 1) return [text];
     if (text.trim().isEmpty) return List<String>.filled(pageCount, '');
 
@@ -737,10 +730,14 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     if (paragraphs.length == pageCount) return paragraphs;
     var segments = <String>[];
     for (var index = 0; index < paragraphs.length; index++) {
-      final pieces = _splitAt(
-        paragraphs[index],
-        const <int>{0x3002, 0xFF01, 0xFF1F, 0x21, 0x3F, 0x2E},
-      );
+      final pieces = _splitAt(paragraphs[index], const <int>{
+        0x3002,
+        0xFF01,
+        0xFF1F,
+        0x21,
+        0x3F,
+        0x2E,
+      });
       if (index > 0 && pieces.isNotEmpty) {
         pieces[0] = '\n${pieces[0]}';
       }
@@ -750,18 +747,15 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     if (segments.length < pageCount) {
       final clauses = <String>[
         for (final segment in segments)
-          ..._splitAt(
-            segment,
-            const <int>{
-              0x3001,
-              0xFF0C,
-              0x2C,
-              0x3B,
-              0xFF1B,
-              0x3A,
-              0xFF1A,
-            },
-          ),
+          ..._splitAt(segment, const <int>{
+            0x3001,
+            0xFF0C,
+            0x2C,
+            0x3B,
+            0xFF1B,
+            0x3A,
+            0xFF1A,
+          }),
       ];
       if (clauses.length > segments.length) segments = clauses;
     }
@@ -971,9 +965,7 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
               steps: widget.tip.topic.steps(l10n, index),
               height: dialogHeight * .60,
               isComparison: widget.tip.topic.isComparison,
-              captures: capturePages.isEmpty
-                  ? const []
-                  : [capturePages[index]],
+              captures: capturePages.isEmpty ? const [] : [capturePages[index]],
             ),
             const SizedBox(height: 12),
             Text(
@@ -1017,7 +1009,8 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                           child: PageView.builder(
                             controller: _pageController,
                             itemCount: totalPages,
-                            onPageChanged: (page) => setState(() => _page = page),
+                            onPageChanged: (page) =>
+                                setState(() => _page = page),
                             itemBuilder: (_, index) => buildPage(index),
                           ),
                         ),
@@ -1064,7 +1057,9 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                             else
                               Text(
                                 '${_page + 1} / $totalPages',
-                                style: TextStyle(color: scheme.onSurfaceVariant),
+                                style: TextStyle(
+                                  color: scheme.onSurfaceVariant,
+                                ),
                               ),
                             IconButton(
                               key: const ValueKey('tipNextTextPage'),
@@ -1098,6 +1093,7 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     );
   }
 }
+
 class _TipCategory {
   final String title;
   final IconData icon;

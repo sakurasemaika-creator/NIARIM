@@ -304,7 +304,11 @@ void main() {
     // widgetWithText can miss the action even though its label is rendered.
     // Locate the visible label itself and tap through its button ancestor.
     final openWorks = find.text(l10n.exportOpenWorks);
-    expect(openWorks, findsOneWidget, reason: 'Export completion must offer Works');
+    expect(
+      openWorks,
+      findsOneWidget,
+      reason: 'Export completion must offer Works',
+    );
     await tester.ensureVisible(openWorks);
     await tester.tap(openWorks);
     await tester.runAsync(() async {

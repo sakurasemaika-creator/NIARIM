@@ -74,8 +74,7 @@ void main() {
     image.dispose();
   }
 
-  String compact(String value) =>
-      value.replaceAll(RegExp(r'\s+'), '');
+  String compact(String value) => value.replaceAll(RegExp(r'\s+'), '');
 
   Future<void> captureTopicPages(
     WidgetTester tester, {

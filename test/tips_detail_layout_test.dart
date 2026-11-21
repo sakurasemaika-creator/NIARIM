@@ -17,10 +17,9 @@ void main() {
   const japanese = Locale('ja');
   final l10n = lookupAppLocalizations(japanese);
   final dialog = find.byType(Dialog);
-  final diagram = find.descendant(
-    of: dialog,
-    matching: find.byType(TipDiagram),
-  ).first;
+  final diagram = find
+      .descendant(of: dialog, matching: find.byType(TipDiagram))
+      .first;
 
   Future<void> mount(
     WidgetTester tester,
@@ -67,10 +66,12 @@ void main() {
     await loadAppFonts(tester);
     await mount(tester, const Size(390, 844));
     await open(tester, l10n.tipsClipDuplicateTitle);
-    final title = find.descendant(
-      of: dialog,
-      matching: find.text(l10n.tipsClipDuplicateTitle),
-    ).first;
+    final title = find
+        .descendant(
+          of: dialog,
+          matching: find.text(l10n.tipsClipDuplicateTitle),
+        )
+        .first;
     final paragraph = tester.renderObject<RenderParagraph>(
       find.descendant(of: title, matching: find.byType(RichText)),
     );
@@ -85,10 +86,12 @@ void main() {
     await loadAppFonts(tester);
     await mount(tester, const Size(320, 720), scale: 2, locale: french);
     await open(tester, words.tipsClipDuplicateTitle);
-    final title = find.descendant(
-      of: dialog,
-      matching: find.text(words.tipsClipDuplicateTitle),
-    ).first;
+    final title = find
+        .descendant(
+          of: dialog,
+          matching: find.text(words.tipsClipDuplicateTitle),
+        )
+        .first;
     expect(tester.getRect(title).bottom, lessThan(tester.getRect(diagram).top));
     final illustration = find.descendant(
       of: diagram,
@@ -127,89 +130,94 @@ void main() {
     },
   );
 
-  testWidgets('arrow keys and swipes advance the complete image-and-text page', (
-    tester,
-  ) async {
-    await mount(tester, const Size(1280, 800));
-    await open(tester, l10n.tipsClipDuplicateTitle);
+  testWidgets(
+    'arrow keys and swipes advance the complete image-and-text page',
+    (tester) async {
+      await mount(tester, const Size(1280, 800));
+      await open(tester, l10n.tipsClipDuplicateTitle);
 
-    Finder page(String topic, int index) =>
-        find.byKey(ValueKey('tip-page-$topic-$index'));
-    Finder viewer(String topic, int index) => find.descendant(
-      of: page(topic, index),
-      matching: find.byType(TipScreenCaptures),
-    );
-    String description(String topic, int index) => tester
-        .widget<Text>(
-          find.descendant(
-            of: page(topic, index),
-            matching: find.byKey(const ValueKey('tipPageDescription')),
-          ),
-        )
-        .data!;
+      Finder page(String topic, int index) =>
+          find.byKey(ValueKey('tip-page-$topic-$index'));
+      Finder viewer(String topic, int index) => find.descendant(
+        of: page(topic, index),
+        matching: find.byType(TipScreenCaptures),
+      );
+      String description(String topic, int index) => tester
+          .widget<Text>(
+            find.descendant(
+              of: page(topic, index),
+              matching: find.byKey(const ValueKey('tipPageDescription')),
+            ),
+          )
+          .data!;
 
-    final firstAsset = tester
-        .widget<TipScreenCaptures>(viewer('clipDuplicate', 0))
-        .frames
-        .single
-        .asset;
-    final firstText = description('clipDuplicate', 0);
-    expect(firstAsset, endsWith('video-open.webp'));
-
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-    await tester.pumpAndSettle();
-    final secondAsset = tester
-        .widget<TipScreenCaptures>(viewer('clipDuplicate', 1))
-        .frames
-        .single
-        .asset;
-    final secondText = description('clipDuplicate', 1);
-    expect(secondAsset, endsWith('video-duplicate-control.webp'));
-    expect(secondText, isNot(firstText));
-
-    await tester.drag(find.byType(PageView), const Offset(-420, 0));
-    await tester.pumpAndSettle();
-    final thirdAsset = tester
-        .widget<TipScreenCaptures>(viewer('clipDuplicate', 2))
-        .frames
-        .single
-        .asset;
-    final thirdText = description('clipDuplicate', 2);
-    expect(thirdAsset, endsWith('video-duplicated.webp'));
-    expect(thirdText, isNot(secondText));
-
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
-    await tester.pumpAndSettle();
-    expect(
-      tester.widget<TipScreenCaptures>(viewer('clipDuplicate', 1)).frames.single.asset,
-      endsWith('video-duplicate-control.webp'),
-    );
-
-    await close(tester);
-    await open(tester, l10n.tipsAutofillManualPartColorTitle);
-    expect(
-      tester
-          .widget<TipScreenCaptures>(viewer('autofillManualPartColor', 0))
+      final firstAsset = tester
+          .widget<TipScreenCaptures>(viewer('clipDuplicate', 0))
           .frames
           .single
-          .asset,
-      endsWith('normal-layer-above.webp'),
-    );
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-    await tester.pumpAndSettle();
-    expect(
-      tester
-          .widget<TipScreenCaptures>(viewer('autofillManualPartColor', 1))
+          .asset;
+      final firstText = description('clipDuplicate', 0);
+      expect(firstAsset, endsWith('video-open.webp'));
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+      final secondAsset = tester
+          .widget<TipScreenCaptures>(viewer('clipDuplicate', 1))
           .frames
           .single
-          .asset,
-      endsWith('autofill-lineart-menu.webp'),
-    );
-    expect(
-      description('autofillManualPartColor', 1),
-      contains('自動塗り用線画レイヤー'),
-    );
-  });
+          .asset;
+      final secondText = description('clipDuplicate', 1);
+      expect(secondAsset, endsWith('video-duplicate-control.webp'));
+      expect(secondText, isNot(firstText));
+
+      await tester.drag(find.byType(PageView), const Offset(-420, 0));
+      await tester.pumpAndSettle();
+      final thirdAsset = tester
+          .widget<TipScreenCaptures>(viewer('clipDuplicate', 2))
+          .frames
+          .single
+          .asset;
+      final thirdText = description('clipDuplicate', 2);
+      expect(thirdAsset, endsWith('video-duplicated.webp'));
+      expect(thirdText, isNot(secondText));
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<TipScreenCaptures>(viewer('clipDuplicate', 1))
+            .frames
+            .single
+            .asset,
+        endsWith('video-duplicate-control.webp'),
+      );
+
+      await close(tester);
+      await open(tester, l10n.tipsAutofillManualPartColorTitle);
+      expect(
+        tester
+            .widget<TipScreenCaptures>(viewer('autofillManualPartColor', 0))
+            .frames
+            .single
+            .asset,
+        endsWith('normal-layer-above.webp'),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<TipScreenCaptures>(viewer('autofillManualPartColor', 1))
+            .frames
+            .single
+            .asset,
+        endsWith('autofill-lineart-menu.webp'),
+      );
+      expect(
+        description('autofillManualPartColor', 1),
+        contains('自動塗り用線画レイヤー'),
+      );
+    },
+  );
 
   testWidgets('save captures and their explanations turn as one page', (
     tester,
@@ -264,9 +272,7 @@ void main() {
       }
     }
 
-    final finalPage = find.byKey(
-      const ValueKey('tip-page-saveSlotAutoSave-3'),
-    );
+    final finalPage = find.byKey(const ValueKey('tip-page-saveSlotAutoSave-3'));
     await tester.tap(
       find.descendant(
         of: finalPage,
@@ -277,7 +283,10 @@ void main() {
     expect(find.byType(InteractiveViewer), findsOneWidget);
     final zoom = find.byType(Dialog).last;
     expect(
-      find.descendant(of: zoom, matching: find.text(l10n.timelinePreviewPlaceholder)),
+      find.descendant(
+        of: zoom,
+        matching: find.text(l10n.timelinePreviewPlaceholder),
+      ),
       findsOneWidget,
     );
     await tester.tap(

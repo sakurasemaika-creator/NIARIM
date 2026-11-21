@@ -81,10 +81,7 @@ void main() {
       );
       const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
-            pathChannel,
-            (call) async => tempDir.path,
-          );
+          .setMockMethodCallHandler(pathChannel, (call) async => tempDir.path);
       addTearDown(() {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(pathChannel, null);
@@ -119,10 +116,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(SplashScreen), findsOneWidget);
       expect(find.byKey(const Key('communityPreviewClose')), findsNothing);
-      expect(
-        communityContext.read<CommunityPreviewService>().work,
-        isNull,
-      );
+      expect(communityContext.read<CommunityPreviewService>().work, isNull);
 
       // The splash button's push future must have completed and released its
       // re-entry guard after the plaza returned to the launch screen.
@@ -135,5 +129,4 @@ void main() {
       await tester.pumpAndSettle();
     },
   );
-
 }

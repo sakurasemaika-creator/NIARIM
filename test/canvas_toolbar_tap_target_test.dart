@@ -34,15 +34,12 @@ void main() {
           await tester.pumpWidget(
             MultiProvider(
               providers: [
-                ChangeNotifierProvider<SettingsService>.value(
-                  value: settings,
-                ),
+                ChangeNotifierProvider<SettingsService>.value(value: settings),
                 ChangeNotifierProvider<ThemeService>.value(value: themes),
               ],
               child: MaterialApp(
                 locale: const Locale('ja'),
-                localizationsDelegates:
-                    AppLocalizations.localizationsDelegates,
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
                 supportedLocales: AppLocalizations.supportedLocales,
                 theme: themes.themeDataFor(const Locale('ja')),
                 home: Scaffold(
@@ -84,10 +81,12 @@ void main() {
           );
           expect(buttons, findsWidgets, reason: scope);
           for (final button in buttons.evaluate()) {
-            final ink = find.descendant(
-              of: find.byWidget(button.widget),
-              matching: find.byType(InkResponse),
-            ).first;
+            final ink = find
+                .descendant(
+                  of: find.byWidget(button.widget),
+                  matching: find.byType(InkResponse),
+                )
+                .first;
             final size = tester.getSize(ink);
             expect(
               size.width,

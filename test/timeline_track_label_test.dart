@@ -137,7 +137,8 @@ void main() {
         expect(
           paragraph.size.height,
           lessThan(20),
-          reason: '$languageCode ${logicalWidth.toInt()}dp: track label wrapped',
+          reason:
+              '$languageCode ${logicalWidth.toInt()}dp: track label wrapped',
         );
         final intrinsic = paragraph.getMaxIntrinsicWidth(double.infinity);
         expect(

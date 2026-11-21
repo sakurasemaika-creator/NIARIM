@@ -249,14 +249,8 @@ void main() {
     );
   }
 
-  Future<void> revealForTap(
-    WidgetTester tester,
-    Finder target,
-  ) async {
-    await Scrollable.ensureVisible(
-      tester.element(target),
-      alignment: 0.5,
-    );
+  Future<void> revealForTap(WidgetTester tester, Finder target) async {
+    await Scrollable.ensureVisible(tester.element(target), alignment: 0.5);
     await tester.pumpAndSettle();
     expect(target, findsOneWidget);
   }

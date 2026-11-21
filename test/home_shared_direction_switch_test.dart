@@ -356,7 +356,11 @@ void main() {
           if (title.evaluate().isNotEmpty) {
             final paragraph = tester.renderObject<RenderParagraph>(title);
             expect(paragraph.didExceedMaxLines, isFalse, reason: where);
-            expect(tester.getRect(title).right, lessThanOrEqualTo(width), reason: where);
+            expect(
+              tester.getRect(title).right,
+              lessThanOrEqualTo(width),
+              reason: where,
+            );
           }
           expect(tester.takeException(), isNull, reason: where);
         }

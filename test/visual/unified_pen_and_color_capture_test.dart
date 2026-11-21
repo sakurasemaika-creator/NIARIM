@@ -232,9 +232,7 @@ void main() {
       await navigate('/canvas/${demo.id}');
       // The mobile toolbar is horizontally scrollable; the swatch may sit
       // beyond the initial viewport. Reveal it before tapping, as a user would.
-      final canvasColorSwatch = find.byKey(
-        const ValueKey('canvasColorSwatch'),
-      );
+      final canvasColorSwatch = find.byKey(const ValueKey('canvasColorSwatch'));
       await tester.ensureVisible(canvasColorSwatch);
       await settle();
       await tester.tap(canvasColorSwatch);

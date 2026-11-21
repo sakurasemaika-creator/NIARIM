@@ -52,9 +52,9 @@ Future<void> _captureTimelinePreview(
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
   final directory = Directory('build/timeline-preview-ui-captures')
     ..createSync(recursive: true);
-  File('${directory.path}/$name.png').writeAsBytesSync(
-    bytes!.buffer.asUint8List(),
-  );
+  File(
+    '${directory.path}/$name.png',
+  ).writeAsBytesSync(bytes!.buffer.asUint8List());
   image.dispose();
 }
 
@@ -129,9 +129,7 @@ void main() {
       child: const NiarimApp(),
     );
     await tester.pumpWidget(
-      captureKey == null
-          ? app
-          : RepaintBoundary(key: captureKey, child: app),
+      captureKey == null ? app : RepaintBoundary(key: captureKey, child: app),
     );
     await tester.pump(const Duration(milliseconds: 300));
     final ps = tester
@@ -500,7 +498,7 @@ void main() {
         'success' => l10n.timelineAutofillCompleteSnackbar(3),
         'unreadable frame' =>
           '${l10n.timelineAutofillFailedFrames(1)} '
-          '${l10n.timelineAutofillFileError}',
+              '${l10n.timelineAutofillFileError}',
         _ => l10n.timelineAutofillBatchCancelled,
       };
       final notice = find.text(expected);
