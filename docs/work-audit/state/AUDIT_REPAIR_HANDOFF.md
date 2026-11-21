@@ -3368,3 +3368,10 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - コミット：`e05ee743`（UI）・`58b34a63`（回帰test）・`b7ec0307`（実行時paddingのconst誤りを修正）。`dev_branch` の最新HEADは `b7ec0307` 時点で確認。
 - 検証：コードとテストの反映は確認したが、Flutter regression suite Run `44878826662` はpending、Audit policy guard Run `44878826660` はqueued。CI成功・実画面合格とはまだ扱わない。
 - DISC564は、空表示のスクロール修正とこのヘッダー調整の両方についてCI待ち。正式完了にはしない。
+
+
+### 2026-11-21 GPT追記 — 所有者指示のタイムライン余白照合
+
+- `lib/screens/timeline/timeline_screen.dart` の最新 `_previewControlInset` は8px。`test/requested_ui_all_captures_test.dart` もフレーム数表示の左・下端を8pxで検査しており、値は一致していたため、期待値を別の数値へ変更しない。
+- 所有者指示に合わせ、`CLAUDE.md` に8pxを明記し、同テストの8px定数が製品側の `_previewControlInset` と一致する旨をコメントに追加。コミット `8133ee64`・`3d147be7`。
+- 反映後の静的な値の照合：製品8px／キャプチャtest 8px／CLAUDE.md 8pxで一致。Flutter regression suite Run `44879055833` はqueuedで、実行結果は未取得。
