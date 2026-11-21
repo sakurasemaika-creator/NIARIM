@@ -1194,6 +1194,7 @@ class _FilterPanelState extends State<FilterPanel> {
                           : () => _showFilterActions(service, filter, l10n),
                     ),
                   ),
+                  // Keep the favorite on the leading edge of the filter-name row.
                   PositionedDirectional(
                     start: 4,
                     bottom: 3,
