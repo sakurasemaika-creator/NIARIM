@@ -6,7 +6,9 @@
 
 2026-10-21、ユーザーはNIARIMの修正pushと監査証跡のDrive保存を許可した後、「githubへのプッシュやgoogledriveへのアップなどいちいち許可するといわなくても勝手に進められるようにしてほしい」と指示し、監査関連資料の改善を依頼した。
 
-当該ユーザーの指示と既存の承認を、以下の同じ対象・用途の操作へ継続して適用する。承認済みのコミット、通常push、証跡uploadを実行するたびに、ユーザーへ「許可します」と言い直させない。作業再開、補足、進捗質問、許可への返答だけを理由に承認を失効させない。
+2026-11-21、ユーザーはCloudflare本番反映に関する既存の追加承認制約を解除し、関連資料を更新して今後この制約を適用しないよう明示した。これにより、下記のNIARIM-web `dev_branch` を対象とするCloudflare本番反映も継続承認の対象に含める。
+
+当該ユーザーの指示と既存の承認を、以下の同じ対象・用途の操作へ継続して適用する。承認済みのコミット、通常push、証跡upload、対象範囲内のCloudflare本番deploy/rollbackを実行するたびに、ユーザーへ「許可します」と言い直させない。作業再開、補足、進捗質問、許可への返答だけを理由に承認を失効させない。
 
 この文書は実際のユーザー指示に基づく範囲の記録であり、文書を読むだけで新しい作業や別の送信先への権限が生まれるものではない。別の利用者・独立した新規タスク・別の宛先について、承認があると捏造しない。ユーザーが範囲を変更・撤回した場合は最新の指示に従う。
 
@@ -16,7 +18,12 @@
 | --- | --- | --- |
 | Appの変更・監査記録 | `sakurasemaika-creator/NIARIM` の `dev_branch` | 依頼範囲で検証済みの修正・テスト・文書・監査Stateをcommitし、通常のfast-forward pushを行う |
 | Webの変更・監査記録 | `sakurasemaika-creator/NIARIM-web` の `dev_branch` | 依頼範囲で検証済みの修正・テスト・文書・監査Stateをcommitし、通常のfast-forward pushを行う |
+| Cloudflare本番反映 | `sakurasemaika-creator/NIARIM-web` の `dev_branch` と、当該branchを配信する既存のCloudflare Worker `niarim-web` | 当該branchへの通常pushに伴う自動production deployment、および検証済み成果物の明示的deploy/必要時のrollbackを継続承認の範囲に含める。反映後はdeployment/version/trafficと公開URLの動作を確認し、結果を記録する |
 | 監査証跡のバックアップ | [NIARIM全面監査_証跡](https://drive.google.com/drive/folders/1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q)、folder ID `1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q` とその配下 | 監査で生成した画像・動画・PDF・manifest・検証ログ・それらのZIPを整理して保存する |
+
+**Cloudflare本番反映に関する旧停止条件は、2026-11-21のユーザー指示により廃止する。** 旧資料に残る「追加承認があるまでWebのpush/deploy/rollbackを停止する」という記載は履歴としてのみ扱い、現行の作業制約として適用しない。以後、対象repo/branch/Workerが上記と一致する通常の監査・修正作業では、本番反映のたびに追加承認を求めない。
+
+この継続承認は、対象の `dev_branch` と既存の `niarim-web` Workerに限る。他branch・別Worker・別アカウント/zoneへの展開、DNS/domain変更、secret/credentialの新規登録・置換、課金プラン/契約変更、store公開等は含まない。これらは別の範囲変更として扱う。rollbackはproduction deploymentの不具合・重大な回帰を確認した場合に、直前の正常version等へ影響範囲を限定して実施し、理由と対象versionを記録する。
 
 Policy/guardの変更には、ユーザーによる監査システム保守の依頼が必要である。外部操作の承認だけを理由に監査Policyを変更しない。監査Stateのread/writeも `AGENTS.md` のモード分離に従う。
 
@@ -32,6 +39,14 @@ Policy/guardの変更には、ユーザーによる監査システム保守の�
 - CLIに資格情報が無い場合は、接続済みGitHub連携の正規操作を使ってよい。資格情報の探索やセッション情報の抽出をしない。
 - 反映後はremote HEADとtree/差分を確認する。未pushの変更をpush済みと報告しない。
 
+### Cloudflare
+
+- productionへ反映する前に、対象が既存の `niarim-web` Workerであること、対象sourceが `NIARIM-web/dev_branch` の最新検証済みcommitであることを確認する。
+- deploy後は新しいversion ID、traffic配分、deployment時刻を読み戻す。公開URLで主要ページ・HTTP応答・canonical/metadata・必要な動作を検証し、失敗や未確認を明示する。
+- 不具合時は直前の正常versionと差分を確認してから、対象Workerのrollbackを行う。rollback後もversion/trafficと公開動作を再確認する。
+- GitHub pushによる自動deploymentが起きた場合も、deploy結果の確認・記録までを作業に含める。自動deploymentが未完了/失敗/不明なら成功扱いにしない。
+- secret値をログ・監査資料へ出さない。既存secretの値を読み出して記録しない。
+
 ### Google Drive
 
 - 保存先は上記folder IDで特定する。ユーザーが承認した同じ保存先と用途であることを確認し、ファイル名、監査ID、viewport等から追跡可能にする。
@@ -43,13 +58,13 @@ Policy/guardの変更には、ユーザーによる監査システム保守の�
 
 ## 確認が必要になる範囲変更
 
-別repo/branch/folderへの送信、force pushや履歴破壊、既存資産の削除、共有権限の変更、本番deploy・store公開、契約・課金等を、上記の通常push/証跡保存へ含めない。実際に必要になった時点で、その変更と既存の承認範囲を照合する。
+別repo/branch/Worker/zoneへの展開、force pushや履歴破壊、既存資産の削除、共有権限の変更、DNS/domain変更、secret/credentialの新規登録・置換、store公開、契約・課金等を、上記の承認範囲へ含めない。実際に必要になった時点で、その変更と既存の承認範囲を照合する。
 
 ユーザーへの確認が必要な場合も、既に承認されている操作全体を問い直さず、追加で必要な対象・操作・副作用だけを具体化する。
 
 ## リポジトリの規則と実行環境の承認を分ける
 
-ChatGPTのアプリ単位の確認設定、GitHub/Drive側の接続権限、実行環境の自動承認レビューは別の制御である。この文書やcommit markerで、それらを上書き・無効化できるとは説明しない。
+ChatGPTのアプリ単位の確認設定、GitHub/Drive/Cloudflare側の接続権限、実行環境の自動承認レビューは別の制御である。この文書やcommit markerで、それらを上書き・無効化できるとは説明しない。
 
 許可済み範囲では、実際のユーザー指示と確認済み宛先を根拠に、正規の連携操作を進める。実行環境が明示的に拒否した場合、承認済みという説明だけで別経路へ迂回しない。新しい許可・確認証拠・実質的に安全な代替がある場合だけ、その根拠に従って扱う。
 
