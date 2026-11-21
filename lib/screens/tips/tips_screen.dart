@@ -687,6 +687,7 @@ class _TipListTile extends StatelessWidget {
                 ),
               ],
             ),
+            ),
           ),
         ),
       ),
@@ -1002,9 +1003,11 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
             vertical: 24,
           ),
           constraints: BoxConstraints(maxHeight: dialogHeight),
-          child: SizedBox(
-            width: dialogWidth,
-            height: dialogHeight,
+          child: RepaintBoundary(
+            key: ValueKey('tip-detail-capture-${widget.tip.topic.name}'),
+            child: SizedBox(
+              width: dialogWidth,
+              height: dialogHeight,
             child: Stack(
               children: [
                 if (totalPages == 1)

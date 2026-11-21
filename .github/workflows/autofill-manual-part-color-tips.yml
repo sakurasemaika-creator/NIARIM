@@ -12,6 +12,7 @@ on:
       - 'lib/screens/tips/tip_screen_capture.dart'
       - 'test/autofill_manual_part_color_tips_test.dart'
       - 'test/tips_detail_layout_test.dart'
+      - 'test/tips_detail_visual_capture_test.dart'
 
 jobs:
   verify-autofill-tips:
@@ -33,5 +34,14 @@ jobs:
         run: flutter test test/autofill_manual_part_color_tips_test.dart --reporter expanded
       - name: Verify that screenshot and explanation pages stay synchronized
         run: flutter test test/tips_detail_layout_test.dart --reporter expanded
+      - name: Capture synchronized Tips pages for visual review
+        run: flutter test test/tips_detail_visual_capture_test.dart --reporter expanded
+      - name: Upload Tips visual evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: tips-detail-visual-captures
+          path: build/feature-captures/tips/
+          if-no-files-found: error
+          retention-days: 14
       - name: Analyze the Tips screen and contract tests
-        run: flutter analyze lib/screens/tips/tips_screen.dart lib/screens/tips/tip_capture_data.dart lib/screens/tips/tip_diagram.dart lib/screens/tips/tip_screen_capture.dart test/autofill_manual_part_color_tips_test.dart test/tips_detail_layout_test.dart --no-fatal-infos --no-fatal-warnings
+        run: flutter analyze lib/screens/tips/tips_screen.dart lib/screens/tips/tip_capture_data.dart lib/screens/tips/tip_diagram.dart lib/screens/tips/tip_screen_capture.dart test/autofill_manual_part_color_tips_test.dart test/tips_detail_layout_test.dart test/tips_detail_visual_capture_test.dart --no-fatal-infos --no-fatal-warnings
