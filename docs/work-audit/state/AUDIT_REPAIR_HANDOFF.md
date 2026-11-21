@@ -3478,3 +3478,10 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - Community filters verification Run `44881977706` は `test/community_filter_surfaces_test.dart` の投稿画面テスト3件が失敗。ログでは `CommunityPostScreen._restorePendingUpload()` のSharedPreferences非同期復元完了前にテストがUI要素を検索・操作していた。破棄ボタンがまだ存在せず、公開/限定公開ラジオのタップも実際の画面に届かず、保留中の公開設定が未復元のまま判定されていた。
 - 対応：投稿画面の共通テストfixture起動処理で、SharedPreferencesの復元処理完了を待ってからpumpAndSettleし、破棄・公開設定・AI開示の各テストを同じ初期化順に統一する。
 - 検証状態：修正後のCommunity filters専用Runと最新HEADのFlutter回帰CIを待つ。未実行・未成功のテストを完了扱いにしない。
+
+
+### 2026-11-21 GPT追記 — 投稿フォーム回帰テストの初期化・可視位置を修正
+
+- App HEAD `b0512c79c8094974d83fbf7a79887a5af5b47019` のCommunity filters Run `44881977706` をログまで確認。失敗は3件で、破棄テストは `_restorePendingUpload()` の非同期SharedPreferences復元完了前に要素を検索して `No element`。公開設定・AI申告テストは `ensureVisible` がタイルを画面上端（y=96）へ寄せ、AppBar等に重なる位置でタップしていたため、テストタップが対象に届かなかった。
+- 修正：共通 `pumpPostScreen` でSharedPreferences読取完了後にpumpし、全投稿フォームテストで同じ初期化経路を使う。共通 `revealForTap` は `Scrollable.ensureVisible(alignment: 0.5)` でタップ対象をビューポート中央へ配置してから操作する。
+- 実製品の投稿フォームや永続化ロジックは変更せず、テストの非同期初期化と可視位置のみ修正。CIで専用回帰・Flutter全体回帰を再実行し、結果を確認する。

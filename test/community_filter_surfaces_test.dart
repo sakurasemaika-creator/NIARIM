@@ -234,6 +234,25 @@ void main() {
     ),
   );
 
+  Future<void> pumpPostScreen(WidgetTester tester) async {
+    await tester.pumpWidget(postFixture());
+    // CommunityPostScreen restores a pending upload in initState. Wait for
+    // the plugin-backed preference read before looking for restored controls.
+    await tester.runAsync(() => SharedPreferences.getInstance());
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> revealForTap(
+    WidgetTester tester,
+    Finder target,
+  ) async {
+    await Scrollable.ensureVisible(
+      tester.element(target),
+      alignment: 0.5,
+    );
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('discard confirmation preserves a pending upload on cancel', (
     tester,
   ) async {
@@ -288,7 +307,7 @@ void main() {
       ('communityPostYouTubeUnlisted', 'unlisted'),
     ]) {
       final choice = find.byKey(Key(key));
-      await tester.ensureVisible(choice);
+      await revealForTap(tester, choice);
       await tester.tap(choice);
       await tester.pumpAndSettle();
       expect(tester.widget<RadioGroup<String>>(group).groupValue, value);
@@ -310,7 +329,7 @@ void main() {
       final unlisted = find.byKey(const Key('communityPostYouTubeUnlisted'));
       expect(tester.widget<RadioGroup<String>>(privacy).groupValue, 'public');
       expect(tester.widget<RadioListTile<String>>(unlisted).enabled, isFalse);
-      await tester.ensureVisible(unlisted);
+      await revealForTap(tester, unlisted);
       await tester.tap(unlisted);
       await tester.pumpAndSettle();
       expect(tester.widget<RadioGroup<String>>(privacy).groupValue, 'public');
@@ -326,7 +345,7 @@ void main() {
         SwitchListTile,
         l10n.communityContainsGenerativeAiImageVideo,
       );
-      await tester.ensureVisible(aiSwitch);
+      await revealForTap(tester, aiSwitch);
       expect(tester.widget<SwitchListTile>(aiSwitch).value, isTrue);
 
       // Changing it while the upload is retained is remembered too.
