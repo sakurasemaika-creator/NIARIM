@@ -1,3 +1,4 @@
+import 'package:characters/characters.dart';
 import 'package:flutter/widgets.dart';
 
 import '../utils/line_break.dart';
@@ -76,7 +77,7 @@ class KoreanWordsText extends StatelessWidget {
             locale: Localizations.maybeLocaleOf(context),
           );
           String breakOversizedTokens(String text) => text.splitMapJoin(
-            RegExp(r'[A-Za-z0-9]+'),
+            RegExp(r'[\p{Script=Latin}\p{M}\p{N}]+', unicode: true),
             onMatch: (match) {
               final token = match[0]!;
               painter
@@ -84,7 +85,7 @@ class KoreanWordsText extends StatelessWidget {
                 ..layout();
               return painter.width <= constraints.maxWidth
                   ? token
-                  : token.split('').join('\u200B');
+                  : token.characters.join('\u200B');
             },
           );
           final broken = breakOversizedTokens(separated);
