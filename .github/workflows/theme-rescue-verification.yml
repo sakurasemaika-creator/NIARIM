@@ -57,6 +57,7 @@ on:
       - 'test/theme_settings_walkthrough_test.dart'
       - 'test/background_color_picker_test.dart'
       - 'test/splash_layout_test.dart'
+      - 'test/trash_confirm_korean_words_test.dart'
 
 jobs:
   verify:
