@@ -42,20 +42,58 @@ class KoreanWordsText extends StatelessWidget {
   /// 読み上げと文での検索は元の文のまま。
   final bool keepJapaneseLineStarts;
 
+  /// 幅を超える空白なしのASCII英数字列だけ、文字境界で折り返せるようにする。
+  /// 短い名前や通常の単語には折り返し位置を追加しない。
+  final bool breakLongLatinWords;
+
   @override
   Widget build(BuildContext context) {
     if (!containsHangul(data) && copyMarks.isEmpty) {
       final separated = breakAtFileSeparators
           ? breakableAtFileSeparators(data)
           : data;
-      // 名前の長音・小書きの仮名は行の頭に来ない（「ファーストショ / ット」）。
-      final shown = keepJapaneseLineStarts
-          ? keepJapaneseLineStartsAttached(separated)
-          : separated;
-      if (shown == data) return Text(data, style: style);
-      return Text.rich(
-        TextSpan(text: shown, semanticsLabel: data),
-        style: style,
+      if (!breakLongLatinWords) {
+        // 名前の長音・小書きの仮名は行の頭に来ない（「ファーストショ / ット」）。
+        final shown = keepJapaneseLineStarts
+            ? keepJapaneseLineStartsAttached(separated)
+            : separated;
+        if (shown == data) return Text(data, style: style);
+        return Text.rich(
+          TextSpan(text: shown, semanticsLabel: data),
+          style: style,
+        );
+      }
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final drawn = DefaultTextStyle.of(context).style.merge(style);
+          final painter = TextPainter(
+            textScaler: MediaQuery.textScalerOf(context),
+            textDirection: Directionality.of(context),
+            locale: Localizations.maybeLocaleOf(context),
+          );
+          String breakOversizedTokens(String text) => text.splitMapJoin(
+            RegExp(r'[A-Za-z0-9]+'),
+            onMatch: (match) {
+              final token = match[0]!;
+              painter
+                ..text = TextSpan(text: token, style: drawn)
+                ..layout();
+              return painter.width <= constraints.maxWidth
+                  ? token
+                  : token.split('').join('\u200B');
+            },
+          );
+          final broken = breakOversizedTokens(separated);
+          final shown = keepJapaneseLineStarts
+              ? keepJapaneseLineStartsAttached(broken)
+              : broken;
+          painter.dispose();
+          if (shown == data) return Text(data, style: style);
+          return Text.rich(
+            TextSpan(text: shown, semanticsLabel: data),
+            style: style,
+          );
+        },
       );
     }
     return LayoutBuilder(
