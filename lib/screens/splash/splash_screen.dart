@@ -57,11 +57,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final router = GoRouter.of(context);
+    final router = GoRouter.maybeOf(context);
     if (identical(router, _router)) return;
     _router?.routerDelegate.removeListener(_handleRouteChanged);
     _router = router;
-    router.routerDelegate.addListener(_handleRouteChanged);
+    router?.routerDelegate.addListener(_handleRouteChanged);
   }
 
   Future<void> _openDestination(String route) async {
