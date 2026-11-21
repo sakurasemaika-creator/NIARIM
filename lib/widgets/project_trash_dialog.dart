@@ -4,7 +4,6 @@ import '../l10n/app_localizations.dart';
 import '../services/project_service.dart'
     show FavoriteProjectDeleteException, TrashedFolderUnreadException;
 import '../utils/folder_persistence.dart' show FolderSaveException;
-import '../utils/line_break.dart';
 import 'app_toast_messenger.dart';
 import 'copy_name_text.dart';
 import 'keep_together_text.dart';
@@ -24,9 +23,9 @@ String _failureText(AppLocalizations l10n, Object? failure) =>
     ? l10n.folderChangesPartiallySaved
     : l10n.homeTrashOperationFailed;
 
-/// ゴミ箱へ移す・完全に削除する確認のボタンの文字。韓国語は語の途中で行を
-/// 変えない（320px・文字2倍で「휴지통으로 이 / 동」と切れた）。読み上げは
-/// 元の文。2行以上に折れたときの上下の余白は、ボタンのテーマ（ラベルの
+/// ゴミ箱へ移す・完全に削除する確認のボタンの文字。韓国語の語は途中で切らず、
+/// 幅を超える長いラテン文字の語だけは文字境界で折り返す。読み上げは元の文。
+/// 2行以上に折れたときの上下の余白は、ボタンのテーマ（ラベルの
 /// 余白、`buttonLabelRoomBuilder`）が字の描かれる所から取る（ここでも空けると
 /// 二重になる）。1行のときはボタンの高さの下限（48）のまま。
 Widget trashConfirmLabelText(String label) => KoreanWordsText(

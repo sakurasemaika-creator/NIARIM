@@ -228,7 +228,7 @@ void main() {
       final displayed = paragraph.text!.toPlainText(
         includeSemanticsLabels: false,
       );
-      expect(displayed, contains('\\u200B'));
+      expect(displayed, contains('\u200B'));
       expect(paragraph.text!.semanticsLabel, l10n.homePermanentDelete);
       final boxes = paragraph.getBoxesForSelection(
         TextSelection(baseOffset: 0, extentOffset: displayed.length),
