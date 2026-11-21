@@ -153,7 +153,7 @@ void main() {
       final displayed = paragraph.text!.toPlainText(
         includeSemanticsLabels: false,
       );
-      expect(displayed, contains('\\u200B'));
+      expect(displayed, contains('\u200B'));
       expect(paragraph.text!.semanticsLabel, name);
       expect(paragraph.computeLineMetrics().length, greaterThan(1));
       final boxes = paragraph.getBoxesForSelection(
@@ -168,5 +168,4 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-
 }
