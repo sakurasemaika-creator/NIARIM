@@ -229,7 +229,7 @@ void main() {
       final l10n = home.l10n;
       final deleted = home.projects.deletedAtOf(project.id)!;
       final date = DateFormat.yMd(l10n.localeName).format(deleted);
-      final units = RegExp(r'\d+(?:fps|ips|s|秒|초)');
+      final units = RegExp(r'\d+(?:fps|ips|[ \u00a0]?i/s|[ \u00a0]?s|秒|초)');
       final problems = <String>[];
       var checked = 0;
       for (final scale in [1.0, 1.3, 2.0]) {
@@ -242,7 +242,7 @@ void main() {
                   .byWidgetPredicate(
                     (w) =>
                         w is RichText &&
-                        RegExp(r'\d+(?:fps|ips)').hasMatch(
+                        RegExp(r'\d+(?:fps|ips|[ \u00a0]?i/s)').hasMatch(
                           w.text
                               .toPlainText(includeSemanticsLabels: false)
                               .replaceAll(wordJoiner, ''),
