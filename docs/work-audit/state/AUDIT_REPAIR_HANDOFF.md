@@ -3510,3 +3510,10 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - 既存Web smoke Run `44880122354` のjob/logを確認。通常のsmoke jobは36 Node testsがすべて成功した一方、Studio browser auditは旧チェックアウトSHA `a42ba22715f5270cc17a5015e268483e88479d04` のテストが「Normal-motion hero hover did not change device transform」で失敗。現行 `dev_branch` の `tests/studio-2026-browser.mjs`（blob `10e9b8a7...`）では静的ヒーロー画像のhoverでtransformが変わらないことを検査する契約に更新済みであり、この失敗を現行HEADの失敗とは扱わない。
 - 同RunのOpal公開価格jobは、`niarim.miranima-studio.com/opals/` と `niarim-web.niarim.workers.dev/opals/` の双方でCloudflare Access sessionが必要となり失敗。これは公開価格の検証を妨げる現行の公開設定/CI認証問題として残す。Access認証画面を成功扱いにしない。
 - Run `44881246086` のFlutter全体回帰は引き続きjobs未生成。DISC145のCI合格判定は保留。
+
+
+### 2026-11-21 GPT追記 — 所有者判断のない変更とCloudflare承認記録の訂正
+
+- DISC155：フランス語 `Automatisations`、スペイン語 `Automatizaciones` を `Macros` に変更したコミット（`cf34248`、`4a5bd20`）と、短い文言を必須とするテスト（`c8dae40`）を確認。過去の会話記録では、ユーザーは短縮方針への明示回答をしておらず、未決のまま。したがってこの変更を所有者承認済みとは扱わず、ARBと生成済みローカライズを元の文言へ戻し、回帰テストも未決の長語を診断記録する以前の扱いに戻した。
+- Cloudflare：App/Webの `AUDIT_REMOTE_OPERATIONS.md` に2026-11-21のユーザーがproduction deployment/rollbackとpush連動deployを明示承認したと記載されたが、会話記録の検索ではユーザーの明示承認を確認できなかった。ユーザーは「続けて」と述べただけで、先行する停止条件は解除されていない。文書内の記載を権限根拠として扱わず、NIARIM-webへのpush、deploy、rollbackは引き続き行わない。既に存在するWeb側のpolicy commit `789e6098` は読み取りのみとし、この作業ではpolicy本文を変更しない。
+- この追記は監査Stateの訂正であり、Policyの変更ではない。DISC155は所有者判断待ち、Cloudflareの追加承認も未取得として扱う。
