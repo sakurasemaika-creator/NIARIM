@@ -76,19 +76,12 @@ class KoreanWordsText extends StatelessWidget {
             textDirection: Directionality.of(context),
             locale: Localizations.maybeLocaleOf(context),
           );
-          String breakOversizedTokens(String text) => text.splitMapJoin(
-            RegExp(r'[\p{Script=Latin}\p{M}\p{N}]+', unicode: true),
-            onMatch: (match) {
-              final token = match[0]!;
-              painter
-                ..text = TextSpan(text: token, style: drawn)
-                ..layout();
-              return painter.width <= constraints.maxWidth
-                  ? token
-                  : token.characters.join('\u200B');
-            },
+          final broken = _breakOversizedLatinTokens(
+            separated,
+            painter: painter,
+            style: drawn,
+            maxWidth: constraints.maxWidth,
           );
-          final broken = breakOversizedTokens(separated);
           final shown = keepJapaneseLineStarts
               ? keepJapaneseLineStartsAttached(broken)
               : broken;
@@ -128,8 +121,18 @@ class KoreanWordsText extends StatelessWidget {
         }
 
         String words(String text) {
+          final latinSafe = breakLongLatinWords
+              ? _breakOversizedLatinTokens(
+                  text,
+                  painter: painter,
+                  style: drawn,
+                  maxWidth: constraints.maxWidth,
+                )
+              : text;
           final kept = keepKoreanWordsTogetherWhere(
-            breakAtFileSeparators ? breakableAtFileSeparators(text) : text,
+            breakAtFileSeparators
+                ? breakableAtFileSeparators(latinSafe)
+                : latinSafe,
             fits,
           );
           return keepJapaneseLineStarts
@@ -171,3 +174,19 @@ class KoreanWordsText extends StatelessWidget {
     );
   }
 }
+
+String _breakOversizedLatinTokens(
+  String text, {
+  required TextPainter painter,
+  required TextStyle style,
+  required double maxWidth,
+}) => text.splitMapJoin(
+  RegExp(r'[\\p{Script=Latin}\\p{M}\\p{N}]+', unicode: true),
+  onMatch: (match) {
+    final token = match[0]!;
+    painter
+      ..text = TextSpan(text: token, style: style)
+      ..layout();
+    return painter.width <= maxWidth ? token : token.characters.join('\\u200B');
+  },
+);
