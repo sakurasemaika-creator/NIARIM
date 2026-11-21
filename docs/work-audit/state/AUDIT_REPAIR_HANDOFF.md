@@ -3568,3 +3568,10 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - Run `44911956448` は前回の不正ScrollView finderを除去した後も失敗。ログのhit-test結果で、`tester.ensureVisible` が対象ボタン/RadioListTileをスクロール領域の上端へ寄せ、AppBar配下（discard center y=80、Radio center y=106）に置いていたことを確認。
 - 対応：`Scrollable.ensureVisible(alignment: 0.5)` で対象をスクロール領域の中央に配置する。保留中アップロード時の限定公開Radioは製品仕様としてdisabledであるため、タップを試みるのではなく `enabled == false`・`onChanged == null`・選択値維持を直接検証する。
 - 製品コード変更なし。次回Community専用回帰で確認する。
+
+
+### 2026-11-21 GPT追記 — 小画面の検索欄左余白
+
+- Compact home toolbar focused Run `44913362972` で、Projectsタブのタイトル左端12pxと検索切替ボタン12pxは合格。Worksタブの検索入力欄はtitleSpacing 12pxの影響で左端12pxとなり、既存の最低16px条件に4px不足。
+- 対応：600px未満のProjects以外のタブ検索欄にだけ左4pxのPaddingを追加。Projectsタブの検索切替は12pxを維持し、600px以上では従来の16px titleSpacingのまま余計なpaddingを足さない。
+- 次のfocused workflowで412/320pxの検索欄と全タブ操作を再確認する。

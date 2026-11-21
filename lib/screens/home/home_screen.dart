@@ -1165,9 +1165,19 @@ class _HomeScreenState extends State<HomeScreen>
                           },
                         ),
                       Expanded(
-                        child: CallbackShortcuts(
-                          bindings: {_escapeOnce: _escapeInSearch},
-                          child: LayoutBuilder(
+                        child: Padding(
+                          // The title inset is 12px on compact phones. Search
+                          // fields on non-Projects tabs retain a 16px text
+                          // inset, while the Projects tag toggle starts at 12px.
+                          padding: EdgeInsets.only(
+                            left: _currentTabIndex != 0 &&
+                                    MediaQuery.sizeOf(context).width < 600
+                                ? 4
+                                : 0,
+                          ),
+                          child: CallbackShortcuts(
+                            bindings: {_escapeOnce: _escapeInSearch},
+                            child: LayoutBuilder(
                             builder: (context, constraints) {
                               final hint = _searchHint(l10n);
                               final themeHint = Theme.of(
@@ -1243,6 +1253,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 },
                               );
                             },
+                            ),
                           ),
                         ),
                       ),
