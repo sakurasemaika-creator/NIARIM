@@ -3532,3 +3532,6 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - 修正後Run `44896567082` はCommunity専用suiteの起動時にコンパイルエラー。並行更新で `pumpPostFixture` helperが重複し、前方のhelperが後方宣言の `postFixture` を参照していた。
 - 対応：fixtureの直後に単一の `pumpPostFixture` を置き、SharedPreferences復元を待つ初期化を統一。投稿画面の3テストだけが利用し、Shortsテストの独立fixtureは保持。タップ対象はビューポート中央へ配置する。
 - 製品コード変更なし。次の専用CIでcompile/testを確認し、成功までは完了扱いにしない。
+
+
+- **CI追跡更新（2026-11-21）**：翻訳・テストを含む `56ea19e5` は後続のCommunity test更新でRun `44896963780` がcancelledになったが、最新HEAD `f26f1e914267b30e0fa483f9585d6d3d0be26526` は比較上 `56ea19e5` の後続（5 commits ahead / 0 behind）で、変更ファイルは監査資料とCommunity testのみ。したがってDISC190の翻訳・テスト変更は現HEADにも含まれる。最新HEADのFlutter regression suite Run `44897184258` はpending・jobs未生成。実行・合格は未確認。
