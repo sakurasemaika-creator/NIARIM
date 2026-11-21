@@ -85,7 +85,7 @@ void main() {
                   home: const Scaffold(
                     body: Align(
                       alignment: Alignment.topRight,
-                      child: ThemeRescueButton(),
+                      child: ThemeRescueButton(iconOnly: true),
                     ),
                   ),
                 ),
@@ -105,6 +105,19 @@ void main() {
               tester.platformDispatcher.textScaleFactorTestValue = scale;
               await tester.pumpAndSettle();
               final at = '${width.toInt()}px x$scale';
+              final hitTarget = tester.getSize(
+                find.descendant(
+                  of: find.byType(ThemeRescueButton),
+                  matching: find.byType(InkWell),
+                ),
+              );
+              if (hitTarget.width < 48 || hitTarget.height < 48) {
+                problems.add(
+                  '$at: rescue button hit target is '
+                  '${hitTarget.width.toStringAsFixed(1)}×'
+                  '${hitTarget.height.toStringAsFixed(1)}dp (expected at least 48×48dp)',
+                );
+              }
               await tester.tap(find.byType(ThemeRescueButton));
               await tester.pumpAndSettle();
               expect(find.text(l10n.themeResetConfirmTitle), findsOneWidget);
