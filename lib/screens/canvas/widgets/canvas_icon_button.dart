@@ -6,6 +6,28 @@ import '../../../services/theme_service.dart';
 import '../../../utils/color_contrast.dart';
 import '../../../widgets/pc_workspace.dart';
 
+/// Visual-size control for the main canvas toolbar. The target remains 48dp
+/// while only the glyph scales, so compact icon preferences never shrink the
+/// accessible touch area.
+class CanvasToolbarMetrics extends InheritedWidget {
+  const CanvasToolbarMetrics({
+    super.key,
+    required this.iconScale,
+    this.targetSize = 48,
+    required super.child,
+  });
+
+  final double iconScale;
+  final double targetSize;
+
+  static CanvasToolbarMetrics? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<CanvasToolbarMetrics>();
+
+  @override
+  bool updateShouldNotify(CanvasToolbarMetrics oldWidget) =>
+      iconScale != oldWidget.iconScale || targetSize != oldWidget.targetSize;
+}
+
 /// キャンバスモード内の常設ボタン共通スタイル：
 /// 背景は一切持たせず、キャンバス上にアイコンだけが浮かんでいる状態にした
 /// うえで、そのアイコンの形にぴったり沿う縁取りを付ける。
@@ -145,6 +167,35 @@ class CanvasIconButton extends StatelessWidget {
         ? (inPalette ? AccentTextTheme.of(context) : scheme.primary)
         : scheme.onSurface;
     final outline = outlineColor(iconColor, scheme);
+    final toolbarMetrics = CanvasToolbarMetrics.maybeOf(context);
+    final toolbarTarget = toolbarMetrics?.targetSize;
+    final icon = _renderIcon(iconColor, outline);
+    final buttonChild = toolbarMetrics == null
+        ? Padding(
+            padding: EdgeInsets.all(padding),
+            child: SizedBox(
+              width: iconWidth ?? iconSize,
+              height: iconSize,
+              child: icon,
+            ),
+          )
+        : SizedBox(
+            width: toolbarTarget,
+            height: toolbarTarget,
+            child: Center(
+              child: Transform.scale(
+                scale: toolbarMetrics.iconScale,
+                child: Padding(
+                  padding: EdgeInsets.all(padding),
+                  child: SizedBox(
+                    width: iconWidth ?? iconSize,
+                    height: iconSize,
+                    child: icon,
+                  ),
+                ),
+              ),
+            ),
+          );
     final button = Tooltip(
       message: tooltip,
       triggerMode: longPressTooltip
@@ -153,17 +204,14 @@ class CanvasIconButton extends StatelessWidget {
       onTriggered: onTooltipLongPress,
       child: InkResponse(
         onTap: onPressed,
-        radius: padding > 6 ? iconSize / 2 + padding + 2 : 22,
+        radius: toolbarTarget != null
+            ? toolbarTarget / 2
+            : padding > 6
+            ? iconSize / 2 + padding + 2
+            : 22,
         containedInkWell: false,
         highlightShape: BoxShape.circle,
-        child: Padding(
-          padding: EdgeInsets.all(padding),
-          child: SizedBox(
-            width: iconWidth ?? iconSize,
-            height: iconSize,
-            child: _renderIcon(iconColor, outline),
-          ),
-        ),
+        child: buttonChild,
       ),
     );
     if (!inPalette || !selected) return button;
