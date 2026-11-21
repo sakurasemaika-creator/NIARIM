@@ -76,12 +76,16 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
                   ],
                   Text(
                     l10n.errorLogHint,
-                    style: TextStyle(color: scheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.5,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 10,
+                    runSpacing: 10,
                     children: [
                       FilledButton.icon(
                         key: const Key('errorLogCopyAll'),
@@ -101,12 +105,12 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
                   const SizedBox(height: 12),
                   for (final error in errors)
                     MenuCard(
-                      margin: const EdgeInsets.only(bottom: 8),
+                      margin: const EdgeInsets.only(bottom: 10),
                       child: Padding(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(14),
                         child: SelectableText(
                           error,
-                          style: const TextStyle(fontSize: 13),
+                          style: const TextStyle(fontSize: 14, height: 1.5),
                         ),
                       ),
                     ),

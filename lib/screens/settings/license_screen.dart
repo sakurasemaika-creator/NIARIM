@@ -195,7 +195,8 @@ class LicenseScreen extends StatelessWidget {
             Text(
               l10n.licenseFfmpegNote,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 12,
+                height: 1.5,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
@@ -213,12 +214,16 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         text,
         style: localizedHeadingStyle(
           context,
-          const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
+            height: 1.3,
+          ),
         ),
       ),
     );
@@ -249,11 +254,18 @@ class _TermsBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.legalLastUpdated),
-        const SizedBox(height: 12),
+        Text(
+          l10n.legalLastUpdated,
+          style: TextStyle(
+            fontSize: 13,
+            height: 1.4,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 16),
         for (final (title, body) in sections)
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -261,11 +273,15 @@ class _TermsBody extends StatelessWidget {
                   title,
                   style: localizedHeadingStyle(
                     context,
-                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      height: 1.35,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(body, style: const TextStyle(fontSize: 12, height: 1.5)),
+                const SizedBox(height: 6),
+                Text(body, style: const TextStyle(fontSize: 14, height: 1.65)),
               ],
             ),
           ),
@@ -291,16 +307,17 @@ class _FontCredit extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return MenuCard(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 10),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               usage,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 12,
+                height: 1.4,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
@@ -308,12 +325,16 @@ class _FontCredit extends StatelessWidget {
               name,
               style: localizedHeadingStyle(
                 context,
-                const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  height: 1.3,
+                ),
               ),
             ),
             Text(
               l10n.licenseFontCreditMeta(author, license),
-              style: const TextStyle(fontSize: 12),
+              style: const TextStyle(fontSize: 13, height: 1.45),
             ),
           ],
         ),

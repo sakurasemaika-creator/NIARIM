@@ -84,11 +84,18 @@ class _PolicyBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.legalLastUpdated),
-        const SizedBox(height: 12),
+        Text(
+          l10n.legalLastUpdated,
+          style: TextStyle(
+            fontSize: 13,
+            height: 1.4,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 16),
         for (var i = 0; i < sections.length; i++)
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -96,19 +103,23 @@ class _PolicyBody extends StatelessWidget {
                   sections[i].$1,
                   style: localizedHeadingStyle(
                     context,
-                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      height: 1.35,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 6),
                 Text(
                   sections[i].$2,
-                  style: const TextStyle(fontSize: 12, height: 1.5),
+                  style: const TextStyle(fontSize: 14, height: 1.65),
                 ),
                 if (i == 1) ...[
                   const SizedBox(height: 8),
                   Text(
                     l10n.privacyPolicyArt2AiTrainingClause,
-                    style: const TextStyle(fontSize: 12, height: 1.5),
+                    style: const TextStyle(fontSize: 14, height: 1.65),
                   ),
                 ],
               ],
