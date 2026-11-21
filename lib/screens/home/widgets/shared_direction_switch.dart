@@ -140,7 +140,7 @@ class SharedDirectionSwitch extends StatelessWidget {
                     side: WidgetStatePropertyAll(
                       BorderSide(color: Theme.of(context).colorScheme.outline),
                     ),
-                    padding: const WidgetStatePropertyAll(
+                    padding: WidgetStatePropertyAll(
                       EdgeInsets.symmetric(
                         horizontal: _segmentPadding,
                         vertical: compactHeight ? 2 : 12,
