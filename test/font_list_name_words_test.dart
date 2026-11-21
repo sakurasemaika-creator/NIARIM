@@ -15,12 +15,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/font_settings_screen.dart';
+import 'package:niarim/services/font_service.dart';
+import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/services/watermark_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/project_storage.dart';
 import 'helpers/word_breaks.dart';
 
 const _names = ['Sample Font', 'Big Font', 'Kosugi Maru Regular'];
@@ -159,6 +163,86 @@ void main() {
       expect(problems, isEmpty, reason: '${problems.length} problems');
     });
   }
+
+  group('font deletion', () {
+    useTemporaryProjectStorage();
+
+    testWidgets('warns about a project and watermark using the font', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({
+        'first_launch': false,
+        'user_fonts': jsonEncode([_font(1, 'Sample Font', 1434)]),
+      });
+      final providers = (await tester.runAsync(buildAppProviders))!;
+      late BuildContext services;
+      final words = lookupAppLocalizations(const Locale('en'));
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers,
+          child: Builder(
+            builder: (context) {
+              services = context;
+              return MaterialApp(
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                home: const FontSettingsScreen(),
+              );
+            },
+          ),
+        ),
+      );
+      final fonts = services.read<FontService>();
+      final projects = services.read<ProjectService>();
+      final asset = fonts.fonts.single;
+      final family = fonts.familyNameOf(asset);
+      await tester.runAsync(() async {
+        final project = await projects.createProject(
+          name: 'Uses the font',
+          fps: 1,
+          durationSeconds: 1,
+          exportWidth: 100,
+          exportHeight: 100,
+          backgroundColor: 0xffffffff,
+        );
+        final scene = projects.scenesOf(project.id).first;
+        final layer = projects.addTextLayer(
+          projectId: project.id,
+          sceneId: scene.id,
+          frameIndex: 0,
+          text: 'Uses this font',
+          position: const Offset(10, 10),
+        );
+        projects.updateLayer(
+          projectId: project.id,
+          sceneId: scene.id,
+          frameIndex: 0,
+          layer: layer.copyWith(
+            textObject: layer.textObject!.copyWith(fontFamily: family),
+          ),
+        );
+        await services.read<WatermarkService>().addTextWatermark(
+          'Watermark',
+          color: 0xff000000,
+          fontFamily: family,
+        );
+      });
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(words.commonDelete));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(words.fontDeleteUsageCounts(1, 1)),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(words.fontDeleteSavedUsageWarning),
+        findsOneWidget,
+      );
+      await tester.tap(find.text(words.commonCancel));
+      await tester.pumpAndSettle();
+      expect(fonts.fonts.single.id, asset.id);
+    });
+  });
 
   // 操作を押すと、今までどおりに働く（お気に入り・ピクセル）。
   testWidgets('the actions below a name still work', (tester) async {

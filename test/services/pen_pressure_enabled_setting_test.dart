@@ -56,6 +56,7 @@ void main() {
         await settings.addCustomPressurePoint(.25, .75);
         await settings.addCustomPressurePoint(.75, .20);
         await settings.addCustomPressurePoint(.254, .35);
+        await settings.addCustomPressurePoint(.254, .8);
         await settings.addCustomPressurePoint(1, .5);
         await settings.addCustomPressurePoint(double.nan, .5);
 
@@ -66,11 +67,13 @@ void main() {
         expect(restored.customPressurePoints, [
           (0.0, 0.0),
           (.25, .75),
+          (.254, .35),
           (.75, .20),
           (1.0, 1.0),
         ]);
         expect(restored.applyPressureCurve(.25), .75);
-        expect(restored.applyPressureCurve(.50), closeTo(.475, 1e-10));
+        expect(restored.applyPressureCurve(.252), closeTo(.55, 1e-10));
+        expect(restored.applyPressureCurve(.254), closeTo(.35, 1e-10));
         expect(restored.applyPressureCurve(.75), closeTo(.20, 1e-10));
       },
     );
@@ -121,7 +124,8 @@ void main() {
       addTearDown(settings.dispose);
       await settings.init();
       await settings.moveCustomPressurePoint(2, .8, .4);
-      expect(settings.customPressurePoints[2], (.503, .4));
+      expect(settings.customPressurePoints[2].$1, closeTo(.503999, 1e-10));
+      expect(settings.customPressurePoints[2].$2, .4);
       await settings.removeCustomPressurePoint(1);
       await settings.removeCustomPressurePoint(2);
       await settings.moveCustomPressurePoint(1, .8, .6);

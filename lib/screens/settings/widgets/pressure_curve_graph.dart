@@ -40,14 +40,19 @@ class _PressureCurveGraphState extends State<PressureCurveGraph> {
     return (x, y);
   }
 
-  int? _hitTestPoint(Offset localPos) {
-    const hitRadius = 18.0;
-    for (int i = 0; i < widget.points.length; i++) {
+  int? _hitTestPoint(Offset localPos, {double radius = 18}) {
+    int? nearest;
+    var distance = radius;
+    for (var i = 0; i < widget.points.length; i++) {
       final p = widget.points[i];
       final screenPos = Offset(p.$1 * widget.size, (1 - p.$2) * widget.size);
-      if ((screenPos - localPos).distance <= hitRadius) return i;
+      final candidate = (screenPos - localPos).distance;
+      if (candidate < distance) {
+        nearest = i;
+        distance = candidate;
+      }
     }
-    return null;
+    return nearest;
   }
 
   @override
@@ -55,7 +60,7 @@ class _PressureCurveGraphState extends State<PressureCurveGraph> {
     final scheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTapUp: (d) {
-        final hit = _hitTestPoint(d.localPosition);
+        final hit = _hitTestPoint(d.localPosition, radius: 8);
         if (hit != null) return;
         final (x, y) = _toCurveSpace(d.localPosition);
         widget.onAddPoint(x, y);

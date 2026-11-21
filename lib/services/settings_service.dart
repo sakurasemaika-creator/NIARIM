@@ -824,18 +824,15 @@ class SettingsService extends ChangeNotifier {
     );
   }
 
-  static const double _pressurePointGap = 0.01;
+  // Only reserve a numerical margin while dragging beside another point.
+  static const double _pressureDragMargin = 0.000001;
 
   /// Adds an interior point when there is room between its neighbors.
   Future<void> addCustomPressurePoint(double x, double y) async {
     if (!x.isFinite || !y.isFinite) return;
     final points = List<(double, double)>.from(_customPressurePoints);
     final next = points.indexWhere((point) => point.$1 > x);
-    if (next <= 0 ||
-        x < points[next - 1].$1 + _pressurePointGap ||
-        x > points[next].$1 - _pressurePointGap) {
-      return;
-    }
+    if (next <= 0 || x <= points[next - 1].$1) return;
     points.insert(next, (x, y.clamp(0.0, 1.0)));
     _customPressurePoints = points;
     await _persistCustomPressurePoints();
@@ -854,12 +851,12 @@ class SettingsService extends ChangeNotifier {
     if (isEndpoint) {
       points[index] = (points[index].$1, clampedY);
     } else {
-      final minX = points[index - 1].$1 + _pressurePointGap;
-      final maxX = points[index + 1].$1 - _pressurePointGap;
-      // Older builds allowed points closer together. Keep their x position
-      // when there is too little room, and still allow vertical edits.
-      final clampedX = minX <= maxX ? x.clamp(minX, maxX) : points[index].$1;
-      points[index] = (clampedX, clampedY);
+      final left = points[index - 1].$1;
+      final right = points[index + 1].$1;
+      final currentX = points[index].$1;
+      final minX = math.min(currentX, left + _pressureDragMargin);
+      final maxX = math.max(currentX, right - _pressureDragMargin);
+      points[index] = (x.clamp(minX, maxX), clampedY);
     }
     _customPressurePoints = points;
     await _persistCustomPressurePoints();

@@ -1,11 +1,18 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/engine/watermark_render.dart';
 import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/project.dart';
+import 'package:niarim/models/scene.dart';
+
+import 'helpers/project_storage.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  useTemporaryProjectStorage();
 
   test('a placed raster keeps its own center and survives clipping', () async {
     const width = 120;
@@ -27,9 +34,48 @@ void main() {
     ))!;
     expect(source.center, const ui.Offset(100, 68));
 
+    final file = await NiaproSerializer.save(
+      project: Project(
+        id: 'Project0001',
+        name: 'Placed watermark',
+        fps: 1,
+        durationSeconds: 1,
+        backgroundColor: 0,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+        totalWorkSeconds: 0,
+        exportWidth: width,
+        exportHeight: height,
+      ),
+      scenes: [
+        Scene(
+          id: 'Scene0001',
+          index: 0,
+          frames: [
+            Frame(
+              index: 0,
+              layers: [
+                const Layer(
+                  id: 'Layer0001',
+                  name: 'Existing watermark',
+                  type: LayerType.watermark,
+                ).copyWith(watermarkSource: source),
+              ],
+            ),
+          ],
+        ),
+      ],
+      tileManager: TileManager(canvasWidth: width, canvasHeight: height),
+    );
+    final reloaded = await NiaproSerializer.load(file.path);
+    final saved =
+        reloaded.scenes.single.frames.single.layers.single.watermarkSource!;
+    expect(saved.center, source.center);
+    expect(saved.png, source.png);
+
     Future<ui.Rect> bounds(double angle, double scale) async {
       final pixels = (await renderPlacedWatermark(
-        PlacedWatermarkSource.fromJson(source.toJson())!,
+        saved,
         width: width,
         height: height,
         angle: angle,

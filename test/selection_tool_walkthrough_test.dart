@@ -220,6 +220,20 @@ void main() {
     expect(find.byType(FrameStripWidget).hitTestable(), findsNothing);
     await capture('select_tool_active');
 
+    // Selecting every pixel must not add a row above the paper on a phone.
+    final canvasArea = find.byType(CanvasArea);
+    final paperBefore = tester.getRect(canvasArea);
+    final all = find.byIcon(Icons.select_all).hitTestable();
+    expect(all, findsOneWidget);
+    await tester.tap(all);
+    await settle();
+    expect(tester.getRect(canvasArea), paperBefore);
+    final clear = find.byIcon(Icons.deselect).hitTestable();
+    expect(clear, findsOneWidget);
+    await tester.tap(clear);
+    await settle();
+    expect(tester.getRect(canvasArea), paperBefore);
+
     // ── 投げ縄で描いた線の一部を囲む ─────────────────────────────────
     final lasso = await tester.startGesture(
       at(80, 80),
