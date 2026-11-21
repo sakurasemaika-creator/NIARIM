@@ -544,6 +544,8 @@ void main() {
   });
 
   testWidgets('DISC145 フランス語の長いフォルダ名は詳細行で幅内に折り返す', (tester) async {
+    final semanticsHandle = tester.ensureSemantics();
+    addTearDown(semanticsHandle.dispose);
     final home = _Home(tester);
     const parentName = 'Archive';
     const name = 'Storyboards (2)';
@@ -569,6 +571,9 @@ void main() {
     final rowText = find.text(name, findRichText: true);
     final row = find.ancestor(of: rowText, matching: find.byType(ListTile));
     expect(row, findsOneWidget);
+    final semanticLabel = tester.getSemantics(row).label;
+    expect(semanticLabel, contains(name));
+    expect(semanticLabel, isNot(contains('\\u200B')));
     final paragraph = _paragraph(tester, rowText);
     final lines = ParagraphLines(paragraph);
     expect(lines.lines.length, lessThanOrEqualTo(2));
