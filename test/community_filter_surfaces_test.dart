@@ -236,9 +236,10 @@ void main() {
 
   Future<void> pumpPostFixture(WidgetTester tester) async {
     await tester.pumpWidget(postFixture());
-    // CommunityPostScreen restores a pending upload in initState. Wait for
-    // the plugin-backed preference read before looking for restored controls.
-    await tester.runAsync(() => SharedPreferences.getInstance());
+    // Wait for CommunityPostScreen's asynchronous SharedPreferences restore.
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 30)),
+    );
     await tester.pumpAndSettle();
   }
 
