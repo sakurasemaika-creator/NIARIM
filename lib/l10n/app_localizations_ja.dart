@@ -1261,6 +1261,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get helpSearchHint => '検索...';
 
   @override
+  String helpSearchResultCount(int count) {
+    return '検索結果 $count件';
+  }
+
+  @override
   String get helpNoResults => '該当する項目が見つかりません';
 
   @override

@@ -2397,6 +2397,12 @@ abstract class AppLocalizations {
   /// **'検索...'**
   String get helpSearchHint;
 
+  /// No description provided for @helpSearchResultCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索結果 {count}件'**
+  String helpSearchResultCount(int count);
+
   /// No description provided for @helpNoResults.
   ///
   /// In ja, this message translates to:

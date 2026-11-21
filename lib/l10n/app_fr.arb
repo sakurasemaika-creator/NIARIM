@@ -426,6 +426,7 @@
   "workspaceLoadLeftHanded": "Gaucher",
   "helpScreenTitle": "Aide",
   "helpSearchHint": "Rechercher...",
+  "helpSearchResultCount": "Résultats ({count})",
   "helpNoResults": "Aucun élément correspondant trouvé",
   "helpCategoryTool": "Outils",
   "helpCategoryLayer": "Calques",

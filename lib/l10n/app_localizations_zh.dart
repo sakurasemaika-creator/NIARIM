@@ -1244,6 +1244,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get helpSearchHint => '搜索...';
 
   @override
+  String helpSearchResultCount(int count) {
+    return '搜索结果（$count）';
+  }
+
+  @override
   String get helpNoResults => '未找到相关项目';
 
   @override
@@ -11670,6 +11675,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpSearchHint => '搜尋...';
+
+  @override
+  String helpSearchResultCount(int count) {
+    return '搜尋結果（$count）';
+  }
 
   @override
   String get helpNoResults => '找不到相符的項目';

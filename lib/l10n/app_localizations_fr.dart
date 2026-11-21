@@ -1327,6 +1327,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get helpSearchHint => 'Rechercher...';
 
   @override
+  String helpSearchResultCount(int count) {
+    return 'Résultats ($count)';
+  }
+
+  @override
   String get helpNoResults => 'Aucun élément correspondant trouvé';
 
   @override

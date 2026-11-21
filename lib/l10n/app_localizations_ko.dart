@@ -1265,6 +1265,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get helpSearchHint => '검색...';
 
   @override
+  String helpSearchResultCount(int count) {
+    return '검색 결과 $count개';
+  }
+
+  @override
   String get helpNoResults => '해당하는 항목을 찾을 수 없습니다';
 
   @override

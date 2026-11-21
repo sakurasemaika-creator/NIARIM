@@ -1299,6 +1299,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get helpSearchHint => 'Search...';
 
   @override
+  String helpSearchResultCount(int count) {
+    return 'Results ($count)';
+  }
+
+  @override
   String get helpNoResults => 'No matching items found';
 
   @override

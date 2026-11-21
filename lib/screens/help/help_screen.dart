@@ -1,5 +1,6 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../config/font_fallback.dart';
@@ -626,13 +627,28 @@ class _HelpScreenState extends State<HelpScreen> {
           : entries.where((e) => e.topicKey == _topic).toList();
     }
     final terms = query.split(RegExp(r'\s+'));
-    return entries.where((entry) {
-      if (entry.topicKey == _searchQuery.trim()) return true;
-      final text = foldName(
-        '${entry.title} ${entry.category} ${entry.description}',
-      );
-      return terms.every(text.contains);
-    }).toList();
+    final exact = <_HelpEntry>[];
+    final titles = <_HelpEntry>[];
+    final categories = <_HelpEntry>[];
+    final descriptions = <_HelpEntry>[];
+    for (final entry in entries) {
+      final title = foldName(entry.title);
+      if (title == query || entry.topicKey == _searchQuery.trim()) {
+        exact.add(entry);
+      } else if (terms.every(title.contains)) {
+        titles.add(entry);
+      } else {
+        final heading = '$title ${foldName(entry.category)}';
+        if (terms.every(heading.contains)) {
+          categories.add(entry);
+        } else if (terms.every(
+          '$heading ${foldName(entry.description)}'.contains,
+        )) {
+          descriptions.add(entry);
+        }
+      }
+    }
+    return [...exact, ...titles, ...categories, ...descriptions];
   }
 
   @override
@@ -647,6 +663,7 @@ class _HelpScreenState extends State<HelpScreen> {
     // 何も探していないときは、一覧の先頭から使い方（図つきの数ページ）を
     // 開ける。
     final showTutorial = query.isEmpty && _topic == null;
+    final showHeader = showTutorial || query.isNotEmpty;
     return Scaffold(
       appBar: widget.embedded
           ? null
@@ -657,39 +674,55 @@ class _HelpScreenState extends State<HelpScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-              child: TextField(
-                controller: _searchController,
-                focusNode: _searchFocus,
-                textInputAction: TextInputAction.search,
-                // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
-                // 文字色（テーマの入力欄はメニューの色で塗りメニューの文字色）。
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                decoration: InputDecoration(
-                  labelText: l10n.helpSearchHint,
-                  labelStyle: searchLabelStyle,
-                  floatingLabelStyle: searchLabelStyle,
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _searchQuery.isEmpty
-                      ? null
-                      : IconButton(
-                          tooltip: l10n.projectListClearSearch,
-                          onPressed: _clearSearch,
-                          icon: const Icon(Icons.clear),
-                        ),
-                  prefixIconColor: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant,
-                  filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+              child: Focus(
+                canRequestFocus: false,
+                onKeyEvent: (_, event) {
+                  final composing = _searchController.value.composing;
+                  if (event is KeyDownEvent &&
+                      event.logicalKey == LogicalKeyboardKey.escape &&
+                      _searchQuery.isNotEmpty &&
+                      (!composing.isValid || composing.isCollapsed)) {
+                    _clearSearch();
+                    return KeyEventResult.handled;
+                  }
+                  return KeyEventResult.ignored;
+                },
+                child: TextField(
+                  controller: _searchController,
+                  focusNode: _searchFocus,
+                  textInputAction: TextInputAction.search,
+                  // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
+                  // 文字色（テーマの入力欄はメニューの色で塗りメニューの文字色）。
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
-                  isDense: true,
+                  decoration: InputDecoration(
+                    labelText: l10n.helpSearchHint,
+                    labelStyle: searchLabelStyle,
+                    floatingLabelStyle: searchLabelStyle,
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchQuery.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: l10n.projectListClearSearch,
+                            onPressed: _clearSearch,
+                            icon: const Icon(Icons.clear),
+                          ),
+                    prefixIconColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
+                    filled: true,
+                    fillColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerLow,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    isDense: true,
+                  ),
+                  onChanged: _updateSearch,
                 ),
-                onChanged: _updateSearch,
               ),
             ),
             if (_topic != null && _searchQuery.isEmpty)
@@ -718,11 +751,26 @@ class _HelpScreenState extends State<HelpScreen> {
                       keyboardDismissBehavior:
                           ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.only(top: 4, bottom: 12),
-                      itemCount: filtered.length + (showTutorial ? 1 : 0),
+                      itemCount: filtered.length + (showHeader ? 1 : 0),
                       itemBuilder: (context, index) {
                         final scheme = Theme.of(context).colorScheme;
-                        if (showTutorial) {
-                          if (index == 0) return const _TutorialEntry();
+                        if (showHeader) {
+                          if (index == 0) {
+                            if (showTutorial) return const _TutorialEntry();
+                            return Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+                              child: Semantics(
+                                liveRegion: true,
+                                child: Text(
+                                  l10n.helpSearchResultCount(filtered.length),
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: scheme.onSurfaceVariant,
+                                      ),
+                                ),
+                              ),
+                            );
+                          }
                           index--;
                         }
                         final entry = filtered[index];
@@ -749,6 +797,11 @@ class _HelpScreenState extends State<HelpScreen> {
                               // 自動展開して探す手間を省く。topicKeyはHelpButton(topic:)の
                               // 呼び出し元と一致させる固定の内部識別子（翻訳対象外）。
                               initiallyExpanded: entry.topicKey == _topic,
+                              onExpansionChanged: (expanded) {
+                                if (expanded && _searchFocus.hasFocus) {
+                                  _searchFocus.unfocus();
+                                }
+                              },
                               shape: const Border(),
                               leading: Container(
                                 width: 36,

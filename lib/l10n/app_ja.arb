@@ -603,6 +603,8 @@
   "workspaceLoadLeftHanded": "左利き",
   "helpScreenTitle": "ヘルプ",
   "helpSearchHint": "検索...",
+  "helpSearchResultCount": "検索結果 {count}件",
+  "@helpSearchResultCount": {"placeholders": {"count": {"type": "int"}}},
   "helpNoResults": "該当する項目が見つかりません",
   "helpCategoryTool": "ツール",
   "helpCategoryLayer": "レイヤー",

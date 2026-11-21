@@ -426,6 +426,7 @@
   "workspaceLoadLeftHanded": "왼손잡이",
   "helpScreenTitle": "도움말",
   "helpSearchHint": "검색...",
+  "helpSearchResultCount": "검색 결과 {count}개",
   "helpNoResults": "해당하는 항목을 찾을 수 없습니다",
   "helpCategoryTool": "도구",
   "helpCategoryLayer": "레이어",

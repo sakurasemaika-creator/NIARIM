@@ -426,6 +426,7 @@
   "workspaceLoadLeftHanded": "Zurdo",
   "helpScreenTitle": "Ayuda",
   "helpSearchHint": "Buscar...",
+  "helpSearchResultCount": "Resultados ({count})",
   "helpNoResults": "No se encontraron elementos coincidentes",
   "helpCategoryTool": "Herramientas",
   "helpCategoryLayer": "Capas",

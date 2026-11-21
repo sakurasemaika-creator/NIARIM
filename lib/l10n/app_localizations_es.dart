@@ -1333,6 +1333,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get helpSearchHint => 'Buscar...';
 
   @override
+  String helpSearchResultCount(int count) {
+    return 'Resultados ($count)';
+  }
+
+  @override
   String get helpNoResults => 'No se encontraron elementos coincidentes';
 
   @override

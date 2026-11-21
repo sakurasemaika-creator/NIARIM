@@ -426,6 +426,7 @@
   "workspaceLoadLeftHanded": "左手",
   "helpScreenTitle": "帮助",
   "helpSearchHint": "搜索...",
+  "helpSearchResultCount": "搜索结果（{count}）",
   "helpNoResults": "未找到相关项目",
   "helpCategoryTool": "工具",
   "helpCategoryLayer": "图层",

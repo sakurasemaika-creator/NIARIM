@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/help/help_screen.dart';
@@ -40,6 +41,13 @@ void main() {
         ),
         findsWidgets,
       );
+      final first = tester
+          .widgetList<ExpansionTile>(find.byType(ExpansionTile))
+          .first;
+      expect((first.title as Text).data, l10n.helpEraserToolTitle);
+      final list = tester.widget<ListView>(find.byType(ListView));
+      final count = list.childrenDelegate.estimatedChildCount! - 1;
+      expect(find.text(l10n.helpSearchResultCount(count)), findsOneWidget);
     });
   }
 
@@ -74,6 +82,58 @@ void main() {
       await tester.enterText(field, '　 ');
       await tester.pumpAndSettle();
       expect(tutorial, findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'a named tool comes before mentions and its explanation frees the keyboard',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(320, 640);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const HelpScreen(),
+        ),
+      );
+      final field = find.byType(TextField);
+      final l10n = AppLocalizations.of(tester.element(field))!;
+      await tester.enterText(field, l10n.helpPressureCurveTitle);
+      await tester.pumpAndSettle();
+      final first = tester
+          .widgetList<ExpansionTile>(find.byType(ExpansionTile))
+          .first;
+      expect((first.title as Text).data, l10n.helpPressureCurveTitle);
+      final status = find.text(l10n.helpSearchResultCount(3));
+      expect(status.hitTestable(), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: status,
+          matching: find.byWidgetPredicate(
+            (w) => w is Semantics && w.properties.liveRegion == true,
+          ),
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.widgetWithText(ExpansionTile, l10n.helpPressureCurveTitle),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.helpPressureCurveDesc), findsOneWidget);
+      expect(tester.widget<TextField>(field).focusNode!.hasFocus, isFalse);
+      await tester.tap(field);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(field).controller!.text, isEmpty);
+      expect(tester.widget<TextField>(field).focusNode!.hasFocus, isTrue);
+      expect(find.byKey(const Key('helpTutorialButton')), findsOneWidget);
+      expect(tester.takeException(), isNull);
     },
   );
 

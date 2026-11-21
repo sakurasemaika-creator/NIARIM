@@ -426,6 +426,7 @@
   "workspaceLoadLeftHanded": "左手",
   "helpScreenTitle": "說明",
   "helpSearchHint": "搜尋...",
+  "helpSearchResultCount": "搜尋結果（{count}）",
   "helpNoResults": "找不到相符的項目",
   "helpCategoryTool": "工具",
   "helpCategoryLayer": "圖層",
