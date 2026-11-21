@@ -205,16 +205,6 @@ void main() {
     expect(find.text(plain.title), findsOneWidget);
   });
 
-  Future<void> pumpPostFixture(WidgetTester tester) async {
-    await tester.pumpWidget(postFixture());
-    // CommunityPostScreen restores the pending-upload record asynchronously
-    // from SharedPreferences. Let that read complete before locating controls.
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 30)),
-    );
-    await tester.pumpAndSettle();
-  }
-
   Widget postFixture() => MultiProvider(
     providers: [
       ChangeNotifierProvider<CommunityService>(
