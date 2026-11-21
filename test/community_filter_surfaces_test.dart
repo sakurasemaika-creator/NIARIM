@@ -253,7 +253,10 @@ void main() {
     WidgetTester tester,
     Finder target,
   ) async {
-    await tester.ensureVisible(target);
+    await Scrollable.ensureVisible(
+      tester.element(target),
+      alignment: 0.5,
+    );
     await tester.pumpAndSettle();
     expect(target, findsOneWidget);
   }
@@ -333,7 +336,9 @@ void main() {
       final privacy = find.byType(RadioGroup<String>);
       final unlisted = find.byKey(const Key('communityPostYouTubeUnlisted'));
       expect(tester.widget<RadioGroup<String>>(privacy).groupValue, 'public');
-      expect(tester.widget<RadioListTile<String>>(unlisted).enabled, isFalse);
+      final lockedChoice = tester.widget<RadioListTile<String>>(unlisted);
+      expect(lockedChoice.enabled, isFalse);
+      expect(lockedChoice.onChanged, isNull);
       // This choice is intentionally disabled while a video is retained.
       expect(tester.widget<RadioGroup<String>>(privacy).groupValue, 'public');
       final l10n = AppLocalizations.of(

@@ -3561,3 +3561,10 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - 専用Community/FCM regression Run `44912055795`（HEAD `6d5db41c1efce6c1a16b4465b92e712c2ffc7854`）は成功。投稿フォームの回帰工程、simulated FCM payload工程、3 regression filesのanalyzeがすべてsuccess。Run: https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44912055795
 - 同HEADのFlutter complete regression Run `44912055793` はpendingでjobs未生成。全体CI合格とは扱わない。DISC145の長いLatin folder wrap testも全体suiteの実行結果待ち。SP/PCの実画面・Android/DeX実機・スクリーンリーダーの確認は未実施で、DISC145は未完了。
 - Cloudflare policy確認：Web policy commit `789e6098543338a78d94fecfc60f8e38e9765160` は `2026-11-21T10:55:50Z`。40秒後の `10:56:30Z` に既存Worker `niarim-web` でdeployment `8b106eea-41d6-43d1-91e6-933c7d807450` / version `62857f27-e8f9-49c6-bf01-3e58804e4dc6` が作成され、traffic 100%。Version metadata `SITE_ORIGIN` は依然 `https://niarim-web.niarim.workers.dev`。公開URLの実ブラウザ確認はできていないため、公開動作成功とは判定しない。DISC557の正規domain判断は別途所有者判断待ち。
+
+
+### 2026-11-21 GPT追記 — Community投稿テストの実タップ位置を修正
+
+- Run `44911956448` は前回の不正ScrollView finderを除去した後も失敗。ログのhit-test結果で、`tester.ensureVisible` が対象ボタン/RadioListTileをスクロール領域の上端へ寄せ、AppBar配下（discard center y=80、Radio center y=106）に置いていたことを確認。
+- 対応：`Scrollable.ensureVisible(alignment: 0.5)` で対象をスクロール領域の中央に配置する。保留中アップロード時の限定公開Radioは製品仕様としてdisabledであるため、タップを試みるのではなく `enabled == false`・`onChanged == null`・選択値維持を直接検証する。
+- 製品コード変更なし。次回Community専用回帰で確認する。
