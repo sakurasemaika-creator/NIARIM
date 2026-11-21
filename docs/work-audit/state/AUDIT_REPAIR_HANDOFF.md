@@ -3649,3 +3649,20 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - Project usability Run `44918624799` はsuccess。解析、DISC145長Latin、空表示Sliver、compact toolbar、dialog、export、Home A003 visual findings（実フォルダ詳細行を含む）、project selection等の工程がsuccess。SP/PCキャプチャ追加を含む次Run `44919278054` は進行中。
 - Flutter complete regression Run `44919278023` はpending・jobs未生成。合格扱いにしない。Save safety Run `44917919779` は旧SHA `6613892a` 対象で、全体analyzer success、full Flutter test gate実行中。Global format gateの失敗原因は当時の未整形 `home_a003_visual_findings_test.dart` で、現HEADではcanonical formatter successにより解消済み。旧Run全体の完了結果は引き続き待つ。
 - これらは対象DISCの実装・回帰証拠であり、全面監査の完了宣言ではない。DISC537/548/564〜566等の最新全体回帰と、残る実機・アクセシビリティ確認を継続する。
+
+### 2026-11-22 GPT追記 — DISC145レスポンシブ修正確定、Cloudflare承認範囲更新
+
+- App `dev_branch` のコード修正commit：`d678414a7c8a9e101c2fbca3402f90f9dc4f54f2`。この後の `414c4bd8178a7171c318cb125e83b966a9bf315b` はDISC145証拠資料の追記であり、製品コードの変更ではない。
+- DISC145の最終SP/PCキャプチャを確認。Artifact `14713922102`（`disc145-folder-row-screens`）の320×844/文字倍率2倍では `Storyboards (2)` が1行に収まり、作成日時も1行、favorite/menu操作はその下に配置される。1280×900/文字倍率1倍のPCではタイトル・日時とも1行で、操作ボタンは従来どおり右端横並び。
+- 320px・文字倍率2倍時のみ、フォルダ詳細行の左右paddingとtitle gapを8pxにし、操作行を日時subtitleの下へ移す。通常表示・PC・選択モード・作品選択画面のレイアウトは変更しない。縦積みtrailing案は28px overflowを発生させたため不採用。最終のsubtitle下配置はFlutter analyzerと統合テストで成功。
+- Project usability Run `44920895738`（HEAD `d678414a`）はsuccess。DISC145の7言語テスト、実アプリSP/PCフォルダ詳細行テスト・PNG capture、空表示Sliver、compact toolbar、dialog、export、home/premium、project selection、localization/keyboard、startup Home、既存画面captureまで全工程success。Artifact `14713922102` のSP/PC画像を目視確認済み。
+- Save snapshot and collection action controls Run `44920895797`（同HEAD）もsuccess。操作ボタンをsubtitleへ移した後の共有action hit-area検証を含む。
+- Save safety Run `44920895880`（同HEAD）はglobal format gate success、full analyzer gate success、full Flutter test gate実行中。Full Flutter regression Run `44920895782` はpending・jobs未生成。Theme Rescue Run `44920895754` も実行中。いずれも完了扱いにしない。
+- DISC145は自動テストとSP/PCキャプチャが進展したが、Android/DeX実機およびTalkBack実機出力は未確認。正式完了にしない。次もDISC145の残る実機・読み上げ確認を先に解消し、番号順を維持する。
+
+### 2026-11-22 GPT追記 — Cloudflare本番反映の旧追加承認制約を廃止
+
+- ユーザーの明示指示に従い、`docs/work-audit/policy/AUDIT_REMOTE_OPERATIONS.md` をNIARIMとNIARIM-webの両 `dev_branch` で同一内容に更新済み。両方のblob SHAは `36089d1fa7984b4bbcf823569ab063bccff5025b`。
+- 旧来の「追加承認があるまでWebのpush/deploy/rollbackを停止する」条件は、履歴上の記録としてのみ扱い、現行の制約から廃止。既存 `niarim-web` Workerに対する `NIARIM-web/dev_branch` の通常pushに伴う自動production deployment、検証済み成果物の明示的deploy、回帰時の限定rollbackを継続承認範囲とした。反映後のversion/traffic/公開URL検証・記録は引き続き必須。
+- 別Worker/branch/zone、DNS/domain、secret/credential新規登録・置換、契約・課金、store公開などはこの承認範囲に含めない。
+- この作業では運用資料の更新・確認のみ実施し、production deployment自体は実行していない。
