@@ -300,7 +300,11 @@ void main() {
     ], reason: 'GIF signature');
     expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
     await capture(tester, name: 'webref_export_complete.png');
-    final openWorks = find.widgetWithText(FilledButton, l10n.exportOpenWorks);
+    // FilledButton.icon uses an internal subclass, so find.byType-based
+    // widgetWithText can miss the action even though its label is rendered.
+    // Locate the visible label itself and tap through its button ancestor.
+    final openWorks = find.text(l10n.exportOpenWorks);
+    expect(openWorks, findsOneWidget, reason: 'Export completion must offer Works');
     await tester.ensureVisible(openWorks);
     await tester.tap(openWorks);
     await tester.runAsync(() async {
