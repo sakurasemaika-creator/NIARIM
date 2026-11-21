@@ -338,7 +338,6 @@ void main() {
       expect(tester.widget<RadioGroup<String>>(privacy).groupValue, 'public');
       final lockedChoice = tester.widget<RadioListTile<String>>(unlisted);
       expect(lockedChoice.enabled, isFalse);
-      expect(lockedChoice.onChanged, isNull);
       // This choice is intentionally disabled while a video is retained.
       expect(tester.widget<RadioGroup<String>>(privacy).groupValue, 'public');
       final l10n = AppLocalizations.of(

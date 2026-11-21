@@ -3593,3 +3593,10 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 
 - 先行コミットで `titleSpacing` 自体がProjectsタブのみ12px、他タブ16pxに調整済みであることを最新HEADで再確認。追加していた非Projects検索欄の4px Paddingは二重加算となるため削除し、AppBarのtab別titleSpacingに統一。
 - Home検索欄周辺のDart formatter差分も解消するよう、LayoutBuilderの字下げとtitleSpacing条件式を正規化。Projectsは12px、他タブは16pxを維持する。
+
+
+### 2026-11-21 GPT追記 — Full analyzer gateのテスト依存を修正
+
+- Full analyzer diagnostics（Run `44914122296` / commit `155c347`）で、Tips visual capture testの `TipTopic` / `tipCapturePages` 未定義、Trash Korean testの `RenderParagraph` import不足、Long Latin testの非nullassertion 8件、Community filter testのdeprecated `RadioListTile.onChanged` 参照を検出。
+- 対応：Tips testに `tip_capture_data.dart` と `tip_diagram_data.dart` をimportし、ページファイル名を文字列補間に変更。Trash testに `flutter/rendering.dart` を追加。Long Latin testはnon-null assertionを除去。Community filter testは `enabled == false` でロック状態を検証し、deprecated API参照を削除。
+- analyzer再実行で型推論エラー（TipTopic未定義に連鎖したdouble/int診断を含む）が解消するか確認する。

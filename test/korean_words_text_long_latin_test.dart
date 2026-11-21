@@ -87,12 +87,12 @@ void main() {
             final paragraph = tester.renderObject<RenderParagraph>(
               find.byType(RichText),
             );
-            final displayed = paragraph.text!.toPlainText(
+            final displayed = paragraph.text.toPlainText(
               includeSemanticsLabels: false,
             );
             final where = '${locale.toLanguageTag()} ${width}px x$scale';
             expect(displayed, contains('\u200B'), reason: where);
-            expect(_semanticsLabel(paragraph.text!), _longName, reason: where);
+            expect(_semanticsLabel(paragraph.text), _longName, reason: where);
             expect(
               _lineCount(paragraph),
               greaterThan(1),
@@ -138,10 +138,10 @@ void main() {
       find.byType(RichText),
     );
     expect(
-      paragraph.text!.toPlainText(includeSemanticsLabels: false),
+      paragraph.text.toPlainText(includeSemanticsLabels: false),
       'My Folder',
     );
-    expect(_semanticsLabel(paragraph.text!), isNull);
+    expect(_semanticsLabel(paragraph.text), isNull);
     expect(tester.takeException(), isNull);
   });
   testWidgets(
@@ -178,11 +178,11 @@ void main() {
       final paragraph = tester.renderObject<RenderParagraph>(
         find.byType(RichText),
       );
-      final displayed = paragraph.text!.toPlainText(
+      final displayed = paragraph.text.toPlainText(
         includeSemanticsLabels: false,
       );
       expect(displayed, contains('\u200B'));
-      expect(_semanticsLabel(paragraph.text!), name);
+      expect(_semanticsLabel(paragraph.text), name);
       expect(_lineCount(paragraph), greaterThan(1));
       final boxes = paragraph.getBoxesForSelection(
         TextSelection(baseOffset: 0, extentOffset: displayed.length),
@@ -231,13 +231,13 @@ void main() {
       final paragraph = tester.renderObject<RenderParagraph>(
         find.byType(RichText),
       );
-      final displayed = paragraph.text!.toPlainText(
+      final displayed = paragraph.text.toPlainText(
         includeSemanticsLabels: false,
       );
       expect(displayed, contains('\u200B'));
       final visibleText = displayed.replaceAll(RegExp('[\\u200B\\u2060]'), '');
       expect(visibleText, name);
-      expect(_semanticsLabel(paragraph.text!), name);
+      expect(_semanticsLabel(paragraph.text), name);
       expect(_lineCount(paragraph), greaterThan(1));
       final boxes = paragraph.getBoxesForSelection(
         TextSelection(baseOffset: 0, extentOffset: displayed.length),

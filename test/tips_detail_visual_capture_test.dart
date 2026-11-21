@@ -6,6 +6,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/screens/tips/tip_capture_data.dart';
+import 'package:niarim/screens/tips/tip_diagram_data.dart';
 import 'package:niarim/screens/tips/tips_screen.dart';
 import 'package:niarim/screens/tips/tip_screen_capture.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -112,11 +114,11 @@ void main() {
       expect(pageText.trim(), isNotEmpty, reason: '$topicKey page $index');
       pageTexts.add(pageText);
 
+      final pageNumber = (index + 1).toString().padLeft(2, '0');
       await capture(
         tester,
         topic: topicKey,
-        fileName: topicKey + '-page-' +
-            (index + 1).toString().padLeft(2, '0'),
+        fileName: '$topicKey-page-$pageNumber',
       );
       if (index + 1 < pages.length) {
         await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
