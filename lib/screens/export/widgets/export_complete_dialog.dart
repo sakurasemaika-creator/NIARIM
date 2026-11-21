@@ -47,6 +47,9 @@ class _ExportCompleteDialogState extends State<ExportCompleteDialog> {
     final theme = Theme.of(context);
     return AlertDialog(
       scrollable: true,
+      insetPadding: MediaQuery.sizeOf(context).height < 360
+          ? const EdgeInsets.symmetric(horizontal: 24, vertical: 12)
+          : null,
       title: Text(l10n.exportCompleteTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -98,15 +101,6 @@ class _ExportCompleteDialogState extends State<ExportCompleteDialog> {
             ),
           ],
           const SizedBox(height: 8),
-          OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: theme.colorScheme.onSurface,
-            ),
-            onPressed: () => Navigator.pop(context, ExportDestination.works),
-            icon: const Icon(Icons.video_library_outlined),
-            label: Text(l10n.exportOpenWorks),
-          ),
-          const SizedBox(height: 8),
           Wrap(
             alignment: WrapAlignment.center,
             children: [
@@ -130,6 +124,17 @@ class _ExportCompleteDialogState extends State<ExportCompleteDialog> {
           ),
         ],
       ),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      actions: [
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: () => Navigator.pop(context, ExportDestination.works),
+            icon: const Icon(Icons.video_library_outlined),
+            label: Text(l10n.exportOpenWorks, textAlign: TextAlign.center),
+          ),
+        ),
+      ],
     );
   }
 }

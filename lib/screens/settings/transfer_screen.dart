@@ -107,6 +107,169 @@ class _TransferScreenState extends State<TransferScreen> {
       _selectedProjectIds.clear();
     });
 
+    final instruction = Text(
+      l10n.transferInstructionHint,
+      style: TextStyle(
+        fontSize: 14,
+        height: 1.45,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    );
+    final selection = FirstThatFits(
+      children: [
+        Wrap(
+          spacing: 8,
+          children: [
+            TextButton(
+              onPressed: _isBusy ? null : selectAll,
+              child: Text(l10n.homeSelectionAllSelect),
+            ),
+            TextButton(
+              onPressed: _isBusy ? null : deselectAll,
+              child: Text(l10n.homeSelectionAllDeselect),
+            ),
+          ],
+        ),
+        Wrap(
+          spacing: 4,
+          children: [
+            IconButton(
+              tooltip: l10n.homeSelectionAllSelect,
+              onPressed: _isBusy ? null : selectAll,
+              icon: const Icon(Icons.select_all),
+            ),
+            IconButton(
+              tooltip: l10n.homeSelectionAllDeselect,
+              onPressed: _isBusy ? null : deselectAll,
+              icon: const Icon(Icons.deselect),
+            ),
+          ],
+        ),
+      ],
+    );
+    final dataSections = <Widget>[
+      Card(
+        margin: EdgeInsets.zero,
+        elevation: 1,
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+          alpha: 0.15,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        child: Column(
+          children: [
+            for (final key in _items.keys) ...[
+              if (key != _items.keys.first) const Divider(height: 1),
+              CheckboxListTile(
+                title: Text(_itemLabel(l10n, key)),
+                value: _items[key],
+                // 書き出し・読み込みの間は選び直せない（作品の
+                // 選択と同じ。途中で変えた項目が今の処理に
+                // 入ったか分からなくなる）。
+                onChanged: _isBusy
+                    ? null
+                    : (v) => setState(() => _items[key] = v!),
+              ),
+            ],
+          ],
+        ),
+      ),
+      const SizedBox(height: 16),
+      Text(
+        l10n.transferProjectsSectionTitle,
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: 5, bottom: 8),
+        child: Text(
+          l10n.transferProjectsHint,
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+      // 保存先を読めなかったときは知らせて読み直せるようにし、
+      // 「プロジェクトがありません。」とは言わない（引き継げる
+      // 作品が無いように見える）。
+      Consumer<ProjectService>(
+        builder: (context, projectService, _) =>
+            projectService.projectsLoadFailed
+            ? ProjectsLoadFailureNotice(
+                key: const Key('transferProjectsLoadFailed'),
+                onRetry: projectService.retryLoadProjects,
+              )
+            : const SizedBox.shrink(),
+      ),
+      Consumer<ProjectService>(
+        builder: (context, projectService, _) {
+          if (projects.isEmpty) {
+            if (projectService.projectsLoadFailed) {
+              return const SizedBox.shrink();
+            }
+            return Card(
+              margin: EdgeInsets.zero,
+              elevation: 1,
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                alpha: 0.15,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  l10n.transferProjectsEmpty,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            );
+          }
+          return Card(
+            margin: EdgeInsets.zero,
+            elevation: 1,
+            shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+              alpha: 0.15,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
+            child: Column(
+              children: [
+                for (final p in projects) ...[
+                  if (p != projects.first) const Divider(height: 1),
+                  CheckboxListTile(
+                    key: ValueKey('transfer-project-${p.id}'),
+                    title: Text(p.name),
+                    subtitle: Text(
+                      [
+                        ?folderNames[p.folderId],
+                        lastSaved.format(p.updatedAt.toLocal()),
+                      ].join(' · '),
+                    ),
+                    value: selectedProjectIds.contains(p.id),
+                    onChanged: _isBusy
+                        ? null
+                        : (v) => setState(() {
+                            if (v == true) {
+                              _selectedProjectIds.add(p.id);
+                            } else {
+                              _selectedProjectIds.remove(p.id);
+                            }
+                          }),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+      ),
+    ];
+
     return Scaffold(
       // topicはヘルプ画面側の項目タイトル（日本語固定の内部検索キー）と
       // 一致させる必要があるため翻訳しない。
@@ -119,41 +282,54 @@ class _TransferScreenState extends State<TransferScreen> {
       // 本文の列の最後に置いていた頃は、浮かぶ知らせ（読み込みの結果等）が
       // 段の上に重なり、出ている間「書き出し」等を押せなかった。Scaffoldは
       // 知らせをこの段の上へ浮かべる。
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Align(
-          heightFactor: 1,
-          child: SizedBox(
-            width: 720,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Wrap(
-                alignment: WrapAlignment.end,
-                spacing: 8,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: _isBusy ? null : _import,
-                    child: Text(l10n.transferImport),
-                  ),
-                  FilledButton.icon(
-                    onPressed:
-                        (!_isBusy &&
-                            (_items.values.any((v) => v) ||
-                                selectedProjectIds.isNotEmpty))
-                        ? _export
-                        : null,
-                    icon: _isBusy
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.file_upload),
-                    label: Text(l10n.transferExport),
-                  ),
-                ],
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Align(
+            heightFactor: 1,
+            child: SizedBox(
+              width: 720,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: _isBusy ? null : _import,
+                      child: Text(l10n.transferImport),
+                    ),
+                    FilledButton.icon(
+                      onPressed:
+                          (!_isBusy &&
+                              (_items.values.any((v) => v) ||
+                                  selectedProjectIds.isNotEmpty))
+                          ? _export
+                          : null,
+                      icon: _isBusy
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.file_upload),
+                      label: Text(l10n.transferExport),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -161,173 +337,47 @@ class _TransferScreenState extends State<TransferScreen> {
       ),
       body: desktopCentered(
         context,
-        ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-          children: [
-            Text(
-              l10n.transferInstructionHint,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.45,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 8),
-            FirstThatFits(
-              children: [
-                Row(
-                  spacing: 8,
-                  children: [
-                    TextButton(
-                      onPressed: _isBusy ? null : selectAll,
-                      child: Text(l10n.homeSelectionAllSelect),
-                    ),
-                    TextButton(
-                      onPressed: _isBusy ? null : deselectAll,
-                      child: Text(l10n.homeSelectionAllDeselect),
-                    ),
-                  ],
-                ),
-                Wrap(
-                  spacing: 4,
-                  children: [
-                    IconButton(
-                      tooltip: l10n.homeSelectionAllSelect,
-                      onPressed: _isBusy ? null : selectAll,
-                      icon: const Icon(Icons.select_all),
-                    ),
-                    IconButton(
-                      tooltip: l10n.homeSelectionAllDeselect,
-                      onPressed: _isBusy ? null : deselectAll,
-                      icon: const Icon(Icons.deselect),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Card(
-              margin: EdgeInsets.zero,
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: Column(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final sideBySide =
+                constraints.maxWidth >= 560 && constraints.maxHeight < 360;
+            if (sideBySide) {
+              return Row(
                 children: [
-                  for (final key in _items.keys) ...[
-                    if (key != _items.keys.first) const Divider(height: 1),
-                    CheckboxListTile(
-                      title: Text(_itemLabel(l10n, key)),
-                      value: _items[key],
-                      // 書き出し・読み込みの間は選び直せない（作品の
-                      // 選択と同じ。途中で変えた項目が今の処理に
-                      // 入ったか分からなくなる）。
-                      onChanged: _isBusy
-                          ? null
-                          : (v) => setState(() => _items[key] = v!),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.transferProjectsSectionTitle,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 5, bottom: 8),
-              child: Text(
-                l10n.transferProjectsHint,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            // 保存先を読めなかったときは知らせて読み直せるようにし、
-            // 「プロジェクトがありません。」とは言わない（引き継げる
-            // 作品が無いように見える）。
-            Consumer<ProjectService>(
-              builder: (context, projectService, _) =>
-                  projectService.projectsLoadFailed
-                  ? ProjectsLoadFailureNotice(
-                      key: const Key('transferProjectsLoadFailed'),
-                      onRetry: projectService.retryLoadProjects,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-            Consumer<ProjectService>(
-              builder: (context, projectService, _) {
-                if (projects.isEmpty) {
-                  if (projectService.projectsLoadFailed) {
-                    return const SizedBox.shrink();
-                  }
-                  return Card(
-                    margin: EdgeInsets.zero,
-                    elevation: 1,
-                    shadowColor: ThemeService.activeColorScheme.shadow
-                        .withValues(alpha: 0.15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    color: Theme.of(context).colorScheme.surfaceContainerLow,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        l10n.transferProjectsEmpty,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                return Card(
-                  margin: EdgeInsets.zero,
-                  elevation: 1,
-                  shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                    alpha: 0.15,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  color: Theme.of(context).colorScheme.surfaceContainerLow,
-                  child: Column(
-                    children: [
-                      for (final p in projects) ...[
-                        if (p != projects.first) const Divider(height: 1),
-                        CheckboxListTile(
-                          key: ValueKey('transfer-project-${p.id}'),
-                          title: Text(p.name),
-                          subtitle: Text(
-                            [
-                              ?folderNames[p.folderId],
-                              lastSaved.format(p.updatedAt.toLocal()),
-                            ].join(' · '),
-                          ),
-                          value: selectedProjectIds.contains(p.id),
-                          onChanged: _isBusy
-                              ? null
-                              : (v) => setState(() {
-                                  if (v == true) {
-                                    _selectedProjectIds.add(p.id);
-                                  } else {
-                                    _selectedProjectIds.remove(p.id);
-                                  }
-                                }),
-                        ),
+                  Expanded(
+                    child: ListView(
+                      primary: false,
+                      padding: const EdgeInsets.fromLTRB(16, 12, 12, 16),
+                      children: [
+                        selection,
+                        const SizedBox(height: 8),
+                        instruction,
                       ],
-                    ],
+                    ),
                   ),
-                );
-              },
-            ),
-          ],
+                  const VerticalDivider(width: 1),
+                  Expanded(
+                    flex: 2,
+                    child: ListView(
+                      primary: false,
+                      padding: const EdgeInsets.fromLTRB(12, 16, 16, 16),
+                      children: dataSections,
+                    ),
+                  ),
+                ],
+              );
+            }
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                instruction,
+                const SizedBox(height: 8),
+                selection,
+                const SizedBox(height: 6),
+                ...dataSections,
+              ],
+            );
+          },
         ),
       ),
     );

@@ -148,8 +148,8 @@ void main() {
     expect(calls, 2);
     expect(find.text(l10n.communityErrorUnsupported), findsNothing);
     expect(find.byType(ExportCompleteDialog), findsOneWidget);
-    final works = find.widgetWithText(OutlinedButton, l10n.exportOpenWorks);
-    await tester.ensureVisible(works);
+    final works = find.widgetWithText(FilledButton, l10n.exportOpenWorks);
+    expect(works.hitTestable(), findsOneWidget);
     await tester.tap(works);
     await tester.pumpAndSettle();
     expect(await result, ExportDestination.works);

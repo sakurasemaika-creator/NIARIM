@@ -40,6 +40,7 @@ class _ExportScreenState extends State<ExportScreen> {
   bool _startingExport = false;
   double _progress = 0;
   String? _error;
+  final _errorKey = GlobalKey();
   DialogRoute<void>? _progressRoute;
   VoidCallback? _refreshProgressDialog;
   // 誤タップ対応のキャンセルボタン。フレーム生成中のみ
@@ -79,17 +80,57 @@ class _ExportScreenState extends State<ExportScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final premium = context.watch<PremiumService>();
     return Scaffold(
       appBar: AppBar(
         title: FitOrHideTitle(l10n.exportScreenTitle),
         actions: const [HelpButton(topic: '動画書き出し（MP4）')],
       ),
-      body: _buildSettings(l10n),
+      body: _buildSettings(l10n, premium),
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Align(
+            heightFactor: 1,
+            child: SizedBox(
+              width: 720,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: FilledButton.icon(
+                  onPressed:
+                      _isExporting ||
+                          _startingExport ||
+                          premium.isCheckingBenefits
+                      ? null
+                      : _startExport,
+                  icon: const Icon(Icons.file_download),
+                  label: Text(
+                    premium.benefitsVerificationUnavailable
+                        ? l10n.exportCurrentConditions
+                        : l10n.exportStartButton,
+                    textAlign: TextAlign.center,
+                  ),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildSettings(AppLocalizations l10n) {
-    final premium = context.watch<PremiumService>();
+  Widget _buildSettings(AppLocalizations l10n, PremiumService premium) {
     final projects = context.watch<ProjectService>();
     final settings = context.watch<SettingsService?>();
     final project = projects.projects
@@ -130,205 +171,250 @@ class _ExportScreenState extends State<ExportScreen> {
       ),
       (ExportFormat.avi, l10n.exportFormatAvi, l10n.exportFormatAviSubtitle),
     ];
-    return desktopCentered(
-      context,
-      SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Semantics(
-              header: true,
-              child: Text(
-                l10n.exportPresetSection,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: headingFontFamilyFor(locale),
-                  fontFamilyFallback: headingFontFallbackFor(locale),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            ExportPresetSelector(
-              value: _preset,
-              onChanged: (value) => setState(() => _preset = value),
-            ),
-            // 「カスタム」選択時のみ詳細設定を展開表示する（初心者はプリセットを
-            // 選ぶだけで書き出しが完了する。詳細設定は「カスタム」タップ時のみ表示）。
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              child: _preset != ExportPreset.custom
-                  ? const SizedBox.shrink()
-                  : Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: MenuCard(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l10n.exportAdvancedSettings,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  fontFamily: headingFontFamilyFor(locale),
-                                  fontFamilyFallback: headingFontFallbackFor(
-                                    locale,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              LabeledSlider(
-                                label: l10n.exportFpsLabel,
-                                value: _customFps.toDouble(),
-                                min: 12,
-                                max: 60,
-                                divisions: 48,
-                                sliderLabel: '$_customFps',
-                                valueText: '$_customFps',
-                                onChanged: (v) =>
-                                    setState(() => _customFps = v.round()),
-                              ),
-                            ],
+    final presetSection = <Widget>[
+      Semantics(
+        header: true,
+        child: Text(
+          l10n.exportPresetSection,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            fontFamily: headingFontFamilyFor(locale),
+            fontFamilyFallback: headingFontFallbackFor(locale),
+          ),
+        ),
+      ),
+      const SizedBox(height: 8),
+      ExportPresetSelector(
+        value: _preset,
+        onChanged: (value) => setState(() => _preset = value),
+      ),
+      // 「カスタム」選択時のみ詳細設定を展開表示する（初心者はプリセットを
+      // 選ぶだけで書き出しが完了する。詳細設定は「カスタム」タップ時のみ表示）。
+      AnimatedSize(
+        duration: const Duration(milliseconds: 200),
+        child: _preset != ExportPreset.custom
+            ? const SizedBox.shrink()
+            : Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: MenuCard(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.exportAdvancedSettings,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            fontFamily: headingFontFamilyFor(locale),
+                            fontFamilyFallback: headingFontFallbackFor(locale),
                           ),
                         ),
-                      ),
-                    ),
-            ),
-            const SizedBox(height: 24),
-            Semantics(
-              header: true,
-              child: Text(
-                l10n.exportFormatSection,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: headingFontFamilyFor(locale),
-                  fontFamilyFallback: headingFontFallbackFor(locale),
-                ),
-              ),
-            ),
-            const SizedBox(height: 9),
-            RadioGroup<ExportFormat>(
-              groupValue: _format,
-              onChanged: (v) => setState(() => _format = v!),
-              child: Column(
-                spacing: 7,
-                children: [
-                  for (final (format, title, description) in formats)
-                    RadioListTile<ExportFormat>(
-                      value: format,
-                      selected: _format == format,
-                      selectedTileColor: colors.surfaceContainerHigh,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(
-                          color: _format == format
-                              ? colors.primary
-                              : colors.outlineVariant,
+                        const SizedBox(height: 8),
+                        LabeledSlider(
+                          label: l10n.exportFpsLabel,
+                          value: _customFps.toDouble(),
+                          min: 12,
+                          max: 60,
+                          divisions: 48,
+                          sliderLabel: '$_customFps',
+                          valueText: '$_customFps',
+                          onChanged: (v) =>
+                              setState(() => _customFps = v.round()),
                         ),
-                      ),
-                      title: Text(
-                        title,
-                        style: TextStyle(
-                          color: colors.onSurface,
-                          fontFamily: headingFontFamilyFor(locale),
-                          fontFamilyFallback: headingFontFallbackFor(locale),
-                        ),
-                      ),
-                      subtitle: Text(
-                        description,
-                        style: TextStyle(
-                          color: colors.onSurfaceVariant,
-                          fontFamily: bodyFontFamilyFor(locale),
-                          fontFamilyFallback: bodyFontFallbackFor(locale),
-                        ),
-                      ),
+                      ],
                     ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            DefaultTextStyle.merge(
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-                height: 1.45,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 3,
-                children: [
-                  if (project != null)
-                    Text(
-                      '${project.exportWidth} × ${project.exportHeight} px · ${l10n.pcStatusFps(_fps)}',
-                      style: TextStyle(
-                        color: colors.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  Text(
-                    appendEndCard
-                        ? l10n.exportOutputWithEndCard(duration)
-                        : l10n.exportOutputWithoutEndCard(duration),
                   ),
-                  Text(l10n.exportKeepsPlaybackTime),
-                ],
+                ),
               ),
-            ),
-            if (needsLongExport) ...[
-              Text(l10n.exportLongProjectNote),
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: TextButton(
-                  onPressed: () => context.push(
-                    '/help?topic=${Uri.encodeComponent('特典の期限が切れたら')}',
+      ),
+    ];
+    final formatSection = <Widget>[
+      Semantics(
+        header: true,
+        child: Text(
+          l10n.exportFormatSection,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            fontFamily: headingFontFamilyFor(locale),
+            fontFamilyFallback: headingFontFallbackFor(locale),
+          ),
+        ),
+      ),
+      const SizedBox(height: 9),
+      RadioGroup<ExportFormat>(
+        groupValue: _format,
+        onChanged: (v) => setState(() => _format = v!),
+        child: Column(
+          spacing: 7,
+          children: [
+            for (final (format, title, description) in formats)
+              RadioListTile<ExportFormat>(
+                value: format,
+                selected: _format == format,
+                selectedTileColor: colors.surfaceContainerHigh,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: _format == format
+                        ? colors.primary
+                        : colors.outlineVariant,
                   ),
-                  child: Text(l10n.helpPremiumExpiryTitle),
+                ),
+                title: Text(
+                  title,
+                  style: TextStyle(
+                    color: colors.onSurface,
+                    fontFamily: headingFontFamilyFor(locale),
+                    fontFamilyFallback: headingFontFallbackFor(locale),
+                  ),
+                ),
+                subtitle: Text(
+                  description,
+                  style: TextStyle(
+                    color: colors.onSurfaceVariant,
+                    fontFamily: bodyFontFamilyFor(locale),
+                    fontFamilyFallback: bodyFontFallbackFor(locale),
+                  ),
                 ),
               ),
-            ],
-            if (premium.isCheckingBenefits)
-              Text(l10n.exportBenefitsChecking)
-            else if (verificationUnavailable) ...[
-              Text(l10n.exportBenefitsUnavailable),
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: TextButton(
-                  onPressed: _isExporting ? null : premium.refreshBenefits,
-                  child: Text(l10n.exportRetryBenefits),
-                ),
-              ),
-            ],
-            const SizedBox(height: 12),
-            if (_error != null)
-              Semantics(
-                liveRegion: true,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(_error!, style: TextStyle(color: colors.error)),
-                ),
-              ),
-            FilledButton.icon(
-              onPressed:
-                  _isExporting || _startingExport || premium.isCheckingBenefits
-                  ? null
-                  : _startExport,
-              icon: const Icon(Icons.file_download),
-              label: Text(
-                verificationUnavailable
-                    ? l10n.exportCurrentConditions
-                    : l10n.exportStartButton,
-              ),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-              ),
-            ),
           ],
         ),
       ),
+    ];
+    final outputDetails = <Widget>[
+      DefaultTextStyle.merge(
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: colors.onSurfaceVariant,
+          height: 1.45,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 3,
+          children: [
+            if (project != null)
+              Text(
+                '${project.exportWidth} × ${project.exportHeight} px · ${l10n.pcStatusFps(_fps)}',
+                style: TextStyle(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            Text(
+              appendEndCard
+                  ? l10n.exportOutputWithEndCard(duration)
+                  : l10n.exportOutputWithoutEndCard(duration),
+            ),
+            Text(l10n.exportKeepsPlaybackTime),
+          ],
+        ),
+      ),
+      if (needsLongExport) ...[
+        Text(l10n.exportLongProjectNote),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton(
+            onPressed: () => context.push(
+              '/help?topic=${Uri.encodeComponent('特典の期限が切れたら')}',
+            ),
+            child: Text(l10n.helpPremiumExpiryTitle),
+          ),
+        ),
+      ],
+      if (premium.isCheckingBenefits)
+        Text(l10n.exportBenefitsChecking)
+      else if (verificationUnavailable) ...[
+        Text(l10n.exportBenefitsUnavailable),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton(
+            onPressed: _isExporting ? null : premium.refreshBenefits,
+            child: Text(l10n.exportRetryBenefits),
+          ),
+        ),
+      ],
+      const SizedBox(height: 12),
+      if (_error != null)
+        Semantics(
+          key: _errorKey,
+          liveRegion: true,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(_error!, style: TextStyle(color: colors.error)),
+          ),
+        ),
+    ];
+    return desktopCentered(
+      context,
+      LayoutBuilder(
+        builder: (context, constraints) {
+          const padding = EdgeInsets.fromLTRB(16, 16, 16, 20);
+          const columnGap = 20.0;
+          final columnWidth =
+              (constraints.maxWidth - padding.horizontal - columnGap) / 2;
+          // When the preset column gets too narrow for a scaled label, keep
+          // both controls in the full-width layout.
+          final minColumnWidth =
+              MediaQuery.textScalerOf(context).scale(14) * 8 + 24;
+          final sideBySide =
+              constraints.maxWidth >= 560 &&
+              columnWidth >= minColumnWidth &&
+              constraints.maxHeight < 380;
+          return SingleChildScrollView(
+            padding: padding,
+            child: sideBySide
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: columnGap,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ...presetSection,
+                            const SizedBox(height: 20),
+                            ...outputDetails,
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: formatSection,
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ...presetSection,
+                      const SizedBox(height: 24),
+                      ...formatSection,
+                      const SizedBox(height: 20),
+                      ...outputDetails,
+                    ],
+                  ),
+          );
+        },
+      ),
     );
+  }
+
+  void _revealError() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final target = _errorKey.currentContext;
+      if (target != null && target.mounted) {
+        Scrollable.ensureVisible(
+          target,
+          alignment: 1,
+          duration: const Duration(milliseconds: 180),
+        );
+      }
+    });
   }
 
   Future<void> _startExport() async {
@@ -352,6 +438,7 @@ class _ExportScreenState extends State<ExportScreen> {
         .firstOrNull;
     if (project == null) {
       setState(() => _error = l10n.exportProjectNotFoundError);
+      _revealError();
       return;
     }
     final scenes = projectService.scenesOf(widget.projectId);
@@ -517,6 +604,7 @@ class _ExportScreenState extends State<ExportScreen> {
           _cancelToken = null;
           _error = l10n.exportFailedError(fileFailureReason(l10n, e));
         });
+        _revealError();
       }
     }
   }
@@ -587,6 +675,7 @@ class _ExportScreenState extends State<ExportScreen> {
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(l10n.exportOutdatedAutofillTitle),
         content: Text(l10n.exportOutdatedAutofillBody),
         actions: [
