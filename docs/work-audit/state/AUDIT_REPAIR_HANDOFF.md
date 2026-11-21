@@ -3456,3 +3456,16 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - DISC190相当の永久削除確認ラベル：`trashConfirmLabelText` を `KoreanWordsText` にし、長いラテン文字列の折り返しと元の読み上げラベルを検査する回帰を追加済み。最新全体CI待ち。
 - DISC537/538/548/564〜566：移行重複の識別、作品広場戻り時のプレビュー遮蔽、選択件数・テキスト検索、空表示スラバー、全選択時のキャンバス枠、保存日時の語分割に対する修正・回帰が現HEADに含まれる。最新全体CI待ち。DISC538はプレビューを閉じてから起動画面へ戻り、作成ボタンを押す統合テストを追加。
 - Web：`NIARIM-web/dev_branch` HEAD `a42ba22715f5270cc17a5015e268483e88479d04`。Cloudflareに2026-11-21 07:25:06 UTC、wrangler由来のversion `6735f180-3e51-4e2d-9d5c-2483847c0340`、traffic 100%のdeploymentが記録されている。本作業セッションではWebを変更・デプロイしていない。既存の停止判断どおりWebのpush/deploy/rollbackを行わない。
+
+
+### 2026-11-21 GPT追記 — 旧フルCI失敗の現行コード照合
+
+- 旧Run `44877101688` / `44877125776` のログを再確認。旧HEADでの失敗には、未使用Tips import、Community投稿フォームの古いdiscardボタンfinderと非同期設定保存の待機不足、Premium透かしメソッド名のテスト陳腐化、Filterお気に入りアイコンとサムネイルの3px重なり、Project Detailテストの未await tapAtによるGuarded function conflictが含まれていた。
+- 現行dev_branchでの対応：
+  - `tips_screen.dart` の未使用 `tip_screen_capture.dart` importを削除（`ddb47021`）。
+  - Filterお気に入りアイコンを3px下げ、サムネイル境界と重ならないよう調整（`12df8214`）。
+  - Community投稿テストを現行のFilledButton構造に合わせ、SwitchListTileのUI値とSharedPreferences永続値を別々に検証。非同期保存完了後にreloadして確認（`e62f3ac6`）。
+  - Premium wiring testは現行実装の `_rasterizeWatermark` を検証する形に更新済み。
+  - Project DetailのtapAtは現行テストでawait済み。これにより旧Guarded function conflictの直接原因は除去されている。
+- 最新App HEAD：`e62f3ac66d3932c89e47fdc55b73784703f22a31`。Flutter regression Run `44881977745` はpending。Community filters Run `44881977706`、Premium lock Run `44881975048`、Filter capture matrix Run `44881975074`、Audit policy guard Run `44881977844` はqueued。まだいずれも成功判定しない。
+- 旧Runの失敗を現行HEADの失敗として扱わず、上記Runで再検証する。追加の製品コード変更はテスト結果を確認してから行う。
