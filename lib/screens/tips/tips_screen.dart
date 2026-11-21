@@ -1093,6 +1093,7 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                 ),
               ],
             ),
+            ),
           ),
         ),
       ),
