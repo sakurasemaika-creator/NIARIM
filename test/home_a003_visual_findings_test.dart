@@ -26,6 +26,7 @@ import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/color_contrast.dart';
 import 'package:niarim/widgets/sort_mode_control.dart';
+import 'package:niarim/widgets/collection_action_controls.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
@@ -570,7 +571,11 @@ void main() {
     expect(row, findsOneWidget);
     final paragraph = _paragraph(tester, rowText);
     final lines = ParagraphLines(paragraph);
-    expect(lines.lines.length, greaterThan(1));
+    expect(lines.lines.length, lessThanOrEqualTo(2));
+    final actions = tester.widget<CollectionActionRow>(
+      find.byType(CollectionActionRow),
+    );
+    expect(actions.direction, Axis.vertical);
     expect(lines.visible.replaceAll(RegExp('[\\u200B\\u2060]'), ''), name);
     expect(lines.charsOutsideWidth(), isEmpty);
     expect(lines.lineEdgeViolations(), isEmpty);
@@ -607,6 +612,10 @@ void main() {
     expect(row, findsOneWidget);
     final paragraph = _paragraph(tester, rowText);
     final lines = ParagraphLines(paragraph);
+    final actions = tester.widget<CollectionActionRow>(
+      find.byType(CollectionActionRow),
+    );
+    expect(actions.direction, Axis.horizontal);
     expect(lines.charsOutsideWidth(), isEmpty);
     expect(lines.lineEdgeViolations(), isEmpty);
     expect(tester.takeException(), isNull);
