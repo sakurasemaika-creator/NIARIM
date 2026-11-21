@@ -3392,3 +3392,13 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - 先行する長文到達テストと、内容が収まる場合に外側一覧へドラッグが通るテストを維持。`test/home_empty_short_height_test.dart` と `test/home_shared_direction_switch_test.dart` の7言語・短画面・文字2倍の回帰も現HEADに存在する。
 - `9555a4c4` のFlutter regression suite Run `44879530139` はpending（job未生成）、Project/canvas usability Run `44879530586` とAudit policy guard Run `44879530168` はqueued。現時点でCI成功・DISC564完了とは判定しない。
 - 最新の `dev_branch` HEADは、回帰範囲を拡張した記録コミット `cc2ea825`。製品コードの最新変更は `9555a4c4`。Webへのpush/deployは引き続き停止。
+
+
+## 2026-11-21 GPT再開チェックポイント — DISC145から番号順に再開
+
+- 作業基準：App `dev_branch` HEAD `69821798c1ec54d92fe331366ee08fe8578106aa`。このチェックポイント作成時点で他ブランチへの操作なし。
+- 再開順：二巡目の未解消Discoveryを番号順に扱う。最初はDISC145、続いてDISC155、DISC189、DISC190の残存確認、その後DISC537、DISC538、DISC548、DISC564〜566等を現行状態と照合する。番号が若い項目を飛ばして新しい項目から処理しない。
+- DISC145の現行コード調査：フォルダカードのタイトルは `lib/screens/home/widgets/project_list_widget.dart` の `KoreanWordsText(folder.name, ...)`。実装本体は `lib/widgets/korean_words_text.dart`。Hangulを含む文字列は幅に入る韓国語の語を結合し、幅を超える語は字間で折り返す。一方、Hangulも複製印も含まない文字列は通常の `Text` に委ねているため、空白のない長いラテン文字列等が欄幅を超える場合の挙動は未確認。現時点でDISC145を修正済みとは判定しない。
+- テスト調査：`test/folder_name_dialog_hint_words_test.dart` は新規フォルダ名ダイアログの説明文が対象であり、フォルダカードの長い名前を検査していない。`test/keep_together_text_caller_matrix_test.dart` 等もフォルダカードの実表示を直接検証するものではない。DISC145専用の実表示回帰を追加し、少なくとも7言語・SP/PC・短幅・文字拡大・通常語と幅超過の長語を分けて検証する必要がある。
+- 未完了：DISC145の原因確定・実装修正・専用回帰・CI実行・台帳の完了記録は未実施。次の作業はDISC145の再現条件を固定するテスト追加と、幅超過語だけを安全に折り返す修正案の実装・検証。
+- 制約：NIARIM-webは既存の監査記録にあるCloudflare production deployment誘発リスクのため、明示的な追加承認がない限りpush/deploy/rollbackしない。App/Webとも変更対象は `dev_branch` のみ。他ブランチには触れない。
