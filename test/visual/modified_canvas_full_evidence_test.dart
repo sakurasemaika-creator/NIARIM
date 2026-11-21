@@ -305,6 +305,11 @@ void main() {
       await navigate('/canvas/${demo.id}');
       final swatch = find.byKey(const ValueKey('canvasColorSwatch'));
       expect(swatch, findsOneWidget);
+      // The toolbar is horizontally scrollable at phone widths. Bring the
+      // color target into view before tapping it, just as a user would scroll.
+      await tester.ensureVisible(swatch);
+      await tester.pumpAndSettle();
+      expect(swatch.hitTestable(), findsOneWidget);
       await tester.tap(swatch);
       await settle();
       expect(find.byType(ColorPickerPanel), findsOneWidget);
