@@ -34,7 +34,7 @@ class TipsScreen extends StatefulWidget {
 /// 10秒おきにランダム表示するTips用に、全カテゴリのTipsをタイトル・説明の
 /// ペアへ平坦化して返す。Tips画面本体（[_TipsScreenState._buildCategories]）
 /// と同じ一覧を参照するため、内容を追加・変更してもここでの二重管理は不要。
-List<(TipTopic topic, String title, String description)> allTipTopicEntries(
+List<(TipTopic, String, String)> allTipTopicEntries(
   AppLocalizations l10n,
 ) {
   return _buildTipCategories(l10n)
@@ -45,7 +45,7 @@ List<(TipTopic topic, String title, String description)> allTipTopicEntries(
 
 List<(String title, String description)> allTipEntries(AppLocalizations l10n) {
   return allTipTopicEntries(l10n)
-      .map((entry) => (entry.title, entry.description))
+      .map((entry) => (entry.$2, entry.$3))
       .toList();
 }
 
