@@ -198,12 +198,22 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    final favorite = tester.getRect(
-      find.byKey(const ValueKey('filter-favorite-Filter0001')),
+    final favoriteFinder = find.byKey(
+      const ValueKey('filter-favorite-Filter0001'),
     );
+    final favorite = tester.getRect(favoriteFinder);
     expect(find.byKey(const ValueKey('filter-menu-Filter0001')), findsNothing);
     final preview = tester.getRect(find.byType(FilterSamplePreview).first);
+    final filterName = tester.getRect(
+      find.text(l10n.filterNameGaussianBlur).first,
+    );
     expect(favorite.top, greaterThanOrEqualTo(preview.bottom));
+    expect(favorite.right, lessThan(filterName.left));
+    expect(
+      (favorite.center.dy - filterName.center.dy).abs(),
+      lessThan(3),
+      reason: 'the favorite star and filter name share one row',
+    );
 
     await openMenu('Filter0001');
     expect(find.text(l10n.commonRename), findsNothing);

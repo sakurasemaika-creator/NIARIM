@@ -34,10 +34,19 @@ class TipsScreen extends StatefulWidget {
 /// 10秒おきにランダム表示するTips用に、全カテゴリのTipsをタイトル・説明の
 /// ペアへ平坦化して返す。Tips画面本体（[_TipsScreenState._buildCategories]）
 /// と同じ一覧を参照するため、内容を追加・変更してもここでの二重管理は不要。
+List<(TipTopic topic, String title, String description)> allTipTopicEntries(
+  AppLocalizations l10n,
+) {
+  return _buildTipCategories(l10n)
+      .expand((category) => category.tips)
+      .map((tip) => (tip.topic, tip.title, tip.description))
+      .toList();
+}
+
 List<(String title, String description)> allTipEntries(AppLocalizations l10n) {
-  return _buildTipCategories(
-    l10n,
-  ).expand((c) => c.tips).map((t) => (t.title, t.description)).toList();
+  return allTipTopicEntries(l10n)
+      .map((entry) => (entry.title, entry.description))
+      .toList();
 }
 
 class _TipsScreenState extends State<TipsScreen>
@@ -702,11 +711,6 @@ class _TipDetailDialog extends StatefulWidget {
 class _TipDetailDialogState extends State<_TipDetailDialog> {
   final _pageController = PageController();
   int _page = 0;
-  final _captureIndexByPage = <int, int>{};
-  late final List<String> _textPages = _splitIntoPages(
-    widget.tip.description,
-    illustrateByParagraph: widget.tip.topic.illustrateByParagraph,
-  );
 
   @override
   void dispose() {
@@ -714,25 +718,157 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     super.dispose();
   }
 
-  /// 説明文を読みやすい分量へ分割する。単純に上限文字数で区切ると、
-  /// 最後のページだけ文章が短く「スカスカ」になりがちなため、まず必要な
-  /// ページ数を概算し、そのページ数へ均等に近い分量で配分し直す（＝
-  /// どのページも中身の詰まった1ページとして成立するようにする）。改行
-  /// （段落）の区切りを優先して尊重し、1段落だけで目標分量を超える場合は
-  /// そのまま1ページにする。
-  static List<String> _splitIntoPages(
+  /// A screenshot and the explanation that belongs to it form one page.
+  /// Split at sentence boundaries first, then at clause/word boundaries only
+  /// when a topic has more screenshots than complete sentences.
+  static List<String> _splitDescriptionToPageCount(
+    String text,
+    int pageCount,
+  ) {
+    if (pageCount <= 1) return [text];
+    if (text.trim().isEmpty) return List<String>.filled(pageCount, '');
+
+    final paragraphs = text
+        .split('\n')
+        .where((paragraph) => paragraph.trim().isNotEmpty)
+        .toList();
+    var segments = <String>[];
+    for (var index = 0; index < paragraphs.length; index++) {
+      final pieces = _splitAt(
+        paragraphs[index],
+        const <int>{0x3002, 0xFF01, 0xFF1F, 0x21, 0x3F, 0x2E},
+      );
+      if (index > 0 && pieces.isNotEmpty) {
+        pieces[0] = '\n${pieces[0]}';
+      }
+      segments.addAll(pieces);
+    }
+
+    if (segments.length < pageCount) {
+      final clauses = <String>[
+        for (final segment in segments)
+          ..._splitAt(
+            segment,
+            const <int>{
+              0x3001,
+              0xFF0C,
+              0x2C,
+              0x3B,
+              0xFF1B,
+              0x3A,
+              0xFF1A,
+            },
+          ),
+      ];
+      if (clauses.length > segments.length) segments = clauses;
+    }
+
+    if (segments.length < pageCount) {
+      final words = <String>[
+        for (final segment in segments) ..._splitAtWhitespace(segment),
+      ];
+      if (words.length > segments.length) segments = words;
+    }
+
+    // Only used when the copy contains fewer natural breaks than screenshots.
+    // Split by Unicode code points, never in the middle of a surrogate pair.
+    while (segments.length < pageCount) {
+      var longestIndex = -1;
+      var longestLength = 1;
+      for (var index = 0; index < segments.length; index++) {
+        final length = segments[index].runes.length;
+        if (length > longestLength) {
+          longestIndex = index;
+          longestLength = length;
+        }
+      }
+      if (longestIndex < 0) break;
+      final runes = segments[longestIndex].runes.toList();
+      final midpoint = runes.length ~/ 2;
+      segments[longestIndex] = String.fromCharCodes(runes.sublist(0, midpoint));
+      segments.insert(
+        longestIndex + 1,
+        String.fromCharCodes(runes.sublist(midpoint)),
+      );
+    }
+    while (segments.length < pageCount) {
+      segments.add('');
+    }
+
+    // Keep the original reading order while distributing the text as evenly
+    // as possible. Every screenshot receives at least one segment.
+    final pages = <String>[];
+    var cursor = 0;
+    var remainingLength = segments.fold<int>(
+      0,
+      (sum, segment) => sum + segment.runes.length,
+    );
+    for (var page = 0; page < pageCount; page++) {
+      final pagesLeft = pageCount - page;
+      final targetLength = remainingLength / pagesLeft;
+      var currentLength = 0;
+      final parts = <String>[];
+      while (cursor < segments.length) {
+        final part = segments[cursor++];
+        parts.add(part);
+        final length = part.runes.length;
+        currentLength += length;
+        remainingLength -= length;
+        if (segments.length - cursor == pagesLeft - 1 ||
+            currentLength >= targetLength) {
+          break;
+        }
+      }
+      pages.add(parts.join());
+    }
+    return pages;
+  }
+
+  static List<String> _splitAt(String text, Set<int> delimiters) {
+    final runes = text.runes.toList();
+    final parts = <String>[];
+    var start = 0;
+    for (var index = 0; index < runes.length; index++) {
+      if (!delimiters.contains(runes[index])) continue;
+      final part = String.fromCharCodes(runes.sublist(start, index + 1));
+      if (part.trim().isNotEmpty) parts.add(part);
+      start = index + 1;
+    }
+    final tail = String.fromCharCodes(runes.sublist(start));
+    if (tail.trim().isNotEmpty) parts.add(tail);
+    return parts.isEmpty ? [text] : parts;
+  }
+
+  static List<String> _splitAtWhitespace(String text) {
+    final runes = text.runes.toList();
+    final parts = <String>[];
+    var start = 0;
+    for (var index = 0; index < runes.length; index++) {
+      if (runes[index] != 0x20 && runes[index] != 0x09) continue;
+      final part = String.fromCharCodes(runes.sublist(start, index + 1));
+      if (part.trim().isNotEmpty) parts.add(part);
+      start = index + 1;
+    }
+    final tail = String.fromCharCodes(runes.sublist(start));
+    if (tail.trim().isNotEmpty) parts.add(tail);
+    return parts.isEmpty ? [text] : parts;
+  }
+
+  /// Topics without individual captures retain the original readable text
+  /// pagination. Captured topics use the screenshot count as the page count.
+  static List<String> _splitLongTextIntoPages(
     String text, {
     required bool illustrateByParagraph,
   }) {
     const maxCharsPerPage = 220;
     final paragraphs = text
         .split('\n')
-        .where((p) => p.trim().isNotEmpty)
+        .where((paragraph) => paragraph.trim().isNotEmpty)
         .toList();
     if (paragraphs.isEmpty) return [text];
     if (illustrateByParagraph) return paragraphs;
     final totalLength =
-        paragraphs.fold<int>(0, (sum, p) => sum + p.length) +
+        paragraphs.fold<int>(0, (sum, paragraph) => sum + paragraph.length) +
         (paragraphs.length - 1);
     final pageCount = (totalLength / maxCharsPerPage).ceil().clamp(
       1,
@@ -742,14 +878,14 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     final targetPerPage = totalLength / pageCount;
     final pages = <String>[];
     var current = '';
-    for (final p in paragraphs) {
-      final candidate = current.isEmpty ? p : '$current\n$p';
+    for (final paragraph in paragraphs) {
+      final candidate = current.isEmpty ? paragraph : '$current\n$paragraph';
       final remainingPages = pageCount - pages.length;
       if (candidate.length > targetPerPage &&
           current.isNotEmpty &&
           remainingPages > 1) {
         pages.add(current);
-        current = p;
+        current = paragraph;
       } else {
         current = candidate;
       }
@@ -758,10 +894,8 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     return pages.isEmpty ? [text] : pages;
   }
 
-  void _goToPage(int page) {
-    if (page < 0 || page >= _textPages.length || !_pageController.hasClients) {
-      return;
-    }
+  void _goToPage(int page, int pageCount) {
+    if (page < 0 || page >= pageCount || !_pageController.hasClients) return;
     _pageController.animateToPage(
       page,
       duration: const Duration(milliseconds: 200),
@@ -769,47 +903,40 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     );
   }
 
-  void _step(int direction, AppLocalizations l10n) {
-    final count = _captures(_page, l10n).length;
-    final capture = (_captureIndexByPage[_page] ?? 0) + direction;
-    if (capture >= 0 && capture < count) {
-      setState(() => _captureIndexByPage[_page] = capture);
-      return;
-    }
-    final nextPage = _page + direction;
-    if (nextPage < 0 || nextPage >= _textPages.length) return;
-    final nextCount = _captures(nextPage, l10n).length;
-    setState(() {
-      _captureIndexByPage[nextPage] = direction < 0 && nextCount > 0
-          ? nextCount - 1
-          : 0;
-    });
-    _goToPage(nextPage);
+  void _step(int direction, int pageCount) {
+    _goToPage(_page + direction, pageCount);
   }
-
-  List<TipScreenCapture> _captures(int page, AppLocalizations l10n) =>
-      tipCaptures(
-        widget.tip.topic,
-        widget.tip.topic.illustrateByParagraph ? page : 0,
-        l10n,
-      );
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final totalPages = _textPages.length;
     final screenSize = MediaQuery.sizeOf(context);
     final dialogWidth = (screenSize.width - 24).clamp(0.0, 600.0);
     final dialogHeight = (screenSize.height - 64).clamp(0.0, 680.0);
     final words = MaterialLocalizations.of(context);
     final l10n = AppLocalizations.of(context)!;
     final scaler = MediaQuery.textScalerOf(context);
+    final capturePages = tipCapturePages(widget.tip.topic, l10n);
+    final textPages = capturePages.isNotEmpty
+        ? _splitDescriptionToPageCount(
+            widget.tip.description,
+            capturePages.length,
+          )
+        : _splitLongTextIntoPages(
+            widget.tip.description,
+            illustrateByParagraph: widget.tip.topic.illustrateByParagraph,
+          );
+    final totalPages = capturePages.isNotEmpty
+        ? capturePages.length
+        : textPages.length;
+
     // Illustrated steps and text start at the same positions for every tip.
     final longTitle = screenSize.width < 360 || scaler.scale(15) > 18;
     final titleHeight = scaler.scale(15) * (longTitle ? 4.2 : 2.8);
 
     Widget buildPage(int index) {
       return SingleChildScrollView(
+        key: ValueKey('tip-page-${widget.tip.topic.name}-$index'),
         primary: false,
         padding: const EdgeInsets.fromLTRB(16, 48, 16, 20),
         child: Column(
@@ -841,15 +968,14 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
               steps: widget.tip.topic.steps(l10n, index),
               height: dialogHeight * .60,
               isComparison: widget.tip.topic.isComparison,
-              captures: _captures(index, l10n),
-              captureIndex: _captureIndexByPage[index] ?? 0,
-              onCaptureChanged: (capture) {
-                setState(() => _captureIndexByPage[index] = capture);
-              },
+              captures: capturePages.isEmpty
+                  ? const []
+                  : [capturePages[index]],
             ),
             const SizedBox(height: 12),
             Text(
-              _textPages[index],
+              textPages[index],
+              key: const ValueKey('tipPageDescription'),
               style: const TextStyle(fontSize: 13, height: 1.5),
             ),
           ],
@@ -860,9 +986,9 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
-            _step(-1, l10n),
+            _step(-1, totalPages),
         const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
-            _step(1, l10n),
+            _step(1, totalPages),
       },
       child: Focus(
         autofocus: true,
@@ -886,7 +1012,7 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                         child: PageView.builder(
                           controller: _pageController,
                           itemCount: totalPages,
-                          onPageChanged: (p) => setState(() => _page = p),
+                          onPageChanged: (page) => setState(() => _page = page),
                           itemBuilder: (_, index) => buildPage(index),
                         ),
                       ),
@@ -894,16 +1020,17 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(
+                            key: const ValueKey('tipPreviousTextPage'),
                             tooltip: words.previousPageTooltip,
                             onPressed: _page == 0
                                 ? null
-                                : () => _goToPage(_page - 1),
+                                : () => _goToPage(_page - 1, totalPages),
                             icon: const Icon(Icons.chevron_left),
                           ),
                           if (totalPages <= 6)
-                            for (var i = 0; i < totalPages; i++)
+                            for (var index = 0; index < totalPages; index++)
                               Semantics(
-                                selected: i == _page,
+                                selected: index == _page,
                                 child: IconButton(
                                   constraints: const BoxConstraints.tightFor(
                                     width: 32,
@@ -911,21 +1038,22 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                                   ),
                                   padding: EdgeInsets.zero,
                                   tooltip: words.pageRowsInfoTitle(
-                                    i + 1,
-                                    i + 1,
+                                    index + 1,
+                                    index + 1,
                                     totalPages,
                                     false,
                                   ),
                                   icon: Icon(
-                                    i == _page
+                                    index == _page
                                         ? Icons.circle
                                         : Icons.circle_outlined,
                                     size: 9,
-                                    color: i == _page
+                                    color: index == _page
                                         ? scheme.primary
                                         : scheme.outline,
                                   ),
-                                  onPressed: () => _goToPage(i),
+                                  onPressed: () =>
+                                      _goToPage(index, totalPages),
                                 ),
                               )
                           else
@@ -938,14 +1066,13 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                             tooltip: words.nextPageTooltip,
                             onPressed: _page == totalPages - 1
                                 ? null
-                                : () => _goToPage(_page + 1),
+                                : () => _goToPage(_page + 1, totalPages),
                             icon: const Icon(Icons.chevron_right),
                           ),
                         ],
                       ),
                     ],
                   ),
-                // 右上の閉じるボタン
                 Positioned(
                   right: 4,
                   top: 4,
@@ -965,7 +1092,6 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     );
   }
 }
-
 class _TipCategory {
   final String title;
   final IconData icon;

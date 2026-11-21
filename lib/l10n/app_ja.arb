@@ -384,7 +384,9 @@
   "creativeFolderDeleteBody": "「{name}」を削除しますか？中の素材は「フォルダなし」に移動します。",
   "@creativeFolderDeleteBody": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "creativeAssetNameLabel": "名前",
@@ -595,7 +597,13 @@
   "workspaceSaveHint": "左利きモード・PCモード・ツールバー・ツール早替え設定を名前を付けて保存し、後から呼び出せます。",
   "workspaceLoadButton": "ワークスペースを読み込み",
   "workspaceLoadConfirmBody": "「{name}」を読み込むと、現在のワークスペース設定が置き換わります。先に現在の設定を保存できます。",
-  "@workspaceLoadConfirmBody": {"placeholders": {"name": {"type": "String"}}},
+  "@workspaceLoadConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "workspaceEmptyToolbar": "表示するツールがありません",
   "workspaceSaveDialogTitle": "ワークスペースを保存",
   "workspaceSaveDialogLabel": "名前（例：アニメ用・線画用）",
@@ -604,7 +612,13 @@
   "helpScreenTitle": "ヘルプ",
   "helpSearchHint": "検索...",
   "helpSearchResultCount": "検索結果 {count}件",
-  "@helpSearchResultCount": {"placeholders": {"count": {"type": "int"}}},
+  "@helpSearchResultCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "helpNoResults": "該当する項目が見つかりません",
   "helpCategoryTool": "ツール",
   "helpCategoryLayer": "レイヤー",
@@ -778,7 +792,7 @@
   "tipsCategoryEffects": "演出・仕上げのコツ",
   "tipsCategoryExport": "書き出し・操作のコツ",
   "tipsClipDuplicateTitle": "タイムラインの素材は複製・移動・削除ができる",
-  "tipsClipDuplicateDesc": "画像・動画・音声クリップをタップすると開く詳細シートのコピーアイコンから複製できます。同じ効果音を繰り返し使う、同じ画像を場面ごとに配置し直すといった編集が、長押しドラッグと複製ボタンだけで完結します。",
+  "tipsClipDuplicateDesc": "タイムライン上の画像・動画・音声クリップをタップすると、詳細シートが開きます。\n詳細シートの複製ボタンを押すと、選んだクリップを複製できます。\n同じ効果音を繰り返したり、同じ画像を別の場面に配置したりするときに便利です。",
   "tipsTextCaptionTitle": "テキストツールで字幕を入れる",
   "tipsTextCaptionDesc": "テキストツールを使えば、字幕やコメントをフレームごとに配置できます。フォントをドット絵モードに切り替えると、レトロゲーム風の質感を演出することもできます。",
   "tipsAutofillPresetTitle": "自動塗り設定はパーツごとに登録しておく",
@@ -786,7 +800,7 @@
   "tipsAutofillBaseCoatTitle": "自動塗りはパーツ分けせず下塗り用に使うだけでも便利",
   "tipsAutofillBaseCoatDesc": "自動塗りは本来パーツごとに色分けする機能ですが、丁寧に分けなくても、線画全体を1色で塗るだけの下塗りレイヤーとして使うだけで十分便利です。線の内側を一括で塗りつぶせるため、手動のバケツ塗りで起きがちな塗り残し（線の隙間から下の色が透けてしまうミス）を防げます。その上に手動で色を重ねれば、パーツ分けの手間をかけずに恩恵だけ得られます。",
   "tipsAutofillManualPartColorTitle": "仮色で塗り分けて色更新するなら、線画は通常レイヤー1枚でOK",
-  "tipsAutofillManualPartColorDesc": "この方法は、目立つ仮色でパーツを手動で塗り分けてから、本来の色に更新したい場合に向いています。実際の線画は通常レイヤー1枚にまとめて描き、塗りレイヤーより上に置きます。\nパーツごとに「自動塗り用線画レイヤー」を追加し、その三点メニューの「パーツ設定」でパーツを割り当てます。この方法では補助用なので線画を描かず、空のままで構いません。同じメニューから「自動塗り実行」を一度行い、対応する「自動塗りレイヤー」を作ります。\n各「自動塗りレイヤー」には、線ではなく面として、パーツごとの目立つ仮色を手動で塗ります。輪郭線を引くのではなく、あとで色を更新したい領域を塗りつぶしてください。\n形を整えたら、対応する「自動塗り用線画レイヤー」の三点メニューから「自動塗り実行」を選び、実行方法で「形状を保ったまま色だけ更新」を選択します。手動で塗った形を保ったまま「自動塗り設定」の本来の色に更新できます。線画からパーツを自動判定して一度で塗りたい場合は、この方法ではなく、実際の線画を「自動塗り用線画レイヤー」に描いてください。",
+  "tipsAutofillManualPartColorDesc": "この方法は、目立つ仮色でパーツを手動で塗り分け、あとから本来の色に更新したい場合に向いています。実際の線画は通常レイヤー1枚にまとめて描き、塗りレイヤーより上に置きます。\nパーツごとに「自動塗り用線画レイヤー」を追加し、三点メニューの「パーツ設定」を開きます。\nパーツ設定で、対応するパーツを選んで割り当てます。\n同じメニューから「自動塗り実行」を選び、実行方法を指定します。\n補助用の自動塗り用線画レイヤーは空のままにし、対応する「自動塗りレイヤー」にパーツごとの仮色を面として塗ります。\n形を整えたら「形状を保ったまま色だけ更新」を選びます。\n手動で塗った形を保ったまま、本来の色に更新できます。線画からパーツを自動判定したい場合は、線画を「自動塗り用線画レイヤー」に描いてください。",
   "tipsBrushFavoriteTitle": "ブラシはお気に入り登録で迷わず選べる",
   "tipsBrushFavoriteDesc": "よく使うブラシは一覧の星アイコンをタップしてお気に入り登録しておきましょう。一覧上部の星アイコンでお気に入りのみに絞り込めるので、探す手間が減ります。誤って削除しないよう、お気に入り登録中は削除できない仕組みになっています。",
   "tipsPressureCurveTitle": "筆圧カーブを自分好みに調整する",
@@ -822,7 +836,7 @@
   "tipsMagicWandLassoTitle": "マジックワンド選択×投げ縄塗りで塗り分け効率化",
   "tipsMagicWandLassoDesc": "選択ツールの自動選択（マジックワンド）でおおまかな範囲を一括選択し、はみ出た部分だけ投げ縄選択で調整すると、複雑な塗り分けも素早く行えます。",
   "tipsCommonLayerFolderTitle": "共通レイヤー×フォルダで話数をまたいで使い回す",
-  "tipsCommonLayerFolderDesc": "シリーズ物で毎話使うロゴやクレジット表記は、共通レイヤー化してフォルダにまとめておくと、新しい話数のプロジェクトへコピーする際も迷わず扱えます。",
+  "tipsCommonLayerFolderDesc": "シリーズ物で毎話使うロゴやクレジット表記は、レイヤーを「共通レイヤー」に変換して使えます。\n共通レイヤーの表示範囲を設定しておくと、必要なフレームだけに表示できます。\nレイヤーパネルでは共通レイヤーとして通常レイヤーと区別して管理できます。\nフォルダにまとめておくと、新しい話数のプロジェクトへコピーするときも迷わず扱えます。",
   "tipsStrokeDecayFadeTitle": "ストローク減衰×フェードで毛筆表現",
   "tipsStrokeDecayFadeDesc": "ブラシ設定では、入り（始点）と抜き（終点）の値・距離を別々に調整できます。ストローク減衰も組み合わせると、入りだけ細くする、抜きだけ長く伸ばす、両端を非対称にするなど、毛筆やインクブラシらしい抑揚を作れます。",
   "tipsColorMixingFadeTitle": "混色×フェードで絵の具のような混ざり",
@@ -864,7 +878,7 @@
   "tipsToneCurveSepiaTitle": "トーンカーブ×セピアでレトロ写真風",
   "tipsToneCurveSepiaDesc": "演出フィルターのトーンカーブで明暗のコントラストを整えてからセピアを重ねると、色あせた古い写真のような質感を演出できます。",
   "tipsCameraLensBlurTitle": "カメラキーフレーム×レンズぼかしでズームブラー演出",
-  "tipsCameraLensBlurDesc": "カメラキーフレームでズームする瞬間に合わせてレンズぼかしの演出フィルターを一時的に強めに設定すると、実写のズームブラーのような迫力を演出できます。",
+  "tipsCameraLensBlurDesc": "カメラキーフレームでズームする動きを付けます。\nズームする瞬間に合わせて、レンズぼかしの演出フィルターを一時的に強めに設定します。\n実写のズームブラーのような迫力を演出できます。",
   "tipsBlurVignetteBgTitle": "ガウスぼかし×周辺減光で柔らかい背景ボケ",
   "tipsBlurVignetteBgDesc": "背景レイヤーだけにガウスぼかしと周辺減光の描画フィルターを重ねてかけると、主役のキャラクターが自然と目立つ、被写界深度のあるカメラ風の仕上がりになります。",
   "tipsSepiaVignetteTitle": "セピア×周辺減光でアンティーク写真風の動画に",
@@ -872,7 +886,7 @@
   "tipsVideoTrimReuseTitle": "動画クリップの使用範囲を変えて同じ素材を使い回す",
   "tipsVideoTrimReuseDesc": "同じ動画素材でも、クリップごとに使用開始・終了フレームを変えて配置すれば、別のカットとして使い回せます。素材を増やさずにバリエーションを作れます。",
   "tipsSaveSlotAutoSaveTitle": "セーブスロット×自動保存を使い分ける",
-  "tipsSaveSlotAutoSaveDesc": "自動保存は最大3件です。大事な時点のデータはセーブスロットに保存し、後から保存データの一覧で選んで読み込めます。",
+  "tipsSaveSlotAutoSaveDesc": "大事な時点のデータは、手動でセーブスロットに保存しておきましょう。\n自動保存は最大3件まで、直近の編集内容を自動で記録します。\n保存データの一覧から読み込むデータを選び、プレビューを確認してから復旧します。\n読み込むと、その保存時点のキャンバスとタイムラインに戻ります。",
   "tipsQuickToolSwipeTitle": "早替えツールは上スワイプで並び替えできる",
   "tipsQuickToolSwipeDesc": "早替えツールの登録内容を変えたいときは、長押しだけでなく上スワイプでも管理ポップアップを開けます。片手で操作しているときに素早く並び替えたい場合に便利です。",
   "tipsDrawingAreaCameraTitle": "描画領域を広めに×カメラキーフレームで安全にパン・ズーム",
@@ -891,7 +905,16 @@
   "fontEmptyTitle": "フォントがありません",
   "fontEmptyHint": "「探してDL」または「読み込み」タブから追加できます",
   "fontDeleteUsageCounts": "使用中のプロジェクト（ゴミ箱を含む）: {projects}件。ウォーターマーク設定: {watermarks}件。",
-  "@fontDeleteUsageCounts": {"placeholders": {"projects": {"type": "int"}, "watermarks": {"type": "int"}}},
+  "@fontDeleteUsageCounts": {
+    "placeholders": {
+      "projects": {
+        "type": "int"
+      },
+      "watermarks": {
+        "type": "int"
+      }
+    }
+  },
   "fontDeleteSavedUsageWarning": "このフォントを使用しているテキストは、過去のセーブも含め、削除後に別のフォントで表示される場合があります。",
   "fontRenameDialogTitle": "フォント名を変更",
   "fontImportTitle": "端末に保存済みのフォントを読み込む",
@@ -1221,9 +1244,21 @@
   "exportKeepsPlaybackTime": "書き出しFPSを変えても作品の再生時間を維持します。",
   "exportLongProjectNote": "90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。",
   "exportOutputWithoutEndCard": "本編 {duration}（エンドマークなし）",
-  "@exportOutputWithoutEndCard": {"placeholders": {"duration": {"type": "String"}}},
+  "@exportOutputWithoutEndCard": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "exportOutputWithEndCard": "本編 {duration}  +  NIARIMエンドマーク（5秒）",
-  "@exportOutputWithEndCard": {"placeholders": {"duration": {"type": "String"}}},
+  "@exportOutputWithEndCard": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "exportProjectNotFoundError": "プロジェクトが見つかりません",
   "exportFailedError": "書き出し失敗: {error}",
   "@exportFailedError": {
@@ -1871,8 +1906,12 @@
   "autofillDeleteUsage": "{projects}件の作品の線画レイヤー{layers}件で使用中です。これらのレイヤーで自動塗りを実行するには、別のパーツを割り当ててください。",
   "@autofillDeleteUsage": {
     "placeholders": {
-      "projects": {"type": "int"},
-      "layers": {"type": "int"}
+      "projects": {
+        "type": "int"
+      },
+      "layers": {
+        "type": "int"
+      }
     }
   },
   "@autofillPartUnconfiguredBanner": {
@@ -3256,7 +3295,16 @@
   "storageClearCacheButton": "キャッシュを削除",
   "storageRemoveUnusedMaterialsButton": "未使用素材を一括削除（全プロジェクト）",
   "storageRemoveUnusedMaterialsConfirmBody": "未使用の素材を{count}件（{size}）削除します。この操作は取り消せません。",
-  "@storageRemoveUnusedMaterialsConfirmBody": {"placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
+  "@storageRemoveUnusedMaterialsConfirmBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "storageNoUnusedMaterials": "未使用の素材はありません。",
   "storageEmptyTrashButton": "ゴミ箱を空にする",
   "storageEmptyTrashKeptUnreadFolders": "ゴミ箱を空にしませんでした。読み込めていないプロジェクトを含むフォルダは、読み込めるまで削除できません。ホームの「{retry}」でもう一度読み込んでください。",
@@ -3453,7 +3501,7 @@
   "helpCustomAutomationTitle": "自動操作（操作記録）",
   "helpCustomAutomationDesc": "キャンバスまたはタイムラインで行った対応操作を手順として記録し、名前を付けて繰り返し実行できる機能です。「自動操作」から新規追加して記録を開始し、停止後の確認画面で手順の並べ替え・削除をして保存します。保存した操作は名前変更・再記録・削除ができ、お気に入りだけに絞り込めます。JSONファイルとして書き出し・読み込みもできます。キャンバスだけで、かつ同じ1フレーム内に記録した操作では、実行時に現在のフレーム・指定したフレーム範囲・全フレームを選べます。タイムライン操作や複数フレームにまたがる記録では、このフレーム範囲選択は表示されません。",
   "tipsOfficialAutomationPresetsTitle": "公式の自動操作プリセットを自分用に調整する",
-  "tipsOfficialAutomationPresetsDesc": "「線画作成（デジタル）」は自動線画→墨溜まり、「線画抽出（アナログ）」は色調補正→二値化→明度で透過、「線画色トレス」は線画レイヤーで実行し、下の塗りの色を線画にクリッピングした新規レイヤーへ取り込む→ぼかしと複製・結合→色トレス補正（明度を半分にし彩度を上げる）で、線を隣の塗りより深い色にする公式プリセットです。再記録では記録に対応した操作を追加できます。確認画面では手順の並べ替え・削除ができます。元の設定へ戻せるよう、編集前に書き出しておくと安心です。",
+  "tipsOfficialAutomationPresetsDesc": "「線画作成（デジタル）」は、自動線画から墨溜まりまでの処理をまとめたプリセットです。\n確認画面では、手順の並べ替えや削除ができ、再記録では操作を追加できます。\n編集前に設定を書き出しておくと、元の状態へ戻せて安心です。\n「線画抽出（アナログ）」は、色調補正→二値化→明度で透過の順に処理します。\n「線画色トレス」は、下の塗り色を線画へ取り込み、ぼかし・複製・結合・色トレス補正で線を隣の塗りより深い色になじませます。",
   "tipsTexturePrismVhsTitle": "質感・プリズム・VHSは複製レイヤーで試す",
   "tipsTexturePrismVhsDesc": "質感変更フィルターはオーロラホログラム・サンプルゴールド・プラチナシルバー・ルミナスパール・オーロラパステル・ダークレインボーから土台を選び、明るさと彩度で調整できます。プリズムはぼかし量と虹の向きで光の帯を作り、VHSノイズはノイズ・彩度・明るさ・コントラストをまとめて古いテープ風にします。複製したレイヤーで一つずつ試すと比較しやすく、気に入った設定をお気に入りにすると再利用も速くなります。",
   "customAutomationExecutionFailed": "自動操作を完了できませんでした。設定と対象レイヤーを確認してください。",
@@ -4192,7 +4240,9 @@
   "savedListUnreadableNotice": "{count, plural, other{保存の中に読み込めない項目が{count}件あります。元のデータは消さずに残してあり、次に起動したときにもう一度読み込みを試します。}}",
   "@savedListUnreadableNotice": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "errorLogEmpty": "エラーは記録されていません",

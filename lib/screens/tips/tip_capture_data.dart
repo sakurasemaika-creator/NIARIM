@@ -15,7 +15,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/app_phone_manual-crop-000010062.webp',
       const Size(780, 1047),
       words.saveDataManualTab,
-      const [Rect.fromLTWH(0.42, 0.43, 0.31, 0.12)],
+      const [Rect.fromLTWH(0.28, 0.12, 0.24, 0.08)],
     ),
     TipScreenCapture(
       'assets/tips/captures/app_phone_auto-crop-000010043.webp',
@@ -47,19 +47,19 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/timeline_phone_before.webp',
       const Size(585, 1266),
       words.timelineMarkerTrackLabel,
-      const [Rect.fromLTWH(0.525, 0.79, 0.07, 0.055)],
+      const [Rect.fromLTWH(0.53, 0.77, 0.10, 0.09)],
     ),
     TipScreenCapture(
       'assets/tips/captures/timeline_phone_edit.webp',
       const Size(585, 1266),
       words.commonEdit,
-      const [Rect.fromLTWH(0.11, 0.31, 0.79, 0.41)],
+      const [Rect.fromLTWH(0.10, 0.30, 0.80, 0.40)],
     ),
     TipScreenCapture(
       'assets/tips/captures/timeline_phone_note.webp',
       const Size(585, 1266),
       words.timelineMarkerTrackLabel,
-      const [Rect.fromLTWH(0.49, 0.8, 0.42, 0.16)],
+      const [Rect.fromLTWH(0.53, 0.85, 0.24, 0.07)],
     ),
   ],
   (TipTopic.commonLayerKeyframe, 0) => [
@@ -67,13 +67,13 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/layer_keyframe_before-crop-0012100100.webp',
       const Size(585, 1114),
       words.layerPanelKeyframeLabel,
-      const [Rect.fromLTWH(0.13, 0.185, 0.72, 0.3)],
+      const [Rect.fromLTWH(0.04, 0.035, 0.92, 0.46)],
     ),
     TipScreenCapture(
       'assets/tips/captures/layer_keyframe_drag-crop-0012100100.webp',
       const Size(585, 1114),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.13, 0.185, 0.72, 0.3)],
+      const [Rect.fromLTWH(0.04, 0.035, 0.92, 0.46)],
     ),
   ],
   (TipTopic.drawingAreaCamera, 0) => [
@@ -81,13 +81,13 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/drawing-area.webp',
       const Size(800, 1600),
       words.newProjectDrawingAreaTitle,
-      const [],
+      const [Rect.fromLTWH(0.33, 0.26, 0.34, 0.10)],
     ),
     TipScreenCapture(
       'assets/tips/captures/camera_before-crop-0012100100.webp',
       const Size(585, 1114),
       words.helpCameraKeyframeTitle,
-      const [Rect.fromLTWH(0.15, 0.17, 0.7, 0.33)],
+      const [Rect.fromLTWH(0.04, 0.07, 0.92, 0.50)],
     ),
     TipScreenCapture(
       'assets/tips/captures/camera_drag-crop-0012100100.webp',
@@ -101,13 +101,13 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/audio-open.webp',
       const Size(800, 1600),
       words.projectListMaterialAudio,
-      const [],
+      const [Rect.fromLTWH(0.04, 0.62, 0.92, 0.14)],
     ),
     TipScreenCapture(
       'assets/tips/captures/audio-fade-controls.webp',
       const Size(800, 1600),
       '${words.timelineClipFadeInLabel} / ${words.timelineClipFadeOutLabel}',
-      const [Rect.fromLTWH(0.04, 0.55, 0.91, 0.405)],
+      const [Rect.fromLTWH(0.04, 0.625, 0.92, 0.15)],
     ),
   ],
   (TipTopic.clipDuplicate, 0) => [
@@ -115,19 +115,19 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/video-open.webp',
       const Size(800, 1600),
       words.projectListMaterialVideo,
-      const [Rect.fromLTWH(0.03, 0.8, 0.94, 0.175)],
+      const [Rect.fromLTWH(0.52, 0.80, 0.46, 0.06)],
     ),
     TipScreenCapture(
       'assets/tips/captures/video-duplicate-control.webp',
       const Size(800, 1600),
       words.commonDuplicate,
-      const [Rect.fromLTWH(0.53, 0.62, 0.44, 0.09)],
+      const [Rect.fromLTWH(0.70, 0.62, 0.08, 0.055)],
     ),
     TipScreenCapture(
       'assets/tips/captures/video-duplicated.webp',
       const Size(800, 1600),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.025, 0.8, 0.95, 0.178)],
+      const [Rect.fromLTWH(0.52, 0.80, 0.46, 0.06)],
     ),
   ],
   (TipTopic.videoTrimReuse, 0) => [
@@ -135,13 +135,13 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/video-trim.webp',
       const Size(800, 1600),
       '${words.timelineClipUseStartLabel} / ${words.timelineClipUseEndLabel}',
-      const [Rect.fromLTWH(0.028, 0.714, 0.944, 0.274)],
+      const [Rect.fromLTWH(0.035, 0.79, 0.93, 0.15)],
     ),
     TipScreenCapture(
       'assets/tips/captures/video-trimmed.webp',
       const Size(800, 1600),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.028, 0.714, 0.944, 0.274)],
+      const [Rect.fromLTWH(0.035, 0.79, 0.93, 0.15)],
     ),
   ],
   (TipTopic.verticalRuby, 0) => [
@@ -149,19 +149,19 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/ruby-controls.webp',
       const Size(800, 1600),
       words.canvasTextVertical,
-      const [Rect.fromLTWH(0.04, 0.18, 0.917, 0.285)],
+      const [Rect.fromLTWH(0.08, 0.39, 0.84, 0.05)],
     ),
     TipScreenCapture(
       'assets/tips/captures/ruby-help.webp',
       const Size(800, 1600),
       words.canvasHelpRubyTitle,
-      const [],
+      const [Rect.fromLTWH(0.08, 0.33, 0.84, 0.34)],
     ),
     TipScreenCapture(
       'assets/tips/captures/ruby-result.webp',
       const Size(800, 1600),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.07, 0.136, 0.86, 0.535)],
+      const [Rect.fromLTWH(0.34, 0.34, 0.17, 0.10)],
     ),
   ],
   (TipTopic.textCaption, 0) => [
@@ -177,13 +177,13 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/video-open.webp',
       const Size(800, 1600),
       words.projectListMaterialVideo,
-      const [],
+      const [Rect.fromLTWH(0.52, 0.80, 0.46, 0.06)],
     ),
     TipScreenCapture(
       'assets/tips/captures/onion-skin.webp',
       const Size(800, 1600),
       words.workspaceDockPanelOnionSkin,
-      const [],
+      const [Rect.fromLTWH(0.39, 0.125, 0.54, 0.05)],
     ),
   ],
   (TipTopic.endCardWatermark, 0) => [
@@ -221,13 +221,13 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/autofill_preset_p1-before-ui.webp',
       const Size(800, 1600),
       words.assetTagLineArt,
-      const [],
+      const [Rect.fromLTWH(0.02, 0.18, 0.96, 0.49)],
     ),
     TipScreenCapture(
       'assets/tips/captures/autofill_preset_p1-after-ui.webp',
       const Size(800, 1600),
       words.timelinePreviewPlaceholder,
-      const [],
+      const [Rect.fromLTWH(0.02, 0.18, 0.96, 0.49)],
     ),
   ],
   (TipTopic.officialAutomationPresets, 0) => [
@@ -281,7 +281,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/normal-layer-above.webp',
       const Size(800, 1600),
       words.layerPanelMenuNormalLayer,
-      const [],
+      const [Rect.fromLTWH(0.02, 0.63, 0.96, 0.07)],
     ),
   ],
   (TipTopic.autofillManualPartColor, 1) => [
@@ -289,13 +289,13 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/autofill-lineart-menu.webp',
       const Size(800, 1600),
       words.layerPanelMenuLineartLayer,
-      const [],
+      const [Rect.fromLTWH(0.03, 0.82, 0.94, 0.08)],
     ),
     TipScreenCapture(
       'assets/tips/captures/autofill-part-assign.webp',
       const Size(800, 1600),
       words.layerPanelMenuPartAssign,
-      const [],
+      const [Rect.fromLTWH(0.03, 0.58, 0.94, 0.31)],
     ),
   ],
   (TipTopic.autofillManualPartColor, 2) => [
@@ -303,13 +303,13 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/autofill-generate-mode.webp',
       const Size(800, 1600),
       words.layerPanelAutofillRepaintTitle,
-      const [],
+      const [Rect.fromLTWH(0.18, 0.56, 0.66, 0.07)],
     ),
     TipScreenCapture(
       'assets/tips/captures/autofill-color-before.webp',
       const Size(800, 1600),
       words.layerPanelMenuAutofillLayer,
-      const [],
+      const [Rect.fromLTWH(0.48, 0.13, 0.50, 0.15)],
     ),
   ],
   (TipTopic.autofillManualPartColor, 3) => [
@@ -323,7 +323,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/autofill-color-after.webp',
       const Size(800, 1600),
       words.timelinePreviewPlaceholder,
-      const [],
+      const [Rect.fromLTWH(0.0, 0.16, 1.0, 0.52)],
     ),
   ],
   (TipTopic.brushFavorite, 0) => [
@@ -387,13 +387,13 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/common-layer.webp',
       const Size(800, 1600),
       words.helpCommonLayerTitle,
-      const [],
+      const [Rect.fromLTWH(0.48, 0.13, 0.50, 0.07)],
     ),
     TipScreenCapture(
       'assets/tips/captures/layer-folder.webp',
       const Size(800, 1600),
       words.helpFolderTitle,
-      const [],
+      const [Rect.fromLTWH(0.48, 0.13, 0.50, 0.12)],
     ),
   ],
   (TipTopic.quickToolPenSub, 0) => [
@@ -431,7 +431,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/autofill-color-before.webp',
       const Size(800, 1600),
       words.autofillPartSelectColorButton,
-      const [],
+      const [Rect.fromLTWH(0.48, 0.13, 0.50, 0.15)],
     ),
     TipScreenCapture(
       'assets/tips/autofillManualPartColor.webp',
@@ -443,7 +443,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/autofill-color-after.webp',
       const Size(800, 1600),
       words.timelinePreviewPlaceholder,
-      const [],
+      const [Rect.fromLTWH(0.0, 0.16, 1.0, 0.52)],
     ),
   ],
   (TipTopic.homeWidget, 0) => [
@@ -537,7 +537,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/pressure-controls.webp',
       const Size(800, 1600),
       words.penSettingsCurveSection,
-      const [],
+      const [Rect.fromLTWH(0.03, 0.265, 0.94, 0.05)],
     ),
     TipScreenCapture(
       'assets/tips/pressureCurve.webp',
@@ -557,7 +557,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/onion-skin.webp',
       const Size(800, 1600),
       words.workspaceDockPanelOnionSkin,
-      const [Rect.fromLTWH(0.501, 0.074, 0.441, 0.107)],
+      const [Rect.fromLTWH(0.39, 0.125, 0.54, 0.05)],
     ),
   ],
   (TipTopic.fourPanelBrush, 0) => [
@@ -637,7 +637,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/Filter0009_default-after-ui.webp',
       const Size(960, 1920),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
+      const [Rect.fromLTWH(0.0, 0.155, 1.0, 0.29)],
     ),
   ],
   (TipTopic.clippingGradient, 0) => [
@@ -748,7 +748,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/Filter0022_default-after-ui.webp',
       const Size(960, 1920),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
+      const [Rect.fromLTWH(0.0, 0.155, 1.0, 0.29)],
     ),
   ],
   (TipTopic.partKeyframeGroup, 0) => [
@@ -812,7 +812,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/camera_drag.webp',
       const Size(585, 1266),
       words.helpCameraKeyframeTitle,
-      const [],
+      const [Rect.fromLTWH(0.04, 0.07, 0.92, 0.50)],
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0002_default-settings.webp',
@@ -824,7 +824,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/Filter0002_default-after-ui.webp',
       const Size(960, 1920),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
+      const [Rect.fromLTWH(0.0, 0.155, 1.0, 0.29)],
     ),
   ],
   (TipTopic.webmCommonLayer, 0) => [
@@ -906,7 +906,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/Filter0017_default-after-ui.webp',
       const Size(960, 1920),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
+      const [Rect.fromLTWH(0.0, 0.155, 1.0, 0.29)],
     ),
   ],
   (TipTopic.sphereShading, 0) => [
@@ -920,7 +920,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/Filter0028_default-after-ui.webp',
       const Size(960, 1920),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
+      const [Rect.fromLTWH(0.0, 0.155, 1.0, 0.29)],
     ),
   ],
   (TipTopic.backgroundBlend, 0) => [
@@ -934,7 +934,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/Filter0020_default-after-ui.webp',
       const Size(960, 1920),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
+      const [Rect.fromLTWH(0.0, 0.155, 1.0, 0.29)],
     ),
   ],
   (TipTopic.exportFormat, 0) => [
@@ -956,7 +956,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/gesture-controls.webp',
       const Size(800, 1600),
       words.settingsGestureTitle,
-      const [],
+      const [Rect.fromLTWH(0.045, 0.08, 0.91, 0.50)],
     ),
   ],
   (TipTopic.lowSpecSettings, 0) => [
@@ -984,7 +984,7 @@ List<TipScreenCapture> tipCaptures(
       'assets/tips/captures/project-preset-filter.webp',
       const Size(800, 1600),
       words.autofillPartAddDialogTitle,
-      const [],
+      const [Rect.fromLTWH(0.02, 0.50, 0.96, 0.45)],
     ),
   ],
   (TipTopic.mosaicChromatic, 0) => [
@@ -1061,3 +1061,13 @@ List<TipScreenCapture> tipCaptures(
   ],
   _ => const [],
 };
+
+/// Flattens the topic's capture sequence so each screenshot is one complete
+/// Tips page, rather than a second image-only pager inside the diagram.
+List<TipScreenCapture> tipCapturePages(
+  TipTopic topic,
+  AppLocalizations words,
+) => [
+  for (var page = 0; page < (topic.illustrateByParagraph ? 4 : 1); page++)
+    ...tipCaptures(topic, page, words),
+];

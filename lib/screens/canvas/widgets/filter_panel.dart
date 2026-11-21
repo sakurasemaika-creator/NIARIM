@@ -1087,7 +1087,7 @@ class _FilterPanelState extends State<FilterPanel> {
   ) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 320 ? 3 : 2;
+        final columns = constraints.maxWidth >= 390 ? 3 : 2;
         // カードを押したときの色を一覧の中に限る（パネルの面へ描くと、
         // スクロールで半分隠れたカードの色が一覧の上下へはみ出す）。
         return GridView.builder(
@@ -1156,14 +1156,24 @@ class _FilterPanelState extends State<FilterPanel> {
                           ),
                         ),
                         const SizedBox(height: 3),
-                        Text(
-                          filterDisplayName(l10n, filter),
-                          maxLines: 2,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 9),
+                        SizedBox(
+                          height: 40,
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 32),
+                              Expanded(
+                                child: Text(
+                                  filterDisplayName(l10n, filter),
+                                  maxLines: 2,
+                                  textAlign: TextAlign.start,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 9),
+                                ),
+                              ),
+                              const SizedBox(width: 32),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 40),
                       ],
                     ),
                   ),
@@ -1185,43 +1195,45 @@ class _FilterPanelState extends State<FilterPanel> {
                     ),
                   ),
                   PositionedDirectional(
-                    end: 4,
+                    start: 4,
                     bottom: 3,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          key: ValueKey('filter-favorite-${filter.id}'),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 32,
-                            minHeight: 40,
-                          ),
-                          tooltip: filter.isFavorite
-                              ? l10n.colorPickerFavoriteRemove
-                              : l10n.colorPickerFavoriteAdd,
-                          onPressed: () => service.toggleFavorite(filter.id),
-                          icon: Icon(
-                            filter.isFavorite ? Icons.star : Icons.star_outline,
-                            size: 15,
-                          ),
-                        ),
-                        if (!builtIn)
-                          InkWell(
-                            onTap: () => SharedAssetCardService.exportSettings(
-                              context,
-                              kind: 'filter',
-                              name: filterDisplayName(l10n, filter),
-                              settings: filter.toJson(),
-                            ),
-                            child: Tooltip(
-                              message: l10n.shareCardExportMenu,
-                              child: const Icon(Icons.image_outlined, size: 17),
-                            ),
-                          ),
-                      ],
+                    child: IconButton(
+                      key: ValueKey('filter-favorite-${filter.id}'),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 32,
+                        height: 40,
+                      ),
+                      tooltip: filter.isFavorite
+                          ? l10n.colorPickerFavoriteRemove
+                          : l10n.colorPickerFavoriteAdd,
+                      onPressed: () => service.toggleFavorite(filter.id),
+                      icon: Icon(
+                        filter.isFavorite ? Icons.star : Icons.star_outline,
+                        size: 15,
+                      ),
                     ),
                   ),
+                  if (!builtIn)
+                    PositionedDirectional(
+                      end: 4,
+                      bottom: 3,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 32,
+                          height: 40,
+                        ),
+                        tooltip: l10n.shareCardExportMenu,
+                        onPressed: () => SharedAssetCardService.exportSettings(
+                          context,
+                          kind: 'filter',
+                          name: filterDisplayName(l10n, filter),
+                          settings: filter.toJson(),
+                        ),
+                        icon: const Icon(Icons.image_outlined, size: 17),
+                      ),
+                    ),
                 ],
               ),
             );

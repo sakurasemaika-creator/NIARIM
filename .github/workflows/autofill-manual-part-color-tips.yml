@@ -7,7 +7,11 @@ on:
       - '.github/workflows/autofill-manual-part-color-tips.yml'
       - 'lib/l10n/**'
       - 'lib/screens/tips/tips_screen.dart'
+      - 'lib/screens/tips/tip_capture_data.dart'
+      - 'lib/screens/tips/tip_diagram.dart'
+      - 'lib/screens/tips/tip_screen_capture.dart'
       - 'test/autofill_manual_part_color_tips_test.dart'
+      - 'test/tips_detail_layout_test.dart'
 
 jobs:
   verify-autofill-tips:
@@ -27,5 +31,7 @@ jobs:
         run: flutter pub get
       - name: Test autofill tips in all supported languages
         run: flutter test test/autofill_manual_part_color_tips_test.dart --reporter expanded
-      - name: Analyze the Tips screen and contract test
-        run: flutter analyze lib/screens/tips/tips_screen.dart test/autofill_manual_part_color_tips_test.dart --no-fatal-infos --no-fatal-warnings
+      - name: Verify that screenshot and explanation pages stay synchronized
+        run: flutter test test/tips_detail_layout_test.dart --reporter expanded
+      - name: Analyze the Tips screen and contract tests
+        run: flutter analyze lib/screens/tips/tips_screen.dart lib/screens/tips/tip_capture_data.dart lib/screens/tips/tip_diagram.dart lib/screens/tips/tip_screen_capture.dart test/autofill_manual_part_color_tips_test.dart test/tips_detail_layout_test.dart --no-fatal-infos --no-fatal-warnings

@@ -20,7 +20,7 @@ void main() {
   final diagram = find.descendant(
     of: dialog,
     matching: find.byType(TipDiagram),
-  );
+  ).first;
 
   Future<void> mount(
     WidgetTester tester,
@@ -70,7 +70,7 @@ void main() {
     final title = find.descendant(
       of: dialog,
       matching: find.text(l10n.tipsClipDuplicateTitle),
-    );
+    ).first;
     final paragraph = tester.renderObject<RenderParagraph>(
       find.descendant(of: title, matching: find.byType(RichText)),
     );
@@ -88,7 +88,7 @@ void main() {
     final title = find.descendant(
       of: dialog,
       matching: find.text(words.tipsClipDuplicateTitle),
-    );
+    ).first;
     expect(tester.getRect(title).bottom, lessThan(tester.getRect(diagram).top));
     final illustration = find.descendant(
       of: diagram,
@@ -113,111 +113,185 @@ void main() {
       final assets = manifest.listAssets().toSet();
       const image = Rect.fromLTWH(0, 0, 1, 1);
       for (final topic in TipTopic.values) {
-        for (
-          var page = 0;
-          page < (topic.illustrateByParagraph ? 4 : 1);
-          page++
-        ) {
-          final captures = tipCaptures(topic, page, l10n);
-          expect(captures, isNotEmpty, reason: '$topic page ${page + 1}');
-          for (final capture in captures) {
-            expect(assets, contains(capture.asset));
-            expect(capture.size.isEmpty, isFalse);
-            for (final focus in capture.focus) {
-              expect(focus.isEmpty, isFalse);
-              expect(image.intersect(focus), focus, reason: capture.asset);
-            }
+        final captures = tipCapturePages(topic, l10n);
+        expect(captures, isNotEmpty, reason: topic.name);
+        for (final capture in captures) {
+          expect(assets, contains(capture.asset));
+          expect(capture.size.isEmpty, isFalse);
+          for (final focus in capture.focus) {
+            expect(focus.isEmpty, isFalse);
+            expect(image.intersect(focus), focus, reason: capture.asset);
           }
         }
       }
     },
   );
 
-  testWidgets('arrow keys step through captures before turning the page', (
+  testWidgets('arrow keys and swipes advance the complete image-and-text page', (
     tester,
   ) async {
     await mount(tester, const Size(1280, 800));
     await open(tester, l10n.tipsClipDuplicateTitle);
-    final viewer = find.byType(TipScreenCaptures);
-    int index() => tester.widget<TipScreenCaptures>(viewer).index!;
-    expect(index(), 0);
+
+    Finder page(String topic, int index) =>
+        find.byKey(ValueKey('tip-page-$topic-$index'));
+    Finder viewer(String topic, int index) => find.descendant(
+      of: page(topic, index),
+      matching: find.byType(TipScreenCaptures),
+    );
+    String description(String topic, int index) => tester
+        .widget<Text>(
+          find.descendant(
+            of: page(topic, index),
+            matching: find.byKey(const ValueKey('tipPageDescription')),
+          ),
+        )
+        .data!;
+
+    final firstAsset = tester
+        .widget<TipScreenCaptures>(viewer('clipDuplicate', 0))
+        .frames
+        .single
+        .asset;
+    final firstText = description('clipDuplicate', 0);
+    expect(firstAsset, endsWith('video-open.webp'));
+
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await tester.pumpAndSettle();
-    expect(index(), 1);
+    final secondAsset = tester
+        .widget<TipScreenCaptures>(viewer('clipDuplicate', 1))
+        .frames
+        .single
+        .asset;
+    final secondText = description('clipDuplicate', 1);
+    expect(secondAsset, endsWith('video-duplicate-control.webp'));
+    expect(secondText, isNot(firstText));
+
+    await tester.drag(find.byType(PageView), const Offset(-420, 0));
+    await tester.pumpAndSettle();
+    final thirdAsset = tester
+        .widget<TipScreenCaptures>(viewer('clipDuplicate', 2))
+        .frames
+        .single
+        .asset;
+    final thirdText = description('clipDuplicate', 2);
+    expect(thirdAsset, endsWith('video-duplicated.webp'));
+    expect(thirdText, isNot(secondText));
+
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.pumpAndSettle();
-    expect(index(), 0);
+    expect(
+      tester.widget<TipScreenCaptures>(viewer('clipDuplicate', 1)).frames.single.asset,
+      endsWith('video-duplicate-control.webp'),
+    );
 
     await close(tester);
     await open(tester, l10n.tipsAutofillManualPartColorTitle);
-    final paragraphs = l10n.tipsAutofillManualPartColorDesc.split('\n');
-    expect(find.text(paragraphs[0]), findsOneWidget);
+    expect(
+      tester
+          .widget<TipScreenCaptures>(viewer('autofillManualPartColor', 0))
+          .frames
+          .single
+          .asset,
+      endsWith('normal-layer-above.webp'),
+    );
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await tester.pumpAndSettle();
-    expect(find.text(paragraphs[1]), findsOneWidget);
-    expect(index(), 0);
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-    await tester.pumpAndSettle();
-    expect(find.text(paragraphs[1]), findsOneWidget);
-    expect(index(), 1);
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-    await tester.pumpAndSettle();
-    expect(find.text(paragraphs[2]), findsOneWidget);
-    expect(index(), 0);
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
-    await tester.pumpAndSettle();
-    expect(find.text(paragraphs[1]), findsOneWidget);
-    expect(index(), 1);
+    expect(
+      tester
+          .widget<TipScreenCaptures>(viewer('autofillManualPartColor', 1))
+          .frames
+          .single
+          .asset,
+      endsWith('autofill-lineart-menu.webp'),
+    );
+    expect(
+      description('autofillManualPartColor', 1),
+      contains('自動塗り用線画レイヤー'),
+    );
   });
 
-  testWidgets('save captures follow the workflow and open full-screen', (
+  testWidgets('save captures and their explanations turn as one page', (
     tester,
   ) async {
     await mount(tester, const Size(390, 844));
     await open(tester, l10n.tipsSaveSlotAutoSaveTitle);
-    final viewer = find.byType(TipScreenCaptures);
-    final frames = tester.widget<TipScreenCaptures>(viewer).frames;
-    expect(frames.map((frame) => frame.label), [
-      l10n.saveDataManualTab,
-      l10n.helpAutoSaveTitle,
-      l10n.saveTreeRestoreAction,
-      l10n.timelinePreviewPlaceholder,
-    ]);
-    final next = find.byKey(const ValueKey('tipNextCapture'));
-    final previous = find.byKey(const ValueKey('tipPreviousCapture'));
-    expect(tester.widget<IconButton>(previous).onPressed, isNull);
-    final viewport = find.byKey(const ValueKey('tipCaptureViewport'));
-    final imageRect = tester.getRect(viewport);
-    for (final (index, frame) in frames.indexed) {
-      expect(
-        find.descendant(of: viewer, matching: find.text(frame.label)),
-        findsOneWidget,
+
+    const expectedAssets = [
+      'app_phone_manual-crop-000010062.webp',
+      'app_phone_auto-crop-000010043.webp',
+      'app_phone_auto_confirm-crop-05249579.webp',
+      'app_phone_auto_canvas-crop-002810057.webp',
+    ];
+    String description(int index) => tester
+        .widget<Text>(
+          find.descendant(
+            of: find.byKey(ValueKey('tip-page-saveSlotAutoSave-$index')),
+            matching: find.byKey(const ValueKey('tipPageDescription')),
+          ),
+        )
+        .data!;
+
+    String? previousText;
+    for (var index = 0; index < expectedAssets.length; index++) {
+      final page = find.byKey(ValueKey('tip-page-saveSlotAutoSave-$index'));
+      final viewer = find.descendant(
+        of: page,
+        matching: find.byType(TipScreenCaptures),
       );
+      expect(viewer, findsOneWidget);
+      final frames = tester.widget<TipScreenCaptures>(viewer).frames;
+      expect(frames, hasLength(1));
+      expect(frames.single.asset, endsWith(expectedAssets[index]));
+      final body = description(index);
+      expect(body.trim(), isNotEmpty);
+      if (previousText != null) expect(body, isNot(previousText));
+      previousText = body;
+
+      final viewport = find.descendant(
+        of: viewer,
+        matching: find.byKey(const ValueKey('tipCaptureViewport')),
+      );
+      expect(viewport, findsOneWidget);
       final image = find.descendant(of: viewer, matching: find.byType(Image));
-      expect(tester.getRect(viewport), imageRect);
-      expect(tester.getRect(image), imageRect);
+      expect(tester.getRect(image), tester.getRect(viewport));
       final picture = tester.widget<Image>(image);
-      expect((picture.image as AssetImage).assetName, frame.asset);
-      if (index < frames.length - 1) {
-        await tester.tap(next);
+      expect((picture.image as AssetImage).assetName, frames.single.asset);
+
+      if (index < expectedAssets.length - 1) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
         await tester.pumpAndSettle();
       }
     }
-    expect(tester.widget<IconButton>(next).onPressed, isNull);
-    await tester.tap(find.byTooltip(l10n.canvasViewZoomIn));
+
+    final finalPage = find.byKey(
+      const ValueKey('tip-page-saveSlotAutoSave-3'),
+    );
+    await tester.tap(
+      find.descendant(
+        of: finalPage,
+        matching: find.byTooltip(l10n.canvasViewZoomIn),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(InteractiveViewer), findsOneWidget);
     final zoom = find.byType(Dialog).last;
     expect(
-      find.descendant(of: zoom, matching: find.text(frames.last.label)),
+      find.descendant(of: zoom, matching: find.text(l10n.timelinePreviewPlaceholder)),
       findsOneWidget,
     );
     await tester.tap(
       find.descendant(of: zoom, matching: find.byIcon(Icons.close)),
     );
     await tester.pumpAndSettle();
-    expect(viewer, findsOneWidget);
-    expect(find.text(frames.last.label), findsOneWidget);
+    expect(finalPage, findsOneWidget);
+    expect(
+      find.descendant(
+        of: finalPage,
+        matching: find.byKey(const ValueKey('tipPageDescription')),
+      ),
+      findsOneWidget,
+    );
   });
 
   for (final size in [const Size(390, 844), const Size(1280, 800)]) {
@@ -227,37 +301,42 @@ void main() {
         await loadAppFonts(tester);
         await mount(tester, size);
         (double, Rect, double, Rect)? reference;
-        final entries = allTipEntries(l10n);
+        final entries = allTipTopicEntries(l10n);
         expect(entries, hasLength(TipTopic.values.length));
-        for (final (title, description) in entries) {
+        for (final (topic, title, description) in entries) {
           await open(tester, title);
+          final page = find.byKey(ValueKey('tip-page-${topic.name}-0'));
           final titleFinder = find.descendant(
-            of: dialog,
+            of: page,
             matching: find.text(title),
           );
           final body = find.descendant(
-            of: dialog,
-            matching: find.text(description.split('\n').first),
+            of: page,
+            matching: find.byKey(const ValueKey('tipPageDescription')),
           );
-          expect(diagram, findsOneWidget, reason: title);
-          final figure = tester.getRect(diagram);
+          final pageDiagram = find.descendant(
+            of: page,
+            matching: find.byType(TipDiagram),
+          );
+          expect(pageDiagram, findsOneWidget, reason: title);
+          final figure = tester.getRect(pageDiagram);
           expect(figure.height, greaterThan(350), reason: title);
           expect(
-            tester.widget<TipDiagram>(diagram).steps,
+            tester.widget<TipDiagram>(pageDiagram).steps,
             hasLength(3),
             reason: title,
           );
-
-          // Multi-page tips put the first translated paragraph below this figure.
-          // Single-page tips can keep multiple paragraphs together.
-          final visibleBody = body.evaluate().isEmpty
-              ? find.descendant(of: dialog, matching: find.text(description))
-              : body;
-          expect(visibleBody, findsOneWidget, reason: title);
-          final bodyTop = tester.getTopLeft(visibleBody).dy;
+          expect(body, findsOneWidget, reason: title);
+          final bodyText = tester.widget<Text>(body).data!.trim();
+          expect(bodyText, isNotEmpty, reason: title);
+          expect(description, contains(bodyText), reason: title);
+          final bodyTop = tester.getTopLeft(body).dy;
           expect(bodyTop - figure.bottom, closeTo(12, .01), reason: title);
           final captureBounds = tester.getRect(
-            find.byKey(const ValueKey('tipCaptureViewport')),
+            find.descendant(
+              of: pageDiagram,
+              matching: find.byKey(const ValueKey('tipCaptureViewport')),
+            ),
           );
           final layout = (
             tester.getTopLeft(titleFinder).dy,
@@ -355,32 +434,53 @@ void main() {
   );
 
   testWidgets(
-    'every autofill page has a diagram and the body scrolls on a short screen',
+    'every autofill screenshot has its own explanation page and scrolls on a short screen',
     (tester) async {
       await mount(tester, const Size(320, 480), scale: 2);
       await open(tester, l10n.tipsAutofillManualPartColorTitle);
+      final captures = tipCapturePages(TipTopic.autofillManualPartColor, l10n);
+      final paragraphs = l10n.tipsAutofillManualPartColorDesc.split('\n');
+      expect(captures, hasLength(7));
+      expect(paragraphs, hasLength(captures.length));
       final next = find.descendant(
         of: dialog,
         matching: find.byKey(const ValueKey('tipNextTextPage')),
       );
-      final paragraphs = l10n.tipsAutofillManualPartColorDesc.split('\n');
-      expect(paragraphs, hasLength(4));
-      for (var page = 0; page < paragraphs.length; page++) {
-        final steps = tester.widget<TipDiagram>(diagram).steps;
-        expect(steps, TipTopic.autofillManualPartColor.steps(l10n, page));
-        final body = find.text(paragraphs[page]);
+      for (var pageIndex = 0; pageIndex < captures.length; pageIndex++) {
+        final page = find.byKey(
+          ValueKey('tip-page-autofillManualPartColor-$pageIndex'),
+        );
+        final pageDiagram = find.descendant(
+          of: page,
+          matching: find.byType(TipDiagram),
+        );
+        expect(pageDiagram, findsOneWidget);
+        final viewer = find.descendant(
+          of: page,
+          matching: find.byType(TipScreenCaptures),
+        );
+        expect(viewer, findsOneWidget);
+        final frames = tester.widget<TipScreenCaptures>(viewer).frames;
+        expect(frames, hasLength(1));
+        expect(frames.single.asset, captures[pageIndex].asset);
+        final body = find.descendant(
+          of: page,
+          matching: find.byKey(const ValueKey('tipPageDescription')),
+        );
         expect(body, findsOneWidget);
+        expect(tester.widget<Text>(body).data, paragraphs[pageIndex]);
         await tester.ensureVisible(body);
         await tester.pumpAndSettle();
         expect(
           tester.getTopLeft(body).dy,
           lessThan(tester.getTopLeft(next).dy),
         );
-        if (page + 1 < paragraphs.length) {
+        if (pageIndex + 1 < captures.length) {
           await tester.tap(next);
           await tester.pumpAndSettle();
         }
       }
+      expect(tester.widget<IconButton>(next).onPressed, isNull);
       expect(tester.takeException(), isNull);
     },
   );
