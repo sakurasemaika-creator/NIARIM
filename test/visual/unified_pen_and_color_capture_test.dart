@@ -230,7 +230,14 @@ void main() {
       await settings.setDefaultDockedPanels(<CanvasDockPanel>{});
       await navigate('/home');
       await navigate('/canvas/${demo.id}');
-      await tester.tap(find.byKey(const ValueKey('canvasColorSwatch')));
+      // The mobile toolbar is horizontally scrollable; the swatch may sit
+      // beyond the initial viewport. Reveal it before tapping, as a user would.
+      final canvasColorSwatch = find.byKey(
+        const ValueKey('canvasColorSwatch'),
+      );
+      await tester.ensureVisible(canvasColorSwatch);
+      await settle();
+      await tester.tap(canvasColorSwatch);
       await settle();
       expect(find.byType(ColorPickerPanel), findsOneWidget);
       final swatch = find.byKey(const ValueKey('selected-color-preview-chip'));
