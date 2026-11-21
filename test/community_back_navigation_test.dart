@@ -112,6 +112,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(SplashScreen), findsOneWidget);
       expect(find.byKey(const Key('communityPreviewClose')), findsNothing);
+      expect(
+        communityContext.read<CommunityPreviewService>().work,
+        isNull,
+      );
 
       // The splash button's push future must have completed and released its
       // re-entry guard after the plaza returned to the launch screen.
