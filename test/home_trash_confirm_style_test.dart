@@ -236,7 +236,7 @@ void main() {
       final paragraph = element.renderObject! as RenderParagraph;
       if (!paragraph.attached || paragraph.size.isEmpty) continue;
       final lines = ParagraphLines(paragraph);
-      final text = lines.visible.replaceAll('\\u00a0', ' ');
+      final text = lines.visible.replaceAll('\u00a0', ' ');
       for (final match in RegExp(
         spaced
             ? r'(?<!\d)\d+(?:[.,]\d+)*(?:[ \u00a0]i/s|[ \u00a0]\p{L})'
