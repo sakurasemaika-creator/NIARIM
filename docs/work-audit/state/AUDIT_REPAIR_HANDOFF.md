@@ -3495,3 +3495,10 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - 対象外は別repo/branch/Worker/zone、DNS/domain変更、secret/credentialの新規登録・置換、契約・課金、store公開等。force push/履歴破壊も引き続き禁止。通常の検証・最新HEAD確認・deployment/version/traffic・公開URL確認は省略しない。
 - App policy commit: `b16e3fd86ba1b295a760af4c00f33b6c1bac8e67`。Web policy commit: `789e6098543338a78d94fecfc60f8e38e9765160`。
 - この資料更新自体がNIARIM-webの `dev_branch` へのpushに該当するため、Cloudflareの自動deploymentが起きたかを確認し、version/traffic/公開動作を別途検証して記録する。まだdeployment成功とは判定しない。
+
+
+## GPTの追加修正（2026-11-21、DISC155・App dev_branch）
+
+- 所有者の判断を受け、キャンバス「設定/編集」メニューの「自動操作」見出しをフランス語・スペイン語とも **Macros** に変更した。録画した操作のまとまりを再利用する機能を指す短いUI表現とし、320px・文字2倍でも項目名の領域を確保できるようにした。
+- `test/canvas_edit_menu_words_test.dart` は従来、フランス語 `Automatisations` とスペイン語 `Automatizaciones` が物理的に行幅を超える条件を除外していた。翻訳変更に合わせてこの例外を廃止し、両言語を含む7言語×320/360/412px×文字倍率1.0/1.3/2.0の各条件で、見出し自体が行幅に収まることを明示的にassertするようにした。
+- 修正コミット：`cf34248`（仏語）、`4a5bd20`（西語）、`c8dae40`（テスト）。この追記時点ではGitHub Actionsの実行結果およびFlutter実行環境でのローカル再実行は未確認。合格扱いにはせず、CI結果を待って再判定する。
