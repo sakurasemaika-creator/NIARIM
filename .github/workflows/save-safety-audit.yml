@@ -43,6 +43,7 @@ on:
       - "test/project_trash_persistence_test.dart"
       - "test/project_trash_recovery_test.dart"
       - "test/project_trash_dialog_test.dart"
+      - "test/trash_confirm_korean_words_test.dart"
       - "test/project_favorite_delete_guard_test.dart"
       - "test/home_selection_toolbar_layout_test.dart"
       - "test/home_favorites_responsive_test.dart"
