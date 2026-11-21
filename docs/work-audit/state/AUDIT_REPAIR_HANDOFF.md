@@ -3434,3 +3434,12 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - `breakLongLatinWords` の説明コメントも、ASCII限定ではなくUnicode Latin script・結合文字・数字、および複製印の前の名前部分へ適用する実装に合わせた。
 - 最新Flutter regression suite：Run `44881246086`（HEAD `3a1e6ca6`）はpending。jobs未生成。Run `44881226017`（直前HEAD `4ac1e079`）もpending。いずれも成功とは扱わない。
 - 全回帰Workflowは `.github/workflows/flutter-complete-sharded-tests.yml` で同一refのrunをqueueする設定へ変更された（`cancel-in-progress` の明示的なtrue指定なし）。CIの開始・完了を再確認する。
+
+
+### 2026-11-21 GPT追記 — DISC538 作品広場から起動画面へ戻る際のプレビュー遮蔽
+
+- 原因候補：`CommunityFloatingPreview` は `NiarimApp` のルート外側にあり、画面遷移後も表示を維持する設計。作品広場から起動画面へ戻るときもプレビューが残り、起動画面の「作品をつくる」ボタンを覆う可能性があった。
+- 修正：作品広場の「起動画面へ戻る」操作で `CommunityPreviewService.close()`NaN`test/community_back_navigation_test.dart` に実アプリの起動経路を追加。プレビューを開く→戻る→プレビューの閉じるボタンが消える→「作品をつくる」を押す→ホームが開く、まで確認する。
+- コミット：修正 `de4efb27`、回帰 `4ac1e079`。
+- CI：専用のCommunity verification Run `44881223069` とFlutter regression Run `44881226017` は確認時点でqueued/pending。最新HEAD `886ff269` のFlutter regression Run `44881246086` もpending。成功扱いにはしない。
+- 追加制約：NIARIM-webはこの作業では変更していない。Cloudflare読み取りで2026-11-21 07:25:06 UTCに `wrangler` 由来の新しいデプロイ（version `6735f180-3e51-4e2d-9d5c-2483847c0340`、traffic 100%）を確認。Webの `dev_branch` HEADは `a42ba227`。このデプロイは本作業セッションから実行しておらず、Web側の追加push・deploy・rollbackは停止継続。
