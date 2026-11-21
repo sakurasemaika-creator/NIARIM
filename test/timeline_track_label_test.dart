@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -56,9 +57,13 @@ void main() {
 
     await loadAppFonts(tester);
     appRouter.go('/');
+    final captureKey = GlobalKey();
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
-      MultiProvider(providers: providers!, child: const NiarimApp()),
+      RepaintBoundary(
+        key: captureKey,
+        child: MultiProvider(providers: providers!, child: const NiarimApp()),
+      ),
     );
     await settle();
 
@@ -101,5 +106,16 @@ void main() {
           '${paragraph.size.width.toStringAsFixed(1)}pxしか無く'
           '（本来 ${intrinsic.toStringAsFixed(1)}px）省略されている',
     );
+    final boundary = tester.renderObject<RenderRepaintBoundary>(
+      find.byKey(captureKey),
+    );
+    final image = await boundary.toImage(pixelRatio: 1);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    final captures = Directory('build/timeline-preview-ui-captures')
+      ..createSync(recursive: true);
+    File('\${captures.path}/timeline_track_labels_ja_360.png').writeAsBytesSync(
+      bytes!.buffer.asUint8List(),
+    );
+    image.dispose();
   });
 }
