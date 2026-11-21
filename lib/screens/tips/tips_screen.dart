@@ -1008,91 +1008,91 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
             child: SizedBox(
               width: dialogWidth,
               height: dialogHeight,
-            child: Stack(
-              children: [
-                if (totalPages == 1)
-                  buildPage(0)
-                else
-                  Column(
-                    children: [
-                      Expanded(
-                        child: PageView.builder(
-                          controller: _pageController,
-                          itemCount: totalPages,
-                          onPageChanged: (page) => setState(() => _page = page),
-                          itemBuilder: (_, index) => buildPage(index),
+              child: Stack(
+                children: [
+                  if (totalPages == 1)
+                    buildPage(0)
+                  else
+                    Column(
+                      children: [
+                        Expanded(
+                          child: PageView.builder(
+                            controller: _pageController,
+                            itemCount: totalPages,
+                            onPageChanged: (page) => setState(() => _page = page),
+                            itemBuilder: (_, index) => buildPage(index),
+                          ),
                         ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            key: const ValueKey('tipPreviousTextPage'),
-                            tooltip: words.previousPageTooltip,
-                            onPressed: _page == 0
-                                ? null
-                                : () => _goToPage(_page - 1, totalPages),
-                            icon: const Icon(Icons.chevron_left),
-                          ),
-                          if (totalPages <= 6)
-                            for (var index = 0; index < totalPages; index++)
-                              Semantics(
-                                selected: index == _page,
-                                child: IconButton(
-                                  constraints: const BoxConstraints.tightFor(
-                                    width: 32,
-                                    height: 48,
-                                  ),
-                                  padding: EdgeInsets.zero,
-                                  tooltip: words.pageRowsInfoTitle(
-                                    index + 1,
-                                    index + 1,
-                                    totalPages,
-                                    false,
-                                  ),
-                                  icon: Icon(
-                                    index == _page
-                                        ? Icons.circle
-                                        : Icons.circle_outlined,
-                                    size: 9,
-                                    color: index == _page
-                                        ? scheme.primary
-                                        : scheme.outline,
-                                  ),
-                                  onPressed: () =>
-                                      _goToPage(index, totalPages),
-                                ),
-                              )
-                          else
-                            Text(
-                              '${_page + 1} / $totalPages',
-                              style: TextStyle(color: scheme.onSurfaceVariant),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              key: const ValueKey('tipPreviousTextPage'),
+                              tooltip: words.previousPageTooltip,
+                              onPressed: _page == 0
+                                  ? null
+                                  : () => _goToPage(_page - 1, totalPages),
+                              icon: const Icon(Icons.chevron_left),
                             ),
-                          IconButton(
-                            key: const ValueKey('tipNextTextPage'),
-                            tooltip: words.nextPageTooltip,
-                            onPressed: _page == totalPages - 1
-                                ? null
-                                : () => _goToPage(_page + 1, totalPages),
-                            icon: const Icon(Icons.chevron_right),
-                          ),
-                        ],
-                      ),
-                    ],
+                            if (totalPages <= 6)
+                              for (var index = 0; index < totalPages; index++)
+                                Semantics(
+                                  selected: index == _page,
+                                  child: IconButton(
+                                    constraints: const BoxConstraints.tightFor(
+                                      width: 32,
+                                      height: 48,
+                                    ),
+                                    padding: EdgeInsets.zero,
+                                    tooltip: words.pageRowsInfoTitle(
+                                      index + 1,
+                                      index + 1,
+                                      totalPages,
+                                      false,
+                                    ),
+                                    icon: Icon(
+                                      index == _page
+                                          ? Icons.circle
+                                          : Icons.circle_outlined,
+                                      size: 9,
+                                      color: index == _page
+                                          ? scheme.primary
+                                          : scheme.outline,
+                                    ),
+                                    onPressed: () =>
+                                        _goToPage(index, totalPages),
+                                  ),
+                                )
+                            else
+                              Text(
+                                '${_page + 1} / $totalPages',
+                                style: TextStyle(color: scheme.onSurfaceVariant),
+                              ),
+                            IconButton(
+                              key: const ValueKey('tipNextTextPage'),
+                              tooltip: words.nextPageTooltip,
+                              onPressed: _page == totalPages - 1
+                                  ? null
+                                  : () => _goToPage(_page + 1, totalPages),
+                              icon: const Icon(Icons.chevron_right),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  Positioned(
+                    right: 4,
+                    top: 4,
+                    child: IconButton(
+                      icon: const Icon(Icons.close, size: 20),
+                      tooltip: MaterialLocalizations.of(
+                        context,
+                      ).closeButtonTooltip,
+                      onPressed: () => Navigator.pop(context),
+                    ),
                   ),
-                Positioned(
-                  right: 4,
-                  top: 4,
-                  child: IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    tooltip: MaterialLocalizations.of(
-                      context,
-                    ).closeButtonTooltip,
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
             ),
           ),
         ),
