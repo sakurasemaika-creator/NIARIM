@@ -2889,7 +2889,7 @@
       }
     }
   },
-  "customAutomationTitle": "Automatisations",
+  "customAutomationTitle": "Macros",
   "customAutomationAdd": "Ajouter une automatisation",
   "customAutomationNewTitle": "Nouvelle automatisation",
   "customAutomationNameLabel": "Nom",
