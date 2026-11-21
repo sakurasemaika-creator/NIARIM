@@ -3502,3 +3502,11 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - 所有者の判断を受け、キャンバス「設定/編集」メニューの「自動操作」見出しをフランス語・スペイン語とも **Macros** に変更した。録画した操作のまとまりを再利用する機能を指す短いUI表現とし、320px・文字2倍でも項目名の領域を確保できるようにした。
 - `test/canvas_edit_menu_words_test.dart` は従来、フランス語 `Automatisations` とスペイン語 `Automatizaciones` が物理的に行幅を超える条件を除外していた。翻訳変更に合わせてこの例外を廃止し、両言語を含む7言語×320/360/412px×文字倍率1.0/1.3/2.0の各条件で、見出し自体が行幅に収まることを明示的にassertするようにした。
 - 修正コミット：`cf34248`（仏語）、`4a5bd20`（西語）、`c8dae40`（テスト）。この追記時点ではGitHub Actionsの実行結果およびFlutter実行環境でのローカル再実行は未確認。合格扱いにはせず、CI結果を待って再判定する。
+
+
+### 2026-11-21 GPT追記 — Cloudflare反映・Webスモークの再確認
+
+- Cloudflare Worker `niarim-web` のdeployment一覧を再取得。最新記録は2026-11-21 10:56:30 UTC、deployment ID `8b106eea-41d6-43d1-91e6-933c7d807450`、version `62857f27-e8f9-49c6-bf01-3e58804e4dc6`、traffic 100%、source `wrangler`。直前の記録は10:??ではなく、10:56:30 UTCより前の一覧値。deployment履歴の観測はできたが、当該versionと今回のGitHub policy commitとの因果関係は未確認。公開URLのブラウザ動作もこの確認では未検証。
+- 既存Web smoke Run `44880122354` のjob/logを確認。通常のsmoke jobは36 Node testsがすべて成功した一方、Studio browser auditは旧チェックアウトSHA `a42ba22715f5270cc17a5015e268483e88479d04` のテストが「Normal-motion hero hover did not change device transform」で失敗。現行 `dev_branch` の `tests/studio-2026-browser.mjs`（blob `10e9b8a7...`）では静的ヒーロー画像のhoverでtransformが変わらないことを検査する契約に更新済みであり、この失敗を現行HEADの失敗とは扱わない。
+- 同RunのOpal公開価格jobは、`niarim.miranima-studio.com/opals/` と `niarim-web.niarim.workers.dev/opals/` の双方でCloudflare Access sessionが必要となり失敗。これは公開価格の検証を妨げる現行の公開設定/CI認証問題として残す。Access認証画面を成功扱いにしない。
+- Run `44881246086` のFlutter全体回帰は引き続きjobs未生成。DISC145のCI合格判定は保留。
