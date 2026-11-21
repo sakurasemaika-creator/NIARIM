@@ -687,7 +687,6 @@ class _TipListTile extends StatelessWidget {
                 ),
               ],
             ),
-            ),
           ),
         ),
       ),
