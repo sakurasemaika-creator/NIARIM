@@ -3405,3 +3405,13 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - CI：Flutter regression suite Run `44880597940`（HEAD `4f3683fa`）は確認時点でpending、jobs未生成。前のpushに対するrunは後続pushでcancelled。現行SHAのCI成功とは扱わない。Android/DeX実機・Linux実画面の目視も未実施。
 - 未完了：CI結果の取得、テスト実行結果の確認、SP/PCの実画面での折り返し・読み上げ確認、DISC145の正式判定・台帳完了記録。
 - 制約：NIARIM-webは既存の監査記録にあるCloudflare production deployment誘発リスクのため、明示的な追加承認がない限りpush/deploy/rollbackしない。App/Webとも変更対象は `dev_branch` のみ。他ブランチには触れない。
+
+
+### 2026-11-21 GPT追記 — DISC145 長いラテン文字列のフォルダカード修正（CI待ち）
+
+- 対象：フォルダカードのタイトル（`KoreanWordsText(folder.name)`）。通常の `Text` に任せていたため、空白のない長い英数字列が狭いカードで折り返せず、横にはみ出す可能性があった。
+- 修正：フォルダカードに限り `breakLongLatinWords` を有効化。幅を超えるASCII英数字列だけに折り返し位置を加え、通常の短い名前・空白で区切られた名前はそのままにする。文字拡大時の太字設定を測定にも反映し、読み上げには元の名前を渡す。
+- 追加回帰：7言語（ja/en/es/fr/ko/zh/zh-Hant）×幅96/180/320px×文字倍率1.0/1.3/2.0。長い英数字列の複数行化、元のsemanticsLabel、行の幅内への収まり、通常の短い名前に不要な区切りを入れないことを確認する。
+- 変更コミット：`404401d3`・`bc6d3d6d`・`c14be3f3`・`e77d7bbc`・`5fe1fbbb`。Unicode書記素単位の分割と依存関係・回帰範囲の補強：`60b1a3b0`・`7f039a1d`・`e442c48f`・`4f3683fa`。
+- 検証状態：専用回帰は追加済みだが、Flutter regression suite Run `44880597940`（HEAD `4f3683fa`）は確認時点でpending・job未生成。CI成功、実画面合格、DISC145完了とはまだ判定しない。次はこのRunの完了と結果を確認し、失敗があれば修正する。
+- 範囲：NIARIM `dev_branch` のみ。NIARIM-webのpush/deploy/rollbackは引き続き停止。
