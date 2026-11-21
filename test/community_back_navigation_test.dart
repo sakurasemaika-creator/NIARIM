@@ -101,9 +101,17 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(CommunityScreen), findsOneWidget);
 
+      final communityContext = tester.element(find.byType(CommunityScreen));
+      communityContext.read<CommunityPreviewService>().show(
+        communityContext.read<CommunityService>().works.first,
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('communityPreviewClose')), findsOneWidget);
+
       await tester.tap(find.byKey(const Key('communityBackToSplashButton')));
       await tester.pumpAndSettle();
       expect(find.byType(SplashScreen), findsOneWidget);
+      expect(find.byKey(const Key('communityPreviewClose')), findsNothing);
 
       // The splash button's push future must have completed and released its
       // re-entry guard after the plaza returned to the launch screen.
