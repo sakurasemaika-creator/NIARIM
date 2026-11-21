@@ -3364,7 +3364,7 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 
 - 対象：`lib/screens/home/widgets/shared_direction_switch.dart`。
 - 変更：高さ400px未満の画面では切り替え区画の上下余白を詰め、区画の最小サイズを48×48pxに維持。色・テーマ値は固定せず既存のテーマ参照を維持。通常の高さでは従来の余白を維持。
-- 回帰：`test/home_shared_direction_switch_test.dart` に640×360・文字2倍のケースを追加し、切り替え区画が48px以上、並び順行が切り替えの下にあり、画面下端より下へ出ないことを確認する。
+- 回帰：`test/home_shared_direction_switch_test.dart` に640×360・文字2倍のケースを追加。さらにコミット `277b93c6` で7言語×320/360px×文字2倍へ広げ、共有タブの切替区画・並び順行・AppBar画面名の領域とRenderFlex例外を確認するテストを追加。
 - コミット：`e05ee743`（UI）・`58b34a63`（回帰test）・`b7ec0307`（実行時paddingのconst誤りを修正）。`dev_branch` の最新HEADは `b7ec0307` 時点で確認。
 - 検証：コードとテストの反映は確認したが、Flutter regression suite Run `44878826662` はpending、Audit policy guard Run `44878826660` はqueued。CI成功・実画面合格とはまだ扱わない。
 - DISC564は、空表示のスクロール修正とこのヘッダー調整の両方についてCI待ち。正式完了にはしない。
@@ -3379,7 +3379,7 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 
 ### 2026-11-21 GPT追記 — EmptyStateSliverの長文到達テスト
 
-- `test/empty_state_placeholder_test.dart` に、見出しの後に残る領域より120px高い空表示を置き、末尾の操作まで内側スクロールで到達できることを検査するケースを追加。既存の「空表示の中身が収まる場合は外側リストのスクロールを妨げない」回帰も維持する。
+- `test/empty_state_placeholder_test.dart` に、見出しの後に残る領域より120px高い空表示を置き、末尾の操作まで内側スクロールで到達できることを検査するケースを追加（`333a0b22`）。また `8d865708` で、内容が収まる場合に内側の空スクロール領域が外側一覧のドラッグを妨げず、前の一覧内容へ戻れる回帰テストを追加。
 - コミット `333a0b22`。Flutter regression suite Run `44879190638`（HEAD `333a0b22`）はqueued。テストの実行結果は未取得。
 
 
