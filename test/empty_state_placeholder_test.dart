@@ -33,6 +33,53 @@ void main() {
     );
   });
 
+  testWidgets('an oversized sliver empty state scrolls its content', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 300);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CustomScrollView(
+            slivers: [
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 60, child: Text('header')),
+              ),
+              EmptyStateSliver(
+                builder: (size) => SizedBox(
+                  height: size.height + 120,
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('empty state top'),
+                      Text('empty state bottom', key: Key('emptyStateBottom')),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final bottom = find.byKey(const Key('emptyStateBottom'));
+    await tester.ensureVisible(bottom);
+    await tester.pumpAndSettle();
+    final bounds = tester.getRect(bottom);
+    final viewport = tester.getRect(
+      find.ancestor(of: bottom, matching: find.byType(Scrollable)).first,
+    );
+    expect(bounds.top, greaterThanOrEqualTo(viewport.top - 0.5));
+    expect(bounds.bottom, lessThanOrEqualTo(viewport.bottom + 0.5));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'a fitting sliver empty state leaves scrolling to its outer list',
     (tester) async {
