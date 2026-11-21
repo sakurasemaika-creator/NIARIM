@@ -203,16 +203,23 @@ class ToolbarWidget extends StatelessWidget {
         // （`test/dialog_screenshot_audit_test.dart`）が到達できるよう
         // キーを付けてある。
         key: const ValueKey('canvasColorSwatch'),
+        behavior: HitTestBehavior.opaque,
         onTap: isStampSelected
             ? () => ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(l10n.toolbarStampColorLockedSnackbar)),
               )
             : onColorTap,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: 28,
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: Center(
+            child: Transform.scale(
+              scale: iconScale,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 28,
               height: 28,
               decoration: BoxDecoration(
                 color: currentColor,
@@ -220,25 +227,28 @@ class ToolbarWidget extends StatelessWidget {
                 border: Border.all(color: outlineColor, width: 2),
               ),
             ),
-            if (isStampSelected)
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: outlineColor, width: 2),
-                ),
-                child: Icon(
-                  Icons.block,
-                  color: ThemeService.activeColorScheme.error,
-                  size: 20,
-                  shadows: CanvasIconButton.foregroundShadows(
-                    Theme.of(context).colorScheme.error,
-                    Theme.of(context).colorScheme,
-                  ),
-                ),
+                  if (isStampSelected)
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: outlineColor, width: 2),
+                      ),
+                      child: Icon(
+                        Icons.block,
+                        color: ThemeService.activeColorScheme.error,
+                        size: 20,
+                        shadows: CanvasIconButton.foregroundShadows(
+                          Theme.of(context).colorScheme.error,
+                          Theme.of(context).colorScheme,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-          ],
+            ),
+          ),
         ),
       ),
       _borderedIconButton(
@@ -302,26 +312,28 @@ class ToolbarWidget extends StatelessWidget {
           spacer
         else
           SizedBox(
-            width: 40 * iconScale,
-            height: 40 * iconScale,
-            child: Center(
-              child: Transform.scale(scale: iconScale, child: item),
-            ),
+            width: 48,
+            height: 48,
+            child: Center(child: item),
           ),
     ];
     return Container(
-      height: vertical ? null : 40 * iconScale,
-      width: vertical ? 40 * iconScale : null,
+      height: vertical ? null : 48,
+      width: vertical ? 48 : null,
       padding: EdgeInsets.symmetric(
         horizontal: vertical ? 0 : 4,
         vertical: vertical ? 4 : 0,
       ),
       color: Colors.transparent,
-      child: SingleChildScrollView(
-        scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
-        child: vertical
-            ? Column(children: scaledItems)
-            : Row(children: scaledItems),
+      child: CanvasToolbarMetrics(
+        iconScale: iconScale,
+        targetSize: 48,
+        child: SingleChildScrollView(
+          scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
+          child: vertical
+              ? Column(children: scaledItems)
+              : Row(children: scaledItems),
+        ),
       ),
     );
   }
