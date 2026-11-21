@@ -22,6 +22,7 @@ import '../../utils/app_error_reporter.dart';
 import '../../utils/file_size_label.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/keep_together_text.dart';
+import '../../widgets/date_line_text.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
@@ -955,14 +956,18 @@ class _SlotTile extends StatelessWidget {
                       ],
                     ),
                     if (node != null)
-                      Text(
-                        formatSaveTime(
-                          node!.savedAt,
-                          AppLocalizations.of(context)!.localeName,
-                        ),
+                      DefaultTextStyle.merge(
                         style: TextStyle(
                           fontSize: 12,
                           color: scheme.onSurfaceVariant,
+                        ),
+                        child: DateLineText(
+                          formatSaveTime(
+                            node!.savedAt,
+                            AppLocalizations.of(context)!.localeName,
+                          ),
+                          when: node!.savedAt,
+                          localeName: AppLocalizations.of(context)!.localeName,
                         ),
                       )
                     else if (memo?.isNotEmpty == true && !listUnread)
