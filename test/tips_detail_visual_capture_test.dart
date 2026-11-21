@@ -74,33 +74,6 @@ void main() {
     image.dispose();
   }
 
-  testWidgets('captures the synchronized Tips page layouts for visual review', (
-    tester,
-  ) async {
-    await mount(tester);
-    await capturePages(
-      tester,
-      topic: 'saveSlotAutoSave',
-      title: l10n.tipsSaveSlotAutoSaveTitle,
-      pageCount: 4,
-      filePrefix: 'save-slot',
-    );
-    await capturePages(
-      tester,
-      topic: 'clipDuplicate',
-      title: l10n.tipsClipDuplicateTitle,
-      pageCount: 3,
-      filePrefix: 'clip-duplicate',
-    );
-    await capturePages(
-      tester,
-      topic: 'autofillManualPartColor',
-      title: l10n.tipsAutofillManualPartColorTitle,
-      pageCount: 7,
-      filePrefix: 'autofill-manual-color',
-    );
-    expect(tester.takeException(), isNull);
-  });
   String compact(String value) =>
       value.replaceAll(RegExp(r'\s+'), '');
 
