@@ -32,4 +32,56 @@ void main() {
       moreOrLessEquals(195, epsilon: 1),
     );
   });
+
+  testWidgets(
+    'a fitting sliver empty state leaves scrolling to its outer list',
+    (tester) async {
+      tester.view.physicalSize = const Size(400, 600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final controller = ScrollController();
+      addTearDown(controller.dispose);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CustomScrollView(
+              controller: controller,
+              slivers: [
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 900,
+                    child: const Center(child: Text('preceding content')),
+                  ),
+                ),
+                EmptyStateSliver(
+                  builder: (size) => SizedBox(
+                    height: size.height,
+                    child: const Center(child: Text('empty state')),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      controller.jumpTo(controller.position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      expect(find.text('empty state'), findsOneWidget);
+      expect(controller.offset, greaterThan(0));
+
+      // The inner viewport has no overflow. A downward gesture on its content
+      // must therefore reach the outer list and reveal the preceding content.
+      await tester.drag(find.text('empty state'), const Offset(0, 180));
+      await tester.pumpAndSettle();
+      expect(
+        controller.offset,
+        lessThan(900),
+        reason: 'the fitting inner scroll view must not trap outer scrolling',
+      );
+    },
+  );
 }
