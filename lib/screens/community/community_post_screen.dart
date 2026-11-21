@@ -1141,7 +1141,11 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           ),
           child: SafeArea(
             top: false,
+            // The persistent action bar must wrap its content vertically.
+            // An unconstrained Center otherwise expands to the full available
+            // height in some layouts and leaves the scrollable form at 0px.
             child: Center(
+              heightFactor: 1,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 720),
                 child: Padding(
