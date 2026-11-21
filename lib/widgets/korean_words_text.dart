@@ -19,6 +19,7 @@ class KoreanWordsText extends StatelessWidget {
     this.breakAtFileSeparators = false,
     this.copyMarks = const [],
     this.keepJapaneseLineStarts = false,
+    this.breakLongLatinWords = false,
   });
 
   /// 描く文。
