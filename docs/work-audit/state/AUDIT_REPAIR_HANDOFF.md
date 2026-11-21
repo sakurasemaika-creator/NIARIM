@@ -3384,3 +3384,11 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 
 
 - DISC564 空表示のスクロール追記：内側の `SingleChildScrollView` に `primary: false` を指定し、外側の `CustomScrollView` と `PrimaryScrollController` を共有しないようにした（コミット `e348c8d8`）。fitする内容で外側リストのスクロールを妨げないことを既存テストで維持し、長い内容は内側でスクロールする。最新Flutter regression suite Run `44879312609` はqueued。
+
+
+### 2026-11-21 GPT追記 — DISC564 空表示のスラバー残り高さを再調整
+
+- `9555a4c4` で `EmptyStateSliver` の `SliverFillRemaining.hasScrollBody` を `false` に戻した。外側のsliverに実際の残り高さを確定させ、その中に置く独立した `SingleChildScrollView(primary: false)` だけが空表示本文をスクロールする構成にする。これにより、ヘッダー後に余分な全画面高さを加算して46px押し出す問題を避ける。
+- 先行する長文到達テストと、内容が収まる場合に外側一覧へドラッグが通るテストを維持。`test/home_empty_short_height_test.dart` と `test/home_shared_direction_switch_test.dart` の7言語・短画面・文字2倍の回帰も現HEADに存在する。
+- `9555a4c4` のFlutter regression suite Run `44879530139` はpending（job未生成）、Project/canvas usability Run `44879530586` とAudit policy guard Run `44879530168` はqueued。現時点でCI成功・DISC564完了とは判定しない。
+- 最新の `dev_branch` HEADは、回帰範囲を拡張した記録コミット `cc2ea825`。製品コードの最新変更は `9555a4c4`。Webへのpush/deployは引き続き停止。
