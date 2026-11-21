@@ -17,7 +17,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 /// google-services.jsonを使わない構成ではgoogle_sign_inのserverClientId
 /// としても利用する。
 class GoogleAuthService extends ChangeNotifier {
-  GoogleAuthService({GoogleSignIn? signIn})
+  GoogleAuthService({GoogleSignIn? signIn, this._clientId = googleClientId})
     : _signIn = signIn ?? GoogleSignIn.instance;
 
   static const String googleClientId = String.fromEnvironment(
@@ -33,6 +33,7 @@ class GoogleAuthService extends ChangeNotifier {
   ];
 
   final GoogleSignIn _signIn;
+  final String _clientId;
   StreamSubscription<GoogleSignInAuthenticationEvent>? _authSubscription;
 
   /// GoogleSignInごとの`initialize`。SDKは1プロセスにつき1回しか
@@ -41,6 +42,7 @@ class GoogleAuthService extends ChangeNotifier {
   static final Expando<Future<void>> _sdkInitializations = Expando();
 
   GoogleSignInAccount? _account;
+  Future<void>? _initialization;
   bool _initialized = false;
   bool _authOperationInProgress = false;
   bool _disposed = false;
@@ -49,7 +51,7 @@ class GoogleAuthService extends ChangeNotifier {
   String? _lastRejectedBackendToken;
 
   GoogleSignInAccount? get account => _account;
-  bool get isConfigured => googleClientId.isNotEmpty;
+  bool get isConfigured => _clientId.isNotEmpty;
   bool get isInitialized => _initialized;
   bool get isSignedIn => _account != null;
   bool get authOperationInProgress =>
@@ -63,13 +65,26 @@ class GoogleAuthService extends ChangeNotifier {
   /// 未設定開発ビルドでは、ネイティブGoogle SDKへ一切触れず匿名モードで
   /// 初期化完了扱いにする。これにより認証未設定がアプリ全体の起動を妨げない。
   Future<void> init() async {
-    if (_initialized) return;
+    final existing = _initialization;
+    if (existing != null) return existing;
+    if (_initialized || _disposed) return;
     if (!isConfigured) {
       _initialized = true;
       return;
     }
 
+    final pending = _initialize();
+    _initialization = pending;
+    try {
+      await pending;
+    } finally {
+      _initialization = null;
+    }
+  }
+
+  Future<void> _initialize() async {
     await _initializeSdkOnce();
+    if (_disposed) return;
     _initialized = true;
 
     _authSubscription = _signIn.authenticationEvents.listen(
@@ -93,8 +108,9 @@ class GoogleAuthService extends ChangeNotifier {
     if (lightweight != null) {
       try {
         final user = await lightweight;
-        if (user != null) _setAccount(user);
+        if (!_disposed && user != null) _setAccount(user);
       } catch (error) {
+        if (_disposed) return;
         _lastError = error;
         notifyListeners();
       }
@@ -104,7 +120,7 @@ class GoogleAuthService extends ChangeNotifier {
   Future<void> _initializeSdkOnce() async {
     final pending =
         _sdkInitializations[_signIn] ??
-        _signIn.initialize(serverClientId: googleClientId);
+        _signIn.initialize(serverClientId: _clientId);
     _sdkInitializations[_signIn] = pending;
     try {
       await pending;

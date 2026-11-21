@@ -12,11 +12,6 @@ import 'package:niarim/services/google_auth_service.dart';
 /// GoogleSignInの`initialize`は1プロセスに1回しか呼べない。起動に失敗して
 /// GoogleAuthServiceを作り直しても、SDKの初期化が二重にならないことを
 /// 確かめる。
-///
-/// OAuthクライアントIDが未設定のビルドではSDKへ一切触れない（匿名モード）
-/// ため、この検証は次のように設定付きで実行したときだけ動く：
-///   flutter test --dart-define=NIARIM_GOOGLE_CLIENT_ID=test \
-///     test/google_auth_init_once_test.dart
 class _FakeSignIn implements GoogleSignIn {
   int initializeCalls = 0;
   int lightweightCalls = 0;
@@ -105,14 +100,11 @@ class _TestAuthorization implements GoogleSignInAuthorizationClient {
 }
 
 void main() {
-  final configured = GoogleAuthService.googleClientId.isNotEmpty;
-  const skip = 'run with --dart-define=NIARIM_GOOGLE_CLIENT_ID=test';
-
   Future<GoogleAuthService> signedIn(
     _FakeSignIn sdk,
     _TestAccount account,
   ) async {
-    final service = GoogleAuthService(signIn: sdk);
+    final service = GoogleAuthService(signIn: sdk, clientId: 'test');
     addTearDown(service.dispose);
     await service.init();
     sdk._events.add(GoogleSignInAuthenticationEventSignIn(user: account));
@@ -163,7 +155,6 @@ void main() {
         'Bearer fresh',
       ]);
     },
-    skip: configured ? false : skip,
   );
 
   test('known-expired credentials are renewed before they are sent', () async {
@@ -174,7 +165,7 @@ void main() {
     expect(await auth.backendIdToken(), 'fresh');
     expect(await auth.backendIdToken(), 'fresh');
     expect(sdk.lightweightCalls, 2);
-  }, skip: configured ? false : skip);
+  });
 
   test(
     'a deleted account signs out without automatically refreshing',
@@ -206,7 +197,6 @@ void main() {
       expect(sdk.signOutCalls, 1);
       expect(await auth.backendIdToken(), isNull);
     },
-    skip: configured ? false : skip,
   );
 
   test(
@@ -221,7 +211,6 @@ void main() {
       expect(sdk.signOutCalls, 0);
       expect(await auth.backendIdToken(), 'other');
     },
-    skip: configured ? false : skip,
   );
 
   test(
@@ -259,14 +248,13 @@ void main() {
       expect(auth.isSignedIn, isFalse);
       expect(await auth.backendIdToken(), isNull);
     },
-    skip: configured ? false : skip,
   );
 
   test('YouTube only requests the scopes needed for each action', () async {
     const read = 'https://www.googleapis.com/auth/youtube.readonly';
     const upload = 'https://www.googleapis.com/auth/youtube.upload';
     final sdk = _FakeSignIn()..initialization.complete();
-    final service = GoogleAuthService(signIn: sdk);
+    final service = GoogleAuthService(signIn: sdk, clientId: 'test');
     addTearDown(service.dispose);
     await service.init();
     final account = _TestAccount();
@@ -297,25 +285,77 @@ void main() {
     );
     expect(auth.checked.last, [read]);
     expect(auth.prompted, hasLength(2));
-  }, skip: configured ? false : skip);
+  });
 
   test('a recreated service reuses the SDK initialization', () async {
     final signIn = _FakeSignIn()..initialization.complete();
-    final first = GoogleAuthService(signIn: signIn);
+    final first = GoogleAuthService(signIn: signIn, clientId: 'test');
     await first.init();
     first.dispose();
 
-    final second = GoogleAuthService(signIn: signIn);
+    final second = GoogleAuthService(signIn: signIn, clientId: 'test');
     await second.init();
     expect(second.isInitialized, isTrue);
     expect(signIn.initializeCalls, 1);
     second.dispose();
-  }, skip: configured ? false : skip);
+  });
+
+  test('an unconfigured service starts without calling the SDK', () async {
+    final signIn = _FakeSignIn();
+    final service = GoogleAuthService(signIn: signIn, clientId: '');
+    addTearDown(service.dispose);
+
+    await service.init();
+
+    expect(service.isConfigured, isFalse);
+    expect(service.isInitialized, isTrue);
+    expect(await service.backendIdToken(), isNull);
+    expect(signIn.initializeCalls, 0);
+    expect(signIn.lightweightCalls, 0);
+  });
+
+  test('concurrent callers share the service startup sign-in', () async {
+    final startupSignIn = Completer<GoogleSignInAccount?>();
+    final signIn = _FakeSignIn()..lightweight = () => startupSignIn.future;
+    final service = GoogleAuthService(signIn: signIn, clientId: 'test');
+    addTearDown(service.dispose);
+
+    var completed = 0;
+    final both = Future.wait([
+      service.init().then((_) => completed++),
+      service.init().then((_) => completed++),
+    ]);
+    signIn.initialization.complete();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(signIn.initializeCalls, 1);
+    expect(signIn.lightweightCalls, 1);
+    expect(completed, 0);
+    final account = _TestAccount();
+    startupSignIn.complete(account);
+    await both;
+    expect(service.account, same(account));
+  });
+
+  test(
+    'disposal before SDK initialization finishes prevents sign-in',
+    () async {
+      final signIn = _FakeSignIn();
+      final service = GoogleAuthService(signIn: signIn, clientId: 'test');
+      final initialization = service.init();
+      service.dispose();
+      signIn.initialization.complete();
+
+      await initialization;
+
+      expect(signIn.lightweightCalls, 0);
+    },
+  );
 
   test('concurrent services share one in-flight initialization', () async {
     final signIn = _FakeSignIn();
-    final a = GoogleAuthService(signIn: signIn);
-    final b = GoogleAuthService(signIn: signIn);
+    final a = GoogleAuthService(signIn: signIn, clientId: 'test');
+    final b = GoogleAuthService(signIn: signIn, clientId: 'test');
     final both = Future.wait([a.init(), b.init()]);
     await Future<void>.delayed(Duration.zero);
     expect(signIn.initializeCalls, 1);
@@ -324,21 +364,21 @@ void main() {
     expect(a.isInitialized && b.isInitialized, isTrue);
     a.dispose();
     b.dispose();
-  }, skip: configured ? false : skip);
+  });
 
   test('a failed initialization is retried by the next attempt', () async {
     final signIn = _FakeSignIn();
     signIn.initialization.completeError(StateError('offline'));
-    final first = GoogleAuthService(signIn: signIn);
+    final first = GoogleAuthService(signIn: signIn, clientId: 'test');
     await expectLater(first.init(), throwsStateError);
     expect(first.isInitialized, isFalse);
     first.dispose();
 
     signIn.initialization = Completer<void>()..complete();
-    final second = GoogleAuthService(signIn: signIn);
+    final second = GoogleAuthService(signIn: signIn, clientId: 'test');
     await second.init();
     expect(second.isInitialized, isTrue);
     expect(signIn.initializeCalls, 2);
     second.dispose();
-  }, skip: configured ? false : skip);
+  });
 }
