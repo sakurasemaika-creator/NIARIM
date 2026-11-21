@@ -3587,3 +3587,9 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - Home folder-only regression Run `44913631373` は共有フォルダの削除確認ダイアログを開く際にFlutter semantics/layout assertionで失敗。ログではAlertDialog内のRenderIntrinsicWidth配下がlayout未完了となり、`trash-dialog-confirm` のtap時にRenderBox未layout。
 - 根本原因：`ProjectTrashDialog` の確定ボタンラベル `trashConfirmLabelText` が `KoreanWordsText(breakLongLatinWords:true)` を使い、内部の `LayoutBuilder` がAlertDialogのIntrinsicWidth計算に参加していた。AlertDialogはIntrinsicWidthを使うため、LayoutBuilderはintrinsic dimensionsを提供できず不整合。
 - 修正：ボタンラベルをintrinsic sizingに対応した `messageText(label, keepLineStarts:true)` に変更。韓国語の語・日本語行頭禁則を維持し、AlertDialogのintrinsic幅計算を可能にする。専用の全locale×画面サイズテスト `project_trash_dialog_test.dart` と共有フォルダ作成・改名・削除回帰を再実行する。
+
+
+### 2026-11-21 GPT追記 — Home検索欄の余白調整を整理
+
+- 先行コミットで `titleSpacing` 自体がProjectsタブのみ12px、他タブ16pxに調整済みであることを最新HEADで再確認。追加していた非Projects検索欄の4px Paddingは二重加算となるため削除し、AppBarのtab別titleSpacingに統一。
+- Home検索欄周辺のDart formatter差分も解消するよう、LayoutBuilderの字下げとtitleSpacing条件式を正規化。Projectsは12px、他タブは16pxを維持する。

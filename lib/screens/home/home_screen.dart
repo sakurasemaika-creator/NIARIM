@@ -1142,7 +1142,10 @@ class _HomeScreenState extends State<HomeScreen>
           key: _scaffoldKey,
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            titleSpacing: MediaQuery.sizeOf(context).width < 600 && _currentTabIndex == 0 ? 12 : 16,
+            titleSpacing:
+                MediaQuery.sizeOf(context).width < 600 && _currentTabIndex == 0
+                ? 12
+                : 16,
             // 起動画面へ戻る矢印は上のバーに置かず、左下の浮かぶボタンに
             // する（どのタブでも同じ場所、所有者の指定）。
             title: _isSearching
@@ -1165,19 +1168,9 @@ class _HomeScreenState extends State<HomeScreen>
                           },
                         ),
                       Expanded(
-                        child: Padding(
-                          // The title inset is 12px on compact phones. Search
-                          // fields on non-Projects tabs retain a 16px text
-                          // inset, while the Projects tag toggle starts at 12px.
-                          padding: EdgeInsets.only(
-                            left: _currentTabIndex != 0 &&
-                                    MediaQuery.sizeOf(context).width < 600
-                                ? 4
-                                : 0,
-                          ),
-                          child: CallbackShortcuts(
-                            bindings: {_escapeOnce: _escapeInSearch},
-                            child: LayoutBuilder(
+                        child: CallbackShortcuts(
+                          bindings: {_escapeOnce: _escapeInSearch},
+                          child: LayoutBuilder(
                             builder: (context, constraints) {
                               final hint = _searchHint(l10n);
                               final themeHint = Theme.of(
@@ -1253,7 +1246,6 @@ class _HomeScreenState extends State<HomeScreen>
                                 },
                               );
                             },
-                            ),
                           ),
                         ),
                       ),
