@@ -151,7 +151,7 @@ void main() {
         matching: find.bySubtype<Text>(),
       ),
     ))
-      t.data ?? '',
+      t.data ?? t.textSpan?.toPlainText() ?? '',
   ].join(' / ');
 
   for (final language in ['ja', 'zh', 'ko', 'zh_Hant']) {
