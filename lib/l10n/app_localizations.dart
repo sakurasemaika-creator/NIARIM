@@ -3444,7 +3444,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsClipDuplicateDesc.
   ///
   /// In ja, this message translates to:
-  /// **'画像・動画・音声クリップをタップすると開く詳細シートのコピーアイコンから複製できます。同じ効果音を繰り返し使う、同じ画像を場面ごとに配置し直すといった編集が、長押しドラッグと複製ボタンだけで完結します。'**
+  /// **'タイムライン上の画像・動画・音声クリップをタップすると、詳細シートが開きます。\n詳細シートの複製ボタンを押すと、選んだクリップを複製できます。\n同じ効果音を繰り返したり、同じ画像を別の場面に配置したりするときに便利です。'**
   String get tipsClipDuplicateDesc;
 
   /// No description provided for @tipsTextCaptionTitle.
@@ -3492,7 +3492,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsAutofillManualPartColorDesc.
   ///
   /// In ja, this message translates to:
-  /// **'この方法は、目立つ仮色でパーツを手動で塗り分けてから、本来の色に更新したい場合に向いています。実際の線画は通常レイヤー1枚にまとめて描き、塗りレイヤーより上に置きます。\nパーツごとに「自動塗り用線画レイヤー」を追加し、その三点メニューの「パーツ設定」でパーツを割り当てます。この方法では補助用なので線画を描かず、空のままで構いません。同じメニューから「自動塗り実行」を一度行い、対応する「自動塗りレイヤー」を作ります。\n各「自動塗りレイヤー」には、線ではなく面として、パーツごとの目立つ仮色を手動で塗ります。輪郭線を引くのではなく、あとで色を更新したい領域を塗りつぶしてください。\n形を整えたら、対応する「自動塗り用線画レイヤー」の三点メニューから「自動塗り実行」を選び、実行方法で「形状を保ったまま色だけ更新」を選択します。手動で塗った形を保ったまま「自動塗り設定」の本来の色に更新できます。線画からパーツを自動判定して一度で塗りたい場合は、この方法ではなく、実際の線画を「自動塗り用線画レイヤー」に描いてください。'**
+  /// **'この方法は、目立つ仮色でパーツを手動で塗り分け、あとから本来の色に更新したい場合に向いています。実際の線画は通常レイヤー1枚にまとめて描き、塗りレイヤーより上に置きます。\nパーツごとに「自動塗り用線画レイヤー」を追加し、三点メニューの「パーツ設定」を開きます。\nパーツ設定で、対応するパーツを選んで割り当てます。\n同じメニューから「自動塗り実行」を選び、実行方法を指定します。\n補助用の自動塗り用線画レイヤーは空のままにし、対応する「自動塗りレイヤー」にパーツごとの仮色を線ではなく面として塗ります。\n形を整えたら「形状を保ったまま色だけ更新」を選びます。\n手動で塗った形を保ったまま、本来の色に更新できます。線画からパーツを自動判定したい場合は、線画を「自動塗り用線画レイヤー」に描いてください。'**
   String get tipsAutofillManualPartColorDesc;
 
   /// No description provided for @tipsBrushFavoriteTitle.
@@ -3708,7 +3708,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsCommonLayerFolderDesc.
   ///
   /// In ja, this message translates to:
-  /// **'シリーズ物で毎話使うロゴやクレジット表記は、共通レイヤー化してフォルダにまとめておくと、新しい話数のプロジェクトへコピーする際も迷わず扱えます。'**
+  /// **'シリーズ物で毎話使うロゴやクレジット表記は、レイヤーを「共通レイヤー」に変換して使えます。\n共通レイヤーの表示範囲を設定しておくと、必要なフレームだけに表示できます。\nレイヤーパネルでは共通レイヤーとして通常レイヤーと区別して管理できます。\nフォルダにまとめておくと、新しい話数のプロジェクトへコピーするときも迷わず扱えます。'**
   String get tipsCommonLayerFolderDesc;
 
   /// No description provided for @tipsStrokeDecayFadeTitle.
@@ -3960,7 +3960,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsCameraLensBlurDesc.
   ///
   /// In ja, this message translates to:
-  /// **'カメラキーフレームでズームする瞬間に合わせてレンズぼかしの演出フィルターを一時的に強めに設定すると、実写のズームブラーのような迫力を演出できます。'**
+  /// **'カメラキーフレームでズームする動きを付けます。\nズームする瞬間に合わせて、レンズぼかしの演出フィルターを一時的に強めに設定します。\n実写のズームブラーのような迫力を演出できます。'**
   String get tipsCameraLensBlurDesc;
 
   /// No description provided for @tipsBlurVignetteBgTitle.
@@ -4008,7 +4008,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsSaveSlotAutoSaveDesc.
   ///
   /// In ja, this message translates to:
-  /// **'自動保存は最大3件です。大事な時点のデータはセーブスロットに保存し、後から保存データの一覧で選んで読み込めます。'**
+  /// **'大事な時点のデータは、手動でセーブスロットに保存しておきましょう。\n自動保存は最大3件まで、直近の編集内容を自動で記録します。\n保存データの一覧から読み込むデータを選び、プレビューを確認してから復旧します。\n読み込むと、その保存時点のキャンバスとタイムラインに戻ります。'**
   String get tipsSaveSlotAutoSaveDesc;
 
   /// No description provided for @tipsQuickToolSwipeTitle.
@@ -12654,7 +12654,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsOfficialAutomationPresetsDesc.
   ///
   /// In ja, this message translates to:
-  /// **'「線画作成（デジタル）」は自動線画→墨溜まり、「線画抽出（アナログ）」は色調補正→二値化→明度で透過、「線画色トレス」は線画レイヤーで実行し、下の塗りの色を線画にクリッピングした新規レイヤーへ取り込む→ぼかしと複製・結合→色トレス補正（明度を半分にし彩度を上げる）で、線を隣の塗りより深い色にする公式プリセットです。再記録では記録に対応した操作を追加できます。確認画面では手順の並べ替え・削除ができます。元の設定へ戻せるよう、編集前に書き出しておくと安心です。'**
+  /// **'「線画作成（デジタル）」は、自動線画から墨溜まりまでの処理をまとめたプリセットです。\n確認画面では、手順の並べ替えや削除ができ、再記録では操作を追加できます。\n編集前に設定を書き出しておくと、元の状態へ戻せて安心です。\n「線画抽出（アナログ）」は、色調補正→二値化→明度で透過の順に処理します。\n「線画色トレス」は、下の塗り色を線画へ取り込み、ぼかし・複製・結合・色トレス補正で線を隣の塗りより深い色になじませます。'**
   String get tipsOfficialAutomationPresetsDesc;
 
   /// No description provided for @tipsTexturePrismVhsTitle.
