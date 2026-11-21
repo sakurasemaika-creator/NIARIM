@@ -44,8 +44,9 @@ class KoreanWordsText extends StatelessWidget {
   /// 読み上げと文での検索は元の文のまま。
   final bool keepJapaneseLineStarts;
 
-  /// 幅を超える空白なしのASCII英数字列だけ、文字境界で折り返せるようにする。
-  /// 短い名前や通常の単語には折り返し位置を追加しない。
+  /// 幅を超えるUnicode Latin script・結合文字・数字の連続だけを、
+  /// 書記素クラスタの境界で折り返せるようにする。複製印より前の名前部分にも適用する。
+  /// 短い名前や通常の単語、複製印自体には折り返し位置を追加しない。
   final bool breakLongLatinWords;
 
   @override
