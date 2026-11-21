@@ -9,7 +9,7 @@
 // プレミアム利用者には表示されないことも確認する。
 //
 // 韓国語の語も、入る幅では音節の途中で折らないことを検査する。
-// 旧訳（Automatisations / Automatizaciones）を前提にした説明・例外は残さない。
+// 旧訳の幅超過を理由に検査対象から外す例外は設けない。
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -144,6 +144,9 @@ void main() {
     testWidgets('the canvas edit menu keeps its words whole ($tag)', (
       tester,
     ) async {
+      if (tag == 'fr' || tag == 'es') {
+        expect(l10n.customAutomationTitle, 'Macros', reason: tag);
+      }
       await openMenu(tester, language);
       final premium = tester
           .element(find.byType(CanvasScreen))
