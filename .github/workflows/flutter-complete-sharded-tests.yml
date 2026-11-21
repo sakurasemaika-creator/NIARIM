@@ -64,7 +64,7 @@ permissions:
   contents: read
 concurrency:
   group: niarim-full-shards-${{ github.ref }}
-  queue: max
+  cancel-in-progress: false
 jobs:
   analyze:
     if: github.ref == 'refs/heads/dev_branch'
