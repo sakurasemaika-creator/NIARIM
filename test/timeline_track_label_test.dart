@@ -10,6 +10,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -84,58 +85,82 @@ void main() {
     await settle();
     expect(tester.takeException(), isNull);
 
-    final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
+    final settings = tester
+        .element(find.byType(MaterialApp).first)
+        .read<SettingsService>();
+    const locales = [
+      Locale('ja'),
+      Locale('en'),
+      Locale('zh'),
+      Locale('ko'),
+      Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+      Locale('fr'),
+      Locale('es'),
+    ];
     const logicalWidths = [320.0, 360.0, 412.0];
     final captures = Directory('build/timeline-preview-ui-captures')
       ..createSync(recursive: true);
 
-    for (final logicalWidth in logicalWidths) {
-      tester.view.physicalSize = Size(logicalWidth * 3, 2280);
+    for (final locale in locales) {
+      final languageCode = locale.scriptCode == 'Hant'
+          ? 'zh_Hant'
+          : locale.languageCode;
+      await settings.setLanguage(languageCode);
       await settle();
-      expect(
-        tester.takeException(),
-        isNull,
-        reason: 'Timeline layout threw at ${logicalWidth.toInt()}dp',
-      );
+      final l10n = await AppLocalizations.delegate.load(locale);
 
-      final finder = find.text(l10n.timelineFrameTrackLabel);
-      expect(
-        finder,
-        findsOneWidget,
-        reason: '${logicalWidth.toInt()}dp: フレームトラックのラベルが見つからない',
-      );
-      final paragraph = tester.renderObject<RenderParagraph>(finder);
-      expect(
-        tester.widget<Text>(finder).style?.fontSize,
-        11,
-        reason: 'Track labels must remain comfortably readable on phones',
-      );
-      // 折り返さず1行に収まっていること。
-      expect(
-        paragraph.size.height,
-        lessThan(20),
-        reason: '${logicalWidth.toInt()}dp: track label wrapped',
-      );
-      // 省略記号で切られていないこと。実際に描かれた文字幅と本来の幅を比較。
-      final intrinsic = paragraph.getMaxIntrinsicWidth(double.infinity);
-      expect(
-        paragraph.size.width,
-        greaterThanOrEqualTo(intrinsic - 0.5),
-        reason:
-            '${logicalWidth.toInt()}dp: "${l10n.timelineFrameTrackLabel}" が'
-            '${paragraph.size.width.toStringAsFixed(1)}pxしか無く'
-            '（本来 ${intrinsic.toStringAsFixed(1)}px）省略されている',
-      );
+      for (final logicalWidth in logicalWidths) {
+        tester.view.physicalSize = Size(logicalWidth * 3, 2280);
+        await settle();
+        expect(
+          tester.takeException(),
+          isNull,
+          reason:
+              'Timeline layout threw for $languageCode at '
+              '${logicalWidth.toInt()}dp',
+        );
 
-      final boundary = tester.renderObject<RenderRepaintBoundary>(
-        find.byKey(captureKey),
-      );
-      final image = await boundary.toImage(pixelRatio: 1);
-      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-      File(
-        '${captures.path}/timeline_track_labels_ja_${logicalWidth.toInt()}.png',
-      ).writeAsBytesSync(bytes!.buffer.asUint8List());
-      image.dispose();
+        final finder = find.text(l10n.timelineFrameTrackLabel);
+        expect(
+          finder,
+          findsOneWidget,
+          reason:
+              '$languageCode ${logicalWidth.toInt()}dp: '
+              'frame track label not found',
+        );
+        final paragraph = tester.renderObject<RenderParagraph>(finder);
+        expect(
+          tester.widget<Text>(finder).style?.fontSize,
+          11,
+          reason: 'Track labels must remain comfortably readable on phones',
+        );
+        expect(
+          paragraph.size.height,
+          lessThan(20),
+          reason: '$languageCode ${logicalWidth.toInt()}dp: track label wrapped',
+        );
+        final intrinsic = paragraph.getMaxIntrinsicWidth(double.infinity);
+        expect(
+          paragraph.size.width,
+          greaterThanOrEqualTo(intrinsic - 0.5),
+          reason:
+              '$languageCode ${logicalWidth.toInt()}dp: '
+              '"${l10n.timelineFrameTrackLabel}" is clipped '
+              '(${paragraph.size.width.toStringAsFixed(1)}px / '
+              '${intrinsic.toStringAsFixed(1)}px)',
+        );
+
+        final boundary = tester.renderObject<RenderRepaintBoundary>(
+          find.byKey(captureKey),
+        );
+        final image = await boundary.toImage(pixelRatio: 1);
+        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+        File(
+          '${captures.path}/timeline_track_labels_${languageCode}_'
+          '${logicalWidth.toInt()}.png',
+        ).writeAsBytesSync(bytes!.buffer.asUint8List());
+        image.dispose();
+      }
     }
   });
 }
