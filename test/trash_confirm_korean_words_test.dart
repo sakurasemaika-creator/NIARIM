@@ -226,11 +226,10 @@ void main() {
       );
       expect(label, findsOneWidget);
       final paragraph = tester.renderObject<RenderParagraph>(label);
-      final displayed = paragraph.text!.toPlainText(
-        includeSemanticsLabels: false,
-      );
+      final span = paragraph.text as TextSpan;
+      final displayed = span.toPlainText(includeSemanticsLabels: false);
       expect(displayed, contains('\u200B'));
-      expect(paragraph.text!.semanticsLabel, l10n.homePermanentDelete);
+      expect(span.semanticsLabel, l10n.homePermanentDelete);
       final boxes = paragraph.getBoxesForSelection(
         TextSelection(baseOffset: 0, extentOffset: displayed.length),
       );

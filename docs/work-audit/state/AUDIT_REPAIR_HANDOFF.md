@@ -3621,3 +3621,10 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - これにより、先行Run `44914122296` のglobal format gate失敗に含まれていた未整形ファイル群を一括修正。最新HEADでfull format gate・full analyzer・Flutter regressionを再確認する。
 - Project usability run `44914454366`（HEAD `626f232`）はDISC145、EmptyStateSliver、compact toolbar、intrinsic-safe dialog、timeline export、premium/help/localization、project selection、localized controls、startup Home test、mobile/desktop capturesまでsuccess。Artifacts `project-and-plan-screens`（ID `14710979162`）と `export-settings-screen`（ID `14711571157`）。
 - Home empty-folder visual proof run `44914454339` と Home clipboard/Trash run `44914454213` もsuccess。Artifacts `home-folder-toast-visual-proof`（ID `14710889061`）、`home-clipboard-verified-png`（ID `14711725196`）、`home-clipboard-trash-ui`（ID `14711048178`）。
+
+
+### 2026-11-22 GPT追記 — ゴミ箱ラベルのSemanticsテストをFlutter APIに合わせて修正
+
+- Run `44915474351`（Theme Rescue）と `44915474347`（YouTube Android build）のAnalyzerが、製品コードではなく `test/trash_confirm_korean_words_test.dart` の `InlineSpan.semanticsLabel` 参照で停止。Flutterの `RenderParagraph.text` は `InlineSpan` 型のため、`TextSpan` に絞り込んでからsemanticsLabelを検証する必要がある。併せてnullableでない `paragraph.text` への不要な `!` も除去。
+- 対応：テスト内で `final span = paragraph.text as TextSpan` とし、可視テキストと読み上げラベルの双方を同じspanから検証する。
+- この修正はTheme Rescue、YouTube Android build、Save safety/full analyzerの共通阻害要因を解消する見込み。各CIの再実行結果で確認する。
