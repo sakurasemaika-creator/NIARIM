@@ -303,6 +303,7 @@ class ToolbarWidget extends StatelessWidget {
           colorScheme.onSurface,
           colorScheme,
         ),
+        iconSize: 24 * iconScale,
       ),
     ];
 
