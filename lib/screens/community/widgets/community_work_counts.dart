@@ -57,6 +57,23 @@ class CommunityWorkCounts extends StatelessWidget {
       );
     }
 
+    final metrics = <Widget>[
+      metric(
+        'bookmark',
+        Icons.bookmarks_outlined,
+        l10n.communityRankingSortBookmarks,
+        work.bookmarkCount,
+      ),
+      metric('repost', Icons.repeat, l10n.communityRepostCount, reposts),
+      if (periodBookmarks case final score?)
+        metric(
+          'period-bookmark',
+          Icons.date_range_outlined,
+          CommunityRankingLayoutLabels.of(context).periodBookmarks,
+          score,
+        ),
+    ];
+
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 10,
@@ -68,20 +85,19 @@ class CommunityWorkCounts extends StatelessWidget {
             key: const Key('communityDetailPostedAt'),
             style: TextStyle(fontSize: fontSize, color: color),
           ),
-        metric(
-          'bookmark',
-          Icons.bookmarks_outlined,
-          l10n.communityRankingSortBookmarks,
-          work.bookmarkCount,
+        // Keep the public metrics together. When a long localized date no
+        // longer fits beside them (for example French at 200% text scale),
+        // move the whole metrics group to the next line instead of leaving
+        // the repost count stranded on a line of its own.
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < metrics.length; i++) ...[
+              if (i > 0) const SizedBox(width: 10),
+              metrics[i],
+            ],
+          ],
         ),
-        metric('repost', Icons.repeat, l10n.communityRepostCount, reposts),
-        if (periodBookmarks case final score?)
-          metric(
-            'period-bookmark',
-            Icons.date_range_outlined,
-            CommunityRankingLayoutLabels.of(context).periodBookmarks,
-            score,
-          ),
       ],
     );
   }
