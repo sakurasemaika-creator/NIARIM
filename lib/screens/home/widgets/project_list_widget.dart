@@ -846,6 +846,31 @@ class ProjectListWidget extends StatelessWidget {
         onPickProject == null &&
         MediaQuery.sizeOf(context).width <= 360 &&
         MediaQuery.textScalerOf(context).scale(1) >= 1.5;
+    final folderDate = DateLineText(
+      [
+        AppLocalizations.of(
+          context,
+        )!.projectListFolderCreatedOn(folder.createdAt),
+        if (_searchLocation(context, folder.parentFolderId)
+            case final location?)
+          AppLocalizations.of(context)!.projectListInFolder(location),
+      ].join('\\n'),
+      when: folder.createdAt,
+      localeName: AppLocalizations.of(context)!.localeName,
+    );
+    final folderActions = CollectionActionRow(
+      children: [
+        CollectionFavoriteButton(
+          itemId: folder.id,
+          favorite: folder.isFavorite,
+          tooltip: folder.isFavorite
+              ? AppLocalizations.of(context)!.colorPickerFavoriteRemove
+              : AppLocalizations.of(context)!.colorPickerFavoriteAdd,
+          onPressed: () => _handleFolderAction(context, 'favorite', folder),
+        ),
+        CollectionActionFrame(child: _folderMenu(context, folder)),
+      ],
+    );
     return ListTile(
       minTileHeight: collectionDetailMinRowHeight(thumb, 48),
       contentPadding: compactLargeTextLayout
@@ -878,36 +903,21 @@ class ProjectListWidget extends StatelessWidget {
       ),
       // フォルダを作った日時（「更新日時」の並びでフォルダに使う日時）。
       // 検索の結果には、入っているフォルダを添える。
-      subtitle: DateLineText(
-        [
-          AppLocalizations.of(
-            context,
-          )!.projectListFolderCreatedOn(folder.createdAt),
-          if (_searchLocation(context, folder.parentFolderId)
-              case final location?)
-            AppLocalizations.of(context)!.projectListInFolder(location),
-        ].join('\n'),
-        when: folder.createdAt,
-        localeName: AppLocalizations.of(context)!.localeName,
-      ),
-      trailing: (!isSelectionMode && onPickProject == null)
-          ? CollectionActionRow(
-              direction: compactLargeTextLayout
-                  ? Axis.vertical
-                  : Axis.horizontal,
+      subtitle: compactLargeTextLayout
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                CollectionFavoriteButton(
-                  itemId: folder.id,
-                  favorite: folder.isFavorite,
-                  tooltip: folder.isFavorite
-                      ? AppLocalizations.of(context)!.colorPickerFavoriteRemove
-                      : AppLocalizations.of(context)!.colorPickerFavoriteAdd,
-                  onPressed: () =>
-                      _handleFolderAction(context, 'favorite', folder),
+                folderDate,
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: folderActions,
                 ),
-                CollectionActionFrame(child: _folderMenu(context, folder)),
               ],
             )
+          : folderDate,
+      trailing: (!isSelectionMode && onPickProject == null)
+          ? (compactLargeTextLayout ? null : folderActions)
           : null,
       // フォルダは選ぶ専用画面でも通常どおり潜れる（[onPickProject]は
       // 作品タップ時のみに関わる）。
