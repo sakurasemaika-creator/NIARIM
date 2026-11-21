@@ -3643,7 +3643,7 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - App `dev_branch` の作業基準HEAD：`90969a6d5e12877afdfca642fad11f097906a48b`。この追記時点でNIARIM-web・他ブランチは変更していない。
 - DISC190：フランス語・スペイン語のキャンバス「自動操作」見出しはARBと生成済みローカライズの両方で `Macros`。`test/canvas_edit_menu_words_test.dart` に仏語・西語の完全一致assertionを追加し、7言語×320/360/412px×文字倍率1.0/1.3/2.0で見出し幅を必須検査する。最新全体Flutter CIの結果待ち。
 - DISC145：`test/korean_words_text_long_latin_test.dart` の7言語・幅・文字倍率回帰はProject usability Run `44918624799` で成功。さらに実アプリのホームで親フォルダを開き、子フォルダ `Storyboards (2)` の詳細ListTileを検査する統合テストを `test/home_a003_visual_findings_test.dart` に追加。同Run `44918624799` で成功。初回テストはルートフォルダを開いてパンくずをListTileとして探す誤りがあり、親子フォルダを作成し詳細表示モードを明示する形へ修正した。
-- DISC145の追加証拠：フランス語・320×844・文字倍率2倍のSP画面と、1280×900・PCモードの詳細行をPNG保存するテストを追加。Project usability workflowに `disc145-folder-row-screens` artifactのアップロードを追加。Run `44919278054` が進行中で、SP/PC画像の生成・アップロードは未確認。Android/DeX実機およびスクリーンリーダー実機確認も未実施のため、DISC145は正式完了扱いにしない。
+- DISC145の追加証拠：フランス語・320×844・文字倍率2倍のSP画面と、1280×900・PCモードの詳細行をPNG保存するテストを追加。Project usability Run `44919278054` のHome A003 grouped testはsuccessし、SP/PC画像の生成テストも通過。`disc145-folder-row-screens` artifact upload stepは後続工程で確認する。Android/DeX実機およびスクリーンリーダー実機確認も未実施のため、DISC145は正式完了扱いにしない。
 - DISC538：`SplashScreen` はGoRouterが存在しないテスト画面でも描画できるよう `GoRouter.maybeOf(context)` を使い、ルーターが無い場合の遷移操作は安全にno-opとする。ルート監視・解除は維持。Theme Rescue Run `44918223310`（SHA `367b7fca`）はテーマunit/widget tests、静的解析、テーマ画面キャプチャの全工程success。現HEADはその後のDart整形とテスト追加のみ。
 - Dart canonical formatter：Run `44919277996` success。1ファイルの整形をcommit `90969a6d` に反映。整形のみで製品ロジック変更なし。
 - Project usability Run `44918624799` はsuccess。解析、DISC145長Latin、空表示Sliver、compact toolbar、dialog、export、Home A003 visual findings（実フォルダ詳細行を含む）、project selection等の工程がsuccess。SP/PCキャプチャ追加を含む次Run `44919278054` は進行中。
