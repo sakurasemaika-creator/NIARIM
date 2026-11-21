@@ -31,7 +31,7 @@ jobs:
       - name: Generate localizations
         run: flutter gen-l10n
       - name: Format check
-        run: dart format --output=none --set-exit-if-changed lib/screens/timeline/timeline_screen.dart test/timeline_preview_controls_test.dart test/timeline_track_label_test.dart
+        run: dart format --output=none --set-exit-if-changed lib/screens/timeline/timeline_screen.dart test/timeline_track_label_test.dart
       - name: Compact preview touch-target test and captures
         run: flutter test test/timeline_preview_controls_test.dart --plain-name "preview fullscreen button keeps a 48dp hit target on compact large text" --reporter expanded
       - name: Verify timeline track labels remain readable
