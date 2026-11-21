@@ -7,6 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/tips/tips_screen.dart';
+import 'package:niarim/screens/tips/tip_capture_data.dart';
+import 'package:niarim/screens/tips/tip_diagram_data.dart';
+import 'package:niarim/screens/tips/tip_screen_capture.dart';
 import 'package:niarim/services/theme_service.dart';
 
 import 'helpers/load_app_fonts.dart';
@@ -71,28 +74,6 @@ void main() {
     image.dispose();
   }
 
-  Future<void> capturePages(
-    WidgetTester tester, {
-    required String topic,
-    required String title,
-    required int pageCount,
-    required String filePrefix,
-  }) async {
-    await open(tester, title);
-    for (var page = 0; page < pageCount; page++) {
-      await capture(
-        tester,
-        topic: topic,
-        fileName: '$filePrefix-page-${(page + 1).toString().padLeft(2, '0')}',
-      );
-      if (page + 1 < pageCount) {
-        await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-        await tester.pumpAndSettle();
-      }
-    }
-    await close(tester);
-  }
-
   testWidgets('captures the synchronized Tips page layouts for visual review', (
     tester,
   ) async {
@@ -118,6 +99,90 @@ void main() {
       pageCount: 7,
       filePrefix: 'autofill-manual-color',
     );
+    expect(tester.takeException(), isNull);
+  });
+  String compact(String value) =>
+      value.replaceAll(RegExp(r'\s+'), '');
+
+  Future<void> captureTopicPages(
+    WidgetTester tester, {
+    required TipTopic topic,
+    required String title,
+    required String description,
+    required List<TipScreenCapture> pages,
+  }) async {
+    final topicKey = topic.name;
+    await open(tester, title);
+    final pageTexts = <String>[];
+    for (var index = 0; index < pages.length; index++) {
+      await tester.pumpAndSettle();
+      final page = find.byKey(ValueKey('tip-page-$topicKey-$index'));
+      expect(page, findsOneWidget, reason: '$topicKey page $index');
+
+      final viewer = find.descendant(
+        of: page,
+        matching: find.byType(TipScreenCaptures),
+      );
+      expect(viewer, findsOneWidget, reason: '$topicKey page $index');
+      final frames = tester.widget<TipScreenCaptures>(viewer).frames;
+      expect(frames, hasLength(1), reason: '$topicKey page $index');
+      expect(
+        frames.single.asset,
+        pages[index].asset,
+        reason: '$topicKey page $index must show its own capture',
+      );
+
+      final body = find.descendant(
+        of: page,
+        matching: find.byKey(const ValueKey('tipPageDescription')),
+      );
+      expect(body, findsOneWidget, reason: '$topicKey page $index');
+      final pageText = tester.widget<Text>(body).data ?? '';
+      expect(pageText.trim(), isNotEmpty, reason: '$topicKey page $index');
+      pageTexts.add(pageText);
+
+      await capture(
+        tester,
+        topic: topicKey,
+        fileName: topicKey + '-page-' +
+            (index + 1).toString().padLeft(2, '0'),
+      );
+      if (index + 1 < pages.length) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+        await tester.pumpAndSettle();
+      }
+    }
+
+    // Preserve the complete explanation while giving each screenshot its own
+    // relevant text segment. Paragraph separators are intentionally removed
+    // when paragraphs become individual swipe pages.
+    expect(
+      compact(pageTexts.join()),
+      compact(description),
+      reason: '$topicKey must not lose or duplicate explanation text',
+    );
+    await close(tester);
+  }
+
+  testWidgets('captures every Tips screenshot with its matching text page', (
+    tester,
+  ) async {
+    await mount(tester);
+    final entries = allTipTopicEntries(l10n);
+    var capturedPages = 0;
+    for (final (topic, title, description) in entries) {
+      final pages = tipCapturePages(topic, l10n);
+      if (pages.isEmpty) continue;
+      await captureTopicPages(
+        tester,
+        topic: topic,
+        title: title,
+        description: description,
+        pages: pages,
+      );
+      capturedPages += pages.length;
+    }
+    expect(capturedPages, greaterThan(100));
     expect(tester.takeException(), isNull);
   });
 }
