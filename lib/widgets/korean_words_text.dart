@@ -1,4 +1,3 @@
-import 'package:characters/characters.dart';
 import 'package:flutter/widgets.dart';
 
 import '../utils/line_break.dart';
