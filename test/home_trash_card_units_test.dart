@@ -38,11 +38,11 @@ void main() {
   );
 
   /// どの種類の数と単位を確かめたか（fps・長さ・件数）。
-  String kindOf(String part) => RegExp(r'fps|ips|i/s').hasMatch(part)
-      ? 'fps'
-      : RegExp(r'^\\d+(?:\\s*s|s|秒|초)').hasMatch(part)
-      ? 'duration'
-      : 'count';
+  String kindOf(String part) {
+    if (RegExp(r'fps|ips|i/s').hasMatch(part)) return 'fps';
+    if (RegExp(r'^\d+(?:\s*s|s|秒|초)').hasMatch(part)) return 'duration';
+    return 'count';
+  }
 
   for (final language in languages) {
     testWidgets('Trash card subtitles keep numbers with their units and '
