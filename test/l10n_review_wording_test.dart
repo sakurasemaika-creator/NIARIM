@@ -295,6 +295,9 @@ final _opalGrammar = <String, List<(RegExp, String)>>{
 /// 頭文字が小文字で始まってよい語（固有の綴り）。
 const _lowercaseNames = ['iOS', 'iPad', 'iPhone', 'macOS'];
 
+// Unit abbreviations are labels, not sentence starts; their casing is locale-specific.
+const _caseNeutralKeys = {'exportFpsLabel'};
+
 String _firstLetterOf(String text) {
   final trimmed = text.replaceFirst(RegExp('^[¿¡«“"\'(   ]+'), '');
   return trimmed.isEmpty ? '' : trimmed[0];
@@ -447,6 +450,12 @@ void main() {
     }
   });
 
+  test('FPS unit uses the localized abbreviation', () {
+    expect(values['en']!['exportFpsLabel'], 'FPS');
+    expect(values['es']!['exportFpsLabel'], 'FPS');
+    expect(values['fr']!['exportFpsLabel'], 'i/s');
+  });
+
   test('英語・スペイン語・フランス語で、同じ文の書き出しの大文字・小文字がそろっている', () {
     // 「Monedas recibidas」の語だけを置き換えて「ópalos recibidas」と小文字で
     // 始まっていた（英語は「Opals received」）。画面の見出し・知らせは文頭を
@@ -456,7 +465,8 @@ void main() {
       final starts = <String, String>{
         for (final locale in const ['en', 'es', 'fr'])
           if (values[locale]![key] case final text?)
-            if (!_lowercaseNames.any(text.startsWith))
+            if (!_lowercaseNames.any(text.startsWith) &&
+                !_caseNeutralKeys.contains(key))
               locale: _firstLetterOf(text),
       };
       bool isLetter(String c) => c.toUpperCase() != c.toLowerCase();
