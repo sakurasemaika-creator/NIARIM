@@ -66,7 +66,10 @@ class KoreanWordsText extends StatelessWidget {
       }
       return LayoutBuilder(
         builder: (context, constraints) {
-          final drawn = DefaultTextStyle.of(context).style.merge(style);
+          var drawn = DefaultTextStyle.of(context).style.merge(style);
+          if (MediaQuery.boldTextOf(context)) {
+            drawn = drawn.merge(const TextStyle(fontWeight: FontWeight.bold));
+          }
           final painter = TextPainter(
             textScaler: MediaQuery.textScalerOf(context),
             textDirection: Directionality.of(context),
