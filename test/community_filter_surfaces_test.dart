@@ -234,7 +234,7 @@ void main() {
     ),
   );
 
-  Future<void> pumpPostScreen(WidgetTester tester) async {
+  Future<void> pumpPostFixture(WidgetTester tester) async {
     await tester.pumpWidget(postFixture());
     // CommunityPostScreen restores a pending upload in initState. Wait for
     // the plugin-backed preference read before looking for restored controls.
@@ -269,7 +269,7 @@ void main() {
       FilledButton,
       l10n.communityPostDiscardPending,
     );
-    await tester.ensureVisible(discard);
+    await revealForTap(tester, discard);
     await tester.tap(discard);
     await tester.pumpAndSettle();
     expect(find.text(l10n.communityPostDiscardPendingConfirm), findsOneWidget);
