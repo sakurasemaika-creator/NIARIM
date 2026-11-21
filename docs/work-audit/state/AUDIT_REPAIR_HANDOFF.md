@@ -3394,11 +3394,14 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - 最新の `dev_branch` HEADは、回帰範囲を拡張した記録コミット `cc2ea825`。製品コードの最新変更は `9555a4c4`。Webへのpush/deployは引き続き停止。
 
 
-## 2026-11-21 GPT再開チェックポイント — DISC145から番号順に再開
+## 2026-11-21 GPT修正チェックポイント — DISC145の実装・回帰追加
 
-- 作業基準：App `dev_branch` HEAD `69821798c1ec54d92fe331366ee08fe8578106aa`。このチェックポイント作成時点で他ブランチへの操作なし。
-- 再開順：二巡目の未解消Discoveryを番号順に扱う。最初はDISC145、続いてDISC155、DISC189、DISC190の残存確認、その後DISC537、DISC538、DISC548、DISC564〜566等を現行状態と照合する。番号が若い項目を飛ばして新しい項目から処理しない。
-- DISC145の現行コード調査：フォルダカードのタイトルは `lib/screens/home/widgets/project_list_widget.dart` の `KoreanWordsText(folder.name, ...)`。実装本体は `lib/widgets/korean_words_text.dart`。Hangulを含む文字列は幅に入る韓国語の語を結合し、幅を超える語は字間で折り返す。一方、Hangulも複製印も含まない文字列は通常の `Text` に委ねているため、空白のない長いラテン文字列等が欄幅を超える場合の挙動は未確認。現時点でDISC145を修正済みとは判定しない。
-- テスト調査：`test/folder_name_dialog_hint_words_test.dart` は新規フォルダ名ダイアログの説明文が対象であり、フォルダカードの長い名前を検査していない。`test/keep_together_text_caller_matrix_test.dart` 等もフォルダカードの実表示を直接検証するものではない。DISC145専用の実表示回帰を追加し、少なくとも7言語・SP/PC・短幅・文字拡大・通常語と幅超過の長語を分けて検証する必要がある。
-- 未完了：DISC145の原因確定・実装修正・専用回帰・CI実行・台帳の完了記録は未実施。次の作業はDISC145の再現条件を固定するテスト追加と、幅超過語だけを安全に折り返す修正案の実装・検証。
+- 現在の基準：App `dev_branch` HEAD `4f3683fac01be0759f719ae8a4c5beda8c480205`。Web `dev_branch` HEAD `a42ba22715f5270cc17a5015e268483e88479d04`。他ブランチへの操作なし。
+- 再開順：二巡目の未解消Discoveryを番号順に扱う。DISC145のCI・実画面確認を先に終え、その後DISC155、DISC189、DISC190の残存確認、DISC537、DISC538、DISC548、DISC564〜566等を現行状態と照合する。番号が若い項目を飛ばさない。
+- DISC145の実装修正：フォルダ詳細行の `KoreanWordsText(folder.name, ...)` にだけ `breakLongLatinWords: true` を指定。`lib/widgets/korean_words_text.dart` は、利用可能幅を超えるラテン文字・結合文字・数字の連続tokenに限り、Unicode grapheme cluster（`characters`）境界へゼロ幅の改行候補を挿入する。短い語や通常の文章は変えず、元の名前をsemantics labelとして保持する。実際の文字倍率・locale・direction・font weightを使って幅を測り、OSの太字アクセシビリティ設定も測定に反映する。既存の日本語行頭禁則と韓国語の語単位折り返しは維持。
+- 関連コミット：実装 `404401d3`、フォルダ詳細行への限定適用 `bc6d3d6d`、オプトイン引数 `c14be3f3`、太字測定 `5fe1fbb`、Unicode Latin/結合文字対応 `e442c48f`、専用回帰 `4f3683fa`。
+- 回帰：`test/korean_words_text_long_latin_test.dart` は7言語（ja/en/es/fr/ko/zh-Hans/zh-Hant）、96/180/320 logical px、文字倍率1.0/1.3/2.0で長いUnicode Latin名を確認し、ゼロ幅改行、複数行、幅内描画、元名のsemantics labelを検査する。短い通常名を変えないテストも含む。
+- 記録：`docs/work-audit/evidence/DISC145-long-latin-folder-wrap.md` を追加。これは実装とテスト範囲の記録であり、正式なDISC145完了宣言ではない。
+- CI：Flutter regression suite Run `44880597940`（HEAD `4f3683fa`）は確認時点でpending、jobs未生成。前のpushに対するrunは後続pushでcancelled。現行SHAのCI成功とは扱わない。Android/DeX実機・Linux実画面の目視も未実施。
+- 未完了：CI結果の取得、テスト実行結果の確認、SP/PCの実画面での折り返し・読み上げ確認、DISC145の正式判定・台帳完了記録。
 - 制約：NIARIM-webは既存の監査記録にあるCloudflare production deployment誘発リスクのため、明示的な追加承認がない限りpush/deploy/rollbackしない。App/Webとも変更対象は `dev_branch` のみ。他ブランチには触れない。
