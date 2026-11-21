@@ -2231,7 +2231,7 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
 - **タイムラインのプレビューの操作（フレーム数・全画面）は欄の端に固定する**：
   `timeline_screen.dart`の`_buildPreviewBand`が、プレビュー欄
   （`timelinePreviewArea`）の中央に絵を置き、全画面をヘッダーの下の右端、
-  フレーム数を大きさを変えるつまみの上の左端（欄の端から `_previewControlInset`）に置く。2026-11-11の`ddda945e`（別のセッション）から、絵の大きさは
+  フレーム数を大きさを変えるつまみの上の左端（欄の端から8px、`_previewControlInset`）に置く。2026-11-11の`ddda945e`（別のセッション）から、絵の大きさは
   欄と縦横比だけで決め、操作のために絵を縮めない（大きい絵には操作が
   重なってよい）。欄の高さもつまみで決め、縦横比で上限を掛けない。
   それ以前の「絵に重ねない（ユーザー指定）」決まり（操作の場所を絵の左右か
