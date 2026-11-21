@@ -85,37 +85,57 @@ void main() {
     expect(tester.takeException(), isNull);
 
     final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
-    final finder = find.text(l10n.timelineFrameTrackLabel);
-    expect(finder, findsOneWidget, reason: 'フレームトラックのラベルが見つからない');
-    final paragraph = tester.renderObject<RenderParagraph>(finder);
-    expect(
-      tester.widget<Text>(finder).style?.fontSize,
-      11,
-      reason: 'Track labels must remain comfortably readable on phones',
-    );
-    // 折り返さず1行に収まっていること。
-    expect(paragraph.size.height, lessThan(20));
-    // 省略記号で切られていないこと。`didExceedMaxLines`は行数超過しか
-    // 見ないので、実際に描かれた文字幅とテキスト本来の幅を突き合わせる。
-    final intrinsic = paragraph.getMaxIntrinsicWidth(double.infinity);
-    expect(
-      paragraph.size.width,
-      greaterThanOrEqualTo(intrinsic - 0.5),
-      reason:
-          '"${l10n.timelineFrameTrackLabel}" が'
-          '${paragraph.size.width.toStringAsFixed(1)}pxしか無く'
-          '（本来 ${intrinsic.toStringAsFixed(1)}px）省略されている',
-    );
-    final boundary = tester.renderObject<RenderRepaintBoundary>(
-      find.byKey(captureKey),
-    );
-    final image = await boundary.toImage(pixelRatio: 1);
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    const logicalWidths = [320.0, 360.0, 412.0];
     final captures = Directory('build/timeline-preview-ui-captures')
       ..createSync(recursive: true);
-    File(captures.path + '/timeline_track_labels_ja_360.png').writeAsBytesSync(
-      bytes!.buffer.asUint8List(),
-    );
-    image.dispose();
+
+    for (final logicalWidth in logicalWidths) {
+      tester.view.physicalSize = Size(logicalWidth * 3, 2280);
+      await settle();
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'Timeline layout threw at ${logicalWidth.toInt()}dp',
+      );
+
+      final finder = find.text(l10n.timelineFrameTrackLabel);
+      expect(
+        finder,
+        findsOneWidget,
+        reason: '${logicalWidth.toInt()}dp: フレームトラックのラベルが見つからない',
+      );
+      final paragraph = tester.renderObject<RenderParagraph>(finder);
+      expect(
+        tester.widget<Text>(finder).style?.fontSize,
+        11,
+        reason: 'Track labels must remain comfortably readable on phones',
+      );
+      // 折り返さず1行に収まっていること。
+      expect(
+        paragraph.size.height,
+        lessThan(20),
+        reason: '${logicalWidth.toInt()}dp: track label wrapped',
+      );
+      // 省略記号で切られていないこと。実際に描かれた文字幅と本来の幅を比較。
+      final intrinsic = paragraph.getMaxIntrinsicWidth(double.infinity);
+      expect(
+        paragraph.size.width,
+        greaterThanOrEqualTo(intrinsic - 0.5),
+        reason:
+            '${logicalWidth.toInt()}dp: "${l10n.timelineFrameTrackLabel}" が'
+            '${paragraph.size.width.toStringAsFixed(1)}pxしか無く'
+            '（本来 ${intrinsic.toStringAsFixed(1)}px）省略されている',
+      );
+
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(captureKey),
+      );
+      final image = await boundary.toImage(pixelRatio: 1);
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      File(
+        '${captures.path}/timeline_track_labels_ja_${logicalWidth.toInt()}.png',
+      ).writeAsBytesSync(bytes!.buffer.asUint8List());
+      image.dispose();
+    }
   });
 }
