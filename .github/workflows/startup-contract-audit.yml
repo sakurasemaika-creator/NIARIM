@@ -1,0 +1,44 @@
+name: Startup initialization contracts (A001)
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/startup-contract-audit.yml'
+      - 'test/startup_*test.dart'
+      - 'lib/main.dart'
+      - 'lib/app_bootstrap.dart'
+      - 'lib/services/settings_service.dart'
+      - 'lib/services/theme_service.dart'
+      - 'lib/utils/stored_settings_recovery.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  startup-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FLUTTER_SUPPRESS_ANALYTICS: 'true'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Reproduce pre-fix corrupt settings failure
+        shell: bash
+        run: |
+          mkdir -p artifacts/startup
+          set -o pipefail
+          flutter test --no-pub --reporter expanded test/startup_settings_recovery_test.dart 2>&1 | tee artifacts/startup/reproduction.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: startup-contracts-${{ github.sha }}
+          path: artifacts/startup/
+          if-no-files-found: error

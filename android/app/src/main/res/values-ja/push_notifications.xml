@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="push_scheduled_release">予約していた作品が公開されました</string>
+    <string name="push_mission_achievement">新しいミッション達成通知があります</string>
+    <string name="push_work_posted">作品が投稿されました</string>
+    <string name="push_work_published">作品が公開されました</string>
+    <string name="push_work_reserved">予約投稿を受け付けました</string>
+    <string name="push_activity_channel">作品広場とミッションの通知</string>
+</resources>

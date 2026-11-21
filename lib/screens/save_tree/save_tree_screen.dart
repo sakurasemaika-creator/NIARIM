@@ -1,0 +1,1980 @@
+import 'dart:typed_data';
+
+import 'package:niarim/services/theme_service.dart';
+
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../engine/niapro_serializer.dart';
+import '../../l10n/app_localizations.dart';
+import '../../services/project_service.dart';
+import '../../services/save_tree_service.dart';
+import '../../models/save_node.dart';
+import '../../widgets/action_beside_or_below.dart';
+import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
+import '../../widgets/projects_load_failure_notice.dart';
+import '../../widgets/confirm_delete.dart';
+import '../../widgets/ad_banner_mock_widget.dart';
+import '../../utils/app_error_reporter.dart';
+import '../../utils/file_size_label.dart';
+import '../../widgets/dispose_on_unmount.dart';
+import '../../widgets/keep_together_text.dart';
+import '../../widgets/date_line_text.dart';
+import '../../widgets/typing_dialog_inset.dart';
+import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
+import 'widgets/save_delete_feedback.dart';
+import 'widgets/autosave_list.dart';
+import 'widgets/save_display_name.dart';
+import 'widgets/save_list_feedback.dart';
+import 'widgets/save_rename_button.dart';
+import 'widgets/save_screen_app_bar.dart';
+import 'widgets/save_slot_title.dart';
+import 'widgets/save_restore_dialog.dart';
+import 'widgets/save_thumbnail_capture.dart';
+import '../../utils/file_failure_reason.dart';
+
+/// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
+/// 閾値。「容量が大きくなる場合はユーザーへ通知」するために使う。ツリー方式は
+/// 各ノードが差分でなく完全なアーカイブとして保存され保存件数に比例して
+/// 増え続けるため、スロット方式（件数上限あり）と異なり自然には頭打ちにならない。
+const int _saveTreeSizeWarningThresholdBytes = 300 * 1024 * 1024; // 300MB
+
+/// 保存ノードのサムネイルを生成する（先頭シーン・先頭フレームを縮小合成）。
+/// 生成できない場合（シーン・フレームが存在しない等）はnullを返す。
+Future<Uint8List?> _generateSaveNodeThumbnail(
+  ProjectService ps,
+  String projectId,
+) => captureSaveThumbnail(ps, projectId);
+
+/// スロット番号→そのスロットのノードの対応表。
+Map<int, SaveNode> _nodesBySlot(List<SaveNode> nodes) {
+  final map = <int, SaveNode>{};
+  for (final n in nodes) {
+    if (n.slotIndex >= 0) map[n.slotIndex] = n;
+  }
+  return map;
+}
+
+/// 親ノードID（rootはnull）→子ノード一覧の対応表を1回の走査で作る。
+///
+/// `SaveTreeService.getChildren()`は呼ぶたびに全ノードを走査して新しい
+/// リストを作るため、ツリーを再帰的にたどりながら毎ノードで呼ぶと
+/// ノード数の2乗の走査になる。木の構築前にこの表を1つ作って使い回す。
+/// ツリー表示1行分の位置情報（[continues]は自身を含む各深さで
+/// 「まだ次の兄弟が続くか」）。実際のウィジェットは表示される行だけ作る。
+typedef _TreeRowSpec = ({
+  SaveNode node,
+  int depth,
+  List<bool> continues,
+  bool hasChildren,
+});
+
+Map<String?, List<SaveNode>> _childrenIndex(List<SaveNode> nodes) {
+  final index = <String?, List<SaveNode>>{};
+  // 親の保存が一覧に無い保存（親の保存を消した等）は根として並べる（親の
+  // 下に入れると、ツリーのどこにも描かれず、開くことも消すこともできな
+  // かった）。
+  final ids = {for (final n in nodes) n.id};
+  for (final n in nodes) {
+    final parent = ids.contains(n.parentId) ? n.parentId : null;
+    (index[parent] ??= <SaveNode>[]).add(n);
+  }
+  return index;
+}
+
+/// セーブツリー／セーブスロット画面をどこから開いたか。過去のセーブへの「復元」（現在の内容を破棄する
+/// 操作）を許可するか、許可する場合にどの確認フローを見せるかをこれで
+/// 分岐する。
+enum SaveTreeEntryMode {
+  /// タイムラインモードから：編集セッションが生きている状態で開くため、
+  /// ノードごとに「上書きする（現在の内容でこのノードを保存し直す）」
+  /// 「ここから再開する（このノードの内容で現在のセッションを置き換える）」
+  /// の2択＋各操作の確認ダイアログを出す。
+  timeline,
+
+  /// プロジェクト詳細画面から：まだ編集セッションを始めていない場面の
+  /// ため、「ここから作業を再開する」か「キャンセルして閉じる」だけの
+  /// シンプルな確認にする（上書きの概念はここにはない）。
+  projectDetail,
+
+  /// キャンバスの保存ボタン等。読み込みの際は確認を表示する。
+  quickSave,
+}
+
+/// クエリパラメータ（例：`/save-tree/xxx?entry=timeline`）からエントリ
+/// モードを解決する。未指定・不明な値はquickSaveとして扱う。
+SaveTreeEntryMode parseSaveTreeEntryMode(String? raw) => switch (raw) {
+  'timeline' => SaveTreeEntryMode.timeline,
+  'projectDetail' => SaveTreeEntryMode.projectDetail,
+  _ => SaveTreeEntryMode.quickSave,
+};
+
+class SaveTreeScreen extends StatefulWidget {
+  final String projectId;
+  final SaveTreeEntryMode entryMode;
+  const SaveTreeScreen({
+    super.key,
+    required this.projectId,
+    this.entryMode = SaveTreeEntryMode.quickSave,
+  });
+
+  @override
+  State<SaveTreeScreen> createState() => _SaveTreeScreenState();
+}
+
+class _SaveTreeScreenState extends State<SaveTreeScreen> {
+  String? _selectedNodeId;
+  bool _showAutosaves = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final saveService = context.watch<SaveTreeService>();
+    final isTreeMode = saveService.isTreeMode;
+    // 選んでいた保存を消したら、選んでいないことにする（消した保存の子として
+    // 保存すると、新しい保存がツリーのどこにも描かれなかった）。
+    if (_selectedNodeId != null &&
+        !saveService
+            .getNodes(widget.projectId)
+            .any((n) => n.id == _selectedNodeId)) {
+      _selectedNodeId = null;
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: SaveScreenTitle(
+          _showAutosaves
+              ? l10n.helpAutoSaveTitle
+              : isTreeMode
+              ? l10n.saveTreeScreenTitleTree
+              : l10n.saveTreeScreenTitleSlot,
+        ),
+        actions: [
+          HelpButton(topic: _showAutosaves ? '自動保存' : 'セーブツリー'),
+          if (isTreeMode && !_showAutosaves)
+            SaveTreeBarSaveButton(
+              onPressed: () => _showTreeSaveDialog(
+                context,
+                widget.projectId,
+                saveService,
+                _selectedNodeId,
+              ),
+            ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: Column(
+        children: [
+          SaveSourcePicker(
+            showAutosaves: _showAutosaves,
+            onChanged: (show) => setState(() => _showAutosaves = show),
+          ),
+          // 保存の一覧を読めなかった：空に見えるスロット・ツリーにも保存が
+          // あるかもしれない（「保存データなし」とは言わない）。
+          if (!_showAutosaves &&
+              saveService.saveListUnreadable(widget.projectId))
+            ProjectsLoadFailureNotice(
+              key: const Key('saveListLoadFailed'),
+              message: l10n.saveTreeLoadFailedSnackbar,
+              onRetry: () => saveService.retryReadList(widget.projectId),
+            ),
+          Expanded(
+            child: _showAutosaves
+                ? AutosaveList(projectId: widget.projectId)
+                : isTreeMode
+                ? _TreeView(
+                    projectId: widget.projectId,
+                    nodes: saveService.getNodes(widget.projectId),
+                    saveService: saveService,
+                    selectedNodeId: _selectedNodeId,
+                    onNodeSelected: (id) =>
+                        setState(() => _selectedNodeId = id),
+                    entryMode: widget.entryMode,
+                  )
+                : desktopCentered(
+                    context,
+                    _SlotView(
+                      projectId: widget.projectId,
+                      saveService: saveService,
+                      entryMode: widget.entryMode,
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// ツリー方式での新規保存ダイアログ（トップの「保存」ボタン・ノードの
+/// 「上書きする」選択の両方から呼ぶため、Widgetをまたいで使えるよう
+/// トップレベル関数にしている）。
+void _showTreeSaveDialog(
+  BuildContext context,
+  String projectId,
+  SaveTreeService service,
+  String? parentId,
+) {
+  final l10n = AppLocalizations.of(context)!;
+  final commentController = TextEditingController();
+  var saving = false;
+  String? failure;
+  // メモの欄のEnterで押す「保存」ボタン（保存中は押せないので何もしない）。
+  final saveButton = GlobalKey();
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => DisposeOnUnmount(
+      controller: commentController,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          // 小さい画面・大きな文字では、開いてすぐ出るキーボードの上に、
+          // 打っている欄が見えるようにスクロールする。
+          scrollable: true,
+          // キーボードが開いている間は、ダイアログの上下に余白を取らない。
+          // 狭い画面では左右の空きを縮め、題・ボタンの語を途中で折らない。
+          insetPadding: typingDialogInsetPadding(ctx),
+          title: Text(l10n.commonSave),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                // 韓国語の語は、1行に入れば途中で折らない。
+                child: messageText(
+                  parentId != null
+                      ? l10n.saveTreeSaveAsChildHint
+                      : l10n.saveTreeSaveAsRootHint,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              TextField(
+                controller: commentController,
+                // 開いたらすぐ打てるように。Enterで保存する。
+                autofocus: true,
+                textInputAction: TextInputAction.done,
+                // 保存を始めた後のEnter（次の画面を描く前の2回目も）は何もしない。
+                onSubmitted: (_) {
+                  if (saving) return;
+                  (saveButton.currentWidget as FilledButton?)?.onPressed
+                      ?.call();
+                },
+                // Enterで欄からフォーカスを外さない。
+                onEditingComplete: () {},
+                decoration: InputDecoration(
+                  labelText: l10n.saveTreeCommentLabel,
+                  hintText: l10n.saveTreeCommentHint,
+                  // 入らないヒントは行を増やして全部出す（1行の欄のままだと、
+                  // 仏語・文字2倍で「ex. : Arrière-plan…」と切れた）。
+                  hintMaxLines: 4,
+                ),
+              ),
+              if (failure != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    failure!,
+                    key: const Key('saveTreeDialogFailure'),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(ctx).colorScheme.error,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: saving ? null : () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              key: saveButton,
+              // スロット方式の保存ダイアログと同じ方針：保存中は二重実行を
+              // 防ぐためボタンを無効化し、失敗は必ず画面へ出す（以前は
+              // try/catchが無く、失敗しても何の表示も出ないまま
+              // ダイアログが閉じずに固まって見えていた）。
+              onPressed: saving
+                  ? null
+                  : () async {
+                      final ps = context.read<ProjectService>();
+                      final project = ps.projects
+                          .where((p) => p.id == projectId)
+                          .firstOrNull;
+                      if (project == null) {
+                        Navigator.pop(ctx);
+                        return;
+                      }
+                      setDialogState(() => saving = true);
+                      // 保存中に端末の「戻る」でダイアログを閉じても失敗を
+                      // 知らせられるように、画面の知らせの出し先を先に取る。
+                      final messenger = ScaffoldMessenger.of(context);
+                      try {
+                        final comment = givenSaveName(commentController.text);
+                        final scenes = ps.scenesOf(projectId);
+                        final tileManager = ps.tileManagerOf(projectId);
+                        final thumb = await _generateSaveNodeThumbnail(
+                          ps,
+                          projectId,
+                        );
+                        await service.saveAsChild(
+                          projectId: projectId,
+                          project: project,
+                          scenes: scenes,
+                          tileManager: tileManager,
+                          parentId: parentId,
+                          comment: comment,
+                          thumbnailPngBytes: thumb,
+                        );
+                        // 閉じるのは自分のダイアログが一番上のときだけ（保存中
+                        // に戻るで閉じていたら、下の画面を閉じない）。
+                        if (ctx.mounted &&
+                            (ModalRoute.of(ctx)?.isCurrent ?? false)) {
+                          Navigator.pop(ctx);
+                        }
+                        // 保存はできたが、保存の一覧（メモ）を書けなかった。
+                        if (service.saveListUnwritten(projectId)) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(l10n.saveTreeMemoNotSavedSnackbar),
+                            ),
+                          );
+                        }
+                        if (context.mounted) {
+                          await _warnIfSaveTreeSizeLarge(context, projectId);
+                        }
+                      } catch (e, st) {
+                        AppErrorReporter.record(e, st);
+                        // 開いたまま失敗を出す（閉じると打ったコメントが
+                        // 消え、もう一度試すには打ち直すしかなかった）。
+                        if (ctx.mounted &&
+                            (ModalRoute.of(ctx)?.isCurrent ?? false)) {
+                          setDialogState(() {
+                            saving = false;
+                            failure = l10n.saveTreeSaveFailedSnackbar(
+                              fileFailureReason(l10n, e),
+                            );
+                          });
+                        } else {
+                          // 保存中に戻るでダイアログを閉じていた：画面に出す
+                          // （以前は記録にだけ残り、誰にも知らされなかった）。
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                l10n.saveTreeSaveFailedSnackbar(
+                                  fileFailureReason(l10n, e),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    },
+              child: saving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n.commonSave),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// セーブツリーの合計容量が閾値を超えている場合に通知する
+/// 「容量が大きくなる場合はユーザーへ通知」するために使う。
+Future<void> _warnIfSaveTreeSizeLarge(
+  BuildContext context,
+  String projectId,
+) async {
+  final sizeBytes = await NiaproSerializer.saveTreeSizeBytes(projectId);
+  if (sizeBytes < _saveTreeSizeWarningThresholdBytes) return;
+  if (!context.mounted) return;
+  final l10n = AppLocalizations.of(context)!;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        l10n.saveTreeSizeWarningSnackbar(fileSizeLabel(l10n, sizeBytes)),
+      ),
+      duration: const Duration(seconds: 5),
+    ),
+  );
+}
+
+enum _SaveNodeChoice { overwrite, resume }
+
+/// セーブノードに対する「復元」操作を、開いた入口（[entryMode]）に応じた
+/// 確認フローで実行する。
+/// タイムラインモードからは編集セッションが生きているため「上書きする」
+/// （[onOverwrite]：スロット方式ならそのスロットへの保存ダイアログ、
+/// ツリー方式ならこのノードを親とした新規保存ダイアログを開く）か
+/// 「ここから再開する」（[onResume]：実際にrestoreFromAutosaveを呼ぶ）かを
+/// 選ばせ、それぞれ破壊的な結果を確認するダイアログを挟む。プロジェクト
+/// 詳細画面からは、まだ編集セッションが無いため上書きの概念を出さず
+/// 「ここから作業を再開する」か「キャンセルして閉じる」のシンプルな確認
+/// のみにする。キャンバスで開いた場合も同じ確認を使う。
+Future<void> _handleSaveNodeRestore(
+  BuildContext context,
+  SaveTreeEntryMode entryMode,
+  SaveNode node, {
+  required VoidCallback onOverwrite,
+  required ValueChanged<NiaproData> onResume,
+}) async {
+  final l10n = AppLocalizations.of(context)!;
+  final saves = context.read<SaveTreeService>();
+  final nodeTitle = saveNameOf(l10n, saves, node);
+  if (entryMode == SaveTreeEntryMode.timeline) {
+    final choice = await showDialog<_SaveNodeChoice>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(nodeTitle),
+        content: Text(l10n.saveTreeTimelineActionChoiceBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, _SaveNodeChoice.overwrite),
+            child: Text(l10n.saveTreeOverwriteAction),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, _SaveNodeChoice.resume),
+            child: Text(l10n.saveTreeRestoreAction),
+          ),
+        ],
+      ),
+    );
+    if (choice == null || !context.mounted) return;
+    if (choice == _SaveNodeChoice.overwrite) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.saveTreeOverwriteAction),
+          content: Text(l10n.saveTreeOverwriteConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.commonOk),
+            ),
+          ],
+        ),
+      );
+      if (ok == true) onOverwrite();
+      return;
+    }
+  }
+  final data = await confirmSavedVersion(
+    context,
+    projectId: node.projectId,
+    name: nodeTitle,
+    time: node.isTreeMode && givenSaveName(node.comment) == null
+        ? null
+        : formatSaveTime(node.savedAt, l10n.localeName),
+    slotLabel: node.isTreeMode
+        ? null
+        : l10n.saveTreeSlotLabel(node.slotIndex + 1),
+    read: () => saves.loadNode(node.projectId, node.id),
+  );
+  if (context.mounted && data != null) onResume(data);
+}
+
+// ─────────────────────────────────────────────
+// スロット方式ビュー
+// ─────────────────────────────────────────────
+class _SlotView extends StatelessWidget {
+  final String projectId;
+  final SaveTreeService saveService;
+  final SaveTreeEntryMode entryMode;
+
+  const _SlotView({
+    required this.projectId,
+    required this.saveService,
+    required this.entryMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // スロット番号からノードを引く表を1回だけ作る。行ごとに
+    // firstWhereで線形探索すると行数×ノード数の走査になり、
+    // castのラッパーも毎行生成されていた。
+    final bySlot = _nodesBySlot(saveService.getNodes(projectId));
+    return ListView.builder(
+      itemCount: saveService.slotMax,
+      itemBuilder: (context, slotIndex) {
+        final node = bySlot[slotIndex];
+        return _SlotTile(
+          projectId: projectId,
+          slotIndex: slotIndex,
+          node: node,
+          listUnread: saveService.saveListUnreadable(projectId),
+          onSave: () => _showSlotSaveDialog(context, slotIndex, node),
+          onRestore: node == null ? null : () => _restore(context, node),
+          onDelete: node != null
+              ? () async {
+                  if (!await confirmDelete(
+                    context,
+                    itemName: slotSaveName(
+                      AppLocalizations.of(context)!,
+                      saveService.slotDisplayMemoOf(projectId, slotIndex),
+                      slotIndex,
+                    ),
+                  )) {
+                    return;
+                  }
+                  if (!context.mounted) return;
+                  await deleteSaveWithFeedback(
+                    context,
+                    saveService,
+                    projectId,
+                    node.id,
+                  );
+                }
+              : null,
+        );
+      },
+    );
+  }
+
+  void _showSlotSaveDialog(
+    BuildContext context,
+    int slotIndex,
+    SaveNode? existing,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final commentController = TextEditingController(
+      text:
+          givenSaveName(saveService.slotDisplayMemoOf(projectId, slotIndex)) ??
+          '',
+    );
+    // メモの欄のEnterで押す「保存」ボタン。
+    final saveButton = GlobalKey();
+    // 保存に失敗したときの文（ダイアログの中）。
+    final failureText = GlobalKey<_SlotSaveFailureTextState>();
+    // 二度押し・Enterの繰り返しで同じスロットへ二重に保存しない（失敗した
+    // ときは押し直せるように戻す）。押したときに見せていたスロットの中身で
+    // 保存する（保存している間に一覧を読めても、確かめていない保存は消さない）。
+    var saving = false;
+    SlotSave? slotSave;
+    Future<void> once(Future<void> Function() save) async {
+      if (saving) return;
+      saving = true;
+      slotSave = saveService.beginSlotSave(
+        projectId,
+        slotIndex,
+        replacing: existing?.id,
+      );
+      try {
+        await save();
+      } catch (e, st) {
+        // 保存の管理の画面と同じく、ダイアログを開いたまま中に失敗を出す
+        // （打ったメモは欄に残る。以前は何も出なかった）。閉じた後なら
+        // 画面に出す。
+        AppErrorReporter.record(e, st);
+        final message = l10n.saveTreeSaveFailedSnackbar(
+          fileFailureReason(l10n, e),
+        );
+        final shown = failureText.currentState?.show(message) ?? false;
+        if (!shown && context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
+        }
+      } finally {
+        saving = false;
+        slotSave?.end();
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => DisposeOnUnmount(
+        controller: commentController,
+        builder: (ctx) => AlertDialog(
+          // 小さい画面・大きな文字では、開いてすぐ出るキーボードの上に、
+          // 打っている欄が見えるようにスクロールする。
+          scrollable: true,
+          // キーボードが開いている間は、ダイアログの上下に余白を取らない。
+          // 狭い画面では左右の空きを縮め、題・ボタンの語を途中で折らない。
+          insetPadding: typingDialogInsetPadding(ctx),
+          title: Text(l10n.saveTreeSlotSaveDialogTitle(slotIndex + 1)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (existing != null)
+                Padding(
+                  padding: EdgeInsets.only(bottom: 8),
+                  // 韓国語の語は、1行に入れば途中で折らない。
+                  child: messageText(
+                    l10n.saveTreeSlotOverwriteWarning(
+                      formatSaveTime(
+                        existing.savedAt,
+                        AppLocalizations.of(context)!.localeName,
+                      ),
+                    ),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: ThemeService.activeColorScheme.tertiary,
+                    ),
+                  ),
+                ),
+              TextField(
+                controller: commentController,
+                // 開いたらすぐ打てるように（クリックする前に打った字が
+                // どこにも入らなかった）。Enterで保存する。
+                autofocus: true,
+                textInputAction: TextInputAction.done,
+                // 保存を始めた後のEnter（次の画面を描く前の2回目も）は何もしない。
+                onSubmitted: (_) {
+                  if (saving) return;
+                  (saveButton.currentWidget as FilledButton?)?.onPressed
+                      ?.call();
+                },
+                // Enterで欄からフォーカスを外さない。
+                onEditingComplete: () {},
+                decoration: InputDecoration(
+                  labelText: l10n.saveTreeCommentLabel,
+                  hintText: l10n.saveTreeCommentHint,
+                  // 入らないヒントは行を増やして全部出す（1行の欄のままだと、
+                  // 仏語・文字2倍で「ex. : Arrière-plan…」と切れた）。
+                  hintMaxLines: 4,
+                ),
+              ),
+              _SlotSaveFailureText(key: failureText),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              key: saveButton,
+              onPressed: () => once(() async {
+                final ps = context.read<ProjectService>();
+                final project = ps.projects
+                    .where((p) => p.id == projectId)
+                    .firstOrNull;
+                if (project == null) {
+                  Navigator.pop(ctx);
+                  return;
+                }
+                final comment = givenSaveName(commentController.text);
+                final scenes = ps.scenesOf(projectId);
+                final tileManager = ps.tileManagerOf(projectId);
+                final thumb = await _generateSaveNodeThumbnail(ps, projectId);
+                await saveService.saveToSlot(
+                  projectId: projectId,
+                  slotIndex: slotIndex,
+                  project: project,
+                  scenes: scenes,
+                  tileManager: tileManager,
+                  comment: comment,
+                  thumbnailPngBytes: thumb,
+                  intent: slotSave,
+                );
+                final kept = await saveService.setSlotMemo(
+                  projectId,
+                  slotIndex,
+                  commentController.text,
+                );
+                if (ctx.mounted) Navigator.pop(ctx);
+                // 保存の一覧を読めていないので、メモ（打ったコメント）は次の
+                // 起動に残らないかもしれない（メモの欄と同じく知らせる）。
+                if (!kept && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        saveListProblemText(l10n, saveService, projectId),
+                      ),
+                    ),
+                  );
+                }
+              }),
+              child: Text(l10n.commonSave),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _restore(BuildContext context, SaveNode node) async {
+    await _handleSaveNodeRestore(
+      context,
+      entryMode,
+      node,
+      onOverwrite: () => _showSlotSaveDialog(context, node.slotIndex, node),
+      onResume: (data) => _doRestore(context, node, data),
+    );
+  }
+
+  void _doRestore(BuildContext context, SaveNode node, NiaproData data) {
+    final l10n = AppLocalizations.of(context)!;
+    context.read<ProjectService>().useSavedVersion(projectId, data);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          l10n.saveTreeRestoredSnackbar(
+            slotSaveName(
+              l10n,
+              saveService.slotDisplayMemoOf(projectId, node.slotIndex),
+              node.slotIndex,
+            ),
+          ),
+        ),
+        // Shared SnackBarThemeData already removes the thick shadow.
+        // Keep this intentionally smaller corner radius.
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+}
+
+/// セーブノードのサムネイル画像。thumbnailPathが無い・読み込めない場合は
+/// プレースホルダーアイコンを表示する。
+class _SaveNodeThumbnail extends StatelessWidget {
+  final SaveNode? node;
+  final double size;
+
+  /// 保存の一覧を読めなかった：空に見えても保存があるかもしれないので、
+  /// 「＋」（ここへ保存）ではなく、読めなかった印を出す。
+  final bool listUnread;
+
+  const _SaveNodeThumbnail({
+    required this.node,
+    this.size = 48,
+    this.listUnread = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final path = node?.thumbnailPath;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: path != null
+          ? Image.file(
+              File(path),
+              fit: BoxFit.contain,
+              // 保存されているサムネイルは長辺200pxだが、ここでの表示は
+              // 40〜48px。指定しないと200px相当のまま画像キャッシュに載る
+              // ため、実際に表示する画素数へ落としてデコードする。
+              cacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
+                  .round(),
+              errorBuilder: (context, error, stackTrace) =>
+                  _placeholderIcon(context),
+            )
+          : _placeholderIcon(context),
+    );
+  }
+
+  Widget _placeholderIcon(BuildContext context) => Center(
+    child: Icon(
+      node != null
+          ? Icons.image
+          : (listUnread ? Icons.folder_off_outlined : Icons.add),
+      size: size / 2,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    ),
+  );
+}
+
+/// スロットへの保存のダイアログの中の、保存に失敗したときの文。ダイアログが
+/// 閉じている（閉じかけている）ときは[show]がfalseを返す。
+class _SlotSaveFailureText extends StatefulWidget {
+  const _SlotSaveFailureText({super.key});
+
+  @override
+  State<_SlotSaveFailureText> createState() => _SlotSaveFailureTextState();
+}
+
+class _SlotSaveFailureTextState extends State<_SlotSaveFailureText> {
+  String? _message;
+
+  bool show(String message) {
+    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? false)) {
+      return false;
+    }
+    setState(() => _message = message);
+    return true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final message = _message;
+    if (message == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Text(
+        message,
+        key: const Key('saveSlotDialogFailure'),
+        style: TextStyle(
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.error,
+        ),
+      ),
+    );
+  }
+}
+
+/// スロットの表示の、スロットの題の書式（見出しの書体）。
+const _slotTileTitleStyle = TextStyle(fontWeight: FontWeight.w600);
+
+class _SlotTile extends StatelessWidget {
+  final String projectId;
+  final int slotIndex;
+  final SaveNode? node;
+  final VoidCallback onSave;
+  final VoidCallback? onRestore;
+  final VoidCallback? onDelete;
+
+  /// 保存の一覧を読めなかった（空に見えても保存があるかもしれないので、
+  /// 「保存データなし」と言わない）。
+  final bool listUnread;
+
+  const _SlotTile({
+    required this.projectId,
+    required this.slotIndex,
+    required this.node,
+    this.listUnread = false,
+    required this.onSave,
+    this.onRestore,
+    this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final memo = context.watch<SaveTreeService>().slotDisplayMemoOf(
+      projectId,
+      slotIndex,
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+      child: Material(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        elevation: 1,
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+          alpha: 0.15,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // スロットの題（語と番号を1つのかたまりにした「Emplacement 1」）が
+              // サムネイルの横に入らない幅では、サムネイルを上に置き、題・
+              // メモ・日時を行の幅いっぱいで出す（横のままだと、仏語・320px・
+              // 文字2倍で「Emplacement / 1」と番号だけ次の行へ落ちた）。どの
+              // スロットも同じ並べ方になるよう、いちばん大きい番号の題の幅で
+              // 決める（保存の管理の画面のカードと同じ）。
+              ActionBesideOrBelow(
+                actionFirst: true,
+                gap: 14,
+                spacing: 10,
+                minTextWidth: widestSlotTitleWidth(
+                  context,
+                  localizedHeadingStyle(context, _slotTileTitleStyle),
+                ),
+                action: _SaveNodeThumbnail(
+                  node: node,
+                  size: 58,
+                  listUnread: listUnread,
+                ),
+                text: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    KeepTogetherText(
+                      l10n.saveTreeSlotLabel(slotIndex + 1),
+                      keep: [l10n.saveTreeSlotLabel(slotIndex + 1)],
+                      style: localizedHeadingStyle(
+                        context,
+                        _slotTileTitleStyle,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          fit: FlexFit.loose,
+                          // 空白だけのメモ（前の版で付けたもの）は
+                          // メモが無いのと同じに出す。
+                          child: givenSaveName(memo) != null
+                              // 利用者のメモは1行で省略する。
+                              ? Text(
+                                  givenSaveName(memo)!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                )
+                              // アプリの文（「保存データなし」・スロットの題）は
+                              // 切らずに折り返す（320/360px・文字2倍で
+                              // 「Aucune donnée…」と切れた）。韓国語の語は、
+                              // 1行に入れば途中で折らない。スロットの題は語と
+                              // 番号を離さない（題の行と同じ）。
+                              : node == null
+                              ? messageText(
+                                  listUnread ? '' : l10n.saveTreeNoDataLabel,
+                                )
+                              : KeepTogetherText(
+                                  l10n.saveTreeSlotLabel(slotIndex + 1),
+                                  keep: [l10n.saveTreeSlotLabel(slotIndex + 1)],
+                                ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 2),
+                          child: SaveSlotMemoButton(
+                            projectId: projectId,
+                            slotIndex: slotIndex,
+                            initialMemo: givenSaveName(memo) ?? '',
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (node != null)
+                      DefaultTextStyle.merge(
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                        child: DateLineText(
+                          formatSaveTime(
+                            node!.savedAt,
+                            AppLocalizations.of(context)!.localeName,
+                          ),
+                          when: node!.savedAt,
+                          localeName: AppLocalizations.of(context)!.localeName,
+                        ),
+                      )
+                    else if (memo?.isNotEmpty == true && !listUnread)
+                      messageText(
+                        l10n.saveTreeNoDataLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _SaveTreeSlotActionButton(
+                      icon: Icons.edit_note,
+                      tooltip: l10n.saveTreeSlotWriteTooltip,
+                      color: scheme.onSurfaceVariant,
+                      onPressed: onSave,
+                    ),
+                    const SizedBox(width: 14),
+                    _SaveTreeSlotActionButton(
+                      icon: Icons.menu_book_outlined,
+                      tooltip: l10n.saveTreeSlotLoadTooltip,
+                      color: scheme.onSurfaceVariant,
+                      onPressed: onRestore,
+                    ),
+                    const SizedBox(width: 14),
+                    _SaveTreeSlotActionButton(
+                      icon: Icons.delete_outline,
+                      tooltip: l10n.saveTreeSlotDeleteTooltip,
+                      color: scheme.error,
+                      onPressed: onDelete,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SaveTreeSlotActionButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final Color color;
+  final VoidCallback? onPressed;
+
+  const _SaveTreeSlotActionButton({
+    required this.icon,
+    required this.tooltip,
+    required this.color,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints.tightFor(width: 56, height: 56),
+      style: IconButton.styleFrom(
+        backgroundColor: scheme.surfaceContainerHighest,
+        side: BorderSide(color: scheme.outlineVariant),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      iconSize: 28,
+      icon: Icon(
+        icon,
+        color: onPressed == null ? Theme.of(context).disabledColor : color,
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// ツリー方式ビュー
+// ─────────────────────────────────────────────
+class _TreeView extends StatelessWidget {
+  final String projectId;
+  final List<SaveNode> nodes;
+  final SaveTreeService saveService;
+  final String? selectedNodeId;
+  final ValueChanged<String?> onNodeSelected;
+  final SaveTreeEntryMode entryMode;
+
+  const _TreeView({
+    required this.projectId,
+    required this.nodes,
+    required this.saveService,
+    required this.selectedNodeId,
+    required this.onNodeSelected,
+    required this.entryMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final childrenIndex = _childrenIndex(nodes);
+    final roots = childrenIndex[null] ?? const <SaveNode>[];
+    if (roots.isEmpty) {
+      // 保存の一覧を読めなかった：「保存データがありません」とは言わない
+      // （上の知らせが読めなかったことと「再試行」を出す）。
+      if (saveService.saveListUnreadable(projectId)) {
+        return const SizedBox.shrink();
+      }
+      final scheme = Theme.of(context).colorScheme;
+      return Container(
+        alignment: Alignment.center,
+        // 長い言語・大きな文字でも、見出しと案内を画面の端に付けない。
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 88,
+                height: 88,
+                decoration: BoxDecoration(
+                  color: scheme.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.account_tree_outlined,
+                  size: 40,
+                  color: AccentTextTheme.of(context),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                l10n.saveTreeEmptyTitle,
+                textAlign: TextAlign.center,
+                style: localizedHeadingStyle(
+                  context,
+                  TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    // 上部の「保存」は、入らない幅ではアイコンだけになるので、
+                    // 案内にもそのアイコンを添える。
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Icon(
+                        Icons.save,
+                        size: 14,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const TextSpan(text: ' '),
+                    TextSpan(text: l10n.saveTreeEmptyHint),
+                  ],
+                ),
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    // 画面下から上へ伸びる木のような見た目にする。
+    // フラット化した行リストをDFS順（root→子→孫…）で構築し、reverse:trueで
+    // 表示することで、rootが画面最下部・深い子孫ほど上に積み上がる形になる。
+    // 各行には祖先の分岐が下（reverse後は下方向）へ続くかを示す接続線を
+    // 添える（一般的なツリーコマンドの罫線と同じアルゴリズム）。
+    // 行そのもの（ListTile・サムネイル・三点メニュー・接続線）はここでは
+    // 作らず、位置情報だけの軽い一覧に畳んでからListView.builderへ渡す。
+    // ListView(children:)だと、実際に描画されるのは画面内の行だけでも、
+    // 行のウィジェットオブジェクト自体は毎回のbuildで全ノードぶん作られて
+    // 捨てられる。
+    // Iterative DFS avoids recursive stack overflow on extremely deep
+    // histories and still produces the same bottom-to-top node order.
+    final rows = <_TreeRowSpec>[];
+    final work =
+        <
+          ({
+            List<SaveNode> siblings,
+            int index,
+            int depth,
+            List<bool> ancestors,
+          })
+        >[];
+    for (int i = roots.length - 1; i >= 0; i--) {
+      work.add((siblings: roots, index: i, depth: 0, ancestors: const []));
+    }
+    while (work.isNotEmpty) {
+      final next = work.removeLast();
+      final node = next.siblings[next.index];
+      final hasNext = next.index + 1 < next.siblings.length;
+      final continues = [...next.ancestors, hasNext];
+      final children = childrenIndex[node.id] ?? const <SaveNode>[];
+      rows.add((
+        node: node,
+        depth: next.depth,
+        continues: continues,
+        hasChildren: children.isNotEmpty,
+      ));
+      for (int i = children.length - 1; i >= 0; i--) {
+        work.add((
+          siblings: children,
+          index: i,
+          depth: next.depth + 1,
+          ancestors: continues,
+        ));
+      }
+    }
+
+    // Deep branches must remain accessible without forcing a narrow tile to
+    // lay out inside a negative width on small phones. Horizontal scrolling
+    // is enabled only when the deepest visible indent exceeds the viewport.
+    final deepest = rows.fold<int>(
+      0,
+      (maxDepth, row) => row.depth > maxDepth ? row.depth : maxDepth,
+    );
+    return LayoutBuilder(
+      builder: (context, viewport) {
+        final fullWidth = (deepest + 1) * 24.0 + 280.0;
+        final contentWidth = fullWidth > viewport.maxWidth
+            ? fullWidth
+            : viewport.maxWidth;
+        return SingleChildScrollView(
+          key: const Key('saveTreeHorizontalScroll'),
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: contentWidth,
+            height: viewport.maxHeight,
+            child: ListView.builder(
+              reverse: true,
+              itemCount: rows.length,
+              itemBuilder: (context, i) =>
+                  _buildTreeRow(context, l10n, rows[i]),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTreeRow(
+    BuildContext context,
+    AppLocalizations l10n,
+    _TreeRowSpec spec,
+  ) {
+    final node = spec.node;
+    final depth = spec.depth;
+    final continues = spec.continues;
+    final isSelected = selectedNodeId == node.id;
+    return Stack(
+      children: [
+        // The painter spans each row's actual rendered height and meets the
+        // adjacent row at the edge, including when text scale increases.
+        Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(
+              painter: _TreeConnectorPainter(
+                depth: depth,
+                continues: continues,
+                hasChildren: spec.hasChildren,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(left: (depth + 1) * 24.0),
+          child: ListTile(
+            selected: isSelected,
+            selectedTileColor: Theme.of(
+              context,
+            ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+            leading: _SaveNodeThumbnail(node: node, size: 40),
+            title: Row(
+              children: [
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: givenSaveName(node.comment) != null
+                      // 利用者の名前は1行で省略する。
+                      ? Text(
+                          givenSaveName(node.comment)!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      // 名前の無い保存の題（アプリの文）は切らずに折り返す
+                      // （320/360px・文字2倍で「Sauvega…」と切れた）。韓国語の
+                      // 語は、1行に入れば途中で折らない。
+                      : messageText(l10n.saveTreeNodeDefaultTitle),
+                ),
+                SaveRenameButton(
+                  node: node,
+                  fallbackName: l10n.saveTreeNodeDefaultTitle,
+                ),
+              ],
+            ),
+            subtitle: Text(
+              formatSaveTime(
+                node.savedAt,
+                AppLocalizations.of(context)!.localeName,
+              ),
+            ),
+            onTap: () => onNodeSelected(isSelected ? null : node.id),
+            trailing: PopupMenuButton<String>(
+              onSelected: (action) => _handleAction(context, action, node),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'restore',
+                  child: Text(l10n.saveTreeRestoreAction),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(
+                    l10n.commonDelete,
+                    style: TextStyle(
+                      color: ThemeService.activeColorScheme.error,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleAction(
+    BuildContext context,
+    String action,
+    SaveNode node,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    switch (action) {
+      case 'restore':
+        await _handleSaveNodeRestore(
+          context,
+          entryMode,
+          node,
+          onOverwrite: () =>
+              _showTreeSaveDialog(context, projectId, saveService, node.id),
+          onResume: (data) => _doRestore(context, node, data),
+        );
+        break;
+      case 'delete':
+        // A tree node contains a complete historical archive. Never delete it
+        // directly from a popup menu without confirming the chosen save.
+        if (!await confirmDelete(context, itemName: treeSaveName(l10n, node))) {
+          return;
+        }
+        if (!context.mounted) return;
+        await deleteSaveWithFeedback(context, saveService, projectId, node.id);
+        break;
+    }
+  }
+
+  void _doRestore(BuildContext context, SaveNode node, NiaproData data) {
+    final l10n = AppLocalizations.of(context)!;
+    context.read<ProjectService>().useSavedVersion(projectId, data);
+    // 「セーブ・ロードした地点から次の枝が伸びる」という設計上、復元した
+    // ノードをそのまま選択状態にする。三点メニューの「復元」は行の
+    // タップ（選択トグル）とは独立した導線のため、これを呼ばないと
+    // 「行を選択せずに三点メニューから直接復元した」場合、次の保存が
+    // 復元前の選択状態（別ノードや未選択）を親にしてしまい、意図しない
+    // 位置に枝分かれするバグがあった。
+    onNodeSelected(node.id);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.saveTreeRestoredSnackbar(treeSaveName(l10n, node))),
+        // Shared SnackBarThemeData already removes the thick shadow.
+        // Keep this intentionally smaller corner radius.
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+}
+
+/// Full-height connectors for the bottom-up (reverse:true) save tree.
+/// A node's parent is rendered directly below its descendants. Each child
+/// connects downward to its parent; each parent with children connects upward.
+/// This prevents the disconnected stubs caused by fixed-height gutter lines.
+class _TreeConnectorPainter extends CustomPainter {
+  final int depth;
+  final List<bool> continues;
+  final bool hasChildren;
+  final Color color;
+
+  _TreeConnectorPainter({
+    required this.depth,
+    required this.continues,
+    required this.hasChildren,
+    required this.color,
+  });
+
+  static const double _columnWidth = 24.0;
+  static double _x(int level) => _columnWidth * level + _columnWidth / 2;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    final middle = size.height / 2;
+
+    void vertical(int column, double top, double bottom) {
+      canvas.drawLine(
+        Offset(_x(column), top),
+        Offset(_x(column), bottom),
+        paint,
+      );
+    }
+
+    // Descendants of a node with later siblings must preserve the
+    // ancestor's vertical branch all the way through their own rows.
+    for (var ancestorDepth = 1; ancestorDepth < depth; ancestorDepth++) {
+      if (continues[ancestorDepth]) {
+        vertical(ancestorDepth - 1, 0, size.height);
+      }
+    }
+    if (depth > 0) {
+      // Parent sits immediately below (the reversed list).
+      vertical(depth - 1, middle, size.height);
+      if (continues[depth]) vertical(depth - 1, 0, middle);
+      canvas.drawLine(
+        Offset(_x(depth - 1), middle),
+        Offset(_columnWidth * (depth + 1), middle),
+        paint,
+      );
+    } else if (hasChildren) {
+      canvas.drawLine(
+        Offset(_x(0), middle),
+        Offset(_columnWidth, middle),
+        paint,
+      );
+    }
+    if (hasChildren) vertical(depth, 0, middle);
+  }
+
+  @override
+  bool shouldRepaint(covariant _TreeConnectorPainter oldDelegate) =>
+      oldDelegate.depth != depth ||
+      oldDelegate.hasChildren != hasChildren ||
+      oldDelegate.continues != continues ||
+      oldDelegate.color != color;
+}
+
+// ─────────────────────────────────────────────
+// 保存データ変更画面（保存方式変更・スロット数削減時に表示）
+// ─────────────────────────────────────────────
+
+/// Collects the choices for every affected project before changing any saves.
+Future<bool> showSaveModeChangeFlowIfNeeded({
+  required BuildContext context,
+  required String projectId,
+  required SaveTreeService saveService,
+  required bool newIsTreeMode,
+  int? newSlotMax,
+  String? projectName,
+}) => showSaveModeChangeFlows(
+  context: context,
+  projects: {projectId: projectName},
+  saveService: saveService,
+  newIsTreeMode: newIsTreeMode,
+  newSlotMax: newSlotMax,
+);
+
+typedef _SaveModeChoice = ({List<String> keepIds, bool archive});
+
+Future<bool> showSaveModeChangeFlows({
+  required BuildContext context,
+  required Map<String, String?> projects,
+  required SaveTreeService saveService,
+  required bool newIsTreeMode,
+  int? newSlotMax,
+}) async {
+  if (newIsTreeMode) {
+    if (!saveService.isTreeMode) {
+      for (final id in projects.keys) {
+        saveService.restoreArchive(id);
+      }
+    }
+    saveService.setTreeMode(true);
+    return true;
+  }
+
+  final limit = newSlotMax ?? saveService.slotMax;
+  final choices = <String, _SaveModeChoice>{};
+  for (final project in projects.entries) {
+    if (saveService.getNodes(project.key).length <= limit) continue;
+    if (!context.mounted) return false;
+    final choice = await Navigator.of(context).push<_SaveModeChoice>(
+      adMockMaterialPageRoute(
+        builder: (_) => _SaveModeChangeScreen(
+          projectId: project.key,
+          saveService: saveService,
+          newSlotMax: limit,
+          projectName: project.value,
+        ),
+      ),
+    );
+    if (choice == null || !context.mounted) return false;
+    choices[project.key] = choice;
+  }
+
+  if (!context.mounted) return false;
+  final messenger = ScaffoldMessenger.of(context);
+  final failure = AppLocalizations.of(context)!.saveTreeDeleteFailedSnackbar;
+  var allDone = true;
+  for (final entry in choices.entries) {
+    try {
+      final done = await saveService.applyModeChange(
+        projectId: entry.key,
+        keepIds: entry.value.keepIds,
+        archive: entry.value.archive,
+        newIsTreeMode: false,
+        newSlotMax: limit,
+      );
+      allDone = allDone && done;
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      allDone = false;
+    }
+  }
+  saveService.setSlotMax(limit);
+  saveService.setTreeMode(false);
+  if (!allDone && messenger.mounted) {
+    messenger.showSnackBar(SnackBar(content: Text(failure)));
+  }
+  return true;
+}
+
+class _SaveModeChangeScreen extends StatefulWidget {
+  final String projectId;
+  final SaveTreeService saveService;
+  final int newSlotMax;
+  final String? projectName;
+
+  const _SaveModeChangeScreen({
+    required this.projectId,
+    required this.saveService,
+    required this.newSlotMax,
+    this.projectName,
+  });
+
+  @override
+  State<_SaveModeChangeScreen> createState() => _SaveModeChangeScreenState();
+}
+
+class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
+  final Set<String> _selectedIds = {};
+  bool _showSelectionList = false;
+  late final bool _initialIsTreeMode;
+  int get _limit => widget.newSlotMax;
+  int _effectiveLimit(int nodeCount) => nodeCount < _limit ? nodeCount : _limit;
+
+  @override
+  void initState() {
+    super.initState();
+    // 今のスロットに無い保存（前の作品で方式・スロット数を変えた後の、
+    // ツリー方式の保存・減らしたスロットの保存）があれば、スロットの一覧では
+    // 選べないので、すべての保存を並べるツリーの一覧で選ぶ。
+    _initialIsTreeMode =
+        widget.saveService.isTreeMode ||
+        widget.saveService
+            .getNodes(widget.projectId)
+            .any(
+              (n) =>
+                  n.slotIndex < 0 || n.slotIndex >= widget.saveService.slotMax,
+            );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final nodes = widget.saveService.getNodes(widget.projectId);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.projectName == null
+              ? l10n.saveTreeChangeDataTitle
+              : l10n.saveTreeChangeDataTitleWithProject(widget.projectName!),
+        ),
+        leading: _showSelectionList
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: l10n.saveTreeBackButton,
+                onPressed: () => setState(() => _showSelectionList = false),
+              )
+            : null,
+      ),
+      body: _showSelectionList
+          ? _buildSelectionBody(context, l10n, nodes)
+          : _buildButtonBody(context, l10n, nodes),
+    );
+  }
+
+  Widget _buildButtonBody(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<SaveNode> nodes,
+  ) {
+    return desktopCentered(
+      context,
+      ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+        children: [
+          messageText(
+            l10n.saveTreeChangeExceedMessage,
+            style: const TextStyle(fontSize: 14, height: 1.45),
+          ),
+          const SizedBox(height: 8),
+          messageText(
+            l10n.saveTreeKeepableCountLabel(_limit),
+            style: localizedHeadingStyle(
+              context,
+              const TextStyle(fontSize: 14),
+            ),
+          ),
+          const SizedBox(height: 20),
+          FilledButton(
+            onPressed: () {
+              _autoSelectLatest(nodes);
+              _showDiscardDialog(context, nodes);
+            },
+            child: messageText(
+              l10n.saveTreeKeepLatestButton(_limit),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: () => setState(() => _showSelectionList = true),
+            child: messageText(
+              l10n.saveTreeSelectDataButton,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.commonCancel),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectionBody(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<SaveNode> nodes,
+  ) {
+    final limitReached = _selectedIds.length >= _limit;
+    return desktopCentered(
+      context,
+      Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Semantics(
+              liveRegion: true,
+              child: messageText(
+                l10n.saveTreeSelectedCountLabel(_selectedIds.length, _limit),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: limitReached
+                      ? ThemeService.activeColorScheme.tertiary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: _initialIsTreeMode
+                ? _SelectableTreeView(
+                    nodes: nodes,
+                    selectedIds: _selectedIds,
+                    limitReached: limitReached,
+                    onToggle: _toggleNode,
+                  )
+                : _SelectableSlotView(
+                    projectId: widget.projectId,
+                    saveService: widget.saveService,
+                    nodes: nodes,
+                    slotMax: widget.saveService.slotMax,
+                    selectedIds: _selectedIds,
+                    limitReached: limitReached,
+                    onToggle: _toggleNode,
+                  ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => setState(() => _showSelectionList = false),
+                    child: Text(l10n.saveTreeBackButton),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed:
+                        _selectedIds.length >= _effectiveLimit(nodes.length)
+                        ? () => _showDiscardDialog(context, nodes)
+                        : null,
+                    child: Text(l10n.saveTreeNextButton),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _toggleNode(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else if (_selectedIds.length < _limit) {
+        _selectedIds.add(id);
+      }
+    });
+  }
+
+  void _autoSelectLatest(List<SaveNode> nodes) {
+    final sorted = [...nodes]..sort((a, b) => b.savedAt.compareTo(a.savedAt));
+    setState(() {
+      _selectedIds.clear();
+      _selectedIds.addAll(sorted.take(_limit).map((n) => n.id));
+    });
+  }
+
+  Future<void> _showDiscardDialog(
+    BuildContext context,
+    List<SaveNode> nodes,
+  ) async {
+    final archive = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => _DiscardChoiceDialog(
+        discardCount: nodes.length - _selectedIds.length,
+        onConfirm: (archive) => Navigator.pop(ctx, archive),
+        onBack: () => Navigator.pop(ctx),
+      ),
+    );
+    if (archive == null || !context.mounted) return;
+    if (ModalRoute.of(context)?.isCurrent != true) return;
+    Navigator.pop(context, (
+      keepIds: _selectedIds.toList(growable: false),
+      archive: archive,
+    ));
+  }
+}
+
+// ─── 選択可能スロットビュー ───
+class _SelectableSlotView extends StatelessWidget {
+  final String projectId;
+  final SaveTreeService saveService;
+  final List<SaveNode> nodes;
+  final int slotMax;
+  final Set<String> selectedIds;
+  final bool limitReached;
+  final ValueChanged<String> onToggle;
+
+  const _SelectableSlotView({
+    required this.projectId,
+    required this.saveService,
+    required this.nodes,
+    required this.slotMax,
+    required this.selectedIds,
+    required this.limitReached,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final bySlot = _nodesBySlot(nodes);
+    return ListView.builder(
+      itemCount: slotMax,
+      itemBuilder: (context, slotIndex) {
+        final node = bySlot[slotIndex];
+        if (node == null) return const SizedBox.shrink();
+        final isSelected = selectedIds.contains(node.id);
+        final isDisabled = limitReached && !isSelected;
+        return ListTile(
+          enabled: !isDisabled,
+          leading: Checkbox(
+            value: isSelected,
+            onChanged: isDisabled ? null : (_) => onToggle(node.id),
+          ),
+          // スロットの行・確認・知らせと同じ名前（鉛筆で変えた・消した
+          // スロットのメモ。保存したときの名前ではない）。
+          title: Text(
+            slotSaveName(
+              l10n,
+              saveService.slotDisplayMemoOf(projectId, slotIndex),
+              slotIndex,
+            ),
+            style: TextStyle(
+              color: isDisabled
+                  ? Theme.of(context).colorScheme.onSurfaceVariant
+                  : null,
+            ),
+          ),
+          subtitle: Text(
+            formatSaveTime(
+              node.savedAt,
+              AppLocalizations.of(context)!.localeName,
+            ),
+          ),
+          onTap: isDisabled ? null : () => onToggle(node.id),
+        );
+      },
+    );
+  }
+}
+
+// ─── 選択可能ツリービュー ───
+class _SelectableTreeView extends StatelessWidget {
+  final List<SaveNode> nodes;
+  final Set<String> selectedIds;
+  final bool limitReached;
+  final ValueChanged<String> onToggle;
+
+  const _SelectableTreeView({
+    required this.nodes,
+    required this.selectedIds,
+    required this.limitReached,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final childrenIndex = _childrenIndex(nodes);
+    final roots = childrenIndex[null] ?? const <SaveNode>[];
+    if (roots.isEmpty) {
+      return Center(child: Text(l10n.saveTreeEmptyTitle));
+    }
+    // Traverse in the same parent-first order without recursing through long chains.
+    final rows = <({SaveNode node, int depth})>[];
+    final pending = [for (final root in roots.reversed) (node: root, depth: 0)];
+    while (pending.isNotEmpty) {
+      final row = pending.removeLast();
+      rows.add(row);
+      final children = childrenIndex[row.node.id] ?? const <SaveNode>[];
+      for (final child in children.reversed) {
+        pending.add((node: child, depth: row.depth + 1));
+      }
+    }
+
+    return LayoutBuilder(
+      builder: (context, viewport) {
+        // Reserve most of the row for its checkbox, name, and date.
+        final maxIndent = (viewport.maxWidth * 0.2).clamp(0.0, 64.0);
+        return ListView.builder(
+          itemCount: rows.length,
+          itemBuilder: (context, i) => _buildNode(
+            context,
+            l10n,
+            rows[i].node,
+            (rows[i].depth * 16.0).clamp(0.0, maxIndent),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNode(
+    BuildContext context,
+    AppLocalizations l10n,
+    SaveNode node,
+    double indent,
+  ) {
+    final isSelected = selectedIds.contains(node.id);
+    final isDisabled = limitReached && !isSelected;
+    return Padding(
+      padding: EdgeInsetsDirectional.only(start: indent),
+      child: ListTile(
+        contentPadding: const EdgeInsetsDirectional.only(start: 8, end: 16),
+        enabled: !isDisabled,
+        leading: Checkbox(
+          value: isSelected,
+          onChanged: isDisabled ? null : (_) => onToggle(node.id),
+        ),
+        title: messageText(
+          givenSaveName(node.comment) ?? l10n.saveTreeNodeDefaultTitle,
+          style: TextStyle(
+            color: isDisabled
+                ? Theme.of(context).colorScheme.onSurfaceVariant
+                : null,
+          ),
+        ),
+        subtitle: Text(
+          formatSaveTime(
+            node.savedAt,
+            AppLocalizations.of(context)!.localeName,
+          ),
+        ),
+        onTap: isDisabled ? null : () => onToggle(node.id),
+      ),
+    );
+  }
+}
+
+// ─── 未選択データの処理選択ダイアログ ───
+class _DiscardChoiceDialog extends StatefulWidget {
+  final int discardCount;
+  final ValueChanged<bool> onConfirm; // true=アーカイブ、false=削除
+  final VoidCallback onBack;
+
+  const _DiscardChoiceDialog({
+    required this.discardCount,
+    required this.onConfirm,
+    required this.onBack,
+  });
+
+  @override
+  State<_DiscardChoiceDialog> createState() => _DiscardChoiceDialogState();
+}
+
+class _DiscardChoiceDialogState extends State<_DiscardChoiceDialog> {
+  bool _archive = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      scrollable: true,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      constraints: const BoxConstraints(maxWidth: 520),
+      title: messageText(l10n.saveTreeDiscardDialogTitle),
+      contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+      // 選択状態と変更通知はRadioGroupがまとめて持つ（各RadioListTileの
+      // groupValue/onChangedはFlutter 3.32で非推奨になった）。
+      content: RadioGroup<bool>(
+        groupValue: _archive,
+        onChanged: (v) => setState(() => _archive = v!),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<bool>(
+              value: true,
+              titleAlignment: ListTileTitleAlignment.top,
+              contentPadding: const EdgeInsetsDirectional.only(
+                start: 4,
+                end: 12,
+              ),
+              title: messageText(l10n.saveTreeArchiveOptionTitle),
+              subtitle: messageText(
+                l10n.saveTreeArchiveOptionSubtitle,
+                style: const TextStyle(fontSize: 13, height: 1.4),
+              ),
+            ),
+            RadioListTile<bool>(
+              value: false,
+              titleAlignment: ListTileTitleAlignment.top,
+              contentPadding: const EdgeInsetsDirectional.only(
+                start: 4,
+                end: 12,
+              ),
+              title: messageText(l10n.saveTreeDeleteOptionTitle),
+              subtitle: messageText(
+                l10n.saveTreeDeleteOptionSubtitle(widget.discardCount),
+                style: const TextStyle(fontSize: 13, height: 1.4),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: widget.onBack,
+          child: Text(l10n.saveTreeBackButton),
+        ),
+        FilledButton(
+          onPressed: () => widget.onConfirm(_archive),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+          child: messageText(
+            l10n.saveTreeApplyChangeButton,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+}

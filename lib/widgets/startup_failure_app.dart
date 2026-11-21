@@ -1,0 +1,225 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import '../l10n/app_localizations.dart';
+import '../services/theme_service.dart';
+import '../utils/app_error_reporter.dart';
+import '../utils/app_locale.dart';
+import '../utils/line_break.dart';
+import 'app_toast_messenger.dart';
+
+/// 起動処理が失敗したときに、アプリ本体の代わりに出す画面。
+///
+/// 起動に失敗した時点ではServiceが1つも無いため、Providerには一切
+/// 依存しない。配色・フォントは既定テーマ、表示言語は失敗前に読めていた
+/// 言語設定（読めていなければ端末の言語）に合わせる。
+///
+/// 「もう一度試す」は[onRetry]で起動処理を最初からやり直す。やり直しにも
+/// 失敗した場合は、呼び出し側が新しいキーでこの画面を出し直す。
+class StartupFailureApp extends StatelessWidget {
+  const StartupFailureApp({
+    super.key,
+    required this.details,
+    required this.onRetry,
+    this.languageCode,
+  });
+
+  /// 開発元へ伝えるための詳細（失敗した処理の名前・例外・呼び出し元）。
+  final String details;
+
+  final Future<void> Function() onRetry;
+
+  /// 失敗前に読めていた表示言語の設定。nullなら端末の言語。
+  final String? languageCode;
+
+  @override
+  Widget build(BuildContext context) {
+    final code = languageCode;
+    return MaterialApp(
+      title: 'NIARIM',
+      debugShowCheckedModeBanner: false,
+      theme: _defaultTheme(
+        localeFromLanguageCode(
+          code ??
+              appLanguageCodeFor(
+                WidgetsBinding.instance.platformDispatcher.locales,
+              ),
+        ),
+      ),
+      locale: code == null ? null : localeFromLanguageCode(code),
+      // 設定を読む前に失敗したときは、アプリ本体と同じ決まりで端末の
+      // 言語から選ぶ（台湾・香港の中国語は繁体字、対応外は英語）。
+      localeListResolutionCallback: (locales, _) =>
+          localeFromLanguageCode(appLanguageCodeFor(locales ?? const [])),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      // 知らせ（SnackBar）はアプリ本体と同じ決まりで出す。
+      builder: (context, child) => AppToastMessenger(child: child!),
+      home: StartupFailureScreen(details: details, onRetry: onRetry),
+    );
+  }
+
+  static ThemeData _defaultTheme(Locale locale) {
+    final themes = ThemeService();
+    try {
+      return themes.themeDataFor(locale);
+    } finally {
+      themes.dispose();
+    }
+  }
+}
+
+class StartupFailureScreen extends StatefulWidget {
+  const StartupFailureScreen({
+    super.key,
+    required this.details,
+    required this.onRetry,
+  });
+
+  final String details;
+  final Future<void> Function() onRetry;
+
+  @override
+  State<StartupFailureScreen> createState() => _StartupFailureScreenState();
+}
+
+class _StartupFailureScreenState extends State<StartupFailureScreen> {
+  bool _retrying = false;
+
+  Future<void> _retry() async {
+    setState(() => _retrying = true);
+    try {
+      await widget.onRetry();
+    } finally {
+      if (mounted) setState(() => _retrying = false);
+    }
+  }
+
+  Future<void> _copyDetails(AppLocalizations l10n, String details) async {
+    await Clipboard.setData(ClipboardData(text: details));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: _KeptKoreanText(l10n.startupFailedDetailsCopied)),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final details = AppErrorReporter.maskPersonalDetails(widget.details);
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Icon(
+                    Icons.error_outline_rounded,
+                    size: 48,
+                    color: colors.error,
+                  ),
+                  const SizedBox(height: 16),
+                  // 韓国語は語の途中で折り返さない（「다시 시도／해 주세요」の
+                  // ように割れていた）。ハングルを含まない文はそのまま。
+                  _KeptKoreanText(
+                    l10n.startupFailedTitle,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  _KeptKoreanText(
+                    l10n.startupFailedBody,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: _retrying ? null : _retry,
+                    icon: _retrying
+                        ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.refresh_rounded),
+                    label: _KeptKoreanText(
+                      _retrying
+                          ? l10n.startupFailedRetrying
+                          : l10n.startupFailedRetry,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton.icon(
+                    onPressed: () => _copyDetails(l10n, details),
+                    icon: const Icon(Icons.copy_rounded),
+                    label: _KeptKoreanText(l10n.startupFailedCopyDetails),
+                  ),
+                  const SizedBox(height: 8),
+                  ExpansionTile(
+                    title: _KeptKoreanText(l10n.startupFailedDetails),
+                    tilePadding: EdgeInsets.zero,
+                    childrenPadding: const EdgeInsets.only(bottom: 8),
+                    shape: const Border(),
+                    collapsedShape: const Border(),
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: colors.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: SelectableText(
+                          details,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontFamily: 'monospace',
+                            fontFamilyFallback: const ['monospace'],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 韓国語を語の途中で折り返さずに出し、読み上げ・点字には語結合子を入れる
+/// 前の文を渡す`Text`。
+class _KeptKoreanText extends StatelessWidget {
+  const _KeptKoreanText(this.text, {this.style, this.textAlign});
+
+  final String text;
+  final TextStyle? style;
+  final TextAlign? textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = keepKoreanWordsTogether(text);
+    return Text(
+      shown,
+      semanticsLabel: plainSemanticsLabel(shown),
+      style: style,
+      textAlign: textAlign,
+    );
+  }
+}

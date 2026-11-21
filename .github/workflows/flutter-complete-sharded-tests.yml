@@ -1,0 +1,145 @@
+# Full Dart/Flutter test suite in eight deterministic file shards.
+# Verification of the complete, current dev_branch regression suite after
+# coin-amount display migration, localization and backend integration repairs. The work
+# is independent and does not write production data or publish APKs.
+name: Flutter complete test suite (8 shards)
+run-name: Flutter regression suite · ${{ github.ref_name }} · ${{ github.sha }}
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/flutter-complete-sharded-tests.yml"
+      - "test/floating_action_button_visual_capture_test.dart"
+      - "test/app_smoke_test.dart"
+      - "test/app_web_reference_export_exact_test.dart"
+      - "test/save_dialog_hint_warning_test.dart"
+      - "test/save_slot_visual_audit_test.dart"
+      - "lib/screens/save_tree/**"
+      - "test/community_work_card_layout_test.dart"
+      - "test/canvas_timeline_position_test.dart"
+      - "test/canvas_panel_screenshot_audit_test.dart"
+      - "test/canvas_dock_fit_test.dart"
+      - "test/helpers/home_matrix_checks.dart"
+      - "lib/widgets/action_beside_or_below.dart"
+      - "test/visual/modified_canvas_scope_capture_test.dart"
+      - "test/timeline_pc_workspace_test.dart"
+      - "test/timeline_preview_controls_test.dart"
+      - "test/home_landscape_side_insets_test.dart"
+      - "test/home_small_fixes_test.dart"
+      - "test/home_title_fit_test.dart"
+      - "test/selection_tool_bar_test.dart"
+      - "test/canvas_tool_coordinate_contract_test.dart"
+      - "test/functional_audit_batch30_test.dart"
+      - "test/canvas_panel_tabs_actions_fit_test.dart"
+      - "test/home_shared_folder_paste_flow_test.dart"
+      - "test/startup_unreadable_projects_folder_test.dart"
+      - "lib/screens/canvas/widgets/hsv_color_wheel.dart"
+      - "lib/screens/canvas/widgets/canvas_icon_button.dart"
+      - "lib/screens/community/community_screen.dart"
+      - "lib/screens/community/community_work_detail_screen.dart"
+      - "lib/screens/home/home_screen.dart"
+      - "lib/screens/project/project_detail_screen.dart"
+      - "lib/services/local_file_trash_service.dart"
+      - "lib/widgets/premium_lock_widget.dart"
+      - "test/niatra_transfer_draw_filters_test.dart"
+      - "test/niatra_transfer_keeps_this_device_test.dart"
+      - "lib/utils/saved_list_reader.dart"
+      - "lib/utils/desktop_dock_column_fit.dart"
+      - "lib/services/api/niarim_api_client.dart"
+      - "lib/services/google_auth_service.dart"
+      - "lib/screens/settings/settings_screen.dart"
+      # Run the full suite for any production, test, tool, dependency, localization,
+      # or Android integration change so newly added files cannot silently miss CI.
+      - "lib/**"
+      - "test/**"
+      - "tool/**"
+      - "integration_test/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - "l10n.yaml"
+      - "analysis_options.yaml"
+      - "android/**"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: niarim-full-shards-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: true
+jobs:
+  analyze:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Run strict static analysis
+        run: flutter analyze --no-pub
+
+  full-tests:
+    if: github.ref == 'refs/heads/dev_branch'
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Run every Flutter test in this shard
+        shell: bash
+        env:
+          SHARD: ${{ matrix.shard }}
+          SHARD_COUNT: ${{ strategy.job-total }}
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          mapfile -t tests < <(find test -type f -name '*_test.dart' | LC_ALL=C sort | awk -v s="$SHARD" -v n="$SHARD_COUNT" '(NR - 1) % n == s {print}')
+          printf 'Shard %s: %s test files\\n' "$SHARD" "${#tests[@]}"
+          if [ "${#tests[@]}" -eq 0 ]; then
+            echo "No test files in shard!"
+            exit 1
+          fi
+          flutter test --no-pub --reporter expanded --concurrency=3 "${tests[@]}" 2>&1 | tee reports/flutter-shard.log
+      - name: Summarize test failures
+        if: always()
+        shell: bash
+        run: |
+          log=reports/flutter-shard.log
+          if [[ ! -s "$log" ]]; then
+            echo "Flutter did not produce a shard log." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo "### Flutter shard ${{ matrix.shard }}"
+            echo
+            echo '~~~text'
+            tail -n 1 "$log"
+            awk '/ \[E\]$/ { total++; if (total <= 40) print } END { if (total > 40) print total - 40 " more failure entries in the shard artifact." }' "$log"
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload full result log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-full-shard-${{ matrix.shard }}-${{ github.sha }}
+          path: reports/
+          retention-days: 7
+          if-no-files-found: warn

@@ -1,0 +1,47 @@
+name: PC compact dock and timeline preview controls
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - "lib/screens/canvas/canvas_screen.dart"
+      - "lib/screens/canvas/widgets/layer_panel.dart"
+      - "lib/utils/desktop_dock_column_fit.dart"
+      - "lib/services/layer_thumbnail_renderer.dart"
+      - "lib/screens/timeline/timeline_screen.dart"
+      - "test/canvas_dock_compact_interaction_test.dart"
+      - "test/desktop_dock_gap_test.dart"
+      - "test/layer_thumbnail_renderer_test.dart"
+      - "test/timeline_preview_controls_test.dart"
+      - "test/layer_panel_add_sheet_and_range_dialog_test.dart"
+      - "lib/utils/duplicate_name.dart"
+      - ".github/workflows/canvas-free-window-timeline-preview-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Static analysis of affected code
+        run: flutter analyze --no-fatal-infos lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/layer_panel.dart lib/services/layer_thumbnail_renderer.dart lib/utils/desktop_dock_column_fit.dart lib/screens/timeline/timeline_screen.dart test/canvas_dock_compact_interaction_test.dart test/desktop_dock_gap_test.dart test/layer_thumbnail_renderer_test.dart test/timeline_preview_controls_test.dart
+      - name: Dock geometry and compact panel interactions
+        run: |
+          flutter test test/desktop_dock_gap_test.dart --reporter expanded
+          flutter test test/canvas_dock_compact_interaction_test.dart --reporter expanded
+      - name: Actual layer thumbnails over project paper
+        run: flutter test test/layer_thumbnail_renderer_test.dart --reporter expanded
+      - name: Layer panel actions
+        run: flutter test test/layer_panel_add_sheet_and_range_dialog_test.dart --reporter expanded
+      - name: Timeline overlay anchors on different aspect ratios and widths
+        run: flutter test test/timeline_preview_controls_test.dart --reporter expanded

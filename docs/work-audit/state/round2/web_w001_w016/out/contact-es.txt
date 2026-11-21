@@ -1,0 +1,33 @@
+Contáctanos
+Ponte en contacto con el equipo de NIARIM para reportar errores, solicitar funciones o resolver dudas de uso.
+※ Los envíos se reciben por correo electrónico.
+Soporte de NIARIM
+support@miranima-studio.com
+Consultas generales a MIRANIMA Studio
+contact@miranima-studio.com
+Tipo de consulta
+Reporte de error
+Solicitud de función
+Sobre el uso de la app
+Sobre tu cuenta
+Otro
+Nombre
+*
+Este campo es obligatorio.
+Correo electrónico
+*
+Introduce una dirección de correo válida.
+Mensaje
+*
+Máximo 1000 caracteres.
+0 / 1000
+Se ha superado el límite de caracteres.
+Adjuntar imágenes o vídeos (opcional)
+Elegir archivos
+Ningún archivo seleccionado
+Hasta 5 MB por imagen, hasta 15 MB por vídeo, 20 MB en total y un máximo de 3 archivos (PNG, JPEG, WebP, GIF, MP4, MOV o WebM).
+Acepto la
+política de privacidad
+y consiento el envío de este formulario
+Debes aceptar la política de privacidad.
+Enviar

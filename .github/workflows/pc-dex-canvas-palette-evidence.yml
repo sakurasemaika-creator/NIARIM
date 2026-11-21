@@ -1,0 +1,37 @@
+name: PC DeX canvas palette visual evidence (no styling changes)
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - "test/canvas_pc_dex_palette_evidence_capture_test.dart"
+      - ".github/workflows/pc-dex-canvas-palette-evidence.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Analyze evidence test
+        run: flutter analyze --no-fatal-infos test/canvas_pc_dex_palette_evidence_capture_test.dart
+      - name: Capture real PC DeX canvas and brush palette
+        run: flutter test test/canvas_pc_dex_palette_evidence_capture_test.dart --reporter expanded
+      - name: Upload PNGs even if a later capture fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pc-dex-canvas-palette-evidence
+          path: build/pc-canvas-palette-evidence/*.png
+          if-no-files-found: warn
+          retention-days: 30

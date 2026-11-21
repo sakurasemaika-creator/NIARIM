@@ -1,0 +1,30 @@
+name: Canvas revision complete visual evidence
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/visual/modified_canvas_full_evidence_test.dart'
+      - '.github/workflows/modified-canvas-full-evidence.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  actual-app-screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - name: Capture real Flutter screens at current dev_branch
+        run: flutter test test/visual/modified_canvas_full_evidence_test.dart --reporter expanded
+      - name: Upload all captured UI screens even when a later test fails
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: niarim-2026-11-12-complete-ui-revisions
+          path: build/modified-canvas-scope/*.png
+          if-no-files-found: warn
+          retention-days: 14

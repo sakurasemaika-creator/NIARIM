@@ -1,0 +1,23 @@
+name: ASO Metadata
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - store/aso/**
+      - tools/validate_aso_metadata.py
+      - .github/workflows/aso-metadata.yml
+  pull_request:
+    paths:
+      - store/aso/**
+      - tools/validate_aso_metadata.py
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python tools/validate_aso_metadata.py

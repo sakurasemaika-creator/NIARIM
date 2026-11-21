@@ -1,0 +1,298 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:niarim/screens/community/widgets/community_work_card.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/l10n/community_ranking_layout_labels.dart';
+import 'package:niarim/models/community_work.dart';
+import 'package:niarim/screens/community/widgets/community_ranking_work_list.dart';
+import 'package:niarim/services/community_preview_service.dart';
+import 'package:niarim/services/community_service.dart';
+import 'package:niarim/services/theme_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'community_header_quality_test.dart' as quality;
+import 'helpers/load_app_fonts.dart';
+
+CommunityWork sample(String id) => CommunityWork(
+  id: id,
+  title: '手描きアニメの作品タイトル / Animation illustration',
+  authorId: 'artist',
+  authorName: 'クリエイター / Artist',
+  viewCount: 124567,
+  likeCount: 42,
+  bookmarkCount: 989,
+  postedAt: DateTime.utc(2026, 10, 30),
+  durationSeconds: 102,
+  thumbnailColorIndex: 1,
+);
+
+void main() {
+  testWidgets('ranking layouts keep ranks off thumbnail and controls usable', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await loadAppFonts(tester);
+    final themes = ThemeService();
+    await themes.init();
+    addTearDown(themes.dispose);
+    for (final locale in AppLocalizations.supportedLocales) {
+      for (final width in [320.0, 390.0, 720.0]) {
+        for (final layout in CommunityRankingLayout.values) {
+          var bookmarkTaps = 0;
+          var menuTaps = 0;
+          var workTaps = 0;
+          tester.view.physicalSize = Size(width, 880);
+          await tester.pumpWidget(
+            MaterialApp(
+              locale: locale,
+              theme: themes.themeData,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: CommunityRankingWorkCard(
+                      work: sample('rank'),
+                      rank: 1,
+                      layout: layout,
+                      isBookmarked: false,
+                      onTap: () => workTaps++,
+                      onBookmarkToggle: () => bookmarkTaps++,
+                      onAuthorTap: () {},
+                      onVisibilityToggle: () => menuTaps++,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          final scope = '${locale.toLanguageTag()} $width ${layout.name}';
+          expect(tester.takeException(), isNull, reason: scope);
+          expect(
+            find.byKey(const ValueKey('communityRankMedal-1')),
+            findsOneWidget,
+            reason: scope,
+          );
+          final thumb = tester.getRect(
+            find.byKey(const ValueKey('ranking-duration-rank')),
+          );
+          expect(thumb.height, greaterThan(0), reason: scope);
+          final bookmark = find.byKey(
+            const ValueKey('community-bookmark-rank'),
+          );
+          final menu = find.byKey(const ValueKey('communityRankingMenu-rank'));
+          expect(bookmark, findsOneWidget, reason: scope);
+          expect(menu, findsOneWidget, reason: scope);
+          await tester.tap(bookmark);
+          await tester.pump();
+          expect(bookmarkTaps, 1, reason: scope);
+          expect(workTaps, 0, reason: scope);
+          await tester.tap(menu);
+          await tester.pumpAndSettle();
+          expect(
+            find.text(
+              CommunityRankingLayoutLabels.of(tester.element(menu)).title,
+            ),
+            findsNothing,
+            reason: scope,
+          );
+          final popup = find.byType(PopupMenuItem<String>);
+          expect(popup, findsOneWidget, reason: scope);
+          await tester.tap(popup);
+          await tester.pumpAndSettle();
+          expect(menuTaps, 1, reason: scope);
+          expect(workTaps, 0, reason: scope);
+        }
+      }
+    }
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('fourth place is a bare number, never an overlay medal', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Column(
+            children: [
+              for (var rank = 1; rank <= 4; rank++)
+                CommunityRankBadge(rank: rank),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    for (final rank in [1, 2, 3]) {
+      expect(find.byKey(ValueKey('communityRankMedal-$rank')), findsOneWidget);
+    }
+    expect(find.byKey(const ValueKey('communityRankNumber-4')), findsOneWidget);
+    final second = tester.widget<Container>(
+      find.byKey(const ValueKey('communityRankMedal-2')),
+    );
+    final third = tester.widget<Container>(
+      find.byKey(const ValueKey('communityRankMedal-3')),
+    );
+    final first = tester.widget<Container>(
+      find.byKey(const ValueKey('communityRankMedal-1')),
+    );
+    expect(
+      (second.decoration as BoxDecoration).color,
+      (third.decoration as BoxDecoration).color,
+    );
+    expect(
+      (first.decoration as BoxDecoration).color,
+      isNot((second.decoration as BoxDecoration).color),
+    );
+    expect(find.byKey(const ValueKey('communityRankMedal-4')), findsNothing);
+  });
+
+  testWidgets('順位の読み上げは数と単位をその言語の順で1度だけ読む', (tester) async {
+    // 以前は「単位の語＋' '＋順位」をコードでつないでいて、日本語で
+    // 「位 3」と読み上げ、さらに中の数字「3」も続けて読んでいた。
+    SharedPreferences.setMockInitialValues({});
+    final semantics = tester.ensureSemantics();
+    for (final (locale, expected) in [
+      (const Locale('ja'), '3位'),
+      (const Locale('en'), 'Rank 3'),
+      (const Locale('es'), 'Puesto 3'),
+      (const Locale('fr'), 'Rang 3'),
+      (const Locale('ko'), '3위'),
+      (const Locale('zh'), '第3名'),
+      (const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'), '第3名'),
+    ]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(
+            body: Center(child: CommunityRankBadge(rank: 3)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(find.byType(CommunityRankBadge)).label,
+        expected,
+        reason: '$locale',
+      );
+    }
+    semantics.dispose();
+  });
+
+  testWidgets('ranking mode switch is exclusive to ranking and remembered', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await loadAppFonts(tester);
+    final themes = ThemeService();
+    await themes.init();
+    final community = CommunityService();
+    final preview = CommunityPreviewService();
+    addTearDown(themes.dispose);
+    addTearDown(community.dispose);
+    addTearDown(preview.dispose);
+    final root = GlobalKey();
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: root,
+        child: quality.host(
+          themes,
+          community,
+          preview,
+          locale: const Locale('ja'),
+          scale: 1,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('communityTileSizeButton')), findsOneWidget);
+    expect(find.byKey(const Key('communityRankingLayoutButton')), findsNothing);
+
+    await tester.tap(find.byType(Tab).at(1));
+    await tester.pumpAndSettle();
+    final chooser = find.byKey(const Key('communityRankingLayoutButton'));
+    expect(chooser, findsOneWidget);
+    expect(find.byKey(const Key('communityTileSizeButton')), findsNothing);
+    expect(
+      find.byKey(const Key('communityRankingHorizontalCard')),
+      findsWidgets,
+    );
+
+    final captureDir = Platform.environment['NIARIM_FIVE_FIXES_CAPTURE'];
+    Future<void> capture(String name) async {
+      if (captureDir == null) return;
+      await tester.runAsync(() async {
+        final boundary =
+            root.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+        final image = await boundary.toImage(pixelRatio: 1);
+        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+        image.dispose();
+        Directory(captureDir).createSync(recursive: true);
+        File(
+          '$captureDir/$name.png',
+        ).writeAsBytesSync(bytes!.buffer.asUint8List());
+      });
+    }
+
+    await capture('21_ranking_horizontal');
+    await tester.tap(chooser);
+    await tester.pumpAndSettle();
+    final words = CommunityRankingLayoutLabels.of(tester.element(chooser));
+    final option = find.ancestor(
+      of: find.text(words.largeThumbnail).last,
+      matching: find.byType(CheckedPopupMenuItem<CommunityRankingLayout>),
+    );
+    expect(option.hitTestable(), findsOneWidget);
+    await tester.tap(option);
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityWorkCard), findsWidgets);
+    expect(
+      find.byKey(const Key('communityRankingHorizontalCard')),
+      findsNothing,
+    );
+    await capture('22_ranking_large_thumbnail');
+
+    final order = find.byWidgetPredicate(
+      (widget) =>
+          widget is IconButton &&
+          widget.icon is Icon &&
+          const [
+            Icons.arrow_upward,
+            Icons.arrow_downward,
+          ].contains((widget.icon as Icon).icon),
+    );
+    expect(find.byType(CommunityRankBadge), findsWidgets);
+    await tester.tap(order);
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityRankBadge), findsNothing);
+    expect(find.byType(CommunityWorkCard), findsWidgets);
+    await tester.tap(order);
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityRankBadge), findsWidgets);
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('community.rankingLayout.v1'), 'largeThumbnail');
+    await tester.tap(find.byType(Tab).at(0));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('communityTileSizeButton')), findsOneWidget);
+    expect(find.byKey(const Key('communityRankingLayoutButton')), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+}

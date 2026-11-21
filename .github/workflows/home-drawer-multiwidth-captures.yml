@@ -1,0 +1,36 @@
+name: Home drawer current UI eight-width screenshots
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/home_drawer_multiwidth_capture_test.dart'
+      - '.github/workflows/home-drawer-multiwidth-captures.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Resolve Flutter dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze capture test
+        run: flutter analyze --no-fatal-infos test/home_drawer_multiwidth_capture_test.dart
+      - name: Capture home and drawer across eight widths
+        run: flutter test test/home_drawer_multiwidth_capture_test.dart --reporter expanded
+      - name: Upload real Flutter home and drawer screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: niarim-home-drawer-eight-width-captures
+          path: build/home-drawer-multiwidth
+          retention-days: 14
+          if-no-files-found: warn

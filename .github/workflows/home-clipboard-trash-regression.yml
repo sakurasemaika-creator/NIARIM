@@ -1,0 +1,97 @@
+name: Home clipboard and Trash regression
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/home-clipboard-trash-regression.yml"
+      - "lib/screens/home/home_clipboard_policy.dart"
+      - "lib/screens/home/home_screen.dart"
+      - "lib/services/project_service.dart"
+      - "lib/services/work_folder_service.dart"
+      - "lib/services/local_file_trash_service.dart"
+      - "test/home_clipboard_policy_test.dart"
+      - "test/home_tab_filtered_empty_layout_test.dart"
+      - "test/shared_folder_clipboard_trash_test.dart"
+      - "test/home_shared_folder_paste_flow_test.dart"
+      - "test/local_work_folder_trash_test.dart"
+      - "test/project_selection_clipboard_test.dart"
+      - "lib/screens/home/widgets/project_list_widget.dart"
+      - "scripts/generate_home_clipboard_pdf.py"
+  workflow_dispatch:
+
+concurrency:
+  group: home-clipboard-trash-dev-branch
+  # Keep the currently running regression alive while other dev_branch
+  # commits arrive. Newer pending checks supersede older pending checks.
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  clipboard-trash:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Analyze touched sources and tests
+        run: |
+          flutter analyze --no-fatal-infos lib/screens/home/home_clipboard_policy.dart lib/screens/home/home_screen.dart lib/services/project_service.dart lib/services/local_file_trash_service.dart test/shared_folder_clipboard_trash_test.dart test/home_shared_folder_paste_flow_test.dart test/local_work_folder_trash_test.dart test/home_tab_filtered_empty_layout_test.dart
+      - name: Clipboard, Trash, folder regressions
+        run: |
+          echo "START suite 1 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/home_clipboard_policy_test.dart --reporter expanded
+          echo "PASS suite 1 at $(date -u +%FT%TZ)"
+          echo "START suite 2 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/shared_folder_clipboard_trash_test.dart --reporter expanded
+          echo "PASS suite 2 at $(date -u +%FT%TZ)"
+          echo "START suite 3 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/home_shared_folder_paste_flow_test.dart --reporter expanded
+          echo "PASS suite 3 at $(date -u +%FT%TZ)"
+          echo "START suite 4 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/local_work_folder_trash_test.dart --reporter expanded
+          echo "PASS suite 4 at $(date -u +%FT%TZ)"
+          echo "START suite 5 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/local_file_trash_service_test.dart --reporter expanded
+          echo "PASS suite 5 at $(date -u +%FT%TZ)"
+          echo "START suite 6 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/project_selection_clipboard_test.dart --reporter expanded
+          echo "PASS suite 6 at $(date -u +%FT%TZ)"
+          echo "START filtered-empty/FAB regression at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/home_tab_filtered_empty_layout_test.dart --reporter expanded
+          echo "PASS filtered-empty/FAB regression at $(date -u +%FT%TZ)"
+      - name: Preserve partial real screenshots when UI tests fail
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-clipboard-partial-captures
+          path: build/home-clipboard-captures/*.png
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Upload verified screenshot PNGs before PDF assembly
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-clipboard-verified-png
+          path: build/home-clipboard-captures/*.png
+          if-no-files-found: error
+          retention-days: 30
+      - name: Build real Flutter screenshots PDF
+        run: |
+          python3 -m pip install --quiet reportlab pillow
+          python3 scripts/generate_home_clipboard_pdf.py
+      - name: Upload real screenshots and PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-clipboard-trash-ui
+          path: |
+            build/home-clipboard-captures/*.png
+            build/home-clipboard-captures/*.pdf
+          if-no-files-found: error
+          retention-days: 30

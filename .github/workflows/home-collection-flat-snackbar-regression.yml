@@ -1,0 +1,37 @@
+name: Home folder-only and flat notification regression
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - "lib/screens/home/home_screen.dart"
+      - "lib/services/theme_service.dart"
+      - "test/shared_empty_folder_widget_test.dart"
+      - "test/home_work_folder_empty_test.dart"
+      - "test/snack_bar_action_contrast_test.dart"
+      - ".github/workflows/home-collection-flat-snackbar-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Analyze changes
+        run: flutter analyze --no-fatal-infos lib/screens/home/home_screen.dart lib/services/theme_service.dart test/shared_empty_folder_widget_test.dart test/home_work_folder_empty_test.dart test/snack_bar_action_contrast_test.dart
+      - name: Snackbar theme has no thick default shadow
+        run: flutter test test/snack_bar_action_contrast_test.dart --reporter expanded
+      - name: Shared folder-only roots do not show empty-project text
+        run: flutter test test/shared_empty_folder_widget_test.dart --reporter expanded
+      - name: Works folder-only roots do not show empty-works text
+        run: flutter test test/home_work_folder_empty_test.dart --plain-name 'folder-only Works collection hides no-works message and restores it after delete' --reporter expanded

@@ -1,0 +1,57 @@
+# Read-only production smoke test. No AWS secrets, real accounts, wallet writes,
+# ad callbacks, Play purchases, or rewarded coins are used in this workflow.
+name: NIARIM production authentication smoke
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/niarim-production-auth-smoke.yml"
+      - "backend/src/api/handler.ts"
+      - "backend/src/lib/auth.ts"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: niarim-prod-auth-smoke-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      # Public Function URL, separately verified against Lambda configuration.
+      API_URL: https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws
+    steps:
+      - name: Public API works and private API denies unauthenticated requests
+        shell: bash
+        run: |
+          set -euo pipefail
+          check_status() {
+            local method="$1"
+            local path="$2"
+            local expected="$3"
+            local code
+            if [[ "$method" == "POST" ]]; then
+              code="$(curl -sS --max-time 20 --retry 2 --retry-all-errors \
+                -o /dev/null -w '%{http_code}' \
+                -X POST -H 'Content-Type: application/json' \
+                --data '{}' "${API_URL}${path}")"
+            else
+              code="$(curl -sS --max-time 20 --retry 2 --retry-all-errors \
+                -o /dev/null -w '%{http_code}' "${API_URL}${path}")"
+            fi
+            if [[ "$code" != "$expected" ]]; then
+              echo "::error::${method} ${path} returned HTTP ${code}; expected ${expected}"
+              exit 1
+            fi
+            printf 'PASS %s %s => HTTP %s\n' "$method" "$path" "$code"
+          }
+          check_status GET '/works/latest?limit=1' 200
+          check_status GET '/me/rewards' 401
+          check_status GET '/me/missions' 401
+          check_status GET '/me/missions/plaza' 401
+          check_status POST '/me/rewards/redeem' 401
+          check_status POST '/me/missions/claim' 401
+          check_status POST '/me/rewards/ad-session' 401
+          check_status GET '/me/premium/play/availability' 401

@@ -1,0 +1,458 @@
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../../config/font_fallback.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../utils/duplicate_name.dart';
+import '../../../utils/line_break.dart' show keepJapaneseLineStartsAttached;
+import '../../../widgets/collection_action_controls.dart';
+import '../../../widgets/collection_tile_layout.dart';
+import '../../../widgets/home_collection_selection_scope.dart';
+import '../../../widgets/menu_action_label.dart';
+import 'folder_thumbnail.dart';
+
+/// A saved export keeps its complete identity visible, including large text.
+class ExportedWorkCard extends StatelessWidget {
+  const ExportedWorkCard({
+    super.key,
+    required this.name,
+    required this.metadata,
+    required this.icon,
+    required this.moveLabel,
+    required this.shareLabel,
+    required this.deleteLabel,
+    required this.onOpen,
+    required this.onMove,
+    this.onCopy,
+    required this.onShare,
+    required this.onDelete,
+    this.onChangeThumbnail,
+    this.thumbnailPath,
+    this.originalMediaPath,
+    this.thumbnailHidden = false,
+    this.shareBusy = false,
+    this.shareError,
+    this.gridTile = false,
+    this.compactActions = false,
+    this.isFavorite = false,
+    this.onToggleFavorite,
+    this.selectionId,
+  });
+
+  final String name;
+  final String metadata;
+  final IconData icon;
+  final String moveLabel;
+  final String shareLabel;
+  final String deleteLabel;
+  final VoidCallback? onOpen;
+  final VoidCallback onMove;
+  final VoidCallback? onCopy;
+  final VoidCallback? onChangeThumbnail;
+  final String? thumbnailPath;
+  final String? originalMediaPath;
+  final bool thumbnailHidden;
+  final VoidCallback? onShare;
+  final VoidCallback? onDelete;
+  final bool shareBusy;
+  final String? shareError;
+
+  /// Match the project collection's small/medium/large card presentation.
+  final bool gridTile;
+  final bool compactActions;
+  final bool isFavorite;
+  final VoidCallback? onToggleFavorite;
+  final String? selectionId;
+
+  static final _filenameSeparators = RegExp(r'([_.-])');
+  static const gridNameLines = kCollectionTileNameLines;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final selection = HomeCollectionSelectionScope.maybeOf(context);
+    final selectionActive =
+        selection != null && selection.active && selectionId != null;
+    final selectTap = selectionActive
+        ? () => selection.onToggle(selectionId!)
+        : onOpen;
+    final selectLongPress = selection != null && selectionId != null
+        ? () => selection.onLongPress(selectionId!)
+        : onMove;
+    final foreground =
+        theme.popupMenuTheme.textStyle?.color ?? theme.colorScheme.onSurface;
+    final background = theme.cardTheme.color ?? theme.colorScheme.surface;
+    final titleStyle = theme.textTheme.bodyLarge!.copyWith(
+      color: foreground,
+      fontFamily: headingFontFamilyFor(Localizations.maybeLocaleOf(context)),
+      fontFamilyFallback: headingFontFallbackFor(
+        Localizations.maybeLocaleOf(context),
+      ),
+      height: kWrappedNameLineHeight,
+    );
+    final detailStyle = theme.textTheme.bodySmall!.copyWith(
+      fontSize: 11,
+      color: foreground,
+    );
+    // Allow natural filename breaks without changing the saved/accessibility name.
+    // 長音・小書きの仮名は行の頭に来ない（「ファーストショ / ット」）。
+    String breakable(String text) => keepJapaneseLineStartsAttached(
+      text.replaceAllMapped(
+        _filenameSeparators,
+        (match) => '\u200B${match[0]}',
+      ),
+    );
+    // 複製の印と拡張子（「（副本）.png」）は途中で折り返さない（「clip_4（副」
+    // 「本）.png」と折れていた）。欄に入らないほど長いときは、印の字の間で
+    // だけ折り返す（かたまりのままだと「(コピー 12).gi / f」とどこかで切れた）。
+    final copy = copyMarkSplit(name);
+    final measuredTitleStyle = DefaultTextStyle.of(
+      context,
+    ).style.merge(titleStyle);
+    TextPainter measureName(String text, {int? maxLines}) => TextPainter(
+      text: TextSpan(
+        text: text,
+        style: MediaQuery.boldTextOf(context)
+            ? measuredTitleStyle.copyWith(fontWeight: FontWeight.bold)
+            : measuredTitleStyle,
+      ),
+      textScaler: MediaQuery.textScalerOf(context),
+      textDirection: Directionality.of(context),
+      locale: Localizations.maybeLocaleOf(context),
+      maxLines: maxLines,
+    );
+    String nameAtWidth(double width) {
+      if (copy == null) return breakable(name);
+      bool fits(String text) {
+        final painter = measureName(text)..layout();
+        final fits = painter.minIntrinsicWidth <= width;
+        painter.dispose();
+        return fits;
+      }
+
+      return breakable(copy.head) + copyMarkLineText(copy.tail, fits);
+    }
+
+    Widget title(String displayName) => Text(
+      displayName,
+      key: const Key('exportedWorkTitle'),
+      semanticsLabel: name,
+      style: titleStyle,
+    );
+    Widget details() => Text(
+      metadata,
+      key: const Key('exportedWorkMetadata'),
+      style: detailStyle,
+    );
+    // 共有できなかったときの知らせ。文字の色はテーマ・外観のメニュー文字色
+    // （このカードの文字と同じ役目）で、色ではなく先頭の印と文で知らせる。
+    Widget shareFeedback() => Semantics(
+      liveRegion: true,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, size: 16, color: foreground),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              shareError!,
+              style: theme.textTheme.bodySmall?.copyWith(color: foreground),
+            ),
+          ),
+        ],
+      ),
+    );
+    Widget favorite() => CollectionFavoriteButton(
+      favorite: isFavorite,
+      tooltip: isFavorite
+          ? AppLocalizations.of(context)!.colorPickerFavoriteRemove
+          : AppLocalizations.of(context)!.colorPickerFavoriteAdd,
+      onPressed: onToggleFavorite,
+    );
+    Widget menu() => CollectionActionFrame(
+      child: PopupMenuButton<String>(
+        key: const Key('exportedWorkMoreMenu'),
+        padding: EdgeInsets.zero,
+        icon: shareBusy
+            ? SizedBox.square(
+                dimension: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: foreground,
+                ),
+              )
+            : const Icon(
+                Icons.more_vert,
+                size: CollectionActionFrame.glyphSize,
+              ),
+        tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+        onSelected: (action) {
+          switch (action) {
+            case 'open':
+              onOpen?.call();
+            case 'copy':
+              onCopy?.call();
+            case 'move':
+              onMove();
+            case 'share':
+              onShare?.call();
+            case 'thumbnail':
+              onChangeThumbnail?.call();
+            case 'delete':
+              onDelete?.call();
+          }
+        },
+        itemBuilder: (context) {
+          final l10n = AppLocalizations.of(context)!;
+          return [
+            PopupMenuItem(
+              value: 'open',
+              enabled: onOpen != null,
+              child: Text(l10n.projectListOpenAction),
+            ),
+            PopupMenuItem(value: 'move', child: Text(moveLabel)),
+            PopupMenuItem(
+              value: 'share',
+              enabled: onShare != null && !shareBusy,
+              child: Text(shareLabel),
+            ),
+            if (onChangeThumbnail != null)
+              PopupMenuItem(
+                value: 'thumbnail',
+                child: Text(l10n.thumbnailChangeAction),
+              ),
+            PopupMenuItem(
+              value: 'delete',
+              enabled: onDelete != null,
+              // メニューの文字色のまま、印のアイコンと文で知らせる。
+              child: MenuActionLabel(
+                icon: Icons.delete_outline,
+                label: deleteLabel,
+              ),
+            ),
+          ];
+        },
+      ),
+    );
+
+    // The whole left edge of the card is its cover. Keeping the title and
+    // metadata in a separate column avoids moving them above the thumbnail
+    // when filenames wrap or accessibility text size increases.
+    // 表紙の面は用紙側の色（パネルの背景色を本文の文字色へ寄せた色）なので、
+    // 種類の印はその面の文字色（本文の文字色）で描く。カードの名前・日付は
+    // カードの面（メニューの背景色）の上なのでメニューの文字色のまま
+    // （印までメニューの文字色にすると、メニューを暗く・メニューの文字を
+    // 明るくしたテーマで見えなかった）。
+    Widget thumbnail() {
+      final path = thumbnailPath ?? originalMediaPath;
+      return ColoredBox(
+        key: const Key('exportedWorkThumbnailArea'),
+        color: theme.colorScheme.surfaceContainerHighest,
+        child: thumbnailHidden || path == null
+            ? Center(child: Icon(icon, color: theme.colorScheme.onSurface))
+            : FolderCoverMedia(path: path, cacheWidth: 256),
+      );
+    }
+
+    // Keep actions at the top right when the name fits beside them. When
+    // they would push the name past two lines, use the full text column and
+    // move the actions below. The scrollable detail list exposes the full name.
+    Widget detailBody() {
+      final actions = [
+        if (!selectionActive && onToggleFavorite != null) favorite(),
+        if (!selectionActive) menu(),
+      ];
+      final actionsWidth = actions.isEmpty
+          ? 0.0
+          : actions.length * CollectionActionFrame.extent +
+                (actions.length - 1) * CollectionActionRow.gap;
+      const inset = EdgeInsets.fromLTRB(0, 8, 8, 8);
+      const actionGap = 6.0;
+      final rtl = Directionality.of(context) == TextDirection.rtl;
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final width = math.max(0.0, constraints.maxWidth - inset.horizontal);
+          final inlineWidth = math.max(0.0, width - actionsWidth - actionGap);
+          var displayName = nameAtWidth(actions.isEmpty ? width : inlineWidth);
+          var actionsBelow = false;
+          if (actions.isNotEmpty) {
+            final painter = measureName(displayName, maxLines: 2)
+              ..layout(maxWidth: inlineWidth);
+            actionsBelow = inlineWidth == 0 || painter.didExceedMaxLines;
+            painter.dispose();
+            if (actionsBelow) displayName = nameAtWidth(width);
+          }
+          return Stack(
+            children: [
+              Padding(
+                padding: inset,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (actions.isEmpty || actionsBelow)
+                      title(displayName)
+                    else
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: title(displayName)),
+                          SizedBox(
+                            width: actionsWidth + actionGap,
+                            height: CollectionActionFrame.extent,
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 4),
+                    details(),
+                    if (shareError != null) ...[
+                      const SizedBox(height: 8),
+                      shareFeedback(),
+                    ],
+                    if (actionsBelow)
+                      const SizedBox(height: CollectionActionFrame.extent + 10),
+                  ],
+                ),
+              ),
+              if (actions.isNotEmpty)
+                Positioned(
+                  // The stack, including its insets, holds the touch target
+                  // outside the drawn circles in either position.
+                  top: actionsBelow ? null : inset.top,
+                  bottom: actionsBelow ? inset.bottom + 4 : null,
+                  right: rtl ? null : inset.right,
+                  left: rtl ? inset.left : null,
+                  child: CollectionActionRow(children: actions),
+                ),
+            ],
+          );
+        },
+      );
+    }
+
+    if (gridTile) {
+      return HomeCollectionSelectionSurface(
+        selectionId: selectionId ?? name,
+        child: collectionTileShadow(
+          context,
+          Card(
+            margin: EdgeInsets.zero,
+            elevation: 0,
+            clipBehavior: Clip.antiAlias,
+            color: background,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: const BorderSide(color: Colors.transparent, width: 2),
+            ),
+            child: InkWell(
+              onTap: selectTap,
+              onLongPress: selectLongPress,
+              onSecondaryTap: selectLongPress,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        thumbnail(),
+                        if (shareError != null)
+                          Center(
+                            child: SingleChildScrollView(
+                              child: ColoredBox(
+                                color: background,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6),
+                                  child: shareFeedback(),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  collectionTileCaption(context, name, keepFileSuffix: true),
+                  if (selectionActive)
+                    CollectionTileActions.selectionSpace
+                  else
+                    CollectionTileActions(
+                      compact: compactActions,
+                      children: [
+                        if (onToggleFavorite != null) favorite(),
+                        menu(),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return HomeCollectionSelectionSurface(
+      selectionId: selectionId ?? name,
+      grid: false,
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        color: background,
+        clipBehavior: Clip.antiAlias,
+        child: CallbackShortcuts(
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.f10, shift: true): onMove,
+            const SingleActivator(LogicalKeyboardKey.contextMenu): onMove,
+          },
+          child: InkWell(
+            onTap: selectTap,
+            onLongPress: selectLongPress,
+            onSecondaryTap: selectLongPress,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Use a proportionate cover on phones without letting it grow
+                // unreasonably large on desktop. The Table fills this cover to
+                // the *actual* content height, including wrapped action rows.
+                // 詳細の大・中・小で表紙の幅の範囲を変える（中は今までどおり）。
+                final (
+                  share,
+                  low,
+                  high,
+                ) = switch (CollectionDetailSizeScope.sizeOf(context)) {
+                  CollectionViewSize.small => (0.18, 56.0, 72.0),
+                  CollectionViewSize.medium => (0.24, 72.0, 96.0),
+                  CollectionViewSize.large => (0.30, 96.0, 168.0),
+                };
+                final coverWidth = constraints.maxWidth.isFinite
+                    ? (constraints.maxWidth * share).clamp(low, high).toDouble()
+                    : (low + high) / 2;
+                return Table(
+                  columnWidths: {
+                    0: FixedColumnWidth(coverWidth),
+                    1: const FixedColumnWidth(12),
+                    2: const FlexColumnWidth(),
+                  },
+                  children: [
+                    TableRow(
+                      children: [
+                        TableCell(
+                          verticalAlignment: TableCellVerticalAlignment.fill,
+                          child: thumbnail(),
+                        ),
+                        const SizedBox.shrink(),
+                        TableCell(
+                          verticalAlignment: TableCellVerticalAlignment.top,
+                          child: detailBody(),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

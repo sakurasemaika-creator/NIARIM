@@ -1,0 +1,32 @@
+name: Community count notification verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'backend/src/api/routes/follows.ts'
+      - 'backend/src/api/handler.ts'
+      - 'backend/src/api/routes/notifications.ts'
+      - 'backend/src/lib/types.ts'
+      - 'backend/test/**'
+      - 'lib/services/community_milestone_store.dart'
+      - '.github/workflows/community-count-notification-check.yml'
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test

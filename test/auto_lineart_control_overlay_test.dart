@@ -1,0 +1,465 @@
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/auto_lineart_engine.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/screens/canvas/widgets/auto_lineart_control_overlay.dart';
+
+Future<ui.Image> _makeImage(int width, int height) async {
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  canvas.drawRect(
+    Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+    Paint(),
+  );
+  return recorder.endRecording().toImage(width, height);
+}
+
+void main() {
+  testWidgets('auto lineart preview control point can be dragged', (
+    tester,
+  ) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), Paint());
+    final image = await recorder.endRecording().toImage(100, 100);
+    int? movedPath;
+    int? movedPoint;
+    AutoLineartPoint? movedTo;
+    const graph = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [
+            AutoLineartPoint(20, 50),
+            AutoLineartPoint(50, 50),
+            AutoLineartPoint(80, 50),
+          ],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 200,
+            height: 200,
+            child: AutoLineartControlOverlay(
+              image: image,
+              graph: graph,
+              onPointMoved: (p, i, point) {
+                movedPath = p;
+                movedPoint = i;
+                movedTo = point;
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final box = tester.getRect(find.byType(AutoLineartControlOverlay));
+    final start = Offset(box.left + box.width * .5, box.top + box.height * .5);
+    await tester.dragFrom(start, const Offset(25, -30));
+    await tester.pump();
+
+    expect(movedPath, 0);
+    expect(movedPoint, 1);
+    expect(movedTo, isNotNull);
+    expect(movedTo!.x, greaterThan(50));
+    expect(movedTo!.y, lessThan(50));
+    image.dispose();
+  });
+
+  testWidgets('inside scrolling controls, dragging a point moves the point '
+      'and not the controls; dragging elsewhere still scrolls', (tester) async {
+    final image = await tester.runAsync(() => _makeImage(100, 100));
+    final moves = <AutoLineartPoint>[];
+    const graph = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [
+            AutoLineartPoint(20, 50),
+            AutoLineartPoint(50, 50),
+            AutoLineartPoint(80, 50),
+          ],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+    final controller = ScrollController(initialScrollOffset: 100);
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 200,
+            height: 300,
+            child: SingleChildScrollView(
+              controller: controller,
+              child: Column(
+                children: [
+                  const SizedBox(height: 150),
+                  SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: AutoLineartControlOverlay(
+                      image: image!,
+                      graph: graph,
+                      onPointMoved: (_, _, point) => moves.add(point),
+                    ),
+                  ),
+                  const SizedBox(height: 400),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Future<void> dragDown(Offset from) async {
+      final gesture = await tester.startGesture(from);
+      for (var i = 0; i < 8; i++) {
+        await gesture.moveBy(const Offset(0, 8));
+        await tester.pump();
+      }
+      await gesture.up();
+      await tester.pump();
+    }
+
+    final box = tester.getRect(find.byType(AutoLineartControlOverlay));
+    await dragDown(box.center);
+    expect(controller.offset, 100, reason: 'the controls stayed put');
+    expect(moves, isNotEmpty);
+    expect(moves.last.y, greaterThan(50), reason: 'the point moved down');
+
+    moves.clear();
+    await dragDown(box.topLeft + const Offset(10, 10));
+    expect(moves, isEmpty);
+    expect(controller.offset, lessThan(100), reason: 'empty preview scrolls');
+    image.dispose();
+  });
+
+  testWidgets(
+    'SP-sized transparent hit target reaches 20px from a control point',
+    (tester) async {
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+      canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), Paint());
+      final image = await recorder.endRecording().toImage(100, 100);
+      AutoLineartPoint? movedTo;
+      const graph = AutoLineartGraph(
+        width: 100,
+        height: 100,
+        paths: [
+          AutoLineartPath(
+            points: [AutoLineartPoint(50, 50), AutoLineartPoint(80, 50)],
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Center(
+            child: SizedBox(
+              width: 200,
+              height: 200,
+              child: AutoLineartControlOverlay(
+                image: image,
+                graph: graph,
+                onPointMoved: (_, _, point) => movedTo = point,
+              ),
+            ),
+          ),
+        ),
+      );
+      final box = tester.getRect(find.byType(AutoLineartControlOverlay));
+      await tester.dragFrom(
+        Offset(box.left + box.width * .5 + 20, box.top + box.height * .5),
+        const Offset(15, -20),
+      );
+      await tester.pump();
+      expect(movedTo, isNotNull);
+      image.dispose();
+    },
+  );
+
+  testWidgets('overlapping touch targets select the nearest control point', (
+    tester,
+  ) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), Paint());
+    final image = await recorder.endRecording().toImage(100, 100);
+    int? movedIndex;
+    const graph = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [
+            AutoLineartPoint(45, 50),
+            AutoLineartPoint(55, 50),
+            AutoLineartPoint(80, 50),
+          ],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 100,
+            height: 100,
+            child: AutoLineartControlOverlay(
+              image: image,
+              graph: graph,
+              onPointMoved: (_, pointIndex, _) => movedIndex = pointIndex,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+    await tester.dragFrom(
+      Offset(rect.left + 54, rect.top + 50),
+      const Offset(6, -10),
+    );
+    await tester.pump();
+
+    expect(movedIndex, 1);
+    image.dispose();
+  });
+
+  for (final graphExtent in <int>[25, 100, 400]) {
+    final zoomLabel = switch (graphExtent) {
+      25 => '4x',
+      100 => '1x',
+      _ => '0.25x',
+    };
+    testWidgets(
+      'control hit target stays screen-fixed at $zoomLabel graph scale',
+      (tester) async {
+        final recorder = ui.PictureRecorder();
+        final canvas = Canvas(recorder);
+        canvas.drawRect(
+          Rect.fromLTWH(0, 0, graphExtent.toDouble(), graphExtent.toDouble()),
+          Paint(),
+        );
+        final image = await recorder.endRecording().toImage(
+          graphExtent,
+          graphExtent,
+        );
+        int? movedIndex;
+        final center = graphExtent / 2.0;
+        final graph = AutoLineartGraph(
+          width: graphExtent,
+          height: graphExtent,
+          paths: [
+            AutoLineartPath(
+              points: [
+                AutoLineartPoint(center, center),
+                AutoLineartPoint(graphExtent * 0.8, center),
+              ],
+              startIsJunction: false,
+              endIsJunction: false,
+              persistence: 1,
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Center(
+              child: SizedBox(
+                width: 200,
+                height: 200,
+                child: AutoLineartControlOverlay(
+                  image: image,
+                  graph: graph,
+                  onPointMoved: (_, pointIndex, _) => movedIndex = pointIndex,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+        // The point is at screen center for every graph scale. Starting 20
+        // logical pixels away must still hit because the 22px hit radius is a
+        // screen-space constant, independent of graph/canvas scale.
+        await tester.dragFrom(
+          Offset(rect.center.dx + 20, rect.center.dy),
+          const Offset(8, -8),
+        );
+        await tester.pump();
+
+        expect(movedIndex, 0);
+        image.dispose();
+      },
+    );
+  }
+  testWidgets('dragging a control point never opens the delete dialog', (
+    tester,
+  ) async {
+    final image = await _makeImage(100, 100);
+    const graph = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [
+            AutoLineartPoint(20, 50),
+            AutoLineartPoint(50, 50),
+            AutoLineartPoint(80, 50),
+          ],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 200,
+            height: 200,
+            child: AutoLineartControlOverlay(
+              image: image,
+              graph: graph,
+              onPointMoved: (_, _, _) {},
+            ),
+          ),
+        ),
+      ),
+    );
+    final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+    await tester.dragFrom(rect.center, const Offset(28, -24));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+    image.dispose();
+  });
+
+  testWidgets('in add mode a tap on a vector segment adds a control point', (
+    tester,
+  ) async {
+    final image = await _makeImage(100, 100);
+    AutoLineartGraph? changed;
+    const graph = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [AutoLineartPoint(20, 50), AutoLineartPoint(80, 50)],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 200,
+            height: 200,
+            child: AutoLineartControlOverlay(
+              image: image,
+              graph: graph,
+              mode: AutoLineartControlMode.add,
+              onPointMoved: (_, _, _) {},
+              onGraphChanged: (value) => changed = value,
+            ),
+          ),
+        ),
+      ),
+    );
+    final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+    await tester.tapAt(rect.center);
+    await tester.pump();
+    expect(changed, isNotNull);
+    expect(changed!.paths.single.points, hasLength(3));
+    image.dispose();
+  });
+
+  testWidgets(
+    'control point tap asks before deletion and cancel preserves it',
+    (tester) async {
+      final image = await _makeImage(100, 100);
+      AutoLineartGraph? changed;
+      const graph = AutoLineartGraph(
+        width: 100,
+        height: 100,
+        paths: [
+          AutoLineartPath(
+            points: [
+              AutoLineartPoint(20, 50),
+              AutoLineartPoint(50, 50),
+              AutoLineartPoint(80, 50),
+            ],
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Center(
+            child: SizedBox(
+              width: 200,
+              height: 200,
+              child: AutoLineartControlOverlay(
+                image: image,
+                graph: graph,
+                onPointMoved: (_, _, _) {},
+                onGraphChanged: (value) => changed = value,
+              ),
+            ),
+          ),
+        ),
+      );
+      final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+      await tester.tapAt(rect.center);
+      await tester.pumpAndSettle();
+      // In the app's language.
+      final ja = lookupAppLocalizations(const Locale('ja'));
+      expect(find.text(ja.filterAutoLineartDeletePointTooltip), findsOneWidget);
+      expect(find.text(ja.filterAutoLineartDeletePointConfirm), findsOneWidget);
+      expect(find.text(ja.commonDelete), findsOneWidget);
+      await tester.tap(find.text(ja.commonCancel));
+      await tester.pumpAndSettle();
+      expect(changed, isNull);
+
+      await tester.tapAt(rect.center);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(ja.commonDelete));
+      await tester.pumpAndSettle();
+      expect(changed, isNotNull);
+      expect(changed!.paths.single.points, hasLength(2));
+      image.dispose();
+    },
+  );
+}

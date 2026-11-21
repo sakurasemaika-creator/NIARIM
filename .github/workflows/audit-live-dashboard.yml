@@ -1,0 +1,58 @@
+name: Audit Live Dashboard
+
+on:
+  # dev_branch のどの変更でもHEAD/作業状態を追従する。
+  # ダッシュボード自身はIssue本文だけを書き換えるためpushループにはならない。
+  push:
+    branches: [dev_branch]
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - 'Audit Continuous Queue'
+      - 'One-shot Strict Visual Evidence Audit'
+      - 'One-shot Screenshot-first Visual Reaudit'
+      - 'One-shot Resume Real Operation Audit'
+      - 'One-shot Canvas Panel Screenshot Audit'
+      - 'One-shot Current Coverage Census'
+      - 'One-shot Known Scope Reaudit'
+      - 'One-shot Current HEAD Unique Reaudit'
+      - 'One-shot Filter Canvas Eyedropper'
+      - 'One-shot Add Ink Pool Filter'
+      - 'One-shot Refine Ink Pool Audit'
+      - 'Visual Smoke Test'
+      - 'Build APK'
+      - 'Implement Background Acclimation V2'
+      - 'One-shot Background Acclimation V2'
+      - 'Final HEAD Release Gate'
+    types: [requested, in_progress, completed]
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+concurrency:
+  group: audit-live-dashboard-dev
+  cancel-in-progress: true
+
+jobs:
+  update:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      # GitHubのActions一覧APIはcompletedイベント直後だけ旧statusを返すことがある。
+      # 数秒待ってから再取得し、完了済みRunを「実行中」に残さない。
+      - name: Allow completed state to settle
+        if: github.event_name == 'workflow_run' && github.event.action == 'completed'
+        run: sleep 8
+      - name: Update dashboard once
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: "3"
+          BRANCH: dev_branch
+        run: python3 audit-dashboard/update_dashboard.py

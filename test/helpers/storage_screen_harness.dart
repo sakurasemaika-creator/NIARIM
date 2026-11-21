@@ -1,0 +1,255 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/screens/settings/storage_screen.dart';
+import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/storage_info_service.dart';
+import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/utils/app_locale.dart';
+import 'package:niarim/widgets/app_scroll_behavior.dart';
+import 'package:provider/provider.dart';
+import 'package:provider/single_child_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'first_use_tooltips.dart';
+import 'load_app_fonts.dart';
+
+/// 容量削減の画面を、集計の進み方を1手ずつ決められるサービスで載せるための
+/// 道具（実時間を待たずに、欄ごとの状態を作る）。
+const storageBreakdownRetryKey = ValueKey<String>('storageBreakdownRetry');
+const storageDeviceRetryKey = ValueKey<String>('storageDeviceRetry');
+
+StorageBreakdown storageBreakdownOf({
+  int cache = 123,
+  int trash = 0,
+  Set<StorageCategory> incomplete = const {},
+}) => StorageBreakdown({
+  StorageCategory.materials: 2048,
+  StorageCategory.projectData: 4096,
+  StorageCategory.trash: trash,
+  StorageCategory.exports: 0,
+  StorageCategory.customAssets: 0,
+  StorageCategory.cache: cache,
+}, incomplete: incomplete);
+
+const storageTestDevice = DeviceSpaceInfo(
+  totalBytes: 1000 * 1024 * 1024,
+  freeBytes: 400 * 1024 * 1024,
+);
+
+/// 呼ばれるたびに、テストが後から答える`Completer`を1つ足す。
+class ScriptedStorage extends StorageInfoService {
+  final scans = <Completer<StorageBreakdown>>[];
+
+  /// 集計ごとの「走っている集計を待たずに始め直す」の指定。
+  final freshScans = <bool>[];
+  final deviceQueries = <Completer<DeviceSpaceInfo?>>[];
+  StorageBreakdown? rememberedBreakdown;
+
+  /// [rememberedBreakdown]を集計したときに、ゴミ箱の分として数えた作品。
+  Set<String> rememberedTrashedIds = const {};
+
+  /// 前回の内訳で中身のあった分類（[invalidate]でも忘れない）。
+  Set<StorageCategory>? rememberedCategories;
+
+  /// 前回の内訳に、読めなかった分類があったか（[rememberedCategories]と同じ）。
+  bool rememberedIncomplete = false;
+  DeviceSpaceInfo? rememberedDevice;
+  int invalidations = 0;
+  int cacheClears = 0;
+
+  @override
+  StorageBreakdown? get lastBreakdown => rememberedBreakdown;
+
+  @override
+  StorageBreakdown? lastBreakdownFor(Set<String> trashedProjectIds) =>
+      setEquals(rememberedTrashedIds, trashedProjectIds)
+      ? rememberedBreakdown
+      : null;
+
+  @override
+  Set<StorageCategory>? get lastNonEmptyCategories => rememberedCategories;
+
+  @override
+  bool get lastBreakdownIncomplete => rememberedIncomplete;
+
+  @override
+  DeviceSpaceInfo? get lastDeviceSpace => rememberedDevice;
+
+  @override
+  void invalidate() {
+    invalidations++;
+    rememberedBreakdown = null;
+    rememberedDevice = null;
+  }
+
+  @override
+  Future<StorageBreakdown> computeBreakdown(
+    Set<String> trashedProjectIds, {
+    bool fresh = false,
+  }) {
+    final scan = Completer<StorageBreakdown>();
+    scans.add(scan);
+    freshScans.add(fresh);
+    return scan.future;
+  }
+
+  @override
+  Future<DeviceSpaceInfo?> deviceSpace() {
+    final query = Completer<DeviceSpaceInfo?>();
+    deviceQueries.add(query);
+    return query.future;
+  }
+
+  /// nullでなければ、キャッシュの削除はこれが終わるまで続く。
+  Completer<int>? clearing;
+
+  @override
+  Future<int> clearCache() async {
+    cacheClears++;
+    return clearing?.future ?? 123;
+  }
+
+  int erasures = 0;
+
+  /// nullでなければ、全データの削除はこれが終わるまで続く。
+  Completer<void>? erasing;
+
+  /// ファイルは消さない（本物は保存も消すので、前の内訳の見込みも忘れる）。
+  @override
+  Future<void> eraseAllData() async {
+    erasures++;
+    await erasing?.future;
+    invalidate();
+    rememberedCategories = null;
+    rememberedIncomplete = false;
+  }
+}
+
+/// 起動処理と同じProviderを作る（言語は日本語、スマホの配置）。
+Future<List<SingleChildWidget>> bootstrapStorageScreen(
+  WidgetTester tester,
+) async {
+  await loadAppFonts(tester);
+  SharedPreferences.setMockInitialValues({
+    'first_launch': false,
+    'language': 'ja',
+    'force_pc_mode': 0,
+    firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+  });
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  return (await tester.runAsync(buildAppProviders))!;
+}
+
+/// 本番と同じテーマ・スクロールの振る舞いで、画面だけを載せる（表示の
+/// 言語は[language]）。
+Future<AppLocalizations> showStorageScreen(
+  WidgetTester tester,
+  List<SingleChildWidget> providers,
+  StorageInfoService service, {
+  Size size = const Size(390, 844),
+  String language = 'ja',
+}) async {
+  tester.view.physicalSize = size;
+  await tester.pumpWidget(
+    MultiProvider(
+      key: UniqueKey(),
+      providers: providers,
+      child: Builder(
+        builder: (context) => MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: context.watch<ThemeService>().themeData,
+          scrollBehavior: const AppScrollBehavior(),
+          locale: localeFromLanguageCode(language),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: StorageScreen(service: service),
+        ),
+      ),
+    ),
+  );
+  await tester.pump();
+  return AppLocalizations.of(tester.element(find.byType(StorageScreen)))!;
+}
+
+Finder storageTile(String title) =>
+    find.widgetWithText(ListTile, title, skipOffstage: false);
+
+/// キーボードのフォーカスが[target]の中にあるか。
+bool focusIsWithin(WidgetTester tester, Finder target) {
+  final focused = FocusManager.instance.primaryFocus?.context;
+  if (focused == null || target.evaluate().isEmpty) return false;
+  final element = tester.element(target);
+  if (focused == element) return true;
+  var within = false;
+  focused.visitAncestorElements((ancestor) {
+    within = ancestor == element;
+    return !within;
+  });
+  return within;
+}
+
+/// Tabキーを、フォーカスが[target]の中へ入るまで押す。入らなければfalse。
+Future<bool> tabTo(WidgetTester tester, Finder target) async {
+  for (var i = 0; i < 20; i++) {
+    if (focusIsWithin(tester, target)) return true;
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+  }
+  return focusIsWithin(tester, target);
+}
+
+/// [providers]の作品のサービス（画面を開く前に作品を作る・ゴミ箱へ移すため）。
+Future<ProjectService> storageProjectServiceOf(
+  WidgetTester tester,
+  List<SingleChildWidget> providers,
+) async {
+  late ProjectService projects;
+  await tester.pumpWidget(
+    MultiProvider(
+      providers: providers,
+      child: Builder(
+        builder: (context) {
+          projects = context.read<ProjectService>();
+          return const SizedBox.shrink();
+        },
+      ),
+    ),
+  );
+  await tester.pumpWidget(const SizedBox.shrink());
+  return projects;
+}
+
+/// 作品を1つ作る（[trashed]ならゴミ箱へ移す）。作品のIDを返す。
+Future<String> addStorageTestProject(
+  WidgetTester tester,
+  ProjectService projects, {
+  bool trashed = false,
+}) async {
+  final id = await tester.runAsync(() async {
+    final project = await projects.createProject(
+      name: 'Storage test',
+      fps: 1,
+      durationSeconds: 1,
+      backgroundColor: 0xFFFFFFFF,
+      exportWidth: 64,
+      exportHeight: 64,
+    );
+    if (trashed) await projects.deleteProject(project.id);
+    return project.id;
+  });
+  return id!;
+}

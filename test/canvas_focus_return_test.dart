@@ -1,0 +1,331 @@
+import 'dart:io';
+
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/screens/canvas/canvas_screen.dart';
+import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
+import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
+import 'package:niarim/services/filter_service.dart';
+import 'package:niarim/screens/canvas/widgets/stamp_panel.dart';
+import 'package:niarim/screens/canvas/widgets/tone_panel.dart';
+import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/typing_aware_shortcuts.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/first_use_tooltips.dart';
+
+/// 入力欄に入力したままキャンバスへ描き始めたら、キーボードのフォーカスを
+/// キャンバス画面へ戻す（戻さないと、画面のショートカットは入力中として
+/// 無視され、Ctrl+Zは入力欄の文字の取り消しになる）。
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+  late Directory tempDir;
+  setUp(() {
+    SharedPreferences.setMockInitialValues({
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    tempDir = Directory.systemTemp.createTempSync('niarim_canvas_focus_');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathChannel, (call) async => tempDir.path);
+  });
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathChannel, null);
+    if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+  });
+
+  testWidgets('asset searches take focus from the canvas shortcuts', (
+    tester,
+  ) async {
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    final screenFocus = FocusNode();
+    addTearDown(screenFocus.dispose);
+    var selectAllCalls = 0;
+    for (final panel in [
+      BrushPanel(dockedMode: true, onClose: () {}),
+      TonePanel(onClose: () {}),
+      StampPanel(onClose: () {}),
+    ]) {
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers,
+          child: MaterialApp(
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: TypingAwareShortcuts(
+                screenFocus: screenFocus,
+                bindings: {
+                  const SingleActivator(
+                    LogicalKeyboardKey.keyA,
+                    control: true,
+                  ): () =>
+                      selectAllCalls++,
+                },
+                child: Focus(focusNode: screenFocus, child: panel),
+              ),
+            ),
+          ),
+        ),
+      );
+      screenFocus.requestFocus();
+      await tester.pump();
+      final l10n = AppLocalizations.of(tester.element(find.byWidget(panel)))!;
+      await tester.tap(find.byTooltip(l10n.creativePanelSearchTooltip));
+      await tester.pumpAndSettle();
+      final input = find.byKey(const ValueKey('asset-search-input'));
+      expect(
+        TypingAwareShortcuts.isTyping,
+        isTrue,
+        reason: '${panel.runtimeType}',
+      );
+      expect(tester.testTextInput.hasAnyClients, isTrue);
+      tester.testTextInput.enterText('zzz');
+      await tester.pump();
+      final controller = tester.widget<TextField>(input).controller!;
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      expect(controller.text, 'zzz');
+      expect(
+        controller.selection,
+        const TextSelection(baseOffset: 0, extentOffset: 3),
+      );
+      expect(selectAllCalls, 0);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(input, findsNothing);
+    }
+  });
+
+  testWidgets('the filter list search takes focus and Esc closes it', (
+    tester,
+  ) async {
+    // DISC294：フィルターの一覧の検索欄だけ、開いてもフォーカスが入らず、
+    // 打った字が画面のショートカットへ届いた。閉じても言葉が残って一覧を
+    // 隠し続けた。
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    final screenFocus = FocusNode();
+    addTearDown(screenFocus.dispose);
+    var selectAllCalls = 0;
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers,
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: TypingAwareShortcuts(
+              screenFocus: screenFocus,
+              bindings: {
+                const SingleActivator(
+                  LogicalKeyboardKey.keyA,
+                  control: true,
+                ): () =>
+                    selectAllCalls++,
+              },
+              child: Focus(
+                focusNode: screenFocus,
+                child: FilterPanel(
+                  projectId: 'none',
+                  sceneId: 'none',
+                  layerId: 'none',
+                  frameIndex: 0,
+                  onClose: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    screenFocus.requestFocus();
+    await tester.pumpAndSettle();
+    final l10n = AppLocalizations.of(tester.element(find.byType(FilterPanel)))!;
+    final filters = tester
+        .element(find.byType(FilterPanel))
+        .read<FilterService>();
+    final visibleBefore = filters.visibleFilters.length;
+    await tester.tap(find.byTooltip(l10n.creativePanelSearchTooltip));
+    await tester.pumpAndSettle();
+    final input = find.byKey(const ValueKey('filter-search-input'));
+    expect(input, findsOneWidget);
+    expect(TypingAwareShortcuts.isTyping, isTrue);
+    tester.testTextInput.enterText('zzzz該当なし');
+    await tester.pump();
+    expect(filters.visibleFilters, isEmpty);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    expect(selectAllCalls, 0);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(input, findsNothing);
+    expect(filters.visibleFilters.length, visibleBefore);
+  });
+
+  testWidgets('layer search takes focus before accepting keyboard input', (
+    tester,
+  ) async {
+    final screenFocus = FocusNode();
+    addTearDown(screenFocus.dispose);
+    var selectAllCalls = 0;
+    const l10n = Locale('ja');
+    final labels = lookupAppLocalizations(l10n);
+    for (final height in [400.0, 200.0]) {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: (await tester.runAsync(buildAppProviders))!,
+          child: MaterialApp(
+            locale: l10n,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: TypingAwareShortcuts(
+                screenFocus: screenFocus,
+                bindings: {
+                  const SingleActivator(
+                    LogicalKeyboardKey.keyA,
+                    control: true,
+                  ): () =>
+                      selectAllCalls++,
+                },
+                child: Focus(
+                  focusNode: screenFocus,
+                  child: SizedBox(
+                    width: 260,
+                    height: height,
+                    child: LayerPanel(
+                      dockedMode: true,
+                      projectId: 'none',
+                      sceneId: 'none',
+                      frameIndex: 0,
+                      onClose: () {},
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      screenFocus.requestFocus();
+      await tester.pumpAndSettle();
+      final toggle = find.byTooltip(labels.creativePanelSearchTooltip);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      final input = find.byType(TextField);
+      expect(TypingAwareShortcuts.isTyping, isTrue);
+      expect(tester.testTextInput.hasAnyClients, isTrue);
+      tester.testTextInput.enterText('ink');
+      await tester.pump();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      final controller = tester.widget<TextField>(input).controller!;
+      expect(controller.text, 'ink');
+      expect(
+        controller.selection,
+        const TextSelection(baseOffset: 0, extentOffset: 3),
+      );
+      expect(selectAllCalls, 0);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(input, findsNothing);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(input).controller!.text, isEmpty);
+      expect(TypingAwareShortcuts.isTyping, isTrue);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      expect(selectAllCalls, 1);
+      selectAllCalls = 0;
+    }
+  });
+
+  for (final kind in [PointerDeviceKind.touch, PointerDeviceKind.mouse]) {
+    testWidgets('pressing the canvas ends text entry ($kind)', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2160);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final providers = (await tester.runAsync(buildAppProviders))!;
+      ProjectService? ps;
+      String? projectId;
+      StateSetter? rebuild;
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers,
+          child: MaterialApp(
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: StatefulBuilder(
+              builder: (context, setState) {
+                ps ??= context.read<ProjectService>();
+                rebuild = setState;
+                return Column(
+                  children: [
+                    const Material(child: TextField()),
+                    Expanded(
+                      child: projectId == null
+                          ? const SizedBox.expand()
+                          : CanvasScreen(projectId: projectId),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      final project = (await tester.runAsync(
+        () => ps!.createProject(
+          name: 'focus',
+          fps: 12,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 320,
+          exportHeight: 320,
+        ),
+      ))!;
+      projectId = project.id;
+      rebuild!(() {});
+      await tester.pump(const Duration(milliseconds: 1400));
+
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+      expect(TypingAwareShortcuts.isTyping, isTrue);
+
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byType(CanvasArea)),
+        kind: kind,
+      );
+      await tester.pump();
+      await gesture.up();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(TypingAwareShortcuts.isTyping, isFalse);
+      // マウスで外を押すと入力欄は自分でフォーカスを手放すが、行き先は
+      // 画面のスコープそのもので、画面のショートカットへは届かない。
+      expect(
+        FocusManager.instance.primaryFocus?.debugLabel,
+        'Canvas',
+        reason: 'canvas shortcuts work again after drawing',
+      );
+    });
+  }
+}

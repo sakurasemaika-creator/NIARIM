@@ -1,0 +1,30 @@
+name: Responsive Tiles and Desktop Dock Captures
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/recent-ui-changes-captures.yml'
+      - 'test/visual/recent_ui_changes_capture_test.dart'
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - name: Capture responsive tile and desktop dock UI on real Flutter
+        run: flutter test test/visual/recent_ui_changes_capture_test.dart --reporter expanded
+      - name: Upload actual UI screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recent-ui-changes-actual-screenshots
+          path: build/recent-ui-changes-captures/*.png
+          if-no-files-found: warn
+          retention-days: 14

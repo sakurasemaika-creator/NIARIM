@@ -1,0 +1,29 @@
+FAQ
+Preguntas frecuentes
+¿Qué tipo de app es NIARIM?
+NIARIM es una app móvil para crear animación a partir de dibujos que haces y mueves tú mismo.
+¿Es gratis?
+Incluso la versión gratuita incluye todas las funciones de creación básicas, incluida la exportación de video. Muestra anuncios y añade automáticamente la marca final oficial de NIARIM. Los planes de precios concretos están disponibles en la ficha de Google Play.
+¿Puedo exportar lo que he creado?
+Sí. Puedes exportar tu trabajo como video, hasta una resolución de 1920×1920, con una relación de aspecto configurable libremente.
+¿Puedo compartir lo que he creado?
+Puedes compartir libremente tus archivos de video exportados a través de tu dispositivo u otras apps. También puedes publicar tu obra en la
+«Plaza de Obras»
+subiéndola directamente a YouTube desde la app NIARIM.
+¿Necesito crear una cuenta?
+Puedes crear sin registrarte. Tus obras y proyectos se guardan en el dispositivo. Para publicar en la galería, debes iniciar sesión con una cuenta de Google.
+¿Qué puedo hacer con el plan Premium?
+Premium elimina los anuncios y añade la opción de ocultar la tarjeta final oficial, marca de agua personalizada, curva de tonos y ajuste de niveles. Consulta la
+página de Premium
+para más detalles.
+Si publico mi obra en la Plaza de Obras, ¿podrá verla cualquiera también en YouTube?
+Publicar en la Plaza de Obras se hace subiendo un vídeo a YouTube desde dentro de la app NIARIM, pero el ajuste de público/privado de la propia Plaza de Obras es independiente de la configuración de visibilidad de YouTube. Aunque el vídeo de YouTube esté configurado como «Oculto», seguirá mostrándose y reproduciéndose con normalidad en la Plaza de Obras, mientras permanece prácticamente invisible en la búsqueda y las recomendaciones de YouTube (solo quienes tengan el enlace directo podrán verlo allí). Por el contrario, si el vídeo de YouTube se configura como «Privado» o se elimina, su URL de reproducción deja de funcionar, por lo que la visualización en la Plaza de Obras se suspende automáticamente sin importar tu configuración en NIARIM (tu configuración de NIARIM se conserva, así que la visualización se reanuda automáticamente si se restablece el estado en YouTube). Si no quieres recibir comentarios de quienes tengan el enlace, puedes desactivar los comentarios en YouTube para mayor tranquilidad.
+¿Dónde puedo reportar un error o solicitar una función?
+Para informar de un error, solicitar una función o preguntar cómo usar la aplicación, utiliza el
+formulario de contacto
+.
+¿Se usan mis obras para entrenar IA?
+No. NIARIM no utiliza ilustraciones, animaciones, datos de proyectos ni otras obras creadas o publicadas por los usuarios como datos de entrenamiento para modelos de IA generativa. Los datos de creación y los archivos de vídeo tampoco se envían ni almacenan en los servidores del desarrollador. Al publicar una obra en la Plaza de Obras, el archivo de vídeo se almacena en YouTube; NIARIM solo gestiona la información necesaria para mostrarla, como el ID del vídeo de YouTube y el título.
+Pon tu historia en movimiento.
+Comienza tu próxima animación con NIARIM.
+Descargar la app

@@ -1,0 +1,29 @@
+name: Mission Redesign Screenshots (real Flutter UI)
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/mission_redesign_capture_test.dart'
+      - '.github/workflows/mission-redesign-captures.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter analyze --no-fatal-infos test/mission_redesign_capture_test.dart
+      - run: flutter test test/mission_redesign_capture_test.dart --reporter expanded
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: niarim-mission-redesign-real-widget-screenshots
+          path: build/mission-redesign-captures
+          retention-days: 14
+          if-no-files-found: warn

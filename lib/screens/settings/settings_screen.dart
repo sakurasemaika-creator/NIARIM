@@ -1,0 +1,664 @@
+import 'widgets/settings_value_tile.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../l10n/app_localizations.dart';
+import '../../widgets/keep_together_text.dart';
+import '../../services/settings_service.dart';
+import '../../services/community_notice.dart';
+import '../../services/first_use_tooltip_service.dart';
+import '../../services/premium_service.dart';
+import '../../widgets/labeled_slider.dart';
+import '../../widgets/premium_lock_widget.dart';
+import '../../widgets/responsive.dart';
+import '../../widgets/help_button.dart';
+import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
+import '../../utils/name_collation.dart';
+import '../../widgets/fit_or_hide_title.dart';
+
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  static const _supportEmail = 'support@miranima-studio.com';
+  final _searchController = TextEditingController();
+  bool _showSearch = false;
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      // Compared in the same form as the entries (’ and no-break spaces in
+      // French text, ' and plain spaces from the keyboard, any letter case).
+      setState(() => _query = foldName(_searchController.text.trim()));
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // はじめて使う機能の説明（吹き出し）を、次に使うときにもう一度出す。
+  Future<void> _resetFeatureTips() async {
+    final l10n = AppLocalizations.of(context)!;
+    await context.read<FirstUseTooltipService>().resetAll();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.settingsTipsResetDone)));
+  }
+
+  Future<void> _showSupport() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.settingsSupportTitle),
+        content: const SelectableText(_supportEmail),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.commonClose),
+          ),
+          TextButton.icon(
+            icon: const Icon(Icons.copy_outlined),
+            label: Text(l10n.commonCopy),
+            onPressed: () async {
+              await Clipboard.setData(const ClipboardData(text: _supportEmail));
+              if (mounted) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text(l10n.qrShareCopiedSnackbar)),
+                );
+              }
+            },
+          ),
+          FilledButton.icon(
+            icon: const Icon(Icons.open_in_new),
+            label: Text(l10n.settingsSupportForm),
+            onPressed: () async {
+              var opened = false;
+              try {
+                opened = await launchUrl(
+                  Uri.https('niarim.miranima-studio.com', '/contact/'),
+                  mode: LaunchMode.externalApplication,
+                );
+              } catch (_) {
+                // The address stays available in the dialog.
+              }
+              if (!opened && mounted) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text(l10n.settingsSupportLinkFailed)),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openAccountDeletion() async {
+    final l10n = AppLocalizations.of(context)!;
+    final language = Localizations.localeOf(context).toLanguageTag();
+    final uri = Uri.https('niarim.miranima-studio.com', '/account-deletion/', {
+      'lang': language == 'zh' ? 'zh-Hans' : language,
+    });
+    var opened = false;
+    try {
+      opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // Keep the settings screen available for retry.
+    }
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(l10n.settingsAccountDeletionLinkFailed)),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isPremium = context.watch<PremiumService>().isPremium;
+    final l10n = AppLocalizations.of(context)!;
+    // 設定内検索バーあり（項目が増えても検索で到達可能）。
+    // 各項目にタイトル・サブタイトルに加えて検索キーワードを持たせ、
+    // 部分一致でカテゴリ一覧を絞り込む。
+    final entries = [
+      (
+        icon: Icons.settings,
+        title: l10n.settingsBasicTitle,
+        subtitle: l10n.settingsBasicSubtitle,
+        keywords: 'fps 言語 描画領域初期値',
+        onTap: _showBasicSettings,
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        // 容量・重さに影響する設定（Undo回数・ゴミ箱自動削除等）は全て
+        // パフォーマンス設定へ統合した（旧「詳細」カテゴリは廃止）。
+        icon: Icons.speed,
+        title: l10n.settingsPerformanceTitle,
+        subtitle: l10n.settingsPerformanceSubtitle,
+        keywords:
+            '品質 タイルキャッシュ 低品質 中品質 高品質 カスタム オニオンスキン 傾き検知 undo ゴミ箱 削除 performance quality cache',
+        onTap: () => context.push('/settings/performance'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.touch_app,
+        title: l10n.settingsGestureTitle,
+        subtitle: l10n.settingsGestureSubtitle,
+        keywords: 'タップ スワイプ 長押し ペンボタン gesture tap swipe',
+        onTap: () => context.push('/settings/gestures'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.keyboard,
+        title: l10n.settingsShortcutTitle,
+        subtitle: l10n.settingsShortcutSubtitle,
+        keywords: 'ショートカット キーボード 左手デバイス キー割り当て shortcut keyboard key',
+        onTap: () => context.push('/settings/shortcuts'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.edit,
+        title: l10n.settingsPenTitle,
+        subtitle: l10n.settingsPenSubtitle,
+        keywords: '筆圧 傾き ペンボタン 筆圧カーブ pen pressure tilt',
+        onTap: () => context.push('/settings/pen'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.desktop_windows,
+        title: l10n.settingsWorkspaceTitle,
+        subtitle: l10n.settingsWorkspaceSubtitle,
+        keywords: 'ツールバー パネル配置 右利き 左利き dex デックス workspace toolbar panel',
+        onTap: () => context.push('/settings/workspace'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.format_color_fill,
+        title: l10n.settingsBucketTitle,
+        subtitle: l10n.settingsBucketSubtitle,
+        keywords: 'バケツ 塗り つぶし 許容誤差 拡張 隙間 線の下 bucket fill tolerance expand',
+        onTap: () => context.push('/settings/bucket'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        // 自動塗りプリセットを制作関連の設定から管理する。
+        icon: Icons.auto_fix_high_outlined,
+        title: l10n.homeDrawerAutofillPreset,
+        subtitle: l10n.tipsAutofillPresetTitle,
+        keywords: '制作 自動塗り パーツ 色セット プリセット autofill presets',
+        onTap: () => context.push('/autofill-presets'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.widgets_outlined,
+        title: l10n.widgetSettingsTitle,
+        subtitle: l10n.widgetSettingsSubtitle,
+        keywords: 'ウィジェット ホーム画面 widget home screen 作品 色',
+        onTap: () => context.push('/settings/widget'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.palette,
+        title: l10n.settingsThemeTitle,
+        subtitle: l10n.settingsThemeSubtitle,
+        keywords: 'テーマ 配色 ベースカラー アクセントカラー theme color',
+        onTap: () => context.push('/settings/theme'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.notifications_outlined,
+        title: devicePushLabel(l10n),
+        subtitle: devicePushDescription(l10n),
+        keywords: '通知 プッシュ push notifications',
+        onTap: () => context.push(communityNotificationSettingsRoute),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      // 無料会員はMaterialのlockアイコンで表示
+      (
+        icon: isPremium ? Icons.water : Icons.lock_outline,
+        title: l10n.settingsWatermarkTitle,
+        subtitle: l10n.settingsWatermarkSubtitle,
+        keywords: 'ウォーターマーク premium プレミアム watermark',
+        onTap: _showWatermarkSetting,
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.import_export,
+        title: l10n.settingsTransferTitle,
+        subtitle: l10n.settingsTransferSubtitle,
+        keywords: '引き継ぎ エクスポート インポート 他端末 niatra transfer export import',
+        onTap: () => context.push('/settings/transfer'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.font_download_outlined,
+        title: l10n.settingsFontTitle,
+        subtitle: l10n.settingsFontSubtitle,
+        keywords: 'フォント ttf otf font',
+        onTap: () => context.push('/settings/fonts'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.lightbulb_outline,
+        title: l10n.settingsTipsResetTitle,
+        subtitle: l10n.settingsTipsResetSubtitle,
+        keywords: '説明 吹き出し ヒント もう一度 再表示 リセット tips hint reset',
+        onTap: _resetFeatureTips,
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.bug_report_outlined,
+        title: l10n.settingsErrorLogTitle,
+        subtitle: l10n.settingsErrorLogSubtitle,
+        keywords: 'エラー 不具合 報告 ログ コピー error log bug report copy',
+        onTap: () => context.push('/settings/error-log'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.support_agent_outlined,
+        title: l10n.settingsSupportTitle,
+        subtitle: _supportEmail,
+        keywords: 'サポート メール support contact help',
+        onTap: _showSupport,
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.person_remove_outlined,
+        title: l10n.settingsAccountDeletionTitle,
+        subtitle: l10n.settingsAccountDeletionSubtitle,
+        keywords: 'アカウント 退会 削除 delete account',
+        onTap: _openAccountDeletion,
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+    ];
+    final filtered = _query.isEmpty
+        ? entries
+        : entries
+              .where(
+                (e) =>
+                    nameMatches(e.title, _query) ||
+                    nameMatches(e.subtitle, _query) ||
+                    nameMatches(e.keywords, _query),
+              )
+              .toList();
+    return Scaffold(
+      appBar: AppBar(
+        title: _showSearch
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: l10n.settingsSearchHint,
+                  border: InputBorder.none,
+                ),
+              )
+            : FitOrHideTitle(l10n.settingsScreenTitle),
+        actions: [
+          const HelpButton(),
+          IconButton(
+            icon: Icon(_showSearch ? Icons.close : Icons.search),
+            tooltip: _showSearch ? l10n.commonClose : l10n.commonSearch,
+            onPressed: () => setState(() {
+              _showSearch = !_showSearch;
+              if (!_showSearch) _searchController.clear();
+            }),
+          ),
+        ],
+      ),
+      body: desktopCentered(
+        context,
+        filtered.isEmpty
+            ? Center(
+                child: Text(
+                  l10n.settingsNoResults,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              )
+            : ListView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                children: [
+                  for (final e in filtered)
+                    _item(e.icon, e.title, e.subtitle, e.onTap, e.accent),
+                  if (_query.isEmpty) ...[
+                    const Divider(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      child: TextButton(
+                        onPressed: () => context.push('/settings/license'),
+                        child: Text(
+                          l10n.settingsTermsLicense,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      child: TextButton(
+                        onPressed: () =>
+                            context.push('/settings/privacy-policy'),
+                        child: Text(
+                          l10n.privacyPolicyScreenTitle,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ],
+              ),
+      ),
+    );
+  }
+
+  // 各項目を独立したカードとして浮かせる（影・角丸・タップ時のインク
+  // エフェクトを角丸に沿わせる）。
+  Widget _item(
+    IconData icon,
+    String title,
+    String subtitle,
+    VoidCallback onTap,
+    Color accent,
+  ) {
+    final textScale = MediaQuery.textScalerOf(context).scale(15) / 15;
+    final showBadge =
+        (MediaQuery.sizeOf(context).width - 32) / textScale >= 198;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14),
+        elevation: 1,
+        shadowColor: Theme.of(
+          context,
+        ).colorScheme.shadow.withValues(alpha: 0.15),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+            child: Row(
+              children: [
+                if (showBadge) ...[
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          accent.withValues(alpha: 0.22),
+                          accent.withValues(alpha: 0.1),
+                        ],
+                      ),
+                    ),
+                    // 淡い下地は差し色、アイコンは背景の上の差し色＝アクセントの
+                    // 文字・アイコン色（明るい差し色でも読めるように）。
+                    child: Icon(
+                      icon,
+                      color: AccentTextTheme.of(context),
+                      size: 21,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      messageText(
+                        title,
+                        style: localizedHeadingStyle(
+                          context,
+                          const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      messageText(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.42,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.chevron_right,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 言語コードから、その言語自身の表記による表示名を返す（言語名は
+  /// 現在のUI言語に関わらず、その言語自身の文字で表示する。「日本語」
+  /// 「English」「简体中文」「한국어」「繁體中文」「Français」「Español」）。
+  String _languageLabel(AppLocalizations l10n, String code) => switch (code) {
+    'ja' => l10n.settingsLanguageJapanese,
+    'en' => l10n.settingsLanguageEnglish,
+    'zh' => l10n.settingsLanguageChinese,
+    'ko' => l10n.settingsLanguageKorean,
+    'zh_Hant' => l10n.settingsLanguageTraditionalChinese,
+    'fr' => l10n.settingsLanguageFrench,
+    'es' => l10n.settingsLanguageSpanish,
+    _ => code,
+  };
+
+  void _showWatermarkSetting() {
+    if (!context.read<PremiumService>().isFeatureAvailable(
+      PremiumFeature.watermark,
+    )) {
+      showPremiumBanner(context, feature: PremiumFeature.watermark);
+      return;
+    }
+    context.push('/settings/watermark');
+  }
+
+  void _showBasicSettings() {
+    final settings = context.read<SettingsService>();
+    var enabled = settings.defaultDrawingAreaEnabled;
+    var scale = settings.defaultDrawingAreaScale;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.3,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (sheetContext, controller) {
+            final l10n = AppLocalizations.of(sheetContext)!;
+            return ListView(
+              controller: controller,
+              padding: const EdgeInsets.all(16),
+              children: [
+                Text(
+                  l10n.settingsBasicSheetTitle,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SettingsValueTile(
+                  title: l10n.settingsDefaultFps,
+                  subtitle: l10n.settingsDefaultFpsSubtitle,
+                  value: '${settings.defaultFps} fps',
+                  onTap: () async {
+                    // 新規プロジェクト作成画面のFPS選択肢と統一（8/12/24のみ）。
+                    final selected = await showDialog<int>(
+                      context: ctx,
+                      builder: (dctx) => SimpleDialog(
+                        title: Text(l10n.settingsDefaultFps),
+                        children: [8, 12, 24]
+                            .map(
+                              (fps) => SimpleDialogOption(
+                                onPressed: () => Navigator.pop(dctx, fps),
+                                child: Text(
+                                  '$fps fps',
+                                  style: TextStyle(
+                                    fontWeight: settings.defaultFps == fps
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    );
+                    if (selected != null) {
+                      await settings.setDefaultFps(selected);
+                      if (ctx.mounted) setS(() {});
+                    }
+                  },
+                ),
+                SettingsValueTile(
+                  title: l10n.settingsLanguage,
+                  value: _languageLabel(l10n, settings.language),
+                  onTap: () async {
+                    // 対応言語：日本語・English・简体中文・한국어・繁體中文・
+                    // Français・Español。
+                    final languages = <String>[
+                      'ja',
+                      'en',
+                      'zh',
+                      'ko',
+                      'zh_Hant',
+                      'fr',
+                      'es',
+                    ];
+                    final selected = await showDialog<String>(
+                      context: ctx,
+                      builder: (dctx) => SimpleDialog(
+                        title: Text(l10n.settingsLanguage),
+                        children: [
+                          for (final code in languages)
+                            SimpleDialogOption(
+                              onPressed: () => Navigator.pop(dctx, code),
+                              child: Text(
+                                _languageLabel(l10n, code),
+                                style: TextStyle(
+                                  fontWeight: settings.language == code
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                    if (selected != null) {
+                      await settings.setLanguage(selected);
+                      if (ctx.mounted) setS(() {});
+                    }
+                  },
+                ),
+                const Divider(),
+                // 描画領域初期値
+                Text(
+                  l10n.settingsDrawingAreaTitle,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                messageText(
+                  l10n.settingsDrawingAreaHint,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.settingsDrawingAreaWiden),
+                  value: enabled,
+                  onChanged: (v) {
+                    setS(() => enabled = v);
+                    settings.setDefaultDrawingArea(enabled: v, scale: scale);
+                  },
+                ),
+                if (enabled) ...[
+                  LabeledSlider(
+                    label: l10n.settingsDrawingAreaScale,
+                    min: 1.0,
+                    max: 10.0,
+                    value: scale,
+                    divisions: 18,
+                    step: 0.5,
+                    isInt: false,
+                    sliderLabel: l10n.settingsScaleValue(
+                      scale.toStringAsFixed(1),
+                    ),
+                    valueText: l10n.settingsScaleValue(
+                      scale.toStringAsFixed(1),
+                    ),
+                    onChanged: (v) {
+                      setS(() => scale = v);
+                      settings.setDefaultDrawingArea(
+                        enabled: enabled,
+                        scale: v,
+                      );
+                    },
+                  ),
+                ],
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}

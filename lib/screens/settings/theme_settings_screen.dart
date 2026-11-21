@@ -1,0 +1,944 @@
+import '../../services/shared_asset_card_service.dart';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+
+import '../../l10n/app_localizations.dart';
+import '../../l10n/theme_preset_labels.dart';
+import '../../services/export_share_service.dart';
+import '../../services/theme_service.dart';
+import '../../models/app_theme_preset.dart';
+import '../../widgets/export_share_feedback.dart';
+import '../../widgets/responsive.dart';
+import '../canvas/widgets/color_picker_panel.dart';
+import '../../widgets/help_button.dart';
+import '../../config/font_fallback.dart';
+import '../../utils/app_error_reporter.dart';
+import '../../utils/color_contrast.dart';
+import '../../utils/duplicate_name.dart';
+import '../../utils/reorder_index.dart';
+import '../../widgets/confirm_delete.dart';
+import '../../widgets/keep_together_text.dart';
+import '../../widgets/name_entry_dialog.dart';
+import '../../widgets/theme_rescue_button.dart';
+import 'theme_preview_gallery_screen.dart';
+import '../../config/accent_text_theme.dart';
+import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/typing_dialog_inset.dart';
+import '../../utils/file_failure_reason.dart';
+
+class ThemeSettingsScreen extends StatelessWidget {
+  const ThemeSettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final themeService = context.watch<ThemeService>();
+    final presets = themeService.presets;
+    final current = themeService.current;
+    final locale = Localizations.localeOf(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: FitOrHideTitle(l10n.themeSettingsTitle),
+        actions: [
+          const HelpButton(topic: 'テーマ設定'),
+          if (themeService.needsThemeRescue)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8),
+              child: ThemeRescueButton(
+                iconOnly:
+                    MediaQuery.sizeOf(context).width < 520 ||
+                    MediaQuery.textScalerOf(context).scale(1) > 1.4,
+              ),
+            ),
+        ],
+      ),
+      body: desktopCentered(
+        context,
+        ListView(
+          children: [
+            // 現在の配色をそのまま縮小表示する。描画の見本は全画面の
+            // 画面ギャラリーと共通で、固定画像・固定配色ではない。
+            // タップで全画面に移動する。カラーピッカーの変更結果は
+            // ThemeServiceの再描画によって即座にこの見本にも反映される。
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+              child: Material(
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
+                  key: const Key('themePreviewOpen'),
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const ThemePreviewGalleryScreen(),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        const ThemePreviewThumbnail(
+                          key: Key('themeInlinePreview'),
+                          height: 184,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.themePreviewCardTitle,
+                                style: localizedHeadingStyle(
+                                  context,
+                                  const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.themePreviewCardSubtitle,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.themePreviewCardViewAll(
+                                        themePreviewEntries.length,
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: AccentTextTheme.of(context),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.open_in_full,
+                                    size: 17,
+                                    color: AccentTextTheme.of(context),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // カラーカスタマイズ：すべてカラーピッカー（HSV/RGB/HEX）で
+            // 自由に設定できる。変更は即座にアプリ全体（現在のプリセット）へ
+            // 反映される。
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: Text(
+                l10n.themeColorCustomizeSection,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            _ColorCustomizeTile(
+              label: l10n.themeColorAccent,
+              color: current.accentColor,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(
+                  accentColor: c,
+                  accentTextColor:
+                      current.accentTextColor != null &&
+                          _sameColor(
+                            current.effectiveAccentTextColor,
+                            current.accentColor,
+                          )
+                      ? c
+                      : current.accentTextColor,
+                  selectionColor:
+                      _sameColor(current.selectionColor, current.accentColor)
+                      ? c
+                      : null,
+                ),
+                current.accentColor,
+              ),
+            ),
+            _ColorCustomizeTile(
+              label: l10n.themeColorText,
+              color: current.textColor,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(
+                  textColor: c,
+                  menuTextColor:
+                      _sameColor(current.menuTextColor, current.textColor)
+                      ? c
+                      : null,
+                ),
+                current.textColor,
+              ),
+            ),
+            _ColorCustomizeTile(
+              key: const Key('themeButtonTextColorTile'),
+              label: l10n.themeColorButtonText,
+              color: current.buttonTextColor,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(
+                  buttonTextColor: c,
+                  selectionTextColor:
+                      _sameColor(
+                        current.selectionTextColor,
+                        current.buttonTextColor,
+                      )
+                      ? c
+                      : null,
+                ),
+                current.buttonTextColor,
+              ),
+            ),
+            _ColorCustomizeTile(
+              label: l10n.themeColorPanelBg,
+              color: current.panelBgColor,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(panelBgColor: c),
+                current.panelBgColor,
+              ),
+            ),
+            _ColorCustomizeTile(
+              label: l10n.themeColorMenuBg,
+              color: current.menuBgColor,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(menuBgColor: c),
+                current.menuBgColor,
+              ),
+            ),
+            _ColorCustomizeTile(
+              label: l10n.themeColorUpdateMark,
+              color: current.updateMarkColor,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(updateMarkColor: c),
+                current.updateMarkColor,
+              ),
+            ),
+            ExpansionTile(
+              key: const PageStorageKey('themeAdvancedColors'),
+              title: Text(l10n.themeAdvancedColors),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Text(
+                    l10n.themeAdvancedColorsHint,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+                _ColorCustomizeTile(
+                  key: const Key('themeAccentTextColorTile'),
+                  label: l10n.themeColorAccentText,
+                  color: current.effectiveAccentTextColor,
+                  onTap: () => _showColorPickerDialog(
+                    context,
+                    themeService,
+                    (p, c) => p.copyWith(accentTextColor: c),
+                    current.effectiveAccentTextColor,
+                  ),
+                ),
+                _ColorCustomizeTile(
+                  key: const Key('themeMenuTextColorTile'),
+                  label: l10n.themeColorMenuText,
+                  color: current.menuTextColor,
+                  onTap: () => _showColorPickerDialog(
+                    context,
+                    themeService,
+                    (p, c) => p.copyWith(menuTextColor: c),
+                    current.menuTextColor,
+                  ),
+                ),
+                _ColorCustomizeTile(
+                  label: l10n.themeColorSelection,
+                  color: current.selectionColor,
+                  onTap: () => _showColorPickerDialog(
+                    context,
+                    themeService,
+                    (p, c) => p.copyWith(selectionColor: c),
+                    current.selectionColor,
+                  ),
+                ),
+                _ColorCustomizeTile(
+                  key: const Key('themeSelectionTextColorTile'),
+                  label: l10n.themeColorSelectionText,
+                  color: current.selectionTextColor,
+                  onTap: () => _showColorPickerDialog(
+                    context,
+                    themeService,
+                    (p, c) => p.copyWith(selectionTextColor: c),
+                    current.selectionTextColor,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(),
+            // テーマ一覧（ドラッグで並び替え可能）
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: Text(
+                l10n.themePresetSection,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            ReorderableListView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              // ドラッグハンドルは行末の明示アイコンのみを使う。既定の
+              // ドラッグハンドル（buildDefaultDragHandles）を有効にしたままだと
+              // Flutterが自動でもう1つハンドルを追加してしまい、テーマ色の
+              // スウォッチからはみ出た黒いハンドルが二重に見えるバグになっていた。
+              buildDefaultDragHandles: false,
+              onReorderItem: (oldIndex, newIndex) => themeService.reorder(
+                oldIndex,
+                preRemovalIndex(oldIndex, newIndex),
+              ),
+              children: [
+                // 他の画面（設定トップ・セーブツリー等）と統一した、影付き
+                // カードとして浮かせるデザイン（作り込みの一環）。
+                //
+                // カードのタップは「そのテーマの配色を現在の色へ取り込む」
+                // だけで、テーマ自体の編集対象にはしない（取り込んだあとに
+                // カラーカスタマイズで色を変えても、見本にしたテーマは
+                // 書き換わらない）。そのためタップしてもチェックマークは
+                // 付かない。テーマ自体を編集したい場合は三点メニューの
+                // 「編集」から編集対象にする（そのときだけチェックが付き、
+                // 背景をprimaryContainerに敷いて区別する）。
+                for (final entry in presets.asMap().entries)
+                  Padding(
+                    key: ValueKey(entry.value.id),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    child: Material(
+                      color: current.id == entry.value.id
+                          ? Theme.of(context).colorScheme.primaryContainer
+                                .withValues(alpha: 0.4)
+                          : Theme.of(context).colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(14),
+                      elevation: 1,
+                      shadowColor: ThemeService.activeColorScheme.shadow
+                          .withValues(alpha: 0.15),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () {
+                          themeService.adoptPresetColors(entry.value.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                l10n.themeAdoptColorsSnackbar(
+                                  themePresetLabel(entry.value, locale),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final name = messageText(
+                                themePresetLabel(entry.value, locale),
+                                keepLineStarts: true,
+                                style: localizedHeadingStyle(
+                                  context,
+                                  const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              );
+                              final swatch = _PresetColorSwatch(
+                                preset: entry.value,
+                              );
+                              final actions = <Widget>[
+                                if (current.id == entry.value.id)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 4),
+                                    child: Icon(
+                                      Icons.check,
+                                      key: const Key('themePresetEditingCheck'),
+                                      color: AccentTextTheme.of(context),
+                                      size: 16,
+                                    ),
+                                  ),
+                                IconButton(
+                                  icon: Icon(
+                                    entry.value.isFavorite
+                                        ? Icons.star
+                                        : Icons.star_outline,
+                                    size: 16,
+                                    color: entry.value.isFavorite
+                                        ? ThemeService
+                                              .activeColorScheme
+                                              .tertiary
+                                        : null,
+                                  ),
+                                  tooltip: l10n.commonFavoriteToggle,
+                                  onPressed: () => themeService.toggleFavorite(
+                                    entry.value.id,
+                                  ),
+                                ),
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert, size: 16),
+                                  onSelected: (action) => _handleAction(
+                                    context,
+                                    action,
+                                    entry.value,
+                                    themeService,
+                                  ),
+                                  itemBuilder: (_) => [
+                                    PopupMenuItem(
+                                      value: 'edit',
+                                      child: Text(l10n.commonEdit),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'rename',
+                                      child: Text(l10n.commonRename),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'duplicate',
+                                      child: Text(l10n.themeDuplicateAction),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'exportCard',
+                                      child: Text(l10n.shareCardExportMenu),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'export',
+                                      // 書き出しと共有が終わるまで、同じ
+                                      // テーマをもう一度は書き出さない。
+                                      enabled: !ExportShareService.isRunning(
+                                        _exportKey(entry.value),
+                                      ),
+                                      child: Text(l10n.themeExportMenuItem),
+                                    ),
+                                    if (ThemeService.isBuiltInPreset(
+                                      entry.value.id,
+                                    ))
+                                      PopupMenuItem(
+                                        value: 'reset',
+                                        child: Text(
+                                          l10n.themeResetConfirmAction,
+                                        ),
+                                      )
+                                    else
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text(l10n.commonDelete),
+                                      ),
+                                  ],
+                                ),
+                                ReorderableDragStartListener(
+                                  index: entry.key,
+                                  child: const Icon(
+                                    Icons.drag_handle,
+                                    size: 18,
+                                  ),
+                                ),
+                              ];
+                              if (constraints.maxWidth <
+                                  370 *
+                                      MediaQuery.textScalerOf(
+                                        context,
+                                      ).scale(1)) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    name,
+                                    Row(
+                                      children: [
+                                        swatch,
+                                        const Spacer(),
+                                        ...actions,
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  swatch,
+                                  const SizedBox(width: 14),
+                                  Expanded(child: name),
+                                  ...actions,
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.add),
+                label: Text(l10n.themeSaveAsNewButton),
+                onPressed: () => _saveCurrentAsNew(context, themeService),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.file_upload),
+                label: Text(l10n.themeImportButton),
+                onPressed: () => _importTheme(context, themeService),
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 保存時と同じ精度で比較する。ピッカーを開いた時点の色を比較し、
+  // プレビュー中に一時的に同じ色を通過しても個別設定を保持する。
+  static bool _sameColor(Color a, Color b) => a.toARGB32() == b.toARGB32();
+
+  /// カラーピッカーダイアログを表示する（カラーカスタマイズ）。
+  /// ドラッグ中は `ThemeService.previewCurrent()` でアプリ全体へ即時反映し、
+  /// 閉じた時点でユーザーが選んだ色をそのまま保存する。
+  ///
+  /// 読みにくさを理由にユーザーの色選択を拒否しない。操作不能になる
+  /// ほど色が近いテーマからの復旧は、起動画面右上のテーマ非依存の
+  /// リセットボタンで行う（判定は `color_contrast.dart`）。
+  Future<void> _showColorPickerDialog(
+    BuildContext context,
+    ThemeService service,
+    AppThemePreset Function(AppThemePreset preset, Color color) update,
+    Color initialColor,
+  ) async {
+    var changed = false;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: typingDialogInsetPadding(
+          ctx,
+          usual: const EdgeInsets.all(16),
+        ),
+        child: ColorPickerPanel(
+          currentColor: initialColor,
+          onColorChanged: (color) {
+            changed = true;
+            service.previewCurrent(update(service.current, color));
+          },
+          onClose: () => Navigator.pop(ctx),
+        ),
+      ),
+    );
+    if (changed) service.commitCurrent();
+  }
+
+  Future<void> _handleAction(
+    BuildContext context,
+    String action,
+    AppThemePreset preset,
+    ThemeService service,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final name = themePresetLabel(preset, locale);
+    switch (action) {
+      // このテーマ自体を編集対象にする（一覧でチェックが付き、以後の
+      // カラーカスタマイズの変更はこのテーマへ上書き保存される）。
+      // カードのタップは配色の取り込みだけなので、編集はここからのみ。
+      case 'edit':
+        service.applyPreset(preset.id);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.themeEditPresetSnackbar(name))),
+        );
+      case 'rename':
+        await _showRenameDialog(context, preset, service);
+      case 'duplicate':
+        // ブラシ・作品の複製・引き継ぎで足す複製と同じ形の名前（同じ名前が
+        // あれば番号を付ける）。
+        final copy = preset.copyWith(
+          id: 'theme_${DateTime.now().millisecondsSinceEpoch}',
+          name: numberedCopyName(l10n, name, {
+            for (final p in service.presets) themePresetLabel(p, locale),
+          }),
+        );
+        service.savePreset(copy);
+      case 'delete':
+        // お気に入り登録中は削除できない。
+        if (preset.isFavorite) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+          );
+        } else if (await confirmDelete(context, itemName: name)) {
+          service.deletePreset(preset.id);
+        }
+      case 'reset':
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: messageText(l10n.themeResetConfirmTitle),
+            content: messageText(name),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.themeResetConfirmAction),
+              ),
+            ],
+          ),
+        );
+        if (confirmed == true) service.resetPresetColors(preset.id);
+      case 'export':
+        _exportTheme(context, preset);
+      case 'exportCard':
+        SharedAssetCardService.exportSettings(
+          context,
+          kind: 'theme',
+          name: name,
+          settings: preset.toJson(),
+        );
+    }
+  }
+
+  static String _exportKey(AppThemePreset preset) => 'theme:${preset.id}';
+
+  /// .niathemeへ書き出してから共有する。書き出しの失敗と、共有できない端末・
+  /// 共有の失敗は別のことなので、別の文で知らせる。
+  Future<void> _exportTheme(BuildContext context, AppThemePreset preset) =>
+      ExportShareService.runExclusive(_exportKey(preset), () async {
+        final File file;
+        try {
+          final dir = await getTemporaryDirectory();
+          final safeName = preset.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+          file = File('${dir.path}/$safeName.niatheme');
+          await file.writeAsString(jsonEncode(preset.toJson()));
+        } catch (e) {
+          if (!context.mounted) return;
+          final l10n = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                l10n.themeExportFailedSnackbar(fileFailureReason(l10n, e)),
+              ),
+            ),
+          );
+          return;
+        }
+        if (!context.mounted) return;
+        await shareExportedFileWithNotice(context, file);
+      });
+
+  Future<void> _importTheme(BuildContext context, ThemeService service) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['niatheme', 'png'],
+      );
+      final path = result?.files.firstOrNull?.path;
+      if (!context.mounted || path == null) return;
+
+      final content = await SharedAssetCardService.readSettingsFile(
+        path,
+        kind: 'theme',
+      );
+      final json = jsonDecode(content);
+      if (json is! Map<String, dynamic> ||
+          (!json.containsKey('accentColor') &&
+              !(json['id'] is String && json['name'] is String))) {
+        throw const FormatException('Not a theme');
+      }
+      final AppThemePreset preset;
+      try {
+        preset = AppThemePreset.fromJson(
+          json,
+        ).copyWith(id: 'theme_${DateTime.now().millisecondsSinceEpoch}');
+      } on TypeError catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+        if (context.mounted) {
+          _showImportMessage(context, l10n.themeImportMissingColors);
+        }
+        return;
+      }
+      if (!context.mounted) return;
+      service.savePreset(preset);
+      if (isThemeAtLockoutRisk(preset)) {
+        _showImportMessage(context, l10n.themeImportLowContrast);
+      } else {
+        service.applyPreset(preset.id);
+        _showImportMessage(context, l10n.themeImportSuccessSnackbar);
+      }
+    } on FormatException catch (error, stack) {
+      AppErrorReporter.record(FormatException(error.message), stack);
+      _showImportMessage(context, l10n.themeImportInvalidFile);
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      _showImportMessage(context, l10n.themeImportReadFailed);
+    }
+  }
+
+  void _showImportMessage(BuildContext context, String message) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: messageText(message)));
+    }
+  }
+
+  Future<void> _showRenameDialog(
+    BuildContext context,
+    AppThemePreset preset,
+    ThemeService service,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final name = themePresetLabel(preset, Localizations.localeOf(context));
+    return showDialog<void>(
+      context: context,
+      builder: (_) => NameEntryDialog(
+        title: l10n.commonRename,
+        confirmLabel: l10n.commonSave,
+        cancelLabel: l10n.commonCancel,
+        initialName: name,
+        onSubmit: (newName) async {
+          if (newName != name) {
+            service.renamePreset(preset.id, newName);
+          }
+        },
+      ),
+    );
+  }
+
+  void _saveCurrentAsNew(BuildContext context, ThemeService service) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog<void>(
+      context: context,
+      builder: (_) => NameEntryDialog(
+        title: l10n.themePresetNameDialogTitle,
+        confirmLabel: l10n.commonSave,
+        cancelLabel: l10n.commonCancel,
+        initialName: l10n.themeDefaultPresetName,
+        onSubmit: (name) async {
+          service.savePreset(
+            service.current.copyWith(
+              id: 'theme_${DateTime.now().millisecondsSinceEpoch}',
+              name: name,
+              isFavorite: false,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// カラーカスタマイズ項目1件：色見本＋ラベル＋タップでカラー
+/// ピッカーを開く。
+class _ColorCustomizeTile extends StatelessWidget {
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ColorCustomizeTile({
+    super.key,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // 他の画面（設定トップ・セーブツリー・テーマプリセット一覧）と統一した
+    // 影付きカードデザイン（作り込みの一環）。
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Material(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14),
+        elevation: 1,
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+          alpha: 0.15,
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PresetColorSwatch extends StatelessWidget {
+  final AppThemePreset preset;
+  const _PresetColorSwatch({required this.preset});
+
+  @override
+  Widget build(BuildContext context) {
+    // Compact swatch samples all four actual foreground roles; colors come
+    // solely from the preset. It is not a substitute for the full preview.
+    return Container(
+      width: 72,
+      height: 48,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(9),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    color: preset.panelBgColor,
+                    child: Text(
+                      'Aa',
+                      style: TextStyle(
+                        color: preset.textColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    color: preset.accentColor,
+                    child: Icon(
+                      Icons.check,
+                      color: preset.buttonTextColor,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    color: preset.menuBgColor,
+                    child: Icon(
+                      Icons.menu,
+                      color: preset.menuTextColor,
+                      size: 16,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    color: preset.selectionColor,
+                    child: Text(
+                      'Aa',
+                      style: TextStyle(
+                        color: preset.selectionTextColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

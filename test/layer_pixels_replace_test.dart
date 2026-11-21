@@ -1,0 +1,592 @@
+import 'helpers/project_storage.dart';
+
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/engine/tile_manager.dart';
+import 'package:niarim/engine/undo_manager.dart' as app_undo;
+import 'package:niarim/models/layer.dart';
+import 'package:niarim/screens/canvas/canvas_screen.dart' show DrawingTool;
+import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/services/autosave_service.dart';
+import 'package:niarim/services/project_service.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+const _w = 120, _h = 80;
+
+/// A filter applied in place (replacing a layer's pixels from outside the
+/// canvas) is one Undo step, and the canvas shows it at once — and shows the
+/// original again after Undo.
+void main() {
+  useTemporaryProjectStorage();
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  Uint8List solid(int r, int g, int b) {
+    final rgba = Uint8List(_w * _h * 4);
+    for (var i = 0; i < rgba.length; i += 4) {
+      rgba[i] = r;
+      rgba[i + 1] = g;
+      rgba[i + 2] = b;
+      rgba[i + 3] = 255;
+    }
+    return rgba;
+  }
+
+  Uint8List layerBytes(TileManager tm, String key) {
+    final out = Uint8List(_w * _h * 4);
+    final tile = tm.getTile(key, 0, 0);
+    if (tile == null) return out;
+    for (var y = 0; y < _h; y++) {
+      out.setRange(
+        y * _w * 4,
+        (y + 1) * _w * 4,
+        tile,
+        y * TileManager.tileSize * 4,
+      );
+    }
+    return out;
+  }
+
+  Future<
+    ({
+      ProjectService projects,
+      app_undo.UndoManager undo,
+      String projectId,
+      String sceneId,
+      Layer layer,
+      String key,
+      TileManager tm,
+    })
+  >
+  setUpProject(WidgetTester? tester) async {
+    final projects = ProjectService();
+    final undo = app_undo.UndoManager();
+    projects.setUndoManager(undo);
+    Future<T> run<T>(Future<T> Function() f) async =>
+        tester == null ? await f() : (await tester.runAsync(f)) as T;
+    final p = await run(
+      () => projects.createProject(
+        name: 'replace',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0x00000000,
+        exportWidth: _w,
+        exportHeight: _h,
+      ),
+    );
+    final scene = projects.scenesOf(p.id).first;
+    final layer = projects.layersOf(p.id, scene.id, 0).first;
+    final key = projects.tileKeyFor(p.id, scene.id, 0, layer.id);
+    final tm = projects.tileManagerOf(p.id);
+    tm.replaceLayerPixels(key, solid(200, 40, 40));
+    return (
+      projects: projects,
+      undo: undo,
+      projectId: p.id,
+      sceneId: scene.id,
+      layer: layer,
+      key: key,
+      tm: tm,
+    );
+  }
+
+  test('canvas crop restores dimensions and archived pixels on undo', () async {
+    final s = await setUpProject(null);
+    final original = layerBytes(s.tm, s.key);
+    s.projects.replaceLayerPixels(
+      projectId: s.projectId,
+      sceneId: s.sceneId,
+      frameIndex: 0,
+      layerId: s.layer.id,
+      pixels: solid(30, 60, 220),
+    );
+    final beforeCrop = layerBytes(s.tm, s.key);
+    await s.projects.saveProject(s.projectId);
+
+    await s.projects.resizeCanvas(
+      s.projectId,
+      newWidth: 64,
+      newHeight: 64,
+      cropX: 0,
+      cropY: 0,
+    );
+    await s.projects.saveProject(s.projectId);
+    expect(s.projects.tileManagerOf(s.projectId).canvasWidth, 64);
+    expect(s.projects.projects.single.exportWidth, 64);
+
+    s.undo.undo();
+    await s.projects.saveProject(s.projectId);
+    expect(s.projects.tileManagerOf(s.projectId), same(s.tm));
+    expect(s.projects.projects.single.exportWidth, _w);
+    expect(layerBytes(s.tm, s.key), beforeCrop);
+    final reopened = ProjectService();
+    await reopened.init();
+    expect(reopened.projects.single.exportWidth, _w);
+    expect(layerBytes(reopened.tileManagerOf(s.projectId), s.key), beforeCrop);
+
+    s.undo.undo();
+    expect(layerBytes(s.tm, s.key), original);
+    s.undo.redo();
+    expect(layerBytes(s.tm, s.key), beforeCrop);
+    s.undo.redo();
+    expect(s.projects.tileManagerOf(s.projectId).canvasWidth, 64);
+    await s.projects.saveProject(s.projectId);
+    reopened.dispose();
+  });
+
+  for (final clockMovedBack in [false, true]) {
+    test('finds the last written autosave (clock moved back: '
+        '$clockMovedBack)', () async {
+      final s = await setUpProject(null);
+      addTearDown(s.projects.dispose);
+      addTearDown(s.undo.dispose);
+      final project = s.projects.projects.single;
+      final savedAt = DateTime.utc(2026, 11, 17);
+      final canonicalTime = savedAt.add(
+        Duration(hours: clockMovedBack ? 1 : -1),
+      );
+      await NiaproSerializer.save(
+        project: project,
+        scenes: s.projects.scenesOf(s.projectId),
+        tileManager: s.tm,
+        updatedAt: canonicalTime,
+      );
+      final original = layerBytes(s.tm, s.key);
+      final backup = AutosaveService();
+      addTearDown(backup.dispose);
+      s.tm.replaceLayerPixels(s.key, solid(220, 60, 30));
+      await backup.save(s.projectId, s.projects);
+      s.tm.replaceLayerPixels(s.key, solid(30, 60, 220));
+      await backup.save(s.projectId, s.projects);
+      final first = backup.slots.first;
+      final latest = backup.slots.last;
+
+      // The earlier slot can still appear newer after a device clock change.
+      SharedPreferences.setMockInitialValues({
+        'autosave_count': 2,
+        'autosave_0_project': s.projectId,
+        'autosave_0_savedAt': savedAt
+            .add(const Duration(days: 2))
+            .millisecondsSinceEpoch,
+        'autosave_0_slot': first.slotIndex,
+        'autosave_1_project': s.projectId,
+        'autosave_1_savedAt': savedAt.millisecondsSinceEpoch,
+        'autosave_1_slot': latest.slotIndex,
+      });
+      final recovery = AutosaveService();
+      addTearDown(recovery.dispose);
+      await recovery.init();
+      final reopened = ProjectService(recovery);
+      addTearDown(reopened.dispose);
+      await reopened.init();
+      final current = reopened.tileManagerOf(s.projectId);
+      expect(layerBytes(current, s.key), original);
+      final saved = await recovery.latestReadable(s.projectId);
+      expect(saved, isNotNull);
+      reopened.restoreFromAutosave(s.projectId, saved!.data);
+      expect(layerBytes(current, s.key), solid(30, 60, 220));
+    });
+  }
+
+  for (final missing in [false, true]) {
+    test(
+      'a missing or damaged work file recovers from the newest readable '
+      'autosave and is readable at the next startup (missing: $missing)',
+      () async {
+        final s = await setUpProject(null);
+        addTearDown(s.projects.dispose);
+        addTearDown(s.undo.dispose);
+        final autosaves = AutosaveService();
+        addTearDown(autosaves.dispose);
+        final recoveredPixels = solid(22, 70, 190);
+        s.tm.replaceLayerPixels(s.key, recoveredPixels);
+        await autosaves.save(s.projectId, s.projects);
+        s.tm.replaceLayerPixels(s.key, solid(180, 25, 20));
+        await autosaves.save(s.projectId, s.projects);
+
+        final base = await NiaproSerializer.projectsBasePath();
+        final folder = '$base/${s.projectId}';
+        final workFile = File('$folder/${s.projectId}.niapro');
+        final newestSlot = autosaves.slots.last.slotIndex;
+        File(
+          '$folder/autosave/slot_$newestSlot.niapro',
+        ).writeAsStringSync('bad');
+        if (missing) {
+          workFile.deleteSync();
+        } else {
+          workFile.writeAsStringSync('bad');
+        }
+        final restored = ProjectService(autosaves);
+        addTearDown(restored.dispose);
+        await restored.init();
+        expect(restored.projects.single.id, s.projectId);
+        expect(restored.projectsLoadFailed, isFalse);
+        expect(
+          layerBytes(restored.tileManagerOf(s.projectId), s.key),
+          recoveredPixels,
+        );
+        expect(restored.takeAutosaveRecoveryNotice(s.projectId), isTrue);
+        expect(restored.takeAutosaveRecoveryNotice(s.projectId), isFalse);
+
+        final reopened = ProjectService();
+        addTearDown(reopened.dispose);
+        await reopened.init();
+        expect(
+          layerBytes(reopened.tileManagerOf(s.projectId), s.key),
+          recoveredPixels,
+        );
+      },
+    );
+  }
+
+  test(
+    'leaving the editor checkpoints changes before the timer runs',
+    () async {
+      final s = await setUpProject(null);
+      addTearDown(s.projects.dispose);
+      addTearDown(s.undo.dispose);
+      final autosaves = AutosaveService();
+      addTearDown(autosaves.dispose);
+      final projects = ProjectService(autosaves);
+      addTearDown(projects.dispose);
+      await projects.init();
+
+      final lease = projects.beginWorkTracking(s.projectId);
+      final tiles = projects.tileManagerOf(s.projectId);
+      final edited = solid(60, 130, 70);
+      tiles.replaceLayerPixels(s.key, edited);
+      projects.endWorkTracking(lease: lease);
+      final backup = await autosaves.latestReadable(s.projectId);
+      expect(backup!.data.tileData[s.key]!.values.single.take(4), [
+        60,
+        130,
+        70,
+        255,
+      ]);
+      await projects.saveProject(s.projectId);
+    },
+  );
+
+  test(
+    'keeps an unrecoverable work file intact and reports the read failure',
+    () async {
+      final s = await setUpProject(null);
+      addTearDown(s.projects.dispose);
+      addTearDown(s.undo.dispose);
+      final autosaves = AutosaveService();
+      addTearDown(autosaves.dispose);
+      final base = await NiaproSerializer.projectsBasePath();
+      final archive = File('$base/${s.projectId}/${s.projectId}.niapro');
+      archive.writeAsStringSync('damaged project');
+
+      final reopened = ProjectService(autosaves);
+      addTearDown(reopened.dispose);
+      await reopened.init();
+      expect(reopened.projects, isEmpty);
+      expect(reopened.projectsLoadFailed, isTrue);
+      expect(archive.readAsStringSync(), 'damaged project');
+    },
+  );
+
+  test('restoring a save with a different canvas size is reversible', () async {
+    final s = await setUpProject(null);
+    addTearDown(s.projects.dispose);
+    addTearDown(s.undo.dispose);
+    final original = layerBytes(s.tm, s.key);
+    final project = s.projects.projects.single;
+    final backup = TileManager(canvasWidth: 60, canvasHeight: _h);
+    addTearDown(backup.dispose);
+    final tile = backup.getOrCreateTile(s.key, 0, 0);
+    tile.setRange(0, 4, [30, 60, 220, 255]);
+
+    s.projects.restoreFromAutosave(
+      s.projectId,
+      NiaproData(
+        project: project.copyWith(exportWidth: 60),
+        scenes: s.projects.scenesOf(s.projectId),
+        tileData: backup.exportAll(),
+      ),
+    );
+    final restored = s.projects.tileManagerOf(s.projectId);
+    expect(restored.canvasWidth, 60);
+    expect(restored.getTile(s.key, 0, 0)?.take(4), [30, 60, 220, 255]);
+    s.undo.undo(projectId: s.projectId);
+    expect(s.projects.tileManagerOf(s.projectId), same(s.tm));
+    expect(s.projects.projects.single.exportWidth, _w);
+    expect(layerBytes(s.tm, s.key), original);
+    s.undo.redo(projectId: s.projectId);
+    expect(s.projects.tileManagerOf(s.projectId), same(restored));
+    expect(s.projects.projects.single.exportWidth, 60);
+    await s.projects.saveProject(s.projectId);
+  });
+
+  test('replacing a layer\'s pixels is one Undo step, with Redo', () async {
+    final s = await setUpProject(null);
+    final before = layerBytes(s.tm, s.key);
+    s.projects.replaceLayerPixels(
+      projectId: s.projectId,
+      sceneId: s.sceneId,
+      frameIndex: 0,
+      layerId: s.layer.id,
+      pixels: solid(30, 60, 220),
+    );
+    final after = layerBytes(s.tm, s.key);
+    expect(after, isNot(orderedEquals(before)));
+    expect(s.undo.undoCount, 1);
+
+    s.undo.undo();
+    expect(layerBytes(s.tm, s.key), orderedEquals(before));
+    s.undo.redo();
+    expect(layerBytes(s.tm, s.key), orderedEquals(after));
+  });
+
+  test('Undo also restores the layer settings changed with it', () async {
+    final s = await setUpProject(null);
+    s.projects.replaceLayerPixels(
+      projectId: s.projectId,
+      sceneId: s.sceneId,
+      frameIndex: 0,
+      layerId: s.layer.id,
+      pixels: solid(30, 60, 220),
+      updatedLayer: s.layer.copyWith(blendMode: LayerBlendMode.linearDodge),
+    );
+    LayerBlendMode mode() =>
+        s.projects.layersOf(s.projectId, s.sceneId, 0).single.blendMode;
+    expect(mode(), LayerBlendMode.linearDodge);
+    s.undo.undo();
+    expect(mode(), s.layer.blendMode);
+    s.undo.redo();
+    expect(mode(), LayerBlendMode.linearDodge);
+  });
+
+  test('a recording already open (a stroke) is left alone', () async {
+    final s = await setUpProject(null);
+    s.tm.beginUndoRecording(s.key);
+    s.projects.replaceLayerPixels(
+      projectId: s.projectId,
+      sceneId: s.sceneId,
+      frameIndex: 0,
+      layerId: s.layer.id,
+      pixels: solid(30, 60, 220),
+    );
+    expect(s.tm.recordingTouchedTiles, isNotNull, reason: 'still recording');
+    expect(s.undo.undoCount, 0);
+    s.tm.endUndoRecording();
+  });
+
+  test('inside an automation run, an existing layer changed in place comes '
+      'back with the run\'s single Undo', () async {
+    final s = await setUpProject(null);
+    final before = layerBytes(s.tm, s.key);
+    await s.projects.runWithGroupedUndo(
+      description: 'automation',
+      operation: () async => s.projects.replaceLayerPixels(
+        projectId: s.projectId,
+        sceneId: s.sceneId,
+        frameIndex: 0,
+        layerId: s.layer.id,
+        pixels: solid(30, 60, 220),
+      ),
+    );
+    expect(s.undo.undoCount, 1);
+    s.undo.undo();
+    expect(layerBytes(s.tm, s.key), orderedEquals(before));
+  });
+
+  test('a layer the run creates and then filters comes back on Redo with '
+      'its final pixels', () async {
+    final s = await setUpProject(null);
+    late String createdKey;
+    await s.projects.runWithGroupedUndo(
+      description: 'automation',
+      operation: () async {
+        final created = s.projects.addLayer(
+          projectId: s.projectId,
+          sceneId: s.sceneId,
+          frameIndex: 0,
+          type: LayerType.normal,
+          name: 'output',
+        );
+        createdKey = s.projects.tileKeyFor(
+          s.projectId,
+          s.sceneId,
+          0,
+          created.id,
+        );
+        s.tm.replaceLayerPixels(createdKey, solid(10, 200, 10));
+        s.projects.replaceLayerPixels(
+          projectId: s.projectId,
+          sceneId: s.sceneId,
+          frameIndex: 0,
+          layerId: created.id,
+          pixels: solid(250, 250, 20),
+        );
+      },
+    );
+    final finalPixels = layerBytes(s.tm, createdKey);
+    s.undo.undo();
+    expect(s.projects.layersOf(s.projectId, s.sceneId, 0), hasLength(1));
+    s.undo.redo();
+    expect(s.projects.layersOf(s.projectId, s.sceneId, 0), hasLength(2));
+    expect(layerBytes(s.tm, createdKey), orderedEquals(finalPixels));
+  });
+
+  testWidgets('the canvas shows the new pixels at once, and the old ones '
+      'after Undo', (tester) async {
+    tester.view.physicalSize = const Size(_w * 3, _h * 3);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final s = await setUpProject(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    final boundary = GlobalKey();
+    final project = s.projects.projects.firstWhere((p) => p.id == s.projectId);
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ...providers!,
+          ChangeNotifierProvider<ProjectService>.value(value: s.projects),
+          ChangeNotifierProvider<app_undo.UndoManager>.value(value: s.undo),
+        ],
+        child: MaterialApp(
+          home: RepaintBoundary(
+            key: boundary,
+            child: CanvasArea(
+              project: project,
+              currentLayerId: s.layer.id,
+              currentTool: DrawingTool.pen,
+              currentFrame: 0,
+              sceneId: s.sceneId,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Future<void> settle() async {
+      for (var i = 0; i < 10; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+    }
+
+    Future<List<int>> centre() async {
+      final pixels = await tester.runAsync(() async {
+        final render =
+            boundary.currentContext!.findRenderObject()!
+                as RenderRepaintBoundary;
+        final image = await render.toImage();
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        final width = image.width;
+        final height = image.height;
+        image.dispose();
+        final i = ((height ~/ 2) * width + width ~/ 2) * 4;
+        return data!.buffer.asUint8List().sublist(i, i + 3);
+      });
+      return pixels!;
+    }
+
+    await settle();
+    expect(await centre(), [200, 40, 40], reason: 'the original layer');
+
+    s.projects.replaceLayerPixels(
+      projectId: s.projectId,
+      sceneId: s.sceneId,
+      frameIndex: 0,
+      layerId: s.layer.id,
+      pixels: solid(30, 60, 220),
+    );
+    await settle();
+    expect(await centre(), [30, 60, 220], reason: 'the filter result');
+
+    s.undo.undo();
+    await settle();
+    expect(await centre(), [200, 40, 40], reason: 'back after Undo');
+  });
+
+  testWidgets('the canvas shows the picture an autosave brings back', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(_w * 3, _h * 3);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final s = await setUpProject(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    final boundary = GlobalKey();
+    final project = s.projects.projects.firstWhere((p) => p.id == s.projectId);
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ...providers!,
+          ChangeNotifierProvider<ProjectService>.value(value: s.projects),
+          ChangeNotifierProvider<app_undo.UndoManager>.value(value: s.undo),
+        ],
+        child: MaterialApp(
+          home: RepaintBoundary(
+            key: boundary,
+            child: CanvasArea(
+              project: project,
+              currentLayerId: s.layer.id,
+              currentTool: DrawingTool.pen,
+              currentFrame: 0,
+              sceneId: s.sceneId,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Future<void> settle() async {
+      for (var i = 0; i < 10; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+    }
+
+    Future<List<int>> centre() async {
+      final pixels = await tester.runAsync(() async {
+        final render =
+            boundary.currentContext!.findRenderObject()!
+                as RenderRepaintBoundary;
+        final image = await render.toImage();
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        final width = image.width;
+        final height = image.height;
+        image.dispose();
+        final i = ((height ~/ 2) * width + width ~/ 2) * 4;
+        return data!.buffer.asUint8List().sublist(i, i + 3);
+      });
+      return pixels!;
+    }
+
+    await settle();
+    expect(await centre(), [200, 40, 40], reason: 'the original layer');
+
+    // 自動保存の中身：同じ作品で、レイヤーの絵だけが違う。
+    final saved = TileManager(canvasWidth: _w, canvasHeight: _h)
+      ..replaceLayerPixels(s.key, solid(30, 60, 220));
+    s.projects.restoreFromAutosave(
+      s.projectId,
+      NiaproData(
+        project: project,
+        scenes: s.projects.scenesOf(s.projectId),
+        tileData: saved.exportAll(),
+      ),
+    );
+    await settle();
+    expect(await centre(), [30, 60, 220], reason: 'the restored picture');
+  });
+}

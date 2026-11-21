@@ -1,0 +1,54 @@
+name: Community Metadata and Comments Verification
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/community-metadata-comments-verify.yml'
+      - 'lib/l10n/community_work_metadata_labels.dart'
+      - 'lib/l10n/community_youtube_comment_labels.dart'
+      - 'lib/models/community_work.dart'
+      - 'lib/services/api/community_api.dart'
+      - 'lib/services/community_service.dart'
+      - 'lib/screens/community/community_post_screen.dart'
+      - 'lib/screens/community/widgets/community_post_copy_button.dart'
+      - 'test/community_post_copy_button_test.dart'
+      - 'test/community_post_recovery_contract_test.dart'
+      - 'lib/screens/community/community_work_settings_screen.dart'
+      - 'lib/screens/community/community_work_detail_screen.dart'
+      - 'lib/screens/community/widgets/community_work_description.dart'
+      - 'lib/screens/community/widgets/community_youtube_comments_section.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: false
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter gen-l10n
+      - name: Analyze comment-viewing and work metadata integration
+        run: |
+          flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
+            lib/l10n/community_work_metadata_labels.dart \
+            lib/l10n/community_youtube_comment_labels.dart \
+            lib/models/community_work.dart \
+            lib/services/api/community_api.dart \
+            lib/services/community_service.dart \
+            lib/screens/community/community_post_screen.dart \
+            lib/screens/community/widgets/community_post_copy_button.dart \
+            lib/screens/community/community_work_settings_screen.dart \
+            lib/screens/community/community_work_detail_screen.dart \
+            lib/screens/community/widgets/community_work_description.dart \
+            lib/screens/community/widgets/community_youtube_comments_section.dart
+      - name: Test copy confirmation and post recovery
+        run: flutter test --no-pub test/community_post_copy_button_test.dart test/community_post_recovery_contract_test.dart

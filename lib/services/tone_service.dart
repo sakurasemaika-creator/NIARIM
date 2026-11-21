@@ -1,0 +1,1133 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:archive/archive_io.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../engine/procedural_texture.dart';
+import '../models/asset_tags.dart';
+import '../models/tone.dart';
+import '../utils/built_in_preset_order.dart';
+import '../utils/creative_image_source.dart';
+import '../utils/duplicate_name.dart';
+import '../utils/saved_list_reader.dart';
+import '../utils/tolerant_preferences.dart';
+import '../utils/transfer_merge.dart';
+
+class ToneFolder {
+  final String id;
+  final String name;
+  final bool isFavorite;
+  ToneFolder({required this.id, required this.name, this.isFavorite = false});
+
+  ToneFolder copyWith({String? name, bool? isFavorite}) => ToneFolder(
+    id: id,
+    name: name ?? this.name,
+    isFavorite: isFavorite ?? this.isFavorite,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'isFavorite': isFavorite,
+  };
+
+  factory ToneFolder.fromJson(Map<String, dynamic> j) => ToneFolder(
+    id: j['id'] as String,
+    name: j['name'] as String,
+    isFavorite: j['isFavorite'] as bool? ?? false,
+  );
+}
+
+/// トーン管理サービス。SharedPreferencesへ永続化する
+/// （端末単位。プロジェクトファイルには含めない）。従来はインメモリのみで、
+/// お気に入り・追加・削除・編集のすべてがアプリ再起動のたびに失われていた
+/// （Task#83で修正）。自作トーン・フォルダ管理・読み込み/書き出しは
+/// Task#84で追加した。テクスチャ画像はアプリ全体の`Tones/`フォルダへ
+/// コピーして保存する。
+class ToneService extends ChangeNotifier {
+  static const _prefsKey = 'tones';
+  static const _foldersKey = 'tone_folders';
+
+  /// このサービスが持つ保存のキー。引き継ぎ（.niatra）の「端末保存データ」
+  /// では扱わない（「素材」の項目が[mergeTransferred]で一覧と突き合わせて
+  /// 取り込む。理由は[BrushService.savedPreferenceKeys]と同じ）。
+  static const Set<String> savedPreferenceKeys = {_prefsKey, _foldersKey};
+
+  /// フォルダの保存の中の、この版では読めなかった項目。一覧には出さないが、
+  /// フォルダを保存し直すときに末尾へ残す（自作のフォルダを消さない）。
+  final List<String> _unreadableFolderEntries = [];
+
+  final List<Tone> _tones = [];
+  final List<ToneFolder> _folders = [];
+  Tone? _currentTone;
+  // バケツ塗りと投げ縄塗りはそれぞれ独立して最後に使用したトーンを保持
+  Tone? _lastBucketTone;
+  Tone? _lastLassoTone;
+  // 投げ縄塗り：ベタ塗り／トーンの選択状態
+  bool _lassoUseTone = false;
+  // バケツ塗り：ベタ塗り／トーンの選択状態
+  bool _bucketUseTone = false;
+
+  List<Tone> get tones => List.unmodifiable(_tones);
+  List<ToneFolder> get folders => List.unmodifiable(_folders);
+  Tone? get currentTone => _currentTone;
+  Tone? get lastBucketTone => _lastBucketTone;
+  Tone? get lastLassoTone => _lastLassoTone;
+  bool get lassoUseTone => _lassoUseTone;
+  bool get bucketUseTone => _bucketUseTone;
+
+  void setLassoUseTone(bool value) {
+    _lassoUseTone = value;
+    notifyListeners();
+  }
+
+  void setBucketUseTone(bool value) {
+    _bucketUseTone = value;
+    notifyListeners();
+  }
+
+  static const _presetOrder = [
+    // Halftone dots by coverage.
+    'Tone0001',
+    'Tone0026',
+    'Tone0002',
+    'Tone0027',
+    'Tone0003',
+    'Tone0028',
+    'Tone0004',
+    'Tone0029',
+    'Tone0030',
+    // Lines, hatches and grids.
+    'Tone0005',
+    'Tone0006',
+    'Tone0031',
+    'Tone0032',
+    'Tone0033',
+    'Tone0034',
+    'Tone0035',
+    'Tone0036',
+    'Tone0037',
+    'Tone0038',
+    'Tone0039',
+    'Tone0046',
+    'Tone0047',
+    // Grain and background patterns.
+    'Tone0040',
+    'Tone0041',
+    'Tone0042',
+    'Tone0043',
+    'Tone0044',
+    'Tone0045',
+    // Fabric patterns.
+    'Tone0010',
+    'Tone0011',
+    'Tone0012',
+    'Tone0013',
+    'Tone0014',
+    'Tone0015',
+    // Pixel patterns and pixel grain.
+    'Tone0007',
+    'Tone0008',
+    'Tone0065',
+    'Tone0009',
+    'Tone0048',
+    'Tone0049',
+    'Tone0050',
+    'Tone0054',
+    'Tone0051',
+    'Tone0052',
+    'Tone0053',
+    // Dither by matrix size and coverage.
+    'Tone0023',
+    'Tone0024',
+    'Tone0025',
+    'Tone0016',
+    'Tone0017',
+    'Tone0018',
+    'Tone0019',
+    'Tone0020',
+    'Tone0021',
+    'Tone0022',
+    'Tone0055',
+    'Tone0056',
+    'Tone0057',
+    'Tone0058',
+    'Tone0059',
+    'Tone0060',
+    'Tone0061',
+    'Tone0062',
+  ];
+  static const _groupedPresetsKey = 'tone_grouped_presets_v1';
+
+  static List<Tone> _defaultTones() {
+    final definitions = {for (final tone in _toneDefinitions) tone.id: tone};
+    return [
+      for (final id in _presetOrder)
+        definitions[id]!.copyWith(
+          texturePath: 'assets/tones/$id.png',
+          pixelMode: definitions[id]!.name.startsWith('ピクセル'),
+        ),
+    ];
+  }
+
+  static final _toneDefinitions = <Tone>[
+    const Tone(
+      id: 'Tone0001',
+      name: '網点 10%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0002',
+      name: '網点 30%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0003',
+      name: '網点 50%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0004',
+      name: '網点 70%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0005',
+      name: 'ライン 細',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0006',
+      name: 'ライン 太',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
+    // ピクセルモード用トーン（1ピクセルごとに市松模様／格子柄／散らし
+    // 配置になっているトーン）。procedural_texture.dartの
+    // generateBuiltInToneTextureが名前に「市松」「格子」「散らし」を
+    // 含むかで判定する。「散らし」は格子（縦横の線がつながって網目状）
+    // とは逆に、1ピクセルずつ上下左右を1px空けて独立させたもの。
+    // 「ドット」という表記は丸い水玉模様と誤認されるため使わず、
+    // 四角い1ピクセル単位のパターンには「ピクセル」を使う
+    // （brush.dartのpixelMode改称と同じ理由・同じ命名規則）。
+    const Tone(
+      id: 'Tone0007',
+      name: 'ピクセル市松（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+    const Tone(
+      id: 'Tone0008',
+      name: 'ピクセル格子（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+    const Tone(
+      id: 'Tone0009',
+      name: 'ピクセル散らし（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+    // ストッキング・タイツ：デニール数が低いほど生地が薄く目が細かい
+    // ため、パターンの格子間隔を詰めて再現する（procedural_texture.dartの
+    // generateBuiltInToneTextureが名前の「デニール」数値を読み取って
+    // 密度を決める）。デニール数が最も低いものは格子間隔を最小にし、
+    // 意図的に細かすぎてモアレが出るくらいの密度にしている。
+    const Tone(
+      id: 'Tone0010',
+      name: 'ストッキング 10デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
+    const Tone(
+      id: 'Tone0011',
+      name: 'ストッキング 20デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
+    const Tone(
+      id: 'Tone0012',
+      name: 'ストッキング 30デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
+    const Tone(
+      id: 'Tone0013',
+      name: 'タイツ 40デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
+    const Tone(
+      id: 'Tone0014',
+      name: 'タイツ 60デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
+    const Tone(
+      id: 'Tone0015',
+      name: 'タイツ 80デニール',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.mesh],
+    ),
+    // ディザリングプリセット：Bayerオーダードディザ行列による、ドット絵・
+    // レトロゲーム風の規則的な階調表現（procedural_texture.dartの
+    // generateBuiltInToneTextureが名前の「ピクセルディザ」と「%」数値・
+    // 「(粗)」の有無で判定する）。網点（円が段々大きくなる連続的な
+    // 階調表現）とは異なり、行列内の固定パターンで塗るか塗らないかを
+    // 決めるため、ピクセルモードでの塗り分けに向く。4×4行列（16段階の
+    // うち代表的な7段階）と、より粗く単位が大きい2×2行列（4段階の
+    // うち代表的な3段階）の2系統を用意する。
+    const Tone(
+      id: 'Tone0016',
+      name: 'ピクセルディザ（標準・4×4・12%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0017',
+      name: 'ピクセルディザ（標準・4×4・25%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0018',
+      name: 'ピクセルディザ（標準・4×4・37%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0019',
+      name: 'ピクセルディザ（標準・4×4・50%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0020',
+      name: 'ピクセルディザ（標準・4×4・62%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0021',
+      name: 'ピクセルディザ（標準・4×4・75%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0022',
+      name: 'ピクセルディザ（標準・4×4・87%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0023',
+      name: 'ピクセルディザ（粗目・2×2・25%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0024',
+      name: 'ピクセルディザ（粗目・2×2・50%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0025',
+      name: 'ピクセルディザ（粗目・2×2・75%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    // ── ここから下は「よくあるイラスト制作ソフトなら入っている定番」を
+    // 一般的な幾何・数式から起こしたもの。既製品のパターン画像は使わず、
+    // すべてprocedural_texture.dartが計算で生成する。
+    //
+    // 網点の中間段階。既存は10/30/50/70%の4段階しか無く、影の濃さを
+    // 詰めたいときに刻みが粗すぎた。
+    const Tone(
+      id: 'Tone0026',
+      name: '網点 20%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0027',
+      name: '網点 40%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0028',
+      name: '網点 60%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0029',
+      name: '網点 80%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0030',
+      name: '網点 90%',
+      tags: [AssetTagKeys.halftone, AssetTagKeys.shadow],
+    ),
+    // 線トーンの向き違い。既存は横線の細/太だけだった。
+    const Tone(
+      id: 'Tone0031',
+      name: 'ライン 縦細',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0032',
+      name: 'ライン 縦太',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0033',
+      name: 'ライン 斜め細',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
+    const Tone(
+      id: 'Tone0034',
+      name: 'ライン 斜め太',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow],
+    ),
+    // クロスハッチ：線を交差させる陰影表現。ペン画・銅版画風の質感に。
+    const Tone(
+      id: 'Tone0035',
+      name: 'クロスハッチ 細',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0036',
+      name: 'クロスハッチ 中',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0037',
+      name: 'クロスハッチ 太',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0038',
+      name: 'クロスハッチ 斜め細',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0039',
+      name: 'クロスハッチ 斜め太',
+      tags: [AssetTagKeys.line, AssetTagKeys.shadow, AssetTagKeys.analog],
+    ),
+    // 砂目：アナログのスクリーントーンでは定番の、ざらついた不規則な粒。
+    // 粒の大きさ違いで3種類。
+    const Tone(
+      id: 'Tone0040',
+      name: '砂目 細',
+      tags: [AssetTagKeys.texture, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0041',
+      name: '砂目 中',
+      tags: [AssetTagKeys.texture, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0042',
+      name: '砂目 粗',
+      tags: [AssetTagKeys.texture, AssetTagKeys.analog],
+    ),
+    // 背景・小物向けの幾何パターン。
+    const Tone(
+      id: 'Tone0043',
+      name: '同心円',
+      tags: [AssetTagKeys.background, AssetTagKeys.pattern],
+    ),
+    const Tone(
+      id: 'Tone0044',
+      name: '波線',
+      tags: [AssetTagKeys.background, AssetTagKeys.pattern],
+    ),
+    const Tone(
+      id: 'Tone0045',
+      name: 'レンガ',
+      tags: [AssetTagKeys.background, AssetTagKeys.pattern],
+    ),
+    const Tone(
+      id: 'Tone0046',
+      name: '方眼 細',
+      tags: [AssetTagKeys.background, AssetTagKeys.pattern],
+    ),
+    const Tone(
+      id: 'Tone0047',
+      name: '方眼 太',
+      tags: [AssetTagKeys.background, AssetTagKeys.pattern],
+    ),
+    // ── ピクセルモード用の追加分 ──
+    // 1px単位の縞。市松・格子・散らしと違い、向きを選べる。
+    const Tone(
+      id: 'Tone0048',
+      name: 'ピクセルボーダー（横1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+    const Tone(
+      id: 'Tone0049',
+      name: 'ピクセルストライプ（縦1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+    const Tone(
+      id: 'Tone0050',
+      name: 'ピクセル斜め縞（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+    // 1px単位のノイズ。規則的なディザと違って不規則なので、砂・岩肌・
+    // 汚れなどの表現に向く。
+    const Tone(
+      id: 'Tone0051',
+      name: 'ピクセル砂目 25%',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.texture],
+    ),
+    const Tone(
+      id: 'Tone0052',
+      name: 'ピクセル砂目 50%',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.texture],
+    ),
+    const Tone(
+      id: 'Tone0053',
+      name: 'ピクセル砂目 75%',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.texture],
+    ),
+    const Tone(id: 'Tone0054', name: 'ピクセルレンガ', tags: [AssetTagKeys.pixelArt]),
+    // 8×8 Bayer行列によるディザ。4×4（16段階）より刻みが4倍細かいので、
+    // なだらかなグラデーションをドット絵として落とし込める。
+    const Tone(
+      id: 'Tone0055',
+      name: 'ピクセルディザ（細目・8×8・6%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0056',
+      name: 'ピクセルディザ（細目・8×8・19%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0057',
+      name: 'ピクセルディザ（細目・8×8・31%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0058',
+      name: 'ピクセルディザ（細目・8×8・44%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0059',
+      name: 'ピクセルディザ（細目・8×8・56%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0060',
+      name: 'ピクセルディザ（細目・8×8・69%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0061',
+      name: 'ピクセルディザ（細目・8×8・81%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    const Tone(
+      id: 'Tone0062',
+      name: 'ピクセルディザ（細目・8×8・94%）',
+      tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
+    ),
+    // 反転格子（旧 Tone0063）は散らし（Tone0009）と重複するため退役済み。
+    // 斜め線を両方向で交差させる菱形格子は新しい独立プリセット。
+    const Tone(
+      id: 'Tone0065',
+      name: 'ピクセル斜め格子（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+  ];
+
+  Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.readStringList(_prefsKey);
+    // A missing marker belongs to an older install. Keep an unrecognized
+    // stored value and avoid reordering that user's presets on startup.
+    final grouped =
+        prefs.readBool(_groupedPresetsKey) ??
+        prefs.containsKey(_groupedPresetsKey);
+    _tones.clear();
+    if (raw == null) {
+      _tones.addAll(_defaultTones());
+      // 読めない型の値が入っているときは、既定の内容で動かすだけで
+      // 保存は書き換えない。
+      if (!prefs.containsKey(_prefsKey)) {
+        await _persist();
+        if (!grouped) await prefs.setBool(_groupedPresetsKey, true);
+      }
+    } else {
+      var intact = true;
+      _tones.addAll(
+        readSavedJsonList(
+          listKey: _prefsKey,
+          raw,
+          Tone.fromJson,
+          onSkipped: () => intact = false,
+        ),
+      );
+      // 既存ユーザーにも新規追加した初期トーン（ピクセルモード2種）を
+      // 反映する（既に同名IDのトーンが存在する場合は追加しない）。
+      final existingIds = _tones.map((t) => t.id).toSet();
+      final missing = _defaultTones().where((t) => !existingIds.contains(t.id));
+      var changed = false;
+      if (missing.isNotEmpty) {
+        _tones.addAll(missing);
+        changed = true;
+      }
+      // 保存済みデータでは未編集の標準「格子反転」「市松反転」のみを退役。
+      // 名前変更・お気に入り・フォルダ移動・独自タグ・画像・描画元は保護。
+      const retiredStockNames = <String, String>{
+        'Tone0063': 'ピクセル格子反転（1px）',
+        'Tone0064': 'ピクセル市松反転（1px）',
+      };
+      final oldCount = _tones.length;
+      _tones.removeWhere((tone) {
+        final stockName = retiredStockNames[tone.id];
+        return stockName != null &&
+            tone.name == stockName &&
+            tone.patternName == null &&
+            tone.texturePath == null &&
+            !tone.isFavorite &&
+            tone.folderId == null &&
+            (tone.tags.isEmpty ||
+                (tone.tags.length == 1 &&
+                    tone.tags.single == AssetTagKeys.pixelArt));
+      });
+      if (_tones.length != oldCount) changed = true;
+      final defaults = {for (final t in _defaultTones()) t.id: t};
+      // Original horizontally/vertically striped presets predate the
+      // familiar stripe/border naming. Update only their *original* names;
+      // user-renamed assets and custom tags/favourites stay intact.
+      const originalStripeNames = <String, String>{
+        'Tone0048': 'ピクセル横縞（1px）',
+        'Tone0049': 'ピクセル縦縞（1px）',
+      };
+      for (var i = 0; i < _tones.length; i++) {
+        final oldName = originalStripeNames[_tones[i].id];
+        if (oldName != null && _tones[i].name == oldName) {
+          _tones[i] = _tones[i].copyWith(name: defaults[_tones[i].id]!.name);
+          changed = true;
+        }
+      }
+      // Older built-ins used separate spellings for each dither matrix.
+      for (var i = 0; i < _tones.length; i++) {
+        final saved = _tones[i];
+        final name = defaults[saved.id]?.name;
+        if (name != null && name.startsWith('ピクセルディザ（') && saved.name != name) {
+          _tones[i] = saved.copyWith(name: name);
+          changed = true;
+        }
+      }
+      // 「ドット○○（1px）」は「ピクセル○○（1px）」へ改称した（「ドット」が
+      // 丸い水玉模様と誤認されるため）。旧名のまま残っている既存ユーザーの
+      // トーンをIDで特定して更新する。
+      for (int i = 0; i < _tones.length; i++) {
+        final fresh = defaults[_tones[i].id];
+        if (fresh != null &&
+            _tones[i].name != fresh.name &&
+            _tones[i].name.contains('ドット')) {
+          _tones[i] = _tones[i].copyWith(name: fresh.name);
+          changed = true;
+        }
+      }
+      for (var i = 0; i < _tones.length; i++) {
+        final saved = _tones[i];
+        final existing = saved.texturePath;
+        final originalName = copySourceName(saved.name) ?? saved.name;
+        final bundledPath =
+            defaults[saved.id]?.texturePath ??
+            defaults.values
+                .where(
+                  (item) => item.name == (saved.patternName ?? originalName),
+                )
+                .firstOrNull
+                ?.texturePath;
+        final path = existing == null
+            ? bundledPath ?? await _bakeLegacyImage(saved)
+            : await migrateCreativeImage(existing);
+        if (path != null && path != existing) {
+          _tones[i] = saved.copyWith(texturePath: path);
+          changed = true;
+        }
+      }
+      // 既定タグを日本語リテラルで保存していた版からの移行。
+      for (int i = 0; i < _tones.length; i++) {
+        final migrated = migrateLegacyTags(_tones[i].tags);
+        if (!identical(migrated, _tones[i].tags)) {
+          _tones[i] = _tones[i].copyWith(tags: migrated);
+          changed = true;
+        }
+      }
+      // 組み込み素材へ後から既定タグを付けたので、保存済みデータにも
+      // 反映する。**利用者が自分で付けたタグは絶対に上書きしない**ため、
+      // タグが1件も無いものだけを対象にする（タグを意図的に全部外した
+      // 状態は「まだ付けていない」と区別できないが、既定タグが戻るだけで
+      // 実害が無く、上書きで消してしまう害のほうが大きい）。
+      final defaultTags = {
+        for (final t in _defaultTones())
+          if (t.tags.isNotEmpty) t.id: t.tags,
+      };
+      for (int i = 0; i < _tones.length; i++) {
+        final tags = defaultTags[_tones[i].id];
+        if (tags != null && _tones[i].tags.isEmpty) {
+          _tones[i] = _tones[i].copyWith(tags: tags);
+          changed = true;
+        }
+      }
+      // 読めない項目があった保存は、起動では書き換えない（後の版でなら
+      // 読めるかもしれない自作の内容を、起動しただけで消さない。その一覧を
+      // 次に変えたときに、読めた分だけで保存し直される）。
+      if (!grouped) {
+        if (groupUnfiledBuiltIns(
+          _tones,
+          _presetOrder,
+          idOf: (preset) => preset.id,
+          folderOf: (preset) => preset.folderId,
+        )) {
+          changed = true;
+        }
+      }
+      if (changed && intact) await _persist();
+      if (intact && !grouped) {
+        await prefs.setBool(_groupedPresetsKey, true);
+      }
+    }
+    final foldersRaw = prefs.readStringList(_foldersKey);
+    _folders.clear();
+    _unreadableFolderEntries.clear();
+    if (foldersRaw != null) {
+      _folders.addAll(
+        readSavedJsonList(
+          foldersRaw,
+          ToneFolder.fromJson,
+          unreadable: _unreadableFolderEntries,
+        ),
+      );
+    }
+    _currentTone = _tones.firstOrNull;
+  }
+
+  Future<void> _persist() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setSavedJsonList(
+      _prefsKey,
+      _tones.map((t) => jsonEncode(t.toJson())).toList(),
+    );
+  }
+
+  Future<void> _persistFolders() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_foldersKey, [
+      for (final folder in _folders) jsonEncode(folder.toJson()),
+      ..._unreadableFolderEntries,
+    ]);
+  }
+
+  void selectTone(String id) {
+    _currentTone = _tones.firstWhere((t) => t.id == id);
+    notifyListeners();
+  }
+
+  void setLastBucketTone(Tone tone) {
+    _lastBucketTone = tone;
+    notifyListeners();
+  }
+
+  void setLastLassoTone(Tone tone) {
+    _lastLassoTone = tone;
+    notifyListeners();
+  }
+
+  /// トーンへ分類用タグを設定する（既存のタグ列を置き換える）。
+  ///
+  /// お気に入りと同様、**組み込みトーンにも付けられる**。編集・削除は
+  /// できなくても「どう分類したいか」は利用者の都合であり、そこを縛ると
+  /// タグ機能がほとんど使えなくなるため（`updateXxx`のような
+  /// `isBuiltIn`ガードは意図的に置いていない）。
+  void setTags(String id, List<String> tags) {
+    final idx = _tones.indexWhere((e) => e.id == id);
+    if (idx < 0) return;
+    _tones[idx] = _tones[idx].copyWith(tags: normalizeTags(tags));
+    notifyListeners();
+    _persist();
+  }
+
+  /// 登録されている全タグを、使われている件数の多い順（同数なら名前順）で
+  /// 返す。タグ検索の候補チップに使う。表記ゆれで別タグ扱いにならないよう、
+  /// 大文字小文字を無視して数え、代表表記は最初に見つかったものを使う。
+  List<String> allTags() {
+    final count = <String, int>{};
+    final display = <String, String>{};
+    for (final e in _tones) {
+      for (final tag in e.tags) {
+        final key = tag.toLowerCase();
+        count[key] = (count[key] ?? 0) + 1;
+        display.putIfAbsent(key, () => tag);
+      }
+    }
+    final keys = count.keys.toList()
+      ..sort((a, b) {
+        final c = count[b]!.compareTo(count[a]!);
+        return c != 0 ? c : a.compareTo(b);
+      });
+    return [for (final k in keys) display[k]!];
+  }
+
+  void toggleFavorite(String id) {
+    final idx = _tones.indexWhere((t) => t.id == id);
+    if (idx >= 0) {
+      _tones[idx] = _tones[idx].copyWith(isFavorite: !_tones[idx].isFavorite);
+      notifyListeners();
+      _persist();
+    }
+  }
+
+  // プリインストールされている初期実装トーン（_defaultTones()の9件）は
+  // 編集・削除の対象外とする（複製したものは別IDになるため、複製後の
+  // 編集・削除は可能）。
+  static final Set<String> _builtInIds = _defaultTones()
+      .map((t) => t.id)
+      .toSet();
+
+  bool isBuiltIn(String id) => _builtInIds.contains(id);
+
+  void addTone(Tone tone) {
+    _tones.add(tone);
+    notifyListeners();
+    _persist();
+  }
+
+  /// 引き継ぎ（.niatra）で受け取ったトーンとフォルダを、この端末の一覧へ
+  /// 合わせて保存する。この端末の内容は黙って失わない（決まりは
+  /// [mergeTransferredItems]）：組み込みは足さず、中身はこの版のまま、
+  /// お気に入り・タグ・フォルダだけを合わせる。自作は、同じIDで中身が違えば
+  /// この端末の方を残し、受け取った方を「名前 (コピー)」として足す。
+  /// フォルダは無いものだけ足し、行き先のフォルダが無い項目はフォルダなし。
+  /// 画像を受け取れなかった項目は、同じIDの項目がこの端末で使っている画像が
+  /// あればそれを使う。画像は置いた場所ではなく中身で比べる。同じ中身が既に
+  /// あって足さなかった項目のお気に入り・タグ・フォルダは、その項目へ
+  /// 合わせる。変えた一覧だけを保存する。受け取ったトーンのIDごとの、
+  /// 合わせた後でその中身を持つこの端末のトーンのIDを[placed]へ書く
+  /// （受け取った自動塗りのパーツが使うトーンを合わせるため）。
+  Future<void> mergeTransferred(
+    List<Tone> incoming, {
+    required TransferCopyNames copyNames,
+    List<ToneFolder> folders = const [],
+    Map<String, String>? placed,
+  }) async {
+    var foldersChanged = false;
+    for (final folder in folders) {
+      if (_folders.any((f) => f.id == folder.id)) continue;
+      _folders.add(folder);
+      foldersChanged = true;
+    }
+    final folderIds = {for (final f in _folders) f.id};
+    final resolved = <Tone>[
+      for (final item in incoming)
+        Tone.fromJson({
+          ...item.toJson(),
+          if (!folderIds.contains(item.folderId)) 'folderId': null,
+          if (!_fileExists(item.texturePath))
+            'texturePath': _workingLocalImage(item.id) ?? item.texturePath,
+        }),
+    ];
+    // 画像は置いた場所ではなく中身で比べる。
+    final images = await TransferImageDigests.read([
+      for (final e in [..._tones, ...resolved]) e.texturePath,
+    ]);
+    // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
+    final copies = await TransferCopyRecord.read(TransferCopyRecord.tones);
+    final listChanged = mergeTransferredItems(
+      _tones,
+      resolved,
+      TransferMergeRules<Tone>(
+        idOf: (e) => e.id,
+        nameOf: (e) => e.name,
+        contentOf: (e) => e.toJson()
+          ..remove('id')
+          ..remove('name')
+          ..remove('isFavorite')
+          ..remove('tags')
+          ..remove('folderId')
+          ..['texturePath'] = images.of(e.texturePath),
+        organizationOf: (e) =>
+            (favorite: e.isFavorite, tags: e.tags, folderId: e.folderId),
+        withOrganization: (e, o) => Tone.fromJson({
+          ...e.toJson(),
+          'isFavorite': o.favorite,
+          'tags': o.tags,
+          'folderId': o.folderId,
+        }),
+        asCopy: (e, id, name) =>
+            Tone.fromJson({...e.toJson(), 'id': id, 'name': name}),
+        newId: (attempt) =>
+            'Tone${DateTime.now().microsecondsSinceEpoch}_$attempt',
+        copyNames: copyNames,
+        shippedOf: (id) => _defaultTones().where((e) => e.id == id).firstOrNull,
+        organizationOnly: isBuiltIn,
+      ),
+      placed: placed,
+      copies: copies,
+    );
+    await copies.save();
+    if (!listChanged && !foldersChanged) return;
+    final current = _currentTone;
+    _currentTone =
+        _tones.where((e) => e.id == current?.id).firstOrNull ??
+        _tones.firstOrNull;
+    notifyListeners();
+    if (foldersChanged) await _persistFolders();
+    if (listChanged) await _persist();
+  }
+
+  /// 同じIDの項目がこの端末で使っている画像（ファイルがあるときだけ）。
+  String? _workingLocalImage(String id) {
+    final path = _tones.where((e) => e.id == id).firstOrNull?.texturePath;
+    return _fileExists(path) ? path : null;
+  }
+
+  static bool _fileExists(String? path) {
+    if (path == null || path.isEmpty) return false;
+    try {
+      return path.startsWith('assets/') || File(path).existsSync();
+    } on UnsupportedError {
+      return false;
+    } on FileSystemException {
+      return false;
+    }
+  }
+
+  /// [id]のトーンを削除する。プリインストール、またはお気に入り登録中の
+  /// 場合は削除せずfalseを返す（呼び出し元でその旨のポップアップを表示する）。
+  bool deleteTone(String id) {
+    if (isBuiltIn(id)) return false;
+    final idx = _tones.indexWhere((t) => t.id == id);
+    if (idx < 0) return false;
+    if (_tones[idx].isFavorite) return false;
+    _tones.removeAt(idx);
+    notifyListeners();
+    _persist();
+    return true;
+  }
+
+  void updateTone(Tone tone) {
+    if (isBuiltIn(tone.id)) return;
+    final idx = _tones.indexWhere((t) => t.id == tone.id);
+    if (idx >= 0) {
+      _tones[idx] = tone;
+      if (_currentTone?.id == tone.id) _currentTone = tone;
+      if (_lastBucketTone?.id == tone.id) _lastBucketTone = tone;
+      if (_lastLassoTone?.id == tone.id) _lastLassoTone = tone;
+      notifyListeners();
+      _persist();
+    }
+  }
+
+  /// トーン一覧の表示順をドラッグで並べ替える（ブラシと同じ操作方法）。
+  void reorderTone(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) newIndex--;
+    final tone = _tones.removeAt(oldIndex);
+    _tones.insert(newIndex, tone);
+    notifyListeners();
+    _persist();
+  }
+
+  /// [id]のトーンを複製して一覧の最後に足す。名前は[name]（画面が
+  /// 「名前 (コピー 2)」のように言語と番号を付けて渡す）。省略すると日本語の
+  /// 形で、複製の複製も元の名前に番号を付ける（[fallbackCopyName]）。
+  /// プリインストールのトーンも複製自体は可能（複製後の新しいIDは
+  /// プリインストール扱いにならない）。
+  void duplicateTone(String id, {String? name}) {
+    final tone = _tones.firstWhere((t) => t.id == id);
+    final newId = 'Tone${DateTime.now().millisecondsSinceEpoch}';
+    _tones.add(
+      tone.copyWith(
+        id: newId,
+        name:
+            name ??
+            fallbackCopyName(tone.name, [for (final t in _tones) t.name]),
+        patternName: tone.patternName ?? tone.name,
+        isFavorite: false,
+      ),
+    );
+    notifyListeners();
+    _persist();
+  }
+
+  // ─── フォルダ管理 ─────────────────────────────────────────
+
+  Future<ToneFolder> createFolder(String name) async {
+    final folder = ToneFolder(
+      id: 'ToneFolder${DateTime.now().microsecondsSinceEpoch}',
+      name: name,
+    );
+    _folders.add(folder);
+    notifyListeners();
+    await _persistFolders();
+    return folder;
+  }
+
+  Future<void> renameFolder(String id, String name) async {
+    final idx = _folders.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    _folders[idx] = _folders[idx].copyWith(name: name);
+    notifyListeners();
+    await _persistFolders();
+  }
+
+  void toggleFolderFavorite(String id) {
+    final idx = _folders.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    _folders[idx] = _folders[idx].copyWith(
+      isFavorite: !_folders[idx].isFavorite,
+    );
+    notifyListeners();
+    _persistFolders();
+  }
+
+  void reorderFolder(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) newIndex--;
+    final folder = _folders.removeAt(oldIndex);
+    _folders.insert(newIndex, folder);
+    notifyListeners();
+    _persistFolders();
+  }
+
+  Future<void> deleteFolder(String id) async {
+    _folders.removeWhere((f) => f.id == id);
+    for (int i = 0; i < _tones.length; i++) {
+      if (_tones[i].folderId == id) {
+        _tones[i] = _tones[i].copyWith(clearFolder: true);
+      }
+    }
+    final current = _currentTone;
+    if (current != null && current.folderId == id) {
+      _currentTone = current.copyWith(clearFolder: true);
+    }
+    notifyListeners();
+    // Persist the members first. If interrupted, an existing folder can
+    // still be opened and deleted again.
+    await _persist();
+    await _persistFolders();
+  }
+
+  void moveToFolder(String toneId, String? folderId) {
+    final idx = _tones.indexWhere((t) => t.id == toneId);
+    if (idx < 0) return;
+    _tones[idx] = _tones[idx].copyWith(
+      folderId: folderId,
+      clearFolder: folderId == null,
+    );
+    final current = _currentTone;
+    if (current != null && current.id == toneId) {
+      _currentTone = current.copyWith(
+        folderId: folderId,
+        clearFolder: folderId == null,
+      );
+    }
+    notifyListeners();
+    _persist();
+  }
+
+  // ─── 自作トーン（画像からの新規作成） ──────────────────────────
+
+  Future<Directory> _tonesDir() async {
+    final base = await getApplicationDocumentsDirectory();
+    final dir = Directory('${base.path}/niarim/Tones');
+    if (!dir.existsSync()) dir.createSync(recursive: true);
+    return dir;
+  }
+
+  Future<String?> _bakeLegacyImage(Tone asset) async {
+    try {
+      final directory = await _tonesDir();
+      const size = 64;
+      final rgba = generateBuiltInToneTexture(asset, size: size);
+      final png = creativePngFromRgba(rgba, size, size);
+      final digest = sha256.convert(png);
+      final file = File('${directory.path}/legacy_$digest.png');
+      if (!await file.exists()) await file.writeAsBytes(png, flush: true);
+      return file.path;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<Tone> withReplacementTexture(Tone tone, String sourcePath) async {
+    final dir = await _tonesDir();
+    final destPath =
+        '${dir.path}/texture_${DateTime.now().microsecondsSinceEpoch}.png';
+    await copyCreativeImageAsPng(sourcePath, destPath);
+    return tone.copyWith(texturePath: destPath);
+  }
+
+  Future<Tone> createToneFromImage(String sourcePath, {String? name}) async {
+    final id = 'Tone${DateTime.now().millisecondsSinceEpoch}';
+    final dir = await _tonesDir();
+    final destPath = '${dir.path}/$id.png';
+    await copyCreativeImageAsPng(sourcePath, destPath);
+    final tone = Tone(
+      id: id,
+      name: name?.trim().isNotEmpty == true ? name!.trim() : '自作トーン',
+      texturePath: destPath,
+    );
+    addTone(tone);
+    return tone;
+  }
+
+  // ─── 読み込み・書き出し（個別ファイル単位） ───────────────────
+
+  static const _bundleDataFile = 'data.json';
+
+  Future<File> exportTone(String id) async {
+    final tone = _tones.firstWhere((t) => t.id == id);
+    final base = await getApplicationDocumentsDirectory();
+    final safeName = tone.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+    final filePath = '${base.path}/$safeName.niatone';
+    final encoder = ZipFileEncoder();
+    encoder.create(filePath);
+    encoder.addArchiveFile(
+      ArchiveFile(_bundleDataFile, 0, utf8.encode(jsonEncode(tone.toJson()))),
+    );
+    final texturePath = tone.texturePath;
+    final bytes = texturePath == null
+        ? null
+        : await readCreativeImageSource(texturePath);
+    if (texturePath != null && bytes != null) {
+      final ext = texturePath.split('.').last;
+      encoder.addArchiveFile(ArchiveFile('image.$ext', bytes.length, bytes));
+    }
+    encoder.close();
+    return File(filePath);
+  }
+
+  Future<Tone> importToneFile(String filePath) async {
+    final bytes = await File(filePath).readAsBytes();
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final dataFile = archive.findFile(_bundleDataFile);
+    if (dataFile == null) throw const FormatException('data.json not found');
+    final json =
+        jsonDecode(utf8.decode(dataFile.content as List<int>))
+            as Map<String, dynamic>;
+    final imported = Tone.fromJson(json);
+    final id = 'Tone${DateTime.now().millisecondsSinceEpoch}';
+    final imageFile = archive.files
+        .where((f) => f.name.startsWith('image.'))
+        .firstOrNull;
+    String? newTexturePath;
+    if (imageFile != null) {
+      final ext = imageFile.name.split('.').last;
+      final dir = await _tonesDir();
+      newTexturePath = await restoreCreativeImage(
+        imageFile.content as List<int>,
+        '${dir.path}/$id',
+        ext,
+      );
+    }
+    newTexturePath ??= await _bakeLegacyImage(imported);
+    // texturePathは元端末のパスをそのまま引き継げないため、copyWith（??で
+    // nullを無視する実装）を使わず、常にnewTexturePath（nullなら未設定）で
+    // 明示的に上書きする。
+    final tone = Tone(
+      id: id,
+      name: imported.name,
+      patternName: imported.patternName,
+      texturePath: newTexturePath,
+      pixelMode: imported.pixelMode,
+      isFavorite: imported.isFavorite,
+      tags: imported.tags,
+    );
+    addTone(tone);
+    return tone;
+  }
+}

@@ -1,0 +1,272 @@
+name: Build APK
+run-name: NIARIM Android ${{ inputs.build-type || 'release' }} APK · ${{ github.ref_name }} · ${{ github.sha }}
+
+# 手動ビルドと、ビルド定義を変更した際の署名付き APK の検証。
+# 細かな修正ごとには起動せず、対象テスト・flutter analyze・必要な実キャプチャを先に完了し、
+# 一連の追加修正がすべて揃った最後に1回だけ起動する。
+on:
+  push:
+    branches: [dev_branch]
+    paths: [".github/workflows/build-apk.yml"]
+  workflow_dispatch:
+    inputs:
+      build-type:
+        description: "ビルド種別"
+        required: true
+        type: choice
+        options:
+          - debug
+          - release
+        default: debug
+      connect_backend:
+        description: "デバッグAPKをNIARIMの稼働中AWS APIへ接続する（実データ利用・既定オフ）"
+        required: true
+        type: boolean
+        default: false
+      connect_google_auth:
+        description: "Googleログインも有効化する（OAuthクライアントとAndroid SHA-1の設定が必要・既定オフ）"
+        required: true
+        type: boolean
+        default: false
+
+# 誤って同じブランチで複数回起動された場合は、古いビルドを継続して資源を消費しない。
+# 最新の手動実行だけを残す。
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: ${{ inputs.build-type || 'release' }}
+  # AdMob placement IDs are public SDK configuration. Repository variables may override them.
+  RELEASE_BANNER_ID: ${{ vars.NIARIM_ANDROID_BANNER_AD_UNIT_ID || 'ca-app-pub-4380578821900659/8828293267' }}
+  RELEASE_RECTANGLE_ID: ${{ vars.NIARIM_ANDROID_RECTANGLE_AD_UNIT_ID || 'ca-app-pub-4380578821900659/1444627261' }}
+  # Public Function URL of niarim-api in ap-northeast-1.
+  NIARIM_API_BASE_URL: https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    # GitHub Releaseへapkを添付するために書き込み権限が必要
+    # （Actions Storageの上限に達している間の代替配布経路。下記
+    # 「APKをGitHub Releaseへ公開」ステップ参照）。
+    permissions:
+      contents: write
+    steps:
+      - name: リポジトリ取得
+        # タグの移動や依存改ざんの影響を避けるため、検証済みcommitへ固定。
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          # 後続のサードパーティActionやビルド処理へ書き込み可能な
+          # GITHUB_TOKENをgit資格情報として残さない。
+          persist-credentials: false
+
+      - name: JDK 17 セットアップ
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6
+        with:
+          distribution: temurin
+          java-version: "17"
+          # GradleキャッシュはAPK生成後の保存時にrunnerのディスクを圧迫し、
+          # tar/zstdがNo space left on deviceで警告になることがあるため無効化。
+          # ビルドの確実性を優先し、毎回必要な依存関係を解決する。
+
+      - name: Flutter セットアップ
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          # Flutter SDK/Pubキャッシュも保存時に数GB規模の一時領域を使い、
+          # APK生成後にrunnerの空き容量を使い切ることがあるため無効化。
+          cache: false
+
+      # The keystores live only in GitHub Actions encrypted Secrets, not in git.
+      # Fail closed rather than silently producing a different SHA-1 each run.
+      - name: 固定debug署名鍵を復元
+        if: ${{ env.BUILD_TYPE == 'debug' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.NIARIM_DEBUG_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.NIARIM_DEBUG_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$KEYSTORE_BASE64" || -z "$KEYSTORE_PASSWORD" ]]; then
+            echo "::error::NIARIM_DEBUG_KEYSTORE_BASE64 / NIARIM_DEBUG_STORE_PASSWORD をRepository Secretsに登録してください"
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/niarim-ci-debug.jks"
+          chmod 600 "$RUNNER_TEMP/niarim-ci-debug.jks"
+          keytool -list -keystore "$RUNNER_TEMP/niarim-ci-debug.jks" -storepass "$KEYSTORE_PASSWORD" -alias niarim_ci_debug >/dev/null
+
+      - name: 固定upload署名鍵を復元
+        if: ${{ env.BUILD_TYPE == 'release' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.NIARIM_UPLOAD_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.NIARIM_UPLOAD_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$KEYSTORE_BASE64" || -z "$KEYSTORE_PASSWORD" ]]; then
+            echo "::error::NIARIM_UPLOAD_KEYSTORE_BASE64 / NIARIM_UPLOAD_STORE_PASSWORD をRepository Secretsに登録してください"
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/niarim-upload.jks"
+          chmod 600 "$RUNNER_TEMP/niarim-upload.jks"
+          keytool -list -keystore "$RUNNER_TEMP/niarim-upload.jks" -storepass "$KEYSTORE_PASSWORD" -alias niarim_upload >/dev/null
+
+      - name: 依存関係取得
+        run: flutter pub get
+
+      - name: 静的解析
+        # 既存のinfoは許容するが、warning/errorを見逃してAPKを配布しない。
+        run: flutter analyze --no-fatal-infos
+
+      - name: APKビルド（debug）
+        if: ${{ env.BUILD_TYPE == 'debug' }}
+        env:
+          NIARIM_DEBUG_KEYSTORE_PATH: ${{ runner.temp }}/niarim-ci-debug.jks
+          NIARIM_DEBUG_STORE_PASSWORD: ${{ secrets.NIARIM_DEBUG_STORE_PASSWORD }}
+          CONNECT_BACKEND: ${{ inputs.connect_backend }}
+          CONNECT_GOOGLE_AUTH: ${{ inputs.connect_google_auth }}
+          NIARIM_GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+          if [[ "$CONNECT_GOOGLE_AUTH" == "true" && "$CONNECT_BACKEND" != "true" ]]; then
+            echo "::error::Googleログインをテストするにはconnect_backendもオンにしてください"
+            exit 1
+          fi
+          args=(--debug)
+          if [[ "$CONNECT_BACKEND" == "true" ]]; then
+            if [[ "${{ github.ref }}" != "refs/heads/dev_branch" ]]; then
+              echo "::error::稼働中APIに接続するデバッグAPKは dev_branch に限定します"
+              exit 1
+            fi
+            args+=(--dart-define="NIARIM_API_BASE_URL=$NIARIM_API_BASE_URL")
+          fi
+          if [[ "$CONNECT_GOOGLE_AUTH" == "true" ]]; then
+            if [[ ! "$NIARIM_GOOGLE_WEB_CLIENT_ID" =~ ^[a-zA-Z0-9-]+[.]apps[.]googleusercontent[.]com$ ]]; then
+              echo "::error::GOOGLE_CLIENT_ID（Web OAuthクライアントID）をGitHub Secretsに正しく登録してください"
+              exit 1
+            fi
+            # Google Client ID is an identifier, not a password. Never pass access/ID tokens to the build.
+            args+=(--dart-define="NIARIM_GOOGLE_CLIENT_ID=$NIARIM_GOOGLE_WEB_CLIENT_ID")
+          fi
+          flutter build apk "${args[@]}"
+
+      - name: リリースでデバッグ接続オプションを拒否
+        if: ${{ env.BUILD_TYPE == 'release' && (inputs.connect_backend || inputs.connect_google_auth) }}
+        run: |
+          echo "::error::リリースAPKではconnect_backendをオフにしてください"
+          exit 1
+
+      - name: 本番用バックエンド・Google認証の接続設定を検証
+        if: ${{ env.BUILD_TYPE == 'release' }}
+        env:
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$NIARIM_API_BASE_URL" =~ ^https://[a-z0-9]+[.]lambda-url[.]ap-northeast-1[.]on[.]aws/$ ]]; then
+            echo "::error::NIARIM_API_BASE_URL must be a Tokyo Lambda Function URL."
+            exit 1
+          fi
+          if [[ ! "$GOOGLE_WEB_CLIENT_ID" =~ ^[A-Za-z0-9-]+[.]apps[.]googleusercontent[.]com$ ]]; then
+            echo "::error::GOOGLE_CLIENT_ID is required for production sign-in."
+            exit 1
+          fi
+          # Both production placements must be registered in NIARIM's AdMob
+          # account; Google's demonstration ad units are never release-ready.
+          for unit in "$RELEASE_BANNER_ID" "$RELEASE_RECTANGLE_ID"; do
+            if [[ ! "$unit" =~ ^ca-app-pub-4380578821900659/[0-9]{10}$ ]]; then
+              echo "::error::A NIARIM-owned banner/rectangle AdMob unit is missing."
+              exit 1
+            fi
+          done
+          echo "Release API, OAuth client and AdMob placements are configured."
+
+      - name: APKビルド（release）
+        if: ${{ env.BUILD_TYPE == 'release' }}
+        env:
+          NIARIM_UPLOAD_KEYSTORE_PATH: ${{ runner.temp }}/niarim-upload.jks
+          NIARIM_UPLOAD_STORE_PASSWORD: ${{ secrets.NIARIM_UPLOAD_STORE_PASSWORD }}
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          flutter build apk --release \
+            --dart-define="NIARIM_API_BASE_URL=$NIARIM_API_BASE_URL" \
+            --dart-define="NIARIM_GOOGLE_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID" \
+            --dart-define="NIARIM_ADMOB_ANDROID_BANNER_AD_UNIT_ID=$RELEASE_BANNER_ID" \
+            --dart-define="NIARIM_ADMOB_ANDROID_RECTANGLE_AD_UNIT_ID=$RELEASE_RECTANGLE_ID"
+
+      - name: 配布APKの署名を検証
+        if: ${{ env.BUILD_TYPE == 'release' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)"
+          test -x "$apksigner"
+          "$apksigner" verify --verbose build/app/outputs/flutter-apk/app-release.apk
+          cd build/app/outputs/flutter-apk
+          sha256sum app-release.apk | tee app-release.apk.sha256 >> "$GITHUB_STEP_SUMMARY"
+
+      # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ
+      # だけが失敗してもビルド済みAPKは下のGitHub Releaseから取得できる。
+      - name: APKをArtifactsへアップロード
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' }}
+        with:
+          name: niarim-${{ env.BUILD_TYPE }}-apk
+          path: |
+            build/app/outputs/flutter-apk/app-${{ env.BUILD_TYPE }}.apk
+            build/app/outputs/flutter-apk/app-${{ env.BUILD_TYPE }}.apk.sha256
+          if-no-files-found: error
+          # APK本体は大きいため保持期間を最短にする。
+          retention-days: 1
+
+      # リリースビルドのR8マッピング/使用状況レポート（難読化後のクラス名
+      # から元の名前を復元する際や、将来の同種の不具合調査に備えて保存）。
+      - name: R8マッピング/使用状況レポートをArtifactsへアップロード
+        if: ${{ env.BUILD_TYPE == 'release' }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        continue-on-error: true
+        with:
+          name: niarim-release-r8-reports
+          path: |
+            build/app/outputs/mapping/release/mapping.txt
+            build/app/outputs/mapping/release/seeds.txt
+            build/app/outputs/mapping/release/usage.txt
+          retention-days: 1
+          if-no-files-found: warn
+
+      # Actions Storageの上限とは別枠のGitHub Releaseへapkを添付する代替
+      # 配布経路。ビルド種別ごとに固定タグを使い回し、毎回置き換える。
+      # Draft releases are visible only to accounts with write access.
+      # They provide a private download fallback if GitHub Actions artifact storage is full.
+      - name: 開発用デバッグAPKをドラフトReleaseへ保存（未公開）
+        if: ${{ github.event_name == 'workflow_dispatch' && env.BUILD_TYPE == 'debug' && inputs.connect_backend }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="dev-backend-debug-latest"
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" \
+            "build/app/outputs/flutter-apk/app-debug.apk" \
+            --draft \
+            --target "${{ github.sha }}" \
+            --title "NIARIM 開発用AWS接続デバッグAPK（未公開）" \
+            --notes "コミット ${{ github.sha }} から作成したテスト専用APK。Googleログインオプション: ${{ inputs.connect_google_auth }}。これは未公開ドラフトであり、一般公開しないこと。"
+
+      # Public GitHub repository: NEVER publish a dev-backend test APK to Releases.
+      # Testers can retrieve it from the run's short-lived Actions artifact instead.
+      - name: APKをGitHub Releaseへ公開（Actions Storage逼迫時の代替配布）
+        if: ${{ github.event_name == 'workflow_dispatch' && !(env.BUILD_TYPE == 'debug' && inputs.connect_backend) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="build-${{ env.BUILD_TYPE }}-latest"
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" \
+            "build/app/outputs/flutter-apk/app-${{ env.BUILD_TYPE }}.apk" \
+            --target "${{ github.sha }}" \
+            --title "NIARIM ${{ env.BUILD_TYPE }} 最新ビルド（実機確認用）" \
+            --notes "コミット ${{ github.sha }} からの最終確認ビルド。Actions Storage逼迫時の代替配布用のため、古いRelease履歴は残さず毎回上書きする。" \
+            --prerelease

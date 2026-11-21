@@ -1,0 +1,482 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
+import { BatchGetCommand, GetCommand, QueryCommand, TransactWriteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+
+const { send } = vi.hoisted(() => ({ send: vi.fn() }));
+vi.mock("../src/lib/dynamo", async (original) => ({
+  ...(await original<typeof import("../src/lib/dynamo")>()),
+  ddb: { send },
+}));
+vi.mock("../src/lib/auth", () => ({
+  authenticate: vi.fn(async () => ({
+    niarimUserId: "NverifiedByGoogle",
+    googleSub: "test-google-sub",
+    membershipTier: "free",
+  })),
+  getUser: vi.fn(async () => ({
+    niarimUserId: "NverifiedByGoogle",
+    followerCount: 14,
+  })),
+}));
+import { claimCreatorMission, getMyCreatorMissions } from "../src/api/routes/creatorMissions";
+import { ApiError } from "../src/lib/response";
+
+const req = (body?: object) => ({
+  headers: { authorization: "Bearer mock-google-id-token" },
+  queryStringParameters: { niarimUserId: "Nattacker" },
+  body: body === undefined ? undefined : JSON.stringify(body),
+}) as unknown as APIGatewayProxyEventV2;
+
+beforeEach(() => {
+  process.env.TABLE_NAME = "test-table";
+  delete process.env.CREATOR_MISSION_CLAIMS_ENABLED;
+  delete process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED;
+  delete process.env.CREATOR_RANKING_REWARDS_REVIEW_APPROVED;
+  delete process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED;
+  delete process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED;
+  delete process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED;
+  send.mockReset();
+  send.mockResolvedValue({});
+});
+
+describe("creator mission endpoints", () => {
+  it("GET uses only point reads and verified user ID", async () => {
+    const resp = await getMyCreatorMissions(req());
+    expect(resp.statusCode).toBe(200);
+    const body = JSON.parse(resp.body ?? "{}");
+    expect(body.enabled).toBe(false);
+    expect(body.missions).toHaveLength(78);
+    expect(body.missions.find((m: {id: string}) => m.id === 'edit_50h').coins).toBe(30);
+    const rank=body.missions.find((m: {id: string}) => m.id === 'bookmark_rank_1');
+    expect(rank.claimed).toBe(null);
+    expect(rank.rankingUnmetConditions).toEqual(["selectWork"]);
+    expect(body.editTimeVerificationReady).toBe(false);
+    expect(body.verifiedEditSeconds).toBe(0);
+    const commands = send.mock.calls.map(([command]) => command);
+    expect(commands).toHaveLength(2);
+    expect(commands[0]).toBeInstanceOf(GetCommand);
+    expect(commands[0].input.Key?.pk).toBe("USER#NverifiedByGoogle");
+    expect(commands[1].input.Key?.pk).toBe("BATCHSTATE#STATS_UPDATE");
+    expect(commands[0]).not.toBeInstanceOf(QueryCommand);
+  });
+
+  it("checks a selected work against the LIVE public ranking for its claim button",async()=>{
+    const workId="abcdefghijk";
+    const selected={
+      pk:"WORK#"+workId,sk:"META",itemType:"WORK",
+      workId,authorId:"NverifiedByGoogle",
+      isNiarimPublished:true,youtubePrivacyStatus:"public",
+      gsi2pk:"BOOKMARK_RANKING",bookmarkCount:60,title:"my work",
+      youtubeUrl:"https://www.youtube.com/watch?v="+workId,
+      thumbnailUrl:"https://example.com/a.png",
+    };
+    send.mockImplementation(async(c:unknown)=>{
+      if(c instanceof GetCommand){
+        const key=c.input.Key;
+        if(key?.pk==="BATCHSTATE#STATS_UPDATE")
+          return {Item:{publishedWorkCount:100}};
+        if(key?.pk==="WORK#"+workId)return {Item:selected};
+        return {};
+      }
+      if(c instanceof QueryCommand)
+        return {Items:[{...selected,gsi2sk:60}]};
+      if(c instanceof BatchGetCommand)
+        return {Responses:{"test-table":[selected]}};
+      return {};
+    });
+    const ev=req();
+    ev.queryStringParameters={workId};
+    const response=JSON.parse((await getMyCreatorMissions(ev)).body??"{}");
+    const byId=(id:string)=>
+      response.missions.find((m:{id:string})=>m.id===id);
+    expect(byId("bookmark_rank_1")).toMatchObject({
+      eligible:true,progress:1,rankingMinPublishedWorks:100,
+      rankingMinBookmarks:50,rankingTopPercent:1,
+      rankingUnmetConditions:[],
+      rankingWorkBookmarks:60,rewardEnabled:false,
+    });
+    expect(byId("bookmark_rank_10")).toMatchObject({
+      eligible:true,rankingMinBookmarks:15,rankingTopPercent:5,
+      rankingEffectiveRankLimit:5,
+    });
+    expect(byId("bookmark_rank_50")).toMatchObject({
+      eligible:true,rankingMinBookmarks:5,rankingTopPercent:10,
+      rankingEffectiveRankLimit:10,
+    });
+    expect(send.mock.calls.filter(([c])=>c instanceof QueryCommand))
+      .toHaveLength(1);
+  });
+
+  it("does not allow arbitrary user claims or award coins before launch", async () => {
+    await expect(claimCreatorMission(req({
+      missionId: "followers_10",
+      niarimUserId: "Nattacker",
+    }))).rejects.toMatchObject({
+      statusCode: 403,
+      code: "CREATOR_MISSIONS_DISABLED",
+    } satisfies Partial<ApiError>);
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("experimental feature toggle alone never authorizes a mission payout", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    await expect(claimCreatorMission(req({ missionId: "followers_10" })))
+      .rejects.toMatchObject({ code: "CREATOR_MISSIONS_DISABLED" });
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("never pays from locally editable project work seconds", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    await expect(claimCreatorMission(req({
+      missionId: "edit_100h", totalWorkSeconds: 1000000,
+    }))).rejects.toMatchObject({
+      code: "MISSION_VERIFICATION_PENDING",
+    });
+    expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand)).toBe(false);
+  });
+
+  it("never awards edit time without trusted server-visible proof, even with flags",async()=>{
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED="true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED="true";
+    process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED="true";
+    process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED="true";
+    process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED="true";
+    send.mockImplementation(async(c:unknown)=>{
+      if(c instanceof GetCommand)return {Item:{
+        itemType:"CREATOR_MISSIONS_V1",revision:1,
+        verifiedEditSeconds:3600,claimedMask:0,totalMissionCoins:0,
+      }};
+      return {};
+    });
+    const display=JSON.parse((await getMyCreatorMissions(req())).body??"{}");
+    expect(display.editTimeVerificationReady).toBe(false);
+    expect(display.missions.find((m:{id:string})=>m.id==="edit_1h"))
+      .toMatchObject({eligible:false,rewardEnabled:false});
+    send.mockClear();
+    await expect(claimCreatorMission(req({
+      missionId:"edit_1h",totalWorkSeconds:99999999999,
+    }))).rejects.toMatchObject({code:"MISSION_VERIFICATION_PENDING"});
+    expect(send.mock.calls.some(([c])=>c instanceof TransactWriteCommand))
+      .toBe(false);
+  });
+
+  it("first eligible follower claim credits coins and initializes claim state atomically", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    const resp = await claimCreatorMission(req({ missionId: "followers_10" }));
+    expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
+      claimed: true, awardedCoins: 10,
+    });
+    const writes = send.mock.calls.map(([c]) => c);
+    expect(writes.filter((c) => c instanceof UpdateCommand)).toHaveLength(0);
+    const tx = writes.find((c) => c instanceof TransactWriteCommand);
+    expect(tx?.input.TransactItems?.[0].Update?.ConditionExpression)
+      .toContain("attribute_not_exists(pk)");
+    expect(tx?.input.TransactItems?.[0].Update?.ExpressionAttributeValues)
+      .toMatchObject({ ":type": "CREATOR_MISSIONS_V1", ":newMask": 2 ** 10 });
+  });
+
+  it("a legacy offer can be collected immediately at its quoted amount", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    const old = Math.floor(Date.now() / 1000) - 60;
+    send.mockImplementation(async (c: unknown) => {
+      if (c instanceof GetCommand) return { Item: {
+        itemType: "CREATOR_MISSIONS_V1",
+        claimedMask: 0,
+        revision: 3,
+        totalMissionCoins: 0,
+        verifiedEditSeconds: 0,
+        firstQualifiedAt: { "10": old },
+        pendingCoins: { "10": 50 },
+      }};
+      return {};
+    });
+    const resp = await claimCreatorMission(req({ missionId: "followers_10" }));
+    expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
+      claimed: true, awardedCoins: 50,
+    });
+    const tx = send.mock.calls.map(([c]) => c)
+      .find((c) => c instanceof TransactWriteCommand);
+    if (!tx) throw new Error("Missing atomic mission award transaction");
+    expect(tx.input.TransactItems).toHaveLength(4);
+    expect(tx.input.TransactItems?.[0].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
+    expect(tx.input.TransactItems?.[1].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
+    expect(tx.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":reward"]).toBe(50);
+    expect(tx.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":maxBefore"])
+      .toBe(Number.MAX_SAFE_INTEGER - 50);
+    expect(tx.input.TransactItems?.[2].Put?.Item?.deltaCoins).toBe(50);
+    expect(tx.input.TransactItems?.[2].Put?.Item?.sk).toMatch(/^COIN_HISTORY#/);
+    expect(tx.input.TransactItems?.[0].Update?.ExpressionAttributeValues?.[":newMask"]).toBe(2 ** 10);
+    expect(tx.input.TransactItems?.[3].ConditionCheck?.Key?.sk).toBe("META");
+    expect(tx.input.TransactItems?.[3].ConditionCheck?.ExpressionAttributeValues?.[":minimum"])
+      .toBe(10);
+  });
+
+  it("duplicate claimed mask never pays the wallet twice", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    send.mockImplementation(async (c: unknown) => {
+      if (c instanceof GetCommand) return { Item: {
+        itemType: "CREATOR_MISSIONS_V1", claimedMask: 2 ** 10,
+        revision: 4, totalMissionCoins: 50,
+      }};
+      return {};
+    });
+    const resp = await claimCreatorMission(req({ missionId: "followers_10" }));
+    expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
+      claimed: true, awardedCoins: 0,
+    });
+    expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand)).toBe(false);
+  });
+  it("requires explicit owned work ID for per-work mission payouts", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    await expect(claimCreatorMission(req({
+      missionId: "work_bookmarks_10",
+    }))).rejects.toMatchObject({ code: "MISSION_WORK_ID_REQUIRED" });
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("claims bookmark milestones for one named work, never the whole account", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    send.mockImplementation(async (c: unknown) => {
+      if (c instanceof GetCommand && c.input.Key?.pk === "WORK#abcdefghijk") {
+        return { Item: {
+          itemType: "WORK", workId: "abcdefghijk",
+          authorId: "NverifiedByGoogle",
+          isNiarimPublished: true, youtubePrivacyStatus: "public",
+          gsi2pk: "BOOKMARK_RANKING", bookmarkCount: 21,
+        }};
+      }
+      return {};
+    });
+    const resp = await claimCreatorMission(req({
+      missionId: "work_bookmarks_10",
+      workId: "abcdefghijk",
+    }));
+    expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
+      claimed: true, awardedCoins: 15,
+      workId: "abcdefghijk",
+    });
+    const write = send.mock.calls.map(([c]) => c)
+      .find((c) => c instanceof TransactWriteCommand);
+    expect(write?.input.TransactItems?.[0].Update?.Key).toEqual({
+      pk: "USER#NverifiedByGoogle",
+      sk: "MISSION_WORK#abcdefghijk",
+    });
+  });
+
+  it("refuses to award for another author's work", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    send.mockImplementation(async (c: unknown) => {
+      if (c instanceof GetCommand) return {
+        Item: { itemType: "WORK", workId: "abcdefghijk",
+          authorId: "Nother", isNiarimPublished: true,
+          youtubePrivacyStatus: "public", gsi2pk: "BOOKMARK_RANKING" },
+      };
+      return {};
+    });
+    await expect(claimCreatorMission(req({
+      missionId: "work_bookmarks_10",
+      workId: "abcdefghijk",
+    }))).rejects.toMatchObject({
+      code: "MISSION_WORK_NOT_ELIGIBLE",
+    });
+    expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand)).toBe(false);
+  });
+
+  it("rejects a claim when bookmark progress drops below the requirement", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    const first = Math.floor(Date.now() / 1000) - 49 * 3600;
+    send.mockImplementation(async (command: unknown) => {
+      if (command instanceof GetCommand &&
+          command.input.Key?.pk === "WORK#abcdefghijk") {
+        return {Item: {
+          itemType: "WORK", workId: "abcdefghijk",
+          authorId: "NverifiedByGoogle", isNiarimPublished: true,
+          youtubePrivacyStatus: "public",
+          gsi2pk: "BOOKMARK_RANKING", bookmarkCount: 9,
+        }};
+      }
+      if (command instanceof GetCommand &&
+          command.input.Key?.sk === "MISSION_WORK#abcdefghijk") {
+        return {Item: {
+          itemType: "CREATOR_WORK_MISSIONS_V1", revision: 9, claimedMask: 0,
+          firstQualifiedAt: { "5": first }, pendingCoins: { "5": 50 },
+        }};
+      }
+      return {};
+    });
+    await expect(claimCreatorMission(req({
+      missionId: "work_bookmarks_10", workId: "abcdefghijk",
+    }))).rejects.toMatchObject({code:"MISSION_NOT_YET_COMPLETE"});
+    const writes = send.mock.calls.map(([command]) => command);
+    expect(writes.some((x) => x instanceof UpdateCommand)).toBe(false);
+    expect(writes.some((x) => x instanceof TransactWriteCommand)).toBe(false);
+  });
+
+  it("pays the per-work award only with the work's own bitmask", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    const old = Math.floor(Date.now() / 1000) - 3 * 86400;
+    send.mockImplementation(async (c: unknown) => {
+      if (c instanceof GetCommand && c.input.Key?.pk === "WORK#abcdefghijk") {
+        return { Item: {
+          itemType: "WORK", workId: "abcdefghijk", authorId: "NverifiedByGoogle",
+          isNiarimPublished: true, youtubePrivacyStatus: "public",
+          gsi2pk: "BOOKMARK_RANKING", bookmarkCount: 20,
+        }};
+      }
+      if (c instanceof GetCommand && c.input.Key?.sk === "MISSION_WORK#abcdefghijk") {
+        return { Item: {
+          itemType: "CREATOR_WORK_MISSIONS_V1", claimedMask: 0,
+          revision: 5, totalMissionCoins: 0,
+          firstQualifiedAt: { "5": old }, pendingCoins: { "5": 50 },
+        }};
+      }
+      return {};
+    });
+    const resp = await claimCreatorMission(req({
+      missionId: "work_bookmarks_10", workId: "abcdefghijk",
+    }));
+    expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
+      claimed: true, awardedCoins: 50,
+    });
+    const tx = send.mock.calls.map(([c]) => c)
+      .find((c) => c instanceof TransactWriteCommand);
+    expect(tx?.input.TransactItems?.[0].Update?.Key?.sk).toBe("MISSION_WORK#abcdefghijk");
+    expect(tx?.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":reward"]).toBe(50);
+    expect(tx?.input.TransactItems?.[3].ConditionCheck?.Key?.pk)
+      .toBe("WORK#abcdefghijk");
+    expect(tx?.input.TransactItems?.[3].ConditionCheck?.ConditionExpression)
+      .toContain("bookmarkCount >= :required");
+    expect(tx?.input.TransactItems?.[3].ConditionCheck?.ExpressionAttributeValues?.[":required"])
+      .toBe(10);
+  });
+
+  it("claims a repost milestone independently from the same bookmark milestone", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    const workId = "abcdefghijk";
+    const repostKey = "MISSION_WORK#REPOST#" + workId;
+    send.mockImplementation(async command => {
+      if (!(command instanceof GetCommand)) return {};
+      const key = command.input.Key;
+      if (key?.pk === "WORK#" + workId) {
+        return { Item: {
+          itemType: "WORK", workId, authorId: "NverifiedByGoogle",
+          isNiarimPublished: true, youtubePrivacyStatus: "public",
+          gsi2pk: "BOOKMARK_RANKING", bookmarkCount: 0, repostCount: 10,
+        }};
+      }
+      return {};
+    });
+    const response = await claimCreatorMission(req({
+      missionId: "work_reposts_10", workId,
+    }));
+    expect(JSON.parse(response.body ?? "{}")).toMatchObject({
+      claimed: true, awardedCoins: 15,
+    });
+    const tx = send.mock.calls.map(([command]) => command)
+      .find(command => command instanceof TransactWriteCommand);
+    expect(tx?.input.TransactItems?.[0].Update?.Key?.sk).toBe(repostKey);
+    expect(tx?.input.TransactItems?.[3].ConditionCheck?.ConditionExpression)
+      .toContain("repostCount >= :required");
+    expect(tx?.input.TransactItems?.[3].ConditionCheck?.ConditionExpression)
+      .not.toContain("bookmarkCount");
+  });
+
+  it("a claimed bit for the same work and mission is never payable again", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    send.mockImplementation(async (command: unknown) => {
+      if (command instanceof GetCommand &&
+          command.input.Key?.pk === "WORK#abcdefghijk") {
+        return {Item:{
+          itemType:"WORK",workId:"abcdefghijk",
+          authorId:"NverifiedByGoogle",isNiarimPublished:true,
+          youtubePrivacyStatus:"public",gsi2pk:"BOOKMARK_RANKING",
+          bookmarkCount:150,
+        }};
+      }
+      if (command instanceof GetCommand &&
+          command.input.Key?.sk === "MISSION_WORK#abcdefghijk") {
+        return {Item:{
+          itemType:"CREATOR_WORK_MISSIONS_V1",
+          claimedMask:2**5,revision:3,totalMissionCoins:50,
+        }};
+      }
+      return {};
+    });
+    const result = await claimCreatorMission(req({
+      missionId:"work_bookmarks_10",workId:"abcdefghijk",
+    }));
+    expect(JSON.parse(result.body ?? "{}")).toMatchObject({
+      claimed:true,awardedCoins:0,
+    });
+    expect(send.mock.calls.some(([c])=>c instanceof TransactWriteCommand)).toBe(false);
+    expect(send.mock.calls.some(([c])=>c instanceof UpdateCommand)).toBe(false);
+  });
+
+  it("two distinct works have independently persisted claim keys", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    send.mockImplementation(async (command: unknown) => {
+      if (command instanceof GetCommand &&
+          typeof command.input.Key?.pk === "string" &&
+          command.input.Key.pk.startsWith("WORK#")) {
+        return {Item:{
+          itemType:"WORK",workId:command.input.Key.pk.slice(5),
+          authorId:"NverifiedByGoogle",isNiarimPublished:true,
+          youtubePrivacyStatus:"public",gsi2pk:"BOOKMARK_RANKING",
+          bookmarkCount:110,
+        }};
+      }
+      return {};
+    });
+    for (const workId of ["abcdefghijk","lmnopqrstuv"]) {
+      const result = await claimCreatorMission(req({
+        missionId:"work_bookmarks_100",workId,
+      }));
+      expect(JSON.parse(result.body ?? "{}")).toMatchObject({
+        claimed:true,awardedCoins:60,workId,
+      });
+    }
+    const writes = send.mock.calls.map(([c])=>c)
+      .filter(c=>c instanceof TransactWriteCommand);
+    expect(writes.map(c=>c.input.TransactItems?.[0].Update?.Key?.sk)).toEqual([
+      "MISSION_WORK#abcdefghijk","MISSION_WORK#lmnopqrstuv",
+    ]);
+  });
+
+  it("concurrent state changes cancel the whole wallet and mask transaction", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    const eligibleSince = Math.floor(Date.now()/1000)-3*86400;
+    send.mockImplementation(async (command: unknown) => {
+      if (command instanceof GetCommand) return {Item:{
+        itemType:"CREATOR_MISSIONS_V1",claimedMask:0,revision:3,
+        totalMissionCoins:0,firstQualifiedAt:{"10":eligibleSince},
+        pendingCoins:{"10":50},
+      }};
+      if (command instanceof TransactWriteCommand) {
+        throw new TransactionCanceledException({
+          $metadata:{},message:"Conditional check failed",
+        });
+      }
+      return {};
+    });
+    await expect(claimCreatorMission(req({
+      missionId:"followers_10",
+    }))).rejects.toMatchObject({code:"MISSION_STATE_CHANGED"});
+    expect(send.mock.calls.filter(([c])=>c instanceof TransactWriteCommand))
+      .toHaveLength(1);
+  });
+
+});

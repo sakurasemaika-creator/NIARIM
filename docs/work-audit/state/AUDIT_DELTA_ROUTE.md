@@ -1,0 +1,1231 @@
+# NIARIM lock-after delta audit route
+
+状態: `active`
+
+## 目的
+
+このファイルは、locked Baseline Route（A001–A104）の後に通常開発で追加・変更された製品機能を、全面監査から漏らさないための正式な追加監査ルート正本。
+
+重要:
+- Baseline RouteのID・順序・definition hashを変更しない。
+- このファイルのD001以降はBaseline A/W IDとは別系統の正式delta TODO。
+- 「登録済み」は「監査済み」ではない。
+- 実装inventory、実操作、実描画、保存復元、targeted regression、実画面目視、必要な7言語・PC/SP・Premium、Visual evidence、修正後回帰まで揃って初めてdone。
+- 最新dev_branchを毎回取得し、過去PDF・過去CI・過去会話だけで完了扱いしない。
+
+## Formal delta status tracker
+
+| ID | status |
+|---|---|
+| D001 | todo |
+| D002 | todo |
+| D003 | todo |
+| D004 | todo |
+| D005 | todo |
+| D006 | todo |
+| D007 | todo |
+| D008 | todo |
+| D009 | todo |
+| D010 | todo |
+| D011 | todo |
+| D012 | todo |
+| D013 | todo |
+| D014 | todo |
+| D015 | todo |
+| D016 | todo |
+| D017 | todo |
+| D018 | todo |
+| D019 | todo |
+| D020 | todo |
+| D021 | todo |
+| D022 | todo |
+| D023 | todo |
+| D024 | todo |
+| D025 | todo |
+| D026 | todo |
+| D027 | todo |
+| D028 | todo |
+| D029 | todo |
+| D030 | todo |
+| D031 | todo |
+| D032 | todo |
+| D033 | todo |
+| D034 | todo |
+| D035 | todo |
+| D036 | todo |
+| D037 | todo |
+
+delta_current_id は、この表の先頭未完了D-IDと一致させる。`not_started` はBaseline/Discoveryが未完了の間だけ使用し、D001以降へ入ったら必ずD-IDを記録する。
+## 実行順
+
+1. D001で最新HEADの変更差分と実装実体を再inventoryする。
+2. D002以降を番号順に実施する。
+3. D002/D010/D011などのinventory系TODOで発見した対象は、同IDの末尾へ「対象名を明記した子TODO」を追加し、1対象=1子TODOにする。追加順は発見順ではなく、実装上の安定した並び順を採用し、再開可能なIDを付与する。
+4. D020以降のCommunity/Web/API等も、App側変更であっても必要なWeb/Backend/Help/公開面まで追跡する。
+5. 全Baseline完了後、D001以降の未完了を番号順に消化する。D-ID処理中に新発見したD-IDは末尾へ追加する。
+6. D031でdelta coverageを再照合し、未割当0・未検証0を確認する。
+7. 最終的にApp/Web共通のVisual closure PDFを最新HEADから再生成し、全ページrender＋実画像目視を実施する。
+
+## 完了状態
+
+D-IDのstatusは `todo / in_progress / blocked / done`。
+blockedは環境・実機・外部サービス等の実在制約だけに使用し、未確認をblockedへ隠さない。全面監査completeにはBaseline未完了=0、Discovery未完了=0、delta未完了=0、advisor-pending=0、未登録Discovery=0が必要。
+
+## D001 — 最新HEAD差分・全追加対象 inventory
+
+製品実装snapshotとして直近に確認した基準は App `ce94a15597f213a168abc682a8f49d53fa3c8508`、Web `ed944b291732f5d9bc4ca0617b7213f8ec212be4`。これ以後の `[audit-*]` commit は監査Stateのみを変更している。実行開始時には必ず現在のdev_branch HEADへ再取得・再照合し、非監査ファイルの変更があればD001の対象範囲を更新する。
+
+対象:
+- 最新App/Web dev_branch
+- lock baseline以後の全commit差分
+- 実装実体（route/navigation/filter/brush/preset/service/API/help/asset）
+- 既存delta note
+
+必須確認:
+- Baseline A001–A104で既に表現可能な変更
+- deltaとして独立追跡すべき新規画面/状態/操作
+- 全フィルター集合
+- 全Brush Custom preset集合
+- Hair Fold/髪の毛/前髪 preset集合
+- Community/API変更
+- Web/Help/Tips変更
+- 新しい保存形式・backend contract・native依存
+- 旧実装の削除/renameによる死線・到達不能
+
+成果:
+- 最新HEAD SHA、App/Web SHA、差分範囲をEvidenceへ記録。
+- 新規対象をD002以降の子TODOへ割当。
+- unassigned target = 0。
+
+## D001.1 — Home navigation・scrolling追加差分
+
+status: `todo`。2026-10-29 App9bce4010、旧1449adeeからの追加。左上Back・右端drawer・scroll-to-top・filter header in-list scroll・空sliver・favorite表示をPC/SP/7言語/境界幅/検索・folder・scroll継続性で実操作し、旧Home証拠との差分回帰を行う。A003のcurrent scopeに影響する部分は同ID中でも優先確認する。
+
+## D001.2 — 28 built-in palette復元とcustom保持・live accent
+
+status: `todo`。同HEAD差分。28色値のone-time restore、invalid saved themesを上書きしないこと、custom保持、drawer icon/outline、Home tab・preview accent一致を実設定変更・再訪・restartで確認。以前のpalette結果は現HEADへ無条件継承しない。
+
+## D001.3 — 作品広場advanced filters・saved search・mute editing
+
+status: `todo`。同HEAD差分。数値filter、saved searches、mute word/tag追加・個別編集・collapse、AI除外、compact query/tag switch・clear、sign-in promptを各control・apply/cancel・persistence・PC/SP/7言語で実操作。各選択肢は実行時inventoryへ展開する。
+
+## D001.4 — Owner work management・settings新route
+
+status: `todo`。同HEAD差分。my works選択・bulk hide・公開状態・削除確認・owner tag management・community_work_settings_screen routeの全control/state、auth/owner境界・保存・失敗/retry・private/non-ownerを実UI/APIと照合。Help/Tips/Web追随も後続で確認する。
+
+## D001.5 — Creator mute・FF非操作表示
+
+status: `todo`。同HEAD差分。author worksのmute/解除、FF countsを操作しない表示へ変更した状態、visibility toggle削除、表示公開範囲・導線・説明の整合を実UI/backend contractで確認。法適合性はLEGAL_IP_STANDARDの別gateで判定し、この登録で保証しない。
+
+2026-10-29追加照合: 66fff30b/4999e363は未使用FF dialog/public state helpersを削除。旧test参照19errorはcurrent sourceへ追随修正しservice30/UI1を検証したが、D001.5全体の実backend/法適合性/全条件closureは未完了。
+
+## D001.6 — YouTube launcher依存固定・追加されたcapture flow
+
+status: `todo`。同HEAD差分。youtube_explode_dart/url_launcher等の固定された依存・URL遷移・platform条件・failure/cancelを確認。新capture workflowやfixtureの存在をproduction UI確認へ代用しない。全46upstream変更pathはS23証拠oct29-head-and-policy.jsonに保持。
+
+## D001.7 — 作品広場の常設検索・履歴・saved search・tile size追加差分
+
+status: `todo`。2026-10-29 App0c02171d、41a37bf以降の28path差分。常設full-width検索・明示Search・compact二段操作・完全/部分一致・space-separated tags、account-local履歴/saved search（各10件）・accordion・bookmark-save・削除確認、tile size保存・advanced thresholds・creator mute確認を全control/state/PC/SP/7言語/狭幅/再訪/restart/account切替で実操作。D001.3との重複は証拠を相互参照するが現追加分を未確認のまま消さない。
+
+## D001.8 — FF count一括取得・端末内milestone・owner-only bookmarks差分
+
+status: `todo`。同HEAD差分。public FF count pair一括request・owner-only following・identity/list/visibility endpoint削除、匿名device-local milestone historyとaccount分離、新community_milestone_store、bookmark owner-onlyと他author bookmark入口/API削除をinventoryしUI/backend契約・公開/本人/別account/匿名/late completion/error/retry/通知既読/保存互換を実操作。追加workflow/fixtureを実backend/PASSへ代用しない。28path manifestはS24 resume0c021-recovery.json、旧CI8失敗はs23-followup-full-gates-CI.logに保存し現在HEADで切り分ける。
+
+
+2026-10-30差分登録: App32e1b79→dc0df194704e11923d029c5fddda55689ddc522bの24pathを確認。以下は新対象の登録であり、D001全体の再inventory/監査完了を意味しない。tab/画面の安定した実装順に追記する。
+
+## D001.9 — Community 新着の25件ページング
+
+status: todo。community_screen/community_service/CommunityApi/worksLatest。初回25件・次cursor・終端・空page・重複・再読込・失敗/retry・少数/全非表示時のload-more導線、7locale/PC-SP/keyboard/保持状態を実操作する。
+
+## D001.10 — Community ランキングの25件ページング
+
+status: todo。ranking API/ランキングlayout。server順位母集団と順序・同順位tie・cursor境界を保ち、非表示/ミュート/再生不可のplaceholderが順位を詰めないこと、表示切替と次page/戻る/refreshを確認する。旧filter前提へ製品を戻さない。
+
+## D001.11 — Community フォロー投稿・repost統合ページング
+
+status: todo。reposts/userWorks/community_service。投稿とrepostをUTC時刻で時系列統合、25件境界/同時刻/同一作品イベント/追加page/ミュート/所有者状態/refresh/error/retryを実データとUIで検証する。
+
+## D001.12 — Community 検索タブのページングと条件変更
+
+status: todo。独立検索タブでquery/tag/exact/saved/historyとpage cursorの対応、検索条件変更時の旧応答排除、全filter後0件でも続きがある場合の到達、全件終了を検証する。
+
+## D001.13 — Community 作者投稿一覧の25件ページング
+
+status: todo。community_author_works_screen/userWorks。初回page全非表示でも次pageを要求できること、作者変更/ミュート/次page失敗/retry/scroll/戻る保持を確認する。
+
+## D001.14 — Community 自分の投稿一覧の25件ページング
+
+status: todo。community_my_works_screen/worksByAuthorPage。owner/account revision・private/AI/muteの意図した扱い、25件以後の公開変更/削除/タグ・遅延応答・refreshを追跡する。
+
+## D001.15 — Project preview transport両端の秒数
+
+status: todo。project_detail_screen/project_playback_status。現在秒数は先頭frame移動の左、総秒数は最終frame移動の右、中央frame/loopを含む全controlsの意味/seek/end/全画面/PC-SP/文字拡大/7locale/保存互換を実操作する。
+
+## D001.16 — 新規project背景色見本の全面描画
+
+status: todo。background_color_picker。白/黒/透明の丸全面が内容色/透明市松で描画され、アクセントが内部へ漏れないこと。未選択白の輪郭は正式theme roleを使い、選択/保存preset/7locale/PC-SPを確認する。
+
+## D001.17 — Save slot actionと確認の最新差分
+
+status: todo。save_management_screen/save_slot_action_buttons_test。保存/読込/削除の各固有icon/label/tooltip/confirm target/cancel/実行/失敗/retry/slot保持/7locale/PC-SPを最新実装から確認する。
+
+## D001.18 — Splash entry labels・subtitleのKuramubon固定差分
+
+status: todo。2d2a2aebで追加。両entry tile label/subtitleの正式font/fallback、7locale/PC-SP/文字拡大/28theme/当たり判定/初回導線を最新sourceから確認する。A002の過去証拠をこの変更の最新Visual closureへ昇格させない。
+
+## D001.19 — Project preview frame overlay・等間隔transport・loop/share配置
+
+status: todo。5bdd4cd6以降。現在時間/全長と全transportの等間隔、frame count overlay、loop/share隣接、再生/停止/先頭末尾/fullscreen、全幅/7locale/PC-SP/文字拡大/theme、実操作・原本・保存再訪。旧画像を新配置のclosureに流用しない。
+
+## D001.20 — Plaza card右rail menu/bookmarkと48dp当たり判定
+
+status: todo。3059c181–c6571fda。title横compact menu、右rail下bookmark、22dp icon/48dp target、preview/details/menu/bookmarkの誤操作・long press/keyboard、全layout/7locale/PC-SP/狭幅/文字拡大/theme/owner権限と状態保持。
+
+## D001.21 — Ranking横型thumbnailのtile高追従とcompact actions
+
+status: todo。a82f0ac1/7dcf9ffd。画像aspectと横縦種別、tile高、順位masked slot/未取得/非公開/再生可否、compact actionsの位置・48dp・導線、全幅/7locale/PC-SP/文字拡大/themeと実結果。
+
+## D001.22 — Search隣接keyword/tag pill・翻訳幅制約・明示feed limit25
+
+status: todo。95527d63–8670f3d8。keyword/tag選択と検索確定、入力保持/clear/back/retry/paging、pill/button隣接、320px/長い翻訳/textScale、keyboard/IME/focus/semantic/PC-SP/7locale/theme。author feedの明示limit25をD001.9–15の条件にも含める。
+
+## D001.23 — Project thumbnail checkerboardの枠内clip
+
+status: todo。fbc48103。project listのthumbnail/Canvas背景/透明格子のclipと角丸、実画像の縦横比/透過/scale、PC-SP/全width/theme/文字拡大とcache/revisit。ProjectListのS27 await変更と共存することも確認する。
+
+## D001.24 — Canvas mode切替ボタンと上部メニューの高さ揃え
+
+status: todo。fbc48103。canvas右上timeline切替と上部controlのbaseline/高さ/余白、矢印・label・当たり判定、PC-SP/文字拡大/全幅/toolbar設定/7locale/左利き/再訪。
+
+## D001.25 — Toolbarの5段階size設定とlive/preview伝播・永続化
+
+status: todo。03ace188–47116e30。toolbar_size_levelの1/2/3/4/5（scale 0.75/0.88/1.0/1.15/1.3）、default3、clamp/legacy/invalid、全実iconと設定previewの一致、並び替え/非表示/docking/左利き/7locale（zh/Hant区別）/theme/PC-SP/48dp・gesture、保存false/throw/再試行/coldを実操作する。sourceだけで保存失敗を不具合確定しない。
+
+## D001.26 — Project背景色のpreviewへの一致
+
+status: todo。fbc48103/c2e3495d。ProjectDetail/canvas color-adjust/filterの実previewがproject由来背景・透明格子を正しく描画し、UI背景のtheme roleと混同しないこと、透過/不透明色/alpha/適用Cancel/元データ/保存再訪/全preview callerを確認。
+
+## D001.27 — Loop default OFF・label・fullscreen compact row
+
+status: todo。ecc8d37c/4bc378c2。既定OFF、切替とicon/label/semantics、通常/fullscreen、48px seek行の横幅/文字拡大/7locale/PC-SP/再生末尾挙動/戻る再訪と保存の意図仕様を確認。
+
+## D001.28 — Dialogのoutline/shadow除去の全caller追従
+
+status: todo。ecc8d37c。ThemeService dialog elevation0/BorderSide.noneとcolor-adjust/filterの明示shapeを確認。全modal/確認/危険操作/失敗/文字拡大/全幅/7locale/PC-SP/28themeで、境界・focus・表示階層・操作性を実画面から判定する。
+
+## D001.29 — Project favorite badge左下配置とpreview loop集約
+
+status: todo。2026-10-31 App38eb0702→2eb01ed3。ProjectListのfavorite badgeを透明格子/画像/選択中/PC-SP/全幅/theme/文字拡大で確認し、menuとの独立配置・保存/再訪を追跡する。Timeline previewの重複loop除去後も残るcontrolで同じ再生能力に到達できることを実操作する。S29保存修正と意味的に共存させる。
+
+## D001.30 — PC dock window表示・移動・列順序
+
+status: todo。a17b0bf7/b6445ec1/408802bc。Canvas/Timelineの表示menuから各windowを開閉し、常設drag handle・列内/列間移動・順序・復帰・未表示panelへの到達、mouse/keyboardとgesture競合を実操作する。全window/presetをinventoryし、SP導線/操作能力を減らさず、全幅/7locale/themeで確認する。
+
+## D001.31 — PC dock高さ・layout editor・toolbar preview永続化
+
+status: todo。同HEADのsettings_service/pc_workspace_layout_settings_screen/workspace_settings_screen。window別高さ/列順序の保存・移行/不正値/失敗/retry/cold、layout editorとの双方向同期、live-sized toolbar previewと実toolbarの一致を確認する。Sourceとcapture fixtureの存在だけではPASSにしない。
+
+2026-10-31 b8506a0e追加照合: PC panel別widthのglobal保存とedge drag（b86a3158/8cd2ecd2）はD001.30–31で各windowの高さと別値として追跡。長いcolor-adjust action折返し（293422f2）はD001.26/28、透明thumbnail FramePreviewBackground内clip（b8506a0e）はD001.23/29へ追加し、現HEADの実control・設定・保存/失敗・再訪・実画面を未確認のままPASSにしない。capture fixture追加は製品実操作の代用にしない。
+
+## D001.32 — Outline pen canvas samplingの到達経路
+
+status: todo。12d2e2f8/bc56d870。Canvasで縁取りpenのスポイト/実canvas色採取へ到達し、設定確定/取消/ツール復帰/描画/undo-redo/保存再読込を実操作する。D024と証拠を相互参照し、7locale/PC-SP/入力差とテーマのUI色・採取した固有色を区別する。
+
+2026-11-06差分登録: Appb8506a0e→5be595b9の414commit/196path。全差分pathはnov06-head-and-inventory.json。以下は独立した追加対象の登録であり、D001の全inventory消化/検証済みを意味しない。
+
+## D001.33 — Homeミッション通知・累計ログイン日
+
+status: todo。7fabd205/39755e9c/63d17cf3。ログイン/復帰/JST日境界/未受取badgeとdrawer更新、offline・同日retry・account切替・重複request・実API保存を確認。失敗後のdedupeも反例検証。
+
+## D001.34 — Home初期タイルサイズとユーザー指定の保持
+
+status: todo。6527cc9d。PC/SP・幅変更・3タブ・初回/既存指定/invalid/restart、一覧/検索/選択の到達性、画像切抜きとthemeを確認。
+
+## D001.35 — Rewarded ad報酬の検証
+
+status: todo。rewardedAd/admobSsv/rewardAdQuota/rewardEntitlement。広告再生完了/中断/失敗/同意と署名・replay・quota・account境界・永続結果を実操作/APIで確認。
+
+## D001.36 — Coin残高・履歴・交換
+
+status: todo。coinEconomyScale/coinRedemption/rewardState。単位換算/残高境界/claim・取消/同時実行/retry・履歴/互換性を検証。Free/Premium/説明・契約・法務は別判定。
+
+S34発見/DISC057: productionのEN SP期間初期表示が`1hours`。数値と複数形unitの直接連結を確認。期間全選択肢の単複/空白/7言語、sheetとprice/expiryの意味一致をD001.36の未完了対象に追加。
+
+## D001.37 — Play Premium購入検証・復元
+
+status: todo。playPremium/playVerification。テスト購入/保留/失敗/復元/期限/失効と本人・商品・署名・replay/本番設定境界を確認。実課金や公開は行わない。
+
+## D001.38 — Creator mission作品条件と報酬受取
+
+status: todo。creatorMissions/qualifiedWorksScan/workCountGrid/claim/workAchievements。全条件・達成/未達/受取/二重請求・非公開/削除・auth/同期/7localeを確認。
+
+## D001.39 — 制作時間の活動判定・idle・明示保存
+
+status: todo。e115ecf6/168a6131/2e5d9f1f/cc519236/ee1b6055。実編集1秒断片、再開/離脱/背景/重複route・idle、明示saveとautosave差、任意送信失敗でも保存成功、backend集計を追跡。
+
+## D001.40 — NIARIMとYouTube投稿欄の独立編集・双方向コピー
+
+status: todo。40ac35e3/91970584/65cea20c/5be595b9。title/説明欄の独立保存、2,000字・空/境界・上書き確認/取消/再試行、7locale/PC-SP/投稿既存データの互換性を実操作。
+
+## D001.41 — YouTubeコメント参照の短期cache
+
+status: todo。8e0cd7c3/219672a9。読取専用cache hit/miss/期限/無効化/失敗、件数/順序とquota/プライバシー、作品切替の漏えい防止を確認。
+
+## D001.42 — GitHub OIDC・CIからのdeploy権限境界
+
+status: todo。009fe8e9/backend stack。branch/subject/環境・最小権限・誤発火・secretログ・無効認証を公式一次資料とCIで追跡。実deployは監査結果に含めない。 App08b46505のbackend-aws-preflight/backend-ci変更を追加。手動実行・アカウント/role/リージョン制約、CDK template diff、FCM key非注入、デプロイ後の公開API smokeと失敗時の扱いを検証対象へ含める。
+
+## D001.43 — Community最新ranking・公開作品・bookmark API差分
+
+status: todo。b850→5beのranking/_publicWork/bookmarks/worksUpdate/Delete。順位集合・mask/公開範囲/失敗・quota・再訪、App/Webの現表示と旧CI23失敗の期待値を別々に確認。
+
+## D001.44 — PC dock左手デフォルトとカスタム全project共有
+
+status: todo。fc0e1831/ae00c313前後。未設定左右反転、ユーザー指定の位置/幅/高さ/開閉・手切替・別作品・再起動、保存pending中の最新状態、D001.30–31との重複証拠を確認。
+
+## D001.45 — 監査差分取り込み後の現dev_branch受入れ
+
+status: todo。cac1c08b→a6beの180path。初回/ヘルプ・Splash/設定とテーマ、CJK font、ホーム/新規制作/保存サイズ、キャンバス/PC dock・ショートカット・描画/消しゴム、保存ツリー・半透明raw/書出しの追加を現dev_branchで照合。DISC007・DISC051を含む。旧枝証拠だけでdoneにしない。実操作、互換性、font license/coverage、保存/再訪、境界と関連回帰を個別に追う。
+
+## D001.46 — 投稿・予約公開・通知・収益化の最新差分
+
+status: todo。a6be→b92の53path（`s30-latest-b92-incoming-paths.txt`）。YouTube処理後のShortsサムネイル、予約の公開/再実行/GSI cleanup、通知と詳細deep link、自分だけの非公開・公開不能状態、削除/権限、Android通知・ログイン、収益化campaign削除。成功/中断/通信失敗/再試行/非公開/公開切替・実auth/backendの経路を分け、保存・プライバシー・App/Web表示を照合。
+
+## D001.47 — 広告のroute・modal・狭幅制御とSSV検証の増分
+
+status: todo。3397a23e→a0d74dcfの45 commit/19 net path（`s31-app-incoming-paths.txt`）。root広告枠・route遷移・modal/IME・横幅と短高、コンテンツありHomeと全route debugモックの画面matrix、署名付きURL確認と報酬grant・不正/重複・診断ログの境界を確認する。mockと実表示を区別し、Samsung実機/DeX・実consent・動的route・実配信と独立した規約確認が残る。S31では配信設定やbackendを変更していない。
+
+S33追加: fc24までのroute別広告制限とcaption/比較capture差分もD001.47へ保持。最新all-route capture successとWeb比較4FAILを区別。
+
+## D001.48 — FCM通知の登録・配送と通知からの復帰
+
+status: todo。S32→fc24のPushNotificationService/main/app・Firebase構成・Android plugin設定、push/missionNotifications/backend stackと通知導入資料。permission/token登録・更新・sign-out/owner境界、foreground/background/終了後の通知tap→作品詳細、重複/無効data・offline/retry・起動失敗fallback・非対応desktop、secret/PIIと失効、実機/同意/Privacyの必要条件を別々に追う。S33では通常の依存/起動・Home回帰だけで、通知配送や実auth/backendの完了としない。
+
+## D001.49 — Rewarded SSV保存境界とDynamoDB Local検証の増分
+
+status: todo。S33公開cae5c893→38815daの8commit/6netpath。rewardedAd route、署名flow/API/DynamoDB Localの3test、DynamoDB Local workflowとpreapproval資料。signed callback→報酬確定の原子性・再送/idempotency・競合・署名/期限・owner/最小権限・保存false/throw/partial failure、同意/広告/実backend境界を確認する。S34では変更を登録しHome依存回帰の起動を確認するだけで、SSV署名/実Google callback/DynamoDB本番/広告実機の完了としない。詳細6pathと20正本hashはstart-heads-and-documents.json。D001.47の広告導線・SSV前提と関連付ける。
+
+## D001.50 — 現SDKと正規format・Community/Premium試験hostの増分
+
+status: todo。S35中断後のb6a6db14→0bed53b9は21commit/367path。Flutter 3.47.2のDart format、保存gateのSDK固定、Communityのauth provider/viewport/request期待とpaid-preview host、広告のno-content/consent条件、Markdown技術ID保護等。旧失敗ログと最新CIを分け、単にassertを弱めず実UI/本番auth境界を保持する。全変更pathはincoming-latest-paths.txt。S34の33PASSや旧capture結果を最新の全greenへ転記しない。
+
+S35公開後の51b7ac93 CI: Save safety save-regressionsが既存niapro_serializer.dartの書式差分でcache9件の前に停止。SDK3.47.2のlocal formatはlib/test 900中230差分、今回storage3fileは0差分。全体gateは保持し、cache隔離のformat/analyze/9testsを独立storage-cache-regressionsで実行する。Functional Visual Auditのfeature_operation_capture_test.dart:139 null failureも現HEADの未解決として保持し、旧S34の失敗や成功に置き換えない。公開receipt ZIP 1DrtZFIT5Rc_BNgpTWj0mVthQsAMzv95l（43740B/SHA2d00249a…/18hash）を検証済み。
+
+S36追跡: 独立storage-cache-regressions job129035511757でS35 cache9件/format3file/analyzeがPASS。全体の230 format差分とFunctional filter capture nullは未解決のまま。S36のcache部分削除修正と実EACCES試験を同jobへ追加し、画面sourceもformat/analyze対象へ登録。全体gateは維持。
+
+## D001.51 — 接続済みGoogle OAuth debug APKと自動preflight
+
+status: todo。prelaunch-connected-debug-apk/google-android-oauth-preflightのworkflow導入。既存の接続済みclient/signing設定の利用、artifactの非公開性/期限/署名、設定変更時の検査、secret非出力、debug/releaseと端末の実callback境界を確認。S35ではbranch増分登録のみで、実機Googleログイン/Play公開/実credentialの完了としない。
+
+## D001.52 — Timelineの実描画矩形と狭幅corner overlay
+
+status: todo。52f3a977/0bed53b9のfitted pictureを実preview画像と一致させる変更と320dp corner重なりの許容条件。中央の作画を覆わない実hit/見た目、frame更新・zoom/resize・全幅/拡大/7locale、旧predicateの過剰/不足、source/engine/alpha/export回帰を確認。S35のStorage起動回帰だけでTimeline全体を閉じない。
+
+## D001.53 — Webプレローンチ導線とcreation中心の公開ページ再設計
+
+status: todo。S35のWeb9fdb7e46→3de5c4e9の4commitでhome/features/community/premium、hero showcase/CSS/各script/i18nを更新。全visible control・到達性・App実仕様との対応、7locale/PC-SP/短高/keyboard/読上げ・公開前表示/価格/会員/広告説明/リンク/保存設定/性能を実サイトで確認。S35では差分を保持・登録し、HTMLやsmokeの存在だけで品質PASSにしない。
+
+## D001.54 — Webの実Premiumキャプチャ36点と検証workflow
+
+status: todo。同上の実App9画面×4版のAVIF/WebP、source.txtとrefresh-2026/real-app-screensのCI・7locale smoke。source App SHA/paid-preview/広告なしの条件、画像内容/比率/各mode/alt/導線/読込・cache/レスポンシブを個別目視し、最新Appのproduction UIと照合。incoming-web-latest.jsonの全変更pathを正本とし、画像があるだけでApp機能や公開ページを監査済みにしない。
+
+S36でWeb9bdbeb39の1commitを保持。refresh-2026-smoke.ymlに日本語PC/SPの全ページfull-height captureと14日artifactを追加。出力画像の個別目視、実操作/全7localeの完了とはしない。
+
+S36公開CI記録の反映直前にWeb c510745a→6dec82f9の2commit/4pathを検出して保持。b75d7f5のCJK見出しfallback/スクリーンショットと外枠の色/bitmap表示のCSS103行とshowcase/user-requestのcache ref更新はD001.53、6dec82fの36capture source.txt更新はD001.54の継続対象。実差分はsource.txt/CSS/JS2のみでimage byte差分なし。個別目視/実操作は未実施で、S36のStorage実操作をこれらWeb品質のPASSへ代用しない。詳細ci-state-incoming-web-paths.txt/patch。
+
+## D001.55 — Webの実読み取り専用ランキングfeedとPC/SP captureの増分
+
+status: todo。S37開始Web8bb3cd58→56ca2444の3commit/85pathを保持。f327515/471e0d3の対応PC版36画像（AVIF/WebPの72files）とcapture workflow/metadataはD001.54へ追加。56ca2444のCommunity模擬ランキング撤去・NIARIM Lambdaのread-only feed、worker src/community-feed.js/API取次、Community loading/empty/error/ranking/7locale、画像/リンク/公開前導線・CORS/入力/limit/cache/個人情報/可用性・モックでない実契約を検証する。S37では増分登録のみで、実feed/全新画像/PC-SP対称性・法務/性能のPASSへ代用しない。incoming-web-paths.txtと現在HEADの20正本hashを証跡へ保存。
+
+## D001.56 — App作品広場の先頭gesture更新と自分だけのフォロー一覧
+
+status: todo。S37再開App a12c9fa4→6e8ce38aの60commit/26path内。community_top_edge_refreshとランキング/新着/私的bookmark/作者/自分の管理一覧への先頭gesture単位の再取得、自分のprofileフォロー数から開くowner-only following directory・follow/unfollow/re-followを登録。非先頭開始/途中jump・連続pointer/refresh中のdedupe、表示中feedだけ取得、header/scroll/input保持、owner境界/ログアウト/非公開作者・実auth/backend/PC-SP/7locale/keyboard/読上げを実操作する。S37の保存/プレビュー結果をこれらのPASSへ代用しない。
+
+## D001.57 — 実期間bookmarkランキングと取得後の公開状態の再確認
+
+status: todo。同上のbackend bookmark/ranking/latest/periodBookmarkRanking/Dynamo型とApp ranking list/API/model、可視性回帰。日/週/月/年の実増加数と原子的記録・期間境界/時刻/重複、公開/限定公開の初期eligible集合・Top50/ascending、取得後private/deletedと再取得/クリック直前照合、伏字slotとcompact動作の最新仕様との対応、title/thumb/owner等の漏洩・stale GSIとconsistent read・bookmark解除のtombstone、再表示/失敗/復旧を確認。途中commitの異なる仕様を混ぜず現在HEADの実装/正本から再確認する。単なるtest追加/CI成功を実UI/実backendの完了にしない。
+
+## D001.58 — Webの全page整備・実PC captureとliveランキング更新
+
+status: todo。Web56ca2444→4972a3e6の39commit/84path。7locale CJK字形/見出し/コピー/404・legal含む全page、native PC/DeX captureとSP対応/palette/provenance、配布前store link状態、旧mock/runtime撤去・script重複/lateDOM bootstrap/8幅監査、real period ranking/visibility proxy・no-store/cache bust/非公開metadata/compact再取得/click時再照合を既存D001.53–55と対応して追加登録。全controls/実link/幅連続変化/短高/文字拡大/読上げ/画像pixel/軽量性/法務を現在HEADの製品で確認する。incoming paths/commit logはnov10-latest-heads-and-delta.json。S37で登録のみ、全Web合格とはしない。
+
+## D001.59 — App/Webの詳細・再生前privacy再照合
+
+status: todo。S37追加App6e8ce38a→7a9162fbの13commit/10path、Web4972a3e6→578904b5の5commit/4pathを保持。App Community preview/detail/playbackの取得後private/削除/不明状態、ownerだけのprivate作品閲覧、非ownerのcacheからの到達をfail closedにする変更とbackend YouTube unknown除外、Web click時live playback preflight/no-cache/invalid IDを登録。本人/他人/未ログイン・公開変更・通信失敗/遅延/再試行・再訪/戻る・PC/SP/7localeで実backendを含めて確認する。追加testやCI実行だけでPASSにしない。入力差分nov10-second-incoming.json。
+
+## D001.60 — 広告App ID・一日一回SSV報酬と接続debug APK
+
+status: todo。同上のAndroidManifest、backend/cdk設定、admob activation記録とAWS-connected debug APK workflowを登録。現在HEADの正式仕様に基づき、実広告/テスト広告の区別、rewarded表示/完了/中断/重複callback・日付境界・SSV署名/ユーザー照合・残高反映・Free/Premium・実Galaxy設定を確認する。S37では登録のみ。本番deploy・課金・実広告による報酬付与を実行したとはせず、保存/PNG検証や設定の存在を実広告/SSVのPASSへ代用しない。
+
+## D001.61 — 直近Backend 49 HTTPルート・App/Web/外部サービス横断の不足分（2026-11-10追加）
+
+status: `todo`。現行App dev_branchの `backend/src/api/handler.ts` は登録時点で **49 HTTPルート**、`backend/src/api/routes/**` に **32 moduleファイル**を持つ。これは異なる集計単位であり、locked Baseline snapshotの `backend_routes: 22` を現在網羅済みとみなさない。最新HEADから全HTTP method/path・route実装・App/Web呼出元・DynamoDB副作用を再inventoryし、**ルート単位の認証・本人/他人・公開/非公開・入力境界・失敗/遅延/再送・冪等性・秘密保持・実画面結果まで照合する正式追加対象**とする。
+
+監査観点と49ルートの登録時棚卸しは `docs/work-audit/BACKEND_API_AUDIT_CHECKLIST.md`（BE-01～BE-08 / API-001～API-049）。とくに owner-only following/follower氏名非公開と自分の人数タップ導線、ranking公開状態の変化・再生/詳細直前check、YouTube/Google OAuth・FCM・AdMob SSV・Play購入・コイン/mission/ログイン特典の副作用、CDK/IAM/OIDC/flag/secret・DynamoDB GSI/競合・Web read-only proxyを検証する。
+
+既存 `D001.8–14`、`D001.35–43`、`D001.46–60`、`D021` と重複する機能はID間で実証拠を共用してよいが、**追加登録のみでPASS・監査完了・backend本番稼働済みとはしない**。実操作、隔離backend/実SDK環境の適否、未検証のhuman-action-pending/implementation-pending、残存不具合を明示する。監査進捗とBaseline lock/Stateは今回変更しない。
+
+
+## D001.62 — ブラシごとの太さ・不透明度の記憶と共有失敗の知らせ（2026-11-10追加）
+
+status: `todo`。S38の製品変更を登録する。App `dd1974d7`・`308c019`：キャンバスで変えた太さ・不透明度をブラシごとに覚える（保存キー`brush_builtin_working_values`、操作の終わりに保存、ペンのブラシだけ、早替えツール・自動操作は一時的な値、一覧のメニュー「既定の太さ・不透明度に戻す」、Help「カスタムブラシ」の説明、数値欄の押下範囲、一覧で選んだ行のアイコン色）。App `07323398`：書き出した作品の行・プレビュー・書き出し完了の共有失敗の知らせ（`ExportShareService`、`export_share_feedback.dart`、正式なメニュー文字色と印）。App `0a008bb4`・`670d666e`：特典交換の期間の表記（ICU plural 4件×7locale、`coin_duration_label.dart`、確認dialogのscroll、選択行の読み上げ）。全ブラシ（組み込み25＋自作）×切り替え/再起動/早替え/ショートカット/自動操作/複製/書き出し/設定の引き継ぎ、スライダー・±・数値入力・PC/SP・7locale・文字拡大、Android/touch/筆圧、共有はAndroid/iPadの実共有・取消・失敗・二重操作を実機で確認する。S38の限定的な検証をこのIDのPASSへ代用しない。
+
+## D001.63 — 容量削減の欄ごとの読み込みと、保存の読み込みの耐性（2026-11-10追加）
+
+status: `todo`。S38の製品変更を登録する。App `84dd0344`・`81af3731`・`d1f809cf`：容量削減の画面（内訳・端末・整理するが別々に読み込み中/失敗/一部だけ/再試行、覚えた結果で再訪は即表示、古い値は集計中、30秒より古い集計は共有しない、削除で`StorageInfoService().invalidate()`、読めないfolderで止めない集計、7localeの文言4件、確認dialogのkeyboard focus、集計中の欄の高さ）。App `3f0a43d3`：保存の読み込み（`readSavedJsonList`で13の保存を1件ずつ、読めない保存を起動で書き換えない、ブラシは読めない項目を保存へ残す、ブラシの整数の小数、undo_limit・autosave_count・日時の範囲、WorkspacePreset）。容量は全theme×7locale×PC/SP/短高/文字拡大、大量の作品・遅いstorage・権限の無いfolder・集計中の操作・他画面の変更の反映・Android/読み上げ、保存は全キー×（型違い/壊れた1件/範囲外）×起動/保存し直し/設定の引き継ぎ/初期化、Androidの実保存を確認する。S38の限定的な検証をこのIDのPASSへ代用しない。
+
+## D001.64 — 所有者の判断10件（ホーム・トースト・多言語）と品質の方針（2026-11-11追加）
+
+status: `todo`。2026-11-11、監査で「判断をお願いする事項」として挙げた10件に所有者が回答した。回答（原文）と、それぞれの実装単位を登録する。どれも実装→対象test→本番相当の実操作→目視→回帰→最新HEADまで確認してから閉じる。
+
+1. **ゴミ箱のカードの「復元」「完全削除」**：「広い画面で名前の右に置く」。幅が600×文字の倍率以上のカードは名前の右・上下の真ん中、狭いカードは名前の下の右端の行（作品・フォルダ・ファイルのカードとも同じ。いまは3つの操作〔コピー・復元・完全削除〕）。A003-8b。**公開（2026-11-13）：App `06f5113f`・`d087559e`・`4b38d3bc`**（作品・フォルダ・書き出したファイルのカードとも同じ置き場所。広いカードでも名前の欄が名前の文字15字分より狭くなる幅では名前の下へ。折り返した「完全削除」の文字も右へそろえる）。
+2. **フォルダのメニューの「削除」**：「ゴミ箱と同じく中身ごとゴミ箱へ移す」。選択→ゴミ箱と同じ動き（`moveFolderToTrash`、「元に戻す」、お気に入りの作品の決まり）に揃える。A006・A003-D1b。**公開（2026-11-13）：App `f8b28d73`・`6277e6ba`**（フォルダの︙・右クリックの「ゴミ箱へ移動」は、選んで移すときと同じ件数つきの確認・お気に入りの決まり・「元に戻す」。お気に入りで断る知らせは他の知らせを閉じない）。実Linux：中の作品2件・フォルダ3件と出て、元に戻すで孫のフォルダまで戻る。
+3. **共有の「受け取ったもの／自分が作成したもの」の切り替え**：「画面幅によってどうしても入らないときはボタン名をアイコン表示にしましょう。適したアイコンありますかね？長押しで本来のボタン名がトースト表示されるようにします。」文字を縮めず、入らない幅ではアイコンだけにし、長押し（PCはホバー）で名前を出す。読み上げ名は元の名前のまま。アイコンの案は受信トレイ／送信トレイの組（決めた案は実装時に記録）。追記（同日、所有者）：「PCだと横幅が足りずに表示できないということはないと思うので今のままでいい気がします。横幅足りるなら文字で表示、足りなければアイコン表示を自動で判断するようにしてください」＝端末の種類では分けず、その幅に文字が入るかどうかで自動で切り替える（入れば文字、入らなければアイコン）。A003-6。**公開（2026-11-13）：App `c16cca86`・`f4066a95`・`d97de0a9`**（測った幅で自動に、文字が入れば文字・入らなければ受信トレイ／送信トレイのアイコン。名前は長押し・ホバーの吹き出しと読み上げ〔1度だけ〕。文字は縮めない。切り替えと並び順は一覧と一緒にスクロール）。実Linux：1280→320pxの連続リサイズでja・fr・ko・文字1/2、選んだ側を保つ、キーボードで届く。確認事項：長押しは吹き出し（判断の「トースト」と違う）。
+4. **画面名が入らないとき**：「画面名が入らないときは画面名は書かなくていいです。書かなくても実際の画面を見たり操作したりしていれば今自分がどこにいるのかわからないことはないと思います。」省略記号で切らず、入らないときは出さない（読み上げ名は残す）。A003-7。**公開（2026-11-13）：App `e9364508`**（ホームの画面名は入らない幅では省略記号で切らずに出さない。読み上げ名・ホバーの吹き出しは残す）。実Linux：4つのタブ×320/360×文字1/2×ja/fr/koの48通りで省略記号なし、320×2.0のja「プロジェクト」・fr「Partagés」だけ出さない、操作はすべて残る。
+5. **作品名が2文字ほどで切れる（320px・文字2倍）**：「表示最大文字数を決めて、そこまでは表示できるようにタイトル表示可能列数を最大2行に増やします。それでも収まらない部分は…のような三点リーダににしちゃっていいです。」表示できる最大の文字数を決め、名前を最大2行まで出し、超えた分だけ…にする。A003-D4。**公開（2026-11-13）：App `82ed9eed`・`9345758c`・`13ccaf21`・`68a0328c`・`3a62759c`**（カードの名前は最大2行・全角16文字〔半角32文字〕分まで、超える分だけ…。韓国語は語の途中で折らない。読み上げ・検索には名前の全部を渡す）。実Linux：同じ行のカードは同じ高さ、ホバーで全文。英語の長い1語は狭い幅で語の途中で折れる（DISC118と同じ種類）。
+6. **貼り付けの結果**：「件数内訳を出して正常に貼り付けられているかわかるようにしましょう。」貼り付けた件数と、貼り付けられなかった理由ごとの件数を出す。A005・A003N。**公開（2026-11-13）：App `2e8371bf`・`28e79bf8`**（貼り付けた件数と、元が見つからない・お気に入り・自分の中・保存の失敗などの理由ごとの件数を出し、途中で止めない。見つからない元はクリップボードから外し、同じ失敗を繰り返さない）。実Linux：「2件を貼り付けました。」「1件は、元の作品・フォルダが見つからないため…」、2回目は繰り返さない、ゴミ箱への貼り付けで3つの理由を同時に。
+7. **トースト**：「トースト表示は基本的に5秒以内に消えるようにしましょう。消えるときは突然消えるのではなく少しずつ薄くなるアニメーション付きです。」アプリ全体のSnackBarの決まり（操作ボタンつきも5秒以内、消えるときは徐々に薄くなる）。切り取りの知らせ・ゴミ箱の「元に戻す」も同じ。**公開（2026-11-13）：App `04906471`・`4f52ed59`**（`AppToastMessenger`で全部の知らせを出切ってから最長4.25秒・400msで薄くして消す。キャンバス6秒・引き継ぎ10秒の指定も5秒へ。実操作で見つけたD1〔ゴミ箱へ移した直後に星を押すと「元に戻す」が消える、以前から〕も、`runProjectAction`が前の失敗の知らせだけを取り下げる形〔`withdrawSnackBars`〕で直した。テスト：知らせ3ファイル89件、84ファイルで基準と同じ失敗の集合。実Linux：0.1〜0.5秒後の星でも「元に戻す」が約4.4秒出切って薄くなる・押すと戻る、切り取り→Esc・2回の貼り付け・「すべてコピー」3回で1つずつ5秒以内、原本`shots-toast3/`）。残り：DISC091〜093をこの決まりに合わせる。確認事項はASTRA_CONTINUATION.mdの6。
+8. **簡体字の括弧**：「“ ”へ全部そろえてください。」`app_zh.arb`の「」を“ ”へ（入れ子は‘ ’）。**公開（2026-11-13）：App `c34bc236`ほか**（簡体字の値の「」『』を“ ”‘ ’へ、英語・中国語の記号の混在も直す。繁体字は「」のまま。`l10n_quote_marks_test`が見張る。実Linux：簡体字のヘルプ・活用Tips・削除の確認で“ ”と入れ子の‘ ’、繁体字は「」と『』、原本`shots-l10n/sheet-L1-*`）。
+9. **詳細表示の行の更新日**：「日時出してください」。詳細表示の行に更新の日時を出す。A004。**公開（2026-11-13）：App `a8271193`・`b4e2eac0`**（詳細表示の行に最終保存の日時、フォルダは作った日時を、その言語の書き方で。日付・時刻を途中で折らない）。実Linux：「2026/11/8 16:35 更新」「Updated 11/8/2026 4:35 PM」「Modifié le 08/11/2026 16:35」。
+10. **別作業が足した切り取り・ゴミ箱のダイアログ**：「すべて多言語対応させてください」。日本語・英語だけの文（ホームの手書きの表・ダイアログ）を7言語のARBへ。A003-4a・4b。**公開（2026-11-13）：App `89ddc2d0..5ecfe65b`（11commit）**（ホームの手書きの言語の表・切り取り/ゴミ箱のダイアログ、作品広場・共有カード・フォントの取得・キャンバスのパネル、テーマの見本のカード・ツールの表示サイズ・PCレイアウトの表をARBへ。訳の誤字・文字化け・訳し忘れ、オパールへの言い換えで崩れた西・仏・韓の文法、狭い画面で切れるオパールの画面名、全機能の交換の確認の「\n\n」も直した。見張り：`home_no_cjk_literals_test`・`home_l10n_locales_test`・`dialog_l10n_locales_test`・`settings_l10n_locales_test`・`l10n_review_wording_test`ほか。テスト：111ファイルで基準に無い失敗0、載せ直し後の28ファイルで成功334・既知の失敗3。実Linux：7言語・PC/360pxで合格、原本`shots-l10n/`）。**残り**：テーマの見本一覧が日本語以外で英語（DISC106）、共有カードの画像の文（DISC108）、複製の名前（DISC105）。
+
+**品質の方針（原文）**：「全面監査資料にも書きましたが、このアプリを世界で賞をとれるレベルにまでクオリティアップさせてください。今できる機能を削る行為でなければ、いくらでもブラッシュアップしていいです。便利にする修正も見やすくする修正もおしゃれなデザインにする修正もよりよくなるなら大歓迎です。」D032の「ブラッシュアップ」をこの方針で進める（機能を削らない。根拠・修正前後・実操作・目視・回帰を残す）。
+
+## D001.65 — 公式Webのオパール・ミッションと統合比較表（2026-11-16追加）
+
+status: todo。Web 141d462a→29cec006〜ca5b6c2に、公開ページのスタジオデザイン、/coins/、Premium相互CTA、ミッション目標・ログインの節目、7言語の通貨表記、12特典・5期間・2比較のオパール料金表が追加・変更。S39で表のcaption/領域名と旧smokeを修正し、Chromiumで実ナビ・キーボード・5つの開閉・表示を確認した。W007/W009・D001.53–58・Appのオパール/特典仕様を現行backendの実装・公開条件と照合。全利用者状態・書体/価格の7言語・全viewport・読み上げ・アプリへの導線・交換と期限切れの実相当検証・法務/IP・公開条件・全Visual evidenceは未完。CI成功だけでこの項目を閉じない。証跡は A003_S39_20261116_EVIDENCE.md。
+
+## D001.66 — NIARIMアカウントの本人による削除（App・Web・Backend、2026-11-20追加）
+
+status: todo。App `f4118200`（設定→公式の削除ページ、410を受けたら対象のセッションだけサインアウト）、Web `20b7564`・`c22bb00`（Googleで本人確認→範囲・取り消せないことの確認→処理・途中再開・二重実行の防止）、Backend（処理待ち・書き込みの制限・所有者のデータ消去・他のアカウントを巻き込まない）。7言語・PC/SP・失敗/再試行・削除後のログイン・保持する記録の範囲を実操作とDynamoDB Localで確認する。公開環境のGoogle認証での削除は人の作業（human-action-pending）。関係：DISC487・563、W035〜W040、A094。
+
+## D001.67 — 壊れた作品の復旧と保存した版の選択・プレビュー（2026-11-20追加）
+
+status: todo。App `b7f8ed0e`（壊れた作品を読める版から戻し、利用者が版を選ぶ）・`f947ebda`（保存した版のプレビュー、保存のTipsの更新）・`ba498400`（時計に頼らない自動保存の復旧）。壊れた作品・版の一覧・プレビュー・選んで戻す・取り消し・起動し直し・7言語・PC/SPを実操作する。関係：A059〜A061。
+
+## D001.68 — 書き出しの目的別の案内・描画前の最終設定・共有の続き（2026-11-20追加）
+
+status: todo。App `f6de961d`（目的から形式を選ぶ案内、描画前に最終の設定を見せる）・`3f3e2a7c`（GIFの圧縮を別のisolateへ、書き出しのダイアログを保つ）・`e9b7f86e`（書き出した作品を共有に残し作品一覧のタブを直接開く）・`b78bbc0a`（特典が切れても書き出しを壊さない）。全形式・目的・特典の有無・戻る・キャンセル・7言語を実操作する。関係：A063〜A064、DISC528・529・531、Web `d39aa82`・`89b3716`・`f4e5aaa`。
+
+## D001.69 — 作品広場の通報・ブロック（モデレーション、2026-11-20追加）
+
+status: todo。App `0b8dfdd5`・`8995ee8f`（ブロックした投稿を一覧の覚えから除く）、Web `21c0daf`（モデレーションの案内と公開データの再確認）、Backend（自分の作品・自分の通報を断る）。見本のデータでの文（DISC540）、送信の成功・失敗・重複・取り消し、ブロックの解除、7言語を実操作する。実APIは未デプロイ。関係：A091、DISC409〜411・540。
+
+## D001.70 — 地域別の広告収益の集計と報酬の段（Backend、2026-11-17追加）
+
+status: todo。Backend `b5f25351`・`0404c394`・`bc1d406e`・`01e17740`・`73e70a19`・`eceedc0a`・`6f4e3899`・`c2557d6b`（国のデータの検証・日次のAdMobの報告・地域ごとの報酬の段・続けて見る報酬広告・遅れた報酬の回収）。単体test・DynamoDB Local・国のデータのダイジェストの照合・失敗/再試行・監視を確認する。実AdMobの報告は人の作業。関係：D001.35・D001.49・D001.60、A088〜A089・A099。
+
+## D001.71 — 名前付きの描画フィルターのプリセットと全画面再生の操作（2026-11-20追加）
+
+status: todo。App `0ff63b77`（描画フィルターの設定に名前を付けて保存・呼び出し、全画面再生の操作を重ねる）・`daee586c`（フィルターの見本の絵）。作成・名前の空白/重複/Enter・削除・引き継ぎ（.niatra）・7言語・取り消しを実操作する。関係：D002・D007・A045。
+
+## D001.72 — 中国語・韓国語の見出しの書体と画面全体の余白・文字の大きさ（2026-11-19〜20追加）
+
+status: todo。App `7f65d544`・`2df20473`（zh・koの見出しを本文の明朝に統一、`headingFontFamilyFor`）・`e4d3c5b7`・`191ae39b`（画面の余白・見出しの間隔・セーブスロットの行・狭い作業画面の操作）、Web `73e6b37`。7言語×PC/SP×文字1.0〜2.0で見出しの書体・字の欠け・折れ・押せる大きさを確かめ、CLAUDE.mdの書体の段落との食い違い（DISCの節の気づいた点）と`home_title_fit_test`・`requested_ui_all_captures_test`の失敗（DISC548）を照合する。
+
+## D001.73 — Tipsの図（注釈つきのアプリの画面）とTipsの読みやすさ（2026-11-20追加）
+
+status: todo。App `2a2f2470`（全ページに共通の配置の図）・`a4b3b66f`（大きな文字での読みやすさ）・`4f92188f`（注釈つきのアプリの画面の図）。図が今の画面と合うか、図の送りのキーボード（DISC536）、7言語×文字2倍×PC/SP、図の字の欠けを確かめる。関係：A087、D028。
+
+## D001.74 — 外観の設定を基本の6色へ簡略化（2026-11-16追加）
+
+status: todo。App `bc79bf03`（外観の色を6つの基本の色に）・`c81945be`（組み込みテーマの名前の翻訳）。旧形式の保存したテーマの読み込み・引き継ぎ・救済ボタン（読めない組み合わせ）・案Aの文字色・7言語を実操作する。関係：A081〜A082、DISC377〜383。CLAUDE.mdの「文字色・背景色・ボタン文字色・メニュー文字色・選択色等を自由に選べ」の記述と今の作りを照合する。
+
+## D001.75 — Webの問い合わせの送信・添付・回数の制限（2026-11-18〜19追加）
+
+status: todo。Web `cb43385`（送信の内容と添付の形式の検証）・`e1b247f`（回数の制限を送る前に確保）・`c147d55`（送信の結果の知らせ・言語ごとのHTML）・`ebb96d1`（問い合わせ・サポートのメールの設定）・`aa393ad`（日本語の確認・隠れた欄の自動入力の防止）。実メールは送らず、ローカルのWorkerで成功・失敗・制限・添付・7言語を確かめる。関係：W013・W035〜W039。
+
+## D002 — 全フィルター inventory → 個別監査
+
+全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。
+
+各フィルター1件ずつ:
+- 到達導線
+- 全設定と境界値
+- Apply/Cancel
+- Undo/Redo
+- 実処理
+- 保存/復元
+- 7言語
+- PC/SP
+- Free/Premium/current campaign
+- disabled/loading/error
+- 実描画
+- Visual evidence
+
+特に実処理がUI値を無視していないこと、名称だけのdead filterがないことを確認。
+
+## D002.1 — 描画フィルター「ガウスぼかし」（`FilterKind.gaussianBlur`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006。
+
+## D002.2 — 描画フィルター「レンズぼかし」（`FilterKind.lensBlur`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006。
+
+## D002.3 — 描画フィルター「アニメ風加工」（`FilterKind.animeStyle`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.4 — 描画フィルター「縁取り」（`FilterKind.outline`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D010。
+
+## D002.5 — 描画フィルター「トーンカーブ」（`FilterKind.toneCurve`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D008。
+
+## D002.6 — 描画フィルター「レベル補正」（`FilterKind.levels`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D009。
+
+## D002.7 — 描画フィルター「シャープ」（`FilterKind.sharpen`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.8 — 描画フィルター「アンシャープマスク」（`FilterKind.unsharpMask`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.9 — 描画フィルター「周辺減光」（`FilterKind.vignette`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+
+## D002.10 — 描画フィルター「フィルムグレイン（ノイズ・VHSノイズの設定を含む）」（`FilterKind.noise`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+
+## D002.11 — 描画フィルター「レトロアニメ」（`FilterKind.retroAnime`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+
+## D002.12 — 描画フィルター「ブラウン管」（`FilterKind.crt`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+
+## D002.13 — 描画フィルター「色調調整（色反転を含む）」（`FilterKind.colorAdjust`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.14 — 描画フィルター「二値化」（`FilterKind.threshold`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.15 — 描画フィルター「魚眼レンズ」（`FilterKind.fisheye`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D013。
+
+## D002.16 — 描画フィルター「色収差」（`FilterKind.chromaticAberration`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D013。
+
+## D002.17 — 描画フィルター「眼鏡断層」（`FilterKind.lensDistortion`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D014。
+
+## D002.18 — 描画フィルター「ドット絵」（`FilterKind.pixelate`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D015。
+
+## D002.19 — 描画フィルター「モザイク」（`FilterKind.mosaic`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D015。
+
+## D002.20 — 描画フィルター「質感変更（質感偏光・6つの土台）」（`FilterKind.auroraHologram`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.21 — 描画フィルター「背景馴染ませ」（`FilterKind.backgroundBlend`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D016。
+
+## D002.22 — 描画フィルター「墨溜まり」（`FilterKind.inkPool`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D016。
+
+## D002.23 — 描画フィルター「自動線画」（`FilterKind.autoLineart`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D017。
+
+## D002.24 — 描画フィルター「プリズム」（`FilterKind.prism`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006・D018。
+
+## D002.25 — 描画フィルター「球体陰影」（`FilterKind.sphereShading`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D005。
+
+## D002.26 — 描画フィルター「水彩境界」（`FilterKind.watercolorBorder`）
+
+status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+
+## D002.27 — 演出フィルター「フェード」（`EffectFilterType.fade`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.28 — 演出フィルター「ガウスぼかし」（`EffectFilterType.gaussianBlur`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.29 — 演出フィルター「レンズぼかし」（`EffectFilterType.lensBlur`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.30 — 演出フィルター「モザイク」（`EffectFilterType.mosaic`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.31 — 演出フィルター「色収差」（`EffectFilterType.chromaticAberration`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.32 — 演出フィルター「ノイズ」（`EffectFilterType.noise`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.33 — 演出フィルター「セピア」（`EffectFilterType.sepia`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.34 — 演出フィルター「アニメ調」（`EffectFilterType.animeStyle`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.35 — 演出フィルター「レトロアニメ」（`EffectFilterType.retroAnime`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.36 — 演出フィルター「ブラウン管」（`EffectFilterType.crt`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.37 — 演出フィルター「動くノイズ」（`EffectFilterType.animatedNoise`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.38 — 演出フィルター「雨」（`EffectFilterType.rain`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.39 — 演出フィルター「単色化フィルター」（`EffectFilterType.monochrome`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.40 — 演出フィルター「色調調整」（`EffectFilterType.colorAdjust`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.41 — 演出フィルター「二値化」（`EffectFilterType.threshold`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.42 — 演出フィルター「魚眼レンズ」（`EffectFilterType.fisheye`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.43 — 演出フィルター「ドット絵」（`EffectFilterType.pixelate`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.44 — 演出フィルター「質感変更」（`EffectFilterType.auroraHologram`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.45 — 演出フィルター「墨溜まり」（`EffectFilterType.inkPool`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.46 — 演出フィルター「VHSノイズ」（`EffectFilterType.vhsNoise`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.47 — 演出フィルター「トーンカーブ」（`EffectFilterType.toneCurve`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.48 — 演出フィルター「レベル補正」（`EffectFilterType.levels`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.49 — 演出フィルター「シャープ」（`EffectFilterType.sharpen`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.50 — 演出フィルター「アンシャープマスク」（`EffectFilterType.unsharpMask`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.51 — 演出フィルター「周辺減光」（`EffectFilterType.vignette`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D002.52 — 演出フィルター「水彩境界」（`EffectFilterType.watercolorBorder`）
+
+status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+
+## D003 — 範囲選択の対象レイヤー
+
+- 作業レイヤーのみ
+- 表示レイヤーすべて
+- toggle persistence
+- 選択→操作→解除
+- Undo/Redo
+- multi-layer alpha/visibility
+- save/restore
+- PC/SP/7言語
+- Visual
+
+## D004 — 投げ縄「線に吸着」
+
+- 単純な最近傍pixel吸着ではないことをsource確認。
+- ユーザー軌跡、連続性、進行方向、交差角を考慮。
+- 横切る別線への誤吸着を再現テスト。
+- 複数領域 fixture。
+- 粗い外周囲い→キャラクター境界へ吸着するケース。
+- cancel/undo、PC/SP、Visual.
+
+## D005 — 球体陰影フィルター
+
+影色/光色（透明可）、各blend mode、楕円光領域、X/Yサイズ、位置、blurを全確認。
+- slider
+- +/- 1 unit
+- 数値入力
+- Canvas drag
+- shadow outside light region
+- undo/redo
+- save/restore
+- real render
+- 透明色境界
+- PC/SP/7言語
+- Visual
+
+単一passの自動陰影方式を使う場合は、blend semanticsを壊していないことも確認。
+
+## D006 — Gaussian / Lens(Bokeh) / Prism blur
+
+- 元のdrawing alpha/region境界で再clipしない。
+- 描画領域外へ自然にblurが展開。
+- edgeはhard cutoffではなくsoft feather。
+- 3 filter同士の意味差。
+- save/restore/undo/redo/Visual。
+
+## D007 — Filter editor UI + Undo/Redo
+
+- filter選択後に大型search/filter/card領域が残らずcanvasを最大化。
+- top-right X / bottom-left Apply。
+- canvas同様の透過UI。
+- theme color text/outlines。
+- mobile最大化。
+- filter edit専用Undo/Redo。
+- keyboard/back/cancel/error。
+- 7言語/PC-SP/Visual。
+
+## D008 — Tone Curve
+
+- input→output graph
+- histogram
+- RGB/R/G/B
+- 任意control point追加・移動・削除
+- monotonic/edge/boundary cases
+- preset fallback
+- saved custom points
+- engine application
+- save/restore
+- actual pixel comparison
+- 7言語/PC-SP/Visual
+
+## D009 — Levels
+
+- Input Black / Gamma / White
+- Output Black / White
+- RGB/R/G/B
+- boundaries/inversions/neutral
+- UI→model→JSON→service→engine
+- save/restore
+- actual pixel comparison
+- 7言語/PC-SP/Visual
+
+## D010 — Outline
+
+- line width
+- inner erosion threshold
+- do not draw directly onto working layer
+- automatically create new layer one below
+- gap/threshold UI→engine
+- color/alpha
+- boundaries
+- save/restore
+- undo/redo
+- actual layer structure and render
+- Visual
+
+## D011 — Vignette / Retro Anime / CRT / VHS
+
+### Vignette
+corner darkening, soft feather, strength parameter, default around 50.
+
+### Retro Anime
+specified multi-step processing is actually automated; saturation change is +5% rather than old -2%; distinct from Film Grain.
+
+### CRT
+chromatic aberration strength + bleed/blur; scanline/RGB-phosphor semantics.
+
+### VHS
+tracking/chroma/time-noise semantics and dedicated route; visually distinguish from CRT.
+
+All four: real rendering, save/restore, boundaries, 7 language, PC/SP, Visual.
+
+## D012 — Removed/changed filter contracts
+
+- Monochrome must be removed from UI **and** old FilterKind/engine route/dead references where applicable.
+- Automation-only “オーロラホログラム” removal must not accidentally delete Gradient Map/texture-side same-name work.
+- dead route/name/serialization compatibility must be investigated.
+- analyze/test/build.
+
+## D013 — Fisheye / Chromatic Aberration
+
+### Fisheye
+radius, distortion, center X/Y, center handle (+), drag, boundaries, save/restore, visual.
+
+### Chromatic Aberration
+strength + X/Y/Z direction controls, boundaries, save/restore, actual channel displacement.
+
+## D014 — 眼鏡断層
+
+- do not use “度数” / prescription-like label for the numeric setting.
+- own lens-range mask editor if existing selection cannot be reused.
+- mask pen / eraser / bucket.
+- visible region, save/restore, undo/redo, localization, Visual.
+
+## D015 — Pixel Art vs Mosaic
+
+Pixel Art:
+- blocks overlapping drawing area boundary remain full rectangular blocks.
+- no clipping.
+- no alpha averaging.
+- diagonal crossing keeps rectangular pixel and same color.
+- color fixture: black/white/red/yellow/blue/green.
+- custom block size vs canvas-resolution-fit easy toggle.
+- compare against Mosaic.
+- actual pixel/sample assertions and Visual.
+
+## D016 — Background blending / Ink Pool
+
+### 背景なじませ
+subject content as a whole receives color, not blur-only edge processing.
+
+### 墨溜まり
+range + maximum thickness; thickest inner corner; smooth taper to 1px at outer edge.
+
+Both: actual pixel geometry, boundary, save/restore, undo/redo, Visual.
+
+## D017 — Auto Lineart / line-color tracing
+
+- Add/Delete control modes next to Apply.
+- Add then line; Delete then point.
+- Existing drag editing remains.
+- Undo/Redo.
+- Visual.
+- line-color tracing: inspect actual output, identify root cause, fix if needed, regression and Visual.
+
+## D018 — Blend 25 modes / picker preview / Prism
+
+- 25 modes total.
+- picker preview for each mode.
+- Addition and Linear Dodge must remain distinct.
+- Linear Dodge: lighten base, blend color reflected, black no effect, white reflected, inverse relationship to Linear Burn.
+- verify all added modes.
+- Prism final composite uses Linear Dodge and blur extends outward.
+- math tests + production visual comparison + Visual PDF.
+
+## D019 — Automation / Auto Fill / persistence regression
+
+Automation:
+- remove Automation-only オーロラホログラム.
+
+Auto Fill:
+- each preset captured with all parts painted at once in completed state.
+
+Persistence:
+- custom brush image bundling/import restores all images and order/mode.
+- pressure profiles.
+- chain/vegetation presets.
+- save/restore/migration/invalid data.
+
+All relevant targeted regression + Visual.
+
+## D020 — Community AI-use and mute filters
+
+Works:
+- exact flag wording: “AI画像・AI動画使用”.
+- author can set/unset at posting and later on own work.
+- AI-use hidden setting is applied across new/ranking/following/repost/Shorts/other surfaces.
+- mute title and mute tag registration.
+- muted title/word/tag disappears from all applicable feed routes.（所有者の判断 2026-11-20：一覧から消さず「この作品は非表示対象です」のカードだけを残す。今の作りのまま）
+- SharedPreferences restore uses trim/lowercase/empty filtering.
+- do not filter author’s own management view.
+
+Test owner/non-owner/public/private/deleted/blocked states where applicable.
+
+## D021 — Community backend/API consistency
+
+- AI-use update propagates local model → service/API/backend → re-fetch → all read surfaces.
+- auth/permission/owner checks.
+- stale cache/refetch.
+- network error/retry.
+- no local-only state.
+- isolated backend/stubs, no production user mutation.
+- request/response evidence with secrets/PII removed.
+
+### D021の必須追加チェック（2026-11-10 / status: todo）
+
+- **API完全棚卸し**: `backend/src/api/handler.ts` の全method/pathを起点に `routes/**` / `lib/**` / CDK / App `CommunityApi` / Web proxyへ対応付け、現時点の49ルート（最新HEADで再算定）を個別に検証。固定Baselineの旧22件を完了根拠にしない。正式な登録時一覧は `docs/work-audit/BACKEND_API_AUDIT_CHECKLIST.md`。
+- **認証/公開境界**: すべてのpublic/owner/optionally-authenticated APIで匿名・本人・他人・無効token/ID/URLを比較する。フォロー中一覧は本人のみ、フォロワーID/氏名や他人FFを公開しないこと、件数だけ公開、bookmarks・notifications・push token・作品所有権の漏れを確認。
+- **ランキング/再生/削除**: 25件page・上限Top50・期間とUTC/JST境界・bookmark transaction、GSIのstale read、公開/限定公開/非公開/削除と歴史的ランキングの伏字slot、取得後状態変更時の詳細/再生前preflightをApp/Webと突合。未知/timeoutは誤許可/誤削除判定をしない。
+- **フォロー/UI同期**: 自分のプロフィールのフォロー中人数tap→本人一覧、一覧内follow/unfollow/re-follow、人数即時更新、top-only pull-to-refreshで該当一覧のみrefetch、途中drag/jump/多重pointer・ログアウト/アカウント切替の古いresponseと非公開作者の扱い。
+- **外部サービスと不可逆変更**: YouTube OAuth/upload/comments/channel, Google OAuth、FCM配信/通知tap、AdMob SSV署名/nonce/リプレイ/日次上限、Google Play購入検証/restore、Premium/coin/missionの原子的残高・重複claim、広告の表示/同意/規約はmockとrealを分離。
+- **運用/障害/証拠**: IAM/OIDC/CDK/env gate・secret redaction・DynamoDB conditional transaction/TTL/GSI、retries/cancel/offline/部分失敗・quota/rate、実APIと隔離fixtureを区別。各ルートに期待/実際の認可、HTTP/JSON、read/write、UIの実操作・7locale/PC-SP、残課題と証拠位置を記録。CI成功や形式的なcoverageだけでD021をdoneにしない。
+
+
+## D022 — Selection / brush / filter state cross-feature interactions
+
+- selection target layer vs filter application target.
+- filter editor undo/redo vs global undo/redo.
+- Brush Custom/Hair Fold + selection + layers.
+- repeated apply/cancel.
+- state reset when leaving/re-entering.
+- save/restore across feature boundaries.
+- no stale callbacks/listeners.
+
+## D023 — Brush Custom
+
+- create/edit/duplicate/delete
+- all settings
+- draw
+- undo/redo
+- save/restore
+- import/export
+- invalid/legacy data
+- production UI
+- 7 languages
+- PC/SP
+- Visual
+
+## D024 — 縁取りペン
+
+- normal outline drawing
+- line width
+- erosion threshold
+- color/alpha
+- layer insertion contract
+- gap threshold
+- boundaries
+- save/restore
+- undo/redo
+- Visual
+
+## D025 — Hair Fold: five modes
+
+Hair Fold is explicitly an **outline-pen extension**, never a thick paint ribbon.
+
+Per-mode child TODOs:
+- ウェーブ俯瞰
+- ウェーブ煽り
+- 右カール
+- 左カール
+- 三日月カール
+
+Each mode:
+- brush thickness
+- taper
+- curvature/fold geometry
+- direction-change trigger
+- continuous bend handling
+- boundary
+- save/restore
+- actual draw
+- Visual
+
+Crescent重点:
+- centerline represents visual position.
+- center thickness follows brush thickness.
+- taper toward start/end.
+- outer crescent curve stronger/tighter than centerline.
+- inner curve weaker/looser.
+- no straight closing line.
+- end→start connection follows smooth curve/tangent.
+- no sudden thickness jumps.
+- brush width may affect activation threshold only; it must not secretly change requested stroke diameter.
+
+## D026 — Preset 髪の毛ブラシ
+
+- inventory latest production presets.
+- 1 preset = 1 child TODO.
+- preset settings and actual draw.
+- back-hair use case.
+- reproducibility via general outline-pen + Hair Fold controls.
+- save/restore.
+- Visual BEFORE/SETTINGS/AFTER.
+
+Do not hide non-reproducible behavior behind preset-only special logic; record as general-function improvement target.
+
+## D026.1 — ウェーブヘア（俯瞰）Brush0023（waveTopView）
+
+status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。塗りの外に黒い縁取り、波の山で内側の縁取りが延びた折り返し線（`shots-r1/h-08c`）。ジグザグ（鋭い折れ）では1つ目の谷と3つ目の山に折り返し線が出て、2つ目の谷・2つ目の山には出ない（`zz-6c`）。書き終わりは細く抜ける。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+
+## D026.2 — 右巻きヘアBrush0031（curlRight）
+
+status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。右へ曲がる所で折り返し線（`hair-cr-combo`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+
+## D026.3 — 左巻きヘアBrush0032（curlLeft）
+
+status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。左へ曲がる所で折り返し線、右巻きと逆の側（`hair-cl-combo`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+
+## D026.4 — ウェーブヘア（煽り）Brush0034（waveLowAngle）
+
+status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。俯瞰と逆の側の曲がりで折り返し線（`hair-lowanglec`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+
+## D026.5 — 三日月カールヘアBrush0035（crescent）
+
+status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。半波ごとに三日月の形、書き始めは丸い普通の線、書き終わりは普通の線に戻って細く抜ける。閉じる直線は無く、太さが急に変わる所は見えない（`hair-crescentc`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+
+## D026.6 — リボン（ウェーブ俯瞰）Brush0036
+
+status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。赤い平たいリボン（太さ26・入り抜きなし）、端は四角、波の山で裏返る線（`rib-combo1`）。縦の区間ではリボンが細くなり、縁が4px前後の段々に見える。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+
+## D026.7 — リボン（ウェーブ煽り）Brush0037
+
+status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。同上、俯瞰と逆の側で裏返る（`rib-combo1`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+
+## D026.8 — リボン（右巻き）Brush0038
+
+status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。右の曲がりで裏返る（`rib-combo2`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+
+## D026.9 — リボン（左巻き）Brush0039
+
+status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。左の曲がりで裏返る（`rib-combo2`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+
+## D026.10 — リボン（三日月カール）Brush0040
+
+status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。半波ごとに三日月、端は四角（`hair-rib-cresc`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+
+## D027 — Preset 前髪ブラシ
+
+Same as D026 for every current bangs preset:
+- inventory
+- 1 preset = 1 child TODO
+- settings
+- actual bangs shape
+- general-setting reproducibility
+- save/restore
+- Visual
+
+## D027.1 — 前髪 Brush0024
+
+status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。前髪の先端の画像（`bangs_cut_01`〜`05`）で縁がぎざぎざの帯になり、端も切った形（`shots-r1/hair-bangsc`）。折り畳みの処理は無い。未確認：短い前髪の束を何本も描く使い方、筆圧での太さ（25〜100%）、保存/復元、Visual。
+
+## D028 — Help / Tips / 7-language consistency
+
+- App/Web Help/Tips current feature inventory.
+- stale legacy descriptions.
+- “下塗りモード” or equivalent stale terminology search.
+- new filter/brush/Hair Fold/Community terminology.
+- 7-language semantic/back-translation.
+- screenshots/links/anchors.
+- App/Web terminology consistency.
+- do not rely on key parity alone.
+
+## D029 — Latest Visual closure
+
+Generate new closure artifact from latest HEAD; historical 2026-09-29 PDFs are references only.
+
+Required:
+- all filters including texture-change/polarization
+- all relevant filter settings
+- Brush Custom
+- 縁取りペン
+- Hair Fold 5 modes
+- each hair/bangs preset
+- Community relevant visual surfaces
+- BEFORE / SETTINGS / AFTER
+- feature name / preset or mode / key settings burned into image
+- manifest-backed cases
+- full PDF render check
+- direct human/agent image inspection
+- no missing images / mojibake / layout break
+
+## D030 — Full quality cross-matrix
+
+For all completed Baseline + Delta IDs:
+- status/evidence consistency.
+- required state matrix.
+- 336 viewport-language matrix where applicable.
+- PC/SP distinction.
+- theme/light-dark-custom.
+- textScale.
+- reduced motion.
+- keyboard/IME/hover/touch.
+- safe area/short height/keyboard.
+- Premium/free/campaign.
+- error/offline/loading/disabled/cancel/retry.
+- save/restore/import/export.
+- security/privacy/data-loss boundaries.
+- targeted analysis/test/build.
+- direct visual inspection separate from automation.
+
+Do not interpret a passing automated matrix as proof of direct interaction or visual quality.
+
+## D031 — Delta coverage and pre-final completion gate
+
+Re-inventory latest HEAD and compare against:
+- Baseline A001–A104
+- Delta D001–D030
+- Discovery TODOs
+- AUDIT_INVENTORY
+- source tree
+- routes/navigation
+- filters/effects
+- brush/preset catalogs
+- Community/API
+- Help/Tips/Web
+
+Required:
+- unassigned feature/filter/preset/route/control = 0
+- unregistered Discovery = 0
+- incomplete delta = 0
+- advisor-pending = 0
+- no queued/running evidence needed for completion
+- final build/test/analyze/visual closure completed
+- latest HEAD after final fixes rechecked
+
+## Delta evidence record schema
+
+各D-IDには必要に応じて以下を記録:
+- ID / substep
+- execution SHA
+- App/Web SHA
+- date/time
+- environment/device/viewport/mode/language/Premium
+- fixture/input
+- exact operations
+- expected result
+- actual result
+- screenshots/PDF/manifest references
+- targeted test/analyze/build/log
+- visual inspection result
+- discovered issue/root cause
+- fix commit
+- post-fix regression
+- remaining unknown/blocker
+- next_action
+
+## Never-pass rules
+
+以下だけではdoneにしない:
+- UIが表示される
+- widget testのみPASS
+- unit testのみPASS
+- CI GREENのみ
+- old PDF exists
+- old chat says completed
+- source implementation appears plausible
+- screenshot exists without known state/settings
+- static translation key exists
+- route/inventory assignment exists
+- advisor says safe
+
+
+## D032 — 全機能・全操作の実操作最終確認 + プロダクトブラッシュアップ
+
+このIDは「テストが通るか」だけでなく、**ユーザーが実際に使うのと同じ順序・入力・ジェスチャー・確定/取消を行ったとき、意図した動き・見た目・フィードバックになるか**を最終確認するための明示的な実操作工程。
+
+### 実操作の対象
+- 全App/Web画面、route、dialog、sheet、popover、menu、context menu、toolbar、panel、tab、設定、onboarding、empty/loading/error/offline/disabled
+- 全機能・全visible control
+- 各機能の主要成功経路だけでなく、取消、戻る、再入力、境界値、無効値、二重操作、連打、途中離脱、再訪、保存/復元、Undo/Redo、import/export、共有/公開、権限拒否、失敗→retry/cancel
+- touch / mouse / stylus / keyboard / IME / hover / long-press / drag / pinch/zoom / scroll / resize 等、実際に存在する操作方式
+- 制作系機能では実際の絵・レイヤー・フレーム・ブラシ・選択範囲・タイムライン等を使った実データ操作
+
+### 判定
+各操作で以下を別々に確認する。
+1. **機能結果** — データ/画像/状態が仕様どおり変化する。
+2. **意図した挙動** — 操作中の追従、境界、遷移、feedback、Undo/Redo、Cancel、再実行、focus/selection等がユーザーの期待どおり。
+3. **見た目** — 操作前/中/後のlayout、spacing、typography、icon、color、contrast、animation、overlay、clipping、overflow、alignment、theme、density、touch targetが自然で崩れない。
+4. **継続性** — その場を離れて再訪・保存復元・再起動した後も意味と状態が壊れない。
+5. **製品品質** — 手数、理解しやすさ、発見可能性、誤操作耐性、操作の気持ちよさ、制作効率を世界水準の商用製品として評価する。
+
+### ブラッシュアップ
+明確なバグだけでなく、**仕様上動いていてもUX/UI・情報設計・視覚品質・操作効率・フィードバック・一貫性をさらに改善できる箇所は、重大製品全体rewriteに当たらない限り遠慮なく修正する。**
+改善を行った場合は必ず、修正前→修正→targeted test→同じ実操作の再実行→Visual再確認→関連regressionまで行う。
+「好みの問題」だけの変更は避け、具体的な利用上の問題・品質差・一貫性・アクセシビリティ・商用製品としての合理性を根拠に判断する。
+既存の良いUI/UXを理由なく壊さず、改善による副作用を確認する。
+
+### 完了条件
+全画面・全機能・全visible controlについて、未説明の実操作未確認が0。
+機能結果・意図挙動・見た目のいずれかに問題がある場合、修正可能なものは修正して再操作する。
+環境上実操作できない対象はPASSにせず、blocked/未確認理由と必要環境をEvidenceへ記録する。
+
+## D033 — 全プリセット総inventory + 個別実操作
+
+髪/前髪だけでなく、最新HEADで利用者が選択・適用・保存できる**全プリセット**をコード、production UI、asset/catalog、model、serializationから再inventoryする。
+
+対象例: built-in/custom brush、髪/前髪、filter、texture/material、theme/color、automation/action/workflow、size/pressure、timeline/animation、その他のpreset/catalog。未知のカテゴリも対象から除外しない。
+
+各プリセットを1対象=1子TODOとして固定し、production UIで実際に選択→適用→結果確認→必要なら編集→確定/取消→再適用を行う。設定値、実結果、保存/復元、import/export、legacy互換、削除/複製、権限制御、7言語、PC/SP、Visualを確認する。プリセット一覧そのものの件数・名称・並び順・重複・dead entryも確認する。
+
+## D034 — 品質設定・テーマ・保存形式のmutation audit
+
+監査中に品質に影響する設定を意図的に変更して、その変更が製品全体へ正しく連動するかを確認する。
+
+- theme colorを複数系統変更し、文字、icon、outline、slider、background、selected/disabled/error、overlay、dialog、canvas chrome等の全theme依存部分が連動するか確認。
+- light/dark/custom、textScale、language、reduced-motion、workspace/panel、performance/quality設定等を切り替え、画面遷移・再訪・再起動後も一貫するか確認。
+- save schema/versionを変更する場合はlegacy→current、current round-trip、unknown/newer、invalid、truncated、corruptを隔離データで検証。指定したversion/schemaそのもの、順序、参照、embedded asset、画像/音声、undo/redoが正しく保存・復元されることを確認。
+- project saveだけでなく、実装されているexport/output formatも全件確認する。拡張子・MIME・codec/encoding、canvas size、alpha、color/profile、frame/audio、metadata、透明部分、ファイル名/保存先、cancel/error、再読込可能性を実出力で確認し、指定形式と実ファイルが一致することを確認。
+- UI→model→serialization→service→engine→render→reloadの往復で値が欠落・丸め・無視されないことを確認。
+- mutation後の見た目と実操作を再確認し、1箇所だけ変わるhalf-updated stateを許容しない。
+
+## D035 — 全主要操作の実行時間・軽量化
+
+主要なユーザー操作について、cold/warm起動、画面遷移、設定適用、描画、filter、blur、undo/redo、save/load、import/export、検索、一覧取得、共有/公開等の実行時間を実測する。
+
+各測定は入力サイズ、端末/環境、fixture、測定方法、反復回数、p50/p95等を記録する。jank/frame drop、UI freeze、memory spike、不要なrebuild/allocation/clone、I/O待ち、同期処理も確認する。 操作inventoryに存在する各操作について、測定可能な処理時間または入力→最初の視覚的feedbackまでの遅延を記録し、測定対象外はN/A理由をEvidenceへ残す。
+入力イベントから最初の視覚的feedbackまでの遅延も必要な操作で測定し、「処理完了まで」だけでなくユーザーが待たされている体感遅延を評価する。
+
+遅い操作はprofile/traceでroot causeを特定し、同じ結果・互換性・安全性を維持できる範囲でキャッシュ、差分更新、非同期化、allocation/clone削減、アルゴリズム改善、バッファ削減、widget rebuild削減、I/O batching、serialization最適化等を実施する。最適化前後を同一条件で比較し、速度だけでなく画像、state、保存、undo/redo、境界条件が一致することを再確認する。
+
+低性能端末でも実用的に動くことを優先し、単にsource codeを短くすることは目的にしない。必要なら同じ結果を得る別実装へ置換する。
+
+S34追加/DISC058: Storageは実PCで約7秒/再訪約16秒後も本文loading。計測対象へcomputeBreakdown/deviceSpaceと本文初回feedback・中断後の処理を追加。原因未確定、spinnerを品質PASSに代用しない。
+
+S35追加/DISC059: Linuxの共有/tmpをNIARIM cacheとして集計/削除する経路を隔離実FSで実証（4反例FAIL）。app専用cacheへの境界修正をD034の保存/初期化安全性と関連付ける。getTemporaryDirectoryを使う既存producer（export/serializer/waveform/thumbnail/widget/autofill/theme/Home）の所有dir・一時出力の個別cleanup/legacy扱いはD035/D036で全件確認し、未実操作を完了にしない。
+
+## D036 — ソース衛生・不要コード・コメント品質
+
+App/Web/Backendを横断して、未使用import、dead code、到達不能route、obsolete service/model、未使用asset、debug print/log、temporary workaround、古いtest/fixture/workflow参照、不要なgenerated artifact、TODO/FIXME/HACK/placeholderを探索する。
+
+同じ結果が得られるなら、より単純・安全・高速・保守しやすい実装へrefactor/rewriteする。削除・統合後はanalyze/lint/test/buildと関連実画面regressionを行い、間接参照・dynamic loading・serialization名による参照切れも確認する。
+
+production sourceのコメントはコードの意味、設計上の不変条件、非自明な制約、公開API/ライセンス等の恒久情報に限定する。開発経緯、修正履歴、作業メモ、チャット由来の説明は削除する。ただし法的/ライセンス上必要なattributionは保持する。
+
+## D037 — 最終全面closure gate
+
+D001〜D036とBaseline/Discoveryを再照合し、**最新dev_branch HEAD**で最終的に全対象が完了しているかを確認する。
+
+必要条件:
+- 全画面・全route・全dialog/sheet/menu/panel/tab・全visible controlの実操作inventoryで未確認0。
+- 全固有操作・状態遷移・分岐・境界・cancel/retry/undo/redo等の未確認0。
+- 全プリセットinventoryで未割当/未実操作0。
+- 全フィルターinventoryで未割当0。質感変更/質感偏光を含む。
+- theme/settings/save-format mutationで未確認0。
+- performance measurement / optimization regressionで未確認0。
+- source hygiene scanで重大なdead/unused/temporary artifactが未処理のまま残っていない。
+- 7言語・PC/SP・必要な336表示matrix、Premium/free/campaign、accessibility条件を満たす。
+- targeted test/analyze/build、production UI実操作、Visual inspection、最新Visual PDFを全て最新HEADへ再照合。
+- 修正後の関連regressionが完了し、queued/running evidenceがない。
+- Baseline未完了=0、Discovery未完了=0、Delta未完了=0、advisor-pending=0、未登録Discovery=0。
+
+これらを満たさない場合は全面監査completeを宣言しない。
+## 2026-10-06 全面監査依頼の起動契約
+全面監査依頼では、D001〜D037を正式に実行対象とし、docs/work-audit/state/FULL_AUDIT_EXECUTION_STANDARD.md を適用する。特にD032（全機能・全操作のhands-on + polish）、D033（全preset個別監査）、D034（theme/quality/save-format mutation）、D035（実行時間・軽量化）、D036（source hygiene）、D037（最終closure）を省略しない。
+

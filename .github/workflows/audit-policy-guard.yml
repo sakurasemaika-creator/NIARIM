@@ -1,0 +1,64 @@
+name: Audit policy guard
+
+on:
+  push:
+    branches: [dev_branch]
+  pull_request:
+    branches: [dev_branch]
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reject unauthorized audit policy/state edits
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            base="origin/${{ github.base_ref }}"
+            range="$base...HEAD"
+          else
+            before="${{ github.event.before }}"
+            if [[ -z "$before" || "$before" =~ ^0+$ ]]; then
+              before="HEAD^"
+            fi
+            range="$before..HEAD"
+          fi
+
+          changed="$(git diff --name-only "$range" || true)"
+          messages="$(git log --format=%B "$range" || true)"
+
+          policy_re='^(AGENTS\.md|\.github/workflows/audit-policy-guard\.yml|docs/work-audit/README\.md|docs/work-audit/policy/.*|docs/product-audit/(QUALITY_STANDARD|LEGAL_IP_STANDARD|HANDS_ON_UI_STANDARD)\.md)$'
+          state_re='^docs/work-audit/state/.*$'
+          legacy_re='^(docs/work-continuation\.md|docs/product-audit/README\.md|docs/work-audit/ASTRA_WORK\.md)$'
+
+          policy_changed="$(printf '%s\n' "$changed" | grep -E "$policy_re" || true)"
+          state_changed="$(printf '%s\n' "$changed" | grep -E "$state_re" || true)"
+          legacy_changed="$(printf '%s\n' "$changed" | grep -E "$legacy_re" || true)"
+
+          if [[ -n "$policy_changed" ]] && ! grep -Fq '[audit-policy-approved]' <<<"$messages"; then
+            echo '::error::Audit policy files changed without [audit-policy-approved].'
+            echo "$policy_changed"
+            exit 1
+          fi
+
+          if [[ -n "$state_changed" ]] && ! grep -Eq '\[(audit-state|audit-policy-approved)\]' <<<"$messages"; then
+            echo '::error::Audit state changed without [audit-state] or [audit-policy-approved].'
+            echo "$state_changed"
+            exit 1
+          fi
+
+          if [[ -n "$legacy_changed" ]] && ! grep -Fq '[audit-policy-approved]' <<<"$messages"; then
+            echo '::error::Legacy audit paths may only change during explicit audit-system migration.'
+            echo "$legacy_changed"
+            exit 1
+          fi
+
+          echo 'Audit policy/state guard passed.'

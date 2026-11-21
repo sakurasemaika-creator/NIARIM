@@ -1,0 +1,18707 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_ja.dart';
+import 'app_localizations_ko.dart';
+import 'app_localizations_zh.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations? of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('es'),
+    Locale('fr'),
+    Locale('ja'),
+    Locale('ko'),
+    Locale('zh'),
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+  ];
+
+  /// No description provided for @brushFoldTriggerDepthRatio.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返しが始まるカーブの深さ（ペン幅比）'**
+  String get brushFoldTriggerDepthRatio;
+
+  /// No description provided for @homeTabProjects.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト'**
+  String get homeTabProjects;
+
+  /// No description provided for @homeTabShared.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有'**
+  String get homeTabShared;
+
+  /// No description provided for @homeTabTrash.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱'**
+  String get homeTabTrash;
+
+  /// No description provided for @homeTabWorks.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品一覧'**
+  String get homeTabWorks;
+
+  /// No description provided for @homeTabBookmarked.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマーク'**
+  String get homeTabBookmarked;
+
+  /// No description provided for @homeBookmarkedEmptyTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示できるブックマーク作品がありません'**
+  String get homeBookmarkedEmptyTitle;
+
+  /// No description provided for @homeBookmarkedEmptyBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場で気に入った公開作品をブックマークすると、ここに表示されます。'**
+  String get homeBookmarkedEmptyBody;
+
+  /// No description provided for @homeBookmarkedHiddenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークは保存されています'**
+  String get homeBookmarkedHiddenTitle;
+
+  /// No description provided for @homeBookmarkedHiddenBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示フィルターや作品の公開状態により表示できない場合があります。作品広場で表示フィルターを確認できます。'**
+  String get homeBookmarkedHiddenBody;
+
+  /// No description provided for @homeBookmarkedLoading.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークを読み込み中…'**
+  String get homeBookmarkedLoading;
+
+  /// No description provided for @homeBookmarkedLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークを読み込めませんでした'**
+  String get homeBookmarkedLoadFailed;
+
+  /// No description provided for @homeBookmarkedLoadPrompt.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存したブックマークを読み込む'**
+  String get homeBookmarkedLoadPrompt;
+
+  /// No description provided for @homeBookmarkedSignInBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存したブックマークを読み込むには、作品広場でGoogleアカウントを接続してください。'**
+  String get homeBookmarkedSignInBody;
+
+  /// No description provided for @homeSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト名で検索'**
+  String get homeSearchHint;
+
+  /// No description provided for @homeSearchHintWorks.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品名で検索'**
+  String get homeSearchHintWorks;
+
+  /// No description provided for @homeSearchHintShared.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有ファイル名で検索'**
+  String get homeSearchHintShared;
+
+  /// No description provided for @homeSearchHintTrash.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱の中を名前で検索'**
+  String get homeSearchHintTrash;
+
+  /// No description provided for @homeBackToSplashTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'起動画面に戻る'**
+  String get homeBackToSplashTooltip;
+
+  /// No description provided for @homeFavoritesOnly.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り'**
+  String get homeFavoritesOnly;
+
+  /// No description provided for @homeAddSheetNewProject.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規プロジェクト'**
+  String get homeAddSheetNewProject;
+
+  /// No description provided for @homeAddSheetNewFolder.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規フォルダ'**
+  String get homeAddSheetNewFolder;
+
+  /// No description provided for @homeSelectionAllSelect.
+  ///
+  /// In ja, this message translates to:
+  /// **'全選択'**
+  String get homeSelectionAllSelect;
+
+  /// No description provided for @homeSelectionAllDeselect.
+  ///
+  /// In ja, this message translates to:
+  /// **'全解除'**
+  String get homeSelectionAllDeselect;
+
+  /// No description provided for @homeSelectionCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件選択中'**
+  String homeSelectionCount(int count);
+
+  /// No description provided for @homeMoveToTrash.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱へ移動'**
+  String get homeMoveToTrash;
+
+  /// No description provided for @homeMoveToTrashConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をゴミ箱へ移動しますか？'**
+  String homeMoveToTrashConfirm(int count);
+
+  /// No description provided for @commonMove.
+  ///
+  /// In ja, this message translates to:
+  /// **'移動'**
+  String get commonMove;
+
+  /// No description provided for @homeShareFileDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有ファイル'**
+  String get homeShareFileDialogTitle;
+
+  /// No description provided for @homeSharedFileTooLarge.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有ファイルが128 MBを超えています。128 MB以下のファイルを開いてください。'**
+  String get homeSharedFileTooLarge;
+
+  /// No description provided for @homeSharedFileUnreadable.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有ファイルを開けませんでした。ファイルを保存し直してから開いてください。'**
+  String get homeSharedFileUnreadable;
+
+  /// No description provided for @homeShareFileDialogContent.
+  ///
+  /// In ja, this message translates to:
+  /// **'この共有ファイルを複製して通常プロジェクトとして保存しますか？'**
+  String get homeShareFileDialogContent;
+
+  /// No description provided for @homeMissingFontsSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'不足フォントがあります。{names}'**
+  String homeMissingFontsSnackbar(String names);
+
+  /// No description provided for @homeSharedImportedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトタブへ追加しました'**
+  String get homeSharedImportedSnackbar;
+
+  /// No description provided for @homeSharedImportFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有ファイルの読み込みに失敗しました: {error}'**
+  String homeSharedImportFailedSnackbar(String error);
+
+  /// No description provided for @homeViewModeLarge.
+  ///
+  /// In ja, this message translates to:
+  /// **'大'**
+  String get homeViewModeLarge;
+
+  /// No description provided for @homeViewModeMedium.
+  ///
+  /// In ja, this message translates to:
+  /// **'中'**
+  String get homeViewModeMedium;
+
+  /// No description provided for @homeViewModeSmall.
+  ///
+  /// In ja, this message translates to:
+  /// **'小'**
+  String get homeViewModeSmall;
+
+  /// No description provided for @homeViewModeDetail.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細'**
+  String get homeViewModeDetail;
+
+  /// No description provided for @homeViewLayoutHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示形式'**
+  String get homeViewLayoutHeading;
+
+  /// No description provided for @homeViewLayoutTiles.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイル'**
+  String get homeViewLayoutTiles;
+
+  /// No description provided for @homeViewSizeHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズ'**
+  String get homeViewSizeHeading;
+
+  /// No description provided for @homeSortFieldName.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前'**
+  String get homeSortFieldName;
+
+  /// No description provided for @homeSortFieldUpdated.
+  ///
+  /// In ja, this message translates to:
+  /// **'更新日時'**
+  String get homeSortFieldUpdated;
+
+  /// No description provided for @homeSortDirectionAscTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'昇順（タップで降順に切り替え）'**
+  String get homeSortDirectionAscTooltip;
+
+  /// No description provided for @homeSortDirectionDescTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'降順（タップで昇順に切り替え）'**
+  String get homeSortDirectionDescTooltip;
+
+  /// No description provided for @homeSharedEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有プロジェクトがありません'**
+  String get homeSharedEmpty;
+
+  /// No description provided for @homeProjectMeta.
+  ///
+  /// In ja, this message translates to:
+  /// **'{fps}fps · {duration}秒'**
+  String homeProjectMeta(int fps, int duration);
+
+  /// ホームのゴミ箱のタブ：作品の行を出したまま、書き出した作品・作成した共有ファイルの控えをまだ読み込んでいる間、一覧の先頭に出す文
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出した作品と、作成した共有ファイルを読み込み中…'**
+  String get homeTrashLoadingFiles;
+
+  /// No description provided for @homeTrashEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱は空です'**
+  String get homeTrashEmpty;
+
+  /// ホームのゴミ箱のタブ：探した言葉に当たるものが無い（種類の絞り込みで隠れているのではない）
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱に「{query}」に一致するものはありません'**
+  String homeTrashNoMatchTitle(String query);
+
+  /// ホームのゴミ箱のタブ：選んだ種類には何も無いが、選んでいない種類にはある
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ種類のものはゴミ箱にありません'**
+  String get homeTrashNoKindTitle;
+
+  /// ホームのゴミ箱のタブ：探した言葉に当たるものは、選んでいない種類にだけある
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ種類に「{query}」に一致するものはありません'**
+  String homeTrashNoKindMatchTitle(String query);
+
+  /// ゴミ箱の行の補足：ゴミ箱へ移した日（作品一覧の日付と同じ、その言語の書き方）
+  ///
+  /// In ja, this message translates to:
+  /// **'{date} 削除'**
+  String homeTrashDeletedOn(DateTime date);
+
+  /// No description provided for @homePermanentDelete.
+  ///
+  /// In ja, this message translates to:
+  /// **'完全削除'**
+  String get homePermanentDelete;
+
+  /// No description provided for @homePermanentDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'完全に削除しますか？'**
+  String get homePermanentDeleteConfirmTitle;
+
+  /// No description provided for @homePermanentDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'元に戻すことはできません。'**
+  String get homePermanentDeleteConfirmBody;
+
+  /// No description provided for @homeWorksEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出した作品がありません'**
+  String get homeWorksEmpty;
+
+  /// No description provided for @homeWorksEmptyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインから動画やGIFを書き出すと、ここに表示されます。'**
+  String get homeWorksEmptyHint;
+
+  /// No description provided for @homeWorkFolderEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダには書き出した作品がありません'**
+  String get homeWorkFolderEmpty;
+
+  /// No description provided for @homeSharedFolderEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダには共有プロジェクトがありません'**
+  String get homeSharedFolderEmpty;
+
+  /// No description provided for @homeDeleteFolderKeepContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」フォルダを削除します。中の項目は一覧に戻り、項目自体は削除されません。'**
+  String homeDeleteFolderKeepContents(String name);
+
+  /// No description provided for @homeShareOpenWith.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有・写真アプリ等で開く'**
+  String get homeShareOpenWith;
+
+  /// No description provided for @homePreviewFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューを再生できません'**
+  String get homePreviewFailed;
+
+  /// No description provided for @homeFirstLaunchMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'手描きアニメーションを制作できます'**
+  String get homeFirstLaunchMessage;
+
+  /// No description provided for @homeFirstLaunchStart.
+  ///
+  /// In ja, this message translates to:
+  /// **'はじめる'**
+  String get homeFirstLaunchStart;
+
+  /// No description provided for @homeFirstLaunchSaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'この案内を見たことを保存できませんでした。もう一度「はじめる」を押してください。'**
+  String get homeFirstLaunchSaveFailed;
+
+  /// No description provided for @settingsScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定'**
+  String get settingsScreenTitle;
+
+  /// No description provided for @settingsBasicTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'基本'**
+  String get settingsBasicTitle;
+
+  /// No description provided for @settingsBasicSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'FPS・言語・描画領域'**
+  String get settingsBasicSubtitle;
+
+  /// No description provided for @settingsBasicSheetTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'基本設定'**
+  String get settingsBasicSheetTitle;
+
+  /// No description provided for @settingsDefaultFps.
+  ///
+  /// In ja, this message translates to:
+  /// **'デフォルトFPS'**
+  String get settingsDefaultFps;
+
+  /// No description provided for @settingsDefaultFpsSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規プロジェクト作成画面の初期値'**
+  String get settingsDefaultFpsSubtitle;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In ja, this message translates to:
+  /// **'言語'**
+  String get settingsLanguage;
+
+  /// No description provided for @settingsLanguageJapanese.
+  ///
+  /// In ja, this message translates to:
+  /// **'日本語'**
+  String get settingsLanguageJapanese;
+
+  /// No description provided for @settingsLanguageEnglish.
+  ///
+  /// In ja, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEnglish;
+
+  /// No description provided for @settingsLanguageChinese.
+  ///
+  /// In ja, this message translates to:
+  /// **'简体中文'**
+  String get settingsLanguageChinese;
+
+  /// No description provided for @settingsLanguageKorean.
+  ///
+  /// In ja, this message translates to:
+  /// **'한국어'**
+  String get settingsLanguageKorean;
+
+  /// No description provided for @settingsLanguageTraditionalChinese.
+  ///
+  /// In ja, this message translates to:
+  /// **'繁體中文'**
+  String get settingsLanguageTraditionalChinese;
+
+  /// No description provided for @settingsLanguageFrench.
+  ///
+  /// In ja, this message translates to:
+  /// **'Français'**
+  String get settingsLanguageFrench;
+
+  /// No description provided for @settingsLanguageSpanish.
+  ///
+  /// In ja, this message translates to:
+  /// **'Español'**
+  String get settingsLanguageSpanish;
+
+  /// No description provided for @settingsSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定を検索...'**
+  String get settingsSearchHint;
+
+  /// No description provided for @settingsPerformanceTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パフォーマンス'**
+  String get settingsPerformanceTitle;
+
+  /// No description provided for @settingsPerformanceSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'品質設定・Undo回数・ゴミ箱・動作の軽さ'**
+  String get settingsPerformanceSubtitle;
+
+  /// No description provided for @settingsGestureTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ジェスチャー'**
+  String get settingsGestureTitle;
+
+  /// No description provided for @settingsGestureSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'2本指タップ・長押し'**
+  String get settingsGestureSubtitle;
+
+  /// No description provided for @settingsPenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン入力'**
+  String get settingsPenTitle;
+
+  /// No description provided for @settingsPenSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'筆圧・傾き・ペンボタン'**
+  String get settingsPenSubtitle;
+
+  /// No description provided for @settingsWorkspaceTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ワークスペース'**
+  String get settingsWorkspaceTitle;
+
+  /// No description provided for @settingsWorkspaceSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールバー編集・パネル配置'**
+  String get settingsWorkspaceSubtitle;
+
+  /// No description provided for @settingsBucketTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'バケツ塗り'**
+  String get settingsBucketTitle;
+
+  /// No description provided for @settingsBucketSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'許容誤差・拡張・線の下まで潜る'**
+  String get settingsBucketSubtitle;
+
+  /// No description provided for @settingsThemeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマ・外観'**
+  String get settingsThemeTitle;
+
+  /// No description provided for @settingsThemeSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマ配色・文字色・背景色'**
+  String get settingsThemeSubtitle;
+
+  /// No description provided for @settingsWatermarkTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウォーターマーク'**
+  String get settingsWatermarkTitle;
+
+  /// No description provided for @settingsWatermarkSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタムウォーターマーク'**
+  String get settingsWatermarkSubtitle;
+
+  /// No description provided for @settingsTransferTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'引き継ぎ'**
+  String get settingsTransferTitle;
+
+  /// No description provided for @settingsTransferSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定・素材・ブラシを他端末へ書き出し/読み込み'**
+  String get settingsTransferSubtitle;
+
+  /// No description provided for @settingsFontTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォント管理'**
+  String get settingsFontTitle;
+
+  /// No description provided for @settingsFontSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'TTF/OTFの追加・検索・削除'**
+  String get settingsFontSubtitle;
+
+  /// No description provided for @settingsNoResults.
+  ///
+  /// In ja, this message translates to:
+  /// **'該当する設定項目が見つかりません'**
+  String get settingsNoResults;
+
+  /// No description provided for @settingsTermsLicense.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用規約・ライセンス'**
+  String get settingsTermsLicense;
+
+  /// No description provided for @settingsDrawingAreaTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画領域初期値'**
+  String get settingsDrawingAreaTitle;
+
+  /// No description provided for @settingsDrawingAreaHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規プロジェクト作成時の初期値となります。'**
+  String get settingsDrawingAreaHint;
+
+  /// No description provided for @settingsDrawingAreaWiden.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画領域を広くする'**
+  String get settingsDrawingAreaWiden;
+
+  /// No description provided for @settingsDrawingAreaScale.
+  ///
+  /// In ja, this message translates to:
+  /// **'倍率'**
+  String get settingsDrawingAreaScale;
+
+  /// No description provided for @settingsScaleValue.
+  ///
+  /// In ja, this message translates to:
+  /// **'{scale}倍'**
+  String settingsScaleValue(String scale);
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンセル'**
+  String get commonCancel;
+
+  /// No description provided for @commonCreate.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成'**
+  String get commonCreate;
+
+  /// No description provided for @commonChange.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更'**
+  String get commonChange;
+
+  /// No description provided for @commonDelete.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除'**
+  String get commonDelete;
+
+  /// No description provided for @confirmDeleteGenericBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'本当に削除しますか？この操作は取り消せません。'**
+  String get confirmDeleteGenericBody;
+
+  /// No description provided for @confirmDeleteNamedBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を削除しますか？この操作は取り消せません。'**
+  String confirmDeleteNamedBody(String name);
+
+  /// No description provided for @commonFavoriteDeleteBlocked.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り登録中は削除できません。先にお気に入りを解除してください。'**
+  String get commonFavoriteDeleteBlocked;
+
+  /// No description provided for @commonSave.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存'**
+  String get commonSave;
+
+  /// No description provided for @commonRestore.
+  ///
+  /// In ja, this message translates to:
+  /// **'復元'**
+  String get commonRestore;
+
+  /// No description provided for @commonClose.
+  ///
+  /// In ja, this message translates to:
+  /// **'閉じる'**
+  String get commonClose;
+
+  /// No description provided for @commonRename.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前変更'**
+  String get commonRename;
+
+  /// No description provided for @commonCopy.
+  ///
+  /// In ja, this message translates to:
+  /// **'コピー'**
+  String get commonCopy;
+
+  /// No description provided for @commonCut.
+  ///
+  /// In ja, this message translates to:
+  /// **'切り取り'**
+  String get commonCut;
+
+  /// No description provided for @commonPaste.
+  ///
+  /// In ja, this message translates to:
+  /// **'貼り付け'**
+  String get commonPaste;
+
+  /// No description provided for @commonDuplicate.
+  ///
+  /// In ja, this message translates to:
+  /// **'複製'**
+  String get commonDuplicate;
+
+  /// 項目名と値（「半径: 12」）。仏語は「:」の前を改行しない空白、中国語は全角の「：」。
+  ///
+  /// In ja, this message translates to:
+  /// **'{label}: {value}'**
+  String commonLabelWithValue(String label, String value);
+
+  /// No description provided for @commonOk.
+  ///
+  /// In ja, this message translates to:
+  /// **'OK'**
+  String get commonOk;
+
+  /// No description provided for @gestureSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ジェスチャー設定'**
+  String get gestureSettingsTitle;
+
+  /// No description provided for @gestureTwoFingerTap.
+  ///
+  /// In ja, this message translates to:
+  /// **'2本指タップ'**
+  String get gestureTwoFingerTap;
+
+  /// No description provided for @gestureThreeFingerTap.
+  ///
+  /// In ja, this message translates to:
+  /// **'3本指タップ'**
+  String get gestureThreeFingerTap;
+
+  /// No description provided for @gestureFourOrMoreFingerTap.
+  ///
+  /// In ja, this message translates to:
+  /// **'4本指以上のタップ'**
+  String get gestureFourOrMoreFingerTap;
+
+  /// No description provided for @gestureTwoFingerSwipe.
+  ///
+  /// In ja, this message translates to:
+  /// **'2本指スワイプ左右'**
+  String get gestureTwoFingerSwipe;
+
+  /// No description provided for @gestureLongPress.
+  ///
+  /// In ja, this message translates to:
+  /// **'長押し'**
+  String get gestureLongPress;
+
+  /// No description provided for @gestureHoldEyedropperSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'長押しスポイト'**
+  String get gestureHoldEyedropperSection;
+
+  /// No description provided for @gestureHoldEyedropperTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'長押しでスポイトを起動'**
+  String get gestureHoldEyedropperTitle;
+
+  /// No description provided for @gestureHoldEyedropperHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン・消しゴムで描画中、指を動かさず一定時間押し続けると、その場の色を拾って現在色に反映します。'**
+  String get gestureHoldEyedropperHint;
+
+  /// No description provided for @gestureHoldEyedropperDurationLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'保持時間'**
+  String get gestureHoldEyedropperDurationLabel;
+
+  /// No description provided for @gestureHoldEyedropperSecondsValue.
+  ///
+  /// In ja, this message translates to:
+  /// **'{seconds}秒'**
+  String gestureHoldEyedropperSecondsValue(String seconds);
+
+  /// No description provided for @gestureActionUndo.
+  ///
+  /// In ja, this message translates to:
+  /// **'取り消し（Undo）'**
+  String get gestureActionUndo;
+
+  /// No description provided for @gestureActionRedo.
+  ///
+  /// In ja, this message translates to:
+  /// **'やり直し（Redo）'**
+  String get gestureActionRedo;
+
+  /// No description provided for @gestureActionEyedropper.
+  ///
+  /// In ja, this message translates to:
+  /// **'スポイト'**
+  String get gestureActionEyedropper;
+
+  /// No description provided for @gestureActionPanTool.
+  ///
+  /// In ja, this message translates to:
+  /// **'手のひらツール'**
+  String get gestureActionPanTool;
+
+  /// No description provided for @gestureActionEraserToggle.
+  ///
+  /// In ja, this message translates to:
+  /// **'消しゴム切替'**
+  String get gestureActionEraserToggle;
+
+  /// No description provided for @gestureActionBrushToggle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ切替'**
+  String get gestureActionBrushToggle;
+
+  /// No description provided for @gestureActionFrameMove.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム移動'**
+  String get gestureActionFrameMove;
+
+  /// No description provided for @gestureActionNextTool.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツール早替え'**
+  String get gestureActionNextTool;
+
+  /// No description provided for @gestureActionOnionSkinToggle.
+  ///
+  /// In ja, this message translates to:
+  /// **'オニオンスキンON/OFF'**
+  String get gestureActionOnionSkinToggle;
+
+  /// No description provided for @gestureActionNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'何もしない'**
+  String get gestureActionNone;
+
+  /// No description provided for @homeDrawerAppTagline.
+  ///
+  /// In ja, this message translates to:
+  /// **'手描きアニメ制作アプリ'**
+  String get homeDrawerAppTagline;
+
+  /// No description provided for @homeDrawerAutofillPreset.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り設定'**
+  String get homeDrawerAutofillPreset;
+
+  /// No description provided for @homeDrawerSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定'**
+  String get homeDrawerSettings;
+
+  /// No description provided for @gestureActionNoneShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'なし'**
+  String get gestureActionNoneShort;
+
+  /// No description provided for @pressureTryDrawHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'この設定で試し書きできます（ペンの場合、実際の筆圧が反映されます）'**
+  String get pressureTryDrawHint;
+
+  /// No description provided for @pressureTryDrawClear.
+  ///
+  /// In ja, this message translates to:
+  /// **'クリア'**
+  String get pressureTryDrawClear;
+
+  /// No description provided for @penSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン入力設定'**
+  String get penSettingsTitle;
+
+  /// No description provided for @penSettingsPalmRejectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パームリジェクション'**
+  String get penSettingsPalmRejectionTitle;
+
+  /// No description provided for @penSettingsPalmRejectionHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン使用中の1本指タッチによる誤操作を防ぎます。2本指以上のジェスチャーは引き続き使用できます。'**
+  String get penSettingsPalmRejectionHint;
+
+  /// No description provided for @penSettingsCurveSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'筆圧カーブ'**
+  String get penSettingsCurveSection;
+
+  /// No description provided for @penSettingsCurveHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'弱い設定ほど筆圧の立ち上がりが緩やかに、強い設定ほど鋭くなります。'**
+  String get penSettingsCurveHint;
+
+  /// No description provided for @penSettingsCurveWeak.
+  ///
+  /// In ja, this message translates to:
+  /// **'弱'**
+  String get penSettingsCurveWeak;
+
+  /// No description provided for @penSettingsCurveNormal.
+  ///
+  /// In ja, this message translates to:
+  /// **'普通'**
+  String get penSettingsCurveNormal;
+
+  /// No description provided for @penSettingsCurveStrong.
+  ///
+  /// In ja, this message translates to:
+  /// **'強'**
+  String get penSettingsCurveStrong;
+
+  /// No description provided for @penSettingsCurveCustom.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタム'**
+  String get penSettingsCurveCustom;
+
+  /// No description provided for @penSettingsCustomGraphHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'グラフの空いている場所をタップすると点を追加（最大10個）、点をドラッグで移動、ダブルタップで削除できます（始点・終点は削除できません）。'**
+  String get penSettingsCustomGraphHint;
+
+  /// No description provided for @penSettingsResetCurveButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'デフォルトにリセット'**
+  String get penSettingsResetCurveButton;
+
+  /// No description provided for @penSettingsPerBrushNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'※ 筆圧の「サイズ／不透明度に反映」設定はブラシごとの個別設定です（ブラシ設定パネルで変更）。'**
+  String get penSettingsPerBrushNote;
+
+  /// No description provided for @penSettingsButtonSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペンボタン設定'**
+  String get penSettingsButtonSection;
+
+  /// No description provided for @penSettingsButton1.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボタン1'**
+  String get penSettingsButton1;
+
+  /// No description provided for @penSettingsButton2.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボタン2'**
+  String get penSettingsButton2;
+
+  /// No description provided for @bucketSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'バケツ塗り設定'**
+  String get bucketSettingsTitle;
+
+  /// No description provided for @bucketSettingsToleranceSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'色の許容誤差'**
+  String get bucketSettingsToleranceSection;
+
+  /// No description provided for @bucketSettingsToleranceHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップした位置の色からどこまでの色差を同じ領域とみなすかを調整します。値が大きいほど、色の境目がぼんやりしていても塗りが広がりやすくなります。'**
+  String get bucketSettingsToleranceHint;
+
+  /// No description provided for @bucketSettingsExpandSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'拡張'**
+  String get bucketSettingsExpandSection;
+
+  /// No description provided for @bucketSettingsExpandHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'塗った領域を境界の外側へ指定px分だけ広げ、線画とのわずかな隙間（塗り残し）をカバーします。'**
+  String get bucketSettingsExpandHint;
+
+  /// No description provided for @bucketSettingsUnderLineTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'線の下まで潜る'**
+  String get bucketSettingsUnderLineTitle;
+
+  /// No description provided for @bucketSettingsUnderLineHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'拡張分を線画の上から塗りつぶさず、線の見た目を保ったまま背後へ塗り色を回り込ませます。線のアンチエイリアス部分に隙間が出にくくなります。'**
+  String get bucketSettingsUnderLineHint;
+
+  /// No description provided for @bucketSettingsUnderLineDisabledHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'「拡張」が0pxの場合は効果がありません。'**
+  String get bucketSettingsUnderLineDisabledHint;
+
+  /// No description provided for @fontCatalogSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォント名で検索...（全{count}書体）'**
+  String fontCatalogSearchHint(int count);
+
+  /// No description provided for @fontCatalogCategories.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォントの分類'**
+  String get fontCatalogCategories;
+
+  /// No description provided for @fontCatalogAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべて'**
+  String get fontCatalogAll;
+
+  /// No description provided for @fontCatalogNoResults.
+  ///
+  /// In ja, this message translates to:
+  /// **'該当するフォントが見つかりません'**
+  String get fontCatalogNoResults;
+
+  /// No description provided for @rulerPanelTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'定規'**
+  String get rulerPanelTitle;
+
+  /// No description provided for @rulerTypeLine.
+  ///
+  /// In ja, this message translates to:
+  /// **'直線定規'**
+  String get rulerTypeLine;
+
+  /// No description provided for @rulerTypeEllipse.
+  ///
+  /// In ja, this message translates to:
+  /// **'楕円定規'**
+  String get rulerTypeEllipse;
+
+  /// No description provided for @rulerTypeRadial.
+  ///
+  /// In ja, this message translates to:
+  /// **'集中線定規'**
+  String get rulerTypeRadial;
+
+  /// No description provided for @rulerTypeOnePoint.
+  ///
+  /// In ja, this message translates to:
+  /// **'1点透視'**
+  String get rulerTypeOnePoint;
+
+  /// No description provided for @rulerTypeTwoPoint.
+  ///
+  /// In ja, this message translates to:
+  /// **'2点透視'**
+  String get rulerTypeTwoPoint;
+
+  /// No description provided for @rulerTypeThreePoint.
+  ///
+  /// In ja, this message translates to:
+  /// **'3点透視'**
+  String get rulerTypeThreePoint;
+
+  /// No description provided for @rulerTypeFisheye.
+  ///
+  /// In ja, this message translates to:
+  /// **'魚眼パース'**
+  String get rulerTypeFisheye;
+
+  /// No description provided for @rulerSnap.
+  ///
+  /// In ja, this message translates to:
+  /// **'定規に吸着'**
+  String get rulerSnap;
+
+  /// No description provided for @rulerDivisions.
+  ///
+  /// In ja, this message translates to:
+  /// **'分割数'**
+  String get rulerDivisions;
+
+  /// No description provided for @transferScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'引き継ぎ（.niatra）'**
+  String get transferScreenTitle;
+
+  /// No description provided for @transferInstructionHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'他の端末へ引き継ぐ項目を選択してください。'**
+  String get transferInstructionHint;
+
+  /// No description provided for @transferItemSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定'**
+  String get transferItemSettings;
+
+  /// No description provided for @transferItemMaterials.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材'**
+  String get transferItemMaterials;
+
+  /// No description provided for @transferItemBrush.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ'**
+  String get transferItemBrush;
+
+  /// No description provided for @transferItemPresets.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り設定'**
+  String get transferItemPresets;
+
+  /// No description provided for @transferItemTheme.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマ'**
+  String get transferItemTheme;
+
+  /// No description provided for @transferItemPalette.
+  ///
+  /// In ja, this message translates to:
+  /// **'パレット（カラーピッカー・ドット絵専用）'**
+  String get transferItemPalette;
+
+  /// No description provided for @transferProjectsSectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'制作中のプロジェクト（任意）'**
+  String get transferProjectsSectionTitle;
+
+  /// No description provided for @transferProjectsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'必要なプロジェクトだけ選んで引き継ぎ内容に含められます。選択したプロジェクトは素材・フォントも含めて丸ごと引き継がれます。'**
+  String get transferProjectsHint;
+
+  /// No description provided for @transferProjectsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトがありません。'**
+  String get transferProjectsEmpty;
+
+  /// No description provided for @transferImport.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込み'**
+  String get transferImport;
+
+  /// No description provided for @transferExport.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し'**
+  String get transferExport;
+
+  /// No description provided for @transferExportSuccessSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'.niatraファイルを書き出しました'**
+  String get transferExportSuccessSnackbar;
+
+  /// No description provided for @transferImportSuccessSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'.niatraファイルを読み込みました'**
+  String get transferImportSuccessSnackbar;
+
+  /// Shown after importing a .niatra file when items already on this device were different: this device's items were kept and the imported ones were added under new names (count = how many, name = the first added name).
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, =1{.niatraファイルを読み込みました。この端末の内容と違った1件は、この端末の方をそのまま残し、読み込んだ方を「{name}」として足しました} other{.niatraファイルを読み込みました。この端末の内容と違った{count}件は、この端末の方をそのまま残し、読み込んだ方を「{name}」などの名前で足しました}}'**
+  String transferImportAddedCopiesSnackbar(int count, String name);
+
+  /// Shown after importing a .niatra file when shortcuts in the file were not added because this device already uses the same key combination for a different action (count = how many, name = the first shortcut's name, combo = its keys, such as Ctrl+E).
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, =1{読み込んだショートカット「{name}」（{combo}）は、この端末で同じキーを別の操作に使っているため足していません。使うときは、ショートカット設定から別のキーで追加してください} other{読み込んだショートカット「{name}」（{combo}）など{count}件は、この端末で同じキーを別の操作に使っているため足していません。使うときは、ショートカット設定から別のキーで追加してください}}'**
+  String transferImportShortcutsNotAddedSnackbar(
+    int count,
+    String name,
+    String combo,
+  );
+
+  /// No description provided for @folderManagementTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ管理'**
+  String get folderManagementTitle;
+
+  /// No description provided for @folderManagementCreateNew.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規作成'**
+  String get folderManagementCreateNew;
+
+  /// No description provided for @folderManagementEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダはまだありません'**
+  String get folderManagementEmpty;
+
+  /// No description provided for @folderCreateFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダを作成できませんでした。もう一度お試しください。'**
+  String get folderCreateFailed;
+
+  /// No description provided for @folderChangesSaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの変更を保存できませんでした。もう一度お試しください。'**
+  String get folderChangesSaveFailed;
+
+  /// No description provided for @folderChangesPartiallySaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'一部の変更だけが保存されました。一覧を確認して、もう一度お試しください。'**
+  String get folderChangesPartiallySaved;
+
+  /// No description provided for @folderNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ名'**
+  String get folderNameLabel;
+
+  /// No description provided for @folderMoveToTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダへ移動'**
+  String get folderMoveToTitle;
+
+  /// Screen-reader name of the 'move to folder' sheet for one file.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」をフォルダへ移動'**
+  String folderMoveSheetSemanticsLabel(String name);
+
+  /// Name of one folder color choice; code is like #FF5C7A.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ色 {code}'**
+  String folderColorOptionSemanticsLabel(String code);
+
+  /// Screen-reader name of the colour preview in the colour picker; code is like #FF5C7A.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んでいる色 {code}'**
+  String colorPickerCurrentColorSemanticsLabel(String code);
+
+  /// No description provided for @folderNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダなし'**
+  String get folderNone;
+
+  /// No description provided for @creativeFolderDeleteBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を削除しますか？中の素材は「フォルダなし」に移動します。'**
+  String creativeFolderDeleteBody(String name);
+
+  /// No description provided for @creativeAssetNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前'**
+  String get creativeAssetNameLabel;
+
+  /// No description provided for @commonAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'追加'**
+  String get commonAdd;
+
+  /// No description provided for @commonSearch.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索'**
+  String get commonSearch;
+
+  /// No description provided for @autofillPresetSelectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用する自動塗り設定'**
+  String get autofillPresetSelectionTitle;
+
+  /// No description provided for @autofillPresetSelectionHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'このプロジェクトで使う自動塗り設定だけを選ぶと、パーツ割り当て時に一覧が見やすくなります。'**
+  String get autofillPresetSelectionHint;
+
+  /// No description provided for @autofillPresetSelectionPartCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}パーツ}}'**
+  String autofillPresetSelectionPartCount(int count);
+
+  /// No description provided for @autofillPresetSelectionButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用する自動塗り設定を選択'**
+  String get autofillPresetSelectionButton;
+
+  /// No description provided for @autofillPresetSelectionCountLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を使用'**
+  String autofillPresetSelectionCountLabel(int count);
+
+  /// No description provided for @commonEdit.
+  ///
+  /// In ja, this message translates to:
+  /// **'編集'**
+  String get commonEdit;
+
+  /// No description provided for @commonFavoriteToggle.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り登録/解除'**
+  String get commonFavoriteToggle;
+
+  /// No description provided for @commonIncrease.
+  ///
+  /// In ja, this message translates to:
+  /// **'増やす'**
+  String get commonIncrease;
+
+  /// No description provided for @commonDecrease.
+  ///
+  /// In ja, this message translates to:
+  /// **'減らす'**
+  String get commonDecrease;
+
+  /// No description provided for @commonPlay.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生'**
+  String get commonPlay;
+
+  /// No description provided for @commonPause.
+  ///
+  /// In ja, this message translates to:
+  /// **'一時停止'**
+  String get commonPause;
+
+  /// No description provided for @fontCatalogDownloadTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォントをダウンロード'**
+  String get fontCatalogDownloadTooltip;
+
+  /// No description provided for @timelineBackToCanvasTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存してキャンバスに戻る'**
+  String get timelineBackToCanvasTooltip;
+
+  /// No description provided for @timelineBackToProjectListTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト一覧に戻る'**
+  String get timelineBackToProjectListTooltip;
+
+  /// No description provided for @timelineBackToProjectListDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト一覧に戻る'**
+  String get timelineBackToProjectListDialogTitle;
+
+  /// No description provided for @timelineBackToProjectListDialogBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更を保存してから戻りますか？'**
+  String get timelineBackToProjectListDialogBody;
+
+  /// No description provided for @timelineBackToProjectListSaveButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存して戻る'**
+  String get timelineBackToProjectListSaveButton;
+
+  /// No description provided for @timelineBackToProjectListDiscardButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'手動セーブせずに戻る'**
+  String get timelineBackToProjectListDiscardButton;
+
+  /// No description provided for @timelineSkipToStart.
+  ///
+  /// In ja, this message translates to:
+  /// **'先頭フレームへ'**
+  String get timelineSkipToStart;
+
+  /// No description provided for @timelineStepBack.
+  ///
+  /// In ja, this message translates to:
+  /// **'1フレーム戻る'**
+  String get timelineStepBack;
+
+  /// No description provided for @timelineStepForward.
+  ///
+  /// In ja, this message translates to:
+  /// **'1フレーム進む'**
+  String get timelineStepForward;
+
+  /// No description provided for @timelineSkipToEnd.
+  ///
+  /// In ja, this message translates to:
+  /// **'最終フレームへ'**
+  String get timelineSkipToEnd;
+
+  /// No description provided for @timelineLoopOnTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ループ再生：ON（タップでOFFに）'**
+  String get timelineLoopOnTooltip;
+
+  /// No description provided for @timelineLoopOffTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ループ再生：OFF（タップでONに）'**
+  String get timelineLoopOffTooltip;
+
+  /// No description provided for @quickToolPanelTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'早替えツール設定'**
+  String get quickToolPanelTitle;
+
+  /// No description provided for @quickToolBrushUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシが見つかりません'**
+  String get quickToolBrushUnavailable;
+
+  /// No description provided for @quickToolEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'登録されたツールがありません'**
+  String get quickToolEmpty;
+
+  /// No description provided for @quickToolAddCurrentBrush.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のブラシを追加'**
+  String get quickToolAddCurrentBrush;
+
+  /// No description provided for @quickToolEraser.
+  ///
+  /// In ja, this message translates to:
+  /// **'消しゴム'**
+  String get quickToolEraser;
+
+  /// No description provided for @quickToolEyedropper.
+  ///
+  /// In ja, this message translates to:
+  /// **'スポイト'**
+  String get quickToolEyedropper;
+
+  /// No description provided for @quickToolBucket.
+  ///
+  /// In ja, this message translates to:
+  /// **'バケツ'**
+  String get quickToolBucket;
+
+  /// No description provided for @quickToolSizeDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'{brushName}のサイズ'**
+  String quickToolSizeDialogTitle(String brushName);
+
+  /// No description provided for @settingsShortcutTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ショートカット設定'**
+  String get settingsShortcutTitle;
+
+  /// No description provided for @settingsShortcutSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーボード・左手デバイスにツールや操作を割り当て'**
+  String get settingsShortcutSubtitle;
+
+  /// No description provided for @shortcutSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ショートカット設定'**
+  String get shortcutSettingsTitle;
+
+  /// No description provided for @shortcutSettingsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーボードや左手デバイスのキーに、ツール（ブラシ・太さまで指定可）やUndo/Redoなどの操作を割り当てられます。キャンバス・タイムラインの両方で使えます。'**
+  String get shortcutSettingsHint;
+
+  /// No description provided for @shortcutEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'登録されたショートカットがありません'**
+  String get shortcutEmpty;
+
+  /// No description provided for @shortcutCaptureTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーを押してください'**
+  String get shortcutCaptureTitle;
+
+  /// No description provided for @shortcutCaptureHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定したいキーの組み合わせを押してください（Ctrl・Shift・Altなどの修飾キーも同時に押せます）。Escで取り消します。'**
+  String get shortcutCaptureHint;
+
+  /// No description provided for @shortcutChooseActionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'{combo} に何を割り当てますか？'**
+  String shortcutChooseActionTitle(String combo);
+
+  /// No description provided for @shortcutActionTypeTool.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツール選択'**
+  String get shortcutActionTypeTool;
+
+  /// No description provided for @shortcutActionTypeCommand.
+  ///
+  /// In ja, this message translates to:
+  /// **'主要操作'**
+  String get shortcutActionTypeCommand;
+
+  /// No description provided for @shortcutCommandUndo.
+  ///
+  /// In ja, this message translates to:
+  /// **'取り消し（Undo）'**
+  String get shortcutCommandUndo;
+
+  /// No description provided for @shortcutCommandRedo.
+  ///
+  /// In ja, this message translates to:
+  /// **'やり直し（Redo）'**
+  String get shortcutCommandRedo;
+
+  /// No description provided for @shortcutCommandToggleLayerPanel.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーパネル切替（キャンバス）'**
+  String get shortcutCommandToggleLayerPanel;
+
+  /// No description provided for @shortcutCommandPlayPause.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生／一時停止（タイムライン）'**
+  String get shortcutCommandPlayPause;
+
+  /// No description provided for @shortcutCommandPreviousFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'1フレーム戻る（タイムライン）'**
+  String get shortcutCommandPreviousFrame;
+
+  /// No description provided for @shortcutCommandNextFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'1フレーム進む（タイムライン）'**
+  String get shortcutCommandNextFrame;
+
+  /// No description provided for @shortcutCommandSelectAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'全選択'**
+  String get shortcutCommandSelectAll;
+
+  /// No description provided for @shortcutCommandCopy.
+  ///
+  /// In ja, this message translates to:
+  /// **'コピー'**
+  String get shortcutCommandCopy;
+
+  /// No description provided for @shortcutCommandCut.
+  ///
+  /// In ja, this message translates to:
+  /// **'切り取り'**
+  String get shortcutCommandCut;
+
+  /// No description provided for @shortcutCommandPaste.
+  ///
+  /// In ja, this message translates to:
+  /// **'貼り付け'**
+  String get shortcutCommandPaste;
+
+  /// No description provided for @shortcutConflictTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'すでに割り当てられています'**
+  String get shortcutConflictTitle;
+
+  /// No description provided for @shortcutConflictBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'{combo} には既に「{existingLabel}」が割り当てられています。上書きしますか？'**
+  String shortcutConflictBody(String combo, String existingLabel);
+
+  /// No description provided for @shortcutConflictOverwrite.
+  ///
+  /// In ja, this message translates to:
+  /// **'上書き'**
+  String get shortcutConflictOverwrite;
+
+  /// No description provided for @materialListTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材管理'**
+  String get materialListTitle;
+
+  /// No description provided for @materialRemoveUnused.
+  ///
+  /// In ja, this message translates to:
+  /// **'未使用素材を削除 ({count})'**
+  String materialRemoveUnused(int count);
+
+  /// No description provided for @materialEmptyTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材がありません'**
+  String get materialEmptyTitle;
+
+  /// No description provided for @materialEmptyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインから画像・動画・音声を追加すると\nここに一覧表示されます'**
+  String get materialEmptyHint;
+
+  /// No description provided for @materialUsedLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用中'**
+  String get materialUsedLabel;
+
+  /// No description provided for @materialUnusedLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'未使用'**
+  String get materialUnusedLabel;
+
+  /// No description provided for @materialMissingLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'不足'**
+  String get materialMissingLabel;
+
+  /// No description provided for @materialDeleteTooltipUsed.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用中のため削除できません'**
+  String get materialDeleteTooltipUsed;
+
+  /// No description provided for @materialRemoveOneConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材を削除しますか？'**
+  String get materialRemoveOneConfirmTitle;
+
+  /// No description provided for @materialRemoveUnusedConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'未使用素材を一括削除しますか？'**
+  String get materialRemoveUnusedConfirmTitle;
+
+  /// No description provided for @materialRemoveUnusedConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト内のどこからも参照されていない素材をまとめて削除します。この操作は元に戻せません。'**
+  String get materialRemoveUnusedConfirmBody;
+
+  /// No description provided for @materialRemovedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件の未使用素材を削除しました'**
+  String materialRemovedSnackbar(int count);
+
+  /// No description provided for @watermarkEmptyTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'登録されたウォーターマークがありません'**
+  String get watermarkEmptyTitle;
+
+  /// No description provided for @watermarkEmptyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'右下の＋から画像または文字を登録してください'**
+  String get watermarkEmptyHint;
+
+  /// No description provided for @watermarkAddFromImage.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像から追加'**
+  String get watermarkAddFromImage;
+
+  /// No description provided for @watermarkAddText.
+  ///
+  /// In ja, this message translates to:
+  /// **'文字を入力'**
+  String get watermarkAddText;
+
+  /// No description provided for @watermarkImageImportFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を読み込めません。画像を選び直してください。'**
+  String get watermarkImageImportFailed;
+
+  /// No description provided for @watermarkAddedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウォーターマークを登録しました'**
+  String get watermarkAddedSnackbar;
+
+  /// No description provided for @watermarkTextDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'文字ウォーターマークを追加'**
+  String get watermarkTextDialogTitle;
+
+  /// No description provided for @watermarkTextFieldLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示する文字'**
+  String get watermarkTextFieldLabel;
+
+  /// No description provided for @watermarkTextColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'文字色'**
+  String get watermarkTextColorLabel;
+
+  /// No description provided for @watermarkTextColorTapHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップして色を選択'**
+  String get watermarkTextColorTapHint;
+
+  /// No description provided for @watermarkDropShadowLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドロップシャドウ'**
+  String get watermarkDropShadowLabel;
+
+  /// No description provided for @watermarkShadowColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'影の色'**
+  String get watermarkShadowColorLabel;
+
+  /// No description provided for @watermarkShadowOffsetXLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'影の位置X'**
+  String get watermarkShadowOffsetXLabel;
+
+  /// No description provided for @watermarkShadowOffsetYLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'影の位置Y'**
+  String get watermarkShadowOffsetYLabel;
+
+  /// No description provided for @watermarkShadowBlurLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'影のぼかし'**
+  String get watermarkShadowBlurLabel;
+
+  /// No description provided for @watermarkOutlineLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り'**
+  String get watermarkOutlineLabel;
+
+  /// No description provided for @watermarkOutlineColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁の色'**
+  String get watermarkOutlineColorLabel;
+
+  /// No description provided for @watermarkOutlineWidthLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁の太さ'**
+  String get watermarkOutlineWidthLabel;
+
+  /// No description provided for @premiumActiveLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム有効'**
+  String get premiumActiveLabel;
+
+  /// No description provided for @premiumVsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'無料版 vs プレミアム'**
+  String get premiumVsTitle;
+
+  /// No description provided for @premiumHeroTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアムで、もっと自由な制作を'**
+  String get premiumHeroTitle;
+
+  /// No description provided for @premiumHeroSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'最大尺2時間・公式エンドマークの表示切り替え・描画フィルターのトーンカーブ／レベル補正などが使えます'**
+  String get premiumHeroSubtitle;
+
+  /// No description provided for @premiumHeroHighlightDuration.
+  ///
+  /// In ja, this message translates to:
+  /// **'尺は最大2時間'**
+  String get premiumHeroHighlightDuration;
+
+  /// No description provided for @premiumHeroHighlightWatermark.
+  ///
+  /// In ja, this message translates to:
+  /// **'公式エンドマークの表示切り替え'**
+  String get premiumHeroHighlightWatermark;
+
+  /// No description provided for @premiumHeroHighlightGrading.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンカーブ／\nレベル補正'**
+  String get premiumHeroHighlightGrading;
+
+  /// No description provided for @premiumPlanSectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'プラン'**
+  String get premiumPlanSectionTitle;
+
+  /// No description provided for @premiumCheckoutPending.
+  ///
+  /// In ja, this message translates to:
+  /// **'Google Playで購入手続き中です。'**
+  String get premiumCheckoutPending;
+
+  /// No description provided for @premiumCheckoutStartFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'Google Playの購入画面を開けませんでした。もう一度プランを選んでください。'**
+  String get premiumCheckoutStartFailed;
+
+  /// No description provided for @premiumRestoreFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'購入を復元できませんでした。もう一度お試しください。'**
+  String get premiumRestoreFailed;
+
+  /// No description provided for @premiumStoreUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'ストアから購入情報を取得できませんでした。通信を確認して再試行してください。'**
+  String get premiumStoreUnavailable;
+
+  /// No description provided for @premiumYearlyTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'年額プラン'**
+  String get premiumYearlyTitle;
+
+  /// No description provided for @premiumYearlyPrice.
+  ///
+  /// In ja, this message translates to:
+  /// **'¥5,500/年'**
+  String get premiumYearlyPrice;
+
+  /// No description provided for @premiumYearlyOriginalPrice.
+  ///
+  /// In ja, this message translates to:
+  /// **'¥6,600'**
+  String get premiumYearlyOriginalPrice;
+
+  /// No description provided for @premiumMonthlyTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'月額プラン'**
+  String get premiumMonthlyTitle;
+
+  /// No description provided for @premiumRestorePurchases.
+  ///
+  /// In ja, this message translates to:
+  /// **'購入を復元'**
+  String get premiumRestorePurchases;
+
+  /// No description provided for @premiumRestoredSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'購入情報を復元しました（該当する購入がある場合）'**
+  String get premiumRestoredSnackbar;
+
+  /// No description provided for @premiumComparisonFeature.
+  ///
+  /// In ja, this message translates to:
+  /// **'機能'**
+  String get premiumComparisonFeature;
+
+  /// No description provided for @premiumComparisonFree.
+  ///
+  /// In ja, this message translates to:
+  /// **'無料'**
+  String get premiumComparisonFree;
+
+  /// No description provided for @premiumFeatureDrawing.
+  ///
+  /// In ja, this message translates to:
+  /// **'アニメ制作・描画機能'**
+  String get premiumFeatureDrawing;
+
+  /// No description provided for @premiumFeatureTimeline.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムライン'**
+  String get premiumFeatureTimeline;
+
+  /// No description provided for @premiumFeatureExport.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画書き出し'**
+  String get premiumFeatureExport;
+
+  /// No description provided for @premiumDurationExportNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。'**
+  String get premiumDurationExportNote;
+
+  /// No description provided for @premiumFeatureMaxDuration.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成・延長できる尺'**
+  String get premiumFeatureMaxDuration;
+
+  /// No description provided for @premiumFeatureEndLogo.
+  ///
+  /// In ja, this message translates to:
+  /// **'公式エンドマーク'**
+  String get premiumFeatureEndLogo;
+
+  /// No description provided for @premiumFeatureWatermark.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分のウォーターマークを追加・編集'**
+  String get premiumFeatureWatermark;
+
+  /// No description provided for @premiumFeatureToneCurve.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンカーブ（描画）'**
+  String get premiumFeatureToneCurve;
+
+  /// No description provided for @premiumFeatureLevelCorrection.
+  ///
+  /// In ja, this message translates to:
+  /// **'レベル補正（描画）'**
+  String get premiumFeatureLevelCorrection;
+
+  /// No description provided for @premiumFeatureAds.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告'**
+  String get premiumFeatureAds;
+
+  /// No description provided for @premiumFeatureCommunityUpload.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場への投稿数/日'**
+  String get premiumFeatureCommunityUpload;
+
+  /// No description provided for @premiumValueYes.
+  ///
+  /// In ja, this message translates to:
+  /// **'あり'**
+  String get premiumValueYes;
+
+  /// No description provided for @premiumValueNo.
+  ///
+  /// In ja, this message translates to:
+  /// **'なし'**
+  String get premiumValueNo;
+
+  /// No description provided for @premiumValueRemovable.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除可'**
+  String get premiumValueRemovable;
+
+  /// No description provided for @premiumValueDuration2Hours.
+  ///
+  /// In ja, this message translates to:
+  /// **'2時間'**
+  String get premiumValueDuration2Hours;
+
+  /// No description provided for @premiumValueDuration90Sec.
+  ///
+  /// In ja, this message translates to:
+  /// **'90秒'**
+  String get premiumValueDuration90Sec;
+
+  /// No description provided for @premiumValueUploadFree.
+  ///
+  /// In ja, this message translates to:
+  /// **'1本'**
+  String get premiumValueUploadFree;
+
+  /// No description provided for @premiumValueUploadPremium.
+  ///
+  /// In ja, this message translates to:
+  /// **'3本'**
+  String get premiumValueUploadPremium;
+
+  /// No description provided for @premiumPlanRecommendedBadge.
+  ///
+  /// In ja, this message translates to:
+  /// **'おすすめ'**
+  String get premiumPlanRecommendedBadge;
+
+  /// No description provided for @premiumMonthlyPrice.
+  ///
+  /// In ja, this message translates to:
+  /// **'¥550/月'**
+  String get premiumMonthlyPrice;
+
+  /// No description provided for @toolbarItemPen.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン'**
+  String get toolbarItemPen;
+
+  /// No description provided for @toolbarItemEraser.
+  ///
+  /// In ja, this message translates to:
+  /// **'消しゴム'**
+  String get toolbarItemEraser;
+
+  /// No description provided for @toolbarItemBucket.
+  ///
+  /// In ja, this message translates to:
+  /// **'バケツ'**
+  String get toolbarItemBucket;
+
+  /// No description provided for @toolbarItemEyedropper.
+  ///
+  /// In ja, this message translates to:
+  /// **'スポイト'**
+  String get toolbarItemEyedropper;
+
+  /// No description provided for @toolbarItemFinger.
+  ///
+  /// In ja, this message translates to:
+  /// **'指'**
+  String get toolbarItemFinger;
+
+  /// No description provided for @toolbarItemPan.
+  ///
+  /// In ja, this message translates to:
+  /// **'手のひら'**
+  String get toolbarItemPan;
+
+  /// No description provided for @toolbarItemSelect.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択'**
+  String get toolbarItemSelect;
+
+  /// No description provided for @toolbarItemText.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキスト'**
+  String get toolbarItemText;
+
+  /// No description provided for @toolbarItemShape.
+  ///
+  /// In ja, this message translates to:
+  /// **'図形'**
+  String get toolbarItemShape;
+
+  /// No description provided for @workspaceScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ワークスペース設定'**
+  String get workspaceScreenTitle;
+
+  /// No description provided for @workspaceToolbarEditSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールバー編集'**
+  String get workspaceToolbarEditSection;
+
+  /// No description provided for @workspaceToolbarEditHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示するツールをチェックボックスで選択し、ドラッグで並び替えできます。'**
+  String get workspaceToolbarEditHint;
+
+  /// No description provided for @workspaceToolbarPcOnlyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'横画面の時のみツールバーに表示されます'**
+  String get workspaceToolbarPcOnlyHint;
+
+  /// No description provided for @workspaceToolbarPanDisabledHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'スマホモードでは使用できません'**
+  String get workspaceToolbarPanDisabledHint;
+
+  /// No description provided for @workspaceResetToolbarDefault.
+  ///
+  /// In ja, this message translates to:
+  /// **'デフォルトに戻す'**
+  String get workspaceResetToolbarDefault;
+
+  /// No description provided for @workspacePanelLayoutSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネル配置'**
+  String get workspacePanelLayoutSection;
+
+  /// No description provided for @workspaceLeftHandedMode.
+  ///
+  /// In ja, this message translates to:
+  /// **'左利きモード'**
+  String get workspaceLeftHandedMode;
+
+  /// No description provided for @workspaceLeftHandedSubtitlePc.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルを右側に配置'**
+  String get workspaceLeftHandedSubtitlePc;
+
+  /// No description provided for @workspaceLeftHandedSubtitleMobile.
+  ///
+  /// In ja, this message translates to:
+  /// **'PC/DeXモードでのみ設定できます'**
+  String get workspaceLeftHandedSubtitleMobile;
+
+  /// No description provided for @workspacePcModeSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'PCモード（DeX）'**
+  String get workspacePcModeSection;
+
+  /// No description provided for @workspacePcModeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'画面幅の広い環境では、パネルを常時表示するプロ向けの画面構成に自動で切り替わります。手動で固定したい場合はここで指定してください。'**
+  String get workspacePcModeHint;
+
+  /// No description provided for @workspacePcModeAuto.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動（画面幅で判定・推奨）'**
+  String get workspacePcModeAuto;
+
+  /// No description provided for @workspacePcModeAlwaysPc.
+  ///
+  /// In ja, this message translates to:
+  /// **'常にPCモード'**
+  String get workspacePcModeAlwaysPc;
+
+  /// No description provided for @workspacePcModeAlwaysMobile.
+  ///
+  /// In ja, this message translates to:
+  /// **'常にスマホモード'**
+  String get workspacePcModeAlwaysMobile;
+
+  /// No description provided for @workspaceSaveSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'ワークスペース保存'**
+  String get workspaceSaveSection;
+
+  /// No description provided for @workspaceSaveHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'左利きモード・PCモード・ツールバー・ツール早替え設定を名前を付けて保存し、後から呼び出せます。'**
+  String get workspaceSaveHint;
+
+  /// No description provided for @workspaceLoadButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'ワークスペースを読み込み'**
+  String get workspaceLoadButton;
+
+  /// No description provided for @workspaceLoadConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を読み込むと、現在のワークスペース設定が置き換わります。先に現在の設定を保存できます。'**
+  String workspaceLoadConfirmBody(String name);
+
+  /// No description provided for @workspaceEmptyToolbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示するツールがありません'**
+  String get workspaceEmptyToolbar;
+
+  /// No description provided for @workspaceSaveDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ワークスペースを保存'**
+  String get workspaceSaveDialogTitle;
+
+  /// No description provided for @workspaceSaveDialogLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前（例：アニメ用・線画用）'**
+  String get workspaceSaveDialogLabel;
+
+  /// No description provided for @workspaceLoadRightHanded.
+  ///
+  /// In ja, this message translates to:
+  /// **'右利き'**
+  String get workspaceLoadRightHanded;
+
+  /// No description provided for @workspaceLoadLeftHanded.
+  ///
+  /// In ja, this message translates to:
+  /// **'左利き'**
+  String get workspaceLoadLeftHanded;
+
+  /// No description provided for @helpScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ヘルプ'**
+  String get helpScreenTitle;
+
+  /// No description provided for @helpSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索...'**
+  String get helpSearchHint;
+
+  /// No description provided for @helpSearchResultCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索結果 {count}件'**
+  String helpSearchResultCount(int count);
+
+  /// No description provided for @helpNoResults.
+  ///
+  /// In ja, this message translates to:
+  /// **'該当する項目が見つかりません'**
+  String get helpNoResults;
+
+  /// No description provided for @helpCategoryTool.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツール'**
+  String get helpCategoryTool;
+
+  /// No description provided for @helpCategoryLayer.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤー'**
+  String get helpCategoryLayer;
+
+  /// No description provided for @helpCategoryAnimation.
+  ///
+  /// In ja, this message translates to:
+  /// **'アニメーション'**
+  String get helpCategoryAnimation;
+
+  /// No description provided for @helpCategoryDrawing.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画'**
+  String get helpCategoryDrawing;
+
+  /// No description provided for @helpCategoryBrush.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ'**
+  String get helpCategoryBrush;
+
+  /// No description provided for @helpCategoryPenInput.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン入力'**
+  String get helpCategoryPenInput;
+
+  /// No description provided for @helpCategorySave.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存'**
+  String get helpCategorySave;
+
+  /// No description provided for @helpCategoryProjectManagement.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト管理'**
+  String get helpCategoryProjectManagement;
+
+  /// No description provided for @helpCategoryExport.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し'**
+  String get helpCategoryExport;
+
+  /// No description provided for @helpCategoryPremium.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム'**
+  String get helpCategoryPremium;
+
+  /// No description provided for @helpCategorySettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定'**
+  String get helpCategorySettings;
+
+  /// No description provided for @helpCategoryCommunity.
+  ///
+  /// In ja, this message translates to:
+  /// **'コミュニティ'**
+  String get helpCategoryCommunity;
+
+  /// No description provided for @helpPenToolTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペンツール'**
+  String get helpPenToolTitle;
+
+  /// No description provided for @helpPenToolDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスに線を描くための基本ツールです。長押しでブラシの種類・太さ・色を変更できます（ダブルタップは簡易説明の表示）。板タブ・液晶タブレットの筆圧・傾きに対応しており、設定画面の「ペン入力」から筆圧カーブを調整すると筆圧の伝わり方（弱い力でどれだけ太さ・不透明度が変化するか）を細かくカスタマイズできます。ペンサブツールを切り替えると、同じペンツールからトーン貼り・スタンプ配置も行えます。'**
+  String get helpPenToolDesc;
+
+  /// No description provided for @helpEraserToolTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'消しゴムツール'**
+  String get helpEraserToolTitle;
+
+  /// No description provided for @helpEraserToolDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペンツールと対になる、描いた内容を消すためのツールです。ブラシと同様に太さ・不透明度を調整でき、フェードやストローク減衰などのブラシ設定も共通で反映されます。レイヤーの透明部分を「描き足す」のではなく既存の描画を「消す」処理を行うため、下のレイヤーが透けて見えるようになります。'**
+  String get helpEraserToolDesc;
+
+  /// No description provided for @helpBucketToolTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'バケツツール'**
+  String get helpBucketToolTitle;
+
+  /// No description provided for @helpBucketToolDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'囲まれた領域を一括で塗りつぶすツールです。線画で囲まれた範囲内をタップすると、その範囲全体が選択中の色（またはトーン）で塗られます。線画に隙間があると意図しない範囲まで塗り広がってしまうことがあるため、線画がきちんと閉じているか確認してから使うのがコツです。設定でベタ塗り／トーン塗りを切り替えられます。 詳細設定（許容誤差・拡張px・線の下まで潜る）は設定画面の「バケツ塗り」から調整できます。'**
+  String get helpBucketToolDesc;
+
+  /// No description provided for @helpLassoFillTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'投げ縄塗り'**
+  String get helpLassoFillTitle;
+
+  /// No description provided for @helpLassoFillDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'囲みたい範囲を指でなぞって多角形の範囲を作り、その内側をまとめて塗るツールです。バケツツールと違い、線画が閉じていない部分があっても自分で囲む範囲を指定できるため、複雑な形や線が途切れている部分の塗りに向いています。「囲って塗る」をオンにすると、囲んだ範囲の中にある線で閉じた領域を、いくつあってもバケツ塗りと同じように一括で塗ります（投げ縄と絵の間の余白は塗りません）。'**
+  String get helpLassoFillDesc;
+
+  /// No description provided for @helpEyedropperToolTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'スポイトツール'**
+  String get helpEyedropperToolTitle;
+
+  /// No description provided for @helpEyedropperToolDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップした位置の色を拾って、描画色として選択するツールです。画面に実際に表示されている全レイヤーを合成した見た目の色を拾うため、複数レイヤーが重なっている部分でも「見た目通りの色」を正確に取得できます。'**
+  String get helpEyedropperToolDesc;
+
+  /// No description provided for @helpSelectToolTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択ツール'**
+  String get helpSelectToolTitle;
+
+  /// No description provided for @helpSelectToolDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスの一部分を範囲選択し、選択した範囲だけを移動・回転・拡大縮小できるツールです。長押しすると「矩形選択」「投げ縄選択（自由な形で囲む）」「自動選択（マジックワンド、似た色の範囲を自動でまとめて選択）」の3種類から選択方法を選べます。選択中は選択範囲を示す枠線がキャンバス上に表示され、選択を解除するまで全フレーム・全レイヤーで同じ範囲が固定表示されます。投げ縄選択では「線に吸着」をオンにすると、バケツ塗りと同じように線画で区切られた領域を見て、囲みの内側に大部分が入っている領域だけを選択します。選択範囲の縁は線画の外側の縁にぴったり沿い、領域を囲む線と内側にある線も一緒に選択されます（輪郭から外へ伸びている線は輪郭の所で切れます）。色を塗った面もバケツ塗りと同じく色ごとの領域として扱うので、塗りと線のあるレイヤーでも絵の形どおりに選択できます。「線画の隙間許容」で指定した幅までの線の途切れは、つながっているものとして扱います。囲みの中に線画が無いときは、囲んだ形のまま選択します。線画は選択の参照先（「作業レイヤーのみ」／「表示レイヤーすべて」）から探します。'**
+  String get helpSelectToolDesc;
+
+  /// No description provided for @helpFingerToolTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'指ツール（歪みツール）'**
+  String get helpFingerToolTitle;
+
+  /// No description provided for @helpFingerToolDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'指でなぞった方向にピクセルを押し流すように歪ませる、液体絵の具を指でこすったような効果を作るツールです。細かい修正よりも、既に描いた線を有機的に歪ませて表情をつけたい時に使います。'**
+  String get helpFingerToolDesc;
+
+  /// No description provided for @helpShapeToolTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'図形ツール'**
+  String get helpShapeToolTitle;
+
+  /// No description provided for @helpShapeToolDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'直線・四角形・円といった正確な図形をワンタップで描くためのツールです。ドラッグで始点から終点まで動かすとその場でプレビューされ、指を離すと確定します。フリーハンドでは描きにくい直線や正円が必要な時に便利です。'**
+  String get helpShapeToolDesc;
+
+  /// No description provided for @helpTextToolTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストツール'**
+  String get helpTextToolTitle;
+
+  /// No description provided for @helpTextToolDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバス上に文字を配置するツールです。フォント・サイズ・色・縦書き/横書きを選べます。縦書きでは半角英数字の自動回転・縦中横（数字を横向きのまま並べる表記）・ルビ（ふりがな）にも対応しています。配置したテキストは書き出し時にもピクセルとして焼き込まれます。 テキストツールで使えるフォントを追加・検索・削除できる画面です。初期同梱フォント以外の追加フリーフォントは、初期インストール容量を抑えるためここからオンデマンドでダウンロードする方式になっています。'**
+  String get helpTextToolDesc;
+
+  /// No description provided for @helpQuickToolTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'早替えツール'**
+  String get helpQuickToolTitle;
+
+  /// No description provided for @helpQuickToolDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'よく使うブラシ・ツールの組み合わせをあらかじめ登録しておき、ボタン一つで順番に切り替えられる機能です。キャンバス上の「ツール早替え」ボタン（円形の矢印）を長押しまたは上スワイプすると、登録・並べ替え・削除ができる管理ポップアップが開きます。ドラッグで並び順を変更できます。'**
+  String get helpQuickToolDesc;
+
+  /// No description provided for @helpLayerTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤー'**
+  String get helpLayerTitle;
+
+  /// No description provided for @helpLayerDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'1枚のキャンバスを複数の透明な「層」に分けて描画できる仕組みです。線画・色塗り・背景などを別々のレイヤーに分けて描くことで、後から色だけをやり直したり、線画を消さずに背景を差し替えたりできます。画面上では上に重なっているレイヤーほど手前に表示されます。各レイヤー行のアイコンからワンタップで削除・下のレイヤーとの結合ができ、レイヤーパネル上部のアイコンから表示中の全レイヤーを一括結合することもできます。'**
+  String get helpLayerDesc;
+
+  /// No description provided for @helpBlendModeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブレンドモード'**
+  String get helpBlendModeTitle;
+
+  /// No description provided for @helpBlendModeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーの合成方法を変更する機能です。トーンやカラー効果をレイヤーとして重ねる時によく使われます。\n通常：そのまま重ねます。\n乗算：下のレイヤーと掛け合わせて暗くします。影・陰影づけの定番です。\nスクリーン：明るさを足し合わせて明るくします。光の表現に向きます。\nオーバーレイ：暗い部分はより暗く、明るい部分はより明るくしてコントラストを強めます。\n加算・発光：色を単純に足し合わせます。光の効果線などに向きます。\n減算：色を差し引き、暗く沈んだ効果になります。\n比較（暗）：上下のレイヤーで暗い方の色を採用します。\n比較（明）：上下のレイヤーで明るい方の色を採用します。\n焼き込みカラー：下の色を暗く沈めながら濃く発色させます。\n覆い焼きカラー：下の色を明るく飛ばしながら発色させます。\nハードライト：オーバーレイより強くコントラストが付きます。\nソフトライト：オーバーレイより穏やかにコントラストが付きます。柔らかい陰影に向きます。\n差の絶対値：上下の色の差を表示します。色のズレ確認などに使えます。\n色相・彩度・カラー・輝度：それぞれ色相・彩度・色味・明るさだけを下のレイヤーへ反映します。\n焼き込み（リニア）：上下の色を足してから基準値を引き、強く暗くします。\n覆い焼き（リニア）：上下の色を線形に加算して明るくします。加算・発光とは別のブレンドモードで、レイヤーが半透明のときは加算・発光の方が明るくなります。\nビビッドライト：上の色に応じて焼き込みと覆い焼きを切り替え、強いコントラストを作ります。\nリニアライト：上の色を基準に明るさを線形に増減します。\nピンライト：上の色に応じて暗い側または明るい側へ置き換えます。\nハードミックス：ビビッドライトの結果を二値化し、原色的な強い色分離を作ります。\n除外：差の絶対値より穏やかな反転・差分効果です。\n除算：下の色を上の色で割り、明るい補正や色差の強調に使えます。\nブレンドモードの選択一覧では、各モードの横に、赤・黄・青・白・黒を暗い色から明るい色の上へ重ねた見本が出ます（見本の下の方は半透明で重ねた見え方です）。'**
+  String get helpBlendModeDesc;
+
+  /// No description provided for @helpClippingTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'クリッピング'**
+  String get helpClippingTitle;
+
+  /// No description provided for @helpClippingDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分のすぐ下にあるレイヤーの、不透明なピクセルの範囲内にのみ描画されるようにする機能です。線画からはみ出さずに色を塗りたい時、線画レイヤーの上に色塗り用レイヤーを作ってクリッピングを有効にすると、線画の外側にうっかりはみ出して描いてしまう心配がなくなります。'**
+  String get helpClippingDesc;
+
+  /// No description provided for @helpCommonLayerTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通レイヤー'**
+  String get helpCommonLayerTitle;
+
+  /// No description provided for @helpCommonLayerDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'通常のレイヤーは1フレームごとに独立していますが、共通レイヤーは複数のフレーム・シーンで同じ内容を共有するレイヤーです。背景などフレームが変わっても動かさない要素を、フレームごとに描き直す手間なく一度描くだけで済ませられます。タイムライン上では専用のトラックとして表示されます。 通常レイヤーを共通レイヤー（複数フレームに同じ内容を表示し続けるレイヤー）へ変換できる機能です。表示中のレイヤーを複製して1枚に統合してから共通化することもできます。背景など毎フレーム同じ内容を使い回したい場合に、描き直す手間を省けます。'**
+  String get helpCommonLayerDesc;
+
+  /// No description provided for @helpAutoFillTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り'**
+  String get helpAutoFillTitle;
+
+  /// No description provided for @helpAutoFillDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り用線画レイヤーの下に自動塗りレイヤーを作り、あらかじめ作成した「自動塗り設定」（パーツごとの色・トーンの組み合わせ）に基づいて色を自動で塗る機能です。線画を描き終えた後に一括で色を塗れるため、同じキャラクターを何度も描く手描きアニメーションで色塗りの手間を大幅に減らせます。線画を描き直した場合はタイムライン・レイヤーパネルに更新マークが表示され、自動塗りの再実行が必要なことを知らせます。 タイムライン画面の三点メニューから「自動塗り実行」を選ぶと、更新マークが付いた自動塗りレイヤーをまとめて再計算できます。線画を描き直した後に1枚ずつレイヤーパネルで実行する手間を省けます。 自動塗り設定の各パーツには、線画の色をどう扱うかの設定（指定色・塗り色と同じ・色トレス）があります。色トレス（線画馴染ませ）を選ぶと、線画の色を塗り色に合わせてHSLシフトし、線が浮かずに馴染んだ仕上がりになります。 設定が増えてくると、パーツ割り当て時の一覧が長くなって選びにくくなります。プロジェクト設定（またはレイヤーパネルのパーツ割り当てダイアログ）から、このプロジェクトで使う設定だけに絞り込んでおくと、一覧がすっきりして選びやすくなります。 「線画と塗りの隙間を埋める」を大きくすると、線の薄いふちの下まで塗り、縁取りや塗り色と同じ線画色のときに見える線画と塗りの間の隙間が小さくなります。'**
+  String get helpAutoFillDesc;
+
+  /// No description provided for @helpOnionSkinTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'オニオンスキン'**
+  String get helpOnionSkinTitle;
+
+  /// No description provided for @helpOnionSkinDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在編集中のフレームの前後のフレームを半透明で重ねて表示し、動きの繋がりを確認しながら描けるようにする機能です。パフォーマンス設定で表示する枚数（前後何枚まで）や色・透明度を調整できます。'**
+  String get helpOnionSkinDesc;
+
+  /// No description provided for @helpRulerTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'定規'**
+  String get helpRulerTitle;
+
+  /// No description provided for @helpRulerDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'直線・円・楕円・パース定規（消失点を使った透視図法用の定規）など、フリーハンドでは描きにくい正確な線を補助するための機能です。配置した定規に沿ってペン先が自動でスナップするため、定規なしでは難しい奥行きのある構図も描きやすくなります。定規はハンドルを操作して移動・回転・サイズ変更ができます。魚眼パースは、レンズの縁の円の中で横・縦の線が弧を描き、奥行きの線が中心へ集まる5点の曲線透視です。描き始めた向きに合う線に沿って描け、ハンドルで中心の移動・半径（円の右の丸）・傾き（円の上の丸）を変えられます。'**
+  String get helpRulerDesc;
+
+  /// No description provided for @helpFadeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フェード'**
+  String get helpFadeTitle;
+
+  /// No description provided for @helpFadeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'入り（始点）と抜き（終点）の値と距離をそれぞれ独立して設定できるブラシ機能です。入りだけ、抜きだけ、または非対称の設定にでき、線の描き始め・描き終わりの太さや不透明度を別々に調整できます。縁取りペンでは全体の形（太さ）だけが変わり、不透明度は変わりません。'**
+  String get helpFadeDesc;
+
+  /// No description provided for @helpStrokeDecayTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ストローク減衰'**
+  String get helpStrokeDecayTitle;
+
+  /// No description provided for @helpStrokeDecayDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'フェードと似ていますが、こちらは「インクが減っていく」ような表現に近く、描き続けるほど色が薄くなったりかすれたりする効果です。筆やマーカーで描き続けた時のインク切れのような質感を再現します。'**
+  String get helpStrokeDecayDesc;
+
+  /// No description provided for @helpColorMixingTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'混色'**
+  String get helpColorMixingTitle;
+
+  /// No description provided for @helpColorMixingDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシで塗る際、ブラシの直下にすでにある色と、これから塗ろうとしている選択色を混ぜ合わせながら描画する機能です。ブラシ設定の「混色モード」で、混ぜずに塗る「デジタル」、絵の具のように混ざり拾った色を引きずって伸ばす「油彩風混色」、透明な絵の具を重ねて乾くと縁に色が溜まる「水彩風混色」を選べます。'**
+  String get helpColorMixingDesc;
+
+  /// No description provided for @helpPressureCurveTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'筆圧カーブ'**
+  String get helpPressureCurveTitle;
+
+  /// No description provided for @helpPressureCurveDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン入力設定にある機能で、実際の筆圧の強さと、ブラシの太さ・不透明度への反映のされ方の関係をグラフで自由に調整できます。弱い筆圧でも太く出したい人、逆に強く押さないと太くならないようにしたい人など、手癖に合わせて描き心地を細かくカスタマイズできます。設定変更後はその場で試し書きしながら確認できます。'**
+  String get helpPressureCurveDesc;
+
+  /// No description provided for @helpTimelineTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムライン'**
+  String get helpTimelineTitle;
+
+  /// No description provided for @helpTimelineDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。項目を長押しして複数選択し、まとめて動かすこともできます。'**
+  String get helpTimelineDesc;
+
+  /// No description provided for @helpSceneTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン'**
+  String get helpSceneTitle;
+
+  /// No description provided for @helpSceneDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'1つのプロジェクト（1本の動画）の中を、場面（カット）ごとに分割して管理する機能です。フォルダがプロジェクト単位の整理なのに対し、シーンは1本の動画の中の場面転換を表現するために使います。タイムラインのシーンタブでは、シーンの追加・複製・削除・名前変更・並び替えができます。複数選択モードにすると複数シーンをまとめて移動・複製・削除することも可能です。'**
+  String get helpSceneDesc;
+
+  /// No description provided for @helpCameraKeyframeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カメラキーフレーム'**
+  String get helpCameraKeyframeTitle;
+
+  /// No description provided for @helpCameraKeyframeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムライン上の特定の位置にカメラの位置・拡大率・回転を記録しておく機能です。キーフレーム間は自動で滑らかに補間されるため、パン（横移動）やズームイン・ズームアウトのようなカメラワークを簡単に付けられます。'**
+  String get helpCameraKeyframeDesc;
+
+  /// No description provided for @helpEffectFilterTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'演出フィルター'**
+  String get helpEffectFilterTitle;
+
+  /// No description provided for @helpEffectFilterDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーンやフレームに適用できる映像効果（ぼかし・色調補正・グロー・ドット絵等）です。手描きの絵そのものを変えずに、演出として画面全体の見た目を調整したい時に使います。描画フィルターのうち、トーンカーブ（プリセットと強さ）・レベル補正・シャープ・アンシャープマスク・周辺減光（色・範囲・濃さ）・水彩境界も、複数のフレームへ同じ効果を一度にかけられるよう演出フィルターに入っています。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。色を限るときは、1色では元の色から遠い所を、使える色のうち2〜3色を規則正しく並べて（ディザリング）元の色に近づけます。輪郭の所は混ぜずにくっきり保ちます。色数を指定すると、絵の多くを占める色から選ばれます。ディザリングはスイッチでオン・オフでき、オフにすると最も近い1色で塗ります。 演出フィルターは複数重ねて適用でき、その適用順はタイムライン上での並び順に従います。フィルター一覧をドラッグで並び替えると、実際に画面へ反映される順序も変わります。 フィルムの粒状感のようなノイズをフレームごとに変化させながら適用する演出フィルターです。強度・量（ノイズが乗る密度）・粒の大きさをスライダーで調整できます。同じフレームに戻ると同じ粒状になるため、スクラブ中にちらつかず、再生すると粒が動いて見えます。 画面に降る雨を表現する演出フィルターです。降り方（本数）・速さ・粒の大きさ・風向きの角度をスライダーで調整できます。各雨粒はフレームが進むごとに一定の速度で降り続けるため、自然な雨の動きになります。'**
+  String get helpEffectFilterDesc;
+
+  /// No description provided for @helpEndCardTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'エンドマーク'**
+  String get helpEndCardTitle;
+
+  /// No description provided for @helpEndCardDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMのエンドマークは、MP4・WebM・AVIの本編末尾に付く5秒のロゴです。エンドマーク特典が有効な間は、作品ごとに表示を切り替えられます。期限後も作品の設定は保存されます。GIFには付きません。'**
+  String get helpEndCardDesc;
+
+  /// No description provided for @helpAutoSaveTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動保存'**
+  String get helpAutoSaveTitle;
+
+  /// No description provided for @helpAutoSaveDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'編集中の内容を自動で記録し、最大3件残します。作品ファイルが壊れている場合は、読み込める最新の自動保存から自動で復旧します。保存データの一覧では、自動保存と手動保存（セーブスロット・セーブツリー）を切り替えて、読み込むデータを選べます。'**
+  String get helpAutoSaveDesc;
+
+  /// No description provided for @saveDataManualTab.
+  ///
+  /// In ja, this message translates to:
+  /// **'手動保存'**
+  String get saveDataManualTab;
+
+  /// No description provided for @saveDataAutosavesEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品の自動保存はまだありません。'**
+  String get saveDataAutosavesEmpty;
+
+  /// No description provided for @projectAutosaveRecovered.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品ファイルを読み込めなかったため、自動保存から復旧しました。'**
+  String get projectAutosaveRecovered;
+
+  /// No description provided for @helpSaveSlotTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'セーブスロット'**
+  String get helpSaveSlotTitle;
+
+  /// No description provided for @helpSaveSlotDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'決まった数の保存枠（スロット）に、自分で保存先を選びながら保存する方式です。スロット数は設定（低品質5件・中品質10件）で決まります。上書きしたい枠を毎回自分で選ぶため、「このタイミングの状態は残しておきたい」という管理がしやすい方式です。'**
+  String get helpSaveSlotDesc;
+
+  /// No description provided for @helpSaveTreeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'セーブツリー'**
+  String get helpSaveTreeTitle;
+
+  /// No description provided for @helpSaveTreeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存するたびに新しい保存地点が作られ、過去の保存地点から分岐して別の履歴を作れる（枝分かれする）保存方式です。件数の上限がなく、「あの時のバージョンに戻ってから別の展開を試したい」といった使い方に向いています。画面には保存地点が下から上へ伸びる樹形図として表示されます。'**
+  String get helpSaveTreeDesc;
+
+  /// No description provided for @helpFolderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ'**
+  String get helpFolderTitle;
+
+  /// No description provided for @helpFolderDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト（作品）をグループ化して整理する機能です。複数階層に対応しているので、同じ作品の複数話数やシリーズ物をまとめて管理する使い方もできます（例：「作品名」フォルダの中に「第1話」「第2話」…とプロジェクトを並べる）。1つの動画の中で場面を分けて作りたい場合は、フォルダではなくキャンバス画面の「シーン」機能をご利用ください。'**
+  String get helpFolderDesc;
+
+  /// No description provided for @helpTrashTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱'**
+  String get helpTrashTitle;
+
+  /// No description provided for @helpTrashDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除したプロジェクトが一時的に移動する場所です。完全に削除するまではここから元に戻せます。設定で自動削除までの日数（OFF/30日/60日/90日）を指定できます。'**
+  String get helpTrashDesc;
+
+  /// No description provided for @helpShareTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有（.niashare）'**
+  String get helpShareTitle;
+
+  /// No description provided for @helpShareDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトを他の人（または自分の他の端末）へ渡すための共有専用ファイル形式です。受け取った側がこのファイルを開くと、複製されて自分のプロジェクト一覧に追加されます。共有元の.niashare自体は変更されません。'**
+  String get helpShareDesc;
+
+  /// No description provided for @helpTransferTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'引き継ぎ（.niatra）'**
+  String get helpTransferTitle;
+
+  /// No description provided for @helpTransferDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定・素材・ブラシ・自動塗り設定・テーマ・パレット（カラーピッカー・ドット絵専用）など、アプリ全体の環境を別の端末へまとめて引き継ぐための機能です。引き継ぐ項目はチェックボックスで個別に選べるほか、制作中のプロジェクトも任意で選んで含められます（選択したプロジェクトは素材・フォントも含めて丸ごと引き継がれます）。個別のプロジェクトだけを渡したい場合は「共有（.niashare）」も使えます。'**
+  String get helpTransferDesc;
+
+  /// No description provided for @helpVideoExportTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画書き出し（MP4・WebM・GIF・AVI）'**
+  String get helpVideoExportTitle;
+
+  /// No description provided for @helpVideoExportDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'MP4・WebM・GIF・AVIで書き出せます。無料版で尺を伸ばせるのは90秒までです。90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。 書き出しFPSを変えても作品の再生時間を維持します。書き出す前に本編の長さとエンドマークの有無を確認できます。'**
+  String get helpVideoExportDesc;
+
+  /// No description provided for @helpTransparentWebmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'透過WebM'**
+  String get helpTransparentWebmTitle;
+
+  /// No description provided for @helpCommunityTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場'**
+  String get helpCommunityTitle;
+
+  /// No description provided for @helpCommunityDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」「検索」「ブックマーク」の5タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品は作品広場の「ブックマーク」タブにまとめて表示されるほか、自分の作者ページの「ブックマーク」タブでも確認できます。投稿や投稿者を通報できます。ミュートは自分の表示だけに、ブロックはログイン中の双方の表示に反映します。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にする非表示ワードと、作品広場で作品に設定されたタグだけを対象にする非表示タグを「新規追加」から1件ずつ登録し、ペンで編集、ゴミ箱で削除できます。カンマや#は不要です。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。'**
+  String get helpCommunityDesc;
+
+  /// No description provided for @helpWatermarkEntryTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウォーターマーク'**
+  String get helpWatermarkEntryTitle;
+
+  /// No description provided for @helpWatermarkEntryDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像や文字で自分の署名やロゴを作品に追加できます。追加や再編集にはウォーターマーク特典が必要です。配置済みのウォーターマークは期限後も書き出せます。'**
+  String get helpWatermarkEntryDesc;
+
+  /// No description provided for @helpPremiumEntryTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム'**
+  String get helpPremiumEntryTitle;
+
+  /// No description provided for @helpPremiumEntryDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'最大尺の特典が有効な間は、最大2時間まで制作・書き出しできます。期限後でも作品は残り、色補正などを反映した先頭90秒を書き出せます。エンドマークは書き出し開始時の特典で決まります。'**
+  String get helpPremiumEntryDesc;
+
+  /// No description provided for @helpPremiumExpiryTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典の期限が切れたら'**
+  String get helpPremiumExpiryTitle;
+
+  /// No description provided for @helpPremiumExpiryDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'90秒を超える作品を全編書き出すには、プレミアムまたは最大尺の特典が必要です。期限後でも先頭90秒を書き出せます。作品データは保存されたままです。 フレームの新規追加・複製は90秒までです。編集履歴が残っていれば、取り消し・やり直しで削除したフレームを復元できます。エンドマーク特典の期限後に新しく書き出すMP4・WebM・AVIには、末尾にNIARIMロゴが5秒付きます。GIFと書き出し済みのファイルには影響しません。書き出し開始時の条件が最後まで適用されます。配置済みのウォーターマーク、適用済みの色補正、自動操作の結果は残ります。保存した自動操作をもう一度実行するには、有効な特典が必要です。'**
+  String get helpPremiumExpiryDesc;
+
+  /// No description provided for @helpPerformanceSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パフォーマンス設定'**
+  String get helpPerformanceSettingsTitle;
+
+  /// No description provided for @helpPerformanceSettingsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末の性能に応じて、低品質・中品質・高品質のプリセットから選ぶか、各項目を個別に設定（カスタム）できます。保存方式・動作の軽さ・オニオンスキン・傾き検知に加えて、Undo回数やゴミ箱の自動削除などアプリの容量・動作の重さに影響する設定もここにまとまっています。'**
+  String get helpPerformanceSettingsDesc;
+
+  /// No description provided for @helpMaterialClipTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材クリップ（テキスト・画像・動画・音声）'**
+  String get helpMaterialClipTitle;
+
+  /// No description provided for @helpMaterialClipDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインのテキスト・画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。同じ時間に重なる素材は自動で別の列に置かれます。テキスト・画像・動画のクリップをタップすると、プレビューの下に編集パネルが開きます。文字の内容・フォント・色・縁取り、位置・拡大縮小・X軸／Y軸／Z軸回転・不透明度（プレビュー上のドラッグでも動かせます。キーフレームを追加すると動きになります）、マスク（四角・楕円・ぼかし・反転）、置く列を変えられ、複製・削除もここから行えます。音声クリップは詳細シートで音量・フェードを調整します。'**
+  String get helpMaterialClipDesc;
+
+  /// No description provided for @helpGestureSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ジェスチャー設定'**
+  String get helpGestureSettingsTitle;
+
+  /// No description provided for @helpGestureSettingsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'2本指タップ・3本指タップ・2本指スワイプ・長押しに、Undo/Redo・フレーム移動・スポイトなどの操作を割り当てられる設定です。ペンボタン（対応スタイラス使用時）にも別途操作を割り当てられます。指を使わずワンタッチで頻用操作を呼び出したい場合に便利です。'**
+  String get helpGestureSettingsDesc;
+
+  /// No description provided for @helpBucketDetailSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'バケツ塗り詳細設定'**
+  String get helpBucketDetailSettingsTitle;
+
+  /// No description provided for @helpBucketDetailSettingsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定画面の「バケツ塗り」から、許容誤差（クリックした位置の色からどこまでの色差を同一領域とみなすか）・拡張px（塗った範囲を境界の外側へ広げて線画との隙間を埋める量）・線の下まで潜る（拡張分を線画の上から上書きせず、線の見た目を保ったまま背後へ塗り色を合成する）を調整できます。線画に細かい隙間がある場合や、塗り残しが気になる場合に調整すると仕上がりが安定します。'**
+  String get helpBucketDetailSettingsDesc;
+
+  /// No description provided for @helpStampToolTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプツール'**
+  String get helpStampToolTitle;
+
+  /// No description provided for @helpStampToolDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスに登録済み画像をブラシのように配置するツールです。集中線や背景パターン、小物などを毎回描き直さず再利用できます。ドット絵モードでは、ドット絵フィルターと同じ処理で透明境界を硬く保ちながらピクセル化・減色します。モザイクは別のエフェクトで、スタンプのドット絵モードには使用しません。スタンプパネルでは配置するスタンプの回転角度とサイズも調整できます。'**
+  String get helpStampToolDesc;
+
+  /// No description provided for @helpToneFillTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーン塗り'**
+  String get helpToneFillTitle;
+
+  /// No description provided for @helpToneFillDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'バケツツールの設定でベタ塗りからトーン塗りへ切り替えると、選択した網点・ライン柄などのトーンパターンで塗りつぶせます。ドット絵モード専用の市松模様・格子柄トーンも用意されており、ドット絵の質感を活かした塗りができます。フリルやニット、タイツなど、手描きでは手間のかかる細かい柄も簡単に描けます。オリジナルのトーンを自作して追加したり、ほかの人と共有したりすることも可能です。 トーン一覧では網点・ライン・布柄・ピクセル柄をまとめて表示します。ピクセルディザの名前には目の細かさ、マス目の大きさ、濃度を表示します。'**
+  String get helpToneFillDesc;
+
+  /// No description provided for @helpPixelModeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドット絵モード'**
+  String get helpPixelModeTitle;
+
+  /// No description provided for @helpPixelModeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ・フォント・スタンプのそれぞれに用意されている設定で、ONにするとアンチエイリアスを取り除き、くっきりとしたドット絵風の輪郭で描画されます。あえて古いゲームのような質感を出したい時や、低解像度感を演出したい時に使います。配色方式は「色を指定しない」「色を指定する」「色数を指定する」「パレットから選ぶ」の4種類から選べ、ドット絵専用パレットを使った配色もできます。'**
+  String get helpPixelModeDesc;
+
+  /// No description provided for @helpHomeScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホーム画面'**
+  String get helpHomeScreenTitle;
+
+  /// No description provided for @helpHomeScreenDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'アプリを起動して最初に表示される画面で、プロジェクト・共有・作品一覧・ゴミ箱の各タブを切り替えて閲覧できます。右上の検索アイコンからプロジェクト名で絞り込み検索もできます。プロジェクトタブでは新規プロジェクト作成とフォルダ作成を画面右下の＋ボタンから選べます。'**
+  String get helpHomeScreenDesc;
+
+  /// No description provided for @helpNewProjectTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規プロジェクト作成'**
+  String get helpNewProjectTitle;
+
+  /// No description provided for @helpNewProjectDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスサイズ・fps・長さ（秒数。あとからタイムラインでのフレーム増減にも連動）・描画領域（書き出し範囲より広く描いておける設定）・使用する自動塗り設定などをまとめて指定してからプロジェクトを作成します。'**
+  String get helpNewProjectDesc;
+
+  /// No description provided for @helpThemeSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマ設定'**
+  String get helpThemeSettingsTitle;
+
+  /// No description provided for @helpThemeSettingsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマ一覧からアプリ全体の配色を選べます。カラーカスタマイズでは6つの基本色を調整でき、色の詳細設定ではメニューや選択中の色などを個別に指定できます。見出し・項目名用フォントと説明文用フォントが分かれており、視認性を保ちながら着せ替えを楽しめます。'**
+  String get helpThemeSettingsDesc;
+
+  /// No description provided for @helpWorkspaceSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ワークスペース設定'**
+  String get helpWorkspaceSettingsTitle;
+
+  /// No description provided for @helpWorkspaceSettingsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'左利きモード（ドッキングパネルを左右反転）、PC/DeXモードの手動切替、手のひらツールの表示条件などをまとめて設定できる画面です。使用端末や利き手に合わせて作業しやすいレイアウトに調整できます。'**
+  String get helpWorkspaceSettingsDesc;
+
+  /// No description provided for @helpPenSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン設定'**
+  String get helpPenSettingsTitle;
+
+  /// No description provided for @helpPenSettingsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'板タブ・液晶タブレットの筆圧カーブに加えて、ペン側面のボタン（対応スタイラス使用時）に消しゴム切替やスポイトなどの操作を割り当てられる設定画面です。'**
+  String get helpPenSettingsDesc;
+
+  /// No description provided for @helpMaterialListTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材一覧'**
+  String get helpMaterialListTitle;
+
+  /// No description provided for @helpMaterialListDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトで使用している画像・動画・音声素材をまとめて確認できる画面です。タイムラインへ配置した素材の元ファイルがここに集約されます。'**
+  String get helpMaterialListDesc;
+
+  /// No description provided for @helpFrameOperationsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム操作'**
+  String get helpFrameOperationsTitle;
+
+  /// No description provided for @helpFrameOperationsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム一覧では新規追加・複製・削除に加えて、複数選択モードで複数フレームをまとめて移動・複製・削除できます。保持セル数を増やすと同じフレームを複数コマ分表示させ続けられる（いわゆる「止め」）ので、動きの少ないカットで枚数を節約できます。'**
+  String get helpFrameOperationsDesc;
+
+  /// No description provided for @helpSceneOperationsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン操作'**
+  String get helpSceneOperationsTitle;
+
+  /// No description provided for @helpSceneOperationsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインのシーンタブでは、シーンの追加・複製・削除・名前変更・並び替えができます。複数選択モードにすると複数シーンをまとめて移動・複製・削除することも可能です。'**
+  String get helpSceneOperationsDesc;
+
+  /// No description provided for @helpQuickToolManagementTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'早替えツール管理'**
+  String get helpQuickToolManagementTitle;
+
+  /// No description provided for @helpQuickToolManagementDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'よく使うツールの組み合わせを登録し、タップひとつで順番に切り替えられる機能です。長押しまたは上スワイプで管理ポップアップを開き、登録内容や並び順を編集できます。'**
+  String get helpQuickToolManagementDesc;
+
+  /// No description provided for @helpTransformSelectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択範囲の変形'**
+  String get helpTransformSelectionTitle;
+
+  /// No description provided for @helpTransformSelectionDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択ツールで囲んだ範囲は、キャンバス左下に出る「移動」「拡大縮小」「回転」のボタンでモードを選び、選択範囲の中をドラッグして変形できます。誤って描いた部分の位置調整や、一部だけを拡大して強調したい時などに使います。同じバーの「全選択」を押せば描画中のレイヤー全体が選択範囲になるので、レイヤーまるごとの移動・回転・拡大縮小も同じ操作でできます（以前あった独立した「変形ツール」はここへ統合しました）。格子点を個別にドラッグしてもっと自由に歪ませたい場合は、同じバーの「自由変形」「メッシュ変形」を使ってください。'**
+  String get helpTransformSelectionDesc;
+
+  /// No description provided for @helpGradientAutofillTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'グラデーション塗り（自動塗り設定）'**
+  String get helpGradientAutofillTitle;
+
+  /// No description provided for @helpGradientAutofillDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り設定の各パーツには単色だけでなくグラデーションも設定できます。ドラッグで移動できる対称ハンドルにより、直感的にグラデーションの範囲・角度を調整できます。 各パーツには「指定色で縁取り」も設定できます。チェックを入れると、塗り範囲の一番外側（線画に接する部分）に指定した色・太さのラインが引かれます。縁取り色はカラーピッカーで自由に選べ、太さはスライダー・±ボタン・数値タップでの直接入力のいずれでも調整できます。設定項目のすぐ上にプレビューが表示されるため、実際に自動塗りを実行する前に色と太さを確認できます。'**
+  String get helpGradientAutofillDesc;
+
+  /// No description provided for @helpColorPickerTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーピッカー'**
+  String get helpColorPickerTitle;
+
+  /// No description provided for @helpColorPickerDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'HSVとRGBを1つの画面で切り替えながら色を選べるカラーピッカーです。パレット機能で使用中のカラーセットを保存・呼び出しできます。パレットはファイル書き出しやQRコードで他の端末と共有することもできます。'**
+  String get helpColorPickerDesc;
+
+  /// No description provided for @helpUndoSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'Undo（元に戻す）回数設定'**
+  String get helpUndoSettingsTitle;
+
+  /// No description provided for @helpUndoSettingsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'パフォーマンス設定から、Undoで遡れる操作回数を調整できます。回数を増やすほど安心して試行錯誤できますが、メモリ使用量も増えるため、低スペック端末では回数を抑えると動作が軽くなります。'**
+  String get helpUndoSettingsDesc;
+
+  /// No description provided for @helpBrushFavoriteTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシのお気に入り'**
+  String get helpBrushFavoriteTitle;
+
+  /// No description provided for @helpBrushFavoriteDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ一覧の各ブラシにある星アイコンをタップすると、お気に入り登録・解除ができます（自動塗り設定・スタンプ・フォント・描画フィルターなど、アプリ内の他のお気に入り機能と同じ操作方法です）。一覧上部の星アイコンで、お気に入りのみ表示に絞り込むこともできます。誤って削除しないよう、お気に入り登録中のブラシは削除できません。'**
+  String get helpBrushFavoriteDesc;
+
+  /// No description provided for @helpCustomBrushTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタムブラシ'**
+  String get helpCustomBrushTitle;
+
+  /// No description provided for @helpCustomBrushDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ一覧でプリインストールのブラシを長押しして「複製」すると、それを元にした自分専用のカスタムブラシが作成されます。複製したブラシは太さ・不透明度・硬さ・回転・密度・散布・ぼかし半径などのパラメータを自由に編集でき、不要になれば削除もできます（プリインストールのブラシ自体は編集・削除できません）。キャンバスのスライダーで変えた太さ・不透明度はブラシごとに覚えます。プリインストールのブラシも同じで、一覧のメニューから既定の値に戻せます。フォルダで分類したり、星アイコンでお気に入り登録することもできます。'**
+  String get helpCustomBrushDesc;
+
+  /// No description provided for @helpLayerFolderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーフォルダ'**
+  String get helpLayerFolderTitle;
+
+  /// No description provided for @helpLayerFolderDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'複数のレイヤーをフォルダにまとめて整理できる機能です。パーツ数が多いイラストでもレイヤーパネルが見やすくなります。クリッピングはフォルダをまたいで適用できない仕様のため、クリッピングを使う場合は同じフォルダ内でまとめておくと安全です。'**
+  String get helpLayerFolderDesc;
+
+  /// No description provided for @helpLayerMultiSelectTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーの複数選択・一括操作'**
+  String get helpLayerMultiSelectTitle;
+
+  /// No description provided for @helpLayerMultiSelectDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーパネルの選択モードを使うと、複数のレイヤーをチェックボックスでまとめて選び、結合や一括削除ができます。結合は通常・自動塗り用線画・自動塗りレイヤー同士でのみ可能です（共通レイヤー・フォルダ・タイムライン素材は結合対象外）。'**
+  String get helpLayerMultiSelectDesc;
+
+  /// No description provided for @helpDrawingAreaTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画領域'**
+  String get helpDrawingAreaTitle;
+
+  /// No description provided for @helpDrawingAreaDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し範囲よりも広い範囲まで描いておける設定です。キャンバス上には書き出し範囲を示す赤枠が表示され、枠の外側にはみ出して描いた部分は書き出されませんが、パン・ズームなどのカメラワークで見せる範囲を後から調整する余地を残せます。新規プロジェクト作成時に倍率を設定します。'**
+  String get helpDrawingAreaDesc;
+
+  /// No description provided for @helpCanvasBackgroundTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスの背景色'**
+  String get helpCanvasBackgroundTitle;
+
+  /// No description provided for @helpCanvasBackgroundDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトのキャンバス背景色を設定できます。透過書き出し（透過WebM）を使う場合は背景色は書き出しに影響しませんが、作業中の見やすさのために好みの色に変更できます。'**
+  String get helpCanvasBackgroundDesc;
+
+  /// No description provided for @helpProjectDetailTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト詳細画面'**
+  String get helpProjectDetailTitle;
+
+  /// No description provided for @helpProjectDetailDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト名・サムネイル・お気に入り登録・使用する自動塗り設定の絞り込みなど、プロジェクト単位の設定をまとめて確認・編集できる画面です。セーブツリーへの入り口もここにあります。'**
+  String get helpProjectDetailDesc;
+
+  /// No description provided for @helpWatermarkEditTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウォーターマークの再編集'**
+  String get helpWatermarkEditTitle;
+
+  /// No description provided for @helpWatermarkEditDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインの共通レイヤートラックから角度・大きさ・不透明度・表示範囲を調整できます。特典が終了しても配置済みのウォーターマークは作品や書き出しに残ります。設定の変更には有効な特典が必要です。'**
+  String get helpWatermarkEditDesc;
+
+  /// No description provided for @helpAudioClipTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'音量調整'**
+  String get helpAudioClipTitle;
+
+  /// No description provided for @helpAudioClipDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインに配置した音声クリップは、詳細シートから音量・フェードイン・フェードアウトの秒数を調整できます。効果音やBGMの音量バランスを整えたり、曲の始まり・終わりを滑らかにしたりできます。'**
+  String get helpAudioClipDesc;
+
+  /// No description provided for @helpPenSubToolTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン'**
+  String get helpPenSubToolTitle;
+
+  /// No description provided for @helpPenSubToolDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペンツールを長押しすると、通常の描画に加えてトーン貼り・スタンプ配置のサブツールへ切り替えられます。ツールをいちいち切り替えずに、同じペンから複数の作業を行き来できます。'**
+  String get helpPenSubToolDesc;
+
+  /// No description provided for @helpTiltDetectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'傾き検知'**
+  String get helpTiltDetectionTitle;
+
+  /// No description provided for @helpTiltDetectionDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'対応スタイラスの傾き情報を使って、筆先を寝かせたときに線を太く・薄くするなど、実際の筆記具に近い描き心地を再現する設定です。パフォーマンス設定からON/OFFを切り替えられます。'**
+  String get helpTiltDetectionDesc;
+
+  /// No description provided for @helpFontImportTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォントの読み込み'**
+  String get helpFontImportTitle;
+
+  /// No description provided for @helpFontImportDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末内のフォントファイルを直接読み込んで使えるようにする機能です。設定画面のフォント管理「読み込み」タブから追加できます。配信されていない自作フォントや購入した商用フォントを使いたい場合に利用します。'**
+  String get helpFontImportDesc;
+
+  /// No description provided for @helpExportScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し画面'**
+  String get helpExportScreenTitle;
+
+  /// No description provided for @helpExportScreenDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'「プリセット」で「標準」「高画質」「カスタム」を選べます。「カスタム」ではFPSを調整できます。動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。 書き出した作品はホームの「作品一覧」でプロジェクト名から探せます。写真アプリに保存したり、ほかのアプリで開いたりするには「共有」を選んでください。'**
+  String get helpExportScreenDesc;
+
+  /// No description provided for @helpDrawingFilterTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画フィルター'**
+  String get helpDrawingFilterTitle;
+
+  /// No description provided for @helpDrawingFilterDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・色反転・モザイク・ノイズ・球体陰影・水彩境界の26種類が用意されています。水彩境界は、作業レイヤーの塗った所の縁に色を溜め、内側を透けさせて、乾いた水彩のようにします（「色の境目にも付ける」で、隣り合う色の境目にも縁が付きます）。アニメ風加工は色数を減らし、隣どうしの色の差が「色の違いの閾値」以上の境目に「境界線の太さ」の線を暗い側へ引きます（線画の線は太りません）。プリズムは、レイヤーに描いた形ごとに虹の6色（赤・緑・水色・青・紫・赤）で塗ってぼかし、合成モードを「覆い焼き（リニア）」にします。暗い色の細い葉のような形を別のレイヤーに描いてから使うと、絵の上に淡い虹の光の筋が入ります（「ぼかし量」は一般的なガウスぼかしと同じ尺度）。球体陰影は、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます（光の位置・大きさはキャンバス上でもドラッグできます）。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、パネルの「ペン」「バケツ」でキャンバスに塗った範囲（「消しゴム」で修正）だけに、強い眼鏡レンズのような局所的な歪みをかけられます（選択範囲・選択レイヤーがあればその範囲から始まります）。キャンバスで選択範囲を作ってあると、描画フィルターはその中だけに適用されます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。色を限るときは、1色では元の色から遠い所を、使える色のうち2〜3色を規則正しく並べて（ディザリング）元の色に近づけます。輪郭の所は混ぜずにくっきり保ちます。色数を指定すると、絵の多くを占める色から選ばれます。ディザリングはスイッチでオン・オフでき、オフにすると最も近い1色で塗ります。大きさは「ブロックサイズを指定」（1〜100の100段階）と「ドット数を指定」（横・縦のドット数のスライダー。左端で1、右端でキャンバスの画素数）を切り替えられ、縦横比を保ったまま横と縦が一緒に変わります。どちらの指定も連動します。どちらも正方形のドットのまま半透明の縁を作りません。 自動線画では適用前の一時的なベクター制御点を直接編集できます。点をドラッグするとその点だけを移動します。「適用」の右の「制御点追加」を選んで線をタップすると制御点を追加、「制御点削除」を選んで点をタップすると削除できます（どちらも選んでいないときに点をタップすると、確認してから削除します）。編集した形状がそのまま適用結果になり、制御点の移動・追加・削除もフィルター編集の元に戻す・やり直すで1つずつ戻せます。 トーンカーブは曲線の何もない所をタップすると点を追加、点をドラッグで移動、長押しで削除でき、R・G・Bの色ごとのカーブはRGBのカーブの後にかかります。レベル補正もR・G・Bごとに調整でき、ガンマで中間の明るさを変えられます。縁取りは「内側への食い込み」で元の輪郭の内側まで縁を広げられ、縁取りの新規レイヤーは元のレイヤーの直下に作られます。色収差は、ずれをX（横）・Y（縦）・Z（中心から外向き）へどれだけ振り分けるかを指定できます。魚眼レンズの中心と半径は、キャンバス上の＋と円のつまみをドラッグしても変えられます。周辺減光はキャンバス全体の四隅をぼんやり暗くします（描いていない透明な所にも影がかかります）。「範囲」で四隅から中心へ向かってどこまで暗くするか、「濃さ」で四隅の暗さを調整できます。眼鏡断層は本物の度の強い眼鏡のように、レンズ越しの景色をレンズの中心へ向かって一様に縮め（負の値・近視用）、または広げ（正の値・遠視用）、レンズの縁で輪郭が段になってずれます。墨溜まりは線が「最大角度」以下で出会う所（初期値の90°では鋭角と直角：V字・交差の狭い側・T字・四角い角など）の角の内側にだけ溜まり、それより広い角には溜まりません。出会う点で線の縁から「中央の太さ」、そこから「範囲」の端に向かってまっすぐ細くなって、端で0pxになり、なめらかにとがって消えます。「中央の太さ」を大きくしても、両側の墨溜まりの端どうしを結ぶ直線より外へはふくらまず、いちばん太くても中央は平らになります。範囲の途中で線が途切れているときは、その線ではそこを終点として0pxまで細くなります（線ごとに長さが変わります）。そのときも2つの墨溜まりは角の真ん中で、どちらの線からも同じ太さで出会います（長い方の線の墨溜まりは、そこから範囲の端まで細くなります）。自動線画は下描きの線の中心をなぞって細い線にします。近くに並んだ線も間が少しでも空いていれば2本のまま描き、線の中の小さな白い点（かすれ）だけを埋めます。2本の線が近づいてくっついている所は、真ん中に1本の線を引くのではなく、下描きと同じように2本の線が徐々に近づいて合わさります。線が交差したり重なったりしている所も、下描きのとおりにそれぞれの線がそのまま続きます（交点で折れ曲がったり、重なった2本が1本に融けたりしません）。斜めに浅く交わる線もまっすぐ交差したまま続き、触れ合うだけの線（頭に沿って描いた髪の輪郭など）は、それぞれ自分の側を通る別々の線のままです。目のような点は塗りつぶした点のまま描きます。「対象ラフ線幅」より短い枝分かれは描きません。「入り抜き」はスイッチでオン・オフでき、オフにすると線の端まで同じ太さになります。背景馴染ませは、背景の光と影を合成モード「ハードライト」で重ねます（影の色は黒や灰色ではなく、背景の影の部分の色を暗くしたもの）。周りの色は「オーバーレイ」で全体に重ねて色の方向を合わせ、下からの照り返しや周りからの反射は「スクリーン」で、ネオンのような強い有色光は「加算・発光」で輪郭に入れます。「明るさ・色みを背景に合わせる」は、描いた色が背景より明るすぎたり鮮やかすぎたりする所を背景の範囲へ寄せ、暗い所・中間・明るい所をそれぞれ背景の同じ明るさの色みへ寄せます（線画の黒はそのまま）。「ぼかし具合」は色を拾う背景をぼかす量です。'**
+  String get helpDrawingFilterDesc;
+
+  /// No description provided for @helpLayerKeyframeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーキーフレーム（パーツ単位アニメーション）'**
+  String get helpLayerKeyframeTitle;
+
+  /// No description provided for @helpLayerKeyframeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'各レイヤーの位置・拡大縮小・回転をフレームごとに指定し、キーフレーム間を自動で補間する機能です。カメラキーフレームが画面全体を動かすのに対し、こちらは個々のレイヤーだけを動かします。自動塗りの各パーツはそれぞれ独立したレイヤーとして生成されるため、パーツ単位でのアニメーション（腕だけ動かす、口だけ開閉させる等）にそのまま使えます。各キーフレームには「等速」「ゆっくり始まる」「ゆっくり終わる」「ゆっくり始まって終わる」「弾む」というイージング（次のキーフレームへのつなぎ方）を個別に設定でき、単調な等速移動だけでなく弾むような動きも表現できます。レイヤーパネルの三点メニュー「アニメーション（キーフレーム）」から設定します。レイヤーの絵自体は変わらず、表示位置だけが変わる非破壊な変形です。この機能はタイムラインの表示（プレビュー・書き出し）にのみ影響し、キャンバスモードでの実際の作画には影響しません。'**
+  String get helpLayerKeyframeDesc;
+
+  /// No description provided for @helpLayerGroupTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーグループ（複数パーツをまとめて動かす）'**
+  String get helpLayerGroupTitle;
+
+  /// No description provided for @helpLayerGroupDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'複数のレイヤーをまとめて1つのキーフレームストリームで動かす機能です。例えば「腕」が肌・袖の2枚の自動塗りパーツで構成されている場合、この2枚をグループ化しておけば、1回のキーフレーム操作でまとめて動かせます。レイヤーパネルで複数選択（チェックボックス）した状態で下部バーの「グループ化」アイコンから作成します。グループの動きは各レイヤー自身のキーフレーム（設定されていれば）に重ねて適用されるため、グループ全体の動き＋個別レイヤーの微調整、という組み合わせも可能です。1つのレイヤーは同時に1つのグループにのみ所属できます。'**
+  String get helpLayerGroupDesc;
+
+  /// No description provided for @tipsScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'活用Tips'**
+  String get tipsScreenTitle;
+
+  /// No description provided for @tipsSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'Tipsを検索...'**
+  String get tipsSearchHint;
+
+  /// No description provided for @tipsCategoryVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画制作のコツ'**
+  String get tipsCategoryVideo;
+
+  /// No description provided for @tipsCategoryEfficiency.
+  ///
+  /// In ja, this message translates to:
+  /// **'制作を効率化するコツ'**
+  String get tipsCategoryEfficiency;
+
+  /// No description provided for @tipsCategoryDrawing.
+  ///
+  /// In ja, this message translates to:
+  /// **'作画をなめらかにするコツ'**
+  String get tipsCategoryDrawing;
+
+  /// No description provided for @tipsCategoryEffects.
+  ///
+  /// In ja, this message translates to:
+  /// **'演出・仕上げのコツ'**
+  String get tipsCategoryEffects;
+
+  /// No description provided for @tipsCategoryExport.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し・操作のコツ'**
+  String get tipsCategoryExport;
+
+  /// No description provided for @tipsClipDuplicateTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインの素材は複製・移動・削除ができる'**
+  String get tipsClipDuplicateTitle;
+
+  /// No description provided for @tipsClipDuplicateDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像・動画・音声クリップをタップすると開く詳細シートのコピーアイコンから複製できます。同じ効果音を繰り返し使う、同じ画像を場面ごとに配置し直すといった編集が、長押しドラッグと複製ボタンだけで完結します。'**
+  String get tipsClipDuplicateDesc;
+
+  /// No description provided for @tipsTextCaptionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストツールで字幕を入れる'**
+  String get tipsTextCaptionTitle;
+
+  /// No description provided for @tipsTextCaptionDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストツールを使えば、字幕やコメントをフレームごとに配置できます。フォントをドット絵モードに切り替えると、レトロゲーム風の質感を演出することもできます。'**
+  String get tipsTextCaptionDesc;
+
+  /// No description provided for @tipsAutofillPresetTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り設定はパーツごとに登録しておく'**
+  String get tipsAutofillPresetTitle;
+
+  /// No description provided for @tipsAutofillPresetDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'肌・髪・服などパーツごとに陰影込みで自動塗り設定を登録しておくと、線画を描くだけで色塗りの大部分を自動化できます。プロジェクトごとに使う設定だけを絞り込むこともできます。'**
+  String get tipsAutofillPresetDesc;
+
+  /// No description provided for @tipsAutofillBaseCoatTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りはパーツ分けせず下塗り用に使うだけでも便利'**
+  String get tipsAutofillBaseCoatTitle;
+
+  /// No description provided for @tipsAutofillBaseCoatDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りは本来パーツごとに色分けする機能ですが、丁寧に分けなくても、線画全体を1色で塗るだけの下塗りレイヤーとして使うだけで十分便利です。線の内側を一括で塗りつぶせるため、手動のバケツ塗りで起きがちな塗り残し（線の隙間から下の色が透けてしまうミス）を防げます。その上に手動で色を重ねれば、パーツ分けの手間をかけずに恩恵だけ得られます。'**
+  String get tipsAutofillBaseCoatDesc;
+
+  /// No description provided for @tipsAutofillManualPartColorTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'仮色で塗り分けて色更新するなら、線画は通常レイヤー1枚でOK'**
+  String get tipsAutofillManualPartColorTitle;
+
+  /// No description provided for @tipsAutofillManualPartColorDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'この方法は、目立つ仮色でパーツを手動で塗り分けてから、本来の色に更新したい場合に向いています。実際の線画は通常レイヤー1枚にまとめて描き、塗りレイヤーより上に置きます。\nパーツごとに「自動塗り用線画レイヤー」を追加し、その三点メニューの「パーツ設定」でパーツを割り当てます。この方法では補助用なので線画を描かず、空のままで構いません。同じメニューから「自動塗り実行」を一度行い、対応する「自動塗りレイヤー」を作ります。\n各「自動塗りレイヤー」には、線ではなく面として、パーツごとの目立つ仮色を手動で塗ります。輪郭線を引くのではなく、あとで色を更新したい領域を塗りつぶしてください。\n形を整えたら、対応する「自動塗り用線画レイヤー」の三点メニューから「自動塗り実行」を選び、実行方法で「形状を保ったまま色だけ更新」を選択します。手動で塗った形を保ったまま「自動塗り設定」の本来の色に更新できます。線画からパーツを自動判定して一度で塗りたい場合は、この方法ではなく、実際の線画を「自動塗り用線画レイヤー」に描いてください。'**
+  String get tipsAutofillManualPartColorDesc;
+
+  /// No description provided for @tipsBrushFavoriteTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシはお気に入り登録で迷わず選べる'**
+  String get tipsBrushFavoriteTitle;
+
+  /// No description provided for @tipsBrushFavoriteDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'よく使うブラシは一覧の星アイコンをタップしてお気に入り登録しておきましょう。一覧上部の星アイコンでお気に入りのみに絞り込めるので、探す手間が減ります。誤って削除しないよう、お気に入り登録中は削除できない仕組みになっています。'**
+  String get tipsBrushFavoriteDesc;
+
+  /// No description provided for @tipsPressureCurveTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'筆圧カーブを自分好みに調整する'**
+  String get tipsPressureCurveTitle;
+
+  /// No description provided for @tipsPressureCurveDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定画面の筆圧カーブは制御点を自由に打てます。強弱の付き方が合わないと感じたら、自分の筆圧の癖に合わせて調整してみましょう。'**
+  String get tipsPressureCurveDesc;
+
+  /// No description provided for @tipsExportFormatTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'用途に合わせて書き出し形式を選ぶ'**
+  String get tipsExportFormatTitle;
+
+  /// No description provided for @tipsExportFormatDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'SNSに気軽に投稿したいときはGIF書き出し、他の動画に重ねたい・背景を透かしたいときは透過WebM、通常の動画として使いたいときはMP4書き出しが向いています。用途ごとに使い分けると、ファイルサイズと画質のバランスを取りやすくなります。'**
+  String get tipsExportFormatDesc;
+
+  /// No description provided for @tipsGestureShortcutTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ジェスチャーで頻用操作をワンタッチに'**
+  String get tipsGestureShortcutTitle;
+
+  /// No description provided for @tipsGestureShortcutDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定画面の「ジェスチャー」から、2本指タップ・3本指タップ・長押しなどにUndo/Redoやスポイトを割り当てられます。ツールを切り替えずに済むので、作画のテンポを崩さずに済みます。'**
+  String get tipsGestureShortcutDesc;
+
+  /// No description provided for @tipsAudioRepeatTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'効果音はクリップ複製×フェードでリズムよく鳴らす'**
+  String get tipsAudioRepeatTitle;
+
+  /// No description provided for @tipsAudioRepeatDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'同じ効果音を繰り返し使いたい場合、クリップを複製してタイミングをずらして並べ、それぞれにフェードイン・アウトを設定すると、リズムに合った自然な効果音の連打が作れます。'**
+  String get tipsAudioRepeatDesc;
+
+  /// No description provided for @tipsVerticalRubyTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦書き×ルビでタイトルロゴ風の演出'**
+  String get tipsVerticalRubyTitle;
+
+  /// No description provided for @tipsVerticalRubyDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストツールの縦書きにルビを組み合わせると、和風のタイトルロゴやこだわりの見出し演出が作れます。半角英数字は自動で横向きに回転して並ぶので、記号や数字が混ざっても読みやすく仕上がります。'**
+  String get tipsVerticalRubyDesc;
+
+  /// No description provided for @tipsBrushTrySaveTreeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'新しいブラシ設定はセーブツリーで試す'**
+  String get tipsBrushTrySaveTreeTitle;
+
+  /// No description provided for @tipsBrushTrySaveTreeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシの太さや安定化などを大きく変えて試したいときは、変更前にセーブツリーへ保存しておくと安心です。気に入らなければすぐに元の状態へ戻せるので、思い切った調整を試しやすくなります。'**
+  String get tipsBrushTrySaveTreeDesc;
+
+  /// No description provided for @tipsEyedropperGestureTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'2本指タップにスポイトを割り当てて配色を崩さない'**
+  String get tipsEyedropperGestureTitle;
+
+  /// No description provided for @tipsEyedropperGestureDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ジェスチャー設定で2本指タップにスポイトを割り当てておくと、ツールを切り替えずに近くの色をすぐ拾えます。キャラクターの配色を保ったまま塗り進めたいときに便利です。'**
+  String get tipsEyedropperGestureDesc;
+
+  /// No description provided for @tipsRulerOnionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パース定規×オニオンスキンで背景を使い回す'**
+  String get tipsRulerOnionTitle;
+
+  /// No description provided for @tipsRulerOnionDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'パース定規で背景の奥行きを決めておき、オニオンスキンで前後フレームを透かして見ながらキャラクターだけを動かすと、背景を毎フレーム描き直さずに済みます。'**
+  String get tipsRulerOnionDesc;
+
+  /// No description provided for @tipsGradientTraceTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'グラデーション自動塗り×色トレスで馴染ませる'**
+  String get tipsGradientTraceTitle;
+
+  /// No description provided for @tipsGradientTraceDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り設定でグラデーションを使う際、線画色設定を色トレス（線画馴染ませ）にしておくと、グラデーションの微妙な色の変化に合わせて線画の色も馴染み、境界が浮きにくくなります。'**
+  String get tipsGradientTraceDesc;
+
+  /// No description provided for @tipsGradientOutlineHairTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'グラデーション×指定色縁取りで前髪に透明感を出す'**
+  String get tipsGradientOutlineHairTitle;
+
+  /// No description provided for @tipsGradientOutlineHairDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り設定で前髪パーツを作り、塗り色をグラデーションにして髪色と透明色の2色を選びます。角度を90度に変更し、ぼかしの強さと色の切り替え位置をお好みに調整したら、「指定色で縁取り」をチェックして縁取り色を「最近使った色」から先ほどの前髪の色と同じものを選びます。前髪の下塗りパーツだけでなく影色パーツにも同じ手順を繰り返すと、毛先が透けるような透明感のある髪の毛になります。'**
+  String get tipsGradientOutlineHairDesc;
+
+  /// No description provided for @tipsRainNoiseTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'雨フィルター×動くノイズでしっとりした空気感'**
+  String get tipsRainNoiseTitle;
+
+  /// No description provided for @tipsRainNoiseDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'雨フィルターに弱めの動くノイズフィルターを重ねると、雨粒だけでなく空気中の粒子感も加わり、しっとりとした雨の日らしい質感を演出できます。'**
+  String get tipsRainNoiseDesc;
+
+  /// No description provided for @tipsPartKeyframeGroupTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツキーフレーム×グループ化でキャラを弾ませる'**
+  String get tipsPartKeyframeGroupTitle;
+
+  /// No description provided for @tipsPartKeyframeGroupDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りの各パーツにレイヤーキーフレームを付けて動かし、さらに関連パーツをグループ化してまとめて弾ませると、音楽に合わせて揺れるようなミニアニメーションを描き直しなしで作れます。'**
+  String get tipsPartKeyframeGroupDesc;
+
+  /// No description provided for @tipsLowSpecSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'低スペック端末はパフォーマンス設定とUndo回数を見直す'**
+  String get tipsLowSpecSettingsTitle;
+
+  /// No description provided for @tipsLowSpecSettingsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'動作が重いと感じたら、パフォーマンス設定を「低品質」プリセットに切り替え、Undo回数も減らしてみましょう。メモリ使用量が減り、動作が軽くなることがあります。'**
+  String get tipsLowSpecSettingsDesc;
+
+  /// No description provided for @tipsSeriesPresetFolderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'シリーズ物は自動塗り設定の絞り込み×フォルダ整理で管理する'**
+  String get tipsSeriesPresetFolderTitle;
+
+  /// No description provided for @tipsSeriesPresetFolderDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'同じ作品の複数話数を作るときは、フォルダで話数ごとにプロジェクトをまとめ、各プロジェクトで使う自動塗り設定を絞り込んでおくと、キャラごとの配色を混同せず効率よく作業できます。'**
+  String get tipsSeriesPresetFolderDesc;
+
+  /// No description provided for @tipsPixelToneRetroTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプのドット絵モード×トーン塗りでレトロ統一'**
+  String get tipsPixelToneRetroTitle;
+
+  /// No description provided for @tipsPixelToneRetroDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドット絵モードのスタンプと、ドット絵モード専用の市松・格子柄トーンを組み合わせると、画面全体をドット絵風の質感で統一できます。レトロゲーム風の演出に向いています。'**
+  String get tipsPixelToneRetroDesc;
+
+  /// No description provided for @tipsMagicWandLassoTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'マジックワンド選択×投げ縄塗りで塗り分け効率化'**
+  String get tipsMagicWandLassoTitle;
+
+  /// No description provided for @tipsMagicWandLassoDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択ツールの自動選択（マジックワンド）でおおまかな範囲を一括選択し、はみ出た部分だけ投げ縄選択で調整すると、複雑な塗り分けも素早く行えます。'**
+  String get tipsMagicWandLassoDesc;
+
+  /// No description provided for @tipsCommonLayerFolderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通レイヤー×フォルダで話数をまたいで使い回す'**
+  String get tipsCommonLayerFolderTitle;
+
+  /// No description provided for @tipsCommonLayerFolderDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'シリーズ物で毎話使うロゴやクレジット表記は、共通レイヤー化してフォルダにまとめておくと、新しい話数のプロジェクトへコピーする際も迷わず扱えます。'**
+  String get tipsCommonLayerFolderDesc;
+
+  /// No description provided for @tipsStrokeDecayFadeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ストローク減衰×フェードで毛筆表現'**
+  String get tipsStrokeDecayFadeTitle;
+
+  /// No description provided for @tipsStrokeDecayFadeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ設定では、入り（始点）と抜き（終点）の値・距離を別々に調整できます。ストローク減衰も組み合わせると、入りだけ細くする、抜きだけ長く伸ばす、両端を非対称にするなど、毛筆やインクブラシらしい抑揚を作れます。'**
+  String get tipsStrokeDecayFadeDesc;
+
+  /// No description provided for @tipsColorMixingFadeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'混色×フェードで絵の具のような混ざり'**
+  String get tipsColorMixingFadeTitle;
+
+  /// No description provided for @tipsColorMixingFadeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'混色を有効にしたブラシへフェードも組み合わせると、下の色と混ざりながら徐々に薄くなる、実際の絵の具に近い塗り心地になります。'**
+  String get tipsColorMixingFadeDesc;
+
+  /// No description provided for @tipsOutlineAnimeStyleTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り×アニメ調でセルアニメ風の仕上げ'**
+  String get tipsOutlineAnimeStyleTitle;
+
+  /// No description provided for @tipsOutlineAnimeStyleDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画フィルターの縁取りで輪郭線を新規レイヤーへ描き出し、アニメ調フィルターで色数を落とすと、セルアニメのようなくっきりした仕上げになります。'**
+  String get tipsOutlineAnimeStyleDesc;
+
+  /// No description provided for @tipsLevelsToneCurveTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'レベル補正×トーンカーブでグラフィック調に'**
+  String get tipsLevelsToneCurveTitle;
+
+  /// No description provided for @tipsLevelsToneCurveDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'レベル補正で明暗差を強めに調整してからトーンカーブで階調を作り込むと、写真的な階調から離れた、ポスターのようなグラフィック調の演出ができます。'**
+  String get tipsLevelsToneCurveDesc;
+
+  /// No description provided for @tipsMosaicChromaticTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'モザイク×色収差でブラウン管風の荒れた質感'**
+  String get tipsMosaicChromaticTitle;
+
+  /// No description provided for @tipsMosaicChromaticDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'モザイクで解像度を落としてから色収差を重ねると、古いブラウン管テレビで見ているような荒れた質感を演出できます。ブラウン管フィルター単体とはひと味違う質感が作れます。'**
+  String get tipsMosaicChromaticDesc;
+
+  /// No description provided for @tipsEndCardWatermarkTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分の署名はウォーターマーク、エンドマークは別物'**
+  String get tipsEndCardWatermarkTitle;
+
+  /// No description provided for @tipsEndCardWatermarkDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画に自分の署名や透かしを入れたいときはウォーターマーク機能を使います。エンドマークはMP4・WebM・AVIの末尾に付くNIARIMのロゴです。プレミアム会員またはエンドマーク編集の特典を利用中は、作品ごとに表示・非表示を切り替えられます。GIFには付きません。エンドマークを使わず自分だけの締めくくりを作りたいときは、画像レイヤーの追加とフェードイン・アウトを組み合わせれば同じような演出を自作できます。'**
+  String get tipsEndCardWatermarkDesc;
+
+  /// No description provided for @tipsVerticalPixelFontTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'実写動画×手描き作画で「実写×アニメ」を作る'**
+  String get tipsVerticalPixelFontTitle;
+
+  /// No description provided for @tipsVerticalPixelFontDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'イラストアプリと動画編集アプリを兼ねているからこそできる遊び方です。実写の動画クリップをタイムラインに配置し、その上のレイヤーへオニオンスキンを使いながら手描きで効果線やキャラクターを描き足せば、実写に手描きアニメが重なった「実写×アニメ」のミックスメディア動画が作れます。'**
+  String get tipsVerticalPixelFontDesc;
+
+  /// No description provided for @tipsTimelineMarkerTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'音や口パクのタイミング合わせにはタイムスタンプ'**
+  String get tipsTimelineMarkerTitle;
+
+  /// No description provided for @tipsTimelineMarkerDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムスタンプはフレームにメモを残す機能です。名前をタップするとそのフレームに移動し、メニューから編集・削除もできます。フレームの上にある三角からもメモを開けます。'**
+  String get tipsTimelineMarkerDesc;
+
+  /// No description provided for @tipsCommunityYoutubeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場への投稿はYouTube経由です'**
+  String get tipsCommunityYoutubeTitle;
+
+  /// No description provided for @tipsCommunityYoutubeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場に投稿すると、YouTubeを通じて作品が公開されます。NIARIMは動画ファイル本体を開発者のサーバーへ送信・収集・保存する機能を持っていません。YouTube側の公開設定を「限定公開」にすれば、YouTube上の一般公開一覧には表示されず、作品広場内だけに投稿された状態にできます。'**
+  String get tipsCommunityYoutubeDesc;
+
+  /// No description provided for @tipsToolbarCustomizeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールバーの並び替え・非表示で指の移動距離を減らす'**
+  String get tipsToolbarCustomizeTitle;
+
+  /// No description provided for @tipsToolbarCustomizeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定画面のツールバー編集から、使わないツールを非表示にし、よく使うツールを指の届きやすい位置へ並び替えられます。表示項目を絞ってすっきりさせるだけで、ツールを探す時間や指の移動距離が減り、作画のテンポが上がります。'**
+  String get tipsToolbarCustomizeDesc;
+
+  /// No description provided for @tipsAutofillBlendModeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りパーツのブレンドモードで陰影の質感を変える'**
+  String get tipsAutofillBlendModeTitle;
+
+  /// No description provided for @tipsAutofillBlendModeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り設定の各パーツにはブレンドモードを設定できます。陰影パーツを「乗算」ではなく「オーバーレイ」や「ソフトライト」にすると、光が透けるような柔らかい陰影になります。同じ色でも質感を変えられる、隠れた自由度の高さです。'**
+  String get tipsAutofillBlendModeDesc;
+
+  /// No description provided for @tipsStampBlendModeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプ×ブレンドモードで光のエフェクト'**
+  String get tipsStampBlendModeTitle;
+
+  /// No description provided for @tipsStampBlendModeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'配置したスタンプのレイヤーをブレンドモード「スクリーン」や「加算・発光」にすると、光の効果線やキラキラしたエフェクトが背景に自然に馴染んで映えます。'**
+  String get tipsStampBlendModeDesc;
+
+  /// No description provided for @tipsQuickToolPenSubTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'早替えツール×ペンサブツールで手を止めない作業導線'**
+  String get tipsQuickToolPenSubTitle;
+
+  /// No description provided for @tipsQuickToolPenSubDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'よく使うツールを早替えツールに登録しつつ、ペンの長押しでトーン貼り・スタンプへ切り替えられるペンサブツールも活用すると、画面を行き来する回数を減らして作業のテンポを保てます。'**
+  String get tipsQuickToolPenSubDesc;
+
+  /// No description provided for @tipsAutofillToneReuseTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りのトーン設定で線画差し替えだけで塗りを再現'**
+  String get tipsAutofillToneReuseTitle;
+
+  /// No description provided for @tipsAutofillToneReuseDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り設定の各パーツを「トーンを使う」設定にしておくと、線画を描き直すたびにトーン込みの塗りを自動で再現できます。フレームごとにトーンを貼り直す手間を省けます。'**
+  String get tipsAutofillToneReuseDesc;
+
+  /// No description provided for @tipsAutofillMisfillTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りの仕組みを知ると塗りミスを減らせる'**
+  String get tipsAutofillMisfillTitle;
+
+  /// No description provided for @tipsAutofillMisfillDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りは生成AIを使った機能ではなく、レイヤーごとのバケツ塗りを応用したものです。そのため、長い髪のように同じパーツの中で線に囲まれた隙間ができていると、そこも一緒に塗りつぶされます。対策として、まずはパーツごとに彩度の高い目立つ色を割り当てて一度塗ってしまうのがおすすめです。塗り間違いがひと目で分かるので自動塗りレイヤーを手動で直しやすく、直したうえで本来の色に設定し直して上書きする形で自動塗りを再実行すれば、塗りミスをぐっと減らせます。'**
+  String get tipsAutofillMisfillDesc;
+
+  /// No description provided for @tipsHomeWidgetTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホーム画面ウィジェットで作品を常に眺められる'**
+  String get tipsHomeWidgetTitle;
+
+  /// No description provided for @tipsHomeWidgetDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定の「ホーム画面ウィジェット」から作品を選ぶと、選んだ1コマをスマホのホーム画面に静止画として置けます。作品を選ぶ画面はプロジェクト一覧タブと同じ並び替え・検索・お気に入り絞り込みが使え、フレームを選ぶ画面ではタイムラインと同じ再生・シークバーで気に入った1コマを探せます。「作品をつくる」「作品広場」ウィジェットも合わせて置けば、ホーム画面からワンタップで制作や投稿作品の閲覧に入れます。'**
+  String get tipsHomeWidgetDesc;
+
+  /// No description provided for @tipsAutofillTransparentFixTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りのはみ出しは透明色のバケツ塗りで消す'**
+  String get tipsAutofillTransparentFixTitle;
+
+  /// No description provided for @tipsAutofillTransparentFixDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りで本来塗られたくないところまで塗られてしまったときは、消しゴムでなぞるより、描画色に透明色を指定したうえでその範囲をバケツ塗りするのが簡単です。バケツ塗りは線で囲まれた領域をまとめて処理するので、はみ出した部分だけを一度のタップできれいに消せます。'**
+  String get tipsAutofillTransparentFixDesc;
+
+  /// No description provided for @tipsRadialVignetteTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'放射定規×周辺減光で集中線演出'**
+  String get tipsRadialVignetteTitle;
+
+  /// No description provided for @tipsRadialVignetteDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'放射定規で集中線を一気に描き、描画フィルターの周辺減光を重ねると、漫画のクライマックスのような迫力ある演出になります。'**
+  String get tipsRadialVignetteDesc;
+
+  /// No description provided for @tipsClippingGradientTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'クリッピング×グラデーションで陰影を描き直し可能に'**
+  String get tipsClippingGradientTitle;
+
+  /// No description provided for @tipsClippingGradientDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'グラデーションレイヤーをキャラクターレイヤーへクリッピングしておくと、陰影の形をブラシで描き込まなくても、グラデーションの範囲・角度の変更だけで陰影を調整し直せます。'**
+  String get tipsClippingGradientDesc;
+
+  /// No description provided for @tipsToneCurveSepiaTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンカーブ×セピアでレトロ写真風'**
+  String get tipsToneCurveSepiaTitle;
+
+  /// No description provided for @tipsToneCurveSepiaDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'演出フィルターのトーンカーブで明暗のコントラストを整えてからセピアを重ねると、色あせた古い写真のような質感を演出できます。'**
+  String get tipsToneCurveSepiaDesc;
+
+  /// No description provided for @tipsCameraLensBlurTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カメラキーフレーム×レンズぼかしでズームブラー演出'**
+  String get tipsCameraLensBlurTitle;
+
+  /// No description provided for @tipsCameraLensBlurDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'カメラキーフレームでズームする瞬間に合わせてレンズぼかしの演出フィルターを一時的に強めに設定すると、実写のズームブラーのような迫力を演出できます。'**
+  String get tipsCameraLensBlurDesc;
+
+  /// No description provided for @tipsBlurVignetteBgTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ガウスぼかし×周辺減光で柔らかい背景ボケ'**
+  String get tipsBlurVignetteBgTitle;
+
+  /// No description provided for @tipsBlurVignetteBgDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'背景レイヤーだけにガウスぼかしと周辺減光の描画フィルターを重ねてかけると、主役のキャラクターが自然と目立つ、被写界深度のあるカメラ風の仕上がりになります。'**
+  String get tipsBlurVignetteBgDesc;
+
+  /// No description provided for @tipsSepiaVignetteTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'セピア×周辺減光でアンティーク写真風の動画に'**
+  String get tipsSepiaVignetteTitle;
+
+  /// No description provided for @tipsSepiaVignetteDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'演出フィルターのセピアと描画フィルターの周辺減光を組み合わせると、四隅が暗く色あせたアンティーク写真のような雰囲気の動画に仕上げられます。'**
+  String get tipsSepiaVignetteDesc;
+
+  /// No description provided for @tipsVideoTrimReuseTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画クリップの使用範囲を変えて同じ素材を使い回す'**
+  String get tipsVideoTrimReuseTitle;
+
+  /// No description provided for @tipsVideoTrimReuseDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'同じ動画素材でも、クリップごとに使用開始・終了フレームを変えて配置すれば、別のカットとして使い回せます。素材を増やさずにバリエーションを作れます。'**
+  String get tipsVideoTrimReuseDesc;
+
+  /// No description provided for @tipsSaveSlotAutoSaveTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'セーブスロット×自動保存を使い分ける'**
+  String get tipsSaveSlotAutoSaveTitle;
+
+  /// No description provided for @tipsSaveSlotAutoSaveDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動保存は最大3件です。大事な時点のデータはセーブスロットに保存し、後から保存データの一覧で選んで読み込めます。'**
+  String get tipsSaveSlotAutoSaveDesc;
+
+  /// No description provided for @tipsQuickToolSwipeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'早替えツールは上スワイプで並び替えできる'**
+  String get tipsQuickToolSwipeTitle;
+
+  /// No description provided for @tipsQuickToolSwipeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'早替えツールの登録内容を変えたいときは、長押しだけでなく上スワイプでも管理ポップアップを開けます。片手で操作しているときに素早く並び替えたい場合に便利です。'**
+  String get tipsQuickToolSwipeDesc;
+
+  /// No description provided for @tipsDrawingAreaCameraTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画領域を広めに×カメラキーフレームで安全にパン・ズーム'**
+  String get tipsDrawingAreaCameraTitle;
+
+  /// No description provided for @tipsDrawingAreaCameraDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画領域を書き出し範囲より広めに設定しておくと、カメラキーフレームでパン・ズームしても画面の端が切れる心配がありません。動きの大きい演出を入れる前に確認しておくと安心です。'**
+  String get tipsDrawingAreaCameraDesc;
+
+  /// No description provided for @tipsWebmCommonLayerTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'透過WebM×背景を共通レイヤーで分離管理'**
+  String get tipsWebmCommonLayerTitle;
+
+  /// No description provided for @tipsWebmCommonLayerDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'透過WebMとして書き出したキャラクターを別の動画編集ソフトで背景と合成する場合、背景を共通レイヤーで別管理しておくと、透過部分に不要な色が混ざらずきれいに抜けます。'**
+  String get tipsWebmCommonLayerDesc;
+
+  /// No description provided for @tipsLeftHandedWorkspaceTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'左利きモード×ワークスペース設定で作業しやすく'**
+  String get tipsLeftHandedWorkspaceTitle;
+
+  /// No description provided for @tipsLeftHandedWorkspaceDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'左利きの場合、ワークスペース設定の左利きモードをONにするとドッキングパネルが左右反転し、利き手側の画面がパネルで隠れにくくなります。'**
+  String get tipsLeftHandedWorkspaceDesc;
+
+  /// No description provided for @tipsTransferDeviceTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'引き継ぎファイルで別端末へ環境を移す'**
+  String get tipsTransferDeviceTitle;
+
+  /// No description provided for @tipsTransferDeviceDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'使う端末を変えても同じ環境で描き続けたいときは、引き継ぎ（.niatra）機能を使うと、設定・ブラシ・トーン・スタンプ・パレットなどの環境をまとめて移動できます。制作中のプロジェクトそのものを渡したい場合は「共有（.niashare）」を使います。'**
+  String get tipsTransferDeviceDesc;
+
+  /// No description provided for @fontSettingsTabDownloaded.
+  ///
+  /// In ja, this message translates to:
+  /// **'ダウンロード済み'**
+  String get fontSettingsTabDownloaded;
+
+  /// No description provided for @fontSettingsTabSearch.
+  ///
+  /// In ja, this message translates to:
+  /// **'探してDL'**
+  String get fontSettingsTabSearch;
+
+  /// No description provided for @fontSettingsTabImport.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込み'**
+  String get fontSettingsTabImport;
+
+  /// No description provided for @fontDownloadedSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォント名で検索...'**
+  String get fontDownloadedSearchHint;
+
+  /// No description provided for @fontPixelModeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドット絵モード（ドットフォント用。アンチエイリアスなしでくっきり表示）'**
+  String get fontPixelModeTooltip;
+
+  /// No description provided for @fontEmptyTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォントがありません'**
+  String get fontEmptyTitle;
+
+  /// No description provided for @fontEmptyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'「探してDL」または「読み込み」タブから追加できます'**
+  String get fontEmptyHint;
+
+  /// No description provided for @fontDeleteUsageCounts.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用中のプロジェクト（ゴミ箱を含む）: {projects}件。ウォーターマーク設定: {watermarks}件。'**
+  String fontDeleteUsageCounts(int projects, int watermarks);
+
+  /// No description provided for @fontDeleteSavedUsageWarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォントを使用しているテキストは、過去のセーブも含め、削除後に別のフォントで表示される場合があります。'**
+  String get fontDeleteSavedUsageWarning;
+
+  /// No description provided for @fontRenameDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォント名を変更'**
+  String get fontRenameDialogTitle;
+
+  /// No description provided for @fontImportTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末に保存済みのフォントを読み込む'**
+  String get fontImportTitle;
+
+  /// No description provided for @fontImportFormats.
+  ///
+  /// In ja, this message translates to:
+  /// **'対応形式：TTF / OTF'**
+  String get fontImportFormats;
+
+  /// No description provided for @fontSelectFileButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'ファイルを選択'**
+  String get fontSelectFileButton;
+
+  /// No description provided for @fontUnsupportedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォントは読み込めません。'**
+  String get fontUnsupportedSnackbar;
+
+  /// No description provided for @fontAddedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を追加しました（ダウンロード済みタブに表示されます）'**
+  String fontAddedSnackbar(String name);
+
+  /// No description provided for @fontCorruptedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォントが破損しています。'**
+  String get fontCorruptedSnackbar;
+
+  /// No description provided for @licenseScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用規約・ライセンス'**
+  String get licenseScreenTitle;
+
+  /// No description provided for @licenseSectionTerms.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用規約'**
+  String get licenseSectionTerms;
+
+  /// No description provided for @licenseCreditBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'基本の本文書体（白光明朝・はっこうみんちょう）'**
+  String get licenseCreditBody;
+
+  /// No description provided for @licenseCreditHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'見出し・タイトル・ボタンの書体（くらむぼん）'**
+  String get licenseCreditHeading;
+
+  /// No description provided for @licenseCreditNumbers.
+  ///
+  /// In ja, this message translates to:
+  /// **'Androidの数値表示'**
+  String get licenseCreditNumbers;
+
+  /// No description provided for @licenseCreditCjkBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'中国語（簡体字・繁体字）の本文と韓国語の文字を表示する同梱サブセット'**
+  String get licenseCreditCjkBody;
+
+  /// No description provided for @licenseCreditCjkHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'韓国語・中国語の見出しを補う同梱サブセット'**
+  String get licenseCreditCjkHeading;
+
+  /// No description provided for @licenseCreditFallback.
+  ///
+  /// In ja, this message translates to:
+  /// **'くらむぼんにない文字の代替表示'**
+  String get licenseCreditFallback;
+
+  /// No description provided for @licenseCreditTextTool.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストツールの同梱書体'**
+  String get licenseCreditTextTool;
+
+  /// No description provided for @licenseCreditCatalog.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストツールの追加書体は {path} からダウンロードできます。'**
+  String licenseCreditCatalog(String path);
+
+  /// No description provided for @licenseCreditCatalogAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'各書体の作者は Google Fonts の書体ページで確認できます。'**
+  String get licenseCreditCatalogAuthor;
+
+  /// No description provided for @licenseCreditCatalogLicense.
+  ///
+  /// In ja, this message translates to:
+  /// **'書体ごとのライセンスはフォント管理のカタログに表示されます。'**
+  String get licenseCreditCatalogLicense;
+
+  /// No description provided for @licenseCreditIcons.
+  ///
+  /// In ja, this message translates to:
+  /// **'消しゴム・バケツ塗り・図形ツールのアイコン'**
+  String get licenseCreditIcons;
+
+  /// No description provided for @licenseCreditIconLicense.
+  ///
+  /// In ja, this message translates to:
+  /// **'アイコンは CC BY 4.0、フォントは SIL Open Font License 1.1、パッケージは MIT License。'**
+  String get licenseCreditIconLicense;
+
+  /// No description provided for @licenseSectionFonts.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用フォントについて'**
+  String get licenseSectionFonts;
+
+  /// No description provided for @licenseSectionOss.
+  ///
+  /// In ja, this message translates to:
+  /// **'オープンソースソフトウェアライセンス'**
+  String get licenseSectionOss;
+
+  /// No description provided for @licenseOssListTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用ライブラリのライセンス一覧'**
+  String get licenseOssListTitle;
+
+  /// No description provided for @licenseOssListSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'本アプリが使用するOSSパッケージのライセンスを表示します'**
+  String get licenseOssListSubtitle;
+
+  /// No description provided for @licenseFfmpegNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'WebM・AVI書き出しにはFFmpeg（LGPL 3.0、ffmpeg_kit_flutter_new_video経由）を使用しています。改変版ソースコードの入手先：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4書き出しは端末内蔵のハードウェアエンコーダーを直接利用しており、FFmpegは使用していません。'**
+  String get licenseFfmpegNote;
+
+  /// No description provided for @licenseFontCreditMeta.
+  ///
+  /// In ja, this message translates to:
+  /// **'作者：{author}　ライセンス：{license}'**
+  String licenseFontCreditMeta(String author, String license);
+
+  /// No description provided for @toolbarPenTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン（長押しでサブツール）'**
+  String get toolbarPenTooltip;
+
+  /// No description provided for @toolbarPenFirstUseTip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペンを長押しすると、ブラシ・トーン・スタンプ・投げ縄塗りを切り替えられます。'**
+  String get toolbarPenFirstUseTip;
+
+  /// No description provided for @toolbarBucketTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'バケツ（長押しでベタ/トーン切替）'**
+  String get toolbarBucketTooltip;
+
+  /// No description provided for @toolbarBucketFirstUseTip.
+  ///
+  /// In ja, this message translates to:
+  /// **'バケツを長押しすると、ベタ塗りとトーン塗りを切り替えられます。'**
+  String get toolbarBucketFirstUseTip;
+
+  /// No description provided for @toolbarSelectTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択（長押しで種別変更）'**
+  String get toolbarSelectTooltip;
+
+  /// No description provided for @toolbarShapeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'図形（タップで種別選択）'**
+  String get toolbarShapeTooltip;
+
+  /// No description provided for @toolbarTextFirstUseTip.
+  ///
+  /// In ja, this message translates to:
+  /// **'文字を自由に配置できます。フォントや色、アウトラインも変更できます。'**
+  String get toolbarTextFirstUseTip;
+
+  /// No description provided for @toolbarQuickToolFirstUseTip.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップで登録したツールを順番に切り替えられます。長押しまたは上にスワイプで登録内容を編集できます。'**
+  String get toolbarQuickToolFirstUseTip;
+
+  /// Heading of the shared operation guide shown in every first-use tutorial card
+  ///
+  /// In ja, this message translates to:
+  /// **'基本の操作'**
+  String get firstUseTipOperationGuideTitle;
+
+  /// Shared operation guide shown in every first-use tutorial card
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールバーのアイコンは、シングルタップでそのツールに切り替わります。同じアイコンを長押し、または上にスワイプすると、そのツールの詳細設定（ブラシの種類・塗り方・選択方法など）が開きます。アイコンをダブルタップすると、そのツールの短い説明が出ます。ここで閉じたあとも、各画面右上の「？」ボタンからヘルプで読み直せます。'**
+  String get firstUseTipOperationGuideBody;
+
+  /// Help entry title for basic tap / long-press / swipe controls
+  ///
+  /// In ja, this message translates to:
+  /// **'基本の操作（タップ・長押し・スワイプ）'**
+  String get helpBasicGestureTitle;
+
+  /// Help entry body describing tap, long-press, swipe and canvas gestures
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールバーのアイコンはシングルタップでそのツールに切り替わります。同じアイコンを長押し、または上にスワイプすると詳細設定が開きます。ペンならブラシ・トーン・スタンプ・投げ縄塗りの切り替え、バケツならベタ塗りとトーン塗りの切り替え、選択ツールなら矩形・投げ縄・自動選択の切り替え、指ツールならぼかしとモザイクの切り替え、早替えツールなら登録内容の編集が、それぞれ長押し・上スワイプの先にあります。アイコンのダブルタップでは、そのツールの短い説明が画面下に出ます。\nキャンバスでは、2本指でつまむと拡大縮小、2本指でなぞると移動、2本指のタップで元に戻す、3本指のタップでやり直しです。画面の左右の端をダブルタップすると、前後のフレームへ移動します。\nマウスやペンタブレットを繋いでいる場合は、ホイールで拡大縮小、中ボタンのドラッグで移動できます。'**
+  String get helpBasicGestureDesc;
+
+  /// No description provided for @toolbarStampColorLockedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプは色情報を保持しているため色変更できません'**
+  String get toolbarStampColorLockedSnackbar;
+
+  /// No description provided for @toolbarBrushSettingsTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ設定'**
+  String get toolbarBrushSettingsTooltip;
+
+  /// No description provided for @toolbarLayerTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤー'**
+  String get toolbarLayerTooltip;
+
+  /// No description provided for @toolbarQuickToolTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツール早替え（長押し/上スワイプで編集）'**
+  String get toolbarQuickToolTooltip;
+
+  /// No description provided for @toolbarSaveTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存（セーブツリー）'**
+  String get toolbarSaveTooltip;
+
+  /// No description provided for @toolbarBucketFlatFill.
+  ///
+  /// In ja, this message translates to:
+  /// **'ベタ塗り'**
+  String get toolbarBucketFlatFill;
+
+  /// No description provided for @toolbarBucketToneListLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーン一覧'**
+  String get toolbarBucketToneListLabel;
+
+  /// No description provided for @toolbarSelectRect.
+  ///
+  /// In ja, this message translates to:
+  /// **'矩形選択'**
+  String get toolbarSelectRect;
+
+  /// No description provided for @toolbarSelectLasso.
+  ///
+  /// In ja, this message translates to:
+  /// **'投げ縄選択'**
+  String get toolbarSelectLasso;
+
+  /// No description provided for @toolbarSelectMagicWand.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動選択（マジックワンド）'**
+  String get toolbarSelectMagicWand;
+
+  /// No description provided for @creativePanelFavoritesOnlyTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りのみ表示'**
+  String get creativePanelFavoritesOnlyTooltip;
+
+  /// No description provided for @creativePanelSearchTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前で検索'**
+  String get creativePanelSearchTooltip;
+
+  /// No description provided for @creativePanelSearchModeKeyword.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーワード検索中（タップでタグ検索へ）'**
+  String get creativePanelSearchModeKeyword;
+
+  /// No description provided for @creativePanelSearchModeTag.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグ検索中（タップでキーワード検索へ）'**
+  String get creativePanelSearchModeTag;
+
+  /// No description provided for @creativePanelTagSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグで検索'**
+  String get creativePanelTagSearchHint;
+
+  /// No description provided for @creativePanelTagNoneYet.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだタグがありません。編集画面から付けられます'**
+  String get creativePanelTagNoneYet;
+
+  /// No description provided for @creativePanelTagsLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグ'**
+  String get creativePanelTagsLabel;
+
+  /// No description provided for @creativePanelTagsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'カンマか空白で区切って入力'**
+  String get creativePanelTagsHint;
+
+  /// No description provided for @creativePanelTagClearFilter.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグの絞り込みを解除'**
+  String get creativePanelTagClearFilter;
+
+  /// No description provided for @widgetSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホーム画面ウィジェット'**
+  String get widgetSettingsTitle;
+
+  /// No description provided for @widgetSettingsDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'スマホのホーム画面へ、好きな作品のフレーム1枚・「作品をつくる」・「作品広場」の3種類のウィジェットを置けます。ウィジェットの追加自体はホーム画面の長押しから行ってください。'**
+  String get widgetSettingsDescription;
+
+  /// No description provided for @widgetSettingsSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示する作品・ウィジェットの色'**
+  String get widgetSettingsSubtitle;
+
+  /// No description provided for @widgetArtworkSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示する作品'**
+  String get widgetArtworkSection;
+
+  /// No description provided for @widgetArtworkPickButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品を選ぶ'**
+  String get widgetArtworkPickButton;
+
+  /// No description provided for @widgetSectionArtwork.
+  ///
+  /// In ja, this message translates to:
+  /// **'起動画面ウィジェット'**
+  String get widgetSectionArtwork;
+
+  /// No description provided for @widgetSectionArtworkDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ作品のフレーム1枚を表示します。タップするとNIARIMが起動します。'**
+  String get widgetSectionArtworkDesc;
+
+  /// No description provided for @widgetSectionCreate.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品をつくるウィジェット'**
+  String get widgetSectionCreate;
+
+  /// No description provided for @widgetSectionCreateDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップすると「作品をつくる」画面が開きます。'**
+  String get widgetSectionCreateDesc;
+
+  /// No description provided for @widgetSectionPlaza.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場ウィジェット'**
+  String get widgetSectionPlaza;
+
+  /// No description provided for @widgetSectionPlazaDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップすると「作品広場」が開きます。'**
+  String get widgetSectionPlazaDesc;
+
+  /// No description provided for @widgetArtworkNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品を選んでいません'**
+  String get widgetArtworkNone;
+
+  /// No description provided for @widgetArtworkInTrash.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ作品はゴミ箱にあります。復元すると再び表示されます。'**
+  String get widgetArtworkInTrash;
+
+  /// No description provided for @widgetArtworkFrameNumberLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'{n}枚目のフレーム'**
+  String widgetArtworkFrameNumberLabel(int n);
+
+  /// No description provided for @widgetArtworkFramePickerHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示したいフレームをタップして選んでください。'**
+  String get widgetArtworkFramePickerHint;
+
+  /// No description provided for @widgetArtworkFramePickerConfirmButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだフレームに決定'**
+  String get widgetArtworkFramePickerConfirmButton;
+
+  /// No description provided for @widgetArtworkNoFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'このシーンにはまだフレームがありません。'**
+  String get widgetArtworkNoFrames;
+
+  /// No description provided for @widgetColorFollowTheme.
+  ///
+  /// In ja, this message translates to:
+  /// **'アプリのテーマに合わせる'**
+  String get widgetColorFollowTheme;
+
+  /// No description provided for @widgetColorCustom.
+  ///
+  /// In ja, this message translates to:
+  /// **'色を選ぶ'**
+  String get widgetColorCustom;
+
+  /// ホーム画面ウィジェットの背景色を選ぶ行の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'背景色'**
+  String get widgetColorBase;
+
+  /// ホーム画面ウィジェットの文字・アイコンの色を選ぶ行の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'文字・アイコンの色'**
+  String get widgetColorForeground;
+
+  /// No description provided for @widgetNoProjects.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ作品がありません。作品を作るとここで選べるようになります。'**
+  String get widgetNoProjects;
+
+  /// No description provided for @widgetSettingsNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホーム画面ウィジェットは動画を再生できないため、選んだ作品の1コマを静止画として表示します。'**
+  String get widgetSettingsNote;
+
+  /// No description provided for @assetTagLineArt.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画'**
+  String get assetTagLineArt;
+
+  /// No description provided for @assetTagBasic.
+  ///
+  /// In ja, this message translates to:
+  /// **'基本'**
+  String get assetTagBasic;
+
+  /// No description provided for @assetTagMainLine.
+  ///
+  /// In ja, this message translates to:
+  /// **'主線'**
+  String get assetTagMainLine;
+
+  /// No description provided for @assetTagPaint.
+  ///
+  /// In ja, this message translates to:
+  /// **'塗り'**
+  String get assetTagPaint;
+
+  /// No description provided for @assetTagBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし'**
+  String get assetTagBlur;
+
+  /// No description provided for @assetTagMixing.
+  ///
+  /// In ja, this message translates to:
+  /// **'混色'**
+  String get assetTagMixing;
+
+  /// No description provided for @assetTagAnalog.
+  ///
+  /// In ja, this message translates to:
+  /// **'アナログ風'**
+  String get assetTagAnalog;
+
+  /// No description provided for @assetTagDecoration.
+  ///
+  /// In ja, this message translates to:
+  /// **'装飾'**
+  String get assetTagDecoration;
+
+  /// No description provided for @assetTagRough.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラフ'**
+  String get assetTagRough;
+
+  /// No description provided for @assetTagEffect.
+  ///
+  /// In ja, this message translates to:
+  /// **'効果'**
+  String get assetTagEffect;
+
+  /// No description provided for @assetTagTaper.
+  ///
+  /// In ja, this message translates to:
+  /// **'入り抜き'**
+  String get assetTagTaper;
+
+  /// No description provided for @assetTagPixelArt.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドット絵'**
+  String get assetTagPixelArt;
+
+  /// No description provided for @assetTagHalftone.
+  ///
+  /// In ja, this message translates to:
+  /// **'網点'**
+  String get assetTagHalftone;
+
+  /// No description provided for @assetTagShadow.
+  ///
+  /// In ja, this message translates to:
+  /// **'影'**
+  String get assetTagShadow;
+
+  /// No description provided for @assetTagLine.
+  ///
+  /// In ja, this message translates to:
+  /// **'線'**
+  String get assetTagLine;
+
+  /// No description provided for @assetTagGradient.
+  ///
+  /// In ja, this message translates to:
+  /// **'グラデ'**
+  String get assetTagGradient;
+
+  /// No description provided for @assetTagTexture.
+  ///
+  /// In ja, this message translates to:
+  /// **'質感'**
+  String get assetTagTexture;
+
+  /// No description provided for @assetTagClothing.
+  ///
+  /// In ja, this message translates to:
+  /// **'服'**
+  String get assetTagClothing;
+
+  /// No description provided for @assetTagMesh.
+  ///
+  /// In ja, this message translates to:
+  /// **'網目'**
+  String get assetTagMesh;
+
+  /// No description provided for @assetTagBackground.
+  ///
+  /// In ja, this message translates to:
+  /// **'背景'**
+  String get assetTagBackground;
+
+  /// No description provided for @assetTagPattern.
+  ///
+  /// In ja, this message translates to:
+  /// **'模様'**
+  String get assetTagPattern;
+
+  /// No description provided for @assetTagShape.
+  ///
+  /// In ja, this message translates to:
+  /// **'図形'**
+  String get assetTagShape;
+
+  /// No description provided for @assetTagSymbol.
+  ///
+  /// In ja, this message translates to:
+  /// **'記号'**
+  String get assetTagSymbol;
+
+  /// No description provided for @assetTagManga.
+  ///
+  /// In ja, this message translates to:
+  /// **'マンガ'**
+  String get assetTagManga;
+
+  /// No description provided for @creativePanelFolderButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ'**
+  String get creativePanelFolderButton;
+
+  /// No description provided for @creativePanelCreateButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規'**
+  String get creativePanelCreateButton;
+
+  /// No description provided for @creativePanelImportButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'読込'**
+  String get creativePanelImportButton;
+
+  /// No description provided for @creativePanelFolderAllChip.
+  ///
+  /// In ja, this message translates to:
+  /// **'全て'**
+  String get creativePanelFolderAllChip;
+
+  /// No description provided for @creativePanelEditAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'編集'**
+  String get creativePanelEditAction;
+
+  /// No description provided for @toneTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーン'**
+  String get toneTitle;
+
+  /// No description provided for @toneEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンがありません'**
+  String get toneEmpty;
+
+  /// No description provided for @toneSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーン名で検索'**
+  String get toneSearchHint;
+
+  /// No description provided for @toneEditTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンを編集'**
+  String get toneEditTitle;
+
+  /// No description provided for @toneChangeTextureButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'テクスチャ画像を変更'**
+  String get toneChangeTextureButton;
+
+  /// No description provided for @toneCreateDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自作トーン'**
+  String get toneCreateDialogTitle;
+
+  /// No description provided for @toneImportFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンの読み込みに失敗しました: {error}'**
+  String toneImportFailedSnackbar(String error);
+
+  /// No description provided for @toneExportFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンの書き出しに失敗しました: {error}'**
+  String toneExportFailedSnackbar(String error);
+
+  /// No description provided for @privacyPolicyScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'プライバシーポリシー'**
+  String get privacyPolicyScreenTitle;
+
+  /// No description provided for @stampTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプ'**
+  String get stampTitle;
+
+  /// No description provided for @stampSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプ名で検索'**
+  String get stampSearchHint;
+
+  /// No description provided for @stampEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプがありません'**
+  String get stampEmpty;
+
+  /// No description provided for @stampCreateDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自作スタンプ'**
+  String get stampCreateDialogTitle;
+
+  /// No description provided for @stampExportFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプの書き出しに失敗しました: {error}'**
+  String stampExportFailedSnackbar(String error);
+
+  /// No description provided for @stampEditTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプを編集'**
+  String get stampEditTitle;
+
+  /// No description provided for @stampRotationLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転'**
+  String get stampRotationLabel;
+
+  /// No description provided for @stampPixelModeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドット絵モード'**
+  String get stampPixelModeLabel;
+
+  /// No description provided for @stampPixelModeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドット絵風（モザイク＋色数削減）に加工して描画します'**
+  String get stampPixelModeHint;
+
+  /// No description provided for @stampDensityLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'密度'**
+  String get stampDensityLabel;
+
+  /// No description provided for @stampScatterLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'散布'**
+  String get stampScatterLabel;
+
+  /// No description provided for @stampChangeImageButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプ画像を変更'**
+  String get stampChangeImageButton;
+
+  /// No description provided for @themeSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマ・外観'**
+  String get themeSettingsTitle;
+
+  /// No description provided for @themeColorCustomizeSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーカスタマイズ'**
+  String get themeColorCustomizeSection;
+
+  /// No description provided for @themeColorAccent.
+  ///
+  /// In ja, this message translates to:
+  /// **'アクセントカラー'**
+  String get themeColorAccent;
+
+  /// No description provided for @themeColorText.
+  ///
+  /// In ja, this message translates to:
+  /// **'本文・通常の文字色'**
+  String get themeColorText;
+
+  /// No description provided for @themeColorButtonText.
+  ///
+  /// In ja, this message translates to:
+  /// **'色付き面の文字・アイコン色'**
+  String get themeColorButtonText;
+
+  /// No description provided for @themeAdvancedColors.
+  ///
+  /// In ja, this message translates to:
+  /// **'色の詳細設定'**
+  String get themeAdvancedColors;
+
+  /// No description provided for @themeAdvancedColorsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'基本色と同じ項目は、基本色を変えると一緒に変わります。個別の色を選ぶこともできます。'**
+  String get themeAdvancedColorsHint;
+
+  /// No description provided for @themeColorMenuText.
+  ///
+  /// In ja, this message translates to:
+  /// **'メニュー・上部バーの文字色'**
+  String get themeColorMenuText;
+
+  /// No description provided for @themeColorSelectionText.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中の文字・アイコン色'**
+  String get themeColorSelectionText;
+
+  /// No description provided for @themeColorPanelBg.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネル背景色'**
+  String get themeColorPanelBg;
+
+  /// No description provided for @themeColorMenuBg.
+  ///
+  /// In ja, this message translates to:
+  /// **'メニュー背景色'**
+  String get themeColorMenuBg;
+
+  /// No description provided for @themeColorSelection.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択色'**
+  String get themeColorSelection;
+
+  /// No description provided for @themeColorUpdateMark.
+  ///
+  /// In ja, this message translates to:
+  /// **'更新マーク色'**
+  String get themeColorUpdateMark;
+
+  /// テーマのリセット前に表示する確認ダイアログ
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマカラーをリセットしますか？'**
+  String get themeResetConfirmTitle;
+
+  /// テーマのリセットを確定するボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'リセット'**
+  String get themeResetConfirmAction;
+
+  /// 読めないテーマになったとき起動画面に出る固定色のリセットボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマをもとに戻す'**
+  String get themeUnreadableResetButton;
+
+  /// テーマをリセットしたときの通知
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマを既定の配色に戻しました。'**
+  String get themeUnreadableResetDone;
+
+  /// No description provided for @themePresetSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマ一覧'**
+  String get themePresetSection;
+
+  /// No description provided for @themePresetDuplicateName.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} (コピー)'**
+  String themePresetDuplicateName(String name);
+
+  /// No description provided for @themeDuplicateAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'複製'**
+  String get themeDuplicateAction;
+
+  /// No description provided for @themeAdoptColorsSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」の配色を現在の色へ反映しました。カラーカスタマイズで変えても元のテーマはそのままです'**
+  String themeAdoptColorsSnackbar(String name);
+
+  /// No description provided for @themeEditPresetSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を編集対象にしました。カラーカスタマイズの変更はこのテーマへ保存されます'**
+  String themeEditPresetSnackbar(String name);
+
+  /// No description provided for @themeExportMenuItem.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し (.niatheme)'**
+  String get themeExportMenuItem;
+
+  /// No description provided for @themeExportFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出しに失敗しました: {error}'**
+  String themeExportFailedSnackbar(String error);
+
+  /// No description provided for @themeImportSuccessSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'.niathemeを読み込みました'**
+  String get themeImportSuccessSnackbar;
+
+  /// No description provided for @themeImportInvalidFile.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマのファイルではないか、ファイルが壊れています。'**
+  String get themeImportInvalidFile;
+
+  /// No description provided for @themeImportMissingColors.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマに必要な色や設定が不足しているか、形式が正しくありません。'**
+  String get themeImportMissingColors;
+
+  /// No description provided for @themeImportLowContrast.
+  ///
+  /// In ja, this message translates to:
+  /// **'文字が見えにくいテーマを一覧に追加しました。現在の配色で表示しています。'**
+  String get themeImportLowContrast;
+
+  /// No description provided for @themeImportReadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマのファイルを読み込めませんでした。'**
+  String get themeImportReadFailed;
+
+  /// No description provided for @themeSaveAsNewButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の設定を新しいテーマとして保存'**
+  String get themeSaveAsNewButton;
+
+  /// No description provided for @themeImportButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'.niathemeを読み込む'**
+  String get themeImportButton;
+
+  /// No description provided for @themePresetNameDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマ名'**
+  String get themePresetNameDialogTitle;
+
+  /// No description provided for @themeDefaultPresetName.
+  ///
+  /// In ja, this message translates to:
+  /// **'マイテーマ'**
+  String get themeDefaultPresetName;
+
+  /// No description provided for @onionSkinTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'オニオンスキン'**
+  String get onionSkinTitle;
+
+  /// No description provided for @onionSkinPrevFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'前フレーム'**
+  String get onionSkinPrevFrame;
+
+  /// No description provided for @onionSkinNextFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'後フレーム'**
+  String get onionSkinNextFrame;
+
+  /// No description provided for @onionSkinFrameInterval.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム間隔'**
+  String get onionSkinFrameInterval;
+
+  /// No description provided for @onionSkinFadeByDistance.
+  ///
+  /// In ja, this message translates to:
+  /// **'近いほど濃く表示'**
+  String get onionSkinFadeByDistance;
+
+  /// No description provided for @onionSkinColorPickerTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'色を選択'**
+  String get onionSkinColorPickerTitle;
+
+  /// No description provided for @onionSkinOnFixed.
+  ///
+  /// In ja, this message translates to:
+  /// **'ON（固定）'**
+  String get onionSkinOnFixed;
+
+  /// No description provided for @onionSkinFrameCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示枚数'**
+  String get onionSkinFrameCount;
+
+  /// No description provided for @onionSkinFrameCountFixed.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}枚（固定）'**
+  String onionSkinFrameCountFixed(int count);
+
+  /// No description provided for @onionSkinColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'色'**
+  String get onionSkinColorLabel;
+
+  /// No description provided for @onionSkinOpacityLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'不透明度'**
+  String get onionSkinOpacityLabel;
+
+  /// No description provided for @exportScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し'**
+  String get exportScreenTitle;
+
+  /// No description provided for @exportPresetSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'プリセット'**
+  String get exportPresetSection;
+
+  /// No description provided for @exportPresetStandard.
+  ///
+  /// In ja, this message translates to:
+  /// **'標準'**
+  String get exportPresetStandard;
+
+  /// No description provided for @exportPresetHighQuality.
+  ///
+  /// In ja, this message translates to:
+  /// **'高画質'**
+  String get exportPresetHighQuality;
+
+  /// No description provided for @exportPresetCustom.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタム'**
+  String get exportPresetCustom;
+
+  /// No description provided for @exportAdvancedSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細設定'**
+  String get exportAdvancedSettings;
+
+  /// No description provided for @exportFpsLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'FPS'**
+  String get exportFpsLabel;
+
+  /// No description provided for @exportFormatSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'形式'**
+  String get exportFormatSection;
+
+  /// No description provided for @exportFormatMp4.
+  ///
+  /// In ja, this message translates to:
+  /// **'MP4'**
+  String get exportFormatMp4;
+
+  /// No description provided for @exportFormatMp4Subtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'完成した動画を投稿・共有する'**
+  String get exportFormatMp4Subtitle;
+
+  /// No description provided for @exportFormatGif.
+  ///
+  /// In ja, this message translates to:
+  /// **'GIF'**
+  String get exportFormatGif;
+
+  /// No description provided for @exportFormatGifSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'音のない短いアニメをくり返し再生する'**
+  String get exportFormatGifSubtitle;
+
+  /// No description provided for @exportFormatWebmSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'背景を透明にして、別の映像に重ねる'**
+  String get exportFormatWebmSubtitle;
+
+  /// No description provided for @exportFormatAvi.
+  ///
+  /// In ja, this message translates to:
+  /// **'AVI'**
+  String get exportFormatAvi;
+
+  /// No description provided for @exportFormatAviSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'AVI対応の編集ソフトで使う（Motion JPEG・背景あり）'**
+  String get exportFormatAviSubtitle;
+
+  /// No description provided for @exportStartButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し開始'**
+  String get exportStartButton;
+
+  /// No description provided for @timelineHideEndCard.
+  ///
+  /// In ja, this message translates to:
+  /// **'エンドマークを非表示'**
+  String get timelineHideEndCard;
+
+  /// No description provided for @timelineShowEndCard.
+  ///
+  /// In ja, this message translates to:
+  /// **'エンドマークを表示'**
+  String get timelineShowEndCard;
+
+  /// No description provided for @exportCurrentConditions.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の条件で書き出す'**
+  String get exportCurrentConditions;
+
+  /// No description provided for @exportRetryBenefits.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典を再確認'**
+  String get exportRetryBenefits;
+
+  /// No description provided for @exportBenefitsUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典を確認できませんでした。再確認するか、表示中の条件で書き出せます。'**
+  String get exportBenefitsUnavailable;
+
+  /// No description provided for @exportBenefitsChecking.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典を確認中です。'**
+  String get exportBenefitsChecking;
+
+  /// No description provided for @exportFirst90Seconds.
+  ///
+  /// In ja, this message translates to:
+  /// **'先頭90秒を書き出す'**
+  String get exportFirst90Seconds;
+
+  /// No description provided for @premiumBannerFullExportTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品を全編書き出す'**
+  String get premiumBannerFullExportTitle;
+
+  /// No description provided for @premiumBannerEndCardBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'公式エンドマークの表示・非表示は、プレミアム会員またはエンドマーク編集の特典を利用中に設定できます。'**
+  String get premiumBannerEndCardBody;
+
+  /// No description provided for @premiumBannerWatermarkBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分のウォーターマークの追加・編集は、プレミアム会員またはウォーターマークの特典を利用中にできます。'**
+  String get premiumBannerWatermarkBody;
+
+  /// No description provided for @premiumBannerToneCurveBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画レイヤーの明るさや色をトーンカーブで調整するには、プレミアム会員またはトーンカーブの特典が必要です。'**
+  String get premiumBannerToneCurveBody;
+
+  /// No description provided for @premiumBannerLevelsBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画レイヤーの明暗の範囲をレベル補正で調整するには、プレミアム会員またはレベル補正の特典が必要です。'**
+  String get premiumBannerLevelsBody;
+
+  /// No description provided for @premiumBannerAutomationBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作の作成・編集・実行は、プレミアム会員または自動操作の特典を利用中にできます。'**
+  String get premiumBannerAutomationBody;
+
+  /// No description provided for @premiumBannerMembershipDetails.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員の詳細を見る'**
+  String get premiumBannerMembershipDetails;
+
+  /// No description provided for @premiumBannerBenefitDetails.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典の詳細を見る'**
+  String get premiumBannerBenefitDetails;
+
+  /// No description provided for @premiumPackHalfPrice.
+  ///
+  /// In ja, this message translates to:
+  /// **'コンプリートパックなら単品合計の半額'**
+  String get premiumPackHalfPrice;
+
+  /// No description provided for @premiumPackPriceBasis.
+  ///
+  /// In ja, this message translates to:
+  /// **'同じ期間の単品設定価格との比較。単品交換は準備中です。'**
+  String get premiumPackPriceBasis;
+
+  /// No description provided for @exportKeepsPlaybackTime.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出しFPSを変えても作品の再生時間を維持します。'**
+  String get exportKeepsPlaybackTime;
+
+  /// No description provided for @exportLongProjectNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。'**
+  String get exportLongProjectNote;
+
+  /// No description provided for @exportOutputWithoutEndCard.
+  ///
+  /// In ja, this message translates to:
+  /// **'本編 {duration}（エンドマークなし）'**
+  String exportOutputWithoutEndCard(String duration);
+
+  /// No description provided for @exportOutputWithEndCard.
+  ///
+  /// In ja, this message translates to:
+  /// **'本編 {duration}  +  NIARIMエンドマーク（5秒）'**
+  String exportOutputWithEndCard(String duration);
+
+  /// No description provided for @exportProjectNotFoundError.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトが見つかりません'**
+  String get exportProjectNotFoundError;
+
+  /// No description provided for @exportFailedError.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し失敗: {error}'**
+  String exportFailedError(String error);
+
+  /// No description provided for @exportInProgressTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し中'**
+  String get exportInProgressTitle;
+
+  /// No description provided for @exportGifEncoding.
+  ///
+  /// In ja, this message translates to:
+  /// **'GIFを生成しています'**
+  String get exportGifEncoding;
+
+  /// No description provided for @exportCancelledSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出しをキャンセルしました'**
+  String get exportCancelledSnackbar;
+
+  /// No description provided for @exportCancelHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'最終処理中のため、完了後にキャンセルを反映します'**
+  String get exportCancelHint;
+
+  /// No description provided for @exportOutdatedAutofillTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りが最新ではありません'**
+  String get exportOutdatedAutofillTitle;
+
+  /// No description provided for @exportOutdatedAutofillBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'更新されていない自動塗りレイヤーがあります。このまま書き出しますか？'**
+  String get exportOutdatedAutofillBody;
+
+  /// No description provided for @exportContinueButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'続行'**
+  String get exportContinueButton;
+
+  /// No description provided for @exportCompleteTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し完了'**
+  String get exportCompleteTitle;
+
+  /// No description provided for @exportCompleteFramesBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count} フレームの書き出しが完了しました。'**
+  String exportCompleteFramesBody(int count);
+
+  /// No description provided for @exportSaveLocationHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出した作品はホームの「作品一覧」でプロジェクト名から探せます。写真アプリに保存したり、ほかのアプリで開いたりするには「共有」を選んでください。'**
+  String get exportSaveLocationHint;
+
+  /// No description provided for @exportOpenWorks.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品一覧を開く'**
+  String get exportOpenWorks;
+
+  /// No description provided for @exportBackToProjectsButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト一覧へ戻る'**
+  String get exportBackToProjectsButton;
+
+  /// No description provided for @exportBackToCanvasButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスへ戻る'**
+  String get exportBackToCanvasButton;
+
+  /// No description provided for @newProjectScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規プロジェクト'**
+  String get newProjectScreenTitle;
+
+  /// No description provided for @newProjectDefaultName.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規プロジェクト'**
+  String get newProjectDefaultName;
+
+  /// No description provided for @newProjectNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト名'**
+  String get newProjectNameLabel;
+
+  /// No description provided for @newProjectSizeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズ'**
+  String get newProjectSizeLabel;
+
+  /// No description provided for @newProjectPresetFullHd.
+  ///
+  /// In ja, this message translates to:
+  /// **'Full HD (16:9・YouTube等横動画向け)'**
+  String get newProjectPresetFullHd;
+
+  /// No description provided for @newProjectPresetHd.
+  ///
+  /// In ja, this message translates to:
+  /// **'HD (16:9・軽量版)'**
+  String get newProjectPresetHd;
+
+  /// No description provided for @newProjectPresetSquare.
+  ///
+  /// In ja, this message translates to:
+  /// **'1:1 スクエア (Twitter/Instagram投稿向け)'**
+  String get newProjectPresetSquare;
+
+  /// No description provided for @newProjectPresetVertical.
+  ///
+  /// In ja, this message translates to:
+  /// **'9:16 縦型 (YouTubeショート/リール・ストーリーズ向け)'**
+  String get newProjectPresetVertical;
+
+  /// No description provided for @newProjectPresetPortrait.
+  ///
+  /// In ja, this message translates to:
+  /// **'4:5 縦長 (Instagramフィード投稿向け)'**
+  String get newProjectPresetPortrait;
+
+  /// No description provided for @newProjectPresetAnalog.
+  ///
+  /// In ja, this message translates to:
+  /// **'4:3 (アナログ放送比率)'**
+  String get newProjectPresetAnalog;
+
+  /// No description provided for @newProjectCustomSize.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタム'**
+  String get newProjectCustomSize;
+
+  /// No description provided for @newProjectMaxEdgeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'長辺は最大1920pxまで指定できます'**
+  String get newProjectMaxEdgeHint;
+
+  /// No description provided for @newProjectWidthLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'幅(px)'**
+  String get newProjectWidthLabel;
+
+  /// No description provided for @newProjectHeightLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'高さ(px)'**
+  String get newProjectHeightLabel;
+
+  /// No description provided for @newProjectWidthShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'幅'**
+  String get newProjectWidthShort;
+
+  /// No description provided for @newProjectHeightShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'高さ'**
+  String get newProjectHeightShort;
+
+  /// No description provided for @newProjectSizePresetManageButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズ設定'**
+  String get newProjectSizePresetManageButton;
+
+  /// No description provided for @newProjectSaveCustomSizeButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'このサイズを保存する'**
+  String get newProjectSaveCustomSizeButton;
+
+  /// No description provided for @newProjectSaveCustomSizeDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズ名を入力'**
+  String get newProjectSaveCustomSizeDialogTitle;
+
+  /// No description provided for @newProjectSaveCustomSizeNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズ名'**
+  String get newProjectSaveCustomSizeNameLabel;
+
+  /// No description provided for @newProjectSaveCustomSizeSavedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズを保存しました'**
+  String get newProjectSaveCustomSizeSavedSnackbar;
+
+  /// No description provided for @canvasSizePresetManageScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズ設定'**
+  String get canvasSizePresetManageScreenTitle;
+
+  /// No description provided for @canvasSizePresetEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存されたサイズはありません'**
+  String get canvasSizePresetEmpty;
+
+  /// No description provided for @canvasSizePresetEmptyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規プロジェクト画面でカスタムサイズを指定し、「このサイズを保存する」から追加できます'**
+  String get canvasSizePresetEmptyHint;
+
+  /// No description provided for @canvasSizePresetEditDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズを編集'**
+  String get canvasSizePresetEditDialogTitle;
+
+  /// No description provided for @newProjectDurationLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さ（最大{max}）'**
+  String newProjectDurationLabel(String max);
+
+  /// No description provided for @newProjectDurationLabelWithPremiumHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さ（最大{max}・最大尺の特典で2時間）'**
+  String newProjectDurationLabelWithPremiumHint(String max);
+
+  /// No description provided for @newProjectDurationSeconds.
+  ///
+  /// In ja, this message translates to:
+  /// **'{n}秒'**
+  String newProjectDurationSeconds(int n);
+
+  /// Unit after the duration in seconds.
+  ///
+  /// In ja, this message translates to:
+  /// **'秒'**
+  String get newProjectDurationUnit;
+
+  /// No description provided for @newProjectDurationHms.
+  ///
+  /// In ja, this message translates to:
+  /// **'{h}時間{m}分{s}秒'**
+  String newProjectDurationHms(int h, int m, int s);
+
+  /// No description provided for @newProjectDurationHm.
+  ///
+  /// In ja, this message translates to:
+  /// **'{h}時間{m}分'**
+  String newProjectDurationHm(int h, int m);
+
+  /// No description provided for @newProjectDurationH.
+  ///
+  /// In ja, this message translates to:
+  /// **'{h}時間'**
+  String newProjectDurationH(int h);
+
+  /// No description provided for @newProjectDurationMs.
+  ///
+  /// In ja, this message translates to:
+  /// **'{m}分{s}秒'**
+  String newProjectDurationMs(int m, int s);
+
+  /// No description provided for @newProjectDurationM.
+  ///
+  /// In ja, this message translates to:
+  /// **'{m}分'**
+  String newProjectDurationM(int m);
+
+  /// No description provided for @newProjectBackgroundColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'背景色'**
+  String get newProjectBackgroundColorLabel;
+
+  /// No description provided for @newProjectDrawingAreaTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画領域を広くする'**
+  String get newProjectDrawingAreaTitle;
+
+  /// No description provided for @newProjectDrawingAreaSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し範囲外にも描画できる領域を追加します'**
+  String get newProjectDrawingAreaSubtitle;
+
+  /// No description provided for @newProjectScaleLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'倍率'**
+  String get newProjectScaleLabel;
+
+  /// No description provided for @newProjectScaleValue.
+  ///
+  /// In ja, this message translates to:
+  /// **'{value}倍'**
+  String newProjectScaleValue(String value);
+
+  /// No description provided for @newProjectDrawableAreaInfo.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画可能範囲: {width}×{scale} = {result}'**
+  String newProjectDrawableAreaInfo(String width, String scale, String result);
+
+  /// No description provided for @newProjectTotalFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'総フレーム数: {count}'**
+  String newProjectTotalFrames(int count);
+
+  /// No description provided for @newProjectExportSizeInfo.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出しサイズ: {size}'**
+  String newProjectExportSizeInfo(String size);
+
+  /// No description provided for @newProjectDrawingAreaInfo.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画領域: {size}'**
+  String newProjectDrawingAreaInfo(String size);
+
+  /// No description provided for @colorPickerTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'色選択'**
+  String get colorPickerTitle;
+
+  /// No description provided for @colorPickerOpacityLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'不透明度'**
+  String get colorPickerOpacityLabel;
+
+  /// No description provided for @colorPickerHexCopiedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'HEXをコピーしました'**
+  String get colorPickerHexCopiedSnackbar;
+
+  /// No description provided for @colorPickerRecentColorsLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'最近使った色'**
+  String get colorPickerRecentColorsLabel;
+
+  /// No description provided for @colorPickerRecentColorsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだありません'**
+  String get colorPickerRecentColorsEmpty;
+
+  /// No description provided for @colorPickerPaletteLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'パレット'**
+  String get colorPickerPaletteLabel;
+
+  /// No description provided for @colorPickerNewPaletteTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'新しいパレット'**
+  String get colorPickerNewPaletteTooltip;
+
+  /// No description provided for @colorPickerManagePaletteTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'パレット管理'**
+  String get colorPickerManagePaletteTooltip;
+
+  /// No description provided for @colorPickerPaletteEmptyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'色がまだありません。「＋」で現在の色を追加できます。'**
+  String get colorPickerPaletteEmptyHint;
+
+  /// No description provided for @colorPickerPaletteLongPressHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'長押しで削除できます'**
+  String get colorPickerPaletteLongPressHint;
+
+  /// No description provided for @colorPickerAddCurrentColorButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の色をパレットに追加'**
+  String get colorPickerAddCurrentColorButton;
+
+  /// No description provided for @colorPickerPaletteNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'パレット名'**
+  String get colorPickerPaletteNameLabel;
+
+  /// No description provided for @colorPickerFavoriteAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り登録'**
+  String get colorPickerFavoriteAdd;
+
+  /// No description provided for @colorPickerFavoriteRemove.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り解除'**
+  String get colorPickerFavoriteRemove;
+
+  /// No description provided for @penSubToolTabBrush.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ'**
+  String get penSubToolTabBrush;
+
+  /// No description provided for @penSubToolTabTone.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーン'**
+  String get penSubToolTabTone;
+
+  /// No description provided for @penSubToolTabStamp.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプ'**
+  String get penSubToolTabStamp;
+
+  /// No description provided for @penSubToolTabLassoFill.
+  ///
+  /// In ja, this message translates to:
+  /// **'投げ縄塗り'**
+  String get penSubToolTabLassoFill;
+
+  /// No description provided for @penSubToolToneTooltipMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンを選ぶと、バケツやペンでアミトーン柄を塗れます。'**
+  String get penSubToolToneTooltipMessage;
+
+  /// No description provided for @penSubToolStampTooltipMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。'**
+  String get penSubToolStampTooltipMessage;
+
+  /// No description provided for @penSubToolBrushSizeOpacity.
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}px · {opacity}%'**
+  String penSubToolBrushSizeOpacity(int size, int opacity);
+
+  /// No description provided for @brushSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ名で検索'**
+  String get brushSearchHint;
+
+  /// No description provided for @brushEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシがありません'**
+  String get brushEmpty;
+
+  /// No description provided for @brushCreateDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自作ブラシ'**
+  String get brushCreateDialogTitle;
+
+  /// No description provided for @brushExportFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシの書き出しに失敗しました: {error}'**
+  String brushExportFailedSnackbar(String error);
+
+  /// No description provided for @brushSettingsSizeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズ'**
+  String get brushSettingsSizeLabel;
+
+  /// No description provided for @brushSettingsOpacityLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'不透明度'**
+  String get brushSettingsOpacityLabel;
+
+  /// No description provided for @brushSettingsSpacingLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'間隔'**
+  String get brushSettingsSpacingLabel;
+
+  /// No description provided for @brushSettingsBlurRadiusLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし半径'**
+  String get brushSettingsBlurRadiusLabel;
+
+  /// No description provided for @brushSettingsPixelModeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドット絵モード'**
+  String get brushSettingsPixelModeTitle;
+
+  /// No description provided for @brushSettingsFadeModeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フェード'**
+  String get brushSettingsFadeModeTitle;
+
+  /// No description provided for @brushSettingsFadeOff.
+  ///
+  /// In ja, this message translates to:
+  /// **'OFF'**
+  String get brushSettingsFadeOff;
+
+  /// No description provided for @brushSettingsFadeWeak.
+  ///
+  /// In ja, this message translates to:
+  /// **'弱'**
+  String get brushSettingsFadeWeak;
+
+  /// No description provided for @brushSettingsFadeMedium.
+  ///
+  /// In ja, this message translates to:
+  /// **'中'**
+  String get brushSettingsFadeMedium;
+
+  /// No description provided for @brushSettingsFadeStrong.
+  ///
+  /// In ja, this message translates to:
+  /// **'強'**
+  String get brushSettingsFadeStrong;
+
+  /// No description provided for @brushSettingsFadeCustom.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタム'**
+  String get brushSettingsFadeCustom;
+
+  /// No description provided for @brushSettingsFadeStartValueLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始値(%)'**
+  String get brushSettingsFadeStartValueLabel;
+
+  /// No description provided for @brushSettingsFadeEndValueLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了値(%)'**
+  String get brushSettingsFadeEndValueLabel;
+
+  /// No description provided for @brushSettingsFadeDistanceLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'距離(px)'**
+  String get brushSettingsFadeDistanceLabel;
+
+  /// No description provided for @brushSettingsStrokeDecayTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ストローク減衰'**
+  String get brushSettingsStrokeDecayTitle;
+
+  /// No description provided for @brushSettingsStrokeDecaySubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'描き続けるほど不透明度が下がる'**
+  String get brushSettingsStrokeDecaySubtitle;
+
+  /// No description provided for @brushSettingsMixingTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'混色モード'**
+  String get brushSettingsMixingTitle;
+
+  /// No description provided for @brushSettingsMixingOff.
+  ///
+  /// In ja, this message translates to:
+  /// **'デジタル'**
+  String get brushSettingsMixingOff;
+
+  /// No description provided for @brushSettingsMixingOil.
+  ///
+  /// In ja, this message translates to:
+  /// **'油彩風混色'**
+  String get brushSettingsMixingOil;
+
+  /// No description provided for @brushSettingsMixingWatercolor.
+  ///
+  /// In ja, this message translates to:
+  /// **'水彩風混色'**
+  String get brushSettingsMixingWatercolor;
+
+  /// No description provided for @brushSettingsMixingBrightnessCorrection.
+  ///
+  /// In ja, this message translates to:
+  /// **'輝度の補正'**
+  String get brushSettingsMixingBrightnessCorrection;
+
+  /// No description provided for @brushSettingsMixingAmount.
+  ///
+  /// In ja, this message translates to:
+  /// **'混色度合い'**
+  String get brushSettingsMixingAmount;
+
+  /// No description provided for @brushSettingsMixingStretch.
+  ///
+  /// In ja, this message translates to:
+  /// **'色延び'**
+  String get brushSettingsMixingStretch;
+
+  /// No description provided for @brushSettingsMixingWater.
+  ///
+  /// In ja, this message translates to:
+  /// **'水分量'**
+  String get brushSettingsMixingWater;
+
+  /// No description provided for @brushSettingsMixingPigment.
+  ///
+  /// In ja, this message translates to:
+  /// **'絵具量'**
+  String get brushSettingsMixingPigment;
+
+  /// No description provided for @brushSettingsMixingBleed.
+  ///
+  /// In ja, this message translates to:
+  /// **'にじみ'**
+  String get brushSettingsMixingBleed;
+
+  /// No description provided for @brushSettingsMixingTexture.
+  ///
+  /// In ja, this message translates to:
+  /// **'むら'**
+  String get brushSettingsMixingTexture;
+
+  /// No description provided for @brushSettingsMixingSoftEdge.
+  ///
+  /// In ja, this message translates to:
+  /// **'境界のぼかし'**
+  String get brushSettingsMixingSoftEdge;
+
+  /// No description provided for @brushSettingsMixingOilHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'下の色と絵の具のように混ざり、拾った色を引きずって伸ばします。'**
+  String get brushSettingsMixingOilHint;
+
+  /// No description provided for @brushSettingsMixingWatercolorHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'透明な絵の具を重ねて塗ります。ペンを離すと乾いて、筆の外へ少しにじみ、縁に色が溜まります。'**
+  String get brushSettingsMixingWatercolorHint;
+
+  /// No description provided for @projectDetailNotFoundTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト'**
+  String get projectDetailNotFoundTitle;
+
+  /// No description provided for @projectDetailNotFoundBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトが見つかりません'**
+  String get projectDetailNotFoundBody;
+
+  /// No description provided for @projectDetailFirstFrameTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'先頭フレーム'**
+  String get projectDetailFirstFrameTooltip;
+
+  /// No description provided for @projectDetailPrevFrameTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'1フレーム戻る'**
+  String get projectDetailPrevFrameTooltip;
+
+  /// No description provided for @projectDetailPauseTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'一時停止'**
+  String get projectDetailPauseTooltip;
+
+  /// No description provided for @projectDetailPlayTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生'**
+  String get projectDetailPlayTooltip;
+
+  /// No description provided for @projectDetailNextFrameTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'1フレーム進む'**
+  String get projectDetailNextFrameTooltip;
+
+  /// No description provided for @projectDetailLastFrameTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'最終フレーム'**
+  String get projectDetailLastFrameTooltip;
+
+  /// No description provided for @projectDetailFullscreenTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューを全画面表示'**
+  String get projectDetailFullscreenTooltip;
+
+  /// No description provided for @projectDetailFullscreenCloseTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'全画面プレビューを閉じる'**
+  String get projectDetailFullscreenCloseTooltip;
+
+  /// No description provided for @projectDetailStartEditButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'編集開始'**
+  String get projectDetailStartEditButton;
+
+  /// No description provided for @projectDetailTagsQuickAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグ'**
+  String get projectDetailTagsQuickAction;
+
+  /// No description provided for @projectDetailShareQuickAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有'**
+  String get projectDetailShareQuickAction;
+
+  /// No description provided for @projectDetailFavoriteRegistered.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り\n登録済み'**
+  String get projectDetailFavoriteRegistered;
+
+  /// No description provided for @projectDetailFavoriteUnregistered.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り\n未登録'**
+  String get projectDetailFavoriteUnregistered;
+
+  /// No description provided for @projectDetailInfoSectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト情報'**
+  String get projectDetailInfoSectionTitle;
+
+  /// No description provided for @projectDetailInfoExportSize.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出しサイズ'**
+  String get projectDetailInfoExportSize;
+
+  /// No description provided for @projectDetailInfoDrawingArea.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画領域'**
+  String get projectDetailInfoDrawingArea;
+
+  /// No description provided for @projectDetailInfoDrawingAreaValue.
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}  ({scale})'**
+  String projectDetailInfoDrawingAreaValue(String size, String scale);
+
+  /// No description provided for @projectDetailInfoTotalFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'総フレーム数'**
+  String get projectDetailInfoTotalFrames;
+
+  /// No description provided for @projectDetailInfoWorkTime.
+  ///
+  /// In ja, this message translates to:
+  /// **'制作時間'**
+  String get projectDetailInfoWorkTime;
+
+  /// No description provided for @projectDetailInfoLastSaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'最終保存'**
+  String get projectDetailInfoLastSaved;
+
+  /// No description provided for @projectDetailInfoSize.
+  ///
+  /// In ja, this message translates to:
+  /// **'容量'**
+  String get projectDetailInfoSize;
+
+  /// No description provided for @projectDetailAddTagHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを追加'**
+  String get projectDetailAddTagHint;
+
+  /// No description provided for @projectDetailNiashareFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'.niashareの作成に失敗しました: {error}'**
+  String projectDetailNiashareFailedSnackbar(String error);
+
+  /// No description provided for @projectDetailTrashMenuItem.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱へ移動'**
+  String get projectDetailTrashMenuItem;
+
+  /// 設定の今の状態の値（オフ）。オニオンスキンの行で使う。仏・西は男性形（Papier calque・Papel cebolla に合わせる）。女性名詞の項目は perfSettingsTiltOff・perfSettingsTrashAutoDeleteOff を使う。日本語のUIでも「OFF」と書く（筆圧OFF・フェードのOFFと同じ）。
+  ///
+  /// In ja, this message translates to:
+  /// **'OFF'**
+  String get commonOff;
+
+  /// No description provided for @perfSettingsScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パフォーマンス設定'**
+  String get perfSettingsScreenTitle;
+
+  /// No description provided for @perfSettingsQualitySection.
+  ///
+  /// In ja, this message translates to:
+  /// **'品質設定'**
+  String get perfSettingsQualitySection;
+
+  /// No description provided for @perfSettingsQualityLow.
+  ///
+  /// In ja, this message translates to:
+  /// **'低品質'**
+  String get perfSettingsQualityLow;
+
+  /// No description provided for @perfSettingsQualityMedium.
+  ///
+  /// In ja, this message translates to:
+  /// **'中品質'**
+  String get perfSettingsQualityMedium;
+
+  /// No description provided for @perfSettingsQualityHigh.
+  ///
+  /// In ja, this message translates to:
+  /// **'高品質'**
+  String get perfSettingsQualityHigh;
+
+  /// No description provided for @perfSettingsQualityCustom.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタム'**
+  String get perfSettingsQualityCustom;
+
+  /// No description provided for @perfSettingsQualityDescLow.
+  ///
+  /// In ja, this message translates to:
+  /// **'動作を軽くしたい端末向け（オニオン前後1枚・スロット5件）'**
+  String get perfSettingsQualityDescLow;
+
+  /// No description provided for @perfSettingsQualityDescMedium.
+  ///
+  /// In ja, this message translates to:
+  /// **'標準的な端末向け（オニオン前後3枚・スロット10件）'**
+  String get perfSettingsQualityDescMedium;
+
+  /// No description provided for @perfSettingsQualityDescHigh.
+  ///
+  /// In ja, this message translates to:
+  /// **'快適な動作に余裕のある端末向け（オニオン前後5枚・ツリー方式）'**
+  String get perfSettingsQualityDescHigh;
+
+  /// No description provided for @perfSettingsQualityDescCustom.
+  ///
+  /// In ja, this message translates to:
+  /// **'各項目を個別設定'**
+  String get perfSettingsQualityDescCustom;
+
+  /// No description provided for @perfSettingsCapacitySection.
+  ///
+  /// In ja, this message translates to:
+  /// **'容量・動作に関わる設定'**
+  String get perfSettingsCapacitySection;
+
+  /// No description provided for @perfSettingsUndoLimitTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'Undo回数'**
+  String get perfSettingsUndoLimitTitle;
+
+  /// No description provided for @perfSettingsUndoLimitSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'多いほどメモリを消費する'**
+  String get perfSettingsUndoLimitSubtitle;
+
+  /// No description provided for @perfSettingsUndoLimitValue.
+  ///
+  /// In ja, this message translates to:
+  /// **'{n}回'**
+  String perfSettingsUndoLimitValue(int n);
+
+  /// No description provided for @perfSettingsTrashAutoDeleteTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱の自動削除'**
+  String get perfSettingsTrashAutoDeleteTitle;
+
+  /// No description provided for @perfSettingsTrashAutoDeleteSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱の作品・ファイルの保持期間'**
+  String get perfSettingsTrashAutoDeleteSubtitle;
+
+  /// No description provided for @perfSettingsTrashApplyConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'この設定を適用すると、期限切れの項目{count}件を今すぐ完全に削除します。削除した項目は元に戻せません。'**
+  String perfSettingsTrashApplyConfirm(int count);
+
+  /// No description provided for @perfSettingsTrashApplied.
+  ///
+  /// In ja, this message translates to:
+  /// **'期限切れの項目{count}件を完全に削除しました。'**
+  String perfSettingsTrashApplied(int count);
+
+  /// No description provided for @homeTrashDaysUntilPermanentDelete.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動削除まで{days}日'**
+  String homeTrashDaysUntilPermanentDelete(int days);
+
+  /// ゴミ箱の自動削除の値・選択肢（オフ）。仏・西は女性名詞（Suppression・Eliminación）に合わせる。
+  ///
+  /// In ja, this message translates to:
+  /// **'OFF'**
+  String get perfSettingsTrashAutoDeleteOff;
+
+  /// No description provided for @perfSettingsTrashAutoDeleteValue.
+  ///
+  /// In ja, this message translates to:
+  /// **'{n}日'**
+  String perfSettingsTrashAutoDeleteValue(int n);
+
+  /// No description provided for @perfSettingsCurrentSettingsSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の設定'**
+  String get perfSettingsCurrentSettingsSection;
+
+  /// No description provided for @perfSettingsTiltLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'傾き検知'**
+  String get perfSettingsTiltLabel;
+
+  /// 現在の設定の「傾き検知」の値（オン）。仏・西は女性名詞（Détection・Detección）に合わせる。
+  ///
+  /// In ja, this message translates to:
+  /// **'ON'**
+  String get perfSettingsTiltOn;
+
+  /// 現在の設定の「傾き検知」の値（オフ）。仏・西は女性名詞（Détection・Detección）に合わせる。
+  ///
+  /// In ja, this message translates to:
+  /// **'OFF'**
+  String get perfSettingsTiltOff;
+
+  /// No description provided for @perfSettingsOnionPrevLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'オニオンスキン（前）'**
+  String get perfSettingsOnionPrevLabel;
+
+  /// No description provided for @perfSettingsOnionNextLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'オニオンスキン（後）'**
+  String get perfSettingsOnionNextLabel;
+
+  /// No description provided for @perfSettingsOnionFrameCountValue.
+  ///
+  /// In ja, this message translates to:
+  /// **'{n}枚'**
+  String perfSettingsOnionFrameCountValue(int n);
+
+  /// No description provided for @perfSettingsSaveModeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存方式'**
+  String get perfSettingsSaveModeLabel;
+
+  /// No description provided for @perfSettingsSlotCountLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'スロット数'**
+  String get perfSettingsSlotCountLabel;
+
+  /// No description provided for @perfSettingsSlotCountValue.
+  ///
+  /// In ja, this message translates to:
+  /// **'{n}件'**
+  String perfSettingsSlotCountValue(int n);
+
+  /// No description provided for @perfSettingsResetButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'初期値に戻す'**
+  String get perfSettingsResetButton;
+
+  /// No description provided for @perfSettingsCopyPresetButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'プリセットからコピー'**
+  String get perfSettingsCopyPresetButton;
+
+  /// No description provided for @perfSettingsTiltSwitchTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペンの傾きをブラシに反映'**
+  String get perfSettingsTiltSwitchTitle;
+
+  /// No description provided for @perfSettingsShowPrevOnionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'前フレームを表示'**
+  String get perfSettingsShowPrevOnionTitle;
+
+  /// No description provided for @perfSettingsOnionCountPrevLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'オニオンスキン枚数（前）'**
+  String get perfSettingsOnionCountPrevLabel;
+
+  /// No description provided for @perfSettingsShowNextOnionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'後フレームを表示'**
+  String get perfSettingsShowNextOnionTitle;
+
+  /// No description provided for @perfSettingsOnionCountNextLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'オニオンスキン枚数（後）'**
+  String get perfSettingsOnionCountNextLabel;
+
+  /// No description provided for @perfSettingsSaveModeSlot.
+  ///
+  /// In ja, this message translates to:
+  /// **'スロット方式'**
+  String get perfSettingsSaveModeSlot;
+
+  /// No description provided for @perfSettingsSaveModeTree.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツリー方式'**
+  String get perfSettingsSaveModeTree;
+
+  /// No description provided for @perfSettingsResetDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタム品質設定を初期値に戻しますか？'**
+  String get perfSettingsResetDialogTitle;
+
+  /// No description provided for @perfSettingsResetDialogBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'初期値は、初回起動時に端末性能から自動判定された「{preset}」の設定になります。'**
+  String perfSettingsResetDialogBody(String preset);
+
+  /// No description provided for @perfSettingsResetConfirmButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'戻す'**
+  String get perfSettingsResetConfirmButton;
+
+  /// No description provided for @perfSettingsCopyPresetDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'コピーするプリセットを選択'**
+  String get perfSettingsCopyPresetDialogTitle;
+
+  /// No description provided for @perfSettingsCopyPresetDialogBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタム設定へコピーするプリセットを選択してください。'**
+  String get perfSettingsCopyPresetDialogBody;
+
+  /// No description provided for @perfSettingsCopyDescLow.
+  ///
+  /// In ja, this message translates to:
+  /// **'前後1枚表示・軽量動作'**
+  String get perfSettingsCopyDescLow;
+
+  /// No description provided for @perfSettingsCopyDescMedium.
+  ///
+  /// In ja, this message translates to:
+  /// **'前後3枚表示・標準'**
+  String get perfSettingsCopyDescMedium;
+
+  /// No description provided for @perfSettingsCopyDescHigh.
+  ///
+  /// In ja, this message translates to:
+  /// **'前後5枚表示・高品質'**
+  String get perfSettingsCopyDescHigh;
+
+  /// No description provided for @filterPanelTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター'**
+  String get filterPanelTitle;
+
+  /// No description provided for @filterPanelTitleBulk.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター（{count}フレームへ一括適用）'**
+  String filterPanelTitleBulk(int count);
+
+  /// No description provided for @filterSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター検索'**
+  String get filterSearchHint;
+
+  /// No description provided for @filterNameGaussianBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'ガウスぼかし'**
+  String get filterNameGaussianBlur;
+
+  /// No description provided for @filterNameLensBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'レンズぼかし'**
+  String get filterNameLensBlur;
+
+  /// No description provided for @filterNameAnimeStyle.
+  ///
+  /// In ja, this message translates to:
+  /// **'アニメ風加工'**
+  String get filterNameAnimeStyle;
+
+  /// No description provided for @filterNameOutline.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り'**
+  String get filterNameOutline;
+
+  /// No description provided for @filterNameInvert.
+  ///
+  /// In ja, this message translates to:
+  /// **'色反転'**
+  String get filterNameInvert;
+
+  /// No description provided for @filterNameToneCurve.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンカーブ'**
+  String get filterNameToneCurve;
+
+  /// No description provided for @filterNameLevels.
+  ///
+  /// In ja, this message translates to:
+  /// **'レベル補正'**
+  String get filterNameLevels;
+
+  /// No description provided for @filterNameSharpen.
+  ///
+  /// In ja, this message translates to:
+  /// **'シャープ'**
+  String get filterNameSharpen;
+
+  /// No description provided for @filterNameUnsharpMask.
+  ///
+  /// In ja, this message translates to:
+  /// **'アンシャープマスク'**
+  String get filterNameUnsharpMask;
+
+  /// No description provided for @filterSharpenStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'シャープの強さ'**
+  String get filterSharpenStrength;
+
+  /// No description provided for @filterUnsharpAmount.
+  ///
+  /// In ja, this message translates to:
+  /// **'かかり具合'**
+  String get filterUnsharpAmount;
+
+  /// No description provided for @filterNameVignette.
+  ///
+  /// In ja, this message translates to:
+  /// **'周辺減光'**
+  String get filterNameVignette;
+
+  /// No description provided for @filterVignetteRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲'**
+  String get filterVignetteRange;
+
+  /// No description provided for @filterVignetteDensity.
+  ///
+  /// In ja, this message translates to:
+  /// **'濃さ'**
+  String get filterVignetteDensity;
+
+  /// No description provided for @filterVignetteHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲：四隅から中心へ向かってどこまで暗くするか。濃さ：四隅の暗さ。'**
+  String get filterVignetteHint;
+
+  /// No description provided for @filterVignetteColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'減光色'**
+  String get filterVignetteColor;
+
+  /// No description provided for @filterNameNoise.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルムグレイン'**
+  String get filterNameNoise;
+
+  /// No description provided for @filterNoiseStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'粒子の強さ'**
+  String get filterNoiseStrength;
+
+  /// No description provided for @filterNameRetroAnime.
+  ///
+  /// In ja, this message translates to:
+  /// **'レトロアニメ'**
+  String get filterNameRetroAnime;
+
+  /// No description provided for @filterNameCrt.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラウン管'**
+  String get filterNameCrt;
+
+  /// No description provided for @filterRetroStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'強さ'**
+  String get filterRetroStrength;
+
+  /// No description provided for @filterCrtScreenStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'走査線・蛍光体の濃さ'**
+  String get filterCrtScreenStrength;
+
+  /// No description provided for @filterCrtAberration.
+  ///
+  /// In ja, this message translates to:
+  /// **'色ずれの強さ'**
+  String get filterCrtAberration;
+
+  /// No description provided for @filterCrtBleed.
+  ///
+  /// In ja, this message translates to:
+  /// **'にじみの強さ'**
+  String get filterCrtBleed;
+
+  /// No description provided for @filterOutlineLayerNameSuffix.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name}（縁取り）'**
+  String filterOutlineLayerNameSuffix(String name);
+
+  /// No description provided for @filterStrengthBlurRadius.
+  ///
+  /// In ja, this message translates to:
+  /// **'強さ（ぼかし半径）'**
+  String get filterStrengthBlurRadius;
+
+  /// No description provided for @filterColorLevels.
+  ///
+  /// In ja, this message translates to:
+  /// **'色数'**
+  String get filterColorLevels;
+
+  /// No description provided for @filterEdgeStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'線の濃さ'**
+  String get filterEdgeStrength;
+
+  /// No description provided for @filterAnimeBorderWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'境界線の太さ'**
+  String get filterAnimeBorderWidth;
+
+  /// No description provided for @filterAnimeBorderThreshold.
+  ///
+  /// In ja, this message translates to:
+  /// **'色の違いの閾値'**
+  String get filterAnimeBorderThreshold;
+
+  /// No description provided for @filterAnimeBorderHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'色の差がこの閾値以上の境目に、暗い側へ線を引きます。太さ0で線なし。'**
+  String get filterAnimeBorderHint;
+
+  /// No description provided for @filterOutlineColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り色'**
+  String get filterOutlineColor;
+
+  /// No description provided for @filterOutlineWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り線幅'**
+  String get filterOutlineWidth;
+
+  /// No description provided for @filterOutlineErosion.
+  ///
+  /// In ja, this message translates to:
+  /// **'内側への食い込み（0で元の輪郭の外側だけ）'**
+  String get filterOutlineErosion;
+
+  /// No description provided for @filterToneCurveLinear.
+  ///
+  /// In ja, this message translates to:
+  /// **'標準'**
+  String get filterToneCurveLinear;
+
+  /// No description provided for @filterToneCurveBrighten.
+  ///
+  /// In ja, this message translates to:
+  /// **'明るく'**
+  String get filterToneCurveBrighten;
+
+  /// No description provided for @filterToneCurveDarken.
+  ///
+  /// In ja, this message translates to:
+  /// **'暗く'**
+  String get filterToneCurveDarken;
+
+  /// No description provided for @filterToneCurveHighContrast.
+  ///
+  /// In ja, this message translates to:
+  /// **'コントラスト強'**
+  String get filterToneCurveHighContrast;
+
+  /// No description provided for @filterToneCurveLowContrast.
+  ///
+  /// In ja, this message translates to:
+  /// **'コントラスト弱'**
+  String get filterToneCurveLowContrast;
+
+  /// No description provided for @filterToneCurveInvert.
+  ///
+  /// In ja, this message translates to:
+  /// **'反転'**
+  String get filterToneCurveInvert;
+
+  /// No description provided for @filterToneCurveHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'曲線の何もない所をタップすると点を追加、点をドラッグすると動かせます。両端以外の点は長押しで削除できます。R・G・Bは色ごとのカーブで、RGBのカーブの後にかかります。'**
+  String get filterToneCurveHint;
+
+  /// No description provided for @filterLevelsInputBlack.
+  ///
+  /// In ja, this message translates to:
+  /// **'入力：黒'**
+  String get filterLevelsInputBlack;
+
+  /// No description provided for @filterLevelsInputWhite.
+  ///
+  /// In ja, this message translates to:
+  /// **'入力：白'**
+  String get filterLevelsInputWhite;
+
+  /// No description provided for @filterLevelsGamma.
+  ///
+  /// In ja, this message translates to:
+  /// **'ガンマ'**
+  String get filterLevelsGamma;
+
+  /// No description provided for @filterLevelsOutputBlack.
+  ///
+  /// In ja, this message translates to:
+  /// **'出力：黒'**
+  String get filterLevelsOutputBlack;
+
+  /// No description provided for @filterLevelsOutputWhite.
+  ///
+  /// In ja, this message translates to:
+  /// **'出力：白'**
+  String get filterLevelsOutputWhite;
+
+  /// No description provided for @filterLevelsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'R・G・Bは色ごとの補正で、RGBの補正の後にかかります。ガンマは中間の明るさを変えます（1より大きいと明るく、小さいと暗く）。'**
+  String get filterLevelsHint;
+
+  /// No description provided for @filterApplyButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'適用'**
+  String get filterApplyButton;
+
+  /// No description provided for @filterApplyBulkButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}フレームへ適用'**
+  String filterApplyBulkButton(int count);
+
+  /// No description provided for @filterEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルターがありません'**
+  String get filterEmpty;
+
+  /// No description provided for @filterApplyingTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター適用中'**
+  String get filterApplyingTitle;
+
+  /// No description provided for @filterApplyingSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name}　{count}フレーム'**
+  String filterApplyingSubtitle(String name, int count);
+
+  /// No description provided for @projectListNewFolderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規フォルダ'**
+  String get projectListNewFolderTitle;
+
+  /// No description provided for @projectListFolderHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'同じ作品の複数話数やシリーズをまとめる場合にも使えます'**
+  String get projectListFolderHint;
+
+  /// No description provided for @projectListEmptyTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトがありません'**
+  String get projectListEmptyTitle;
+
+  /// No description provided for @projectListEmptyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'＋ ボタンから新規作成'**
+  String get projectListEmptyHint;
+
+  /// No description provided for @projectListOpenAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'開く'**
+  String get projectListOpenAction;
+
+  /// No description provided for @projectListCreateShareAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトを共有'**
+  String get projectListCreateShareAction;
+
+  /// No description provided for @projectListEditFolderAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前・色を編集'**
+  String get projectListEditFolderAction;
+
+  /// No description provided for @projectListDeleteFolderConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダを削除しますか？'**
+  String get projectListDeleteFolderConfirmTitle;
+
+  /// No description provided for @projectListFolderRootOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダなし（ルート）'**
+  String get projectListFolderRootOption;
+
+  /// No description provided for @projectListEditFolderTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダを編集'**
+  String get projectListEditFolderTooltip;
+
+  /// No description provided for @projectListCreateFolderAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規フォルダを作成'**
+  String get projectListCreateFolderAction;
+
+  /// No description provided for @projectListFolderColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ色'**
+  String get projectListFolderColorLabel;
+
+  /// No description provided for @projectListMaterialIncludeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材の同梱'**
+  String get projectListMaterialIncludeTitle;
+
+  /// No description provided for @projectListMaterialIncludeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'同梱しない場合、受信側で不足素材の警告が表示されます。'**
+  String get projectListMaterialIncludeHint;
+
+  /// No description provided for @projectListMaterialImage.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像'**
+  String get projectListMaterialImage;
+
+  /// No description provided for @projectListMaterialVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画'**
+  String get projectListMaterialVideo;
+
+  /// No description provided for @projectListMaterialAudio.
+  ///
+  /// In ja, this message translates to:
+  /// **'音声'**
+  String get projectListMaterialAudio;
+
+  /// No description provided for @projectListShareFontNamesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用中の追加フォントは名前だけを共有します。受け取った端末では、フォントを別途追加してください。'**
+  String get projectListShareFontNamesHint;
+
+  /// No description provided for @blendModeNormal.
+  ///
+  /// In ja, this message translates to:
+  /// **'通常'**
+  String get blendModeNormal;
+
+  /// No description provided for @blendModeMultiply.
+  ///
+  /// In ja, this message translates to:
+  /// **'乗算'**
+  String get blendModeMultiply;
+
+  /// No description provided for @blendModeScreen.
+  ///
+  /// In ja, this message translates to:
+  /// **'スクリーン'**
+  String get blendModeScreen;
+
+  /// No description provided for @blendModeOverlay.
+  ///
+  /// In ja, this message translates to:
+  /// **'オーバーレイ'**
+  String get blendModeOverlay;
+
+  /// No description provided for @blendModeAddition.
+  ///
+  /// In ja, this message translates to:
+  /// **'加算・発光'**
+  String get blendModeAddition;
+
+  /// No description provided for @blendModeSubtract.
+  ///
+  /// In ja, this message translates to:
+  /// **'減算'**
+  String get blendModeSubtract;
+
+  /// No description provided for @blendModeDarken.
+  ///
+  /// In ja, this message translates to:
+  /// **'比較（暗）'**
+  String get blendModeDarken;
+
+  /// No description provided for @blendModeLighten.
+  ///
+  /// In ja, this message translates to:
+  /// **'比較（明）'**
+  String get blendModeLighten;
+
+  /// No description provided for @blendModeColorBurn.
+  ///
+  /// In ja, this message translates to:
+  /// **'焼き込みカラー'**
+  String get blendModeColorBurn;
+
+  /// No description provided for @blendModeColorDodge.
+  ///
+  /// In ja, this message translates to:
+  /// **'覆い焼きカラー'**
+  String get blendModeColorDodge;
+
+  /// No description provided for @blendModeHardLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'ハードライト'**
+  String get blendModeHardLight;
+
+  /// No description provided for @blendModeSoftLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'ソフトライト'**
+  String get blendModeSoftLight;
+
+  /// No description provided for @blendModeDifference.
+  ///
+  /// In ja, this message translates to:
+  /// **'差の絶対値'**
+  String get blendModeDifference;
+
+  /// No description provided for @blendModeHue.
+  ///
+  /// In ja, this message translates to:
+  /// **'色相'**
+  String get blendModeHue;
+
+  /// No description provided for @blendModeSaturation.
+  ///
+  /// In ja, this message translates to:
+  /// **'彩度'**
+  String get blendModeSaturation;
+
+  /// No description provided for @blendModeColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラー'**
+  String get blendModeColor;
+
+  /// No description provided for @blendModeLuminosity.
+  ///
+  /// In ja, this message translates to:
+  /// **'輝度'**
+  String get blendModeLuminosity;
+
+  /// No description provided for @blendModeLinearBurn.
+  ///
+  /// In ja, this message translates to:
+  /// **'焼き込み（リニア）'**
+  String get blendModeLinearBurn;
+
+  /// No description provided for @blendModeLinearDodge.
+  ///
+  /// In ja, this message translates to:
+  /// **'覆い焼き（リニア）'**
+  String get blendModeLinearDodge;
+
+  /// No description provided for @blendModeVividLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'ビビッドライト'**
+  String get blendModeVividLight;
+
+  /// No description provided for @blendModeLinearLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'リニアライト'**
+  String get blendModeLinearLight;
+
+  /// No description provided for @blendModePinLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'ピンライト'**
+  String get blendModePinLight;
+
+  /// No description provided for @blendModeHardMix.
+  ///
+  /// In ja, this message translates to:
+  /// **'ハードミックス'**
+  String get blendModeHardMix;
+
+  /// No description provided for @blendModeExclusion.
+  ///
+  /// In ja, this message translates to:
+  /// **'除外'**
+  String get blendModeExclusion;
+
+  /// No description provided for @blendModeDivide.
+  ///
+  /// In ja, this message translates to:
+  /// **'除算'**
+  String get blendModeDivide;
+
+  /// No description provided for @autofillLineColorModeSpecified.
+  ///
+  /// In ja, this message translates to:
+  /// **'指定色'**
+  String get autofillLineColorModeSpecified;
+
+  /// No description provided for @autofillLineColorModeSameAsFill.
+  ///
+  /// In ja, this message translates to:
+  /// **'塗り色と同じ'**
+  String get autofillLineColorModeSameAsFill;
+
+  /// No description provided for @autofillLineColorModeTraceAdjust.
+  ///
+  /// In ja, this message translates to:
+  /// **'色トレス・線画馴染ませ'**
+  String get autofillLineColorModeTraceAdjust;
+
+  /// No description provided for @autofillGradientTypeLinear.
+  ///
+  /// In ja, this message translates to:
+  /// **'直線'**
+  String get autofillGradientTypeLinear;
+
+  /// No description provided for @autofillGradientTypeRadialCenterOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'放射：中央→外側'**
+  String get autofillGradientTypeRadialCenterOut;
+
+  /// No description provided for @autofillGradientTypeRadialOutCenter.
+  ///
+  /// In ja, this message translates to:
+  /// **'放射：外側→中央'**
+  String get autofillGradientTypeRadialOutCenter;
+
+  /// No description provided for @autofillSampleGray.
+  ///
+  /// In ja, this message translates to:
+  /// **'グレー単色の下塗り'**
+  String get autofillSampleGray;
+
+  /// No description provided for @autofillSampleLead.
+  ///
+  /// In ja, this message translates to:
+  /// **'主人公'**
+  String get autofillSampleLead;
+
+  /// No description provided for @autofillSampleHeroine.
+  ///
+  /// In ja, this message translates to:
+  /// **'ヒロイン'**
+  String get autofillSampleHeroine;
+
+  /// No description provided for @autofillSamplePartUnderpaint.
+  ///
+  /// In ja, this message translates to:
+  /// **'下塗り'**
+  String get autofillSamplePartUnderpaint;
+
+  /// No description provided for @autofillSamplePartHair.
+  ///
+  /// In ja, this message translates to:
+  /// **'髪'**
+  String get autofillSamplePartHair;
+
+  /// No description provided for @autofillSamplePartSkin.
+  ///
+  /// In ja, this message translates to:
+  /// **'肌'**
+  String get autofillSamplePartSkin;
+
+  /// No description provided for @autofillSamplePartTop.
+  ///
+  /// In ja, this message translates to:
+  /// **'トップス'**
+  String get autofillSamplePartTop;
+
+  /// No description provided for @autofillSamplePartBottom.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボトムス'**
+  String get autofillSamplePartBottom;
+
+  /// No description provided for @autofillSamplePartShoes.
+  ///
+  /// In ja, this message translates to:
+  /// **'シューズ'**
+  String get autofillSamplePartShoes;
+
+  /// No description provided for @autofillSamplePartRibbon.
+  ///
+  /// In ja, this message translates to:
+  /// **'リボン'**
+  String get autofillSamplePartRibbon;
+
+  /// No description provided for @autofillSamplePartEyeWhite.
+  ///
+  /// In ja, this message translates to:
+  /// **'白目'**
+  String get autofillSamplePartEyeWhite;
+
+  /// No description provided for @autofillSamplePartPupil.
+  ///
+  /// In ja, this message translates to:
+  /// **'瞳孔'**
+  String get autofillSamplePartPupil;
+
+  /// No description provided for @autofillSamplePartIris.
+  ///
+  /// In ja, this message translates to:
+  /// **'瞳'**
+  String get autofillSamplePartIris;
+
+  /// No description provided for @autofillSamplePartCatchlight.
+  ///
+  /// In ja, this message translates to:
+  /// **'瞳キャッチライト'**
+  String get autofillSamplePartCatchlight;
+
+  /// No description provided for @autofillSamplePartShadow.
+  ///
+  /// In ja, this message translates to:
+  /// **'{part}{number}影'**
+  String autofillSamplePartShadow(String part, int number);
+
+  /// No description provided for @autofillSamplePartHighlight.
+  ///
+  /// In ja, this message translates to:
+  /// **'{part}ハイライト'**
+  String autofillSamplePartHighlight(String part);
+
+  /// No description provided for @autofillPresetScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り設定'**
+  String get autofillPresetScreenTitle;
+
+  /// No description provided for @autofillPresetSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定を検索'**
+  String get autofillPresetSearchHint;
+
+  /// No description provided for @autofillPresetEmptyFavorites.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りの設定がありません'**
+  String get autofillPresetEmptyFavorites;
+
+  /// No description provided for @autofillPresetEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定がありません'**
+  String get autofillPresetEmpty;
+
+  /// No description provided for @autofillPresetEmptyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'右下の＋から作成できます'**
+  String get autofillPresetEmptyHint;
+
+  /// No description provided for @autofillPresetPartsCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}パーツ}}'**
+  String autofillPresetPartsCount(int count);
+
+  /// No description provided for @autofillPresetNewDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規作成'**
+  String get autofillPresetNewDialogTitle;
+
+  /// No description provided for @autofillPresetNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定名'**
+  String get autofillPresetNameLabel;
+
+  /// No description provided for @autofillPresetRenameDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定名を変更'**
+  String get autofillPresetRenameDialogTitle;
+
+  /// No description provided for @autofillPresetDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を削除しますか？'**
+  String autofillPresetDeleteConfirmTitle(String name);
+
+  /// No description provided for @autofillFabImportOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込み'**
+  String get autofillFabImportOption;
+
+  /// No description provided for @autofillPresetExportMenuItem.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し (.niafill)'**
+  String get autofillPresetExportMenuItem;
+
+  /// No description provided for @autofillPresetImportSuccessSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件のプリセットを読み込みました'**
+  String autofillPresetImportSuccessSnackbar(int count);
+
+  /// No description provided for @autofillPresetImportFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込みに失敗しました: {error}'**
+  String autofillPresetImportFailedSnackbar(String error);
+
+  /// No description provided for @autofillPresetExportFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出しに失敗しました: {error}'**
+  String autofillPresetExportFailedSnackbar(String error);
+
+  /// No description provided for @autofillPresetDuplicateName.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} (コピー)'**
+  String autofillPresetDuplicateName(String name);
+
+  /// No description provided for @autofillPartSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツ名で検索'**
+  String get autofillPartSearchHint;
+
+  /// No description provided for @autofillPartUnconfiguredBanner.
+  ///
+  /// In ja, this message translates to:
+  /// **'未設定のパーツが{count}件あります：{names}（トーン未選択）'**
+  String autofillPartUnconfiguredBanner(int count, String names);
+
+  /// No description provided for @autofillDeleteUsage.
+  ///
+  /// In ja, this message translates to:
+  /// **'{projects}件の作品の線画レイヤー{layers}件で使用中です。これらのレイヤーで自動塗りを実行するには、別のパーツを割り当ててください。'**
+  String autofillDeleteUsage(int projects, int layers);
+
+  /// No description provided for @autofillPartEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツがありません\n＋ボタンで追加してください'**
+  String get autofillPartEmpty;
+
+  /// No description provided for @autofillPartToneUnselected.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンが未選択です'**
+  String get autofillPartToneUnselected;
+
+  /// No description provided for @autofillPartAddDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツ追加'**
+  String get autofillPartAddDialogTitle;
+
+  /// No description provided for @autofillPartNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツ名'**
+  String get autofillPartNameLabel;
+
+  /// No description provided for @autofillPartAddButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'追加'**
+  String get autofillPartAddButton;
+
+  /// No description provided for @autofillPartRenameDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツ名変更'**
+  String get autofillPartRenameDialogTitle;
+
+  /// No description provided for @autofillPartDetailDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name}の詳細設定'**
+  String autofillPartDetailDialogTitle(String name);
+
+  /// No description provided for @autofillPartFillColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'塗り色'**
+  String get autofillPartFillColorLabel;
+
+  /// No description provided for @autofillPartSelectColorButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'色を選択'**
+  String get autofillPartSelectColorButton;
+
+  /// No description provided for @autofillPartOutlineLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'指定色で縁取り'**
+  String get autofillPartOutlineLabel;
+
+  /// No description provided for @autofillPartOutlineWidthLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り太さ: {value}px'**
+  String autofillPartOutlineWidthLabel(int value);
+
+  /// No description provided for @autofillPartLineGapLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画と塗りの隙間を埋める: {value}'**
+  String autofillPartLineGapLabel(int value);
+
+  /// No description provided for @autofillPartLineGapHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'大きいほど線の薄いふちの下まで塗り、線画と塗りの間の隙間が小さくなります（縁取りや、塗り色と同じ線画色のときに見える隙間の調整用）。'**
+  String get autofillPartLineGapHint;
+
+  /// No description provided for @autofillEyedropperFromThumbnailButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像からスポイト'**
+  String get autofillEyedropperFromThumbnailButton;
+
+  /// No description provided for @autofillEyedropperDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像から色を拾う'**
+  String get autofillEyedropperDialogTitle;
+
+  /// No description provided for @autofillEyedropperDialogHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像をタップして色を選択してください'**
+  String get autofillEyedropperDialogHint;
+
+  /// No description provided for @autofillEyedropperPickedLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択した色'**
+  String get autofillEyedropperPickedLabel;
+
+  /// No description provided for @autofillEyedropperImageLoadFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を読み込めませんでした'**
+  String get autofillEyedropperImageLoadFailedSnackbar;
+
+  /// No description provided for @autofillThumbnailMenuItem.
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル画像設定'**
+  String get autofillThumbnailMenuItem;
+
+  /// No description provided for @autofillThumbnailLoadButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像読み込み'**
+  String get autofillThumbnailLoadButton;
+
+  /// No description provided for @autofillThumbnailDeleteButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル画像削除'**
+  String get autofillThumbnailDeleteButton;
+
+  /// No description provided for @autofillThumbnailDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル画像を削除しますか？'**
+  String get autofillThumbnailDeleteConfirmTitle;
+
+  /// No description provided for @autofillThumbnailDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除すると既定のパーツ色表示（最大4色）に戻ります。'**
+  String get autofillThumbnailDeleteConfirmBody;
+
+  /// No description provided for @autofillThumbnailCropDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル画像を調整'**
+  String get autofillThumbnailCropDialogTitle;
+
+  /// No description provided for @autofillThumbnailCropDialogHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドラッグで位置調整、ピンチで拡大縮小、2本指で回転できます'**
+  String get autofillThumbnailCropDialogHint;
+
+  /// No description provided for @autofillThumbnailCropLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を読み込めませんでした。別の画像でお試しください。'**
+  String get autofillThumbnailCropLoadFailed;
+
+  /// No description provided for @autofillThumbnailSetSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル画像を設定しました'**
+  String get autofillThumbnailSetSnackbar;
+
+  /// No description provided for @autofillPartGradientSetButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'グラデーション設定'**
+  String get autofillPartGradientSetButton;
+
+  /// No description provided for @autofillPartGradientEditButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'グラデーション編集'**
+  String get autofillPartGradientEditButton;
+
+  /// No description provided for @autofillPartFillOpacityLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'不透明度（塗りレイヤー）: {value}%'**
+  String autofillPartFillOpacityLabel(int value);
+
+  /// No description provided for @autofillPartLineColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画色'**
+  String get autofillPartLineColorLabel;
+
+  /// No description provided for @autofillPartTraceHueLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'色相: {value}'**
+  String autofillPartTraceHueLabel(int value);
+
+  /// No description provided for @autofillPartTraceSaturationLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'彩度: {value}'**
+  String autofillPartTraceSaturationLabel(int value);
+
+  /// No description provided for @autofillPartTraceLightnessLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'明度: {value}'**
+  String autofillPartTraceLightnessLabel(int value);
+
+  /// No description provided for @autofillPartLineOpacityLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'不透明度（線画レイヤー）: {value}%'**
+  String autofillPartLineOpacityLabel(int value);
+
+  /// No description provided for @autofillPartToneLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーン'**
+  String get autofillPartToneLabel;
+
+  /// No description provided for @autofillPartUseToneCheckbox.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンを使用'**
+  String get autofillPartUseToneCheckbox;
+
+  /// No description provided for @autofillPartBlendModeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブレンドモード'**
+  String get autofillPartBlendModeLabel;
+
+  /// No description provided for @autofillPartApplyButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'適用'**
+  String get autofillPartApplyButton;
+
+  /// No description provided for @autofillPartGradientDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name}のグラデーション'**
+  String autofillPartGradientDialogTitle(String name);
+
+  /// No description provided for @autofillPartGradientTypeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'種類'**
+  String get autofillPartGradientTypeLabel;
+
+  /// No description provided for @autofillPartGradientTypeInfo.
+  ///
+  /// In ja, this message translates to:
+  /// **'直線：指定した角度に沿って色が変化します。放射：中央→外側は中心から外側へ、外側→中央は逆に外側から中心へ色が変化します。'**
+  String get autofillPartGradientTypeInfo;
+
+  /// No description provided for @autofillPartGradientFeatherInfo.
+  ///
+  /// In ja, this message translates to:
+  /// **'0%にすると隣り合う色の境界がくっきり分かれます。100%にすると隣の色の端まで完全になめらかに混ざります。'**
+  String get autofillPartGradientFeatherInfo;
+
+  /// No description provided for @autofillLineColorModeTraceAdjustInfo.
+  ///
+  /// In ja, this message translates to:
+  /// **'元の線の色を保ったまま、色相・彩度・明度をずらして少しだけ色味を変える機能です。線を単色で塗りつぶすのではなく、線画の濃淡を活かしたい場合に使います。'**
+  String get autofillLineColorModeTraceAdjustInfo;
+
+  /// No description provided for @autofillPartGradientAngleLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'角度: {value}°'**
+  String autofillPartGradientAngleLabel(int value);
+
+  /// No description provided for @autofillPartGradientColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'色'**
+  String get autofillPartGradientColorLabel;
+
+  /// No description provided for @autofillPartGradientAddColorButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'色を追加'**
+  String get autofillPartGradientAddColorButton;
+
+  /// No description provided for @autofillPartGradientRemoveButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'グラデーション解除'**
+  String get autofillPartGradientRemoveButton;
+
+  /// No description provided for @autofillPartGradientFeatherLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかしの強さ: {value}%'**
+  String autofillPartGradientFeatherLabel(int value);
+
+  /// No description provided for @autofillPartGradientDragHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドラッグ（右端のハンドル）で色の順番を入れ替えられます'**
+  String get autofillPartGradientDragHint;
+
+  /// No description provided for @autofillPartGradientStopLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'切り替え位置: {value}%'**
+  String autofillPartGradientStopLabel(int value);
+
+  /// No description provided for @autofillPartGradientStopDragHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'▲をドラッグすると色の切り替え位置を調整できます。グラデーションはパーツの塗り範囲全体にかかります。'**
+  String get autofillPartGradientStopDragHint;
+
+  /// No description provided for @saveTreeScreenTitleTree.
+  ///
+  /// In ja, this message translates to:
+  /// **'セーブツリー'**
+  String get saveTreeScreenTitleTree;
+
+  /// No description provided for @saveTreeScreenTitleSlot.
+  ///
+  /// In ja, this message translates to:
+  /// **'セーブスロット'**
+  String get saveTreeScreenTitleSlot;
+
+  /// No description provided for @timelineExportMenuItem.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し'**
+  String get timelineExportMenuItem;
+
+  /// No description provided for @timelineExportFrameMenuItem.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを画像で書き出す'**
+  String get timelineExportFrameMenuItem;
+
+  /// No description provided for @timelineExportFrameDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを画像で書き出す'**
+  String get timelineExportFrameDialogTitle;
+
+  /// No description provided for @timelineExportFrameDialogMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在表示中のフレーム1枚を静止画として保存します。形式を選んでください。'**
+  String get timelineExportFrameDialogMessage;
+
+  /// No description provided for @timelineExportFramePngOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'PNGで保存'**
+  String get timelineExportFramePngOption;
+
+  /// No description provided for @timelineExportFrameJpegOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'JPEGで保存'**
+  String get timelineExportFrameJpegOption;
+
+  /// No description provided for @timelineExportFrameSuccessSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{fileName} として保存しました（作品一覧タブから確認できます）'**
+  String timelineExportFrameSuccessSnackbar(String fileName);
+
+  /// No description provided for @timelineExportFrameErrorSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームの書き出しに失敗しました'**
+  String get timelineExportFrameErrorSnackbar;
+
+  /// No description provided for @timelineDurationChangeMenuItem.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さ変更'**
+  String get timelineDurationChangeMenuItem;
+
+  /// No description provided for @timelineCanvasSizeChangeMenuItem.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスサイズ変更'**
+  String get timelineCanvasSizeChangeMenuItem;
+
+  /// No description provided for @timelineDurationFramesLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム数'**
+  String get timelineDurationFramesLabel;
+
+  /// No description provided for @timelineDurationSecondsLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'秒数'**
+  String get timelineDurationSecondsLabel;
+
+  /// No description provided for @timelineDurationShrinkConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'本当に短くしますか？'**
+  String get timelineDurationShrinkConfirmTitle;
+
+  /// No description provided for @timelineDurationShrinkConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'短くすると、範囲外になるフレームとその描画・レイヤーが削除されます。削除しますか？'**
+  String get timelineDurationShrinkConfirmBody;
+
+  /// No description provided for @timelineCanvasSizeDragHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'枠内をドラッグして位置を、四隅をドラッグしてサイズを変更できます（元のサイズ付近でスナップします）'**
+  String get timelineCanvasSizeDragHint;
+
+  /// No description provided for @timelineCanvasSizeAngleLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'角度'**
+  String get timelineCanvasSizeAngleLabel;
+
+  /// No description provided for @saveTreeSaveAsChildHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中のノードの子として保存します。'**
+  String get saveTreeSaveAsChildHint;
+
+  /// No description provided for @saveTreeSaveAsRootHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ルートノードとして保存します。'**
+  String get saveTreeSaveAsRootHint;
+
+  /// No description provided for @saveTreeCommentLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'メモ'**
+  String get saveTreeCommentLabel;
+
+  /// No description provided for @saveTreeCommentHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'例：背景完成'**
+  String get saveTreeCommentHint;
+
+  /// No description provided for @saveTreeSizeWarningSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'セーブツリーの容量が大きくなっています（約{size}）。不要な保存データの削除をおすすめします。'**
+  String saveTreeSizeWarningSnackbar(String size);
+
+  /// No description provided for @saveTreeDeleteFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存データを削除できませんでした'**
+  String get saveTreeDeleteFailedSnackbar;
+
+  /// No description provided for @saveTreeMemoNotSavedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'メモを保存できませんでした。空き容量などを確認してください'**
+  String get saveTreeMemoNotSavedSnackbar;
+
+  /// No description provided for @saveTreeSaveFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存に失敗しました。空き容量などを確認してもう一度お試しください（{error}）'**
+  String saveTreeSaveFailedSnackbar(String error);
+
+  /// No description provided for @saveTreeSlotWriteTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'このスロットへ保存'**
+  String get saveTreeSlotWriteTooltip;
+
+  /// No description provided for @saveTreeSlotLoadTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'このスロットから読み込む'**
+  String get saveTreeSlotLoadTooltip;
+
+  /// No description provided for @saveTreeSlotDeleteTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'このスロットを削除'**
+  String get saveTreeSlotDeleteTooltip;
+
+  /// No description provided for @saveTreeSlotSaveDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'スロット{n}に保存'**
+  String saveTreeSlotSaveDialogTitle(int n);
+
+  /// No description provided for @saveTreeSlotOverwriteWarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'既存データ（{date}）を上書きします。'**
+  String saveTreeSlotOverwriteWarning(String date);
+
+  /// No description provided for @saveTreeRestoreAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込み'**
+  String get saveTreeRestoreAction;
+
+  /// No description provided for @saveTreeTimelineActionChoiceBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'このセーブへ「上書き保存」するか、「ここから作業を再開」するか選んでください。'**
+  String get saveTreeTimelineActionChoiceBody;
+
+  /// No description provided for @saveTreeOverwriteAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'上書きする'**
+  String get saveTreeOverwriteAction;
+
+  /// No description provided for @saveTreeOverwriteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'このときのセーブデータは消えますがよろしいですか？'**
+  String get saveTreeOverwriteConfirmBody;
+
+  /// No description provided for @saveTreeProjectDetailResumeBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'このセーブデータから作業を再開しますか？\n\n現在の作業は上書きされます。残すには、先に手動でセーブしてください。'**
+  String get saveTreeProjectDetailResumeBody;
+
+  /// No description provided for @saveTreeLoadFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存データの読み込みに失敗しました'**
+  String get saveTreeLoadFailedSnackbar;
+
+  /// No description provided for @saveTreeRestoredSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'セーブデータを読み込みました（{name}）'**
+  String saveTreeRestoredSnackbar(String name);
+
+  /// No description provided for @saveTreeSlotLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'スロット{n}'**
+  String saveTreeSlotLabel(int n);
+
+  /// No description provided for @saveTreeNoDataLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存データなし'**
+  String get saveTreeNoDataLabel;
+
+  /// No description provided for @saveTreeEmptyTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存データがありません'**
+  String get saveTreeEmptyTitle;
+
+  /// No description provided for @saveTreeEmptyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'上部の「保存」ボタンで最初のノードを作成できます'**
+  String get saveTreeEmptyHint;
+
+  /// No description provided for @saveTreeNodeDefaultTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存'**
+  String get saveTreeNodeDefaultTitle;
+
+  /// No description provided for @saveTreeNodeDatedName.
+  ///
+  /// In ja, this message translates to:
+  /// **'{date}の保存'**
+  String saveTreeNodeDatedName(String date);
+
+  /// No description provided for @saveTreeChangeDataTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存データ変更'**
+  String get saveTreeChangeDataTitle;
+
+  /// No description provided for @saveTreeChangeDataTitleWithProject.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存データ変更（{name}）'**
+  String saveTreeChangeDataTitleWithProject(String name);
+
+  /// No description provided for @saveTreeChangeExceedMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の保存データ数が\n新しい保存可能数を超えています。\n\n保持する保存データを選択してください。'**
+  String get saveTreeChangeExceedMessage;
+
+  /// No description provided for @saveTreeKeepableCountLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'保持できる保存数：{n}件'**
+  String saveTreeKeepableCountLabel(int n);
+
+  /// No description provided for @saveTreeKeepLatestButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新{n}件を保存'**
+  String saveTreeKeepLatestButton(int n);
+
+  /// No description provided for @saveTreeSelectDataButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存データを選択'**
+  String get saveTreeSelectDataButton;
+
+  /// No description provided for @saveTreeSelectedCountLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中：{selected} / {limit}件'**
+  String saveTreeSelectedCountLabel(int selected, int limit);
+
+  /// No description provided for @saveTreeBackButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'戻る'**
+  String get saveTreeBackButton;
+
+  /// No description provided for @saveTreeNextButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'次へ'**
+  String get saveTreeNextButton;
+
+  /// No description provided for @saveTreeDiscardDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択されなかった保存データ'**
+  String get saveTreeDiscardDialogTitle;
+
+  /// No description provided for @saveTreeArchiveOptionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'アーカイブとして保持する（推奨）'**
+  String get saveTreeArchiveOptionTitle;
+
+  /// No description provided for @saveTreeArchiveOptionSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'セーブツリー方式へ戻したときに自動で復元されます。\nストレージ容量を使用します。'**
+  String get saveTreeArchiveOptionSubtitle;
+
+  /// No description provided for @saveTreeDeleteOptionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'完全に削除する'**
+  String get saveTreeDeleteOptionTitle;
+
+  /// No description provided for @saveTreeDeleteOptionSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択されなかった{count}件を完全に削除します。\nストレージ容量を節約できます。\n※削除したデータは元に戻せません。'**
+  String saveTreeDeleteOptionSubtitle(int count);
+
+  /// No description provided for @saveTreeApplyChangeButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更する'**
+  String get saveTreeApplyChangeButton;
+
+  /// No description provided for @canvasEditMenuAutofillPresets.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り設定'**
+  String get canvasEditMenuAutofillPresets;
+
+  /// No description provided for @canvasEditMenuAutofillPresetsSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツごとの色・トーンの組み合わせを編集'**
+  String get canvasEditMenuAutofillPresetsSubtitle;
+
+  /// No description provided for @canvasEditMenuBackgroundToggle.
+  ///
+  /// In ja, this message translates to:
+  /// **'背景切替'**
+  String get canvasEditMenuBackgroundToggle;
+
+  /// No description provided for @canvasEditMenuBackgroundCurrentColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在：プロジェクト背景色（タップで透過へ）'**
+  String get canvasEditMenuBackgroundCurrentColor;
+
+  /// No description provided for @canvasEditMenuBackgroundCurrentTransparent.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在：透過（タップでプロジェクト背景色へ）'**
+  String get canvasEditMenuBackgroundCurrentTransparent;
+
+  /// No description provided for @canvasEditMenuOnionSkinSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'前後のフレームを薄く重ねて表示'**
+  String get canvasEditMenuOnionSkinSubtitle;
+
+  /// No description provided for @canvasEditMenuFilterSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし・トーンカーブなどを適用'**
+  String get canvasEditMenuFilterSubtitle;
+
+  /// No description provided for @canvasEditMenuFrameMultiSelect.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム複数選択'**
+  String get canvasEditMenuFrameMultiSelect;
+
+  /// No description provided for @canvasEditMenuFrameMultiSelectSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'大量処理（フィルター一括適用など）に使用'**
+  String get canvasEditMenuFrameMultiSelectSubtitle;
+
+  /// No description provided for @canvasEditMenuPressureCurve.
+  ///
+  /// In ja, this message translates to:
+  /// **'筆圧カーブ'**
+  String get canvasEditMenuPressureCurve;
+
+  /// No description provided for @canvasEditMenuPressureCurveSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン入力設定を開く（設定画面と共通）'**
+  String get canvasEditMenuPressureCurveSubtitle;
+
+  /// No description provided for @canvasEditMenuMeshTransform.
+  ///
+  /// In ja, this message translates to:
+  /// **'自由変形・メッシュ変形'**
+  String get canvasEditMenuMeshTransform;
+
+  /// No description provided for @canvasEditMenuMeshTransformSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤー全体を選択せずに変形する'**
+  String get canvasEditMenuMeshTransformSubtitle;
+
+  /// No description provided for @meshTransformPanelTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自由変形・メッシュ変形'**
+  String get meshTransformPanelTitle;
+
+  /// No description provided for @meshTransformPanelHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'角や格子点を指でドラッグして動かせます（2本指で別々の点をつまむと回転・拡大縮小も可能）'**
+  String get meshTransformPanelHint;
+
+  /// No description provided for @meshTransformDensityLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'分割数'**
+  String get meshTransformDensityLabel;
+
+  /// No description provided for @meshTransformRotateLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転'**
+  String get meshTransformRotateLabel;
+
+  /// No description provided for @meshTransformScaleLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'拡大縮小'**
+  String get meshTransformScaleLabel;
+
+  /// No description provided for @meshTransformApplyButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'適用'**
+  String get meshTransformApplyButton;
+
+  /// No description provided for @canvasLassoEnclosedLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'囲って塗る'**
+  String get canvasLassoEnclosedLabel;
+
+  /// No description provided for @canvasInvertSelectionTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択範囲を反転'**
+  String get canvasInvertSelectionTooltip;
+
+  /// No description provided for @canvasTapToEnterTextLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスをタップしてテキストを入力'**
+  String get canvasTapToEnterTextLabel;
+
+  /// No description provided for @canvasRulerFirstUseTip.
+  ///
+  /// In ja, this message translates to:
+  /// **'定規を使うとまっすぐな線や綺麗な図形が描けます。'**
+  String get canvasRulerFirstUseTip;
+
+  /// No description provided for @canvasRulerTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'定規'**
+  String get canvasRulerTooltip;
+
+  /// No description provided for @commonUndo.
+  ///
+  /// In ja, this message translates to:
+  /// **'取り消し'**
+  String get commonUndo;
+
+  /// No description provided for @commonRedo.
+  ///
+  /// In ja, this message translates to:
+  /// **'やり直し'**
+  String get commonRedo;
+
+  /// No description provided for @canvasSettingsMenuTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定/編集'**
+  String get canvasSettingsMenuTooltip;
+
+  /// No description provided for @canvasFrameSelectedCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'{selected} / {total} フレーム選択中'**
+  String canvasFrameSelectedCount(int selected, int total);
+
+  /// No description provided for @canvasSelectAllButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'全選択'**
+  String get canvasSelectAllButton;
+
+  /// No description provided for @canvasDeselectAllButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'全解除'**
+  String get canvasDeselectAllButton;
+
+  /// No description provided for @canvasSelectionFreeTransform.
+  ///
+  /// In ja, this message translates to:
+  /// **'自由変形'**
+  String get canvasSelectionFreeTransform;
+
+  /// No description provided for @canvasSelectionMeshTransform.
+  ///
+  /// In ja, this message translates to:
+  /// **'メッシュ変形'**
+  String get canvasSelectionMeshTransform;
+
+  /// No description provided for @canvasSelectionRevertButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'変形キャンセル'**
+  String get canvasSelectionRevertButton;
+
+  /// No description provided for @canvasSelectionRevertTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'変形を取り消して選択ツールを終了'**
+  String get canvasSelectionRevertTooltip;
+
+  /// No description provided for @canvasSelectionApplyButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'変形適用'**
+  String get canvasSelectionApplyButton;
+
+  /// No description provided for @canvasSelectionApplyTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'変形を確定して選択ツールを終了'**
+  String get canvasSelectionApplyTooltip;
+
+  /// No description provided for @canvasSelectionSliderMoveX.
+  ///
+  /// In ja, this message translates to:
+  /// **'X移動'**
+  String get canvasSelectionSliderMoveX;
+
+  /// No description provided for @canvasSelectionSliderMoveY.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y移動'**
+  String get canvasSelectionSliderMoveY;
+
+  /// No description provided for @canvasSelectionSliderScale.
+  ///
+  /// In ja, this message translates to:
+  /// **'拡大縮小'**
+  String get canvasSelectionSliderScale;
+
+  /// No description provided for @canvasSelectionSliderRotate.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転'**
+  String get canvasSelectionSliderRotate;
+
+  /// No description provided for @canvasApplyFilterButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター適用'**
+  String get canvasApplyFilterButton;
+
+  /// No description provided for @canvasShapeOff.
+  ///
+  /// In ja, this message translates to:
+  /// **'OFF（通常ブラシへ戻る）'**
+  String get canvasShapeOff;
+
+  /// No description provided for @canvasShapeLine.
+  ///
+  /// In ja, this message translates to:
+  /// **'線'**
+  String get canvasShapeLine;
+
+  /// No description provided for @canvasShapeRect.
+  ///
+  /// In ja, this message translates to:
+  /// **'四角形'**
+  String get canvasShapeRect;
+
+  /// No description provided for @canvasShapeCircle.
+  ///
+  /// In ja, this message translates to:
+  /// **'円'**
+  String get canvasShapeCircle;
+
+  /// No description provided for @canvasMissingMaterialsSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'不足素材があります'**
+  String get canvasMissingMaterialsSnackbar;
+
+  /// No description provided for @canvasResearchButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'再検索'**
+  String get canvasResearchButton;
+
+  /// No description provided for @canvasTextInputTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキスト入力'**
+  String get canvasTextInputTitle;
+
+  /// No description provided for @canvasTextEditTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキスト編集'**
+  String get canvasTextEditTitle;
+
+  /// No description provided for @canvasTextInputHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストを入力してください'**
+  String get canvasTextInputHint;
+
+  /// No description provided for @canvasTextFontLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォント'**
+  String get canvasTextFontLabel;
+
+  /// No description provided for @canvasTextStandardFont.
+  ///
+  /// In ja, this message translates to:
+  /// **'標準フォント'**
+  String get canvasTextStandardFont;
+
+  /// No description provided for @canvasTextBold.
+  ///
+  /// In ja, this message translates to:
+  /// **'太字'**
+  String get canvasTextBold;
+
+  /// No description provided for @canvasTextItalic.
+  ///
+  /// In ja, this message translates to:
+  /// **'斜体'**
+  String get canvasTextItalic;
+
+  /// No description provided for @canvasTextVertical.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦書き'**
+  String get canvasTextVertical;
+
+  /// No description provided for @canvasTextHorizontal.
+  ///
+  /// In ja, this message translates to:
+  /// **'横書き'**
+  String get canvasTextHorizontal;
+
+  /// No description provided for @canvasTypesettingHelpTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'組版・ルビについて'**
+  String get canvasTypesettingHelpTooltip;
+
+  /// No description provided for @canvasTextLineHeight.
+  ///
+  /// In ja, this message translates to:
+  /// **'行間'**
+  String get canvasTextLineHeight;
+
+  /// No description provided for @canvasTextLetterSpacing.
+  ///
+  /// In ja, this message translates to:
+  /// **'文字間隔'**
+  String get canvasTextLetterSpacing;
+
+  /// No description provided for @canvasTextAlign.
+  ///
+  /// In ja, this message translates to:
+  /// **'揃え'**
+  String get canvasTextAlign;
+
+  /// No description provided for @canvasTextOutline.
+  ///
+  /// In ja, this message translates to:
+  /// **'アウトライン'**
+  String get canvasTextOutline;
+
+  /// No description provided for @canvasOutlineWidthLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'太さ'**
+  String get canvasOutlineWidthLabel;
+
+  /// No description provided for @canvasHelpRotationTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'半角英数字の回転（縦書きのみ）'**
+  String get canvasHelpRotationTitle;
+
+  /// No description provided for @canvasHelpRotationBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'英字・記号は自動的に90°回転して表示されます。'**
+  String get canvasHelpRotationBody;
+
+  /// No description provided for @canvasHelpTatechuyokoTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦中横（縦書きのみ）'**
+  String get canvasHelpTatechuyokoTitle;
+
+  /// No description provided for @canvasHelpTatechuyokoBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'半角数字が2桁連続すると、1文字分の高さに横並びで自動的に収まります（例：12）。'**
+  String get canvasHelpTatechuyokoBody;
+
+  /// No description provided for @canvasHelpRubyTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ルビ（ふりがな）'**
+  String get canvasHelpRubyTitle;
+
+  /// No description provided for @canvasHelpRubyBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{example}」のように入力すると、基底文字の上（横書き）または右側（縦書き）に小さくふりがなが表示されます。縦書き・横書きどちらでも使えますが、ルビを含むテキストは横書きでの自動折り返しが効かなくなります（手動改行のみ対応）。'**
+  String canvasHelpRubyBody(String example);
+
+  /// No description provided for @layerPanelTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤー'**
+  String get layerPanelTitle;
+
+  /// No description provided for @layerPanelHelpTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ヘルプ'**
+  String get layerPanelHelpTooltip;
+
+  /// No description provided for @layerPanelSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤー名で検索'**
+  String get layerPanelSearchHint;
+
+  /// No description provided for @layerPanelSelectAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'全選択'**
+  String get layerPanelSelectAll;
+
+  /// No description provided for @layerPanelDeselectAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'全解除'**
+  String get layerPanelDeselectAll;
+
+  /// No description provided for @layerPanelNewLayerButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'通常レイヤー'**
+  String get layerPanelNewLayerButton;
+
+  /// No description provided for @layerPanelNewFolderButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規フォルダ'**
+  String get layerPanelNewFolderButton;
+
+  /// No description provided for @layerPanelImportImageButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像読み込み'**
+  String get layerPanelImportImageButton;
+
+  /// No description provided for @layerPanelDefaultLayerName.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤー{n}'**
+  String layerPanelDefaultLayerName(int n);
+
+  /// No description provided for @layerPanelDefaultFolderName.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ{n}'**
+  String layerPanelDefaultFolderName(int n);
+
+  /// No description provided for @layerPanelDefaultLineartName.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画{n}'**
+  String layerPanelDefaultLineartName(int n);
+
+  /// No description provided for @layerPanelDefaultAutofillName.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り{n}'**
+  String layerPanelDefaultAutofillName(int n);
+
+  /// No description provided for @layerPanelDefaultCommonName.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通{n}'**
+  String layerPanelDefaultCommonName(int n);
+
+  /// No description provided for @layerPanelDefaultSelectionName.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択{n}'**
+  String layerPanelDefaultSelectionName(int n);
+
+  /// No description provided for @layerPanelClippingBadge.
+  ///
+  /// In ja, this message translates to:
+  /// **'クリッピング'**
+  String get layerPanelClippingBadge;
+
+  /// No description provided for @layerPanelAddTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'その他追加'**
+  String get layerPanelAddTooltip;
+
+  /// No description provided for @layerPanelAutofillMarkTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画が更新されました。タップすると自動塗りを最新の状態に更新できます。'**
+  String get layerPanelAutofillMarkTooltip;
+
+  /// No description provided for @layerPanelRangeAllFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'全フレーム'**
+  String get layerPanelRangeAllFrames;
+
+  /// No description provided for @layerPanelRangeCurrentScene.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在シーン'**
+  String get layerPanelRangeCurrentScene;
+
+  /// No description provided for @layerPanelRangeSceneSpecified.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン指定'**
+  String get layerPanelRangeSceneSpecified;
+
+  /// No description provided for @layerPanelRangeFrameSpan.
+  ///
+  /// In ja, this message translates to:
+  /// **'{start}〜{end}'**
+  String layerPanelRangeFrameSpan(int start, int end);
+
+  /// No description provided for @layerPanelMenuFrameRangeChange.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示フレーム範囲変更'**
+  String get layerPanelMenuFrameRangeChange;
+
+  /// No description provided for @layerPanelMenuRangeChange.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示範囲変更'**
+  String get layerPanelMenuRangeChange;
+
+  /// No description provided for @layerPanelMenuPartAssign.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツ設定'**
+  String get layerPanelMenuPartAssign;
+
+  /// No description provided for @layerPanelMenuRunAutofill.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り実行'**
+  String get layerPanelMenuRunAutofill;
+
+  /// No description provided for @layerPanelMenuOrphanFill.
+  ///
+  /// In ja, this message translates to:
+  /// **'最新の色で塗りつぶす'**
+  String get layerPanelMenuOrphanFill;
+
+  /// No description provided for @layerPanelMenuOrphanFillSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'対応する線画レイヤーが見つからないため色更新のみ実行します'**
+  String get layerPanelMenuOrphanFillSubtitle;
+
+  /// No description provided for @layerPanelMenuReplaceMaterial.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材差し替え'**
+  String get layerPanelMenuReplaceMaterial;
+
+  /// No description provided for @layerPanelDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name}を削除しますか？'**
+  String layerPanelDeleteConfirmTitle(String name);
+
+  /// No description provided for @layerPanelDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'この素材の表示範囲内のすべてのフレームから削除されます。'**
+  String get layerPanelDeleteConfirmBody;
+
+  /// No description provided for @layerPanelCommonRemoveFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフレームで「{name}」を非表示にしますか？'**
+  String layerPanelCommonRemoveFrame(String name);
+
+  /// No description provided for @layerPanelCommonDeleteMidDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name}の表示範囲を変更しますか？'**
+  String layerPanelCommonDeleteMidDialogTitle(String name);
+
+  /// No description provided for @layerPanelCommonDeleteMidDialogBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通レイヤーの表示範囲は連続した1区間でしか設定できないため、範囲の途中のフレームでは削除できません。代わりに、このフレームより前と後のどちらを残すか選んでください。'**
+  String get layerPanelCommonDeleteMidDialogBody;
+
+  /// No description provided for @layerPanelCommonDeleteKeepBeforeButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'これより前を残す'**
+  String get layerPanelCommonDeleteKeepBeforeButton;
+
+  /// No description provided for @layerPanelCommonDeleteKeepAfterButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'これより後を残す'**
+  String get layerPanelCommonDeleteKeepAfterButton;
+
+  /// No description provided for @layerPanelRangeDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示範囲'**
+  String get layerPanelRangeDialogTitle;
+
+  /// No description provided for @layerPanelRangeStartFrameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始フレーム'**
+  String get layerPanelRangeStartFrameLabel;
+
+  /// No description provided for @layerPanelRangeEndFrameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了フレーム'**
+  String get layerPanelRangeEndFrameLabel;
+
+  /// No description provided for @layerPanelRangeTilde.
+  ///
+  /// In ja, this message translates to:
+  /// **'〜'**
+  String get layerPanelRangeTilde;
+
+  /// No description provided for @layerPanelRangeUseCurrentButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在範囲を使用'**
+  String get layerPanelRangeUseCurrentButton;
+
+  /// No description provided for @layerPanelRangeNumberError.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始フレームと終了フレームを1〜{count}の範囲で入力してください。'**
+  String layerPanelRangeNumberError(int count);
+
+  /// No description provided for @layerPanelRangeOrderError.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了フレームは開始フレーム以降にしてください。'**
+  String get layerPanelRangeOrderError;
+
+  /// No description provided for @layerPanelRangeTargetSceneLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'対象シーン'**
+  String get layerPanelRangeTargetSceneLabel;
+
+  /// No description provided for @layerPanelRangeFrameRangeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム範囲指定'**
+  String get layerPanelRangeFrameRangeLabel;
+
+  /// No description provided for @layerPanelMenuNormalLayer.
+  ///
+  /// In ja, this message translates to:
+  /// **'通常レイヤー'**
+  String get layerPanelMenuNormalLayer;
+
+  /// No description provided for @layerPanelMenuCommonLayer.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通レイヤー'**
+  String get layerPanelMenuCommonLayer;
+
+  /// No description provided for @layerPanelMenuLineartLayer.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り用線画レイヤー'**
+  String get layerPanelMenuLineartLayer;
+
+  /// No description provided for @layerPanelMenuAutofillLayer.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りレイヤー'**
+  String get layerPanelMenuAutofillLayer;
+
+  /// No description provided for @layerPanelMenuSelectionLayer.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択レイヤー'**
+  String get layerPanelMenuSelectionLayer;
+
+  /// No description provided for @layerPanelOpacityLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'不透明度'**
+  String get layerPanelOpacityLabel;
+
+  /// No description provided for @layerPanelLockLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'ロック'**
+  String get layerPanelLockLabel;
+
+  /// No description provided for @layerPanelOpacityLockLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'不透明度ロック'**
+  String get layerPanelOpacityLockLabel;
+
+  /// ロックしたレイヤーへ描こうとしたときのキャンバスの通知
+  ///
+  /// In ja, this message translates to:
+  /// **'このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。'**
+  String get canvasLayerLockedNotice;
+
+  /// No description provided for @brushPanelDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を削除しますか？'**
+  String brushPanelDeleteConfirmTitle(String name);
+
+  /// No description provided for @brushPanelDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除したブラシは元に戻せません。'**
+  String get brushPanelDeleteConfirmBody;
+
+  /// No description provided for @brushPanelResetRememberedValues.
+  ///
+  /// In ja, this message translates to:
+  /// **'既定の太さ・不透明度に戻す'**
+  String get brushPanelResetRememberedValues;
+
+  /// No description provided for @numberInputRangeError.
+  ///
+  /// In ja, this message translates to:
+  /// **'{min}〜{max}の数字を入力してください'**
+  String numberInputRangeError(String min, String max);
+
+  /// No description provided for @layerPanelClippingDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'下のレイヤーの不透明範囲内のみ描画'**
+  String get layerPanelClippingDescription;
+
+  /// No description provided for @layerPanelConvertToCommonLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通レイヤーへ変更'**
+  String get layerPanelConvertToCommonLabel;
+
+  /// No description provided for @layerPanelConvertOption1Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在レイヤーを共通化'**
+  String get layerPanelConvertOption1Title;
+
+  /// No description provided for @layerPanelConvertOption1Subtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このレイヤーのみを共通レイヤーとして設定します'**
+  String get layerPanelConvertOption1Subtitle;
+
+  /// No description provided for @layerPanelConvertOption2Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示中レイヤーを複製して全統合して共通化'**
+  String get layerPanelConvertOption2Title;
+
+  /// No description provided for @layerPanelConvertOption2Subtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示中のすべてのレイヤーを統合した結果を共通レイヤーとして作成します'**
+  String get layerPanelConvertOption2Subtitle;
+
+  /// No description provided for @layerPanelCommonRangeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通レイヤー範囲'**
+  String get layerPanelCommonRangeTitle;
+
+  /// No description provided for @layerPanelHelpDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーについて'**
+  String get layerPanelHelpDialogTitle;
+
+  /// No description provided for @layerPanelHelpBlendModeBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーの合成方法を変更します。乗算・スクリーン・オーバーレイなどがあります。タイルをタップすると、上のプレビューにこのフレームがその合成方法でどう見えるかが表示され、「適用」で決定します。'**
+  String get layerPanelHelpBlendModeBody;
+
+  /// No description provided for @layerPanelHelpClippingBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'下のレイヤーの不透明ピクセル範囲内のみ描画します。描画範囲を制御したい場合はこちらを使用してください。'**
+  String get layerPanelHelpClippingBody;
+
+  /// No description provided for @layerPanelCommonLayerLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通レイヤー'**
+  String get layerPanelCommonLayerLabel;
+
+  /// No description provided for @layerPanelHelpCommonLayerBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'複数のフレームで同じ内容を共有するレイヤーです。表示するフレーム範囲を設定できます。'**
+  String get layerPanelHelpCommonLayerBody;
+
+  /// No description provided for @layerPanelAutofillMethodTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り方法'**
+  String get layerPanelAutofillMethodTitle;
+
+  /// No description provided for @layerPanelAutofillNoLineartSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'対応する自動塗り用線画レイヤーが見つかりません。'**
+  String get layerPanelAutofillNoLineartSnackbar;
+
+  /// No description provided for @layerPanelAutofillNote1.
+  ///
+  /// In ja, this message translates to:
+  /// **'※ 自動塗りを初回実行する場合は、どの方法でも線画から新しく塗られます。'**
+  String get layerPanelAutofillNote1;
+
+  /// No description provided for @layerPanelAutofillNote2.
+  ///
+  /// In ja, this message translates to:
+  /// **'※ 自動塗りレイヤーが存在しない場合は、一から領域を判定して自動塗りします。'**
+  String get layerPanelAutofillNote2;
+
+  /// No description provided for @layerPanelAutofillSmartUpdateTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更された形状だけ更新'**
+  String get layerPanelAutofillSmartUpdateTitle;
+
+  /// No description provided for @layerPanelAutofillSmartUpdateHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'通常はこちら。線画の変更を反映しつつ、既存の手動調整をできるだけ残します'**
+  String get layerPanelAutofillSmartUpdateHint;
+
+  /// No description provided for @layerPanelAutofillSmartUpdateNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'※ 新しい領域は自動で塗り、重なる既存領域の色は保持します。線画から外れた領域は削除されます。'**
+  String get layerPanelAutofillSmartUpdateNote;
+
+  /// No description provided for @layerPanelAutofillRepaintTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画から形状を更新して塗る'**
+  String get layerPanelAutofillRepaintTitle;
+
+  /// No description provided for @layerPanelAutofillRepaintHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り用線画の現在の形に合わせたい場合'**
+  String get layerPanelAutofillRepaintHint;
+
+  /// No description provided for @layerPanelAutofillRepaintNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'※ 自動塗り用線画から領域を判定し直します。現在の自動塗りレイヤーの形状は置き換わります。'**
+  String get layerPanelAutofillRepaintNote;
+
+  /// No description provided for @layerPanelAutofillColorUpdateTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'形状を保ったまま色だけ更新'**
+  String get layerPanelAutofillColorUpdateTitle;
+
+  /// No description provided for @layerPanelAutofillColorUpdateHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'手動で調整した自動塗りの形状を残したい場合'**
+  String get layerPanelAutofillColorUpdateHint;
+
+  /// No description provided for @layerPanelAutofillColorUpdateNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'※ 現在の不透明領域を保ったまま最新の色へ更新します。手動で整えた形状は維持されます。'**
+  String get layerPanelAutofillColorUpdateNote;
+
+  /// No description provided for @layerPanelExecuteButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'実行'**
+  String get layerPanelExecuteButton;
+
+  /// No description provided for @layerPanelAutofillPartMissingSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツが未設定です。「パーツ設定」から設定してください。'**
+  String get layerPanelAutofillPartMissingSnackbar;
+
+  /// No description provided for @layerPanelAutofillPresetMissingSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'対応する自動塗り設定のパーツが見つかりません。'**
+  String get layerPanelAutofillPresetMissingSnackbar;
+
+  /// No description provided for @layerPanelOrphanFillSuccessSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'対応する線画レイヤーが見つからないため、最新の色で塗りつぶしました。'**
+  String get layerPanelOrphanFillSuccessSnackbar;
+
+  /// No description provided for @layerPanelOrphanFillFailSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツが未設定、または塗り形状がないため処理できませんでした。'**
+  String get layerPanelOrphanFillFailSnackbar;
+
+  /// No description provided for @layerPanelAutofillUpdateHelpTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り更新マーク'**
+  String get layerPanelAutofillUpdateHelpTitle;
+
+  /// No description provided for @layerPanelAutofillUpdateHelpBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の自動塗りは最新ではありません。タップすると更新できます。'**
+  String get layerPanelAutofillUpdateHelpBody;
+
+  /// No description provided for @layerPanelReplaceMaterialSuccessSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材を差し替えました: {name}'**
+  String layerPanelReplaceMaterialSuccessSnackbar(String name);
+
+  /// No description provided for @layerPanelImportImageSuccessSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を読み込みました: {name}'**
+  String layerPanelImportImageSuccessSnackbar(String name);
+
+  /// No description provided for @layerPanelCopySuffix.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name}のコピー'**
+  String layerPanelCopySuffix(String name);
+
+  /// No description provided for @timelineFullscreenPreviewCloseTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'全画面プレビューを閉じる'**
+  String get timelineFullscreenPreviewCloseTooltip;
+
+  /// No description provided for @timelineDefaultProjectName.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト名'**
+  String get timelineDefaultProjectName;
+
+  /// No description provided for @timelinePreviewPlaceholder.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビュー'**
+  String get timelinePreviewPlaceholder;
+
+  /// No description provided for @timelinePreviewFullscreenTip.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップするとプレビューを全画面表示できます。仕上がりの確認に便利です。'**
+  String get timelinePreviewFullscreenTip;
+
+  /// No description provided for @timelinePreviewFullscreenTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューを全画面表示'**
+  String get timelinePreviewFullscreenTooltip;
+
+  /// No description provided for @timelineAddVideoTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'+ 動画'**
+  String get timelineAddVideoTooltip;
+
+  /// No description provided for @timelineAddAudioTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'+ 音源'**
+  String get timelineAddAudioTooltip;
+
+  /// No description provided for @timelineEffectFilterLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'演出フィルター'**
+  String get timelineEffectFilterLabel;
+
+  /// No description provided for @timelineAddCameraKfTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'カメラキーフレーム追加'**
+  String get timelineAddCameraKfTooltip;
+
+  /// No description provided for @timelineAddWatermarkTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'+ ウォーターマーク'**
+  String get timelineAddWatermarkTooltip;
+
+  /// No description provided for @timelineStackScopeRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム範囲'**
+  String get timelineStackScopeRange;
+
+  /// No description provided for @timelineStackTargetLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'この重なり順を使う所'**
+  String get timelineStackTargetLabel;
+
+  /// No description provided for @timelineStackTargetScenes.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン複数選択'**
+  String get timelineStackTargetScenes;
+
+  /// No description provided for @timelineStackTargetAllFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'全てのフレーム'**
+  String get timelineStackTargetAllFrames;
+
+  /// No description provided for @timelineStackScenesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだシーンの全てのフレームに同じ順番を使います。並べ替えると、選んだシーンすべてがこの順番になります。'**
+  String get timelineStackScenesHint;
+
+  /// No description provided for @timelineStackAllFramesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'全てのシーンの全てのフレームに同じ順番を使います。並べ替えると、全てのシーンがこの順番になります。'**
+  String get timelineStackAllFramesHint;
+
+  /// No description provided for @timelineStackRangesTakePriority.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム範囲を指定したフレームは、その範囲の順番が優先されます。'**
+  String get timelineStackRangesTakePriority;
+
+  /// No description provided for @timelineStackRangeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{start}〜F{end}'**
+  String timelineStackRangeLabel(int start, int end);
+
+  /// No description provided for @timelineStackRangeAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n}に範囲を追加'**
+  String timelineStackRangeAdd(int n);
+
+  /// No description provided for @timelineStackRangeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'指定した範囲のフレームだけ、ここで並べた順番になります。範囲の外はシーン全体の順番です。'**
+  String get timelineStackRangeHint;
+
+  /// No description provided for @timelineStackRangeEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲がありません。上のボタンで今のフレームに作れます。'**
+  String get timelineStackRangeEmpty;
+
+  /// No description provided for @timelineStackRangeOrderHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'{range}の重なり順（上ほど手前）。つまみのドラッグか矢印で並べ替えます。'**
+  String timelineStackRangeOrderHint(String range);
+
+  /// No description provided for @timelineStackRangeDelete.
+  ///
+  /// In ja, this message translates to:
+  /// **'この範囲を削除'**
+  String get timelineStackRangeDelete;
+
+  /// No description provided for @timelineAddMaterialTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材を追加'**
+  String get timelineAddMaterialTooltip;
+
+  /// No description provided for @timelineMaterialRowLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'置く列'**
+  String get timelineMaterialRowLabel;
+
+  /// No description provided for @timelineMaterialNewRow.
+  ///
+  /// In ja, this message translates to:
+  /// **'新しい列'**
+  String get timelineMaterialNewRow;
+
+  /// No description provided for @timelineAddTextTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'+ テキスト'**
+  String get timelineAddTextTooltip;
+
+  /// No description provided for @timelineAddImageTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'+ 画像'**
+  String get timelineAddImageTooltip;
+
+  /// No description provided for @timelineStackOrderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'重なり順'**
+  String get timelineStackOrderTitle;
+
+  /// No description provided for @timelineMaterialText.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキスト'**
+  String get timelineMaterialText;
+
+  /// No description provided for @timelineAddTextDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストを追加'**
+  String get timelineAddTextDialogTitle;
+
+  /// No description provided for @timelineEditSectionText.
+  ///
+  /// In ja, this message translates to:
+  /// **'文字'**
+  String get timelineEditSectionText;
+
+  /// No description provided for @timelineEditSectionTransform.
+  ///
+  /// In ja, this message translates to:
+  /// **'配置'**
+  String get timelineEditSectionTransform;
+
+  /// No description provided for @timelineEditSectionMask.
+  ///
+  /// In ja, this message translates to:
+  /// **'マスク'**
+  String get timelineEditSectionMask;
+
+  /// No description provided for @timelineTransformRotationX.
+  ///
+  /// In ja, this message translates to:
+  /// **'X軸回転'**
+  String get timelineTransformRotationX;
+
+  /// No description provided for @timelineTransformRotationY.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y軸回転'**
+  String get timelineTransformRotationY;
+
+  /// No description provided for @timelineTransformRotationZ.
+  ///
+  /// In ja, this message translates to:
+  /// **'Z軸回転'**
+  String get timelineTransformRotationZ;
+
+  /// No description provided for @timelineTransformReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'配置をリセット'**
+  String get timelineTransformReset;
+
+  /// No description provided for @timelineKeyframeAddHere.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n}にキーフレームを追加'**
+  String timelineKeyframeAddHere(int n);
+
+  /// No description provided for @timelineKeyframeRemoveHere.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n}のキーフレームを削除'**
+  String timelineKeyframeRemoveHere(int n);
+
+  /// No description provided for @timelineKeyframeWholeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材全体に同じ配置が使われます。動かすときは、フレームを移動してキーフレームを追加してください。'**
+  String get timelineKeyframeWholeHint;
+
+  /// No description provided for @timelineKeyframeAnimHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーフレーム{count}個：F{n}の値として記録し、間は自動でつなぎます。'**
+  String timelineKeyframeAnimHint(int count, int n);
+
+  /// No description provided for @timelineGizmoHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビュー上でドラッグすると移動、角の丸で拡大縮小、上の丸で回転できます。2本指でも操作できます。'**
+  String get timelineGizmoHint;
+
+  /// No description provided for @timelineMaterialOutOfRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフレームには表示されていません（F{start}〜F{end}に表示）'**
+  String timelineMaterialOutOfRange(int start, int end);
+
+  /// No description provided for @timelineMaskNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'なし'**
+  String get timelineMaskNone;
+
+  /// No description provided for @timelineMaskRectangle.
+  ///
+  /// In ja, this message translates to:
+  /// **'四角'**
+  String get timelineMaskRectangle;
+
+  /// No description provided for @timelineMaskEllipse.
+  ///
+  /// In ja, this message translates to:
+  /// **'楕円'**
+  String get timelineMaskEllipse;
+
+  /// No description provided for @timelineMaskCenterX.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心 X'**
+  String get timelineMaskCenterX;
+
+  /// No description provided for @timelineMaskCenterY.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心 Y'**
+  String get timelineMaskCenterY;
+
+  /// No description provided for @timelineMaskWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'幅'**
+  String get timelineMaskWidth;
+
+  /// No description provided for @timelineMaskHeight.
+  ///
+  /// In ja, this message translates to:
+  /// **'高さ'**
+  String get timelineMaskHeight;
+
+  /// No description provided for @timelineMaskFeather.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし'**
+  String get timelineMaskFeather;
+
+  /// No description provided for @timelineMaskInvert.
+  ///
+  /// In ja, this message translates to:
+  /// **'反転（内側を隠す）'**
+  String get timelineMaskInvert;
+
+  /// No description provided for @timelineMaskHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'マスクの内側だけを見せます。反転すると内側を隠します。'**
+  String get timelineMaskHint;
+
+  /// No description provided for @timelineStackOrderHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'上にあるものほど手前に表示されます。つまみをドラッグするか矢印で並べ替えます。'**
+  String get timelineStackOrderHint;
+
+  /// No description provided for @timelineStackScopeScene.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のシーン全体'**
+  String get timelineStackScopeScene;
+
+  /// No description provided for @timelineStackFrameUnit.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム（イラスト）'**
+  String get timelineStackFrameUnit;
+
+  /// No description provided for @timelineStackResetScene.
+  ///
+  /// In ja, this message translates to:
+  /// **'既定の順番に戻す'**
+  String get timelineStackResetScene;
+
+  /// No description provided for @timelineStackFrameMaskTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム（イラスト）のマスク'**
+  String get timelineStackFrameMaskTitle;
+
+  /// No description provided for @timelineStackFrameMaskHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'描いた絵だけを切り抜きます。テキスト・画像・動画には効きません。キャンバスで描いている間は隠れません。'**
+  String get timelineStackFrameMaskHint;
+
+  /// No description provided for @timelineStackMoveUp.
+  ///
+  /// In ja, this message translates to:
+  /// **'手前へ'**
+  String get timelineStackMoveUp;
+
+  /// No description provided for @timelineStackMoveDown.
+  ///
+  /// In ja, this message translates to:
+  /// **'奥へ'**
+  String get timelineStackMoveDown;
+
+  /// No description provided for @timelineStackSelectedCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件選択中'**
+  String timelineStackSelectedCount(int count);
+
+  /// No description provided for @timelineStackBringToFront.
+  ///
+  /// In ja, this message translates to:
+  /// **'最前面へ'**
+  String get timelineStackBringToFront;
+
+  /// No description provided for @timelineStackSendToBack.
+  ///
+  /// In ja, this message translates to:
+  /// **'最背面へ'**
+  String get timelineStackSendToBack;
+
+  /// No description provided for @timelineStackDeselectAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'全解除'**
+  String get timelineStackDeselectAll;
+
+  /// No description provided for @timelineStackSelectAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'全選択'**
+  String get timelineStackSelectAll;
+
+  /// No description provided for @timelineStackMultiSelectHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'項目を長押しすると複数選択できます。選んだ項目は矢印・ドラッグ・下のボタンでまとめて動かせます。'**
+  String get timelineStackMultiSelectHint;
+
+  /// No description provided for @timelineWatermarkNotRegisteredTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウォーターマーク未登録'**
+  String get timelineWatermarkNotRegisteredTitle;
+
+  /// No description provided for @timelineWatermarkNotRegisteredBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定画面の「ウォーターマーク」からあらかじめ画像または文字を登録してください。'**
+  String get timelineWatermarkNotRegisteredBody;
+
+  /// No description provided for @timelineOpenSettingsButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定を開く'**
+  String get timelineOpenSettingsButton;
+
+  /// No description provided for @timelineWatermarkSelectTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウォーターマークを選択'**
+  String get timelineWatermarkSelectTitle;
+
+  /// No description provided for @timelineWatermarkAddedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウォーターマークを追加しました（全フレームに表示されます）: {name}'**
+  String timelineWatermarkAddedSnackbar(String name);
+
+  /// No description provided for @timelineWatermarkEditTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウォーターマークを編集'**
+  String get timelineWatermarkEditTitle;
+
+  /// No description provided for @timelineWatermarkAngleLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'角度'**
+  String get timelineWatermarkAngleLabel;
+
+  /// No description provided for @timelineWatermarkSizeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'大きさ'**
+  String get timelineWatermarkSizeLabel;
+
+  /// No description provided for @timelineWatermarkOpacityLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'不透明度'**
+  String get timelineWatermarkOpacityLabel;
+
+  /// No description provided for @timelineWatermarkLoopLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'常時表示（ループ表示）'**
+  String get timelineWatermarkLoopLabel;
+
+  /// No description provided for @timelineWatermarkLoopSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'オフにすると現在のシーンのみに表示されます'**
+  String get timelineWatermarkLoopSubtitle;
+
+  /// No description provided for @timelineConfirmButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'決定'**
+  String get timelineConfirmButton;
+
+  /// No description provided for @timelineClipSelectDoneButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了'**
+  String get timelineClipSelectDoneButton;
+
+  /// No description provided for @timelineClipOverlapDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'既存のクリップと重なります'**
+  String get timelineClipOverlapDialogTitle;
+
+  /// No description provided for @timelineClipOverlapDialogBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'貼り付け先が既存のクリップと重なっています。どのように配置しますか？'**
+  String get timelineClipOverlapDialogBody;
+
+  /// No description provided for @timelineClipOverlapPlaceBefore.
+  ///
+  /// In ja, this message translates to:
+  /// **'前に配置する'**
+  String get timelineClipOverlapPlaceBefore;
+
+  /// No description provided for @timelineClipOverlapPlaceAfter.
+  ///
+  /// In ja, this message translates to:
+  /// **'後ろに配置する'**
+  String get timelineClipOverlapPlaceAfter;
+
+  /// No description provided for @timelineClipOverlapPlaceNewRow.
+  ///
+  /// In ja, this message translates to:
+  /// **'重ねて配置する（行を増やす）'**
+  String get timelineClipOverlapPlaceNewRow;
+
+  /// No description provided for @timelineSceneRenameTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン名変更'**
+  String get timelineSceneRenameTitle;
+
+  /// No description provided for @timelineSceneDeleteMenuItem.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン削除'**
+  String get timelineSceneDeleteMenuItem;
+
+  /// No description provided for @timelineDurationLimitTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さの上限に達します'**
+  String get timelineDurationLimitTitle;
+
+  /// No description provided for @timelineDurationLimitBodyFree.
+  ///
+  /// In ja, this message translates to:
+  /// **'無料版で尺を伸ばせるのは90秒までです。最大尺の特典を使うと2時間まで伸ばせます。'**
+  String get timelineDurationLimitBodyFree;
+
+  /// No description provided for @timelineDurationLimitBodyPremium.
+  ///
+  /// In ja, this message translates to:
+  /// **'最大尺の特典で伸ばせるのは2時間までです。'**
+  String get timelineDurationLimitBodyPremium;
+
+  /// No description provided for @timelineSceneDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を削除しますか？'**
+  String timelineSceneDeleteConfirmTitle(String name);
+
+  /// No description provided for @timelineSceneDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン内の全フレーム・共通レイヤー・テキスト素材・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。'**
+  String get timelineSceneDeleteConfirmBody;
+
+  /// No description provided for @timelineSceneMultiDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中の{count}件のシーンを削除しますか？'**
+  String timelineSceneMultiDeleteConfirmTitle(int count);
+
+  /// No description provided for @timelineAutofillUpdateHelpBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'このシーン・フレームには最新ではない自動塗りレイヤーが含まれています。レイヤーパネルで対象レイヤーをタップすると更新できます。'**
+  String get timelineAutofillUpdateHelpBody;
+
+  /// No description provided for @timelineFrameTrackLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム'**
+  String get timelineFrameTrackLabel;
+
+  /// No description provided for @timelineTrackRowRenameTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'行名を変更'**
+  String get timelineTrackRowRenameTitle;
+
+  /// No description provided for @timelineCameraTrackLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'カメラ'**
+  String get timelineCameraTrackLabel;
+
+  /// No description provided for @timelineEndCardDefaultLogoLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMロゴ'**
+  String get timelineEndCardDefaultLogoLabel;
+
+  /// No description provided for @timelineEndCardHiddenLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示'**
+  String get timelineEndCardHiddenLabel;
+
+  /// No description provided for @timelineEndCardTrackLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'エンドマークトラック'**
+  String get timelineEndCardTrackLabel;
+
+  /// No description provided for @timelineMarkerTrackLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムスタンプ'**
+  String get timelineMarkerTrackLabel;
+
+  /// No description provided for @timelineMarkerAddDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n} にタイムスタンプを追加'**
+  String timelineMarkerAddDialogTitle(int n);
+
+  /// No description provided for @timelineMarkerEditDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムスタンプ: F{n}'**
+  String timelineMarkerEditDialogTitle(int n);
+
+  /// No description provided for @timelineMarkerCommentHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'コメント（例：ここで口パク「あ」）'**
+  String get timelineMarkerCommentHint;
+
+  /// No description provided for @timelineAddClipDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'{trackName}クリップを追加'**
+  String timelineAddClipDialogTitle(String trackName);
+
+  /// No description provided for @timelineClipLabelFieldLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラベル'**
+  String get timelineClipLabelFieldLabel;
+
+  /// No description provided for @timelineClipStartLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始:'**
+  String get timelineClipStartLabel;
+
+  /// No description provided for @timelineClipLengthLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さ:'**
+  String get timelineClipLengthLabel;
+
+  /// No description provided for @timelineAutofillNote2.
+  ///
+  /// In ja, this message translates to:
+  /// **'※ 自動塗りレイヤーのみ存在する場合は、一から領域を判定して自動塗りします。'**
+  String get timelineAutofillNote2;
+
+  /// No description provided for @timelineAutofillTargetLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'実行対象'**
+  String get timelineAutofillTargetLabel;
+
+  /// No description provided for @timelineAutofillScopeCurrentFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のフレームのみ'**
+  String get timelineAutofillScopeCurrentFrame;
+
+  /// No description provided for @timelineAutofillScopeCurrentScene.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン単位（現在のシーンの全フレーム）'**
+  String get timelineAutofillScopeCurrentScene;
+
+  /// No description provided for @timelineAutofillScopeAllScenes.
+  ///
+  /// In ja, this message translates to:
+  /// **'全フレーム（プロジェクト全体）'**
+  String get timelineAutofillScopeAllScenes;
+
+  /// No description provided for @timelineAutofillProgressTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り実行中'**
+  String get timelineAutofillProgressTitle;
+
+  /// No description provided for @timelineAutofillProgressSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}フレーム'**
+  String timelineAutofillProgressSubtitle(int count);
+
+  /// No description provided for @timelineAutofillCompleteSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りが完了しました（{count}件処理）'**
+  String timelineAutofillCompleteSnackbar(int count);
+
+  /// No description provided for @timelineEffectTypeFade.
+  ///
+  /// In ja, this message translates to:
+  /// **'フェード'**
+  String get timelineEffectTypeFade;
+
+  /// No description provided for @timelineEffectTypeGaussianBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'ガウスぼかし'**
+  String get timelineEffectTypeGaussianBlur;
+
+  /// No description provided for @timelineEffectTypeLensBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'レンズぼかし'**
+  String get timelineEffectTypeLensBlur;
+
+  /// No description provided for @timelineEffectTypeMosaic.
+  ///
+  /// In ja, this message translates to:
+  /// **'モザイク'**
+  String get timelineEffectTypeMosaic;
+
+  /// No description provided for @timelineEffectTypeChromaticAberration.
+  ///
+  /// In ja, this message translates to:
+  /// **'色収差'**
+  String get timelineEffectTypeChromaticAberration;
+
+  /// No description provided for @timelineEffectTypeNoise.
+  ///
+  /// In ja, this message translates to:
+  /// **'ノイズ'**
+  String get timelineEffectTypeNoise;
+
+  /// No description provided for @timelineEffectTypeSepia.
+  ///
+  /// In ja, this message translates to:
+  /// **'セピア'**
+  String get timelineEffectTypeSepia;
+
+  /// No description provided for @timelineEffectTypeAnimeStyle.
+  ///
+  /// In ja, this message translates to:
+  /// **'アニメ調'**
+  String get timelineEffectTypeAnimeStyle;
+
+  /// No description provided for @timelineEffectTypeRetroAnime.
+  ///
+  /// In ja, this message translates to:
+  /// **'レトロアニメ'**
+  String get timelineEffectTypeRetroAnime;
+
+  /// No description provided for @timelineEffectTypeCrt.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラウン管'**
+  String get timelineEffectTypeCrt;
+
+  /// No description provided for @timelineEffectTypeAnimatedNoise.
+  ///
+  /// In ja, this message translates to:
+  /// **'動くノイズ'**
+  String get timelineEffectTypeAnimatedNoise;
+
+  /// No description provided for @timelineEffectTypeRain.
+  ///
+  /// In ja, this message translates to:
+  /// **'雨'**
+  String get timelineEffectTypeRain;
+
+  /// No description provided for @timelineEffectFilterEmptyState.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルターがありません\n＋追加ボタンで追加してください'**
+  String get timelineEffectFilterEmptyState;
+
+  /// No description provided for @timelineRangeStartLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始'**
+  String get timelineRangeStartLabel;
+
+  /// No description provided for @timelineRangeEndLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了'**
+  String get timelineRangeEndLabel;
+
+  /// No description provided for @timelineEffectSizeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズ'**
+  String get timelineEffectSizeLabel;
+
+  /// No description provided for @timelineEffectStrengthLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'強度'**
+  String get timelineEffectStrengthLabel;
+
+  /// No description provided for @timelineEffectAmountLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'量'**
+  String get timelineEffectAmountLabel;
+
+  /// No description provided for @timelineEffectGrainSizeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'粒の大きさ'**
+  String get timelineEffectGrainSizeLabel;
+
+  /// No description provided for @timelineEffectRainIntensityLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'降り方'**
+  String get timelineEffectRainIntensityLabel;
+
+  /// No description provided for @timelineEffectRainSpeedLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'速さ'**
+  String get timelineEffectRainSpeedLabel;
+
+  /// No description provided for @timelineEffectRainSizeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'粒の大きさ'**
+  String get timelineEffectRainSizeLabel;
+
+  /// No description provided for @timelineEffectWindAngleLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'風向き'**
+  String get timelineEffectWindAngleLabel;
+
+  /// No description provided for @timelineColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'色'**
+  String get timelineColorLabel;
+
+  /// No description provided for @timelineColorBlack.
+  ///
+  /// In ja, this message translates to:
+  /// **'黒'**
+  String get timelineColorBlack;
+
+  /// No description provided for @timelineColorWhite.
+  ///
+  /// In ja, this message translates to:
+  /// **'白'**
+  String get timelineColorWhite;
+
+  /// No description provided for @timelineColorCustom.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタム'**
+  String get timelineColorCustom;
+
+  /// No description provided for @timelineFadeColorDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フェードカラー'**
+  String get timelineFadeColorDialogTitle;
+
+  /// No description provided for @timelineAddFilterDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルターを追加'**
+  String get timelineAddFilterDialogTitle;
+
+  /// No description provided for @timelineClipVolumeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'音量'**
+  String get timelineClipVolumeLabel;
+
+  /// No description provided for @timelineClipFadeInLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'フェードイン'**
+  String get timelineClipFadeInLabel;
+
+  /// No description provided for @timelineClipFadeOutLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'フェードアウト'**
+  String get timelineClipFadeOutLabel;
+
+  /// No description provided for @timelineClipUseStartLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用開始F'**
+  String get timelineClipUseStartLabel;
+
+  /// No description provided for @timelineClipUseEndLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用終了F'**
+  String get timelineClipUseEndLabel;
+
+  /// No description provided for @timelineCameraFrameAlreadyHasKeyframe.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフレームにはカメラのキーフレームがあります。'**
+  String get timelineCameraFrameAlreadyHasKeyframe;
+
+  /// No description provided for @timelineCameraKfTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'カメラ KF: F{n}'**
+  String timelineCameraKfTitle(int n);
+
+  /// No description provided for @timelineCameraMoveXLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'X 移動'**
+  String get timelineCameraMoveXLabel;
+
+  /// No description provided for @timelineCameraMoveYLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y 移動'**
+  String get timelineCameraMoveYLabel;
+
+  /// No description provided for @timelineCameraZoomLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'ズーム'**
+  String get timelineCameraZoomLabel;
+
+  /// No description provided for @timelineCameraRotationLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転'**
+  String get timelineCameraRotationLabel;
+
+  /// No description provided for @layerPanelKeyframeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'アニメーション（キーフレーム）'**
+  String get layerPanelKeyframeLabel;
+
+  /// No description provided for @layerKeyframeSheetTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} のキーフレーム'**
+  String layerKeyframeSheetTitle(String name);
+
+  /// No description provided for @layerKeyframeSheetDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'このレイヤーの位置・拡大縮小・回転をフレームごとに指定し、キーフレーム間を自動で補間します。レイヤーの絵自体は変わりません。'**
+  String get layerKeyframeSheetDesc;
+
+  /// No description provided for @layerKeyframeAddAtCurrentFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のフレーム（F{n}）に追加'**
+  String layerKeyframeAddAtCurrentFrame(int n);
+
+  /// No description provided for @layerKeyframeEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーフレームがありません。上のボタンから追加してください。'**
+  String get layerKeyframeEmpty;
+
+  /// No description provided for @layerKeyframeScaleShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'倍率'**
+  String get layerKeyframeScaleShort;
+
+  /// No description provided for @layerKeyframeRotationShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転'**
+  String get layerKeyframeRotationShort;
+
+  /// No description provided for @layerKeyframeEditTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーフレーム: F{n}'**
+  String layerKeyframeEditTitle(int n);
+
+  /// No description provided for @layerKeyframeFrameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム'**
+  String get layerKeyframeFrameLabel;
+
+  /// No description provided for @layerKeyframeScaleLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'拡大縮小'**
+  String get layerKeyframeScaleLabel;
+
+  /// No description provided for @layerKeyframeRotationLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転'**
+  String get layerKeyframeRotationLabel;
+
+  /// No description provided for @layerKeyframeEasingLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'次のキーフレームへのつなぎ方'**
+  String get layerKeyframeEasingLabel;
+
+  /// No description provided for @layerKeyframeEasingLinear.
+  ///
+  /// In ja, this message translates to:
+  /// **'等速'**
+  String get layerKeyframeEasingLinear;
+
+  /// No description provided for @layerKeyframeEasingEaseIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゆっくり始まる'**
+  String get layerKeyframeEasingEaseIn;
+
+  /// No description provided for @layerKeyframeEasingEaseOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゆっくり終わる'**
+  String get layerKeyframeEasingEaseOut;
+
+  /// No description provided for @layerKeyframeEasingEaseInOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゆっくり始まって終わる'**
+  String get layerKeyframeEasingEaseInOut;
+
+  /// No description provided for @layerKeyframeEasingBounceOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'弾む'**
+  String get layerKeyframeEasingBounceOut;
+
+  /// No description provided for @layerPanelGroupTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'グループ化'**
+  String get layerPanelGroupTooltip;
+
+  /// No description provided for @layerPanelShowSelectedTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中のレイヤーを全て表示'**
+  String get layerPanelShowSelectedTooltip;
+
+  /// No description provided for @layerPanelHideSelectedTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中のレイヤーを全て非表示'**
+  String get layerPanelHideSelectedTooltip;
+
+  /// No description provided for @layerPanelGroupDefaultName.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規グループ'**
+  String get layerPanelGroupDefaultName;
+
+  /// No description provided for @layerPanelGroupMembershipLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'グループ: {name}'**
+  String layerPanelGroupMembershipLabel(String name);
+
+  /// No description provided for @layerPanelGroupLeaveAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'解除'**
+  String get layerPanelGroupLeaveAction;
+
+  /// No description provided for @frameStripHoldDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n} 保持セル数'**
+  String frameStripHoldDialogTitle(int n);
+
+  /// No description provided for @frameStripTimelineModeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムライン'**
+  String get frameStripTimelineModeLabel;
+
+  /// Title of the dialog that adds several frames at once.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを一括追加'**
+  String get frameStripBulkAddTitle;
+
+  /// Unit after the number of frames to add.
+  ///
+  /// In ja, this message translates to:
+  /// **'枚'**
+  String get frameStripBulkAddUnit;
+
+  /// No description provided for @progressDialogAdLoading.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告読み込み中…'**
+  String get progressDialogAdLoading;
+
+  /// No description provided for @adMockPlaceholderLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告バナー（配置検討用モック）'**
+  String get adMockPlaceholderLabel;
+
+  /// No description provided for @adMediumRectangleMockPlaceholderLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'中型レクタングル広告（300×250・配置検討用モック）'**
+  String get adMediumRectangleMockPlaceholderLabel;
+
+  /// No description provided for @progressDialogTipLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'ヒント'**
+  String get progressDialogTipLabel;
+
+  /// No description provided for @premiumBannerRegisterButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアムに登録'**
+  String get premiumBannerRegisterButton;
+
+  /// No description provided for @legalLastUpdated.
+  ///
+  /// In ja, this message translates to:
+  /// **'最終更新日：2026年11月18日'**
+  String get legalLastUpdated;
+
+  /// No description provided for @licenseTermsArt1Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第1条（適用）'**
+  String get licenseTermsArt1Title;
+
+  /// No description provided for @licenseTermsArt1Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'この利用規約（以下「本規約」といいます。）は、本アプリ「NIARIM」（以下「本アプリ」といいます。）の利用条件を定めるものです。ユーザーは、本規約に同意の上、本アプリをご利用いただくものとします。本アプリを利用することにより、本規約に同意したものとみなします。'**
+  String get licenseTermsArt1Body;
+
+  /// No description provided for @licenseTermsArt2Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第2条（利用資格・対応環境）'**
+  String get licenseTermsArt2Title;
+
+  /// No description provided for @licenseTermsArt2Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. 本アプリの対応OSや推奨動作環境の詳細は、各配布ストアおよび本アプリ内の表示に従います。\n2. 本アプリは、多様な性能の端末でも快適にご利用いただけるよう工夫していますが、端末の性能・OSのバージョン・空き容量・設定その他の利用環境によっては、一部機能が制限される、または正常に動作しない場合があります。\n3. 未成年の方は、本アプリの利用（有料機能の利用を含みます）にあたり、保護者等の法定代理人の同意を得るものとします。'**
+  String get licenseTermsArt2Body;
+
+  /// No description provided for @licenseTermsArt3Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第3条（禁止事項）'**
+  String get licenseTermsArt3Title;
+
+  /// No description provided for @licenseTermsArt3Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'ユーザーは本アプリの利用にあたり、以下の行為をしてはなりません。\n・法令または公序良俗に違反する行為\n・本アプリ、開発者または第三者の著作権・商標権その他の知的財産権、肖像権、プライバシーその他の権利または利益を侵害する行為\n・本アプリの逆コンパイル、逆アセンブル、リバースエンジニアリングその他解析を目的とする行為（法令上認められる場合を除く）\n・本アプリの不正な改造、複製または再配布\n・本アプリまたはその提供基盤に対する不正アクセス、過度な負荷その他、正常な提供を妨げる行為\n・その他、開発者が合理的な理由に基づき不適切と判断する行為'**
+  String get licenseTermsArt3Body;
+
+  /// No description provided for @licenseTermsArt4Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第4条（作成コンテンツの権利）'**
+  String get licenseTermsArt4Title;
+
+  /// No description provided for @licenseTermsArt4Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. ユーザーが本アプリを利用して作成したイラスト・アニメーション等のコンテンツ（プロジェクトデータ・書き出した画像・動画等を含みます。以下「作成コンテンツ」といいます。）に関する著作権その他の権利は、法令上認められる範囲において、当該コンテンツについて権利を有するユーザーまたは第三者に帰属します。\n2. 本アプリは、作成コンテンツを開発者のサーバーへ送信・収集・同期する機能を提供していません。プロジェクトデータは、原則としてユーザーの端末内にのみ保存されます。（ユーザーが自らの意思で作品広場機能を利用して作成コンテンツを投稿する場合の取扱いについては、第12条によります。）\n3. 無料版・プレミアム版のいずれを利用して作成した場合であっても、本アプリの利用料金やエディションを理由として、開発者が作成コンテンツの商用利用を制限することはありません。（無料版・プレミアム版の違いは、エンドマーク表示や書き出し時間の上限等の機能面に限られます。）\n4. 前項にかかわらず、ユーザーが本アプリに追加したフォント・画像・素材等、第三者が権利を有するものについては、それぞれの利用条件（第5条）に従う必要があります。'**
+  String get licenseTermsArt4Body;
+
+  /// No description provided for @licenseTermsArt5Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第5条（同梱フォント・追加素材について）'**
+  String get licenseTermsArt5Title;
+
+  /// No description provided for @licenseTermsArt5Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. 本アプリに同梱されるフォントその他の素材は、本画面「使用フォントについて」に記載された各ライセンス条件に従い利用されています。\n2. ユーザーが本アプリに追加登録・読み込みしたフォント、画像、トーン、スタンプ等の素材の権利関係については、ユーザー自身の責任において、必要な権利または許諾を取得の上、適法にご利用ください。\n3. ユーザーによる第三者素材の利用に起因して第三者との間で紛争等が生じた場合、開発者は、法令上の責任を負う場合を除き、その責任を負いません。'**
+  String get licenseTermsArt5Body;
+
+  /// No description provided for @licenseTermsArt6Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第6条（プレミアム機能・課金）'**
+  String get licenseTermsArt6Title;
+
+  /// No description provided for @licenseTermsArt6Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. 本アプリには、無料でご利用いただける機能のほか、アプリ内課金（月額プラン、年額プランその他のプレミアムプラン）により利用可能となるプレミアム機能があります。\n2. プレミアム機能の価格、提供内容、購入方法その他の条件は、購入時点における本アプリ内または配布ストアの表示に従います。\n3. 購入後のキャンセル・返金その他決済に関する事項については、Google Playその他ご利用の決済プラットフォームの規定が適用されます。ただし、法令に別段の定めがある場合は、その定めに従います。\n4. 開発者は、法令の改正、技術上の必要性、本アプリの改善その他の合理的な理由により、プレミアム機能の内容を変更することがあります。重要な変更を行う場合は、可能な限り事前に本アプリ内その他適切な方法でお知らせします。'**
+  String get licenseTermsArt6Body;
+
+  /// No description provided for @licenseTermsArt7Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第7条（広告表示）'**
+  String get licenseTermsArt7Title;
+
+  /// No description provided for @licenseTermsArt7Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. 無料版では、第三者の広告配信サービスを通じた広告が表示される場合があります。\n2. 広告配信事業者による情報の取得・利用その他の取扱いについては、各広告配信事業者のプライバシーポリシーが適用されます。'**
+  String get licenseTermsArt7Body;
+
+  /// No description provided for @licenseTermsArt8Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第8条（情報の取扱い）'**
+  String get licenseTermsArt8Title;
+
+  /// No description provided for @licenseTermsArt8Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. 本アプリは、ユーザーが作成したイラスト・アニメーション等のコンテンツおよびプロジェクトデータを、開発者のサーバーへ送信・収集する機能を提供していません。これらは原則としてユーザーの端末内にのみ保存されており、開発者はこれらを自ら保存する機能を持たないため、開発者側での保存期間という概念自体がありません。\n2. 本アプリが組み込む第三者サービス（広告配信・アプリ内課金等）による情報の取得その他ユーザーの情報の取扱いについては、別途定める「プライバシーポリシー」の定めに従うものとします。\n3. 本アプリをアンインストールした場合、端末内に保存されたデータ（プロジェクト、設定、追加したフォント等）は削除されます。'**
+  String get licenseTermsArt8Body;
+
+  /// No description provided for @licenseTermsArt9Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第9条（提供の停止・変更・終了）'**
+  String get licenseTermsArt9Title;
+
+  /// No description provided for @licenseTermsArt9Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. 開発者は、本アプリの保守・更新・修正を行う場合、提供基盤に不具合が生じた場合その他やむを得ない事情がある場合、本アプリの全部または一部の提供を一時的に停止することがあります。\n2. 開発者は、必要に応じて本アプリの内容を変更し、または本アプリの提供を終了することがあります。\n3. 前2項の場合、緊急のときを除き、可能な限り事前に本アプリ内その他適切な方法で告知します。\n4. 本条に基づく変更・停止・終了によってユーザーに生じた損害について、開発者は、法令上の責任を負う場合を除き、責任を負いません。'**
+  String get licenseTermsArt9Body;
+
+  /// No description provided for @licenseTermsArt10Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第10条（免責事項）'**
+  String get licenseTermsArt10Title;
+
+  /// No description provided for @licenseTermsArt10Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. 開発者は、本アプリについて、事実上または法律上の瑕疵（安全性・信頼性・正確性・完全性・特定目的への適合性・バグや不具合がないこと等を含みます。）がないことを保証するものではありません。\n2. ユーザーは、本アプリを自己の責任においてご利用いただくものとします。端末の故障・誤操作・OSの更新その他の事情によりデータが失われる場合がありますので、作成中のデータについては、書き出し・共有機能等を利用した定期的なバックアップを推奨します。\n3. 本アプリの利用によってユーザーに生じた損害について、開発者は、法令上認められる範囲で責任を負いません。ただし、開発者に故意または重過失がある場合はこの限りではなく、その場合であっても、開発者が負う損害賠償責任は、通常生じうる直接損害に限り、ユーザーが本アプリに関し直近1年間に実際に支払った金額（無料でご利用の場合は0円）を上限とします。'**
+  String get licenseTermsArt10Body;
+
+  /// No description provided for @licenseTermsArt11Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第11条（本規約の変更）'**
+  String get licenseTermsArt11Title;
+
+  /// No description provided for @licenseTermsArt11Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. 開発者は、法令の改正、本アプリの内容の変更その他必要と判断した場合、本規約を変更することがあります。\n2. 本規約を変更する場合、変更内容および効力発生日を、本アプリ内その他適切な方法により、事前に周知します。\n3. 変更後の本規約は、法令上認められる範囲において、前項の効力発生日から適用されます。'**
+  String get licenseTermsArt11Body;
+
+  /// No description provided for @licenseTermsArt12Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第12条（作品広場：コミュニティ投稿機能）'**
+  String get licenseTermsArt12Title;
+
+  /// No description provided for @licenseTermsArt12Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. 本アプリは、ユーザーが作成したアニメーション作品を、ユーザー自身のGoogleアカウントを通じてYouTubeへ投稿し、「作品広場」上で公開・閲覧できる機能（以下「本コミュニティ機能」といいます。）を任意で提供します。作品の閲覧・作成自体は、本コミュニティ機能を利用しなくても行えます。\n2. 投稿された動画ファイル本体はYouTube上に保存され、開発者のサーバーには保存されません。一方、投稿作品の識別・表示に必要な情報（YouTube動画ID、タイトル、統計情報、通報情報等）、および投稿・通報・ブロック機能の利用にあたり発行されるNIARIM User ID（Googleアカウントとは別に本アプリ内部で発行する識別子）は、開発者のサーバーで管理します。\n3. 本コミュニティ機能のうち、作品の投稿、通報およびユーザーのブロックには、Googleアカウントによるログインが必要です。\n4. 投稿できる作品数には1日あたりの上限があります。（無料会員・プレミアム会員で上限が異なります。）当該上限は、運営上の都合により変更されることがあります。\n5. ユーザーは、他のユーザーが投稿した作品のうち、法令もしくは公序良俗に違反する、または第3条各号に該当するおそれがあると考えるものについて、本アプリ内の通報機能を通じて開発者に報告できます。開発者は、通報の内容を確認のうえ、合理的な理由に基づき当該作品の一覧からの非表示その他の必要な措置を講じることがあります。虚偽の通報または通報機能の濫用は禁止します。\n6. ユーザーが投稿を削除した場合、または本アプリにおけるGoogleアカウント連携を解除した場合、当該投稿に対応するYouTube動画が削除されることがあります。また、YouTube側で動画が非公開または削除された場合、当該作品は作品広場上でも表示されなくなります。\n7. 本コミュニティ機能の利用にあたっては、本規約に加えてYouTubeの利用規約およびコミュニティガイドラインが適用されます。\n8. ユーザーは、他のユーザーをフォローし、他のユーザーの作品をブックマークまたはリポストできます。フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。\n9. 作品に付けるタグは、投稿者以外のユーザーも追加・削除できます。投稿者は、自分の作品のタグをロックして他のユーザーによる編集を禁止できます。ユーザーは、他人を誹謗中傷するタグ、作品の内容と無関係なタグその他不適切なタグを付けてはなりません。開発者は、不適切なタグを削除することがあります。\n10. 開発者は、本人の作品の投稿・公開やミッション達成などに関する通知を、本アプリ内の通知一覧に表示します。端末の通知が許可されている場合は、プッシュ通知が送信されることがあります。プッシュ通知は本アプリまたは端末の設定から無効にできます。\n11. ユーザーは、本コミュニティ機能を、他のユーザーへの嫌がらせ、宣伝・勧誘、その他本来の目的（作品の公開と閲覧）から外れる目的で利用してはなりません。 ミュートは自分の表示だけに反映されます。ブロックすると、作品広場にログイン中の双方に相手の投稿が表示されなくなります。どちらの操作でも相手に通知は送られません。'**
+  String get licenseTermsArt12Body;
+
+  /// No description provided for @licenseTermsArt13Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第13条（準拠法・裁判管轄）'**
+  String get licenseTermsArt13Title;
+
+  /// No description provided for @licenseTermsArt13Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. 本規約の解釈にあたっては、日本法を準拠法とします。\n2. 本アプリに関して紛争が生じた場合には、訴額に応じて開発者の所在地を管轄する地方裁判所または簡易裁判所を第一審の専属的合意管轄裁判所とします。'**
+  String get licenseTermsArt13Body;
+
+  /// No description provided for @privacyPolicyArt1Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第1条（本ポリシーの位置づけ）'**
+  String get privacyPolicyArt1Title;
+
+  /// No description provided for @privacyPolicyArt1Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'このプライバシーポリシー（以下「本ポリシー」といいます。）は、本アプリ「NIARIM」（以下「本アプリ」といいます。）における情報の取扱いについて定めるものです。本アプリの利用条件全般については別途「利用規約・ライセンス」画面をご確認ください。'**
+  String get privacyPolicyArt1Body;
+
+  /// No description provided for @privacyPolicyArt2Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第2条（本アプリが取得しないデータ）'**
+  String get privacyPolicyArt2Title;
+
+  /// No description provided for @privacyPolicyArt2Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'本アプリは、ユーザーが作成したイラスト・アニメーション等のコンテンツ（プロジェクトデータ・書き出し画像・動画等を含みます。以下同じです。）を、開発者のサーバーへ送信・収集・保存する機能を提供していません。これらのデータは、原則としてユーザーの端末内にのみ保存されます。（クラウド同期機能は搭載していません。）開発者はこれらのコンテンツを自ら保存する機能を持たないため、開発者側での保存期間という概念自体がありません。端末内に保存されたデータは、本アプリの削除機能により随時削除できるほか、アプリをアンインストールした場合はプロジェクト・設定・追加したフォント等のデータも併せて削除されます。（ただし、ユーザーが自らの意思で作品広場機能を利用して作品を投稿する場合の情報の取扱いについては、第7条によります。）'**
+  String get privacyPolicyArt2Body;
+
+  /// プライバシーポリシー第2条の追記（Web版の正本と同じ。生成AI・機械学習の学習データとして利用しない）
+  ///
+  /// In ja, this message translates to:
+  /// **'開発者は、ユーザーが作成または投稿したコンテンツ、プロジェクトデータその他の制作データを、生成AIモデルその他の機械学習モデルの学習データとして利用しません。'**
+  String get privacyPolicyArt2AiTrainingClause;
+
+  /// No description provided for @privacyPolicyArt3Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第3条（第三者サービスによる情報の取得）'**
+  String get privacyPolicyArt3Title;
+
+  /// No description provided for @privacyPolicyArt3Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'本アプリは、以下の第三者サービスを組み込んでおり、それぞれのサービス提供者が、サービス提供に必要な範囲で情報を取得する場合があります。本アプリの開発者は、これらの情報を独自に取得・保存する機能を実装していません。（各サービスが取得した情報の管理は、それぞれのサービス提供者のプライバシーポリシーに従います。）\n\n【広告配信（Google AdMob）】\n無料版では、Google AdMobを通じて広告を配信しています。広告の配信、効果測定、不正防止等の目的で、広告識別子（Advertising ID）その他の端末情報が、Googleまたはその関連事業者によって取得・利用される場合があります。取得・利用の詳細は、Googleのプライバシーポリシー（https://policies.google.com/privacy）をご確認ください。端末の設定（Android設定アプリの「プライバシー」等）から、広告識別子のリセットや、パーソナライズ広告の無効化が可能です。欧州経済領域（EEA）・英国・スイスにお住まいの場合は、起動時等に表示される同意フォームで、広告のパーソナライズに関する同意設定を選択できます。設定はいつでも本画面下部の「広告の同意設定を変更」ボタンから変更できます。\n\n【アプリ内課金（Google Play Billing）】\nプレミアム機能の購入は、Google Playの決済システムを通じて行われます。クレジットカード番号等の決済情報は、開発者側が直接取得・保持することはありません。決済に関する情報の取扱いは、Google Playの規定に従います。\n\n【追加フォントのダウンロード（GitHub）】\n設定画面の「フォント管理」から追加フォントをダウンロードする操作を行った場合に限り、フォントの配布元であるGitHub（GitHub, Inc.）のサーバーへ通信が発生します。この通信はお客様がダウンロードを選択したときにのみ行われ、アプリの起動時や通常の利用では発生しません。送信されるのは通信に必要な情報（IPアドレス、取得するフォントファイルの指定等）のみで、作品データやお客様を特定する情報を送信することはありません。取得された情報の取扱いは、GitHubのプライバシーポリシー（https://docs.github.com/site-policy/privacy-policies/github-privacy-statement）に従います。\n\n【クラッシュ解析・利用状況分析】\n本アプリは、現時点でクラッシュ解析・利用状況分析を目的としたSDKを組み込んでいません。将来これらのサービスを導入する場合は、本ポリシーを更新し、本アプリ内で告知します。'**
+  String get privacyPolicyArt3Body;
+
+  /// No description provided for @privacyPolicyArt4Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第4条（Cookie等のトラッキング技術について）'**
+  String get privacyPolicyArt4Title;
+
+  /// No description provided for @privacyPolicyArt4Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'本アプリ自体はCookieを使用しませんが、第3条記載の広告配信サービス（Google AdMob）が、広告の配信・効果測定のために、これに類する識別技術（広告識別子等）を使用する場合があります。'**
+  String get privacyPolicyArt4Body;
+
+  /// No description provided for @privacyPolicyArt5Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第5条（お子様の個人情報について）'**
+  String get privacyPolicyArt5Title;
+
+  /// No description provided for @privacyPolicyArt5Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'本アプリは、13歳未満のお子様を主な対象として意図的に情報を収集するものではありません。保護者の方は、お子様が本アプリを利用する際、必要に応じて端末の設定からパーソナライズ広告の無効化等をご検討ください。'**
+  String get privacyPolicyArt5Body;
+
+  /// No description provided for @privacyPolicyArt6Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第6条（情報の越境移転について）'**
+  String get privacyPolicyArt6Title;
+
+  /// No description provided for @privacyPolicyArt6Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'第3条記載の第三者サービス（Google AdMob、Google Play Billing）は、Google社が世界各地で運用するサーバー上で処理される場合があります。これらの取扱いについては、各サービスのプライバシーポリシーが適用されます。'**
+  String get privacyPolicyArt6Body;
+
+  /// No description provided for @privacyPolicyArt7Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第7条（作品広場：コミュニティ投稿機能における情報の取扱い）'**
+  String get privacyPolicyArt7Title;
+
+  /// No description provided for @privacyPolicyArt7Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'1. 本アプリは、ユーザーが自らの意思で「作品広場」機能（利用規約第12条）を利用する場合に限り、以下の情報を開発者のサーバーで管理します。\n・投稿作品を識別・表示するための情報（YouTube動画ID、タイトル、統計情報、投稿日時、タグ等）\n・投稿・通報・ブロック・フォロー・ブックマーク等の機能の利用にあたり発行するNIARIM User ID（Googleアカウントとは別に本アプリ内部で発行する識別子）\n・連携したYouTubeチャンネルの公開情報（チャンネル名、チャンネルアイコンの画像URL）。これは投稿者名・アイコンの表示に用いるため、開発者のサーバーに複製して保持します\n・通報機能を利用した場合の通報内容および通報者のNIARIM User ID\n・ブロックした相手のNIARIM User ID\n・フォローした相手のNIARIM User ID、およびフォロー数・フォロワー数\n・ブックマークした作品のIDおよびブックマークした日時\n・リポストした作品のIDおよびリポストした日時\n・作品に付けられたタグ（第4項参照）\n・プッシュ通知を有効にした場合の端末トークン（通知の宛先を特定するために端末が発行する識別子。通知の送信のみに用います）\n2. 投稿された動画ファイル本体はYouTube上に保存され、開発者のサーバーには保存されません。\n3. 前2項の情報は、本コミュニティ機能の提供（作品の一覧表示・ランキング・検索、通報への対応、投稿上限の管理、フォロー・ブックマーク・リポストの反映、通知の送信等）の目的の範囲内でのみ利用します。開発者はこれらの情報を広告配信の目的で第三者へ提供しません。\n4. タグは、投稿者以外のユーザーも追加・削除できます（投稿者は自分の作品のタグをロックして編集を禁止できます）。タグは作品広場上で公開され、誰が付けたかは表示されません。\n5. フォロー中のユーザーとブックマークした作品の一覧は、本人だけが閲覧できます。フォロワーの氏名・表示名や一覧は表示せず、フォロー数とフォロワー数を表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。\n6. 投稿作品を非公開にする、または削除した場合、当該作品は作品広場の一覧・ランキングから表示されなくなります。開発者のサーバー上の記録の削除を希望する場合は、第9条の窓口へご連絡ください。\n7. 本コミュニティ機能を利用しない場合、本条に基づく情報の取扱いは発生しません。（第2条の原則どおり、開発者のサーバーへの送信は行われません。）'**
+  String get privacyPolicyArt7Body;
+
+  /// No description provided for @privacyPolicyArt8Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第8条（本ポリシーの変更）'**
+  String get privacyPolicyArt8Title;
+
+  /// No description provided for @privacyPolicyArt8Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'開発者は、法令の改正、本アプリの内容の変更その他必要と判断した場合、本ポリシーを変更することがあります。本ポリシーを変更する場合、変更内容および効力発生日を、本アプリ内その他適切な方法により、事前に周知します。'**
+  String get privacyPolicyArt8Body;
+
+  /// No description provided for @privacyPolicyArt9Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'第9条（お問い合わせ）'**
+  String get privacyPolicyArt9Title;
+
+  /// No description provided for @privacyPolicyArt9Body.
+  ///
+  /// In ja, this message translates to:
+  /// **'本ポリシーに関するお問い合わせは、下記の連絡先までご連絡ください。\nsupport@miranima-studio.com'**
+  String get privacyPolicyArt9Body;
+
+  /// No description provided for @privacyPolicyAdConsentButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告の同意設定を変更'**
+  String get privacyPolicyAdConsentButton;
+
+  /// No description provided for @tipsPcDexLayoutTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ワイド画面ではPCモード（DeX）の本格レイアウトに'**
+  String get tipsPcDexLayoutTitle;
+
+  /// No description provided for @tipsPcDexLayoutDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'Chromebookやタブレット×キーボード、DeXなど画面の広い環境で使うと、ドッキングパネル方式の本格的なレイアウトへ自動で切り替わります。ワークスペース設定から常にPCモード・常にスマホモードへ手動で固定することもできるので、外部ディスプレイに接続して作業するときなどにも活用できます。'**
+  String get tipsPcDexLayoutDesc;
+
+  /// No description provided for @workspaceTimelineSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムライン表示'**
+  String get workspaceTimelineSection;
+
+  /// No description provided for @workspaceTimelineHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画・音源トラックの1行あたりの高さを5段階で調整できます。指2本でのピンチイン・ピンチアウトでも、タイムライン上のフレーム幅を一時的に拡大縮小できます。'**
+  String get workspaceTimelineHint;
+
+  /// No description provided for @workspaceTimelineTrackHeightLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'トラックの高さ'**
+  String get workspaceTimelineTrackHeightLabel;
+
+  /// No description provided for @workspaceTimelinePreviewLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビュー'**
+  String get workspaceTimelinePreviewLabel;
+
+  /// No description provided for @workspaceEndCardSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'エンドマーク'**
+  String get workspaceEndCardSection;
+
+  /// No description provided for @workspaceEndCardHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品ごとの表示設定がない場合に使う設定です。エンドマーク特典が有効な間に適用され、期限後も設定は保存されます。'**
+  String get workspaceEndCardHint;
+
+  /// No description provided for @workspaceEndCardDefaultHiddenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'エンドマークをデフォルトで非表示にする'**
+  String get workspaceEndCardDefaultHiddenTitle;
+
+  /// No description provided for @tipsTransparentColorTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'透明色はただの消しゴムじゃない、ペンと同じ感覚で使える'**
+  String get tipsTransparentColorTitle;
+
+  /// No description provided for @tipsTransparentColorDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'透明色を選ぶと、ブラシ・投げ縄・図形など好きなツールでそのまま「消す」ことができます。ブラシの筆圧や滑らかさをそのまま活かして輪郭だけ丸く削ったり、グラデーションブラシで境界をふわっと透明にぼかしたりと、消しゴムツールにはない繊細な表現が可能です。'**
+  String get tipsTransparentColorDesc;
+
+  /// No description provided for @tipsQuickToolVariantTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'早替えツールはツール違いだけでなくブラシ・サイズ違いも登録できる'**
+  String get tipsQuickToolVariantTitle;
+
+  /// No description provided for @tipsQuickToolVariantDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'早替えツールには、ペン・消しゴムのようなツールの切り替えだけでなく、同じペンでもブラシの種類が違うものや、同じ消しゴムでもサイズ違いのものを別々に登録できます。よく使う組み合わせだけを厳選して並べておけば、細かい設定変更のたびにパネルを開き直す手間が減ります。'**
+  String get tipsQuickToolVariantDesc;
+
+  /// No description provided for @tipsCommonLayerLipSyncTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通レイヤーは背景だけでなく人物の容量削減にも使える'**
+  String get tipsCommonLayerLipSyncTitle;
+
+  /// No description provided for @tipsCommonLayerLipSyncDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'背景だけでなく、人物レイヤーそのものを共通レイヤー化するのも有効です。口や瞬きする瞳など、フレームごとに変化する部分だけを通常レイヤーとして重ね、体や髪など動かない部分は共通レイヤーにしておけば、口パクや瞬きのアニメーションでも容量を大きく削減できます。'**
+  String get tipsCommonLayerLipSyncDesc;
+
+  /// No description provided for @tipsCommonLayerKeyframeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通レイヤー×レイヤーキーフレームでも容量削減できる'**
+  String get tipsCommonLayerKeyframeTitle;
+
+  /// No description provided for @tipsCommonLayerKeyframeDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通レイヤーはレイヤーキーフレームで位置・拡大・回転を動かせます。フレームごとに描き直す代わりに、1枚の絵を共通レイヤー化してキーフレームで動かすだけで、容量を増やさずに簡単な動きを付けられます。'**
+  String get tipsCommonLayerKeyframeDesc;
+
+  /// No description provided for @tipsTransferCustomizationTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'引き継ぎ機能で端末を変えてもいつもの使い心地のまま'**
+  String get tipsTransferCustomizationTitle;
+
+  /// No description provided for @tipsTransferCustomizationDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'引き継ぎ（.niatra）機能では、ブラシ・テーマ・ツールバーの並び・パレットなどカスタマイズした設定をまとめて別端末へ移せます。機種変更や複数端末の使い分けをしても、毎回イチから設定し直す必要がありません。'**
+  String get tipsTransferCustomizationDesc;
+
+  /// No description provided for @tipsBlendModeUsageTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブレンドモードは目的別に使い分けると効果的'**
+  String get tipsBlendModeUsageTitle;
+
+  /// No description provided for @tipsBlendModeUsageDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'影をつけたい時は「乗算」、光や輝きを足したい時は「スクリーン」や「加算・発光」、陰影に質感を出したい時は「オーバーレイ」や「ソフトライト」が向いています。同じ色でもブレンドモードを変えるだけで印象が大きく変わるので、まずは候補をいくつか切り替えて見比べてみるのがおすすめです。'**
+  String get tipsBlendModeUsageDesc;
+
+  /// No description provided for @timelineSaveFailedDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存に失敗しました'**
+  String get timelineSaveFailedDialogTitle;
+
+  /// No description provided for @timelineSaveFailedDialogBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存に失敗しました。もう一度お試しください。'**
+  String get timelineSaveFailedDialogBody;
+
+  /// No description provided for @licenseSectionIcons.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用アイコンについて'**
+  String get licenseSectionIcons;
+
+  /// No description provided for @layerPanelMergeAllVisibleTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示中の全レイヤーを結合'**
+  String get layerPanelMergeAllVisibleTooltip;
+
+  /// No description provided for @canvasBrushSliderToggleLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細'**
+  String get canvasBrushSliderToggleLabel;
+
+  /// No description provided for @helpMeshTransformTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自由変形・メッシュ変形'**
+  String get helpMeshTransformTitle;
+
+  /// No description provided for @helpMeshTransformDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバス右上の編集・設定メニューから開ける、レイヤー全体を対象にした変形ツールです。範囲選択の変形と異なり選択範囲は不要で、角や格子点を指で個別にドラッグして自由な形に変形できます。コントロールパネルの分割数スライダーでメッシュを最大10×10まで細かくでき、2本の指で別々の点を同時につまめば回転・拡大縮小のような操作も直感的に行えます。'**
+  String get helpMeshTransformDesc;
+
+  /// No description provided for @layerPanelBrightnessToAlphaLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'明度で透過'**
+  String get layerPanelBrightnessToAlphaLabel;
+
+  /// No description provided for @layerPanelBrightnessToAlphaHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'白い部分ほど透明にします。色はそのまま半透明になります（白背景が消えるのではなく、絵全体が薄くなるイメージ）。'**
+  String get layerPanelBrightnessToAlphaHint;
+
+  /// No description provided for @layerPanelBrightnessToAlphaColorButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラー'**
+  String get layerPanelBrightnessToAlphaColorButton;
+
+  /// No description provided for @layerPanelBrightnessToAlphaGrayButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'グレー'**
+  String get layerPanelBrightnessToAlphaGrayButton;
+
+  /// No description provided for @tipsRoughLayerRescueTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'下描きに線画を描いてしまった時は「明度で透過」で救出'**
+  String get tipsRoughLayerRescueTitle;
+
+  /// No description provided for @tipsRoughLayerRescueDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'下描きレイヤーに誤って線画を重ねて描いてしまっても、レイヤーを消さずに線画だけを取り出せます。①新しいレイヤーを追加し、ブレンドモードを「除算」にする。②スポイトで下描きの色を拾い、その除算レイヤー全体を塗りつぶす（下描きが薄くなります）。③除算レイヤーを複製すると、下描きが完全に消えます。④レイヤーパネルの「表示中の全レイヤーを結合」で1枚にまとめる。⑤結合したレイヤーの三点メニューから「明度で透過（グレー）」を選べば、白い部分が透明になり線画だけが残ります。'**
+  String get tipsRoughLayerRescueDesc;
+
+  /// No description provided for @timelineEffectTypeMonochrome.
+  ///
+  /// In ja, this message translates to:
+  /// **'単色化フィルター'**
+  String get timelineEffectTypeMonochrome;
+
+  /// No description provided for @filterNameColorAdjust.
+  ///
+  /// In ja, this message translates to:
+  /// **'色調調整'**
+  String get filterNameColorAdjust;
+
+  /// No description provided for @filterColorAdjustSaturationLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'彩度'**
+  String get filterColorAdjustSaturationLabel;
+
+  /// No description provided for @filterColorAdjustBrightnessLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'明度'**
+  String get filterColorAdjustBrightnessLabel;
+
+  /// No description provided for @filterColorAdjustContrastLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'コントラスト'**
+  String get filterColorAdjustContrastLabel;
+
+  /// No description provided for @canvasColorAdjustTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'色調調整'**
+  String get canvasColorAdjustTitle;
+
+  /// No description provided for @canvasColorAdjustAddToDrawFilter.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画フィルターに追加する'**
+  String get canvasColorAdjustAddToDrawFilter;
+
+  /// No description provided for @canvasColorAdjustAddToEffectFilter.
+  ///
+  /// In ja, this message translates to:
+  /// **'演出フィルターに追加する'**
+  String get canvasColorAdjustAddToEffectFilter;
+
+  /// No description provided for @canvasColorAdjustDrawFilterAdded.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画フィルターに「{name}」を追加しました。'**
+  String canvasColorAdjustDrawFilterAdded(String name);
+
+  /// No description provided for @canvasColorAdjustEffectFilterAdded.
+  ///
+  /// In ja, this message translates to:
+  /// **'演出フィルターに「{name}」を追加しました。タイムラインで確認できます。'**
+  String canvasColorAdjustEffectFilterAdded(String name);
+
+  /// No description provided for @canvasColorAdjustMenuTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'色調調整'**
+  String get canvasColorAdjustMenuTitle;
+
+  /// No description provided for @canvasEditMenuReferenceWindow.
+  ///
+  /// In ja, this message translates to:
+  /// **'資料ウィンドウ'**
+  String get canvasEditMenuReferenceWindow;
+
+  /// No description provided for @canvasEditMenuReferenceWindowSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'三面図・資料画像をフローティング表示'**
+  String get canvasEditMenuReferenceWindowSubtitle;
+
+  /// No description provided for @referenceWindowTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'資料ウィンドウ'**
+  String get referenceWindowTitle;
+
+  /// No description provided for @referenceWindowSelectImageButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を選択'**
+  String get referenceWindowSelectImageButton;
+
+  /// No description provided for @workspaceDockPanelSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'PCモード版で既定で開くパネル'**
+  String get workspaceDockPanelSection;
+
+  /// No description provided for @workspaceDockPanelHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'PC/DeXモードでは、チェックした複数のパネルを同時にドッキング表示できます（スマホ版は誤操作防止のため対象外）。'**
+  String get workspaceDockPanelHint;
+
+  /// No description provided for @workspaceDockPanelBrush.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ'**
+  String get workspaceDockPanelBrush;
+
+  /// No description provided for @workspaceDockPanelColorPicker.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーピッカー'**
+  String get workspaceDockPanelColorPicker;
+
+  /// No description provided for @workspaceDockPanelLayer.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤー'**
+  String get workspaceDockPanelLayer;
+
+  /// No description provided for @workspaceDockPanelTone.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーン'**
+  String get workspaceDockPanelTone;
+
+  /// No description provided for @workspaceDockPanelStamp.
+  ///
+  /// In ja, this message translates to:
+  /// **'スタンプ'**
+  String get workspaceDockPanelStamp;
+
+  /// No description provided for @workspaceDockPanelPenSubTool.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン'**
+  String get workspaceDockPanelPenSubTool;
+
+  /// No description provided for @workspaceDockPanelOnionSkin.
+  ///
+  /// In ja, this message translates to:
+  /// **'オニオンスキン'**
+  String get workspaceDockPanelOnionSkin;
+
+  /// No description provided for @workspaceDockPanelRuler.
+  ///
+  /// In ja, this message translates to:
+  /// **'定規'**
+  String get workspaceDockPanelRuler;
+
+  /// No description provided for @workspaceDockPanelFilter.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター'**
+  String get workspaceDockPanelFilter;
+
+  /// No description provided for @workspaceDockPanelQuickTool.
+  ///
+  /// In ja, this message translates to:
+  /// **'早替えツール'**
+  String get workspaceDockPanelQuickTool;
+
+  /// No description provided for @workspaceDockPanelColorAdjust.
+  ///
+  /// In ja, this message translates to:
+  /// **'色調調整'**
+  String get workspaceDockPanelColorAdjust;
+
+  /// No description provided for @workspaceDockPanelCanvasPreview.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスプレビュー'**
+  String get workspaceDockPanelCanvasPreview;
+
+  /// No description provided for @workspacePcLayoutButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'PCレイアウト設定'**
+  String get workspacePcLayoutButton;
+
+  /// No description provided for @pcWorkspaceResizeGrip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドラッグしてサイズを変更'**
+  String get pcWorkspaceResizeGrip;
+
+  /// No description provided for @pcWorkspaceLayoutScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'PCレイアウト設定'**
+  String get pcWorkspaceLayoutScreenTitle;
+
+  /// No description provided for @pcWorkspaceLayoutIntroHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'PCモード（横画面＋マウス・ペンタブ接続）でキャンバス画面を開いた際の、パネルの並び順・幅を調整できます。'**
+  String get pcWorkspaceLayoutIntroHint;
+
+  /// No description provided for @pcWorkspaceLayoutToolOrderSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールパネルの並び順'**
+  String get pcWorkspaceLayoutToolOrderSection;
+
+  /// No description provided for @pcWorkspaceLayoutRightOrderSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤー等パネルの並び順'**
+  String get pcWorkspaceLayoutRightOrderSection;
+
+  /// No description provided for @pcWorkspaceLayoutResetWidthButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'幅と高さをデフォルトに戻す'**
+  String get pcWorkspaceLayoutResetWidthButton;
+
+  /// No description provided for @pcWorkspaceLayoutResetOrderButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'並び順をデフォルトに戻す'**
+  String get pcWorkspaceLayoutResetOrderButton;
+
+  /// No description provided for @pcWorkspaceLayoutResetWorkspaceConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルの並び順・幅・高さ・収納状態・自動収納の設定と、最初から開くパネルをデフォルトに戻します。'**
+  String get pcWorkspaceLayoutResetWorkspaceConfirmBody;
+
+  /// No description provided for @pcWorkspaceLayoutResetSizeConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルの幅と高さをデフォルトに戻します。'**
+  String get pcWorkspaceLayoutResetSizeConfirmBody;
+
+  /// No description provided for @pcWorkspaceLayoutResetOrderConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルの並び順をデフォルトに戻します。'**
+  String get pcWorkspaceLayoutResetOrderConfirmBody;
+
+  /// No description provided for @canvasPreviewNavigatorTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスプレビュー'**
+  String get canvasPreviewNavigatorTitle;
+
+  /// No description provided for @canvasEditMenuPreviewNavigator.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスプレビュー'**
+  String get canvasEditMenuPreviewNavigator;
+
+  /// No description provided for @canvasEditMenuPreviewNavigatorSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'全体を縮小表示（ナビゲーター）'**
+  String get canvasEditMenuPreviewNavigatorSubtitle;
+
+  /// No description provided for @filterNamePrism.
+  ///
+  /// In ja, this message translates to:
+  /// **'プリズム'**
+  String get filterNamePrism;
+
+  /// No description provided for @filterNameThreshold.
+  ///
+  /// In ja, this message translates to:
+  /// **'二値化'**
+  String get filterNameThreshold;
+
+  /// No description provided for @filterMonochromeColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'単色化の色'**
+  String get filterMonochromeColorLabel;
+
+  /// No description provided for @filterThresholdLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'閾値'**
+  String get filterThresholdLabel;
+
+  /// No description provided for @filterNameFisheye.
+  ///
+  /// In ja, this message translates to:
+  /// **'魚眼レンズ'**
+  String get filterNameFisheye;
+
+  /// No description provided for @filterFisheyeStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'歪み'**
+  String get filterFisheyeStrength;
+
+  /// No description provided for @filterNameChromaticAberration.
+  ///
+  /// In ja, this message translates to:
+  /// **'色収差'**
+  String get filterNameChromaticAberration;
+
+  /// No description provided for @filterChromaticAberrationStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'ずれの強さ'**
+  String get filterChromaticAberrationStrength;
+
+  /// No description provided for @filterNameLensDistortion.
+  ///
+  /// In ja, this message translates to:
+  /// **'眼鏡断層'**
+  String get filterNameLensDistortion;
+
+  /// No description provided for @filterLensDistortionStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'レンズの強さ（負で凹レンズ、正で凸レンズ）'**
+  String get filterLensDistortionStrength;
+
+  /// No description provided for @filterLensDistortionOffsetX.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心位置の微調整（左右）'**
+  String get filterLensDistortionOffsetX;
+
+  /// No description provided for @filterNamePixelate.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドット絵'**
+  String get filterNamePixelate;
+
+  /// No description provided for @filterNameAuroraHologram.
+  ///
+  /// In ja, this message translates to:
+  /// **'質感変更'**
+  String get filterNameAuroraHologram;
+
+  /// No description provided for @filterAuroraHologramStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター強度'**
+  String get filterAuroraHologramStrength;
+
+  /// No description provided for @filterAuroraHologramBrightness.
+  ///
+  /// In ja, this message translates to:
+  /// **'明度'**
+  String get filterAuroraHologramBrightness;
+
+  /// No description provided for @filterAuroraHologramSaturation.
+  ///
+  /// In ja, this message translates to:
+  /// **'彩度'**
+  String get filterAuroraHologramSaturation;
+
+  /// No description provided for @filterHologramKeepLines.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画を残す'**
+  String get filterHologramKeepLines;
+
+  /// No description provided for @filterHologramKeepLinesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'黒に近い細い線（同じレイヤーに描いた線画）は元の色のまま残し、面にだけ質感をかけます。'**
+  String get filterHologramKeepLinesHint;
+
+  /// No description provided for @filterAuroraHologramPresetSilverHologram.
+  ///
+  /// In ja, this message translates to:
+  /// **'オーロラホログラム'**
+  String get filterAuroraHologramPresetSilverHologram;
+
+  /// No description provided for @filterAuroraHologramPresetSilverFoil.
+  ///
+  /// In ja, this message translates to:
+  /// **'プラチナシルバー'**
+  String get filterAuroraHologramPresetSilverFoil;
+
+  /// No description provided for @filterAuroraHologramPresetSampledGold.
+  ///
+  /// In ja, this message translates to:
+  /// **'サンプルゴールド'**
+  String get filterAuroraHologramPresetSampledGold;
+
+  /// No description provided for @filterAuroraHologramPresetLuminousPearl.
+  ///
+  /// In ja, this message translates to:
+  /// **'ルミナスパール'**
+  String get filterAuroraHologramPresetLuminousPearl;
+
+  /// No description provided for @filterAuroraHologramPresetAuroraPastel.
+  ///
+  /// In ja, this message translates to:
+  /// **'オーロラパステル'**
+  String get filterAuroraHologramPresetAuroraPastel;
+
+  /// No description provided for @filterAuroraHologramPresetDarkRainbow.
+  ///
+  /// In ja, this message translates to:
+  /// **'ダークレインボー'**
+  String get filterAuroraHologramPresetDarkRainbow;
+
+  /// No description provided for @filterNameBackgroundBlend.
+  ///
+  /// In ja, this message translates to:
+  /// **'背景馴染ませ'**
+  String get filterNameBackgroundBlend;
+
+  /// No description provided for @filterBackgroundBlendDirection.
+  ///
+  /// In ja, this message translates to:
+  /// **'影と光（連動）の向き'**
+  String get filterBackgroundBlendDirection;
+
+  /// No description provided for @filterBackgroundBlendLength.
+  ///
+  /// In ja, this message translates to:
+  /// **'影と光（連動）の長さ'**
+  String get filterBackgroundBlendLength;
+
+  /// No description provided for @filterBackgroundBlendBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし具合'**
+  String get filterBackgroundBlendBlur;
+
+  /// No description provided for @filterPixelateBlockSize.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロックサイズ'**
+  String get filterPixelateBlockSize;
+
+  /// No description provided for @filterPixelateDither.
+  ///
+  /// In ja, this message translates to:
+  /// **'ディザリング'**
+  String get filterPixelateDither;
+
+  /// No description provided for @filterPixelateDitherHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'1色では元の色から遠い所を、使える色を規則正しく並べて近づけます'**
+  String get filterPixelateDitherHint;
+
+  /// No description provided for @filterPixelateModeBlock.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロックサイズを指定'**
+  String get filterPixelateModeBlock;
+
+  /// No description provided for @filterPixelateModeDots.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドット数を指定'**
+  String get filterPixelateModeDots;
+
+  /// No description provided for @filterPixelateDotsWide.
+  ///
+  /// In ja, this message translates to:
+  /// **'横のドット数'**
+  String get filterPixelateDotsWide;
+
+  /// No description provided for @filterPixelateDotsHigh.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦のドット数'**
+  String get filterPixelateDotsHigh;
+
+  /// No description provided for @filterPixelateDotsSummary.
+  ///
+  /// In ja, this message translates to:
+  /// **'横{wide}×縦{high}ドット'**
+  String filterPixelateDotsSummary(int wide, int high);
+
+  /// No description provided for @filterLensDistortionOffsetY.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心位置の微調整（上下）'**
+  String get filterLensDistortionOffsetY;
+
+  /// No description provided for @filterLensDistortionNoMaskHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'レンズにする範囲（眼鏡のレンズ部分など）を、「ペン」か「バケツ」でキャンバスに塗ってください。選択範囲や選択レイヤーがあれば、その範囲から始まります。'**
+  String get filterLensDistortionNoMaskHint;
+
+  /// No description provided for @filterLensMaskTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'レンズの範囲'**
+  String get filterLensMaskTitle;
+
+  /// No description provided for @filterLensMaskPen.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン'**
+  String get filterLensMaskPen;
+
+  /// No description provided for @filterLensMaskEraser.
+  ///
+  /// In ja, this message translates to:
+  /// **'消しゴム'**
+  String get filterLensMaskEraser;
+
+  /// No description provided for @filterLensMaskBucket.
+  ///
+  /// In ja, this message translates to:
+  /// **'バケツ'**
+  String get filterLensMaskBucket;
+
+  /// No description provided for @filterLensMaskBrushSize.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペンの太さ'**
+  String get filterLensMaskBrushSize;
+
+  /// No description provided for @filterLensMaskClear.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲を消す'**
+  String get filterLensMaskClear;
+
+  /// No description provided for @filterSelectionOnlyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択範囲の中だけに適用されます'**
+  String get filterSelectionOnlyHint;
+
+  /// No description provided for @tipsStockingDenierTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ストッキング・タイツはデニール数でトーンの目の細かさが変わる'**
+  String get tipsStockingDenierTitle;
+
+  /// No description provided for @tipsStockingDenierDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーン一覧に追加されたストッキング・タイツは、デニール数が低いものほど生地が薄いという設定に合わせて格子模様の間隔を詰めてあり、10デニールなど最も薄いものはあえて細かすぎるくらいの密度にしています（表示・書き出し解像度によってはモアレが出ることがあります）。デニール数が高いタイツほど間隔が広く不透明感のある見た目になるので、キャラクターの脚に合わせて使い分けてください。'**
+  String get tipsStockingDenierDesc;
+
+  /// No description provided for @tipsFisheyeChromaticTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'魚眼レンズ・色収差フィルターでレンズらしい歪み・にじみを演出'**
+  String get tipsFisheyeChromaticTitle;
+
+  /// No description provided for @tipsFisheyeChromaticDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'魚眼レンズフィルターは画面中心を膨らませ、周辺を圧縮することで広角・魚眼レンズで撮ったような湾曲を再現します。色収差フィルターはRGBチャンネルを少しずつずらすことで、安いレンズで撮影したときのような色のにじみを再現します。どちらも描画フィルター（レイヤーへ直接適用）・演出フィルター（タイムライン上で範囲指定して適用）の両方から使えます。魚眼レンズの中心は、キャンバス上の＋をドラッグしても動かせます。'**
+  String get tipsFisheyeChromaticDesc;
+
+  /// No description provided for @tipsLensDistortionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'眼鏡断層フィルターで、眼鏡のレンズ越しの歪みを再現'**
+  String get tipsLensDistortionTitle;
+
+  /// No description provided for @tipsLensDistortionDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'眼鏡断層フィルターを選び、レンズにする範囲（眼鏡のレンズ部分など）をパネルの「ペン」でキャンバスに塗るか、「バケツ」で線に囲まれた所をタップすると、その範囲だけに局所的な歪みをかけられます。はみ出したら「消しゴム」で消せ、塗った範囲は元に戻す・やり直すで1手ずつ戻せます。選択範囲や選択レイヤーがあれば、その範囲から始まります。レンズの強さのスライダーは負の値で凹レンズ風に縮小、正の値で凸レンズ風に拡大し、中心位置も微調整できます。両目分のレンズを塗って一括で適用することも可能です。塗った範囲は書き出し・最終的な絵には写り込みません。眼鏡以外にも、カメラのレンズ越しに景色を見ているような歪みを再現したいときにも使えます。背景など広い範囲を塗り、弱めの強さにするのがおすすめです。'**
+  String get tipsLensDistortionDesc;
+
+  /// No description provided for @tipsSphereShadingTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'球体陰影フィルターで丸い立体感を一度に付ける'**
+  String get tipsSphereShadingTitle;
+
+  /// No description provided for @tipsSphereShadingDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'球体陰影フィルターは、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます。光の位置と大きさはスライダーのほか、キャンバス上の＋（位置）と丸いつまみ（大きさ）のドラッグでも変えられ、境目のぼかしで球のような柔らかい陰影にできます。影色・光色はそれぞれブレンドモードを選べ（例：影は乗算、光はスクリーン）、「まとめて1つで」にすると影色から光色へのグラデーションを1つのブレンドモード（ハードライト等）で重ねます。色は透明にもでき、透明にした側は何もしません。選択範囲か選択レイヤーがあれば、その範囲だけに付きます。'**
+  String get tipsSphereShadingDesc;
+
+  /// No description provided for @tipsBackgroundBlendTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'背景と人物をなじませる手順'**
+  String get tipsBackgroundBlendTitle;
+
+  /// No description provided for @tipsBackgroundBlendDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'描いた人物を背景の写真や絵になじませるには、まず人物のレイヤーで描画フィルター「背景馴染ませ」をかけます。描いた色の明るさ・彩度が背景の範囲に収まり、背景の色の方向（オーバーレイ）、背景の影の色の影と光（ハードライト）、照り返し（スクリーン）、ネオンのような強い光（加算・発光）がまとめて入ります。さらに整えるなら、大きな影から乗算かハードライトのレイヤーに描き足し、ガラスや金属など素材ごとの映り込みや輪郭の光をスクリーン・加算・発光のレイヤーで足します。見せたい所（顔など）は明るく鮮やかに残し、周辺減光で周りを少し暗くすると主役が引き立ちます。最後にトーンカーブやレベル補正で全体の色を整えます。'**
+  String get tipsBackgroundBlendDesc;
+
+  /// No description provided for @tipsLineArtExtractionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'色調補正・二値化・明度で透過を組み合わせて線画を抽出する'**
+  String get tipsLineArtExtractionTitle;
+
+  /// No description provided for @tipsLineArtExtractionDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'色調補正でコントラストを強めて線を際立たせたあと、二値化フィルターで画像を白黒2色に分けると、線とそれ以外がはっきり分離します。二値化の閾値はスライダーで自由に調整でき、線の太さ・かすれ具合を好みに合わせられます。仕上げにレイヤーの三点メニューにある「明度で透過（グレー）」を使うと、白い部分（線以外）だけが透過し、線画だけを抽出できます。写真や下描きから線画だけを取り出したいときに便利です。'**
+  String get tipsLineArtExtractionDesc;
+
+  /// No description provided for @tipsLineColorUsageTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画色は用途で使い分けると仕上がりが変わる'**
+  String get tipsLineColorUsageTitle;
+
+  /// No description provided for @tipsLineColorUsageDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツの輪郭をはっきり見せつつ線を周囲になじませたい場合は、「線画色」を「色トレス・線画馴染ませ」にします。影やハイライトを塗るパーツでは、「線画色」を「塗り色と同じ」にすると、線画も塗り色に合わせて色づき、線だけが濃く浮くのを防げます。意図的に別の線色を使いたい場合は「指定色」を選びます。'**
+  String get tipsLineColorUsageDesc;
+
+  /// No description provided for @tipsBlushAutofillTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'頬の赤みも自動塗りでふんわり乗せられる'**
+  String get tipsBlushAutofillTitle;
+
+  /// No description provided for @tipsBlushAutofillDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画色を指定色にして透明色を選び、塗り色を放射：中央→外側にして頬の赤みと透明色の2色を指定すると、肌の上に頬の赤みだけをふわっと重ねられます。赤みの不透明度と色の切り替え位置を調整すると、境界がより馴染みやすくなります。'**
+  String get tipsBlushAutofillDesc;
+
+  /// No description provided for @autofillPartResetTraceButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'デフォルトに戻す'**
+  String get autofillPartResetTraceButton;
+
+  /// No description provided for @premiumScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム'**
+  String get premiumScreenTitle;
+
+  /// No description provided for @premiumComparisonPremium.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム'**
+  String get premiumComparisonPremium;
+
+  /// No description provided for @premiumRegisteredDateLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'登録日: {date}'**
+  String premiumRegisteredDateLabel(String date);
+
+  /// No description provided for @premiumNextRenewalDateLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'次回更新日: {date}'**
+  String premiumNextRenewalDateLabel(String date);
+
+  /// No description provided for @workspaceApplyCurrentButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定したワークスペースを適用'**
+  String get workspaceApplyCurrentButton;
+
+  /// No description provided for @workspaceAppliedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'ワークスペース設定を反映しました'**
+  String get workspaceAppliedSnackbar;
+
+  /// No description provided for @workspaceSaveAsButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'ワークスペースに名前を付けて保存・上書き保存'**
+  String get workspaceSaveAsButton;
+
+  /// No description provided for @workspaceShareButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'ワークスペースを共有'**
+  String get workspaceShareButton;
+
+  /// No description provided for @workspaceShareSelectTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有するワークスペースを選択'**
+  String get workspaceShareSelectTitle;
+
+  /// No description provided for @workspaceShareFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有に失敗しました: {error}'**
+  String workspaceShareFailedSnackbar(String error);
+
+  /// No description provided for @workspaceImportFromFileButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'外部ファイルを読み込み'**
+  String get workspaceImportFromFileButton;
+
+  /// No description provided for @workspaceImportFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込みに失敗しました: {error}'**
+  String workspaceImportFailedSnackbar(String error);
+
+  /// No description provided for @workspaceNameRequiredError.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前を入力してください'**
+  String get workspaceNameRequiredError;
+
+  /// No description provided for @workspaceOverwriteSelectTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'上書きするワークスペースを選択'**
+  String get workspaceOverwriteSelectTitle;
+
+  /// No description provided for @workspaceOverwriteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'上書きの確認'**
+  String get workspaceOverwriteConfirmTitle;
+
+  /// No description provided for @workspaceOverwriteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を現在の設定で上書きします。元の内容は削除されます。よろしいですか？'**
+  String workspaceOverwriteConfirmBody(String name);
+
+  /// No description provided for @workspaceOverwriteButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'上書き保存'**
+  String get workspaceOverwriteButton;
+
+  /// No description provided for @splashCommunityButtonTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場'**
+  String get splashCommunityButtonTitle;
+
+  /// No description provided for @splashCommunityButtonSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿作品をみる'**
+  String get splashCommunityButtonSubtitle;
+
+  /// No description provided for @splashCreateButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品をつくる'**
+  String get splashCreateButton;
+
+  /// No description provided for @communitySampleBadge.
+  ///
+  /// In ja, this message translates to:
+  /// **'見本データ'**
+  String get communitySampleBadge;
+
+  /// No description provided for @communityScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場'**
+  String get communityScreenTitle;
+
+  /// No description provided for @communityTabNew.
+  ///
+  /// In ja, this message translates to:
+  /// **'新着'**
+  String get communityTabNew;
+
+  /// No description provided for @communityTabRanking.
+  ///
+  /// In ja, this message translates to:
+  /// **'ランキング'**
+  String get communityTabRanking;
+
+  /// No description provided for @communityTabFavoriteAuthors.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロー中'**
+  String get communityTabFavoriteAuthors;
+
+  /// No description provided for @communitySearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品タイトル・投稿者名で検索'**
+  String get communitySearchHint;
+
+  /// No description provided for @communityEmptyState.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品がありません'**
+  String get communityEmptyState;
+
+  /// No description provided for @communitySearchNoResults.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{query}」に一致する作品が見つかりませんでした'**
+  String communitySearchNoResults(String query);
+
+  /// No description provided for @communityTagSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグ名で検索'**
+  String get communityTagSearchHint;
+
+  /// No description provided for @communityAddTagButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを追加'**
+  String get communityAddTagButton;
+
+  /// No description provided for @communityAddTagDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを追加'**
+  String get communityAddTagDialogTitle;
+
+  /// No description provided for @communityAddTagDialogHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグ名を入力'**
+  String get communityAddTagDialogHint;
+
+  /// No description provided for @communityTagLockTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグをロック（投稿者のみ）'**
+  String get communityTagLockTooltip;
+
+  /// No description provided for @communityTagUnlockTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグのロックを解除（投稿者のみ）'**
+  String get communityTagUnlockTooltip;
+
+  /// No description provided for @communityRemoveTagTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを削除'**
+  String get communityRemoveTagTooltip;
+
+  /// No description provided for @communityPostButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿する'**
+  String get communityPostButton;
+
+  /// No description provided for @communityRankingPeriodAllTime.
+  ///
+  /// In ja, this message translates to:
+  /// **'累計'**
+  String get communityRankingPeriodAllTime;
+
+  /// No description provided for @communityRankingPeriodYearly.
+  ///
+  /// In ja, this message translates to:
+  /// **'年間'**
+  String get communityRankingPeriodYearly;
+
+  /// No description provided for @communityRankingPeriodMonthly.
+  ///
+  /// In ja, this message translates to:
+  /// **'月間'**
+  String get communityRankingPeriodMonthly;
+
+  /// No description provided for @communityRankingPeriodWeekly.
+  ///
+  /// In ja, this message translates to:
+  /// **'週間'**
+  String get communityRankingPeriodWeekly;
+
+  /// No description provided for @communityRankingPeriodDaily.
+  ///
+  /// In ja, this message translates to:
+  /// **'デイリー'**
+  String get communityRankingPeriodDaily;
+
+  /// No description provided for @communityRankingSortBookmarks.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマーク数'**
+  String get communityRankingSortBookmarks;
+
+  /// No description provided for @communityRankingSortAscendingTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'昇順（少ない順）'**
+  String get communityRankingSortAscendingTooltip;
+
+  /// No description provided for @communityRankingSortDescendingTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'降順（多い順）'**
+  String get communityRankingSortDescendingTooltip;
+
+  /// No description provided for @communityWorkDetailPostedLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'{date}に投稿'**
+  String communityWorkDetailPostedLabel(String date);
+
+  /// No description provided for @communityWorkDetailViewOnYoutube.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeで見る'**
+  String get communityWorkDetailViewOnYoutube;
+
+  /// No description provided for @communityWorkDetailBookmarkAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマーク'**
+  String get communityWorkDetailBookmarkAdd;
+
+  /// No description provided for @communityWorkDetailBookmarkRemove.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマーク済み'**
+  String get communityWorkDetailBookmarkRemove;
+
+  /// No description provided for @communityWorkDetailReportButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'通報'**
+  String get communityWorkDetailReportButton;
+
+  /// No description provided for @communityWorkDetailBlockButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロック'**
+  String get communityWorkDetailBlockButton;
+
+  /// No description provided for @communityVisibilityCardTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場での公開状態'**
+  String get communityVisibilityCardTitle;
+
+  /// No description provided for @communityVisibilityPublishedDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'公開中：新着・ランキング・投稿者別作品一覧に表示されています。'**
+  String get communityVisibilityPublishedDesc;
+
+  /// No description provided for @communityVisibilityHiddenDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'非公開中：新着・ランキング・投稿者別作品一覧から非表示です（YouTube側の公開設定とは独立した設定です）。'**
+  String get communityVisibilityHiddenDesc;
+
+  /// No description provided for @communityVisibilityHiddenBadge.
+  ///
+  /// In ja, this message translates to:
+  /// **'非公開'**
+  String get communityVisibilityHiddenBadge;
+
+  /// No description provided for @communityWorkDetailTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品詳細'**
+  String get communityWorkDetailTitle;
+
+  /// No description provided for @communityWorkHiddenByFilterMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示フィルターの設定により、この作品は非表示になっています'**
+  String get communityWorkHiddenByFilterMessage;
+
+  /// No description provided for @communityEditFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更を保存できませんでした。通信状態を確認して、もう一度お試しください。'**
+  String get communityEditFailed;
+
+  /// No description provided for @communityEditSignInRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更するにはGoogleアカウントでログインしてください'**
+  String get communityEditSignInRequired;
+
+  /// No description provided for @communityFloatingPreviewDetailButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細へ'**
+  String get communityFloatingPreviewDetailButton;
+
+  /// No description provided for @communityFloatingPreviewPlayTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生'**
+  String get communityFloatingPreviewPlayTooltip;
+
+  /// No description provided for @communityFloatingPreviewPauseTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'一時停止'**
+  String get communityFloatingPreviewPauseTooltip;
+
+  /// No description provided for @communityFloatingPreviewResizeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューのサイズを変更'**
+  String get communityFloatingPreviewResizeTooltip;
+
+  /// No description provided for @communityFloatingPreviewMoveHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドラッグで移動できます。Alt＋矢印キーでも移動できます。'**
+  String get communityFloatingPreviewMoveHint;
+
+  /// No description provided for @communityFloatingPreviewCompactHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品は詳細画面で確認できます。'**
+  String get communityFloatingPreviewCompactHint;
+
+  /// No description provided for @communityAuthorWorksCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}作品'**
+  String communityAuthorWorksCount(int count);
+
+  /// No description provided for @communityAuthorFollowerCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワー{count}人'**
+  String communityAuthorFollowerCount(int count);
+
+  /// No description provided for @communityAuthorFollowingCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロー{count}人'**
+  String communityAuthorFollowingCount(int count);
+
+  /// No description provided for @communityFollowNotificationsTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知'**
+  String get communityFollowNotificationsTooltip;
+
+  /// No description provided for @communityFollowNotificationsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知はありません'**
+  String get communityFollowNotificationsEmpty;
+
+  /// No description provided for @communityFollowNotificationsSignInRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場の通知を見るには、Googleアカウントでログインしてください。'**
+  String get communityFollowNotificationsSignInRequired;
+
+  /// No description provided for @communityNoWorksMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品がありません'**
+  String get communityNoWorksMessage;
+
+  /// No description provided for @communityFavoriteAuthorFollow.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロー'**
+  String get communityFavoriteAuthorFollow;
+
+  /// No description provided for @communityFavoriteAuthorFollowing.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロー中'**
+  String get communityFavoriteAuthorFollowing;
+
+  /// No description provided for @communityFavoriteAuthorsEmptyTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り作者がいません'**
+  String get communityFavoriteAuthorsEmptyTitle;
+
+  /// No description provided for @communityFavoriteAuthorsEmptyBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'気に入った投稿者のページで「フォロー」すると、ここにその人の新着作品が並びます。'**
+  String get communityFavoriteAuthorsEmptyBody;
+
+  /// No description provided for @communityRepostCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'リポスト数'**
+  String get communityRepostCount;
+
+  /// No description provided for @communityRepostButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'リポスト'**
+  String get communityRepostButton;
+
+  /// No description provided for @communityRepostedButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'リポスト済み'**
+  String get communityRepostedButton;
+
+  /// No description provided for @communityRepostedByBadge.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name}さんがリポスト'**
+  String communityRepostedByBadge(String name);
+
+  /// No description provided for @communityAuthorSortPosted.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿日時'**
+  String get communityAuthorSortPosted;
+
+  /// No description provided for @communityAuthorTabWorks.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品'**
+  String get communityAuthorTabWorks;
+
+  /// No description provided for @communityAuthorTabBookmarks.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマーク'**
+  String get communityAuthorTabBookmarks;
+
+  /// No description provided for @communityBookmarksHiddenMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークした作品は、まだ読み込めていないか、今は公開されていません'**
+  String get communityBookmarksHiddenMessage;
+
+  /// No description provided for @communityBookmarksEmptyMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークした作品がありません'**
+  String get communityBookmarksEmptyMessage;
+
+  /// No description provided for @communityShortsBadge.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦画面'**
+  String get communityShortsBadge;
+
+  /// No description provided for @communityLandscapeBadge.
+  ///
+  /// In ja, this message translates to:
+  /// **'横画面'**
+  String get communityLandscapeBadge;
+
+  /// No description provided for @communityVideoTypeFilterTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の種類を絞り込む'**
+  String get communityVideoTypeFilterTooltip;
+
+  /// No description provided for @communityVideoTypeFilterAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'総合'**
+  String get communityVideoTypeFilterAll;
+
+  /// No description provided for @communityVideoTypeFilterShortOnly.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦画面のみ'**
+  String get communityVideoTypeFilterShortOnly;
+
+  /// No description provided for @communityVideoTypeFilterLongOnly.
+  ///
+  /// In ja, this message translates to:
+  /// **'横画面のみ'**
+  String get communityVideoTypeFilterLongOnly;
+
+  /// No description provided for @communityShortsModeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦画面モードで見る'**
+  String get communityShortsModeTooltip;
+
+  /// No description provided for @communityShortsModeEmptySnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦画面の動画がありません'**
+  String get communityShortsModeEmptySnackbar;
+
+  /// No description provided for @communityShortsModeExitTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦画面モードを終了'**
+  String get communityShortsModeExitTooltip;
+
+  /// No description provided for @pixelColorModeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'配色方式'**
+  String get pixelColorModeLabel;
+
+  /// No description provided for @pixelColorModeNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'色を指定しない'**
+  String get pixelColorModeNone;
+
+  /// No description provided for @pixelColorModePalette.
+  ///
+  /// In ja, this message translates to:
+  /// **'パレットから選ぶ'**
+  String get pixelColorModePalette;
+
+  /// No description provided for @pixelColorModeExplicit.
+  ///
+  /// In ja, this message translates to:
+  /// **'色を指定する'**
+  String get pixelColorModeExplicit;
+
+  /// No description provided for @pixelColorModeCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'色数を指定する'**
+  String get pixelColorModeCount;
+
+  /// No description provided for @pixelColorLevelsLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'色数: {count}'**
+  String pixelColorLevelsLabel(int count);
+
+  /// No description provided for @pixelColorChipDeleteTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'この色を削除'**
+  String get pixelColorChipDeleteTooltip;
+
+  /// No description provided for @pixelColorChipAddButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'色を追加'**
+  String get pixelColorChipAddButton;
+
+  /// No description provided for @pixelArtPaletteNameRequiredError.
+  ///
+  /// In ja, this message translates to:
+  /// **'パレット名を入力してください'**
+  String get pixelArtPaletteNameRequiredError;
+
+  /// No description provided for @pixelArtPaletteEditTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パレットを編集'**
+  String get pixelArtPaletteEditTitle;
+
+  /// No description provided for @pixelArtPaletteAddTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パレットを追加'**
+  String get pixelArtPaletteAddTitle;
+
+  /// No description provided for @pixelArtPaletteNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'パレット名'**
+  String get pixelArtPaletteNameLabel;
+
+  /// No description provided for @pixelArtPalettePickerTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パレットから選ぶ'**
+  String get pixelArtPalettePickerTitle;
+
+  /// No description provided for @pixelArtPalettePickerEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存済みのパレットがありません。「追加」から作成してください'**
+  String get pixelArtPalettePickerEmpty;
+
+  /// No description provided for @pixelArtPalettePickerApplyButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'適用'**
+  String get pixelArtPalettePickerApplyButton;
+
+  /// No description provided for @storageScreenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'容量削減'**
+  String get storageScreenTitle;
+
+  /// No description provided for @storageDeviceChartTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末の容量'**
+  String get storageDeviceChartTitle;
+
+  /// No description provided for @storageBreakdownChartTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMの内訳'**
+  String get storageBreakdownChartTitle;
+
+  /// No description provided for @storageActionsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'整理する'**
+  String get storageActionsTitle;
+
+  /// No description provided for @storageCalculating.
+  ///
+  /// In ja, this message translates to:
+  /// **'集計中…'**
+  String get storageCalculating;
+
+  /// No description provided for @storageBreakdownLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'内訳を集計できませんでした'**
+  String get storageBreakdownLoadFailed;
+
+  /// No description provided for @storageBreakdownIncomplete.
+  ///
+  /// In ja, this message translates to:
+  /// **'一部のデータを読み取れなかったため、実際より少なく表示されている可能性があります'**
+  String get storageBreakdownIncomplete;
+
+  /// No description provided for @storageBreakdownEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだデータはありません。プロジェクトを作ると、ここに内訳が出ます。'**
+  String get storageBreakdownEmpty;
+
+  /// No description provided for @storageDeviceSpaceUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末の容量を取得できませんでした'**
+  String get storageDeviceSpaceUnavailable;
+
+  /// No description provided for @storageCategoryNiarimTotal.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM'**
+  String get storageCategoryNiarimTotal;
+
+  /// No description provided for @storageCategoryOtherApps.
+  ///
+  /// In ja, this message translates to:
+  /// **'その他'**
+  String get storageCategoryOtherApps;
+
+  /// No description provided for @storageCategoryFree.
+  ///
+  /// In ja, this message translates to:
+  /// **'空き容量'**
+  String get storageCategoryFree;
+
+  /// No description provided for @storageCategoryMaterials.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材'**
+  String get storageCategoryMaterials;
+
+  /// No description provided for @storageCategoryProjectData.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトデータ'**
+  String get storageCategoryProjectData;
+
+  /// No description provided for @storageCategoryExports.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出し済みファイル'**
+  String get storageCategoryExports;
+
+  /// No description provided for @storageCategoryCustomAssets.
+  ///
+  /// In ja, this message translates to:
+  /// **'自作ブラシ・トーン・スタンプ・フォント'**
+  String get storageCategoryCustomAssets;
+
+  /// No description provided for @storageCategoryCache.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャッシュ'**
+  String get storageCategoryCache;
+
+  /// No description provided for @storageCategoryTrash.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱'**
+  String get storageCategoryTrash;
+
+  /// No description provided for @storageClearCacheButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャッシュを削除'**
+  String get storageClearCacheButton;
+
+  /// No description provided for @storageRemoveUnusedMaterialsButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'未使用素材を一括削除（全プロジェクト）'**
+  String get storageRemoveUnusedMaterialsButton;
+
+  /// No description provided for @storageRemoveUnusedMaterialsConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'未使用の素材を{count}件（{size}）削除します。この操作は取り消せません。'**
+  String storageRemoveUnusedMaterialsConfirmBody(int count, String size);
+
+  /// No description provided for @storageNoUnusedMaterials.
+  ///
+  /// In ja, this message translates to:
+  /// **'未使用の素材はありません。'**
+  String get storageNoUnusedMaterials;
+
+  /// No description provided for @storageEmptyTrashButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱を空にする'**
+  String get storageEmptyTrashButton;
+
+  /// No description provided for @storageEmptyTrashKeptUnreadFolders.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱を空にしませんでした。読み込めていないプロジェクトを含むフォルダは、読み込めるまで削除できません。ホームの「{retry}」でもう一度読み込んでください。'**
+  String storageEmptyTrashKeptUnreadFolders(String retry);
+
+  /// No description provided for @storageOrganizeProjectsButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトを整理する'**
+  String get storageOrganizeProjectsButton;
+
+  /// No description provided for @storageEraseAllButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'全データを削除（初期化）'**
+  String get storageEraseAllButton;
+
+  /// No description provided for @storageClearCacheDoneSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}のキャッシュを削除しました'**
+  String storageClearCacheDoneSnackbar(String size);
+
+  /// ファイルの大きさ（バイト）。sizeは表示の言語の書き方の数（例：512）
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}B'**
+  String fileSizeBytes(String size);
+
+  /// ファイルの大きさ（キロバイト）。sizeは表示の言語の書き方の小数1桁の数（例：1.4。仏語は1,4）
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}KB'**
+  String fileSizeKilobytes(String size);
+
+  /// ファイルの大きさ（メガバイト）。sizeは表示の言語の書き方の小数1桁の数
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}MB'**
+  String fileSizeMegabytes(String size);
+
+  /// ファイルの大きさ（ギガバイト）。sizeは表示の言語の書き方の小数1桁の数
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}GB'**
+  String fileSizeGigabytes(String size);
+
+  /// ファイルの大きさ（テラバイト）。sizeは表示の言語の書き方の小数1桁の数
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}TB'**
+  String fileSizeTerabytes(String size);
+
+  /// No description provided for @storageEraseAllConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'全データを削除しますか？'**
+  String get storageEraseAllConfirmTitle;
+
+  /// No description provided for @storageEraseAllConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト・素材・アプリ管理の書き出し済みファイル・自作ブラシ/トーン/スタンプ/フォント・設定など、NIARIMのデータを完全に削除します。以前の共有フォルダにある書き出しは残ります。この操作は元に戻せません。削除後はアプリを再起動してください。'**
+  String get storageEraseAllConfirmBody;
+
+  /// No description provided for @storageEraseAllDoneSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'全データを削除しました。アプリを再起動してください'**
+  String get storageEraseAllDoneSnackbar;
+
+  /// No description provided for @homeDrawerStorage.
+  ///
+  /// In ja, this message translates to:
+  /// **'容量削減'**
+  String get homeDrawerStorage;
+
+  /// No description provided for @helpStorageTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'容量削減'**
+  String get helpStorageTitle;
+
+  /// No description provided for @helpStorageDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末容量に対するNIARIMの使用量と、NIARIM内部（プロジェクト・素材・書き出し済みファイル・自作ブラシ/トーン/スタンプ/フォント・キャッシュ・ゴミ箱）の内訳を円グラフで確認できます。キャッシュの削除・未使用素材の一括削除（全プロジェクト）・ゴミ箱を空にする・プロジェクトの整理・全データ削除（初期化）が行えます。'**
+  String get helpStorageDesc;
+
+  /// No description provided for @helpWidgetSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホーム画面ウィジェット'**
+  String get helpWidgetSettingsTitle;
+
+  /// No description provided for @helpWidgetSettingsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'スマホのホーム画面に置ける3種類のウィジェット（作品の1コマ表示／作品をつくる／作品広場）の設定です。ウィジェット自体の追加はホーム画面の長押しから行います（アプリ内には追加ボタンはありません）。「作品を選ぶ」では、プロジェクト一覧タブと同じ並び替え・表示方法・検索・お気に入り絞り込みを使って作品を選び、再生コントロール付きのプレビューで表示するフレームまで選べます。「作品をつくる」「作品広場」ウィジェットは、背景色をアプリのテーマに合わせるか個別に指定するかを選べます。'**
+  String get helpWidgetSettingsDesc;
+
+  /// No description provided for @colorPickerImportPaletteTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'パレットを取り込む'**
+  String get colorPickerImportPaletteTooltip;
+
+  /// No description provided for @colorPickerSharePaletteTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有する'**
+  String get colorPickerSharePaletteTooltip;
+
+  /// No description provided for @colorPickerShareViaFile.
+  ///
+  /// In ja, this message translates to:
+  /// **'ファイルで共有'**
+  String get colorPickerShareViaFile;
+
+  /// No description provided for @colorPickerShareFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有に失敗しました: {error}'**
+  String colorPickerShareFailedSnackbar(String error);
+
+  /// No description provided for @colorPickerShareViaQr.
+  ///
+  /// In ja, this message translates to:
+  /// **'QRコードで共有'**
+  String get colorPickerShareViaQr;
+
+  /// No description provided for @qrShareTooLargeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を含む素材やQRコードに収まらない設定は、ファイル共有をご利用ください。'**
+  String get qrShareTooLargeHint;
+
+  /// No description provided for @colorPickerImportViaFile.
+  ///
+  /// In ja, this message translates to:
+  /// **'ファイルから選択'**
+  String get colorPickerImportViaFile;
+
+  /// No description provided for @colorPickerImportFailedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込みに失敗しました: {error}'**
+  String colorPickerImportFailedSnackbar(String error);
+
+  /// No description provided for @colorPickerImportViaQr.
+  ///
+  /// In ja, this message translates to:
+  /// **'QRコードのテキストを貼り付け'**
+  String get colorPickerImportViaQr;
+
+  /// No description provided for @qrImportFailedError.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込みに失敗しました。テキストが正しいか確認してください'**
+  String get qrImportFailedError;
+
+  /// No description provided for @qrImportHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'相手の端末で表示されたQRコードを標準カメラアプリ等で読み取り、コピーした文字列をここに貼り付けてください'**
+  String get qrImportHint;
+
+  /// No description provided for @qrImportFieldHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み取った文字列を貼り付け'**
+  String get qrImportFieldHint;
+
+  /// No description provided for @qrImportPasteButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'クリップボードから貼り付け'**
+  String get qrImportPasteButton;
+
+  /// No description provided for @qrImportSubmitButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込む'**
+  String get qrImportSubmitButton;
+
+  /// No description provided for @qrShareHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'標準カメラアプリ等でこのQRコードを読み取ると、テキストをコピーできます。相手の端末で「取り込む」からQRコードのテキストを貼り付けてください。'**
+  String get qrShareHint;
+
+  /// No description provided for @qrShareCopiedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストをコピーしました'**
+  String get qrShareCopiedSnackbar;
+
+  /// No description provided for @qrShareCopyButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストをコピー'**
+  String get qrShareCopyButton;
+
+  /// No description provided for @toolbarItemBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'ガウスぼかし'**
+  String get toolbarItemBlur;
+
+  /// No description provided for @toolbarItemMosaic.
+  ///
+  /// In ja, this message translates to:
+  /// **'モザイク'**
+  String get toolbarItemMosaic;
+
+  /// No description provided for @toolbarFingerSubtoolWarp.
+  ///
+  /// In ja, this message translates to:
+  /// **'歪み'**
+  String get toolbarFingerSubtoolWarp;
+
+  /// No description provided for @brushSettingsEdgeJitterTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ふち滲み'**
+  String get brushSettingsEdgeJitterTitle;
+
+  /// No description provided for @filterNameInkPool.
+  ///
+  /// In ja, this message translates to:
+  /// **'墨溜まり'**
+  String get filterNameInkPool;
+
+  /// No description provided for @filterInkPoolColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'色'**
+  String get filterInkPoolColor;
+
+  /// No description provided for @filterInkPoolRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲'**
+  String get filterInkPoolRange;
+
+  /// No description provided for @filterInkPoolCenterWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'中央の太さ'**
+  String get filterInkPoolCenterWidth;
+
+  /// No description provided for @filterInkPoolMaxAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'最大角度'**
+  String get filterInkPoolMaxAngle;
+
+  /// No description provided for @filterInkPoolMaxAngleHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'線どうしがこの角度以下で出会う角の内側に溜まります（90°で鋭角と直角、180°で鈍角まで）。'**
+  String get filterInkPoolMaxAngleHint;
+
+  /// No description provided for @filterInkPoolLayerNameSuffix.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} 墨溜まり'**
+  String filterInkPoolLayerNameSuffix(String name);
+
+  /// No description provided for @filterCanvasEyedropperTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスから色を選択'**
+  String get filterCanvasEyedropperTooltip;
+
+  /// No description provided for @filterInkPoolEyedropperHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップで墨溜まりの色を選択してください'**
+  String get filterInkPoolEyedropperHint;
+
+  /// No description provided for @filterOutlineEyedropperHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップで縁取りの色を選択してください'**
+  String get filterOutlineEyedropperHint;
+
+  /// No description provided for @filterNameAutoLineart.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動線画'**
+  String get filterNameAutoLineart;
+
+  /// No description provided for @filterAutoLineartRoughWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'対象ラフ線幅'**
+  String get filterAutoLineartRoughWidth;
+
+  /// No description provided for @filterAutoLineartOutputWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画の太さ'**
+  String get filterAutoLineartOutputWidth;
+
+  /// No description provided for @filterAutoLineartTaperLength.
+  ///
+  /// In ja, this message translates to:
+  /// **'入り抜きの長さ'**
+  String get filterAutoLineartTaperLength;
+
+  /// No description provided for @filterAutoLineartTaper.
+  ///
+  /// In ja, this message translates to:
+  /// **'入り抜き'**
+  String get filterAutoLineartTaper;
+
+  /// No description provided for @filterAutoLineartSmoothing.
+  ///
+  /// In ja, this message translates to:
+  /// **'なめらか補正'**
+  String get filterAutoLineartSmoothing;
+
+  /// No description provided for @filterAutoLineartLayerNameSuffix.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} 自動線画'**
+  String filterAutoLineartLayerNameSuffix(String name);
+
+  /// No description provided for @customAutomationTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作'**
+  String get customAutomationTitle;
+
+  /// No description provided for @customAutomationAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作を新規追加'**
+  String get customAutomationAdd;
+
+  /// No description provided for @customAutomationNewTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'新しい自動操作'**
+  String get customAutomationNewTitle;
+
+  /// No description provided for @customAutomationNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前'**
+  String get customAutomationNameLabel;
+
+  /// No description provided for @customAutomationStartRecording.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作記録開始'**
+  String get customAutomationStartRecording;
+
+  /// No description provided for @customAutomationStopRecording.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作記録停止'**
+  String get customAutomationStopRecording;
+
+  /// No description provided for @customAutomationRunConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'実行しますか？'**
+  String get customAutomationRunConfirmTitle;
+
+  /// No description provided for @customAutomationCurrentFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'この操作を現在のフレームに行う'**
+  String get customAutomationCurrentFrame;
+
+  /// No description provided for @customAutomationAllFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'この操作を全フレームに行う'**
+  String get customAutomationAllFrames;
+
+  /// No description provided for @customAutomationYes.
+  ///
+  /// In ja, this message translates to:
+  /// **'はい'**
+  String get customAutomationYes;
+
+  /// No description provided for @customAutomationNo.
+  ///
+  /// In ja, this message translates to:
+  /// **'いいえ'**
+  String get customAutomationNo;
+
+  /// No description provided for @customAutomationRenameTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前を変更'**
+  String get customAutomationRenameTitle;
+
+  /// No description provided for @customAutomationDeleteTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作を削除しますか？'**
+  String get customAutomationDeleteTitle;
+
+  /// No description provided for @customAutomationImport.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作を読み込む'**
+  String get customAutomationImport;
+
+  /// No description provided for @customAutomationExport.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作を配布・書き出し'**
+  String get customAutomationExport;
+
+  /// No description provided for @customAutomationRerecord.
+  ///
+  /// In ja, this message translates to:
+  /// **'再記録'**
+  String get customAutomationRerecord;
+
+  /// No description provided for @customAutomationImportInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'この自動操作ファイルは読み込めません'**
+  String get customAutomationImportInvalid;
+
+  /// No description provided for @customAutomationEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'記録済みの自動操作はありません'**
+  String get customAutomationEmpty;
+
+  /// No description provided for @customAutomationStepCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count} 手順'**
+  String customAutomationStepCount(int count);
+
+  /// No description provided for @customAutomationStopConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作の登録をやめますか？'**
+  String get customAutomationStopConfirmTitle;
+
+  /// No description provided for @customAutomationStopConfirmContinue.
+  ///
+  /// In ja, this message translates to:
+  /// **'続ける'**
+  String get customAutomationStopConfirmContinue;
+
+  /// No description provided for @customAutomationReviewHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'手順を並べ替えたり削除してから保存できます'**
+  String get customAutomationReviewHint;
+
+  /// No description provided for @customAutomationNoRecordedSteps.
+  ///
+  /// In ja, this message translates to:
+  /// **'記録された操作がありません'**
+  String get customAutomationNoRecordedSteps;
+
+  /// No description provided for @customAutomationCanvasStep.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバス操作'**
+  String get customAutomationCanvasStep;
+
+  /// No description provided for @customAutomationTimelineStep.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムライン操作'**
+  String get customAutomationTimelineStep;
+
+  /// No description provided for @customAutomationBackToRecording.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作記録に戻る'**
+  String get customAutomationBackToRecording;
+
+  /// No description provided for @customAutomationStopConfirmStop.
+  ///
+  /// In ja, this message translates to:
+  /// **'やめる'**
+  String get customAutomationStopConfirmStop;
+
+  /// No description provided for @filterNameVhsNoise.
+  ///
+  /// In ja, this message translates to:
+  /// **'VHSノイズ'**
+  String get filterNameVhsNoise;
+
+  /// No description provided for @filterNameMosaic.
+  ///
+  /// In ja, this message translates to:
+  /// **'モザイク'**
+  String get filterNameMosaic;
+
+  /// No description provided for @filterNameGenericNoise.
+  ///
+  /// In ja, this message translates to:
+  /// **'ノイズ'**
+  String get filterNameGenericNoise;
+
+  /// No description provided for @filterVhsNoiseStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'ノイズ'**
+  String get filterVhsNoiseStrength;
+
+  /// No description provided for @filterVhsScanlineStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'走査線'**
+  String get filterVhsScanlineStrength;
+
+  /// No description provided for @filterVhsColorBleed.
+  ///
+  /// In ja, this message translates to:
+  /// **'色にじみ'**
+  String get filterVhsColorBleed;
+
+  /// No description provided for @filterVhsTracking.
+  ///
+  /// In ja, this message translates to:
+  /// **'トラッキング'**
+  String get filterVhsTracking;
+
+  /// No description provided for @timelineEffectTypeVhsNoise.
+  ///
+  /// In ja, this message translates to:
+  /// **'VHSノイズ'**
+  String get timelineEffectTypeVhsNoise;
+
+  /// No description provided for @customAutomationSpecifiedFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'指定したフレームで行う'**
+  String get customAutomationSpecifiedFrames;
+
+  /// No description provided for @customAutomationFrameFrom.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始フレーム'**
+  String get customAutomationFrameFrom;
+
+  /// No description provided for @customAutomationFrameTo.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了フレーム'**
+  String get customAutomationFrameTo;
+
+  /// No description provided for @customAutomationFrameRangeInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'有効なフレーム範囲を入力してください。'**
+  String get customAutomationFrameRangeInvalid;
+
+  /// No description provided for @customAutomationRunAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'実行'**
+  String get customAutomationRunAction;
+
+  /// No description provided for @customAutomationFavoriteAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りに追加'**
+  String get customAutomationFavoriteAction;
+
+  /// No description provided for @customAutomationUnfavoriteAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りを解除'**
+  String get customAutomationUnfavoriteAction;
+
+  /// No description provided for @brushSettingsCommonSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通'**
+  String get brushSettingsCommonSection;
+
+  /// No description provided for @brushSettingsPressureOnSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'筆圧ON'**
+  String get brushSettingsPressureOnSection;
+
+  /// No description provided for @brushSettingsPressureOffSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'筆圧OFF'**
+  String get brushSettingsPressureOffSection;
+
+  /// No description provided for @brushSettingsWeakPressureLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'弱'**
+  String get brushSettingsWeakPressureLabel;
+
+  /// No description provided for @brushSettingsStrongPressureLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'強'**
+  String get brushSettingsStrongPressureLabel;
+
+  /// No description provided for @helpCustomAutomationTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作（操作記録）'**
+  String get helpCustomAutomationTitle;
+
+  /// No description provided for @helpCustomAutomationDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスまたはタイムラインで行った対応操作を手順として記録し、名前を付けて繰り返し実行できる機能です。「自動操作」から新規追加して記録を開始し、停止後の確認画面で手順の並べ替え・削除をして保存します。保存した操作は名前変更・再記録・削除ができ、お気に入りだけに絞り込めます。JSONファイルとして書き出し・読み込みもできます。キャンバスだけで、かつ同じ1フレーム内に記録した操作では、実行時に現在のフレーム・指定したフレーム範囲・全フレームを選べます。タイムライン操作や複数フレームにまたがる記録では、このフレーム範囲選択は表示されません。'**
+  String get helpCustomAutomationDesc;
+
+  /// No description provided for @tipsOfficialAutomationPresetsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'公式の自動操作プリセットを自分用に調整する'**
+  String get tipsOfficialAutomationPresetsTitle;
+
+  /// No description provided for @tipsOfficialAutomationPresetsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'「線画作成（デジタル）」は自動線画→墨溜まり、「線画抽出（アナログ）」は色調補正→二値化→明度で透過、「線画色トレス」は線画レイヤーで実行し、下の塗りの色を線画にクリッピングした新規レイヤーへ取り込む→ぼかしと複製・結合→色トレス補正（明度を半分にし彩度を上げる）で、線を隣の塗りより深い色にする公式プリセットです。再記録では記録に対応した操作を追加できます。確認画面では手順の並べ替え・削除ができます。元の設定へ戻せるよう、編集前に書き出しておくと安心です。'**
+  String get tipsOfficialAutomationPresetsDesc;
+
+  /// No description provided for @tipsTexturePrismVhsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'質感・プリズム・VHSは複製レイヤーで試す'**
+  String get tipsTexturePrismVhsTitle;
+
+  /// No description provided for @tipsTexturePrismVhsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'質感変更フィルターはオーロラホログラム・サンプルゴールド・プラチナシルバー・ルミナスパール・オーロラパステル・ダークレインボーから土台を選び、明るさと彩度で調整できます。プリズムはぼかし量と虹の向きで光の帯を作り、VHSノイズはノイズ・彩度・明るさ・コントラストをまとめて古いテープ風にします。複製したレイヤーで一つずつ試すと比較しやすく、気に入った設定をお気に入りにすると再利用も速くなります。'**
+  String get tipsTexturePrismVhsDesc;
+
+  /// No description provided for @customAutomationExecutionFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作を完了できませんでした。設定と対象レイヤーを確認してください。'**
+  String get customAutomationExecutionFailed;
+
+  /// No description provided for @brushLateralRepeat.
+  ///
+  /// In ja, this message translates to:
+  /// **'横方向反復'**
+  String get brushLateralRepeat;
+
+  /// No description provided for @brushLateralRepeatCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'横方向反復個数'**
+  String get brushLateralRepeatCount;
+
+  /// No description provided for @brushLateralRepeatSpacing.
+  ///
+  /// In ja, this message translates to:
+  /// **'横方向間隔'**
+  String get brushLateralRepeatSpacing;
+
+  /// No description provided for @brushOutline.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り'**
+  String get brushOutline;
+
+  /// No description provided for @brushOutlineWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り幅'**
+  String get brushOutlineWidth;
+
+  /// No description provided for @brushOutlineColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り色'**
+  String get brushOutlineColor;
+
+  /// No description provided for @brushOutlineColorPicker.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーピッカー'**
+  String get brushOutlineColorPicker;
+
+  /// No description provided for @brushOutlineEyedropper.
+  ///
+  /// In ja, this message translates to:
+  /// **'スポイト'**
+  String get brushOutlineEyedropper;
+
+  /// No description provided for @brushOutlineKeepOverlap.
+  ///
+  /// In ja, this message translates to:
+  /// **'重なりを維持する'**
+  String get brushOutlineKeepOverlap;
+
+  /// No description provided for @brushOutlineKeepOverlapHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'オンでは、ストローク同士が重なった所にも縁取りを描きます。オフでは、重なった所は縁取りも折り返し線も描かず、全体の周りだけを縁取ります。'**
+  String get brushOutlineKeepOverlapHelp;
+
+  /// No description provided for @brushOutlineAccent.
+  ///
+  /// In ja, this message translates to:
+  /// **'強弱'**
+  String get brushOutlineAccent;
+
+  /// No description provided for @brushOutlineAccentWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'頂点の縁取り幅'**
+  String get brushOutlineAccentWidth;
+
+  /// No description provided for @brushOutlineAccentHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'ストロークのカーブの頂点に向かって縁取り線を太くします。カーブの始まりと終わりは縁取り幅のまま、頂点でこの太さになるよう徐々に太くなります（筆圧・入り抜きは縁取り線の太さを変えないので、縁取り線の強弱はこれでつけます）。ペンを離したときに反映されます。'**
+  String get brushOutlineAccentHelp;
+
+  /// No description provided for @brushFold.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り畳みモード'**
+  String get brushFold;
+
+  /// No description provided for @brushFoldCurveStart.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し線のカーブ開始位置'**
+  String get brushFoldCurveStart;
+
+  /// No description provided for @brushFoldLength.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し長さ'**
+  String get brushFoldLength;
+
+  /// No description provided for @brushFoldMode.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り畳みタイプ'**
+  String get brushFoldMode;
+
+  /// No description provided for @brushFoldModeWaveTopView.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウェーブ俯瞰'**
+  String get brushFoldModeWaveTopView;
+
+  /// No description provided for @brushFoldModeWaveLowAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウェーブ煽り'**
+  String get brushFoldModeWaveLowAngle;
+
+  /// No description provided for @brushFoldModeCurlRight.
+  ///
+  /// In ja, this message translates to:
+  /// **'右巻き'**
+  String get brushFoldModeCurlRight;
+
+  /// No description provided for @brushFoldModeCurlLeft.
+  ///
+  /// In ja, this message translates to:
+  /// **'左巻き'**
+  String get brushFoldModeCurlLeft;
+
+  /// No description provided for @brushFoldModeCrescent.
+  ///
+  /// In ja, this message translates to:
+  /// **'三日月カール'**
+  String get brushFoldModeCrescent;
+
+  /// No description provided for @helpBrushFoldTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシの折り返し'**
+  String get helpBrushFoldTitle;
+
+  /// No description provided for @helpBrushFoldDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ設定で「縁取り」をONにすると「折り畳みモード」を使えます。OFFでは通常の縁取りペンと同じ描画です。ONにすると、描いたストロークの方向と曲がりをもとに、縁取りペンの線そのものが折れたり巻いたりします。波形を自動生成する機能ではありません。曲がり角ごとに、内側の輪郭から分かれてカーブし、すっと消える折り返し線が入ります。同じ向きに回り続けたときは270°ごとに控えめな折り返し線が入ります。折り畳みタイプは5種類です。「ウェーブ俯瞰」は先に描いた側、「ウェーブ煽り」は後に描いた側を手前にします。「右巻き」はストロークの進行方向の右へ、「左巻き」は左へ巻き込むように前後を決めます。基準は画面の向きではなく描いた向きです。「三日月カール」は描いたC字のカーブに沿って三日月がつながる形に整えます。「折り返し長さ」は折り返し線の長さ（ブラシサイズに連動）、「折り返し角度」はストロークのカーブへの追従の強さ（50%で自然に連動）、「折り返し線のカーブ開始位置」は素材の見かけの厚み（0%で分岐位置からすぐにカーブ）を調整します。縁取りペンの筆圧とフェード（入り抜き）は縁取りを含む全体の形だけを変え、縁取り線の太さと色の濃さは変わりません。縁取りの「重なりを維持する」をオフにすると、重なったストロークは境目を縁取らずにつながり（重なった所には折り返し線も描きません）、全体の周りだけを縁取ります。縁取りの「強弱」をオンにすると、ストロークのカーブの頂点に向かって縁取り線が太くなります（カーブの始まりと終わりは縁取り幅のまま、頂点で「頂点の縁取り幅」になるよう徐々に太くなり、ペンを離したときに反映されます）。'**
+  String get helpBrushFoldDesc;
+
+  /// No description provided for @tipsBrushFoldTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返しの手前側を選んで髪の流れを描く'**
+  String get tipsBrushFoldTitle;
+
+  /// No description provided for @tipsBrushFoldDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取りと折り畳みモードをONにし、まずは初期値のままゆるいS字を描いてみましょう。先に描いた側を手前にするなら「ウェーブ俯瞰」、後に描いた側なら「ウェーブ煽り」を選びます。巻き込みを表すときは、進行方向の右へ巻く「右巻き」と左へ巻く「左巻き」を比べると決めやすくなります。C字のカーブを続けて描くときは「三日月カール」で三日月のつながりを整えます。どのタイプも描いた曲がりを使うため、直線が自動で波形に変わることはありません。折り返し線が短ければ「折り返し長さ」を、曲がりが足りなければ「折り返し角度」を上げ、薄い髪やリボンに見せたいときは「折り返し線のカーブ開始位置」を上げてください。折り畳みモードをOFFにすると通常のストロークへ戻ります。'**
+  String get tipsBrushFoldDesc;
+
+  /// No description provided for @tipsFourPanelBrushTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'四コマ漫画ブラシ×直線定規でコマをすばやく作る'**
+  String get tipsFourPanelBrushTitle;
+
+  /// No description provided for @tipsFourPanelBrushDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'プリセットの「四コマ漫画」ブラシは、ストロークに沿って細い線の四角い枠を並べます。ブラシサイズでコマの大きさと間隔が一緒に変わります。直線定規をオンにして、横や縦へまっすぐ引いてください。'**
+  String get tipsFourPanelBrushDesc;
+
+  /// No description provided for @canvasSelectionReferenceWorkingLayer.
+  ///
+  /// In ja, this message translates to:
+  /// **'作業レイヤーのみ'**
+  String get canvasSelectionReferenceWorkingLayer;
+
+  /// No description provided for @canvasSelectionReferenceVisibleLayers.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示レイヤーすべて'**
+  String get canvasSelectionReferenceVisibleLayers;
+
+  /// No description provided for @brushTipSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン先・画像素材'**
+  String get brushTipSettingsTitle;
+
+  /// No description provided for @brushTipShapeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン先の形'**
+  String get brushTipShapeLabel;
+
+  /// No description provided for @brushTipRound.
+  ///
+  /// In ja, this message translates to:
+  /// **'円形'**
+  String get brushTipRound;
+
+  /// No description provided for @brushTipSquare.
+  ///
+  /// In ja, this message translates to:
+  /// **'中空の四角'**
+  String get brushTipSquare;
+
+  /// No description provided for @brushTipHexagon.
+  ///
+  /// In ja, this message translates to:
+  /// **'六角形'**
+  String get brushTipHexagon;
+
+  /// No description provided for @brushTipChain.
+  ///
+  /// In ja, this message translates to:
+  /// **'チェーンの輪'**
+  String get brushTipChain;
+
+  /// No description provided for @brushTipBallChain.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボールチェーン'**
+  String get brushTipBallChain;
+
+  /// No description provided for @brushTipRelativeSpacing.
+  ///
+  /// In ja, this message translates to:
+  /// **'太さに比例する間隔'**
+  String get brushTipRelativeSpacing;
+
+  /// No description provided for @brushTipSpacingRatio.
+  ///
+  /// In ja, this message translates to:
+  /// **'太さに対する間隔'**
+  String get brushTipSpacingRatio;
+
+  /// No description provided for @brushChainAspect.
+  ///
+  /// In ja, this message translates to:
+  /// **'リンクの縦横比'**
+  String get brushChainAspect;
+
+  /// No description provided for @brushChainThickness.
+  ///
+  /// In ja, this message translates to:
+  /// **'リンクの太さ'**
+  String get brushChainThickness;
+
+  /// No description provided for @brushNibFlat.
+  ///
+  /// In ja, this message translates to:
+  /// **'扁平なペン先'**
+  String get brushNibFlat;
+
+  /// No description provided for @brushNibAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン先の角度'**
+  String get brushNibAngle;
+
+  /// No description provided for @brushImagesAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を追加'**
+  String get brushImagesAdd;
+
+  /// No description provided for @brushImageInkLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像の描画部分'**
+  String get brushImageInkLabel;
+
+  /// No description provided for @brushImageInkDark.
+  ///
+  /// In ja, this message translates to:
+  /// **'暗い部分'**
+  String get brushImageInkDark;
+
+  /// No description provided for @brushImageInkLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'明るい部分'**
+  String get brushImageInkLight;
+
+  /// No description provided for @brushImageInkAlpha.
+  ///
+  /// In ja, this message translates to:
+  /// **'不透明な部分'**
+  String get brushImageInkAlpha;
+
+  /// No description provided for @brushImageInkHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ部分を現在色で描画します。素材は複数登録でき、1ストロークごとに切り替わります。'**
+  String get brushImageInkHelp;
+
+  /// No description provided for @brushImageOrderLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材の切り替え'**
+  String get brushImageOrderLabel;
+
+  /// No description provided for @brushImageOrderRandom.
+  ///
+  /// In ja, this message translates to:
+  /// **'ランダム'**
+  String get brushImageOrderRandom;
+
+  /// No description provided for @brushImageOrderSequential.
+  ///
+  /// In ja, this message translates to:
+  /// **'登録順'**
+  String get brushImageOrderSequential;
+
+  /// No description provided for @brushImageOrderRandomPerStamp.
+  ///
+  /// In ja, this message translates to:
+  /// **'ランダム（描画中も切り替え）'**
+  String get brushImageOrderRandomPerStamp;
+
+  /// No description provided for @brushImageMoveUp.
+  ///
+  /// In ja, this message translates to:
+  /// **'上へ移動'**
+  String get brushImageMoveUp;
+
+  /// No description provided for @brushImageMoveDown.
+  ///
+  /// In ja, this message translates to:
+  /// **'下へ移動'**
+  String get brushImageMoveDown;
+
+  /// No description provided for @brushImageRemove.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材を外す'**
+  String get brushImageRemove;
+
+  /// No description provided for @filterNoiseStyle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ノイズの種類'**
+  String get filterNoiseStyle;
+
+  /// No description provided for @filterNoiseColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーノイズ'**
+  String get filterNoiseColor;
+
+  /// No description provided for @filterNoiseSeed.
+  ///
+  /// In ja, this message translates to:
+  /// **'模様のシード値'**
+  String get filterNoiseSeed;
+
+  /// No description provided for @communityContentFilterTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示フィルター'**
+  String get communityContentFilterTitle;
+
+  /// No description provided for @communityHideGenerativeAiImageVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'AIで生成した画像・動画を使用した作品を表示しない'**
+  String get communityHideGenerativeAiImageVideo;
+
+  /// No description provided for @communityMutedWords.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示ワード登録'**
+  String get communityMutedWords;
+
+  /// No description provided for @communityMutedWordsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。1件ずつ追加・編集できます。'**
+  String get communityMutedWordsHint;
+
+  /// No description provided for @communityMutedTags.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示タグ登録'**
+  String get communityMutedTags;
+
+  /// No description provided for @communityMutedTagsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場で一致するタグの作品を非表示にします。タグを1件ずつ登録でき、#は不要です。'**
+  String get communityMutedTagsHint;
+
+  /// No description provided for @communityMuteAddNew.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規追加'**
+  String get communityMuteAddNew;
+
+  /// No description provided for @communityScrollToTop.
+  ///
+  /// In ja, this message translates to:
+  /// **'最上部に戻る'**
+  String get communityScrollToTop;
+
+  /// No description provided for @communityPostPeriodTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿期間'**
+  String get communityPostPeriodTitle;
+
+  /// No description provided for @communityDurationFilterTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の長さ'**
+  String get communityDurationFilterTitle;
+
+  /// No description provided for @communitySavedSearches.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存した検索条件'**
+  String get communitySavedSearches;
+
+  /// No description provided for @communitySignInPromptTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントでログイン'**
+  String get communitySignInPromptTitle;
+
+  /// No description provided for @communitySignInPromptBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の投稿・管理、フォロー、ブックマーク、通報などの機能を利用するにはGoogleアカウントとの連携が必要です。'**
+  String get communitySignInPromptBody;
+
+  /// No description provided for @communitySignInPromptConnect.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントを連携'**
+  String get communitySignInPromptConnect;
+
+  /// No description provided for @communitySignInUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'この開発ビルドにはGoogleログイン設定がないため、連携を開始できません。'**
+  String get communitySignInUnavailable;
+
+  /// No description provided for @communitySaveSearch.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の検索条件を保存'**
+  String get communitySaveSearch;
+
+  /// No description provided for @communitySavedSearchName.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索条件の名前'**
+  String get communitySavedSearchName;
+
+  /// No description provided for @communitySavedSearchLimit.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存できる検索条件は10件までです'**
+  String get communitySavedSearchLimit;
+
+  /// No description provided for @communitySavedSearchEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存した検索条件はありません'**
+  String get communitySavedSearchEmpty;
+
+  /// No description provided for @communityDurationAny.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さを指定しない'**
+  String get communityDurationAny;
+
+  /// No description provided for @communityDurationUpTo.
+  ///
+  /// In ja, this message translates to:
+  /// **'〇分以内（スライダー）'**
+  String get communityDurationUpTo;
+
+  /// No description provided for @communityDurationRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'〇分以上〇分以内（数値入力）'**
+  String get communityDurationRange;
+
+  /// 作品広場の絞り込み：「〇分以内（スライダー）」で選んでいる長さ。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}分以内'**
+  String communityDurationUpToMinutes(int count);
+
+  /// No description provided for @communityDurationMinimum.
+  ///
+  /// In ja, this message translates to:
+  /// **'最短（分）'**
+  String get communityDurationMinimum;
+
+  /// No description provided for @communityDurationMaximum.
+  ///
+  /// In ja, this message translates to:
+  /// **'最長（分）'**
+  String get communityDurationMaximum;
+
+  /// No description provided for @communityTagExactMatch.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索語を完全一致で検索する（オフなら部分一致）'**
+  String get communityTagExactMatch;
+
+  /// No description provided for @communityMinimumViews.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生回数'**
+  String get communityMinimumViews;
+
+  /// No description provided for @communityMinimumBookmarks.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマーク数'**
+  String get communityMinimumBookmarks;
+
+  /// No description provided for @communityPostPeriodAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべての期間'**
+  String get communityPostPeriodAll;
+
+  /// No description provided for @communityPostPeriodToday.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日'**
+  String get communityPostPeriodToday;
+
+  /// No description provided for @communityPostPeriodWeek.
+  ///
+  /// In ja, this message translates to:
+  /// **'今週'**
+  String get communityPostPeriodWeek;
+
+  /// No description provided for @communityPostPeriodMonth.
+  ///
+  /// In ja, this message translates to:
+  /// **'今月'**
+  String get communityPostPeriodMonth;
+
+  /// No description provided for @communityPostPeriodYear.
+  ///
+  /// In ja, this message translates to:
+  /// **'今年'**
+  String get communityPostPeriodYear;
+
+  /// No description provided for @communityPostPeriodCustom.
+  ///
+  /// In ja, this message translates to:
+  /// **'日付期間を指定'**
+  String get communityPostPeriodCustom;
+
+  /// No description provided for @communityPostPeriodChooseRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'日付を選ぶ'**
+  String get communityPostPeriodChooseRange;
+
+  /// No description provided for @communityMutedAuthors.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートしたユーザー'**
+  String get communityMutedAuthors;
+
+  /// No description provided for @communityMutedAuthorsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートしたユーザーはいません'**
+  String get communityMutedAuthorsEmpty;
+
+  /// No description provided for @communityUnmuteAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートを解除'**
+  String get communityUnmuteAuthor;
+
+  /// No description provided for @communityMyWorksManagementHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品管理'**
+  String get communityMyWorksManagementHeading;
+
+  /// No description provided for @communityWorkTagsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品のタグ管理'**
+  String get communityWorkTagsTitle;
+
+  /// No description provided for @communityWorkTagsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを追加・編集・削除できます。ロックすると他のユーザーは変更できません。ロックしたタグの編集・削除は先に解除してください。'**
+  String get communityWorkTagsHint;
+
+  /// No description provided for @communityWorkEditTag.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを編集'**
+  String get communityWorkEditTag;
+
+  /// No description provided for @communityWorkTagChangeFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを変更できませんでした'**
+  String get communityWorkTagChangeFailed;
+
+  /// No description provided for @communityContainsGenerativeAiImageVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'AI画像・AI動画使用'**
+  String get communityContainsGenerativeAiImageVideo;
+
+  /// No description provided for @communityContainsGenerativeAiImageVideoHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等は「AI画像・AI動画使用」の対象外です。'**
+  String get communityContainsGenerativeAiImageVideoHelp;
+
+  /// No description provided for @communityAiImageVideoUpdateFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'「AI画像・AI動画使用」を変更できませんでした。通信状態を確認して、もう一度お試しください。'**
+  String get communityAiImageVideoUpdateFailed;
+
+  /// No description provided for @communityRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'再試行'**
+  String get communityRetry;
+
+  /// No description provided for @communityReloadTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'再読み込み'**
+  String get communityReloadTooltip;
+
+  /// No description provided for @communityGoogleSignInNotConfigured.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントが連携されていません'**
+  String get communityGoogleSignInNotConfigured;
+
+  /// No description provided for @communityGoogleAccountBusy.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントの別の操作を処理中です。完了してから、もう一度お試しください。'**
+  String get communityGoogleAccountBusy;
+
+  /// No description provided for @communityMyWorksTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分の投稿'**
+  String get communityMyWorksTitle;
+
+  /// No description provided for @communityMyWorksViewAuthorPage.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分の作品一覧ページを見る'**
+  String get communityMyWorksViewAuthorPage;
+
+  /// No description provided for @communityMyWorksAccountRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品一覧を表示するにはGoogleアカウントに接続してください'**
+  String get communityMyWorksAccountRequired;
+
+  /// No description provided for @communityMyWorksSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の設定'**
+  String get communityMyWorksSettingsTitle;
+
+  /// No description provided for @communityMyWorksPublishInNiarim.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM内で公開する'**
+  String get communityMyWorksPublishInNiarim;
+
+  /// No description provided for @communityMyWorksDeleteNiarim.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM作品広場からこの作品を削除'**
+  String get communityMyWorksDeleteNiarim;
+
+  /// No description provided for @communityMyWorksDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品を削除しますか？'**
+  String get communityMyWorksDeleteConfirmTitle;
+
+  /// No description provided for @communityMyWorksDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM内の作品を完全に削除します。YouTube上の動画は削除されません。この操作は取り消せません。'**
+  String get communityMyWorksDeleteConfirmBody;
+
+  /// No description provided for @communityMyWorksOpenYoutubeStudio.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube Studioで動画を管理する'**
+  String get communityMyWorksOpenYoutubeStudio;
+
+  /// No description provided for @communityMyWorksYoutubeStudioHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube側の公開状態や動画設定はYouTube Studioで管理します。NIARIM内の公開設定とは独立しています。'**
+  String get communityMyWorksYoutubeStudioHelp;
+
+  /// No description provided for @communityMyWorksYoutubeOpenFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube Studioを開けませんでした'**
+  String get communityMyWorksYoutubeOpenFailed;
+
+  /// No description provided for @communityMyWorksOperationFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作に失敗しました。{reason}'**
+  String communityMyWorksOperationFailed(String reason);
+
+  /// No description provided for @communityMyWorksBulkPublish.
+  ///
+  /// In ja, this message translates to:
+  /// **'一括公開'**
+  String get communityMyWorksBulkPublish;
+
+  /// No description provided for @communityMyWorksBulkHide.
+  ///
+  /// In ja, this message translates to:
+  /// **'一括非公開'**
+  String get communityMyWorksBulkHide;
+
+  /// No description provided for @communityMyWorksBulkResult.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了: {success}件 / 失敗: {failed}件'**
+  String communityMyWorksBulkResult(int success, int failed);
+
+  /// No description provided for @communityMyWorksAccountNotConnected.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウント未接続'**
+  String get communityMyWorksAccountNotConnected;
+
+  /// No description provided for @communityMyWorksAddAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントを追加'**
+  String get communityMyWorksAddAccount;
+
+  /// No description provided for @communityMyWorksSwitchAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントを切り替え・追加'**
+  String get communityMyWorksSwitchAccount;
+
+  /// No description provided for @communityMyWorksLoading.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿を読み込んでいます…'**
+  String get communityMyWorksLoading;
+
+  /// No description provided for @communityMyWorksLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分の投稿を読み込めませんでした。{reason}'**
+  String communityMyWorksLoadFailed(String reason);
+
+  /// No description provided for @communityAccountSwitchFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントを切り替えられませんでした。{reason}'**
+  String communityAccountSwitchFailed(String reason);
+
+  /// No description provided for @communitySignInFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントでログインできませんでした。{reason}'**
+  String communitySignInFailed(String reason);
+
+  /// No description provided for @communityMyWorksDeletedCannotPublish.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeから削除された動画は、作品広場で再公開できません'**
+  String get communityMyWorksDeletedCannotPublish;
+
+  /// No description provided for @communityMyWorksStatusDeletedOnYoutube.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeから削除済み • 作品広場で再公開できません'**
+  String get communityMyWorksStatusDeletedOnYoutube;
+
+  /// No description provided for @communityMyWorksStatusYoutubePrivate.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場で公開中 • YouTubeが非公開のため一時的に非表示'**
+  String get communityMyWorksStatusYoutubePrivate;
+
+  /// No description provided for @communityMyWorksStatusHiddenYoutubePrivate.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場で非公開 • YouTubeも非公開'**
+  String get communityMyWorksStatusHiddenYoutubePrivate;
+
+  /// No description provided for @communityVisibilityPublishedBadge.
+  ///
+  /// In ja, this message translates to:
+  /// **'公開中'**
+  String get communityVisibilityPublishedBadge;
+
+  /// No description provided for @communityYoutubeVideoIdLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画ID: {videoId}'**
+  String communityYoutubeVideoIdLabel(String videoId);
+
+  /// No description provided for @communityPostTitleLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトル'**
+  String get communityPostTitleLabel;
+
+  /// No description provided for @communityPostPickVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画を選択'**
+  String get communityPostPickVideo;
+
+  /// No description provided for @communityPostAsShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦画面ショートとして投稿'**
+  String get communityPostAsShort;
+
+  /// No description provided for @communityPostShowInPlaza.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場で公開'**
+  String get communityPostShowInPlaza;
+
+  /// No description provided for @communityPostShowInPlazaHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeには限定公開でアップロードされます。作品広場での公開・非公開は、これとは別に管理します。'**
+  String get communityPostShowInPlazaHelp;
+
+  /// No description provided for @communityPostUploadedHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへアップロード済み'**
+  String get communityPostUploadedHeading;
+
+  /// No description provided for @communityPostUploadedAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウント: {email}'**
+  String communityPostUploadedAccount(String email);
+
+  /// No description provided for @communityPostNoReupload.
+  ///
+  /// In ja, this message translates to:
+  /// **'再試行しても、動画が再アップロードされることはありません。'**
+  String get communityPostNoReupload;
+
+  /// No description provided for @communityPostDiscardPending.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場への登録をやめる'**
+  String get communityPostDiscardPending;
+
+  /// No description provided for @communityPostDiscardPendingConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'登録待ちの入力が削除され、この動画の登録を再開できなくなります。YouTubeにアップロード済みの動画は残ります。'**
+  String get communityPostDiscardPendingConfirm;
+
+  /// No description provided for @communityPostPendingDiscarded.
+  ///
+  /// In ja, this message translates to:
+  /// **'保留中だった作品広場への登録を取りやめました。YouTubeの動画は削除していません。'**
+  String get communityPostPendingDiscarded;
+
+  /// No description provided for @communityPostYoutubeSyntheticQuestion.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube 向けの申告：現実と見分けにくい改変・合成コンテンツを含みますか？'**
+  String get communityPostYoutubeSyntheticQuestion;
+
+  /// No description provided for @communityPostYoutubeSyntheticHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'実在する人がしていないことをしたように見せたり、実際には起きていない出来事を本物のように表現した場合などが該当します。'**
+  String get communityPostYoutubeSyntheticHelp;
+
+  /// No description provided for @communityPostYoutubeKidsQuestion.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube の視聴者設定：この動画は子ども向けですか？'**
+  String get communityPostYoutubeKidsQuestion;
+
+  /// No description provided for @communityPostYoutubeKidsHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'子どもを対象に制作した動画なら「はい」を選んでください。'**
+  String get communityPostYoutubeKidsHelp;
+
+  /// No description provided for @communityPostYoutubeDeclarationsRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube の改変・合成コンテンツと子ども向けの設定を両方選んでください。'**
+  String get communityPostYoutubeDeclarationsRequired;
+
+  /// No description provided for @communityPostYoutubeDeclarationsStudio.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップロード済みの動画の改変・合成コンテンツと視聴者の設定は YouTube Studio で確認・変更できます。'**
+  String get communityPostYoutubeDeclarationsStudio;
+
+  /// No description provided for @communityPostSubmitUpload.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへアップロードして投稿'**
+  String get communityPostSubmitUpload;
+
+  /// No description provided for @communityPostSubmitRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場への登録を再試行'**
+  String get communityPostSubmitRetry;
+
+  /// No description provided for @communityPostErrorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラー: {message}'**
+  String communityPostErrorLabel(String message);
+
+  /// No description provided for @communityPostDoneSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿しました（YouTube動画ID: {videoId}）'**
+  String communityPostDoneSnackbar(String videoId);
+
+  /// No description provided for @communityPostRecoveredSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿済みの作品を復旧しました（YouTube動画ID: {videoId}）'**
+  String communityPostRecoveredSnackbar(String videoId);
+
+  /// No description provided for @communityPostStatusPendingRestored.
+  ///
+  /// In ja, this message translates to:
+  /// **'前回YouTubeへアップロードした動画があります。作品広場への登録だけを再試行できます。'**
+  String get communityPostStatusPendingRestored;
+
+  /// No description provided for @communityPostStatusPendingUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'保留中のYouTube動画は削除されたか見つからないため、復旧できません。新しい動画を選択してください。'**
+  String get communityPostStatusPendingUnavailable;
+
+  /// No description provided for @communityPostStatusRecovered.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿済みの作品を復旧しました'**
+  String get communityPostStatusRecovered;
+
+  /// No description provided for @communityPostStatusCompleted.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿が完了しました'**
+  String get communityPostStatusCompleted;
+
+  /// No description provided for @communityPostStatusCheckingAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントを確認しています…'**
+  String get communityPostStatusCheckingAccount;
+
+  /// No description provided for @communityPostStatusCheckingRegistration.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場への登録状況を確認しています…'**
+  String get communityPostStatusCheckingRegistration;
+
+  /// No description provided for @communityPostStatusSyncingAiFlag.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿済み作品の「AI画像・AI動画使用」を同期しています…'**
+  String get communityPostStatusSyncingAiFlag;
+
+  /// No description provided for @communityPostStatusSyncingVisibility.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿済み作品の公開状態を同期しています…'**
+  String get communityPostStatusSyncingVisibility;
+
+  /// No description provided for @communityPostStatusUploading.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへアップロードしています…'**
+  String get communityPostStatusUploading;
+
+  /// No description provided for @communityPostCancelUpload.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップロードを取り消す'**
+  String get communityPostCancelUpload;
+
+  /// No description provided for @communityPostKeepUploading.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップロードを続ける'**
+  String get communityPostKeepUploading;
+
+  /// No description provided for @communityPostCancelUploadConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップロードを取り消しますか？入力した内容はこの画面に残ります。'**
+  String get communityPostCancelUploadConfirm;
+
+  /// No description provided for @communityPostStatusUploadCancelled.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップロードを中止しました。完了直前に中止した場合は、再試行の前にYouTube Studioで動画を確認してください。'**
+  String get communityPostStatusUploadCancelled;
+
+  /// No description provided for @communityPostStatusRegistering.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへのアップロードが完了しました。作品広場へ登録しています…'**
+  String get communityPostStatusRegistering;
+
+  /// No description provided for @communityPostStatusUploadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップロードに失敗しました'**
+  String get communityPostStatusUploadFailed;
+
+  /// No description provided for @communityPostStatusRegistrationRetryable.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの動画は保存されています。作品広場への登録だけを再試行できます。'**
+  String get communityPostStatusRegistrationRetryable;
+
+  /// No description provided for @communityPostErrorNoVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿する動画を選択してください'**
+  String get communityPostErrorNoVideo;
+
+  /// No description provided for @communityPostErrorNoTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトルを入力してください'**
+  String get communityPostErrorNoTitle;
+
+  /// No description provided for @communityPostErrorServerNotConfigured.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場の接続先が設定されていないため、投稿できません'**
+  String get communityPostErrorServerNotConfigured;
+
+  /// No description provided for @communityPostErrorPendingVideoUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画が見つかりません。この動画の作品広場への登録は再試行できません'**
+  String get communityPostErrorPendingVideoUnavailable;
+
+  /// No description provided for @communityPostErrorUploadedByAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は{email}でアップロードされています。そのGoogleアカウントに切り替えてから、作品広場への登録を再試行してください'**
+  String communityPostErrorUploadedByAccount(String email);
+
+  /// No description provided for @communityPostErrorUploadedByAnotherAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は別のGoogleアカウントでアップロードされています。そのアカウントに切り替えてから、作品広場への登録を再試行してください'**
+  String get communityPostErrorUploadedByAnotherAccount;
+
+  /// No description provided for @communityPostErrorAccountChanged.
+  ///
+  /// In ja, this message translates to:
+  /// **'処理の途中でGoogleアカウントが切り替わりました。{email}に戻してから、もう一度お試しください'**
+  String communityPostErrorAccountChanged(String email);
+
+  /// No description provided for @communityPostErrorYoutubePermission.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへの投稿権限を取得できませんでした'**
+  String get communityPostErrorYoutubePermission;
+
+  /// No description provided for @communityPostErrorNoVideoId.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeから動画IDを受け取れませんでした'**
+  String get communityPostErrorNoVideoId;
+
+  /// No description provided for @communityShortsEndBehaviorTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生終了時の動作'**
+  String get communityShortsEndBehaviorTooltip;
+
+  /// No description provided for @communityShortsEndBehaviorLoop.
+  ///
+  /// In ja, this message translates to:
+  /// **'同じ動画をループ再生'**
+  String get communityShortsEndBehaviorLoop;
+
+  /// No description provided for @communityShortsEndBehaviorAutoAdvance.
+  ///
+  /// In ja, this message translates to:
+  /// **'次の動画へ自動スクロール'**
+  String get communityShortsEndBehaviorAutoAdvance;
+
+  /// No description provided for @communityErrorNetwork.
+  ///
+  /// In ja, this message translates to:
+  /// **'通信できませんでした。通信状態を確認して、もう一度お試しください。'**
+  String get communityErrorNetwork;
+
+  /// No description provided for @communityErrorSignInRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントでのログインが必要です。ログインし直してから、もう一度お試しください。'**
+  String get communityErrorSignInRequired;
+
+  /// No description provided for @communityErrorForbidden.
+  ///
+  /// In ja, this message translates to:
+  /// **'この操作を行う権限がありません。'**
+  String get communityErrorForbidden;
+
+  /// No description provided for @communityErrorNotFound.
+  ///
+  /// In ja, this message translates to:
+  /// **'対象が見つかりませんでした。削除された可能性があります。'**
+  String get communityErrorNotFound;
+
+  /// No description provided for @communityErrorRateLimited.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作が集中しています。しばらく待ってから、もう一度お試しください。'**
+  String get communityErrorRateLimited;
+
+  /// No description provided for @communityErrorServer.
+  ///
+  /// In ja, this message translates to:
+  /// **'サーバーで問題が発生しました。しばらく待ってから、もう一度お試しください。'**
+  String get communityErrorServer;
+
+  /// No description provided for @communityErrorGeneric.
+  ///
+  /// In ja, this message translates to:
+  /// **'問題が発生しました。もう一度お試しください。'**
+  String get communityErrorGeneric;
+
+  /// Reason shown after a failed export/import/save when the file system refused (never the raw exception text).
+  ///
+  /// In ja, this message translates to:
+  /// **'ファイルを読み書きできませんでした'**
+  String get fileFailureReasonAccess;
+
+  /// Reason shown after a failed import when the file could not be understood.
+  ///
+  /// In ja, this message translates to:
+  /// **'ファイルの形式が違うか、壊れています'**
+  String get fileFailureReasonFormat;
+
+  /// Reason shown after a failed export/import/save for any other cause.
+  ///
+  /// In ja, this message translates to:
+  /// **'予期しない問題が起きました'**
+  String get fileFailureReasonOther;
+
+  /// No description provided for @communityErrorTagLimitExceeded.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグは1作品につき{max}個までです。'**
+  String communityErrorTagLimitExceeded(int max);
+
+  /// No description provided for @communityErrorTagTooLong.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグが長すぎます。短くしてから、もう一度お試しください。'**
+  String get communityErrorTagTooLong;
+
+  /// No description provided for @communityErrorTagUpdateConflict.
+  ///
+  /// In ja, this message translates to:
+  /// **'ほかの人が同時にタグを変更しました。もう一度お試しください。'**
+  String get communityErrorTagUpdateConflict;
+
+  /// No description provided for @communityErrorWorkChanged.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品がほかの操作で更新されました。もう一度お試しください。'**
+  String get communityErrorWorkChanged;
+
+  /// No description provided for @communityErrorVideoNotFound.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画が見つかりませんでした。'**
+  String get communityErrorVideoNotFound;
+
+  /// No description provided for @communityErrorVideoAlreadyRegistered.
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は、既に別のユーザーが作品広場に登録しています。'**
+  String get communityErrorVideoAlreadyRegistered;
+
+  /// No description provided for @communityErrorWorkDeleted.
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は作品広場から削除済みのため、再登録できません。'**
+  String get communityErrorWorkDeleted;
+
+  /// No description provided for @communityErrorVideoRegistrationConflict.
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は同時に別の登録処理で使われました。自分の投稿を再読み込みしてから、もう一度お試しください。'**
+  String get communityErrorVideoRegistrationConflict;
+
+  /// No description provided for @communityErrorPostQuotaExceeded.
+  ///
+  /// In ja, this message translates to:
+  /// **'本日の投稿上限に達しました。日付が変わると、また投稿できます。'**
+  String get communityErrorPostQuotaExceeded;
+
+  /// No description provided for @communityErrorSignInCanceled.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログインがキャンセルされました。'**
+  String get communityErrorSignInCanceled;
+
+  /// No description provided for @communityErrorGoogleSignIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントでのログインを完了できませんでした。もう一度お試しください。'**
+  String get communityErrorGoogleSignIn;
+
+  /// No description provided for @communityErrorYoutubeUpload.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへのアップロードに失敗しました。通信状態を確認して、もう一度お試しください。'**
+  String get communityErrorYoutubeUpload;
+
+  /// No description provided for @communityErrorVideoFile.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画ファイルを読み込めませんでした。動画を選び直してください。'**
+  String get communityErrorVideoFile;
+
+  /// No description provided for @communityErrorUnsupported.
+  ///
+  /// In ja, this message translates to:
+  /// **'この端末では、この操作に対応していません。'**
+  String get communityErrorUnsupported;
+
+  /// No description provided for @canvasLassoSnapToLines.
+  ///
+  /// In ja, this message translates to:
+  /// **'線に吸着'**
+  String get canvasLassoSnapToLines;
+
+  /// No description provided for @canvasLassoGapTolerance.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画の隙間許容'**
+  String get canvasLassoGapTolerance;
+
+  /// No description provided for @filterBackToList.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター一覧へ戻る'**
+  String get filterBackToList;
+
+  /// No description provided for @filterPanelCollapse.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルをたたむ'**
+  String get filterPanelCollapse;
+
+  /// No description provided for @filterPanelExpand.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルを広げる'**
+  String get filterPanelExpand;
+
+  /// No description provided for @customAutomationShowAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべて表示'**
+  String get customAutomationShowAll;
+
+  /// No description provided for @customAutomationFavoritesOnly.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りのみ'**
+  String get customAutomationFavoritesOnly;
+
+  /// No description provided for @customAutomationBuiltinDraftToLineart.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画作成（デジタル）'**
+  String get customAutomationBuiltinDraftToLineart;
+
+  /// No description provided for @customAutomationBuiltinAnalogLineart.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画抽出（アナログ）'**
+  String get customAutomationBuiltinAnalogLineart;
+
+  /// No description provided for @customAutomationBuiltinLineartColorTrace.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画色トレス'**
+  String get customAutomationBuiltinLineartColorTrace;
+
+  /// No description provided for @customAutomationStepFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム{frame}へ移動'**
+  String customAutomationStepFrame(int frame);
+
+  /// No description provided for @customAutomationStepAddFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを追加'**
+  String get customAutomationStepAddFrame;
+
+  /// No description provided for @customAutomationStepBrushSize.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシの太さ {size}px'**
+  String customAutomationStepBrushSize(String size);
+
+  /// No description provided for @customAutomationStepBrushOpacity.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシの不透明度 {opacity}%'**
+  String customAutomationStepBrushOpacity(int opacity);
+
+  /// No description provided for @customAutomationStepTool.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツール：{tool}'**
+  String customAutomationStepTool(String tool);
+
+  /// No description provided for @customAutomationStepColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画色 {color}'**
+  String customAutomationStepColor(String color);
+
+  /// No description provided for @customAutomationStepFilter.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター「{name}」を適用'**
+  String customAutomationStepFilter(String name);
+
+  /// No description provided for @customAutomationStepColorsBelowClipped.
+  ///
+  /// In ja, this message translates to:
+  /// **'下の塗りの色を線画にクリッピング'**
+  String get customAutomationStepColorsBelowClipped;
+
+  /// No description provided for @customAutomationStepDuplicateLayer.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーを複製'**
+  String get customAutomationStepDuplicateLayer;
+
+  /// No description provided for @customAutomationStepMergeDown.
+  ///
+  /// In ja, this message translates to:
+  /// **'下のレイヤーと結合'**
+  String get customAutomationStepMergeDown;
+
+  /// No description provided for @customAutomationStepColorTraceAdjust.
+  ///
+  /// In ja, this message translates to:
+  /// **'色トレス補正'**
+  String get customAutomationStepColorTraceAdjust;
+
+  /// No description provided for @customAutomationStepVisibleComposite.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示中のレイヤーを結合した新規レイヤーを一番上に作成'**
+  String get customAutomationStepVisibleComposite;
+
+  /// No description provided for @brushFoldAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し角度'**
+  String get brushFoldAngle;
+
+  /// No description provided for @brushFoldModeHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'ストロークに沿った折り畳み方を選択します。'**
+  String get brushFoldModeHelp;
+
+  /// No description provided for @brushFoldLengthHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り畳みが伸びる長さを調整します。ブラシサイズに連動します。'**
+  String get brushFoldLengthHelp;
+
+  /// No description provided for @brushFoldAngleHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'ストロークのカーブに対する折り畳みの強さを調整します。50%でストロークのカーブに自然に連動します。'**
+  String get brushFoldAngleHelp;
+
+  /// No description provided for @brushFoldDepartureAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し線の出る角度'**
+  String get brushFoldDepartureAngle;
+
+  /// No description provided for @brushFoldDepartureAngleHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'0°は縁取りの向きに沿い、+は内側、−は外側に傾きます。'**
+  String get brushFoldDepartureAngleHelp;
+
+  /// No description provided for @brushFoldCurveStartHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し線のどこから曲がるかを調整します。0%で始点から曲がり、100%で直線になります。'**
+  String get brushFoldCurveStartHelp;
+
+  /// No description provided for @filterAutoLineartAddPointTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'制御点追加'**
+  String get filterAutoLineartAddPointTooltip;
+
+  /// No description provided for @filterAutoLineartDeletePointTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'制御点削除'**
+  String get filterAutoLineartDeletePointTooltip;
+
+  /// No description provided for @filterAutoLineartDeletePointConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'この制御点を削除しますか？'**
+  String get filterAutoLineartDeletePointConfirm;
+
+  /// No description provided for @filterPrismDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'参照レイヤーのα領域を6等分で着色 → ガウスぼかし → 覆い焼き（リニア）'**
+  String get filterPrismDescription;
+
+  /// No description provided for @filterPrismBlurAmount.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし量'**
+  String get filterPrismBlurAmount;
+
+  /// No description provided for @filterPrismColorDirection.
+  ///
+  /// In ja, this message translates to:
+  /// **'色方向'**
+  String get filterPrismColorDirection;
+
+  /// No description provided for @filterFisheyeRadius.
+  ///
+  /// In ja, this message translates to:
+  /// **'半径'**
+  String get filterFisheyeRadius;
+
+  /// No description provided for @filterNameSphereShading.
+  ///
+  /// In ja, this message translates to:
+  /// **'球体陰影'**
+  String get filterNameSphereShading;
+
+  /// No description provided for @filterSphereModeSeparate.
+  ///
+  /// In ja, this message translates to:
+  /// **'影と光を別々に'**
+  String get filterSphereModeSeparate;
+
+  /// No description provided for @filterSphereModeCombined.
+  ///
+  /// In ja, this message translates to:
+  /// **'まとめて1つで'**
+  String get filterSphereModeCombined;
+
+  /// No description provided for @filterSphereCombinedHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'影色から光色へのグラデーションを1つのブレンドモードで重ねます。ハードライトなら、中間の灰色より暗い色は暗く、明るい色は明るくします。'**
+  String get filterSphereCombinedHint;
+
+  /// No description provided for @filterSphereShadowColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'影色'**
+  String get filterSphereShadowColor;
+
+  /// No description provided for @filterSphereLightColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'光色'**
+  String get filterSphereLightColor;
+
+  /// No description provided for @filterSphereShadowBlend.
+  ///
+  /// In ja, this message translates to:
+  /// **'影のブレンドモード'**
+  String get filterSphereShadowBlend;
+
+  /// No description provided for @filterSphereLightBlend.
+  ///
+  /// In ja, this message translates to:
+  /// **'光のブレンドモード'**
+  String get filterSphereLightBlend;
+
+  /// No description provided for @filterSphereBlend.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブレンドモード'**
+  String get filterSphereBlend;
+
+  /// No description provided for @filterSphereLightX.
+  ///
+  /// In ja, this message translates to:
+  /// **'光の位置 X'**
+  String get filterSphereLightX;
+
+  /// No description provided for @filterSphereLightY.
+  ///
+  /// In ja, this message translates to:
+  /// **'光の位置 Y'**
+  String get filterSphereLightY;
+
+  /// No description provided for @filterSphereLightWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'光の大きさ X'**
+  String get filterSphereLightWidth;
+
+  /// No description provided for @filterSphereLightHeight.
+  ///
+  /// In ja, this message translates to:
+  /// **'光の大きさ Y'**
+  String get filterSphereLightHeight;
+
+  /// No description provided for @filterSphereLightBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'光側のぼかし'**
+  String get filterSphereLightBlur;
+
+  /// No description provided for @filterSphereShadowBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'影側のぼかし'**
+  String get filterSphereShadowBlur;
+
+  /// No description provided for @filterSphereCanvasHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバス上の＋で光を動かし、丸いつまみで大きさを変えられます。影と光は描いてあるところにだけ付きます。'**
+  String get filterSphereCanvasHint;
+
+  /// No description provided for @filterNameWatercolorBorder.
+  ///
+  /// In ja, this message translates to:
+  /// **'水彩境界'**
+  String get filterNameWatercolorBorder;
+
+  /// No description provided for @filterWatercolorBorderRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲'**
+  String get filterWatercolorBorderRange;
+
+  /// No description provided for @filterWatercolorBorderBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし幅'**
+  String get filterWatercolorBorderBlur;
+
+  /// No description provided for @filterWatercolorBorderOpacity.
+  ///
+  /// In ja, this message translates to:
+  /// **'透明度の影響'**
+  String get filterWatercolorBorderOpacity;
+
+  /// No description provided for @filterWatercolorBorderDarken.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁の濃さ'**
+  String get filterWatercolorBorderDarken;
+
+  /// No description provided for @filterWatercolorBorderColorEdges.
+  ///
+  /// In ja, this message translates to:
+  /// **'色の境目にも付ける'**
+  String get filterWatercolorBorderColorEdges;
+
+  /// No description provided for @filterWatercolorBorderHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'塗った所の縁に色が溜まり、内側が透けて、乾いた水彩のようになります（作業レイヤーに直接描きます）。範囲：縁から内側へどこまで濃くするか。縁の濃さ：縁に溜まる色の濃さ。透明度の影響：内側をどれだけ透けさせるか。ぼかし幅：濃さの移り変わりのなめらかさ。'**
+  String get filterWatercolorBorderHint;
+
+  /// No description provided for @filterFisheyeCanvasHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバス上の＋で中心を、円の上の丸いつまみで半径を動かせます。'**
+  String get filterFisheyeCanvasHint;
+
+  /// No description provided for @filterCenterX.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心 X'**
+  String get filterCenterX;
+
+  /// No description provided for @filterCenterY.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心 Y'**
+  String get filterCenterY;
+
+  /// No description provided for @filterAxisX.
+  ///
+  /// In ja, this message translates to:
+  /// **'X 軸'**
+  String get filterAxisX;
+
+  /// No description provided for @filterAxisY.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y 軸'**
+  String get filterAxisY;
+
+  /// No description provided for @filterAxisZ.
+  ///
+  /// In ja, this message translates to:
+  /// **'Z 軸'**
+  String get filterAxisZ;
+
+  /// No description provided for @filterBgBlendAutoLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'光源方向を自動推定'**
+  String get filterBgBlendAutoLight;
+
+  /// No description provided for @filterBgBlendStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'馴染み強度'**
+  String get filterBgBlendStrength;
+
+  /// No description provided for @filterBgBlendLightStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'主光源の強さ'**
+  String get filterBgBlendLightStrength;
+
+  /// No description provided for @filterBgBlendShadowStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'影の強さ'**
+  String get filterBgBlendShadowStrength;
+
+  /// No description provided for @filterBgBlendAmbient.
+  ///
+  /// In ja, this message translates to:
+  /// **'環境光'**
+  String get filterBgBlendAmbient;
+
+  /// No description provided for @filterBgBlendBounce.
+  ///
+  /// In ja, this message translates to:
+  /// **'下方反射光'**
+  String get filterBgBlendBounce;
+
+  /// No description provided for @filterBgBlendColorSpill.
+  ///
+  /// In ja, this message translates to:
+  /// **'局所的な色移り'**
+  String get filterBgBlendColorSpill;
+
+  /// No description provided for @filterBgBlendSoftness.
+  ///
+  /// In ja, this message translates to:
+  /// **'光の柔らかさ'**
+  String get filterBgBlendSoftness;
+
+  /// No description provided for @filterBgBlendSecondary.
+  ///
+  /// In ja, this message translates to:
+  /// **'副光源'**
+  String get filterBgBlendSecondary;
+
+  /// No description provided for @filterBgBlendMaterialProtection.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材保護'**
+  String get filterBgBlendMaterialProtection;
+
+  /// No description provided for @filterBgBlendToneMatch.
+  ///
+  /// In ja, this message translates to:
+  /// **'明るさ・色みを背景に合わせる'**
+  String get filterBgBlendToneMatch;
+
+  /// No description provided for @filterBgBlendSamplingBand.
+  ///
+  /// In ja, this message translates to:
+  /// **'環境サンプリング帯'**
+  String get filterBgBlendSamplingBand;
+
+  /// No description provided for @canvasAutofillCheckView.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り確認表示'**
+  String get canvasAutofillCheckView;
+
+  /// No description provided for @canvasAutofillCheckNormal.
+  ///
+  /// In ja, this message translates to:
+  /// **'通常表示'**
+  String get canvasAutofillCheckNormal;
+
+  /// No description provided for @canvasAutofillCheckParts.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツ分け確認'**
+  String get canvasAutofillCheckParts;
+
+  /// No description provided for @canvasAutofillCheckSilhouette.
+  ///
+  /// In ja, this message translates to:
+  /// **'シルエット確認'**
+  String get canvasAutofillCheckSilhouette;
+
+  /// No description provided for @canvasBackgroundColorChoices.
+  ///
+  /// In ja, this message translates to:
+  /// **'白 / 黒 / 透明'**
+  String get canvasBackgroundColorChoices;
+
+  /// No description provided for @canvasBackgroundTransparent.
+  ///
+  /// In ja, this message translates to:
+  /// **'透明'**
+  String get canvasBackgroundTransparent;
+
+  /// No description provided for @canvasTimelineModeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインモード'**
+  String get canvasTimelineModeTooltip;
+
+  /// No description provided for @startupFailedTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMを起動できませんでした'**
+  String get startupFailedTitle;
+
+  /// No description provided for @startupFailedBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存されている作品や設定はそのまま残っています。もう一度お試しください。何度も起きる場合は、詳細をコピーして開発元へお知らせください。'**
+  String get startupFailedBody;
+
+  /// No description provided for @startupFailedRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'もう一度試す'**
+  String get startupFailedRetry;
+
+  /// No description provided for @startupFailedRetrying.
+  ///
+  /// In ja, this message translates to:
+  /// **'起動しています…'**
+  String get startupFailedRetrying;
+
+  /// No description provided for @startupFailedCopyDetails.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細をコピー'**
+  String get startupFailedCopyDetails;
+
+  /// No description provided for @startupFailedDetailsCopied.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細をコピーしました'**
+  String get startupFailedDetailsCopied;
+
+  /// No description provided for @startupFailedDetails.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細'**
+  String get startupFailedDetails;
+
+  /// No description provided for @errorViewTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'この部分の表示でエラーが発生しました'**
+  String get errorViewTitle;
+
+  /// No description provided for @errorViewBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'作業中のデータは保持されています。前の画面へ戻ってからもう一度お試しください。以下の内容を開発元へお知らせいただけると原因の特定に役立ちます。'**
+  String get errorViewBody;
+
+  /// No description provided for @homeWorksLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品一覧を読み込めませんでした'**
+  String get homeWorksLoadFailed;
+
+  /// No description provided for @newProjectCreating.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成しています…'**
+  String get newProjectCreating;
+
+  /// No description provided for @newProjectCreateFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。'**
+  String get newProjectCreateFailed;
+
+  /// No description provided for @communityCreatorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'作者'**
+  String get communityCreatorLabel;
+
+  /// No description provided for @communityThresholdAny.
+  ///
+  /// In ja, this message translates to:
+  /// **'条件なし'**
+  String get communityThresholdAny;
+
+  /// No description provided for @communityMinimumViewsOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}回再生以上'**
+  String communityMinimumViewsOption(String count);
+
+  /// No description provided for @communityMinimumBookmarksOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件以上'**
+  String communityMinimumBookmarksOption(String count);
+
+  /// No description provided for @communityTileSize.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の表示サイズ'**
+  String get communityTileSize;
+
+  /// No description provided for @communityMutedWordsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示ワードはありません'**
+  String get communityMutedWordsEmpty;
+
+  /// No description provided for @communityMutedTagsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示タグはありません'**
+  String get communityMutedTagsEmpty;
+
+  /// No description provided for @communityMuteShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュート'**
+  String get communityMuteShort;
+
+  /// No description provided for @communityMuteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーをミュートしますか？'**
+  String get communityMuteConfirmTitle;
+
+  /// No description provided for @communityMuteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートすると、このユーザーの投稿が自分の画面に表示されなくなります。'**
+  String get communityMuteConfirmBody;
+
+  /// No description provided for @communityMuteConfirmAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートする'**
+  String get communityMuteConfirmAction;
+
+  /// No description provided for @communityUnmuteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーのミュートを解除しますか？'**
+  String get communityUnmuteConfirmTitle;
+
+  /// No description provided for @communityUnmuteConfirmAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートを解除'**
+  String get communityUnmuteConfirmAction;
+
+  /// No description provided for @communityMuteNo.
+  ///
+  /// In ja, this message translates to:
+  /// **'いいえ'**
+  String get communityMuteNo;
+
+  /// No description provided for @communityMuteDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーをミュートしました'**
+  String get communityMuteDone;
+
+  /// No description provided for @communityUnmuteDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーのミュートを解除しました'**
+  String get communityUnmuteDone;
+
+  /// No description provided for @communityFollowerMilestone.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワーが{count}人に達しました'**
+  String communityFollowerMilestone(String count);
+
+  /// No description provided for @communityBookmarkMilestone.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品「{title}」のブックマークが{count}件に達しました'**
+  String communityBookmarkMilestone(String title, String count);
+
+  /// No description provided for @communitySearchHistory.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索履歴'**
+  String get communitySearchHistory;
+
+  /// No description provided for @communitySearchHistoryEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索履歴はありません'**
+  String get communitySearchHistoryEmpty;
+
+  /// No description provided for @communityDeleteSavedSearchConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存した検索条件を削除しますか？'**
+  String get communityDeleteSavedSearchConfirm;
+
+  /// No description provided for @communitySortLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'並び替え'**
+  String get communitySortLabel;
+
+  /// No description provided for @homeTrashOperationFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作を完了できませんでした。保存先を確認して、もう一度お試しください。'**
+  String get homeTrashOperationFailed;
+
+  /// No description provided for @homeTrashWorking.
+  ///
+  /// In ja, this message translates to:
+  /// **'処理中…'**
+  String get homeTrashWorking;
+
+  /// No description provided for @commonShowExplanation.
+  ///
+  /// In ja, this message translates to:
+  /// **'説明を表示'**
+  String get commonShowExplanation;
+
+  /// No description provided for @homeViewModeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示形式とサイズ'**
+  String get homeViewModeTooltip;
+
+  /// No description provided for @homeMovedToTrashSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をゴミ箱へ移動しました'**
+  String homeMovedToTrashSnackbar(int count);
+
+  /// No description provided for @homeUndoAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'元に戻す'**
+  String get homeUndoAction;
+
+  /// No description provided for @homeCutSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を切り取りました。移動先を開いて、画面下部のバーにある貼り付けを押してください。'**
+  String homeCutSnackbar(int count);
+
+  /// No description provided for @homeCopiedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をコピーしました。貼り付けたい場所を開いて、画面下部のバーにある貼り付けを押してください。'**
+  String homeCopiedSnackbar(int count);
+
+  /// No description provided for @homePastedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}件を貼り付けました。}}'**
+  String homePastedSnackbar(int count);
+
+  /// No description provided for @homePasteSkippedIntoSelf.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。}}'**
+  String homePasteSkippedIntoSelf(int count);
+
+  /// No description provided for @homePasteSkippedMissing.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}件は、元の作品・フォルダが見つからないため貼り付けられませんでした（ゴミ箱へ移動・削除済み）。}}'**
+  String homePasteSkippedMissing(int count);
+
+  /// ゴミ箱への貼り付けで、お気に入りの作品・フォルダ（またはそれが入っているフォルダ）だったため移さなかった件数
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}件は、お気に入りの作品・フォルダ（またはそれが入っているフォルダ）のため、ゴミ箱へ移さずに残しました。お気に入りを外してから貼り付けてください。}}'**
+  String homePasteSkippedFavorite(int count);
+
+  /// ゴミ箱への貼り付けの確認で、お気に入りの作品・フォルダ（またはそれが入っているフォルダ）のため移さないものの並びの前に出す文
+  ///
+  /// In ja, this message translates to:
+  /// **'次のものは、お気に入りの作品・フォルダ（またはそれが入っているフォルダ）のため、ゴミ箱へ移さずに残します：'**
+  String get homePasteToTrashKeepsFavorites;
+
+  /// 中にお気に入りの作品・フォルダ（下の階層を含む）があるフォルダをゴミ箱へ移せないときの知らせ（フォルダ自身がお気に入りのときは commonFavoriteDeleteBlocked）
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りの作品・フォルダが入っているフォルダは、ゴミ箱へ移動できません。中のお気に入りを外してから移動してください。'**
+  String get homeTrashFolderHoldsFavorite;
+
+  /// 保存の失敗などで貼り付けられなかった件数（クリップボードに残る）
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}件は貼り付けられませんでした。保存先を確認して、もう一度お試しください。}}'**
+  String homePasteSkippedFailed(int count);
+
+  /// 一部の変更だけが保存され、途中までしか貼り付けられなかった件数（クリップボードに残る）
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}件は一部だけ貼り付けられました。一覧を確認して、もう一度お試しください。}}'**
+  String homePasteSkippedPartial(int count);
+
+  /// No description provided for @homeCutPendingHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'切り取り中（貼り付けを待っています）'**
+  String get homeCutPendingHint;
+
+  /// Name of a duplicated work.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} (コピー)'**
+  String projectDuplicateName(String name);
+
+  /// Name of a duplicated work when a copy with the plain duplicate name already exists in the same place; number starts at 2.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} (コピー {number})'**
+  String projectDuplicateNameNumbered(String name, int number);
+
+  /// 作品を複製したときの知らせ（プロジェクト詳細・ホームのメニューの「複製」）。nameはできた複製の名前
+  ///
+  /// In ja, this message translates to:
+  /// **'複製を作りました：{name}'**
+  String projectDuplicatedSnackbar(String name);
+
+  /// 作品一覧・共有・ゴミ箱のタブで2つ以上選んだとき、切り取り・コピーが押せない理由（吹き出し・読み上げ・押したときの知らせ）
+  ///
+  /// In ja, this message translates to:
+  /// **'このタブでは、切り取り・コピーは1件ずつです。1件だけ選んでください。'**
+  String get homeSelectionOneAtATime;
+
+  /// ゴミ箱のタブで項目を選んだとき、切り取りが押せない理由（吹き出し・読み上げ・押したときの知らせ）。{restore}は「復元」ボタンの名前
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱からは切り取れません。元の場所へ戻すときは「{restore}」を押してください。'**
+  String homeTrashCutUnavailable(String restore);
+
+  /// ゴミ箱のタブで2つ以上選んだとき、コピーが押せない理由（吹き出し・読み上げ・押したときの知らせ）
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱では、コピーは1件ずつです。1件だけ選んでください。'**
+  String get homeTrashCopyOneAtATime;
+
+  /// 共有の「自分が作成したもの」の名前を、すでにある共有ファイルと同じ名前に変えようとしたとき（名前の変更のダイアログの中）
+  ///
+  /// In ja, this message translates to:
+  /// **'同じ名前の共有ファイルがあります。別の名前にしてください。'**
+  String get homeShareFileNameTaken;
+
+  /// 共有の「自分が作成したもの」の名前を変更できなかったとき（名前の変更のダイアログの中）
+  ///
+  /// In ja, this message translates to:
+  /// **'名前を変更できませんでした。もう一度お試しください。'**
+  String get homeShareFileRenameFailed;
+
+  /// No description provided for @homeDrawerTutorial.
+  ///
+  /// In ja, this message translates to:
+  /// **'使い方'**
+  String get homeDrawerTutorial;
+
+  /// Theme color for accent-colored text and icons drawn directly on the background (selected tab label, outlined and text buttons, empty-state icons). Defaults to the accent color.
+  ///
+  /// In ja, this message translates to:
+  /// **'アクセントの文字・アイコン色'**
+  String get themeColorAccentText;
+
+  /// プロジェクト詳細で作品が見つからないときに、ホームのプロジェクトの一覧へ戻るボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトの一覧へ'**
+  String get projectDetailNotFoundBackToList;
+
+  /// No description provided for @projectListNoMatchTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{query}」に一致する作品はありません'**
+  String projectListNoMatchTitle(String query);
+
+  /// No description provided for @projectListNoMatchNameHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。'**
+  String get projectListNoMatchNameHint;
+
+  /// No description provided for @projectListNoMatchTagHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中も含めて、作品に付けたタグの一部で探しています。'**
+  String get projectListNoMatchTagHint;
+
+  /// No description provided for @projectListClearSearch.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索をやめる'**
+  String get projectListClearSearch;
+
+  /// No description provided for @projectListNoFavoritesTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りの作品はありません'**
+  String get projectListNoFavoritesTitle;
+
+  /// No description provided for @projectListNoFavoritesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。'**
+  String get projectListNoFavoritesHint;
+
+  /// No description provided for @projectListShowAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべて表示'**
+  String get projectListShowAll;
+
+  /// No description provided for @projectListEmptyFolderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダは空です'**
+  String get projectListEmptyFolderTitle;
+
+  /// ホームのプロジェクトタブ：「お気に入りだけ」で探したとき、検索に当たる作品はあるが、その中にお気に入りが無い（ほかのお気に入りはある）
+  ///
+  /// In ja, this message translates to:
+  /// **'「{query}」に一致するお気に入りはありません'**
+  String projectListNoFavoriteMatchTitle(String query);
+
+  /// ホームのプロジェクトタブ：フォルダの中で「お気に入りだけ」にしたとき、このフォルダにはお気に入りが無い（ほかの場所にはある）
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダにお気に入りはありません'**
+  String get projectListNoFavoritesInFolderTitle;
+
+  /// ホームのプロジェクトタブの一番上で「お気に入りだけ」にしたとき、一番上にはお気に入りが無く、お気に入りはどれもフォルダの中にある
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの外にお気に入りはありません'**
+  String get projectListNoFavoritesOutsideFoldersTitle;
+
+  /// ホームの詳細表示の作品の行：作品を最後に保存した日時（その言語の日付と時刻の書き方）
+  ///
+  /// In ja, this message translates to:
+  /// **'{date} 更新'**
+  String projectListUpdatedOn(DateTime date);
+
+  /// ホームの詳細表示のフォルダの行：フォルダを作った日時（「更新日時」の並びでフォルダに使う日時。その言語の日付と時刻の書き方）
+  ///
+  /// In ja, this message translates to:
+  /// **'{date} 作成'**
+  String projectListFolderCreatedOn(DateTime date);
+
+  /// Search results: the folder a work is in (folder names joined by " / ").
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ：{path}'**
+  String projectListInFolder(String path);
+
+  /// No description provided for @homeProjectsLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトを読み込めませんでした'**
+  String get homeProjectsLoadFailed;
+
+  /// No description provided for @homeOutgoingSharesLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成した共有ファイルを読み込めませんでした'**
+  String get homeOutgoingSharesLoadFailed;
+
+  /// No description provided for @settingsErrorLogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラーの記録'**
+  String get settingsErrorLogTitle;
+
+  /// No description provided for @settingsErrorLogSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'不具合を知らせるときに、アプリで起きたエラーを確認してコピーできます'**
+  String get settingsErrorLogSubtitle;
+
+  /// No description provided for @errorLogHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'このアプリを閉じるまでに起きたエラーを、新しい順に最大20件表示します。メールアドレスやログインの情報は伏せてあります。'**
+  String get errorLogHint;
+
+  /// No description provided for @savedListUnreadableNotice.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{保存の中に読み込めない項目が{count}件あります。元のデータは消さずに残してあり、次に起動したときにもう一度読み込みを試します。}}'**
+  String savedListUnreadableNotice(int count);
+
+  /// No description provided for @errorLogEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラーは記録されていません'**
+  String get errorLogEmpty;
+
+  /// No description provided for @errorLogCopyAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべてコピー'**
+  String get errorLogCopyAll;
+
+  /// No description provided for @errorLogCopied.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラーの記録をコピーしました'**
+  String get errorLogCopied;
+
+  /// No description provided for @errorLogClear.
+  ///
+  /// In ja, this message translates to:
+  /// **'記録を消す'**
+  String get errorLogClear;
+
+  /// No description provided for @tutorialSkip.
+  ///
+  /// In ja, this message translates to:
+  /// **'スキップ'**
+  String get tutorialSkip;
+
+  /// No description provided for @tutorialNext.
+  ///
+  /// In ja, this message translates to:
+  /// **'次へ'**
+  String get tutorialNext;
+
+  /// No description provided for @tutorialPageIndicator.
+  ///
+  /// In ja, this message translates to:
+  /// **'{total}ページ中{current}ページ目'**
+  String tutorialPageIndicator(int current, int total);
+
+  /// No description provided for @tutorialPage1Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMへようこそ'**
+  String get tutorialPage1Title;
+
+  /// No description provided for @tutorialPage1Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'1枚の絵を「フレーム」に描きます'**
+  String get tutorialPage1Step1;
+
+  /// No description provided for @tutorialPage1Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'少しずつ動きを変えたフレームを並べます'**
+  String get tutorialPage1Step2;
+
+  /// No description provided for @tutorialPage1Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'続けて再生するとアニメーションになり、動画として書き出せます'**
+  String get tutorialPage1Step3;
+
+  /// No description provided for @tutorialPage2Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品をつくる'**
+  String get tutorialPage2Title;
+
+  /// No description provided for @tutorialPage2Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホームの右下の＋を押します'**
+  String get tutorialPage2Step1;
+
+  /// No description provided for @tutorialPage2Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'「新規プロジェクト」を選び、名前や大きさを決めて「作成」を押します'**
+  String get tutorialPage2Step2;
+
+  /// No description provided for @tutorialPage2Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'作った作品は「プロジェクト」に並びます。押して「編集開始」を選ぶと続きを描けます'**
+  String get tutorialPage2Step3;
+
+  /// No description provided for @tutorialPage3Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスで描く'**
+  String get tutorialPage3Title;
+
+  /// No description provided for @tutorialPage3Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'下のツールバーで、ペン・消しゴム・塗りつぶしなどの道具を選びます'**
+  String get tutorialPage3Step1;
+
+  /// No description provided for @tutorialPage3Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'色の丸を押すと、描く色を変えられます'**
+  String get tutorialPage3Step2;
+
+  /// No description provided for @tutorialPage3Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'左上の矢印で、取り消し・やり直しができます'**
+  String get tutorialPage3Step3;
+
+  /// No description provided for @tutorialPage4Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを足して動かす'**
+  String get tutorialPage4Title;
+
+  /// No description provided for @tutorialPage4Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'下のフレーム一覧で、いま描いているフレームが分かります'**
+  String get tutorialPage4Step1;
+
+  /// No description provided for @tutorialPage4Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'＋で次のフレームを足し、少しずつ動かして描きます'**
+  String get tutorialPage4Step2;
+
+  /// No description provided for @tutorialPage4Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'右上の設定の「オニオンスキン」で、前のフレームを薄く重ねて見られます'**
+  String get tutorialPage4Step3;
+
+  /// No description provided for @tutorialPage5Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生して書き出す'**
+  String get tutorialPage5Title;
+
+  /// No description provided for @tutorialPage5Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'右上のタイムラインのボタンで、タイムラインを開きます'**
+  String get tutorialPage5Step1;
+
+  /// No description provided for @tutorialPage5Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生ボタンで、動きを確かめます'**
+  String get tutorialPage5Step2;
+
+  /// No description provided for @tutorialPage5Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'「書き出し」で、動画やGIFとして保存・共有できます'**
+  String get tutorialPage5Step3;
+
+  /// No description provided for @tutorialPage6Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'困ったときは'**
+  String get tutorialPage6Title;
+
+  /// No description provided for @tutorialPage6Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホームの「ヘルプ」で機能の説明を検索できます'**
+  String get tutorialPage6Step1;
+
+  /// No description provided for @tutorialPage6Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'はじめて使う機能では、短い説明が出ます'**
+  String get tutorialPage6Step2;
+
+  /// No description provided for @tutorialPage6Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'この使い方は、ホームの右上のメニューの「使い方」にある「使い方を見る」から、いつでも見直せます'**
+  String get tutorialPage6Step3;
+
+  /// No description provided for @helpTutorialSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'イラスト付きの使い方ガイドを開きます'**
+  String get helpTutorialSubtitle;
+
+  /// No description provided for @settingsTipsResetTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'機能の説明をもう一度表示'**
+  String get settingsTipsResetTitle;
+
+  /// No description provided for @settingsTipsResetSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'はじめて使う機能に出る短い説明を、次に使うときにもう一度出します'**
+  String get settingsTipsResetSubtitle;
+
+  /// No description provided for @settingsTipsResetDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'機能の説明を、次に使うときにもう一度表示します'**
+  String get settingsTipsResetDone;
+
+  /// No description provided for @helpTutorialButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'使い方を見る'**
+  String get helpTutorialButton;
+
+  /// No description provided for @projectListTrashFolderConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダをゴミ箱へ移動しますか？'**
+  String get projectListTrashFolderConfirmTitle;
+
+  /// No description provided for @homeFolderMovedToTrashSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」をゴミ箱へ移動しました'**
+  String homeFolderMovedToTrashSnackbar(String name);
+
+  /// No description provided for @homeMoveToTrashFolderContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中の{contents}も一緒に移動します。'**
+  String homeMoveToTrashFolderContents(String contents);
+
+  /// No description provided for @homeMoveToTrashUnreadNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込めていないプロジェクトがフォルダの中にあれば、読み込めたときにゴミ箱のそのフォルダへ入ります。'**
+  String get homeMoveToTrashUnreadNote;
+
+  /// No description provided for @homeTrashFolderPermanentDeleteBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を完全に削除します。元に戻すことはできません。'**
+  String homeTrashFolderPermanentDeleteBody(String name);
+
+  /// No description provided for @homeFolderContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'{projects, plural, =0{{folders, plural, =0{中身なし} other{フォルダ{folders}件}}} other{プロジェクト{projects}件{folders, plural, =0{} other{・フォルダ{folders}件}}}}'**
+  String homeFolderContents(int projects, int folders);
+
+  /// No description provided for @homeTrashFolderPermanentDeleteContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中の{contents}も一緒に削除します。'**
+  String homeTrashFolderPermanentDeleteContents(String contents);
+
+  /// No description provided for @newProjectNumberRangeError.
+  ///
+  /// In ja, this message translates to:
+  /// **'{min}〜{max}の数字を入力してください'**
+  String newProjectNumberRangeError(int min, int max);
+
+  /// No description provided for @pcViewFit.
+  ///
+  /// In ja, this message translates to:
+  /// **'全体を表示'**
+  String get pcViewFit;
+
+  /// PC/DeXモードのステータスバー：今のフレームと総数
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム {current}/{total}'**
+  String pcStatusFrame(int current, int total);
+
+  /// PC/DeXモードのタイムライン：ステータスバーのフレームレート
+  ///
+  /// In ja, this message translates to:
+  /// **'{fps} fps'**
+  String pcStatusFps(int fps);
+
+  /// No description provided for @communityChannelRefreshButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube名・アイコンを更新（1日1回）'**
+  String get communityChannelRefreshButton;
+
+  /// No description provided for @communityChannelRefreshSuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの名前・アイコンを更新しました'**
+  String get communityChannelRefreshSuccess;
+
+  /// No description provided for @communityChannelRefreshNoToken.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの認証が必要です'**
+  String get communityChannelRefreshNoToken;
+
+  /// No description provided for @communityChannelRefreshUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログインとサーバー接続が必要です'**
+  String get communityChannelRefreshUnavailable;
+
+  /// No description provided for @communityChannelRefreshFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube情報を更新できませんでした: {error}'**
+  String communityChannelRefreshFailed(String error);
+
+  /// No description provided for @communityPlazaMuteWork.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品を非表示にする'**
+  String get communityPlazaMuteWork;
+
+  /// No description provided for @communityPlazaUnmuteWork.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品の非表示を解除する'**
+  String get communityPlazaUnmuteWork;
+
+  /// No description provided for @communityPlazaMutedPlaceholder.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品は非表示対象です'**
+  String get communityPlazaMutedPlaceholder;
+
+  /// No description provided for @communityPlazaUnmuteQuestion.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品の非表示を常に解除しますか？'**
+  String get communityPlazaUnmuteQuestion;
+
+  /// No description provided for @communityPlazaUnmuteAlways.
+  ///
+  /// In ja, this message translates to:
+  /// **'常に解除する'**
+  String get communityPlazaUnmuteAlways;
+
+  /// No description provided for @communityPlazaUnmuteTemporary.
+  ///
+  /// In ja, this message translates to:
+  /// **'一時的に解除する'**
+  String get communityPlazaUnmuteTemporary;
+
+  /// No description provided for @communityPlazaMuteSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示設定'**
+  String get communityPlazaMuteSettings;
+
+  /// No description provided for @communityPlazaPartialHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'※OFFなら部分一致検索'**
+  String get communityPlazaPartialHint;
+
+  /// No description provided for @communityPlazaDeleteHistory.
+  ///
+  /// In ja, this message translates to:
+  /// **'この検索履歴を削除しますか？'**
+  String get communityPlazaDeleteHistory;
+
+  /// No description provided for @communityPlazaLocalData.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末保存データ'**
+  String get communityPlazaLocalData;
+
+  /// No description provided for @communityPlazaExactTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索語を完全一致で検索する'**
+  String get communityPlazaExactTitle;
+
+  /// No description provided for @communityPlazaUnavailablePlaceholder.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品は削除または非公開です'**
+  String get communityPlazaUnavailablePlaceholder;
+
+  /// No description provided for @communityPlazaSearchTab.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索'**
+  String get communityPlazaSearchTab;
+
+  /// No description provided for @communityPlazaMutePrivacyNotice.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートしても相手に通知は送られません。'**
+  String get communityPlazaMutePrivacyNotice;
+
+  /// No description provided for @communityPostVisibilityHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeでの公開範囲'**
+  String get communityPostVisibilityHeading;
+
+  /// No description provided for @communityPostVisibilityUnlistedTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場にのみ投稿する'**
+  String get communityPostVisibilityUnlistedTitle;
+
+  /// No description provided for @communityPostVisibilityUnlistedHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'※YouTube上では限定公開になります。NIARIMのブックマークランキングには参加できます。'**
+  String get communityPostVisibilityUnlistedHelp;
+
+  /// No description provided for @communityPostVisibilityPublicTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeにも同時投稿する'**
+  String get communityPostVisibilityPublicTitle;
+
+  /// No description provided for @communityPostVisibilityPublicHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'※YouTube上では全体公開になります。NIARIMのブックマークランキングには参加できます。'**
+  String get communityPostVisibilityPublicHelp;
+
+  /// No description provided for @communityPostVisibilityUnlistedDisclosure.
+  ///
+  /// In ja, this message translates to:
+  /// **'※ 限定公開は非公開ではありません。動画のURLを知る人は、NIARIM外でも視聴・共有できます。'**
+  String get communityPostVisibilityUnlistedDisclosure;
+
+  /// No description provided for @communityRankingLayoutTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ランキングの表示形式'**
+  String get communityRankingLayoutTitle;
+
+  /// No description provided for @communityRankingLayoutHorizontal.
+  ///
+  /// In ja, this message translates to:
+  /// **'横長リスト'**
+  String get communityRankingLayoutHorizontal;
+
+  /// No description provided for @communityRankingLayoutLargeThumbnail.
+  ///
+  /// In ja, this message translates to:
+  /// **'大きいサムネイル'**
+  String get communityRankingLayoutLargeThumbnail;
+
+  /// 作品広場のランキングの順位（読み上げ用）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{rank}位'**
+  String communityRankingLayoutRankedPlace(int rank);
+
+  /// No description provided for @communityRankingLayoutPeriodBookmarks.
+  ///
+  /// In ja, this message translates to:
+  /// **'期間内ブックマーク'**
+  String get communityRankingLayoutPeriodBookmarks;
+
+  /// No description provided for @communityWorkMetadataTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品タイトル'**
+  String get communityWorkMetadataTitle;
+
+  /// No description provided for @communityWorkMetadataDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の概要欄'**
+  String get communityWorkMetadataDescription;
+
+  /// No description provided for @communityWorkMetadataDescriptionHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の説明や制作について（任意）'**
+  String get communityWorkMetadataDescriptionHint;
+
+  /// No description provided for @communityWorkMetadataEdit.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトル・概要欄を編集'**
+  String get communityWorkMetadataEdit;
+
+  /// No description provided for @communityWorkMetadataSaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトルと概要欄を保存しました'**
+  String get communityWorkMetadataSaved;
+
+  /// No description provided for @communityWorkMetadataInfo.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM内の情報を編集します。YouTube上のタイトル・概要欄は変わりません。'**
+  String get communityWorkMetadataInfo;
+
+  /// No description provided for @communityWorkMetadataLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'概要欄を読み込めませんでした'**
+  String get communityWorkMetadataLoadFailed;
+
+  /// No description provided for @communityWorkMetadataYoutubeDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの説明欄（任意）'**
+  String get communityWorkMetadataYoutubeDescription;
+
+  /// No description provided for @communityWorkMetadataYoutubeDescriptionHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画の説明。NIARIMの概要欄とは別に管理されます'**
+  String get communityWorkMetadataYoutubeDescriptionHint;
+
+  /// No description provided for @communityWorkMetadataYoutubeDescriptionInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの説明欄は5,000バイト以内で入力し、< と > は使用しないでください'**
+  String get communityWorkMetadataYoutubeDescriptionInvalid;
+
+  /// No description provided for @communityWorkMetadataYoutubeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeのタイトル'**
+  String get communityWorkMetadataYoutubeTitle;
+
+  /// No description provided for @communityWorkMetadataCopyTitleToYoutube.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeのタイトルにコピー'**
+  String get communityWorkMetadataCopyTitleToYoutube;
+
+  /// No description provided for @communityWorkMetadataCopyTitleToNiarim.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMのタイトルにコピー'**
+  String get communityWorkMetadataCopyTitleToNiarim;
+
+  /// No description provided for @communityWorkMetadataCopyDescriptionToYoutube.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの説明欄にコピー'**
+  String get communityWorkMetadataCopyDescriptionToYoutube;
+
+  /// No description provided for @communityWorkMetadataCopyDescriptionToNiarim.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMの概要欄にコピー'**
+  String get communityWorkMetadataCopyDescriptionToNiarim;
+
+  /// No description provided for @communityWorkMetadataYoutubeTitleRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeのタイトルを入力してください'**
+  String get communityWorkMetadataYoutubeTitleRequired;
+
+  /// No description provided for @communityWorkMetadataCopyConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'コピー先の内容を上書きしますか？'**
+  String get communityWorkMetadataCopyConfirmTitle;
+
+  /// No description provided for @communityWorkMetadataCopyConfirmMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'コピー先に現在入力されている内容はすべて上書きされます。コピーを実行しますか？'**
+  String get communityWorkMetadataCopyConfirmMessage;
+
+  /// No description provided for @communityWorkMetadataCopyCancel.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンセル'**
+  String get communityWorkMetadataCopyCancel;
+
+  /// No description provided for @communityWorkMetadataCopyConfirmAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'コピーする'**
+  String get communityWorkMetadataCopyConfirmAction;
+
+  /// No description provided for @communityYoutubeCommentHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeのコメントを見る'**
+  String get communityYoutubeCommentHeading;
+
+  /// No description provided for @communityYoutubeCommentLoadMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'さらに表示'**
+  String get communityYoutubeCommentLoadMore;
+
+  /// No description provided for @communityYoutubeCommentOpenYouTube.
+  ///
+  /// In ja, this message translates to:
+  /// **'続きをYouTubeで見る'**
+  String get communityYoutubeCommentOpenYouTube;
+
+  /// No description provided for @communityYoutubeCommentNoComments.
+  ///
+  /// In ja, this message translates to:
+  /// **'コメントはまだありません'**
+  String get communityYoutubeCommentNoComments;
+
+  /// No description provided for @communityYoutubeCommentUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeコメントを取得できませんでした'**
+  String get communityYoutubeCommentUnavailable;
+
+  /// No description provided for @communityYoutubeCommentRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'再読み込み'**
+  String get communityYoutubeCommentRetry;
+
+  /// YouTubeのコメントの下に出す、まだ表示していない返信を含めた返信の数。
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{返信 {count}件}}'**
+  String communityYoutubeCommentReplies(int count);
+
+  /// No description provided for @communityYoutubeCommentAttribution.
+  ///
+  /// In ja, this message translates to:
+  /// **'コメントはYouTubeから取得しています。投稿・返信はできません。'**
+  String get communityYoutubeCommentAttribution;
+
+  /// No description provided for @creatorMissionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション'**
+  String get creatorMissionTitle;
+
+  /// No description provided for @creatorMissionGenericPublished.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿した作品を公開する'**
+  String get creatorMissionGenericPublished;
+
+  /// No description provided for @creatorMissionDetailsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成条件'**
+  String get creatorMissionDetailsTitle;
+
+  /// No description provided for @creatorMissionDetailsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'目標を満たしてから受け取れます。受取済みのミッションは同じアカウント・同じ作品では再受取できません。'**
+  String get creatorMissionDetailsHint;
+
+  /// No description provided for @creatorMissionNotAchieved.
+  ///
+  /// In ja, this message translates to:
+  /// **'未達成'**
+  String get creatorMissionNotAchieved;
+
+  /// No description provided for @creatorMissionDetailsTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'内容を確認'**
+  String get creatorMissionDetailsTooltip;
+
+  /// No description provided for @creatorMissionReviewing.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成確認中'**
+  String get creatorMissionReviewing;
+
+  /// No description provided for @creatorMissionCoinReward.
+  ///
+  /// In ja, this message translates to:
+  /// **'オパール報酬'**
+  String get creatorMissionCoinReward;
+
+  /// No description provided for @creatorMissionClaim.
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取る'**
+  String get creatorMissionClaim;
+
+  /// No description provided for @creatorMissionActivityTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知'**
+  String get creatorMissionActivityTitle;
+
+  /// No description provided for @creatorMissionActivityObserved.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成を確認した日'**
+  String get creatorMissionActivityObserved;
+
+  /// No description provided for @creatorMissionActivityEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだミッション達成の通知はありません'**
+  String get creatorMissionActivityEmpty;
+
+  /// No description provided for @creatorMissionActivitySyncMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成通知をさらに確認'**
+  String get creatorMissionActivitySyncMore;
+
+  /// No description provided for @creatorMissionActivityHistoryMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'過去の通知を表示'**
+  String get creatorMissionActivityHistoryMore;
+
+  /// No description provided for @creatorMissionActivityError.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知を取得できませんでした'**
+  String get creatorMissionActivityError;
+
+  /// No description provided for @creatorMissionActivitySignIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'サインインすると達成履歴を確認できます'**
+  String get creatorMissionActivitySignIn;
+
+  /// No description provided for @creatorMissionDetailsDraftCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'複数作品の達成数は暫定集計です。正式な受取時にサーバーが再確認します。'**
+  String get creatorMissionDetailsDraftCount;
+
+  /// No description provided for @creatorMissionDetailsPerWorkRule.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品ごとに1回受け取れます。別の作品で同じ条件を達成すると、別途受け取れます。'**
+  String get creatorMissionDetailsPerWorkRule;
+
+  /// No description provided for @creatorMissionDetailsAccountRule.
+  ///
+  /// In ja, this message translates to:
+  /// **'この条件の報酬はアカウントにつき1回限りです。'**
+  String get creatorMissionDetailsAccountRule;
+
+  /// No description provided for @creatorMissionDetailsTemplateRule.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品が条件を達成すると、上部に作品名入りの達成項目が追加されます。この見本の行は常に未達成のまま表示されます。'**
+  String get creatorMissionDetailsTemplateRule;
+
+  /// No description provided for @creatorMissionDetailsPending.
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取りを確認中です。'**
+  String get creatorMissionDetailsPending;
+
+  /// No description provided for @creatorMissionDetailsOffline.
+  ///
+  /// In ja, this message translates to:
+  /// **'この報酬は現在公開準備中のため、受取操作は無効です。'**
+  String get creatorMissionDetailsOffline;
+
+  /// No description provided for @creatorMissionDrawerAttention.
+  ///
+  /// In ja, this message translates to:
+  /// **'未受取の達成ミッションがあります'**
+  String get creatorMissionDrawerAttention;
+
+  /// No description provided for @creatorMissionAchieved.
+  ///
+  /// In ja, this message translates to:
+  /// **'条件達成'**
+  String get creatorMissionAchieved;
+
+  /// No description provided for @creatorMissionClaimReceived.
+  ///
+  /// In ja, this message translates to:
+  /// **'報酬を受け取りました'**
+  String get creatorMissionClaimReceived;
+
+  /// No description provided for @creatorMissionHoldStarted.
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取りを確認中です。'**
+  String get creatorMissionHoldStarted;
+
+  /// No description provided for @creatorMissionClaimFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'受取処理に失敗しました。再読み込みしてお試しください。'**
+  String get creatorMissionClaimFailed;
+
+  /// No description provided for @creatorMissionWorkSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品ごとの達成ミッション'**
+  String get creatorMissionWorkSection;
+
+  /// No description provided for @creatorMissionWorkWarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成作品だけを表示します。同じ作品・同じミッションの報酬は1回限りです。'**
+  String get creatorMissionWorkWarning;
+
+  /// No description provided for @creatorMissionNoAchievements.
+  ///
+  /// In ja, this message translates to:
+  /// **'このページに達成した作品ミッションはありません。'**
+  String get creatorMissionNoAchievements;
+
+  /// No description provided for @creatorMissionLoadMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'次の25作品を確認'**
+  String get creatorMissionLoadMore;
+
+  /// No description provided for @creatorMissionWorkListError.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品別ミッションを読み込めませんでした。'**
+  String get creatorMissionWorkListError;
+
+  /// No description provided for @creatorMissionSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'制作・作品広場の達成でオパールを獲得'**
+  String get creatorMissionSubtitle;
+
+  /// No description provided for @creatorMissionPerWork.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品ごとに1回ずつ'**
+  String get creatorMissionPerWork;
+
+  /// No description provided for @creatorMissionClaimed.
+  ///
+  /// In ja, this message translates to:
+  /// **'獲得済み'**
+  String get creatorMissionClaimed;
+
+  /// No description provided for @creatorMissionPending.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成確認中'**
+  String get creatorMissionPending;
+
+  /// No description provided for @creatorMissionNotClaimed.
+  ///
+  /// In ja, this message translates to:
+  /// **'未獲得'**
+  String get creatorMissionNotClaimed;
+
+  /// No description provided for @creatorMissionUpcoming.
+  ///
+  /// In ja, this message translates to:
+  /// **'報酬の提供準備中'**
+  String get creatorMissionUpcoming;
+
+  /// No description provided for @creatorMissionLogin.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントでログインするとミッションを確認できます。'**
+  String get creatorMissionLogin;
+
+  /// No description provided for @creatorMissionOffline.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッションサーバーに接続されていません。'**
+  String get creatorMissionOffline;
+
+  /// No description provided for @creatorMissionRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'再読み込み'**
+  String get creatorMissionRetry;
+
+  /// No description provided for @creatorMissionLoading.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成状況を確認中…'**
+  String get creatorMissionLoading;
+
+  /// No description provided for @creatorMissionLoadError.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成状況を取得できませんでした。'**
+  String get creatorMissionLoadError;
+
+  /// No description provided for @creatorMissionTimeWarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'制作時間は表示用の記録です。オパール対象にはサーバー側の検証が必要です。'**
+  String get creatorMissionTimeWarning;
+
+  /// No description provided for @creatorMissionRankingWarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'※順位報酬はNIARIM内のブックマークランキングが対象です。全体の公開作品数・対象作品のブックマーク数・順位・上位割合のすべてに条件があります。詳しくは各ミッションの「内容を確認」をご覧ください。'**
+  String get creatorMissionRankingWarning;
+
+  /// No description provided for @creatorMissionBudget.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション報酬はそれぞれ1回限りです。'**
+  String get creatorMissionBudget;
+
+  /// No description provided for @loginBonusTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'累計ログインボーナス'**
+  String get loginBonusTitle;
+
+  /// No description provided for @loginBonusDaily.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日のログイン報酬'**
+  String get loginBonusDaily;
+
+  /// No description provided for @loginBonusClaim.
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取る'**
+  String get loginBonusClaim;
+
+  /// No description provided for @loginBonusClaimed.
+  ///
+  /// In ja, this message translates to:
+  /// **'受取済み'**
+  String get loginBonusClaimed;
+
+  /// No description provided for @loginBonusNotYet.
+  ///
+  /// In ja, this message translates to:
+  /// **'未達成'**
+  String get loginBonusNotYet;
+
+  /// No description provided for @loginBonusMilestones.
+  ///
+  /// In ja, this message translates to:
+  /// **'節目の追加ボーナス'**
+  String get loginBonusMilestones;
+
+  /// No description provided for @loginBonusUnknown.
+  ///
+  /// In ja, this message translates to:
+  /// **'確認できません'**
+  String get loginBonusUnknown;
+
+  /// No description provided for @loginBonusUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'報酬の受取機能は現在準備中です'**
+  String get loginBonusUnavailable;
+
+  /// No description provided for @loginBonusUtc.
+  ///
+  /// In ja, this message translates to:
+  /// **'日付は日本時間の午前0時に切替。休んでも累計日数は減りません。'**
+  String get loginBonusUtc;
+
+  /// No description provided for @loginBonusRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'更新'**
+  String get loginBonusRetry;
+
+  /// No description provided for @loginBonusFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'受取を確認できませんでした'**
+  String get loginBonusFailed;
+
+  /// No description provided for @loginBonusSuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'オパールの受取が確認できました'**
+  String get loginBonusSuccess;
+
+  /// No description provided for @loginBonusVisitMissing.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日のログインを確認中です'**
+  String get loginBonusVisitMissing;
+
+  /// No description provided for @rewardNavigationExchange.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典交換'**
+  String get rewardNavigationExchange;
+
+  /// No description provided for @rewardNavigationHub.
+  ///
+  /// In ja, this message translates to:
+  /// **'オパール・特典'**
+  String get rewardNavigationHub;
+
+  /// No description provided for @rewardNavigationEarnTab.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告を見てオパールGET'**
+  String get rewardNavigationEarnTab;
+
+  /// No description provided for @rewardNavigationMissions.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション'**
+  String get rewardNavigationMissions;
+
+  /// No description provided for @rewardNavigationEarn.
+  ///
+  /// In ja, this message translates to:
+  /// **'無料でオパールを貯める'**
+  String get rewardNavigationEarn;
+
+  /// No description provided for @rewardNavigationMembership.
+  ///
+  /// In ja, this message translates to:
+  /// **'契約状態'**
+  String get rewardNavigationMembership;
+
+  /// No description provided for @rewardNavigationMembershipDetail.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員について詳しく見る'**
+  String get rewardNavigationMembershipDetail;
+
+  /// No description provided for @rewardNavigationMembershipFree.
+  ///
+  /// In ja, this message translates to:
+  /// **'無料会員'**
+  String get rewardNavigationMembershipFree;
+
+  /// No description provided for @rewardNavigationMembershipMonthly.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム（月額）'**
+  String get rewardNavigationMembershipMonthly;
+
+  /// No description provided for @rewardNavigationMembershipYearly.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム（年額）'**
+  String get rewardNavigationMembershipYearly;
+
+  /// No description provided for @rewardNavigationMembershipPlay.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員'**
+  String get rewardNavigationMembershipPlay;
+
+  /// No description provided for @rewardNavigationMembershipCoin.
+  ///
+  /// In ja, this message translates to:
+  /// **'オパールで解放中'**
+  String get rewardNavigationMembershipCoin;
+
+  /// No description provided for @rewardNavigationMembershipBenefit.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用中の特典'**
+  String get rewardNavigationMembershipBenefit;
+
+  /// No description provided for @rewardNavigationMembershipNoBenefit.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在利用中の交換特典はありません'**
+  String get rewardNavigationMembershipNoBenefit;
+
+  /// No description provided for @rewardNavigationMembershipUpsell.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアムでは機能制限を気にせず制作できます。内容や料金を確認してから登録できます。'**
+  String get rewardNavigationMembershipUpsell;
+
+  /// 契約状態：会員・交換した特典の利用期限（日時）
+  ///
+  /// In ja, this message translates to:
+  /// **'利用期限：{expiry}'**
+  String rewardNavigationMembershipExpiresAt(DateTime expiry);
+
+  /// 契約状態：オパールで交換した全機能を利用中であることと、その利用期限（日時）
+  ///
+  /// In ja, this message translates to:
+  /// **'オパールで解放中 · 利用期限：{expiry}'**
+  String rewardNavigationMembershipCoinExpiresAt(DateTime expiry);
+
+  /// No description provided for @rewardNavigationMembershipUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典情報を確認できませんでした'**
+  String get rewardNavigationMembershipUnavailable;
+
+  /// No description provided for @rewardNavigationMembershipLogin.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典情報の確認にはログインが必要です'**
+  String get rewardNavigationMembershipLogin;
+
+  /// No description provided for @rewardNavigationPremiumCompare.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員について詳しく見る'**
+  String get rewardNavigationPremiumCompare;
+
+  /// No description provided for @rewardNavigationPremiumJoin.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員になる'**
+  String get rewardNavigationPremiumJoin;
+
+  /// No description provided for @rewardNavigationPremiumPlans.
+  ///
+  /// In ja, this message translates to:
+  /// **'月額・年額プランを選ぶ'**
+  String get rewardNavigationPremiumPlans;
+
+  /// No description provided for @rewardNavigationEarnDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告を見るとオパールを獲得できます'**
+  String get rewardNavigationEarnDescription;
+
+  /// No description provided for @rewardNavigationEarnUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在リワード広告は利用できません'**
+  String get rewardNavigationEarnUnavailable;
+
+  /// No description provided for @rewardUnlockTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'報酬'**
+  String get rewardUnlockTitle;
+
+  /// No description provided for @rewardUnlockMissionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション'**
+  String get rewardUnlockMissionTitle;
+
+  /// No description provided for @rewardUnlockMissionSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の投稿やブックマーク達成でオパールを獲得'**
+  String get rewardUnlockMissionSubtitle;
+
+  /// No description provided for @rewardUnlockLoading.
+  ///
+  /// In ja, this message translates to:
+  /// **'残高を確認中…'**
+  String get rewardUnlockLoading;
+
+  /// No description provided for @rewardUnlockPaused.
+  ///
+  /// In ja, this message translates to:
+  /// **'保管中・残り秒数'**
+  String get rewardUnlockPaused;
+
+  /// No description provided for @rewardUnlockActiveUntil.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用期限'**
+  String get rewardUnlockActiveUntil;
+
+  /// No description provided for @rewardUnlockSubscriptionBenefit.
+  ///
+  /// In ja, this message translates to:
+  /// **'オパールは広告視聴で無料で貯められます。広告視聴の時間を省きたい方には月額・年額Premiumが便利です。'**
+  String get rewardUnlockSubscriptionBenefit;
+
+  /// No description provided for @rewardUnlockActive.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在利用中の特典'**
+  String get rewardUnlockActive;
+
+  /// No description provided for @rewardUnlockActivePremium.
+  ///
+  /// In ja, this message translates to:
+  /// **'Premium会員として全特典を利用中'**
+  String get rewardUnlockActivePremium;
+
+  /// No description provided for @rewardUnlockActiveUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'オパール特典の利用状況はサーバー連携後に表示します'**
+  String get rewardUnlockActiveUnavailable;
+
+  /// No description provided for @rewardUnlockDuration.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用期間'**
+  String get rewardUnlockDuration;
+
+  /// No description provided for @rewardUnlockChooseDuration.
+  ///
+  /// In ja, this message translates to:
+  /// **'期間を選択'**
+  String get rewardUnlockChooseDuration;
+
+  /// No description provided for @rewardUnlockChooseBenefits.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典を選択'**
+  String get rewardUnlockChooseBenefits;
+
+  /// No description provided for @rewardUnlockPricePending.
+  ///
+  /// In ja, this message translates to:
+  /// **'必要オパール：未設定'**
+  String get rewardUnlockPricePending;
+
+  /// No description provided for @rewardUnlockNotReady.
+  ///
+  /// In ja, this message translates to:
+  /// **'準備中'**
+  String get rewardUnlockNotReady;
+
+  /// No description provided for @rewardUnlockTotal.
+  ///
+  /// In ja, this message translates to:
+  /// **'合計必要オパール'**
+  String get rewardUnlockTotal;
+
+  /// No description provided for @rewardUnlockUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'正式な交換価格は準備中です'**
+  String get rewardUnlockUnavailable;
+
+  /// No description provided for @rewardUnlockBalancePending.
+  ///
+  /// In ja, this message translates to:
+  /// **'オパール残高：サーバー連携準備中'**
+  String get rewardUnlockBalancePending;
+
+  /// No description provided for @rewardUnlockGoal.
+  ///
+  /// In ja, this message translates to:
+  /// **'このオパール数を目標にする'**
+  String get rewardUnlockGoal;
+
+  /// No description provided for @rewardUnlockRedeem.
+  ///
+  /// In ja, this message translates to:
+  /// **'オパールと引き換え'**
+  String get rewardUnlockRedeem;
+
+  /// No description provided for @rewardUnlockWatchRewardedAd.
+  ///
+  /// In ja, this message translates to:
+  /// **'リワード広告を見てオパールを貯める'**
+  String get rewardUnlockWatchRewardedAd;
+
+  /// No description provided for @rewardUnlockRewardPending.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告の確認待ちです。Googleの検証後にオパールが反映されます。'**
+  String get rewardUnlockRewardPending;
+
+  /// No description provided for @rewardUnlockRewardUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告を表示できませんでした。しばらくしてから再試行してください。'**
+  String get rewardUnlockRewardUnavailable;
+
+  /// No description provided for @rewardUnlockRewardRefresh.
+  ///
+  /// In ja, this message translates to:
+  /// **'残高を更新'**
+  String get rewardUnlockRewardRefresh;
+
+  /// No description provided for @rewardUnlockCoinHistory.
+  ///
+  /// In ja, this message translates to:
+  /// **'取引履歴'**
+  String get rewardUnlockCoinHistory;
+
+  /// No description provided for @rewardUnlockHistoryEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ取引履歴はありません'**
+  String get rewardUnlockHistoryEmpty;
+
+  /// No description provided for @rewardUnlockHistoryError.
+  ///
+  /// In ja, this message translates to:
+  /// **'履歴を取得できませんでした'**
+  String get rewardUnlockHistoryError;
+
+  /// No description provided for @rewardUnlockHistoryMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'さらに読み込む'**
+  String get rewardUnlockHistoryMore;
+
+  /// No description provided for @rewardUnlockHistoryAd.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告視聴'**
+  String get rewardUnlockHistoryAd;
+
+  /// No description provided for @rewardUnlockHistoryMission.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション'**
+  String get rewardUnlockHistoryMission;
+
+  /// No description provided for @rewardUnlockHistoryRedemption.
+  ///
+  /// In ja, this message translates to:
+  /// **'オパール交換'**
+  String get rewardUnlockHistoryRedemption;
+
+  /// No description provided for @rewardUnlockHistoryOther.
+  ///
+  /// In ja, this message translates to:
+  /// **'その他の取引'**
+  String get rewardUnlockHistoryOther;
+
+  /// No description provided for @rewardUnlockRewardQuotaReached.
+  ///
+  /// In ja, this message translates to:
+  /// **'本日の獲得上限に達しました（UTC）'**
+  String get rewardUnlockRewardQuotaReached;
+
+  /// No description provided for @rewardUnlockRewardQuotaUncapped.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM側の回数上限なし'**
+  String get rewardUnlockRewardQuotaUncapped;
+
+  /// No description provided for @rewardUnlockRewardQuotaCaution.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告の在庫・AdMobの表示制限により、再生できる回数は異なります。'**
+  String get rewardUnlockRewardQuotaCaution;
+
+  /// No description provided for @rewardUnlockRedemptionSuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'交換が完了しました。サーバーの利用期限を更新しました。'**
+  String get rewardUnlockRedemptionSuccess;
+
+  /// No description provided for @rewardUnlockRedemptionUncertain.
+  ///
+  /// In ja, this message translates to:
+  /// **'交換状況を確認できませんでした。再試行時は同じ取引を確認します。'**
+  String get rewardUnlockRedemptionUncertain;
+
+  /// No description provided for @rewardUnlockFreeOnly.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告を見るだけでオパールが貯まります（公開準備中）'**
+  String get rewardUnlockFreeOnly;
+
+  /// No description provided for @rewardUnlockSubscribe.
+  ///
+  /// In ja, this message translates to:
+  /// **'Premium（月額・年額）を見る'**
+  String get rewardUnlockSubscribe;
+
+  /// No description provided for @rewardUnlockBestValue.
+  ///
+  /// In ja, this message translates to:
+  /// **'最もお得'**
+  String get rewardUnlockBestValue;
+
+  /// No description provided for @rewardUnlockBestExplain.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員と同じ対象機能を、個別交換よりお得にまとめて使えます'**
+  String get rewardUnlockBestExplain;
+
+  /// No description provided for @rewardUnlockEarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'Premium加入中もオパールを貯められる予定です'**
+  String get rewardUnlockEarning;
+
+  /// No description provided for @rewardUnlockHour.
+  ///
+  /// In ja, this message translates to:
+  /// **'時間'**
+  String get rewardUnlockHour;
+
+  /// No description provided for @rewardUnlockDay.
+  ///
+  /// In ja, this message translates to:
+  /// **'日'**
+  String get rewardUnlockDay;
+
+  /// No description provided for @rewardUnlockWeek.
+  ///
+  /// In ja, this message translates to:
+  /// **'週間'**
+  String get rewardUnlockWeek;
+
+  /// No description provided for @rewardUnlockMonth.
+  ///
+  /// In ja, this message translates to:
+  /// **'か月'**
+  String get rewardUnlockMonth;
+
+  /// No description provided for @rewardUnlockEndCardEdit.
+  ///
+  /// In ja, this message translates to:
+  /// **'エンドマーク編集・削除'**
+  String get rewardUnlockEndCardEdit;
+
+  /// No description provided for @rewardUnlockWatermark.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分のウォーターマークを追加・編集'**
+  String get rewardUnlockWatermark;
+
+  /// No description provided for @rewardUnlockToneCurve.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンカーブ'**
+  String get rewardUnlockToneCurve;
+
+  /// No description provided for @rewardUnlockLevelAdjustment.
+  ///
+  /// In ja, this message translates to:
+  /// **'レベル補正'**
+  String get rewardUnlockLevelAdjustment;
+
+  /// No description provided for @rewardUnlockUnlimitedDuration.
+  ///
+  /// In ja, this message translates to:
+  /// **'最大尺2時間'**
+  String get rewardUnlockUnlimitedDuration;
+
+  /// No description provided for @rewardUnlockCustomAutomation.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタムオートアクション'**
+  String get rewardUnlockCustomAutomation;
+
+  /// No description provided for @rewardUnlockCommunityPostQuota.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場の投稿枠（1日1作品→3作品）'**
+  String get rewardUnlockCommunityPostQuota;
+
+  /// No description provided for @rewardUnlockProjectListAds.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト一覧の広告なし'**
+  String get rewardUnlockProjectListAds;
+
+  /// No description provided for @rewardUnlockCanvasAds.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスの広告なし'**
+  String get rewardUnlockCanvasAds;
+
+  /// No description provided for @rewardUnlockTimelineAds.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインの広告なし'**
+  String get rewardUnlockTimelineAds;
+
+  /// No description provided for @rewardUnlockProcessingAds.
+  ///
+  /// In ja, this message translates to:
+  /// **'処理中の広告なし'**
+  String get rewardUnlockProcessingAds;
+
+  /// No description provided for @rewardUnlockAllAds.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべての広告なし'**
+  String get rewardUnlockAllAds;
+
+  /// No description provided for @rewardUnlockFullPremium.
+  ///
+  /// In ja, this message translates to:
+  /// **'コンプリートパック（プレミアム会員と同内容）'**
+  String get rewardUnlockFullPremium;
+
+  /// No description provided for @rewardUnlockChoose.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択'**
+  String get rewardUnlockChoose;
+
+  /// No description provided for @sharedArchiveReceived.
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取った'**
+  String get sharedArchiveReceived;
+
+  /// No description provided for @sharedArchiveCreated.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成した'**
+  String get sharedArchiveCreated;
+
+  /// No description provided for @sharedArchiveShare.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有する'**
+  String get sharedArchiveShare;
+
+  /// No description provided for @sharedArchiveEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成した共有ファイルはまだありません'**
+  String get sharedArchiveEmpty;
+
+  /// オパールの数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言。数は表示言語の桁区切りで書く
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}オパール'**
+  String coinAmount(int count);
+
+  /// ミッション：投稿した作品のリポスト数の目標（作品名なし）
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿した作品がリポスト数{count}件を達成する'**
+  String creatorMissionGenericRepost(int count);
+
+  /// ミッション：投稿した作品のブックマーク数の目標（作品名なし）
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿した作品がブックマーク数{count}件達成する'**
+  String creatorMissionGenericBookmark(int count);
+
+  /// ミッション：作品名つきのリポスト数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}がリポスト数{count}件を達成する'**
+  String creatorMissionNamedRepost(String title, int count);
+
+  /// ミッション：作品名つきのブックマーク数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}がブックマーク数{count}件達成する'**
+  String creatorMissionNamedBookmark(String title, int count);
+
+  /// ミッション：作品名つきの投稿の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}を投稿する'**
+  String creatorMissionNamedPublished(String title);
+
+  /// ミッション：複数の作品がそれぞれブックマーク数を達成する目標
+  ///
+  /// In ja, this message translates to:
+  /// **'{works}作品でブックマーク数を各{count}件達成する'**
+  String creatorMissionWorksGoal(int works, int count);
+
+  /// ミッション：作品を投稿する数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'{works}作品を投稿する'**
+  String creatorMissionWorksPublished(int works);
+
+  /// 作品広場の通知：作品を投稿した
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}を投稿しました'**
+  String creatorMissionActivityPublished(String title);
+
+  /// 作品広場の通知：フォロワー数を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワーが{count}人になりました'**
+  String creatorMissionActivityFollowers(int count);
+
+  /// 作品広場の通知：作品がリポスト数を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}がリポスト数{count}件を達成しました'**
+  String creatorMissionActivityWorkReposts(String title, int count);
+
+  /// 作品広場の通知：作品がブックマーク数を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}がブックマーク数{count}件を達成しました'**
+  String creatorMissionActivityWorkBookmarks(String title, int count);
+
+  /// 作品広場の通知：複数の作品がそれぞれブックマーク数を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'あなたが投稿した{works}作品で各{count}件のブックマークを達成しました'**
+  String creatorMissionActivityWorksBookmarks(int works, int count);
+
+  /// 作品広場の通知：作品を投稿した数を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'あなたが{works}作品を投稿しました'**
+  String creatorMissionActivityWorksPublished(int works);
+
+  /// ミッションの達成条件：作品のリポスト数の進み具合
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のリポスト数：{progress}件（必要：{goal}件）'**
+  String creatorMissionDetailsRepostProgress(int progress, int goal);
+
+  /// ミッションの達成条件：作品のブックマーク数の進み具合
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のブックマーク数：{progress}件（必要：{goal}件）'**
+  String creatorMissionDetailsWorkProgress(int progress, int goal);
+
+  /// ミッションの達成条件：条件を満たす作品数の進み具合
+  ///
+  /// In ja, this message translates to:
+  /// **'条件を満たす作品：{progress}作品（必要：{goal}作品）'**
+  String creatorMissionDetailsWorksProgress(int progress, int goal);
+
+  /// ミッションの達成条件：フォロワー数の進み具合
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のフォロワー：{progress}人（必要：{goal}人）'**
+  String creatorMissionDetailsFollowersProgress(int progress, int goal);
+
+  /// ミッション：検証済みの制作時間の目標（時間）
+  ///
+  /// In ja, this message translates to:
+  /// **'検証済みの制作時間 累計{hours}時間'**
+  String creatorMissionTime(int hours);
+
+  /// ミッション：フォロワー数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワー{count}人'**
+  String creatorMissionFollowers(int count);
+
+  /// ミッション：ブックマークランキングの順位の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークランキング{rank}位以内'**
+  String creatorMissionRank(int rank);
+
+  /// ミッション：この端末で記録した制作時間（参考、時間）
+  ///
+  /// In ja, this message translates to:
+  /// **'この端末の制作時間（参考）: {hours}時間'**
+  String creatorMissionLocalTime(int hours);
+
+  /// ミッション：サーバーに届いた制作時間の候補（分）
+  ///
+  /// In ja, this message translates to:
+  /// **'サーバーに届いた制作時間の候補: {minutes}分（報酬審査前）'**
+  String creatorMissionCandidateMinutes(int minutes);
+
+  /// ミッション：受け取れる報酬をまとめて受け取るボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'まとめて受け取る'**
+  String get creatorMissionClaimAll;
+
+  /// ミッション：まとめて受け取った結果（受け取れた件数・受け取れなかった件数）
+  ///
+  /// In ja, this message translates to:
+  /// **'まとめて受取：{received}件完了{failed, plural, =0{} other{ / {failed}件は受取できませんでした}}'**
+  String creatorMissionClaimAllResult(int received, int failed);
+
+  /// ミッション：まとめて受け取る前に受取状況を読み込めなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'受取状況を読み込めませんでした。再度お試しください。'**
+  String get creatorMissionClaimAllLoadFailed;
+
+  /// ミッション：ブックマークランキング1位の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークランキング1位'**
+  String get creatorMissionRankOne;
+
+  /// No description provided for @creatorMissionDetailsRepostRule.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMで公開中の自分の作品が対象です。リポスト数は作品ごとに集計します。'**
+  String get creatorMissionDetailsRepostRule;
+
+  /// ミッションの達成条件：作品のブックマーク数の決まり
+  ///
+  /// In ja, this message translates to:
+  /// **'【作品のブックマーク数】自分がNIARIMで公開中の作品について、NIARIM内で付けられたブックマーク数が目標以上であることが条件です。作品ごとに判定します。公開を取り消した作品や削除された作品は対象外です。'**
+  String get creatorMissionDetailsBookmarkRule;
+
+  /// ミッションの達成条件：複数作品の決まり
+  ///
+  /// In ja, this message translates to:
+  /// **'【複数作品の条件】NIARIMで公開中の自分の作品のうち、それぞれが指定のブックマーク数以上を獲得している作品が、指定作品数以上必要です。ブックマーク0件の条件は公開作品数のみで判定します。サーバーで対象作品を再確認します。'**
+  String get creatorMissionDetailsWorksRule;
+
+  /// ミッションの達成条件：フォロワーの決まり
+  ///
+  /// In ja, this message translates to:
+  /// **'【フォロワーの条件】NIARIMアカウントの現在のフォロワー数が目標以上必要です。端末から申告した人数ではなく、サーバーの記録を使用します。'**
+  String get creatorMissionDetailsFollowerRule;
+
+  /// ミッションの達成条件：制作時間の決まり
+  ///
+  /// In ja, this message translates to:
+  /// **'【制作時間の条件】端末の自己申告や端末に保存した制作時間は報酬対象ではありません。実際の制作を証明する仕組みが未完成のため、制作時間ミッションのオパール受取は現在できません。画面に表示される制作時間は参考値です。'**
+  String get creatorMissionDetailsTimeRule;
+
+  /// ミッションの達成条件：受け取り時の達成条件の確認
+  ///
+  /// In ja, this message translates to:
+  /// **'【受取方法】「受け取る」を押すとサーバーが達成条件を確認し、満たしていればすぐに報酬を付与します。報酬は同じミッションにつきアカウントまたは作品ごとに1回限りです。'**
+  String get creatorMissionDetailsClaimRule;
+
+  /// ランキングのミッションの達成条件：順位の計算方法。percentは全体の上位の割合（％）、rankはミッションの順位
+  ///
+  /// In ja, this message translates to:
+  /// **'【順位の計算方法】NIARIMで公開中の自分の作品が対象です。全体の公開作品が100件以上で、作品のブックマーク数が指定件数以上、かつランキング{rank}位以内・全体の上位{percent}％以内を同時に満たす必要があります。上位割合による順位上限は「全体の公開作品数 × {percent}％」を小数点以下切り捨て（最低1位）で計算し、{rank}位と比較して厳しい方を適用します。公開作品数はサーバーの集計値を使用します。'**
+  String creatorMissionRankDetailsRules(int percent, int rank);
+
+  /// ランキングのミッションの達成条件：受け取り時の順位確認
+  ///
+  /// In ja, this message translates to:
+  /// **'【ランキング報酬】「受け取る」を押した時点の順位と達成条件をサーバーが確認し、満たしていればすぐに付与します。同じ作品の同じ順位報酬は1回限りです。'**
+  String get creatorMissionRankDetailsHold;
+
+  /// ランキングのミッション：作品を選んでいないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'作品を選択すると現在の達成状況を確認できます'**
+  String get creatorMissionRankSelectWork;
+
+  /// ランキングのミッション：作品が公開されていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品は現在公開されていません'**
+  String get creatorMissionRankWorkNotPublic;
+
+  /// ランキングのミッション：全体の公開作品数をまだ集計しているとき
+  ///
+  /// In ja, this message translates to:
+  /// **'全体の公開作品数を集計中です。集計が終わるまで受取できません'**
+  String get creatorMissionRankCommunityNotMeasured;
+
+  /// ランキングのミッション：全体の公開作品数が足りないとき。countは今の数、requiredは必要な数
+  ///
+  /// In ja, this message translates to:
+  /// **'公開作品数が不足：現在{count}件／必要{required}件'**
+  String creatorMissionRankCommunityWait(int count, int required);
+
+  /// ランキングのミッション：作品のブックマークが足りないとき。countは今の数、requiredは必要な数
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマーク不足：現在{count}件／必要{required}件'**
+  String creatorMissionRankBookmarkWait(int count, int required);
+
+  /// ランキングのミッション：作品が上位50位に入っていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'対象作品が現在のランキング50位以内に入っていません'**
+  String get creatorMissionRankNotRanked;
+
+  /// ランキングのミッション：順位が足りないとき。rankは今の順位、limitは必要な順位
+  ///
+  /// In ja, this message translates to:
+  /// **'現在{rank}位／条件は{limit}位以内（上位割合も適用）'**
+  String creatorMissionRankRankWait(int rank, int limit);
+
+  /// ランキングのミッション：すべての条件を満たしたとき
+  ///
+  /// In ja, this message translates to:
+  /// **'すべての条件を達成。受取時に最新の状況を確認します'**
+  String get creatorMissionRankQualified;
+
+  /// ランキングのミッションの達成条件：NIARIM全体の公開作品数
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM公開作品：現在{count}件'**
+  String creatorMissionRankPoolCurrent(int count);
+
+  /// ランキングのミッションの達成条件：全体の公開作品数をまだ集計しているとき
+  ///
+  /// In ja, this message translates to:
+  /// **'公開作品数のサーバー集計がまだ完了していません'**
+  String get creatorMissionRankPoolUnknown;
+
+  /// ランキングのミッション：作品が今の上位50位に入っていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品は現在の上位50位に入っていません'**
+  String get creatorMissionRankCurrentUnknown;
+
+  /// ミッション：制作時間がオパールの対象にならない理由
+  ///
+  /// In ja, this message translates to:
+  /// **'制作時間は端末側で偽装可能なため、現在オパール報酬の対象外です。計測した時間は参考値です。'**
+  String get creatorMissionEditTimeUnverified;
+
+  /// ランキングのミッションの達成条件：作品の今のブックマーク数
+  ///
+  /// In ja, this message translates to:
+  /// **'対象作品のブックマーク：現在{count}件'**
+  String creatorMissionRankBookmarkCurrent(int count);
+
+  /// ランキングのミッションの達成条件：作品の今の順位
+  ///
+  /// In ja, this message translates to:
+  /// **'対象作品の現在順位：{rank}位'**
+  String creatorMissionRankCurrentPlace(int rank);
+
+  /// ランキングのミッション：オパールの支給をまだ始めていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'オパール支給は現在準備中です。条件を満たしても今は受け取れません。'**
+  String get creatorMissionRankNotLive;
+
+  /// ミッション：サーバーの時刻で確かめた制作時間（分）
+  ///
+  /// In ja, this message translates to:
+  /// **'サーバー時刻で検証した制作時間: {minutes}分'**
+  String creatorMissionVerifiedMinutes(int minutes);
+
+  /// ランキングのミッションの達成条件：受け取りに要る公開作品数（works）と作品のブックマーク数（bookmarks）
+  ///
+  /// In ja, this message translates to:
+  /// **'受取条件: NIARIMの公開作品が{works}件以上、この作品のブックマークが{bookmarks}件以上'**
+  String creatorMissionRankingRequirements(int works, int bookmarks);
+
+  /// ランキングのミッションの達成条件：今の公開作品数で必要な順位
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の公開作品数で必要な順位: {rank}位以内'**
+  String creatorMissionRankingEffective(int rank);
+
+  /// 累計ログインボーナス：累計ログイン日数
+  ///
+  /// In ja, this message translates to:
+  /// **'累計{days}日'**
+  String loginBonusDays(int days);
+
+  /// 累計ログインボーナス：毎日受け取れるオパールの数
+  ///
+  /// In ja, this message translates to:
+  /// **'毎日{coins}オパール'**
+  String loginBonusDailyCoins(int coins);
+
+  /// 累計ログインボーナス：節目の日数
+  ///
+  /// In ja, this message translates to:
+  /// **'累計{days}日達成'**
+  String loginBonusMilestone(int days);
+
+  /// 作品広場の通知：累計ログインの節目を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'累計ログイン{days}日を達成しました'**
+  String loginBonusActivityMilestone(int days);
+
+  /// 特典交換：今日あと何回リワード広告でオパールを獲得できるか
+  ///
+  /// In ja, this message translates to:
+  /// **'本日のオパール獲得：残り{count}回（UTC）'**
+  String rewardUnlockRewardQuotaRemaining(int count);
+
+  /// 特典交換：価格は確定しているが、まだ交換できない特典の価格の前に付ける言葉（合計の下の注記にも使う）
+  ///
+  /// In ja, this message translates to:
+  /// **'確定価格（交換準備中）'**
+  String get rewardUnlockFixedPrice;
+
+  /// ミッション：オパールを受け取れたときの知らせ
+  ///
+  /// In ja, this message translates to:
+  /// **'オパールを受け取りました'**
+  String get missionCoinsReceived;
+
+  /// ミッション：受け取りに失敗したときの知らせ
+  ///
+  /// In ja, this message translates to:
+  /// **'受取に失敗しました'**
+  String get missionClaimFailed;
+
+  /// ミッション：受け取れたか確認できなかったときの知らせ
+  ///
+  /// In ja, this message translates to:
+  /// **'受取を確認できませんでした'**
+  String get missionClaimUnconfirmed;
+
+  /// ミッション：受け取り済みの印
+  ///
+  /// In ja, this message translates to:
+  /// **'受取済み'**
+  String get missionClaimed;
+
+  /// ミッション：達成しているが受け取りがまだ始まっていないときのボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'準備中'**
+  String get missionComingSoon;
+
+  /// ミッション：報酬を受け取るボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取る'**
+  String get missionClaim;
+
+  /// ミッション：まだ達成していないときのボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'未達成'**
+  String get missionNotYet;
+
+  /// ミッション：毎日のミッションの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'デイリー'**
+  String get missionPeriodDaily;
+
+  /// ミッション：毎週のミッションの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'ウィークリー'**
+  String get missionPeriodWeekly;
+
+  /// ミッション：毎月のミッションの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'マンスリー'**
+  String get missionPeriodMonthly;
+
+  /// ミッション：達成状況を読み込み直すボタンの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'更新'**
+  String get missionRefresh;
+
+  /// ミッション：作品広場の滞在ミッションの欄で、オパールの受け取りがまだ始まっていないことの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'オパールの受取は準備中です'**
+  String get missionPayoutPending;
+
+  /// ミッション：ウィークリー・マンスリーミッションの欄で、オパールの配布がまだ始まっていないことの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'オパール配布は準備中です'**
+  String get recurringMissionsPayoutPending;
+
+  /// ミッション：時間の長さ（時間単位）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}時間'**
+  String missionDurationHours(int count);
+
+  /// ミッション：時間の長さ（分単位）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}分'**
+  String missionDurationMinutes(int count);
+
+  /// 作品広場の滞在ミッションの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場の滞在ミッション'**
+  String get plazaMissionsTitle;
+
+  /// 作品広場の滞在ミッション：数え方の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'再生・操作は不要。作品広場を開いている時間を日本時間で集計します。'**
+  String get plazaMissionsNote;
+
+  /// 作品広場の滞在ミッション：読み込めなかったとき
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場ミッションを読み込めません'**
+  String get plazaMissionsUnavailable;
+
+  /// 作品広場の滞在ミッション：目標。durationは「5分」「1時間」などの長さ
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場を合計{duration}開く'**
+  String plazaMissionGoal(String duration);
+
+  /// ウィークリー・マンスリーのログインミッションの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'ウィークリー・マンスリーミッション'**
+  String get recurringMissionsTitle;
+
+  /// ウィークリー・マンスリーのログインミッション：数え方の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'日本時間で集計（週は月曜日開始）'**
+  String get recurringMissionsNote;
+
+  /// ウィークリー・マンスリーのログインミッション：読み込めなかったとき
+  ///
+  /// In ja, this message translates to:
+  /// **'期間ミッションを取得できませんでした'**
+  String get recurringMissionsUnavailable;
+
+  /// ウィークリー・マンスリーのログインミッション：ログインした日数／目標の日数
+  ///
+  /// In ja, this message translates to:
+  /// **'{days} / {goal}日'**
+  String recurringMissionProgress(int days, int goal);
+
+  /// 期間・作品広場のミッション：達成条件を開くボタンの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'達成条件を確認'**
+  String get missionDetailsTooltip;
+
+  /// 期間・作品広場のミッション：達成条件のダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'達成条件'**
+  String get missionDetailsTitle;
+
+  /// 期間・作品広場のミッションの達成条件：この期間の報酬を受け取ったとき
+  ///
+  /// In ja, this message translates to:
+  /// **'この期間の報酬は受取済みです。'**
+  String get missionDetailsClaimedThisPeriod;
+
+  /// 期間・作品広場のミッションの達成条件：条件を満たしたとき
+  ///
+  /// In ja, this message translates to:
+  /// **'条件達成済みです。'**
+  String get missionDetailsGoalCompleted;
+
+  /// 期間・作品広場のミッションの達成条件：まだ条件を満たしていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ達成条件を満たしていません。'**
+  String get missionDetailsGoalNotCompleted;
+
+  /// 期間・作品広場のミッションの達成条件：オパールの受け取りをまだ始めていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'オパールの受取機能は現在準備中です。'**
+  String get missionDetailsPayoutUnavailable;
+
+  /// 作品広場の滞在ミッションの達成条件。periodはday・week・month、durationは「5分」「1時間」などの長さ
+  ///
+  /// In ja, this message translates to:
+  /// **'【達成条件】{period, select, day{デイリー} week{ウィークリー} other{マンスリー}}の期間中、NIARIMの作品広場を開いている時間の合計が{duration}以上になると達成です。動画を再生したり、画面を操作したりする必要はありません。'**
+  String plazaMissionDetailsConditions(String period, String duration);
+
+  /// 作品広場の滞在ミッションの達成条件：時間の測り方
+  ///
+  /// In ja, this message translates to:
+  /// **'計測はサーバー時刻に基づく定期通信で行います。端末が申告した秒数は使用しません。通信が長く途切れた時間やページを閉じていた時間は加算されません。'**
+  String get plazaMissionDetailsMeasurement;
+
+  /// 作品広場の滞在ミッションの達成条件：期間の区切り方
+  ///
+  /// In ja, this message translates to:
+  /// **'期間は日本時間で区切り、1日は午前0時に、週は月曜日に、月は1日に切り替わります。'**
+  String get plazaMissionDetailsPeriods;
+
+  /// 作品広場の滞在ミッションの達成条件：今の時間／目標の時間（「5分」「1時間」などの長さ）
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の閲覧時間：{progress} / {goal}'**
+  String plazaMissionDetailsProgress(String progress, String goal);
+
+  /// 作品広場の滞在ミッションの達成条件：受け取れるオパールと回数
+  ///
+  /// In ja, this message translates to:
+  /// **'【受取】条件を満たすと{coins}オパールを受け取れます。各ミッションの受取は同じ期間中に1回限りです。次の期間には再度挑戦できます。前の期間の報酬は期間終了後に受け取れません。'**
+  String plazaMissionDetailsClaim(int coins);
+
+  /// ウィークリーのログインミッション：週にログインする日数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'週に{days}日ログイン'**
+  String recurringMissionGoalWeek(int days);
+
+  /// マンスリーのログインミッション：月にログインする日数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'月に{days}日ログイン'**
+  String recurringMissionGoalMonth(int days);
+
+  /// ウィークリーのログインミッションの達成条件
+  ///
+  /// In ja, this message translates to:
+  /// **'【達成条件】日本時間の同じ週（月曜日から日曜日）内に、異なる日付で{days}日以上ログインしてください。連続ログインは必要ありません。1日に複数回ログインしても1日として数えます。ログイン日数はサーバーで確認します。'**
+  String recurringMissionDetailsConditionsWeek(int days);
+
+  /// マンスリーのログインミッションの達成条件
+  ///
+  /// In ja, this message translates to:
+  /// **'【達成条件】日本時間の同じ月（1日から末日）内に、異なる日付で{days}日以上ログインしてください。連続ログインは必要ありません。1日に複数回ログインしても1日として数えます。ログイン日数はサーバーで確認します。'**
+  String recurringMissionDetailsConditionsMonth(int days);
+
+  /// ウィークリー・マンスリーのログインミッションの達成条件：ログインした日数／目標の日数
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の達成日数：{progress} / {goal}日'**
+  String recurringMissionDetailsProgress(int progress, int goal);
+
+  /// ウィークリー・マンスリーのログインミッションの達成条件：受け取れるオパールと回数
+  ///
+  /// In ja, this message translates to:
+  /// **'【受取】条件を満たすと{coins}オパールを受け取れます。同じ期間の同じ段階は1回限りです。新しい週・月には進捗がリセットされ、再度達成できます。期間終了後は前の期間の報酬を受け取れません。'**
+  String recurringMissionDetailsClaim(int coins);
+
+  /// ミッション達成の知らせの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション達成'**
+  String get missionCompletedTitle;
+
+  /// ミッション達成の知らせ：報酬の受け取り方
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッションページで報酬を受け取れます。'**
+  String get missionCompletedBody;
+
+  /// ミッション達成の知らせ：ミッションページへ移るボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッションページへ'**
+  String get missionCompletedGoToMissions;
+
+  /// 作品広場の滞在ミッション達成の知らせの1行。periodはday・week・month（それ以外はマンスリー）、goalはplazaMissionGoalの文（作品広場を合計10分開く）
+  ///
+  /// In ja, this message translates to:
+  /// **'{period, select, day{デイリー} week{ウィークリー} other{マンスリー}}：{goal}'**
+  String plazaMissionCompletedItem(String period, String goal);
+
+  /// ミッション達成の知らせ：今週ログインした日数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'週{days}日ログイン'**
+  String missionLoginWeek(int days);
+
+  /// ミッション達成の知らせ：今月ログインした日数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'月{days}日ログイン'**
+  String missionLoginMonth(int days);
+
+  /// ミッション達成の知らせ：累計でログインした日数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'累計{days}日ログイン'**
+  String missionLoginTotal(int days);
+
+  /// 作品の説明：コピー先の文字数の上限を超えるときの知らせ
+  ///
+  /// In ja, this message translates to:
+  /// **'コピー先の上限（{max}文字）を超えるためコピーできません'**
+  String communityWorkMetadataCopyTooLong(int max);
+
+  /// 特典交換：交換期間（時間単位、1〜24）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}時間}}'**
+  String rewardDurationHours(int count);
+
+  /// 特典交換：交換期間（日単位、2〜6）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}日間}}'**
+  String rewardDurationDays(int count);
+
+  /// 特典交換：交換期間（週単位、1〜3）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}週間}}'**
+  String rewardDurationWeeks(int count);
+
+  /// 特典交換：交換期間（月単位、1〜120）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}か月}}'**
+  String rewardDurationMonths(int count);
+
+  /// 特典交換：選んだ特典の重複・有効期限を確認するボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'重複・有効期限を確認'**
+  String get rewardUnlockReviewButton;
+
+  /// 特典交換：重複・有効期限の確認ダイアログの題
+  ///
+  /// In ja, this message translates to:
+  /// **'特典の重複・有効期限の確認'**
+  String get rewardUnlockReviewTitle;
+
+  /// 特典交換の確認：オパールの全機能を利用中に交換すると延長される見込みの期限
+  ///
+  /// In ja, this message translates to:
+  /// **'現在プレミアム特典を利用中です。交換すると有効期限が{expiry}まで延長される見込みです。よろしいですか？'**
+  String rewardUnlockRedeemExtendNotice(DateTime expiry);
+
+  /// 特典交換の確認：交換した後の有効期限（参考）
+  ///
+  /// In ja, this message translates to:
+  /// **'交換後の有効期限（参考）：{expiry}'**
+  String rewardUnlockRedeemExpiryNotice(DateTime expiry);
+
+  /// 重複・有効期限の確認：Google Playのプレミアム会員の期限
+  ///
+  /// In ja, this message translates to:
+  /// **'現在プレミアム会員を利用中です（{expiry}まで）。'**
+  String rewardUnlockReviewPlayPremiumUntil(DateTime expiry);
+
+  /// 重複・有効期限の確認：プレミアム会員だが期限が分からない
+  ///
+  /// In ja, this message translates to:
+  /// **'現在プレミアム会員を利用中です。契約終了日時は確認できていません。'**
+  String get rewardUnlockReviewPlayPremiumUnknown;
+
+  /// 重複・有効期限の確認：オパールで交換した全機能の期限
+  ///
+  /// In ja, this message translates to:
+  /// **'現在プレミアム特典を利用中です（{expiry}まで）。'**
+  String rewardUnlockReviewCoinPremiumUntil(DateTime expiry);
+
+  /// 重複・有効期限の確認：全機能のまとめ交換がほかの特典を含むこと（bundleは特典の名前）
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中の「{bundle}」はほかの単品特典を含みます。重複分は二重に有効にせず、延長される想定です。'**
+  String rewardUnlockReviewFullIncludes(String bundle);
+
+  /// 重複・有効期限の確認：広告非表示の特典がまとめの特典と重複すること（bundleは特典の名前）
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中の広告非表示特典は「{bundle}」と重複します。'**
+  String rewardUnlockReviewAdsOverlap(String bundle);
+
+  /// 重複・有効期限の確認：選んだ特典1つの延長後の期限（参考）
+  ///
+  /// In ja, this message translates to:
+  /// **'{benefit}：参考の延長後期限 {expiry}'**
+  String rewardUnlockReviewItem(String benefit, DateTime expiry);
+
+  /// 重複・有効期限の確認：既存・まとめの特典と重なる特典1つの延長後の期限（参考）
+  ///
+  /// In ja, this message translates to:
+  /// **'{benefit}：既存・セット特典と重複。参考の延長後期限 {expiry}'**
+  String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry);
+
+  /// 重複・有効期限の確認：確定単価による合計（coinsはcoinAmountで作ったオパールの数）
+  ///
+  /// In ja, this message translates to:
+  /// **'確定単価による合計：{coins}。単品特典・重複交換のオパール消費はまだサーバー未対応です。金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。正式な有効期限は交換直前のサーバー確認で決まります。'**
+  String rewardUnlockReviewFixedTotal(String coins);
+
+  /// ゴミ箱の種類：自分で作ったプロジェクト（フィルターのチップと各行の補足。ゴミ箱の検索でもこの文で探す）
+  ///
+  /// In ja, this message translates to:
+  /// **'作成したプロジェクト'**
+  String get homeTrashKindCreatedProject;
+
+  /// ゴミ箱の種類：受け取った共有ファイル（.niashare）
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取った共有ファイル'**
+  String get homeTrashKindReceivedShare;
+
+  /// ゴミ箱の種類：自分が作成した共有ファイル（.niashare）
+  ///
+  /// In ja, this message translates to:
+  /// **'自分が作成した共有ファイル'**
+  String get homeTrashKindCreatedShare;
+
+  /// ゴミ箱の種類：書き出した作品（動画・画像のファイル）
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出した作品'**
+  String get homeTrashKindExportedWork;
+
+  /// 共有タブの切り替え：受け取った共有ファイルの一覧
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取ったもの'**
+  String get homeSharedReceivedFilter;
+
+  /// 共有タブの切り替え：自分が作成した共有ファイルの一覧（貼り付けの説明の文でもこの名前を引用する）
+  ///
+  /// In ja, this message translates to:
+  /// **'自分が作成したもの'**
+  String get homeSharedCreatedFilter;
+
+  /// 貼り付けられない場所で貼り付けたときのダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'ここには貼り付けられません'**
+  String get homePasteRestrictionTitle;
+
+  /// 形式の違うタブ・区分（共有の「受け取ったもの」「自分が作成したもの」）へ貼り付けようとしたときの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'形式の違うタブ・区分へは貼り付けられません。作品・ファイルは元のタブ・区分に貼り付けてください。中にファイルの無いフォルダだけは、別の場所にも貼り付けられます。'**
+  String get homePasteCrossFormatBody;
+
+  /// 共有タブの「自分が作成したもの」へフォルダを貼り付けようとしたときの説明（引用はhomeTabSharedとhomeSharedCreatedFilterと同じ文）
+  ///
+  /// In ja, this message translates to:
+  /// **'「共有」の「自分が作成したもの」にはファイルしか置けないため、フォルダは貼り付けられません。'**
+  String get homePasteOutgoingNoFolders;
+
+  /// 入れ子のフォルダに対応していない場所へ、子フォルダのあるフォルダを貼り付けようとしたときの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダには子フォルダがあります。貼り付け先はフォルダの入れ子に対応していないため、中の構造を失わないよう貼り付けを中止しました。'**
+  String get homePasteNestedFolders;
+
+  /// 貼り付ける前にフォルダの中身を調べられなかったときの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中身を確認できませんでした。データを守るため、貼り付けを中止しました。'**
+  String get homePasteFolderUnreadable;
+
+  /// ゴミ箱へ入れられない種類のフォルダをゴミ箱へ貼り付けようとしたときの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'この種類のフォルダはゴミ箱に入れられません。'**
+  String get homePasteFolderNotTrashable;
+
+  /// ゴミ箱のタブへ貼り付けたときの確認。下に名前を1行ずつ並べる
+  ///
+  /// In ja, this message translates to:
+  /// **'以下の作品・フォルダをゴミ箱へ移動しますか？'**
+  String get homePasteToTrashQuestion;
+
+  /// ゴミ箱へ移す確認の注記：自動で完全に削除されるまでの日数（daysは1以上）
+  ///
+  /// In ja, this message translates to:
+  /// **'※ゴミ箱に移動されたファイルは{days}日後に完全削除されます。'**
+  String homeTrashAutoDeleteNotice(int days);
+
+  /// ゴミ箱へ移す確認の注記：自動削除がオフのとき
+  ///
+  /// In ja, this message translates to:
+  /// **'※ゴミ箱の自動削除はオフです。手動で削除するまで保存されます。'**
+  String get homeTrashAutoDeleteOffNotice;
+
+  /// ゴミ箱から戻す確認のダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱から復元'**
+  String get homeRestoreFromTrashTitle;
+
+  /// ゴミ箱から戻す確認。下に名前を1行ずつ並べる
+  ///
+  /// In ja, this message translates to:
+  /// **'以下の作品・フォルダをゴミ箱から復元しますか？'**
+  String get homeRestoreFromTrashQuestion;
+
+  /// ゴミ箱で選んだ項目をまとめて復元する確認
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を復元しますか？'**
+  String homeTrashRestoreSelectedConfirm(int count);
+
+  /// 確認のダイアログで名前を1行ずつ並べるときの行頭の印
+  ///
+  /// In ja, this message translates to:
+  /// **'・{item}'**
+  String commonBulletItem(String item);
+
+  /// 名前を1行に並べるときの区切り（日本語・中国語は読点、他は「, 」）
+  ///
+  /// In ja, this message translates to:
+  /// **'、'**
+  String get commonListSeparator;
+
+  /// 共有・作品一覧のフォルダの行にある「…」ボタンの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダのメニュー'**
+  String get homeFolderMenuTooltip;
+
+  /// ホームの上の帯：切り取って貼り付けを待っている件数
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を切り取り中'**
+  String homeClipboardCutStatus(int count);
+
+  /// ホームの上の帯：コピーして貼り付けを待っている件数
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をコピー中'**
+  String homeClipboardCopiedStatus(int count);
+
+  /// No description provided for @homeTrashPasteElsewhere.
+  ///
+  /// In ja, this message translates to:
+  /// **'元のタブを開き、「貼り付け」を押すと復元できます。'**
+  String get homeTrashPasteElsewhere;
+
+  /// No description provided for @homePasteRestoreOriginalQuestion.
+  ///
+  /// In ja, this message translates to:
+  /// **'以下の項目を元の場所に復元しますか？'**
+  String get homePasteRestoreOriginalQuestion;
+
+  /// No description provided for @homePasteRestoredOriginalCollection.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱から元の一覧に復元しました。'**
+  String get homePasteRestoredOriginalCollection;
+
+  /// ホームの上の帯：コピー・切り取りをやめて帯を閉じるボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'クリア'**
+  String get homeClipboardClear;
+
+  /// 作品一覧の各行と、共有の「自分が作成したもの」の各行の補足：ファイルの更新日時と大きさ
+  ///
+  /// In ja, this message translates to:
+  /// **'{date} ・ {size}'**
+  String homeExportedWorkMetadata(DateTime date, String size);
+
+  /// 作品一覧・作品のフォルダの行の補足：中の書き出した作品の数（空ならプロジェクトのフォルダと同じ「中身なし」）
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, =0{中身なし} other{作品{count}件}}'**
+  String homeWorkFolderContents(int count);
+
+  /// プロジェクト・フォルダ・書き出した作品のメニュー項目と、サムネイルを選ぶダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル変更'**
+  String get thumbnailChangeAction;
+
+  /// フォルダのサムネイル：中の最新の作品を使う（既定）
+  ///
+  /// In ja, this message translates to:
+  /// **'デフォルト（最新の作品）'**
+  String get thumbnailDefaultLatestWork;
+
+  /// サムネイルを出さない
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル表示しない'**
+  String get thumbnailHide;
+
+  /// フォルダのサムネイル：中の作品を1つ選んで使う
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイルにする作品を選ぶ'**
+  String get thumbnailChooseWork;
+
+  /// 端末の画像をサムネイルに使う
+  ///
+  /// In ja, this message translates to:
+  /// **'端末から画像を読み込む'**
+  String get thumbnailChooseDeviceImage;
+
+  /// フォルダのサムネイル：中の作品の一覧の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ内の作品から選択'**
+  String get thumbnailChooseWorkInFolder;
+
+  /// フォルダのサムネイル：中に作品が無い
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダに作品はありません'**
+  String get thumbnailFolderNoWorks;
+
+  /// サムネイルにする画像を端末から選ぶボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を選択'**
+  String get thumbnailPickImage;
+
+  /// 選んだ画像を読み込めなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を読み込めませんでした'**
+  String get thumbnailImageLoadFailed;
+
+  /// サムネイルを選ぶダイアログ：フレームの絵を描けなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューを表示できませんでした'**
+  String get thumbnailPreviewFailed;
+
+  /// 選んだサムネイルを保存できなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイルを保存できませんでした'**
+  String get thumbnailSaveFailed;
+
+  /// 書き出した動画の長さ・フレーム数を読み取れなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'動画情報を読み取れませんでした'**
+  String get thumbnailVideoInfoFailed;
+
+  /// サムネイルを選ぶダイアログ：いま選んでいるフレームの番号と総数
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のフレーム: {current} / {total}'**
+  String thumbnailCurrentFrame(int current, int total);
+
+  /// 書き出した静止画のサムネイルを選ぶとき：フレームは1つだけ
+  ///
+  /// In ja, this message translates to:
+  /// **'静止画像は1フレームとして扱います。'**
+  String get thumbnailStillImageOneFrame;
+
+  /// サムネイルの選び方：最後に保存したときのフレーム（既定）
+  ///
+  /// In ja, this message translates to:
+  /// **'最後に保存したフレーム'**
+  String get thumbnailLastSavedFrame;
+
+  /// サムネイルの選び方：フレームを指定する
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを指定する'**
+  String get thumbnailSelectFrame;
+
+  /// ダイアログで選んだ内容を反映するボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'適用'**
+  String get commonApply;
+
+  /// 共有のボタン（共有のシートを開く）
+  ///
+  /// In ja, this message translates to:
+  /// **'共有'**
+  String get commonShare;
+
+  /// ブラシ・トーン・スタンプの…メニュー：共有カード（設定と使用画像を埋め込んだPNG）を書き出す
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードを書き出す'**
+  String get shareCardExportMenu;
+
+  /// 共有カードを書き出したあとのダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードを作成しました'**
+  String get shareCardCreatedTitle;
+
+  /// 共有カードは元のPNGのまま渡すよう知らせる注記
+  ///
+  /// In ja, this message translates to:
+  /// **'元のPNGファイルをそのまま保存・共有してください。'**
+  String get shareCardKeepOriginalNote;
+
+  /// 共有カードを端末に保存するボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'端末に保存'**
+  String get shareCardSaveToDevice;
+
+  /// 共有カードの保存先を選ぶ画面の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードの保存先'**
+  String get shareCardSaveDialogTitle;
+
+  /// 共有カードを保存した
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードを保存しました'**
+  String get shareCardSavedSnackbar;
+
+  /// 共有カードを保存できなかった（errorは失敗の内容）
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードを保存できませんでした: {error}'**
+  String shareCardSaveFailedSnackbar(String error);
+
+  /// 共有カードを読み込む確認の見出し（kindは brush・tone・stamp）
+  ///
+  /// In ja, this message translates to:
+  /// **'{kind, select, brush{ブラシを読み込みますか？} tone{トーンを読み込みますか？} other{スタンプを読み込みますか？}}'**
+  String shareCardImportConfirmTitle(String kind);
+
+  /// 共有カードから素材を追加した（kindは brush・tone・stamp、nameは素材の名前）
+  ///
+  /// In ja, this message translates to:
+  /// **'{kind, select, brush{ブラシ「{name}」を追加しました} tone{トーン「{name}」を追加しました} other{スタンプ「{name}」を追加しました}}'**
+  String shareCardAddedSnackbar(String kind, String name);
+
+  /// 別の種類の素材の共有カードを選んだ（kindはカードの種類 brush・tone・stamp）
+  ///
+  /// In ja, this message translates to:
+  /// **'{kind, select, brush{これはブラシの共有カードです。ブラシの一覧から読み込んでください。} tone{これはトーンの共有カードです。トーンの一覧から読み込んでください。} other{これはスタンプの共有カードです。スタンプの一覧から読み込んでください。}}'**
+  String shareCardWrongKind(String kind);
+
+  /// 共有カードを読み込めなかった（errorは失敗の内容）
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードを読み込めませんでした: {error}'**
+  String shareCardImportFailedSnackbar(String error);
+
+  /// 共有カードの画像：見本と使用画像の欄の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'素材の見本・使用画像'**
+  String get shareCardSampleHeading;
+
+  /// 共有カードの画像：カードに入れた元画像の枚数（countは枚数）
+  ///
+  /// In ja, this message translates to:
+  /// **'元画像 {count}枚'**
+  String shareCardSourceImageCount(int count);
+
+  /// 共有カードの画像：元画像が多く、先頭の何枚かだけを見本に出すとき（countは全部の枚数、shownは出した枚数）
+  ///
+  /// In ja, this message translates to:
+  /// **'元画像 {count}枚（先頭{shown}枚を表示）'**
+  String shareCardSourceImageCountFirst(int count, int shown);
+
+  /// 共有カードの画像：見本を描けなかったとき（組み込みの模様を設定から作る素材）の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'内蔵パターン / 設定で生成'**
+  String get shareCardBuiltInPattern;
+
+  /// 共有カードの画像：外から読み込んだ画像を使っていない素材のときの注記
+  ///
+  /// In ja, this message translates to:
+  /// **'外部の使用画像はありません'**
+  String get shareCardNoSourceImages;
+
+  /// 共有カードの画像：設定と使用画像をすべて含むカードであることを示す見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カード'**
+  String get shareCardCompleteTitle;
+
+  /// 共有カードの画像：このカードを読み込む方法（buttonは一覧の読み込みのボタンの名前）
+  ///
+  /// In ja, this message translates to:
+  /// **'この画像をNIARIMの「{button}」から選ぶと、設定と使用画像を復元できます。'**
+  String shareCardRestoreHint(String button);
+
+  /// 共有カードの画像：QRコードの役目の注記
+  ///
+  /// In ja, this message translates to:
+  /// **'QRはカードの識別用です'**
+  String get shareCardQrNote;
+
+  /// 共有カードの画像：QRコードだけでは読み込めないことの注記
+  ///
+  /// In ja, this message translates to:
+  /// **'単独のQRでは素材を復元できません'**
+  String get shareCardQrCannotRestore;
+
+  /// フォロー中の一覧：フォローをやめるボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロー解除'**
+  String get communityUnfollowAction;
+
+  /// フォロー中の一覧：最近フォローをやめた人の行の補足
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロー解除済み'**
+  String get communityUnfollowedLabel;
+
+  /// No description provided for @communityFollowersTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワー'**
+  String get communityFollowersTitle;
+
+  /// No description provided for @communityFollowersEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワーはまだいません'**
+  String get communityFollowersEmpty;
+
+  /// No description provided for @communityFollowersLoadMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'さらに表示'**
+  String get communityFollowersLoadMore;
+
+  /// フォロー中の一覧：だれもフォローしていない
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロー中のユーザーはいません'**
+  String get communityFollowingListEmpty;
+
+  /// フォロー中の一覧：最近フォローをやめた人の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'最近フォローを解除したユーザー'**
+  String get communityRecentlyUnfollowedHeader;
+
+  /// 自分の投稿：予約公開を待っている作品（dateは公開予定の日時）
+  ///
+  /// In ja, this message translates to:
+  /// **'予約公開中 • {date}'**
+  String communityMyWorksStatusScheduled(DateTime date);
+
+  /// 自分の投稿：予約公開を待っていて、作品広場では非公開の作品
+  ///
+  /// In ja, this message translates to:
+  /// **'予約公開中 • {date} • 作品広場は非公開'**
+  String communityMyWorksStatusScheduledHidden(DateTime date);
+
+  /// 自分の投稿：予約の日時を過ぎたが、YouTubeでまだ公開になっていない
+  ///
+  /// In ja, this message translates to:
+  /// **'公開予定日時経過 • YouTubeの公開処理を確認中'**
+  String get communityMyWorksStatusSchedulePassed;
+
+  /// 作品の詳細：YouTubeで動画を開けなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの動画を開けませんでした'**
+  String get communityWorkDetailYoutubeOpenFailed;
+
+  /// 埋め込みのプレーヤー：作品にYouTubeの動画が結び付いていない
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画が連携されていません'**
+  String get communityPlayerNotLinked;
+
+  /// 埋め込みのプレーヤー：再生できなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画を再生できませんでした'**
+  String get communityPlayerPlaybackFailed;
+
+  /// 埋め込みのプレーヤー：表示の場所が小さすぎる（sizeは必要な幅・高さのpx）
+  ///
+  /// In ja, this message translates to:
+  /// **'動画を再生するには、縦横{size}px以上の表示の場所が必要です'**
+  String communityPlayerTooSmall(int size);
+
+  /// 再生の状態：動画が削除された
+  ///
+  /// In ja, this message translates to:
+  /// **'動画は削除済みです'**
+  String get communityPlaybackDeletedTitle;
+
+  /// 再生の状態：動画が削除された（説明）
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は削除されているため再生できません。'**
+  String get communityPlaybackDeletedBody;
+
+  /// 再生の状態：非公開
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は非公開です'**
+  String get communityPlaybackPrivateTitle;
+
+  /// 再生の状態：非公開（説明）
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿者の公開設定により再生できません。'**
+  String get communityPlaybackPrivateBody;
+
+  /// 再生の状態：利用できない
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画を利用できません'**
+  String get communityPlaybackUnavailableTitle;
+
+  /// 再生の状態：利用できない（説明）
+  ///
+  /// In ja, this message translates to:
+  /// **'削除または非公開の可能性があります。公開状態は確認できません。'**
+  String get communityPlaybackUnavailableBody;
+
+  /// 再生の状態：確認できなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'再生状態を確認できません'**
+  String get communityPlaybackUnknownTitle;
+
+  /// 再生の状態：確認できなかった（説明）
+  ///
+  /// In ja, this message translates to:
+  /// **'通信や動画サービスの問題により確認できませんでした。'**
+  String get communityPlaybackUnknownBody;
+
+  /// 再生の状態：確認中
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の状態を確認中'**
+  String get communityPlaybackCheckingTitle;
+
+  /// 再生の状態：確認中（説明）
+  ///
+  /// In ja, this message translates to:
+  /// **'再生できるか確認しています。'**
+  String get communityPlaybackCheckingBody;
+
+  /// 再生の状態：もう一度確かめるボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'再確認'**
+  String get communityPlaybackRecheck;
+
+  /// 投稿の画面：サムネイルの欄の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル'**
+  String get communityPostThumbnailHeading;
+
+  /// 投稿の画面：選んだサムネイルの画像を表示できない
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を読み込めません。画像を選び直してください。'**
+  String get communityPostThumbnailUnreadable;
+
+  /// 投稿の画面：サムネイルをYouTubeへ設定し終えた
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへサムネイルを設定済み'**
+  String get communityPostThumbnailApplied;
+
+  /// 投稿の画面：サムネイルを選ばなかったとき
+  ///
+  /// In ja, this message translates to:
+  /// **'未指定の場合はYouTubeの自動サムネイルを使用します。'**
+  String get communityPostThumbnailAutoHint;
+
+  /// 投稿の画面：画像をサムネイルにするボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を指定'**
+  String get communityPostThumbnailPickImage;
+
+  /// 投稿の画面：動画の1コマをサムネイルにするボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'動画のフレームを指定'**
+  String get communityPostThumbnailPickFrame;
+
+  /// 投稿の画面：選んだサムネイルをやめて自動に戻す
+  ///
+  /// In ja, this message translates to:
+  /// **'自動サムネイルに戻す'**
+  String get communityPostThumbnailUseAuto;
+
+  /// 投稿の画面：サムネイルにPNG・JPEG以外を選んだ
+  ///
+  /// In ja, this message translates to:
+  /// **'PNGまたはJPEGの画像を指定してください'**
+  String get communityPostThumbnailWrongFormat;
+
+  /// 投稿の画面：サムネイルの画像が大きすぎる（mbは上限のMB）
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル画像は{mb}MB以内にしてください'**
+  String communityPostThumbnailTooLarge(int mb);
+
+  /// 投稿の画面：サムネイルの画像を選べなかった（errorは失敗の内容）
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を選択できませんでした: {error}'**
+  String communityPostThumbnailPickFailed(String error);
+
+  /// 投稿の画面：サムネイルにする動画の位置を選ぶダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイルにするフレームを選択'**
+  String get communityPostFramePickerTitle;
+
+  /// 投稿の画面：選んでいる位置と動画の長さ（秒。小数1桁にした文字列）
+  ///
+  /// In ja, this message translates to:
+  /// **'{current} / {total} 秒'**
+  String communityPostFramePickerPosition(String current, String total);
+
+  /// 投稿の画面：選んだ位置をサムネイルにするボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'このフレームを使う'**
+  String get communityPostFramePickerUse;
+
+  /// 投稿の画面：動画の長さを調べられなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の再生時間を取得できません'**
+  String get communityPostVideoLengthUnavailable;
+
+  /// 投稿の画面：動画から1コマを取り出せなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'動画のフレームを取得できません'**
+  String get communityPostFrameUnavailable;
+
+  /// 投稿の画面：この端末では動画から1コマを取り出せない
+  ///
+  /// In ja, this message translates to:
+  /// **'この環境では動画のフレームを取り出せません。画像を選択してください。'**
+  String get communityPostFrameUnsupported;
+
+  /// 投稿の画面：動画の1コマを取り出す途中で失敗した（errorは失敗の内容）
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを取得できませんでした: {error}'**
+  String communityPostFrameFailed(String error);
+
+  /// 投稿の画面：予約の日時が近すぎる・過ぎている（minutesは最短の分数）
+  ///
+  /// In ja, this message translates to:
+  /// **'現在時刻から{minutes}分以上先の日時を指定してください'**
+  String communityPostScheduleTooSoon(int minutes);
+
+  /// 投稿の画面：公開範囲「非公開」
+  ///
+  /// In ja, this message translates to:
+  /// **'非公開'**
+  String get communityPostVisibilityPrivateTitle;
+
+  /// 投稿の画面：公開範囲「非公開」の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeにも作品広場にも一般公開されません。'**
+  String get communityPostVisibilityPrivateHelp;
+
+  /// 投稿の画面：公開範囲「日時を指定して予約公開」
+  ///
+  /// In ja, this message translates to:
+  /// **'日時を指定して予約公開'**
+  String get communityPostVisibilityScheduledTitle;
+
+  /// 投稿の画面：公開範囲「予約公開」の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'指定日時まではYouTubeで非公開。公開後に作品広場にも反映します。'**
+  String get communityPostVisibilityScheduledHelp;
+
+  /// 投稿の画面：予約の日時をまだ選んでいない
+  ///
+  /// In ja, this message translates to:
+  /// **'公開日時が未設定です'**
+  String get communityPostScheduleUnset;
+
+  /// 投稿の画面：選んだ予約の日時
+  ///
+  /// In ja, this message translates to:
+  /// **'公開予定: {date}'**
+  String communityPostScheduleAt(DateTime date);
+
+  /// 投稿の画面：予約の日時を選ぶボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'予約日時を選択'**
+  String get communityPostScheduleChoose;
+
+  /// 投稿の画面：予約の日時を変えるボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'予約日時を変更'**
+  String get communityPostScheduleChange;
+
+  /// フォントのダウンロード：通信できない
+  ///
+  /// In ja, this message translates to:
+  /// **'ネットワークに接続できません。'**
+  String get fontDownloadNetworkError;
+
+  /// フォントのダウンロード：配布元から取得できない
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォントは読み込めません。'**
+  String get fontDownloadUnavailable;
+
+  /// フォントのダウンロード：ファイルが壊れている
+  ///
+  /// In ja, this message translates to:
+  /// **'フォントが破損しています。'**
+  String get fontDownloadCorrupted;
+
+  /// フォントの種類：ゴシック体
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴシック'**
+  String get fontCategorySansSerif;
+
+  /// フォントの種類：明朝体・セリフ体
+  ///
+  /// In ja, this message translates to:
+  /// **'明朝・セリフ'**
+  String get fontCategorySerif;
+
+  /// フォントの種類：装飾的な書体
+  ///
+  /// In ja, this message translates to:
+  /// **'装飾'**
+  String get fontCategoryDisplay;
+
+  /// フォントの種類：手書き風
+  ///
+  /// In ja, this message translates to:
+  /// **'手書き風'**
+  String get fontCategoryHandwriting;
+
+  /// フォントの種類：等幅
+  ///
+  /// In ja, this message translates to:
+  /// **'等幅'**
+  String get fontCategoryMonospace;
+
+  /// フォントの検索：各フォントの種類とライセンス
+  ///
+  /// In ja, this message translates to:
+  /// **'{category} ・ {license}'**
+  String fontCatalogEntrySubtitle(String category, String license);
+
+  /// ブラシの設定：紙の目・粒子の強さのスライダー
+  ///
+  /// In ja, this message translates to:
+  /// **'紙目・粒子'**
+  String get brushSettingsPaperGrain;
+
+  /// PC/DeXの色の窓の見出しにある、いまの色の見本（読み上げ）
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の色'**
+  String get colorPickerCurrentColorLabel;
+
+  /// ヘルプ：ショートカット設定の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'キーボードや左手デバイスのキーに、ツール（ブラシ・太さまで指定可）や、取り消し・やり直し・再生・コマ送り・全選択・コピー・切り取り・貼り付けなどの操作を割り当てる画面です。キャンバスとタイムラインの両方で使えます。すでにほかの操作に使っているキーの組み合わせを割り当てようとすると、置き換えてよいか確認します。'**
+  String get helpShortcutSettingsDesc;
+
+  /// テーマ・外観：見本の一覧を開くカードの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'画面プレビュー'**
+  String get themePreviewCardTitle;
+
+  /// テーマ・外観：カードの小さな見本が何の画面か
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト一覧の見本'**
+  String get themePreviewCardSubtitle;
+
+  /// テーマ・外観：見本の一覧を開く案内（countは見本の画面の数）
+  ///
+  /// In ja, this message translates to:
+  /// **'タップして全{count}画面を見る'**
+  String themePreviewCardViewAll(int count);
+
+  /// テーマの見本一覧：見本を閉じるボタンの吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューを閉じる'**
+  String get themePreviewCloseTooltip;
+
+  /// テーマの見本一覧：画面名の下に出す「これは配色の見本」という小さな説明
+  ///
+  /// In ja, this message translates to:
+  /// **'配色見本'**
+  String get themePreviewSampleCaption;
+
+  /// テーマの見本一覧：前の見本へ戻るボタンの吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'前の画面'**
+  String get themePreviewPreviousScreen;
+
+  /// テーマの見本一覧：次の見本へ進むボタンの吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'次の画面'**
+  String get themePreviewNextScreen;
+
+  /// テーマの見本一覧：下の操作バーを隠すボタンの吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'操作バーを隠す'**
+  String get themePreviewHideControls;
+
+  /// テーマの見本一覧：隠した操作バーを出すボタンの吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'操作バーを表示'**
+  String get themePreviewShowControls;
+
+  /// テーマ・外観：縮小見本の読み上げの名前
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のテーマで描画したプロジェクト一覧の縮小見本'**
+  String get themePreviewThumbnailSemantics;
+
+  /// テーマの見本一覧：見本の画面名（起動画面）
+  ///
+  /// In ja, this message translates to:
+  /// **'起動画面'**
+  String get themePreviewScreenSplash;
+
+  /// テーマの見本一覧：見本の画面名（ホームのプロジェクト一覧）
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト一覧'**
+  String get themePreviewScreenProjects;
+
+  /// テーマの見本一覧：見本の画面名（プロジェクト詳細）
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト詳細'**
+  String get themePreviewScreenProjectDetail;
+
+  /// テーマの見本一覧：見本の画面名（キャンバス）
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスモード'**
+  String get themePreviewScreenCanvas;
+
+  /// テーマの見本一覧：見本の画面名（タイムライン）
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインモード'**
+  String get themePreviewScreenTimeline;
+
+  /// テーマの見本一覧：見本の画面名（作品の書き出し）
+  ///
+  /// In ja, this message translates to:
+  /// **'作品書き出し'**
+  String get themePreviewScreenExport;
+
+  /// テーマの見本一覧：見本の画面名（セーブスロット）
+  ///
+  /// In ja, this message translates to:
+  /// **'セーブ管理'**
+  String get themePreviewScreenSaves;
+
+  /// テーマの見本一覧：見本の画面名（作品広場の作品詳細）
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場・作品詳細'**
+  String get themePreviewScreenWorkDetail;
+
+  /// テーマの見本一覧：見本の画面名（作品広場への投稿）
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場・投稿'**
+  String get themePreviewScreenPost;
+
+  /// テーマの見本一覧：見本の画面名（投稿者の作品一覧）
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿者の作品'**
+  String get themePreviewScreenAuthor;
+
+  /// テーマの見本一覧：見本の画面名（フォローなどの通知）
+  ///
+  /// In ja, this message translates to:
+  /// **'通知'**
+  String get themePreviewScreenNotifications;
+
+  /// テーマの見本一覧：見本に出す架空のプロジェクト名
+  ///
+  /// In ja, this message translates to:
+  /// **'はじめてのアニメ'**
+  String get themePreviewSampleProjectName;
+
+  /// テーマの見本一覧：作品広場の見本に出す架空の作品名（1）
+  ///
+  /// In ja, this message translates to:
+  /// **'雨上がりの約束'**
+  String get themePreviewSampleWorkTitle1;
+
+  /// テーマの見本一覧：作品広場の見本に出す架空の作品名（2）
+  ///
+  /// In ja, this message translates to:
+  /// **'夜明けの冒険'**
+  String get themePreviewSampleWorkTitle2;
+
+  /// テーマの見本一覧：作品広場の見本に出す架空の作品名（3）
+  ///
+  /// In ja, this message translates to:
+  /// **'最後のメロディ'**
+  String get themePreviewSampleWorkTitle3;
+
+  /// テーマの見本一覧：作品広場の見本に出す架空の投稿者名
+  ///
+  /// In ja, this message translates to:
+  /// **'サンプル作者'**
+  String get themePreviewSampleArtist;
+
+  /// テーマの見本一覧：作品詳細の見本に出す架空の投稿者名（制作グループ）
+  ///
+  /// In ja, this message translates to:
+  /// **'あさかぜ工房'**
+  String get themePreviewSampleStudio;
+
+  /// テーマの見本一覧：投稿の見本の説明欄の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'説明'**
+  String get themePreviewSampleDescriptionLabel;
+
+  /// テーマの見本一覧：投稿の見本の説明欄の入力案内
+  ///
+  /// In ja, this message translates to:
+  /// **'説明を入力'**
+  String get themePreviewSampleDescriptionHint;
+
+  /// ワークスペース設定：ツールバーのアイコンの大きさ
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールの表示サイズ'**
+  String get workspaceToolbarSizeLabel;
+
+  /// PCレイアウト：ツールウィンドウを自動で収納するスイッチ
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールウィンドウの自動収納'**
+  String get pcLayoutAutoFoldTitle;
+
+  /// PCレイアウト：自動収納のスイッチの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'高さを縮めても収まらないときだけ、最近使っていないウィンドウを一時収納します。操作中のものは維持し、空きが戻ると復元します。OFFでは列内スクロールのみ使用します。'**
+  String get pcLayoutAutoFoldHelp;
+
+  /// PCレイアウト：配置を最初の状態に戻すボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'ワークスペースを初期化'**
+  String get pcLayoutResetWorkspace;
+
+  /// PCレイアウト：見本の操作のしかた
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューのウィンドウ端をドラッグして幅・高さを変更し、左上のハンドルを長押しして移動・入れ替えできます。ピンチで拡大できます。'**
+  String get pcLayoutInstruction;
+
+  /// No description provided for @brushNibWidthRatio.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン先の幅（高さ比）'**
+  String get brushNibWidthRatio;
+
+  /// No description provided for @brushFoldEndTaper.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し線の先細り'**
+  String get brushFoldEndTaper;
+
+  /// No description provided for @timelineSelectionScenes.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン'**
+  String get timelineSelectionScenes;
+
+  /// No description provided for @timelineSelectionClips.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材クリップ'**
+  String get timelineSelectionClips;
+
+  /// No description provided for @helpShowAllTopics.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべての項目を表示'**
+  String get helpShowAllTopics;
+
+  /// No description provided for @transferExportFileFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'引き継ぎファイルを作成できませんでした。'**
+  String get transferExportFileFailed;
+
+  /// No description provided for @transferImportFileFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'引き継ぎファイルを読み込めませんでした。'**
+  String get transferImportFileFailed;
+
+  /// No description provided for @transferImportInterrupted.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込みを完了できませんでした。取り込み済みの項目は残っています。'**
+  String get transferImportInterrupted;
+
+  /// No description provided for @transferImportStepSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定・テーマ・パレット'**
+  String get transferImportStepSettings;
+
+  /// No description provided for @transferImportStepDeviceData.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末の設定と登録項目'**
+  String get transferImportStepDeviceData;
+
+  /// No description provided for @transferImportStepProjects.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト'**
+  String get transferImportStepProjects;
+
+  /// No description provided for @transferImportCompletedSteps.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了した処理'**
+  String get transferImportCompletedSteps;
+
+  /// No description provided for @transferImportFailedStep.
+  ///
+  /// In ja, this message translates to:
+  /// **'中断した処理（一部反映された可能性があります）'**
+  String get transferImportFailedStep;
+
+  /// No description provided for @transferImportPendingSteps.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始していない処理'**
+  String get transferImportPendingSteps;
+
+  /// No description provided for @communityChannelRefreshRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube情報を更新できませんでした。もう一度お試しください。'**
+  String get communityChannelRefreshRetry;
+
+  /// No description provided for @timelineAutofillBatchCancelled.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りを中止しました。'**
+  String get timelineAutofillBatchCancelled;
+
+  /// No description provided for @timelineAutofillFailedFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りで{count}コマの処理に失敗しました。'**
+  String timelineAutofillFailedFrames(int count);
+
+  /// No description provided for @timelineAutofillFileError.
+  ///
+  /// In ja, this message translates to:
+  /// **'一部のファイルデータにアクセスできませんでした。'**
+  String get timelineAutofillFileError;
+
+  /// No description provided for @timelineAutofillProcessingError.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画データの処理中にエラーが発生しました。'**
+  String get timelineAutofillProcessingError;
+
+  /// No description provided for @timelineAutofillBatchFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りの途中でエラーが発生しました。'**
+  String get timelineAutofillBatchFailed;
+
+  /// No description provided for @pcBinEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材はまだありません'**
+  String get pcBinEmpty;
+
+  /// PC/DeXモードのタイムライン：シーンの一覧のフレーム数
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}フレーム'**
+  String pcBinSceneFrames(int count);
+
+  /// No description provided for @pcInspectorHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。'**
+  String get pcInspectorHint;
+
+  /// No description provided for @pcPaneInspector.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細'**
+  String get pcPaneInspector;
+
+  /// No description provided for @pcPaneProgram.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビュー'**
+  String get pcPaneProgram;
+
+  /// No description provided for @pcTimelineZoomIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインを拡大'**
+  String get pcTimelineZoomIn;
+
+  /// No description provided for @pcTimelineZoomOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインを縮小'**
+  String get pcTimelineZoomOut;
+
+  /// No description provided for @communityTagLockedMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'このタグはロックされています。編集できるのは投稿者本人です。'**
+  String get communityTagLockedMessage;
+
+  /// No description provided for @communityTagEditPrompt.
+  ///
+  /// In ja, this message translates to:
+  /// **'このタグを編集しますか？'**
+  String get communityTagEditPrompt;
+
+  /// No description provided for @communityTagDeleteConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'本当にこのタグを削除しますか？'**
+  String get communityTagDeleteConfirm;
+
+  /// No description provided for @communityTagLockAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'ロック'**
+  String get communityTagLockAction;
+
+  /// No description provided for @communityTagUnlockAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'ロック解除'**
+  String get communityTagUnlockAction;
+
+  /// No description provided for @communityTagUnlockBeforeDelete.
+  ///
+  /// In ja, this message translates to:
+  /// **'このタグを削除するには、投稿者がロックを解除する必要があります。'**
+  String get communityTagUnlockBeforeDelete;
+
+  /// No description provided for @communityPreviewStart.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の先頭へ'**
+  String get communityPreviewStart;
+
+  /// No description provided for @communityPreviewEnd.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の末尾へ'**
+  String get communityPreviewEnd;
+
+  /// No description provided for @communityPreviewBackward.
+  ///
+  /// In ja, this message translates to:
+  /// **'5秒戻る'**
+  String get communityPreviewBackward;
+
+  /// No description provided for @communityPreviewForward.
+  ///
+  /// In ja, this message translates to:
+  /// **'5秒進む'**
+  String get communityPreviewForward;
+
+  /// No description provided for @settingsSupportTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ヘルプ・お問い合わせ'**
+  String get settingsSupportTitle;
+
+  /// No description provided for @settingsSupportForm.
+  ///
+  /// In ja, this message translates to:
+  /// **'お問い合わせフォームを開く'**
+  String get settingsSupportForm;
+
+  /// No description provided for @settingsSupportLinkFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'お問い合わせフォームを開けませんでした。'**
+  String get settingsSupportLinkFailed;
+
+  /// No description provided for @canvasToolbarToggleTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールバーを開閉'**
+  String get canvasToolbarToggleTooltip;
+
+  /// No description provided for @canvasFrameStripToggleTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム一覧を開閉'**
+  String get canvasFrameStripToggleTooltip;
+
+  /// No description provided for @layerPanelToggleFolderTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダを開閉'**
+  String get layerPanelToggleFolderTooltip;
+
+  /// No description provided for @layerPanelShowLayerTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーを表示'**
+  String get layerPanelShowLayerTooltip;
+
+  /// No description provided for @layerPanelHideLayerTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーを非表示'**
+  String get layerPanelHideLayerTooltip;
+
+  /// No description provided for @layerPanelMergeDownTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'下のレイヤーと結合'**
+  String get layerPanelMergeDownTooltip;
+
+  /// No description provided for @timelineAddTrackRowTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'トラックに行を追加'**
+  String get timelineAddTrackRowTooltip;
+
+  /// No description provided for @keyframePreviewGestureHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。'**
+  String get keyframePreviewGestureHint;
+
+  /// No description provided for @settingsAccountDeletionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMアカウントを削除'**
+  String get settingsAccountDeletionTitle;
+
+  /// No description provided for @settingsAccountDeletionSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'公式サイトで手続きする'**
+  String get settingsAccountDeletionSubtitle;
+
+  /// No description provided for @settingsAccountDeletionLinkFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウント削除ページを開けませんでした。'**
+  String get settingsAccountDeletionLinkFailed;
+
+  /// No description provided for @communitySampleReportUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'見本の作品や作者は通報できません。'**
+  String get communitySampleReportUnavailable;
+
+  /// No description provided for @communityReportAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'ユーザーを通報'**
+  String get communityReportAuthor;
+
+  /// No description provided for @communityReportReason.
+  ///
+  /// In ja, this message translates to:
+  /// **'通報理由（運営のみ閲覧）'**
+  String get communityReportReason;
+
+  /// No description provided for @communityReportSend.
+  ///
+  /// In ja, this message translates to:
+  /// **'通報を送信'**
+  String get communityReportSend;
+
+  /// No description provided for @communityReportSent.
+  ///
+  /// In ja, this message translates to:
+  /// **'運営に通報を送信しました'**
+  String get communityReportSent;
+
+  /// No description provided for @communityModerationSaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更を保存しました'**
+  String get communityModerationSaved;
+
+  /// No description provided for @communityModerationFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作を完了できませんでした。時間をおいてもう一度お試しください。'**
+  String get communityModerationFailed;
+
+  /// No description provided for @communityBlockAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロックする'**
+  String get communityBlockAuthor;
+
+  /// No description provided for @communityUnblockAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロックを解除'**
+  String get communityUnblockAuthor;
+
+  /// No description provided for @communityBlockPrivacyNotice.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場にログインしている間、お互いの投稿が表示されなくなります。相手に通知は送られません。'**
+  String get communityBlockPrivacyNotice;
+
+  /// No description provided for @communityBlockedUsers.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロックしたユーザー'**
+  String get communityBlockedUsers;
+
+  /// No description provided for @communityBlockedUsersEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロックしたユーザーはいません'**
+  String get communityBlockedUsersEmpty;
+
+  /// No description provided for @communityPostingTermsPrompt.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場に投稿する前に、利用規約をご確認ください。'**
+  String get communityPostingTermsPrompt;
+
+  /// No description provided for @communityPostingTermsAgree.
+  ///
+  /// In ja, this message translates to:
+  /// **'同意して続ける'**
+  String get communityPostingTermsAgree;
+
+  /// No description provided for @canvasViewActions.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスの表示'**
+  String get canvasViewActions;
+
+  /// No description provided for @canvasViewZoomIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'拡大'**
+  String get canvasViewZoomIn;
+
+  /// No description provided for @canvasViewZoomOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'縮小'**
+  String get canvasViewZoomOut;
+
+  /// No description provided for @canvasViewActualPixels.
+  ///
+  /// In ja, this message translates to:
+  /// **'等倍表示'**
+  String get canvasViewActualPixels;
+
+  /// No description provided for @canvasViewRotateLeft.
+  ///
+  /// In ja, this message translates to:
+  /// **'左に回転'**
+  String get canvasViewRotateLeft;
+
+  /// No description provided for @canvasViewRotateRight.
+  ///
+  /// In ja, this message translates to:
+  /// **'右に回転'**
+  String get canvasViewRotateRight;
+
+  /// No description provided for @canvasViewResetRotation.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転を戻す'**
+  String get canvasViewResetRotation;
+
+  /// No description provided for @projectDetailShowPlaybackControls.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生メニューを表示'**
+  String get projectDetailShowPlaybackControls;
+
+  /// No description provided for @projectDetailHidePlaybackControls.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生メニューを非表示'**
+  String get projectDetailHidePlaybackControls;
+
+  /// No description provided for @filterSaveSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'この設定を保存する'**
+  String get filterSaveSettings;
+
+  /// No description provided for @filterLoadSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存済みの設定を適用する'**
+  String get filterLoadSettings;
+
+  /// No description provided for @filterSettingsName.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定の名前'**
+  String get filterSettingsName;
+
+  /// No description provided for @filterSettingsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフィルターの保存済み設定はありません。'**
+  String get filterSettingsEmpty;
+
+  /// No description provided for @filterSettingsSaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター設定を保存しました'**
+  String get filterSettingsSaved;
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) => <String>[
+    'en',
+    'es',
+    'fr',
+    'ja',
+    'ko',
+    'zh',
+  ].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when language+script codes are specified.
+  switch (locale.languageCode) {
+    case 'zh':
+      {
+        switch (locale.scriptCode) {
+          case 'Hant':
+            return AppLocalizationsZhHant();
+        }
+        break;
+      }
+  }
+
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
+    case 'ja':
+      return AppLocalizationsJa();
+    case 'ko':
+      return AppLocalizationsKo();
+    case 'zh':
+      return AppLocalizationsZh();
+  }
+
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}

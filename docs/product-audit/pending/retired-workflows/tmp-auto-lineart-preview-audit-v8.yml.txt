@@ -1,0 +1,185 @@
+name: TMP Auto Lineart Preview Audit v8
+on:
+  push:
+    branches: [dev_branch]
+    paths: ['.github/workflows/tmp-auto-lineart-preview-audit-v8.yml']
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with: {ref: dev_branch, fetch-depth: 0}
+      - uses: subosito/flutter-action@v2
+        with: {channel: stable, cache: true}
+      - name: Isolate visual audit and add 120px preview evidence
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('test/auto_lineart_filter_panel_visual_audit_test.dart')
+          s=p.read_text()
+          marker='void main() {\n  TestWidgetsFlutterBinding.ensureInitialized();'
+          replacement="const runAutoLineartVisualAudit = bool.fromEnvironment('NIARIM_AUTO_LINEART_VISUAL_AUDIT');\n\nvoid main() {\n  TestWidgetsFlutterBinding.ensureInitialized();"
+          assert marker in s
+          s=s.replace(marker,replacement,1)
+          s=s.replace("  });\n\n  testWidgets('SP actual FilterPanel + production overlay smoothing 85'", "  }, skip: !runAutoLineartVisualAudit);\n\n  testWidgets('SP actual FilterPanel + production overlay smoothing 85'",1)
+          s=s.replace("  });\n\n  testWidgets('desktop actual FilterPanel + production overlay smoothing 45'", "  }, skip: !runAutoLineartVisualAudit);\n\n  testWidgets('desktop actual FilterPanel + production overlay smoothing 45'",1)
+          # Replace the final test terminator only.
+          pos=s.rfind('  });\n}')
+          assert pos!=-1
+          s=s[:pos]+'  }, skip: !runAutoLineartVisualAudit);\n'+s[pos+5:]
+          # Add exact production-preview-size captures before final closing brace.
+          insert=r'''
+
+  Future<void> pumpPreviewAudit(
+    WidgetTester tester, {
+    required int smoothing,
+    required String golden,
+  }) async {
+    tester.view.physicalSize = const Size(360, 360);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final image = await makePreview();
+    addTearDown(image.dispose);
+    final graph = AutoLineartEngine.prepareEditableGraph(
+      baseGraph(),
+      smoothingLevel: smoothing,
+    );
+    final key = GlobalKey();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: RepaintBoundary(
+              key: key,
+              child: SizedBox(
+                width: 120,
+                height: 120,
+                child: AutoLineartControlOverlay(
+                  image: image,
+                  graph: graph,
+                  onPointMoved: (_, __, ___) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    await expectLater(find.byKey(key), matchesGoldenFile(golden));
+  }
+
+  testWidgets(
+    '120px production preview smoothing 45',
+    (tester) async => pumpPreviewAudit(
+      tester,
+      smoothing: 45,
+      golden: 'goldens/auto_lineart_preview_120_45.png',
+    ),
+    skip: !runAutoLineartVisualAudit,
+  );
+
+  testWidgets(
+    '120px production preview smoothing 85',
+    (tester) async => pumpPreviewAudit(
+      tester,
+      smoothing: 85,
+      golden: 'goldens/auto_lineart_preview_120_85.png',
+    ),
+    skip: !runAutoLineartVisualAudit,
+  );
+'''
+          idx=s.rfind('\n}')
+          assert idx!=-1
+          s=s[:idx]+insert+s[idx:]
+          p.write_text(s)
+
+          p=Path('test/auto_lineart_control_overlay_test.dart')
+          s=p.read_text()
+          anchor='''  testWidgets('SP-sized transparent hit target reaches 20px from a control point', (tester) async {'''
+          assert anchor in s
+          addition=r'''
+
+  testWidgets('overlapping touch targets select the nearest control point', (tester) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), Paint());
+    final image = await recorder.endRecording().toImage(100, 100);
+    int? movedIndex;
+    const graph = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [
+            AutoLineartPoint(45, 50),
+            AutoLineartPoint(55, 50),
+            AutoLineartPoint(80, 50),
+          ],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 100,
+            height: 100,
+            child: AutoLineartControlOverlay(
+              image: image,
+              graph: graph,
+              onPointMoved: (_, pointIndex, __) => movedIndex = pointIndex,
+            ),
+          ),
+        ),
+      ),
+    );
+    final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+    await tester.dragFrom(
+      Offset(rect.left + 54, rect.top + 50),
+      const Offset(6, -10),
+    );
+    await tester.pump();
+    expect(movedIndex, 1);
+    image.dispose();
+  });
+'''
+          # Insert immediately before existing 20px test.
+          s=s.replace(anchor,addition+'\n'+anchor,1)
+          p.write_text(s)
+          PY
+          dart format test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
+      - name: Validate normal tests remain green
+        run: |
+          flutter pub get
+          flutter analyze test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
+          flutter test test/auto_lineart_control_overlay_test.dart
+          flutter test test/auto_lineart_filter_panel_visual_audit_test.dart
+      - name: Generate visual audit evidence
+        run: flutter test --dart-define=NIARIM_AUTO_LINEART_VISUAL_AUDIT=true --update-goldens test/auto_lineart_filter_panel_visual_audit_test.dart
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auto-lineart-preview-audit-v8
+          path: test/goldens/*.png
+          if-no-files-found: warn
+      - name: Land regression-safe audit tests
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
+          git commit -m 'test: isolate auto lineart visual audit and verify dense touch selection'
+          git reset --hard HEAD
+          git clean -fd
+          git fetch origin dev_branch
+          git rebase origin/dev_branch
+          git push origin HEAD:dev_branch

@@ -1,0 +1,1133 @@
+{
+  "version": 3,
+  "description": "NIARIM feature-level AI audit coverage. A visual feature is final_pass only when its evidence image visibly proves the feature-specific intended behavior, not merely that pixels changed or a PNG exists.",
+  "visual_acceptance_standard": "strict-v2: appearance-sensitive features require feature-specific visual evidence; parameterized features additionally require multi-value progression checks. Numeric checks support but do not replace visual review.",
+  "features": [
+    {
+      "id": "brush.pen",
+      "category": "描画/ブラシ",
+      "name": "標準ペン",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "brush.gpen",
+      "category": "描画/ブラシ",
+      "name": "Gペン",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "brush.pencil",
+      "category": "描画/ブラシ",
+      "name": "鉛筆",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "brush.airbrush",
+      "category": "描画/ブラシ",
+      "name": "エアブラシ",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "brush.marker",
+      "category": "描画/ブラシ",
+      "name": "マーカー",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "brush.pixel",
+      "category": "描画/ブラシ",
+      "name": "ピクセルペン",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "brush.opacity",
+      "category": "描画/ブラシ",
+      "name": "ブラシ不透明度",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "同一入力で不透明度設定を段階変更し、実画素alpha/見た目が設定値に追従することをstrict-v2で再証明",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "brush.pressure.opacity",
+      "category": "描画/ブラシ",
+      "name": "筆圧不透明度",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "シミュレーション筆圧と筆圧強度の複数値に対し不透明度が段階追従することをstrict-v2で再証明",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "brush.pressure.size",
+      "category": "描画/ブラシ",
+      "name": "筆圧サイズ",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "シミュレーション筆圧と筆圧強度の複数値に対し線幅が段階追従することをstrict-v2で再証明",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "brush.fade",
+      "category": "描画/ブラシ",
+      "name": "フェード",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "off/weak/medium/strong/customの距離依存変化を同一ストロークで比較するstrict-v2再監査",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "brush.stabilizer",
+      "category": "描画/ブラシ",
+      "name": "手ブレ補正",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "recheck_reason": "現在の画像だけでは同じ揺れ入力に対して補正ONが実際に平滑化したことを視覚的に比較できないためstrict-v2再監査",
+      "workflows": [
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
+    },
+    {
+      "id": "brush.mix",
+      "category": "描画/ブラシ",
+      "name": "混色",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "混色率0〜100の複数値で境界色が段階変化することを画像と色値でstrict-v2再証明",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "brush.color_extension",
+      "category": "描画/ブラシ",
+      "name": "色伸び",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "色伸び率とストローク進行に応じた既存色の引きずり量を画像と色値でstrict-v2再証明",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "eraser.opacity",
+      "category": "描画/ブラシ",
+      "name": "半透明消しゴム",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ]
+    },
+    {
+      "id": "fill.bucket",
+      "category": "塗り/選択",
+      "name": "バケツ",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ]
+    },
+    {
+      "id": "selection.rect",
+      "category": "塗り/選択",
+      "name": "矩形選択",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "selection.lasso",
+      "category": "塗り/選択",
+      "name": "投げ縄選択",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "selection.magicwand",
+      "category": "塗り/選択",
+      "name": "マジックワンド",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "selection.rotate",
+      "category": "塗り/選択",
+      "name": "選択範囲回転",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "selection.scale",
+      "category": "塗り/選択",
+      "name": "選択範囲拡大縮小",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "ruler.line",
+      "category": "定規",
+      "name": "直線定規",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "recheck_reason": "単一ストローク画像では任意入力が定規へ拘束されたことを視覚証明できないためstrict-v2再監査",
+      "workflows": [
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+    },
+    {
+      "id": "ruler.circle",
+      "category": "定規",
+      "name": "円定規",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "recheck_reason": "定規ON入力と拘束結果の対応が一枚で判別できる証拠へ更新するためstrict-v2再監査",
+      "workflows": [
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+    },
+    {
+      "id": "ruler.ellipse",
+      "category": "定規",
+      "name": "楕円定規",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "recheck_reason": "定規ON入力と拘束結果の対応が一枚で判別できる証拠へ更新するためstrict-v2再監査",
+      "workflows": [
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+    },
+    {
+      "id": "ruler.radial",
+      "category": "定規",
+      "name": "放射定規",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "recheck_reason": "単一スポークでは放射定規固有の中心収束を視覚証明できないためstrict-v2再監査",
+      "workflows": [
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+    },
+    {
+      "id": "ruler.perspective1",
+      "category": "定規",
+      "name": "1点透視定規",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "recheck_reason": "複数線が1消失点へ収束することを画像で証明するstrict-v2再監査",
+      "workflows": [
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
+    },
+    {
+      "id": "ruler.perspective2",
+      "category": "定規",
+      "name": "2点透視定規",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "recheck_reason": "左右の線群が2消失点へ収束することを画像で証明するstrict-v2再監査",
+      "workflows": [
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
+    },
+    {
+      "id": "ruler.perspective3",
+      "category": "定規",
+      "name": "3点透視定規",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "recheck_reason": "3方向の線群が3消失点へ収束することを画像で証明するstrict-v2再監査",
+      "workflows": [
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
+    },
+    {
+      "id": "shape.line",
+      "category": "図形",
+      "name": "直線図形",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ]
+    },
+    {
+      "id": "shape.rect",
+      "category": "図形",
+      "name": "矩形図形",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ]
+    },
+    {
+      "id": "shape.ellipse",
+      "category": "図形",
+      "name": "楕円図形",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ]
+    },
+    {
+      "id": "effect.blur",
+      "category": "効果/素材",
+      "name": "ぼかし",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "ぼかし強度に応じてエッジ/高周波成分が段階的に減ることをstrict-v2再証明",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "effect.mosaic",
+      "category": "効果/素材",
+      "name": "モザイク",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "tone.all",
+      "category": "効果/素材",
+      "name": "全25トーン",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "全25トーンが各パターン固有の見た目を示すことをstrict-v2で再確認",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "stamp.all",
+      "category": "効果/素材",
+      "name": "全7スタンプ",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "全7スタンプが各プリセット固有形状として実描画されることをstrict-v2で再確認",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "filter.all",
+      "category": "効果/素材",
+      "name": "全21フィルター",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-visual-delta-audit.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "全21フィルターを単なる画素差ではなく各効果固有の期待結果としてstrict-v2再確認",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "autofill",
+      "category": "効果/素材",
+      "name": "自動塗り各種",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "各自動塗りモードが対象領域へ意図した塗り結果を作ることをstrict-v2再確認",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "layer.opacity",
+      "category": "レイヤー",
+      "name": "レイヤー不透明度",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "レイヤー不透明度の複数値で合成結果が段階追従することをstrict-v2再証明",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "layer.clipping",
+      "category": "レイヤー",
+      "name": "クリッピング",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ]
+    },
+    {
+      "id": "layer.blendmodes",
+      "category": "レイヤー",
+      "name": "全17ブレンドモード",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "全17モードを差分の有無だけでなく各ブレンド式固有の結果としてstrict-v2再確認",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "layer.transform",
+      "category": "レイヤー",
+      "name": "レイヤー全体変形",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "layer.mesh",
+      "category": "レイヤー",
+      "name": "メッシュ変形",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "メッシュ操作量に応じた局所変形方向・量が正しいことをstrict-v2再証明",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "layer.outline",
+      "category": "レイヤー",
+      "name": "縁取り",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-visual-delta-audit.yml"
+      ]
+    },
+    {
+      "id": "history.undo",
+      "category": "履歴/操作",
+      "name": "Undo",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "history.redo",
+      "category": "履歴/操作",
+      "name": "Redo",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml"
+      ]
+    },
+    {
+      "id": "input.touch",
+      "category": "履歴/操作",
+      "name": "タッチ入力",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": true,
+      "workflows": [
+        "one-shot-direct-engine-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Simulated touch/pointer routing plus app-level platform mock regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04. Physical touchscreen behavior remains an external device sanity check, not an unresolved app-logic audit."
+    },
+    {
+      "id": "input.stylus",
+      "category": "履歴/操作",
+      "name": "スタイラス入力",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": true,
+      "workflows": [
+        "one-shot-direct-engine-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Dedicated stylus classification, pressure, tilt/orientation and stylus-active routing tests plus app-level platform mock regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04. Physical stylus hardware compatibility remains an external device sanity check."
+    },
+    {
+      "id": "animation.onion",
+      "category": "アニメーション",
+      "name": "オニオンスキン",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-resume-real-operation-audit.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "基本ON/OFF・前後色は強い証拠済みだが、不透明度/枚数/間隔/距離フェードの設定追従をstrict-v2追加監査",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "animation.frame_duplicate",
+      "category": "アニメーション",
+      "name": "フレーム複製",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ],
+      "evidence_note": "Final remaining audit: functional/service behavior verified by successful executable state-transition or disk round-trip tests in One-shot Final Remaining Audit #1/#3."
+    },
+    {
+      "id": "animation.frame_delete",
+      "category": "アニメーション",
+      "name": "フレーム削除",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ],
+      "evidence_note": "Final remaining audit: functional/service behavior verified by successful executable state-transition or disk round-trip tests in One-shot Final Remaining Audit #1/#3."
+    },
+    {
+      "id": "animation.frame_reorder",
+      "category": "アニメーション",
+      "name": "フレーム並べ替え",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ],
+      "evidence_note": "Final remaining audit: functional/service behavior verified by successful executable state-transition or disk round-trip tests in One-shot Final Remaining Audit #1/#3."
+    },
+    {
+      "id": "animation.camera",
+      "category": "アニメーション",
+      "name": "カメラ移動/回転/ズーム",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-visual-delta-audit.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "移動/回転/ズーム各パラメータの方向と量が出力へ正しく反映されることをstrict-v2再証明",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "animation.keyframe",
+      "category": "アニメーション",
+      "name": "キーフレーム補間",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-visual-delta-audit.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "始点/中間/終点の補間値と見た目が補間式どおりであることをstrict-v2再証明",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "animation.fade",
+      "category": "アニメーション",
+      "name": "演出フェード",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-visual-delta-audit.yml",
+        "one-shot-strict-visual-evidence-audit.yml"
+      ],
+      "recheck_reason": "フェード値と時間位置に応じて不透明度が段階変化することをstrict-v2再証明",
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
+    },
+    {
+      "id": "text.horizontal",
+      "category": "テキスト",
+      "name": "横書きテキスト",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ]
+    },
+    {
+      "id": "text.vertical",
+      "category": "テキスト",
+      "name": "縦書きテキスト",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ]
+    },
+    {
+      "id": "text.ruby",
+      "category": "テキスト",
+      "name": "ルビ",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ]
+    },
+    {
+      "id": "text.outline",
+      "category": "テキスト",
+      "name": "縁取り文字",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ]
+    },
+    {
+      "id": "text.pixel",
+      "category": "テキスト",
+      "name": "ピクセル文字",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "functional-visual.yml"
+      ]
+    },
+    {
+      "id": "export.png",
+      "category": "保存/書き出し",
+      "name": "PNG書き出し",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-visual-delta-audit.yml"
+      ]
+    },
+    {
+      "id": "export.crop",
+      "category": "保存/書き出し",
+      "name": "中央クロップ",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-visual-delta-audit.yml"
+      ]
+    },
+    {
+      "id": "save.project",
+      "category": "保存/書き出し",
+      "name": "プロジェクト保存/再読込",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-direct-service-coverage.yml"
+      ],
+      "evidence_note": "Final remaining audit: functional/service behavior verified by successful executable state-transition or disk round-trip tests in One-shot Final Remaining Audit #1/#3."
+    },
+    {
+      "id": "save.tree",
+      "category": "保存/書き出し",
+      "name": "セーブツリー",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-all-routes-screenshot-audit.yml"
+      ]
+    },
+    {
+      "id": "ui.routes",
+      "category": "UI/画面",
+      "name": "主要31ルート",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-all-routes-screenshot-audit.yml"
+      ]
+    },
+    {
+      "id": "ui.canvas_panels",
+      "category": "UI/画面",
+      "name": "Canvas主要パネル",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-canvas-panel-screenshot-audit.yml"
+      ],
+      "evidence_note": "Audit Continuous Queue #24 canvas panel screenshot audit passed; 10 panel screenshots visually reviewed."
+    },
+    {
+      "id": "ui.timeline",
+      "category": "UI/画面",
+      "name": "タイムライン画面",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-all-routes-screenshot-audit.yml"
+      ]
+    },
+    {
+      "id": "ui.settings",
+      "category": "UI/画面",
+      "name": "設定画面群",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-all-routes-screenshot-audit.yml"
+      ]
+    },
+    {
+      "id": "ui.storage",
+      "category": "UI/画面",
+      "name": "ストレージ画面",
+      "interaction": true,
+      "output": true,
+      "screenshot": true,
+      "visual": true,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-all-routes-screenshot-audit.yml"
+      ]
+    },
+    {
+      "id": "settings.persistence",
+      "category": "設定/サービス",
+      "name": "設定永続化・再初期化",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-direct-service-coverage.yml"
+      ],
+      "evidence_note": "direct_service_coverage_batch10_test.dart verifies write, reset/reorder/visibility/dock behavior and fresh SettingsService round-trip restoration; full suite passed in Audit Continuous Queue #24."
+    },
+    {
+      "id": "settings.gestures",
+      "category": "設定/サービス",
+      "name": "ジェスチャー割当",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": true,
+      "workflows": [
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Pinch/frame-strip/gesture-settings simulation and app-level platform mock regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04. Physical multi-touch feel remains an external device sanity check."
+    },
+    {
+      "id": "settings.toolbar",
+      "category": "設定/サービス",
+      "name": "ツールバー順/非表示/Dock",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": false,
+      "workflows": [
+        "one-shot-direct-service-coverage.yml"
+      ],
+      "evidence_note": "direct_service_coverage_batch10_test.dart verifies write, reset/reorder/visibility/dock behavior and fresh SettingsService round-trip restoration; full suite passed in Audit Continuous Queue #24."
+    },
+    {
+      "id": "font.import",
+      "category": "設定/サービス",
+      "name": "フォント登録/共有/削除",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": true,
+      "workflows": [
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Real TTF lifecycle passed: add/read/rename/favorite/pixel-mode/persist/reload/remove, plus bundled import/corruption handling. OS file picker/share-sheet UX remains an external platform sanity check."
+    },
+    {
+      "id": "material.import",
+      "category": "設定/サービス",
+      "name": "素材管理/欠損検出",
+      "interaction": false,
+      "output": false,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": true,
+      "workflows": [
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Real file copy, duplicate prevention, manifest persistence/reload, missing-file detection, remove and share-bundle logic passed in the final platform-adjacent audit. OS picker/share-sheet UX remains an external platform sanity check."
+    },
+    {
+      "id": "premium.local",
+      "category": "設定/サービス",
+      "name": "Premiumローカル経路",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": true,
+      "workflows": [
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Current product behavior passed: pre-2027 monetization gate avoids store connection, launch-campaign Premium access is enabled, local purchase metadata/renewal restoration works. Real Google Play Billing purchase E2E is deferred until monetization activation on 2027-01-01."
+    },
+    {
+      "id": "community",
+      "category": "設定/サービス",
+      "name": "Community機能",
+      "interaction": true,
+      "output": true,
+      "screenshot": false,
+      "visual": false,
+      "final_pass": true,
+      "device_required": true,
+      "workflows": [
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Community API/service/backend contract and preview-size tests plus app-level regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04."
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+name: Save snapshot and collection action controls verification
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/save-and-collection-controls-verify.yml'
+      - '.github/scripts/build_save_ui_capture_pdf.py'
+      - 'lib/services/save_tree_service.dart'
+      - 'lib/screens/save_tree/**'
+      - 'lib/screens/home/home_screen.dart'
+      - 'lib/screens/export/export_screen.dart'
+      - 'lib/screens/home/widgets/project_list_widget.dart'
+      - 'lib/screens/home/widgets/folder_thumbnail.dart'
+      - 'lib/screens/home/widgets/exported_work_thumbnail_dialog.dart'
+      - 'lib/screens/home/widgets/exported_work_card.dart'
+      - 'lib/screens/home/widgets/project_thumbnail_dialog.dart'
+      - 'lib/models/project.dart'
+      - 'lib/engine/niapro_serializer.dart'
+      - 'lib/services/project_service.dart'
+      - 'lib/services/work_folder_service.dart'
+      - 'lib/widgets/collection_action_controls.dart'
+      - 'test/save_slot_visual_audit_test.dart'
+      - 'test/save_thumbnail_accuracy_test.dart'
+      - 'test/save_tree_persistence_test.dart'
+      - 'test/save_tree_lazy_list_test.dart'
+      - 'test/save_slot_confirmation_dialog_test.dart'
+      - 'test/project_grid_actions_test.dart'
+      - 'test/save_slot_action_buttons_test.dart'
+      - 'test/save_slot_action_success_visual_test.dart'
+      - 'test/shared_collection_controls_capture_test.dart'
+      - 'test/folder_thumbnail_modes_test.dart'
+      - 'test/exported_work_thumbnail_choice_test.dart'
+      - 'test/works_collection_controls_test.dart'
+      - 'test/home_collection_tile_search_favorites_test.dart'
+      - 'test/home_short_controls_and_video_states_test.dart'
+      - 'test/home_export_share_failure_test.dart'
+      - 'test/home_work_folder_empty_test.dart'
+      - 'test/project_thumbnail_choice_test.dart'
+      - 'test/folder_thumbnail_visual_capture_test.dart'
+      - 'test/save_memo_max_length_test.dart'
+      - 'test/save_tree_large_branch_stress_test.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.47.9'
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Static analysis
+        run: |
+          flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
+            lib/services/save_tree_service.dart \
+            lib/screens/save_tree \
+            lib/screens/home/home_screen.dart \
+            lib/screens/export/export_screen.dart \
+            lib/screens/home/widgets/project_list_widget.dart \
+            lib/screens/home/widgets/folder_thumbnail.dart \
+            lib/screens/home/widgets/exported_work_thumbnail_dialog.dart \
+            lib/screens/home/widgets/exported_work_card.dart \
+            test/exported_work_thumbnail_choice_test.dart \
+            test/works_collection_controls_test.dart \
+            test/home_collection_tile_search_favorites_test.dart \
+            test/home_short_controls_and_video_states_test.dart \
+            lib/screens/home/widgets/project_thumbnail_dialog.dart \
+            test/project_thumbnail_choice_test.dart \
+            lib/services/project_service.dart \
+            lib/services/work_folder_service.dart \
+            lib/widgets/collection_action_controls.dart \
+            test/folder_thumbnail_modes_test.dart \
+            test/exported_work_thumbnail_choice_test.dart \
+            test/project_thumbnail_choice_test.dart \
+            test/folder_thumbnail_visual_capture_test.dart \
+            test/save_memo_max_length_test.dart \
+            test/save_tree_large_branch_stress_test.dart
+      - name: Compact works three-dot delete regression
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/home_short_controls_and_video_states_test.dart \
+            --plain-name 'last export delete reaches confirmation independently of Home folder creation at 220px'
+      - name: Save and collection UI regressions
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/save_slot_action_buttons_test.dart \
+            test/save_slot_visual_audit_test.dart \
+            test/save_thumbnail_accuracy_test.dart \
+            test/save_tree_persistence_test.dart \
+            test/save_tree_lazy_list_test.dart \
+            test/save_slot_confirmation_dialog_test.dart \
+            test/project_grid_actions_test.dart \
+            test/save_slot_action_success_visual_test.dart \
+            test/shared_collection_controls_capture_test.dart \
+            test/folder_thumbnail_modes_test.dart \
+            test/exported_work_thumbnail_choice_test.dart \
+            test/works_collection_controls_test.dart \
+            test/home_collection_tile_search_favorites_test.dart \
+            test/folder_thumbnail_visual_capture_test.dart \
+            test/save_memo_max_length_test.dart \
+            test/save_tree_large_branch_stress_test.dart
+      - name: Export sharing and folder action compatibility
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/home_export_share_failure_test.dart \
+            --plain-name 'Works row share failure stays visible and keeps the file'
+          flutter test --no-pub --reporter expanded \
+            test/home_work_folder_empty_test.dart \
+            --plain-name 'moving a real export into a folder then deleting it preserves the empty folder'
+      - name: Prepare Python PDF generator
+        if: always()
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Bundle all actual Flutter save captures into a PDF
+        if: always()
+        run: |
+          python -m pip install --quiet reportlab Pillow
+          python .github/scripts/build_save_ui_capture_pdf.py \
+            --output build/save-slot-visual-audit/NIARIM_save_UI_captures.pdf
+      - name: Upload actual Flutter screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: save-project-ui-captures
+          path: |
+            build/save-slot-visual-audit/*.png
+            build/save-slot-visual-audit/*.pdf
+          if-no-files-found: warn
+          retention-days: 7

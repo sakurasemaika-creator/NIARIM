@@ -1,0 +1,656 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../l10n/app_localizations.dart';
+import '../../l10n/community_plaza_labels.dart';
+import '../../models/community_work.dart';
+import '../../services/community_preview_service.dart';
+import '../../services/community_service.dart';
+import '../../utils/responsive_tile_defaults.dart';
+import '../../widgets/collection_tile_layout.dart';
+import '../../widgets/sort_mode_control.dart';
+import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/ad_banner_mock_widget.dart';
+import 'community_edit_feedback.dart';
+import 'community_moderation.dart';
+import 'community_following_list_screen.dart';
+import 'community_followers_screen.dart';
+import 'widgets/community_shorts_viewer.dart';
+import 'widgets/community_top_edge_refresh.dart';
+import 'widgets/community_work_card.dart';
+import 'widgets/video_type_filter.dart';
+import 'widgets/community_list_controls.dart';
+import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
+
+/// Confirm both mute and unmute; used by author profiles and muted-user lists.
+Future<void> confirmCommunityAuthorMute(
+  BuildContext context,
+  CommunityService service,
+  String authorId, {
+  required bool mute,
+}) async {
+  final l10n = AppLocalizations.of(context)!;
+  final approved = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(
+        mute
+            ? l10n.communityMuteConfirmTitle
+            : l10n.communityUnmuteConfirmTitle,
+      ),
+      content: mute
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.communityMuteConfirmBody),
+                const SizedBox(height: 12),
+                Text(
+                  CommunityPlazaLabels.of(dialogContext).mutePrivacyNotice,
+                  key: const Key('communityMutePrivacyNoticeDialog'),
+                  style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            )
+          : null,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(l10n.communityMuteNo),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(
+            mute
+                ? l10n.communityMuteConfirmAction
+                : l10n.communityUnmuteConfirmAction,
+          ),
+        ),
+      ],
+    ),
+  );
+  if (approved != true || !context.mounted) return;
+  await service.setAuthorMuted(authorId, mute);
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(mute ? l10n.communityMuteDone : l10n.communityUnmuteDone),
+    ),
+  );
+}
+
+/// 特定の作者の投稿作品一覧（29_動画投稿・ランキング機能仕様.md 8.4節）＋
+/// その作者のブックマーク一覧（Task#145：ユーザー別ブックマーク一覧の
+/// 実現可否調査を受けた実装）。作品カードの作者名タップから遷移する。
+///
+/// 【不具合修正】以前はauthorId/authorName以外に`works`・`bookmarkedIds`・
+/// `onToggleBookmark`・`onOpenWork`を呼び出し元からその都度の
+/// スナップショットとして受け取っていたが、`MaterialPageRoute`のbuilder
+/// 内で一度だけ評価される値のため、このAPI設計自体が「この画面を開いた
+/// 後にブックマーク状態が変わっても、この画面上のブックマークアイコンが
+/// 更新されない」という不具合を内包していた（この画面自身でブックマークを
+/// トグルした場合も、setStateではwidget.bookmarkedIdsという不変の
+/// フィールド自体は更新されないため、直後の再描画でも古い状態のまま
+/// 表示されていた）。`CommunityService`は既にアプリ全体で共有される
+/// Providerであるため、authorId/authorNameだけを受け取り、残りは全て
+/// `context.watch<CommunityService>()`から都度取得するよう変更し、
+/// この種のスナップショット起因の不具合が起きない設計にした。
+class CommunityAuthorWorksScreen extends StatefulWidget {
+  final String authorId;
+  final String authorName;
+
+  const CommunityAuthorWorksScreen({
+    super.key,
+    required this.authorId,
+    required this.authorName,
+  });
+
+  @override
+  State<CommunityAuthorWorksScreen> createState() =>
+      _CommunityAuthorWorksScreenState();
+}
+
+class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController = TabController(
+    length: 2,
+    vsync: this,
+  );
+  // 「総合」「縦画面のみ」「横画面のみ」の絞り込み（「作品」タブが対象。
+  // ブックマーク一覧は本来の投稿順ではないため、ショートモード同様に
+  // 対象外とする）。
+  VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
+  final ScrollController _authorWorksScroll = ScrollController();
+  final ScrollController _bookmarksScroll = ScrollController();
+  bool _refreshingAuthorWorks = false;
+  bool _refreshingBookmarks = false;
+  int _visibleWorks = CommunityService.pageSize;
+  bool _loadingMoreWorks = false;
+
+  CollectionViewSize? _chosenViewSize;
+  bool _detail = false;
+  CollectionViewSize get _viewSize =>
+      _chosenViewSize ?? defaultTileSizeFor(MediaQuery.sizeOf(context).width);
+  bool _sortByName = false;
+  bool _sortAscending = false;
+
+  bool get _needsCompleteList =>
+      _sortByName || _sortAscending || _videoTypeFilter != VideoTypeFilter.all;
+
+  List<CommunityWork> _sortWorks(Iterable<CommunityWork> works) =>
+      sortCommunityWorks(works, byName: _sortByName, ascending: _sortAscending);
+
+  void _updateSort({bool? byName, bool? ascending}) {
+    setState(() {
+      if (byName != null && byName != _sortByName) {
+        _sortByName = byName;
+        _sortAscending = byName;
+      }
+      if (ascending != null) _sortAscending = ascending;
+      _visibleWorks = CommunityService.pageSize;
+    });
+    if (_authorWorksScroll.hasClients) _authorWorksScroll.jumpTo(0);
+    if (_bookmarksScroll.hasClients) _bookmarksScroll.jumpTo(0);
+    if (_needsCompleteList) unawaited(_loadMoreAuthorWorks());
+  }
+
+  void _onAuthorScroll() {
+    if (!_authorWorksScroll.hasClients ||
+        _authorWorksScroll.position.extentAfter > 220 ||
+        _loadingMoreWorks ||
+        _refreshingAuthorWorks) {
+      return;
+    }
+    final service = context.read<CommunityService>();
+    final count = _videoTypeFilter
+        .apply(
+          service.worksByAuthor(
+            widget.authorId,
+            includeHidden: service.isOwnAuthor(widget.authorId),
+          ),
+        )
+        .length;
+    if (_visibleWorks < count) {
+      setState(() => _visibleWorks += CommunityService.pageSize);
+    } else if (!_needsCompleteList) {
+      unawaited(_loadMoreAuthorWorks());
+    }
+  }
+
+  Future<void> _refreshAuthorWorks() async {
+    if (_refreshingAuthorWorks || _loadingMoreWorks) return;
+    final service = context.read<CommunityService>();
+    if (!service.isBackendConnected) return;
+    setState(() => _refreshingAuthorWorks = true);
+    try {
+      if (await service.refreshAuthorWorks(widget.authorId) && mounted) {
+        _visibleWorks = CommunityService.pageSize;
+      }
+    } finally {
+      if (mounted) setState(() => _refreshingAuthorWorks = false);
+    }
+    if (mounted && _needsCompleteList) await _loadMoreAuthorWorks();
+  }
+
+  Future<void> _refreshBookmarks() async {
+    if (_refreshingBookmarks) return;
+    final service = context.read<CommunityService>();
+    if (!service.isBackendConnected || !service.isOwnAuthor(widget.authorId)) {
+      return;
+    }
+    _refreshingBookmarks = true;
+    try {
+      await service.refreshViewerBookmarks();
+    } finally {
+      _refreshingBookmarks = false;
+    }
+  }
+
+  Future<void> _loadMoreAuthorWorks() async {
+    final service = context.read<CommunityService>();
+    if (_loadingMoreWorks ||
+        _refreshingAuthorWorks ||
+        !service.hasMoreAuthor(widget.authorId)) {
+      return;
+    }
+    setState(() => _loadingMoreWorks = true);
+    try {
+      do {
+        if (!await service.loadMoreAuthorWorks(widget.authorId) || !mounted) {
+          return;
+        }
+      } while (_needsCompleteList && service.hasMoreAuthor(widget.authorId));
+    } finally {
+      if (mounted) setState(() => _loadingMoreWorks = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _authorWorksScroll.addListener(_onAuthorScroll);
+    // With a backend the page lists the author's works as the server has
+    // them now, not only those another list happened to bring in.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final service = context.read<CommunityService>();
+      if (service.isBackendConnected) {
+        unawaited(_refreshAuthorWorks());
+      }
+      service.refreshFollowerCount(widget.authorId);
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _authorWorksScroll.dispose();
+    _bookmarksScroll.dispose();
+    super.dispose();
+  }
+
+  void _openShortsMode(List<CommunityWork> works, Set<String> bookmarkedIds) {
+    if (works.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.communityShortsModeEmptySnackbar)),
+      );
+      return;
+    }
+    final shorts = works.where((w) => w.isShort).toList();
+    final target = shorts.isNotEmpty ? shorts : works;
+    context.read<CommunityPreviewService?>()?.close();
+    Navigator.of(context).push(
+      adMockMaterialPageRoute(
+        builder: (_) => CommunityShortsScreen(
+          works: target,
+          ownerView: context.read<CommunityService>().isOwnAuthor(
+            widget.authorId,
+          ),
+          bookmarkedIds: bookmarkedIds,
+          onToggleBookmark: (w) => reportFailedCommunityEdit(
+            context,
+            context.read<CommunityService>(),
+            context.read<CommunityService>().toggleBookmark(w.id),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final communityService = context.watch<CommunityService>();
+    final isSelf = communityService.isOwnAuthor(widget.authorId);
+    final isFavorite = communityService.isFavoriteAuthor(widget.authorId);
+    final isMuted = communityService.isAuthorMuted(widget.authorId);
+    final works = communityService.worksByAuthor(
+      widget.authorId,
+      includeHidden: isSelf,
+    );
+    // 投稿数の表示（works.length）は絞り込みの影響を受けない総数のままにする。
+    final sortedWorks = _sortWorks(_videoTypeFilter.apply(works));
+    final filteredWorks = sortedWorks.take(_visibleWorks).toList();
+    final moreAuthorPages = communityService.hasMoreAuthor(widget.authorId);
+    final sorting =
+        _needsCompleteList && (_refreshingAuthorWorks || moreAuthorPages);
+    final moreVisibleWorks = sortedWorks.length > filteredWorks.length;
+    final followerCount = communityService.followerCountOf(widget.authorId);
+    final followingCount = communityService.followingCountOf(widget.authorId);
+    final bookmarkedIds = communityService.bookmarkedIds;
+    final savedWorks = isSelf
+        ? communityService.bookmarkedWorksOf(widget.authorId)
+        : const <CommunityWork>[];
+    final bookmarkedWorks = _videoTypeFilter.apply(savedWorks);
+
+    Widget socialCount(String key, String label, Widget screen) {
+      if (!isSelf) {
+        return Text(
+          label,
+          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+        );
+      }
+      final color = AccentTextTheme.of(context);
+      return InkWell(
+        key: Key(key),
+        borderRadius: BorderRadius.circular(6),
+        onTap: () => Navigator.of(
+          context,
+        ).push(adMockMaterialPageRoute<void>(builder: (_) => screen)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(fontSize: 12, color: color),
+                  ),
+                ),
+                const SizedBox(width: 2),
+                Icon(Icons.chevron_right, size: 16, color: color),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    void toggleBookmark(CommunityWork work) => reportFailedCommunityEdit(
+      context,
+      communityService,
+      communityService.toggleBookmark(work.id),
+    );
+    void openWork(CommunityWork work) =>
+        context.read<CommunityPreviewService>().show(work);
+
+    Widget workGrid(List<CommunityWork> visibleWorks) => CommunityWorkGrid(
+      works: visibleWorks,
+      viewSize: _viewSize,
+      detail: _detail,
+      bookmarkedIds: bookmarkedIds,
+      onTapWork: openWork,
+      onToggleBookmark: toggleBookmark,
+    );
+
+    final worksPane = CommunityTopEdgeRefresh(
+      key: const Key('communityAuthorWorksPullRefresh'),
+      controller: _authorWorksScroll,
+      enabled: communityService.isBackendConnected,
+      onRefresh: _refreshAuthorWorks,
+      child: SingleChildScrollView(
+        controller: _authorWorksScroll,
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            if (!sorting && filteredWorks.isNotEmpty) workGrid(filteredWorks),
+            if (!sorting &&
+                filteredWorks.isEmpty &&
+                !_loadingMoreWorks &&
+                !_refreshingAuthorWorks)
+              Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text(l10n.communityNoWorksMessage),
+              ),
+            if (_loadingMoreWorks || (sorting && _refreshingAuthorWorks))
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              )
+            else if (moreAuthorPages || moreVisibleWorks)
+              TextButton.icon(
+                key: const Key('communityAuthorLoadNextPage'),
+                onPressed: () {
+                  if (!sorting && moreVisibleWorks) {
+                    setState(() => _visibleWorks += CommunityService.pageSize);
+                  } else {
+                    unawaited(_loadMoreAuthorWorks());
+                  }
+                },
+                icon: Icon(sorting ? Icons.refresh : Icons.expand_more),
+                label: Text(
+                  sorting
+                      ? l10n.communityRetry
+                      : MaterialLocalizations.of(context).moreButtonTooltip,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: ModalRoute.of(context)?.canPop == true
+            ? const BackButton()
+            : null,
+        title: FitOrHideTitle(widget.authorName),
+        actions: [
+          if (!isSelf && communityService.isBackendConnected)
+            PopupMenuButton<bool>(
+              onSelected: (report) {
+                if (report) {
+                  reportCommunityContent(context, authorId: widget.authorId);
+                } else {
+                  confirmCommunityBlock(
+                    context,
+                    widget.authorId,
+                    blocked: !communityService.isAuthorBlocked(widget.authorId),
+                  );
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: true,
+                  child: Text(l10n.communityReportAuthor),
+                ),
+                PopupMenuItem(
+                  value: false,
+                  child: Text(
+                    communityService.isAuthorBlocked(widget.authorId)
+                        ? l10n.communityUnblockAuthor
+                        : l10n.communityBlockAuthor,
+                  ),
+                ),
+              ],
+            ),
+          CommunityWorkViewButton(
+            key: const Key('communityAuthorViewSize'),
+            detail: _detail,
+            size: _viewSize,
+            onChanged: (mode) => setState(() {
+              _detail = mode == CommunityWorkView.detail;
+              _chosenViewSize = mode.tileSize ?? _chosenViewSize;
+            }),
+          ),
+          VideoTypeFilterButton(
+            compact: true,
+            value: _videoTypeFilter,
+            onChanged: (value) {
+              setState(() {
+                _videoTypeFilter = value;
+                _visibleWorks = CommunityService.pageSize;
+              });
+              if (_authorWorksScroll.hasClients) _authorWorksScroll.jumpTo(0);
+              if (_needsCompleteList) unawaited(_loadMoreAuthorWorks());
+            },
+          ),
+          if (_videoTypeFilter == VideoTypeFilter.shortOnly)
+            IconButton(
+              icon: const Icon(Icons.view_carousel_outlined),
+              tooltip: l10n.communityShortsModeTooltip,
+              // ショートモードは「作品」タブの一覧を対象にする
+              // （ブックマーク一覧は本来の投稿順ではないため対象外）。
+              onPressed: sorting
+                  ? null
+                  : () => _openShortsMode(filteredWorks, bookmarkedIds),
+            ),
+        ],
+        bottom: isSelf
+            ? TabBar(
+                controller: _tabController,
+                tabs: [
+                  Tab(text: l10n.communityAuthorTabWorks),
+                  Tab(text: l10n.communityAuthorTabBookmarks),
+                ],
+              )
+            : null,
+      ),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: scheme.primaryContainer,
+                    child: Text(
+                      widget.authorName.substring(0, 1),
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: scheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.authorName,
+                          style: localizedHeadingStyle(
+                            context,
+                            const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 2,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              l10n.communityAuthorWorksCount(works.length),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                            socialCount(
+                              'communityOwnFollowingCountButton',
+                              l10n.communityAuthorFollowingCount(
+                                followingCount,
+                              ),
+                              const CommunityFollowingListScreen(),
+                            ),
+                            socialCount(
+                              'communityOwnFollowersCountButton',
+                              l10n.communityAuthorFollowerCount(followerCount),
+                              CommunityFollowersScreen(
+                                ownerId: widget.authorId,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Keep the less-frequent mute action compact in the
+                  // profile row; following receives the full-width action.
+                  if (!isSelf)
+                    IconButton.outlined(
+                      key: const Key('communityAuthorMuteToggle'),
+                      tooltip: isMuted
+                          ? l10n.communityUnmuteAuthor
+                          : l10n.communityMuteShort,
+                      onPressed: () => confirmCommunityAuthorMute(
+                        context,
+                        communityService,
+                        widget.authorId,
+                        mute: !isMuted,
+                      ),
+                      icon: Icon(
+                        isMuted
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (!isSelf)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: OutlinedButton.icon(
+                  key: const Key('communityAuthorFollowToggle'),
+                  onPressed: () => reportFailedCommunityEdit(
+                    context,
+                    communityService,
+                    communityService.toggleFavoriteAuthor(widget.authorId),
+                  ),
+                  icon: Icon(
+                    isFavorite
+                        ? Icons.person_remove_alt_1
+                        : Icons.person_add_alt_1,
+                  ),
+                  label: Text(
+                    isFavorite
+                        ? l10n.communityFavoriteAuthorFollowing
+                        : l10n.communityFavoriteAuthorFollow,
+                  ),
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: SortModeControl(
+                dateLabel: l10n.communityAuthorSortPosted,
+                sortByName: _sortByName,
+                sortAscending: _sortAscending,
+                onSortByNameChanged: (byName) => _updateSort(byName: byName),
+                onToggleDirection: () =>
+                    _updateSort(ascending: !_sortAscending),
+              ),
+            ),
+            Expanded(
+              child: isSelf
+                  ? TabBarView(
+                      controller: _tabController,
+                      children: [
+                        worksPane,
+                        // Private bookmarks are visible to their owner only.
+                        CommunityTopEdgeRefresh(
+                          key: const Key('communityAuthorBookmarksPullRefresh'),
+                          controller: _bookmarksScroll,
+                          enabled: communityService.isBackendConnected,
+                          onRefresh: _refreshBookmarks,
+                          child: SingleChildScrollView(
+                            controller: _bookmarksScroll,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: bookmarkedWorks.isEmpty
+                                ? Padding(
+                                    padding: const EdgeInsets.all(32),
+                                    child: Center(
+                                      // ブックマークはあるのに出せる作品が無い
+                                      // ときは「ありません」と言わない（まだ
+                                      // 読み込めていないか、今は公開されて
+                                      // いない）。
+                                      child: Text(
+                                        savedWorks.isNotEmpty
+                                            ? l10n.communityNoWorksMessage
+                                            : bookmarkedIds.isEmpty
+                                            ? l10n.communityBookmarksEmptyMessage
+                                            : l10n.communityBookmarksHiddenMessage,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  )
+                                : workGrid(_sortWorks(bookmarkedWorks)),
+                          ),
+                        ),
+                      ],
+                    )
+                  : worksPane,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

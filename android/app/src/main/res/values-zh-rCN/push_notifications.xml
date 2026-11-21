@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="push_scheduled_release">你预约的作品已公开</string>
+    <string name="push_mission_achievement">你有新的任务达成通知</string>
+    <string name="push_work_posted">你的作品已投稿</string>
+    <string name="push_work_published">你的作品已公开</string>
+    <string name="push_work_reserved">已接受你的预约投稿</string>
+    <string name="push_activity_channel">作品广场和任务通知</string>
+</resources>

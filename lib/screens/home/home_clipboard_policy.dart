@@ -1,0 +1,46 @@
+/// Clipboard source and destination collections in the create-works screen.
+/// The two "Shared" pills are different serialization formats.
+enum HomePasteArea { projects, works, received, outgoing, trash }
+
+enum HomePasteDecision { allowed, incompatibleFormat, unsupportedTrashRestore }
+
+/// A selected library entry keeps its original tab or pill format.
+class HomeClipboardEntry {
+  const HomeClipboardEntry({
+    required this.source,
+    required this.id,
+    required this.name,
+    this.isFolder = false,
+    this.isCut = false,
+    this.originalArea,
+  });
+  final HomePasteArea source;
+  final String id;
+  final String name;
+  final bool isFolder;
+  final bool isCut;
+  final HomePasteArea? originalArea;
+}
+
+abstract final class HomePastePolicy {
+  static HomePasteDecision check({
+    required HomePasteArea source,
+    required HomePasteArea destination,
+    required bool containsFiles,
+    required bool containsFolders,
+    HomePasteArea? originalArea,
+  }) {
+    if (source == HomePasteArea.trash) {
+      if (destination == originalArea) return HomePasteDecision.allowed;
+      return HomePasteDecision.unsupportedTrashRestore;
+    }
+    if (destination == HomePasteArea.trash) {
+      return HomePasteDecision.allowed;
+    }
+    if (source == destination) return HomePasteDecision.allowed;
+    // A folder without any files is format-neutral. Folder hierarchy must
+    // still be checked by the destination's storage implementation.
+    if (containsFolders && !containsFiles) return HomePasteDecision.allowed;
+    return HomePasteDecision.incompatibleFormat;
+  }
+}

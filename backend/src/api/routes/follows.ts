@@ -1,0 +1,239 @@
+import { isBlockedBetween } from "./blocks";
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import {
+  GetCommand,
+  QueryCommand,
+  TransactWriteCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
+import { ddb, tableName, Keys } from "../../lib/dynamo";
+import { authenticate, getUser } from "../../lib/auth";
+import { badRequest, forbidden, ok } from "../../lib/response";
+import type {
+  FollowerRecordItem,
+  FollowingRecordItem,
+  UserItem,
+} from "../../lib/types";
+import { TABLE_ITEM_TYPE } from "../../lib/types";
+
+/**
+ * `POST /users/{id}/follow`（22.5節）。フォロー/解除の操作ごとに
+ * `TransactWriteItems`で「被フォロー側記録（FollowerRecord）」
+ * 「フォロー側記録（FollowingRecord、二重書き込みでO(1)クエリ可能に
+ * する）」「両ユーザーのfollowerCount/followingCountカウンター」を
+ * まとめて更新する。通知用の個別フォローイベントは保存しない。
+ */
+export async function toggleFollow(
+  event: APIGatewayProxyEventV2,
+  targetId: string,
+) {
+  const auth = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+  if (auth.niarimUserId === targetId)
+    badRequest("自分自身をフォローすることはできません");
+
+  const followerKey = Keys.followerRecord(targetId, auth.niarimUserId);
+  const existing = await ddb.send(
+    new GetCommand({ TableName: tableName(), Key: followerKey }),
+  );
+  const isFollowing = Boolean(existing.Item);
+  if (!isFollowing && await isBlockedBetween(auth.niarimUserId, targetId)) {
+    forbidden();
+  }
+  const now = new Date().toISOString();
+
+  try {
+    if (isFollowing) {
+      await ddb.send(
+        new TransactWriteCommand({
+          TransactItems: [
+            {
+              Delete: {
+                TableName: tableName(),
+                Key: followerKey,
+                ConditionExpression: "attribute_exists(pk)",
+              },
+            },
+            {
+              Delete: {
+                TableName: tableName(),
+                Key: Keys.followingRecord(auth.niarimUserId, targetId),
+              },
+            },
+            {
+              Update: {
+                TableName: tableName(),
+                Key: Keys.user(targetId),
+                UpdateExpression: "ADD followerCount :minus",
+                ConditionExpression: "followerCount > :zero",
+                ExpressionAttributeValues: { ":minus": -1, ":zero": 0 },
+              },
+            },
+            {
+              Update: {
+                TableName: tableName(),
+                Key: Keys.user(auth.niarimUserId),
+                UpdateExpression: "ADD followingCount :minus",
+                ConditionExpression: "followingCount > :zero",
+                ExpressionAttributeValues: { ":minus": -1, ":zero": 0 },
+              },
+            },
+          ],
+        }),
+      );
+    } else {
+      const followerRecord: FollowerRecordItem = {
+        itemType: TABLE_ITEM_TYPE.FollowerRecord,
+        ...followerKey,
+        targetId,
+        followerId: auth.niarimUserId,
+        followedAt: now,
+      };
+      const followingRecord: FollowingRecordItem = {
+        itemType: TABLE_ITEM_TYPE.FollowingRecord,
+        ...Keys.followingRecord(auth.niarimUserId, targetId),
+        followerId: auth.niarimUserId,
+        targetId,
+        followedAt: now,
+      };
+
+      await ddb.send(
+        new TransactWriteCommand({
+          TransactItems: [
+            {
+              Put: {
+                TableName: tableName(),
+                Item: followerRecord,
+                ConditionExpression: "attribute_not_exists(pk)",
+              },
+            },
+            { Put: { TableName: tableName(), Item: followingRecord } },
+            {
+              Update: {
+                TableName: tableName(),
+                Key: Keys.user(targetId),
+                UpdateExpression: "ADD followerCount :plus",
+                ConditionExpression: "itemType = :user AND attribute_not_exists(erasureReceipt)",
+                ExpressionAttributeValues: { ":plus": 1, ":user": TABLE_ITEM_TYPE.User },
+              },
+            },
+            {
+              Update: {
+                TableName: tableName(),
+                Key: Keys.user(auth.niarimUserId),
+                UpdateExpression: "ADD followingCount :plus",
+                ConditionExpression: "itemType = :user AND attribute_not_exists(erasureReceipt)",
+                ExpressionAttributeValues: { ":plus": 1, ":user": TABLE_ITEM_TYPE.User },
+              },
+            },
+          ],
+        }),
+      );
+
+
+    }
+  } catch (err) {
+    if (err instanceof TransactionCanceledException) {
+      return ok({ following: isFollowing, conflict: true });
+    }
+    throw err;
+  }
+
+  return ok({ following: !isFollowing });
+}
+
+/** Public numerical counts only: never return follower or following identities. */
+export async function getSocialCounts(
+  _event: APIGatewayProxyEventV2,
+  targetId: string,
+) {
+  const user = await getUser(targetId);
+  return ok({
+    followerCount: user?.followerCount ?? 0,
+    followingCount: user?.followingCount ?? 0,
+  });
+}
+
+/** Returns a page of followers to the profile owner. */
+export async function getFollowers(
+  event: APIGatewayProxyEventV2,
+  targetId: string,
+) {
+  const auth = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+  if (auth.niarimUserId !== targetId) {
+    forbidden("自分のフォロワーのみ取得できます");
+  }
+  const cursor = event.queryStringParameters?.cursor;
+  if (cursor !== undefined && !/^N[a-f0-9]{32}$/.test(cursor)) {
+    badRequest("カーソルが不正です");
+  }
+
+  const result = await ddb.send(new QueryCommand({
+    TableName: tableName(),
+    KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+    ExpressionAttributeValues: {
+      ":pk": Keys.user(targetId).pk,
+      ":prefix": "FOLLOWER#",
+    },
+    Limit: 25,
+    ExclusiveStartKey: cursor ? Keys.followerRecord(targetId, cursor) : undefined,
+  }));
+  const records = (result.Items ?? []) as FollowerRecordItem[];
+  const profiles = await Promise.all(records.map((record) => getUser(record.followerId)));
+  return ok({
+    followers: profiles.filter((user): user is UserItem => Boolean(user)).map((user) => ({
+      niarimUserId: user.niarimUserId,
+      channelName: user.channelName,
+    })),
+    nextCursor: result.LastEvaluatedKey?.sk?.slice("FOLLOWER#".length) ?? null,
+  });
+}
+
+/** `GET /users/{id}/following`（22.5節）。フォロー中一覧はこの修正の対象外（22.7節）。 */
+export async function getFollowing(
+  event: APIGatewayProxyEventV2,
+  followerId: string,
+) {
+  const auth = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+  if (auth.niarimUserId !== followerId) {
+    forbidden("自分がフォロー中のデータのみ取得できます");
+  }
+
+  const result = await ddb.send(
+    new QueryCommand({
+      TableName: tableName(),
+      // A reload after an unfollow must see the committed deletion.
+      ConsistentRead: true,
+      KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+      ExpressionAttributeValues: {
+        ":pk": `USER#${followerId}`,
+        ":prefix": "FOLLOWING#",
+      },
+    }),
+  );
+  const records = (result.Items ?? []) as FollowingRecordItem[];
+
+  const targets = await Promise.all(
+    records.map((r) =>
+      ddb.send(
+        new GetCommand({ TableName: tableName(), Key: Keys.user(r.targetId) }),
+      ),
+    ),
+  );
+  const following = targets
+    .map((u) => u.Item as UserItem | undefined)
+    .filter((u): u is UserItem => Boolean(u))
+    .map((u) => ({
+      niarimUserId: u.niarimUserId,
+      channelName: u.channelName,
+      channelAvatarUrl: u.channelAvatarUrl,
+    }));
+
+  return ok({ followerId, following });
+}
+

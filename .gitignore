@@ -1,0 +1,63 @@
+# 多言語対応（ARBファイルから`flutter pub get`時に自動生成されるコード。
+# lib/l10n/app_ja.arb・app_en.arbが唯一の翻訳ソース。生成物はコミットしない）
+lib/l10n/app_localizations.dart
+lib/l10n/app_localizations_*.dart
+
+# Miscellaneous
+*.class
+*.log
+analyze_out.txt
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Gradleビルド出力（android/build, android/app/build等）
+/android/**/build/
+/android/.gradle/
+
+# Android signing keys and local signing credentials — never commit
+*.jks
+*.keystore
+*.p12
+*.pfx
+/android/key.properties
+/android/signing.properties

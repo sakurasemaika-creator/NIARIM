@@ -1,0 +1,754 @@
+import 'dart:io';
+import 'dart:math' as math;
+import 'dart:typed_data';
+
+import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+
+import '../../../l10n/app_localizations.dart';
+import '../../../models/project.dart';
+import '../../../services/project_service.dart';
+
+/// A saved work which can be used as a folder cover.
+class FolderThumbnailChoice {
+  final String id;
+  final String name;
+  final String? imagePath;
+  final DateTime updatedAt;
+
+  const FolderThumbnailChoice({
+    required this.id,
+    required this.name,
+    required this.imagePath,
+    required this.updatedAt,
+  });
+}
+
+/// Includes direct works as well as works in any nested child folder.
+/// A visited set prevents malformed cycles from hanging the home screen.
+List<FolderThumbnailChoice> projectFolderThumbnailChoices(
+  List<ProjectFolder> folders,
+  List<Project> projects,
+  String rootId,
+) {
+  final children = <String, List<String>>{};
+  for (final folder in folders) {
+    if (folder.parentFolderId != null) {
+      children.putIfAbsent(folder.parentFolderId!, () => []).add(folder.id);
+    }
+  }
+  final descendants = <String>{rootId};
+  final queue = <String>[rootId];
+  for (var i = 0; i < queue.length; i++) {
+    for (final id in children[queue[i]] ?? const <String>[]) {
+      if (descendants.add(id)) queue.add(id);
+    }
+  }
+  return [
+    for (final project in projects)
+      if (project.folderId != null && descendants.contains(project.folderId))
+        FolderThumbnailChoice(
+          id: project.id,
+          name: project.name,
+          imagePath: project.thumbnailPath,
+          updatedAt: project.updatedAt,
+        ),
+  ];
+}
+
+/// Resolve a project folder's effective cover, respecting direct works first
+/// and then recursively inheriting the newest child-folder cover. Child-folder
+/// "recent" is measured by the newest descendant project's updatedAt;
+/// for completely empty custom-cover folders, createdAt is the fallback.
+String? projectFolderEffectiveCover(
+  String folderId,
+  List<ProjectFolder> folders,
+  List<Project> projects,
+) {
+  final byId = {for (final f in folders) f.id: f};
+  final byParent = <String, List<ProjectFolder>>{};
+  final projectsByFolder = <String, List<Project>>{};
+  for (final f in folders) {
+    if (f.parentFolderId != null) {
+      byParent.putIfAbsent(f.parentFolderId!, () => []).add(f);
+    }
+  }
+  for (final p in projects) {
+    if (p.folderId != null) {
+      projectsByFolder.putIfAbsent(p.folderId!, () => []).add(p);
+    }
+  }
+  final visiting = <String>{};
+
+  ({String? path, DateTime? updatedAt}) visit(String id) {
+    final folder = byId[id];
+    if (folder == null || !visiting.add(id)) {
+      return (path: null, updatedAt: null);
+    }
+    try {
+      final direct = projectsByFolder[id] ?? const <Project>[];
+      DateTime? directLatest;
+      Project? newestWithImage;
+      for (final p in direct) {
+        if (directLatest == null || p.updatedAt.isAfter(directLatest)) {
+          directLatest = p.updatedAt;
+        }
+        if (p.thumbnailPath?.isNotEmpty == true &&
+            (newestWithImage == null ||
+                p.updatedAt.isAfter(newestWithImage.updatedAt))) {
+          newestWithImage = p;
+        }
+      }
+      DateTime? latestDescendant = directLatest;
+      final subFolders = <({String path, DateTime updatedAt})>[];
+      for (final child in byParent[id] ?? const <ProjectFolder>[]) {
+        final resolved = visit(child.id);
+        if (resolved.updatedAt != null &&
+            (latestDescendant == null ||
+                resolved.updatedAt!.isAfter(latestDescendant))) {
+          latestDescendant = resolved.updatedAt;
+        }
+        if (resolved.path != null) {
+          subFolders.add((
+            path: resolved.path!,
+            updatedAt: resolved.updatedAt ?? child.createdAt,
+          ));
+        }
+      }
+      final date = latestDescendant ?? folder.createdAt;
+      switch (folder.thumbnailMode) {
+        case 'none':
+          return (path: null, updatedAt: date);
+        case 'custom':
+          return (path: folder.thumbnailImagePath, updatedAt: date);
+        case 'item':
+          for (final p in projects) {
+            if (p.id == folder.thumbnailSourceId &&
+                p.thumbnailPath?.isNotEmpty == true) {
+              return (path: p.thumbnailPath, updatedAt: date);
+            }
+          }
+          return (path: null, updatedAt: date);
+        default:
+          // Direct files take precedence when present, as requested.
+          if (newestWithImage != null) {
+            return (path: newestWithImage.thumbnailPath, updatedAt: date);
+          }
+          if (subFolders.isEmpty) {
+            return (path: null, updatedAt: date);
+          }
+          subFolders.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+          return (path: subFolders.first.path, updatedAt: date);
+      }
+    } finally {
+      visiting.remove(id);
+    }
+  }
+
+  return visit(folderId).path;
+}
+
+String? folderThumbnailPath(
+  ProjectFolder folder,
+  List<FolderThumbnailChoice> choices,
+) {
+  switch (folder.thumbnailMode) {
+    case 'none':
+      return null;
+    case 'custom':
+      return folder.thumbnailImagePath;
+    case 'item':
+      for (final choice in choices) {
+        if (choice.id == folder.thumbnailSourceId) return choice.imagePath;
+      }
+      return null;
+    default:
+      FolderThumbnailChoice? latest;
+      for (final choice in choices) {
+        if (choice.imagePath != null &&
+            (latest == null || choice.updatedAt.isAfter(latest.updatedAt))) {
+          latest = choice;
+        }
+      }
+      return latest?.imagePath;
+  }
+}
+
+/// Creates a small preview for exported video files only when the UI
+/// actually needs one. This is Android-only; desktop widget tests do not
+/// invoke native codecs and simply retain the folder icon fallback.
+class FolderCoverMedia extends StatelessWidget {
+  const FolderCoverMedia({
+    super.key,
+    required this.path,
+    this.fit = BoxFit.cover,
+    this.cacheWidth = 320,
+  });
+
+  final String path;
+  final BoxFit fit;
+  final int cacheWidth;
+
+  static final Map<String, Future<String?>> _videoPreviews = {};
+
+  static bool _isVideo(String path) {
+    final suffix = path.split('.').last.toLowerCase();
+    return const {'mp4', 'webm', 'mov', 'mkv', 'avi'}.contains(suffix);
+  }
+
+  static String _ffmpegQuote(String path) =>
+      '"${path.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"';
+
+  static Future<String?> _resolveVideo(String path) async {
+    if (!Platform.isAndroid) return null;
+    try {
+      final source = File(path);
+      if (!source.existsSync()) return null;
+      final modified = source.lastModifiedSync().millisecondsSinceEpoch;
+      var hash = 0x811c9dc5;
+      for (final code in path.codeUnits) {
+        hash = ((hash ^ code) * 0x01000193) & 0xffffffff;
+      }
+      final directory = Directory(
+        '${(await getTemporaryDirectory()).path}/folder_cover_previews',
+      );
+      await directory.create(recursive: true);
+      final poster = File(
+        '${directory.path}/${hash.toRadixString(16)}_$modified.jpg',
+      );
+      if (await poster.exists() && await poster.length() > 0) {
+        return poster.path;
+      }
+      final session = await FFmpegKit.execute(
+        '-hide_banner -loglevel error -y -ss 0.2 '
+        '-i ${_ffmpegQuote(path)} -frames:v 1 -vf scale=320:-2 '
+        '${_ffmpegQuote(poster.path)}',
+      );
+      final code = await session.getReturnCode();
+      return ReturnCode.isSuccess(code) &&
+              await poster.exists() &&
+              await poster.length() > 0
+          ? poster.path
+          : null;
+    } catch (_) {
+      // A corrupt or unsupported export should not break folder browsing.
+      return null;
+    }
+  }
+
+  static Future<String?> _videoFuture(String path) {
+    // The last modified timestamp forms part of the key so regenerated video
+    // content gets a new preview instead of reusing an outdated cached one.
+    int modified;
+    try {
+      modified = File(path).lastModifiedSync().millisecondsSinceEpoch;
+    } on FileSystemException {
+      return Future<String?>.value(null);
+    }
+    return _videoPreviews.putIfAbsent(
+      '$path:$modified',
+      () => _resolveVideo(path),
+    );
+  }
+
+  Widget _image(String filePath) => Image.file(
+    File(filePath),
+    key: ValueKey('folderCoverMedia_$filePath'),
+    fit: fit,
+    cacheWidth: cacheWidth,
+    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isVideo(path)) return _image(path);
+    return FutureBuilder<String?>(
+      future: _videoFuture(path),
+      builder: (context, snapshot) => snapshot.data == null
+          ? const SizedBox.shrink()
+          : _image(snapshot.data!),
+    );
+  }
+}
+
+/// Same sized preview surface as a work card. The actual image is clipped
+/// to the BODY of the folder symbol rather than covering the folder outline.
+class FolderThumbnail extends StatelessWidget {
+  const FolderThumbnail({
+    super.key,
+    required this.folder,
+    required this.choices,
+    this.defaultImagePath,
+  });
+  final ProjectFolder folder;
+  final List<FolderThumbnailChoice> choices;
+
+  /// Pre-resolved nested-folder fallback for the project collection.
+  final String? defaultImagePath;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = folder.color == null
+        ? Theme.of(context).colorScheme.primary
+        : Color(folder.color!);
+    final imagePath = folder.thumbnailMode == 'auto'
+        ? (defaultImagePath ?? folderThumbnailPath(folder, choices))
+        : folderThumbnailPath(folder, choices);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth.isFinite ? constraints.maxWidth : 56.0;
+        final h = constraints.maxHeight.isFinite ? constraints.maxHeight : 56.0;
+        final size = math.max(1.0, math.min(w, h) * 0.87);
+        final left = (w - size) / 2;
+        final top = (h - size) / 2;
+        return Stack(
+          clipBehavior: Clip.hardEdge,
+          children: [
+            Positioned.fill(
+              child: ColoredBox(color: color.withValues(alpha: 0.10)),
+            ),
+            Positioned(
+              left: left,
+              top: top,
+              width: size,
+              height: size,
+              child: Icon(Icons.folder_rounded, size: size, color: color),
+            ),
+            if (imagePath != null)
+              Positioned(
+                left: left + size * 0.17,
+                top: top + size * 0.36,
+                width: size * 0.68,
+                height: size * 0.43,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(size * 0.05),
+                  child: FolderCoverMedia(
+                    key: ValueKey('folderCover_${folder.id}_$imagePath'),
+                    path: imagePath,
+                    cacheWidth: 320,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+String _folderCoverText(BuildContext context, String key) {
+  final l10n = AppLocalizations.of(context)!;
+  return switch (key) {
+    'title' => l10n.thumbnailChangeAction,
+    'auto' => l10n.thumbnailDefaultLatestWork,
+    'none' => l10n.thumbnailHide,
+    'item' => l10n.thumbnailChooseWork,
+    'custom' => l10n.thumbnailChooseDeviceImage,
+    'select' => l10n.thumbnailChooseWorkInFolder,
+    'empty' => l10n.thumbnailFolderNoWorks,
+    'load' => l10n.thumbnailPickImage,
+    'apply' => l10n.commonApply,
+    'cancel' => l10n.commonCancel,
+    _ => l10n.thumbnailImageLoadFailed,
+  };
+}
+
+typedef SaveFolderThumbnail =
+    Future<void> Function({
+      required String mode,
+      String? sourceId,
+      String? imagePath,
+    });
+
+/// Four mutually exclusive radio choices. The custom image is copied into
+/// app-owned storage only after Apply, so Cancel does not mutate metadata.
+Future<void> showFolderThumbnailDialog(
+  BuildContext context, {
+  required ProjectFolder folder,
+  required List<FolderThumbnailChoice> choices,
+  required SaveFolderThumbnail onSave,
+}) async {
+  String mode = folder.thumbnailMode;
+  String? selectedId = folder.thumbnailSourceId;
+  String? customPath = folder.thumbnailImagePath;
+  Uint8List? pickedBytes;
+  String? pickedExtension;
+  String? pickedName;
+  bool saving = false;
+  String? failure;
+  // Most recently updated first, stable by title and id for equal timestamps.
+  final sortedChoices = [...choices]
+    ..sort((a, b) {
+      final updated = b.updatedAt.compareTo(a.updatedAt);
+      if (updated != 0) return updated;
+      final name = a.name.compareTo(b.name);
+      return name != 0 ? name : a.id.compareTo(b.id);
+    });
+
+  await showDialog<void>(
+    context: context,
+    builder: (dialogContext) => StatefulBuilder(
+      builder: (ctx, setState) => AlertDialog(
+        scrollable: true,
+        title: Text(_folderCoverText(ctx, 'title')),
+        content: SizedBox(
+          width: 400,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RadioGroup<String>(
+                groupValue: mode,
+                onChanged: (value) {
+                  if (value != null) setState(() => mode = value);
+                },
+                child: Column(
+                  children: [
+                    RadioListTile<String>(
+                      key: const Key('folderCoverAuto'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(_folderCoverText(ctx, 'auto')),
+                      value: 'auto',
+                    ),
+                    RadioListTile<String>(
+                      key: const Key('folderCoverItem'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(_folderCoverText(ctx, 'item')),
+                      value: 'item',
+                    ),
+                    RadioListTile<String>(
+                      key: const Key('folderCoverCustom'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(_folderCoverText(ctx, 'custom')),
+                      value: 'custom',
+                    ),
+                    RadioListTile<String>(
+                      key: const Key('folderCoverNone'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(_folderCoverText(ctx, 'none')),
+                      value: 'none',
+                    ),
+                  ],
+                ),
+              ),
+              // The panel below the four radios is the only changing part.
+              // The Cancel/Apply actions stay at the bottom of the dialog.
+              AnimatedSize(
+                duration: const Duration(milliseconds: 180),
+                alignment: Alignment.topCenter,
+                child: switch (mode) {
+                  'item' => Padding(
+                    key: const Key('folderCoverItemPanel'),
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _folderCoverText(ctx, 'select'),
+                          style: Theme.of(ctx).textTheme.labelMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        if (sortedChoices.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            child: Text(_folderCoverText(ctx, 'empty')),
+                          )
+                        else
+                          SizedBox(
+                            height: 262,
+                            child: LayoutBuilder(
+                              builder: (context, gridBounds) {
+                                final columns = gridBounds.maxWidth >= 390
+                                    ? 3
+                                    : 2;
+                                return GridView.builder(
+                                  key: const Key('folderCoverWorkGrid'),
+                                  primary: false,
+                                  shrinkWrap: false,
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: columns,
+                                        mainAxisSpacing: 8,
+                                        crossAxisSpacing: 8,
+                                        mainAxisExtent: 140,
+                                      ),
+                                  itemCount: sortedChoices.length,
+                                  itemBuilder: (context, index) {
+                                    final choice = sortedChoices[index];
+                                    final selected = selectedId == choice.id;
+                                    final scheme = Theme.of(ctx).colorScheme;
+                                    return Material(
+                                      key: ValueKey(
+                                        'folderCoverWorkTile_${choice.id}',
+                                      ),
+                                      color: selected
+                                          ? scheme.primaryContainer
+                                          : scheme.surfaceContainerLow,
+                                      borderRadius: BorderRadius.circular(10),
+                                      clipBehavior: Clip.antiAlias,
+                                      child: InkWell(
+                                        key: ValueKey(
+                                          'folderCoverSelect_${choice.id}',
+                                        ),
+                                        onTap: saving
+                                            ? null
+                                            : () => setState(
+                                                () => selectedId = choice.id,
+                                              ),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: selected
+                                                  ? scheme.primary
+                                                  : scheme.outlineVariant,
+                                              width: selected ? 2 : 1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              Expanded(
+                                                child: Stack(
+                                                  fit: StackFit.expand,
+                                                  children: [
+                                                    if (choice.imagePath !=
+                                                        null)
+                                                      FolderCoverMedia(
+                                                        path: choice.imagePath!,
+                                                        cacheWidth: 220,
+                                                      )
+                                                    else
+                                                      Icon(
+                                                        Icons.image_outlined,
+                                                        color: scheme
+                                                            .onSurfaceVariant,
+                                                        size: 30,
+                                                      ),
+                                                    if (selected)
+                                                      Positioned(
+                                                        top: 4,
+                                                        right: 4,
+                                                        child: Icon(
+                                                          Icons.check_circle,
+                                                          color: scheme.primary,
+                                                          size: 22,
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.all(
+                                                  6,
+                                                ),
+                                                child: Text(
+                                                  choice.name,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  'custom' => Padding(
+                    key: const Key('folderCoverCustomPanel'),
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        OutlinedButton.icon(
+                          key: const Key('folderCoverChooseImage'),
+                          onPressed: saving
+                              ? null
+                              : () async {
+                                  try {
+                                    final result = await FilePicker.platform
+                                        .pickFiles(
+                                          type: FileType.image,
+                                          withData: true,
+                                        );
+                                    if (result == null ||
+                                        result.files.isEmpty) {
+                                      return;
+                                    }
+                                    final picked = result.files.first;
+                                    final bytes =
+                                        picked.bytes ??
+                                        (picked.path != null
+                                            ? await File(
+                                                picked.path!,
+                                              ).readAsBytes()
+                                            : null);
+                                    if (bytes == null ||
+                                        bytes.isEmpty ||
+                                        bytes.lengthInBytes >
+                                            10 * 1024 * 1024) {
+                                      throw const FormatException(
+                                        'Invalid image size',
+                                      );
+                                    }
+                                    final ext =
+                                        picked.extension?.toLowerCase() ??
+                                        'png';
+                                    if (!const {
+                                      'png',
+                                      'jpg',
+                                      'jpeg',
+                                      'webp',
+                                      'gif',
+                                      'bmp',
+                                    }.contains(ext)) {
+                                      throw const FormatException(
+                                        'Unsupported image',
+                                      );
+                                    }
+                                    setState(() {
+                                      pickedBytes = bytes;
+                                      pickedName = picked.name;
+                                      pickedExtension = ext;
+                                      failure = null;
+                                    });
+                                  } catch (_) {
+                                    if (ctx.mounted) {
+                                      setState(
+                                        () => failure = _folderCoverText(
+                                          ctx,
+                                          'error',
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                          icon: const Icon(Icons.photo_library_outlined),
+                          label: Text(_folderCoverText(ctx, 'load')),
+                        ),
+                        if (pickedName != null) ...[
+                          Text(
+                            pickedName!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ] else if (customPath != null) ...[
+                          Text(
+                            customPath.split(Platform.pathSeparator).last,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        if (pickedBytes != null || customPath != null) ...[
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: pickedBytes != null
+                                ? Image.memory(
+                                    pickedBytes!,
+                                    key: const Key('folderCoverImagePreview'),
+                                    width: 112,
+                                    height: 72,
+                                    fit: BoxFit.cover,
+                                    cacheWidth: 224,
+                                  )
+                                : Image.file(
+                                    File(customPath!),
+                                    key: const Key('folderCoverImagePreview'),
+                                    width: 112,
+                                    height: 72,
+                                    fit: BoxFit.cover,
+                                    cacheWidth: 224,
+                                    errorBuilder: (_, _, _) =>
+                                        const SizedBox.shrink(),
+                                  ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  _ => const SizedBox.shrink(),
+                },
+              ),
+              if (failure != null)
+                Text(
+                  failure!,
+                  style: TextStyle(color: Theme.of(ctx).colorScheme.error),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: saving ? null : () => Navigator.pop(ctx),
+            child: Text(_folderCoverText(ctx, 'cancel')),
+          ),
+          FilledButton(
+            key: const Key('folderCoverApply'),
+            onPressed:
+                saving ||
+                    (mode == 'item' &&
+                        !choices.any((c) => c.id == selectedId)) ||
+                    (mode == 'custom' &&
+                        pickedBytes == null &&
+                        customPath == null)
+                ? null
+                : () async {
+                    setState(() => saving = true);
+                    try {
+                      String? path = mode == 'custom' ? customPath : null;
+                      if (mode == 'custom' && pickedBytes != null) {
+                        final dir = Directory(
+                          '${(await getApplicationSupportDirectory()).path}/folder_thumbnails',
+                        );
+                        await dir.create(recursive: true);
+                        final safeId = folder.id.replaceAll(
+                          RegExp(r'[^a-zA-Z0-9_-]'),
+                          '_',
+                        );
+                        final file = File(
+                          '${dir.path}/${safeId}_${DateTime.now().microsecondsSinceEpoch}.${pickedExtension ?? 'png'}',
+                        );
+                        await file.writeAsBytes(pickedBytes!, flush: true);
+                        path = file.path;
+                      }
+                      await onSave(
+                        mode: mode,
+                        sourceId: mode == 'item' ? selectedId : null,
+                        imagePath: path,
+                      );
+                      if (ctx.mounted) Navigator.pop(ctx);
+                    } catch (_) {
+                      if (ctx.mounted) {
+                        setState(() {
+                          saving = false;
+                          failure = _folderCoverText(ctx, 'error');
+                        });
+                      }
+                    }
+                  },
+            child: Text(_folderCoverText(ctx, 'apply')),
+          ),
+        ],
+      ),
+    ),
+  );
+}

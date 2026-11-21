@@ -1,0 +1,153 @@
+name: Stop obsolete screenshot runs
+
+# A one-time queue cleanup. Normal commits do not start this workflow.
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/stop-obsolete-screenshots.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  cancel-outdated:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Cancel obsolete push-triggered screenshot runs only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import time
+          from urllib.error import HTTPError
+          from urllib.parse import urlencode
+          from urllib.request import Request, urlopen
+
+          repository = os.environ['GITHUB_REPOSITORY']
+          own_id = int(os.environ['GITHUB_RUN_ID'])
+          token = os.environ['GH_TOKEN']
+          api_root = 'https://api.github.com/repos/' + repository
+
+          # These seven full-scope capture workflows are now manual-only.
+          bulk_names = {
+              'One-shot All Routes Screenshot Audit',
+              'Web Reference Capture',
+              'Requested UI All Captures',
+              'Functional Visual Audit',
+              'Five Updated UI Screenshots',
+              'NIARIM Latest UI & Playback Captures',
+              'Visual Smoke Test',
+          }
+          # Keep the newest active capture; older, superseded revisions are redundant.
+          latest_only_names = {
+              'Home four-tab menu screenshots',
+              'Thumbnail editor visual captures',
+              'Home empty folders and black outline visual proof',
+              'Floating button flat-outline regression and real screenshots',
+              'Community five-icon tabs visual matrix',
+              'Home folder-only and flat notification regression',
+              'Canvas color layer compact dock and live adjustment screenshots',
+              'Unified pen assets actual Flutter screens',
+              'Save snapshot and collection action controls verification',
+          }
+
+          def request(method, path):
+              req = Request(
+                  'https://api.github.com' + path,
+                  data=b'' if method == 'POST' else None,
+                  method=method,
+                  headers={
+                      'Authorization': 'Bearer ' + token,
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                      'User-Agent': 'NIARIM-obsolete-screenshot-run-cleanup',
+                  },
+              )
+              with urlopen(req, timeout=30) as response:
+                  raw = response.read()
+                  return json.loads(raw) if raw else {'status': response.status}
+
+          own = request('GET', '/repos/' + repository + '/actions/runs/' + str(own_id))
+          cutoff = own['created_at']
+          active = {}
+          for status in ('queued', 'in_progress', 'pending'):
+              for page in range(1, 12):
+                  params = urlencode({
+                      'branch': 'dev_branch',
+                      'status': status,
+                      'per_page': 100,
+                      'page': page,
+                  })
+                  response = request('GET', '/repos/' + repository + '/actions/runs?' + params)
+                  runs = response.get('workflow_runs', [])
+                  for run in runs:
+                      if (
+                          run.get('head_branch') == 'dev_branch'
+                          and run.get('event') == 'push'
+                          and run.get('created_at', '') < cutoff
+                          and run.get('id') != own_id
+                          and run.get('status') in ('queued', 'in_progress', 'pending')
+                      ):
+                          active[run['id']] = run
+                  if len(runs) < 100:
+                      break
+
+          latest = {}
+          for run in active.values():
+              name = run.get('name', '')
+              if name in latest_only_names:
+                  current = latest.get(name)
+                  if current is None or (run['created_at'], run['id']) > (
+                      current['created_at'], current['id']
+                  ):
+                      latest[name] = run
+
+          targets = [
+              run for run in active.values()
+              if run.get('name') in bulk_names
+              or (
+                  run.get('name') in latest_only_names
+                  and run['id'] != latest[run['name']]['id']
+              )
+          ]
+          targets.sort(key=lambda item: (item['name'], item['created_at']))
+          print('Active run inventory:', len(active))
+          print('Cancellation targets:', len(targets))
+          print('Protected newest targeted screenshots:', [
+              (name, run['id']) for name, run in sorted(latest.items())
+          ])
+          accepted = 0
+          skipped = 0
+          errors = []
+          for run in targets:
+              run_id = run['id']
+              try:
+                  result = request(
+                      'POST', '/repos/' + repository + '/actions/runs/'
+                      + str(run_id) + '/cancel',
+                  )
+                  accepted += 1
+                  print('Cancellation requested:', run_id, run['name'], result.get('status'))
+              except HTTPError as e:
+                  # A job may finish before the request reaches the API.
+                  if e.code in (404, 409, 422):
+                      skipped += 1
+                      print('Already stopped / not cancelable:', run_id, e.code)
+                  else:
+                      errors.append((run_id, e.code))
+                      print('Cancellation API error:', run_id, e.code)
+              time.sleep(0.15)
+
+          print('Summary: accepted=', accepted, 'already_finished=', skipped,
+                'errors=', errors)
+          if errors:
+              raise SystemExit('Some cancellation requests failed; see run IDs above.')
+          PY
