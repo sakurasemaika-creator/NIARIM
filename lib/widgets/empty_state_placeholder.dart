@@ -34,6 +34,10 @@ class EmptyStateSliver extends StatelessWidget {
           constraints.maxHeight - clearance,
         );
         return SingleChildScrollView(
+          // Keep this nested viewport independent of the outer list's
+          // PrimaryScrollController; fitting content still lets drag gestures
+          // fall through to the outer scroll view.
+          primary: false,
           child: Padding(
             padding: EdgeInsets.only(bottom: clearance),
             child: ConstrainedBox(
