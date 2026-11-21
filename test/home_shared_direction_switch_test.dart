@@ -315,6 +315,29 @@ void main() {
     await _close(tester);
   });
 
+  testWidgets('short shared header keeps its switch and sort row visible', (
+    tester,
+  ) async {
+    await _openShared(tester, size: const Size(640, 360), scale: 2);
+    final switchBounds = tester.getRect(_switch);
+    final sortBounds = tester.getRect(
+      find.byKey(const Key('homeCollectionSortHeader')),
+    );
+    expect(switchBounds.height, greaterThanOrEqualTo(48));
+    expect(
+      sortBounds.top,
+      greaterThanOrEqualTo(switchBounds.bottom - 0.5),
+      reason: 'The sort row must follow the direction switch without overlap.',
+    );
+    expect(
+      sortBounds.bottom,
+      lessThanOrEqualTo(360),
+      reason: 'The shared sort row must not extend below the short viewport.',
+    );
+    expect(tester.takeException(), isNull);
+    await _close(tester);
+  });
+
   testWidgets('as icons, the switch is reachable and usable by keyboard', (
     tester,
   ) async {
