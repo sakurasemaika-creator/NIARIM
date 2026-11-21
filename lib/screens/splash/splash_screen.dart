@@ -42,6 +42,27 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   bool _openingDestination = false;
+  GoRouter? _router;
+
+  // A pushed page can be replaced with context.go('/') instead of being
+  // popped. In that case the Future returned by context.push may never
+  // complete, so release the tap guard when the router returns to this route.
+  void _handleRouteChanged() {
+    if (!mounted) return;
+    if (_router?.routerDelegate.currentConfiguration.uri.path == '/') {
+      _openingDestination = false;
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final router = GoRouter.of(context);
+    if (identical(router, _router)) return;
+    _router?.routerDelegate.removeListener(_handleRouteChanged);
+    _router = router;
+    router.routerDelegate.addListener(_handleRouteChanged);
+  }
 
   Future<void> _openDestination(String route) async {
     if (_openingDestination) return;
@@ -49,8 +70,14 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       await context.push<void>(route);
     } finally {
-      _openingDestination = false;
+      if (mounted) _openingDestination = false;
     }
+  }
+
+  @override
+  void dispose() {
+    _router?.routerDelegate.removeListener(_handleRouteChanged);
+    super.dispose();
   }
 
   @override

@@ -3628,3 +3628,11 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - Run `44915474351`（Theme Rescue）と `44915474347`（YouTube Android build）のAnalyzerが、製品コードではなく `test/trash_confirm_korean_words_test.dart` の `InlineSpan.semanticsLabel` 参照で停止。Flutterの `RenderParagraph.text` は `InlineSpan` 型のため、`TextSpan` に絞り込んでからsemanticsLabelを検証する必要がある。併せてnullableでない `paragraph.text` への不要な `!` も除去。
 - 対応：テスト内で `final span = paragraph.text as TextSpan` とし、可視テキストと読み上げラベルの双方を同じspanから検証する。
 - この修正はTheme Rescue、YouTube Android build、Save safety/full analyzerの共通阻害要因を解消する見込み。各CIの再実行結果で確認する。
+
+
+### 2026-11-22 GPT追記 — 起動画面へ戻った後の導線ロック（DISC538）
+
+- 現行 `splash_screen.dart` を再確認。遷移開始時に `_openingDestination=true` とし、`context.push` のFuture完了まで解除しない実装が残っていた。ホーム/作品広場側の戻る操作は `context.go('/')` で履歴を置き換えるため、push Futureに依存した解除では再現条件を満たす。
+- 修正：GoRouterのrouterDelegate変更を監視し、現在のpathが `/` に戻った時点でタップガードを解除する。通常pop時のfinally解除も維持し、disposeでlistenerを解除。
+- 回帰テスト `test/splash_navigation_guard_test.dart` を追加。ホーム→go('/')→作品広場→go('/')→ホームの再遷移を実操作で検証する。
+- 製品修正は反映済み。最新HEADのFlutter regressionでテスト成功を確認するまでDISC538完了とはしない。
