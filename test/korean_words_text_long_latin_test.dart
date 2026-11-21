@@ -3,6 +3,24 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/widgets/korean_words_text.dart';
 
+int _lineCount(RenderParagraph paragraph) {
+  final painter = TextPainter(
+    text: paragraph.text,
+    textAlign: paragraph.textAlign,
+    textDirection: paragraph.textDirection,
+    textScaler: paragraph.textScaler,
+    maxLines: paragraph.maxLines,
+    locale: paragraph.locale,
+    strutStyle: paragraph.strutStyle,
+    textWidthBasis: paragraph.textWidthBasis,
+    textHeightBehavior: paragraph.textHeightBehavior,
+  );
+  painter.layout(maxWidth: paragraph.size.width);
+  final count = painter.computeLineMetrics().length;
+  painter.dispose();
+  return count;
+}
+
 const _longName =
     'NIARIMÉcoleCafe\u0301AnimationStudioFolderNameWithoutSpaces'
     '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
@@ -64,9 +82,9 @@ void main() {
             );
             final where = '${locale.toLanguageTag()} ${width}px x$scale';
             expect(displayed, contains('\u200B'), reason: where);
-            expect(paragraph.text!.semanticsLabel, _longName, reason: where);
+            expect((paragraph.text! as TextSpan).semanticsLabel, _longName, reason: where);
             expect(
-              paragraph.computeLineMetrics().length,
+              _lineCount(paragraph),
               greaterThan(1),
               reason: where,
             );
@@ -113,7 +131,7 @@ void main() {
       paragraph.text!.toPlainText(includeSemanticsLabels: false),
       'My Folder',
     );
-    expect(paragraph.text!.semanticsLabel, isNull);
+    expect((paragraph.text! as TextSpan).semanticsLabel, isNull);
     expect(tester.takeException(), isNull);
   });
   testWidgets(
@@ -154,8 +172,8 @@ void main() {
         includeSemanticsLabels: false,
       );
       expect(displayed, contains('\u200B'));
-      expect(paragraph.text!.semanticsLabel, name);
-      expect(paragraph.computeLineMetrics().length, greaterThan(1));
+      expect((paragraph.text! as TextSpan).semanticsLabel, name);
+      expect(_lineCount(paragraph), greaterThan(1));
       final boxes = paragraph.getBoxesForSelection(
         TextSelection(baseOffset: 0, extentOffset: displayed.length),
       );
@@ -209,8 +227,8 @@ void main() {
       expect(displayed, contains('\u200B'));
       expect(displayed, contains('copy'));
       expect(displayed, contains('2'));
-      expect(paragraph.text!.semanticsLabel, name);
-      expect(paragraph.computeLineMetrics().length, greaterThan(1));
+      expect((paragraph.text! as TextSpan).semanticsLabel, name);
+      expect(_lineCount(paragraph), greaterThan(1));
       final boxes = paragraph.getBoxesForSelection(
         TextSelection(baseOffset: 0, extentOffset: displayed.length),
       );
