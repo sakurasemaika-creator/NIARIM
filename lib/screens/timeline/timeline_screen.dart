@@ -4972,7 +4972,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _centerFrameInList();
   }
 
-  static const double _trackLabelWidth = 64;
+  static const double _trackLabelWidth = 72;
 
   BoxDecoration get _trackRowDivider => BoxDecoration(
     border: Border(
@@ -4985,27 +4985,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   Widget _buildTrackLabel(IconData icon, String label) {
     return Container(
-      // 56dpだとアイコン12＋間隔2＋左右の余白8を引いて文字に34dpしか
-      // 残らず、9ptの「フレーム」（約36px）が「フレ…」に切れていた。
-      // 実キャプチャ（build/all-route-screenshots/05_timeline.png）で
-      // 発覚。`test/timeline_track_label_test.dart`が再発を見張る。
+      // 文字が切れないだけでなく、スマートフォンでも読みやすいサイズを確保する。
+      // 72dpの欄にアイコン14dp・間隔4dp・左右余白6dpを取り、11dpのラベルを置く。
+      // 320dp幅でもフレーム領域を大きく圧迫しない。
       width: _trackLabelWidth,
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: Row(
         children: [
           Icon(
             icon,
-            size: 12,
+            size: 14,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: 4),
           Flexible(
             child: Text(
               label,
               style: localizedHeadingStyle(
                 context,
                 TextStyle(
-                  fontSize: 9,
+                  fontSize: 11,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
