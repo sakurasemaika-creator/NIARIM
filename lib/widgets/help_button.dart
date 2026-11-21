@@ -16,13 +16,25 @@ class HelpButton extends StatelessWidget {
   // keep their existing Material styling unless explicitly opted in.
   final Color? iconColor;
   final List<Shadow>? iconShadows;
-  const HelpButton({super.key, this.topic, this.iconColor, this.iconShadows});
+  final double iconSize;
+  const HelpButton({
+    super.key,
+    this.topic,
+    this.iconColor,
+    this.iconShadows,
+    this.iconSize = 24,
+  });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return IconButton(
-      icon: Icon(Icons.help_outline, color: iconColor, shadows: iconShadows),
+      icon: Icon(
+        Icons.help_outline,
+        color: iconColor,
+        shadows: iconShadows,
+        size: iconSize,
+      ),
       tooltip: l10n.layerPanelHelpTooltip,
       onPressed: () => context.push(
         topic == null ? '/help' : '/help?topic=${Uri.encodeComponent(topic!)}',
