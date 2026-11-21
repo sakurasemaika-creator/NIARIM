@@ -300,7 +300,7 @@ void main() {
     ], reason: 'GIF signature');
     expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
     await capture(tester, name: 'webref_export_complete.png');
-    final openWorks = find.widgetWithText(OutlinedButton, l10n.exportOpenWorks);
+    final openWorks = find.widgetWithText(FilledButton, l10n.exportOpenWorks);
     await tester.ensureVisible(openWorks);
     await tester.tap(openWorks);
     await tester.runAsync(() async {
