@@ -65,10 +65,11 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _openDestination(String route) async {
-    if (_openingDestination) return;
+    final router = _router;
+    if (_openingDestination || router == null) return;
     _openingDestination = true;
     try {
-      await context.push<void>(route);
+      await router.push<void>(route);
     } finally {
       if (mounted) _openingDestination = false;
     }
