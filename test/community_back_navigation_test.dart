@@ -56,11 +56,18 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    final communityContext = tester.element(find.byType(CommunityScreen));
+    final preview = communityContext.read<CommunityPreviewService>();
+    preview.show(community.works.first);
+    await tester.pump();
+    expect(preview.work, isNotNull);
+
     final back = find.byKey(const Key('communityBackToSplashButton'));
     expect(back, findsOneWidget);
     expect(find.byIcon(Icons.arrow_back), findsOneWidget);
     await tester.tap(back);
     await tester.pumpAndSettle();
+    expect(preview.work, isNull);
     expect(find.text('launch-route-marker'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
