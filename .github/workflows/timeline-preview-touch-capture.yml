@@ -7,6 +7,7 @@ on:
       - '.github/workflows/timeline-preview-touch-capture.yml'
       - 'lib/screens/timeline/timeline_screen.dart'
       - 'test/timeline_preview_controls_test.dart'
+      - 'test/timeline_track_label_test.dart'
   workflow_dispatch:
 
 permissions:
@@ -30,11 +31,13 @@ jobs:
       - name: Generate localizations
         run: flutter gen-l10n
       - name: Format check
-        run: dart format --output=none --set-exit-if-changed lib/screens/timeline/timeline_screen.dart test/timeline_preview_controls_test.dart
+        run: dart format --output=none --set-exit-if-changed lib/screens/timeline/timeline_screen.dart test/timeline_preview_controls_test.dart test/timeline_track_label_test.dart
       - name: Compact preview touch-target test and captures
         run: flutter test test/timeline_preview_controls_test.dart --plain-name "preview fullscreen button keeps a 48dp hit target on compact large text" --reporter expanded
+      - name: Verify timeline track labels remain readable
+        run: flutter test test/timeline_track_label_test.dart --reporter expanded
       - name: Analyze changed Dart files
-        run: flutter analyze --no-pub lib/screens/timeline/timeline_screen.dart test/timeline_preview_controls_test.dart --no-fatal-infos --no-fatal-warnings
+        run: flutter analyze --no-pub lib/screens/timeline/timeline_screen.dart test/timeline_preview_controls_test.dart test/timeline_track_label_test.dart --no-fatal-infos --no-fatal-warnings
       - name: Confirm timeline preview captures were produced
         run: test -n "$(find build/timeline-preview-ui-captures -type f -name '*.png' -print -quit)"
       - name: Upload compact preview captures
