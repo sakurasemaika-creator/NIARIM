@@ -181,12 +181,12 @@ String _breakOversizedLatinTokens(
   required TextStyle style,
   required double maxWidth,
 }) => text.splitMapJoin(
-  RegExp(r'[\\p{Script=Latin}\\p{M}\\p{N}]+', unicode: true),
+  RegExp(r'[\p{Script=Latin}\p{M}\p{N}]+', unicode: true),
   onMatch: (match) {
     final token = match[0]!;
     painter
       ..text = TextSpan(text: token, style: style)
       ..layout();
-    return painter.width <= maxWidth ? token : token.characters.join('\\u200B');
+    return painter.width <= maxWidth ? token : token.characters.join('\u200B');
   },
 );
