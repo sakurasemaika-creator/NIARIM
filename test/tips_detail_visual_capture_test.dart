@@ -7,8 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/tips/tips_screen.dart';
-import 'package:niarim/screens/tips/tip_capture_data.dart';
-import 'package:niarim/screens/tips/tip_diagram_data.dart';
 import 'package:niarim/screens/tips/tip_screen_capture.dart';
 import 'package:niarim/services/theme_service.dart';
 
