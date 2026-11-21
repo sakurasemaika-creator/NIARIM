@@ -4,6 +4,7 @@ on:
     branches: [dev_branch]
     paths:
       - 'lib/screens/home/widgets/project_list_widget.dart'
+      - 'lib/screens/home/home_screen.dart'
       - 'lib/widgets/korean_words_text.dart'
       - 'test/korean_words_text_long_latin_test.dart'
       - 'lib/screens/premium/premium_screen.dart'
@@ -52,6 +53,7 @@ jobs:
       - run: >
           flutter analyze --no-pub
           lib/screens/home/widgets/project_list_widget.dart lib/screens/premium/premium_screen.dart
+          lib/screens/home/home_screen.dart
           lib/widgets/empty_state_placeholder.dart lib/widgets/background_color_picker.dart
           lib/widgets/korean_words_text.dart
           lib/screens/help/help_screen.dart lib/screens/project/new_project_screen.dart lib/screens/export/export_screen.dart
@@ -61,11 +63,13 @@ jobs:
         run: flutter test --no-pub --reporter expanded test/korean_words_text_long_latin_test.dart
       - name: Verify empty-state sliver scrolling without intrinsic layout failures
         run: flutter test --no-pub --reporter expanded test/empty_state_placeholder_test.dart
+      - name: Verify compact home toolbar edge spacing and search controls
+        run: flutter test --no-pub --reporter expanded test/home_small_fixes_test.dart
       - name: Verify choosing a format and opening export help from the timeline
         run: flutter test --no-pub --reporter expanded test/export_filename_test.dart test/export_share_notice_test.dart test/export_video_failure_cleanup_test.dart test/app_web_reference_export_exact_test.dart
       - run: >
           flutter test --no-pub --reporter expanded
-          test/home_a003_visual_findings_test.dart test/home_small_fixes_test.dart
+          test/home_a003_visual_findings_test.dart
           test/home_filtered_empty_states_test.dart
           test/premium_screen_price_test.dart test/premium_comparison_table_test.dart test/premium_checkout_retry_test.dart
           test/new_project_inputs_test.dart test/background_color_picker_test.dart
