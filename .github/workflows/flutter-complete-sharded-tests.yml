@@ -58,12 +58,13 @@ on:
       - "l10n.yaml"
       - "analysis_options.yaml"
       - "android/**"
+      - ".github/workflows/flutter-complete-sharded-tests.yml"
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
   group: niarim-full-shards-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   analyze:
     if: github.ref == 'refs/heads/dev_branch'
