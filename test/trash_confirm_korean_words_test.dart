@@ -137,7 +137,7 @@ void main() {
           message:
               '${l10n.homePermanentDeleteConfirmBody}\n'
               '${l10n.homeProjectsLoadFailed}',
-          confirmLabel: l10n.commonDelete,
+          confirmLabel: l10n.homePermanentDelete,
           itemNames: [name, '$name 2'],
           onApply: () async {},
         ),
@@ -195,6 +195,54 @@ void main() {
       expect(problems, isEmpty, reason: '${problems.length} problems');
     });
   }
+
+  testWidgets(
+    'an oversized French permanent-delete label wraps without changing semantics',
+    (tester) async {
+      await fonts(tester);
+      const locale = Locale('fr');
+      final l10n = lookupAppLocalizations(locale);
+      final context = await _pumpHost(tester, locale);
+      tester.view.physicalSize = const Size(320, 740);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+
+      showDialog<void>(
+        context: context,
+        builder: (_) => ProjectTrashDialog(
+          title: l10n.homePermanentDeleteConfirmTitle,
+          message: l10n.homePermanentDeleteConfirmBody,
+          confirmLabel: l10n.homePermanentDelete,
+          itemNames: const ['Storyboard practice'],
+          onApply: () async {},
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final confirm = find.byKey(const Key('trash-dialog-confirm'));
+      final label = find.descendant(
+        of: confirm,
+        matching: find.byType(RichText),
+      );
+      expect(label, findsOneWidget);
+      final paragraph = tester.renderObject<RenderParagraph>(label);
+      final displayed = paragraph.text!.toPlainText(
+        includeSemanticsLabels: false,
+      );
+      expect(displayed, contains('\\u200B'));
+      expect(paragraph.text!.semanticsLabel, l10n.homePermanentDelete);
+      final boxes = paragraph.getBoxesForSelection(
+        TextSelection(baseOffset: 0, extentOffset: displayed.length),
+      );
+      expect(boxes, isNotEmpty);
+      expect(
+        boxes.every((box) => box.right <= paragraph.size.width + 0.5),
+        isTrue,
+        reason: 'The long French label must stay inside the confirm button.',
+      );
+      expect(tester.takeException(), isNull);
+      await _close(tester);
+    },
+  );
 
   testWidgets('a Korean body is read as the plain sentence', (tester) async {
     await fonts(tester);

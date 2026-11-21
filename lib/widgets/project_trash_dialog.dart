@@ -8,6 +8,7 @@ import '../utils/line_break.dart';
 import 'app_toast_messenger.dart';
 import 'copy_name_text.dart';
 import 'keep_together_text.dart';
+import 'korean_words_text.dart';
 import 'typing_dialog_inset.dart';
 
 // 読めていない作品があって断られたときは、読み込めていないことを伝える
@@ -28,10 +29,11 @@ String _failureText(AppLocalizations l10n, Object? failure) =>
 /// 元の文。2行以上に折れたときの上下の余白は、ボタンのテーマ（ラベルの
 /// 余白、`buttonLabelRoomBuilder`）が字の描かれる所から取る（ここでも空けると
 /// 二重になる）。1行のときはボタンの高さの下限（48）のまま。
-Widget trashConfirmLabelText(String label) {
-  final shown = keepKoreanWordsTogether(label);
-  return Text(shown, semanticsLabel: plainSemanticsLabel(shown));
-}
+Widget trashConfirmLabelText(String label) => KoreanWordsText(
+  label,
+  keepJapaneseLineStarts: true,
+  breakLongLatinWords: true,
+);
 
 /// [showProjectActionFailure]が出した失敗の知らせの印（閉じるときに、他の
 /// 機能の知らせと見分ける）。知らせごとに別のキーになる。
