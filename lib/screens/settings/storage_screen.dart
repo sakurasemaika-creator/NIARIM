@@ -1115,7 +1115,11 @@ class _StorageScreenState extends State<StorageScreen> {
         iconColor: foreground,
         textColor: foreground,
         // 括弧の中（「（初期化）」等）は行の途中で切らない。
-        title: messageText(title, keep: _bracketedWords(title)),
+        // Keep only explicit bracketed phrases. messageText also keeps every
+        // Korean word, which can add an unnecessary line in compact layouts.
+        // KeepTogetherText still keeps a closing bracket with the preceding
+        // character when the full bracketed phrase does not fit.
+        title: KeepTogetherText(title, keep: _bracketedWords(title)),
         subtitle: subtitle == null
             ? null
             : Text(
