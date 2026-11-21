@@ -28,6 +28,24 @@ import 'helpers/color_channels.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
+Future<void> _captureProjectDetail(
+  WidgetTester tester,
+  GlobalKey boundaryKey,
+  String name,
+) async {
+  final boundary = tester.renderObject<RenderRepaintBoundary>(
+    find.byKey(boundaryKey),
+  );
+  final image = await boundary.toImage(pixelRatio: 1);
+  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  final directory = Directory('build/project-detail-ui-captures')
+    ..createSync(recursive: true);
+  File('${directory.path}/$name.png').writeAsBytesSync(
+    bytes!.buffer.asUint8List(),
+  );
+  image.dispose();
+}
+
 /// ゴミ箱の記録の書き込みを、[rejectTrash]の間だけ断る保存先。
 class _TrashRejectingStore extends InMemorySharedPreferencesStore {
   _TrashRejectingStore()
@@ -118,6 +136,7 @@ void main() {
     int exportHeight = 32,
     List<Color> colors = const [],
     String language = 'ja',
+    GlobalKey? captureKey,
     void Function(ProjectService service, String id)? prepare,
   }) async {
     tester.view.physicalSize = size;
@@ -125,8 +144,14 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final providers = (await tester.runAsync(buildAppProviders))!;
+    final app = MultiProvider(
+      providers: providers,
+      child: const NiarimApp(),
+    );
     await tester.pumpWidget(
-      MultiProvider(providers: providers, child: const NiarimApp()),
+      captureKey == null
+          ? app
+          : RepaintBoundary(key: captureKey, child: app),
     );
     await settle(tester);
     final context = tester.element(find.byType(Scaffold).first);
@@ -449,6 +474,49 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'fullscreen preview control keeps a 48dp hit target on compact screens',
+    (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final captureKey = GlobalKey();
+      await open(
+        tester,
+        size: const Size(320, 640),
+        language: 'fr',
+        captureKey: captureKey,
+      );
+
+      final button = find.byKey(const Key('projectDetailFullscreenButton'));
+      expect(button, findsOneWidget);
+      expect(tester.getSize(button), const Size(48, 48));
+      final rect = tester.getRect(button);
+      expect(rect.left, greaterThanOrEqualTo(0));
+      expect(rect.right, lessThanOrEqualTo(320));
+      expect(rect.top, greaterThanOrEqualTo(0));
+      expect(rect.bottom, lessThanOrEqualTo(640));
+      expect(button.hitTestable(), findsOneWidget);
+      await _captureProjectDetail(
+        tester,
+        captureKey,
+        'project_detail_preview_320_fr_200',
+      );
+
+      await tester.tap(button);
+      await settle(tester);
+      expect(
+        find.byKey(const Key('projectDetailFullscreenImage')),
+        findsOneWidget,
+      );
+      await _captureProjectDetail(
+        tester,
+        captureKey,
+        'project_detail_fullscreen_320_fr_200',
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('the seek track reaches both edges of the preview', (
     tester,
   ) async {
@@ -613,6 +681,9 @@ void main() {
         matching: find.text(label),
       );
       expect(finder, findsOneWidget, reason: label);
+      final labelWidget = tester.widget<Text>(finder);
+      expect(labelWidget.style?.fontSize, 13);
+      expect(labelWidget.style?.height, 1.25);
       final paragraph = tester.renderObject<RenderParagraph>(finder);
       final text = paragraph.text.toPlainText();
       // 1つの語の文字の箱がすべて同じ行にあれば、語の途中で折れていない。

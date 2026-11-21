@@ -837,11 +837,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               child: IconButton(
                 key: const Key('projectDetailFullscreenButton'),
                 padding: EdgeInsets.zero,
+                // Fullscreen is a frequent preview action: retain a 48dp hit
+                // target even though the glyph itself stays visually compact.
                 constraints: const BoxConstraints.tightFor(
-                  width: 32,
-                  height: 32,
+                  width: 48,
+                  height: 48,
                 ),
-                visualDensity: VisualDensity.compact,
                 icon: Icon(
                   Icons.fullscreen,
                   color: theme.menuTextColor,
@@ -1240,7 +1241,7 @@ class _QuickActionsRow extends StatelessWidget {
 
   final List<_QuickAction> children;
 
-  static const _labelStyle = TextStyle(fontSize: 12);
+  static const _labelStyle = TextStyle(fontSize: 13, height: 1.25);
 
   // 空白・改行で区切った1つ1つを、折らずに1行に収める語として測る。漢字・
   // かなの語も同じ（字の間で折ると「ループ再/生」「フォル/ダ」になった）。
