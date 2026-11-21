@@ -43,3 +43,12 @@ The folder detail-row title uses `KoreanWordsText`. Its non-Hangul path previous
 ## Status
 
 Implementation and source re-fetch are confirmed on `dev_branch`. Flutter regression suite run `44881246086` targets checkpoint `3a1e6ca6` and was pending with no jobs reported at the time of recording. Run `44881226017` for the preceding checkpoint was also pending. The workflow now queues full regression runs rather than cancelling pending runs. Do not mark DISC145 complete until current CI and targeted tests pass, the relevant SP/PC layouts and screen-reader output are visually/operationally checked, and the remaining discovery scope is reconciled.
+
+
+## 2026-11-21 follow-up — dedicated CI and regression hardening
+
+- `project-and-plan-usability.yml` now includes `lib/widgets/korean_words_text.dart` and `test/korean_words_text_long_latin_test.dart` in its path filters and analyzer scope, with a dedicated DISC145 test step immediately after analysis so unrelated project-suite failures cannot skip it.
+- Test compatibility was corrected for Flutter 3.47.2: semantics labels are searched recursively through nested `InlineSpan` / `TextSpan` children; line counts are measured through a configured `TextPainter`; invisible U+200B zero-width breaks and U+2060 word joiners are removed only for visible-text equality assertions.
+- Current Project, canvas and plan usability Run `44913593458` (HEAD `e6985a5e8e28b78999784577d0981907b14cd38d`) has passed analysis, the dedicated DISC145 test, empty-state sliver regression, compact home toolbar spacing regression, timeline-to-export regression, and the grouped home/premium/localization test batch. The project-selection/card/quick-tool batch is still in progress at this evidence update; this is not the full workflow result.
+- Product fixes verified in the same run: `Center(heightFactor: 1)` keeps the Community post body viewport nonzero; `SliverFillRemaining(hasScrollBody: true)` avoids unsupported intrinsic measurement for the nested scroll view; `ScrollPosition.hasContentDimensions` is checked before reading `minScrollExtent`; compact Projects tab title/search controls use 12px while other tabs preserve 16px.
+- Full Flutter regression Run `44913593121` is pending with no jobs created at the time of this note. Android/DeX physical-device, screenshot comparison, and TalkBack/VoiceOver checks remain outstanding. DISC145 remains implementation + CI-verified, but not formally complete until full regression and device/accessibility verification are done.
