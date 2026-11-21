@@ -1197,7 +1197,7 @@ class _FilterPanelState extends State<FilterPanel> {
                   // Keep the favorite on the leading edge of the filter-name row.
                   PositionedDirectional(
                     start: 4,
-                    bottom: 3,
+                    bottom: 0,
                     child: IconButton(
                       key: ValueKey('filter-favorite-${filter.id}'),
                       padding: EdgeInsets.zero,
