@@ -3551,3 +3551,13 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - Run `44911728132` の3件の失敗は、投稿フォーム内の実装ではなくテストhelper `revealForTap` が存在しない `SingleChildScrollView` を `.first` で取得していたことによる `Bad state: No element`。同runではテスト画面を390×2400 logical pxに設定済みで、対象フォームは通常のスクロール可視化で扱える。
 - 対応：存在しないScrollView finderと診断printを削除し、`tester.ensureVisible(target)` → pump → finder存在確認に整理。投稿フォーム本体は変更しない。
 - 次の専用回帰で再確認し、合格までは未完了のまま保持する。
+
+
+### 2026-11-21 GPT追記 — Community投稿画面の本文0pxレイアウト修正・専用CI成功
+
+- Run `44911868425`（HEAD `df0490fb`）で診断した結果、投稿フォームの `SingleChildScrollView` は `390×2400` のviewに対して `390×0` となっていた。ラジオ・Switch・保留アップロード破棄のtap失敗は、テスト画面が小さいからではなく本文viewportが0pxであることが直接原因。
+- 製品修正：`lib/screens/community/community_post_screen.dart` の下部固定投稿バーで `Center(heightFactor: 1)` を指定し、ボタン内容に必要な高さだけを使うようにした。無制約のCenterが縦方向へ広がってScaffold本文を押しつぶす経路を防止。
+- 回帰修正：`test/community_filter_surfaces_test.dart` を390×844の実用的なphone viewportへ変更。フォーム本文viewportが0より大きいことをassertし、`tester.ensureVisible` で実スクロールして公開範囲とAI申告Switchを操作する。破棄ボタンは製品実装どおりTextButtonで検索し、保持中にdisabledな非公開Radioはtapせずdisabled contractを確認。
+- 専用Community/FCM regression Run `44912055795`（HEAD `6d5db41c1efce6c1a16b4465b92e712c2ffc7854`）は成功。投稿フォームの回帰工程、simulated FCM payload工程、3 regression filesのanalyzeがすべてsuccess。Run: https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44912055795
+- 同HEADのFlutter complete regression Run `44912055793` はpendingでjobs未生成。全体CI合格とは扱わない。DISC145の長いLatin folder wrap testも全体suiteの実行結果待ち。SP/PCの実画面・Android/DeX実機・スクリーンリーダーの確認は未実施で、DISC145は未完了。
+- Cloudflare policy確認：Web policy commit `789e6098543338a78d94fecfc60f8e38e9765160` は `2026-11-21T10:55:50Z`。40秒後の `10:56:30Z` に既存Worker `niarim-web` でdeployment `8b106eea-41d6-43d1-91e6-933c7d807450` / version `62857f27-e8f9-49c6-bf01-3e58804e4dc6` が作成され、traffic 100%。Version metadata `SITE_ORIGIN` は依然 `https://niarim-web.niarim.workers.dev`。公開URLの実ブラウザ確認はできていないため、公開動作成功とは判定しない。DISC557の正規domain判断は別途所有者判断待ち。
