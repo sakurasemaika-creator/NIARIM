@@ -517,46 +517,40 @@ void main() {
     await home.close();
   });
 
-  testWidgets(
-    'DISC145 フランス語の長いフォルダ名は詳細行で幅内に折り返す',
-    (tester) async {
-      final home = _Home(tester);
-      const parentName = 'Archive';
-      const name = 'Storyboards (2)';
-      await home.open(
-        language: 'fr',
-        size: const Size(320, 844),
-        scale: 2,
-        prefs: {'home.projectViewMode.v1': 'detail'},
-      );
-      await home.addFolder(parentName);
-      final parent = home.projects.folders.singleWhere(
-        (folder) => folder.name == parentName,
-      );
-      await tester.runAsync(
-        () => home.projects.createFolder(name, parentFolderId: parent.id),
-      );
-      await home.frames(12);
-      final parentRow = find.text(parentName, findRichText: true);
-      expect(parentRow, findsOneWidget);
-      await tester.tap(parentRow);
-      await home.frames(12);
-      final rowText = find.text(name, findRichText: true);
-      final row = find.ancestor(of: rowText, matching: find.byType(ListTile));
-      expect(row, findsOneWidget);
-      final paragraph = _paragraph(tester, rowText);
-      final lines = ParagraphLines(paragraph);
-      expect(lines.lines.length, greaterThan(1));
-      expect(
-        lines.visible.replaceAll(RegExp('[\\u200B\\u2060]'), ''),
-        name,
-      );
-      expect(lines.charsOutsideWidth(), isEmpty);
-      expect(lines.lineEdgeViolations(), isEmpty);
-      expect(tester.takeException(), isNull);
-      await home.close();
-    },
-  );
+  testWidgets('DISC145 フランス語の長いフォルダ名は詳細行で幅内に折り返す', (tester) async {
+    final home = _Home(tester);
+    const parentName = 'Archive';
+    const name = 'Storyboards (2)';
+    await home.open(
+      language: 'fr',
+      size: const Size(320, 844),
+      scale: 2,
+      prefs: {'home.projectViewMode.v1': 'detail'},
+    );
+    await home.addFolder(parentName);
+    final parent = home.projects.folders.singleWhere(
+      (folder) => folder.name == parentName,
+    );
+    await tester.runAsync(
+      () => home.projects.createFolder(name, parentFolderId: parent.id),
+    );
+    await home.frames(12);
+    final parentRow = find.text(parentName, findRichText: true);
+    expect(parentRow, findsOneWidget);
+    await tester.tap(parentRow);
+    await home.frames(12);
+    final rowText = find.text(name, findRichText: true);
+    final row = find.ancestor(of: rowText, matching: find.byType(ListTile));
+    expect(row, findsOneWidget);
+    final paragraph = _paragraph(tester, rowText);
+    final lines = ParagraphLines(paragraph);
+    expect(lines.lines.length, greaterThan(1));
+    expect(lines.visible.replaceAll(RegExp('[\\u200B\\u2060]'), ''), name);
+    expect(lines.charsOutsideWidth(), isEmpty);
+    expect(lines.lineEdgeViolations(), isEmpty);
+    expect(tester.takeException(), isNull);
+    await home.close();
+  });
 
   testWidgets('一覧が空なら「一番上へ」は出さない（送る先が無い）', (tester) async {
     final home = _Home(tester);
