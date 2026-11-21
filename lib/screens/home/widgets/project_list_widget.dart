@@ -841,8 +841,17 @@ class ProjectListWidget extends StatelessWidget {
   Widget _folderDetailTile(BuildContext context, ProjectFolder folder) {
     final isSelected = selectedIds.contains(folder.id);
     final thumb = collectionDetailThumbExtent(context, 48);
+    final compactLargeTextLayout =
+        !isSelectionMode &&
+        onPickProject == null &&
+        MediaQuery.sizeOf(context).width <= 360 &&
+        MediaQuery.textScalerOf(context).scale(1) >= 1.5;
     return ListTile(
       minTileHeight: collectionDetailMinRowHeight(thumb, 48),
+      contentPadding: compactLargeTextLayout
+          ? const EdgeInsets.symmetric(horizontal: 8)
+          : null,
+      horizontalTitleGap: compactLargeTextLayout ? 8 : 16,
       leading: isSelectionMode
           ? Checkbox(
               value: isSelected,
@@ -883,6 +892,7 @@ class ProjectListWidget extends StatelessWidget {
       ),
       trailing: (!isSelectionMode && onPickProject == null)
           ? CollectionActionRow(
+              direction: compactLargeTextLayout ? Axis.vertical : Axis.horizontal,
               children: [
                 CollectionFavoriteButton(
                   itemId: folder.id,
