@@ -59,12 +59,14 @@ jobs:
           lib/screens/canvas/widgets/toolbar_widget.dart lib/widgets/collection_action_controls.dart
       - name: Verify long Latin folder names at narrow widths and large text scales (DISC145)
         run: flutter test --no-pub --reporter expanded test/korean_words_text_long_latin_test.dart
+      - name: Verify empty-state sliver scrolling without intrinsic layout failures
+        run: flutter test --no-pub --reporter expanded test/empty_state_placeholder_test.dart
       - name: Verify choosing a format and opening export help from the timeline
         run: flutter test --no-pub --reporter expanded test/export_filename_test.dart test/export_share_notice_test.dart test/export_video_failure_cleanup_test.dart test/app_web_reference_export_exact_test.dart
       - run: >
           flutter test --no-pub --reporter expanded
           test/home_a003_visual_findings_test.dart test/home_small_fixes_test.dart
-          test/home_filtered_empty_states_test.dart test/empty_state_placeholder_test.dart
+          test/home_filtered_empty_states_test.dart
           test/premium_screen_price_test.dart test/premium_comparison_table_test.dart test/premium_checkout_retry_test.dart
           test/new_project_inputs_test.dart test/background_color_picker_test.dart
           test/l10n_locales_not_left_in_english_test.dart test/help_topic_search_text_test.dart
