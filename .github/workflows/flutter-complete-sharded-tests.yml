@@ -62,6 +62,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+# Keep an active full-suite run intact; only the newest pending HEAD needs to wait.
 concurrency:
   group: niarim-full-shards-${{ github.ref }}
   cancel-in-progress: false
