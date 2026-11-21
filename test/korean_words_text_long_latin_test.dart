@@ -3,6 +3,16 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/widgets/korean_words_text.dart';
 
+String? _semanticsLabel(InlineSpan span) {
+  if (span is! TextSpan) return null;
+  if (span.semanticsLabel != null) return span.semanticsLabel;
+  for (final child in span.children ?? const <InlineSpan>[]) {
+    final label = _semanticsLabel(child);
+    if (label != null) return label;
+  }
+  return null;
+}
+
 int _lineCount(RenderParagraph paragraph) {
   final painter = TextPainter(
     text: paragraph.text,
@@ -82,7 +92,7 @@ void main() {
             );
             final where = '${locale.toLanguageTag()} ${width}px x$scale';
             expect(displayed, contains('\u200B'), reason: where);
-            expect((paragraph.text! as TextSpan).semanticsLabel, _longName, reason: where);
+            expect(_semanticsLabel(paragraph.text!), _longName, reason: where);
             expect(
               _lineCount(paragraph),
               greaterThan(1),
@@ -131,7 +141,7 @@ void main() {
       paragraph.text!.toPlainText(includeSemanticsLabels: false),
       'My Folder',
     );
-    expect((paragraph.text! as TextSpan).semanticsLabel, isNull);
+    expect(_semanticsLabel(paragraph.text!), isNull);
     expect(tester.takeException(), isNull);
   });
   testWidgets(
@@ -172,7 +182,7 @@ void main() {
         includeSemanticsLabels: false,
       );
       expect(displayed, contains('\u200B'));
-      expect((paragraph.text! as TextSpan).semanticsLabel, name);
+      expect(_semanticsLabel(paragraph.text!), name);
       expect(_lineCount(paragraph), greaterThan(1));
       final boxes = paragraph.getBoxesForSelection(
         TextSelection(baseOffset: 0, extentOffset: displayed.length),
@@ -225,9 +235,9 @@ void main() {
         includeSemanticsLabels: false,
       );
       expect(displayed, contains('\u200B'));
-      expect(displayed, contains('copy'));
-      expect(displayed, contains('2'));
-      expect((paragraph.text! as TextSpan).semanticsLabel, name);
+      final visibleText = displayed.replaceAll(RegExp('[\\u200B\\u2060]'), '');
+      expect(visibleText, name);
+      expect(_semanticsLabel(paragraph.text!), name);
       expect(_lineCount(paragraph), greaterThan(1));
       final boxes = paragraph.getBoxesForSelection(
         TextSelection(baseOffset: 0, extentOffset: displayed.length),
