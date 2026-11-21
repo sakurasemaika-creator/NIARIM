@@ -1142,6 +1142,7 @@ class _HomeScreenState extends State<HomeScreen>
           key: _scaffoldKey,
           appBar: AppBar(
             automaticallyImplyLeading: false,
+            // 小画面ではProjectsタブの題だけ12pxにし、検索欄のある他タブは16pxを保つ。
             titleSpacing:
                 MediaQuery.sizeOf(context).width < 600 && _currentTabIndex == 0
                 ? 12
