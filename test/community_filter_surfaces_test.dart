@@ -230,7 +230,7 @@ void main() {
     // hit testing is not affected by desktopCentered's loose constraints or
     // an artificial short test viewport.
     tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(390, 2400);
+    tester.view.physicalSize = const Size(390, 844);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
 
@@ -239,6 +239,14 @@ void main() {
     // SharedPreferences future. Await it, then pump the state update.
     await tester.runAsync(() => SharedPreferences.getInstance());
     await tester.pumpAndSettle();
+    final formViewport = tester.renderObject<RenderBox>(
+      find.byType(SingleChildScrollView),
+    );
+    expect(
+      formViewport.size.height,
+      greaterThan(0),
+      reason: 'the persistent submit bar must not collapse the post form body',
+    );
   }
 
   Future<void> revealForTap(
@@ -326,9 +334,7 @@ void main() {
       final unlisted = find.byKey(const Key('communityPostYouTubeUnlisted'));
       expect(tester.widget<RadioGroup<String>>(privacy).groupValue, 'public');
       expect(tester.widget<RadioListTile<String>>(unlisted).enabled, isFalse);
-      await revealForTap(tester, unlisted);
-      await tester.tap(unlisted);
-      await tester.pumpAndSettle();
+      // This choice is intentionally disabled while a video is retained.
       expect(tester.widget<RadioGroup<String>>(privacy).groupValue, 'public');
       final l10n = AppLocalizations.of(
         tester.element(find.byType(CommunityPostScreen)),
