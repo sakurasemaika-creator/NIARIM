@@ -48,6 +48,17 @@ on:
       - "lib/services/api/niarim_api_client.dart"
       - "lib/services/google_auth_service.dart"
       - "lib/screens/settings/settings_screen.dart"
+      # Run the full suite for any production, test, tool, dependency, localization,
+      # or Android integration change so newly added files cannot silently miss CI.
+      - "lib/**"
+      - "test/**"
+      - "tool/**"
+      - "integration_test/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - "l10n.yaml"
+      - "analysis_options.yaml"
+      - "android/**"
   workflow_dispatch:
 permissions:
   contents: read
