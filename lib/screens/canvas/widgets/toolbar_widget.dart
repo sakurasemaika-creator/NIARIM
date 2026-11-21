@@ -220,13 +220,13 @@ class ToolbarWidget extends StatelessWidget {
                 children: [
                   Container(
                     width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: currentColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: outlineColor, width: 2),
-              ),
-            ),
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: currentColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: outlineColor, width: 2),
+                    ),
+                  ),
                   if (isStampSelected)
                     Container(
                       width: 28,
