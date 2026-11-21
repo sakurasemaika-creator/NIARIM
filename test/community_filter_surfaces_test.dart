@@ -226,10 +226,9 @@ void main() {
 
   Future<void> pumpPostFixture(WidgetTester tester) async {
     await tester.pumpWidget(postFixture());
-    // Wait for CommunityPostScreen's asynchronous SharedPreferences restore.
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 30)),
-    );
+    // CommunityPostScreen restores the pending upload from the same cached
+    // SharedPreferences future. Await it, then pump the state update.
+    await tester.runAsync(() => SharedPreferences.getInstance());
     await tester.pumpAndSettle();
   }
 
