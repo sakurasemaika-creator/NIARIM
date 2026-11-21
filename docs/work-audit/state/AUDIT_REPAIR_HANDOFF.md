@@ -3426,3 +3426,11 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - 変更コミット：共通処理 `3befc76f`、Unicode regex/zero-width escapeの修正 `0bb0c022`、複製名経路の回帰 `8f446569`、実際のU+200Bを検査するassertion `c045b40a`。
 - 現在のApp HEAD：`e144dfe790e3e1a5687f7fcafd1109bba1f3c9fe`。製品・テスト変更を含むFlutter regression suite Run `44881135199`（対象SHA `c045b40a`）はpendingでjob未生成。現時点でCI合格とは扱わない。
 - 未完了：CI実行結果、Flutter targeted testの実行結果、SP/PC実画面での折り返し・読み上げ確認、DISC145正式判定。
+
+
+### 2026-11-21 GPT追記 — DISC145の最新CI checkpoint
+
+- 最新App `dev_branch` HEAD：`3a1e6ca62d606702e10b97553f5ee61f5875459c`。Unicode Latin tokenの通常表示・複製印付き表示を共通helperで処理する実装と、7言語/幅/倍率matrix、実例回帰を含む。
+- `breakLongLatinWords` の説明コメントも、ASCII限定ではなくUnicode Latin script・結合文字・数字、および複製印の前の名前部分へ適用する実装に合わせた。
+- 最新Flutter regression suite：Run `44881246086`（HEAD `3a1e6ca6`）はpending。jobs未生成。Run `44881226017`（直前HEAD `4ac1e079`）もpending。いずれも成功とは扱わない。
+- 全回帰Workflowは `.github/workflows/flutter-complete-sharded-tests.yml` で同一refのrunをqueueする設定へ変更された（`cancel-in-progress` の明示的なtrue指定なし）。CIの開始・完了を再確認する。
