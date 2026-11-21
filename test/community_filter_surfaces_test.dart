@@ -246,7 +246,7 @@ void main() {
     Finder target,
   ) async {
     final viewport = tester.renderObject<RenderBox>(
-      find.byType(Viewport).first,
+      find.byType(SingleChildScrollView).first,
     );
     await tester.ensureVisible(target);
     await tester.pumpAndSettle();
