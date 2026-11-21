@@ -1703,6 +1703,10 @@ class _CommunityScreenState extends State<CommunityScreen>
           tooltip: l10n.homeBackToSplashTooltip,
           onPressed: () {
             communityService.clearTemporaryUnmutes();
+            // The preview is intentionally app-wide while browsing content,
+            // but it must not remain over the launch actions after leaving
+            // the plaza for the splash screen.
+            context.read<CommunityPreviewService>().close();
             context.go('/');
           },
         ),
