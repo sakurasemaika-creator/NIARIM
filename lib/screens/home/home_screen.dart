@@ -163,11 +163,6 @@ class _ClipboardNoticeTextState extends State<_ClipboardNoticeText> {
   EdgeInsets? _insets;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final screen = MediaQuery.sizeOf(context);
