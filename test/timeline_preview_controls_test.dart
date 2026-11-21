@@ -40,6 +40,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/pump_real_async.dart';
 
+Future<void> _captureTimelinePreview(
+  WidgetTester tester,
+  GlobalKey boundaryKey,
+  String name,
+) async {
+  final boundary = tester.renderObject<RenderRepaintBoundary>(
+    find.byKey(boundaryKey),
+  );
+  final image = await boundary.toImage(pixelRatio: 1);
+  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  final directory = Directory('build/timeline-preview-ui-captures')
+    ..createSync(recursive: true);
+  File('${directory.path}/$name.png').writeAsBytesSync(
+    bytes!.buffer.asUint8List(),
+  );
+  image.dispose();
+}
+
 class _FailingAutofillPresets extends AutofillPresetService {
   @override
   AutofillPart? findPart(String partId) {
@@ -77,6 +95,7 @@ void main() {
     bool showNavigator = false,
     String language = 'ja',
     int durationSeconds = 1,
+    GlobalKey? captureKey,
   }) async {
     await tester.pumpWidget(const SizedBox.shrink());
     SharedPreferences.setMockInitialValues({
@@ -101,15 +120,18 @@ void main() {
     tester.view.devicePixelRatio = 1;
     appRouter.go('/');
     final providers = await tester.runAsync(buildAppProviders);
+    final app = MultiProvider(
+      providers: [
+        ...providers!,
+        if (presets != null)
+          ChangeNotifierProvider<AutofillPresetService>.value(value: presets),
+      ],
+      child: const NiarimApp(),
+    );
     await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ...providers!,
-          if (presets != null)
-            ChangeNotifierProvider<AutofillPresetService>.value(value: presets),
-        ],
-        child: const NiarimApp(),
-      ),
+      captureKey == null
+          ? app
+          : RepaintBoundary(key: captureKey, child: app),
     );
     await tester.pump(const Duration(milliseconds: 300));
     final ps = tester
@@ -278,6 +300,51 @@ void main() {
     expect(find.byType(ExportScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'preview fullscreen button keeps a 48dp hit target on compact large text',
+    (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final captureKey = GlobalKey();
+      await openTimeline(
+        tester,
+        project: const Size(16, 16),
+        screen: const Size(320, 640),
+        pc: false,
+        fraction: .42,
+        language: 'fr',
+        captureKey: captureKey,
+      );
+
+      final button = find.byKey(const Key('timelinePreviewFullscreenButton'));
+      expect(button, findsOneWidget);
+      expect(tester.getSize(button), const Size(48, 48));
+      expect(button.hitTestable(), findsOneWidget);
+      final rect = tester.getRect(button);
+      final band = tester.getRect(find.byKey(const Key('timelinePreviewArea')));
+      expect((rect.top - band.top).abs(), lessThanOrEqualTo(12));
+      expect((rect.right - band.right).abs(), lessThanOrEqualTo(12));
+      await _captureTimelinePreview(
+        tester,
+        captureKey,
+        'timeline_preview_320_fr_200',
+      );
+
+      await tester.tap(button);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
+      await _captureTimelinePreview(
+        tester,
+        captureKey,
+        'timeline_preview_fullscreen_320_fr_200',
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('system Back keeps the export dialog until GIF completion', (
     tester,
@@ -575,6 +642,12 @@ void main() {
         reason: '$label $key $rect',
       );
       if (key == 'timelinePreviewFullscreenButton') {
+        expect(rect.size, const Size(48, 48), reason: '$label touch target');
+        expect(
+          find.byKey(Key(key)).hitTestable(),
+          findsOneWidget,
+          reason: '$label touch target is reachable',
+        );
         expect(
           (rect.top - band.top).abs(),
           lessThanOrEqualTo(12),

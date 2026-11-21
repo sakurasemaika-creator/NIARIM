@@ -2719,9 +2719,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   child: IconButton(
                     key: const Key('timelinePreviewFullscreenButton'),
                     padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.standard,
                     constraints: const BoxConstraints.tightFor(
-                      width: 32,
-                      height: 32,
+                      width: 48,
+                      height: 48,
                     ),
                     icon: Icon(
                       Icons.fullscreen,
