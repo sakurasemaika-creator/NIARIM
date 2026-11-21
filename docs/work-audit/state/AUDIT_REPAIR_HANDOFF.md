@@ -3613,3 +3613,11 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - Save safety auditで全体formatter gateが23 Dart filesの差分を検出。うち `home_screen.dart` は後続修正でstorage専用formatterを通過したが、他の既存変更ファイルも含めて一括正規化が必要。
 - 既存のone-shot workflow `.github/workflows/one-shot-prelaunch-dart-format.yml` は `dev_branch` 限定・stale HEAD検知付きで `dart format lib test tool` を実行し、Dartソースのみをコミットする設計。コード変更なしのcomment triggerで実行する。
 - formatterが成功して作成したcommitを最新HEADとして、別途audit-state追記commitを行い、全体analyzer / regressionを再実行する。workflowのGITHUB_TOKEN push自体は後続workflowを自動起動しないため、その後の検証トリガーを忘れない。
+
+
+### 2026-11-21 GPT追記 — 全体Dart canonical format完了
+
+- One-shot formatter Run `44915250882` は成功。Dart 1,425 filesを走査し、22 filesを正規化、`style(prelaunch): apply canonical Dart format to existing sources` commit `e1d9f0b42cb8e1632f523f8705ef2644c2646e44` を `dev_branch` にpush。623 insertions / 655 deletionsはDart formatterの整形差分のみ。
+- これにより、先行Run `44914122296` のglobal format gate失敗に含まれていた未整形ファイル群を一括修正。最新HEADでfull format gate・full analyzer・Flutter regressionを再確認する。
+- Project usability run `44914454366`（HEAD `626f232`）はDISC145、EmptyStateSliver、compact toolbar、intrinsic-safe dialog、timeline export、premium/help/localization、project selection、localized controls、startup Home test、mobile/desktop capturesまでsuccess。Artifacts `project-and-plan-screens`（ID `14710979162`）と `export-settings-screen`（ID `14711571157`）。
+- Home empty-folder visual proof run `44914454339` と Home clipboard/Trash run `44914454213` もsuccess。Artifacts `home-folder-toast-visual-proof`（ID `14710889061`）、`home-clipboard-verified-png`（ID `14711725196`）、`home-clipboard-trash-ui`（ID `14711048178`）。
