@@ -732,6 +732,10 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
         .split('\n')
         .where((paragraph) => paragraph.trim().isNotEmpty)
         .toList();
+    // Explicit authoring breaks are intentional page boundaries. When the
+    // copy already has one paragraph per screenshot, keep each paragraph
+    // intact instead of splitting a sentence into a neighboring page.
+    if (paragraphs.length == pageCount) return paragraphs;
     var segments = <String>[];
     for (var index = 0; index < paragraphs.length; index++) {
       final pieces = _splitAt(
