@@ -2231,6 +2231,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fontEmptyHint => '可从“搜索下载”或“导入”标签页添加';
 
   @override
+  String fontDeleteUsageCounts(int projects, int watermarks) {
+    return '使用中的项目（含回收站）：$projects 个。水印预设：$watermarks 个。';
+  }
+
+  @override
+  String get fontDeleteSavedUsageWarning =>
+      '删除后，使用此字体的文字（包括在以前的存档中）可能会以其他字体显示。';
+
+  @override
   String get fontRenameDialogTitle => '更改字体名称';
 
   @override
@@ -12662,6 +12671,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get fontEmptyHint => '可從「搜尋下載」或「匯入」分頁新增';
+
+  @override
+  String fontDeleteUsageCounts(int projects, int watermarks) {
+    return '使用中的專案（含垃圾桶）：$projects 個。浮水印預設：$watermarks 個。';
+  }
+
+  @override
+  String get fontDeleteSavedUsageWarning =>
+      '刪除後，使用此字型的文字（包括在先前的存檔中）可能會以其他字型顯示。';
 
   @override
   String get fontRenameDialogTitle => '變更字型名稱';

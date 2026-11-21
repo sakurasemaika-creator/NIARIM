@@ -712,6 +712,8 @@
   "fontPixelModeTooltip": "Modo píxel (para fuentes de puntos. Se muestra nítido sin suavizado)",
   "fontEmptyTitle": "No hay fuentes",
   "fontEmptyHint": "Añade fuentes desde las pestañas «Buscar y descargar» o «Importar»",
+  "fontDeleteUsageCounts": "Proyectos y papelera: {projects}. Ajustes de marca de agua: {watermarks}.",
+  "fontDeleteSavedUsageWarning": "Después de eliminar esta fuente, el texto que la use, incluso en guardados anteriores, puede mostrarse con otra fuente.",
   "fontRenameDialogTitle": "Renombrar fuente",
   "fontImportTitle": "Importar una fuente guardada en este dispositivo",
   "fontImportFormats": "Formatos compatibles: TTF / OTF",

@@ -2344,6 +2344,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add fonts from the “Find & Download” or “Import” tabs';
 
   @override
+  String fontDeleteUsageCounts(int projects, int watermarks) {
+    return 'Projects and trash: $projects. Watermark presets: $watermarks.';
+  }
+
+  @override
+  String get fontDeleteSavedUsageWarning =>
+      'Text that uses this font, including in earlier saves, may appear in a different font after deletion.';
+
+  @override
   String get fontRenameDialogTitle => 'Rename Font';
 
   @override

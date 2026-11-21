@@ -712,6 +712,8 @@
   "fontPixelModeTooltip": "픽셀 모드(도트 폰트용. 안티에일리어싱 없이 선명하게 표시)",
   "fontEmptyTitle": "폰트가 없습니다",
   "fontEmptyHint": "「찾아서 다운로드」또는「불러오기」탭에서 추가할 수 있습니다",
+  "fontDeleteUsageCounts": "사용 중인 프로젝트(휴지통 포함): {projects}개. 워터마크 설정: {watermarks}개.",
+  "fontDeleteSavedUsageWarning": "삭제하면 이전 저장본을 포함하여 이 글꼴을 사용하는 텍스트가 다른 글꼴로 표시될 수 있습니다.",
   "fontRenameDialogTitle": "폰트 이름 변경",
   "fontImportTitle": "기기에 저장된 폰트 불러오기",
   "fontImportFormats": "지원 형식: TTF / OTF",

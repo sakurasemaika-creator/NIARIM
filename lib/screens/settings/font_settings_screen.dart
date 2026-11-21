@@ -6,7 +6,10 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/font_asset.dart';
 import '../../services/font_service.dart';
+import '../../services/project_service.dart';
+import '../../services/watermark_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/name_entry_dialog.dart';
@@ -259,7 +262,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
+                                messageText(
                                   f.displayName,
                                   style: TextStyle(
                                     fontFamily: service.familyNameOf(f),
@@ -323,10 +326,9 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                                       _showRenameDialog(context, f),
                                 ),
                                 IconButton(
-                                  icon: Icon(
+                                  icon: const Icon(
                                     Icons.delete_outline,
                                     size: 18,
-                                    color: ThemeService.activeColorScheme.error,
                                   ),
                                   tooltip: l10n.commonDelete,
                                   onPressed: () => _confirmDelete(context, f),
@@ -370,10 +372,31 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
       ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
-    final confirmed = await confirmDelete(context, itemName: font.displayName);
+    final fonts = context.read<FontService>();
+    final family = fonts.familyNameOf(font);
+    final projects = context.read<ProjectService?>();
+    final projectCount = projects == null
+        ? 0
+        : [...projects.projects, ...projects.trash]
+              .where((p) => projects.usedFontFamiliesOf(p.id).contains(family))
+              .length;
+    final watermarkCount =
+        context
+            .read<WatermarkService?>()
+            ?.assets
+            .where((asset) => asset.fontFamily == family)
+            .length ??
+        0;
+    final message = [
+      l10n.confirmDeleteNamedBody(font.displayName),
+      if (projectCount + watermarkCount > 0)
+        l10n.fontDeleteUsageCounts(projectCount, watermarkCount),
+      l10n.fontDeleteSavedUsageWarning,
+    ].join('\n\n');
+    final confirmed = await confirmDelete(context, message: message);
     if (!confirmed) return;
     if (!context.mounted) return;
-    context.read<FontService>().removeFont(font.id);
+    await fonts.removeFont(font.id);
   }
 }
 
@@ -406,7 +429,7 @@ class _ImportFontTab extends StatelessWidget {
                 ),
               ),
               icon: const Icon(Icons.add),
-              label: Text(
+              label: messageText(
                 l10n.fontSelectFileButton,
                 textAlign: TextAlign.center,
               ),

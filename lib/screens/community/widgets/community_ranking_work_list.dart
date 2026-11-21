@@ -9,6 +9,7 @@ import 'community_work_counts.dart';
 import '../../../models/community_work.dart';
 import '../../../services/community_service.dart';
 import '../../../widgets/collection_action_controls.dart';
+import '../../../widgets/keep_together_text.dart';
 import '../../canvas/widgets/canvas_icon_button.dart';
 import 'community_work_card.dart'
     show
@@ -68,6 +69,7 @@ class CommunityRankingWorkList extends StatelessWidget {
                   : null,
               periodBookmarkCount: periodScores[works[i].id],
               layout: layout,
+              isSample: !service.isBackendConnected,
               isBookmarked: bookmarkedIds.contains(works[i].id),
               isMuted: !works[i].isUnavailable && service.isWorkMuted(works[i]),
               isUnavailable:
@@ -162,6 +164,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
     required this.layout,
     this.periodBookmarkCount,
     this.repostedByAuthorName,
+    this.isSample = false,
     required this.isBookmarked,
     required this.onTap,
     required this.onBookmarkToggle,
@@ -183,6 +186,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
   final VoidCallback? onVisibilityToggle;
   final bool isMuted;
   final bool isUnavailable;
+  final bool isSample;
 
   bool get _obscured => isMuted || isUnavailable;
 
@@ -382,6 +386,12 @@ class CommunityRankingWorkCard extends StatelessWidget {
                     ],
                   ),
                   if (!_obscured) ...[
+                    if (isSample)
+                      messageText(
+                        AppLocalizations.of(context)!.communitySampleBadge,
+                        key: ValueKey('ranking-sample-${work.id}'),
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
                     _author(context),
                     _counts(context),
                     if (repostedByAuthorName case final author?)

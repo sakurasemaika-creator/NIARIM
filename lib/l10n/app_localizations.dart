@@ -4113,6 +4113,18 @@ abstract class AppLocalizations {
   /// **'「探してDL」または「読み込み」タブから追加できます'**
   String get fontEmptyHint;
 
+  /// No description provided for @fontDeleteUsageCounts.
+  ///
+  /// In ja, this message translates to:
+  /// **'使用中のプロジェクト（ゴミ箱を含む）: {projects}件。ウォーターマーク設定: {watermarks}件。'**
+  String fontDeleteUsageCounts(int projects, int watermarks);
+
+  /// No description provided for @fontDeleteSavedUsageWarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォントを使用しているテキストは、過去のセーブも含め、削除後に別のフォントで表示される場合があります。'**
+  String get fontDeleteSavedUsageWarning;
+
   /// No description provided for @fontRenameDialogTitle.
   ///
   /// In ja, this message translates to:

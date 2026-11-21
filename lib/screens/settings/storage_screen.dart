@@ -518,7 +518,7 @@ class _StorageScreenState extends State<StorageScreen> {
     String? busyLabel,
     required FocusNode focusNode,
   }) {
-    final title = Text(
+    final title = messageText(
       text,
       style: localizedHeadingStyle(
         context,
@@ -625,7 +625,7 @@ class _StorageScreenState extends State<StorageScreen> {
                 : const CircularProgressIndicator(strokeWidth: 2),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Text(l10n.storageCalculating)),
+          Expanded(child: messageText(l10n.storageCalculating)),
         ],
       ),
     );
@@ -848,7 +848,7 @@ class _StorageScreenState extends State<StorageScreen> {
   Widget _emptyBreakdownText(AppLocalizations l10n, {bool sample = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Text(
+      child: messageText(
         l10n.storageBreakdownEmpty,
         key: sample ? null : const ValueKey('storageBreakdownEmpty'),
         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
@@ -1115,7 +1115,7 @@ class _StorageScreenState extends State<StorageScreen> {
         iconColor: foreground,
         textColor: foreground,
         // 括弧の中（「（初期化）」等）は行の途中で切らない。
-        title: KeepTogetherText(title, keep: _bracketedWords(title)),
+        title: messageText(title, keep: _bracketedWords(title)),
         subtitle: subtitle == null
             ? null
             : Text(
@@ -1589,7 +1589,7 @@ class _StorageNotice extends StatelessWidget {
                 else
                   Icon(Icons.error_outline, size: 20, color: color),
                 const SizedBox(width: 8),
-                Expanded(child: Text(message)),
+                Expanded(child: messageText(message)),
               ],
             ),
           ),

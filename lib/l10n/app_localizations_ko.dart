@@ -2254,6 +2254,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fontEmptyHint => '「찾아서 다운로드」또는「불러오기」탭에서 추가할 수 있습니다';
 
   @override
+  String fontDeleteUsageCounts(int projects, int watermarks) {
+    return '사용 중인 프로젝트(휴지통 포함): $projects개. 워터마크 설정: $watermarks개.';
+  }
+
+  @override
+  String get fontDeleteSavedUsageWarning =>
+      '삭제하면 이전 저장본을 포함하여 이 글꼴을 사용하는 텍스트가 다른 글꼴로 표시될 수 있습니다.';
+
+  @override
   String get fontRenameDialogTitle => '폰트 이름 변경';
 
   @override

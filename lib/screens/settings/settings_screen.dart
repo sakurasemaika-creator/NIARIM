@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../services/settings_service.dart';
 import '../../services/community_notice.dart';
 import '../../services/first_use_tooltip_service.dart';
@@ -441,7 +442,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      messageText(
                         title,
                         style: localizedHeadingStyle(
                           context,
@@ -453,7 +454,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                       const SizedBox(height: 3),
-                      Text(
+                      messageText(
                         subtitle,
                         style: TextStyle(
                           fontSize: 13,
@@ -613,7 +614,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
+                messageText(
                   l10n.settingsDrawingAreaHint,
                   style: TextStyle(
                     fontSize: 11,

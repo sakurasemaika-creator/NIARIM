@@ -370,10 +370,6 @@ class _CommunityWorkSettingsScreenState
           ),
           FilledButton(
             key: const Key('communityWorkSettingsConfirmDelete'),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-              foregroundColor: Theme.of(context).colorScheme.onError,
-            ),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(l10n.commonDelete),
           ),
@@ -620,9 +616,6 @@ class _CommunityWorkSettingsScreenState
                   const SizedBox(height: 28),
                   OutlinedButton.icon(
                     key: const Key('communityWorkSettingsDelete'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: scheme.error,
-                    ),
                     onPressed: !ownWork || _busy
                         ? null
                         : () => _deleteWork(work),

@@ -3003,7 +3003,10 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                   trackOutlineColor: WidgetStatePropertyAll(scheme.onSurface),
                   value: _hideAi,
                   onChanged: (value) => setState(() => _hideAi = value),
-                  title: messageText(l10n.communityHideGenerativeAiImageVideo),
+                  title: messageText(
+                    l10n.communityHideGenerativeAiImageVideo,
+                    keepLastPhrase: true,
+                  ),
                 ),
               ),
           ],

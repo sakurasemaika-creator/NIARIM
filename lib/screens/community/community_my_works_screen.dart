@@ -323,7 +323,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                   Text(
                     l10n.communitySignInUnavailable,
                     style: TextStyle(
-                      color: Theme.of(dialogContext).colorScheme.error,
+                      color: Theme.of(
+                        dialogContext,
+                      ).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],

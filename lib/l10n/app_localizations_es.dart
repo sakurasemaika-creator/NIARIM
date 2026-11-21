@@ -2384,6 +2384,15 @@ class AppLocalizationsEs extends AppLocalizations {
       'Añade fuentes desde las pestañas «Buscar y descargar» o «Importar»';
 
   @override
+  String fontDeleteUsageCounts(int projects, int watermarks) {
+    return 'Proyectos y papelera: $projects. Ajustes de marca de agua: $watermarks.';
+  }
+
+  @override
+  String get fontDeleteSavedUsageWarning =>
+      'Después de eliminar esta fuente, el texto que la use, incluso en guardados anteriores, puede mostrarse con otra fuente.';
+
+  @override
   String get fontRenameDialogTitle => 'Renombrar fuente';
 
   @override

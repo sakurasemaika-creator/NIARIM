@@ -701,11 +701,7 @@ class _WatermarkTile extends StatelessWidget {
               children: [
                 Expanded(child: _WatermarkName(asset.name)),
                 IconButton(
-                  icon: Icon(
-                    Icons.delete,
-                    size: 16,
-                    color: ThemeService.activeColorScheme.error,
-                  ),
+                  icon: const Icon(Icons.delete, size: 16),
                   onPressed: onDelete,
                   tooltip: l10n.commonDelete,
                 ),

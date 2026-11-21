@@ -351,7 +351,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
               icon: locked ? Icons.lock_open_outlined : Icons.lock_outline,
             ),
         ];
-        final errorColor = Theme.of(ctx).colorScheme.error;
         final largeText = MediaQuery.textScalerOf(ctx).scale(14) >= 21;
         return AlertDialog(
           scrollable: true,
@@ -393,9 +392,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, action.value),
                         style: TextButton.styleFrom(
-                          foregroundColor: action.value == _TagAction.delete
-                              ? errorColor
-                              : null,
                           minimumSize: const Size(48, 48),
                           padding: const EdgeInsets.symmetric(horizontal: 6),
                         ),
@@ -411,9 +407,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                       IconButton(
                         tooltip: action.label,
                         onPressed: () => Navigator.pop(ctx, action.value),
-                        color: action.value == _TagAction.delete
-                            ? errorColor
-                            : null,
                         icon: Icon(action.icon),
                       ),
                   ],
@@ -450,10 +443,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(ctx).colorScheme.error,
-                  foregroundColor: Theme.of(ctx).colorScheme.onError,
-                ),
                 child: Text(l10n.commonDelete),
               ),
             ],

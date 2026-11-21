@@ -857,7 +857,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineBackToProjectListDiscardButton =>
-      'Revenir sans enregistrer manuellement';
+      'Revenir sans sauvegarde manuelle';
 
   @override
   String get timelineSkipToStart => 'Aller à la première image';
@@ -2375,6 +2375,15 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get fontEmptyHint =>
       'Ajoutez des polices depuis les onglets « Rechercher et télécharger » ou « Importer »';
+
+  @override
+  String fontDeleteUsageCounts(int projects, int watermarks) {
+    return 'Projets et corbeille : $projects. Préréglages de filigrane : $watermarks.';
+  }
+
+  @override
+  String get fontDeleteSavedUsageWarning =>
+      'Après la suppression, le texte qui utilise cette police, y compris dans des sauvegardes antérieures, peut s’afficher avec une autre police.';
 
   @override
   String get fontRenameDialogTitle => 'Renommer la police';

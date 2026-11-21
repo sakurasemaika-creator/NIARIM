@@ -2249,6 +2249,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get fontEmptyHint => '「探してDL」または「読み込み」タブから追加できます';
 
   @override
+  String fontDeleteUsageCounts(int projects, int watermarks) {
+    return '使用中のプロジェクト（ゴミ箱を含む）: $projects件。ウォーターマーク設定: $watermarks件。';
+  }
+
+  @override
+  String get fontDeleteSavedUsageWarning =>
+      'このフォントを使用しているテキストは、過去のセーブも含め、削除後に別のフォントで表示される場合があります。';
+
+  @override
   String get fontRenameDialogTitle => 'フォント名を変更';
 
   @override

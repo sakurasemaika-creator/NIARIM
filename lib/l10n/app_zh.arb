@@ -712,6 +712,8 @@
   "fontPixelModeTooltip": "像素模式（适用于点阵字体，无抗锯齿清晰显示）",
   "fontEmptyTitle": "没有字体",
   "fontEmptyHint": "可从“搜索下载”或“导入”标签页添加",
+  "fontDeleteUsageCounts": "使用中的项目（含回收站）：{projects} 个。水印预设：{watermarks} 个。",
+  "fontDeleteSavedUsageWarning": "删除后，使用此字体的文字（包括在以前的存档中）可能会以其他字体显示。",
   "fontRenameDialogTitle": "更改字体名称",
   "fontImportTitle": "导入设备中已保存的字体",
   "fontImportFormats": "支持格式：TTF / OTF",
