@@ -315,28 +315,55 @@ void main() {
     await _close(tester);
   });
 
-  testWidgets('short shared header keeps its switch and sort row visible', (
-    tester,
-  ) async {
-    await _openShared(tester, size: const Size(640, 360), scale: 2);
-    final switchBounds = tester.getRect(_switch);
-    final sortBounds = tester.getRect(
-      find.byKey(const Key('homeCollectionSortHeader')),
-    );
-    expect(switchBounds.height, greaterThanOrEqualTo(48));
-    expect(
-      sortBounds.top,
-      greaterThanOrEqualTo(switchBounds.bottom - 0.5),
-      reason: 'The sort row must follow the direction switch without overlap.',
-    );
-    expect(
-      sortBounds.bottom,
-      lessThanOrEqualTo(360),
-      reason: 'The shared sort row must not extend below the short viewport.',
-    );
-    expect(tester.takeException(), isNull);
-    await _close(tester);
-  });
+  testWidgets(
+    'short shared header and page title fit at narrow widths in 7 languages',
+    (tester) async {
+      final settings = await _openShared(
+        tester,
+        size: const Size(320, 360),
+        scale: 2,
+      );
+      for (final language in _languages) {
+        await tester.runAsync(() => settings.setLanguage(language));
+        for (final width in [320.0, 360.0]) {
+          tester.view.physicalSize = Size(width, 360);
+          await _frames(tester, 4);
+          final where = '$language ${width.toInt()}x360 @2x';
+          final switchBounds = tester.getRect(_switch);
+          final sortBounds = tester.getRect(
+            find.byKey(const Key('homeCollectionSortHeader')),
+          );
+          expect(switchBounds.left, greaterThanOrEqualTo(0), reason: where);
+          expect(switchBounds.right, lessThanOrEqualTo(width), reason: where);
+          expect(switchBounds.height, greaterThanOrEqualTo(48), reason: where);
+          expect(sortBounds.left, greaterThanOrEqualTo(0), reason: where);
+          expect(sortBounds.right, lessThanOrEqualTo(width), reason: where);
+          expect(
+            sortBounds.top,
+            greaterThanOrEqualTo(switchBounds.bottom - 0.5),
+            reason: '$where: sort row overlaps the direction switch',
+          );
+          expect(
+            sortBounds.bottom,
+            lessThanOrEqualTo(360),
+            reason: '$where: sort row extends below the short viewport',
+          );
+          final appBar = find.byType(AppBar).first;
+          final title = find.descendant(
+            of: appBar,
+            matching: find.text(_l10n(tester).homeTabShared),
+          );
+          if (title.evaluate().isNotEmpty) {
+            final paragraph = tester.renderObject<RenderParagraph>(title);
+            expect(paragraph.didExceedMaxLines, isFalse, reason: where);
+            expect(tester.getRect(title).right, lessThanOrEqualTo(width), reason: where);
+          }
+          expect(tester.takeException(), isNull, reason: where);
+        }
+      }
+      await _close(tester);
+    },
+  );
 
   testWidgets('as icons, the switch is reachable and usable by keyboard', (
     tester,
