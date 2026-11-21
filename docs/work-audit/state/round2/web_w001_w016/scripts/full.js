@@ -1,3 +1,0 @@
-const L=require('./lib');
-// node full.js name path lang vp [path lang vp ...]  -> full page shots
-(async()=>{const a=process.argv.slice(2);const b=await L.chromium.launch();for(let i=0;i<a.length;i+=4){const [name,path,lang,vp]=a.slice(i,i+4);const ctx=await L.ctxFor(b,vp,{reducedMotion:'reduce'});const p=await ctx.newPage();await p.goto(L.url(path,lang),{waitUntil:'networkidle'});await L.revealAll(p);await p.waitForTimeout(300);await p.screenshot({path:L.SHOTS+'/'+name+'.png',fullPage:true});console.log(name,await p.evaluate(()=>document.documentElement.scrollHeight));await ctx.close();}await b.close();})();

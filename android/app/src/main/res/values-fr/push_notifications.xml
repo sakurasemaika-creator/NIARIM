@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="push_scheduled_release">Votre œuvre programmée a été publiée</string>
-    <string name="push_mission_achievement">Vous avez accompli un nouvel objectif de mission</string>
-    <string name="push_work_posted">Votre œuvre a été enregistrée</string>
-    <string name="push_work_published">Votre œuvre a été publiée</string>
-    <string name="push_work_reserved">Votre publication programmée a été acceptée</string>
-    <string name="push_activity_channel">Notifications de la place et des missions</string>
-</resources>

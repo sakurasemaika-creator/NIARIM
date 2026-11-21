@@ -1,4 +1,0 @@
-const L=require('./lib');
-// usage: node zoom.js path lang vp selector outname [scale]
-(async()=>{const [path,lang,vp,sel,out,scale]=process.argv.slice(2);const b=await L.chromium.launch();const ctx=await b.newContext({viewport:L.VPS[vp],deviceScaleFactor:+(scale||2)});await ctx.route('**/api/community**',r=>r.fulfill({status:200,contentType:'application/json',body:'{"works":[]}'}));await ctx.route(u=>!/^(http:\/\/127\.0\.0\.1:8801|data:|blob:|about:)/.test(u.toString()),r=>r.abort());const p=await ctx.newPage();await p.goto(L.url(path,lang),{waitUntil:'networkidle'});await L.revealAll(p);const el=p.locator(sel).first();await el.scrollIntoViewIfNeeded();await p.waitForTimeout(400);await el.screenshot({path:L.SHOTS+'/'+out});
-console.log(await el.evaluate(e=>{const s=getComputedStyle(e);return s.fontFamily+' | '+s.fontFeatureSettings+' | '+s.letterSpacing+' | '+e.innerHTML.slice(0,300)}));await b.close();})();

@@ -19,24 +19,28 @@ class EmptyStateSliver extends StatelessWidget {
   final double clearance;
 
   @override
-  Widget build(BuildContext context) => SliverLayoutBuilder(
-    builder: (context, constraints) {
-      final availableHeight = math.max(
-        0.0,
-        constraints.viewportMainAxisExtent -
-            constraints.precedingScrollExtent -
-            clearance,
-      );
-      return SliverToBoxAdapter(
-        child: Padding(
+  Widget build(BuildContext context) => SliverFillRemaining(
+    // Let the viewport calculate the true remaining height after all preceding
+    // slivers (including overlap and scroll offset). A hand-computed height
+    // from viewportMainAxisExtent - precedingScrollExtent can overestimate the
+    // visible remainder on short, scaled layouts and push empty-state content
+    // below the viewport.
+    hasScrollBody: false,
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final availableHeight = math.max(
+          0.0,
+          constraints.maxHeight - clearance,
+        );
+        return Padding(
           padding: EdgeInsets.only(bottom: clearance),
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: availableHeight),
-            child: builder(Size(constraints.crossAxisExtent, availableHeight)),
+            child: builder(Size(constraints.maxWidth, availableHeight)),
           ),
-        ),
-      );
-    },
+        );
+      },
+    ),
   );
 }
 
