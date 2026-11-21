@@ -85,12 +85,19 @@ class ThemeRescueButton extends StatelessWidget {
                 splashColor: const Color(0x33000000),
                 highlightColor: const Color(0x33FFFFFF),
                 onTap: () => _confirmReset(context),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
+                child: ConstrainedBox(
+                  // The icon and label are visually compact, but the actual
+                  // interactive area must still meet the 48dp touch target.
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
                   ),
-                  child: ExcludeSemantics(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                    child: ExcludeSemantics(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -167,6 +174,8 @@ class ThemeRescueButton extends StatelessWidget {
                         ],
                       ],
                     ),
+                  ),
+                ),
                   ),
                 ),
               ),
