@@ -4,6 +4,8 @@ on:
     branches: [dev_branch]
     paths:
       - 'lib/screens/home/widgets/project_list_widget.dart'
+      - 'lib/widgets/korean_words_text.dart'
+      - 'test/korean_words_text_long_latin_test.dart'
       - 'lib/screens/premium/premium_screen.dart'
       - 'lib/widgets/empty_state_placeholder.dart'
       - 'lib/widgets/background_color_picker.dart'
@@ -51,6 +53,7 @@ jobs:
           flutter analyze --no-pub
           lib/screens/home/widgets/project_list_widget.dart lib/screens/premium/premium_screen.dart
           lib/widgets/empty_state_placeholder.dart lib/widgets/background_color_picker.dart
+          lib/widgets/korean_words_text.dart
           lib/screens/help/help_screen.dart lib/screens/project/new_project_screen.dart lib/screens/export/export_screen.dart
           lib/screens/export/widgets/export_complete_dialog.dart lib/screens/canvas/widgets/canvas_icon_button.dart
           lib/screens/canvas/widgets/toolbar_widget.dart lib/widgets/collection_action_controls.dart
@@ -68,6 +71,8 @@ jobs:
           flutter test --no-pub --reporter expanded
           test/project_grid_view_size_test.dart test/project_selection_clipboard_test.dart
           test/shared_empty_folder_widget_test.dart test/quick_tool_panel_landscape_fit_test.dart
+      - name: Verify long Latin folder names at narrow widths and large text scales (DISC145)
+        run: flutter test --no-pub --reporter expanded test/korean_words_text_long_latin_test.dart
       - name: Verify localized controls, dialog fonts and keyboard space
         run: >
           flutter test --no-pub --reporter expanded
