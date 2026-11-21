@@ -189,6 +189,7 @@ void main() {
     final fullscreenButton = tester.getRect(
       find.byKey(const Key('timelinePreviewFullscreenButton')),
     );
+    // Match timeline_screen.dart's current _previewControlInset (8px).
     const controlInset = 8.0;
     expect(
       frameCounter.left,
