@@ -335,6 +335,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Narrow phones benefit from slightly tighter section rhythm without
+    // changing the established spacing on regular phones, tablets, or desktop.
+    final sectionSpacing = MediaQuery.sizeOf(context).width < 360 ? 20.0 : 24.0;
     return Scaffold(
       appBar: AppBar(
         title: FitOrHideTitle(l10n.newProjectScreenTitle),
@@ -354,7 +357,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   border: const OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: sectionSpacing),
               Text(
                 'FPS',
                 style: localizedHeadingStyle(
@@ -378,7 +381,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     )
                     .toList(),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: sectionSpacing),
               // 見出しと「サイズ設定」が1行に入らなければ、ボタンを次の行へ
               // （Rowに並べていた頃は、英・西・仏語の大きな文字ではみ出した）。
               Wrap(
@@ -667,7 +670,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: sectionSpacing),
               Builder(
                 builder: (context) {
                   // 長さの上限：無料会員は最大90秒、プレミアム会員は
@@ -791,7 +794,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: sectionSpacing),
               Text(
                 l10n.newProjectBackgroundColorLabel,
                 style: localizedHeadingStyle(
@@ -804,7 +807,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 selectedColor: _backgroundColor,
                 onChanged: (color) => setState(() => _backgroundColor = color),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: sectionSpacing),
               // 描画領域設定
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
@@ -895,7 +898,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: sectionSpacing),
               MenuCard(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
