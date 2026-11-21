@@ -20,13 +20,11 @@ class EmptyStateSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SliverFillRemaining(
-    // Let the viewport calculate the true remaining height after all preceding
-    // slivers (including overlap and scroll offset). Keep the remaining area
-    // scrollable as well: at large text scales the empty-state copy can be
-    // taller than the viewport even after its badge has been reduced. Without
-    // an inner scroll viewport, hasScrollBody:false lays that child out as a
-    // non-scrollable box and clips/overflows the last lines.
-    hasScrollBody: true,
+    // Let the sliver use the actual space left after preceding content.
+    // The child scroll view then handles only the empty-state copy when it is
+    // taller than that space, without adding a second full viewport after the
+    // header or taking over the outer list's scroll position.
+    hasScrollBody: false,
     child: LayoutBuilder(
       builder: (context, constraints) {
         final availableHeight = math.max(
