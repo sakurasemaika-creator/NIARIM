@@ -113,7 +113,7 @@ void main() {
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     final captures = Directory('build/timeline-preview-ui-captures')
       ..createSync(recursive: true);
-    File('\${captures.path}/timeline_track_labels_ja_360.png').writeAsBytesSync(
+    File(captures.path + '/timeline_track_labels_ja_360.png').writeAsBytesSync(
       bytes!.buffer.asUint8List(),
     );
     image.dispose();
