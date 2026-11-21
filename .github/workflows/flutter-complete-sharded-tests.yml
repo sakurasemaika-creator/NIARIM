@@ -8,7 +8,6 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - ".github/workflows/flutter-complete-sharded-tests.yml"
       - "test/floating_action_button_visual_capture_test.dart"
       - "test/app_smoke_test.dart"
       - "test/app_web_reference_export_exact_test.dart"
@@ -88,6 +87,7 @@ jobs:
     if: github.ref == 'refs/heads/dev_branch'
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         shard: [0, 1, 2, 3, 4, 5, 6, 7]
     runs-on: ubuntu-latest
@@ -117,7 +117,7 @@ jobs:
             echo "No test files in shard!"
             exit 1
           fi
-          flutter test --no-pub --reporter expanded --concurrency=3 "${tests[@]}" 2>&1 | tee reports/flutter-shard.log
+          flutter test --no-pub --reporter expanded --concurrency=1 "${tests[@]}" 2>&1 | tee reports/flutter-shard.log
       - name: Summarize test failures
         if: always()
         shell: bash
