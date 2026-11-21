@@ -1064,7 +1064,9 @@ class ThemeService extends ChangeNotifier {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleSpacing: 12,
+        // Align the title inset with the app's 16dp content/input gutter.
+        // FitOrHideTitle handles constrained widths without truncating labels.
+        titleSpacing: 16,
         // 画面名（AppBarタイトル）がデフォルトフォント（Roboto等の端末標準）
         // で表示されてしまう不具合を修正。ThemeData.fontFamily='HakkouMincho'
         // をルートで設定していても、appBarTheme.titleTextStyleへ独自の
