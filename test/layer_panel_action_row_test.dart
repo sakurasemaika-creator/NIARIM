@@ -22,16 +22,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   useTemporaryProjectStorage();
 
-  test('default layer names separate the number in English, Spanish and French', () async {
-    for (final (language, expected) in [
-      ('en', 'Layer 1'),
-      ('es', 'Capa 1'),
-      ('fr', 'Calque 1'),
-    ]) {
-      final l10n = await AppLocalizations.delegate.load(Locale(language));
-      expect(l10n.layerPanelDefaultLayerName(1), expected);
-    }
-  });
+  test(
+    'default layer names separate the number in English, Spanish and French',
+    () async {
+      for (final (language, expected) in [
+        ('en', 'Layer 1'),
+        ('es', 'Capa 1'),
+        ('fr', 'Calque 1'),
+      ]) {
+        final l10n = await AppLocalizations.delegate.load(Locale(language));
+        expect(l10n.layerPanelDefaultLayerName(1), expected);
+      }
+    },
+  );
   testWidgets('レイヤーパネル上部のボタンラベルが1行に収まる', (tester) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(1080, 2280);
