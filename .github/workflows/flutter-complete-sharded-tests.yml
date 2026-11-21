@@ -63,6 +63,7 @@ on:
 permissions:
   contents: read
 # Keep an active full-suite run intact; only the newest pending HEAD needs to wait.
+# The push path filter below intentionally includes this workflow and all source/test trees.
 concurrency:
   group: niarim-full-shards-${{ github.ref }}
   cancel-in-progress: false
