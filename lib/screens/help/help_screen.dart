@@ -657,6 +657,20 @@ class _HelpScreenState extends State<HelpScreen> {
     final searchLabelStyle = TextStyle(
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
+    final categoryIcons = {
+      l10n.helpCategoryTool: Icons.edit,
+      l10n.helpCategoryBrush: Icons.brush,
+      l10n.helpCategoryPenInput: Icons.tune,
+      l10n.helpCategoryDrawing: Icons.straighten,
+      l10n.helpCategoryLayer: Icons.layers,
+      l10n.helpCategoryAnimation: Icons.movie_filter,
+      l10n.helpCategorySave: Icons.save_outlined,
+      l10n.helpCategoryProjectManagement: Icons.folder,
+      l10n.helpCategoryExport: Icons.file_download,
+      l10n.helpCategoryCommunity: Icons.image,
+      l10n.helpCategoryPremium: Icons.star,
+      l10n.helpCategorySettings: Icons.settings,
+    };
     final entries = _buildEntries(l10n);
     final query = foldName(_searchQuery).trim();
     final filtered = _filtered(entries, query);
@@ -763,7 +777,7 @@ class _HelpScreenState extends State<HelpScreen> {
                                 liveRegion: true,
                                 child: Text(
                                   l10n.helpSearchResultCount(filtered.length),
-                                  style: Theme.of(context).textTheme.bodySmall
+                                  style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(
                                         color: scheme.onSurfaceVariant,
                                       ),
@@ -808,18 +822,12 @@ class _HelpScreenState extends State<HelpScreen> {
                                 height: 36,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      scheme.primary.withValues(alpha: 0.22),
-                                      scheme.primary.withValues(alpha: 0.1),
-                                    ],
-                                  ),
+                                  color: scheme.primaryContainer,
                                 ),
                                 child: Icon(
-                                  Icons.help_outline,
-                                  color: AccentTextTheme.of(context),
+                                  categoryIcons[entry.category] ??
+                                      Icons.help_outline,
+                                  color: scheme.onPrimaryContainer,
                                   size: 18,
                                 ),
                               ),

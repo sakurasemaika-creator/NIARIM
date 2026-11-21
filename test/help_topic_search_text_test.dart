@@ -45,6 +45,13 @@ void main() {
           .widgetList<ExpansionTile>(find.byType(ExpansionTile))
           .first;
       expect((first.title as Text).data, l10n.helpEraserToolTitle);
+      expect(
+        find.descendant(
+          of: find.byWidget(first),
+          matching: find.byIcon(Icons.edit),
+        ),
+        findsOneWidget,
+      );
       final list = tester.widget<ListView>(find.byType(ListView));
       final count = list.childrenDelegate.estimatedChildCount! - 1;
       expect(find.text(l10n.helpSearchResultCount(count)), findsOneWidget);
