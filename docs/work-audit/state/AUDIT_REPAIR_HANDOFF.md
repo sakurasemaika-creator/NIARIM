@@ -3606,3 +3606,10 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 
 - Full analyzer diagnosticsで検出したTips visual captureのimport不足、Trash Korean testのRenderParagraph import不足、Long Latin testの不要なnon-null assertion、Community filter testのdeprecated RadioListTile API参照を修正し、commit `23550218` に反映。
 - 次の全体analyzer gateでエラー・warning・infoが解消したかを再確認する。Homeのtab別12/16px insetはコードコメントを日本語で明確化し、Save safety gateを最新HEADで再実行する。
+
+
+### 2026-11-21 GPT追記 — Dart全体canonical formatter
+
+- Save safety auditで全体formatter gateが23 Dart filesの差分を検出。うち `home_screen.dart` は後続修正でstorage専用formatterを通過したが、他の既存変更ファイルも含めて一括正規化が必要。
+- 既存のone-shot workflow `.github/workflows/one-shot-prelaunch-dart-format.yml` は `dev_branch` 限定・stale HEAD検知付きで `dart format lib test tool` を実行し、Dartソースのみをコミットする設計。コード変更なしのcomment triggerで実行する。
+- formatterが成功して作成したcommitを最新HEADとして、別途audit-state追記commitを行い、全体analyzer / regressionを再実行する。workflowのGITHUB_TOKEN push自体は後続workflowを自動起動しないため、その後の検証トリガーを忘れない。
