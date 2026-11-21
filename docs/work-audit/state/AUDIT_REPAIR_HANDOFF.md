@@ -3415,3 +3415,14 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - 変更コミット：`404401d3`・`bc6d3d6d`・`c14be3f3`・`e77d7bbc`・`5fe1fbbb`。Unicode書記素単位の分割と依存関係・回帰範囲の補強：`60b1a3b0`・`7f039a1d`・`e442c48f`・`4f3683fa`。
 - 検証状態：専用回帰は追加済みだが、Flutter regression suite Run `44880597940`（HEAD `4f3683fa`）は確認時点でpending・job未生成。CI成功、実画面合格、DISC145完了とはまだ判定しない。次はこのRunの完了と結果を確認し、失敗があれば修正する。
 - 範囲：NIARIM `dev_branch` のみ。NIARIM-webのpush/deploy/rollbackは引き続き停止。
+
+
+### 2026-11-21 GPT追記 — DISC145の重複名経路も折り返し対象へ拡張
+
+- 先行メモの補足：適用先はフォルダの詳細行タイトル（`_folderDetailTile`）であり、格子カード全体へ無差別に適用したものではない。
+- 追加で発見した境界：`KoreanWordsText` は複製印（`copyMarks`）がある場合に別の描画経路を通る。先行の `breakLongLatinWords` が通常経路だけだと、複製名の長いLatin prefixには適用されない。
+- 対応：共通の `_breakOversizedLatinTokens` を通常経路と複製印を分割描画する経路の両方で使用。幅を超えるUnicode Latin script・結合文字・数字のtokenだけを、`characters` のgrapheme cluster境界で折り返す。複製印自体は従来の `copyMarkLineText` に委ね、名前全体のsemantics labelを保持。
+- 追加回帰：`Storyboards (copy 2)`、fr、160 logical px、文字200%、太字、複製印を保持した状態でもprefixだけを折り返し、名前の読み上げ・幅内描画を確認する。
+- 変更コミット：共通処理 `3befc76f`、Unicode regex/zero-width escapeの修正 `0bb0c022`、複製名経路の回帰 `8f446569`、実際のU+200Bを検査するassertion `c045b40a`。
+- 現在のApp HEAD：`e144dfe790e3e1a5687f7fcafd1109bba1f3c9fe`。製品・テスト変更を含むFlutter regression suite Run `44881135199`（対象SHA `c045b40a`）はpendingでjob未生成。現時点でCI合格とは扱わない。
+- 未完了：CI実行結果、Flutter targeted testの実行結果、SP/PC実画面での折り返し・読み上げ確認、DISC145正式判定。
