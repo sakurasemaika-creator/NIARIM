@@ -3544,3 +3544,10 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - 継続承認の対象は既存repo/branch/Workerに限定。別branch・別Worker/zone、DNS/domain変更、secret/credentialの新規登録・置換、契約/課金、store公開、force push/履歴破壊は含まれない。CI・最新HEAD・deployment/version/traffic・公開URL検証は引き続き必須。
 - 前段の訂正記録（「明示承認なし」「Web push/deploy停止」）は当時の認識履歴として保持するが、以後の現行判断には本追記と上記policyを適用する。
 - DISC145の最新確認：App HEAD `f26f1e914267b30e0fa483f9585d6d3d0be26526`。Flutter full regression Run `44897184258` はpending、jobs未生成。成功扱いにしない。DISC145 evidenceの旧Run `44881246086` は最新HEADを対象としないため、合格根拠に使わない。SP/PC実画面・スクリーンリーダー確認も未実施で、DISC145は未完了。
+
+
+### 2026-11-21 GPT追記 — Communityフォームの表示位置helperを修正
+
+- Run `44911728132` の3件の失敗は、投稿フォーム内の実装ではなくテストhelper `revealForTap` が存在しない `SingleChildScrollView` を `.first` で取得していたことによる `Bad state: No element`。同runではテスト画面を390×2400 logical pxに設定済みで、対象フォームは通常のスクロール可視化で扱える。
+- 対応：存在しないScrollView finderと診断printを削除し、`tester.ensureVisible(target)` → pump → finder存在確認に整理。投稿フォーム本体は変更しない。
+- 次の専用回帰で再確認し、合格までは未完了のまま保持する。

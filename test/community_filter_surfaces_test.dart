@@ -245,17 +245,9 @@ void main() {
     WidgetTester tester,
     Finder target,
   ) async {
-    final viewport = tester.renderObject<RenderBox>(
-      find.byType(SingleChildScrollView).first,
-    );
     await tester.ensureVisible(target);
     await tester.pumpAndSettle();
-    final targetBox = tester.renderObject<RenderBox>(target);
-    debugPrint(
-      'post-form hit-test viewport=${tester.view.physicalSize} '
-      'viewportSize=${viewport.size} '
-      'targetRect=${targetBox.localToGlobal(Offset.zero) & targetBox.size}',
-    );
+    expect(target, findsOneWidget);
   }
 
   testWidgets('discard confirmation preserves a pending upload on cancel', (
