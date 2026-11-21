@@ -225,6 +225,15 @@ void main() {
   );
 
   Future<void> pumpPostFixture(WidgetTester tester) async {
+    // These are form-interaction tests, not scroll-layout tests. Use a
+    // realistic phone width with enough vertical room for every control so
+    // hit testing is not affected by desktopCentered's loose constraints or
+    // an artificial short test viewport.
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(390, 2400);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
     await tester.pumpWidget(postFixture());
     // CommunityPostScreen restores the pending upload from the same cached
     // SharedPreferences future. Await it, then pump the state update.
