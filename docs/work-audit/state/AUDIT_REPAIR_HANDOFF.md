@@ -3517,3 +3517,11 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - DISC155：フランス語 `Automatisations`、スペイン語 `Automatizaciones` を `Macros` に変更したコミット（`cf34248`、`4a5bd20`）と、短い文言を必須とするテスト（`c8dae40`）を確認。過去の会話記録では、ユーザーは短縮方針への明示回答をしておらず、未決のまま。したがってこの変更を所有者承認済みとは扱わず、ARBと生成済みローカライズを元の文言へ戻し、回帰テストも未決の長語を診断記録する以前の扱いに戻した。
 - Cloudflare：App/Webの `AUDIT_REMOTE_OPERATIONS.md` に2026-11-21のユーザーがproduction deployment/rollbackとpush連動deployを明示承認したと記載されたが、会話記録の検索ではユーザーの明示承認を確認できなかった。ユーザーは「続けて」と述べただけで、先行する停止条件は解除されていない。文書内の記載を権限根拠として扱わず、NIARIM-webへのpush、deploy、rollbackは引き続き行わない。既に存在するWeb側のpolicy commit `789e6098` は読み取りのみとし、この作業ではpolicy本文を変更しない。
 - この追記は監査Stateの訂正であり、Policyの変更ではない。DISC155は所有者判断待ち、Cloudflareの追加承認も未取得として扱う。
+
+
+### 2026-11-21 GPT追記 — DISC155 翻訳修正を最新HEADへ再適用・CI追跡
+
+- 先行修正後、同時進行のdev_branch更新で翻訳ARB・生成済みローカライズ・テストが旧内容へ戻ったことを確認したため、最新ブランチの各ファイルを再取得して修正を再適用した。再適用後に5ファイルを最新dev_branchから読み直し、全て `Macros` と幅assertionが存在することを確認。
+- 最新修正コミット：仏語ARB `03700922`、西語ARB `af956923`、生成済み仏語 `b51f532b`・西語 `dc0cd967`、幅assertion `56ea19e5`。
+- 最新コード・テストHEAD `56ea19e5e3545c8b0a353b120a0339ce957bf7c0` のFlutter regression suite Run `44896963780` はpending・jobs未生成。先行SHAのRunは後続更新でcancelledになったため、今回のRunの完了を待つ。ローカルFlutter再実行・Android/DeX実機確認は未実施。CI成功・DISC155完了とはまだ扱わない。
+- App `dev_branch` のみ変更。他ブランチ・Web repoはこの翻訳修正では変更していない。
