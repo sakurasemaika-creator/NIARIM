@@ -179,16 +179,23 @@ class _ClipboardNoticeTextState extends State<_ClipboardNoticeText> {
       _screen = screen;
       _insets = insets;
       _maxHeight = null;
+      _measureAfterFrame();
     }
   }
 
-  // 描くたびに、描いた後で空いている所を測る（フレームを増やさない。
-  // 上限が変わったときだけ描き直す）。
+  @override
+  void didUpdateWidget(covariant _ClipboardNoticeText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.ceiling != oldWidget.ceiling) _measureAfterFrame();
+  }
+
+  // レイアウト確定後に一度だけ空き領域を測る。毎フレーム測定を続けると、
+  // SnackBarが表示されている間ずっと不要なフレーム処理が発生する。
+  // 画面サイズ・IME・親から渡される測定条件が変わったときだけ再測定する。
   void _measureAfterFrame() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _measure();
-      _measureAfterFrame();
     });
   }
 
