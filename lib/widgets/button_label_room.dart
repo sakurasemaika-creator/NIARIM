@@ -199,19 +199,62 @@ class _RenderButtonLabelRoom extends RenderShiftedBox {
 
   double _withRoom(double height) => height + 2 * _roomFor(height);
 
-  @override
-  double computeMinIntrinsicHeight(double width) =>
-      _withRoom(child?.getMinIntrinsicHeight(width) ?? 0);
+  T _intrinsicOrFallback<T>(T Function() measure, T fallback) {
+    try {
+      return measure();
+    } on FlutterError catch (error) {
+      // Material buttons contain a LayoutBuilder. AlertDialog's action Wrap
+      // asks for intrinsic dimensions before the button receives constraints,
+      // but LayoutBuilder deliberately rejects speculative intrinsic layout.
+      // This render object only adds vertical ink room, so use a conservative
+      // button-sized fallback for that unsupported query; normal layout still
+      // measures the child with real constraints.
+      if (!error.toString().contains(
+        'LayoutBuilder does not support returning intrinsic dimensions',
+      )) {
+        rethrow;
+      }
+      return fallback;
+    }
+  }
 
   @override
-  double computeMaxIntrinsicHeight(double width) =>
-      _withRoom(child?.getMaxIntrinsicHeight(width) ?? 0);
+  double computeMinIntrinsicHeight(double width) {
+    final child = this.child;
+    if (child == null) return 0;
+    return _intrinsicOrFallback(
+      () => _withRoom(child.getMinIntrinsicHeight(width)),
+      _minHeight,
+    );
+  }
 
   @override
-  double computeMinIntrinsicWidth(double height) =>
-      child?.getMinIntrinsicWidth(height) ?? 0;
+  double computeMaxIntrinsicHeight(double width) {
+    final child = this.child;
+    if (child == null) return 0;
+    return _intrinsicOrFallback(
+      () => _withRoom(child.getMaxIntrinsicHeight(width)),
+      _minHeight + 2 * _room,
+    );
+  }
 
   @override
-  double computeMaxIntrinsicWidth(double height) =>
-      child?.getMaxIntrinsicWidth(height) ?? 0;
+  double computeMinIntrinsicWidth(double height) {
+    final child = this.child;
+    if (child == null) return 0;
+    return _intrinsicOrFallback(
+      () => child.getMinIntrinsicWidth(height),
+      _minHeight,
+    );
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    final child = this.child;
+    if (child == null) return 0;
+    return _intrinsicOrFallback(
+      () => child.getMaxIntrinsicWidth(height),
+      math.max(_minHeight * 3, 144),
+    );
+  }
 }
