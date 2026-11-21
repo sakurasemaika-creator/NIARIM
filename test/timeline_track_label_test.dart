@@ -83,6 +83,11 @@ void main() {
     final finder = find.text(l10n.timelineFrameTrackLabel);
     expect(finder, findsOneWidget, reason: 'フレームトラックのラベルが見つからない');
     final paragraph = tester.renderObject<RenderParagraph>(finder);
+    expect(
+      tester.widget<Text>(finder).style?.fontSize,
+      11,
+      reason: 'Track labels must remain comfortably readable on phones',
+    );
     // 折り返さず1行に収まっていること。
     expect(paragraph.size.height, lessThan(20));
     // 省略記号で切られていないこと。`didExceedMaxLines`は行数超過しか
