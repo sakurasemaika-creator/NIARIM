@@ -17,6 +17,7 @@ void main() {
   testWidgets('community post submit stays reachable across locales and sizes', (
     tester,
   ) async {
+    SharedPreferences.setMockInitialValues({});
     await loadAppFonts(tester);
     final theme = ThemeService();
     await theme.init();
@@ -47,7 +48,6 @@ void main() {
     }
 
     for (final item in cases) {
-      SharedPreferences.setMockInitialValues({});
       tester.view.physicalSize = item.size;
       final root = GlobalKey();
       await tester.pumpWidget(
@@ -116,9 +116,21 @@ void main() {
       final scrollable = find.byType(Scrollable).first;
       await tester.drag(scrollable, const Offset(0, -5000));
       await tester.pumpAndSettle();
-      expect(submit.hitTestable(), findsOneWidget, reason: '${item.name}/scrolled');
-      expect(tester.getRect(submit), initialRect, reason: '${item.name}/fixed');
-      expect(tester.takeException(), isNull, reason: '${item.name}/scrolled');
+      expect(
+        submit.hitTestable(),
+        findsOneWidget,
+        reason: '${item.name}/scrolled',
+      );
+      expect(
+        tester.getRect(submit),
+        initialRect,
+        reason: '${item.name}/fixed',
+      );
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: '${item.name}/scrolled',
+      );
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();

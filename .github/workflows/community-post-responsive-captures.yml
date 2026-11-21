@@ -5,6 +5,8 @@ on:
     branches: [dev_branch]
     paths:
       - 'lib/screens/community/community_post_screen.dart'
+      - 'lib/screens/rewards/creator_missions_screen.dart'
+      - 'test/creator_mission_claim_ui_policy_test.dart'
       - 'test/visual/community_post_responsive_capture_test.dart'
       - '.github/workflows/community-post-responsive-captures.yml'
   workflow_dispatch:
@@ -29,10 +31,13 @@ jobs:
           flutter analyze --no-pub
           lib/screens/community/community_post_screen.dart
           test/visual/community_post_responsive_capture_test.dart
-      - name: Verify 7 locales, 4 widths and 2 text scales
+          lib/screens/rewards/creator_missions_screen.dart
+          test/creator_mission_claim_ui_policy_test.dart
+      - name: Verify community post and creator mission action targets
         run: >-
           flutter test --no-pub --reporter expanded
           test/visual/community_post_responsive_capture_test.dart
+          test/creator_mission_claim_ui_policy_test.dart
       - uses: actions/upload-artifact@v4
         if: always()
         with:
