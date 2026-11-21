@@ -20,11 +20,12 @@ class EmptyStateSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SliverFillRemaining(
-    // Let the sliver use the actual space left after preceding content.
-    // The child scroll view then handles only the empty-state copy when it is
-    // taller than that space, without adding a second full viewport after the
-    // header or taking over the outer list's scroll position.
-    hasScrollBody: false,
+    // The child is itself a scroll view. Mark it as a scroll body so the
+    // sliver does not request intrinsic dimensions from its LayoutBuilder;
+    // that intrinsic pass is unsupported and can break the entire viewport.
+    // With primary:false below, a fitting child still lets drag gestures fall
+    // through to the outer list.
+    hasScrollBody: true,
     child: LayoutBuilder(
       builder: (context, constraints) {
         final availableHeight = math.max(
