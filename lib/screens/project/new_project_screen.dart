@@ -357,7 +357,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   border: const OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: sectionSpacing),
+              SizedBox(
+                key: const ValueKey('new-project-section-gap-1'),
+                height: sectionSpacing,
+              ),
               Text(
                 'FPS',
                 style: localizedHeadingStyle(
@@ -381,7 +384,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     )
                     .toList(),
               ),
-              SizedBox(height: sectionSpacing),
+              SizedBox(
+                key: const ValueKey('new-project-section-gap-2'),
+                height: sectionSpacing,
+              ),
               // 見出しと「サイズ設定」が1行に入らなければ、ボタンを次の行へ
               // （Rowに並べていた頃は、英・西・仏語の大きな文字ではみ出した）。
               Wrap(
@@ -670,7 +676,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),
-              SizedBox(height: sectionSpacing),
+              SizedBox(
+                key: const ValueKey('new-project-section-gap-3'),
+                height: sectionSpacing,
+              ),
               Builder(
                 builder: (context) {
                   // 長さの上限：無料会員は最大90秒、プレミアム会員は
@@ -794,7 +803,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   );
                 },
               ),
-              SizedBox(height: sectionSpacing),
+              SizedBox(
+                key: const ValueKey('new-project-section-gap-4'),
+                height: sectionSpacing,
+              ),
               Text(
                 l10n.newProjectBackgroundColorLabel,
                 style: localizedHeadingStyle(
@@ -807,7 +819,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 selectedColor: _backgroundColor,
                 onChanged: (color) => setState(() => _backgroundColor = color),
               ),
-              SizedBox(height: sectionSpacing),
+              SizedBox(
+                key: const ValueKey('new-project-section-gap-5'),
+                height: sectionSpacing,
+              ),
               // 描画領域設定
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
@@ -898,7 +913,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: sectionSpacing),
+              SizedBox(
+                key: const ValueKey('new-project-section-gap-6'),
+                height: sectionSpacing,
+              ),
               MenuCard(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
