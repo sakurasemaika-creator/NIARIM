@@ -78,8 +78,16 @@ class SharedDirectionSwitch extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final received = l10n.homeSharedReceivedFilter;
     final created = l10n.homeSharedCreatedFilter;
+    // 短い画面では共有の切り替えと並び順を同時に見せるため、上下の
+    // 内側余白を詰める。押せる区画は48pxを下回らない。
+    final compactHeight = MediaQuery.sizeOf(context).height < 400;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      padding: EdgeInsets.fromLTRB(
+        12,
+        compactHeight ? 4 : 8,
+        12,
+        compactHeight ? 0 : 4,
+      ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final text = labelsFit(context, [
@@ -127,6 +135,7 @@ class SharedDirectionSwitch extends StatelessWidget {
                   emptySelectionAllowed: false,
                   style: ButtonStyle(
                     visualDensity: VisualDensity.standard,
+                    minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
                     shape: const WidgetStatePropertyAll(StadiumBorder()),
                     side: WidgetStatePropertyAll(
                       BorderSide(color: Theme.of(context).colorScheme.outline),
@@ -134,7 +143,7 @@ class SharedDirectionSwitch extends StatelessWidget {
                     padding: const WidgetStatePropertyAll(
                       EdgeInsets.symmetric(
                         horizontal: _segmentPadding,
-                        vertical: 12,
+                        vertical: compactHeight ? 2 : 12,
                       ),
                     ),
                   ),
