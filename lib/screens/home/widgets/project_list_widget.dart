@@ -909,6 +909,7 @@ class ProjectListWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 folderDate,
+                const SizedBox(height: 8),
                 Align(
                   alignment: AlignmentDirectional.centerEnd,
                   child: folderActions,
