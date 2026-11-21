@@ -3580,3 +3580,10 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 ### 2026-11-21 GPT追記 — 監査状態更新のコミットマーカー
 
 - Run `44913631475` のAudit policy guardは、保護対象のpolicyファイル変更ではなく、`AUDIT_REPAIR_HANDOFF.md` の更新コミットに `[audit-state]` マーカーが無かったため失敗。今回の追記コミットには必要マーカーを付ける。監査ルール自体は変更しない。
+
+
+### 2026-11-21 GPT追記 — ゴミ箱確認ダイアログのIntrinsicWidth例外
+
+- Home folder-only regression Run `44913631373` は共有フォルダの削除確認ダイアログを開く際にFlutter semantics/layout assertionで失敗。ログではAlertDialog内のRenderIntrinsicWidth配下がlayout未完了となり、`trash-dialog-confirm` のtap時にRenderBox未layout。
+- 根本原因：`ProjectTrashDialog` の確定ボタンラベル `trashConfirmLabelText` が `KoreanWordsText(breakLongLatinWords:true)` を使い、内部の `LayoutBuilder` がAlertDialogのIntrinsicWidth計算に参加していた。AlertDialogはIntrinsicWidthを使うため、LayoutBuilderはintrinsic dimensionsを提供できず不整合。
+- 修正：ボタンラベルをintrinsic sizingに対応した `messageText(label, keepLineStarts:true)` に変更。韓国語の語・日本語行頭禁則を維持し、AlertDialogのintrinsic幅計算を可能にする。専用の全locale×画面サイズテスト `project_trash_dialog_test.dart` と共有フォルダ作成・改名・削除回帰を再実行する。
