@@ -26,6 +26,7 @@ on:
       - 'lib/engine/niatra_serializer.dart'
       - 'lib/l10n/**'
       - 'test/theme_contrast_rescue_test.dart'
+      - 'test/theme_rescue_dialog_inset_test.dart'
       - 'test/theme_preview_gallery_test.dart'
       - 'test/canvas_bar_transparency_test.dart'
       - 'lib/screens/canvas/widgets/canvas_icon_button.dart'
@@ -75,6 +76,7 @@ jobs:
       - name: Theme unit and widget tests
         run: |
           flutter test test/theme_contrast_rescue_test.dart --reporter expanded
+          flutter test test/theme_rescue_dialog_inset_test.dart --reporter expanded
           flutter test test/theme_preview_gallery_test.dart --reporter expanded
           flutter test test/canvas_bar_transparency_test.dart --reporter expanded
           flutter test test/toolbar_size_level_test.dart --reporter expanded
