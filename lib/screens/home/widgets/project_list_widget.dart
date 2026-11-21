@@ -892,7 +892,9 @@ class ProjectListWidget extends StatelessWidget {
       ),
       trailing: (!isSelectionMode && onPickProject == null)
           ? CollectionActionRow(
-              direction: compactLargeTextLayout ? Axis.vertical : Axis.horizontal,
+              direction: compactLargeTextLayout
+                  ? Axis.vertical
+                  : Axis.horizontal,
               children: [
                 CollectionFavoriteButton(
                   itemId: folder.id,
