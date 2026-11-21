@@ -15,6 +15,7 @@ on:
       - test/community_shorts_youtube_playback_test.dart
       - test/community_playback_privacy_actions_test.dart
       - test/home_bookmark_youtube_playback_test.dart
+      - test/trash_confirm_korean_words_test.dart
       - lib/screens/home/home_screen.dart
   workflow_dispatch:
 
