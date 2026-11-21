@@ -3375,3 +3375,9 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - `lib/screens/timeline/timeline_screen.dart` の最新 `_previewControlInset` は8px。`test/requested_ui_all_captures_test.dart` もフレーム数表示の左・下端を8pxで検査しており、値は一致していたため、期待値を別の数値へ変更しない。
 - 所有者指示に合わせ、`CLAUDE.md` に8pxを明記し、同テストの8px定数が製品側の `_previewControlInset` と一致する旨をコメントに追加。コミット `8133ee64`・`3d147be7`。
 - 反映後の静的な値の照合：製品8px／キャプチャtest 8px／CLAUDE.md 8pxで一致。Flutter regression suite Run `44879055833` はqueuedで、実行結果は未取得。
+
+
+### 2026-11-21 GPT追記 — EmptyStateSliverの長文到達テスト
+
+- `test/empty_state_placeholder_test.dart` に、見出しの後に残る領域より120px高い空表示を置き、末尾の操作まで内側スクロールで到達できることを検査するケースを追加。既存の「空表示の中身が収まる場合は外側リストのスクロールを妨げない」回帰も維持する。
+- コミット `333a0b22`。Flutter regression suite Run `44879190638`（HEAD `333a0b22`）はqueued。テストの実行結果は未取得。
