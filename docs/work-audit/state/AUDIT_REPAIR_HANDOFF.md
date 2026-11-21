@@ -3485,3 +3485,13 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - App HEAD `b0512c79c8094974d83fbf7a79887a5af5b47019` のCommunity filters Run `44881977706` をログまで確認。失敗は3件で、破棄テストは `_restorePendingUpload()` の非同期SharedPreferences復元完了前に要素を検索して `No element`。公開設定・AI申告テストは `ensureVisible` がタイルを画面上端（y=96）へ寄せ、AppBar等に重なる位置でタップしていたため、テストタップが対象に届かなかった。
 - 修正：共通 `pumpPostScreen` でSharedPreferences読取完了後にpumpし、全投稿フォームテストで同じ初期化経路を使う。共通 `revealForTap` は `Scrollable.ensureVisible(alignment: 0.5)` でタップ対象をビューポート中央へ配置してから操作する。
 - 実製品の投稿フォームや永続化ロジックは変更せず、テストの非同期初期化と可視位置のみ修正。CIで専用回帰・Flutter全体回帰を再実行し、結果を確認する。
+
+
+### 2026-11-21 GPT追記 — Cloudflare本番反映の継続承認（旧停止条件を廃止）
+
+- ユーザーはCloudflare本番反映に関する既存の追加承認制約を解除し、関連資料を更新して制約を無くすよう明示。
+- 正本 `docs/work-audit/policy/AUDIT_REMOTE_OPERATIONS.md` をApp/Web両方の `dev_branch` で更新。NIARIM-webの `dev_branch` への通常pushに伴う既存 `niarim-web` Workerの自動production deployment、および対象Workerへの明示deploy/必要時rollbackを継続承認の対象に含めた。
+- 旧資料の「追加承認があるまでWeb push/deploy/rollback停止」は履歴上の記録として保持するが、現行制約としては適用しない。今後この対象内の本番反映ごとに追加承認を求めない。
+- 対象外は別repo/branch/Worker/zone、DNS/domain変更、secret/credentialの新規登録・置換、契約・課金、store公開等。force push/履歴破壊も引き続き禁止。通常の検証・最新HEAD確認・deployment/version/traffic・公開URL確認は省略しない。
+- App policy commit: `b16e3fd86ba1b295a760af4c00f33b6c1bac8e67`。Web policy commit: `789e6098543338a78d94fecfc60f8e38e9765160`。
+- この資料更新自体がNIARIM-webの `dev_branch` へのpushに該当するため、Cloudflareの自動deploymentが起きたかを確認し、version/traffic/公開動作を別途検証して記録する。まだdeployment成功とは判定しない。
