@@ -3324,3 +3324,27 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - DISC557：2026-11-13の明示決定は、NIARIMサイトの正式なサブドメインを niarim.miranima-studio.com とし、canonicalは https://niarim.miranima-studio.com/ を維持すること。ルートの miranima-studio.com をサイトURLとして追加しない。現在確認したWebトップのHTMLはcanonicalとog:urlに niarim-web.niarim.workers.dev を使用しており、owner decisionと不一致。コード修正は必要だが、上記の理由でWeb pushを停止中。
 - DISC541：過去の会話から確認できた明示決定は「電話番号認証でユーザーを減らしたくない」のみ。フォロワー一覧の公開範囲やポリシー文言を決めた証拠は見つからないため、未決のまま維持する。
 - DISC563：ポリシー第7条6項の本人操作による削除・削除後の記録について、法務判断待ち。GPT側で内容を推定して確定しない。
+
+
+## 2026-11-21 GPT追記 — ①実装・テスト残件の再開
+
+### App / dev_branch
+
+- `test/app_web_reference_export_exact_test.dart`：書き出し完了ダイアログの「作品を開く」ボタンを、`find.widgetWithText(FilledButton, ...)` で探していたテストを、表示ラベル `find.text(...)` で探す方式へ変更。FilledButton.icon の内部実装型に依存しないようにした。コミット `b520b89`。Project, canvas and plan usability Run `44866080835` は成功。
+- `lib/screens/save_tree/save_tree_screen.dart`：保存日時を通常の `Text` から既存の `DateLineText` に変更し、日付・時刻の言語別まとまりを保つようにした（韓国語320px・文字200%で「오후」が「오／후」に分かれる指摘DISC566への修正）。コミット `85fdf7e`。Save Slot Widget Test Run `44866965180` は成功したが、このRunは `save_slot_title_words_test.dart` を含まないため、DISC566の専用回帰は全体Flutter CIでの確認待ち。
+- Save snapshot and collection action controls verification Run `44866965108` は成功。
+- Flutter regression suite Run `44866965140` はHEAD `85fdf7e` で8 shardとも実行待ち。全体CIの成功とはまだ扱わない。
+
+### NIARIM-web / dev_branch の検証状況（この追記時点）
+
+- HEAD `c7c28c7`。One-time canonical formatting Run `44866509803` は Prettier の `format:check` までは成功し、`audit:opal` の `v8 rate row 0` で失敗。価格セル抽出 `values(row)` がPrettier後の `<td>\n  1,440` のような空白を許容しないため、テスト側を空白許容にする修正が必要。
+- Home width sweep Run `44866449760` は成功。Font coverage Run `44866449831` は結果確認待ち。
+- 公開オパール価格の2 URLは、どちらもCloudflare Accessの認証画面を返して失敗。公開ページを今すぐ一般公開するか、リリースまでAccessで保護するかの所有者判断が必要。CIで認証画面を成功扱いにして隠さない。
+- refreshed website smoke Run `44866496515` はローカル静的サーバーの起動確認で失敗。Actionsログでは起動後のcurlが1回だけ実行されて失敗し、サーバーの診断ログは空だった。待機処理を `seq` ベースにし、`127.0.0.1` へ明示bindしてPID・起動ログを確認する修正案を記録。未反映。
+- 正規ドメインDISC557は2026-11-13に `https://niarim.miranima-studio.com/` と明示決定済み。現行HTMLのworkers.dev canonicalは実装側の不一致であり、所有者の再判断事項ではない。
+- Web側はdev_branchへのpushがCloudflare本番反映を起動する既存運用制約があるため、明示的な追加承認が得られるまで修正コミットをpushしない。
+
+### 今回の作業範囲
+
+- ユーザー指示により、②実ブラウザー・実端末での手動確認と④法務・専門家確認は一旦保留。
+- ①実装・自動テストの残件を継続する。未検証の修正を完了扱いにしない。
