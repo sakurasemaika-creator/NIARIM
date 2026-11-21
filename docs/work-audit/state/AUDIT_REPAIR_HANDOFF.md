@@ -3575,3 +3575,8 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - Compact home toolbar focused Run `44913362972` で、Projectsタブのタイトル左端12pxと検索切替ボタン12pxは合格。Worksタブの検索入力欄はtitleSpacing 12pxの影響で左端12pxとなり、既存の最低16px条件に4px不足。
 - 対応：600px未満のProjects以外のタブ検索欄にだけ左4pxのPaddingを追加。Projectsタブの検索切替は12pxを維持し、600px以上では従来の16px titleSpacingのまま余計なpaddingを足さない。
 - 次のfocused workflowで412/320pxの検索欄と全タブ操作を再確認する。
+
+
+### 2026-11-21 GPT追記 — 監査状態更新のコミットマーカー
+
+- Run `44913631475` のAudit policy guardは、保護対象のpolicyファイル変更ではなく、`AUDIT_REPAIR_HANDOFF.md` の更新コミットに `[audit-state]` マーカーが無かったため失敗。今回の追記コミットには必要マーカーを付ける。監査ルール自体は変更しない。
