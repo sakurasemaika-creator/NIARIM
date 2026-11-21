@@ -236,10 +236,10 @@ void main() {
       final paragraph = element.renderObject! as RenderParagraph;
       if (!paragraph.attached || paragraph.size.isEmpty) continue;
       final lines = ParagraphLines(paragraph);
-      final text = lines.visible;
+      final text = lines.visible.replaceAll('\\u00a0', ' ');
       for (final match in RegExp(
         spaced
-            ? r'(?<!\d)\d+(?:[.,]\d+)*[ \u00a0]\p{L}'
+            ? r'(?<!\d)\d+(?:[.,]\d+)*(?:[ \u00a0]i/s|[ \u00a0]\p{L})'
             : r'(?<!\d)\d+(?:[.,]\d+)*\p{L}',
         unicode: true,
       ).allMatches(text)) {
@@ -285,7 +285,7 @@ void main() {
           final rows = find.byWidgetPredicate(
             (w) =>
                 w is RichText &&
-                RegExp(r'\d+(?:fps|ips)').hasMatch(
+                RegExp(r'\d+(?:fps|ips|[ \u00a0]?i/s)').hasMatch(
                   w.text
                       .toPlainText(includeSemanticsLabels: false)
                       .replaceAll(wordJoiner, ''),
