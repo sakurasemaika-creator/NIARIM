@@ -98,84 +98,83 @@ class ThemeRescueButton extends StatelessWidget {
                       vertical: 8,
                     ),
                     child: ExcludeSemantics(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(
-                          height: 26,
-                          width: 29,
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                left: 0,
-                                top: 2,
-                                child: Icon(
-                                  Icons.palette_outlined,
-                                  size: 24,
-                                  color: Color(0xFFFFFFFF),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            height: 26,
+                            width: 29,
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  left: 0,
+                                  top: 2,
+                                  child: Icon(
+                                    Icons.palette_outlined,
+                                    size: 24,
+                                    color: Color(0xFFFFFFFF),
+                                  ),
                                 ),
-                              ),
-                              Positioned(
-                                left: 2,
-                                top: 4,
-                                child: Icon(
-                                  Icons.palette_outlined,
-                                  size: 20,
-                                  color: Color(0xFF000000),
+                                Positioned(
+                                  left: 2,
+                                  top: 4,
+                                  child: Icon(
+                                    Icons.palette_outlined,
+                                    size: 20,
+                                    color: Color(0xFF000000),
+                                  ),
                                 ),
-                              ),
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                child: Icon(
-                                  Icons.restart_alt,
-                                  size: 16,
-                                  color: Color(0xFFFFFFFF),
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: Icon(
+                                    Icons.restart_alt,
+                                    size: 16,
+                                    color: Color(0xFFFFFFFF),
+                                  ),
                                 ),
-                              ),
-                              Positioned(
-                                right: 1,
-                                top: 1,
-                                child: Icon(
-                                  Icons.restart_alt,
-                                  size: 12,
-                                  color: Color(0xFF000000),
+                                Positioned(
+                                  right: 1,
+                                  top: 1,
+                                  child: Icon(
+                                    Icons.restart_alt,
+                                    size: 12,
+                                    color: Color(0xFF000000),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        if (!iconOnly) ...[
-                          const SizedBox(width: 4),
-                          Stack(
-                            children: [
-                              Text(
-                                l10n.themeUnreadableResetButton,
-                                style: TextStyle(
-                                  foreground: Paint()
-                                    ..style = PaintingStyle.stroke
-                                    ..strokeWidth = 3.5
-                                    ..strokeJoin = StrokeJoin.round
-                                    ..color = const Color(0xFFFFFFFF),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
+                          if (!iconOnly) ...[
+                            const SizedBox(width: 4),
+                            Stack(
+                              children: [
+                                Text(
+                                  l10n.themeUnreadableResetButton,
+                                  style: TextStyle(
+                                    foreground: Paint()
+                                      ..style = PaintingStyle.stroke
+                                      ..strokeWidth = 3.5
+                                      ..strokeJoin = StrokeJoin.round
+                                      ..color = const Color(0xFFFFFFFF),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                l10n.themeUnreadableResetButton,
-                                style: const TextStyle(
-                                  color: Color(0xFF000000),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
+                                Text(
+                                  l10n.themeUnreadableResetButton,
+                                  style: const TextStyle(
+                                    color: Color(0xFF000000),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                ),
                   ),
                 ),
               ),
@@ -183,6 +182,7 @@ class ThemeRescueButton extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }
