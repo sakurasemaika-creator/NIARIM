@@ -3535,3 +3535,12 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 
 
 - **CI追跡更新（2026-11-21）**：翻訳・テストを含む `56ea19e5` は後続のCommunity test更新でRun `44896963780` がcancelledになったが、最新HEAD `f26f1e914267b30e0fa483f9585d6d3d0be26526` は比較上 `56ea19e5` の後続（5 commits ahead / 0 behind）で、変更ファイルは監査資料とCommunity testのみ。したがってDISC190の翻訳・テスト変更は現HEADにも含まれる。最新HEADのFlutter regression suite Run `44897184258` はpending・jobs未生成。実行・合格は未確認。
+
+
+### 2026-11-21 GPT追記 — ユーザーの明示的なCloudflare制約解除指示を反映
+
+- この追記時点の会話でユーザーは「Cloudflare本番反映に関する既存の制約→これ資料更新してこの制約無くしてください」と明示。これは旧停止条件の解除と関連資料の更新を直接指示するものであり、過去の追記にある「ユーザー承認を確認できないため停止継続」という記載は、この新しい明示指示によって更新される。
+- App/Web両方の `docs/work-audit/policy/AUDIT_REMOTE_OPERATIONS.md`（現blob SHA `36089d1fa7984b4bbcf823569ab063bccff5025b`）は、NIARIM-web `dev_branch` の通常pushに伴う既存 `niarim-web` Workerの自動production deployment、および同Workerへの検証済み成果物の明示deploy/不具合時rollbackを継続承認対象とし、旧停止条件を現行制約として適用しない旨を記載済み。App/Web両ファイルは同一blob SHAで一致。
+- 継続承認の対象は既存repo/branch/Workerに限定。別branch・別Worker/zone、DNS/domain変更、secret/credentialの新規登録・置換、契約/課金、store公開、force push/履歴破壊は含まれない。CI・最新HEAD・deployment/version/traffic・公開URL検証は引き続き必須。
+- 前段の訂正記録（「明示承認なし」「Web push/deploy停止」）は当時の認識履歴として保持するが、以後の現行判断には本追記と上記policyを適用する。
+- DISC145の最新確認：App HEAD `f26f1e914267b30e0fa483f9585d6d3d0be26526`。Flutter full regression Run `44897184258` はpending、jobs未生成。成功扱いにしない。DISC145 evidenceの旧Run `44881246086` は最新HEADを対象としないため、合格根拠に使わない。SP/PC実画面・スクリーンリーダー確認も未実施で、DISC145は未完了。
