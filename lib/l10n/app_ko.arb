@@ -3955,6 +3955,7 @@
   "settingsAccountDeletionTitle": "NIARIM 계정 삭제",
   "settingsAccountDeletionSubtitle": "공식 사이트에서 진행",
   "settingsAccountDeletionLinkFailed": "계정 삭제 페이지를 열 수 없습니다.",
+  "communitySampleReportUnavailable": "예시 작품과 작가는 신고할 수 없습니다.",
   "communityReportAuthor": "사용자 신고",
   "communityReportReason": "신고 이유(운영자만 볼 수 있음)",
   "communityReportSend": "신고 보내기",

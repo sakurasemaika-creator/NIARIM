@@ -1442,6 +1442,8 @@ onTap: ...)`だったために
   省略すると見分けられない言語がある）。収まるかは文字のボタンと同じ書式・
   文字の大きさの設定で測る。`home_display_matrix_test`が全幅・全言語で
   「全選択・全解除の文字が省略されていない」ことを見張る。
+- **作品広場でミュートした作品はカードの位置と順位を保つ**。カードに
+  「この作品は非表示対象です」と表示し、作品の内容は隠す。
 - **作品広場の上部（検索・絞り込み・タブ）と浮かぶプレビューの大きさは
   dev_branchの作りが正**：dev_branchが2026-10-28〜30に、段に分けたヘッダー・
   検索のタブ・保存した検索条件・ミュート等へ作り直した（見張りは
@@ -2229,8 +2231,7 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
 - **タイムラインのプレビューの操作（フレーム数・全画面）は欄の端に固定する**：
   `timeline_screen.dart`の`_buildPreviewBand`が、プレビュー欄
   （`timelinePreviewArea`）の中央に絵を置き、全画面をヘッダーの下の右端、
-  フレーム数を大きさを変えるつまみの上の左端（欄の端から8px、dev_branchの
-  決まり）に置く。2026-11-11の`ddda945e`（別のセッション）から、絵の大きさは
+  フレーム数を大きさを変えるつまみの上の左端（欄の端から `_previewControlInset`）に置く。2026-11-11の`ddda945e`（別のセッション）から、絵の大きさは
   欄と縦横比だけで決め、操作のために絵を縮めない（大きい絵には操作が
   重なってよい）。欄の高さもつまみで決め、縦横比で上限を掛けない。
   それ以前の「絵に重ねない（ユーザー指定）」決まり（操作の場所を絵の左右か
@@ -2239,7 +2240,7 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   ループの切り替えは置かない（dev_branchが消した。再生はいつも先頭へ戻る）。
   プレビューに操作を足すときもこの欄の端へ置き、
   `test/timeline_preview_controls_test.dart`とdev_branchの
-  `requested_ui_all_captures_test`（欄の端から8px）に通すこと。
+  `requested_ui_all_captures_test` に通すこと。
 - **`dart format lib test tool`は他セッションの未整形ファイルまで書き換える**：
   別セッションがGitHub API経由で未整形のまま入れたファイル
   （`brush_texture_selector.dart`等）があり、全体にかけると無関係なファイルが

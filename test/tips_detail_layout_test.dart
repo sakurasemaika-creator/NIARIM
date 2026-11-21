@@ -133,6 +133,43 @@ void main() {
     },
   );
 
+  testWidgets('arrow keys step through captures before turning the page', (
+    tester,
+  ) async {
+    await mount(tester, const Size(1280, 800));
+    await open(tester, l10n.tipsClipDuplicateTitle);
+    final viewer = find.byType(TipScreenCaptures);
+    int index() => tester.widget<TipScreenCaptures>(viewer).index!;
+    expect(index(), 0);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(index(), 1);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.pumpAndSettle();
+    expect(index(), 0);
+
+    await close(tester);
+    await open(tester, l10n.tipsAutofillManualPartColorTitle);
+    final paragraphs = l10n.tipsAutofillManualPartColorDesc.split('\n');
+    expect(find.text(paragraphs[0]), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(find.text(paragraphs[1]), findsOneWidget);
+    expect(index(), 0);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(find.text(paragraphs[1]), findsOneWidget);
+    expect(index(), 1);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(find.text(paragraphs[2]), findsOneWidget);
+    expect(index(), 0);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.pumpAndSettle();
+    expect(find.text(paragraphs[1]), findsOneWidget);
+    expect(index(), 1);
+  });
+
   testWidgets('save captures follow the workflow and open full-screen', (
     tester,
   ) async {

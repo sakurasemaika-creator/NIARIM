@@ -41,6 +41,14 @@ const _nbsp = ' ';
 const _narrowNbsp = ' ';
 
 void main() {
+  test('French frame rates use i/s and nonbreaking unit spaces', () {
+    final words = lookupAppLocalizations(const Locale('fr'));
+    expect(words.homeProjectMeta(12, 10), '12\u00a0i/s · 10\u00a0s');
+    expect(words.pcStatusFps(12), '12\u00a0i/s');
+    expect(words.exportFpsLabel, 'i/s');
+    expect(words.settingsDefaultFps, contains('(i/s)'));
+  });
+
   final fr = _values('fr');
 
   test('（1）仏語：クリップボードを空にするボタンと「元に戻す」は別の言葉', () {

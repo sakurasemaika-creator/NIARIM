@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../../config/font_fallback.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router.dart';
 import '../../../services/community_preview_service.dart';
@@ -166,7 +167,10 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
     final width = math.min(service.width, availableWidth);
     const labelStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
     final detailStyle =
-        theme.textTheme.labelLarge?.merge(labelStyle) ?? labelStyle;
+        theme.textButtonTheme.style?.textStyle
+            ?.resolve({})
+            ?.merge(labelStyle) ??
+        localizedHeadingStyle(context, labelStyle);
     final text = TextPainter(
       text: TextSpan(
         text: l10n.communityFloatingPreviewDetailButton,

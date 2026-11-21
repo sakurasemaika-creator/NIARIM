@@ -6,6 +6,7 @@ import '../../l10n/app_localizations.dart';
 import 'tip_diagram.dart';
 import 'tip_diagram_data.dart';
 import 'tip_capture_data.dart';
+import 'tip_screen_capture.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
@@ -701,6 +702,7 @@ class _TipDetailDialog extends StatefulWidget {
 class _TipDetailDialogState extends State<_TipDetailDialog> {
   final _pageController = PageController();
   int _page = 0;
+  final _captureIndexByPage = <int, int>{};
   late final List<String> _textPages = _splitIntoPages(
     widget.tip.description,
     illustrateByParagraph: widget.tip.topic.illustrateByParagraph,
@@ -767,6 +769,31 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     );
   }
 
+  void _step(int direction, AppLocalizations l10n) {
+    final count = _captures(_page, l10n).length;
+    final capture = (_captureIndexByPage[_page] ?? 0) + direction;
+    if (capture >= 0 && capture < count) {
+      setState(() => _captureIndexByPage[_page] = capture);
+      return;
+    }
+    final nextPage = _page + direction;
+    if (nextPage < 0 || nextPage >= _textPages.length) return;
+    final nextCount = _captures(nextPage, l10n).length;
+    setState(() {
+      _captureIndexByPage[nextPage] = direction < 0 && nextCount > 0
+          ? nextCount - 1
+          : 0;
+    });
+    _goToPage(nextPage);
+  }
+
+  List<TipScreenCapture> _captures(int page, AppLocalizations l10n) =>
+      tipCaptures(
+        widget.tip.topic,
+        widget.tip.topic.illustrateByParagraph ? page : 0,
+        l10n,
+      );
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -814,11 +841,11 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
               steps: widget.tip.topic.steps(l10n, index),
               height: dialogHeight * .60,
               isComparison: widget.tip.topic.isComparison,
-              captures: tipCaptures(
-                widget.tip.topic,
-                widget.tip.topic.illustrateByParagraph ? index : 0,
-                l10n,
-              ),
+              captures: _captures(index, l10n),
+              captureIndex: _captureIndexByPage[index] ?? 0,
+              onCaptureChanged: (capture) {
+                setState(() => _captureIndexByPage[index] = capture);
+              },
             ),
             const SizedBox(height: 12),
             Text(
@@ -833,9 +860,9 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
-            _goToPage(_page - 1),
+            _step(-1, l10n),
         const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
-            _goToPage(_page + 1),
+            _step(1, l10n),
       },
       child: Focus(
         autofocus: true,

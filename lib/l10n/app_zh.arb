@@ -3955,6 +3955,7 @@
   "settingsAccountDeletionTitle": "删除 NIARIM 账号",
   "settingsAccountDeletionSubtitle": "前往官方网站办理",
   "settingsAccountDeletionLinkFailed": "无法打开账号删除页面。",
+  "communitySampleReportUnavailable": "无法举报示例作品或创作者。",
   "communityReportAuthor": "举报用户",
   "communityReportReason": "举报原因（仅运营方可见）",
   "communityReportSend": "发送举报",

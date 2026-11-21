@@ -11440,6 +11440,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo abrir la página de eliminación de la cuenta.';
 
   @override
+  String get communitySampleReportUnavailable =>
+      'No se pueden denunciar las obras ni los autores de muestra.';
+
+  @override
   String get communityReportAuthor => 'Denunciar esta cuenta';
 
   @override

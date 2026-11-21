@@ -14,12 +14,16 @@ class TipDiagram extends StatelessWidget {
     required this.height,
     required this.isComparison,
     this.captures = const [],
+    this.captureIndex,
+    this.onCaptureChanged,
   });
 
   final List<TipDiagramStep> steps;
   final double height;
   final bool isComparison;
   final List<TipScreenCapture> captures;
+  final int? captureIndex;
+  final ValueChanged<int>? onCaptureChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +56,11 @@ class TipDiagram extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(10),
               child: captures.isNotEmpty
-                  ? TipScreenCaptures(frames: captures)
+                  ? TipScreenCaptures(
+                      frames: captures,
+                      index: captureIndex,
+                      onChanged: onCaptureChanged,
+                    )
                   : Column(
                       children: [
                         for (var i = 0; i < steps.length; i++) ...[

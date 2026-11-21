@@ -10365,6 +10365,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAccountDeletionLinkFailed => '无法打开账号删除页面。';
 
   @override
+  String get communitySampleReportUnavailable => '无法举报示例作品或创作者。';
+
+  @override
   String get communityReportAuthor => '举报用户';
 
   @override
@@ -20807,6 +20810,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get settingsAccountDeletionLinkFailed => '無法開啟帳號刪除頁面。';
+
+  @override
+  String get communitySampleReportUnavailable => '無法檢舉範例作品或創作者。';
 
   @override
   String get communityReportAuthor => '檢舉使用者';

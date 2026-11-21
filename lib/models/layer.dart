@@ -1,3 +1,5 @@
+import 'dart:ui' show Offset;
+
 import 'layer_keyframe.dart';
 import 'layer_mask.dart';
 import 'text_object.dart';
@@ -30,6 +32,7 @@ class Layer {
   final String? watermarkAssetId;
   final double watermarkAngle;
   final double watermarkScale;
+  final PlacedWatermarkSource? watermarkSource;
   final int trackRow;
   final List<LayerKeyframe> keyframes;
 
@@ -63,6 +66,7 @@ class Layer {
     this.watermarkAssetId,
     this.watermarkAngle = 0,
     this.watermarkScale = 0.25,
+    this.watermarkSource,
     this.trackRow = 0,
     this.keyframes = const [],
     this.mask,
@@ -94,6 +98,7 @@ class Layer {
     Object? watermarkAssetId = _sentinel,
     double? watermarkAngle,
     double? watermarkScale,
+    Object? watermarkSource = _sentinel,
     int? trackRow,
     List<LayerKeyframe>? keyframes,
     Object? mask = _sentinel,
@@ -139,9 +144,64 @@ class Layer {
           : watermarkAssetId as String?,
       watermarkAngle: watermarkAngle ?? this.watermarkAngle,
       watermarkScale: watermarkScale ?? this.watermarkScale,
+      watermarkSource: watermarkSource == _sentinel
+          ? this.watermarkSource
+          : watermarkSource as PlacedWatermarkSource?,
       trackRow: trackRow ?? this.trackRow,
       keyframes: keyframes ?? this.keyframes,
       mask: mask == _sentinel ? this.mask : mask as LayerMask?,
+    );
+  }
+}
+
+/// The embedded raster before the first size or angle edit. The cropped PNG
+/// stays independent of the preset and of the currently visible canvas pixels.
+class PlacedWatermarkSource {
+  const PlacedWatermarkSource({
+    required this.png,
+    required this.center,
+    required this.angle,
+    required this.scale,
+  });
+
+  final String png;
+  final Offset center;
+  final double angle;
+  final double scale;
+
+  Map<String, Object> toJson() => {
+    'png': png,
+    'x': center.dx,
+    'y': center.dy,
+    'angle': angle,
+    'scale': scale,
+  };
+
+  static PlacedWatermarkSource? fromJson(Object? json) {
+    if (json is! Map<String, dynamic>) return null;
+    final png = json['png'];
+    final x = json['x'];
+    final y = json['y'];
+    final angle = json['angle'];
+    final scale = json['scale'];
+    if (png is! String ||
+        png.isEmpty ||
+        x is! num ||
+        !x.isFinite ||
+        y is! num ||
+        !y.isFinite ||
+        angle is! num ||
+        !angle.isFinite ||
+        scale is! num ||
+        !scale.isFinite ||
+        scale <= 0) {
+      return null;
+    }
+    return PlacedWatermarkSource(
+      png: png,
+      center: Offset(x.toDouble(), y.toDouble()),
+      angle: angle.toDouble(),
+      scale: scale.toDouble(),
     );
   }
 }

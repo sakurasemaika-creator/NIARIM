@@ -181,7 +181,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String homeProjectMeta(int fps, int duration) {
-    return '${fps}ips · ${duration}s';
+    return '$fps i/s · $duration s';
   }
 
   @override
@@ -266,13 +266,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsBasicTitle => 'Général';
 
   @override
-  String get settingsBasicSubtitle => 'FPS, langue, zone de dessin';
+  String get settingsBasicSubtitle => 'Cadence (i/s), langue, zone de dessin';
 
   @override
   String get settingsBasicSheetTitle => 'Réglages généraux';
 
   @override
-  String get settingsDefaultFps => 'FPS par défaut';
+  String get settingsDefaultFps => 'Cadence par défaut (i/s)';
 
   @override
   String get settingsDefaultFpsSubtitle =>
@@ -1713,7 +1713,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpNewProjectDesc =>
-      'Définissez la taille du canevas, les fps, la durée (en secondes — ensuite maintenue synchronisée avec les changements d’images faits dans la timeline), la zone de dessin (permet de dessiner au-delà des limites d’export) et les réglages de remplissage automatique à utiliser, le tout avant de créer le projet.';
+      'Définissez la taille du canevas, la cadence (i/s), la durée (en secondes — ensuite maintenue synchronisée avec les changements d’images faits dans la timeline), la zone de dessin (permet de dessiner au-delà des limites d’export) et les réglages de remplissage automatique à utiliser, le tout avant de créer le projet.';
 
   @override
   String get helpThemeSettingsTitle => 'Réglages de thème';
@@ -1883,7 +1883,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'Dans « Préréglage », choisissez « Standard », « Haute qualité » ou « Personnalisé ». Le mode « Personnalisé » permet de régler les images par seconde (FPS). Affiche la progression pendant l’export d’une vidéo ou d’une image, et permet d’annuler en cours de route. Le temps nécessaire dépend des performances de l’appareil. Dans Œuvres, sur l’écran d’accueil, recherchez le fichier par le nom du projet. Choisissez Partager pour l’enregistrer dans Photos ou l’ouvrir dans une autre application.';
+      'Dans « Préréglage », choisissez « Standard », « Haute qualité » ou « Personnalisé ». Le mode « Personnalisé » permet de régler les images par seconde (i/s). Affiche la progression pendant l’export d’une vidéo ou d’une image, et permet d’annuler en cours de route. Le temps nécessaire dépend des performances de l’appareil. Dans Œuvres, sur l’écran d’accueil, recherchez le fichier par le nom du projet. Choisissez Partager pour l’enregistrer dans Photos ou l’ouvrir dans une autre application.';
 
   @override
   String get helpDrawingFilterTitle => 'Filtres de dessin';
@@ -2996,7 +2996,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exportAdvancedSettings => 'Réglages avancés';
 
   @override
-  String get exportFpsLabel => 'IPS';
+  String get exportFpsLabel => 'i/s';
 
   @override
   String get exportFormatSection => 'Format';
@@ -9038,7 +9038,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String pcStatusFps(int fps) {
-    return '$fps i/s';
+    return '$fps i/s';
   }
 
   @override
@@ -11449,6 +11449,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get settingsAccountDeletionLinkFailed =>
       'Impossible d’ouvrir la page de suppression du compte.';
+
+  @override
+  String get communitySampleReportUnavailable =>
+      'Vous ne pouvez pas signaler les œuvres ni les créateurs de démonstration.';
 
   @override
   String get communityReportAuthor => 'Signaler ce compte';

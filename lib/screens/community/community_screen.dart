@@ -2683,6 +2683,25 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
       theme.dialogTheme.backgroundColor ?? scheme.surfaceContainerHigh,
       theme.scaffoldBackgroundColor,
     );
+    final dateLabels = [
+      for (final date in _PostDateFilter.values) _dateLabel(l10n, date),
+    ];
+    final durationLabels = [
+      l10n.communityDurationAny,
+      l10n.communityDurationUpTo,
+      l10n.communityDurationRange,
+    ];
+    List<Widget> selectedLabels(List<String> labels) => [
+      for (final label in labels)
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(label, maxLines: 1, softWrap: false),
+          ),
+        ),
+    ];
     return AlertDialog(
       insetPadding: typingDialogInsetPadding(
         context,
@@ -2715,11 +2734,12 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                   key: const Key('communityPostDateFilter'),
                   initialValue: _dateFilter,
                   isExpanded: true,
+                  selectedItemBuilder: (_) => selectedLabels(dateLabels),
                   items: [
                     for (final date in _PostDateFilter.values)
                       DropdownMenuItem(
                         value: date,
-                        child: Text(_dateLabel(l10n, date)),
+                        child: messageText(dateLabels[date.index]),
                       ),
                   ],
                   onChanged: (value) {
@@ -2760,19 +2780,13 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                   key: const Key('communityDurationMode'),
                   initialValue: _durationMode,
                   isExpanded: true,
+                  selectedItemBuilder: (_) => selectedLabels(durationLabels),
                   items: [
-                    DropdownMenuItem(
-                      value: _DurationFilterMode.all,
-                      child: Text(l10n.communityDurationAny),
-                    ),
-                    DropdownMenuItem(
-                      value: _DurationFilterMode.upTo,
-                      child: Text(l10n.communityDurationUpTo),
-                    ),
-                    DropdownMenuItem(
-                      value: _DurationFilterMode.range,
-                      child: Text(l10n.communityDurationRange),
-                    ),
+                    for (final mode in _DurationFilterMode.values)
+                      DropdownMenuItem(
+                        value: mode,
+                        child: messageText(durationLabels[mode.index]),
+                      ),
                   ],
                   onChanged: (value) => setState(
                     () => _durationMode = value ?? _DurationFilterMode.all,

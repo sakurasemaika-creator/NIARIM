@@ -4881,7 +4881,37 @@ class ProjectService extends ChangeNotifier {
     final newExportWidth = (newWidth / scale).round().clamp(64, 1 << 30);
     final newExportHeight = (newHeight / scale).round().clamp(64, 1 << 30);
 
-    _setResizedCanvas(projectId, newTm, newExportWidth, newExportHeight);
+    // Cropping is explicitly destructive. Future watermark edits start
+    // from the cropped raster and the resize history can restore its source.
+    final originalScenes = _scenes[projectId];
+    final resizedScenes = originalScenes?.map((scene) {
+      if (!scene.frames.any(
+        (frame) => frame.layers.any((layer) => layer.watermarkSource != null),
+      )) {
+        return scene;
+      }
+      return scene.copyWith(
+        frames: [
+          for (final frame in scene.frames)
+            frame.copyWith(
+              layers: [
+                for (final layer in frame.layers)
+                  if (layer.watermarkSource != null)
+                    layer.copyWith(watermarkSource: null)
+                  else
+                    layer,
+              ],
+            ),
+        ],
+      );
+    }).toList();
+    _setResizedCanvas(
+      projectId,
+      newTm,
+      newExportWidth,
+      newExportHeight,
+      resizedScenes,
+    );
     // Pixel history actions retain their TileManager. Restore that exact
     // instance so operations on each side of the resize remain undoable.
     _undoManager?.push(
@@ -4892,12 +4922,14 @@ class ProjectService extends ChangeNotifier {
           sourceTm,
           current.exportWidth,
           current.exportHeight,
+          originalScenes,
         ),
         () => _setResizedCanvas(
           projectId,
           newTm,
           newExportWidth,
           newExportHeight,
+          resizedScenes,
         ),
       ),
       projectId: projectId,
@@ -4909,11 +4941,13 @@ class ProjectService extends ChangeNotifier {
     TileManager tiles,
     int exportWidth,
     int exportHeight,
+    List<Scene>? scenes,
   ) {
     final index = _projects.indexWhere((p) => p.id == projectId);
     if (index < 0) return;
     tiles.markAllTilesDirty();
     _tileManagers[projectId] = tiles;
+    if (scenes != null) _scenes[projectId] = List.of(scenes);
     _projects[index] = _projects[index].copyWith(
       exportWidth: exportWidth,
       exportHeight: exportHeight,

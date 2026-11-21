@@ -10541,6 +10541,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsAccountDeletionLinkFailed => '계정 삭제 페이지를 열 수 없습니다.';
 
   @override
+  String get communitySampleReportUnavailable => '예시 작품과 작가는 신고할 수 없습니다.';
+
+  @override
   String get communityReportAuthor => '사용자 신고';
 
   @override

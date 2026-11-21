@@ -1200,6 +1200,8 @@ class NiaproSerializer {
     'watermarkAssetId': l.watermarkAssetId,
     'watermarkAngle': l.watermarkAngle,
     'watermarkScale': l.watermarkScale,
+    if (l.watermarkSource case final source?)
+      'watermarkSource': source.toJson(),
     'trackRow': l.trackRow,
     if (l.keyframes.isNotEmpty)
       'keyframes': l.keyframes.map((k) => k.toJson()).toList(),
@@ -1437,6 +1439,7 @@ class NiaproSerializer {
     watermarkAssetId: j['watermarkAssetId'] as String?,
     watermarkAngle: (j['watermarkAngle'] as num?)?.toDouble() ?? 0,
     watermarkScale: (j['watermarkScale'] as num?)?.toDouble() ?? 0.25,
+    watermarkSource: PlacedWatermarkSource.fromJson(j['watermarkSource']),
     trackRow: j['trackRow'] as int? ?? 0,
     keyframes: (j['keyframes'] as List<dynamic>? ?? const [])
         .map((k) => LayerKeyframe.fromJson(k as Map<String, dynamic>))

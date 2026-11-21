@@ -13,8 +13,12 @@ Future<void> reportCommunityContent(
 }) async {
   final service = context.read<CommunityService>();
   final api = service.api;
-  if (!_canModerate(context, service)) return;
   final l10n = AppLocalizations.of(context)!;
+  if (!service.isBackendConnected) {
+    _showFeedback(context, l10n.communitySampleReportUnavailable);
+    return;
+  }
+  if (!_canModerate(context, service)) return;
   final revision = service.accountRevision;
   final reason = await showDialog<String>(
     context: context,

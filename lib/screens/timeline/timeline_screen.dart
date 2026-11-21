@@ -3390,14 +3390,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// Transform the embedded pixels, independently of the source preset.
-  Future<Uint8List?> _transformPlacedWatermark(
+  Future<PlacedWatermarkSource?> _capturePlacedWatermark(
     ProjectService projects,
     Layer layer, {
     required String sceneId,
     required int frameIndex,
-    required double angle,
-    required double scale,
   }) async {
     final tiles = projects.tileManagerOf(widget.projectId);
     final key = projects.tileKeyFor(
@@ -3406,34 +3403,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
       frameIndex,
       layer.id,
     );
-    final source = await tiles.compositeLayerToImage(key);
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    final center = Offset(tiles.canvasWidth / 2, tiles.canvasHeight / 2);
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate((angle - layer.watermarkAngle) * math.pi / 180);
-    canvas.scale(scale / layer.watermarkScale);
-    canvas.translate(-center.dx, -center.dy);
-    canvas.drawImage(
-      source,
-      Offset.zero,
-      Paint()..filterQuality = FilterQuality.high,
-    );
-    final picture = recorder.endRecording();
-    source.dispose();
+    final image = await tiles.compositeLayerToImage(key);
     try {
-      final image = await picture.toImage(
-        tiles.canvasWidth,
-        tiles.canvasHeight,
+      return await capturePlacedWatermark(
+        image,
+        angle: layer.watermarkAngle,
+        scale: layer.watermarkScale,
       );
-      try {
-        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-        return data?.buffer.asUint8List();
-      } finally {
-        image.dispose();
-      }
     } finally {
-      picture.dispose();
+      image.dispose();
     }
   }
 
@@ -6217,16 +6195,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     current.watermarkScale <= 0) {
                   return;
                 }
-                final pixels = await _transformPlacedWatermark(
-                  ps,
-                  current,
-                  sceneId: home.sceneId,
-                  frameIndex: home.frameIndex,
-                  angle: angle,
-                  scale: scale,
-                );
+                final tiles = ps.tileManagerOf(widget.projectId);
+                final source =
+                    current.watermarkSource ??
+                    await _capturePlacedWatermark(
+                      ps,
+                      current,
+                      sceneId: home.sceneId,
+                      frameIndex: home.frameIndex,
+                    );
+                final pixels = source == null
+                    ? null
+                    : await renderPlacedWatermark(
+                        source,
+                        width: tiles.canvasWidth,
+                        height: tiles.canvasHeight,
+                        angle: angle,
+                        scale: scale,
+                      );
                 if (pixels == null ||
                     !mounted ||
+                    !identical(tiles, ps.tileManagerOf(widget.projectId)) ||
                     !context.read<PremiumService>().isFeatureAvailable(
                       PremiumFeature.watermark,
                     ) ||
@@ -6245,7 +6234,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   frameIndex: home.frameIndex,
                   layerId: layer.id,
                   pixels: pixels,
-                  updatedLayer: updated,
+                  updatedLayer: updated.copyWith(watermarkSource: source),
                 );
               },
               child: Text(l10n.commonOk),

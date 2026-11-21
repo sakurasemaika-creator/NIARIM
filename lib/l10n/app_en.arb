@@ -3992,6 +3992,7 @@
   "settingsAccountDeletionTitle": "Delete your NIARIM account",
   "settingsAccountDeletionSubtitle": "Continue on the official website",
   "settingsAccountDeletionLinkFailed": "Could not open the account deletion page.",
+  "communitySampleReportUnavailable": "Sample works and creators can’t be reported.",
   "communityReportAuthor": "Report creator",
   "communityReportReason": "Reason for reporting (visible only to moderators)",
   "communityReportSend": "Send report",

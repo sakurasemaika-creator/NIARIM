@@ -6,6 +6,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/community_work.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
+import 'package:niarim/screens/community/community_work_detail_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_preview_service.dart';
@@ -123,6 +124,59 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('reporting a sample explains why no report can be sent', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final sample = CommunityService();
+    addTearDown(sample.dispose);
+    final work = sample.works.firstWhere((work) => !sample.isOwnWork(work));
+    await tester.pumpWidget(
+      host(sample, home: CommunityWorkDetailScreen(workId: work.id)),
+    );
+    await tester.pumpAndSettle();
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    await tapVisible(tester, find.text(l10n.communityWorkDetailReportButton));
+    expect(find.text(l10n.communitySampleReportUnavailable), findsOneWidget);
+    expect(find.byType(AlertDialog), findsNothing);
+  });
+
+  testWidgets('French filter selections display on one line at 200%', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(390, 844);
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final sample = CommunityService();
+    addTearDown(sample.dispose);
+    const locale = Locale('fr');
+    final theme = ThemeService();
+    addTearDown(theme.dispose);
+    await loadAppFonts(tester);
+    await tester.pumpWidget(
+      host(sample, locale: locale, theme: theme.themeDataFor(locale)),
+    );
+    await tester.pumpAndSettle();
+    await openDialog(tester, mute: false);
+    final words = l10nOf(tester);
+    for (final (key, label) in [
+      ('communityPostDateFilter', words.communityPostPeriodAll),
+      ('communityDurationMode', words.communityDurationAny),
+    ]) {
+      final selected = find
+          .descendant(of: find.byKey(Key(key)), matching: find.text(label))
+          .hitTestable();
+      expect(selected, findsOneWidget);
+      final text = tester.widget<Text>(selected);
+      expect(text.maxLines, 1);
+      expect(text.softWrap, isFalse);
+    }
+  });
 
   testWidgets('connected community does not label its results as samples', (
     tester,

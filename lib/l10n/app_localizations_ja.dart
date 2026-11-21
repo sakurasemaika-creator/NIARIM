@@ -10485,6 +10485,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsAccountDeletionLinkFailed => 'アカウント削除ページを開けませんでした。';
 
   @override
+  String get communitySampleReportUnavailable => '見本の作品や作者は通報できません。';
+
+  @override
   String get communityReportAuthor => 'ユーザーを通報';
 
   @override

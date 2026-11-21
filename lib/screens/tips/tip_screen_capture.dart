@@ -14,23 +14,40 @@ class TipScreenCapture {
 }
 
 class TipScreenCaptures extends StatefulWidget {
-  const TipScreenCaptures({super.key, required this.frames});
+  const TipScreenCaptures({
+    super.key,
+    required this.frames,
+    this.index,
+    this.onChanged,
+  });
 
   final List<TipScreenCapture> frames;
+  final int? index;
+  final ValueChanged<int>? onChanged;
 
   @override
   State<TipScreenCaptures> createState() => _TipScreenCapturesState();
 }
 
 class _TipScreenCapturesState extends State<TipScreenCaptures> {
-  int _selected = 0;
+  int _localIndex = 0;
+
+  void _select(int index) {
+    final onChanged = widget.onChanged;
+    if (onChanged != null) {
+      onChanged(index);
+    } else {
+      setState(() => _localIndex = index);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final material = MaterialLocalizations.of(context);
     final words = AppLocalizations.of(context)!;
-    final capture = widget.frames[_selected];
     final count = widget.frames.length;
+    final selected = (widget.index ?? _localIndex).clamp(0, count - 1);
+    final capture = widget.frames[selected];
     final theme = Theme.of(context);
     final caption = theme.textTheme.titleSmall!.copyWith(height: 1.2);
     final captionLine =
@@ -73,28 +90,26 @@ class _TipScreenCapturesState extends State<TipScreenCaptures> {
               IconButton(
                 key: const ValueKey('tipPreviousCapture'),
                 tooltip: material.previousPageTooltip,
-                onPressed: _selected == 0
-                    ? null
-                    : () => setState(() => _selected--),
+                onPressed: selected == 0 ? null : () => _select(selected - 1),
                 icon: const Icon(Icons.chevron_left),
               ),
               Semantics(
                 liveRegion: true,
                 label: material.pageRowsInfoTitle(
-                  _selected + 1,
-                  _selected + 1,
+                  selected + 1,
+                  selected + 1,
                   count,
                   false,
                 ),
                 excludeSemantics: true,
-                child: Text('${_selected + 1} / $count'),
+                child: Text('${selected + 1} / $count'),
               ),
               IconButton(
                 key: const ValueKey('tipNextCapture'),
                 tooltip: material.nextPageTooltip,
-                onPressed: _selected >= count - 1
+                onPressed: selected >= count - 1
                     ? null
-                    : () => setState(() => _selected++),
+                    : () => _select(selected + 1),
                 icon: const Icon(Icons.chevron_right),
               ),
             ],

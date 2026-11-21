@@ -18477,6 +18477,12 @@ abstract class AppLocalizations {
   /// **'アカウント削除ページを開けませんでした。'**
   String get settingsAccountDeletionLinkFailed;
 
+  /// No description provided for @communitySampleReportUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'見本の作品や作者は通報できません。'**
+  String get communitySampleReportUnavailable;
+
   /// No description provided for @communityReportAuthor.
   ///
   /// In ja, this message translates to:

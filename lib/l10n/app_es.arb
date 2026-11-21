@@ -3955,6 +3955,7 @@
   "settingsAccountDeletionTitle": "Eliminar tu cuenta de NIARIM",
   "settingsAccountDeletionSubtitle": "Continuar en el sitio web oficial",
   "settingsAccountDeletionLinkFailed": "No se pudo abrir la página de eliminación de la cuenta.",
+  "communitySampleReportUnavailable": "No se pueden denunciar las obras ni los autores de muestra.",
   "communityReportAuthor": "Denunciar esta cuenta",
   "communityReportReason": "Motivo de la denuncia (solo visible para moderación)",
   "communityReportSend": "Enviar denuncia",

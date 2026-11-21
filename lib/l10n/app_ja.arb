@@ -6341,6 +6341,7 @@
   "settingsAccountDeletionTitle": "NIARIMアカウントを削除",
   "settingsAccountDeletionSubtitle": "公式サイトで手続きする",
   "settingsAccountDeletionLinkFailed": "アカウント削除ページを開けませんでした。",
+  "communitySampleReportUnavailable": "見本の作品や作者は通報できません。",
   "communityReportAuthor": "ユーザーを通報",
   "communityReportReason": "通報理由（運営のみ閲覧）",
   "communityReportSend": "通報を送信",

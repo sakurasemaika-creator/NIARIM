@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import '../models/layer.dart';
 import '../models/text_object.dart';
 import '../models/watermark_asset.dart';
 import 'filter_engine.dart';
@@ -178,4 +180,103 @@ Uint8List _applyEffects(
     }
   }
   return result;
+}
+
+/// Captures the current watermark once, before size or angle changes clip it.
+Future<PlacedWatermarkSource?> capturePlacedWatermark(
+  ui.Image image, {
+  required double angle,
+  required double scale,
+}) async {
+  final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+  if (data == null) return null;
+  var left = image.width;
+  var top = image.height;
+  var right = 0;
+  var bottom = 0;
+  for (var y = 0; y < image.height; y++) {
+    for (var x = 0; x < image.width; x++) {
+      if (data.getUint8((y * image.width + x) * 4 + 3) == 0) continue;
+      left = math.min(left, x);
+      top = math.min(top, y);
+      right = math.max(right, x + 1);
+      bottom = math.max(bottom, y + 1);
+    }
+  }
+  if (left >= right || top >= bottom) return null;
+
+  final recorder = ui.PictureRecorder();
+  ui.Canvas(
+    recorder,
+  ).drawImage(image, ui.Offset(-left.toDouble(), -top.toDouble()), ui.Paint());
+  final picture = recorder.endRecording();
+  try {
+    final cropped = await picture.toImage(right - left, bottom - top);
+    try {
+      final png = await cropped.toByteData(format: ui.ImageByteFormat.png);
+      if (png == null) return null;
+      return PlacedWatermarkSource(
+        png: base64Encode(
+          png.buffer.asUint8List(png.offsetInBytes, png.lengthInBytes),
+        ),
+        center: ui.Offset((left + right) / 2, (top + bottom) / 2),
+        angle: angle,
+        scale: scale,
+      );
+    } finally {
+      cropped.dispose();
+    }
+  } finally {
+    picture.dispose();
+  }
+}
+
+Future<Uint8List?> renderPlacedWatermark(
+  PlacedWatermarkSource source, {
+  required int width,
+  required int height,
+  required double angle,
+  required double scale,
+}) async {
+  final ui.Image image;
+  try {
+    final codec = await ui.instantiateImageCodec(base64Decode(source.png));
+    try {
+      image = (await codec.getNextFrame()).image;
+    } finally {
+      codec.dispose();
+    }
+  } on FormatException {
+    return null;
+  } on Exception {
+    return null;
+  }
+  try {
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.translate(source.center.dx, source.center.dy);
+    canvas.rotate((angle - source.angle) * math.pi / 180);
+    canvas.scale(scale / source.scale);
+    canvas.drawImage(
+      image,
+      ui.Offset(-image.width / 2, -image.height / 2),
+      ui.Paint()..filterQuality = ui.FilterQuality.high,
+    );
+    final picture = recorder.endRecording();
+    try {
+      final raster = await picture.toImage(width, height);
+      try {
+        final data = await raster.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
+        return data?.buffer.asUint8List();
+      } finally {
+        raster.dispose();
+      }
+    } finally {
+      picture.dispose();
+    }
+  } finally {
+    image.dispose();
+  }
 }

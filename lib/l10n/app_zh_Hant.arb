@@ -3955,6 +3955,7 @@
   "settingsAccountDeletionTitle": "刪除 NIARIM 帳號",
   "settingsAccountDeletionSubtitle": "前往官方網站辦理",
   "settingsAccountDeletionLinkFailed": "無法開啟帳號刪除頁面。",
+  "communitySampleReportUnavailable": "無法檢舉範例作品或創作者。",
   "communityReportAuthor": "檢舉使用者",
   "communityReportReason": "檢舉原因（僅營運方可見）",
   "communityReportSend": "送出檢舉",

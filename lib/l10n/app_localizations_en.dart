@@ -11278,6 +11278,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not open the account deletion page.';
 
   @override
+  String get communitySampleReportUnavailable =>
+      'Sample works and creators can’t be reported.';
+
+  @override
   String get communityReportAuthor => 'Report creator';
 
   @override
