@@ -4972,7 +4972,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _centerFrameInList();
   }
 
-  static const double _trackLabelWidth = 72;
+  static const double _trackLabelWidth = 84;
 
   BoxDecoration get _trackRowDivider => BoxDecoration(
     border: Border(
@@ -4986,8 +4986,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Widget _buildTrackLabel(IconData icon, String label) {
     return Container(
       // 文字が切れないだけでなく、スマートフォンでも読みやすいサイズを確保する。
-      // 72dpの欄にアイコン14dp・間隔4dp・左右余白6dpを取り、11dpのラベルを置く。
-      // 320dp幅でもフレーム領域を大きく圧迫しない。
+      // 84dpの欄にアイコン14dp・間隔4dp・左右余白6dpを取り、11dpのラベルを置く。
+      // 7言語の長いラベルでも省略せず、320dp幅でも制作領域を確保する。
       width: _trackLabelWidth,
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: Row(
