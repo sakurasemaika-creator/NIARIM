@@ -157,7 +157,22 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('missionClaimAllButton')));
+    final bulkButton = find.byKey(const Key('missionClaimAllButton'));
+    expect(tester.getSize(bulkButton).height, greaterThanOrEqualTo(52));
+    final claimButton = find.byKey(
+      const ValueKey('claim_work_reposts_10_abcdefghijk'),
+    );
+    await tester.scrollUntilVisible(
+      claimButton,
+      180,
+      scrollable: find.byType(Scrollable).first,
+      maxScrolls: 20,
+    );
+    expect(claimButton, findsOneWidget);
+    expect(tester.getSize(claimButton).height, greaterThanOrEqualTo(48));
+    await tester.ensureVisible(bulkButton);
+    await tester.pumpAndSettle();
+    await tester.tap(bulkButton);
     await tester.pumpAndSettle();
     expect(claims, [
       ('work_reposts_10', 'abcdefghijk'),

@@ -1134,6 +1134,50 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
               ),
           ],
         ),
+        bottomNavigationBar: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.surface,
+            border: Border(top: BorderSide(color: scheme.outlineVariant)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 16, 10),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      key: const Key('communityPostSubmitButton'),
+                      onPressed: _busy || _restoringPending ? null : _submit,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                      ),
+                      icon: _busy
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Icon(
+                              retainedVideoId == null
+                                  ? Icons.cloud_upload_outlined
+                                  : Icons.refresh,
+                            ),
+                      label: Text(
+                        retainedVideoId == null
+                            ? l10n.communityPostSubmitUpload
+                            : l10n.communityPostSubmitRetry,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
         body: desktopCentered(
           context,
           SingleChildScrollView(
@@ -1556,26 +1600,6 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   ),
                 ],
                 const SizedBox(height: 20),
-                FilledButton.icon(
-                  key: const Key('communityPostSubmitButton'),
-                  onPressed: _busy || _restoringPending ? null : _submit,
-                  icon: _busy
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Icon(
-                          retainedVideoId == null
-                              ? Icons.cloud_upload_outlined
-                              : Icons.refresh,
-                        ),
-                  label: Text(
-                    retainedVideoId == null
-                        ? l10n.communityPostSubmitUpload
-                        : l10n.communityPostSubmitRetry,
-                  ),
-                ),
               ],
             ),
           ),

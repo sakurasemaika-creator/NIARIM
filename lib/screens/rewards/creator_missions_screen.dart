@@ -589,6 +589,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                         onPressed: canClaim
                             ? () => _claim(api, id, workId)
                             : null,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(0, 48),
+                        ),
                         child: _claimBusy.contains(actionKey)
                             ? const SizedBox(
                                 width: 14,
@@ -602,6 +605,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                     else
                       OutlinedButton(
                         onPressed: null,
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(0, 48),
+                        ),
                         child: Text(
                           !available
                               ? t.get('upcoming')
@@ -726,6 +732,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                   child: FilledButton.icon(
                     key: const Key('missionClaimAllButton'),
                     onPressed: _bulkBusy ? null : () => _bulkClaim(api, data),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                    ),
                     icon: _bulkBusy
                         ? const SizedBox(
                             width: 16,
@@ -790,6 +799,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
               onPressed: _bulkBusy || _moreBusy
                   ? null
                   : () => _more(api, cursor),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
               child: messageText(t.get('loadMore')),
             );
           }
