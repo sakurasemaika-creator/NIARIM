@@ -116,4 +116,57 @@ void main() {
     expect(paragraph.text!.semanticsLabel, isNull);
     expect(tester.takeException(), isNull);
   });
+  testWidgets(
+    'DISC145 reproducer: Storyboards (2) stays within a narrow French row at 200%',
+    (tester) async {
+      const name = 'Storyboards (2)';
+      const width = 160.0;
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('fr'),
+          home: MediaQuery(
+            data: const MediaQueryData(
+              textScaler: TextScaler.linear(2),
+              boldText: true,
+            ),
+            child: Scaffold(
+              body: SizedBox(
+                width: width,
+                child: const KoreanWordsText(
+                  name,
+                  breakLongLatinWords: true,
+                  keepJapaneseLineStarts: true,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.byType(RichText),
+      );
+      final displayed = paragraph.text!.toPlainText(
+        includeSemanticsLabels: false,
+      );
+      expect(displayed, contains('\\u200B'));
+      expect(paragraph.text!.semanticsLabel, name);
+      expect(paragraph.computeLineMetrics().length, greaterThan(1));
+      final boxes = paragraph.getBoxesForSelection(
+        TextSelection(baseOffset: 0, extentOffset: displayed.length),
+      );
+      expect(boxes, isNotEmpty);
+      expect(
+        boxes.every((box) => box.right <= paragraph.size.width + 0.5),
+        isTrue,
+      );
+      expect(paragraph.size.width, lessThanOrEqualTo(width + 0.5));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
 }
