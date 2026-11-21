@@ -3381,3 +3381,6 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 
 - `test/empty_state_placeholder_test.dart` に、見出しの後に残る領域より120px高い空表示を置き、末尾の操作まで内側スクロールで到達できることを検査するケースを追加。既存の「空表示の中身が収まる場合は外側リストのスクロールを妨げない」回帰も維持する。
 - コミット `333a0b22`。Flutter regression suite Run `44879190638`（HEAD `333a0b22`）はqueued。テストの実行結果は未取得。
+
+
+- DISC564 空表示のスクロール追記：内側の `SingleChildScrollView` に `primary: false` を指定し、外側の `CustomScrollView` と `PrimaryScrollController` を共有しないようにした（コミット `e348c8d8`）。fitする内容で外側リストのスクロールを妨げないことを既存テストで維持し、長い内容は内側でスクロールする。最新Flutter regression suite Run `44879312609` はqueued。
