@@ -573,7 +573,7 @@ void main() {
     expect(row, findsOneWidget);
     final semanticLabel = tester.getSemantics(row).label;
     expect(semanticLabel, contains(name));
-    expect(semanticLabel, isNot(contains('\\u200B')));
+    expect(semanticLabel, isNot(contains(String.fromCharCode(0x200B))));
     final paragraph = _paragraph(tester, rowText);
     final lines = ParagraphLines(paragraph);
     expect(lines.lines.length, lessThanOrEqualTo(2));
