@@ -30,10 +30,7 @@ void main() {
       final providers = (await tester.runAsync(buildAppProviders))!;
       final router = GoRouter(
         routes: [
-          GoRoute(
-            path: '/',
-            builder: (_, _) => const SplashScreen(),
-          ),
+          GoRoute(path: '/', builder: (_, _) => const SplashScreen()),
           GoRoute(
             path: '/home',
             builder: (context, _) => Scaffold(
@@ -65,8 +62,7 @@ void main() {
             builder: (context) => MaterialApp.router(
               theme: context.watch<ThemeService>().themeData,
               routerConfig: router,
-              localizationsDelegates:
-                  AppLocalizations.localizationsDelegates,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
             ),
           ),
@@ -80,7 +76,10 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('return-from-home')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('splashCommunityActionButton')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('splashCommunityActionButton')),
+        findsOneWidget,
+      );
 
       await tester.tap(
         find.byKey(const ValueKey('splashCommunityActionButton')),
