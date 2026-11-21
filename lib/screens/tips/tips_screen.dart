@@ -6,7 +6,6 @@ import '../../l10n/app_localizations.dart';
 import 'tip_diagram.dart';
 import 'tip_diagram_data.dart';
 import 'tip_capture_data.dart';
-import 'tip_screen_capture.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
