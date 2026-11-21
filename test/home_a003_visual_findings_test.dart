@@ -177,14 +177,9 @@ class _Home {
     ExportStorage.invalidate();
     appRouter.go('/home');
     final providers = (await tester.runAsync(buildAppProviders))!;
-    final app = MultiProvider(
-      providers: providers,
-      child: const NiarimApp(),
-    );
+    final app = MultiProvider(providers: providers, child: const NiarimApp());
     await tester.pumpWidget(
-      captureRoot
-          ? RepaintBoundary(key: _captureBoundaryKey, child: app)
-          : app,
+      captureRoot ? RepaintBoundary(key: _captureBoundaryKey, child: app) : app,
     );
     await frames(6);
     await settleIo();
@@ -206,9 +201,9 @@ class _Home {
         expect(data, isNotNull);
         final output = Directory('build/disc145-folder-row')
           ..createSync(recursive: true);
-        await File('${output.path}/$name.png').writeAsBytes(
-          data!.buffer.asUint8List(),
-        );
+        await File(
+          '${output.path}/$name.png',
+        ).writeAsBytes(data!.buffer.asUint8List());
       } finally {
         image.dispose();
       }
@@ -584,48 +579,42 @@ void main() {
     await home.close();
   });
 
-    testWidgets(
-    'DISC145 フランス語の長いフォルダ名はPC詳細行でも幅内に収まる',
-    (tester) async {
-      final home = _Home(tester);
-      const parentName = 'Archive';
-      const name = 'Storyboards (2)';
-      await home.open(
-        language: 'fr',
-        size: const Size(1280, 900),
-        scale: 1,
-        prefs: {
-          'force_pc_mode': 1,
-          'home.projectViewMode.v1': 'detail',
-        },
-        captureRoot: true,
-      );
-      await home.addFolder(parentName);
-      final parent = home.projects.folders.singleWhere(
-        (folder) => folder.name == parentName,
-      );
-      await tester.runAsync(
-        () => home.projects.createFolder(name, parentFolderId: parent.id),
-      );
-      await home.frames(12);
-      final parentRow = find.text(parentName, findRichText: true);
-      expect(parentRow, findsOneWidget);
-      await tester.tap(parentRow);
-      await home.frames(12);
-      final rowText = find.text(name, findRichText: true);
-      final row = find.ancestor(of: rowText, matching: find.byType(ListTile));
-      expect(row, findsOneWidget);
-      final paragraph = _paragraph(tester, rowText);
-      final lines = ParagraphLines(paragraph);
-      expect(lines.charsOutsideWidth(), isEmpty);
-      expect(lines.lineEdgeViolations(), isEmpty);
-      expect(tester.takeException(), isNull);
-      await home.capture('fr-pc-1280x900-text-1x');
-      await home.close();
-    },
-  );
+  testWidgets('DISC145 フランス語の長いフォルダ名はPC詳細行でも幅内に収まる', (tester) async {
+    final home = _Home(tester);
+    const parentName = 'Archive';
+    const name = 'Storyboards (2)';
+    await home.open(
+      language: 'fr',
+      size: const Size(1280, 900),
+      scale: 1,
+      prefs: {'force_pc_mode': 1, 'home.projectViewMode.v1': 'detail'},
+      captureRoot: true,
+    );
+    await home.addFolder(parentName);
+    final parent = home.projects.folders.singleWhere(
+      (folder) => folder.name == parentName,
+    );
+    await tester.runAsync(
+      () => home.projects.createFolder(name, parentFolderId: parent.id),
+    );
+    await home.frames(12);
+    final parentRow = find.text(parentName, findRichText: true);
+    expect(parentRow, findsOneWidget);
+    await tester.tap(parentRow);
+    await home.frames(12);
+    final rowText = find.text(name, findRichText: true);
+    final row = find.ancestor(of: rowText, matching: find.byType(ListTile));
+    expect(row, findsOneWidget);
+    final paragraph = _paragraph(tester, rowText);
+    final lines = ParagraphLines(paragraph);
+    expect(lines.charsOutsideWidth(), isEmpty);
+    expect(lines.lineEdgeViolations(), isEmpty);
+    expect(tester.takeException(), isNull);
+    await home.capture('fr-pc-1280x900-text-1x');
+    await home.close();
+  });
 
-testWidgets('一覧が空なら「一番上へ」は出さない（送る先が無い）', (tester) async {
+  testWidgets('一覧が空なら「一番上へ」は出さない（送る先が無い）', (tester) async {
     final home = _Home(tester);
     await home.open(size: const Size(390, 844));
     expect(find.byKey(const Key('homeScrollToTopFab')), findsNothing);
