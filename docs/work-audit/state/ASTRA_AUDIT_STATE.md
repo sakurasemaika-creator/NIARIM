@@ -4821,6 +4821,11 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
 - 未確認：設定の画面での折り畳みの各値の変更と結果、方向が替わるきっかけの境界、連続する曲がり、筆圧・ペン、保存/復元、後ろ髪の使い方、一般の縁取りペン＋折り畳みの設定でプリセットを作り直せるか、Visual（BEFORE/SETTINGS/AFTER）。
 - test：髪の折り畳み・ブラシのtest 10本を記録時の最新`f09082e1`で137件すべて成功：`engine/drawing_engine_wave_fold_contract_test`（21）・`engine/hair_fold_crescent_end_test`（2）・`engine/hair_fold_line_alignment_test`（46、折り畳みON/OFFで同じ見た目）・`engine/hair_fold_raster_test`（31）・`engine/hair_fold_smooth_bend_dive_test`（2、延長線より外へ出ない）・`engine/hair_preset_taper_test`（8）・`hair_fold_settings_model_test`（19）・`brush_preset_fidelity_test`（3）・`brush_management_test`（3）・`brush_tip_settings_test`（2）。縁取りの`outline_*`（engine）は`643cc267`の98ファイルの中で成功。
 
+### D025〜D027 三巡目（2026-11-22、Claude・S54、App `d2e2db0a`〔製品は`e9b0e1d3`と同じ〕）— 判定：二巡目から髪の折り畳み・プリセットの製品の変更なし。全件のtestの範囲でOK、設定・保存・Visualは未確認
+
+- 二巡目の後、`brush_presets_extension.dart`・`hair_fold_raster.dart`・`drawing_engine.dart`の折り畳みの変更は無い。全件のtestで`engine/hair_fold_*`・`engine/drawing_engine_wave_fold_contract_test`・`hair_fold_settings_model_test`・`brush_preset_fidelity_test`ほかが成功（A103の回の`engine/hair_fold_raster_test`も成功）。
+- 未確認：二巡目と同じ（設定の画面での各値の変更、方向が替わるきっかけの境界、筆圧・ペン、保存/復元、Visual）。
+
 ## D028 — ヘルプ・Tips・7言語のそろい（二巡目）
 
 ### D028 二巡目（2026-11-20、Claude・S50、App `643cc267`〔製品 `4f92188f`〕・Web `c1182da`）— 判定：要修正（既存DISC535・DISC536）
