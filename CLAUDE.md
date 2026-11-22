@@ -891,8 +891,7 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   並び順の保存・`name_collation`・表示サイズの列数・検索・空の表示（A004、
   2026-11-13）。
   **まだ戻っていないので、このファイルの次の記述は今の実装と食い違う**：
-  `_fabClearance`、初回の`AppTutorial`（今は短い案内のダイアログ
-  `_FirstLaunchDialog`。使い方はヘルプから開く）、ドックの下限（A011、所有者の
+  `_fabClearance`、ドックの下限（A011、所有者の
   判断待ち）、PC専用の作業画面（DISC066、所有者の判断待ち）、案Aの文字色を
   使う画面の一部（`accent_text_screens_test`、所有者の判断待ち）。
   この中の機能に触る前に、棚卸しの該当の行と今のコードを確かめること。
@@ -1040,14 +1039,13 @@ kAllFirstUseTooltipKeys})`で全キーを表示済みにしておくこと（一
   決める吹き出し（`InfoIconTooltip`）は`RawDialogRoute`ではなく`PopupRoute`
   にする（`RawDialogRoute`は折りたたみ端末のヒンジで画面を分けて片側に
   置くため、もう片側のアイコンの吹き出しが切れる）。
-- **初回起動のホームでは使い方（`lib/widgets/app_tutorial.dart`の`AppTutorial`、
-  図つきの6ページ）が出る**：`first_launch`を保存していないテストでホームを
-  開くと、全画面のダイアログが上に積まれて後の操作を吸う。起動から通すテストは
-  `find.byKey(const Key('tutorialSkip'))`を押して閉じること（以前の一文の
-  ダイアログの「はじめる」は最後のページにしか無い）。スキップ・はじめる・
-  戻る操作のどれで閉じても`markFirstLaunchDone`する。ホームのメニューの
-  「使い方」（ヘルプ・活用Tipsの並び、ユーザー指定）・ヘルプの先頭から
-  見直せ、設定の「機能の説明をもう一度表示」が
+- **初回起動のホームでは短い案内のダイアログ（`_FirstLaunchDialog`、一文と
+  「はじめる」）が出る（所有者の判断、2026-11-22：今の作りのまま確定）**：
+  `first_launch`を保存していないテストでホームを開くと、ダイアログが上に積まれて
+  後の操作を吸うので閉じること。閉じると`markFirstLaunchDone`する。図つきの
+  6ページの使い方（`lib/widgets/app_tutorial.dart`の`AppTutorial`）は初回には
+  出さず、ヘルプの先頭から開く（テストで閉じるときは`tutorialSkip`）。設定の
+  「機能の説明をもう一度表示」が
   `FirstUseTooltipService.resetAll`を呼ぶ。図はアプリの部品で描いた模式図で、
   操作する場所の囲み（`_Marked`）は**相手の部品に付けて**描くこと（図の座標に
   置くと、言語で文字の幅が変わったとき作成ボタン等から外れた）。ページや手順を
@@ -2241,7 +2239,8 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   重なってよい）。欄の高さもつまみで決め、縦横比で上限を掛けない。
   それ以前の「絵に重ねない（ユーザー指定）」決まり（操作の場所を絵の左右か
   上下に空ける）を置き換えたが、所有者の指定かどうかはコミットに書かれて
-  いない（DISC099、所有者に確認中。確認できるまでどちらへも戻さないこと）。
+  いなかった（DISC099）。所有者の判断（2026-11-22）で今の作り（欄の端に固定し、
+  絵と重なってよい）に確定した。
   ループの切り替えは置かない（dev_branchが消した。再生はいつも先頭へ戻る）。
   プレビューに操作を足すときもこの欄の端へ置き、
   `test/timeline_preview_controls_test.dart`とdev_branchの
