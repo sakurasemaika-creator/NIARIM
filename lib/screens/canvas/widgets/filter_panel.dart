@@ -1195,15 +1195,23 @@ class _FilterPanelState extends State<FilterPanel> {
                     ),
                   ),
                   // Keep the favorite on the leading edge of the filter-name row.
+                  // The button is a 48x48 touch target whose icon is centered on
+                  // the name row's 32px leading slot (card padding 5 + 16, name
+                  // row center 5 + 20 from the bottom). A smaller button would be
+                  // padded to 48x48 on Android only and its icon would shift 8px
+                  // onto the name.
                   PositionedDirectional(
-                    start: 4,
-                    bottom: 0,
+                    start: -3,
+                    bottom: 1,
                     child: IconButton(
                       key: ValueKey('filter-favorite-${filter.id}'),
                       padding: EdgeInsets.zero,
+                      style: IconButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       constraints: const BoxConstraints.tightFor(
-                        width: 32,
-                        height: 40,
+                        width: 48,
+                        height: 48,
                       ),
                       tooltip: filter.isFavorite
                           ? l10n.colorPickerFavoriteRemove
@@ -1217,13 +1225,17 @@ class _FilterPanelState extends State<FilterPanel> {
                   ),
                   if (!builtIn)
                     PositionedDirectional(
-                      end: 4,
-                      bottom: 3,
+                      end: -3,
+                      bottom: 1,
                       child: IconButton(
+                        key: ValueKey('filter-export-${filter.id}'),
                         padding: EdgeInsets.zero,
+                        style: IconButton.styleFrom(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         constraints: const BoxConstraints.tightFor(
-                          width: 32,
-                          height: 40,
+                          width: 48,
+                          height: 48,
                         ),
                         tooltip: l10n.shareCardExportMenu,
                         onPressed: () => SharedAssetCardService.exportSettings(

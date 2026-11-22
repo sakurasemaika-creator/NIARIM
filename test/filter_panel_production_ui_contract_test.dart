@@ -207,13 +207,26 @@ void main() {
     final filterName = tester.getRect(
       find.text(l10n.filterNameGaussianBlur).first,
     );
-    expect(favorite.top, greaterThanOrEqualTo(preview.bottom));
-    expect(favorite.right, lessThan(filterName.left));
+    // The star is drawn in the name row's leading slot, below the picture
+    // and before the name, and keeps a 48x48 touch target on every platform
+    // (Android pads smaller buttons to 48x48, which used to push the star
+    // onto the name).
+    final star = tester.getRect(
+      find.descendant(of: favoriteFinder, matching: find.byType(Icon)),
+    );
+    expect(star.top, greaterThanOrEqualTo(preview.bottom));
     expect(
-      (favorite.center.dy - filterName.center.dy).abs(),
+      filterName.left - star.right,
+      greaterThanOrEqualTo(6),
+      reason: 'the star stays in its slot instead of touching the name',
+    );
+    expect(
+      (star.center.dy - filterName.center.dy).abs(),
       lessThan(3),
       reason: 'the favorite star and filter name share one row',
     );
+    expect(favorite.width, greaterThanOrEqualTo(48));
+    expect(favorite.height, greaterThanOrEqualTo(48));
 
     await openMenu('Filter0001');
     expect(find.text(l10n.commonRename), findsNothing);
