@@ -4782,6 +4782,11 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
   - 未達：57ルートを1本ずつ、匿名・本人・他人・無効なトークン/ID/URLで比べる表はまだ無い（A098は単体testとコードで、ルートごとの表は作っていない）。デプロイした実環境・Google/YouTube/FCM/AdMob/Playの実際の応答・並行実行・再試行は、この環境では確かめられない（実の資格情報を使わない決まり）。
 - test：`community_ai_flag_edit_test`（9）・`community_content_filter_dialog_test`（23）・`community_content_filter_l10n_contract_test`（1）・`community_filter_dialog_contrast_test`（2）・`community_filter_dialog_layout_test`（1）・`community_filter_surfaces_test`（11）・`community_mute_filter_test`（10）・`community_mute_wording_l10n_test`（3）・`community_header_quality_test`（2）・`community_post_upload_cancel_test`（7）を記録時の最新`f09082e1`で69件すべて成功。`community_header_quality_test`は`643cc267`ではDISC539で失敗していたが、`191ae39b`（作品広場の画面の余白の見直し）の後は通る（DISC539は直った見込み。仏語・390pxの実画面は未確認）。
 
+### D020〜D021 三巡目（2026-11-22、Claude・S54、App `d2e2db0a`〔製品は`e9b0e1d3`と同じ〕、`backend/`は二巡目から差分なし）— 判定：D020は見本のデータとtestの範囲でOK（DISC538・539・417・407の残りは直った）、D021は未達（ルートごとの照合・実環境）
+
+- D020：A090・A091・A093の三巡目の実画面（ja・fr・文字2倍）で、表示フィルターのAIのスイッチの文は語の切れ目で折れ、非表示設定（ワード・タグ・ミュート）のダイアログ、見本の作品の通報の断り（DISC540）、起動画面へ戻った後の導線（DISC538）を確かめた。ミュートした作品は所有者の判断どおり札として残る。作品広場のカードの日本語の題が小さいかなで行を始める（DISC588）。
+- D021：`backend/`の`vitest run`を8回流し、7回は418件成功・12件省略、最初の1回だけ1件失敗（再現せず）。`tsc -noEmit`成功。ルートを1本ずつ匿名・本人・他人・無効なトークン/ID/URLで比べる表はまだ無い。デプロイした実環境・外部サービスの応答は確かめられない（二巡目と同じ）。
+
 ## D022〜D024 — 選択・ブラシ・フィルターの組み合わせ・自作ブラシ・縁取りペン（二巡目）
 
 ### D022〜D024 二巡目（2026-11-20、Claude・S50、App `4f92188f`のLinuxデバッグビルド・testは`643cc267`と記録時の最新`f09082e1`）— 判定：D022は要修正（DISC565）、D023・D024はAの二巡目とtestの範囲でOK、個々の全条件は未確認
