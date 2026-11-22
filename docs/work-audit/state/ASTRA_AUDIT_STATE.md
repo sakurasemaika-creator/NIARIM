@@ -3584,6 +3584,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：動画の素材（Linuxで読み込めない）、文字2倍・仏語、削除に失敗したとき、使用中で見つからない素材の再生・書き出し、Androidのファイル選択。
 - 画像：`shots-r1/r2a062-*`（backup-pending）。
 
+### A062 三巡目（2026-11-22、Claude・S54、App `2a8c0426`〔製品は`e9b0e1d3`と同じ〕のLinuxデバッグビルド）— 判定：要修正（既存のDISC198の形の残り。二巡目のDISC527は画像の分が直った）
+
+- 環境：ja、1280×860と390×844、マウス、A048で400×300のPNG（pic.png）を足した作品（クリップは消してあり、素材は未使用）。作品の詳細の︙→「素材管理」。
+- 二巡目の指摘：DISC527は画像の分が直った（`66f9f372`）。行は「Material0001 ・ 1.8KB ・ 400×300 ・ 2026/11/22 ・ 未使用」で、`materials.json`にも`width: 400, height: 300`。音声・動画の長さはFFprobeで読む作りで、LinuxにはFFprobeが無いので確かめられない（`material_delete_availability_test`で見た）。
+- OK：390×844でも行・上部バー（「未使用素材を削除 (1)」）ははみ出さない。🗑→「素材を削除しますか？」（ファイル名）→削除で、ファイルと一覧から消え、「素材がありません」の空の表示。
+- 要修正（既存のDISC198の形の残り）：素材の削除の確認・未使用素材をまとめて削除する確認の「削除」が`colorScheme.error`の赤で塗られる（`material_list_screen.dart`283・316行付近の`FilledButton.styleFrom(backgroundColor: …error)`）。共通の`confirmDelete`は差し色の塗り。
+- 気づいた点（DISCにしない、二巡目と同じ）：1件の削除の後は知らせが出ない。見つからない素材を選び直す道は無い。
+- test：`material_delete_availability_test`・`material_include_dialog_layout_test`・`timeline_text_material_flow_test`を`2a8c0426`で5件成功。
+- 未確認：音声・動画の長さ（LinuxにFFprobeが無い）、古い記録の幅・高さを開いたときに埋める所（testで見た）、文字2倍・仏語、削除に失敗したとき。
+
 ## A063 — 書き出し /export/:id・設定・制限
 
 ### A063 二巡目（2026-11-20、Claude・S50、App `ec135568`のLinuxデバッグビルド）— 判定：要修正（新DISC528・DISC529。既存のDISC069は直った）
