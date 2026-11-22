@@ -3763,6 +3763,15 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：ほかの5言語での基本設定、Androidでの言語の切り替え。
 - 画像：`shots-r1/r2a070-*`（backup-pending）。
 
+### A070 三巡目（2026-11-22、Claude・S54、App `82535ddf`〔製品は`e9b0e1d3`と同じ〕のLinuxデバッグビルド）— 判定：OK（DISCなし）
+
+- 環境：fr、文字2倍（GSettings、D-Busのportalの中）、390×844、マウス、プロフィール`a69`。設定の画面の`cf2f427e`以降の変更は、言語の名前の書体（`215c551d`、DISC150）・余白（`e4d3c5b7`・`191ae39b`）・短い窓（`0c7666ab`）ほか。
+- OK：引き出し→「Réglages」の一覧（Général「Cadence (i/s), langue, zone de dessin」・Performances・Gestes・Raccourcis・Saisie au stylet・Espace de travail…）ははみ出さない。「Général」のシート（Réglages généraux：Cadence par défaut (i/s) 12 fps・Langue Français・Zone de dessin par défaut）。
+- OK（二巡目の気づいた点が直った）：「Langue」の一覧に今の言語の印（Françaisの右の✓）が付き、言語の名前（日本語・English・简体中文・한국어・繁體中文・Français・Español）はそれぞれの言語の本文の書体で描かれる（`215c551d`）。
+- 気づいた点（DISCにしない）：文字2倍では言語の一覧の題「Langue」の左の余白が選択肢より狭い（Flutterの`SimpleDialog`が大きな文字で題の余白だけを縮める標準の作り）。
+- test：`initial_language_test`・`settings_audit_regressions_test`・`settings_l10n_locales_test`・`compact_settings_layout_test`・`search_typed_apostrophe_test`・`button_label_room_test`・`notice_above_bottom_buttons_test`・`font_coverage_test`を`82535ddf`で87件成功。
+- 未確認：言語を替えたときのシートの切り替え（二巡目に確認）、既定FPS・描画領域の新規プロジェクトへの反映（二巡目に確認）、Androidでの言語の切り替え。
+
 ## A071 — quality・保存方式・Undo・trash期限
 
 ### A071 二巡目（2026-11-20、Claude・S50、App `cf2f427e`のLinuxデバッグビルド）— 判定：OK（一巡目のDISC368と、この項目のDISC350・DISC119は直った）
