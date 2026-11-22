@@ -43,6 +43,7 @@ import 'package:niarim/widgets/collection_tile_layout.dart';
 import 'package:niarim/widgets/empty_state_placeholder.dart';
 import 'package:niarim/widgets/frame_preview_background.dart';
 import 'package:niarim/widgets/sort_mode_control.dart';
+import 'package:niarim/widgets/app_tutorial.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
@@ -1110,14 +1111,16 @@ class HomeMatrix {
     (Size(320, kHomeMatrixPhoneHeight), false, 2.0),
   ];
 
-  /// 初回の案内を各画面で撮る。見たことの保存を断らせて「はじめる」を押し、
-  /// 失敗の知らせ（その言語の文）と「はじめる」が出ることを各画面で撮り、
-  /// 保存できるようにして押すと閉じることを確かめる。
+  /// 初回の案内（図つきの使い方）を各画面で撮る。1ページ目（案内の一文と
+  /// 「スキップ」「次へ」）を撮り、見たことの保存を断らせて「スキップ」を
+  /// 押すと、閉じずに最後のページで失敗の知らせ（その言語の文）と
+  /// 「はじめる」が出ることを各画面で撮り、保存できるようにして押すと
+  /// 閉じることを確かめる。
   Future<void> firstLaunchCells() async {
     for (final failed in const [false, true]) {
       if (failed) {
         _firstLaunchStore.reject = true;
-        await _pressFirstLaunchStart();
+        await _pressFirstLaunch(_firstLaunchSkip());
       }
       for (final (screen, pc, scale) in _firstLaunchScreens) {
         await setPc(pc);
@@ -1128,10 +1131,10 @@ class HomeMatrix {
       await setTextScale(1);
     }
     _firstLaunchStore.reject = false;
-    await _pressFirstLaunchStart();
+    await _pressFirstLaunch(_firstLaunchPrimary());
     record(cellName('firstlaunch', 'done'), 'firstlaunch', 'done', null, [
-      if (find.byType(AlertDialog).evaluate().isNotEmpty)
-        'first-launch notice still open after a successful save',
+      if (find.byType(AppTutorial).evaluate().isNotEmpty)
+        'first-launch guide still open after a successful save',
       if (settings.isFirstLaunch) 'first launch not marked as done',
       if (_firstLaunchStore.attempts != 2)
         'first_launch written ${_firstLaunchStore.attempts} times (want 2)',
@@ -1139,20 +1142,23 @@ class HomeMatrix {
     ], const []);
   }
 
-  Future<void> _pressFirstLaunchStart() async {
-    final start = _firstLaunchStart();
-    if (start.evaluate().length != 1) return;
-    await tester.tap(start);
+  Future<void> _pressFirstLaunch(Finder button) async {
+    if (button.evaluate().length != 1) return;
+    await tester.tap(button);
     await frames(6);
     await settleIo(2);
   }
 
-  Finder _firstLaunchStart() => find.ancestor(
-    of: find.descendant(
-      of: find.byType(AlertDialog),
-      matching: find.text(l10n.homeFirstLaunchStart),
-    ),
-    matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+  /// 案内の「次へ」（最後のページでは「はじめる」）。
+  Finder _firstLaunchPrimary() => find.byWidgetPredicate(
+    (w) =>
+        w is ButtonStyleButton &&
+        (w.key == const Key('tutorialNext') ||
+            w.key == const Key('tutorialStart')),
+  );
+
+  Finder _firstLaunchSkip() => find.byWidgetPredicate(
+    (w) => w is ButtonStyleButton && w.key == const Key('tutorialSkip'),
   );
 
   Future<void> _firstLaunchCell({required bool failed}) async {
@@ -1161,85 +1167,86 @@ class HomeMatrix {
     final problems = {...inspect(firstLaunchFailed: failed)};
     await capture(name);
     final images = ['$name.png'];
-    // 案内の中身はスクロールする。失敗の文はスクロールすると見える。
-    final failure = find.descendant(
-      of: find.byType(AlertDialog),
-      matching: _drawnText(l10n.homeFirstLaunchSaveFailed),
-    );
-    if (failed && failure.evaluate().length == 1) {
-      final surface = _firstLaunchSurface();
-      if (!_contains(surface, tester.getRect(failure))) {
-        await tester.ensureVisible(failure);
-        await frames(2);
-        if (!_contains(_firstLaunchSurface(), tester.getRect(failure))) {
-          problems.add('save-failure text cannot be scrolled into view');
-        }
-        problems.addAll(inspect(firstLaunchFailed: failed));
-        await capture('${name}_end');
-        images.add('${name}_end.png');
-      }
-    }
     record(name, 'firstlaunch', what, images, problems.toList(), const []);
   }
 
   Rect _firstLaunchSurface() => tester.getRect(
     find
         .descendant(
-          of: find.byType(AlertDialog),
+          of: find.byType(AppTutorial),
           matching: find.byType(Material),
         )
         .first,
   );
 
-  /// 初回の案内：1つだけ画面内にあり、その言語の案内と「はじめる」（押せる）
-  /// があり、文が横にはみ出さない。[failed]なら失敗の知らせ（その言語）も
-  /// ある。
+  /// 初回の案内：1つだけ画面内にあり、[failed]でなければ1ページ目にその
+  /// 言語の案内の一文と「スキップ」、[failed]なら最後のページに失敗の
+  /// 知らせ（その言語）があり、「次へ」／「はじめる」が押せ、文が横に
+  /// はみ出さない。
   List<String> _firstLaunchProblems({required bool failed}) {
     final l10n = this.l10n;
-    final dialog = find.byType(AlertDialog);
+    final dialog = find.byType(AppTutorial);
     final count = dialog.evaluate().length;
-    if (count != 1) return ['first-launch notice shown $count times'];
+    if (count != 1) return ['first-launch guide shown $count times'];
     final screen = Offset.zero & size;
     final surface = _firstLaunchSurface();
     final problems = <String>[
-      if (!_contains(screen, surface))
-        'first-launch notice off screen $surface',
-      if (find
-              .descendant(
-                of: dialog,
-                matching: find.text(l10n.homeFirstLaunchMessage),
-              )
-              .evaluate()
-              .length !=
-          1)
+      if (!_contains(screen, surface)) 'first-launch guide off screen $surface',
+      if (!failed &&
+          find
+                  .descendant(
+                    of: dialog,
+                    matching: find.text(l10n.homeFirstLaunchMessage),
+                  )
+                  .evaluate()
+                  .length !=
+              1)
         'first-launch message not shown in this language',
+      if (!failed && _firstLaunchSkip().evaluate().length != 1)
+        'skip button not shown on the first page',
+      if (failed &&
+          find.byKey(const Key('tutorialStart')).evaluate().length != 1)
+        'save failure did not move to Start on the last page',
     ];
-    final failure = find
-        .descendant(
-          of: dialog,
-          matching: _drawnText(l10n.homeFirstLaunchSaveFailed),
-        )
-        .evaluate()
-        .length;
+    final failureFinder = find.descendant(
+      of: dialog,
+      matching: _drawnText(l10n.homeFirstLaunchSaveFailed),
+    );
+    final failure = failureFinder.evaluate().length;
     if (failed && failure != 1) {
       problems.add('save-failure text not shown in this language');
+    }
+    if (failed && failure == 1) {
+      // 低い画面では知らせの高さを抑えてスクロールするので、見えている所
+      // （スクロールの枠）が案内の中にあればよい。
+      final scroll = find.ancestor(
+        of: failureFinder,
+        matching: find.byType(Scrollable),
+      );
+      final text = tester.getRect(failureFinder);
+      final rect = scroll.evaluate().isEmpty
+          ? text
+          : tester.getRect(scroll.first).intersect(text);
+      if (!_contains(surface, rect) || !_contains(screen, rect)) {
+        problems.add('save-failure text outside the guide $rect');
+      }
     }
     if (!failed && failure != 0) {
       problems.add('save-failure text shown before a failed save');
     }
-    final start = _firstLaunchStart();
+    final start = _firstLaunchPrimary();
     final starts = start.evaluate().length;
     if (starts != 1) {
-      problems.add('start button found $starts times');
+      problems.add('next/start button found $starts times');
     } else {
       final button = tester.widget<ButtonStyleButton>(start);
       final box = tester.renderObject<RenderBox>(start);
       final rect = _globalRect(box);
-      if (!button.enabled) problems.add('start button disabled');
+      if (!button.enabled) problems.add('next/start button disabled');
       if (!_contains(surface, rect) || !_contains(screen, rect)) {
-        problems.add('start button outside the notice $rect');
+        problems.add('next/start button outside the guide $rect');
       } else if (!_hits(box, rect.center)) {
-        problems.add('start button not hit-testable');
+        problems.add('next/start button not hit-testable');
       }
     }
     for (final e
@@ -1251,7 +1258,7 @@ class HomeMatrix {
       final rect = _globalRect(paragraph);
       if (rect.left < surface.left - 0.5 || rect.right > surface.right + 0.5) {
         problems.add(
-          'notice text cut sideways: "${paragraph.text.toPlainText()}"',
+          'guide text cut sideways: "${paragraph.text.toPlainText()}"',
         );
       }
     }

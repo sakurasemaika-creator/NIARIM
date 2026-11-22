@@ -6,6 +6,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../config/accent_text_theme.dart';
 import '../config/font_fallback.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/app_error_reporter.dart';
+import '../utils/line_break.dart';
+import 'export_share_feedback.dart';
 
 /// アプリの使い方（はじめのガイド）。初回起動のホームと、ホームのメニュー・
 /// ヘルプの「使い方」から開く。図（アプリの画面を簡略化した絵に、操作する場所の
@@ -15,13 +18,24 @@ import '../l10n/app_localizations.dart';
 /// 図はアプリの部品（実際のアイコン・テーマの色）で描くので、テーマを
 /// 変えても実際の画面と見え方がそろい、言語ごとの画像も要らない。
 class AppTutorial extends StatefulWidget {
-  const AppTutorial({super.key});
+  const AppTutorial({super.key, this.onFinish});
+
+  /// 初回起動の案内として開いたときの「見た」の保存。「スキップ」「はじめる」の
+  /// どちらも、保存できてから閉じる（閉じた後に保存が失敗すると、次の起動で
+  /// また出る）。保存できなければ閉じずに「はじめる」のある最後のページで
+  /// 知らせ、もう一度押せばやり直す。戻る操作では閉じず、前のページへ戻るだけ
+  /// （外側を押す・Escはどちらの開き方でも何もしない）。nullならヘルプから
+  /// 開いた使い方で、スキップ・はじめる・戻る操作でそのまま閉じる。
+  final Future<void> Function()? onFinish;
 
   /// 使い方を開き、閉じるまで待つ（スキップ・最後まで見た・戻る操作）。
-  static Future<void> show(BuildContext context) => showDialog<void>(
+  static Future<void> show(
+    BuildContext context, {
+    Future<void> Function()? onFinish,
+  }) => showDialog<void>(
     context: context,
     barrierDismissible: false,
-    builder: (_) => const AppTutorial(),
+    builder: (_) => AppTutorial(onFinish: onFinish),
   );
 
   @override
@@ -32,10 +46,75 @@ class _AppTutorialState extends State<AppTutorial> {
   final _pageController = PageController();
   int _page = 0;
 
+  // ページとボタンの部分。画面の大きさでスマホの全画面とPCの枠を切り替えても
+  // 作り直さず、めくったページ・スクロール・フォーカスを保つ（作り直すと、
+  // 見えるページだけ1ページ目へ戻り、ページの印と食い違った）。
+  final _bodyKey = GlobalKey(debugLabel: 'tutorialBody');
+
+  // 「次へ」「はじめる」。開いたらキーボードのEnterで押せ、ページをめくって
+  // ボタンが替わってもフォーカスを持ち続ける。
+  final _primaryFocus = FocusNode(debugLabel: 'tutorialPrimary');
+
+  // 初回起動の案内の「見た」を保存している間・保存できなかった後。
+  bool _saving = false;
+  bool _failed = false;
+
   @override
   void dispose() {
     _pageController.dispose();
+    _primaryFocus.dispose();
     super.dispose();
+  }
+
+  void _onPageChanged(int page) {
+    final keepFocus = _primaryFocus.hasFocus;
+    setState(() => _page = page);
+    // 最後のページでは「次へ」が「はじめる」に替わる（別のボタンとして
+    // 作り直される）ので、フォーカスを持っていたら新しいボタンへ戻す。
+    if (keepFocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _primaryFocus.requestFocus();
+      });
+    }
+  }
+
+  Future<void> _finish(int count) async {
+    final onFinish = widget.onFinish;
+    if (onFinish == null) {
+      Navigator.of(context).pop();
+      return;
+    }
+    if (_saving) return;
+    setState(() {
+      _saving = true;
+      _failed = false;
+    });
+    try {
+      await onFinish();
+      if (mounted) Navigator.of(context).pop();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _failed = true;
+      });
+      // 知らせの文は「はじめる」を押すように言うので、そのボタンのある最後の
+      // ページへ移る。保存を待つ間は押せないボタンからフォーカスが外れて
+      // いるので、押せるように戻ってから、Enterでやり直せるよう戻す。
+      if (_page != count - 1) _pageController.jumpToPage(count - 1);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _primaryFocus.requestFocus();
+      });
+    }
+  }
+
+  void _back() {
+    if (_saving || _page == 0) return;
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
   }
 
   List<_TutorialPage> _pages(AppLocalizations l10n) => [
@@ -78,7 +157,7 @@ class _AppTutorialState extends State<AppTutorial> {
 
   void _next(int count) {
     if (_page >= count - 1) {
-      Navigator.of(context).pop();
+      _finish(count);
       return;
     }
     _pageController.nextPage(
@@ -94,90 +173,138 @@ class _AppTutorialState extends State<AppTutorial> {
     final pages = _pages(l10n);
     final last = _page == pages.length - 1;
     final body = SafeArea(
-      child: Column(
-        children: [
-          Expanded(
-            child: PageView.builder(
-              key: const Key('tutorialPages'),
-              controller: _pageController,
-              itemCount: pages.length,
-              onPageChanged: (page) => setState(() => _page = page),
-              itemBuilder: (context, index) =>
-                  _TutorialPageView(page: pages[index]),
+      key: _bodyKey,
+      child: LayoutBuilder(
+        builder: (context, constraints) => Column(
+          children: [
+            Expanded(
+              child: PageView.builder(
+                key: const Key('tutorialPages'),
+                controller: _pageController,
+                itemCount: pages.length,
+                onPageChanged: _onPageChanged,
+                itemBuilder: (context, index) =>
+                    _TutorialPageView(page: pages[index]),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-            child: Column(
-              children: [
-                Semantics(
-                  label: l10n.tutorialPageIndicator(_page + 1, pages.length),
-                  child: ExcludeSemantics(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        for (var i = 0; i < pages.length; i++)
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            margin: const EdgeInsets.symmetric(horizontal: 3),
-                            width: i == _page ? 18 : 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: i == _page
-                                  ? scheme.primary
-                                  : scheme.outlineVariant,
-                              borderRadius: BorderRadius.circular(4),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+              child: Column(
+                children: [
+                  if (_saving) ...[
+                    const LinearProgressIndicator(),
+                    const SizedBox(height: 8),
+                  ],
+                  if (_failed) ...[
+                    // 色ではなく先頭の印と文で知らせ、読み上げへも伝える。
+                    // 押すボタンの名前は引用符ごと1行に保ち、韓国語は語の途中で
+                    // 折り返さない。低い画面・大きな文字では、ページと
+                    // ボタンの場所を残すよう高さを抑えてスクロールする。
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: math.max(48, constraints.maxHeight * 0.25),
+                      ),
+                      child: SingleChildScrollView(
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: ExportShareNotice(
+                            message: keepKoreanWordsTogether(
+                              keepPhraseTogether(
+                                l10n.homeFirstLaunchSaveFailed,
+                                l10n.homeFirstLaunchStart,
+                              ),
                             ),
                           ),
-                      ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  Semantics(
+                    label: l10n.tutorialPageIndicator(_page + 1, pages.length),
+                    child: ExcludeSemantics(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          for (var i = 0; i < pages.length; i++)
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              margin: const EdgeInsets.symmetric(horizontal: 3),
+                              width: i == _page ? 18 : 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: i == _page
+                                    ? scheme.primary
+                                    : scheme.outlineVariant,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                // 大きな文字で横に並びきらなければ、縦に積む（「次へ」が下）。
-                OverflowBar(
-                  alignment: last
-                      ? MainAxisAlignment.end
-                      : MainAxisAlignment.spaceBetween,
-                  overflowAlignment: OverflowBarAlignment.center,
-                  overflowSpacing: 4,
-                  children: [
-                    if (!last)
-                      TextButton(
-                        key: const Key('tutorialSkip'),
-                        onPressed: () => Navigator.of(context).pop(),
+                  const SizedBox(height: 8),
+                  // 大きな文字で横に並びきらなければ、縦に積む（「次へ」が下）。
+                  OverflowBar(
+                    alignment: last
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.spaceBetween,
+                    overflowAlignment: OverflowBarAlignment.center,
+                    overflowSpacing: 4,
+                    children: [
+                      if (!last)
+                        TextButton(
+                          key: const Key('tutorialSkip'),
+                          onPressed: _saving
+                              ? null
+                              : () => _finish(pages.length),
+                          child: Text(
+                            l10n.tutorialSkip,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      FilledButton(
+                        key: Key(last ? 'tutorialStart' : 'tutorialNext'),
+                        focusNode: _primaryFocus,
+                        autofocus: true,
+                        onPressed: _saving ? null : () => _next(pages.length),
                         child: Text(
-                          l10n.tutorialSkip,
+                          last ? l10n.homeFirstLaunchStart : l10n.tutorialNext,
                           textAlign: TextAlign.center,
                         ),
                       ),
-                    FilledButton(
-                      key: Key(last ? 'tutorialStart' : 'tutorialNext'),
-                      onPressed: () => _next(pages.length),
-                      child: Text(
-                        last ? l10n.homeFirstLaunchStart : l10n.tutorialNext,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
     // スマホ（縦・横）は画面いっぱい、PC・タブレットは中央の枠。
     final screen = MediaQuery.sizeOf(context);
+    final Widget dialog;
     if (screen.width < 600 || screen.height < 500) {
-      return Dialog.fullscreen(child: body);
+      dialog = Dialog.fullscreen(child: body);
+    } else {
+      dialog = Dialog(
+        clipBehavior: Clip.antiAlias,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560, maxHeight: 760),
+          child: body,
+        ),
+      );
     }
-    return Dialog(
-      clipBehavior: Clip.antiAlias,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 560, maxHeight: 760),
-        child: body,
-      ),
+    if (widget.onFinish == null) return dialog;
+    // 初回起動の案内は、戻る操作では閉じない（見たことを保存しないまま
+    // 閉じると、次の起動でまた出る）。前のページへ戻るだけ。
+    return PopScope<Object?>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _back();
+      },
+      child: dialog,
     );
   }
 }
@@ -205,12 +332,18 @@ class _TutorialPageView extends StatelessWidget {
     final figure = MediaQuery.withNoTextScaling(
       child: FittedBox(child: page.figure),
     );
+    // 韓国語は語の途中で折り返さない。描く文にだけ語結合子を入れ、読み上げ・
+    // 探す文には元の文を渡す。
+    Widget words(String text, TextStyle style) => Text.rich(
+      TextSpan(text: keepKoreanWordsTogether(text), semanticsLabel: text),
+      style: style,
+    );
     final text = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        words(
           page.title,
-          style: localizedHeadingStyle(
+          localizedHeadingStyle(
             context,
             TextStyle(
               fontSize: 20,
@@ -221,9 +354,9 @@ class _TutorialPageView extends StatelessWidget {
         ),
         if (page.lead != null) ...[
           const SizedBox(height: 8),
-          Text(
+          words(
             page.lead!,
-            style: TextStyle(
+            TextStyle(
               fontSize: 15,
               height: 1.5,
               color: scheme.onSurfaceVariant,
@@ -240,9 +373,9 @@ class _TutorialPageView extends StatelessWidget {
                 _StepBadge(i + 1),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
+                  child: words(
                     page.steps[i],
-                    style: TextStyle(
+                    TextStyle(
                       fontSize: 15,
                       height: 1.5,
                       color: scheme.onSurface,

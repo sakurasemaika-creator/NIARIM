@@ -14,6 +14,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/utils/line_break.dart';
+import 'package:niarim/widgets/app_tutorial.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
@@ -49,6 +50,12 @@ class _FirstLaunchStore extends SharedPreferencesStorePlatform {
   @override
   Future<bool> clear() => delegate.clear();
 }
+
+// 初回起動の案内（図つきの使い方）の「スキップ」と、最後のページの
+// 「はじめる」。どちらも見たことを保存できてから閉じる。
+final _skip = find.byKey(const Key('tutorialSkip'));
+final _start = find.byKey(const Key('tutorialStart'));
+final _guide = find.byType(AppTutorial);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -135,6 +142,21 @@ void main() {
     expect(find.text(c.l10n.homeFirstLaunchMessage), findsOneWidget);
     expect(c.settings.isFirstLaunch, isTrue);
     expect(c.store.attempts, 0);
+    // 2ページ目からの戻る操作は前のページへ戻るだけ、Escは何もしない。
+    await tester.tap(find.byKey(const Key('tutorialNext')));
+    await tester.pumpAndSettle();
+    expect(find.text(c.l10n.tutorialPage2Title), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text(c.l10n.tutorialPage1Title), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tutorialNext')));
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(find.text(c.l10n.tutorialPage2Title), findsOneWidget);
+    expect(_guide, findsOneWidget);
+    expect(c.settings.isFirstLaunch, isTrue);
+    expect(c.store.attempts, 0);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -144,11 +166,11 @@ void main() {
     ) async {
       final c = await open(tester);
       c.store.mode = mode;
-      await tester.tap(
-        find.widgetWithText(FilledButton, c.l10n.homeFirstLaunchStart),
-      );
+      await tester.tap(_skip);
       await tester.pumpAndSettle();
-      expect(find.text(c.l10n.homeFirstLaunchMessage), findsOneWidget);
+      // 閉じずに「はじめる」のある最後のページで知らせる。
+      expect(_guide, findsOneWidget);
+      expect(_start, findsOneWidget);
       expect(c.settings.isFirstLaunch, isTrue);
       expect(saveFailureNotice(), findsOneWidget);
       final prefs = await SharedPreferences.getInstance();
@@ -156,11 +178,9 @@ void main() {
       expect(prefs.getBool('first_launch'), isTrue);
       expect(c.store.attempts, 1);
       c.store.mode = 'off';
-      await tester.tap(
-        find.widgetWithText(FilledButton, c.l10n.homeFirstLaunchStart),
-      );
+      await tester.tap(_start);
       await tester.pumpAndSettle();
-      expect(find.text(c.l10n.homeFirstLaunchMessage), findsNothing);
+      expect(_guide, findsNothing);
       expect(c.settings.isFirstLaunch, isFalse);
       await prefs.reload();
       expect(prefs.getBool('first_launch'), isFalse);
@@ -175,13 +195,10 @@ void main() {
     (tester) async {
       final c = await open(tester);
       c.store.mode = 'pending';
-      final start = find.widgetWithText(
-        FilledButton,
-        c.l10n.homeFirstLaunchStart,
-      );
-      await tester.tap(start);
+      await tester.tap(_skip);
       await tester.pump();
-      await tester.tap(start);
+      await tester.tap(_skip, warnIfMissed: false);
+      await tester.tap(find.byKey(const Key('tutorialNext')));
       await tester.pump();
       expect(c.store.attempts, 1);
       expect(c.settings.isFirstLaunch, isTrue);
@@ -217,13 +234,10 @@ void main() {
           scale: scale,
         );
         c.store.mode = 'reject';
-        final start = find.widgetWithText(
-          FilledButton,
-          c.l10n.homeFirstLaunchStart,
-        );
-        await tester.ensureVisible(start);
-        await tester.tap(start);
+        await tester.ensureVisible(_skip);
+        await tester.tap(_skip);
         await tester.pumpAndSettle();
+        final start = _start;
         final error = saveFailureNotice();
         await tester.ensureVisible(error);
         await tester.pumpAndSettle();
@@ -265,7 +279,7 @@ void main() {
         c.store.mode = 'off';
         await tester.tap(start);
         await tester.pumpAndSettle();
-        expect(find.text(c.l10n.homeFirstLaunchMessage), findsNothing);
+        expect(_guide, findsNothing);
         expect(c.settings.isFirstLaunch, isFalse);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
@@ -292,12 +306,8 @@ void main() {
     ]) {
       final c = await open(tester, language: 'ko', size: size, scale: scale);
       c.store.mode = 'reject';
-      final start = find.widgetWithText(
-        FilledButton,
-        c.l10n.homeFirstLaunchStart,
-      );
-      await tester.ensureVisible(start);
-      await tester.tap(start);
+      await tester.ensureVisible(_skip);
+      await tester.tap(_skip);
       await tester.pumpAndSettle();
       final notice = saveFailureNotice();
       expect(notice, findsOneWidget);
@@ -344,12 +354,8 @@ void main() {
     final handle = tester.ensureSemantics();
     final c = await open(tester, language: 'ko');
     c.store.mode = 'reject';
-    final start = find.widgetWithText(
-      FilledButton,
-      c.l10n.homeFirstLaunchStart,
-    );
-    await tester.ensureVisible(start);
-    await tester.tap(start);
+    await tester.ensureVisible(_skip);
+    await tester.tap(_skip);
     await tester.pumpAndSettle();
     final notice = saveFailureNotice();
     expect(notice, findsOneWidget);
@@ -389,9 +395,7 @@ void main() {
       );
       final c = await open(tester, language: language, theme: preset);
       c.store.mode = 'reject';
-      await tester.tap(
-        find.widgetWithText(FilledButton, c.l10n.homeFirstLaunchStart),
-      );
+      await tester.tap(_skip);
       await tester.pumpAndSettle();
       final notice = saveFailureNotice();
       expect(notice, findsOneWidget);
@@ -416,7 +420,7 @@ void main() {
       );
       expect(icon, findsOneWidget);
       expect(tester.widget<Icon>(icon).color, preset.menuTextColor);
-      expect(find.text(c.l10n.homeFirstLaunchMessage), findsOneWidget);
+      expect(_guide, findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
     });

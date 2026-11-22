@@ -195,13 +195,7 @@ void main() {
     expect(find.byType(Scaffold), findsWidgets);
     expectAdSlotFollowsPremium(tester, 'ホーム画面の最上部の横長広告モック');
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(Scaffold).first),
-    )!;
-    final firstLaunchDialogButton = find.widgetWithText(
-      FilledButton,
-      l10n.homeFirstLaunchStart,
-    );
+    final firstLaunchDialogButton = find.byKey(const Key('tutorialSkip'));
     if (firstLaunchDialogButton.evaluate().isNotEmpty) {
       await tester.tap(firstLaunchDialogButton);
       await tester.pump(const Duration(milliseconds: 300));

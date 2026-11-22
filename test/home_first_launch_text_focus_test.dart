@@ -12,6 +12,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/utils/line_break.dart';
+import 'package:niarim/widgets/app_tutorial.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
@@ -61,8 +62,8 @@ const _sizes = [
   (Size(1280, 800), 2.0),
 ];
 
-// 初回の案内の「はじめる」。空のホームにも作成の塗りのボタンがあるので、
-// ダイアログの中に限って探す。
+// 初回の案内（図つきの使い方）の「次へ」「はじめる」。空のホームにも作成の
+// 塗りのボタンがあるので、ダイアログの中に限って探す。
 final _startButton = find.descendant(
   of: find.byType(Dialog),
   matching: find.byType(FilledButton),
@@ -113,7 +114,7 @@ void main() {
   }
 
   AppLocalizations l10nOf(WidgetTester tester) =>
-      AppLocalizations.of(tester.element(find.byType(AlertDialog)))!;
+      AppLocalizations.of(tester.element(find.byType(AppTutorial)))!;
 
   Future<void> show(
     WidgetTester tester,
@@ -134,7 +135,7 @@ void main() {
       for (final element
           in find
               .descendant(
-                of: find.byType(AlertDialog),
+                of: find.byType(AppTutorial),
                 matching: find.byType(RichText),
               )
               .evaluate())
@@ -241,7 +242,9 @@ void main() {
     final handle = tester.ensureSemantics();
     final c = await open(tester, language: 'ja');
     c.store.reject = true;
-    await tester.tap(_startButton);
+    // 1ページ目の「スキップ」で保存に失敗すると、「はじめる」のある最後の
+    // ページへ移って知らせる。
+    await tester.tap(find.byKey(const Key('tutorialSkip')));
     await tester.pumpAndSettle();
     expect(c.store.attempts, 1);
     for (final language in ['ja', 'zh', 'zh_Hant', 'ko', 'en', 'es', 'fr']) {
@@ -313,7 +316,9 @@ void main() {
       'as the name at every width', (tester) async {
     final c = await open(tester, language: 'ja');
     c.store.reject = true;
-    await tester.tap(_startButton);
+    // 1ページ目の「スキップ」で保存に失敗すると、「はじめる」のある最後の
+    // ページへ移って知らせる。
+    await tester.tap(find.byKey(const Key('tutorialSkip')));
     await tester.pumpAndSettle();
     expect(c.store.attempts, 1);
     final split = <String>[];
@@ -385,8 +390,10 @@ void main() {
     expect(keepPhraseTogether(ja, ''), ja);
   });
 
-  // PC（キーボード）：案内が開いたらEnterで「はじめる」を押せる。
-  testWidgets('Enter presses Start as soon as the notice opens', (
+  // PC（キーボード）：案内が開いたら「次へ」にフォーカスがあり、Enterで
+  // ページをめくれる。最後のページで「はじめる」に替わってもフォーカスは
+  // 残り、Enterで閉じる。
+  testWidgets('Enter turns the pages and presses Start on the last page', (
     tester,
   ) async {
     final c = await open(
@@ -395,12 +402,25 @@ void main() {
       pc: true,
       size: const Size(1280, 800),
     );
-    expect(find.byType(AlertDialog), findsOneWidget);
-    expect(startHasFocus(), isTrue);
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pumpAndSettle();
+    final l10n = l10nOf(tester);
+    final titles = [
+      l10n.tutorialPage1Title,
+      l10n.tutorialPage2Title,
+      l10n.tutorialPage3Title,
+      l10n.tutorialPage4Title,
+      l10n.tutorialPage5Title,
+      l10n.tutorialPage6Title,
+    ];
+    expect(find.byType(AppTutorial), findsOneWidget);
+    for (var page = 0; page < titles.length; page++) {
+      expect(find.text(titles[page]), findsOneWidget, reason: 'page $page');
+      expect(startHasFocus(), isTrue, reason: 'page $page');
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      if (page < titles.length - 1) expect(c.store.attempts, 0);
+    }
     expect(c.store.attempts, 1);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(AppTutorial), findsNothing);
     expect(c.settings.isFirstLaunch, isFalse);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
@@ -417,11 +437,12 @@ void main() {
       pc: true,
       size: const Size(1280, 800),
     );
-    // 修正前は開いた時点でフォーカスが無いので、Tabで「はじめる」へ移す。
-    for (var i = 0; i < 4 && !startHasFocus(); i++) {
-      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await tester.pump();
+    // 最後のページまでEnterでめくる。
+    for (var page = 0; page < 5; page++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
     }
+    expect(find.byKey(const Key('tutorialStart')), findsOneWidget);
     expect(startHasFocus(), isTrue);
     c.store.pending = Completer<bool>();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
@@ -445,7 +466,35 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pumpAndSettle();
     expect(c.store.attempts, 2);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(AppTutorial), findsNothing);
+    expect(c.settings.isFirstLaunch, isFalse);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  // 「スキップ」の保存に失敗したときも、最後のページの「はじめる」に
+  // フォーカスを移し、Enterでやり直せる。
+  testWidgets('a failed Skip moves to Start on the last page', (tester) async {
+    final c = await open(
+      tester,
+      language: 'ja',
+      pc: true,
+      size: const Size(1280, 800),
+    );
+    c.store.reject = true;
+    await tester.tap(find.byKey(const Key('tutorialSkip')));
+    await tester.pumpAndSettle();
+    expect(c.store.attempts, 1);
+    expect(find.byKey(const Key('tutorialStart')), findsOneWidget);
+    expect(find.byKey(const Key('tutorialSkip')), findsNothing);
+    paragraphOf(tester, l10nOf(tester).homeFirstLaunchSaveFailed);
+    expect(startHasFocus(), isTrue);
+    expect(c.settings.isFirstLaunch, isTrue);
+    c.store.reject = false;
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(c.store.attempts, 2);
+    expect(find.byType(AppTutorial), findsNothing);
     expect(c.settings.isFirstLaunch, isFalse);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());

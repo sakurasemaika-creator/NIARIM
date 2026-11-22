@@ -145,14 +145,17 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
+      // 初回は図つきの使い方（1ページ目に案内の一文）。外側・Esc・戻る
+      // 操作では閉じない。
       expect(find.text(l10n.homeFirstLaunchMessage), findsOneWidget);
-      expect(find.byType(AppTutorial), findsNothing);
+      expect(find.byType(AppTutorial), findsOneWidget);
       expect(
         (await SharedPreferences.getInstance()).getBool('first_launch'),
         isTrue,
       );
-      await tester.tap(find.text(l10n.homeFirstLaunchStart));
+      await tester.tap(find.byKey(const Key('tutorialSkip')));
       await tester.pumpAndSettle();
+      expect(find.byType(AppTutorial), findsNothing);
       expect(find.text(l10n.homeFirstLaunchMessage), findsNothing);
       expect(
         (await SharedPreferences.getInstance()).getBool('first_launch'),
@@ -730,18 +733,31 @@ void main() {
             services: services,
           );
           await capture(tester, 'first-guidance-$suffix');
-          for (final text in [
-            l10n.homeFirstLaunchMessage,
-            l10n.homeFirstLaunchStart,
+          // 初回の案内（図つきの使い方）の1ページ目：案内の一文と、
+          // 「スキップ」「次へ」のボタンの名前が切れずに画面の中にある。
+          for (final (name, finder) in [
+            ('lead', find.text(l10n.homeFirstLaunchMessage)),
+            (
+              'skip',
+              find.descendant(
+                of: find.byKey(const Key('tutorialSkip')),
+                matching: find.byType(RichText),
+              ),
+            ),
+            (
+              'next',
+              find.descendant(
+                of: find.byKey(const Key('tutorialNext')),
+                matching: find.byType(RichText),
+              ),
+            ),
           ]) {
-            final label = tester.renderObject<RenderParagraph>(find.text(text));
-            expect(label.didExceedMaxLines, isFalse, reason: '$suffix $text');
-            expect(
-              find.text(text).hitTestable(),
-              findsOneWidget,
-              reason: suffix,
-            );
-            final bounds = tester.getRect(find.text(text));
+            await tester.ensureVisible(finder);
+            await tester.pumpAndSettle();
+            final label = tester.renderObject<RenderParagraph>(finder);
+            expect(label.didExceedMaxLines, isFalse, reason: '$suffix $name');
+            expect(finder.hitTestable(), findsOneWidget, reason: suffix);
+            final bounds = tester.getRect(finder);
             expect(bounds.left, greaterThanOrEqualTo(0), reason: suffix);
             expect(
               bounds.right,
@@ -755,7 +771,7 @@ void main() {
               reason: suffix,
             );
           }
-          await tester.tap(find.text(l10n.homeFirstLaunchStart));
+          await tester.tap(find.byKey(const Key('tutorialSkip')));
           await tester.pumpAndSettle();
           await capture(tester, 'projects-empty-$suffix');
           await switchTab(tester, 1);

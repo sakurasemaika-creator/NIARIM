@@ -339,7 +339,7 @@ void main() {
       }
     });
     expect(savedWork, findsOneWidget);
-    final welcome = find.text(l10n.homeFirstLaunchStart);
+    final welcome = find.byKey(const Key('tutorialSkip'));
     if (welcome.evaluate().isNotEmpty) {
       await tester.ensureVisible(welcome);
       await tester.tap(welcome);

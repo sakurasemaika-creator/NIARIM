@@ -34,6 +34,7 @@ import '../../services/shortcut_service.dart';
 import '../../services/storage_info_service.dart';
 import '../../services/work_folder_service.dart';
 import '../../models/shortcut_binding.dart';
+import '../../widgets/app_tutorial.dart';
 import '../../widgets/export_share_feedback.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
@@ -1070,12 +1071,9 @@ class _HomeScreenState extends State<HomeScreen>
   void _checkFirstLaunch() {
     final settings = context.read<SettingsService>();
     if (!settings.isFirstLaunch) return;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) =>
-          _FirstLaunchDialog(onDone: settings.markFirstLaunchDone),
-    );
+    // 初回起動は図つきの使い方（6ページ）。「スキップ」「はじめる」は見たことを
+    // 保存できてから閉じる。
+    AppTutorial.show(context, onFinish: settings.markFirstLaunchDone);
   }
 
   // 現在の並び替えが名前基準かどうか（項目自体はProjectSortMode
@@ -8441,122 +8439,3 @@ enum ProjectViewMode {
 }
 
 enum ProjectSortMode { nameAsc, nameDesc, updatedAsc, updatedDesc }
-
-// ─── 初回起動ポップアップ ─────────────────────────────────────────────────
-// 初回起動時は「手描きアニメーションを制作できます」の
-// ポップアップのみを表示する（複数ページのチュートリアルは表示しない）。
-
-class _FirstLaunchDialog extends StatefulWidget {
-  final Future<void> Function() onDone;
-  const _FirstLaunchDialog({required this.onDone});
-
-  @override
-  State<_FirstLaunchDialog> createState() => _FirstLaunchDialogState();
-}
-
-class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
-  bool _saving = false;
-  bool _failed = false;
-  // 開いたらキーボードのEnterで「はじめる」を押せるようにする。
-  final _startFocus = FocusNode(debugLabel: 'firstLaunchStart');
-
-  @override
-  void dispose() {
-    _startFocus.dispose();
-    super.dispose();
-  }
-
-  Future<void> _complete() async {
-    if (_saving) return;
-    setState(() {
-      _saving = true;
-      _failed = false;
-    });
-    try {
-      await widget.onDone();
-      if (mounted) Navigator.of(context).pop();
-    } catch (error, stackTrace) {
-      AppErrorReporter.record(error, stackTrace);
-      if (mounted) {
-        setState(() {
-          _saving = false;
-          _failed = true;
-        });
-        // 保存を待つ間は押せないボタンからフォーカスが外れている。押せる
-        // ように戻ってから、Enterでやり直せるようフォーカスを戻す。
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _startFocus.requestFocus();
-        });
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return PopScope<Object?>(
-      canPop: false,
-      child: AlertDialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
-        scrollable: true,
-        // スクロールした文を案内の角丸の形で切り取る（既定の Clip.none
-        // では、文字の大きいときに余白が縮み、四隅の丸みの外に文の端が
-        // 出うる）。
-        clipBehavior: Clip.antiAlias,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 韓国語は語の途中で折り返さない。描く文にだけ語結合子を入れ、
-            // 読み上げには元の文を渡す。
-            Text.rich(
-              TextSpan(
-                text: keepKoreanWordsTogether(l10n.homeFirstLaunchMessage),
-                semanticsLabel: l10n.homeFirstLaunchMessage,
-              ),
-            ),
-            if (_saving) ...[
-              const SizedBox(height: 12),
-              const LinearProgressIndicator(),
-            ],
-            if (_failed) ...[
-              const SizedBox(height: 12),
-              // 色ではなく先頭の印と文で知らせ、読み上げへも伝える
-              // （文字の色はダイアログの文字色）。韓国語は語の途中で
-              // 折り返さない（押すボタンの名前が2行に割れないように）。
-              // 日本語・中国語も、押すボタンの名前は引用符ごと1行に保つ。
-              ExportShareNotice(
-                message: keepKoreanWordsTogether(
-                  keepPhraseTogether(
-                    l10n.homeFirstLaunchSaveFailed,
-                    l10n.homeFirstLaunchStart,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          // 「はじめる」ボタンの文字はくらむぼんを明示指定する
-          // （通常のボタン文字は白光明朝のため、ここだけ差し替える）。
-          FilledButton(
-            focusNode: _startFocus,
-            autofocus: true,
-            onPressed: _saving ? null : _complete,
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-            ),
-            child: Text(
-              l10n.homeFirstLaunchStart,
-              style: localizedHeadingStyle(
-                context,
-                const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

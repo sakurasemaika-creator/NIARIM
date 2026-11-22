@@ -14,6 +14,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/widgets/sort_mode_control.dart';
+import 'package:niarim/widgets/app_tutorial.dart';
 
 import 'helpers/load_app_fonts.dart';
 
@@ -121,13 +122,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
     expectNoFlutterException(tester, '作品をつくる→ホーム');
 
-    final dialog = find.byType(AlertDialog);
+    final dialog = find.byType(AppTutorial);
     expect(dialog, findsOneWidget);
-    final l10n = AppLocalizations.of(tester.element(dialog))!;
-    final firstLaunch = find.widgetWithText(
-      FilledButton,
-      l10n.homeFirstLaunchStart,
-    );
+    final firstLaunch = find.byKey(const Key('tutorialSkip'));
     await capture(tester, '02_first_launch_dialog');
     await tester.tap(firstLaunch);
     await tester.pumpAndSettle();

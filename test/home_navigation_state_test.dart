@@ -14,6 +14,7 @@ import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/widgets/app_tutorial.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -656,28 +657,29 @@ void main() {
   });
 
   // 以前の版は「戻る操作で閉じても表示済みにする」だった。いまの初回の
-  // 案内は保存を待つため（保存に失敗したら開いたまま、やり直せる）、
-  // 戻る操作では閉じず、「はじめる」で閉じて表示済みにする。
-  testWidgets('the first-run guide survives back and Start marks it seen', (
+  // 案内（図つきの使い方）は保存を待つため（保存に失敗したら開いたまま、
+  // やり直せる）、戻る操作では閉じず、「スキップ」「はじめる」で閉じて
+  // 表示済みにする。
+  testWidgets('the first-run guide survives back and Skip marks it seen', (
     tester,
   ) async {
     await boot(tester, firstLaunch: true);
-    final l10n = l10nOf(tester);
     final settings = tester
         .element(find.byType(HomeScreen))
         .read<SettingsService>();
-    expect(find.text(l10n.homeFirstLaunchStart), findsOneWidget);
+    final guide = find.byType(AppTutorial);
+    expect(guide, findsOneWidget);
     await tester.binding.handlePopRoute();
     await settle(tester);
-    expect(find.text(l10n.homeFirstLaunchStart), findsOneWidget);
+    expect(guide, findsOneWidget);
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(settings.isFirstLaunch, isTrue);
-    await tester.tap(find.text(l10n.homeFirstLaunchStart));
+    await tester.tap(find.byKey(const Key('tutorialSkip')));
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 50)),
     );
     await settle(tester);
-    expect(find.text(l10n.homeFirstLaunchStart), findsNothing);
+    expect(guide, findsNothing);
     expect(settings.isFirstLaunch, isFalse);
   });
 

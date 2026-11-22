@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -15,6 +16,7 @@ import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/utils/app_error_reporter.dart';
 import 'package:niarim/utils/app_locale.dart';
+import 'package:niarim/widgets/app_tutorial.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
@@ -22,17 +24,20 @@ import 'package:shared_preferences_platform_interface/shared_preferences_platfor
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
-/// ホームの初回の案内（「手描きアニメーションを制作できます」）を、
-/// 7言語 × 8画面 × 文字の大きさ1倍・2倍で開き、見たことの保存が通常に
-/// 済む・断られる・例外になる・待たされる、の各状態を撮って確かめる。
+/// ホームの初回の案内（図つきの使い方。1ページ目に「手描きアニメーションを
+/// 制作できます」）を、7言語 × 8画面 × 文字の大きさ1倍・2倍で開き、最後の
+/// ページまでめくってから、見たことの保存が通常に済む・断られる・例外に
+/// なる・待たされる、の各状態を撮って確かめる。
 /// 画面は320x568・360x800・横640x360・PCの1280x800と、実機のスマホの
 /// 状態バー（上24）とジェスチャーの帯（下24）を持つ横640x360・横568x320、
 /// 状態バーと3つのボタンの帯（下48）を持つ320x568、小さい浮かぶ窓の360x260。
 ///
 /// 画像と一覧（manifest-<言語>.json）は build/home-first-launch へ出す。
 /// 各状態で確かめること：
-/// - 案内が画面の帯の内側に収まり、例外（はみ出し等）が出ない。「はじめる」は
-///   画面と案内の中にあり、押せる（押せる大きさ48px以上）。文が案内の外へ
+/// - 案内の中身（ページ・ボタン）が画面の帯の内側に収まり、例外（はみ出し
+///   等）が出ない。スマホでは画面いっぱい、PCでは幅560px以下の枠。「次へ」
+///   「はじめる」は画面と案内の中にあり、押せる（押せる大きさ48px以上）。
+///   1ページ目からは「次へ」（PCはEnter）で最後のページへめくれる。文が案内の外へ
 ///   出ない。中身がスクロールするときは、上の端・下の端のどちらからでも、
 ///   文がスクロールで見える所まで来る。どの言語でも、スクロールする画面が
 ///   少なくとも1つあり、隠れた文をスクロールで見せる確かめが実際に走ること
@@ -40,7 +45,8 @@ import 'helpers/load_app_fonts.dart';
 /// - 失敗の文はその言語の文で、日本語以外の言語の案内に仮名が混ざらない
 ///   （英・西・仏は漢字・ハングルも混ざらない）。
 /// - 外側のタップ・Esc・戻る操作では閉じず（`barrierDismissible: false`・
-///   `PopScope(canPop: false)`）、戻る操作はアプリを閉じずに受け止める。
+///   `PopScope(canPop: false)`）、戻る操作はアプリを閉じずに受け止め、
+///   前のページへ戻るだけ（1ページ目と保存を待つ間は何もしない）。
 ///   保存も行わない。Escは、案内の中にフォーカスがあるとき（スマホでも
 ///   キーボードのTabで入れて）にも確かめる。
 /// - 「はじめる」は保存に成功したときだけ閉じる。断られた・例外になった・
@@ -228,13 +234,12 @@ const _knownDefects = <String, String>{
   'PC-ENTER-NEEDS-TAB':
       'PCで、案内が開いた直後か、待った末に断られた後に、Enterだけでは'
       '「はじめる」を押せない（「はじめる」にフォーカスが無く、Tabが要る）。'
-      'home_screen.dartの_FirstLaunchDialogStateは開いたときに「はじめる」へ'
-      'フォーカスを置き（autofocus）、保存に失敗したら次のフレームで'
-      'フォーカスを戻すはず。',
+      'app_tutorial.dartの_AppTutorialStateは開いたときに「次へ」へ'
+      'フォーカスを置き（autofocus）、ページが替わっても、保存に失敗した'
+      '後も次のフレームでフォーカスを戻すはず。',
   'KO-WORD-SPLIT':
-      '韓国語の文が語の途中で折り返す。home_screen.dartの'
-      '_FirstLaunchDialogState.buildは歓迎の文も失敗の文も'
-      'keepKoreanWordsTogetherで包むはず。',
+      '韓国語の文が語の途中で折り返す。app_tutorial.dartは見出し・'
+      '歓迎の文・手順も失敗の文もkeepKoreanWordsTogetherで包むはず。',
   'START-NAME-SPLIT':
       '失敗の文が押すボタンの名前（「はじめる」“开始使用”「開始使用」）を'
       '2行に割る。失敗の文はkeepPhraseTogetherで名前を引用符ごと1行に'
@@ -510,11 +515,41 @@ class _Cell {
   Rect get _safeRect =>
       Rect.fromLTRB(0, screen.top, _size.width, _size.height - screen.bottom);
 
-  final Finder _dialog = find.byType(AlertDialog);
+  final Finder _dialog = find.byType(AppTutorial);
   Finder _inDialog(Finder finder) =>
       find.descendant(of: _dialog, matching: finder);
-  // 案内の面（AlertDialogの中で最初のMaterial）。
+  // 案内の面（使い方のダイアログの中で最初のMaterial）。
   Finder get _surface => _inDialog(find.byType(Material)).first;
+
+  /// スマホ（縦・横）は画面いっぱい、PC・タブレットは中央の枠。
+  bool get _fullscreen => _size.width < 600 || _size.height < 500;
+
+  List<String> get _titles => [
+    expected.tutorialPage1Title,
+    expected.tutorialPage2Title,
+    expected.tutorialPage3Title,
+    expected.tutorialPage4Title,
+    expected.tutorialPage5Title,
+    expected.tutorialPage6Title,
+  ];
+
+  /// 見えているページ（0から）。見つからなければ-1。
+  int _page() {
+    for (var i = 0; i < _titles.length; i++) {
+      if (_inDialog(_text(_titles[i])).evaluate().isNotEmpty) return i;
+    }
+    return -1;
+  }
+
+  /// [finder]をスクロールさせる、いちばん近い縦のスクロール。
+  Finder _verticalScrollOf(Finder finder) => find
+      .ancestor(
+        of: finder,
+        matching: find.byWidgetPredicate(
+          (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+        ),
+      )
+      .first;
   // 文は単語結合子（韓国語の語を折り返さない印）を除いて比べる。歓迎の文は
   // 描く文にだけ語結合子を入れたText.richなので、描く文（読み上げの文では
   // なく）を見る。
@@ -526,12 +561,8 @@ class _Cell {
                 ?.replaceAll('\u2060', '') ==
             text,
   );
-  Finder get _start => _inDialog(
-    find.ancestor(
-      of: _text(expected.homeFirstLaunchStart),
-      matching: find.byType(FilledButton),
-    ),
-  );
+  // 「次へ」（最後のページでは「はじめる」）。
+  Finder get _start => _inDialog(find.byType(FilledButton));
   Finder get _message => _inDialog(_text(expected.homeFirstLaunchMessage));
   // 保存に失敗したときの知らせ（読み上げにも伝わる1行）の文。
   Finder get _notice => _inDialog(
@@ -543,7 +574,12 @@ class _Cell {
     ),
   );
   Finder get _progress => _inDialog(find.byType(LinearProgressIndicator));
-  Finder get _scroll => _inDialog(find.byType(Scrollable));
+  // 案内の中の縦のスクロール（ページの中身・失敗の知らせ）。
+  Finder get _scroll => _inDialog(
+    find.byWidgetPredicate(
+      (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+    ),
+  );
 
   void _problem(String step, String what) => problems.add('$name $step: $what');
 
@@ -557,7 +593,7 @@ class _Cell {
   bool _focusInDialog() {
     final context = FocusManager.instance.primaryFocus?.context;
     return context != null &&
-        context.findAncestorWidgetOfExactType<AlertDialog>() != null;
+        context.findAncestorWidgetOfExactType<AppTutorial>() != null;
   }
 
   bool _startFocused() {
@@ -654,8 +690,12 @@ class _Cell {
       _problem('1-normal', 'saved ${_store.attempts}x before Start');
     }
 
+    // 1b. 「次へ」（PCはEnter）で最後のページまでめくる。保存はしない。
+    if (!await _toLastPage()) return;
+    if (!await _look('1b-last-page', failed: false, waiting: false)) return;
+
     // 2. 保存を断られた（setBoolがfalse）。開いたまま、その言語の文で知らせる。
-    // PCでは、案内を見てすぐEnterを押す人の操作から始める。
+    // PCでは、最後のページを見てすぐEnterを押す人の操作から始める。
     await _pressAndFail('2-rejected', _Save.reject, 1, 'was not saved');
     if (!await _look('2-rejected', failed: true, waiting: false)) return;
     // キーボードのTabで案内の中へフォーカスを入れてからEscも押す。
@@ -774,6 +814,32 @@ class _Cell {
       record['homeKana'] = kana.toList();
     }
     record['png'] = await _capture('5-saved');
+  }
+
+  /// 1ページ目から最後のページまで「次へ」を押す（PCはEnterだけ）。
+  Future<bool> _toLastPage() async {
+    for (var page = 1; page < _titles.length; page++) {
+      if (screen.pc) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      } else {
+        await tester.ensureVisible(_start);
+        await tester.tap(_start);
+      }
+      await tester.pumpAndSettle();
+      if (_page() != page) {
+        _problem(
+          '1b-next',
+          '${screen.pc ? 'Enter' : 'Next'} did not turn to page '
+              '${page + 1} (on ${_page() + 1})',
+        );
+        if (screen.pc) _defect('PC-ENTER-NEEDS-TAB 1b-next (page $page)');
+        return false;
+      }
+      if (_store.attempts != 0) {
+        _problem('1b-next', 'saved before the last page');
+      }
+    }
+    return true;
   }
 
   Future<void> _pressAndFail(
@@ -905,10 +971,21 @@ class _Cell {
     }
     final box = tester.getRect(_surface);
     record['dialog'] = [box.left, box.top, box.width, box.height];
-    if (!_inside(box, _safeRect)) {
-      _problem(step, 'notice $box leaves the screen or covers its bars');
+    if (_fullscreen) {
+      // 画面いっぱいの面。中身（ページ）は状態バー・帯の内側。
+      if (!_inside(box, Offset.zero & _size)) {
+        _problem(step, 'guide $box leaves the screen');
+      }
+      final pages = tester.getRect(find.byKey(const Key('tutorialPages')));
+      if (!_inside(pages, _safeRect)) {
+        _problem(step, 'guide pages $pages cover the screen bars');
+      }
+    } else {
+      if (!_inside(box, _safeRect)) {
+        _problem(step, 'guide $box leaves the screen or covers its bars');
+      }
+      if (box.width > 560.5) _problem(step, 'guide wider than 560: $box');
     }
-    if (box.width > 560.5) _problem(step, 'notice wider than 560: $box');
 
     final context = tester.element(_surface);
     if (Localizations.localeOf(context) != localeFromLanguageCode(language)) {
@@ -919,8 +996,17 @@ class _Cell {
       _problem(step, 'text scale $applied instead of $scale');
     }
 
-    if (_message.evaluate().length != 1) {
-      _problem(step, 'welcome text is not the $language text');
+    // 1ページ目は歓迎の文、保存を始めた後は最後のページ。
+    final firstPage = step.startsWith('1-');
+    final page = _page();
+    record['page'] = page + 1;
+    if (firstPage) {
+      if (page != 0) _problem(step, 'not on the first page (${page + 1})');
+      if (_message.evaluate().length != 1) {
+        _problem(step, 'welcome text is not the $language text');
+      }
+    } else if (page != _titles.length - 1) {
+      _problem(step, 'not on the last page (${page + 1})');
     }
 
     // 案内の中の文：行の上限で切れず、案内の外へ横にはみ出さず、
@@ -1029,11 +1115,13 @@ class _Cell {
     }
 
     var extent = 0.0;
-    if (_scroll.evaluate().isNotEmpty) {
-      extent = tester
-          .state<ScrollableState>(_scroll.first)
-          .position
-          .maxScrollExtent;
+    for (final element in _scroll.evaluate()) {
+      extent = math.max(
+        extent,
+        (element as StatefulElement).state is ScrollableState
+            ? ((element.state as ScrollableState).position.maxScrollExtent)
+            : 0.0,
+      );
     }
     record['scrollExtent'] = extent;
     if (capture) record['png'] = await _capture(step);
@@ -1042,17 +1130,19 @@ class _Cell {
     // 文がスクロールで見える所まで来ること（上の端では失敗の文、下の端では
     // 歓迎の文が隠れうる）。
     if (extent > 0.5) {
-      ScrollPosition position() =>
-          tester.state<ScrollableState>(_scroll.first).position;
-      Rect viewport() => tester.getRect(_scroll.first).intersect(_safeRect);
       final reached = <String>[];
-      for (final (end, at) in [('top', 0.0), ('bottom', extent)]) {
+      for (final end in const ['top', 'bottom']) {
         for (final (what, finder) in [
-          ('welcome', _message),
+          if (firstPage) ('welcome', _message),
+          if (!firstPage) ('title', _inDialog(_text(_titles.last))),
           if (failed) ('failure', _notice),
         ]) {
           if (finder.evaluate().length != 1) continue;
-          position().jumpTo(at);
+          final scroll = _verticalScrollOf(finder);
+          ScrollPosition position() =>
+              tester.state<ScrollableState>(scroll).position;
+          Rect viewport() => tester.getRect(scroll).intersect(_safeRect);
+          position().jumpTo(end == 'top' ? 0.0 : position().maxScrollExtent);
           await _settle(waiting: waiting);
           if (_inside(tester.getRect(finder), viewport())) continue;
           // 見える所より高い文は、上の端と下の端をそれぞれ見せられること。
@@ -1121,9 +1211,33 @@ class _Cell {
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await _settle(waiting: waiting);
     results['escape'] = _dialog.evaluate().isNotEmpty;
+    final pageBefore = _page();
     final handled = await tester.binding.handlePopRoute();
     await _settle(waiting: waiting);
     results['back'] = _dialog.evaluate().isNotEmpty;
+    // 戻る操作は前のページへ戻るだけ（1ページ目と保存を待つ間は何もしない）。
+    // 確かめたら元のページへ戻す。
+    if (results['back']!) {
+      final pageAfter = _page();
+      final expectedPage = waiting || pageBefore <= 0
+          ? pageBefore
+          : pageBefore - 1;
+      if (pageAfter != expectedPage) {
+        _problem(
+          step,
+          'Back moved to page ${pageAfter + 1} '
+          '(expected ${expectedPage + 1})',
+        );
+      }
+      if (pageAfter != pageBefore && !waiting) {
+        await tester.ensureVisible(_start);
+        await tester.tap(_start);
+        await _settle(waiting: waiting);
+        if (_page() != pageBefore) {
+          _problem(step, 'Next did not return to page ${pageBefore + 1}');
+        }
+      }
+    }
     _steps.add({
       'step': '$step-dismiss',
       'stillOpen': results,

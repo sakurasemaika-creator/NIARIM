@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -21,9 +22,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
-/// 初回起動の案内は「はじめる」で完了する。図つきの使い方は
-/// ホームのメニューから「使い方」→ヘルプで開け、設定から機能の説明
-/// （吹き出し）をもう一度出せる。どの言語・
+/// 初回起動では図つきの使い方（6ページ）が出て、「スキップ」か最後の
+/// 「はじめる」で完了する。同じ使い方はホームのメニューから「使い方」→
+/// ヘルプでも開け、設定から機能の説明（吹き出し）をもう一度出せる。どの言語・
 /// 文字の大きさ・画面の形でも、ボタンが画面に収まり手順を読み切れる。
 void main() {
   final captureRoot = Platform.environment['NIARIM_TUTORIAL_CAPTURE'];
@@ -62,41 +63,65 @@ void main() {
 
   final ja = lookupAppLocalizations(const Locale('ja'));
 
-  testWidgets('first launch: confirming the notice closes it for good', (
-    tester,
-  ) async {
+  Future<bool?> savedFirstLaunch() async =>
+      (await SharedPreferences.getInstance()).getBool('first_launch');
+
+  testWidgets('first launch: the illustrated guide opens and Start on the '
+      'last page closes it for good', (tester) async {
     await openApp(tester, firstLaunch: true);
-    final notice = find.byType(AlertDialog);
-    expect(notice, findsOneWidget);
+    final guide = find.byType(AppTutorial);
+    expect(guide, findsOneWidget);
+    expect(find.text(ja.tutorialPage1Title), findsOneWidget);
     expect(find.bySemanticsLabel(ja.homeFirstLaunchMessage), findsOneWidget);
-    await tester.tap(find.text(ja.homeFirstLaunchStart));
+    for (var page = 0; page < 5; page++) {
+      await tester.tap(find.byKey(const Key('tutorialNext')));
+      await tester.pumpAndSettle();
+      expect(await savedFirstLaunch(), isTrue, reason: 'page ${page + 2}');
+    }
+    expect(find.text(ja.tutorialPage6Title), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tutorialStart')));
     await tester.pumpAndSettle();
-    expect(notice, findsNothing);
-    expect(
-      (await SharedPreferences.getInstance()).getBool('first_launch'),
-      isFalse,
-    );
+    expect(guide, findsNothing);
+    expect(await savedFirstLaunch(), isFalse);
     appRouter.go('/');
     await tester.pumpAndSettle();
     appRouter.go('/home');
     await tester.pumpAndSettle();
     expect(find.byType(HomeScreen), findsOneWidget);
-    expect(notice, findsNothing);
+    expect(guide, findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('first launch: Back does not skip the notice', (tester) async {
+  testWidgets('first launch: Skip also closes the guide for good', (
+    tester,
+  ) async {
     await openApp(tester, firstLaunch: true);
-    final notice = find.byType(AlertDialog);
-    expect(notice, findsOneWidget);
+    await tester.tap(find.byKey(const Key('tutorialNext')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tutorialSkip')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppTutorial), findsNothing);
+    expect(await savedFirstLaunch(), isFalse);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('first launch: Back turns back a page but never skips the '
+      'guide', (tester) async {
+    await openApp(tester, firstLaunch: true);
+    final guide = find.byType(AppTutorial);
+    expect(guide, findsOneWidget);
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(notice, findsOneWidget);
+    expect(guide, findsOneWidget);
+    expect(find.text(ja.tutorialPage1Title), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tutorialNext')));
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(guide, findsOneWidget);
+    expect(find.text(ja.tutorialPage1Title), findsOneWidget);
     expect(find.byType(HomeScreen), findsOneWidget);
-    expect(
-      (await SharedPreferences.getInstance()).getBool('first_launch'),
-      isTrue,
-    );
+    expect(await savedFirstLaunch(), isTrue);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -150,6 +175,35 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text(titles[4]), findsOneWidget);
+    semantics.dispose();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  // 画面の大きさでPCの枠とスマホの全画面を切り替えても、めくったページの
+  // まま（以前は見えるページだけ1ページ目へ戻り、ページの印と食い違った）。
+  testWidgets('the page stays when the window switches between the framed '
+      'and the full-screen guide', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await openApp(tester, firstLaunch: false, route: '/help');
+    tester.view.physicalSize = const Size(1280, 800);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('helpTutorialButton')));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 3; i++) {
+      await tester.tap(find.byKey(const Key('tutorialNext')));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text(ja.tutorialPage4Title), findsOneWidget);
+    for (final size in const [Size(390, 844), Size(1280, 800)]) {
+      tester.view.physicalSize = size;
+      await tester.pumpAndSettle();
+      expect(find.text(ja.tutorialPage4Title), findsOneWidget, reason: '$size');
+      expect(
+        find.bySemanticsLabel(ja.tutorialPageIndicator(4, 6)),
+        findsOneWidget,
+        reason: '$size',
+      );
+    }
     semantics.dispose();
     await tester.pumpWidget(const SizedBox.shrink());
   });
@@ -369,6 +423,9 @@ void main() {
               );
             }
             // 見出しも最後の手順も、スクロールすればボタンの上で読める。
+            // 文字が大きく見える所より高い文は、始めと終わりをそれぞれ
+            // スクロールして読めること（韓国語は語の途中で折り返さないので、
+            // 横向きの文字2倍では最後の手順が見える所より高くなる）。
             for (final text in [titles[page], lastSteps[page]]) {
               final finder = find.text(text);
               expect(finder, findsOneWidget, reason: '$where $text');
@@ -376,12 +433,16 @@ void main() {
               await tester.pumpAndSettle();
               final rect = tester.getRect(finder);
               expect(rect.top, greaterThanOrEqualTo(0), reason: where);
+              expect(rect.right, lessThanOrEqualTo(size.width), reason: where);
+              unawaited(
+                Scrollable.ensureVisible(tester.element(finder), alignment: 1),
+              );
+              await tester.pumpAndSettle();
               expect(
-                rect.bottom,
+                tester.getRect(finder).bottom,
                 lessThanOrEqualTo(bar.top),
                 reason: '$where $text',
               );
-              expect(rect.right, lessThanOrEqualTo(size.width), reason: where);
             }
             final capture =
                 captureRoot != null &&
