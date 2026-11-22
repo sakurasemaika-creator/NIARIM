@@ -2975,6 +2975,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：合成モードの描き比べ（乗算・加算・スクリーン・リニアライト等の描いている間と確定後）、明度で透過（カラー・グレー）、下と結合・表示を結合、フォルダの中のクリッピング、それぞれの取り消し。
 - 画像：`shots-r1/r2a032-*`（backup-pending）。
 
+### A032 三巡目（2026-11-22、Claude・S54、App `2bd1d88e`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 範囲の変更（`2939841e`以降）：合成（`layer_compositor.dart`・`blend_math.dart`）は保存の版のプレビュー（`f947ebda`）と空の一覧の作りだけで、合成の式は変わらない（二巡目のOKのまま）。レイヤーの設定のシート（不透明度・拡大縮小・回転・ブレンドモード・ロック・不透明度ロック・クリッピング・アニメーション・共通レイヤー・明度で透過）はA012の実画面で出る。
+- test：`canvas_blend_mode_display`・`generated_layer_clipping`・`layer_compositor`・`niapro_blend_mode_roundtrip`・`engine/blend_math`の18件成功。
+- 未確認：合成モードの描き比べ、明度で透過、結合、フォルダの中のクリッピング。
+
 ## A033 — レイヤーフォルダ・group・複数選択
 
 ### A033 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：要修正（新DISC507）
