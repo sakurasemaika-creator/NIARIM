@@ -4523,6 +4523,23 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：Safari・Firefox、実機（タッチ・IME）、読み上げ、本番のWorker・Durable Object・Resend、7言語の文の意味の一つずつの照合、規約の法的な意味。
 - 記録：`scratchpad/wr2/out/sweep.json`・`sweep-axe.log`、スクリプトと画像は`scratchpad/wr2/a`（backup-pending）。
 
+### W001〜W016 三巡目（2026-11-22、Claude・S54、Web `d80df6a`・App `90779103`）— 判定：要修正（W001・W003・W008・W009・W015・W016）、OK（W002・W004・W005・W006・W007・W010・W011・W012・W013・W014）
+
+- 進め方：Web `d80df6a`（`origin/dev_branch`の製品の最新）を`git archive`で写し、`wrangler dev --local`（127.0.0.1:8801、公開APIの宛先は`http://127.0.0.1:9/`へ差し替え、`/api/community`は差し替えた応答、外への通信は遮断）とChromium（Playwright）で、二巡目のスクリプト（`scratchpad/wr3/a`・`wr3/b`）と追加の確認を流した。App `90779103`（製品は`e9b0e1d3`と同じ）。巡回は15ページ×8言語（`?lang`なし＋7言語）×PC 1280×800・SP 360×740（225状態）。
+- 巡回：横のはみ出し0件、外への要求0件。axe（WCAG 2.2 AA＋best-practice）の違反は3種（color-contrast 502か所〔トップ・/features/の見本の注記#9f8290 11pxの3.4:1など、DISC474の扱い〕・landmark-unique〔`.nr-statement`〕・region〔404の`.font-license-access`〕）。二巡目のlandmark-complementary-is-top-levelは無くなった。/account-deletion/は色の違反なし（DISC560は直った）。
+- W001（要修正）：二巡目のDISC549は直った（/・/about/のSPのメニューを開いてTabを14回押しても、フォーカスはメニューの中を回り、裏の本文へ出ない）。既存DISC438は直った（メニューを開いている間にホイールしても本文は0pxのまま）。新DISC589：メニューのボタンの名前が6言語とも日本語（ページ別の辞書にJSだけのキーが入らない）。
+- W002（OK）：`?lang`の無いURLは`Accept-Language`で言語を決め（fr-FR→fr、de-DE→en、ja-JP→ja）、`Content-Language`・`Vary: Accept-Language, Cookie`・`<html lang>`がそろう。
+- W003（要修正）：既存DISC440は一部直った（ヘッダーが伸びてナビがはみ出さない）が、ja 1181〜1279pxではナビの「お問い合わせ」1つだけが2段目に落ち、ヘッダーが68→93pxに伸びる（1280px以上・es 1441・fr 1801・en/fr 1280は1段）。既存DISC441の残り：/faq/の「アプリをダウンロード」は`/#download`（配信準備中）へのリンクのまま。
+- W004（OK）：二巡目のDISC550は直った（配色のボタンの名前がja「配色 1〜4」・fr「Palette de couleurs 1〜4」、まとまりは「プレビューのカラーパレット」「Palette d'aperçu」）。
+- W005〜W007（OK）：DISC444〜450は直ったまま（巡回で崩れなし）。
+- W008（要修正）：二巡目のDISC551は直っていない。SP 360×740・jaで作品広場（/community/、作品4件を差し替えた応答）の「週間」を押すと、2.5秒待ってもタブの下が空白のまま（作品のカードの文字の葉33/50が不透明度0の親の下）。enで作品0件のときの「No published works are available」も不透明度0のまま。
+- W009（要修正）：新DISC590：`sync-app-help.mjs --check`が仏語の2件の食い違いで落ちる（アプリのDISC546の修正にWebが追いついていない）。
+- W010（OK）：既存DISC460は直った（英語の/community/に小文字の「NIARIM gallery」は無い）。
+- W011（OK）。W012（OK）：二巡目のDISC552は直った（仏語のお問い合わせの添付の誤りの文は「Les pièces jointes sont limitées à 20 Mo…」「Impossible de lire une pièce jointe…」、西語の題「Ópalos y ventajas | NIARIM」・h1「…con ópalos!」、韓国語「오팔로」、仏語の題「Opales et avantages | NIARIM」）。W013・W014（OK）。
+- W015（要修正）：二巡目のDISC553は直った（規約・ポリシーの最終更新日がja・en・frとも「2026年11月22日」「November 22, 2026」「22 novembre 2026」で、アプリの`legalLastUpdated`と同じ）。既存DISC470の残り：Webの規約第5条1項が今も「本画面「使用フォントについて」に記載された」（en「on this screen under “About Fonts Used.”」）。
+- W016（要修正）：既存DISC471は直っていない（/privacy/の第4条は「本アプリ自体はCookieを使用しません」のままで、サイトの言語のCookie`niarim_lang`とお問い合わせの回数制限の情報の扱いが無い、法務の判断待ち）。本人の操作のアカウント削除と削除の後に残る記録の文（DISC563）は入った（このセッションのS51の修正、法務の確認待ち）。
+- 未確認：Safari・Firefox、実機（タッチ・IME）、読み上げ、本番のWorker・Durable Object・Resend、リンクで移るときのview-transitionのコンソールのエラー（二巡目の気づいた点）。
+
 ## W017〜W024 — WebのURL・SEO・多言語・アクセシビリティ・性能・CI
 
 ### W017〜W024 二巡目（2026-11-20、Claude・S50、Web `c1182da`・App `643cc267`）— 判定：要修正（W017・W018・W019・W020・W021・W023・W024）、OK（W022）
