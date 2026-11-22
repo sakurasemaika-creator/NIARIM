@@ -873,7 +873,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickToolEraser => 'Eraser';
 
   @override
-  String get quickToolEyedropper => 'Eyedropper';
+  String get quickToolEyedropper => 'Dropper';
 
   @override
   String get quickToolBucket => 'Bucket';

@@ -14,8 +14,8 @@
 // 開き括弧の前では行を変えてよい。括弧の中まで1語として数えると、語より
 // 広くなって「行より広い語」として数えられず、「눌러주세 / 요」を見逃す）。
 // 確かめのダイアログの中のキーの組は、修飾キーの「+」の後でだけ折る
-// （DISC158の決まり）。1語が行より広い語は、決まりが所有者の判断待ち
-// （DISC155）なので数えずに出しておく。
+// （DISC158の決まり）。1語が行より広い語も失敗として
+// 数える（所有者の判断、2026-11-22：行より広い1語は短い訳に替える）。
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -345,7 +345,7 @@ void main() {
         FlutterError.onError = onError;
       }
       for (final word in tooWide) {
-        debugPrint('$tag wider than the line (DISC155): $word');
+        problems.add('$tag wider than the line (DISC155): $word');
       }
       for (final problem in problems) {
         debugPrint('$tag $problem');

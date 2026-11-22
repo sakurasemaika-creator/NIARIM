@@ -205,8 +205,8 @@ void main() {
           }
           names[id] = texts.length == 1 ? texts.single : null;
         }
-        // 行の名前の欄より広い1語（どう並べても途中で折れる語。DISC155と
-        // 同じ種類）は、数えずに名前を出す。
+        // 行の名前の欄より広い1語（どう並べても途中で折れる語）も失敗として
+        // 数える（所有者の判断、2026-11-22：短い訳に替える。DISC155）。
         for (final paragraph in textParagraphsIn(
           find.descendant(
             of: find.byType(QuickToolPanel),
@@ -277,7 +277,7 @@ void main() {
     }
     FlutterError.onError = onError;
     for (final word in tooWide) {
-      debugPrint('wider than the name column (DISC155): $word');
+      problems.add('wider than the name column (DISC155): $word');
     }
     for (final problem in problems) {
       debugPrint(problem);

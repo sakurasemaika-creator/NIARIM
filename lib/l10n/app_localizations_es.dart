@@ -214,10 +214,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get homePermanentDelete => 'Eliminar definitivamente';
+  String get homePermanentDelete => 'Eliminar para siempre';
 
   @override
-  String get homePermanentDeleteConfirmTitle => '¿Eliminar definitivamente?';
+  String get homePermanentDeleteConfirmTitle => '¿Eliminar para siempre?';
 
   @override
   String get homePermanentDeleteConfirmBody =>
@@ -882,7 +882,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Reproducción en bucle: DESACTIVADA (toca para activar)';
 
   @override
-  String get quickToolPanelTitle => 'Ajustes de herramientas rápidas';
+  String get quickToolPanelTitle => 'Ajustes de acceso rápido';
 
   @override
   String get quickToolBrushUnavailable => 'Pincel no disponible';
@@ -897,7 +897,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get quickToolEraser => 'Goma de borrar';
 
   @override
-  String get quickToolEyedropper => 'Cuentagotas';
+  String get quickToolEyedropper => 'Gotero';
 
   @override
   String get quickToolBucket => 'Cubo de pintura';
@@ -2122,7 +2122,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeTitle =>
-      'Decaimiento de trazo + desvanecimiento para un aire de pincel caligráfico';
+      'Decaimiento de trazo + desvanecido para un aire de pincel caligráfico';
 
   @override
   String get tipsStrokeDecayFadeDesc =>
@@ -2130,11 +2130,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsColorMixingFadeTitle =>
-      'Mezcla de color + desvanecimiento para un mezclado tipo pintura';
+      'Mezcla de color + desvanecido para un mezclado tipo pintura';
 
   @override
   String get tipsColorMixingFadeDesc =>
-      'Añadir desvanecimiento a un pincel con mezcla de color activada hace que se mezcle con el color de debajo mientras se va aclarando gradualmente, mucho más parecido a cómo se comporta la pintura real.';
+      'Añadir desvanecido a un pincel con mezcla de color activada hace que se mezcle con el color de debajo mientras se va aclarando gradualmente, mucho más parecido a cómo se comporta la pintura real.';
 
   @override
   String get tipsOutlineAnimeStyleTitle =>
@@ -2218,7 +2218,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsQuickToolPenSubTitle =>
-      'Herramienta rápida + subherramientas del lápiz para un flujo de trabajo sin pausas';
+      'Herramienta rápida + herramientas del lápiz para trabajar sin pausas';
 
   @override
   String get tipsQuickToolPenSubDesc =>
@@ -6080,7 +6080,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsPcDexLayoutTitle =>
-      'En pantallas anchas, cambia automáticamente al modo PC (DeX)';
+      'En pantallas anchas se activa el modo PC (DeX)';
 
   @override
   String get tipsPcDexLayoutDesc =>
@@ -6198,7 +6198,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsRoughLayerRescueTitle =>
-      '¿Dibujaste el lineart sobre tu boceto? Rescátalo con «Transparencia por brillo»';
+      '¿Dibujaste el lineart sobre tu boceto? Rescátalo con la función Transparencia por brillo';
 
   @override
   String get tipsRoughLayerRescueDesc =>
@@ -6550,7 +6550,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsBlushAutofillTitle =>
-      'Hasta el rubor suave se puede rellenar automáticamente';
+      'El relleno automático llega hasta el rubor suave';
 
   @override
   String get tipsBlushAutofillDesc =>
@@ -7370,7 +7370,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsTitle =>
-      'Adapta los ajustes oficiales de automatización a tu dibujo';
+      'Adapta las macros oficiales a tu dibujo';
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
@@ -9396,7 +9396,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loginBonusTitle => 'Bonos de acceso acumulado';
 
   @override
-  String get loginBonusDaily => 'Recompensa de hoy';
+  String get loginBonusDaily => 'Premio de hoy';
 
   @override
   String get loginBonusClaim => 'Reclamar';
@@ -9693,7 +9693,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Acciones automáticas personalizadas';
 
   @override
-  String get rewardUnlockCommunityPostQuota => 'Publicaciones: 1 a 3 por día';
+  String get rewardUnlockCommunityPostQuota => 'Publicar: 1 a 3 por día';
 
   @override
   String get rewardUnlockProjectListAds => 'Sin anuncios en proyectos';
@@ -10494,7 +10494,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get rewardUnlockReviewButton => 'Revisar solapamientos y vigencia';
+  String get rewardUnlockReviewButton => 'Revisar solapes y vigencia';
 
   @override
   String get rewardUnlockReviewTitle =>

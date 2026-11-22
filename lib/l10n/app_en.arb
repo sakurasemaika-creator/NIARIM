@@ -278,7 +278,7 @@
   "quickToolEmpty": "No tools added yet",
   "quickToolAddCurrentBrush": "Add Current Brush",
   "quickToolEraser": "Eraser",
-  "quickToolEyedropper": "Eyedropper",
+  "quickToolEyedropper": "Dropper",
   "quickToolBucket": "Bucket",
   "quickToolSizeDialogTitle": "{brushName} Size",
   "settingsShortcutTitle": "Shortcuts",

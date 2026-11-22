@@ -8,9 +8,8 @@
 // 7言語×320/360/412px×文字1.0/1.3/2.0で、一覧のすべての題（74件）について、
 // 行に入る語を途中で折らないこと（韓国語の語・欧文の語）、長音符・小さいかな・
 // 閉じ括弧・句読点で始まる行が無いこと、題を省略しないこと、はみ出さないことを
-// 見る。1語が行より広い（どう並べても入らない）語は、決まりが所有者の判断待ち
-// （DISC155）なので数えずに出しておく（仏語320px・文字2倍の
-// 「automatisations」）。
+// 見る。1語が行より広い（どう並べても入らない）語も失敗として数える
+// （所有者の判断、2026-11-22：行より広い1語は短い訳に替える）。
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -285,7 +284,7 @@ void main() {
         FlutterError.onError = onError;
       }
       for (final word in tooWide) {
-        debugPrint('$tag wider than the line (DISC155): $word');
+        problems.add('$tag wider than the line (DISC155): $word');
       }
       for (final problem in problems.take(20)) {
         debugPrint('$tag $problem');

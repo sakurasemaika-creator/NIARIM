@@ -12,8 +12,8 @@
 // シートの題と選ぶ行の文が、行に入る語（韓国語の語・欧文の語。付いている括弧・
 // 引用符ごと）を途中で折らない
 // こと（一覧の行の名前は、キーの印を上に置いたときの名前の欄に入る語）、
-// はみ出さないことを見る。1語が行より広い語は、決まりが所有者の判断待ち
-// （DISC155）なので数えずに出しておく。
+// はみ出さないことを見る。1語が行より広い語も失敗として
+// 数える（所有者の判断、2026-11-22：行より広い1語は短い訳に替える）。
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -303,7 +303,7 @@ void main() {
         FlutterError.onError = onError;
       }
       for (final word in tooWide) {
-        debugPrint('$tag wider than the line (DISC155): $word');
+        problems.add('$tag wider than the line (DISC155): $word');
       }
       for (final problem in problems) {
         debugPrint('$tag $problem');

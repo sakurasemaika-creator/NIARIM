@@ -13,8 +13,8 @@
 //   幅から左右の余白を引いた幅に入る語）を途中で折らず、行・パネルから
 //   はみ出さず、削除のボタンが押せる大きさ（48×48）で行の中にあること、
 //   スマホの浮かぶパネル（412×760の画面）の一覧に行が2つ以上見えることを
-//   見る。行より広い1語は、決まりが所有者の判断待ち（DISC155）なので
-//   数えずに出しておく。
+//   見る。行より広い1語も失敗として数える
+//   （所有者の判断、2026-11-22：行より広い1語は短い訳に替える）。
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -206,7 +206,7 @@ void main() {
         FlutterError.onError = onError;
       }
       for (final word in tooWide) {
-        debugPrint('$tag wider than the line (DISC155): $word');
+        problems.add('$tag wider than the line (DISC155): $word');
       }
       for (final problem in problems) {
         debugPrint('$tag $problem');
@@ -368,7 +368,7 @@ void main() {
         FlutterError.onError = onError;
       }
       for (final word in tooWide) {
-        debugPrint('$tag wider than the line (DISC155): $word');
+        problems.add('$tag wider than the line (DISC155): $word');
       }
       for (final problem in problems) {
         debugPrint('$tag $problem');

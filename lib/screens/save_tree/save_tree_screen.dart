@@ -1056,6 +1056,11 @@ class _SaveTreeSlotActionButton extends StatelessWidget {
 // ─────────────────────────────────────────────
 // ツリー方式ビュー
 // ─────────────────────────────────────────────
+/// ツリーの行で題の欄以外が使う幅（先頭のサムネイルと間・名前の変更の
+/// ボタン・三点メニュー・ListTileの余白）。アイコンの大きさは文字の大きさの
+/// 設定で変わらないので一定。
+const double _treeRowChrome = 200.0;
+
 class _TreeView extends StatelessWidget {
   final String projectId;
   final List<SaveNode> nodes;
@@ -1198,9 +1203,29 @@ class _TreeView extends StatelessWidget {
       0,
       (maxDepth, row) => row.depth > maxDepth ? row.depth : maxDepth,
     );
+    // 名前の無い保存の題（アプリの文「Sauvegarde」「Guardado」）の1語が、
+    // 行の題の欄より広いときは、その語が入るまでツリーを横へ広げる
+    // （文字2倍の320pxでは題の欄が80pxしかなく、どの短い訳も入らない）。
+    final theme = Theme.of(context);
+    final titleStyle =
+        theme.listTileTheme.titleTextStyle ?? theme.textTheme.bodyLarge;
+    final textScaler = MediaQuery.textScalerOf(context);
+    var titleWord = 0.0;
+    for (final word in l10n.saveTreeNodeDefaultTitle.split(RegExp(r'\s+'))) {
+      final painter = TextPainter(
+        text: TextSpan(text: word, style: titleStyle),
+        textDirection: Directionality.of(context),
+        textScaler: textScaler,
+        maxLines: 1,
+      )..layout();
+      if (painter.width > titleWord) titleWord = painter.width;
+      painter.dispose();
+    }
+    final rowWidth = titleWord.ceilToDouble() + 1 + _treeRowChrome;
     return LayoutBuilder(
       builder: (context, viewport) {
-        final fullWidth = (deepest + 1) * 24.0 + 280.0;
+        final fullWidth =
+            (deepest + 1) * 24.0 + (rowWidth > 280.0 ? rowWidth : 280.0);
         final contentWidth = fullWidth > viewport.maxWidth
             ? fullWidth
             : viewport.maxWidth;

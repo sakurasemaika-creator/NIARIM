@@ -203,7 +203,7 @@ void main() {
               matching: find.byType(ListTile),
             );
             // 1つの語が、項目名の使える幅より広いとき（どう並べても1行に
-            // 入らない。所有者の決まりを待っている、DISC118・145・155）。
+            // 入らない。短い訳に替える、所有者の判断、2026-11-22、DISC155）。
             final title = tester.renderObject<RenderParagraph>(
               find.descendant(of: automation, matching: find.byType(RichText)),
             );

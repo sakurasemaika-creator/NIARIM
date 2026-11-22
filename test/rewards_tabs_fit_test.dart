@@ -12,8 +12,8 @@
 // - ページの中の文はどれも画面の端から8px以上の余白を取る。どの文も行に
 //   入る語を途中で折らない（DISC243：韓国語のミッション・特典の文などが
 //   「혜택 컴플리트 / 팩」のように語の途中で折れていた。以前はログイン・接続の
-//   案内だけを見ていた）。行より広い1語は所有者の判断待ち（DISC155）なので
-//   数えずに名前を出す。
+//   案内だけを見ていた）。行より広い1語も失敗として数える
+//   （所有者の判断、2026-11-22：行より広い1語は短い訳に替える）。
 //
 // 7言語×320/360/412px×文字1.0/1.3/2.0。
 import 'dart:convert';
@@ -376,7 +376,7 @@ void main() {
         semantics.dispose();
       }
       for (final word in tooWide) {
-        debugPrint('$tag wider than the line (DISC155): $word');
+        problems.add('$tag wider than the line (DISC155): $word');
       }
       for (final problem in problems) {
         debugPrint('$tag $problem');

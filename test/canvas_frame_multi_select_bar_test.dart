@@ -285,7 +285,7 @@ void main() {
         semantics.dispose();
       }
       for (final word in tooWide) {
-        debugPrint('$tag wider than the line (DISC155): $word');
+        problems.add('$tag wider than the line (DISC155): $word');
       }
       for (final problem in problems) {
         debugPrint('$tag $problem');

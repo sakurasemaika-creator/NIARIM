@@ -214,10 +214,10 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get homePermanentDelete => 'Supprimer définitivement';
+  String get homePermanentDelete => 'Supprimer';
 
   @override
-  String get homePermanentDeleteConfirmTitle => 'Supprimer définitivement ?';
+  String get homePermanentDeleteConfirmTitle => 'Suppression définitive ?';
 
   @override
   String get homePermanentDeleteConfirmBody => 'Cette action est irréversible.';
@@ -951,16 +951,16 @@ class AppLocalizationsFr extends AppLocalizations {
       'Basculer le panneau des calques (Canevas)';
 
   @override
-  String get shortcutCommandPlayPause => 'Lecture/Pause (Chronologie)';
+  String get shortcutCommandPlayPause => 'Lecture/Pause (Timeline)';
 
   @override
-  String get shortcutCommandPreviousFrame => 'Image précédente (Chronologie)';
+  String get shortcutCommandPreviousFrame => 'Image précédente (Timeline)';
 
   @override
-  String get shortcutCommandNextFrame => 'Image suivante (Chronologie)';
+  String get shortcutCommandNextFrame => 'Image suivante (Timeline)';
 
   @override
-  String get shortcutCommandSelectAll => 'Tout sélectionner';
+  String get shortcutCommandSelectAll => 'Sélection totale';
 
   @override
   String get shortcutCommandCopy => 'Copier';
@@ -6084,7 +6084,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsPcDexLayoutTitle =>
-      'Sur grand écran, bascule automatiquement en mode PC (DeX)';
+      'Sur grand écran, le mode PC (DeX) s’active tout seul';
 
   @override
   String get tipsPcDexLayoutDesc =>
@@ -6202,7 +6202,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsRoughLayerRescueTitle =>
-      'Encrage dessiné sur le calque de brouillon ? Récupérez-le avec « Transparence par luminosité »';
+      'Encrage dessiné sur le calque de brouillon ? Récupérez-le avec la fonction Transparence par luminosité';
 
   @override
   String get tipsRoughLayerRescueDesc =>
@@ -6555,7 +6555,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsBlushAutofillTitle =>
-      'Même un rougissement doux peut être rempli automatiquement';
+      'Le remplissage auto gère même un rougissement doux';
 
   @override
   String get tipsBlushAutofillDesc =>
@@ -7377,7 +7377,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsTitle =>
-      'Adaptez les automatisations officielles à votre dessin';
+      'Adaptez les macros officielles à votre dessin';
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
@@ -10256,7 +10256,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get recurringMissionsTitle => 'Missions hebdomadaires et mensuelles';
+  String get recurringMissionsTitle => 'Missions de la semaine et du mois';
 
   @override
   String get recurringMissionsNote =>
@@ -10264,7 +10264,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get recurringMissionsUnavailable =>
-      'Missions hebdomadaires et mensuelles indisponibles';
+      'Missions de la semaine et du mois indisponibles';
 
   @override
   String recurringMissionProgress(int days, int goal) {

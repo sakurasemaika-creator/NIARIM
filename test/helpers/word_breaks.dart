@@ -70,9 +70,9 @@ Iterable<RenderParagraph> textParagraphsIn(Finder scope) sync* {
 /// 描かれた段落[p]の中で、[fitWidth]（省けば段落の欄の幅）より広いために
 /// 途中で行を変えている語（どう並べても1行に入らない語）。
 ///
-/// [wordsBrokenThatFit]はこの語を数えない。1つの語が行より広いときの決まりは
-/// 所有者の判断を待っている（DISC118・145・155）ので、テストは数えずに名前を
-/// 出しておく。
+/// [wordsBrokenThatFit]はこの語を数えない。アプリの文の1語が行より広いときは
+/// 短い訳に替える（所有者の判断、2026-11-22、DISC155）ので、アプリの文を
+/// 見るテストはこの語も失敗として数える（利用者の名前は字の間で折る、DISC145）。
 List<String> wordsWiderThanLine(RenderParagraph p, {double? fitWidth}) {
   final lines = ParagraphLines(p);
   final text = lines.visible;

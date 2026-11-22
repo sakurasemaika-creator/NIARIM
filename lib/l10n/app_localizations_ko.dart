@@ -881,7 +881,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get shortcutCaptureHint =>
-      '설정하고 싶은 키 조합을 눌러주세요（Ctrl·Shift·Alt 등의 보조키도 함께 누를 수 있습니다）. Esc로 취소합니다.';
+      '설정하고 싶은 키 조합을 눌러주세요. Ctrl·Shift·Alt 등의 보조키도 함께 누를 수 있습니다. Esc로 취소합니다.';
 
   @override
   String shortcutChooseActionTitle(String combo) {
@@ -901,16 +901,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get shortcutCommandRedo => '다시 실행';
 
   @override
-  String get shortcutCommandToggleLayerPanel => '레이어 패널 전환（캔버스）';
+  String get shortcutCommandToggleLayerPanel => '레이어 패널 전환 (캔버스)';
 
   @override
-  String get shortcutCommandPlayPause => '재생/일시정지（타임라인）';
+  String get shortcutCommandPlayPause => '재생/일시정지 (타임라인)';
 
   @override
-  String get shortcutCommandPreviousFrame => '1프레임 뒤로（타임라인）';
+  String get shortcutCommandPreviousFrame => '1프레임 뒤로 (타임라인)';
 
   @override
-  String get shortcutCommandNextFrame => '1프레임 앞으로（타임라인）';
+  String get shortcutCommandNextFrame => '1프레임 앞으로 (타임라인)';
 
   @override
   String get shortcutCommandSelectAll => '전체 선택';
@@ -1924,14 +1924,14 @@ class AppLocalizationsKo extends AppLocalizations {
       '설정 화면의 「제스처」에서 두 손가락 탭·세 손가락 탭·길게 누르기 등에 실행 취소/다시 실행이나 스포이트를 할당할 수 있습니다. 도구를 바꾸지 않아도 되므로 작화의 리듬이 끊기지 않습니다.';
 
   @override
-  String get tipsAudioRepeatTitle => '효과음은 클립 복제×페이드로 리듬감 있게';
+  String get tipsAudioRepeatTitle => '효과음은 클립 복제 × 페이드로 리듬감 있게';
 
   @override
   String get tipsAudioRepeatDesc =>
       '같은 효과음을 반복해서 쓰고 싶을 때는 클립을 복제해 타이밍을 조금씩 어긋나게 배치하고, 각각에 페이드인·아웃을 설정하면 리듬감 있는 자연스러운 효과음 연타를 만들 수 있습니다.';
 
   @override
-  String get tipsVerticalRubyTitle => '세로쓰기×루비로 타이틀 로고풍 연출';
+  String get tipsVerticalRubyTitle => '세로쓰기 × 루비로 타이틀 로고풍 연출';
 
   @override
   String get tipsVerticalRubyDesc =>
@@ -1952,35 +1952,35 @@ class AppLocalizationsKo extends AppLocalizations {
       '제스처 설정에서 두 손가락 탭에 스포이트를 할당해두면 도구를 바꾸지 않고도 근처 색을 바로 뽑을 수 있습니다. 캐릭터의 배색을 유지한 채 채색을 이어가고 싶을 때 편리합니다.';
 
   @override
-  String get tipsRulerOnionTitle => '투시 자×어니언 스킨으로 배경을 재사용하기';
+  String get tipsRulerOnionTitle => '투시 자 × 어니언 스킨으로 배경을 재사용하기';
 
   @override
   String get tipsRulerOnionDesc =>
       '투시 자로 배경의 깊이를 정해두고, 어니언 스킨으로 앞뒤 프레임을 비쳐 보면서 캐릭터만 움직이면 배경을 매 프레임 다시 그리지 않아도 됩니다.';
 
   @override
-  String get tipsGradientTraceTitle => '그라데이션 자동 채색×색 트레이싱으로 자연스럽게';
+  String get tipsGradientTraceTitle => '그라데이션 자동 채색 × 색 트레이싱으로 자연스럽게';
 
   @override
   String get tipsGradientTraceDesc =>
       '자동 채색 설정에서 그라데이션을 사용할 때, 선화 색상 설정을 색 트레이스（선화 어우러짐）로 해두면 그라데이션의 미묘한 색 변화에 맞춰 선화 색도 자연스럽게 어우러져 경계가 도드라지지 않습니다.';
 
   @override
-  String get tipsGradientOutlineHairTitle => '그라데이션×지정 색상 테두리로 앞머리에 투명감 주기';
+  String get tipsGradientOutlineHairTitle => '그라데이션 × 지정 색상 테두리로 앞머리에 투명감 주기';
 
   @override
   String get tipsGradientOutlineHairDesc =>
       '자동 채색 설정에서 앞머리 부위를 만들고, 채우기 색을 그라데이션으로 설정한 뒤 머리색과 투명색 2가지를 선택합니다. 각도를 90도로 바꾸고 흐림 강도와 색 전환 위치를 취향대로 조정한 다음, 「지정 색상으로 테두리」를 체크하고 테두리 색을 「최근 사용한 색」에서 방금 사용한 앞머리 색과 같은 색으로 선택합니다. 앞머리 밑칠 부위뿐 아니라 그림자색 부위에도 같은 방법을 반복하면, 머리끝이 비쳐 보이는 듯한 투명감 있는 머리카락을 표현할 수 있습니다.';
 
   @override
-  String get tipsRainNoiseTitle => '비×움직이는 노이즈로 촉촉한 공기감';
+  String get tipsRainNoiseTitle => '비 × 움직이는 노이즈로 촉촉한 공기감';
 
   @override
   String get tipsRainNoiseDesc =>
       '비 필터에 약한 움직이는 노이즈 필터를 겹치면 빗방울뿐 아니라 공기 중의 입자감도 더해져 촉촉한 비 오는 날다운 질감을 연출할 수 있습니다.';
 
   @override
-  String get tipsPartKeyframeGroupTitle => '파츠 키프레임×그룹화로 캐릭터를 통통 튀게';
+  String get tipsPartKeyframeGroupTitle => '파츠 키프레임 × 그룹화로 캐릭터를 통통 튀게';
 
   @override
   String get tipsPartKeyframeGroupDesc =>
@@ -1994,63 +1994,63 @@ class AppLocalizationsKo extends AppLocalizations {
       '동작이 무겁다고 느껴지면 성능 설정을 「저품질」 프리셋으로 바꾸고 실행 취소 횟수도 줄여보세요. 메모리 사용량이 줄어 동작이 가벼워질 수 있습니다.';
 
   @override
-  String get tipsSeriesPresetFolderTitle => '시리즈물은 자동 채색 설정 필터링×폴더 정리로 관리하기';
+  String get tipsSeriesPresetFolderTitle => '시리즈물은 자동 채색 설정 필터링 × 폴더 정리로 관리하기';
 
   @override
   String get tipsSeriesPresetFolderDesc =>
       '같은 작품의 여러 화를 만들 때는 폴더로 화별로 프로젝트를 묶고, 각 프로젝트에서 사용하는 자동 채색 설정을 필터링해두면 캐릭터별 배색을 혼동하지 않고 효율적으로 작업할 수 있습니다.';
 
   @override
-  String get tipsPixelToneRetroTitle => '스탬프 픽셀 모드×스크린톤 채색으로 레트로 통일감';
+  String get tipsPixelToneRetroTitle => '스탬프 픽셀 모드 × 스크린톤 채색으로 레트로 통일감';
 
   @override
   String get tipsPixelToneRetroDesc =>
       '픽셀 모드 스탬프와 픽셀 모드 전용 체크무늬·격자무늬 스크린톤을 조합하면 화면 전체를 픽셀 아트풍 질감으로 통일할 수 있습니다. 레트로 게임풍 연출에 어울립니다.';
 
   @override
-  String get tipsMagicWandLassoTitle => '매직완드 선택×올가미 채색으로 채색 분리 효율화';
+  String get tipsMagicWandLassoTitle => '매직완드 선택 × 올가미 채색으로 채색 분리 효율화';
 
   @override
   String get tipsMagicWandLassoDesc =>
       '선택 도구의 자동 선택（매직완드）으로 대략적인 범위를 한꺼번에 선택하고, 삐져나온 부분만 올가미 선택으로 조정하면 복잡한 색 분리도 빠르게 할 수 있습니다.';
 
   @override
-  String get tipsCommonLayerFolderTitle => '공통 레이어×폴더로 회차를 넘나들며 재사용하기';
+  String get tipsCommonLayerFolderTitle => '공통 레이어 × 폴더로 회차를 넘나들며 재사용하기';
 
   @override
   String get tipsCommonLayerFolderDesc =>
       '시리즈물에서 매회 사용하는 로고나 크레딧 표기는 공통 레이어로 만들어 폴더에 정리해두면, 새 회차 프로젝트로 복사할 때도 헤매지 않고 다룰 수 있습니다.';
 
   @override
-  String get tipsStrokeDecayFadeTitle => '스트로크 감쇠×페이드로 붓 표현';
+  String get tipsStrokeDecayFadeTitle => '스트로크 감쇠 × 페이드로 붓 표현';
 
   @override
   String get tipsStrokeDecayFadeDesc =>
       '브러시 설정에서는 들어가기(시작점)와 빠지기(끝점)의 값과 거리를 각각 따로 조절할 수 있습니다. 스트로크 감쇠도 함께 사용하면 시작만 가늘게 하거나 끝만 길게 빼거나 양 끝을 비대칭으로 설정해 붓이나 잉크 브러시 같은 강약을 만들 수 있습니다.';
 
   @override
-  String get tipsColorMixingFadeTitle => '혼색×페이드로 물감 같은 섞임';
+  String get tipsColorMixingFadeTitle => '혼색 × 페이드로 물감 같은 섞임';
 
   @override
   String get tipsColorMixingFadeDesc =>
       '혼색을 켠 브러시에 페이드도 함께 조합하면, 아래 색과 섞이면서 서서히 옅어지는 실제 물감에 가까운 채색감을 얻을 수 있습니다.';
 
   @override
-  String get tipsOutlineAnimeStyleTitle => '윤곽선×애니메이션풍으로 셀 애니메이션풍 마무리';
+  String get tipsOutlineAnimeStyleTitle => '윤곽선 × 애니메이션풍으로 셀 애니메이션풍 마무리';
 
   @override
   String get tipsOutlineAnimeStyleDesc =>
       '그리기 필터의 윤곽선으로 외곽선을 새 레이어에 그려내고, 애니메이션풍 필터로 색상 수를 줄이면 셀 애니메이션 같은 또렷한 마무리가 됩니다.';
 
   @override
-  String get tipsLevelsToneCurveTitle => '레벨 보정×톤 커브로 그래픽풍으로';
+  String get tipsLevelsToneCurveTitle => '레벨 보정 × 톤 커브로 그래픽풍으로';
 
   @override
   String get tipsLevelsToneCurveDesc =>
       '레벨 보정으로 명암 차를 강하게 조정한 뒤 톤 커브로 계조를 다듬으면, 사진적인 계조에서 벗어난 포스터 같은 그래픽풍 연출을 할 수 있습니다.';
 
   @override
-  String get tipsMosaicChromaticTitle => '모자이크×색수차로 브라운관풍의 거친 질감';
+  String get tipsMosaicChromaticTitle => '모자이크 × 색수차로 브라운관풍의 거친 질감';
 
   @override
   String get tipsMosaicChromaticDesc =>
@@ -2064,7 +2064,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '동영상에 자신의 서명이나 마크를 넣고 싶을 때는 워터마크 기능을 사용하세요. 엔드마크는 MP4, WebM, AVI 파일 끝에 붙는 NIARIM 로고입니다. 프리미엄 또는 엔드마크 편집 혜택을 이용하면 작품별로 표시하거나 숨길 수 있습니다. GIF에는 붙지 않습니다. 엔드마크를 사용하지 않고 나만의 마무리를 만들고 싶다면, 이미지 레이어 추가와 페이드 인/아웃을 조합해 비슷한 연출을 직접 만들 수 있습니다.';
 
   @override
-  String get tipsVerticalPixelFontTitle => '실사 영상×손그림으로 「실사×애니메이션」 만들기';
+  String get tipsVerticalPixelFontTitle => '실사 영상 × 손그림으로 「실사 × 애니메이션」 만들기';
 
   @override
   String get tipsVerticalPixelFontDesc =>
@@ -2099,14 +2099,14 @@ class AppLocalizationsKo extends AppLocalizations {
       '자동 채색 설정의 각 부위에는 블렌드 모드를 설정할 수 있습니다. 음영 부위를 「곱하기」 대신 「오버레이」나 「소프트 라이트」로 하면 빛이 비치는 듯한 부드러운 음영이 됩니다. 같은 색이라도 질감을 바꿀 수 있는 숨겨진 자유도입니다.';
 
   @override
-  String get tipsStampBlendModeTitle => '스탬프×블렌드 모드로 빛나는 이펙트';
+  String get tipsStampBlendModeTitle => '스탬프 × 블렌드 모드로 빛나는 이펙트';
 
   @override
   String get tipsStampBlendModeDesc =>
       '배치한 스탬프 레이어의 블렌드 모드를 「스크린」이나 「가산」으로 하면, 빛 효과선이나 반짝이는 이펙트가 배경에 자연스럽게 어우러져 돋보입니다.';
 
   @override
-  String get tipsQuickToolPenSubTitle => '빠른 도구×펜 서브 도구로 멈추지 않는 작업 흐름';
+  String get tipsQuickToolPenSubTitle => '빠른 도구 × 펜 서브 도구로 멈추지 않는 작업 흐름';
 
   @override
   String get tipsQuickToolPenSubDesc =>
@@ -2142,42 +2142,42 @@ class AppLocalizationsKo extends AppLocalizations {
       '자동 채색이 칠하지 말아야 할 곳까지 칠했을 때는, 지우개로 문지르기보다 그리기 색을 투명색으로 지정한 뒤 그 범위를 페인트통으로 칠하는 편이 간단합니다. 페인트통은 선으로 둘러싸인 영역을 한 번에 처리하므로, 한 번의 탭으로 삐져나온 부분만 깔끔하게 지울 수 있습니다.';
 
   @override
-  String get tipsRadialVignetteTitle => '방사형 자×비네트로 집중선 연출';
+  String get tipsRadialVignetteTitle => '방사형 자 × 비네트로 집중선 연출';
 
   @override
   String get tipsRadialVignetteDesc =>
       '방사형 자로 집중선을 한 번에 그리고, 그리기 필터의 비네트를 겹치면 만화의 클라이맥스 같은 박력 있는 연출이 됩니다.';
 
   @override
-  String get tipsClippingGradientTitle => '클리핑×그라데이션으로 음영을 다시 그릴 수 있게';
+  String get tipsClippingGradientTitle => '클리핑 × 그라데이션으로 음영을 다시 그릴 수 있게';
 
   @override
   String get tipsClippingGradientDesc =>
       '그라데이션 레이어를 캐릭터 레이어에 클리핑해두면, 브러시로 음영 형태를 그려 넣지 않아도 그라데이션의 범위·각도 변경만으로 음영을 다시 조정할 수 있습니다.';
 
   @override
-  String get tipsToneCurveSepiaTitle => '톤 커브×세피아로 레트로 사진풍';
+  String get tipsToneCurveSepiaTitle => '톤 커브 × 세피아로 레트로 사진풍';
 
   @override
   String get tipsToneCurveSepiaDesc =>
       '연출 필터의 톤 커브로 명암 대비를 정돈한 뒤 세피아를 겹치면, 색이 바랜 오래된 사진 같은 질감을 연출할 수 있습니다.';
 
   @override
-  String get tipsCameraLensBlurTitle => '카메라 키프레임×렌즈 블러로 줌 블러 연출';
+  String get tipsCameraLensBlurTitle => '카메라 키프레임 × 렌즈 블러로 줌 블러 연출';
 
   @override
   String get tipsCameraLensBlurDesc =>
       '카메라 키프레임이 줌인하는 순간에 맞춰 렌즈 블러 연출 필터를 일시적으로 강하게 설정하면, 실사 줌 블러 같은 박력을 연출할 수 있습니다.';
 
   @override
-  String get tipsBlurVignetteBgTitle => '가우시안 블러×비네트로 부드러운 배경 보케';
+  String get tipsBlurVignetteBgTitle => '가우시안 블러 × 비네트로 부드러운 배경 보케';
 
   @override
   String get tipsBlurVignetteBgDesc =>
       '배경 레이어에만 가우시안 블러와 비네트 그리기 필터를 겹쳐 걸면, 주인공 캐릭터가 자연스럽게 돋보이는 심도감 있는 카메라풍 마무리가 됩니다.';
 
   @override
-  String get tipsSepiaVignetteTitle => '세피아×비네트로 앤티크 사진풍 영상으로';
+  String get tipsSepiaVignetteTitle => '세피아 × 비네트로 앤티크 사진풍 영상으로';
 
   @override
   String get tipsSepiaVignetteDesc =>
@@ -2191,7 +2191,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '같은 동영상 소재라도 클립마다 사용 시작·종료 프레임을 바꿔 배치하면 다른 컷으로 재사용할 수 있습니다. 소재를 늘리지 않고도 변화를 줄 수 있습니다.';
 
   @override
-  String get tipsSaveSlotAutoSaveTitle => '세이브 슬롯×자동 저장을 나눠서 쓰기';
+  String get tipsSaveSlotAutoSaveTitle => '세이브 슬롯 × 자동 저장을 나눠서 쓰기';
 
   @override
   String get tipsSaveSlotAutoSaveDesc =>
@@ -2205,21 +2205,21 @@ class AppLocalizationsKo extends AppLocalizations {
       '빠른 도구의 등록 내용을 바꾸고 싶을 때는 길게 누르기뿐 아니라 위로 스와이프해도 관리 팝업을 열 수 있습니다. 한 손으로 조작할 때 빠르게 재배열하고 싶을 때 편리합니다.';
 
   @override
-  String get tipsDrawingAreaCameraTitle => '작화 영역을 넓게×카메라 키프레임으로 안전하게 팬·줌';
+  String get tipsDrawingAreaCameraTitle => '작화 영역을 넓게 × 카메라 키프레임으로 안전하게 팬·줌';
 
   @override
   String get tipsDrawingAreaCameraDesc =>
       '작화 영역을 내보내기 범위보다 넓게 설정해두면, 카메라 키프레임으로 팬·줌을 해도 화면 끝이 잘릴 걱정이 없습니다. 움직임이 큰 연출을 넣기 전에 확인해두면 안심입니다.';
 
   @override
-  String get tipsWebmCommonLayerTitle => '투명 WebM×배경을 공통 레이어로 분리 관리';
+  String get tipsWebmCommonLayerTitle => '투명 WebM × 배경을 공통 레이어로 분리 관리';
 
   @override
   String get tipsWebmCommonLayerDesc =>
       '투명 WebM으로 내보낸 캐릭터를 다른 영상 편집 소프트웨어에서 배경과 합성할 경우, 배경을 공통 레이어로 따로 관리해두면 투명 부분에 불필요한 색이 섞이지 않고 깔끔하게 빠집니다.';
 
   @override
-  String get tipsLeftHandedWorkspaceTitle => '왼손잡이 모드×워크스페이스 설정으로 작업하기 편하게';
+  String get tipsLeftHandedWorkspaceTitle => '왼손잡이 모드 × 워크스페이스 설정으로 작업하기 편하게';
 
   @override
   String get tipsLeftHandedWorkspaceDesc =>
@@ -6998,7 +6998,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '공식 프리셋은 「선화 작성(디지털)」(자동 선화 → 잉크 고임), 「선화 추출(아날로그)」(색조 보정 → 이진화 → 밝기로 투명도 변환), 「선화 색 트레이스」(선화 레이어에서 실행: 아래에 칠한 색을 선화에 클리핑한 새 레이어로 가져오기 → 블러·복제·병합 → 색 트레이스 보정으로 선이 옆 채색보다 깊은 색이 됩니다)입니다. 다시 기록하면 지원되는 작업이 추가됩니다. 확인 화면에서 단계 순서를 바꾸거나 삭제할 수 있습니다. 원래 설정으로 쉽게 돌아가려면 편집 전에 내보내 두세요.';
 
   @override
-  String get tipsTexturePrismVhsTitle => '질감·프리즘·VHS는 복제 레이어에서 시험하기';
+  String get tipsTexturePrismVhsTitle => '질감, 프리즘, VHS는 복제 레이어에서 시험하기';
 
   @override
   String get tipsTexturePrismVhsDesc =>
@@ -9524,7 +9524,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get recurringMissionsTitle => '주간·월간 미션';
+  String get recurringMissionsTitle => '주간 및 월간 미션';
 
   @override
   String get recurringMissionsNote => '일본 시간 기준 집계(한 주는 월요일 시작)';

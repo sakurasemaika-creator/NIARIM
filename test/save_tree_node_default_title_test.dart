@@ -9,8 +9,9 @@
 // 7言語×320/360/412px×文字1.0/1.3/2.0で、名前の無い保存（一番上と、その下の
 // 枝）の題が1行に限られず省略されないこと、行に入る語を途中で折らないこと、
 // 利用者の名前の保存の題は1行・省略記号であること、はみ出さないことを見る。
-// 1語が行より広い（どう並べても入らない）語は、決まりが所有者の判断待ち
-// （DISC155）なので数えずに出しておく。
+// 1語が行より広い（どう並べても入らない）語も失敗として数える
+// （所有者の判断、2026-11-22：行より広い1語は短い訳に替える）。仏語・西語の題「Sauvegarde」「Guardado」はどの短い訳も
+// 320px・文字2倍の題の欄（80px）に入らないので、ツリーを横へ広げる。
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -208,7 +209,7 @@ void main() {
                     problems.add('$at: $broken');
                   }
                   for (final wide in wordsWiderThanLine(paragraph)) {
-                    debugPrint(
+                    problems.add(
                       '$tag $at: wider than the line (DISC155): $wide',
                     );
                   }

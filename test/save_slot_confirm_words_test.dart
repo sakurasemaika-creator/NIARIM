@@ -200,10 +200,10 @@ void main() {
             for (final broken in wordsBrokenThatFit(paragraph, fitWidth: fit)) {
               problems.add('$at: $broken');
             }
-            // 1つの語がその幅より広い（どう並べても途中で折れる）ときは
-            // 数えない。所有者の決まりを待っている件（DISC118・145・155）。
+            // 1つの語がその幅より広い（どう並べても途中で折れる）ときも
+            // 失敗として数える（所有者の判断、2026-11-22：行より広い1語は短い訳に替える）。
             for (final wide in wordsWiderThanLine(paragraph, fitWidth: fit)) {
-              debugPrint('$at: wider than the line (DISC155): $wide');
+              problems.add('$at: wider than the line (DISC155): $wide');
             }
           }
           // 題は、語と番号をつないだ幅が要約に入るなら1行。

@@ -63,6 +63,11 @@ Future<void> _sweep(
         for (final broken in wordsBrokenThatFit(paragraph)) {
           problems.add('$at: $broken');
         }
+        // 1つの語が行より広い所は、短い訳に替える（所有者の判断、
+        // 2026-11-22、DISC155）。
+        for (final wide in wordsWiderThanLine(paragraph)) {
+          problems.add('$at: wider than the line (DISC155): $wide');
+        }
       }
       final error = tester.takeException();
       if (error != null) problems.add('$at: $error');
@@ -197,52 +202,59 @@ void main() {
     });
   }
 
-  testWidgets(
-    'an oversized French permanent-delete label wraps without changing semantics',
-    (tester) async {
-      await fonts(tester);
-      const locale = Locale('fr');
-      final l10n = lookupAppLocalizations(locale);
-      final context = await _pumpHost(tester, locale);
-      tester.view.physicalSize = const Size(320, 740);
-      tester.platformDispatcher.textScaleFactorTestValue = 2;
+  // 仏語・西語の完全削除の確認は、1語が行より広い「définitivement」
+  // 「definitivamente」を使わない短い訳にした（所有者の判断、2026-11-22、
+  // DISC155）。320px・文字2倍で、題とボタンの語が途中で折れないこと。
+  for (final locale in const [Locale('fr'), Locale('es')]) {
+    testWidgets(
+      'the ${locale.languageCode} permanent-delete question keeps every word whole',
+      (tester) async {
+        await fonts(tester);
+        final l10n = lookupAppLocalizations(locale);
+        final context = await _pumpHost(tester, locale);
+        tester.view.physicalSize = const Size(320, 740);
+        tester.platformDispatcher.textScaleFactorTestValue = 2;
 
-      showDialog<void>(
-        context: context,
-        builder: (_) => ProjectTrashDialog(
-          title: l10n.homePermanentDeleteConfirmTitle,
-          message: l10n.homePermanentDeleteConfirmBody,
-          confirmLabel: l10n.homePermanentDelete,
-          itemNames: const ['Storyboard practice'],
-          onApply: () async {},
-        ),
-      );
-      await tester.pumpAndSettle();
+        showDialog<void>(
+          context: context,
+          builder: (_) => ProjectTrashDialog(
+            title: l10n.homePermanentDeleteConfirmTitle,
+            message: l10n.homePermanentDeleteConfirmBody,
+            confirmLabel: l10n.homePermanentDelete,
+            itemNames: const ['Storyboard practice'],
+            onApply: () async {},
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      final confirm = find.byKey(const Key('trash-dialog-confirm'));
-      final label = find.descendant(
-        of: confirm,
-        matching: find.byType(RichText),
-      );
-      expect(label, findsOneWidget);
-      final paragraph = tester.renderObject<RenderParagraph>(label);
-      final span = paragraph.text as TextSpan;
-      final displayed = span.toPlainText(includeSemanticsLabels: false);
-      expect(displayed, contains('\u200B'));
-      expect(span.semanticsLabel, l10n.homePermanentDelete);
-      final boxes = paragraph.getBoxesForSelection(
-        TextSelection(baseOffset: 0, extentOffset: displayed.length),
-      );
-      expect(boxes, isNotEmpty);
-      expect(
-        boxes.every((box) => box.right <= paragraph.size.width + 0.5),
-        isTrue,
-        reason: 'The long French label must stay inside the confirm button.',
-      );
-      expect(tester.takeException(), isNull);
-      await _close(tester);
-    },
-  );
+        final confirm = find.byKey(const Key('trash-dialog-confirm'));
+        final label = find.descendant(
+          of: confirm,
+          matching: find.byType(RichText),
+        );
+        expect(label, findsOneWidget);
+        final paragraph = tester.renderObject<RenderParagraph>(label);
+        final span = paragraph.text as TextSpan;
+        final displayed = span.toPlainText(includeSemanticsLabels: false);
+        expect(displayed.replaceAll('\u2060', ''), l10n.homePermanentDelete);
+        expect(span.semanticsLabel ?? displayed, l10n.homePermanentDelete);
+        final problems = <String>[];
+        for (final p in textParagraphsIn(find.byType(AlertDialog))) {
+          problems
+            ..addAll(wordsBrokenThatFit(p))
+            ..addAll(wordsWiderThanLine(p));
+        }
+        expect(problems, isEmpty);
+        expect(
+          ParagraphLines(paragraph).charsOutsideWidth(),
+          isEmpty,
+          reason: 'The label must stay inside the confirm button.',
+        );
+        expect(tester.takeException(), isNull);
+        await _close(tester);
+      },
+    );
+  }
 
   testWidgets('a Korean body is read as the plain sentence', (tester) async {
     await fonts(tester);
