@@ -7,6 +7,18 @@ final RegExp _numberWithUnit = RegExp(
   r'^[0-9]+(?:[.,][0-9]+)?[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF]+$',
 );
 
+/// 日時の行の、日付・時刻に添える日本語・中国語の語（「更新」「创建」等。
+/// 空白で区切られ、数を含まない語）。[DateLineText.keep]へ渡すと、行の幅に
+/// 入るときは字の途中で折り返さない（「创 / 建」と1字だけ次の行へ落ちた）。
+/// 作品・フォルダの名前を含む行には使わないこと。
+List<String> dateLabelWords(String line) => [
+  for (final word in line.split(RegExp(r'\s+')))
+    if (_cjkLetter.hasMatch(word) && !_digit.hasMatch(word)) word,
+];
+
+final RegExp _cjkLetter = RegExp(r'[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF]');
+final RegExp _digit = RegExp(r'[0-9]');
+
 /// 日時（[when]を日付`yMd`と時刻`jm`の書き方で含む文）を、日付・時刻・
 /// [keep]（数と単位「10秒」など）と韓国語の語、数と日本語・中国語の単位
 /// （「1秒」）の途中で折り返さずに描く[Text]（詳細表示の行の2行目など）。

@@ -792,10 +792,14 @@ class ProjectListWidget extends StatelessWidget {
         ].join('\n'),
         when: project.updatedAt,
         localeName: l10n.localeName,
-        // 「12fps · 10秒」の数と単位も途中で折り返さない。
-        keep: numberUnitParts(
-          l10n.homeProjectMeta(project.fps, project.durationSeconds),
-        ),
+        // 「12fps · 10秒」の数と単位も途中で折り返さない。日時に添える語
+        // （「更新」）も字の途中で折り返さない。
+        keep: [
+          ...numberUnitParts(
+            l10n.homeProjectMeta(project.fps, project.durationSeconds),
+          ),
+          ...dateLabelWords(l10n.projectListUpdatedOn(project.updatedAt)),
+        ],
       ),
       trailing: (isSelectionMode || onPickProject != null)
           ? null
@@ -857,6 +861,12 @@ class ProjectListWidget extends StatelessWidget {
       ].join('\n'),
       when: folder.createdAt,
       localeName: AppLocalizations.of(context)!.localeName,
+      // 日時に添える語（中国語の「创建」等）を字の途中で折り返さない。
+      keep: dateLabelWords(
+        AppLocalizations.of(
+          context,
+        )!.projectListFolderCreatedOn(folder.createdAt),
+      ),
     );
     final folderActions = CollectionActionRow(
       children: [

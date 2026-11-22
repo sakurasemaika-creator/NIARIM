@@ -6,6 +6,7 @@ import 'package:niarim/engine/niapro_serializer.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/date_line_text.dart';
 
 import 'helpers/home_app_harness.dart';
 import 'helpers/load_app_fonts.dart';
@@ -99,11 +100,17 @@ void main() {
     return [...problems, ...lines.lineEdgeViolations()];
   }
 
+  // 行の下の日時の段落。狭い幅・大きな文字のフォルダの行は、日時の下に
+  // 星・︙の丸（アイコンも段落）を並べるので、日時の行の中に限って探す。
   RenderParagraph subtitleOf(WidgetTester tester, Finder tile) {
     final subtitle = tester.widget<ListTile>(tile).subtitle!;
     return tester.renderObject<RenderParagraph>(
       find.descendant(
-        of: find.byWidget(subtitle),
+        of: find.descendant(
+          of: find.byWidget(subtitle),
+          matching: find.byType(DateLineText),
+          matchRoot: true,
+        ),
         matching: find.byType(RichText),
       ),
     );
