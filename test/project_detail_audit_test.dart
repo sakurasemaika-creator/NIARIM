@@ -36,14 +36,20 @@ Future<void> _captureProjectDetail(
   final boundary = tester.renderObject<RenderRepaintBoundary>(
     find.byKey(boundaryKey),
   );
-  final image = await boundary.toImage(pixelRatio: 1);
-  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  // toImage・toByteDataは本物の非同期処理なので、偽の時計（FakeAsync）の
+  // 下では終わらない（テストが止まる）。runAsyncの中で行う。
+  final bytes = await tester.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 1);
+    try {
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      return data!.buffer.asUint8List();
+    } finally {
+      image.dispose();
+    }
+  });
   final directory = Directory('build/project-detail-ui-captures')
     ..createSync(recursive: true);
-  File(
-    '${directory.path}/$name.png',
-  ).writeAsBytesSync(bytes!.buffer.asUint8List());
-  image.dispose();
+  File('${directory.path}/$name.png').writeAsBytesSync(bytes!);
 }
 
 /// ゴミ箱の記録の書き込みを、[rejectTrash]の間だけ断る保存先。

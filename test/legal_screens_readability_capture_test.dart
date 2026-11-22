@@ -34,14 +34,20 @@ Future<void> _capture(
   final boundary = tester.renderObject<RenderRepaintBoundary>(
     find.byKey(boundaryKey),
   );
-  final image = await boundary.toImage(pixelRatio: 1);
-  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  // toImage・toByteDataは本物の非同期処理なので、偽の時計（FakeAsync）の
+  // 下では終わらない（テストが10分で時間切れになる）。runAsyncの中で行う。
+  final bytes = await tester.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 1);
+    try {
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      return data!.buffer.asUint8List();
+    } finally {
+      image.dispose();
+    }
+  });
   final directory = Directory('build/legal-ui-captures')
     ..createSync(recursive: true);
-  File(
-    '${directory.path}/$name.png',
-  ).writeAsBytesSync(bytes!.buffer.asUint8List());
-  image.dispose();
+  File('${directory.path}/$name.png').writeAsBytesSync(bytes!);
 }
 
 void main() {
@@ -185,8 +191,16 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // 320×568・文字2倍では、仏語の案内の文（17行ほど）の下にボタンがあり、
+    // 最初の画面には入らない。一覧を送ってボタンまで届くことを確かめる。
     final copy = find.byKey(const Key('errorLogCopyAll'));
     final clear = find.byKey(const Key('errorLogClear'));
+    await tester.scrollUntilVisible(
+      copy,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     expect(copy, findsOneWidget);
     expect(clear, findsOneWidget);
     expect(tester.getRect(copy).left, greaterThanOrEqualTo(0));

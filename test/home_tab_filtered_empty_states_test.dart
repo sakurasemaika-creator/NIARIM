@@ -159,7 +159,12 @@ void main() {
     expect(find.text('apple'), findsWidgets);
 
     // 作成したプロジェクトの種類を外すと、選んだ種類に当たるものが無い。
-    await tester.tap(find.byKey(const ValueKey('trashKind_createdProject')));
+    // 「検索をやめる」を押すために一覧を送ったので、種類のチップは一覧の
+    // 上の方にある（タブの列の下に隠れている）。送り戻してから押す。
+    final createdKind = find.byKey(const ValueKey('trashKind_createdProject'));
+    await tester.ensureVisible(createdKind);
+    await home.settle();
+    await tester.tap(createdKind);
     await home.settleIo(2);
     expect(find.text(l10n.homeTrashNoKindTitle), findsOneWidget);
     expectNoEmptyLibraryText(l10n);
