@@ -4175,6 +4175,13 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：A089の31本を`643cc267`で432件成功・1件失敗（上のDISC537）。
 - 未確認（実機）：同意の画面（EEA・英国・スイス）、オフラインと遅い通信での起動の待ち時間、バナー・リワード広告の読み込み・失敗・SSV、画面の回転。
 
+### A089 三巡目（2026-11-22、Claude・S54、App `1eec50dc`〔製品は`e9b0e1d3`と同じ〕のLinuxデバッグビルド）— 判定：OK（二巡目のDISC537は直った。広告の実表示は実機）
+
+- 二巡目の指摘：DISC537（同じ.niatraを2回読み込むと自動塗りの複製が増える、`1b10d63f`の回帰）は直った。`niatra_transfer_reread_holder_test`を含む`niatra_*`の23本がA061の回に`1eec50dc`で成功。
+- 一巡目のDISC404〜406は二巡目に直っている（広告の枠・特典のタブの幅・`app_smoke_test`）。
+- test：`premium_*`・`ad_*`・`coin_*`・`rewards_*`・`community_*`の95本を`1eec50dc`で410件成功・6件省略・1件失敗（`community_back_navigation_test`、A090のDISC587〔testの誤り〕）。
+- 未確認（実機）：同意の画面、バナー・リワード広告の読み込み・失敗・SSV（二巡目と同じ）。
+
 ## A090 — 作品広場 /community・一覧
 
 ### A090 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルド）— 判定：要修正（新DISC538・DISC539〔どちらも今日のcommitの回帰〕、DISC407の残り。DISC408は直った）
