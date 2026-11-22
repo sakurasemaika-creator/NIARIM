@@ -3741,6 +3741,15 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：中身のあるキャッシュの削除、APIの失敗・大量のファイル（testで確認）、全データを削除の実行（写しのプロフィールでも行わない）、スマホの幅（390×844）、韓国語・中国語。
 - 画像：`shots-r1/r2a069-*`・`r2a069b-*`（backup-pending）。
 
+### A069 三巡目（2026-11-22、Claude・S54、App `dffd9928`〔製品は`e9b0e1d3`と同じ〕のLinuxデバッグビルド）— 判定：OK（二巡目のDISC530は直った）
+
+- 環境：fr、文字2倍（GSettingsのtext-scaling-factor 2.0、D-Busのportalの中）、1280×860と390×220、マウス。A047のプロフィールの写し`a69`（言語だけ仏語）。
+- 二巡目の指摘：DISC530は直った（`4f31f59d`）。390×220・文字2倍で容量削減→「Effacer toutes les données (remise à zéro)」→確認は題「Effacer toutes les données?」・警告の文・「Annuler」・「Effacer toutes les données (remise à zéro)」が1つの欄として送れ、題と文がダイアログの高さいっぱいに出て1画面に5行ずつ読める（二巡目は題と文の欄が1行ぶんだけだった）。「Annuler」で閉じ、作品のフォルダ（2つ）は残る。
+- OK：1280×860・文字2倍の仏語で、「Stockage de l’appareil」（NIARIM・Autres・Espace libre）と「Répartition NIARIM」（Données du projet・Fichiers exportés・Corbeille）の棒、「Organiser」の行（Vider le cache 0 o・Supprimer les matériaux inutilisés (tous les projets)・Vider la corbeille 46,2 Ko）。大きさは仏語の書き方（Ko・Go、小数点はコンマ）。
+- 気づいた点（DISCにしない）：棒の地は文字色で塗る作り（`storage_screen.dart`の`_storageAmountBar`、グラフは他のセッションの作りが正）なので、小さい値（NIARIM 517,3 Ko）の行も全幅の黒い棒に見える。390×220の確認の中では、常に出るスクロールのつまみが文の行の右端に重なる。
+- test：`storage*`の26本を`dffd9928`で175件成功・1件失敗。失敗は二巡目と同じ`storage_cache_isolation_test`の「partial cache deletion reports failure and supports a later retry」で、testの前提（`chmod 0555`のフォルダへの書き込みが断られる）がrootで動くこの環境では成り立たない（製品の不具合ではない）。
+- 未確認：中身のあるキャッシュの削除、全データを削除の実行（写しでも行わない）、韓国語・中国語（二巡目と同じ）。
+
 ## A070 — 設定 /settings・基本設定
 
 ### A070 二巡目（2026-11-20、Claude・S50、App `cf2f427e`のLinuxデバッグビルド）— 判定：OK（一巡目のDISC366・DISC367は直った）
