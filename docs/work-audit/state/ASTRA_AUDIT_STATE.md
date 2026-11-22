@@ -566,6 +566,15 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - 要修正（DISC492）：30ms間隔の3回押しで、作品をつくる・作品広場とも同じ画面が2重に積まれ、「戻る」1回で起動画面に戻らない（2回押し・90ms間隔はOK）。
 - 正式なstatusはdoneのまま。二巡目のOKはDISC492の修正の後の確認で出す。画像：`shots-r1/r2a002-*`（backup-pending）。
 
+### A002 三巡目（2026-11-22、Claude・S54、App `fe2e38b2`〔製品は`e9b0e1d3`と同じ〕）— 判定：要修正（DISC492の修正が足りない・DISC570）
+
+- 範囲の変更（`2939841e`以降）：`splash_screen.dart`に導線の二重の押下の守り（`_openingDestination`、`93076e24`）と、戻ったときに守りを外す`_handleRouteChanged`（`2c5c1b5b`・`46daaa56`・`367b7fca`）。`theme_rescue_button.dart`は押せる大きさ48dp（`9e9a5140`ほか）。
+- test：`splash_layout`・`splash_gradient`・`splash_navigation_guard`・`home_widget_shortcut_design`・`theme_contrast_rescue`・`theme_rescue_dialog_chinese_font`・`theme_rescue_dialog_inset`の51件成功。
+- 実画面（Linux debug・Xvfb・ja 390×844、「戻る」は`WidgetsBinding.instance.handlePopRoute()`）：1回押し・30ms×2回は「戻る」1回で起動画面。30ms×3回は、起動し直した直後の最初の1回だけ二重化する：作品をつくる（3回の起動で「戻る」3・2回、2回目以降の押下は1回）、作品広場（2回の起動で3・2回）。キーボード：Tab2回で作品をつくるに輪→Enterでホーム。横向き844×390で欠けなし。読めないテーマ→右上に救済ボタン→確認→リセット→既定の配色と知らせ→起動し直すとボタンなし（保存も既定の文字色）。
+- 要修正（DISC492、修正が足りない）：原因は`_handleRouteChanged`が`currentConfiguration.uri.path == '/'`で守りを外すこと。go_router 13.2.5の`RouteMatchList.push`は`uri`を変えない（`copyWith(matches:)`だけ）ので、ホーム・作品広場を積んだ直後の通知でもpathは`/`のままで、守りが積んだその場で外れる。最初の遷移は画面を作るのが遅く、起動画面に届いていた2・3回目の押下がもう一度積む。`splash_navigation_guard_test`は戻った後に押せることだけを見て、素早い連打を見ていない。
+- 要修正（DISC570）：救済ボタンのラベルが白光明朝。
+- 正式なstatusはdoneのまま。画像：`r3/shots/a002-*`・`c-*`（backup-pending）。
+
 ## A003 — ホーム /home・初回案内・ドロワー（Opusブランチの証跡）
 
 status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判定した記録。2026-10-23にdev_branchへ統合した後のRoute状態はAUDIT_ROUTE.mdに従う（A003 in_progress。この節はA003の完了判定で再利用できる証跡で、現在のHEADで再確認してから使う）。製品修正 App（`d83cbe4`）、証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A003）
