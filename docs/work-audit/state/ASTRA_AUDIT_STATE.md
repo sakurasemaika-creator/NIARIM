@@ -667,6 +667,10 @@ status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判
 - 未確認：Android実機の指の操作・切り欠き（testで代える）。
 - 画像：`shots-r1/r2a003-*`（backup-pending）。
 
+### A003 所有者の判断（2026-11-22、S51）
+
+- 初回の案内は今の作り（短い案内のダイアログ`_FirstLaunchDialog`、図つきの使い方`AppTutorial`はヘルプから）のまま確定（原文「今の作りのまま確定でいいですよ」）。二巡目の判定（OK）で残っていたのはこの判断だけ。正式な状態の変更は次の確認で行う。
+
 ## A004 — プロジェクト一覧・検索・表示・ソート（Opusブランチの証跡）
 
 status: Opusのブランチで2026-10-17にdoneと判定した記録。統合後のRoute状態はAUDIT_ROUTE.mdに従う（A004 todo。A004の監査で現在のHEADで再確認してから再利用する）。製品修正 App（`adf4176`）、証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A004）
