@@ -509,6 +509,14 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - 正式なstatusはdoneのまま（既存の進捗を保持し、Verifierの順序を崩さない）。二巡目のOKはDISC491の修正の後の確認で出す。
 - 画像：`shots-r1/r2a001-*`（backup-pending）。
 
+### A001 三巡目（2026-11-22、Claude・S54、App `e9b0e1d3`・Web `c48129c`）— 判定：OK（DISC491の修正を確認）
+
+- test：起動の10本（`startup_service_contract`・`startup_settings_recovery`・`startup_failure_recovery`・`startup_unreadable_saved_lists`・`startup_saved_number_range`・`startup_unreadable_projects_folder`・`startup_trash_sweep_unavailable`・`initial_language`・`startup_failure_korean_line_break`・`home_unreadable_saved_items_notice`）は174件成功。`google_auth_init_once`・`saved_list_unreadable_carry_over`は`--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`で12件成功。
+- 実画面（Linux debug・Xvfb・1280×744、端末の言語en）：新しい保存領域→起動画面（英語、DISC001どおり）→作品をつくる→ホームに初回の6ページの案内（1ページ目「You can create hand-drawn animations」）→スキップ。同じ保存領域で起動し直す→保存の20キーに増減・変化なし。
+- 壊れた設定（`custom_size_presets`に読める1件と壊れた1件、トーン・テーマ一覧・ブラシに読めない1件ずつ、`language`がint・`undo_limit`が文字列）→起動し、保存は1バイトも変わらない（起動の前後で同じ）。ホームに「4 saved items could not be read…」の知らせ（サイズ・トーン・テーマ・ブラシの4件。二巡目はサイズ・テーマ・ブラシを数えなかった）が出て約4秒で薄く消える。知らせの「Error log」→エラーの記録の先頭に同じ件数の欄、記録はテーマ・トーン・ブラシ・サイズの読めない項目と型違い2件。
+- DISC491の(1)：新規プロジェクトで新しいサイズ「R3 size」を保存→`custom_size_presets`は読める2件の後ろに壊れた1件が残る（二巡目は新しい1件だけになった）。(2)：上の4件のとおり。
+- 画像：`r3/shots/a001-*`（backup-pending）。
+
 ## A002 — 起動画面 /・2導線・テーマ救済
 
 status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A002）
