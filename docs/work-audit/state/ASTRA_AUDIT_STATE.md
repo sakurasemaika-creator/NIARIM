@@ -1228,6 +1228,14 @@ status: dev_branchどおりtodo（Route状態は変えない）
 - 未確認：選択範囲の中だけを消す（DISC284の判断と関係）、DISC053（書き出したPNG）、スマホ、ペンの消しゴムの端・筆圧。
 - 画像：`shots-r1/r2a015-*`（backup-pending）。
 
+### A015 三巡目（2026-11-22、Claude・S54、App `a4080324`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 二巡目の残り：DISC067は所有者の判断の形（A014で確認：消しゴムの23・40%は起動し直しても残りペンへ漏れない）。DISC275はA012で確認。
+- 選択範囲の中だけを消す（DISC284の所有者の判断、`a9a9450a`）：PC ja 1280×800で投げ縄で線の一部（横150px）を囲み、消しゴム（23・40%）で線の全体を3回横切る→選択範囲の外の線は(0,0,0)のまま、中だけが消える。
+- test：`eraser_transparent_colour`・`stroke_premultiplied`・`layer_lock_canvas`（A012で22件成功）、`canvas_audit_decisions`（A014で成功）。
+- 未確認：スマホ、ペンの消しゴムの端・筆圧、DISC053（書き出したPNG）。
+- 画像：`r3/shots/a15-*`（backup-pending）。
+
 ## PC/DeXモード専用の作業画面（ユーザー依頼、Opusブランチ）
 
 status: Route外のユーザー依頼（キャンバス・タイムラインのPC/DeXモードの画面）。Route状態は変えない（A011以降はdev_branchどおり）。
