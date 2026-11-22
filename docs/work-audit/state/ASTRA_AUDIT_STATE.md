@@ -2921,6 +2921,13 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：背景の色の変更（白・黒・透明・ベージュ）、描画領域を広げた作品、起動し直した後の表示、スマホ390×844、ピンチ・2本指の回転・トラックパッド（Androidが要る）。
 - 画像：`shots-r1/r2a029-*`（backup-pending）。
 
+### A029 三巡目（2026-11-22、Claude・S54、App `25dc926e`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 二巡目の指摘：DISC066（PCで表示を元に戻す道が無い）は所有者の判断（`a9a9450a`）の形で直った。PC ja 1280×800でCtrl＋ホイール5回で拡大（紙の縦101〜676）→Ctrl+0で最初の表示（紙207〜563）に戻る。上部バーの表示のボタン（右上の左端）は「全体を表示」「等倍表示」のメニューで、「全体を表示」でも最初の表示に戻る。
+- test：`canvas_viewport_transform`・`canvas_background_layer_architecture`・`extended_drawing_area_selection`・`background_color_picker`（A016・A020の回で成功）、`canvas_audit_decisions`（A014で成功）。
+- 未確認：背景の色の変更、描画領域を広げた作品、スマホ390×844、ピンチ・2本指（Androidが要る）。
+- 画像：`r3/shots/a29-*`（backup-pending）。
+
 ## A030 — 参考画像・プレビューナビゲータ
 
 ### A030 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：要修正（新DISC506）
