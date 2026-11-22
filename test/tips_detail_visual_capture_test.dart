@@ -65,13 +65,17 @@ void main() {
     final boundary = tester.renderObject<RenderRepaintBoundary>(
       find.byKey(ValueKey('tip-detail-capture-$topic')),
     );
-    final image = await boundary.toImage(pixelRatio: 2);
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    if (bytes == null) throw StateError('Could not encode $fileName');
-    final file = File('build/feature-captures/tips/$fileName.png');
-    await file.parent.create(recursive: true);
-    await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
-    image.dispose();
+    // 画像の書き出しとファイルの書き込みは本物の非同期処理なので、偽の時計の
+    // 外（runAsync）で待つ（中で待つと終わらず、10分で打ち切られていた）。
+    await tester.runAsync(() async {
+      final image = await boundary.toImage(pixelRatio: 2);
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      if (bytes == null) throw StateError('Could not encode $fileName');
+      final file = File('build/feature-captures/tips/$fileName.png');
+      await file.parent.create(recursive: true);
+      await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
+    });
   }
 
   String compact(String value) => value.replaceAll(RegExp(r'\s+'), '');
