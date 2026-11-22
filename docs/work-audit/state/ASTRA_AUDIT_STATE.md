@@ -4000,6 +4000,13 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：実機のタッチ、Androidの共有での書き出し（.niathemeと共有カード）、7言語・文字2倍の一覧の実画面、「色の詳細設定」の中の色を1つずつ。
 - 画像：`shots-r1/r2a081-*`（backup-pending）。
 
+### A081 三巡目（2026-11-22、Claude・S54、App `a34df5aa`〔製品は`e9b0e1d3`と同じ〕のLinuxデバッグビルド）— 判定：OK（DISCなし）
+
+- 環境：ja、360×780、マウス、プロフィール`a47`。設定→「テーマ・外観」。テーマの画面・サービスの`1740d395`以降の変更は余白（`e4d3c5b7`・`1c291ac7`）・見本の作品（`85c2f25c`）・空の一覧の大きさ。
+- OK：上の「画面プレビュー」（プロジェクト一覧の見本・「タップして全16画面を見る」）、カラーカスタマイズ（アクセントカラー・本文・通常の文字色・色付き面の文字・アイコン色・パネル背景色・メニュー背景色・更新マーク色）、色の詳細設定、テーマ一覧。360×780でテーマの行は名前を上の行に1行で出し、見本・選んでいる印・星・︙・つまみを下に並べる（一巡目のDISC383は今も直っている。「レッド（ダーク）」等は語の途中で折れない）。
+- test：`theme*`の17本・`accent_text_*`の2本・`popup_opaque_background_test`・`placed_watermark_transform_test`・`watermark_copy_name_tile_test`・`premium_all_entry_points_test`・`premium_production_entry_wiring_test`を`a34df5aa`で122件成功。
+- 未確認：実機のタッチ、Androidの共有での書き出し、7言語・文字2倍の一覧の実画面（二巡目と同じ）。
+
 ## A082 — watermark画像/文字管理
 
 ### A082 二巡目（2026-11-20、Claude・S50、App `1740d395`のLinuxデバッグビルド、Premiumの中はコードとtest）— 判定：要修正（新DISC534、既存DISC198が残る。一巡目のDISC384・385は直った）
