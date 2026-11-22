@@ -3805,6 +3805,15 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：実機のタッチでの2本指スワイプ・3本指以上のタップ・ピンチや描画との競合・ポインターの取り消し、長押しのほかの操作（消しゴム切替・手のひら等）。
 - 画像：`shots-r1/r2a072-*`（backup-pending）。
 
+### A072 三巡目（2026-11-22、Claude・S54、App `ee8ddee1`〔製品は`e9b0e1d3`と同じ〕のLinuxデバッグビルド）— 判定：OK（二巡目のDISC531は直った）
+
+- 環境：ja、1280×860、マウス、プロフィール`a47`（確かめた後も長押しは「取り消し（Undo）」のまま）。2本指のスワイプ・マルチタッチはLinuxで出せないので、testで見た。
+- 二巡目の指摘：DISC531は直った（`a47b8e38`）。`no_untranslated_action_label_test`が成功する。
+- OK：ジェスチャー設定（2本指タップ 取り消し・3本指タップ やり直し・4本指以上のタップ 何もしない・2本指スワイプ左右 フレーム移動・長押し スポイト、長押しでスポイトを起動・保持時間0.5秒）。長押しを「取り消し（Undo）」にし、キャンバスで横線を描いてからマウスを動かさずに1.8秒押し続けると、横線が取り消され、押した所に点も残らない（一巡目のDISC369は今も直っている）。
+- 気づいた点（DISCにしない、一・二巡目と同じ）：操作を選ぶシートに見出しが無い。
+- test：`no_untranslated_action_label_test`・`gesture_settings_sheet_test`・`multi_touch_tap_tracker_test`・`two_finger_vertical_swipe_detector_test`・`canvas_pinch_*`の2本・`frame_strip_gesture_test`・`first_use_tooltip_gesture_test`・`auto_lineart_overlay_gesture_test`を`ee8ddee1`で45件成功。
+- 未確認：実機のタッチでの2本指スワイプ・3本指以上のタップ・ピンチや描画との競合（二巡目と同じ）。
+
 ## A073 — キーボード・左手device設定
 
 ### A073 二巡目（2026-11-20、Claude・S50、App `1740d395`〈`f947ebda`の製品コード〉のLinuxデバッグビルド）— 判定：要修正（新DISC532）
