@@ -864,6 +864,14 @@ status: dev_branchどおりtodo（Route状態は変えない。current_idのA003
 - 未確認：フォルダのサムネイルの変更、Androidのキーボードが開いている間の空き。
 - 画像：`shots-r1/r2a006-*`（backup-pending）。
 
+### A006 三巡目（2026-11-22、Claude・S54、App `13694e2c`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK（フォルダ）。作品の行の詰まりはA004のDISC573
+
+- 範囲の変更（`2939841e`以降）：フォルダの詳細の行（長い名前・狭い幅・大きな文字で☆・︙を名前の下へ、`bc6d3d6d`・`9e1a3081`・`e4c4b693`・`89e0cedd`・`d678414a`、日時の行の中国語`63b02944`）。フォルダの処理（`project_service.dart`）は自動保存からの戻しの追加だけ。
+- 実画面（Linux debug・Xvfb、二巡目と同じ保存に長い名前のフォルダ2つを足す）：320×700・文字2倍で、フォルダの行は名前に全幅（「Supercalifragilisticexpialidocious_Storyboard_Folder」は続いた語なので字の間で折れる）、☆・︙は日時の下の右。PC ja 1280×800で「Storyboards」を開くとパンくず「ホーム＞Storyboards」、「Episode 1」の︙→ゴミ箱へ移動→「フォルダの中のプロジェクト2件も一緒に移動します。」→移す→知らせが消えた後のCtrl+Zで中身ごと元の場所（ゴミ箱のフォルダの記録・作品とも0）。
+- 見つけたもの（DISC573、A004の範囲）：同じ320×700・文字2倍の詳細表示で、作品の行は☆・︙が名前の横のままで、名前が語の途中で折れる（「Scene1 / 0」「thumbn / ail」）・1語ずつの行になる。
+- test：A006の12本（`project_folder_*`・`home_folder_*`・`folder_trash_copy`・`home_breadcrumb_navigation`・`home_work_folder_*`・`home_trash_undo_shortcut`）は89件成功。
+- 画像：`r3/shots/a6-*`（backup-pending）。
+
 ## A007 — 新規プロジェクト /new-project（Opusブランチの証跡）
 
 status: dev_branchどおりtodo（Route状態は変えない）
