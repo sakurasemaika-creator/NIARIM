@@ -4556,6 +4556,19 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：本番のCloudflare・Resend・バックエンド・Googleの本人確認、Safari・Firefox、INP、読み上げ。
 - 記録：`scratchpad/wr2/out`（sweep）、`scratchpad/logs/web-r2-format.txt`・`web-r2-nodetest.txt`（backup-pending）。
 
+### W017〜W024 三巡目（2026-11-22、Claude・S54、Web `d80df6a`・App `90779103`）— 判定：要修正（W019・W021）、OK（W017・W018・W020・W022・W023）、W024は他のWの指摘を指す
+
+- 進め方：W001〜W016と同じ環境（Web `d80df6a`（`origin/dev_branch`の製品の最新）を`git archive`で写し、`wrangler dev --local`（127.0.0.1:8801、公開APIの宛先は`http://127.0.0.1:9/`へ差し替え、`/api/community`は差し替えた応答、外への通信は遮断）とChromium（Playwright）で、二巡目のスクリプト（`scratchpad/wr3/a`・`wr3/b`）と追加の確認を流した。App `90779103`（製品は`e9b0e1d3`と同じ））。
+- W017（OK）：二巡目のDISC554は直った（`/coins/`・`/coins`・`/coins/index.html`は308で`/opals/`へ）。
+- W018（OK）：二巡目のDISC555は直った（サーバーが返す/opals/の題・h1がja「オパール・ミッション | NIARIM」「無料でもプレミアム機能が使える！」、en「Opals & Benefits | NIARIM」、fr「Opales et avantages | NIARIM」）。DISC556は直った（/font-licenses/にcanonical・robots・og:title・og:url）。DISC557は所有者の判断どおり、canonical・og:urlが`https://niarim.miranima-studio.com/`（`SITE_ORIGIN`、旧`*.workers.dev`は恒久転送）。
+- W019（要修正）：二巡目のDISC558の残り：/features/のPCモードの画像の代替テキストが6言語とも「NIARIM PCモード版 canvas 画面」のように日本語と英字の名前の手書き（`pc-paired-captures.js`64・92行付近）。トップの画像と/opals/のナビの名前は直った。DISC559は直った（en・fr・esの14ページの本文に全角の記号なし）。メニューのボタンの名前はW001の新DISC（ページ別の辞書）。
+- W020（OK）：二巡目のDISC560は直った（/account-deletion/に色の違反なし）。ピンクと白の色はDISC474（所有者の指定）の扱い。
+- W021（要修正）：二巡目のDISC561は直った（英語のトップのPC 1280のCLSは0.000、jaは0.018）。既存DISC476の残り：遅いSP（CPU4倍）で/opals/（ja）のCLS 0.281（`coins-shortcuts`のページ内のナビとボタンがずれる、enは0.000）、/community/（ja）0.100。
+- W022（OK）：宛先・送り元・回数制限は二巡目と同じ（DISC477は直ったまま）。
+- W023（OK）：二巡目のDISC562は直った（`npm run format:check`で全部のファイルがそろい、`node --test tests/*.test.mjs`は39件成功。push時に整形と契約のtestを流すワークフロー〔`581f39c`〕）。
+- W024：W001・W009・W019・W021の指摘と、規約・ポリシーのDISC（470・471・485〜489・563）を指す。
+- 未確認：本番のCloudflare・Resend・バックエンド・Googleの本人確認、Safari・Firefox、INP、読み上げ。
+
 ## W025〜W042 — Webの製品設計・市場・法務・知財・締め
 
 ### W025〜W042 二巡目（2026-11-20、Claude・S50、Web `c1182da`・App `643cc267`）— 判定：要修正（W028〜W030・W032・W035〜W041）、未確認（W025〜W027・W031・W033・W034・W042）
