@@ -78,6 +78,7 @@ void main() {
     // 「'${bytes}B'」「toStringAsFixed(1)}KB'」「'0B'」「['B', 'KB', …]」の
     // ような手書きの単位（'B'だけの文字列は色の青〔RGBのB〕にも使うので見ない）。
     final unit = RegExp(r"""(\}|\d)(B|KB|MB|GB|TB)'|'(KB|MB|GB|TB)'""");
+    final unicodeEscape = RegExp(r'\\u(\{[0-9A-Fa-f]+\}|[0-9A-Fa-f]{4})');
     final offenders = <String>[];
     for (final file
         in Directory('lib')
@@ -89,7 +90,9 @@ void main() {
       for (var i = 0; i < lines.length; i++) {
         final line = lines[i].trimLeft();
         if (line.startsWith('//')) continue;
-        if (unit.hasMatch(line)) offenders.add('${file.path}:${i + 1}: $line');
+        // 文字のエスケープ（'\u200B'＝ゼロ幅スペース等）は単位ではない。
+        final code = line.replaceAll(unicodeEscape, '');
+        if (unit.hasMatch(code)) offenders.add('${file.path}:${i + 1}: $line');
       }
     }
     expect(offenders, isEmpty, reason: offenders.join('\n'));
