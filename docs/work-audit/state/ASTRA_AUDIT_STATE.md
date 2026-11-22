@@ -3424,6 +3424,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：全14種の各パラメーターの最小・最大、範囲の前後のコマでの見え方、重なったときの並べ替えのドラッグ、入切、書き出した静止画との見比べ、時間で変わるフィルター（雨・動くノイズ・VHS）の再生と書き出し（Androidの実機）。
 - 画像：`shots-r1/r2a054-*`（backup-pending）。
 
+### A054 三巡目（2026-11-22、Claude・S54、App `4e44b133`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 二巡目の残り：DISC518の残りは直った（演出フィルターの行の削除の確認は`layerPanelDeleteConfirmTitle`〔`timeline_screen.dart`9854行付近〕で「取り消せません」の文なし）。演出フィルターの一覧の🗑は`colorScheme.error`ではない（タイムラインに残るエラーの赤はA052の一覧）。
+- test：`effect_filter_from_draw_filters`（A038で成功）・`functional_audit_batch2`・`visual_reaudit_export_camera`（A051で成功）。
+- 気づいた点（DISCにしない）：複製した行の名前が元と同じ（二巡目と同じ）。
+
 ## A055 — エンドカード
 
 ### A055 二巡目（2026-11-20、Claude・S50、App `9e8124f0`のLinuxデバッグビルド）— 判定：要修正（新DISC523）
