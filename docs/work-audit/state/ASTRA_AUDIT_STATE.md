@@ -4454,6 +4454,13 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：全キーの意味・語調の逆翻訳による照合、ほかの画面の日付・時刻・数の書き方（en・es・zhの実画面）、Webの規約・ストアの文との一致（Wの項目）。
 - 画像：`shots-r1/r2a102-*`（backup-pending）。
 
+### A102 三巡目（2026-11-22、Claude・S54、App `9a8dcfd9`〔製品は`e9b0e1d3`と同じ〕）— 判定：要修正（DISC546の修正が足りない。DISC547は直った）
+
+- DISC547は直った：`l10n_*`の10本（`l10n_locales_not_left_in_english_test`・`l10n_unused_key_test`・`l10n_hardcoded_text_guard_test`ほか）が成功。
+- DISC546の修正が足りない：仏語のARBはコマ毎秒の書き方が「i/s」にそろい（`homeProjectMeta`「{fps} i/s · {duration} s」・`pcStatusFps`・`exportFpsLabel`・`settingsDefaultFps`「Cadence par défaut (i/s)」）、ホームの詳細の行も数と単位の間に空白がある。しかし手書きの単位が4か所残る：設定の基本設定の値と選択肢（`settings_screen.dart`546行の`${settings.defaultFps} fps`・558行の`$fps fps`、A070の三巡目の実画面で「Cadence par défaut (i/s)」の右に「12 fps」）、作品広場の作品詳細とショートの情報（`community_work_detail_screen.dart`963行・`community_shorts_viewer.dart`608行の`${work.projectFps}fps`、空白も無い）、テーマの見本一覧の模型（`theme_preview_gallery_screen.dart`3050行の`24fps`）。`l10n_hardcoded_text_guard_test`はこの形を見ていない。
+- test：`l10n_*`の10本・`dialog_text_scale_audit_test`・`app_smoke_test`・`startup_*`の9本・`stroke_pointer_lifecycle_test`・`custom_automation_manager_dialog_lifecycle_test`を`9a8dcfd9`で259件成功。
+- 未確認：7言語の逆翻訳（二巡目と同じ）。
+
 ## A103 — App性能・安定性・資産サイズ
 
 ### A103 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルドとtest）— 判定：OK〔test・静的・Linuxの実画面〕／実機の性能は未確認

@@ -3852,3 +3852,8 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 
 - DISC542〜545は直った。
 - **DISC588**（要修正）：作品広場のカードの日本語の題が小さいかなで行を始める（「最後のメロデ／ィ」、fr・文字2倍・390px）。ホームのカードと同じ行頭の決まりを作品広場の題・作者名にも使う。
+
+### A102（三巡目、Claude・S54、App `9a8dcfd9`〔製品は`e9b0e1d3`と同じ〕、判定：要修正・DISC546の残り）
+
+- DISC547は直った。
+- DISC546の残り：コマ毎秒の手書きの単位が4か所（`settings_screen.dart`546・558行の`fps`、`community_work_detail_screen.dart`963行・`community_shorts_viewer.dart`608行の数＋`fps`、`theme_preview_gallery_screen.dart`3050行の`24fps`）。ARBの単位（仏語は「i/s」）を使い、手書きの単位を見張るtestを足す。
