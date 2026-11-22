@@ -4286,6 +4286,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：A094の40本を`643cc267`で357件成功・9件省略・1件失敗（`community_header_quality_test`、A090のDISC539で、認証とは別の上部バーの押せる所）。
 - 未確認（実機・実API）：Googleのログイン・選択画面・2つのアカウントの切り替え、`youtube.upload`・`youtube.readonly`の許可と拒否、IDトークンの期限切れ・取り消し、オフライン、ログに個人の情報が出ないこと。
 
+### A094 三巡目（2026-11-22、Claude・S54、App `1eec50dc`〔製品は`e9b0e1d3`と同じ〕のLinuxデバッグビルド）— 判定：OK〔実機・実APIは未確認〕（DISCなし）
+
+- Linuxではログインできないので、コードとtestで確かめた（二巡目と同じ）。一巡目のDISC418〜421・423は二巡目に直っている。
+- test：`premium_*`・`ad_*`・`coin_*`・`rewards_*`・`community_*`の95本を`1eec50dc`で410件成功・6件省略・1件失敗（`community_back_navigation_test`、A090のDISC587〔testの誤り〕）（認証の`community_account_boundary_widget_test`ほかを含む）。
+- 未確認（実機・実API）：Googleのログイン・アカウントの切り替え、`youtube.upload`・`youtube.readonly`の許可と拒否、IDトークンの期限切れ（二巡目と同じ）。
+
 ## A095 — 自分の作品（直接遷移）
 
 ### A095 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルド）— 判定：要修正（既存DISC198。一巡目のDISC422・DISC423は直った）
