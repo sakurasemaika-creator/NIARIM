@@ -183,12 +183,14 @@ void main() {
         }
       }
     }
-    // 入らない所では題を出さない（切らない）。最新の余白では、幅320px・
-    // 文字1.3倍と2倍のスペイン語の共有のタブの題が表示サイズ・検索・メニューの
-    // ボタンの間に入らない（日本語の「プロジェクト」は今は入る）。
+    // 入らない所では題を出さない（切らない）。幅320px・文字2倍では、
+    // 左上の起動画面へ戻る矢印と表示サイズ・検索・メニューのボタンの間に
+    // 日本語の「プロジェクト」も、スペイン語の共有のタブの題も入らない。
+    // 文字1倍の日本語は入る。
     expect(hidden, contains('tab2 es 320 x1.3'));
     expect(hidden, contains('tab2 es 320 x2.0'));
-    expect(shown, contains('tab0 ja 320 x2.0'));
+    expect(hidden, contains('tab0 ja 320 x2.0'));
+    expect(shown, contains('tab0 ja 320 x1.0'));
     semantics.dispose();
     await _close(tester);
   });

@@ -397,16 +397,18 @@ void main() {
     await _close(tester);
   });
 
-  // 起動画面へ戻る矢印は左下の浮かぶボタンになり、上のバーの左には無い。
-  // Projectsタブの題・検索種別切替は小画面で12px、他タブの検索欄は
-  // 16pxを保つ。タブごとのAppBar titleSpacingが混ざらないことを確認する。
+  // 起動画面へ戻る矢印は上のバーの左上（所有者の指定 2026-11-22）。
+  // Projectsタブの題・検索種別切替は小画面で矢印の欄の12px右、他タブの
+  // 検索欄は16pxを保つ。幅400px未満の題だけは矢印の欄のすぐ右（題が入る
+  // 幅を残す）。タブごとのAppBar titleSpacingが混ざらないことを確認する。
   testWidgets('the top bar starts 12px from the edge on small phones', (
     tester,
   ) async {
     await _openHome(tester, size: const Size(412, 844));
     final l10n = _l10n(tester);
-    expect(find.byKey(const Key('homeBackToSplashButton')), findsNothing);
-    expect(find.byKey(const Key('homeBackToSplashFab')), findsOneWidget);
+    expect(find.byKey(const Key('homeBackToSplashButton')), findsOneWidget);
+    // 矢印の欄（上のバーの左の欄、幅56）の右端から測る。
+    const leadingEdge = kToolbarHeight;
     double titleLeft() => [
       for (final element
           in find
@@ -421,7 +423,11 @@ void main() {
     for (final width in [412.0, 399.0, 360.0, 320.0]) {
       tester.view.physicalSize = Size(width, 844);
       await _frames(tester, 4);
-      expect(titleLeft(), closeTo(12, 0.5), reason: 'title ${width}px');
+      expect(
+        titleLeft(),
+        closeTo(leadingEdge + (width < 400 ? 0 : 12), 0.5),
+        reason: 'title ${width}px',
+      );
     }
     tester.view.physicalSize = const Size(412, 844);
     await _frames(tester, 4);
@@ -433,7 +439,7 @@ void main() {
       await _frames(tester, 4);
       expect(
         tester.getRect(toggle).left,
-        closeTo(12, 0.5),
+        closeTo(leadingEdge + 12, 0.5),
         reason: 'toggle ${width}px',
       );
     }
@@ -451,7 +457,7 @@ void main() {
       await _frames(tester, 4);
       expect(
         tester.getRect(field).left,
-        greaterThanOrEqualTo(16 - 0.5),
+        greaterThanOrEqualTo(leadingEdge + 16 - 0.5),
         reason: 'Works ${width}px',
       );
     }

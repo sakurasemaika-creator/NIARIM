@@ -400,21 +400,19 @@ void main() {
     tester,
   ) async {
     final l10n = await open(tester);
-    // 起動画面へ戻る矢印は左下の浮かぶボタンで、どのタブでも同じ所に出る
-    // （所有者の指定。上のバーには置かない）。
-    final backFinder = find.byKey(const Key('homeBackToSplashFab'));
+    // 起動画面へ戻る矢印は上のバーの左上で、どのタブでも同じ所に出る
+    // （所有者の指定 2026-11-22。11-17の左下の浮かぶボタンを戻した）。
+    // 左下は一覧の一番上へ戻る「↑」、右下は＋。
+    final backFinder = find.byKey(const Key('homeBackToSplashButton'));
     final scrollFinder = find.byKey(const Key('homeScrollToTopFab'));
     expect(backFinder, findsOneWidget);
-    expect(find.byKey(const Key('homeBackToSplashButton')), findsNothing);
+    expect(find.byKey(const Key('homeBackToSplashFab')), findsNothing);
     expect(
-      find.descendant(
-        of: find.byType(AppBar).first,
-        matching: find.byIcon(Icons.arrow_back),
-      ),
-      findsNothing,
+      find.ancestor(of: backFinder, matching: find.byType(AppBar)),
+      findsOneWidget,
     );
-    // 空の一覧では「一番上へ」を出さない（送る先が無い）。作品を1つ作って
-    // から、左下の戻る矢印・右下の「一番上へ」と＋の並びを確かめる。
+    // 空の一覧では「一番上へ」を出さない（送る先が無い）。作品を作って
+    // から、左下の「一番上へ」と右下の＋の並びを確かめる。
     expect(scrollFinder, findsNothing);
     final projects = tester
         .element(find.byType(HomeScreen))
@@ -448,12 +446,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(scrollFinder, findsOneWidget);
     final fabs = find.byType(FloatingActionButton);
-    expect(fabs, findsNWidgets(3));
+    expect(fabs, findsNWidgets(2));
     final fabTheme = Theme.of(
       tester.element(scrollFinder),
     ).floatingActionButtonTheme;
-    // 戻る矢印・一番上へ・＋は同じ見た目（影なし・縁なしの丸）。
-    for (final fab in [backFinder, scrollFinder, fabs.last]) {
+    // 一番上へ・＋は同じ見た目（影なし・縁なしの丸）。
+    for (final fab in [scrollFinder, fabs.last]) {
       final widget = tester.widget<FloatingActionButton>(fab);
       final shape = widget.shape ?? fabTheme.shape;
       expect(widget.elevation ?? fabTheme.elevation, 0);
@@ -464,13 +462,11 @@ void main() {
     final backCenter = tester.getCenter(backFinder);
     final upCenter = tester.getCenter(scrollFinder);
     final addCenter = tester.getCenter(fabs.last);
-    expect(backCenter.dx, lessThan(80));
-    expect(upCenter.dx, greaterThan(backCenter.dx));
-    expect(upCenter.dx, lessThan(addCenter.dx));
-    expect((backCenter.dy - addCenter.dy).abs(), lessThan(2));
+    expect(backCenter.dx, lessThan(40));
+    expect(upCenter.dx, lessThan(80));
     expect((upCenter.dy - addCenter.dy).abs(), lessThan(2));
     expect(addCenter.dx, greaterThan(310));
-    // The menu is top-right of search.
+    // The menu is top-right of search, on the same bar as the back arrow.
     final drawerIcon = find.descendant(
       of: find.byType(AppBar).first,
       matching: find.byIcon(Icons.menu),
@@ -480,7 +476,10 @@ void main() {
       tester.getCenter(drawerIcon).dx,
       greaterThan(tester.getCenter(find.byIcon(Icons.search).first).dx),
     );
-    expect(tester.getCenter(drawerIcon).dy, lessThan(backCenter.dy));
+    expect(
+      (tester.getCenter(drawerIcon).dy - backCenter.dy).abs(),
+      lessThan(2),
+    );
 
     // 作品一覧・共有（受け取った／作った）・ゴミ箱のタブでも同じ所。
     for (final tab in [1, 2, 3]) {
@@ -493,7 +492,7 @@ void main() {
     await switchTab(tester, 1);
     expect(
       find.byType(FloatingActionButton),
-      findsNWidgets(2),
+      findsNWidgets(1),
       reason: 'The exported works tab still has its new-folder button',
     );
     await tester.pumpWidget(const SizedBox.shrink());

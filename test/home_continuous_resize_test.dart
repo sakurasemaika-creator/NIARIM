@@ -759,14 +759,13 @@ Future<void> _sweep(
       }
 
       // 上のバーのメニュー・浮かぶボタンが画面内。作成の＋は選んでいる間と
-      // ゴミ箱のタブでは出ない（左下の戻る矢印は出る）。
+      // ゴミ箱のタブでは出ない（起動画面へ戻る矢印は上のバーの左上）。
       final menu = scan.keyed['homeMenuButton'];
       if (menu == null || !onScreen(_globalRect(menu))) {
         found.add('menu button off screen');
       }
-      // 起動画面へ戻る矢印（左下）はいつも出る。一番下まで送ったときは
-      // 「一番上へ」と＋も。
-      final expectedFabs = scenario == _Scenario.listEnd ? 3 : 1;
+      // 一番下まで送ったときは左下の「一番上へ」と右下の＋。
+      final expectedFabs = scenario == _Scenario.listEnd ? 2 : 0;
       if (scan.fabs.length != expectedFabs) {
         found.add('floating buttons ${scan.fabs.length} != $expectedFabs');
       }

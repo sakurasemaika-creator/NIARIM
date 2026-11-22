@@ -99,7 +99,11 @@ void main() {
         }
 
         // 検索していないとき（プロジェクトのタブ）。起動画面へ戻る矢印は
-        // 上のバーではなく左下の浮かぶボタン。
+        // 上のバーの左上。
+        await check(
+          find.byKey(const Key('homeBackToSplashButton')),
+          l10n.homeBackToSplashTooltip,
+        );
         await check(
           find.byKey(const Key('homeCollectionViewModeMenu')),
           l10n.homeViewModeTooltip,

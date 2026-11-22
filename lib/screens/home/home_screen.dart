@@ -1141,12 +1141,25 @@ class _HomeScreenState extends State<HomeScreen>
           appBar: AppBar(
             automaticallyImplyLeading: false,
             // 小画面のProjectsタブだけ12px、検索欄を持つ他タブは16pxの左余白を保つ。
+            // 幅400px未満では題の左の余白を詰める（左上の矢印・表示サイズ・
+            // 検索・メニューのボタンで幅が残らず、題が出せなかった）。検索中は
+            // 検索の種類のボタン・入力欄が矢印に近づきすぎるので詰めない。
             titleSpacing:
-                MediaQuery.sizeOf(context).width < 600 && _currentTabIndex == 0
+                !_isSearching && MediaQuery.sizeOf(context).width < 400
+                ? 0
+                : MediaQuery.sizeOf(context).width < 600 &&
+                      _currentTabIndex == 0
                 ? 12
                 : 16,
-            // 起動画面へ戻る矢印は上のバーに置かず、左下の浮かぶボタンに
-            // する（どのタブでも同じ場所、所有者の指定）。
+            // 起動画面へ戻る矢印は上のバーの左上（どのタブでも同じ場所、
+            // 所有者の指定 2026-11-22。11-17に左下の浮かぶボタンへ移したのを
+            // 戻した）。左下は一覧の一番上へ戻る「↑」。
+            leading: IconButton(
+              key: const Key('homeBackToSplashButton'),
+              icon: const Icon(Icons.arrow_back),
+              tooltip: l10n.homeBackToSplashTooltip,
+              onPressed: () => context.go('/'),
+            ).tooltipsBelowTabs(),
             title: _isSearching
                 ? Row(
                     children: [
@@ -2163,79 +2176,68 @@ class _HomeScreenState extends State<HomeScreen>
   }) {
     final compact = MediaQuery.sizeOf(context).height < 400;
 
-    // 起動画面へ戻る矢印は、どのタブでも・選んでいる間も左下に置く
-    // （所有者の指定。以前は上のバーの左上）。
-    final back = _buildHomeAction(
-      compact: compact,
-      key: const Key('homeBackToSplashFab'),
-      heroTag: 'home-back-to-splash',
-      tooltip: l10n.homeBackToSplashTooltip,
-      onPressed: () => context.go('/'),
-      icon: Icons.arrow_back,
-    );
     final creates =
         !_isSelectionMode &&
         _currentTabIndex != 3 &&
         !(_currentTabIndex == 2 && _sharedOutgoing);
     final projects = _currentTabIndex == 0;
     final shared = _currentTabIndex == 2;
-    // 一覧が空（空の表示・読み込めなかった知らせだけ）のときは、送る先が
-    // 無いので「一番上へ」を出さない（押しても何も起きず、空の表示の案内に
-    // 重なった）。一覧の一番上にいるとき・スクロールできない短い一覧でも
-    // 出さない（上へ戻る先が無い）。左下は戻る矢印なので、作成の＋の左に
-    // 並べる。
+    // 左下は一覧の一番上へ戻る「↑」（所有者の指定 2026-11-22）。一覧が空
+    // （空の表示・読み込めなかった知らせだけ）のときは、送る先が無いので
+    // 出さない（押しても何も起きず、空の表示の案内に重なった）。一覧の一番
+    // 上にいるとき・スクロールできない短い一覧でも出さない（上へ戻る先が
+    // 無い）。
     final scrollToTop =
         creates &&
         projects &&
         _projectsCanGoUp &&
         _visibleProjectIds(context.watch<ProjectService>()).isNotEmpty;
-    final trailing = <Widget>[
-      if (scrollToTop) ...[
-        _buildHomeAction(
-          compact: compact,
-          key: const Key('homeScrollToTopFab'),
-          heroTag: 'home-scroll-to-top',
-          tooltip: l10n.communityScrollToTop,
-          onPressed: () {
-            if (!_projectScrollController.hasClients) return;
-            if (MediaQuery.disableAnimationsOf(context)) {
-              _projectScrollController.jumpTo(0);
-              return;
-            }
-            _projectScrollController.animateTo(
-              0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-            );
-          },
-          icon: Icons.arrow_upward,
+    final Widget leading = scrollToTop
+        ? _buildHomeAction(
+            compact: compact,
+            key: const Key('homeScrollToTopFab'),
+            heroTag: 'home-scroll-to-top',
+            tooltip: l10n.communityScrollToTop,
+            onPressed: () {
+              if (!_projectScrollController.hasClients) return;
+              if (MediaQuery.disableAnimationsOf(context)) {
+                _projectScrollController.jumpTo(0);
+                return;
+              }
+              _projectScrollController.animateTo(
+                0,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+              );
+            },
+            icon: Icons.arrow_upward,
+          )
+        : const SizedBox.shrink();
+    final Widget trailing;
+    if (!creates) {
+      trailing = const SizedBox.shrink();
+    } else if (projects) {
+      trailing = _buildHomeAction(
+        compact: compact,
+        heroTag: 'home-add-project',
+        tooltip: l10n.commonAdd,
+        onPressed: () => _showAddChoiceSheet(context),
+        icon: Icons.add,
+      );
+    } else if (shared) {
+      trailing = _buildHomeAction(
+        compact: compact,
+        heroTag: 'shared-add-folder',
+        tooltip: l10n.homeAddSheetNewFolder,
+        onPressed: () => showCreateFolderNameDialog(
+          context,
+          (name) => context.read<ProjectService>().createSharedFolder(name),
         ),
-        const SizedBox(width: 16),
-      ],
-      if (!creates)
-        const SizedBox.shrink()
-      else if (projects)
-        _buildHomeAction(
-          compact: compact,
-          heroTag: 'home-add-project',
-          tooltip: l10n.commonAdd,
-          onPressed: () => _showAddChoiceSheet(context),
-          icon: Icons.add,
-        )
-      else if (shared)
-        _buildHomeAction(
-          compact: compact,
-          heroTag: 'shared-add-folder',
-          tooltip: l10n.homeAddSheetNewFolder,
-          onPressed: () => showCreateFolderNameDialog(
-            context,
-            (name) => context.read<ProjectService>().createSharedFolder(name),
-          ),
-          icon: Icons.create_new_folder_outlined,
-        )
-      else
-        _buildCreateWorkFolderAction(context, l10n, compact: compact),
-    ];
+        icon: Icons.create_new_folder_outlined,
+      );
+    } else {
+      trailing = _buildCreateWorkFolderAction(context, l10n, compact: compact);
+    }
     // 浮かぶボタンの所では Scaffold が画面の左右の安全な領域を外すので、
     // 横向きの左右の切り欠き・3ボタンの帯は、ホームの画面の値で避ける
     // （以前は帯の下に描いた。縦向きでは0で、今までどおり）。
@@ -2251,10 +2253,7 @@ class _HomeScreenState extends State<HomeScreen>
       child: Row(
         key: inFooter ? null : _floatingActionsKey,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          back,
-          Row(mainAxisSize: MainAxisSize.min, children: trailing),
-        ],
+        children: [leading, trailing],
       ),
     );
   }

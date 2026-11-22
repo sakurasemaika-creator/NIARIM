@@ -1820,7 +1820,7 @@ class HomeMatrix {
         projectsScroll.position.pixels >
             projectsScroll.position.minScrollExtent + 0.5;
     final controls = <String, Finder>{
-      'back': fab('home-back-to-splash', l10n.homeBackToSplashTooltip),
+      'back': appBarButton(l10n.homeBackToSplashTooltip),
       'drawer': find.byKey(const Key('homeMenuButton')),
       ...switch (currentView) {
         HomeView.projects => {

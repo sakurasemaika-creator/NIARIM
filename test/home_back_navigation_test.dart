@@ -192,7 +192,7 @@ void main() {
         expect(find.byType(TextField), findsNothing);
         expect(find.text('Nested take'), findsOneWidget);
         expect(projects.folders.length, 2);
-        await tester.tap(find.byKey(const Key('homeBackToSplashFab')));
+        await tester.tap(find.byKey(const Key('homeBackToSplashButton')));
         await tester.pumpAndSettle();
         expect(find.byType(HomeScreen), findsNothing);
         expect(projects.projects.single.name, 'Nested take');

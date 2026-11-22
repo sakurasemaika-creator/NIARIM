@@ -109,7 +109,7 @@ void main() {
   Finder searchButton(WidgetTester tester) =>
       find.byTooltip(l10nOf(tester).commonSearch);
 
-  Finder backArrow() => find.byKey(const Key('homeBackToSplashFab'));
+  Finder backArrow() => find.byKey(const Key('homeBackToSplashButton'));
 
   Finder listText(String name) => find.descendant(
     of: find.byType(ProjectListWidget),
@@ -286,14 +286,14 @@ void main() {
     expect(find.byType(SplashScreen), findsOneWidget);
   });
 
-  // 検索中も左下の戻る矢印と右上のメニューはそのままで、検索は×で閉じる。
+  // 検索中も左上の戻る矢印と右上のメニューはそのままで、検索は×で閉じる。
   testWidgets('the close button ends search without leaving Home', (
     tester,
   ) async {
     await boot(tester, projects: 1);
     await tester.tap(find.byIcon(Icons.search));
     await settle(tester);
-    expect(find.byKey(const Key('homeBackToSplashFab')), findsOneWidget);
+    expect(find.byKey(const Key('homeBackToSplashButton')), findsOneWidget);
     expect(find.byKey(const Key('homeMenuButton')), findsOneWidget);
     await tester.tap(find.byIcon(Icons.close));
     await settle(tester);
@@ -301,9 +301,9 @@ void main() {
     expect(find.byType(SplashScreen), findsNothing);
   });
 
-  // いまの決まり：起動画面へ戻る矢印は左下の浮かぶボタン（どのタブでも
-  // 同じ所、所有者の指定、2026-11-17）で、検索中も起動画面へ戻る（検索は
-  // ×・Esc・端末の戻るで閉じる）。
+  // いまの決まり：起動画面へ戻る矢印は上のバーの左上（どのタブでも同じ所、
+  // 所有者の指定、2026-11-22）で、検索中も起動画面へ戻る（検索は×・Esc・
+  // 端末の戻るで閉じる）。
   testWidgets('while searching, the arrow returns to the launch screen', (
     tester,
   ) async {
@@ -314,7 +314,7 @@ void main() {
     await tester.enterText(find.byType(TextField), 'zzz');
     await settle(tester);
     expect(
-      tester.widget<FloatingActionButton>(backArrow()).tooltip,
+      tester.widget<IconButton>(backArrow()).tooltip,
       l10n.homeBackToSplashTooltip,
     );
     await tester.tap(backArrow());
