@@ -986,6 +986,14 @@ status: dev_branchどおりtodo（Route状態は変えない）
 - 未確認：見つからないID（Linuxで任意のルートへ行く手段が無い。testのみ）、「元に戻す」が失敗する場合（一般ユーザーでの実行）、Androidの戻る・指のシーク、Androidの実機でDISC497が起きるか。
 - 画像：`shots-r1/r2a009-*`（backup-pending）。
 
+### A009 三巡目（2026-11-22、Claude・S54、App `ba280782`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK（DISC497の修正を確認）
+
+- 二巡目の指摘：DISC497は直った（`84f02194`）。PC ja 1280×800・1280×720の作品・ペン太さ5・マウス：空のコマで左から右へ1本（押して160pxずつ3回動かして離す）と、16ms間隔で16回動かす1本→5秒後もどちらの線も書き始めから離した位置まで途切れなく出る（キャンバスの画素で隙間0）。別のコマへ移って戻っても同じ。「手動セーブせずに戻る」→ホームのサムネイルと詳細のプレビューも2本とも欠けない。二巡目の不具合の時に描いた「Scene」の3作品のサムネイルは欠けたまま（その時の保存の中身で、今の描画の不具合ではない）。
+- 範囲の変更（`2939841e`以降）：プレビューの押せる大きさ（`6cc82f05`）、全画面の再生の操作（`0ff63b77`）、シークの行（`daee586c`）、壊れた作品の回復・保存の版を選ぶ（`b7f8ed0e`）、余白・書体。
+- test：`project_detail_audit`・`project_detail_info_numbers`・`stroke_pointer_lifecycle`・`home_duplicate_twice`・`tile_manager`の44件成功。
+- 未確認：見つからないID（testのみ）、Androidの戻る・指のシーク、Androidの実機でのDISC497。
+- 画像：`r3/shots/a9-*`（backup-pending）。
+
 ## A010 — キャンバスを開く・閉じる（Opusブランチの証跡）
 
 status: dev_branchどおりtodo（Route状態は変えない）
