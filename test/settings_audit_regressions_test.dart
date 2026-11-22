@@ -11,6 +11,8 @@ import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/quick_tool_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/workspace_preset_service.dart';
+import 'package:niarim/config/font_fallback.dart';
+import 'package:niarim/utils/app_locale.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -63,6 +65,36 @@ void main() {
     await tap(tester, find.text(ja.settingsBasicTitle));
     expect(find.text(ja.settingsBasicSheetTitle), findsOneWidget);
     await tap(tester, find.text(ja.settingsLanguage));
+    // 言語の名前はその言語の本文の書体で描き（「简体中文」が1語の中で2つの
+    // 書体にならない）、選んでいる言語は太字ではなく印で示す。
+    final dialog = find.byType(SimpleDialog);
+    for (final (code, name) in [
+      ('ja', '日本語'),
+      ('en', 'English'),
+      ('zh', '简体中文'),
+      ('ko', '한국어'),
+      ('zh_Hant', '繁體中文'),
+      ('fr', 'Français'),
+      ('es', 'Español'),
+    ]) {
+      final label = find.descendant(of: dialog, matching: find.text(name));
+      final style = tester.widget<Text>(label).style;
+      expect(
+        style?.fontFamily,
+        bodyFontFamilyFor(localeFromLanguageCode(code)),
+        reason: name,
+      );
+      expect(style?.fontWeight, isNull, reason: name);
+      final option = find.ancestor(
+        of: label,
+        matching: find.byType(SimpleDialogOption),
+      );
+      expect(
+        find.descendant(of: option, matching: find.byIcon(Icons.check)),
+        code == 'ja' ? findsOneWidget : findsNothing,
+        reason: name,
+      );
+    }
     await tap(tester, find.text('English'));
     final en = lookupAppLocalizations(const Locale('en'));
     expect(find.text(en.settingsBasicSheetTitle), findsOneWidget);

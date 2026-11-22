@@ -16,6 +16,7 @@ import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/app_locale.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
 import '../../widgets/fit_or_hide_title.dart';
@@ -493,6 +494,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _ => code,
   };
 
+  /// 言語の名前を、その言語の本文の書体で描く書式。
+  TextStyle _languageNameStyle(String code) {
+    final locale = localeFromLanguageCode(code);
+    return TextStyle(
+      fontFamily: bodyFontFamilyFor(locale),
+      fontFamilyFallback: bodyFontFallbackFor(locale),
+    );
+  }
+
   void _showWatermarkSetting() {
     if (!context.read<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
@@ -586,12 +596,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           for (final code in languages)
                             SimpleDialogOption(
                               onPressed: () => Navigator.pop(dctx, code),
-                              child: Text(
-                                _languageLabel(l10n, code),
-                                style: TextStyle(
-                                  fontWeight: settings.language == code
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                              // 言語の名前はその言語の本文の書体で描く（UIの
+                              // 書体で描くと「简体中文」の「简」だけが別の書体・
+                              // 太さになった）。選んでいる言語は太字ではなく
+                              // 印で示す（白光明朝は太字にしても太くならず、
+                              // 中国語・韓国語の名前だけが太く見えた）。
+                              child: Semantics(
+                                selected: settings.language == code,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        _languageLabel(l10n, code),
+                                        style: _languageNameStyle(code),
+                                      ),
+                                    ),
+                                    if (settings.language == code)
+                                      Icon(
+                                        Icons.check,
+                                        size: 20,
+                                        color: AccentTextTheme.of(dctx),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ),

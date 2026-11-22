@@ -349,6 +349,41 @@ void main() {
           .toList()
         ..sort((a, b) => a.path.compareTo(b.path));
 
+  // 1つの文は1つの書体で描く（DISC150）。白光明朝は太さ600の1書体で太字でも
+  // 太くならず、Noto Serif SC/KR（部分フォント）は400で太字では太さを足す。
+  // 2つが1つの文の中で混ざると、太字で字によって太さが違う（「存储槽2」の
+  // 「储」だけが太かった）。各言語のUIの字は、その言語の本文の主の書体
+  // だけで描けること。空白（書体によって無いものがある）と、言語の選択の
+  // 一覧に出す他の言語の名前（その言語の書体で描く）は除く。
+  test('各言語のUIの字は、その言語の本文の主の書体だけで描ける', () {
+    final problems = <String>[];
+    for (final arb in arbs) {
+      final name = arb.uri.pathSegments.last;
+      final code = name.substring(4, name.length - 4);
+      final family = bodyFontFamilyFor(ui.Locale(code.split('_').first));
+      final primary = cmapCodePoints(_fontFiles[family]!);
+      final data = json.decode(arb.readAsStringSync()) as Map<String, dynamic>;
+      final missing = <int, String>{};
+      data.forEach((key, value) {
+        if (key.startsWith('@') || value is! String) return;
+        if (key.startsWith('settingsLanguage') && key != 'settingsLanguage') {
+          return;
+        }
+        for (final rune in value.replaceAll(RegExp(r'\{[^}]*\}'), '').runes) {
+          if (_invisible.hasMatch(String.fromCharCode(rune))) continue;
+          if (symbolsHandledBySystem.contains(rune)) continue;
+          if (!primary.contains(rune)) missing.putIfAbsent(rune, () => key);
+        }
+      });
+      if (missing.isNotEmpty) {
+        problems.add(
+          '$name（$family）に無い字: ${missing.entries.map((e) => '${String.fromCharCode(e.key)}(${e.value})').join(' ')}',
+        );
+      }
+    }
+    expect(problems, isEmpty, reason: problems.join('\n'));
+  });
+
   test('検証対象のARBが7言語ぶんある', () {
     expect(arbs.length, 7, reason: '対応言語が増減している');
   });
