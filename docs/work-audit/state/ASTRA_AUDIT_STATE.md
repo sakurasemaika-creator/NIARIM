@@ -1116,6 +1116,13 @@ status: dev_branchどおりtodo（Route状態は変えない）
 - 未確認：DISC053（書き出したPNGとの比較）、詳細のプレビューの色、指・ペンの筆圧と傾き・ペンの消しゴムの端・トラックパッド・OSの取り消し（PointerCancel）・2本指（DISC080）。
 - 画像：`shots-r1/r2a012-*`（backup-pending）。
 
+### A012 三巡目（2026-11-22、Claude・S54、App `1e273704`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 二巡目の指摘：DISC497は直った（A009で確認。押して160pxずつ3回・16ms間隔16回の線とも、描いた直後から途切れない）。DISC275は所有者の判断（2026-11-20、`a9a9450a`：ロック・不透明度ロックを作品の取り消し・やり直しに入れる）の形：PC ja 1280×800でレイヤーの設定の「ロック」をオン→描くと「このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。」→Ctrl+Zでロックがオフ→Ctrl+Yでオンに戻る。
+- test：`stroke_pointer_lifecycle`・`stroke_premultiplied`・`stroke_sample_preview`・`eraser_transparent_colour`・`input_handler_pressure`・`layer_lock_canvas`・`canvas_typing_aware_keys`の22件成功。
+- 未確認：太さ49・不透明度51%の線の画素（DISC051、二巡目にキャンバスでは正しい）、指・ペンの筆圧と傾き・2本指（DISC080）、書き出したPNGとの比較（DISC053）。
+- 画像：`r3/shots/a12-*`（backup-pending）。
+
 ## A013 — ブラシ選択・全組込・カスタム管理（Opusブランチの証跡）
 
 status: dev_branchどおりtodo（Route状態は変えない）
