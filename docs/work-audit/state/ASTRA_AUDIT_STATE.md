@@ -4432,6 +4432,14 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：全画面×7言語×文字1.0/1.3/2.0の目視（今回は仏語・韓国語の390px・2倍で作品広場・設定・容量削減・フォント管理）、TalkBack・スイッチ操作（Androidのみ）、自作の暗いテーマでのDISC193〜199。
 - 画像：`shots-r1/r2a101-*`（backup-pending）。記録：`logs/a101-tests.txt`・`a101-probe.txt`・`a101-bis-*.txt`。
 
+### A101 三巡目（2026-11-22、Claude・S54、App `9a8dcfd9`〔製品は`e9b0e1d3`と同じ〕）— 判定：要修正（新DISC588。二巡目のDISC542〜545は直った）
+
+- 環境：fr、文字2倍（GSettings、D-Busのportalの中）、390×844、マウス、APIの接続先なし（見本のデータ）。
+- 二巡目の指摘：DISC542は直った（カードの向きの印「Horizontal」は語の途中で折れない）。DISC543は直った（表示フィルターのドロップダウンの値「Toutes les dates」「Toutes les durées」「Aucune」が1行で全部出る）。DISC544は直った（浮かぶプレビューの「Détails」が見出しの書体）。DISC545は直った（`dialog_text_scale_audit_test`が成功）。DISC538の追加（作品広場の戻るの後の起動画面）はA090で直ったことを確かめた。
+- 要修正（新、DISC588）：カードの日本語の題「最後のメロデ／ィ」で小さい「ィ」が行頭に来る（作品広場は行頭の決まりを使っていない）。
+- test：`l10n_*`の10本・`dialog_text_scale_audit_test`・`app_smoke_test`・`startup_*`の9本・`stroke_pointer_lifecycle_test`・`custom_automation_manager_dialog_lifecycle_test`を`9a8dcfd9`で259件成功（DISC545を含む）。`community_*`はA090の回。
+- 未確認：韓国語・中国語の文字2倍、APIのある環境（二巡目と同じ）。
+
 ## A102 — App7言語・用語・意味・format
 
 ### A102 二巡目（2026-11-20、Claude・S50、App `643cc267`のARB・testとLinuxデバッグビルド）— 判定：要修正（新DISC546・547。一巡目のDISC436とDISC394は直った）
