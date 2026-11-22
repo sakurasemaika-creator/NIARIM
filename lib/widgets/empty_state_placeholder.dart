@@ -7,7 +7,8 @@ import '../config/accent_text_theme.dart';
 import '../utils/line_break.dart';
 
 /// Centers an empty state in the space after its header. When the contents
-/// need more room, the remaining viewport scrolls without moving the header.
+/// need more room than is left, the list scrolls past the header by just the
+/// overflow.
 class EmptyStateSliver extends StatelessWidget {
   const EmptyStateSliver({
     super.key,
@@ -19,34 +20,39 @@ class EmptyStateSliver extends StatelessWidget {
   final double clearance;
 
   @override
-  Widget build(BuildContext context) => SliverFillRemaining(
-    // The child is itself a scroll view. Mark it as a scroll body so the
-    // sliver does not request intrinsic dimensions from its LayoutBuilder;
-    // that intrinsic pass is unsupported and can break the entire viewport.
-    // With primary:false below, a fitting child still lets drag gestures fall
-    // through to the outer list.
-    hasScrollBody: true,
-    child: LayoutBuilder(
-      builder: (context, constraints) {
-        final availableHeight = math.max(
-          0.0,
-          constraints.maxHeight - clearance,
-        );
-        return SingleChildScrollView(
-          // Keep this nested viewport independent of the outer list's
-          // PrimaryScrollController; fitting content still lets drag gestures
-          // fall through to the outer scroll view.
-          primary: false,
-          child: Padding(
-            padding: EdgeInsets.only(bottom: clearance),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: availableHeight),
-              child: builder(Size(constraints.maxWidth, availableHeight)),
+  Widget build(BuildContext context) => SliverLayoutBuilder(
+    // Take at least the viewport space left after the preceding slivers (the
+    // header) and grow with the contents beyond it. SliverFillRemaining does
+    // not fit here: hasScrollBody:false asks a LayoutBuilder child for
+    // intrinsic dimensions (unsupported, breaks the viewport), and
+    // hasScrollBody:true reports a whole viewport of scroll extent after the
+    // header, so a list with nothing in it scrolled by the header's height and
+    // showed a full-height scrollbar thumb. An inner scroll view sized to the
+    // remainder squeezed the copy into a strip a few pixels tall when the
+    // header took most of a short window. Sizing to the contents scrolls the
+    // outer list only when they really do not fit.
+    builder: (context, constraints) {
+      final viewport = constraints.viewportMainAxisExtent;
+      final remaining = viewport - constraints.precedingScrollExtent;
+      // A header taller than the list leaves no space: give the empty state
+      // a whole screen of its own after it.
+      final available = math.max(
+        0.0,
+        (remaining > 0 ? remaining : viewport) - clearance,
+      );
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.only(bottom: clearance),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: available,
+              minWidth: constraints.crossAxisExtent,
             ),
+            child: builder(Size(constraints.crossAxisExtent, available)),
           ),
-        );
-      },
-    ),
+        ),
+      );
+    },
   );
 }
 
