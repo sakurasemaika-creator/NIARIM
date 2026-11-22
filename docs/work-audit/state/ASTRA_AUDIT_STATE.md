@@ -3379,6 +3379,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：回転・X・Y移動の補間の見た目、最後のキーフレームの後の保持、キャンバスに出るカメラの枠、コマの削除・挿入でキーフレームが付いていくか（DISC341と関係）、書き出した静止画とプレビューの見比べ、カメラ付きの動画の書き出し（Androidの実機）。
 - 画像：`shots-r1/r2a052-*`（backup-pending）。
 
+### A052 三巡目（2026-11-22、Claude・S54、App `4e44b133`〔製品は`e9b0e1d3`と同じ〕）— 判定：要修正（既存DISC198・DISC577の形の残り）
+
+- 範囲の変更：カメラのキーフレームの処理（`camera*`）は`2939841e`以降の正味の変更なし（二巡目の実画面のOKのまま）。カメラのキーフレームの削除の確認は「「カメラ KF: F◯」を削除しますか？」（`layerPanelDeleteConfirmTitle`、「取り消せません」の文なし）。
+- 残り（コード）：カメラのキーフレームのシートの🗑がエラーの赤（`timeline_screen.dart`11234〜11240行付近の`ThemeService.activeColorScheme.error`）、「このフレームにはカメラのキーフレームがあります」がエラーの赤の字（11338〜11344行付近）。タイムラインではほかに、シーンの削除・複数のシーンの削除の確認（4155〜4192行付近）と長さを縮める確認（8690〜8700行付近）の「削除」の塗りのボタンが`activeColorScheme.error`のまま（共通の`confirmDelete`の塗りは差し色に変わった〔S39〕）。
+- test：`visual_reaudit_export_camera`・`functional_audit_batch2/22/24/25/26`・`time_change_strict_evidence`（A051と一緒に46件成功）。
+
 ## A053 — タイムラインmarker
 
 ### A053 二巡目（2026-11-20、Claude・S50、App `9e8124f0`のLinuxデバッグビルド）— 判定：要修正（新DISC522、DISC518の残り）
