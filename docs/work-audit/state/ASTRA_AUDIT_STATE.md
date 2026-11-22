@@ -1073,6 +1073,14 @@ status: dev_branchどおりtodo（Route状態は変えない）
 - 未確認：指・ソフトキーボード・ペンとマウスの切り替え・実機のDeX、すべての窓を1つずつ開閉、窓のたたみで列が52pxの帯になる・高さの変更。
 - 画像：`shots-r1/r2a011-*`（backup-pending）。
 
+### A011 三巡目（2026-11-22、Claude・S54、App `2659bedd`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 二巡目の指摘：DISC498は直った（en「Layer {n}」・es「Capa {n}」・fr「Calque {n}」。実画面のfr・文字2倍で新しい作品のレイヤーの窓に「Calque 1」）。既存DISC066は所有者の5つの判断（2026-11-20、`a9a9450a`）で決まった形（表示の操作〔全体表示・100%・拡大・縮小・左右の回転・回転のリセット〕をショートカットに割り当てられる、全体表示はCtrl+0）。PCのキャンバスの上部バーは取り消し・やり直し・全体表示・パネル・設定・ホーム・タイムラインで、メニューバーは出ない。
+- 実画面（Linux debug・Xvfb・fr・文字2倍、二巡目と同じ保存）：1280×800で左の列に「Stylet」とカラーピッカー、右に「Calques」、ツールバーは右端（保存した並び）。900×650へ縮めるとキャンバスの欄は約275px（240px以上）、絵は256px、窓の題・「Calque 1」は欠けない。新規プロジェクトの「Créer」は文字2倍でボタンの高さいっぱいだが切れない。
+- test：`canvas_dock_fit`・`desktop_dock_*`の5本・`canvas_top_bar_tap_targets`・`canvas_panel_selected_row_clip`・`canvas_pc_*`の3本・`canvas_bar_transparency`の67件成功。
+- 未確認：指・ソフトキーボード・実機のDeX、窓のたたみ（52pxの帯）。
+- 画像：`r3/shots/a11-*`（backup-pending）。
+
 ## A012 — 描画入力・ストローク・Undo/Redo（Opusブランチの証跡）
 
 status: dev_branchどおりtodo（Route状態は変えない）
