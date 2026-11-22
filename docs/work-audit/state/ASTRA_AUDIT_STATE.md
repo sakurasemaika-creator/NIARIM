@@ -2851,6 +2851,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：網点の濃さごとの位相のそろい、トーンの消しゴム、自作トーンの名前変更・削除、タグ・フォルダ・お気に入りだけ、大きな倍率、透明の上、画像から新規（portalが要る）、スマホ390×844。
 - 画像：`shots-r1/r2a025-*`（backup-pending）。
 
+### A025 三巡目（2026-11-22、Claude・S54、App `ce2461d5`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 範囲の変更（`2939841e`以降）：トーンのパネル・サービスは書式（`e7fabdaf`）・書体（`2df20473`）・空の一覧だけで、描き方・検索・一覧は変わらない（二巡目のOKのまま）。PCのキャンバスのペンの窓に「ブラシ・トーン・スタンプ」のタブが出る（A010〜A023の実画面）。
+- test：`tone_pixel_mode_ui`・`tone_pixel_pattern_and_analog_presets`・`stamp_opacity_functional`・`asset_panel_favorites_row`・`asset_panel_search_empty`の17件成功。
+- 未確認：網点の濃さごとの位相、トーンの消しゴム、自作トーンの管理、画像から新規（portal）、スマホ。
+
 ## A026 — スタンプ全種・管理
 
 ### A026 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：OK
