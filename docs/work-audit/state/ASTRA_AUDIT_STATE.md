@@ -3150,6 +3150,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：並べ替え、消しゴム・バケツの行の太さ、上下のスワイプ・ショートカットでの巡回、起動し直して残るか、狭いドックの幅、スマホ。
 - 画像：`shots-r1/r2a041-*`（backup-pending）。
 
+### A041 三巡目（2026-11-22、Claude・S54、App `b85bf022`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 二巡目の指摘：DISC198は早替えツールでは直った（`quick_tool_panel.dart`に`colorScheme.error`は無い）。自作のブラシの︙の「削除」はA013でメニューの文字色・印になったことを確認。DISC319（消したブラシの行）は二巡目に直っている。
+- test：`quick_tool_names_follow_language`・`quick_tool_panel_landscape_fit`・`quick_tool_panel_layout`の22件成功。
+- 未確認：並べ替え、ショートカットでの巡回、起動し直して残るか、スマホ。
+
 ## A042 — canvasフレームstrip
 
 ### A042 二巡目（2026-11-20、Claude・S50、App `9c06dd69`のLinuxデバッグビルド）— 判定：要修正（新DISC514）
