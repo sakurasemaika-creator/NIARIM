@@ -4474,6 +4474,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認（実機）：低・中・高の端末での起動時間・フレーム時間・メモリ、長い動画の書き出し・取り消し・再試行、多数のレイヤー・素材、裏へ回ってから戻る、APKの大きさ（R8・`shrinkResources`後）。
 - 画像：`shots-r1/r2a103-*`（backup-pending）。
 
+### A103 三巡目（2026-11-22、Claude・S54、App `9a8dcfd9`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK〔test・Linuxの実画面〕／実機の性能は未確認
+
+- test：`keep_together_text_relayout_cost_test`・`local_file_trash_list_speed_test`・`save_tree_lazy_list_test`・`engine/hair_fold_raster_test`を`9a8dcfd9`で37件成功（`save_tree_large_branch_stress_test`はA060の回）。GIFのエンコードを画面の処理の外へ移したこと（DISC529）はA063の三巡目に実画面で確かめた（100%の後もヒントが替わり続ける）。
+- 気づいた点：私が渡したtestの道（`test/hair_fold_raster_test.dart`）の誤りで1件「読み込みの失敗」が出たが、ファイルは`test/engine/`にあり、製品とtestの不具合ではない。
+- 未確認：実機の性能（描画・書き出し・大きな作品）（二巡目と同じ）。
+
 ## A104 — App保守性・テスト・CI品質
 
 ### A104 二巡目（2026-11-20、Claude・S50、App `643cc267`と`origin/dev_branch`のワークフロー、GitHub Actionsの実行）— 判定：要修正（新DISC548、既存DISC437は所有者の判断待ち）
