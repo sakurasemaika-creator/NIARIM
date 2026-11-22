@@ -902,6 +902,15 @@ status: dev_branchどおりtodo（Route状態は変えない）
 - 未確認：Premium・オパールの状態（2時間の上限）、自動塗りの設定の選択の中身。
 - 画像：`shots-r1/r2a007-*`（backup-pending）。
 
+### A007 三巡目（2026-11-22、Claude・S54、App `8c83570f`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 二巡目の残り：DISC268の資料の残り（CLAUDE.mdの地雷の段落が無くなった`monetization_gate.dart`を前提にしていた）は直った（CLAUDE.mdに`monetization_gate`・`isMonetizationEnabled`の記述は無い。`12_実装チェックリスト.md`の時系列の記録に残るのは経緯なので対象外）。ルートの条件の「campaign」はBaselineの定義（固定）なので変えない。
+- 範囲の変更（`2939841e`以降）：狭いスマホの余白（`c0880cef`・`41f34722`）、押せる大きさ（`6e3a6355`）、余白・文字の大きさ（`e4d3c5b7`・`191ae39b`、所有者の判断「余白は最新に揃える」）。
+- 実画面（Linux debug・Xvfb）：西語360×780・文字2倍で、＋→「Nuevo proyecto」、サイズの選択肢が折り返して欠けない、「Personalizado」で幅に9999→「Introduce un número entre 64 y…」、欄から出ると1920に書き戻る（範囲の文と「Ancho (px)」の浮かぶ見出しは近いが重ならない）。PC ja 1280×800で「作成」を60ms間隔で2回→作品は1つ（17→18件）。
+- test：`new_project_inputs`・`new_project_creation_recovery`・`canvas_size_preset_manage`・`text_scale_layout`の16件成功。
+- 未確認：Premium・オパールの状態（2時間の上限）、自動塗りの設定の選択の中身。
+- 画像：`r3/shots/a7-*`（backup-pending）。
+
 ## A008 — キャンバスサイズのプリセット管理（Opusブランチの証跡）
 
 status: dev_branchどおりtodo（Route状態は変えない）
