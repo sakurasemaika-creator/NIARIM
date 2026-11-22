@@ -4493,6 +4493,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：CIの各shardの失敗の全件（shard 0以外のログは開いていない）、`tool/`のスクリプトの再現性。
 - 記録：`logs/a104-tests.txt`（scratchpad、backup-pending）。
 
+### A104 三巡目（2026-11-22、Claude・S54、App `9a8dcfd9`〔製品は`e9b0e1d3`と同じ〕）— 判定：要修正（DISC548が残る。新しい失敗はDISC579・587で記録済み）
+
+- GitHub Actionsの全件のtest（`flutter-complete-sharded-tests.yml`）：最新の製品`e9b0e1d3`の#271（2026-11-22 08:20）はまだ待ち。最後に終わった#269（`9215e424`）は失敗：shard 0は`timeline_track_label_test`（DISC579、10分の打ち切り）、shard 1は`home_list_quiet_states_test`の12件（後の`25abae0e`で直した）、shard 4は`community_back_navigation_test`（DISC587）、shard 3は55分で打ち切り（cancelled）。analyzeとshard 2・5・6・7は成功。手元でもDISC579・587は落ちるので、#271も緑にならない見込み。
+- 既存DISC437は所有者の判断待ち（二巡目と同じ）。
+- 未確認：#271の結果（待ち）、shard 3の打ち切りの原因。
+
 ## W001〜W016 — Web共通・トップ・機能・作品広場・ヘルプ・お問い合わせ・規約
 
 ### W001〜W016 二巡目（2026-11-20、Claude・S50、Web `c1182da`〔`origin/dev_branch` `aec066e`の製品の最新〕・App `643cc267`）— 判定：要修正（W001・W003・W004・W008・W010・W012・W015・W016）、OK（W002・W005・W006〔W006.01〜W006.09〕・W007・W009〔W009.01〜W009.76〕・W011・W013・W014）

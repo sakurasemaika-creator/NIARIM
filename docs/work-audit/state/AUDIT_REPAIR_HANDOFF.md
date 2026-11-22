@@ -3857,3 +3857,7 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 
 - DISC547は直った。
 - DISC546の残り：コマ毎秒の手書きの単位が4か所（`settings_screen.dart`546・558行の`fps`、`community_work_detail_screen.dart`963行・`community_shorts_viewer.dart`608行の数＋`fps`、`theme_preview_gallery_screen.dart`3050行の`24fps`）。ARBの単位（仏語は「i/s」）を使い、手書きの単位を見張るtestを足す。
+
+### A104（三巡目、Claude・S54、App `9a8dcfd9`〔製品は`e9b0e1d3`と同じ〕、判定：要修正・DISC548が残る）
+
+- 全件のCI（#269、`9215e424`）は、DISC579（`timeline_track_label_test`）・DISC587（`community_back_navigation_test`）・`home_list_quiet_states_test`（後で直した）で失敗し、shard 3は55分で打ち切り。最新`e9b0e1d3`の#271は待ち。DISC579・587を直し、shard 3の時間を確かめて、全shardを緑にする。
