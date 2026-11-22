@@ -819,6 +819,14 @@ status: Opusのブランチで2026-10-23に実操作・修正・再検証した�
 - 未確認：書き込めない保存先での貼り付けの失敗（一般ユーザーでの実行）、スマホのマウスの長押し、仏語320・文字2倍の選ぶ操作の行。
 - 画像：`shots-r1/r2a005-*`（backup-pending）。
 
+### A005 三巡目（2026-11-22、Claude・S54、App `f1dad33b`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 二巡目の指摘：DISC495は直った（`89d30d0b`。コピーの知らせ「1件をコピーしました。貼り付けたい場所を開いて、画面下部のバーにある貼り付けを押してください。」、画面の一番下に「1件をコピー中／クリア／貼り付け」）。DISC496は直った（名前順↑で「ＡＢＣ全角」「ＡＢＣ全角 (コピー)」「(コピー 2)」「(コピー 3)」「(コピー 4)」の順）。
+- 実画面（Linux debug・Xvfb・ja 1280×800、二巡目と同じ保存）：詳細表示の行を長押しで選ぶ→Ctrl+C→Ctrl+Vを60ms間隔で2回→複製は1つ（16→17件、「(コピー 3)」）、少し後のCtrl+Vで「(コピー 4)」（18件）。Ctrl+Aで全部（お気に入りを含む19件）を選びDelete→何も移さず「お気に入り登録中は削除できません。先にお気に入りを解除してください。」。
+- test：A005の24本（`project_selection_clipboard`・`home_clipboard_*`・`home_paste_result_*`・`home_duplicate_*`・`home_copy_*`・`home_row_right_click_menu`・`home_card_keyboard`・`duplicate_name`・`reorder_index`・`home_trash_confirm_*`・`home_project_action_hit`ほか）は220件成功。
+- 未確認：書き込めない保存先での貼り付けの失敗（一般ユーザーでの実行）、スマホの指の長押し。
+- 画像：`r3/shots/a5-*`（backup-pending）。
+
 ## A006 — フォルダの階層・パンくず・フォルダの削除と複製（Opusブランチの証跡）
 
 status: dev_branchどおりtodo（Route状態は変えない。current_idのA003を閉じた後、A004・A005に続けて判定する）
