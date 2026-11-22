@@ -2940,6 +2940,14 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：浮かぶ窓の大きさの変更（角のつまみ）、Androidの画像選択・HEIC、画面の回転（Androidが要る）。
 - 画像：`shots-r1/r2a030-*`（backup-pending）。
 
+### A030 三巡目（2026-11-22、Claude・S54、App `f38f57a6`〔製品は`e9b0e1d3`と同じ〕）— 判定：要修正（DISC577、軽微）。DISC506は直った
+
+- 二巡目の指摘：DISC506は直った（`8a232dde`。PC ja 1280×800・D-Busのportalの中で起動。設定/編集→資料ウィンドウが右のドックに入り「画像を選択」→400×300のPNGが窓に出る→中身が文字の「bad.png」を選ぶ→前の画像のまま、上に「画像を読み込めませんでした」。ログに「Invalid image data」は出ない〔読めるかを先に確かめ、`AppErrorReporter`へ記録〕）。
+- 見つけたもの（DISC577）：その知らせの文はエラーの赤（`colorScheme.error`）の字だけ（先頭の印なし）。フィルターの眼鏡断層の注意も同じ。
+- test：`canvas_menu_sheets_reachability`・`final_remaining_strict_evidence`・`requested_ui_all_captures`（全体回帰で流す）。
+- 未確認：浮かぶ窓の大きさの変更、Androidの画像選択・HEIC。
+- 画像：`r3/shots/a30-*`（backup-pending）。
+
 ## A031 — レイヤー一覧・追加・順序・削除
 
 ### A031 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：要修正（既存DISC198）
