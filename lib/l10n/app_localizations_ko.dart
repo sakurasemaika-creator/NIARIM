@@ -8123,6 +8123,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeUndoAction => '실행 취소';
 
   @override
+  String homeTrashMoveUndone(int count) {
+    return '$count개 항목을 휴지통에서 복원했습니다';
+  }
+
+  @override
   String homeCutSnackbar(int count) {
     return '$count개 항목을 잘라냈습니다. 옮길 곳을 열고 화면 하단 막대의 붙여넣기를 누르세요.';
   }

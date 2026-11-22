@@ -3323,6 +3323,7 @@
   "homeViewModeTooltip": "Diseño y tamaño",
   "homeMovedToTrashSnackbar": "{count, plural, one{{count} elemento movido a la papelera} other{{count} elementos movidos a la papelera}}",
   "homeUndoAction": "Deshacer",
+  "homeTrashMoveUndone": "{count, plural, one{{count} elemento restaurado de la papelera} other{{count} elementos restaurados de la papelera}}",
   "homeCutSnackbar": "{count, plural, one{{count} elemento cortado. Abre el destino y toca Pegar en la barra inferior de la pantalla.} other{{count} elementos cortados. Abre el destino y toca Pegar en la barra inferior de la pantalla.}}",
   "homeCopiedSnackbar": "{count, plural, one{{count} elemento copiado. Abre el lugar de destino y toca Pegar en la barra inferior de la pantalla.} other{{count} elementos copiados. Abre el lugar de destino y toca Pegar en la barra inferior de la pantalla.}}",
   "homePastedSnackbar": "{count, plural, one{Se pegó {count} elemento.} other{Se pegaron {count} elementos.}}",

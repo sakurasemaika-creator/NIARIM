@@ -8564,6 +8564,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeUndoAction => 'Deshacer';
 
   @override
+  String homeTrashMoveUndone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos restaurados de la papelera',
+      one: '$count elemento restaurado de la papelera',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String homeCutSnackbar(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

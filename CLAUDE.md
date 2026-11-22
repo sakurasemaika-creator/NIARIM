@@ -1409,6 +1409,17 @@ onTap: ...)`だったために
   薄くなる（操作ボタン付き・`persist: true`・長い`duration`でも同じ。短い指定は
   そのまま）。出てくる前・途中に裏へ回っても見ないうちには消さない。例外は読み上げ・
   スイッチ操作の使用中の操作ボタン付き（`persist`の指定なし）で、押すまで残す。
+  **触れている間は消さない**（所有者の判断、2026-11-22、DISC125）：マウスを載せて
+  いる・指やペンで押さえている・キーボードのフォーカスが知らせの中（「元に戻す」等）に
+  ある間は期限を数えず、薄くなり始めていても元の濃さに戻す。離したら残りの時間
+  （短くても`kToastResumeAfterHold`＝1秒）で消える。触れているかは、知らせの中身を
+  包む`_ToastProbe`（知らせのカードの`Material`の面）と全体のポインターの経路・
+  `FocusManager`で見る。期限は自分のタイマー（50msごと）だけで決め、基底クラスの
+  時間切れは使わない。知らせの中身を`SnackBar.content as Text`で読むテストは
+  `toastContentOf`を通すこと（包んだ部品が入る）。ホームの取り消し（Ctrl+Z）は、
+  最後にゴミ箱へ移したもの（1つの知らせにまとめたもの）のうち、まだゴミ箱にあるものを
+  知らせが消えた後でも戻す（`undoLastTrashMove`、どのタブでも・検索中も。戻すのは
+  最後の1回だけ。`home_trash_undo_shortcut_test`）。
   `test/toast_contract_test.dart`が、lib配下の`SnackBar`の`duration`（5秒以下の
   定数、`c ? a : b`は長い方で判定）・`Timer`/`Future.delayed`/`Stream.periodic`を
   使うファイルの一覧・`MaterialApp.new`/`ScaffoldMessenger.new`が無いことを見張る。

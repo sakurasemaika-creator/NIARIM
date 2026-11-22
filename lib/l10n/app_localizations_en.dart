@@ -8425,6 +8425,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeUndoAction => 'Undo';
 
   @override
+  String homeTrashMoveUndone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Restored $count items from the trash',
+      one: 'Restored $count item from the trash',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String homeCutSnackbar(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

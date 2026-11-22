@@ -2504,13 +2504,24 @@ class _HomeScreenState extends State<HomeScreen>
     if (_scaffoldKey.currentState?.isEndDrawerOpen ?? false) {
       return {_escapeOnce: () => _scaffoldKey.currentState?.closeEndDrawer()};
     }
+    // 取り消し（Ctrl+Z等）は、最後にゴミ箱へ移したものを元に戻す（知らせが
+    // 消えた後も。所有者の判断、2026-11-22）。どのタブでも、検索中も効く
+    // （入力欄にフォーカスがある間は入力欄の取り消し）。
+    final undo = <ShortcutActivator, VoidCallback>{
+      for (final b in bindings)
+        if (!b.isToolAction && b.command == ShortcutCommand.undo)
+          b.activator: _undoLastTrashMove,
+    };
     // 検索中は全選択・コピー等を効かせない（検索で隠れた作品を操作しない）。
     // Escは検索を閉じる（Enterで入力を終えた後も）。
-    if (_isSearching) return {_escapeOnce: _escapeInSearch};
+    if (_isSearching) return {...undo, _escapeOnce: _escapeInSearch};
     // 作品一覧・共有・ゴミ箱のタブでは全選択・コピー等を効かせない。Escは
     // どのタブでも選ぶのを終える（以前はこれらのタブでEscが何もしなかった）。
     const find = SingleActivator(LogicalKeyboardKey.keyF, control: true);
-    final result = <ShortcutActivator, VoidCallback>{find: _openProjectSearch};
+    final result = <ShortcutActivator, VoidCallback>{
+      ...undo,
+      find: _openProjectSearch,
+    };
     if (_currentTabIndex != 0) {
       if (_isSelectionMode) result[_escapeOnce] = _endProjectSelection;
       return result;
@@ -2540,6 +2551,8 @@ class _HomeScreenState extends State<HomeScreen>
             if (_hasClipboard) _pasteClipboard();
           };
         case ShortcutCommand.undo:
+          // 上で割り当てた（どのタブでも効く）。
+          break;
         case ShortcutCommand.redo:
         case ShortcutCommand.toggleLayerPanel:
         case ShortcutCommand.playPause:
@@ -2563,6 +2576,17 @@ class _HomeScreenState extends State<HomeScreen>
       result[_escapeOnce] = _cancelCutClipboard;
     }
     return result;
+  }
+
+  /// 最後にゴミ箱へ移したもの（まだゴミ箱にあるもの）を元に戻す。
+  void _undoLastTrashMove() {
+    final messenger = _messenger;
+    if (messenger == null || !mounted) return;
+    undoLastTrashMove(
+      messenger,
+      AppLocalizations.of(context)!,
+      context.read<ProjectService>(),
+    );
   }
 
   /// Clear the in-memory clipboard, including items copied from other tabs.

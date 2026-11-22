@@ -852,7 +852,8 @@ void main() {
         await tester.pump(frame);
         final found = find.byType(SnackBar).evaluate();
         if (found.isEmpty) break;
-        final text = ((found.single.widget as SnackBar).content as Text).data!;
+        final text =
+            (toastContentOf(found.single.widget as SnackBar) as Text).data!;
         if (appeared.isEmpty || appeared.last != text) appeared.add(text);
       }
       debugPrint('queued before the fade: $appeared');
@@ -878,7 +879,8 @@ void main() {
         final found = find.byType(SnackBar).evaluate();
         if (found.isEmpty) break;
         for (final element in found) {
-          final text = ((element.widget as SnackBar).content as Text).data!;
+          final text =
+              (toastContentOf(element.widget as SnackBar) as Text).data!;
           if (!appeared.contains(text)) appeared.add(text);
           inTree[text] = (inTree[text] ?? Duration.zero) + frame;
           if (opacityOf(text) == 1.0) {
@@ -1228,7 +1230,7 @@ void main() {
         mine('mine'),
         const SnackBar(content: Text('other')),
       ]) {
-        final text = ((toast.content as Text).data)!;
+        final text = (toastContentOf(toast) as Text).data!;
         messenger(
           tester,
         ).showSnackBar(toast).closed.then((reason) => reasons[text] = reason);
@@ -1471,7 +1473,7 @@ void main() {
           final found = find.byType(SnackBar).evaluate();
           expect(found.length, lessThanOrEqualTo(1));
           if (found.isEmpty) return null;
-          return ((found.single.widget as SnackBar).content as Text).data;
+          return (toastContentOf(found.single.widget as SnackBar) as Text).data;
         }
 
         for (var step = 0; step < 400; step++) {

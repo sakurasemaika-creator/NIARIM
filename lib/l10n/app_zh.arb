@@ -3323,6 +3323,7 @@
   "homeViewModeTooltip": "显示方式和大小",
   "homeMovedToTrashSnackbar": "已将{count}项移至回收站",
   "homeUndoAction": "撤销",
+  "homeTrashMoveUndone": "已从回收站恢复{count}项",
   "homeCutSnackbar": "已剪切{count}项。打开目标位置后，点按屏幕底部工具栏的粘贴。",
   "homeCopiedSnackbar": "已复制{count}项。打开要粘贴的位置后，点按屏幕底部工具栏的粘贴。",
   "homePastedSnackbar": "{count, plural, other{已粘贴{count}项。}}",

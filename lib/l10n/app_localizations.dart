@@ -14685,6 +14685,12 @@ abstract class AppLocalizations {
   /// **'元に戻す'**
   String get homeUndoAction;
 
+  /// No description provided for @homeTrashMoveUndone.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をゴミ箱から元に戻しました'**
+  String homeTrashMoveUndone(int count);
+
   /// No description provided for @homeCutSnackbar.
   ///
   /// In ja, this message translates to:

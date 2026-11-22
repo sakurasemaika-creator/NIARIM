@@ -3353,6 +3353,7 @@
   "homeViewModeTooltip": "Layout and size",
   "homeMovedToTrashSnackbar": "{count, plural, one{Moved {count} item to the trash} other{Moved {count} items to the trash}}",
   "homeUndoAction": "Undo",
+  "homeTrashMoveUndone": "{count, plural, one{Restored {count} item from the trash} other{Restored {count} items from the trash}}",
   "homeCutSnackbar": "{count, plural, one{Cut {count} item. Open the destination and tap Paste in the bar at the bottom of the screen.} other{Cut {count} items. Open the destination and tap Paste in the bar at the bottom of the screen.}}",
   "homeCopiedSnackbar": "{count, plural, one{Copied {count} item. Open where you want it and tap Paste in the bar at the bottom of the screen.} other{Copied {count} items. Open where you want them and tap Paste in the bar at the bottom of the screen.}}",
   "homePastedSnackbar": "{count, plural, one{Pasted {count} item.} other{Pasted {count} items.}}",

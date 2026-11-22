@@ -8083,6 +8083,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeUndoAction => '元に戻す';
 
   @override
+  String homeTrashMoveUndone(int count) {
+    return '$count件をゴミ箱から元に戻しました';
+  }
+
+  @override
   String homeCutSnackbar(int count) {
     return '$count件を切り取りました。移動先を開いて、画面下部のバーにある貼り付けを押してください。';
   }

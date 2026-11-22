@@ -3323,6 +3323,7 @@
   "homeViewModeTooltip": "顯示方式和大小",
   "homeMovedToTrashSnackbar": "已將{count}項移至垃圾桶",
   "homeUndoAction": "復原",
+  "homeTrashMoveUndone": "已從垃圾桶還原{count}項",
   "homeCutSnackbar": "已剪下{count}項。開啟目標位置後，點按畫面底部工具列的貼上。",
   "homeCopiedSnackbar": "已複製{count}項。開啟要貼上的位置後，點按畫面底部工具列的貼上。",
   "homePastedSnackbar": "{count, plural, other{已貼上{count}項。}}",

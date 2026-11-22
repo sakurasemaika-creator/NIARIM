@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 /// Shows an action label when its long press also opens a menu or dialog.
@@ -37,6 +38,20 @@ const Duration kToastFadeOutWhenReplaced = Duration(milliseconds: 300);
 /// 400msに、タイマーと描画のずれの分を足して[kToastMaxLifetime]に収まる。
 const Duration kToastLongestShown = Duration(milliseconds: 4250);
 
+/// 知らせに触れて（マウスを載せて・押さえて・キーボードのフォーカスを
+/// 入れて）いた後、離してから消えるまでの最短の時間（所有者の判断、
+/// 2026-11-22「触れている間は消さない」）。残りの時間がこれより長ければ
+/// 残りの時間。
+const Duration kToastResumeAfterHold = Duration(seconds: 1);
+
+/// [AppToastMessenger]が出した知らせの中身（[SnackBar.content]を、触れて
+/// いるかを確かめる部品で包んだもの）から、元の中身を取り出す。
+@visibleForTesting
+Widget toastContentOf(SnackBar snackBar) {
+  final content = snackBar.content;
+  return content is _ToastProbe ? content.child : content;
+}
+
 /// アプリの知らせ（SnackBar）を1か所で受ける[ScaffoldMessenger]。
 ///
 /// `MaterialApp.builder`の中で、画面（Navigator）を包む位置に置く。画面・
@@ -44,7 +59,11 @@ const Duration kToastLongestShown = Duration(milliseconds: 4250);
 /// グローバルキーも、awaitの前に取っておいたメッセンジャーも、すべてこれを
 /// 指すので、呼び出し側が何も書かなくても次の決まりで動く。
 ///
-/// * 初めて描かれてから[kToastMaxLifetime]以内に自分で消える。操作ボタンが
+/// * 初めて描かれてから[kToastMaxLifetime]以内に自分で消える。ただし、
+///   マウスを載せている・指やペンで押さえている・キーボードのフォーカスが
+///   知らせの中（「元に戻す」等）にある間は時間を数えず、薄くなり始めて
+///   いても元の濃さに戻す（所有者の判断、2026-11-22）。離したら残りの時間
+///   （短くても[kToastResumeAfterHold]）で消える。操作ボタンが
 ///   あっても（[SnackBar.persist]の既定は「操作ボタンがあれば消えない」）、
 ///   長い[SnackBar.duration]・`persist: true`を渡しても同じ。短い指定は
 ///   そのまま。時間は出切ったときから数えるので、出てくる前・出てくる
@@ -106,12 +125,35 @@ class AppToastMessengerState extends ScaffoldMessengerState {
   /// 読み上げの利用者のために、時間が来ても残しているか。
   bool _heldForAssistiveUse = false;
 
-  /// 出ている知らせの期限。出切ったフレーム（出てくるアニメーションが
-  /// 終わったとき）から数える。基底クラスのタイマーは出切った後のビルドで
-  /// 始まり、描画が飛ぶとその分だけ遅れる。初めて描かれたフレームから
-  /// 数えると、出てくる途中でアプリが裏へ回った・描画が止まったとき、
-  /// 見ないうちに期限が来て消えていた。
+  /// 出ている知らせの期限を数えるタイマー（[_tick]ごとに[_remaining]を
+  /// 減らす）。出切ったフレーム（出てくるアニメーションが終わったとき）から
+  /// 数える。基底クラスのタイマーは出切った後のビルドで始まり、描画が飛ぶと
+  /// その分だけ遅れる。初めて描かれたフレームから数えると、出てくる途中で
+  /// アプリが裏へ回った・描画が止まったとき、見ないうちに期限が来て消えて
+  /// いた。知らせに触れている間は止める（基底クラスのタイマーでは止め
+  /// られないので、基底クラスの時間切れは使わない）。
   Timer? _deadline;
+
+  /// 期限を数える刻み。
+  static const Duration _tick = Duration(milliseconds: 50);
+
+  /// 出ている知らせの期限までの残り。
+  Duration _remaining = Duration.zero;
+
+  /// 自分の期限で消しているところ（基底クラスの時間切れと見分ける）。
+  bool _timingOut = false;
+
+  /// マウス・ホバーしているペンの最後の位置（機器ごと）。
+  final Map<int, Offset> _hoverPositions = <int, Offset>{};
+
+  /// 知らせの上で押したままの指・ペン・マウス。
+  final Set<int> _pressing = <int>{};
+
+  /// 知らせに触れていて、期限を数えていないか。
+  bool _held = false;
+
+  /// 描かれている知らせの中身（どの知らせのものかは[_ToastProbeState.snackBar]）。
+  final Set<_ToastProbeState> _probes = <_ToastProbeState>{};
 
   bool _assistiveUse = false;
   bool _noMotion = false;
@@ -123,6 +165,8 @@ class AppToastMessengerState extends ScaffoldMessengerState {
     super.initState();
     _exit = AnimationController(vsync: this, value: 1.0)
       ..addStatusListener(_onExitStatus);
+    GestureBinding.instance.pointerRouter.addGlobalRoute(_onPointer);
+    FocusManager.instance.addListener(_updateHold);
   }
 
   @override
@@ -134,7 +178,7 @@ class AppToastMessengerState extends ScaffoldMessengerState {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _heldForAssistiveUse && !_assistiveUse) {
           _heldForAssistiveUse = false;
-          hideCurrentSnackBar(reason: SnackBarClosedReason.timeout);
+          _timeOut();
         }
       });
     }
@@ -184,6 +228,9 @@ class AppToastMessengerState extends ScaffoldMessengerState {
   void hideCurrentSnackBar({
     SnackBarClosedReason reason = SnackBarClosedReason.hide,
   }) {
+    // 時間切れは自分の期限（[_deadline]）だけで決める。基底クラスのタイマー
+    // は、知らせに触れている間も止まらない。
+    if (reason == SnackBarClosedReason.timeout && !_timingOut) return;
     if (reason == SnackBarClosedReason.hide ||
         reason == SnackBarClosedReason.remove) {
       // 時間切れ・操作ボタン・閉じるボタンは入れ替えではない。
@@ -317,20 +364,129 @@ class AppToastMessengerState extends ScaffoldMessengerState {
     // 次の知らせの期限は、それが出切ってから数える（[_onEntranceStatus]）。
     _deadline?.cancel();
     _deadline = null;
+    _pressing.clear();
+    _held = false;
   }
 
-  /// 出切った先頭の知らせの期限を数え始める。
+  /// 出切った先頭の知らせの期限を数え始める（触れている間は数えない）。
   void _armDeadline() {
     _deadline?.cancel();
     _deadline = null;
     if (_toasts.isEmpty) return;
+    _remaining = _toasts.first.toast.duration;
+    _updateHold();
+    if (!_held) _countDown();
+  }
+
+  /// [_remaining]を数え、0になったら時間切れとして消す。
+  void _countDown() {
+    _deadline?.cancel();
+    _deadline = null;
+    if (_toasts.isEmpty) return;
     final toast = _toasts.first;
-    _deadline = Timer(toast.toast.duration, () {
+    _deadline = Timer.periodic(_tick, (timer) {
       if (!mounted || _toasts.isEmpty || !identical(_toasts.first, toast)) {
+        timer.cancel();
         return;
       }
-      hideCurrentSnackBar(reason: SnackBarClosedReason.timeout);
+      _remaining -= _tick;
+      if (_remaining > Duration.zero) return;
+      timer.cancel();
+      _deadline = null;
+      _timeOut();
     });
+  }
+
+  void _timeOut() {
+    _timingOut = true;
+    try {
+      hideCurrentSnackBar(reason: SnackBarClosedReason.timeout);
+    } finally {
+      _timingOut = false;
+    }
+  }
+
+  void _onPointer(PointerEvent event) {
+    switch (event) {
+      case PointerHoverEvent():
+        _hoverPositions[event.device] = event.position;
+      case PointerMoveEvent(kind: PointerDeviceKind.mouse):
+        _hoverPositions[event.device] = event.position;
+      case PointerRemovedEvent():
+        _hoverPositions.remove(event.device);
+      case PointerDownEvent():
+        if (event.kind == PointerDeviceKind.mouse) {
+          _hoverPositions[event.device] = event.position;
+        }
+        if (_toastRect()?.contains(event.position) ?? false) {
+          _pressing.add(event.pointer);
+        }
+      case PointerUpEvent():
+      case PointerCancelEvent():
+        if (!_pressing.remove(event.pointer)) return;
+      default:
+        return;
+    }
+    if (_onScreen) _updateHold();
+  }
+
+  /// 出ている知らせの面（画面の座標）。描かれていなければnull。
+  Rect? _toastRect() {
+    if (_toasts.isEmpty || !_onScreen) return null;
+    final current = _toasts.first.animation;
+    for (final probe in _probes) {
+      if (!identical(probe.snackBar?.animation, current)) continue;
+      final rect = probe.surface();
+      if (rect != null) return rect;
+    }
+    return null;
+  }
+
+  /// キーボードのフォーカスが出ている知らせの中（操作ボタン等）にあるか。
+  bool get _focusInside {
+    if (_toasts.isEmpty) return false;
+    final focused = FocusManager.instance.primaryFocus?.context;
+    if (focused == null || !focused.mounted) return false;
+    final snackBar = focused.findAncestorWidgetOfExactType<SnackBar>();
+    return identical(snackBar?.animation, _toasts.first.animation);
+  }
+
+  /// 知らせに触れているか（マウスが上にある・押さえている・フォーカスが
+  /// 中にある）を確かめ、触れ始めたら期限を止め、離したら数え直す。
+  void _updateHold() {
+    if (!mounted) return;
+    var held = false;
+    if (_onScreen && _toasts.isNotEmpty) {
+      if (_pressing.isNotEmpty || _focusInside) {
+        held = true;
+      } else if (_hoverPositions.isNotEmpty) {
+        final rect = _toastRect();
+        held = rect != null && _hoverPositions.values.any(rect.contains);
+      }
+    }
+    if (held == _held) return;
+    _held = held;
+    if (held) {
+      _deadline?.cancel();
+      _deadline = null;
+      // 時間切れで薄くなり始めていたら、元の濃さに戻す（次の知らせが
+      // 待っているとき・隠す途中は戻さない）。
+      if (_leaving == SnackBarClosedReason.timeout &&
+          !_othersWaiting &&
+          !_noMotion) {
+        _leaving = null;
+        _remaining = Duration.zero;
+        _exit.animateTo(1.0, duration: kToastFadeOut * (1.0 - _exit.value));
+      }
+      return;
+    }
+    // 離した。出切っていて、消える途中でなければ数え直す（出切る前なら
+    // 出切ったときに数え始める）。
+    if (_leaving != null || !(_entrance?.isCompleted ?? false)) return;
+    if (_remaining < kToastResumeAfterHold) {
+      _remaining = kToastResumeAfterHold;
+    }
+    _countDown();
   }
 
   /// 基底クラスが[toast]を待ち行列へ入れる直前に呼ばれる。
@@ -353,6 +509,8 @@ class AppToastMessengerState extends ScaffoldMessengerState {
   @override
   void dispose() {
     _deadline?.cancel();
+    GestureBinding.instance.pointerRouter.removeGlobalRoute(_onPointer);
+    FocusManager.instance.removeListener(_updateHold);
     _entrance?.removeStatusListener(_onEntranceStatus);
     _exit.dispose();
     super.dispose();
@@ -392,7 +550,7 @@ class _Toast extends SnackBar {
       messenger,
       keptForAssistiveUse: source.persist && source.action != null,
       key: source.key,
-      content: source.content,
+      content: _ToastProbe(messenger: messenger, child: source.content),
       backgroundColor: source.backgroundColor,
       elevation: source.elevation,
       margin: source.margin,
@@ -543,4 +701,57 @@ class _Queued {
   /// 順番を待っている間に取り下げられた（出さずに下げる、
   /// [AppToastMessengerState.withdrawSnackBars]）。
   bool withdrawn = false;
+}
+
+/// 知らせの中身を包み、知らせの面の位置を[AppToastMessengerState]へ
+/// 教える（マウスが載っているか・押さえているかを確かめるため）。
+///
+/// [SnackBar.action]は[SnackBarAction]しか置けないので、中身に置く。面は
+/// 中身を包む[Material]（知らせのカード、操作ボタンも含む）。
+class _ToastProbe extends StatefulWidget {
+  const _ToastProbe({required this.messenger, required this.child});
+
+  final AppToastMessengerState messenger;
+  final Widget child;
+
+  @override
+  State<_ToastProbe> createState() => _ToastProbeState();
+
+  // SnackBarは中身の文字列を画面の切り替え（Hero）の印に使うので、包む前と
+  // 同じにする。
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) =>
+      child.toString(minLevel: minLevel);
+}
+
+class _ToastProbeState extends State<_ToastProbe> {
+  @override
+  void initState() {
+    super.initState();
+    widget.messenger._probes.add(this);
+  }
+
+  @override
+  void dispose() {
+    widget.messenger._probes.remove(this);
+    super.dispose();
+  }
+
+  /// この中身を描いている知らせ。
+  SnackBar? get snackBar =>
+      mounted ? context.findAncestorWidgetOfExactType<SnackBar>() : null;
+
+  /// 知らせのカードの面（画面の座標）。
+  Rect? surface() {
+    if (!mounted) return null;
+    final Object? ink = Material.maybeOf(context);
+    if (ink is! RenderBox || !ink.attached || !ink.hasSize) return null;
+    return MatrixUtils.transformRect(
+      ink.getTransformTo(null),
+      Offset.zero & ink.size,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

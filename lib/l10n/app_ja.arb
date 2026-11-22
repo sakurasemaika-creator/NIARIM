@@ -4031,6 +4031,14 @@
     }
   },
   "homeUndoAction": "元に戻す",
+  "homeTrashMoveUndone": "{count}件をゴミ箱から元に戻しました",
+  "@homeTrashMoveUndone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "homeCutSnackbar": "{count}件を切り取りました。移動先を開いて、画面下部のバーにある貼り付けを押してください。",
   "@homeCutSnackbar": {
     "placeholders": {

@@ -7991,6 +7991,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeUndoAction => '撤销';
 
   @override
+  String homeTrashMoveUndone(int count) {
+    return '已从回收站恢复$count项';
+  }
+
+  @override
   String homeCutSnackbar(int count) {
     return '已剪切$count项。打开目标位置后，点按屏幕底部工具栏的粘贴。';
   }
@@ -18436,6 +18441,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeUndoAction => '復原';
+
+  @override
+  String homeTrashMoveUndone(int count) {
+    return '已從垃圾桶還原$count項';
+  }
 
   @override
   String homeCutSnackbar(int count) {

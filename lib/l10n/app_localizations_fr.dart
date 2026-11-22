@@ -8577,6 +8577,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeUndoAction => 'Annuler';
 
   @override
+  String homeTrashMoveUndone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count éléments restaurés depuis la corbeille',
+      one: '$count élément restauré depuis la corbeille',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String homeCutSnackbar(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

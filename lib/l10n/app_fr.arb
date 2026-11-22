@@ -3323,6 +3323,7 @@
   "homeViewModeTooltip": "Disposition et taille",
   "homeMovedToTrashSnackbar": "{count, plural, one{{count} élément mis à la corbeille} other{{count} éléments mis à la corbeille}}",
   "homeUndoAction": "Annuler",
+  "homeTrashMoveUndone": "{count, plural, one{{count} élément restauré depuis la corbeille} other{{count} éléments restaurés depuis la corbeille}}",
   "homeCutSnackbar": "{count, plural, one{{count} élément coupé. Ouvrez la destination et touchez Coller dans la barre en bas de l’écran.} other{{count} éléments coupés. Ouvrez la destination et touchez Coller dans la barre en bas de l’écran.}}",
   "homeCopiedSnackbar": "{count, plural, one{{count} élément copié. Ouvrez l’emplacement voulu et touchez Coller dans la barre en bas de l’écran.} other{{count} éléments copiés. Ouvrez l’emplacement voulu et touchez Coller dans la barre en bas de l’écran.}}",
   "homePastedSnackbar": "{count, plural, one{{count} élément collé.} other{{count} éléments collés.}}",

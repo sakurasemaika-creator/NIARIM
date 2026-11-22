@@ -3323,6 +3323,7 @@
   "homeViewModeTooltip": "표시 형식과 크기",
   "homeMovedToTrashSnackbar": "{count}개 항목을 휴지통으로 이동했습니다",
   "homeUndoAction": "실행 취소",
+  "homeTrashMoveUndone": "{count}개 항목을 휴지통에서 복원했습니다",
   "homeCutSnackbar": "{count}개 항목을 잘라냈습니다. 옮길 곳을 열고 화면 하단 막대의 붙여넣기를 누르세요.",
   "homeCopiedSnackbar": "{count}개 항목을 복사했습니다. 붙여넣을 곳을 열고 화면 하단 막대의 붙여넣기를 누르세요.",
   "homePastedSnackbar": "{count, plural, other{{count}개 항목을 붙여넣었습니다.}}",

@@ -10,6 +10,7 @@ import '../services/work_folder_service.dart';
 import '../utils/app_error_reporter.dart';
 import 'app_toast_messenger.dart';
 import 'copy_name_text.dart';
+import 'keep_together_text.dart' show messageText;
 import 'project_trash_dialog.dart' show showProjectActionFailure;
 
 /// 1回のゴミ箱への移動で移したもの（「元に戻す」で戻すもの）。
@@ -85,6 +86,11 @@ class _TrashNoticeState {
 /// 出し先ごとの、まだ「元に戻す」を押せるゴミ箱の知らせ。
 final Expando<_MovedToTrashNoticeKey> _openTrashNotice =
     Expando<_MovedToTrashNoticeKey>('movedToTrashNotice');
+
+/// 出し先ごとの、最後にゴミ箱へ移したことを伝えた知らせ（知らせが消えた
+/// 後も、[undoLastTrashMove]で戻すために覚えておく）。
+final Expando<_MovedToTrashNoticeKey> _lastTrashNotice =
+    Expando<_MovedToTrashNoticeKey>('lastTrashNotice');
 
 /// 作品をゴミ箱へ移したことを伝え、その場で戻せるSnackBarを出す。
 ///
@@ -173,6 +179,7 @@ void _showTrashNotice(
   }
   final key = _MovedToTrashNoticeKey([...carried, move]);
   _openTrashNotice[messenger] = key;
+  _lastTrashNotice[messenger] = key;
   final total = key.moves.fold<int>(0, (sum, item) => sum + item.count);
   final controller = messenger.showSnackBar(
     SnackBar(
@@ -196,24 +203,7 @@ void _showTrashNotice(
         label: l10n.homeUndoAction,
         onPressed: () {
           key.state.settled = true;
-          // 後から移したものを先に戻す（作品を移した後にその作品の
-          // 入っていたフォルダを移したときは、フォルダが戻ってから作品を
-          // 戻す）。1回の移動の中ではフォルダを先に戻す（中の作品は
-          // フォルダと一緒に元の場所へ戻る）。
-          final restores = <Future<void> Function()>[];
-          for (final item in key.moves.reversed) {
-            if (item.restoring) continue;
-            item.restoring = true;
-            restores.addAll([
-              for (final id in item.folderIds)
-                () => service.restoreTrashedFolder(id),
-              for (final id in item.projectIds)
-                () => service.restoreProject(id),
-              for (final file in item.files)
-                () => _restoreFile(file, service, item.workFolders),
-            ]);
-          }
-          _undo(messenger, l10n, restores);
+          _undo(messenger, l10n, _claimRestores(key.moves, service));
         },
       ),
     ),
@@ -225,6 +215,59 @@ void _showTrashNotice(
       _openTrashNotice[messenger] = null;
     }
   });
+}
+
+/// [moves]を戻す手順（戻し始めた印を付ける。もう戻し始めたものは除く）。
+/// 後から移したものを先に戻す（作品を移した後にその作品の入っていた
+/// フォルダを移したときは、フォルダが戻ってから作品を戻す）。1回の移動の
+/// 中ではフォルダを先に戻す（中の作品はフォルダと一緒に元の場所へ戻る）。
+List<Future<void> Function()> _claimRestores(
+  List<_TrashMove> moves,
+  ProjectService service,
+) {
+  final restores = <Future<void> Function()>[];
+  for (final item in moves.reversed) {
+    if (item.restoring) continue;
+    item.restoring = true;
+    restores.addAll([
+      for (final id in item.folderIds) () => service.restoreTrashedFolder(id),
+      for (final id in item.projectIds) () => service.restoreProject(id),
+      for (final file in item.files)
+        () => _restoreFile(file, service, item.workFolders),
+    ]);
+  }
+  return restores;
+}
+
+/// 最後にゴミ箱へ移したもの（1つの知らせにまとめて伝えたもの）のうち、
+/// いまもゴミ箱にあり、まだ戻していないものを元に戻す（ホームのCtrl+Z。
+/// 所有者の判断、2026-11-22「Ctrl+Zで戻せるようにする」）。知らせが消えた
+/// 後でも戻せる。知らせが出ていれば閉じ、戻したら件数を知らせる。戻すものが
+/// 無ければ何もせずfalse。続けて押しても、前に移したものまでは戻さない。
+bool undoLastTrashMove(
+  ScaffoldMessengerState messenger,
+  AppLocalizations l10n,
+  ProjectService service,
+) {
+  final key = _lastTrashNotice[messenger];
+  _lastTrashNotice[messenger] = null;
+  if (key == null) return false;
+  final moves = _stillInTrash(
+    key.moves,
+    service,
+    newer: _TrashMove(projectIds: const [], folderIds: const []),
+  );
+  if (moves.isEmpty) return false;
+  if (!key.state.settled) _withdraw(messenger, key);
+  key.state.settled = true;
+  final count = moves.fold<int>(0, (sum, item) => sum + item.count);
+  _undo(
+    messenger,
+    l10n,
+    _claimRestores(moves, service),
+    done: l10n.homeTrashMoveUndone(count),
+  );
+  return true;
 }
 
 /// 前の知らせの[moves]のうち、まだ戻し始めておらず、いまもゴミ箱にある
@@ -328,11 +371,13 @@ void showTrashRefusedSnackBar(
 /// 「元に戻す」の[restores]を順に行う。戻せなかった（ゴミ箱の記録を保存
 /// できない等）ときは、黙らずにホームのゴミ箱と同じ文で知らせる（以前は
 /// 何も出ず、作品はゴミ箱に残ったままだった）。戻せるものは戻し切る。
+/// すべて戻せたときは[done]を知らせる（あれば）。
 Future<void> _undo(
   ScaffoldMessengerState messenger,
   AppLocalizations l10n,
-  List<Future<void> Function()> restores,
-) async {
+  List<Future<void> Function()> restores, {
+  String? done,
+}) async {
   Object? failure;
   for (final restore in restores) {
     try {
@@ -342,7 +387,10 @@ Future<void> _undo(
       failure ??= error;
     }
   }
-  if (failure != null && messenger.mounted) {
+  if (!messenger.mounted) return;
+  if (failure != null) {
     showProjectActionFailure(messenger, l10n, failure);
+  } else if (done != null) {
+    messenger.showSnackBar(SnackBar(content: messageText(done)));
   }
 }
