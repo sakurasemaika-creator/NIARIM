@@ -1191,6 +1191,13 @@ status: dev_branchどおりtodo（Route状態は変えない）
 - 未確認：DISC254（色の輪の切り替えの読み上げ）・DISC255（横向きのスマホの浮かぶカラーピッカー）、混色3種・ピクセル・入り抜き・縁のゆらぎの描き比べ、スマホ・仏語、筆圧・傾き（ペンが要る）。
 - 画像：`shots-r1/r2a014-*`（backup-pending）。
 
+### A014 三巡目（2026-11-22、Claude・S54、App `7f5cb6f4`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 二巡目の残り：DISC067は所有者の判断（2026-11-20、`a9a9450a`：太さに加え不透明度もツール〔とペンのサブツール〕ごとに端末へ保存）の形。実画面（PC ja 1280×800）：消しゴムで太さ23・不透明度40%を値の手入力で入れる→ペンへ替えると5・100%（漏れない）→起動し直すと消しゴムは23・40%、ペンは5・100%。
+- test：`brush_*`（A013と一緒に97件成功）、`canvas_audit_decisions`・`editable_slider_value_input`・`labeled_slider_layout`・`perceptual_color_mixer`の25件成功。
+- 未確認：混色3種・ピクセル・入り抜き・縁のゆらぎの描き比べ、スマホ・仏語、筆圧・傾き（ペンが要る）、DISC254の読み上げ。
+- 画像：`r3/shots/a14-*`（backup-pending）。
+
 ## A015 — 消しゴム・透明色（Opusブランチの証跡）
 
 status: dev_branchどおりtodo（Route状態は変えない）
