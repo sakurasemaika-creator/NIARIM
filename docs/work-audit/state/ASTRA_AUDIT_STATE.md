@@ -2684,6 +2684,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：RGB・不透明度のスライダーの値、複数レイヤーでのスポイト、画像からのスポイト（portal）、長押しのスポイト（指）、読み上げ。
 - 画像：`shots-r1/r2a016-*`（backup-pending）。
 
+### A016 三巡目（2026-11-22、Claude・S54、App `cc5fbc27`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 範囲の変更（`2939841e`以降）：カラーピッカーの部品は書体（`2df20473`）・空の一覧（`14c26762`・`6fab3aec`）・削除の色（`d9520122`、DISC198）・パレットのダイアログ（`84f02194`、A017のDISC499・500）だけで、色の選び方・スポイト・HEXの入力は変わらない（二巡目のOKのまま）。PCのキャンバスではカラーピッカーの窓が開き、HSV/RGBの切り替え・透明色のボタンが出る（A010〜A015の実画面）。
+- test：`background_color_picker`・`brush_outline_canvas_eyedropper_contract`・`color_picker_mode_pill_fit`・`color_wheel_corner_layout`・`palette_service`・`qr_share_dialog`・`canvas_typing_aware_keys`の28件成功。
+- 未確認：複数レイヤーでのスポイト、画像からのスポイト（portal）、長押しのスポイト（指）、読み上げ。
+
 ## A017 — パレット・ドット絵パレット・QR
 
 ### A017 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：要修正（新DISC499・DISC500、既存DISC198）
