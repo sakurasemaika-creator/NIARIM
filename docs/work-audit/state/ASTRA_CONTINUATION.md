@@ -4,7 +4,7 @@
 
 三巡目（Claude）。ユーザーの依頼「修正点全て対応できたら全面監査三巡目に入ってください」（2026-11-22）。二巡目の指摘はS51（Claude、ユーザー依頼）とGPTの修正工程で直し、所有者の判断（2026-11-20・22）を反映した。残っていたDISC568は誤り（HarfBuzzが書体に無いU+202Fを書体自身の空白の半分で描く。App `e9b0e1d3`で見張るtestを足した）。人の作業として残るもの：DISC563（プライバシーポリシー第7条6項）の法務確認、実機・実サービスの確認。開始SHA：App `e9b0e1d3`・Web `c48129c`。preflight（`verify_full_audit_state`・`verify_audit_route`・`verify_audit_delta`）はエラー0、`current_id`はA003（in_progress）。三巡目は二巡目と同じ手順（Baseline A001〜A104・W001〜W042→Discovery DISC001〜569→Delta D001〜D037を固定Route順に、全対象IDを最新HEADで再判定）。Claudeは再現・判定・記録まで、要修正は[修正引継ぎ台帳](AUDIT_REPAIR_HANDOFF.md)でGPTへ渡す。判定は各IDの証跡に「三巡目」として書く。
 
-- 三巡目の進み（2026-11-22）：A001〜A026を判定した。要修正はA002（DISC492の修正が足りない・DISC570）・A003（DISC571）・A004（DISC572・573）・A010（DISC574）・A019（DISC575）で、[修正引継ぎ台帳](AUDIT_REPAIR_HANDOFF.md)の「三巡目」に載せた。次はA027。
+- 三巡目の進み（2026-11-22）：A001〜A047を判定した。要修正はA002（DISC492の修正が足りない・DISC570）・A003（DISC571）・A004（DISC572・573）・A010（DISC574）・A019（DISC575）・A028（DISC576）・A030（DISC577）・A035・A043（既存DISC198の残り）・A042（DISC514の修正が足りない）、資料・testはA037（DISC578）・A046（DISC579）で、[修正引継ぎ台帳](AUDIT_REPAIR_HANDOFF.md)の「三巡目」に載せた。次はA048。
 
 ## S50（2026-11-19）— GPTの修正工程の結果を受け、二巡目をA001から
 
