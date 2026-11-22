@@ -3203,6 +3203,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：全体回帰 `44641695291` で`custom_automation_executor_test`・`custom_automation_frame_scope_test`・`custom_automation_builtin_refresh_test`・`custom_automation_digital_lineart_step_evidence_test`・`custom_automation_labels_test`・`automation_presets_tips_sync_test`・`niatra_transfer_automation_names_test`・`services/filter_custom_replay_test`は成功。
 - 未確認：Premiumでの実行（今のコマ・範囲・全コマ、繰り返し、途中の失敗と取り消し、ロックしたレイヤーでの知らせの文）。A043と同じく、手元でPremiumを有効にする道が無い。
 
+### A044 三巡目（2026-11-22、Claude・S54、App `cace483b`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK（testとコード。Premiumの実操作はこの環境では不可）
+
+- 範囲の変更（`2939841e`以降）：自動操作の実行の処理（`custom_automation_*`）は変わらない（二巡目のOKのまま）。
+- test：A043と同じ73件成功（`custom_automation_executor`・`custom_automation_frame_scope`・`custom_automation_builtin_refresh`・`custom_automation_digital_lineart_step_evidence`・`custom_automation_labels`ほか）。
+- 未確認：Premiumでの実行（今のコマ・範囲・全コマ、繰り返し、途中の失敗と取り消し）。
+
 ## A045 — タイムライン /timeline/:id・往復
 
 ### A045 二巡目（2026-11-20、Claude・S50、App `9c06dd69`のLinuxデバッグビルド）— 判定：OK
