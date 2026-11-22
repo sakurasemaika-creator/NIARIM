@@ -748,6 +748,14 @@ status: Opusのブランチで2026-10-17にdoneと判定した記録。統合後
 - 要修正（DISC494）：中国語・韓国語で、同じ一覧のフォルダ名はくらむぼん、作品名は明朝。
 - 画像：`shots-r1/r2a004-*`（backup-pending）。
 
+### A004 三巡目（2026-11-22、Claude・S54、App `1eb623e4`〔製品は`e9b0e1d3`と同じ〕）— 判定：要修正（DISC572）。DISC494は直った
+
+- 二巡目の指摘：DISC494は直った（`89d30d0b`。簡体字・韓国語のホームの詳細表示で、フォルダ名と作品名が同じ書体〔Noto Serif SC/KR〕。`fontFamily: 'Kuramubon'`を直に書いた所はlib配下に0か所）。
+- 実画面（Linux debug・Xvfb、二巡目と同じ保存：入れ子のフォルダ・同じ名前・長い名前・壊れた／無い表紙）：PC ja 1280×800で名前順↑（「scene 2」が「Scene10」より前の自然な順）、「scene」の検索でフォルダの場所つきの結果、「xyzq」で一致なし、Escで元へ、並び順を更新日時に替えると新しい順↓。zh・ko 360×780の詳細表示。
+- test：A004の26本（`home_library_sort_layout`・`home_selection_toolbar_layout`・`home_list_end_bottom_bar`・`home_view_mode_menu`・`home_name_order`・`home_sort_persist`・`home_search_*`の5本・`home_filtered_empty_states`・`home_tile_name_*`の4本・`home_detail_*`の2本・`home_list_filters_persist`・`project_grid_view_size`・`font_coverage`ほか）は225件成功。
+- 要修正（DISC572）：韓国語で作品名「ＡＢＣ全角」の「ＡＢＣ」だけが極太（DelaGothicOne）。本文の代替の並びの先頭が見出しの書体のため（中国語は明朝が先頭）。
+- 画像：`r3/shots/a4-*`（backup-pending）。
+
 ## A005 — プロジェクト単体・複数選択・クリップボード（Opusブランチの証跡）
 
 status: Opusのブランチで2026-10-23に実操作・修正・再検証した記録（製品修正 App `14c53d7`、証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A005）。同日dev_branchへ統合した後のRoute状態はAUDIT_ROUTE.mdに従う（A005 todo。A005の監査で現在のHEADで再確認してから再利用する）。
