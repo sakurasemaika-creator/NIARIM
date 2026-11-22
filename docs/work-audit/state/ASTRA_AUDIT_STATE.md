@@ -4092,6 +4092,13 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：7言語の全条文のアプリとWebの一致（第4条の語以外）、オフライン、文字2倍・360px、ストアに載せるプライバシーポリシーのURL。
 - 画像：`shots-r1/r2a085-*`（backup-pending）。
 
+### A085 三巡目（2026-11-22、Claude・S54、App `c7d5289f`〔製品は`e9b0e1d3`と同じ〕・Web `origin/dev_branch`）— 判定：OK（二巡目のDISC535は直った）
+
+- 二巡目の指摘：DISC535は直った。アプリの利用規約第4条3項（`licenseTermsArt4Body`）は「エンドマーク表示」、Webの利用規約（`public/terms/index.html`・`public/js/i18n-dict-legal.js`、英語は「the display of the end mark」）も同じ「エンドマーク」で、最終更新日はアプリ（`legalLastUpdated`）・Webとも「2026年11月22日」。
+- 気づいた点（Webの監査で見る）：Webのヘルプ（`public/help/index.html`903行）の見出しの静的な文が「エンドカード」のまま（表示はi18nの`help.entry51.title`「エンドマーク」で置き換わる）。
+- test：`legal_screens_readability_capture_test`・`privacy_policy_ai_clause_test`・`font_license_test`・`ported_code_license_test`を`c7d5289f`で成功（この回の85件の中）。
+- 未確認：7言語の本文の逆翻訳とWebとの全文の照合（二巡目と同じ）。
+
 ## A086 — ヘルプ /help・文脈help・検索
 
 ### A086 二巡目（2026-11-20、Claude・S50、App `1740d395`のLinuxデバッグビルド）— 判定：OK（一巡目のDISC397・398・399は直った）
