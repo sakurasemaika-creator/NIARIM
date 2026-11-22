@@ -167,6 +167,12 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   await projectService.sweepExpiredTrash(settingsService.trashAutoDeleteDays);
   await LocalFileTrashService.sweepExpired(settingsService.trashAutoDeleteDays);
   await ExportStorage.cleanInterruptedImageExports();
+  // 容量削減の画面の並びの見込みを覚えていなければ（入れたばかり等）、
+  // 中身のある分類だけを軽く調べる（待たない）。初めて開いた画面も2回目と
+  // 同じ高さの欄を取れるように。
+  StorageInfoService().probeLayoutIfUnknown({
+    for (final project in projectService.trash) project.id,
+  });
 
   await enter('brush');
   final brushService = own(BrushService());

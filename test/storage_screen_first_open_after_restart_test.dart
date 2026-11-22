@@ -304,6 +304,45 @@ void main() {
     });
   }
 
+  // 並びの見込みを何も覚えていない端末（入れたばかり・見込みを保存する前の
+  // 版から更新した）。以前は最初に開いた画面だけが分類の数（6本）の高さを
+  // 取り、2回目に開いた画面と操作の行の位置が違った（1280×800で62px・
+  // 360幅で42px）。起動処理が中身のある分類だけを軽く調べて見込みにする。
+  for (final (label, size, textScale) in profiles) {
+    testWidgets('何も覚えていない端末でも、起動して最初に開いた画面と2回目の画面で操作の行が同じ所（$label）', (
+      tester,
+    ) async {
+      StorageInfoService.forgetLayoutForTesting();
+      // 書き出した作品と自作のブラシの画像がある（作品はまだ無い）。
+      for (final path in [
+        '${root.path}/niarim/exports/clip.mp4',
+        '${root.path}/niarim/Brushes/tip.png',
+      ]) {
+        File(path)
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(const [1, 2, 3]);
+      }
+      final providers = await _bootstrap(tester, const {});
+      await tester.runAsync(() async => await StorageInfoService.layoutProbe);
+      const now = {
+        StorageCategory.exports,
+        StorageCategory.customAssets,
+        StorageCategory.cache,
+      };
+      expect(StorageInfoService().lastNonEmptyCategories, now);
+      tester.platformDispatcher.textScaleFactorTestValue = textScale;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final tops = await openTwice(
+        tester,
+        providers,
+        _breakdownWith(now),
+        size: size,
+      );
+      debugPrint('STORAGE UNKNOWN LAYOUT $label y: ${trashRow(tops)}');
+      expectSameEveryOpen(tops);
+    });
+  }
+
   testWidgets('一部を読めなかった内訳で操作をした後、集計し直している間も結果が届いた後も操作の行は動かない', (tester) async {
     final providers = await bootstrapStorageScreen(tester);
     final incomplete = storageBreakdownOf(

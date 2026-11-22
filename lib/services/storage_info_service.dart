@@ -221,6 +221,125 @@ class StorageInfoService {
     unawaited(_saveLayout(categories, incomplete));
   }
 
+  /// 起動の後で走らせた[probeLayoutIfUnknown]（テストが終わるのを待つため）。
+  @visibleForTesting
+  static Future<void>? get layoutProbe => _layoutProbe;
+  static Future<void>? _layoutProbe;
+
+  /// 覚えている並びの見込みを忘れる（テストが「何も覚えていない端末」を
+  /// 作るため）。
+  @visibleForTesting
+  static void forgetLayoutForTesting() {
+    _lastNonEmptyCategories = null;
+    _lastBreakdownIncomplete = false;
+    _layoutProbe = null;
+  }
+
+  /// 並びの見込みを覚えていない（入れたばかり・見込みを保存する前の版から
+  /// 更新した）とき、起動の後で、中身のある分類だけを軽く調べて見込みにする
+  /// （起動処理が待たずに1度呼ぶ）。覚えていないまま初めて開いた画面は分類の
+  /// 数（6本）だけの高さを取って待ち、2回目に開いた画面（集計で覚えた本数）と
+  /// 操作の行の位置が違った（1280×800で62px・360幅で42px、一度だけ）。
+  ///
+  /// 大きさは数えず、分類ごとに大きさのある最初のファイルで止める（作品の
+  /// 多い端末でも、各作品のフォルダを1つずつ見るだけ）。数える所と振り分けは
+  /// 集計（[computeBreakdown]）と同じ。ゴミ箱・作品データ・キャッシュは
+  /// [expectedBarCount]が開いたときの様子で決めるので、ここでは素材・書き出し・
+  /// 自作の素材を見る。調べられなければ何も覚えない（画面はいちばん高い場合を
+  /// 取る）。見込みは保存しない（集計で覚えたものだけを保存する）。調べて
+  /// いる間に集計が終わって見込みを覚えたら、そちらを残す。
+  void probeLayoutIfUnknown(Set<String> trashedProjectIds) {
+    if (_lastNonEmptyCategories != null) return;
+    _layoutProbe = _probeLayout(Set.of(trashedProjectIds));
+  }
+
+  static Future<void> _probeLayout(Set<String> trashedProjectIds) async {
+    final epoch = _epoch;
+    try {
+      final docs = await getApplicationDocumentsDirectory();
+      final niarim = '${docs.path}/niarim';
+      final found = <StorageCategory>{StorageCategory.cache};
+
+      final projectsDir = Directory('$niarim/projects');
+      final projects = projectsDir.existsSync()
+          ? projectsDir.listSync()
+          : const <FileSystemEntity>[];
+      for (final entry in projects) {
+        if (entry is! Directory) continue;
+        final id = entry.uri.pathSegments.where((s) => s.isNotEmpty).last;
+        if (trashedProjectIds.contains(id)) continue;
+        final root = entry.path;
+        if (!found.contains(StorageCategory.materials) &&
+            await _hasContent(Directory('$root/Materials'))) {
+          found.add(StorageCategory.materials);
+        }
+        if (!found.contains(StorageCategory.projectData) &&
+            await _hasContent(
+              entry,
+              skip: (path) => path.startsWith(_materialsFolder, root.length),
+            )) {
+          found.add(StorageCategory.projectData);
+        }
+        if (found.contains(StorageCategory.materials) &&
+            found.contains(StorageCategory.projectData)) {
+          break;
+        }
+      }
+
+      if (await _hasContent(ExportStorage.managedDirectoryIn(docs)) ||
+          await _hasContent(Directory('$niarim/shared/outgoing'))) {
+        found.add(StorageCategory.exports);
+      }
+
+      for (final name in [
+        'Brushes',
+        'Tones',
+        'Stamps',
+        'Fonts',
+        'watermarks',
+        'autofill_thumbnails',
+      ]) {
+        if (await _hasContent(Directory('$niarim/$name'))) {
+          found.add(StorageCategory.customAssets);
+          break;
+        }
+      }
+
+      if (_lastNonEmptyCategories != null || epoch != _epoch) return;
+      _lastNonEmptyCategories = Set.unmodifiable(found);
+      _lastBreakdownIncomplete = false;
+    } catch (_) {
+      // 見込みを覚えないだけ（画面はいちばん高い場合を取る）。集計ではない
+      // ので、エラーの記録には残さない（開いた画面の集計が記録する）。
+    }
+  }
+
+  /// [dir]の下に、大きさが0でないファイルが1つでもあるか（[skip]が真の
+  /// ファイルは見ない）。読めない所は飛ばす。
+  static Future<bool> _hasContent(
+    Directory dir, {
+    bool Function(String path)? skip,
+  }) async {
+    try {
+      if (!dir.existsSync()) return false;
+      final entries = dir
+          .list(recursive: true, followLinks: false)
+          .handleError((Object _) {});
+      await for (final entry in entries) {
+        if (entry is! File) continue;
+        if (skip != null && skip(entry.path)) continue;
+        try {
+          if (await entry.length() > 0) return true;
+        } catch (_) {
+          // 一覧を取った後に消えた・読めないファイルは数えない。
+        }
+      }
+    } catch (_) {
+      // 調べられない所は中身なしと見る（集計が確かめる）。
+    }
+    return false;
+  }
+
   static Future<void> _saveLayout(
     Set<StorageCategory> categories,
     bool incomplete,

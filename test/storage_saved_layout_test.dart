@@ -257,6 +257,41 @@ void main() {
     expect(await expected([]), 1);
   });
 
+  test('何も覚えていなければ、起動の後の軽い調べで集計と同じ分類を見込む', () async {
+    SharedPreferences.setMockInitialValues({});
+    StorageInfoService.forgetLayoutForTesting();
+    final service = StorageInfoService();
+    // ゴミ箱の外の作品（素材なし）、ゴミ箱の作品の素材、大きさ0の自作の
+    // スタンプ、共有で作ったファイル、キャッシュ。
+    write('${docs.path}/niarim/projects/live/live.niapro', 11);
+    write('${docs.path}/niarim/projects/gone/Materials/b.png', 7);
+    write('${docs.path}/niarim/projects/gone/gone.niapro', 5);
+    write('${docs.path}/niarim/Stamps/empty.png', 0);
+    write('${docs.path}/niarim/shared/outgoing/x.niashare', 4);
+    write('${cache.path}/thumb.bin', 3);
+
+    service.probeLayoutIfUnknown({'gone'});
+    await StorageInfoService.layoutProbe;
+    expect(service.lastNonEmptyCategories, {_projectData, _exports, _cache});
+    // 見込みは保存しない（集計で覚えたものだけを保存する）。
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getStringList(_savedCategoriesKey), isNull);
+
+    // 集計の中身のある分類と同じ（ゴミ箱は開いたときの様子で決める）。
+    final breakdown = await service.computeBreakdown({'gone'});
+    expect(breakdown.nonEmptyCategories.difference({_trash}), {
+      _projectData,
+      _exports,
+      _cache,
+    });
+
+    // 覚えている見込みがあれば調べない。
+    write('${docs.path}/niarim/projects/live/Materials/a.png', 9);
+    service.probeLayoutIfUnknown(const {});
+    expect(service.lastNonEmptyCategories, breakdown.nonEmptyCategories);
+    expect(_materials, isNot(isIn(service.lastNonEmptyCategories!)));
+  });
+
   test('何も覚えていなければ、棒の本数を見込まない（画面は分類の数だけ取る）', () {
     // 起動処理の読み直しより前・保存の無い端末を、全データの削除で作る
     // （削除は、保存とプロセスの中の覚えの両方を消す）。
