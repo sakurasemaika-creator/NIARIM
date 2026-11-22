@@ -3187,6 +3187,13 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：Premiumでの記録・下書き・保存・取り消し・読み込み・書き出し・ショートカット（実機の購入か特典が要る）。
 - 画像：`shots-r1/r2a043-*`（backup-pending）。
 
+### A043 三巡目（2026-11-22、Claude・S54、App `cace483b`〔製品は`e9b0e1d3`と同じ〕）— 判定：要修正（既存DISC198の残り）。DISC268の資料の残りは直った
+
+- 二巡目の指摘：DISC268の資料の残りは直った（CLAUDE.mdに`monetization_gate`・`isMonetizationEnabled`の記述は無い、A007で確認）。
+- 既存DISC198の残り：自動操作の管理のシートの「削除」の行が、アイコン・字ともエラーの赤（`custom_automation_manager_sheet.dart`424〜430行付近の`colorScheme.error`）。DISC198の行の一覧に「自動操作の管理のシート」として載る所。Premiumの実操作はこの環境ではできない（二巡目と同じ）ので、コードで確かめた。
+- test：`custom_automation_*`の14本・`premium_all_entry_points`・`automation_presets_tips_sync`・`niatra_transfer_automation_names`ほかの73件成功。
+- 未確認：Premiumでの記録・下書き・保存・取り消し・読み込み・書き出し。
+
 ## A044 — 自動操作の実行範囲・安全性・組込
 
 ### A044 二巡目（2026-11-20、Claude・S50、App `9c06dd69`）— 判定：OK（testとコード。Premiumの実操作はこの環境では不可）
