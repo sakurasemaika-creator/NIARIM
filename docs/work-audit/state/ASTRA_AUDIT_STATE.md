@@ -4022,6 +4022,15 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：Premiumの中の実操作（実機・購入の確認つき）、書き出した動画の透かしと見本の一致、7言語・文字2倍・360pxの一覧、キャンペーン中の扱い。DISC534の実画面での見え方と取り消しで戻るか。
 - 画像：`shots-r1/r2a082-*`（backup-pending）。
 
+### A082 三巡目（2026-11-22、Claude・S54、App `a34df5aa`〔製品は`e9b0e1d3`と同じ〕、Premiumの中はコードとtest）— 判定：OK（二巡目のDISC534と、この画面のDISC198は直った）
+
+- 環境：無料会員の環境（Premiumの中の追加・編集・タイムラインの透かしの編集はLinuxで開けない）。
+- 二巡目の指摘：DISC534は直った（`a97a91d6`の`placed_watermark_transform_test`：置いた透かしの大きさ・角度は透かし自身の中心を軸に変わり、キャンバスの外へ出ない）。testが`a34df5aa`で成功。
+- 既存のDISC198（この画面の分）は直った：`watermark_settings_screen.dart`に`colorScheme.error`は無くなった（一覧のタイルの削除のアイコンは赤ではない）。
+- 一巡目のDISC384・385は二巡目に直っている。ウォーターマークの画面の`2939841e`以降の変更はA056の三巡目の訂正のとおり。
+- test：`placed_watermark_transform_test`・`watermark_copy_name_tile_test`・`premium_*`の2本（A081の回の122件の中）と`niatra_transfer_watermarks_test`（A061の回）が`a34df5aa`で成功。
+- 未確認：Premiumの中の実操作（実機・購入の確認つき）、書き出した動画の透かしと見本の一致、7言語・文字2倍・360pxの一覧（二巡目と同じ）。
+
 ## A083 — 引き継ぎ .niatra
 
 ### A083 二巡目（2026-11-20、Claude・S50、App `1740d395`のLinuxデバッグビルド）— 判定：OK（一巡目のDISC387〜391は直った。DISC297・069・380も確認）
