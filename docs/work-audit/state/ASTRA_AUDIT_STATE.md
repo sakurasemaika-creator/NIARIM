@@ -688,6 +688,15 @@ status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判
 
 - 初回の案内は今の作り（短い案内のダイアログ`_FirstLaunchDialog`、図つきの使い方`AppTutorial`はヘルプから）のまま確定（原文「今の作りのまま確定でいいですよ」）。二巡目の判定（OK）で残っていたのはこの判断だけ。正式な状態の変更は次の確認で行う。
 
+### A003 三巡目（2026-11-22、Claude・S54、App `80cb4234`〔製品は`e9b0e1d3`と同じ〕）— 判定：要修正（DISC571）。正式なstatusはin_progressのまま
+
+- 範囲の変更（`2939841e`以降）：初回の図つきの6ページの使い方（`623bc7c7`、所有者の指定）、起動画面へ戻る矢印を左上・左下を↑に（`5013a234`、所有者の判断）、知らせに触れている間は消さない・ホームのCtrl+Z（`9215e424`、DISC125）、空の一覧のつまみ（`25abae0e`ほか）、ホームの上部バーの余白（`62f31cc2`〜`626f232a`）。
+- test：ホーム・使い方・知らせの33本（`home_navigation_state`・`home_back_navigation`・`home_entry_navigation`・`home_first_launch_*`の3本・`home_drawer_*`の3本・`home_reduced_motion_*`の2本・`home_small_fixes`・`home_scroll_to_top_visibility`・`home_title_fit`・`home_tab_*`の3本・`home_continuous_resize`・`home_landscape_side_insets`・`home_a003_visual_findings`・`app_tutorial`・`app_toast_hold`・`app_toast_messenger`・`home_trash_undo_shortcut`・`home_notice_lifetime`ほか）は400件成功。
+- 実画面（Linux debug・Xvfb・ja 390×844）：初回（新しい保存領域）→作品をつくる→6ページの使い方。Escと外側の押下は何もしない、1ページ目の「戻る」も何もしない、Enterで次へ・「戻る」で前のページ、Enterで6ページ目の「はじめる」→閉じて`first_launch`がfalseで保存。作品120件：一覧を下へ送る→作品一覧のタブ→プロジェクトのタブでスクロールの位置のまま、左下の↑で一番上、右上のメニューの5つのリンク、「使い方」→「ヘルプ」のタブに検索と「使い方を見る」。︙→「ゴミ箱へ移動」→知らせにマウスを載せる→9.5秒消えない→離して約4秒で消える。知らせが消えた後のCtrl+Zで戻り「1件をゴミ箱から元に戻しました」。検索「102」で1件→Escで元の一覧。左上の矢印で起動画面。
+- 使い方の中身と実画面：3〜5ページ（キャンバスの左上の取り消し・やり直し、下のツールバーの色の丸、右上の設定の「オニオンスキン」、フレーム一覧の末尾の＋、右上のタイムラインのボタン）と2ページの手順は合う。
+- 要修正（DISC571）：2ページ目の図のホームのタブが「プロジェクト・作品一覧・ブックマーク」（今は4つのタブで、ブックマークは作品広場）。6ページ目の手順1「ホームの「ヘルプ」」はホームに無い（メニュー→使い方→ヘルプのタブ）。
+- 正式なstatusはin_progressのまま（所有者の判断は済んだ。DISC571の修正の後の確認でdoneにする）。画像：`r3/shots/tut-*`・`h-*`（backup-pending）。
+
 ## A004 — プロジェクト一覧・検索・表示・ソート（Opusブランチの証跡）
 
 status: Opusのブランチで2026-10-17にdoneと判定した記録。統合後のRoute状態はAUDIT_ROUTE.mdに従う（A004 todo。A004の監査で現在のHEADで再確認してから再利用する）。製品修正 App（`adf4176`）、証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A004）
