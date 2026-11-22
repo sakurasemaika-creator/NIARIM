@@ -3336,6 +3336,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認（Androidの実機）：音量・フェードの境界、再生・シーク・ループ・一時停止・裏へ回したとき、二重再生、波形、動画の音、速度・FPSの変化、書き出しの音ズレ。
 - 画像：`shots-r1/r2a050-*`（backup-pending）。
 
+### A050 三巡目（2026-11-22、Claude・S54、App `90690ba1`〔製品は`e9b0e1d3`と同じ〕）— 判定：一部確認（DISCなし。音はLinuxで確かめられない）
+
+- 範囲：音声のクリップの追加は画像と同じダイアログ（⊕→＋音源、A048のDISC580の対象）。二巡目と同じく、Linuxでは音声の再生（audioplayersのGStreamer）を作るとアプリが落ちるため、音量・フェード・再生・波形はAndroidの実機で確かめる。音声の処理（`audio_*`）の`2939841e`以降の変更は無い。
+- test：`audio_source_offset_serializer_regression`・`audio_waveform_service`（全体回帰で流す）。
+- 未確認（Androidの実機）：音量・フェード、再生・シーク・ループ、波形、動画の音、書き出しの音ズレ。
+
 ## A051 — タイムライン共通layer range
 
 ### A051 二巡目（2026-11-20、Claude・S50、App `3966af4f`のLinuxデバッグビルド）— 判定：要修正（新DISC521）
