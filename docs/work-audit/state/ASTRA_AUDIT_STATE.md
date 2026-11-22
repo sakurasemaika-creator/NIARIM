@@ -2959,6 +2959,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：追加メニューの全種類、レイヤーの検索、名前の変更・複製・コピー・貼り付け、30枚以上のスクロール、たたんだフォルダ、保存して起動し直した後。
 - 画像：`shots-r1/r2a031-*`（backup-pending）。
 
+### A031 三巡目（2026-11-22、Claude・S54、App `1669a61b`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK
+
+- 二巡目の指摘：DISC198はレイヤーの窓では直った（`layer_panel.dart`に`colorScheme.error`は無い。PCのキャンバスのレイヤーの行の🗑は他の印と同じ色〔A010〜A030の実画面〕）。タイムラインの削除の赤（`timeline_screen.dart`の削除の確認の塗りのボタン・🗑・カメラの注意）はタイムラインの項目（A053以降）で見る。
+- test：`layer_panel_*`の2本・`layer_compositor`・`layer_keyframe_engine`・`layer_lock_canvas`・`layer_options_sheet`・`layer_pixels_replace`・`layer_thumbnail_renderer`・`reorder_index`の53件成功。
+- 未確認：追加メニューの全種類、レイヤーの検索、名前の変更・複製・貼り付け、30枚以上、起動し直した後。
+
 ## A032 — レイヤーblend/opacity/clipping/明度→alpha
 
 ### A032 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：OK
