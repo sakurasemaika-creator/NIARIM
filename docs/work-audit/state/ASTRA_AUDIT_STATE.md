@@ -4369,6 +4369,11 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認（実環境）：デプロイしたAPIの401・403・404・429・500の実際の応答、ページ送り、条件付き更新と並行実行、再試行、Google・YouTubeのトークンの実際の検証、アカウント削除の実際の消し込み（DynamoDB Localでは確認）。
 - 記録：`logs/a098-vitest.txt`・`a098-tsc.txt`・`a098-ddblocal.txt`・`a098-tests.txt`（scratchpad、backup-pending）。
 
+### A098 三巡目（2026-11-22、Claude・S54、App `f8e3e846`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK〔単体test・コード〕／デプロイした実環境は未確認
+
+- `backend/`の`vitest run`を8回流し、7回は418件成功・12件省略、最初の1回だけ1件失敗（名前は控えられず、以後7回は再現しない）。`tsc -noEmit`は成功。`backend/`は`643cc267`から差分なし（`14c26762`で消えて`6fab3aec`で戻った）。
+- 未確認：デプロイした実環境（二巡目と同じ）。
+
 ## A099 — ランキング集計・push配信・インフラ
 
 ### A099 二巡目（2026-11-20、Claude・S50、App `643cc267`の`backend/`）— 判定：OK〔cdk synth・単体test〕（一巡目のDISC431・DISC432は直った。デプロイした実環境は未確認）
