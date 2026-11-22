@@ -4407,6 +4407,12 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認（実機）：コールド・ウォームの起動、再開、回転、低メモリ・プロセスの終了からの戻り、ウィジェットの追加と大きさの変更、共有・`.niashare`のタップと「アプリで開く」の候補、動画の書き出しのコーデック、R8のリリースのインストール、DeX・低性能端末。
 - 画像：`shots-r1/r2a100-*`（backup-pending）。
 
+### A100 三巡目（2026-11-22、Claude・S54、App `9a8dcfd9`〔製品は`e9b0e1d3`と同じ〕）— 判定：OK〔コード・test〕（Androidの実機は未確認）
+
+- 一巡目のDISC433・434は二巡目に直っている。起動・起動の失敗からの立ち直り・ライフサイクルのtestで見た。
+- test：`l10n_*`の10本・`dialog_text_scale_audit_test`・`app_smoke_test`・`startup_*`の9本・`stroke_pointer_lifecycle_test`・`custom_automation_manager_dialog_lifecycle_test`を`9a8dcfd9`で259件成功。
+- 未確認：Androidの実機（R8のリリースビルド・共有のintent・ウィジェット・戻る）、配布（二巡目と同じ）。
+
 ## A101 — App横断accessibility・表示matrix締め
 
 ### A101 二巡目（2026-11-20、Claude・S50、App `643cc267`のLinuxデバッグビルドとtest）— 判定：要修正（新DISC542〜545、DISC538の追加。一巡目のDISC435は直った）
