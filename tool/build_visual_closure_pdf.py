@@ -5,7 +5,11 @@ test/visual/visual_closure_capture_test.dart) and lays out each preset as a
 row: kind, name and ID, its settings, BEFORE and AFTER. Writes
 build/visual-closure/visual_closure.pdf and one PNG per page for eye review.
 
-Usage: python3 tool/build_visual_closure_pdf.py [commit]
+Usage: python3 tool/build_visual_closure_pdf.py [commit] [screen-dir ...]
+
+Each screen-dir (for example build/community-five-icon-captures, written by
+the community capture tests) adds its PNG files as screen rows after the
+presets.
 """
 
 import json
@@ -24,9 +28,12 @@ THUMB_H = 250
 KIND_LABEL = {
     "filter": "描画フィルター",
     "brush": "ブラシ",
+    "brushmode": "ブラシの設定",
     "tone": "トーン",
     "stamp": "スタンプ",
     "theme": "テーマ",
+    "screen": "画面",
+    "setting": "設定の変更",
 }
 
 
@@ -43,15 +50,29 @@ def wrap(draw, text, font, width):
     return lines
 
 
-def thumb(path):
+def thumb(path, max_width=980):
     image = Image.open(path).convert("RGB")
-    scale = THUMB_H / image.height
-    return image.resize((max(1, round(image.width * scale)), THUMB_H))
+    scale = min(THUMB_H / image.height, max_width / image.width)
+    return image.resize(
+        (max(1, round(image.width * scale)), max(1, round(image.height * scale)))
+    )
 
 
 def main():
     commit = sys.argv[1] if len(sys.argv) > 1 else "unknown"
     items = json.loads((OUT / "manifest.json").read_text(encoding="utf-8"))
+    for directory in sys.argv[2:]:
+        for png in sorted((ROOT / directory).glob("*.png")):
+            items.append(
+                {
+                    "kind": "screen",
+                    "id": directory.rstrip("/").split("/")[-1],
+                    "name": png.stem,
+                    "settings": "",
+                    "before": None,
+                    "after": str(png.relative_to(ROOT)),
+                }
+            )
     title = ImageFont.truetype(str(FONT), 34)
     body = ImageFont.truetype(str(FONT), 22)
     small = ImageFont.truetype(str(FONT), 18)
@@ -90,7 +111,11 @@ def main():
                 draw.text((text_x, ty), line, font=small, fill=(60, 60, 60))
                 ty += 24
             x = MARGIN + 560
-            for label, key in (("BEFORE", "before"), ("AFTER", "after")):
+            for label, key in (
+                ("BEFORE", "before"),
+                ("SETTINGS", "settingsImage"),
+                ("AFTER", "after"),
+            ):
                 if not item.get(key):
                     continue
                 image = thumb(ROOT / item[key])

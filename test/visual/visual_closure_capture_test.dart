@@ -1,6 +1,7 @@
 // 見た目の締め（全面監査のD029）の素材を作る。
 //
-// 組み込みの描画フィルター・ブラシ・トーン・スタンプ・テーマを1件ずつ、
+// 組み込みの描画フィルター・ブラシ・トーン・スタンプ・テーマと、ブラシの
+// 設定（縁取りペン・折り畳みの5種・入り抜き・先端の形・混色ほか）を1件ずつ、
 // 「前（BEFORE）」「設定（SETTINGS）」「後（AFTER）」の組として
 // build/visual-closure/ に画像と manifest.json で書く。PDFにするのは
 // tool/build_visual_closure_pdf.py（名前・ID・設定を頁に書き込む）。
@@ -18,6 +19,7 @@ import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/filter_preview.dart';
 import 'package:niarim/engine/procedural_texture.dart';
 import 'package:niarim/engine/tile_manager.dart';
+import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/filter_def.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/filter_service.dart';
@@ -174,6 +176,94 @@ void _add(
   });
 }
 
+/// The pixels of [strokes] drawn one after another with [brush] (over a
+/// red band first when [overRed], for the colour-mixing modes).
+Future<Uint8List> _drawStrokes(
+  WidgetTester tester,
+  Brush brush,
+  List<List<Offset>> strokes, {
+  bool overRed = false,
+  Color color = const Color(0xFF2B2A3A),
+}) async => (await tester.runAsync(() async {
+  final tm = TileManager(canvasWidth: _w, canvasHeight: _h);
+  try {
+    final engine = DrawingEngine(tileManager: tm)..pressureEnabled = false;
+    void draw(Brush b, Color c, List<Offset> points) {
+      engine
+        ..currentBrush = b
+        ..currentColor = c;
+      // Like the canvas: the first pass is taken back before the final one
+      // (a custom fade-out and an outline's 強弱 need the whole stroke).
+      tm.beginUndoRecording('l');
+      engine.beginStroke(
+        StrokePoint(x: points.first.dx, y: points.first.dy),
+        'l',
+      );
+      for (final p in points.skip(1)) {
+        engine.continueStroke(StrokePoint(x: p.dx, y: p.dy), 'l');
+      }
+      final firstPass = tm.endUndoRecording();
+      if (engine.needsFinalFadeReplay) {
+        tm.applyTileSnapshot('l', firstPass.before);
+        engine.replayCurrentStrokeWithFinalFade();
+      }
+      engine.endStroke();
+    }
+
+    if (overRed) {
+      draw(
+        BrushService.builtInBrushes.first.copyWith(size: 90, opacity: 100),
+        const Color(0xFFE5483D),
+        [for (var x = 60.0; x <= 420; x += 6) Offset(x, 135)],
+      );
+    }
+    for (final points in strokes) {
+      draw(brush, color, points);
+    }
+    final image = await tm.compositeLayerToImage('l');
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    image.dispose();
+    return data!.buffer.asUint8List();
+  } finally {
+    tm.dispose();
+  }
+}))!;
+
+/// A wave from left to right (the stroke used for every brush).
+List<Offset> _wave() => [
+  for (var x = 40.0; x <= 440; x += 4)
+    Offset(
+      x,
+      200 -
+          120 * math.sin((x - 40) / 400 * math.pi) +
+          20 * math.sin((x - 40) / 400 * 9),
+    ),
+];
+
+/// A zigzag with sharp turns, where hair folds.
+List<Offset> _zigzag() {
+  const corners = [
+    Offset(40, 220),
+    Offset(130, 60),
+    Offset(210, 220),
+    Offset(300, 60),
+    Offset(380, 220),
+    Offset(440, 120),
+  ];
+  return [
+    for (var i = 0; i + 1 < corners.length; i++)
+      for (var t = 0.0; t < 1; t += 0.05)
+        Offset.lerp(corners[i], corners[i + 1], t)!,
+    corners.last,
+  ];
+}
+
+/// A round curl (a C that comes back), for the crescent fold.
+List<Offset> _curl() => [
+  for (var a = 0.0; a <= 1.6 * math.pi; a += 0.06)
+    Offset(240 + 100 * math.cos(a + math.pi), 135 - 90 * math.sin(a + math.pi)),
+];
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -228,35 +318,7 @@ void main() {
     final before = '${_out.path}/brush/_before.png';
     _writeOnWhite(before, blank, _w, _h);
     for (final brush in BrushService.builtInBrushes) {
-      final pixels = (await tester.runAsync(() async {
-        final tm = TileManager(canvasWidth: _w, canvasHeight: _h);
-        try {
-          final engine = DrawingEngine(tileManager: tm)
-            ..currentColor = const Color(0xFF2B2A3A)
-            ..currentBrush = brush
-            ..pressureEnabled = false;
-          engine.beginStroke(const StrokePoint(x: 40, y: 200), 'l');
-          for (var x = 44.0; x <= 440; x += 4) {
-            final t = (x - 40) / 400;
-            engine.continueStroke(
-              StrokePoint(
-                x: x,
-                y: 200 - 120 * math.sin(t * math.pi) + 20 * math.sin(t * 9),
-              ),
-              'l',
-            );
-          }
-          engine.endStroke();
-          final image = await tm.compositeLayerToImage('l');
-          final data = await image.toByteData(
-            format: ui.ImageByteFormat.rawRgba,
-          );
-          image.dispose();
-          return data!.buffer.asUint8List();
-        } finally {
-          tm.dispose();
-        }
-      }))!;
+      final pixels = await _drawStrokes(tester, brush, [_wave()]);
       final path = '${_out.path}/brush/${brush.id}.png';
       _writeOnWhite(path, pixels, _w, _h);
       _add(
@@ -266,6 +328,177 @@ void main() {
         'size=${brush.size}, opacity=${brush.opacity}, '
             'pixelMode=${brush.pixelMode}, scatter=${brush.scatter}',
         before,
+        path,
+      );
+    }
+  });
+
+  testWidgets('ブラシの設定：縁取りペン・折り畳み5種・入り抜き・先端・混色', (tester) async {
+    final pen = BrushService.builtInBrushes.first;
+    final blank = '${_out.path}/brush/_before.png';
+    final redBefore = '${_out.path}/brushmode/_before_red.png';
+    _writeOnWhite(
+      redBefore,
+      await _drawStrokes(tester, pen, const [], overRed: true),
+      _w,
+      _h,
+    );
+    final outlined = pen.copyWith(
+      size: 26,
+      outlineEnabled: true,
+      outlineWidth: 3,
+      outlineColor: 0xFF2B2A3A,
+    );
+    const fill = Color(0xFFF2C14E);
+    final crossing = [
+      _wave(),
+      [for (var x = 40.0; x <= 440; x += 4) Offset(x, 60 + (x - 40) * 0.4)],
+    ];
+    final cases = <(String, String, Brush, List<List<Offset>>, Color, bool)>[
+      ('outline_w3', '縁取りペン（縁取り幅3）', outlined, [_wave()], fill, false),
+      (
+        'outline_w8',
+        '縁取りペン（縁取り幅8）',
+        outlined.copyWith(outlineWidth: 8),
+        [_wave()],
+        fill,
+        false,
+      ),
+      (
+        'outline_keep_on',
+        '縁取りペン（重なりを維持：オン）',
+        outlined.copyWith(outlineKeepOverlap: true),
+        crossing,
+        fill,
+        false,
+      ),
+      (
+        'outline_keep_off',
+        '縁取りペン（重なりを維持：オフ）',
+        outlined.copyWith(outlineKeepOverlap: false),
+        crossing,
+        fill,
+        false,
+      ),
+      (
+        'outline_accent',
+        '縁取りペン（強弱：頂点の縁取り幅9）',
+        outlined.copyWith(outlineAccentEnabled: true, outlineAccentWidth: 9),
+        [_zigzag()],
+        fill,
+        false,
+      ),
+      for (final mode in HairFoldMode.values)
+        (
+          'fold_${mode.name}',
+          '折り畳み（${mode.name}）',
+          outlined.copyWith(foldEnabled: true, foldMode: mode),
+          [mode == HairFoldMode.crescent ? _curl() : _zigzag()],
+          fill,
+          false,
+        ),
+      for (final fade in FadeMode.values)
+        (
+          'fade_${fade.name}',
+          '入り抜き（${fade.name}）',
+          pen.copyWith(
+            size: 22,
+            fadeMode: fade,
+            fadeIn: const FadeEndpointSettings(value: 0, rangePx: 120),
+            fadeOut: const FadeEndpointSettings(value: 0, rangePx: 220),
+          ),
+          [_wave()],
+          const Color(0xFF2B2A3A),
+          false,
+        ),
+      for (final tip in BrushTipShape.values)
+        (
+          'tip_${tip.name}',
+          '先端の形（${tip.name}）',
+          pen.copyWith(size: 24, tipShape: tip),
+          [_wave()],
+          const Color(0xFF2B2A3A),
+          false,
+        ),
+      (
+        'lateral3',
+        '横に並べる（3本）',
+        pen.copyWith(
+          size: 10,
+          lateralRepeatEnabled: true,
+          lateralRepeatCount: 3,
+          lateralRepeatSpacing: 2,
+        ),
+        [_wave()],
+        const Color(0xFF2B2A3A),
+        false,
+      ),
+      (
+        'scatter',
+        '散布（0.8）',
+        pen.copyWith(size: 14, scatter: 0.8),
+        [_wave()],
+        const Color(0xFF2B2A3A),
+        false,
+      ),
+      (
+        'pixel',
+        'ピクセルモード',
+        pen.copyWith(size: 12, pixelMode: true),
+        [_wave()],
+        const Color(0xFF2B2A3A),
+        false,
+      ),
+      for (final mode in BrushMixingMode.values)
+        (
+          'mix_${mode.name}',
+          '混色（${mode.name}、混色度合い60）',
+          pen.copyWith(
+            size: 30,
+            pressureOff: pen.pressureOff.copyWith(
+              mixing: PressureMixingOffSetting(
+                enabled: mode != BrushMixingMode.off,
+                mode: mode,
+                rate: 60,
+              ),
+            ),
+          ),
+          [
+            [
+              for (var y = 30.0; y <= 240; y += 4)
+                Offset(240 + (y - 30) * 0.3, y),
+            ],
+          ],
+          const Color(0xFF2E5BD8),
+          true,
+        ),
+    ];
+    for (final (id, name, brush, strokes, color, overRed) in cases) {
+      final pixels = await _drawStrokes(
+        tester,
+        brush,
+        strokes,
+        overRed: overRed,
+        color: color,
+      );
+      expect(pixels.any((v) => v != 0), isTrue, reason: id);
+      final path = '${_out.path}/brushmode/$id.png';
+      _writeOnWhite(path, pixels, _w, _h);
+      final json = brush.toJson();
+      final base = pen.toJson();
+      final changed = <String>[
+        for (final e in json.entries)
+          if (e.key != 'id' &&
+              e.key != 'name' &&
+              jsonEncode(e.value) != jsonEncode(base[e.key]))
+            '${e.key}=${e.value is Map ? jsonEncode(e.value) : e.value}',
+      ];
+      _add(
+        'brushmode',
+        id,
+        name,
+        '基のブラシ=${pen.name}（${pen.id}）, 色=#${color.toARGB32().toRadixString(16).toUpperCase()}, ${changed.join(', ')}',
+        overRed ? redBefore : blank,
         path,
       );
     }
