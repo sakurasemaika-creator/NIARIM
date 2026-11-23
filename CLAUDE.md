@@ -1411,6 +1411,12 @@ onTap: ...)`だったために
   `MenuActionLabel`も読むこと。カード・浮いた名前・ドロップダウンの値・
   メニューの中のアイコン・タブ・ほかの画面の危ない操作・救済ボタンの判定は
   まだ（DISC193〜199）。
+- **購入・Googleログイン・作品広場への投稿の前は`ensureLegalConsent`（所有者の判断、2026-11-23、DISC489）**：
+  `lib/widgets/legal_consent.dart`。絵を描くだけなら聞かない。同意した版（`kLegalDocumentsVersion`）と
+  日時をこの端末に保存し（`legal.consent.`、設定の引き継ぎでは移さない）、版が変わったら次の購入・
+  ログイン・投稿でもう一度聞く。**規約・ポリシーの文を変えて同意を取り直すときは版を上げる**。
+  `signInInteractively()`・`premium.buy(`を新しく呼ぶ所は、同じ関数の中で先に`ensureLegalConsent`を
+  呼ぶこと（`test/legal_consent_test.dart`がlib配下のソースを走査して見張る）。
 - **その場の知らせは`IconNotice`、エラーの赤で描かない（DISC577・198、2026-11-23）**：
   読み込めなかった・足りない・重なっている等の文は`lib/widgets/icon_notice.dart`の
   `IconNotice`（その面の文字色＋先頭の印、`liveRegion:`で読み上げへも）。メニューの危ない
