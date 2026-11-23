@@ -173,6 +173,7 @@ const _abbreviations = [
   'p. ej',
   'ex',
   'Transf',
+  'Inc',
   'Min',
   'Max',
   'Mín',
@@ -445,6 +446,7 @@ void main() {
       'For bulk operations (e.g. applying a filter)',
       'Commentaire (ex. bouche « a » ici)',
       'Utilisez Transf. libre',
+      'Amazon Web Services, Inc. (région de Tokyo, Japon)',
     ]) {
       expect(_lowercaseSentenceStarts(good), isEmpty, reason: good);
     }

@@ -106,7 +106,6 @@ const _sameInLocale = <String, Set<String>>{
     'licenseTermsArt1Title',
     'missionDurationMinutes',
     'penSettingsCurveNormal',
-    'privacyPolicyArt9Title',
     'projectDetailPauseTooltip',
     'projectListMaterialAudio',
     'projectListMaterialImage',
