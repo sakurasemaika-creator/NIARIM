@@ -45,7 +45,9 @@ class YoutubeThumbnailService {
           statusCode: response.statusCode,
         );
       }
-      final decoded = jsonDecode(response.body);
+      final decoded = jsonDecode(
+        utf8.decode(response.bodyBytes, allowMalformed: true),
+      );
       if (decoded is! Map || decoded['items'] is! List) {
         throw const YoutubeThumbnailException('YouTubeの動画処理状態が不正です');
       }
@@ -104,7 +106,9 @@ class YoutubeThumbnailService {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       String message = 'サムネイルを設定できませんでした（HTTP ${response.statusCode}）';
       try {
-        final error = jsonDecode(response.body) as Map<String, dynamic>;
+        final error =
+            jsonDecode(utf8.decode(response.bodyBytes, allowMalformed: true))
+                as Map<String, dynamic>;
         final details = error['error'];
         if (details is Map && details['message'] is String) {
           message += ': ${details['message']}';
