@@ -533,7 +533,6 @@ void main() {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(SaveManagementScreen)),
     )!;
-    final slot2 = l10n.saveTreeSlotLabel(2);
     // スロットの行はメモの名前（B・スロット2・E）。
     expect(find.text('B'), findsOneWidget);
     expect(find.text('A'), findsNothing);
@@ -550,12 +549,26 @@ void main() {
     await settleIo(tester, 4);
     await tester.tap(find.text(l10n.saveTreeSelectDataButton));
     await settleIo(tester, 3);
-    // 選ぶ行（先頭にチェックボックス）の見出し。
-    final rows = [
-      for (final tile in tester.widgetList<ListTile>(find.byType(ListTile)))
-        if (tile.leading is Checkbox) (tile.title! as Text).data,
-    ];
-    expect(rows, ['B', slot2, 'E'], reason: '選んで残す画面の行がスロットの行と違う名前');
+    // 選ぶ行は、スロットの行と同じく番号の題と、その下に鉛筆のメモ
+    // （消したスロットにはメモの行なし）。保存したときの名前（A・C）は出さない。
+    for (final (slot, memo) in [(0, 'B'), (1, null), (2, 'E')]) {
+      final row = find.byKey(ValueKey('selectableSlot$slot'));
+      expect(row, findsOneWidget, reason: 'slot ${slot + 1}');
+      expect(
+        find.descendant(
+          of: row,
+          matching: find.text(l10n.saveTreeSlotLabel(slot + 1)),
+        ),
+        findsOneWidget,
+      );
+      for (final name in ['A', 'B', 'C', 'E']) {
+        expect(
+          find.descendant(of: row, matching: find.text(name)),
+          name == memo ? findsOneWidget : findsNothing,
+          reason: '選んで残す画面の行がスロットの行と違う名前（slot ${slot + 1}: $name）',
+        );
+      }
+    }
     await tester.tap(
       find.widgetWithText(OutlinedButton, l10n.saveTreeBackButton),
     );
