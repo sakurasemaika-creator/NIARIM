@@ -51,7 +51,16 @@ void main() {
     expect(find.byKey(const Key('communityDetailSeekBar')), findsOneWidget);
     expect(find.byKey(const Key('communityDetailFrameCounter')), findsNothing);
     expect(find.byIcon(Icons.fullscreen), findsNothing);
-    expect(find.text('${work.projectFps}fps'), findsOneWidget);
+    // The frame rate uses the language's unit (French: i/s), not a
+    // hand-written "fps".
+    expect(
+      find.text(
+        AppLocalizations.of(
+          tester.element(find.byType(Scaffold).first),
+        )!.pcStatusFps(work.projectFps),
+      ),
+      findsOneWidget,
+    );
     expect(
       find.text('${work.projectCanvasWidth}×${work.projectCanvasHeight}'),
       findsOneWidget,

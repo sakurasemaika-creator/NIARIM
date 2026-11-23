@@ -44,7 +44,16 @@ void main() {
     // 詳細情報アイコンとNIARIM制作情報は動画外パネルに存在する。
     expect(find.byIcon(Icons.info_outline_rounded), findsOneWidget);
     expect(find.text('${work.projectFrameCount}f'), findsOneWidget);
-    expect(find.text('${work.projectFps}fps'), findsOneWidget);
+    // The frame rate uses the language's unit (French: i/s), not a
+    // hand-written "fps".
+    expect(
+      find.text(
+        AppLocalizations.of(
+          tester.element(find.byType(Scaffold).first),
+        )!.pcStatusFps(work.projectFps),
+      ),
+      findsOneWidget,
+    );
     expect(
       find.text('${work.projectCanvasWidth}×${work.projectCanvasHeight}'),
       findsOneWidget,
