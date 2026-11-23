@@ -41,7 +41,7 @@
 
 監査モードでは `docs/work-audit/FULL_AUDIT_ENTRYPOINT.md` と `docs/work-audit/policy/ASTRA_WORK.md` に従い、`AUDIT_ROUTE.md`、`ASTRA_CONTINUATION.md`、`ASTRA_AUDIT_STATE.md` を使用する。
 
-**Claudeは一巡目の判定・記録と、独立したGPTセッションによる修正・確認後の二巡目の全件判定を担当する。** 製品修正の実行・委任・取り込みはGPTの修正工程に限る。進行中は安全なチェックポイントで進捗と差分を保存し、最新Policyを読み直して続ける。
+**Claudeは各巡の判定・記録に加えて、要修正・DISCの製品修正も担当する（2026-11-23のユーザー指定「次からは修正もClaudeにお願いします」）。全面監査はAIだけで可能な範囲を書くもので、実機確認と法務確認は除く。**進行中は安全なチェックポイントで進捗と差分を保存し、最新Policyを読み直して続ける。
 
 GPTはユーザーから監査指摘の修正を明示された場合に限り、Appの修正引継ぎ台帳とそこから参照される指摘・証跡の必要箇所を読み、台帳に修正と確認の結果を追記できる。Claudeが正式なRoute/Progress/Evidenceの更新とdone判定を行う。通常タスクの結果をそのまま監査済み扱いしない。
 
