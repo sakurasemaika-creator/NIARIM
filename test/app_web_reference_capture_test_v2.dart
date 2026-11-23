@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
@@ -13,10 +14,13 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/models/app_theme_preset.dart';
+import 'package:niarim/models/layer.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/canvas/widgets/onion_skin_panel.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/advertising_service.dart';
 import 'package:niarim/services/premium_service.dart';
+import 'package:niarim/services/save_tree_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/ad_banner_widget.dart';
 import 'package:niarim/widgets/ad_banner_mock_widget.dart';
@@ -45,6 +49,173 @@ class _FakeFilePicker extends FilePicker {
     bool lockParentWindow = false,
     bool readSequential = false,
   }) async => null;
+}
+
+/// Frames of the bouncing ball drawn into the captured project.
+const int _artFrames = 5;
+
+/// Draws frame [i] of a short bouncing-ball animation (top, falling, squashed
+/// on the ground, rising, top) on a [width]×[height] transparent canvas, so
+/// the published captures show artwork instead of an empty canvas.
+void _drawBounceFrame(Canvas c, int width, int height, int i) {
+  final w = width.toDouble();
+  final h = height.toDouble();
+  final s = math.min(w, h) / 1080.0;
+  const ink = Color(0xFF2B2A3A);
+  final groundY = h * 0.82;
+  final line = Paint()
+    ..color = ink
+    ..style = PaintingStyle.stroke
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round;
+
+  // The ground: a gently uneven hand-drawn line with a few tufts.
+  c.drawPath(
+    Path()
+      ..moveTo(w * 0.05, groundY + 2 * s)
+      ..cubicTo(
+        w * 0.32,
+        groundY - 7 * s,
+        w * 0.62,
+        groundY + 7 * s,
+        w * 0.95,
+        groundY - 2 * s,
+      ),
+    line..strokeWidth = 7 * s,
+  );
+  for (final fx in const [0.12, 0.47, 0.86]) {
+    final x = w * fx;
+    for (final dx in const [-14.0, 0.0, 14.0]) {
+      c.drawLine(
+        Offset(x + dx * s, groundY - 2 * s),
+        Offset(x + dx * 1.6 * s, groundY - (dx == 0 ? 30 : 20) * s),
+        line..strokeWidth = 5 * s,
+      );
+    }
+  }
+
+  const lifts = [1.0, 0.36, 0.0, 0.36, 1.0];
+  const scales = [
+    (1.0, 1.0),
+    (0.9, 1.14),
+    (1.3, 0.74),
+    (0.9, 1.14),
+    (1.0, 1.0),
+  ];
+  final t = i / (_artFrames - 1);
+  // Kept inside the middle square, which the timeline's frame cells show.
+  final r = 135 * s;
+  final x = w * (0.28 + 0.44 * t);
+  final lift = (h * 0.42) * lifts[i];
+  final (sx, sy) = scales[i];
+  final cy = groundY - r * sy - lift;
+
+  // The shadow grows and darkens as the ball comes down.
+  final near = 1 - lifts[i];
+  c.drawOval(
+    Rect.fromCenter(
+      center: Offset(x, groundY + 6 * s),
+      width: r * (1.3 + 0.9 * near) * (i == 2 ? 1.25 : 1),
+      height: 26 * s,
+    ),
+    Paint()..color = ink.withValues(alpha: 0.10 + 0.12 * near),
+  );
+
+  // Speed lines behind the moving ball, impact marks on the ground.
+  final speed = Paint()
+    ..color = ink.withValues(alpha: 0.5)
+    ..style = PaintingStyle.stroke
+    ..strokeCap = StrokeCap.round
+    ..strokeWidth = 6 * s;
+  if (i == 1 || i == 3) {
+    final up = i == 1 ? -1.0 : 1.0;
+    for (var k = -1; k <= 1; k++) {
+      final from = Offset(x - r * 1.25, cy + k * r * 0.45 + up * r * 0.35);
+      c.drawLine(from, from + Offset(-r * 0.8, up * r * 0.55), speed);
+    }
+  } else if (i == 2) {
+    for (final side in const [-1.0, 1.0]) {
+      for (var k = 0; k < 3; k++) {
+        final angle = (0.25 + 0.22 * k) * math.pi;
+        final dir = Offset(side * math.cos(angle), -math.sin(angle));
+        final start = Offset(x + side * r * 1.45, groundY - 8 * s);
+        c.drawLine(start + dir * 18 * s, start + dir * 62 * s, speed);
+      }
+    }
+  }
+
+  // The ball: coral with a cream band that turns as it travels.
+  c.save();
+  c.translate(x, cy);
+  c.scale(sx, sy);
+  final ball = Rect.fromCircle(center: Offset.zero, radius: r);
+  c.drawCircle(
+    Offset.zero,
+    r,
+    Paint()
+      ..shader = const RadialGradient(
+        center: Alignment(-0.35, -0.4),
+        radius: 1.0,
+        colors: [Color(0xFFFF8A73), Color(0xFFE5483D)],
+      ).createShader(ball),
+  );
+  c.save();
+  c.clipPath(Path()..addOval(ball));
+  c.rotate(-0.5 + t * math.pi * 1.1);
+  c.drawRect(
+    Rect.fromCenter(center: Offset.zero, width: r * 2.4, height: r * 0.5),
+    Paint()..color = const Color(0xFFFFE6A6),
+  );
+  c.drawLine(
+    Offset(-r * 1.2, -r * 0.25),
+    Offset(r * 1.2, -r * 0.25),
+    line..strokeWidth = 4 * s,
+  );
+  c.drawLine(
+    Offset(-r * 1.2, r * 0.25),
+    Offset(r * 1.2, r * 0.25),
+    line..strokeWidth = 4 * s,
+  );
+  c.restore();
+  c.drawOval(
+    Rect.fromCenter(
+      center: Offset(-r * 0.38, -r * 0.45),
+      width: r * 0.42,
+      height: r * 0.26,
+    ),
+    Paint()..color = const Color(0xB3FFFFFF),
+  );
+  c.drawCircle(Offset.zero, r, line..strokeWidth = 8 * s / ((sx + sy) / 2));
+  c.restore();
+}
+
+/// Frame [i] as premultiplied RGBA, the format a layer's pixels use.
+Future<Uint8List> _bounceFramePixels(int width, int height, int i) async {
+  final recorder = ui.PictureRecorder();
+  _drawBounceFrame(Canvas(recorder), width, height, i);
+  final image = await recorder.endRecording().toImage(width, height);
+  final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+  image.dispose();
+  return data!.buffer.asUint8List();
+}
+
+/// A small PNG of frame [i] on white paper, for the saved slot's thumbnail.
+Future<Uint8List> _bounceThumbnail(int width, int height, int i) async {
+  final scale = 200 / math.max(width, height);
+  final tw = (width * scale).round();
+  final th = (height * scale).round();
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder)
+    ..drawRect(
+      Rect.fromLTWH(0, 0, tw.toDouble(), th.toDouble()),
+      Paint()..color = const Color(0xFFFFFFFF),
+    )
+    ..scale(scale);
+  _drawBounceFrame(canvas, width, height, i);
+  final image = await recorder.endRecording().toImage(tw, th);
+  final data = await image.toByteData(format: ui.ImageByteFormat.png);
+  image.dispose();
+  return data!.buffer.asUint8List();
 }
 
 void main() {
@@ -279,6 +450,26 @@ void main() {
     return names.indexOf(name);
   }
 
+  /// Lets the real asynchronous work (layer compositing, thumbnails, image
+  /// files) finish between frames; the fake clock alone never completes it.
+  Future<void> settleAsync(WidgetTester tester, {int rounds = 6}) async {
+    for (var i = 0; i < rounds; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 150)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    // Image files (saved thumbnails) decode only with real time.
+    for (final element in find.byType(Image).evaluate().toList()) {
+      final image = (element.widget as Image).image;
+      if (image is FileImage ||
+          (image is ResizeImage && image.imageProvider is FileImage)) {
+        await tester.runAsync(() => precacheImage(image, element));
+      }
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+
   Future<void> capture(WidgetTester tester, String name) async {
     final appContext = tester.element(find.byType(NiarimApp));
     final premium = appContext.read<PremiumService>();
@@ -332,6 +523,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       await tester.pump();
+      await settleAsync(tester);
       final displayedTheme = Theme.of(
         tester.element(find.byType(Scaffold).first),
       );
@@ -382,6 +574,7 @@ void main() {
         tester.view.physicalSize = const Size(1440, 900);
         tester.view.devicePixelRatio = 1.0;
         await tester.pump(const Duration(milliseconds: 300));
+        await settleAsync(tester);
         final pcBytes = await renderPng(1.0);
         File(
           '${dir.path}/webref_pc_$name$suffix.png',
@@ -472,6 +665,67 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
   }
 
+  /// Draws the bouncing ball into the first frames and keeps one manual save
+  /// of it, so the canvas, layers, onion skin, timeline and saves show work.
+  Future<void> seedArtwork(
+    WidgetTester tester,
+    ({String projectId, String sceneId}) ids,
+  ) async {
+    final context = tester.element(find.byType(Scaffold).first);
+    final ps = context.read<ProjectService>();
+    final tm = ps.tileManagerOf(ids.projectId);
+    final width = tm.canvasWidth;
+    final height = tm.canvasHeight;
+    int frameCount() => ps
+        .scenesOf(ids.projectId)
+        .firstWhere((scene) => scene.id == ids.sceneId)
+        .frames
+        .length;
+    while (frameCount() < _artFrames) {
+      ps.addFrame(ids.projectId, ids.sceneId);
+    }
+    for (var i = 0; i < _artFrames; i++) {
+      final pixels = (await tester.runAsync(
+        () => _bounceFramePixels(width, height, i),
+      ))!;
+      final layer = ps
+          .layersOf(ids.projectId, ids.sceneId, i)
+          .firstWhere((layer) => layer.type == LayerType.normal);
+      ps.replaceLayerPixels(
+        projectId: ids.projectId,
+        sceneId: ids.sceneId,
+        frameIndex: i,
+        layerId: layer.id,
+        pixels: pixels,
+      );
+    }
+    await tester.runAsync(() => ps.renameProject(ids.projectId, 'ボールのバウンド'));
+    final thumbnail = (await tester.runAsync(
+      () => _bounceThumbnail(width, height, 2),
+    ))!;
+    final project = ps.projects.firstWhere((p) => p.id == ids.projectId);
+    await tester.runAsync(
+      () => context.read<SaveTreeService>().saveToSlot(
+        projectId: ids.projectId,
+        slotIndex: 0,
+        project: project,
+        scenes: ps.scenesOf(ids.projectId),
+        tileManager: tm,
+        comment: 'ボールのバウンド',
+        thumbnailPngBytes: thumbnail,
+      ),
+    );
+    // Show the squashed frame in the middle, so the onion skin has frames
+    // on both sides.
+    final middle = find.byKey(const ValueKey('frameStripCell2'));
+    if (middle.evaluate().isNotEmpty) {
+      await tester.tap(middle, warnIfMissed: false);
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+    await settleAsync(tester, rounds: 8);
+    expectClean(tester, '絵を描き込む');
+  }
+
   Future<({String projectId, String sceneId})> createProjectAndOpenCanvas(
     WidgetTester tester,
   ) async {
@@ -502,7 +756,9 @@ void main() {
     final project = ps.projects.first;
     final scenes = ps.scenesOf(project.id);
     expect(scenes, isNotEmpty);
-    return (projectId: project.id, sceneId: scenes.first.id);
+    final ids = (projectId: project.id, sceneId: scenes.first.id);
+    await seedArtwork(tester, ids);
+    return ids;
   }
 
   Future<void> tapToolbarControl(WidgetTester tester, String tooltip) async {
@@ -536,6 +792,9 @@ void main() {
     ).go('/timeline/$projectId');
     await tester.pump(const Duration(milliseconds: 700));
     consumeKnownTimelineOverflow(tester);
+    // The frame thumbnails are drawn one by one with real time.
+    await settleAsync(tester, rounds: 20);
+    consumeKnownTimelineOverflow(tester);
   }
 
   testWidgets('Web比較基準v2: Canvas / Layer / OnionSkin', (tester) async {
@@ -551,10 +810,27 @@ void main() {
     expect(settingsEdit, findsWidgets);
     await tester.tap(settingsEdit.last, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 350));
-    final onion = find.text('オニオンスキン', skipOffstage: false);
-    expect(onion, findsWidgets);
-    await tester.tap(onion.last, warnIfMissed: false);
+    final onion = find.ancestor(
+      of: find.text('オニオンスキン', skipOffstage: false).first,
+      matching: find.byType(ListTile),
+    );
+    expect(onion, findsOneWidget);
+    await tester.ensureVisible(onion);
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.tap(onion);
     await tester.pump(const Duration(milliseconds: 350));
+    await tester.pump(const Duration(milliseconds: 350));
+    final onionSwitch = find.descendant(
+      of: find.byType(OnionSkinPanel),
+      matching: find.byType(Switch),
+    );
+    expect(onionSwitch, findsWidgets);
+    await tester.tap(onionSwitch.first);
+    await tester.pump(const Duration(milliseconds: 350));
+    // Close the settings so the faint previous and next frames show on the
+    // canvas around the current one.
+    await closeOverlay(tester);
+    await settleAsync(tester, rounds: 8);
     expectClean(tester, 'オニオンスキンを開く');
     await capture(tester, '03_canvas_onion_skin');
   }, timeout: const Timeout(Duration(seconds: 180)));
@@ -616,11 +892,15 @@ void main() {
     ).go('/canvas/${ids.projectId}');
     await tester.pump(const Duration(milliseconds: 700));
     await openTimeline(tester, projectId: ids.projectId);
-    final export = find.byIcon(Icons.upload_file, skipOffstage: false);
-    expect(export, findsWidgets);
-    await tester.tap(export.last, warnIfMissed: false);
-    await tester.pump(const Duration(milliseconds: 550));
-    consumeKnownTimelineOverflow(tester);
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).push('/export/${ids.projectId}');
+    await tester.pump(const Duration(milliseconds: 700));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 600)),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    expectClean(tester, 'Timeline→Export');
     await capture(tester, '07_export');
   }, timeout: const Timeout(Duration(seconds: 180)));
 
