@@ -6055,14 +6055,9 @@
       }
     }
   },
-  "communityPostThumbnailPickFailed": "画像を選択できませんでした: {error}",
+  "communityPostThumbnailPickFailed": "画像を選択できませんでした。別の画像を選んでください。",
   "@communityPostThumbnailPickFailed": {
-    "description": "投稿の画面：サムネイルの画像を選べなかった（errorは失敗の内容）",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
+    "description": "投稿の画面：サムネイルの画像を選べなかった（OSの例外の文は出さない。元の例外はエラーの記録へ）"
   },
   "communityPostFramePickerTitle": "サムネイルにするフレームを選択",
   "@communityPostFramePickerTitle": {
@@ -6096,14 +6091,9 @@
   "@communityPostFrameUnsupported": {
     "description": "投稿の画面：この端末では動画から1コマを取り出せない"
   },
-  "communityPostFrameFailed": "フレームを取得できませんでした: {error}",
+  "communityPostFrameFailed": "フレームを取得できませんでした。別のフレームを選ぶか、もう一度お試しください。",
   "@communityPostFrameFailed": {
-    "description": "投稿の画面：動画の1コマを取り出す途中で失敗した（errorは失敗の内容）",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
+    "description": "投稿の画面：動画の1コマを取り出す途中で失敗した（OSの例外の文は出さない。元の例外はエラーの記録へ）"
   },
   "communityPostScheduleTooSoon": "現在時刻から{minutes}分以上先の日時を指定してください",
   "@communityPostScheduleTooSoon": {

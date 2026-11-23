@@ -467,14 +467,14 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         await _storeThumbnail(File(path));
       } on _ThumbnailProblem catch (problem) {
         _showThumbnailProblem(problem);
-      } on Object catch (error) {
+      } on Object catch (error, stack) {
+        // The OS's text of the exception is kept in the error log, not shown.
+        AppErrorReporter.record(error, stack);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                AppLocalizations.of(
-                  context,
-                )!.communityPostThumbnailPickFailed('$error'),
+                AppLocalizations.of(context)!.communityPostThumbnailPickFailed,
               ),
             ),
           );
@@ -562,12 +562,13 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       }
     } on _ThumbnailProblem catch (problem) {
       _showThumbnailProblem(problem);
-    } on Object catch (error) {
+    } on Object catch (error, stack) {
+      AppErrorReporter.record(error, stack);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)!.communityPostFrameFailed('$error'),
+              AppLocalizations.of(context)!.communityPostFrameFailed,
             ),
           ),
         );

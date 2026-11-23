@@ -10051,9 +10051,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String communityPostThumbnailPickFailed(String error) {
-    return '无法选择图片：$error';
-  }
+  String get communityPostThumbnailPickFailed => '无法选择图片。请选择其他图片。';
 
   @override
   String get communityPostFramePickerTitle => '选择用作缩略图的帧';
@@ -10076,9 +10074,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityPostFrameUnsupported => '此环境无法从视频中提取帧，请选择图片。';
 
   @override
-  String communityPostFrameFailed(String error) {
-    return '获取帧失败：$error';
-  }
+  String get communityPostFrameFailed => '获取帧失败。请选择其他帧或重试。';
 
   @override
   String communityPostScheduleTooSoon(int minutes) {
@@ -20548,9 +20544,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String communityPostThumbnailPickFailed(String error) {
-    return '無法選擇圖片：$error';
-  }
+  String get communityPostThumbnailPickFailed => '無法選擇圖片。請選擇其他圖片。';
 
   @override
   String get communityPostFramePickerTitle => '選擇用作縮圖的影格';
@@ -20573,9 +20567,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityPostFrameUnsupported => '此環境無法從影片中擷取影格，請選擇圖片。';
 
   @override
-  String communityPostFrameFailed(String error) {
-    return '取得影格失敗：$error';
-  }
+  String get communityPostFrameFailed => '取得影格失敗。請選擇其他影格或重試。';
 
   @override
   String communityPostScheduleTooSoon(int minutes) {

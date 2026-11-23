@@ -10229,9 +10229,8 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String communityPostThumbnailPickFailed(String error) {
-    return '이미지를 선택하지 못했습니다: $error';
-  }
+  String get communityPostThumbnailPickFailed =>
+      '이미지를 선택하지 못했습니다. 다른 이미지를 선택해 주세요.';
 
   @override
   String get communityPostFramePickerTitle => '썸네일로 쓸 프레임 선택';
@@ -10255,9 +10254,8 @@ class AppLocalizationsKo extends AppLocalizations {
       '이 환경에서는 동영상 프레임을 가져올 수 없습니다. 이미지를 선택해 주세요.';
 
   @override
-  String communityPostFrameFailed(String error) {
-    return '프레임을 가져오지 못했습니다: $error';
-  }
+  String get communityPostFrameFailed =>
+      '프레임을 가져오지 못했습니다. 다른 프레임을 선택하거나 다시 시도해 주세요.';
 
   @override
   String communityPostScheduleTooSoon(int minutes) {

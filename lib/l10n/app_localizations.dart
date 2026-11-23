@@ -17895,11 +17895,11 @@ abstract class AppLocalizations {
   /// **'サムネイル画像は{mb}MB以内にしてください'**
   String communityPostThumbnailTooLarge(int mb);
 
-  /// 投稿の画面：サムネイルの画像を選べなかった（errorは失敗の内容）
+  /// 投稿の画面：サムネイルの画像を選べなかった（OSの例外の文は出さない。元の例外はエラーの記録へ）
   ///
   /// In ja, this message translates to:
-  /// **'画像を選択できませんでした: {error}'**
-  String communityPostThumbnailPickFailed(String error);
+  /// **'画像を選択できませんでした。別の画像を選んでください。'**
+  String get communityPostThumbnailPickFailed;
 
   /// 投稿の画面：サムネイルにする動画の位置を選ぶダイアログの見出し
   ///
@@ -17937,11 +17937,11 @@ abstract class AppLocalizations {
   /// **'この環境では動画のフレームを取り出せません。画像を選択してください。'**
   String get communityPostFrameUnsupported;
 
-  /// 投稿の画面：動画の1コマを取り出す途中で失敗した（errorは失敗の内容）
+  /// 投稿の画面：動画の1コマを取り出す途中で失敗した（OSの例外の文は出さない。元の例外はエラーの記録へ）
   ///
   /// In ja, this message translates to:
-  /// **'フレームを取得できませんでした: {error}'**
-  String communityPostFrameFailed(String error);
+  /// **'フレームを取得できませんでした。別のフレームを選ぶか、もう一度お試しください。'**
+  String get communityPostFrameFailed;
 
   /// 投稿の画面：予約の日時が近すぎる・過ぎている（minutesは最短の分数）
   ///

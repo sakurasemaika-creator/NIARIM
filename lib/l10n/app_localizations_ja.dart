@@ -10175,9 +10175,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String communityPostThumbnailPickFailed(String error) {
-    return '画像を選択できませんでした: $error';
-  }
+  String get communityPostThumbnailPickFailed => '画像を選択できませんでした。別の画像を選んでください。';
 
   @override
   String get communityPostFramePickerTitle => 'サムネイルにするフレームを選択';
@@ -10201,9 +10199,8 @@ class AppLocalizationsJa extends AppLocalizations {
       'この環境では動画のフレームを取り出せません。画像を選択してください。';
 
   @override
-  String communityPostFrameFailed(String error) {
-    return 'フレームを取得できませんでした: $error';
-  }
+  String get communityPostFrameFailed =>
+      'フレームを取得できませんでした。別のフレームを選ぶか、もう一度お試しください。';
 
   @override
   String communityPostScheduleTooSoon(int minutes) {

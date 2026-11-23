@@ -11096,9 +11096,8 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String communityPostThumbnailPickFailed(String error) {
-    return 'No se pudo usar la imagen: $error';
-  }
+  String get communityPostThumbnailPickFailed =>
+      'No se pudo usar la imagen. Elige otra imagen.';
 
   @override
   String get communityPostFramePickerTitle =>
@@ -11125,9 +11124,8 @@ class AppLocalizationsEs extends AppLocalizations {
       'En este dispositivo no se pueden extraer fotogramas de vídeos. Elige una imagen.';
 
   @override
-  String communityPostFrameFailed(String error) {
-    return 'No se pudo obtener el fotograma: $error';
-  }
+  String get communityPostFrameFailed =>
+      'No se pudo obtener el fotograma. Elige otro fotograma o vuelve a intentarlo.';
 
   @override
   String communityPostScheduleTooSoon(int minutes) {
