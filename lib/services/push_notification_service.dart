@@ -119,6 +119,8 @@ class PushNotificationService {
       SnackBar(
         content: Text(body),
         duration: const Duration(seconds: 5),
+        // A notice with an action stays until pressed unless told otherwise.
+        persist: false,
         action: route == null || l10n == null
             ? null
             : SnackBarAction(

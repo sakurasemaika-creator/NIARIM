@@ -11,6 +11,7 @@ import 'filter_immersive_policy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/layer_locked_notice.dart';
 import '../../widgets/project_autosave_notice.dart';
 import '../../services/autosave_service.dart';
 import '../../services/save_tree_service.dart';
@@ -1555,14 +1556,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// ロックしたレイヤーへ描こうとしたとき（押すたびに出し直す）。
   void _showLockedLayerNotice() {
     if (!mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.canvasLayerLockedNotice),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    showLayerLockedNotice(context);
   }
 
   void _onPerfChanged() => _syncOnionFromPerf();

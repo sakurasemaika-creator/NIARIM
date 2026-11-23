@@ -34,6 +34,7 @@ import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
 import '../../../utils/blend_mode_label.dart';
 import '../../../utils/filter_display_name.dart';
+import '../../../widgets/layer_locked_notice.dart';
 import '../../../widgets/filter_sample_preview.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/frame_preview_background.dart';
@@ -3418,13 +3419,7 @@ class _FilterPanelState extends State<FilterPanel> {
 
   void _showLockedFilterNotice() {
     if (!mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.canvasLayerLockedNotice),
-      ),
-    );
+    showLayerLockedNotice(context);
   }
 
   Future<void> _applyFilter() async {
