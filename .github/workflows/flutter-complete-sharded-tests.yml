@@ -94,7 +94,10 @@ jobs:
       matrix:
         shard: [0, 1, 2, 3, 4, 5, 6, 7]
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    # Shard 3 (118 files, with a home display matrix and several walkthrough
+    # and capture tests) needed more than 55 minutes on the hosted runners
+    # and was cancelled before its result. A hanging test is still stopped.
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
