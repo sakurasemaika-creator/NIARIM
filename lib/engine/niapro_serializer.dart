@@ -45,6 +45,14 @@ class NiaproSerializer {
   // まだ発生しないが、将来フォーマットが変わった際にここへ分岐を追加する。
   static const String currentAppVersion = '1.0.0';
 
+  /// A tile key is the tile's column and row ("x,y").
+  static final RegExp _tileKeyPattern = RegExp(r'^-?\d+,-?\d+$');
+
+  /// Numbers in the manifest that this app never writes outside these ranges.
+  /// A damaged file with fps 0 opened, then playing it divided by zero.
+  static const int _maxFps = 240;
+  static const int _maxExportEdge = 16384;
+
   /// セマンティックバージョン文字列（例："1.2.3"）を比較する。
   /// aがbより新しければ正、古ければ負、同じなら0を返す。パースできない
   /// 部分（不正・破損データ）は0として扱い、例外を投げず安全に処理する。
@@ -909,8 +917,19 @@ class NiaproSerializer {
     }
 
     final tileData = <String, Map<String, Uint8List>>{};
-    void addTile(String compositeKey, String tileKey, Uint8List bytes) {
-      tileData.putIfAbsent(compositeKey, () => {})[tileKey] = bytes;
+    var skippedTiles = 0;
+    void addTile(String compositeKey, String tileKey, ArchiveFile file) {
+      // A tile of the wrong size or with a key that is not "x,y" cannot be
+      // drawn: one such tile made every composite of its layer throw, so
+      // the whole layer vanished from the canvas. Only that tile is left out.
+      if (!_tileKeyPattern.hasMatch(tileKey) ||
+          file.size != TileManager.tileSize * TileManager.tileSize * 4) {
+        skippedTiles++;
+        return;
+      }
+      tileData.putIfAbsent(compositeKey, () => {})[tileKey] = _readTilePixels(
+        file,
+      );
     }
 
     // 新形式：Tiles/{sceneId}/{frameIndex}/{layerId}_{tileKey}.bin
@@ -927,29 +946,21 @@ class NiaproSerializer {
         final frameIndex = int.tryParse(segments[1]);
         if (frameIndex == null) continue;
         final withoutExt = segments[2].replaceAll('.bin', '');
-        final underscoreIdx = withoutExt.indexOf('_');
+        final underscoreIdx = withoutExt.lastIndexOf('_');
         if (underscoreIdx < 0) continue;
         final layerId = withoutExt.substring(0, underscoreIdx);
         final tileKey = withoutExt.substring(underscoreIdx + 1);
-        addTile(
-          frameLayerKey(sceneId, frameIndex, layerId),
-          tileKey,
-          _readTilePixels(file),
-        );
+        addTile(frameLayerKey(sceneId, frameIndex, layerId), tileKey, file);
       } else {
         final withoutExt = segments.last.replaceAll('.bin', '');
-        final underscoreIdx = withoutExt.indexOf('_');
+        final underscoreIdx = withoutExt.lastIndexOf('_');
         if (underscoreIdx < 0) continue;
         final layerId = withoutExt.substring(0, underscoreIdx);
         final tileKey = withoutExt.substring(underscoreIdx + 1);
         final targets = framesByLayerId[layerId];
         if (targets == null) continue;
         for (final target in targets) {
-          addTile(
-            frameLayerKey(target.$1, target.$2, layerId),
-            tileKey,
-            _readTilePixels(file),
-          );
+          addTile(frameLayerKey(target.$1, target.$2, layerId), tileKey, file);
         }
       }
     }
@@ -961,19 +972,18 @@ class NiaproSerializer {
         if (!file.name.startsWith('Scene/${scene.id}/$_tilesDir/')) continue;
         final fileName = file.name.split('/').last;
         final withoutExt = fileName.replaceAll('.bin', '');
-        final underscoreIdx = withoutExt.indexOf('_');
+        final underscoreIdx = withoutExt.lastIndexOf('_');
         if (underscoreIdx < 0) continue;
         final layerId = withoutExt.substring(0, underscoreIdx);
         final tileKey = withoutExt.substring(underscoreIdx + 1);
         for (final frame in scene.frames) {
           if (!frame.layers.any((l) => l.id == layerId)) continue;
-          addTile(
-            frameLayerKey(scene.id, frame.index, layerId),
-            tileKey,
-            _readTilePixels(file),
-          );
+          addTile(frameLayerKey(scene.id, frame.index, layerId), tileKey, file);
         }
       }
+    }
+    if (skippedTiles > 0) {
+      debugPrint('[NiaproSerializer] 大きさ・名前の壊れたタイルを$skippedTiles枚読み飛ばしました。');
     }
 
     // 同梱素材（.niashare作成時に選択した画像/動画/音声の実ファイル）。
@@ -1236,7 +1246,25 @@ class NiaproSerializer {
 
   // ─── デシリアライズ ───────────────────────────────────────────────────
 
-  static Project _deserializeManifest(Map<String, dynamic> j) => Project(
+  static Project _deserializeManifest(Map<String, dynamic> j) {
+    final project = _projectFromManifest(j);
+    final scale = project.drawingAreaScale;
+    if (project.id.isEmpty ||
+        project.fps < 1 ||
+        project.fps > _maxFps ||
+        project.durationSeconds < 0 ||
+        project.exportWidth < 1 ||
+        project.exportWidth > _maxExportEdge ||
+        project.exportHeight < 1 ||
+        project.exportHeight > _maxExportEdge ||
+        !scale.isFinite ||
+        scale <= 0) {
+      throw const FormatException('manifest.json has an invalid value');
+    }
+    return project;
+  }
+
+  static Project _projectFromManifest(Map<String, dynamic> j) => Project(
     id: j['id'] as String,
     name: j['name'] as String,
     hideEndCard: j['hideEndCard'] is bool ? j['hideEndCard'] as bool : null,
