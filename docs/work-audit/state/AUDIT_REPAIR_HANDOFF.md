@@ -3944,3 +3944,32 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 
 - **新しく見つけたもの（四巡目で直す）**：DISC591（Webのアプリのキャプチャが空のキャンバス・古い「エンドカードトラック」）、DISC592（/premium/の見出しの1字だけの行）、DISC593（失敗したままCIで走らない契約のスクリプト2本）、DISC594（/help/の言語のi18n監査の揺れ）、DISC595（プレミアムの購入の失敗の文6つが日本語の手書き）。
 - **人の作業（公開前）**：規約・ポリシーの新しい文の法務の確認、事業者の氏名・住所（ポリシー第1条は「請求があれば遅滞なく知らせる」形）、Googleの公式のバッジ7言語の画像を`public/assets/badges/google-play/<lang>.png`に置く、ストアのスクリーンショット、同梱の画像を作った道具と利用条件の記録、作品広場のサーバーが公開時に動いていなければストアの説明文の作品広場の段落を外す。
+
+## 四巡目の前と四巡目の修正（2026-11-23、Claude・S56）
+
+所有者の依頼「完璧になるまで監査、修正を繰り返してください。判断待ちのものはここで質問投げてくれたら回答します」。三巡目の後の修正中と四巡目の監査（Appの全件のtest、Webの監査一式をローカルで実行）で見つけたものを直した。
+
+| DISC | 修正 | 確かめたこと |
+|---|---|---|
+| DISC591 | App `56081430`・`08eb5dac`（撮影のtestがボールの弾む5コマと枝分かれしたセーブツリーを作り、オニオンスキン・書き出しの画面を撮る）・Web `f0d21a32`・`b00ca587`（72枚を撮り直し、版の印を元のcommitに）。 | `app_web_reference_capture_test_v2` 4件成功、`font-and-captures-contract` 144枚、目視。 |
+| DISC592 | Web `e3342fd8`（「プレミアム」と「プラン」の間に折れる所）。 | 320・360・390pxで1字だけの行なし。字の確認の誤検出（幅0の字）はWeb `01e108c5`で直した。 |
+| DISC593 | Web `0c492fdc`（契約のスクリプト2本を今の作りに合わせCIで走らせる）。 | 2本ともok。 |
+| DISC594 | Web `26be230b`（`audit:i18n`がヘルプの言語の切り替えを待つ）。製品は正しかった。 | `audit:i18n` 0件。 |
+| DISC595 | App `c75caf65`（購入の失敗の文を7言語・日付を言語の書き方）。 | premium系test成功。 |
+| DISC596 | Web `01e108c5`・`1b6e47d3`（英語・仏語の ' を ’ に、ヘルプの同期）。 | `typographic-apostrophes` test、`sync-app-help --check`成功。 |
+| DISC597 | App `4d3ad571`（英語の文の ' を ’ に）。 | `l10n_english_apostrophe_test`ほか141件成功。 |
+| DISC598 | Web `bc31e4cd`（src の無い `<img>` を無くし、バッジは掲載のURLが決まったときに作る）。 | ブラウザの監査の「壊れた画像」171件→0件。 |
+| DISC599 | Web `9a8390e7`・`2e061f17`（監査の道具を今の作りに合わせる。古いトップ向けの確かめは、そのトップがあるときだけ働き、今のトップでは同じ目的の確かめをする。消した監査は無い）。 | 下の「Webの監査一式」。 |
+| DISC600 | App `786dd9cd`（同意の確かめを出している間の2回目は何もしない。アカウントの境界のtestは同意済みから始める）。 | `legal_consent_test`（二度押しの件を足した）、`community_account_boundary_widget_test`。 |
+| DISC602 | App `39f8c7f1`（「ロック中」の知らせは自分の前の知らせだけを取り下げる共通の部品。プッシュ通知の知らせに`persist: false`）。 | `layer_locked_notice_test`（新）・`toast_contract_test`・`layer_lock_canvas_test`。実画面（Linux・en）でロックしたレイヤーへ描くと描かれず知らせが出る。 |
+| DISC603 | App `c7468eba`（ブラシの画像の一覧を40px×倍率で読み込む）。 | `brush_tip_settings_test`。 |
+| DISC604 | App `e18d8e11`（YouTubeの応答をUTF-8のバイト列から読む）。 | `youtube_thumbnail_service_test`。 |
+| DISC605 | App `8555d1a6`（投稿のサムネイルの失敗の知らせにOSの例外の文を出さず、7言語の文と次にすること。元の例外はエラーの記録へ）。 | `font_coverage_test`・l10nのtest・`community_post_*`。 |
+| DISC601 | Web `0bbf72c5`・`1f95d979`（リンクの押せる大きさ44px、600〜641pxのトップのPC画面のはみ出し、仏語・西語のナビ、英語の「Guide」）。 | 全ページのレスポンシブ品質の監査（24幅×12ページ）。 |
+
+- **Webの監査一式（`visual-audit.yml`と同じ並び、ローカルの静的サーバー・Chromium）**：
+  - 1回目（直す前）に失敗した監査：operations-seo（文字列の書き方違い）・intermediate-width（消えた`.hero`で停止）・ai-trust（更新日の決め打ち）・autonomous-browser v2（28件：消えた帯・ヒーロー、作品広場のAPIの404）・complete-scroll（pngjsが無い）・design-polish・hero-rendered-layout・real-capture-loading・home-rendered-capture-alignment・feature-rendered-alignment（後の4本はブラウザの起動の書き方の誤り）・cross-width（72か所が消えた部品）・page-heading（消えたspotlight・2つのキャプチャ・古い見出し）・multilang v4・final-visual-invariants v2・final-visual-screenshot v3（消えたプレビュー）・all-pages-responsive-quality（押せる大きさ・はみ出し＝DISC601）。
+  - 直した後：上の全部と、seo-contract・contact-api・i18n-browser-detection・contact-form・help-interaction・deep-section・screen-mock-capture・mobile-nav・timeline-current-frame・modern-width（トップ35幅）・mock-detail・source-style・i18n・audit-site・font-and-captures・opal・brand-direction が成功。all-pages-responsive-qualityは7言語×SP・PCで0件。古いトップの確かめを消した監査は無い（削除は監視を減らす操作として止められ、今の作りを確かめる形に書き直した）。
+- **Appの全件のtest（App `56081430`、3分割・-j 3）**：成功5939・スキップ23・失敗5（DISC489の同意で止まっていた`community_account_boundary_widget_test`の2件〔DISC600で直した〕と、rootで流すと権限が効かない既知の3件）。2分割目は100分の上限で`keep_together_text_caller_matrix_test`の途中で止まったので、その2ファイルを修正後に流して成功（関連181件）。`flutter analyze` 0件。
+- **実画面（Linux debug・Xvfb・en 1280×860、App `08eb5dac`）**：起動画面→ホーム（初回の6ページの使い方が出る→スキップ）→新しい作品→PC表示のキャンバスで線を描く→レイヤーをロック→描こうとすると描かれず「This layer is locked, so you can’t draw on it…」→ホームへ戻る確認→引き出し→会員の状況→プレミアム（Linuxはストアが無くプランは押せない・自動更新の案内が出る）。画像は`scratchpad/r3/shots/r4-*`（backup-pending）。
+- **人の作業（変わらず）**：規約・ポリシーの法務の確認、事業者の氏名・住所、Googleの公式のバッジの画像、実機・実課金・実広告・バックエンドのデプロイ。
