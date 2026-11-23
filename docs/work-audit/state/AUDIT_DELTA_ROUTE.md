@@ -1178,6 +1178,680 @@ Required:
 
 各プリセットを1対象=1子TODOとして固定し、production UIで実際に選択→適用→結果確認→必要なら編集→確定/取消→再適用を行う。設定値、実結果、保存/復元、import/export、legacy互換、削除/複製、権限制御、7言語、PC/SP、Visualを確認する。プリセット一覧そのものの件数・名称・並び順・重複・dead entryも確認する。
 
+### D033の子TODO（四巡目、2026-11-23、Claude・S56、App `08eb5dac`の後の`test/preset_inventory_test.dart`）
+
+1プリセット＝1子TODO。各件は`test/preset_inventory_test.dart`で当てて確かめた（正式なstatusは独立した確認まで todo のまま）。選ぶ・確定/取消・削除/複製・PC/SPの画面の操作は、ブラシ〜スタンプがA016〜A026、テーマがA081・A082、自動操作がA043、自動塗りがA067・A068の各巡の判定にある。描画フィルター・演出フィルター52件はD002.1〜D002.52。
+
+## D033.1 — ブラシ「ペン」（`Brush0001`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の1番目。
+
+## D033.2 — ブラシ「Gペン」（`Brush0002`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の2番目。
+
+## D033.3 — ブラシ「丸ペン」（`Brush0008`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の3番目。
+
+## D033.4 — ブラシ「面相筆」（`Brush0015`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の4番目。
+
+## D033.5 — ブラシ「カリグラフィー」（`Brush0006`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の5番目。
+
+## D033.6 — ブラシ「平筆」（`Brush0009`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の6番目。
+
+## D033.7 — ブラシ「マーカーペン」（`Brush0005`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の7番目。
+
+## D033.8 — ブラシ「鉛筆」（`Brush0007`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の8番目。
+
+## D033.9 — ブラシ「鉛筆（4B）」（`Brush0028`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の9番目。
+
+## D033.10 — ブラシ「チョーク」（`Brush0012`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の10番目。
+
+## D033.11 — ブラシ「木炭（粗目）」（`Brush0026`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の11番目。
+
+## D033.12 — ブラシ「パステル（粉）」（`Brush0029`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の12番目。
+
+## D033.13 — ブラシ「水彩」（`Brush0010`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の13番目。
+
+## D033.14 — ブラシ「ガッシュ（不透明水彩）」（`Brush0027`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の14番目。
+
+## D033.15 — ブラシ「混色ブラシ」（`Brush0004`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の15番目。
+
+## D033.16 — ブラシ「エアブラシ」（`Brush0003`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の16番目。
+
+## D033.17 — ブラシ「スプレー」（`Brush0013`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の17番目。
+
+## D033.18 — ブラシ「ぼかし」（`Brush0011`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の18番目。
+
+## D033.19 — ブラシ「ピクセルペン」（`Brush0014`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の19番目。
+
+## D033.20 — ブラシ「グリッターペン」（`Brush0016`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の20番目。
+
+## D033.21 — ブラシ「ラメペン」（`Brush0017`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の21番目。
+
+## D033.22 — ブラシ「チェーン（太）」（`Brush0018`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の22番目。
+
+## D033.23 — ブラシ「チェーン（中）」（`Brush0019`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の23番目。
+
+## D033.24 — ブラシ「チェーン（細）」（`Brush0020`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の24番目。
+
+## D033.25 — ブラシ「ボールチェーン」（`Brush0021`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の25番目。
+
+## D033.26 — ブラシ「ネット」（`Brush0022`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の26番目。
+
+## D033.27 — ブラシ「四コマ漫画」（`Brush0025`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の27番目。
+
+## D033.28 — ブラシ「ウェーブヘア（俯瞰）」（`Brush0023`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の28番目。
+
+## D033.29 — ブラシ「右巻きヘア」（`Brush0031`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の29番目。
+
+## D033.30 — ブラシ「左巻きヘア」（`Brush0032`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の30番目。
+
+## D033.31 — ブラシ「ウェーブヘア（煽り）」（`Brush0034`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の31番目。
+
+## D033.32 — ブラシ「三日月カールヘア」（`Brush0035`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の32番目。
+
+## D033.33 — ブラシ「前髪」（`Brush0024`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の33番目。
+
+## D033.34 — ブラシ「リボン（ウェーブ俯瞰）」（`Brush0036`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の34番目。
+
+## D033.35 — ブラシ「リボン（ウェーブ煽り）」（`Brush0037`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の35番目。
+
+## D033.36 — ブラシ「リボン（右巻き）」（`Brush0038`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の36番目。
+
+## D033.37 — ブラシ「リボン（左巻き）」（`Brush0039`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の37番目。
+
+## D033.38 — ブラシ「リボン（三日月カール）」（`Brush0040`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の38番目。
+
+## D033.39 — ブラシ「雲」（`Brush0030`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の39番目。
+
+## D033.40 — ブラシ「雲（ベタ塗り）」（`Brush0041`）
+
+status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の40番目。
+
+## D033.41 — トーン「網点 10%」（`Tone0001`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の1番目。
+
+## D033.42 — トーン「網点 20%」（`Tone0026`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の2番目。
+
+## D033.43 — トーン「網点 30%」（`Tone0002`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の3番目。
+
+## D033.44 — トーン「網点 40%」（`Tone0027`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の4番目。
+
+## D033.45 — トーン「網点 50%」（`Tone0003`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の5番目。
+
+## D033.46 — トーン「網点 60%」（`Tone0028`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の6番目。
+
+## D033.47 — トーン「網点 70%」（`Tone0004`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の7番目。
+
+## D033.48 — トーン「網点 80%」（`Tone0029`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の8番目。
+
+## D033.49 — トーン「網点 90%」（`Tone0030`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の9番目。
+
+## D033.50 — トーン「ライン 細」（`Tone0005`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の10番目。
+
+## D033.51 — トーン「ライン 太」（`Tone0006`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の11番目。
+
+## D033.52 — トーン「ライン 縦細」（`Tone0031`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の12番目。
+
+## D033.53 — トーン「ライン 縦太」（`Tone0032`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の13番目。
+
+## D033.54 — トーン「ライン 斜め細」（`Tone0033`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の14番目。
+
+## D033.55 — トーン「ライン 斜め太」（`Tone0034`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の15番目。
+
+## D033.56 — トーン「クロスハッチ 細」（`Tone0035`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の16番目。
+
+## D033.57 — トーン「クロスハッチ 中」（`Tone0036`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の17番目。
+
+## D033.58 — トーン「クロスハッチ 太」（`Tone0037`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の18番目。
+
+## D033.59 — トーン「クロスハッチ 斜め細」（`Tone0038`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の19番目。
+
+## D033.60 — トーン「クロスハッチ 斜め太」（`Tone0039`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の20番目。
+
+## D033.61 — トーン「方眼 細」（`Tone0046`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の21番目。
+
+## D033.62 — トーン「方眼 太」（`Tone0047`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の22番目。
+
+## D033.63 — トーン「砂目 細」（`Tone0040`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の23番目。
+
+## D033.64 — トーン「砂目 中」（`Tone0041`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の24番目。
+
+## D033.65 — トーン「砂目 粗」（`Tone0042`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の25番目。
+
+## D033.66 — トーン「同心円」（`Tone0043`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の26番目。
+
+## D033.67 — トーン「波線」（`Tone0044`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の27番目。
+
+## D033.68 — トーン「レンガ」（`Tone0045`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の28番目。
+
+## D033.69 — トーン「ストッキング 10デニール」（`Tone0010`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の29番目。
+
+## D033.70 — トーン「ストッキング 20デニール」（`Tone0011`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の30番目。
+
+## D033.71 — トーン「ストッキング 30デニール」（`Tone0012`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の31番目。
+
+## D033.72 — トーン「タイツ 40デニール」（`Tone0013`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の32番目。
+
+## D033.73 — トーン「タイツ 60デニール」（`Tone0014`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の33番目。
+
+## D033.74 — トーン「タイツ 80デニール」（`Tone0015`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の34番目。
+
+## D033.75 — トーン「ピクセル市松（1px）」（`Tone0007`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の35番目。
+
+## D033.76 — トーン「ピクセル格子（1px）」（`Tone0008`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の36番目。
+
+## D033.77 — トーン「ピクセル斜め格子（1px）」（`Tone0065`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の37番目。
+
+## D033.78 — トーン「ピクセル散らし（1px）」（`Tone0009`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の38番目。
+
+## D033.79 — トーン「ピクセルボーダー（横1px）」（`Tone0048`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の39番目。
+
+## D033.80 — トーン「ピクセルストライプ（縦1px）」（`Tone0049`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の40番目。
+
+## D033.81 — トーン「ピクセル斜め縞（1px）」（`Tone0050`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の41番目。
+
+## D033.82 — トーン「ピクセルレンガ」（`Tone0054`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の42番目。
+
+## D033.83 — トーン「ピクセル砂目 25%」（`Tone0051`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の43番目。
+
+## D033.84 — トーン「ピクセル砂目 50%」（`Tone0052`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の44番目。
+
+## D033.85 — トーン「ピクセル砂目 75%」（`Tone0053`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の45番目。
+
+## D033.86 — トーン「ピクセルディザ（粗目・2×2・25%）」（`Tone0023`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の46番目。
+
+## D033.87 — トーン「ピクセルディザ（粗目・2×2・50%）」（`Tone0024`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の47番目。
+
+## D033.88 — トーン「ピクセルディザ（粗目・2×2・75%）」（`Tone0025`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の48番目。
+
+## D033.89 — トーン「ピクセルディザ（標準・4×4・12%）」（`Tone0016`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の49番目。
+
+## D033.90 — トーン「ピクセルディザ（標準・4×4・25%）」（`Tone0017`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の50番目。
+
+## D033.91 — トーン「ピクセルディザ（標準・4×4・37%）」（`Tone0018`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の51番目。
+
+## D033.92 — トーン「ピクセルディザ（標準・4×4・50%）」（`Tone0019`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の52番目。
+
+## D033.93 — トーン「ピクセルディザ（標準・4×4・62%）」（`Tone0020`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の53番目。
+
+## D033.94 — トーン「ピクセルディザ（標準・4×4・75%）」（`Tone0021`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の54番目。
+
+## D033.95 — トーン「ピクセルディザ（標準・4×4・87%）」（`Tone0022`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の55番目。
+
+## D033.96 — トーン「ピクセルディザ（細目・8×8・6%）」（`Tone0055`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の56番目。
+
+## D033.97 — トーン「ピクセルディザ（細目・8×8・19%）」（`Tone0056`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の57番目。
+
+## D033.98 — トーン「ピクセルディザ（細目・8×8・31%）」（`Tone0057`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の58番目。
+
+## D033.99 — トーン「ピクセルディザ（細目・8×8・44%）」（`Tone0058`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の59番目。
+
+## D033.100 — トーン「ピクセルディザ（細目・8×8・56%）」（`Tone0059`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の60番目。
+
+## D033.101 — トーン「ピクセルディザ（細目・8×8・69%）」（`Tone0060`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の61番目。
+
+## D033.102 — トーン「ピクセルディザ（細目・8×8・81%）」（`Tone0061`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の62番目。
+
+## D033.103 — トーン「ピクセルディザ（細目・8×8・94%）」（`Tone0062`）
+
+status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の63番目。
+
+## D033.104 — スタンプ「三角形」（`Stamp0001`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の1番目。
+
+## D033.105 — スタンプ「四角形」（`Stamp0009`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の2番目。
+
+## D033.106 — スタンプ「丸角四角」（`Stamp0010`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の3番目。
+
+## D033.107 — スタンプ「菱形」（`Stamp0011`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の4番目。
+
+## D033.108 — スタンプ「五角形」（`Stamp0002`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の5番目。
+
+## D033.109 — スタンプ「六角形」（`Stamp0003`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の6番目。
+
+## D033.110 — スタンプ「八角形」（`Stamp0012`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の7番目。
+
+## D033.111 — スタンプ「円」（`Stamp0008`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の8番目。
+
+## D033.112 — スタンプ「ドーナツ」（`Stamp0013`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の9番目。
+
+## D033.113 — スタンプ「吹き出し」（`Stamp0006`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の10番目。
+
+## D033.114 — スタンプ「矢印」（`Stamp0007`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の11番目。
+
+## D033.115 — スタンプ「両矢印」（`Stamp0024`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の12番目。
+
+## D033.116 — スタンプ「チェックマーク」（`Stamp0023`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の13番目。
+
+## D033.117 — スタンプ「星」（`Stamp0004`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の14番目。
+
+## D033.118 — スタンプ「四芒星」（`Stamp0015`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の15番目。
+
+## D033.119 — スタンプ「キラキラ」（`Stamp0018`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の16番目。
+
+## D033.120 — スタンプ「ハート」（`Stamp0005`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の17番目。
+
+## D033.121 — スタンプ「花」（`Stamp0022`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の18番目。
+
+## D033.122 — スタンプ「稲妻」（`Stamp0021`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の19番目。
+
+## D033.123 — スタンプ「雲」（`Stamp0020`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の20番目。
+
+## D033.124 — スタンプ「葉っぱ」（`Stamp0025`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の21番目。
+
+## D033.125 — スタンプ「葉っぱ（ベタ塗り）」（`Stamp0027`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の22番目。
+
+## D033.126 — スタンプ「草」（`Stamp0026`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の23番目。
+
+## D033.127 — スタンプ「草（ベタ塗り）」（`Stamp0028`）
+
+status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の24番目。
+
+## D033.128 — テーマ「レッド（ライト）」（`default_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.129 — テーマ「レッド（ダーク）」（`default_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.130 — テーマ「オレンジ（ライト）」（`orange_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.131 — テーマ「オレンジ（ダーク）」（`orange_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.132 — テーマ「イエロー（ライト）」（`yellow_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.133 — テーマ「イエロー（ダーク）」（`yellow_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.134 — テーマ「グリーン（ライト）」（`green_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.135 — テーマ「グリーン（ダーク）」（`green_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.136 — テーマ「ブルー（ライト）」（`blue_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.137 — テーマ「ブルー（ダーク）」（`blue_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.138 — テーマ「藍色（ライト）」（`indigo_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.139 — テーマ「藍色（ダーク）」（`indigo_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.140 — テーマ「パープル（ライト）」（`purple_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.141 — テーマ「パープル（ダーク）」（`purple_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.142 — テーマ「ピンク（ライト）」（`pink_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.143 — テーマ「ピンク（ダーク）」（`pink_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.144 — テーマ「ライトパープル（ライト）」（`light_purple_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.145 — テーマ「ライトパープル（ダーク）」（`light_purple_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.146 — テーマ「ライトブルー（ライト）」（`light_blue_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.147 — テーマ「ライトブルー（ダーク）」（`light_blue_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.148 — テーマ「エメラルドグリーン（ライト）」（`emerald_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.149 — テーマ「エメラルドグリーン（ダーク）」（`emerald_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.150 — テーマ「くすみピンク（ライト）」（`dusty_pink_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.151 — テーマ「くすみピンク（ダーク）」（`dusty_pink_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.152 — テーマ「くすみブルー（ライト）」（`dusty_blue_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.153 — テーマ「くすみブルー（ダーク）」（`dusty_blue_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.154 — テーマ「くすみグリーン（ライト）」（`dusty_green_light`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.155 — テーマ「くすみグリーン（ダーク）」（`dusty_green_dark`）
+
+status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+
+## D033.156 — 公式の自動操作「線画作成（デジタル）」（`builtin_draft_to_lineart`）
+
+status: todo（四巡目の確認まで）。手順が読める・保存の形で変わらない・6言語の名前と手順名に日本語が残らない（DISC606を直した）。
+
+## D033.157 — 公式の自動操作「線画抽出（アナログ）」（`builtin_analog_lineart_extract`）
+
+status: todo（四巡目の確認まで）。手順が読める・保存の形で変わらない・6言語の名前と手順名に日本語が残らない（DISC606を直した）。
+
+## D033.158 — 公式の自動操作「線画色トレス」（`builtin_lineart_color_trace`）
+
+status: todo（四巡目の確認まで）。手順が読める・保存の形で変わらない・6言語の名前と手順名に日本語が残らない（DISC606を直した）。
+
+## D033.159 — 自動塗り「グレー単色の下塗り」（`builtin_gray_underpaint`）
+
+status: todo（四巡目の確認まで）。パーツがある・保存の形で変わらない・6言語のプリセットとパーツの名前。
+
+## D033.160 — 自動塗り「主人公」（`p1`）
+
+status: todo（四巡目の確認まで）。パーツがある・保存の形で変わらない・6言語のプリセットとパーツの名前。
+
+## D033.161 — 自動塗り「ヒロイン」（`p2`）
+
+status: todo（四巡目の確認まで）。パーツがある・保存の形で変わらない・6言語のプリセットとパーツの名前。
+
+## D033.162 — キャンバスの大きさ「fullHd」（1920×1080）
+
+status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+
+## D033.163 — キャンバスの大きさ「hd」（1280×720）
+
+status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+
+## D033.164 — キャンバスの大きさ「square」（1080×1080）
+
+status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+
+## D033.165 — キャンバスの大きさ「vertical」（1080×1920）
+
+status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+
+## D033.166 — キャンバスの大きさ「portrait」（1080×1350）
+
+status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+
+## D033.167 — キャンバスの大きさ「analog」（1440×1080）
+
+status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+
+- 利用者が作るプリセット（自作のブラシ・トーン・スタンプ・テーマ・自動操作・ワークスペース・サイズ・フィルターの設定）は組み込みが無く、作る・保存・引き継ぎ（.niatra）の流れを各Aと`niatra_transfer_*`のtestで確かめる。
+
 ## D034 — 品質設定・テーマ・保存形式のmutation audit
 
 監査中に品質に影響する設定を意図的に変更して、その変更が製品全体へ正しく連動するかを確認する。
