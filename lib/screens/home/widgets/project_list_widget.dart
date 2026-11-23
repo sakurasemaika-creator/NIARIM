@@ -8,6 +8,7 @@ import 'package:flutter/material.dart' hide MaterialType;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../config/accent_text_theme.dart';
 import '../../../engine/niapro_serializer.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/material_asset.dart';
@@ -982,7 +983,7 @@ class ProjectListWidget extends StatelessWidget {
           child: Icon(
             Icons.star,
             size: CollectionActionFrame.glyphSize,
-            color: Theme.of(context).colorScheme.primary,
+            color: AccentTextTheme.of(context),
           ),
         ),
       ?selectionMarker,

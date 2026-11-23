@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+import '../config/accent_text_theme.dart';
 import '../screens/canvas/widgets/canvas_icon_button.dart';
 
 /// Identical tap areas and toolbar-style outline across project, folder,
@@ -547,7 +548,9 @@ class CollectionFavoriteButton extends StatelessWidget {
         ),
         icon: Icon(
           Icons.star,
-          color: favorite ? scheme.primary : ink.withValues(alpha: ink.a * 0.7),
+          color: favorite
+              ? AccentTextTheme.of(context)
+              : ink.withValues(alpha: ink.a * 0.7),
           size: CollectionActionFrame.glyphSize,
         ),
       ),

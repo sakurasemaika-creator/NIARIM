@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../config/accent_text_theme.dart';
 import '../../l10n/reward_navigation_labels.dart';
 import '../../l10n/reward_unlock_labels.dart';
 import '../../services/api/community_api.dart';
@@ -79,7 +80,6 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
     // 時分」を組み立てて語とつないでいて、どの言語でも日本語の日付だった）。
     final l10n = appLocalizationsOf(context);
     final premium = context.watch<PremiumService>();
-    final scheme = Theme.of(context).colorScheme;
     final isPlayMember = premium.hasVerifiedPlayPremium;
     final plan = premium.verifiedSubscriptionProductId;
     final tier = isPlayMember
@@ -166,7 +166,7 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
                       return ListTile(
                         leading: Icon(
                           Icons.verified_outlined,
-                          color: scheme.primary,
+                          color: AccentTextTheme.of(context),
                         ),
                         title: Text(reward[feature]),
                         subtitle: Text(

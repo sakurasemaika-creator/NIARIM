@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../config/accent_text_theme.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/app_toast_messenger.dart';
 
@@ -174,7 +175,7 @@ class HomeSelectionToolbar extends StatelessWidget {
               primaryActionLabel ?? l10n.homeMoveToTrash,
               primaryActionIcon,
               onTrash,
-              color: theme.colorScheme.primary,
+              color: AccentTextTheme.of(context),
             ),
           ];
           if (compact) {

@@ -433,7 +433,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     iconColor:
                         projectService.isFavoriteSaving(project.id) ||
                             project.isFavorite
-                        ? Theme.of(context).colorScheme.primary
+                        ? AccentTextTheme.of(context)
                         : null,
                     onTap: projectService.isFavoriteSaving(project.id)
                         ? null

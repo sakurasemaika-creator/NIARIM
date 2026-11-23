@@ -22,6 +22,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../config/accent_text_theme.dart';
 import '../../utils/immersive_mode.dart';
 import '../../widgets/project_autosave_notice.dart';
 import '../../utils/app_error_reporter.dart';
@@ -3602,7 +3603,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: isMoving
-                                      ? Theme.of(context).colorScheme.primary
+                                      ? AccentTextTheme.of(context)
                                       : null,
                                 ),
                               ),

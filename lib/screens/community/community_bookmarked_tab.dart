@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../config/accent_text_theme.dart';
 import '../../config/font_fallback.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/community_preview_service.dart';
@@ -45,7 +46,10 @@ class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final background = opaqueOver(theme.scaffoldBackgroundColor, Colors.black);
-    final foreground = scheme.primary;
+    // Text and icons on the background use the accent text colour; the
+    // progress indicators are fills and keep the accent itself.
+    final foreground = AccentTextTheme.of(context);
+    final progress = scheme.primary;
     final textForeground = scheme.onSurface;
     final bodyForeground = scheme.onSurfaceVariant;
     final service = context.watch<CommunityService>();
@@ -109,7 +113,7 @@ class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
               children: [
                 if (savedWorks.isEmpty) ...[
                   if (loading)
-                    CircularProgressIndicator(color: foreground)
+                    CircularProgressIndicator(color: progress)
                   else
                     Icon(
                       error != null
@@ -175,9 +179,9 @@ class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
                 ] else ...[
                   if (loading)
                     LinearProgressIndicator(
-                      color: foreground,
+                      color: progress,
                       backgroundColor: Color.alphaBlend(
-                        foreground.withValues(alpha: 0.15),
+                        progress.withValues(alpha: 0.15),
                         background,
                       ),
                       semanticsLabel: l10n.homeBookmarkedLoading,

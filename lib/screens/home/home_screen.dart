@@ -72,6 +72,7 @@ import 'widgets/exported_work_thumbnail_dialog.dart';
 import 'widgets/exported_work_preview_layout.dart';
 import 'widgets/work_folder_move_sheet.dart';
 import 'home_clipboard_policy.dart';
+import '../../config/accent_text_theme.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/line_break.dart';
 import '../../utils/name_collation.dart';
@@ -4032,7 +4033,6 @@ class _HomeTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final selected = scheme.primary;
     final labelStyle = localizedHeadingStyle(
       context,
       const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
@@ -4061,7 +4061,9 @@ class _HomeTabBar extends StatelessWidget {
           controller: controller,
           isScrollable: false,
           labelPadding: EdgeInsets.zero,
-          labelColor: selected,
+          // The selected tab's name and icon are text on the bar: the accent
+          // text colour. The underline is a fill: the accent itself.
+          labelColor: AccentTextTheme.of(context),
           // タブはアプリバー（メニュー背景色）の上に描くので、選んでいない
           // タブはメニュー文字色から作る（本文の文字色から作ると、メニューが
           // 暗く本文の文字も暗いテーマで見えなくなる）。
@@ -4071,7 +4073,7 @@ class _HomeTabBar extends StatelessWidget {
                   .withValues(alpha: 0.7),
           labelStyle: labelStyle,
           unselectedLabelStyle: labelStyle,
-          indicatorColor: selected,
+          indicatorColor: scheme.primary,
           tabs: [
             for (var i = 0; i < labels.length; i++)
               Tab(

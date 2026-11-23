@@ -636,7 +636,7 @@ class _LayerPanelState extends State<LayerPanel> {
                                         ? Icons.expand_more
                                         : Icons.chevron_right,
                                     color: layer.id == _selectedFolderId
-                                        ? Theme.of(context).colorScheme.primary
+                                        ? AccentTextTheme.of(context)
                                         : null,
                                     size: 16,
                                   ),

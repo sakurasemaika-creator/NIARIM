@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../config/accent_text_theme.dart';
 import '../../l10n/creator_mission_labels.dart';
 import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
@@ -539,7 +540,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                     : Icons.help_outline,
               ),
               color: eligible && !claimed
-                  ? scheme.primary
+                  ? AccentTextTheme.of(context)
                   : scheme.onSurfaceVariant,
             ),
             // コインと受け取るボタンは文の横か下に置く（右端に固定すると、
@@ -566,7 +567,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                         Icon(
                           Icons.toll_outlined,
                           size: 16,
-                          color: scheme.primary,
+                          color: AccentTextTheme.of(context),
                         ),
                         const SizedBox(width: 3),
                         Text(

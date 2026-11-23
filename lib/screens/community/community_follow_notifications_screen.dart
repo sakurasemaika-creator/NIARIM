@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../config/accent_text_theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/creator_mission_labels.dart';
 import '../../services/api/community_api.dart';
@@ -234,7 +235,6 @@ class _CommunityFollowNotificationsScreenState
 
   Widget _noticeWithLocalHistory({required String message, Widget? action}) {
     final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
     final local = context.watch<CommunityService>().milestoneNotifications;
     final notice = Padding(
       padding: const EdgeInsets.all(16),
@@ -267,7 +267,7 @@ class _CommunityFollowNotificationsScreenState
             notification.isFollower
                 ? Icons.people_outline
                 : Icons.bookmarks_outlined,
-            color: scheme.primary,
+            color: AccentTextTheme.of(context),
           ),
           title: Text(message),
           subtitle: Text(_dateText(time)),
@@ -282,7 +282,6 @@ class _CommunityFollowNotificationsScreenState
     final l10n = AppLocalizations.of(context)!;
     final t = CreatorMissionLabels.of(context);
     final api = _api;
-    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: FitOrHideTitle(t.get('activityTitle')),
@@ -398,7 +397,7 @@ class _CommunityFollowNotificationsScreenState
                           route != null && route != communityNotificationsRoute;
                       return ListTile(
                         key: ValueKey('missionActivity_${event['eventId']}'),
-                        leading: Icon(icon, color: scheme.primary),
+                        leading: Icon(icon, color: AccentTextTheme.of(context)),
                         title: Text(_message(t, event)),
                         subtitle: Text(_date(t, event)),
                         trailing: canOpen

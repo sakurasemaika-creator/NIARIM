@@ -1215,7 +1215,8 @@ class _CommunityScreenState extends State<CommunityScreen>
       opaqueOver(theme.scaffoldBackgroundColor, Colors.black),
     );
     final foreground = theme.appBarTheme.foregroundColor ?? scheme.onSurface;
-    final selected = theme.tabBarTheme.labelColor ?? scheme.primary;
+    final selected =
+        theme.tabBarTheme.labelColor ?? AccentTextTheme.of(context);
     final unselected =
         theme.tabBarTheme.unselectedLabelColor ?? scheme.onSurfaceVariant;
     final titleStyle =
@@ -1629,7 +1630,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                                               ? FontWeight.bold
                                               : FontWeight.normal,
                                           color: !_tagSearchMode
-                                              ? scheme.primary
+                                              ? AccentTextTheme.of(context)
                                               : scheme.onSurfaceVariant,
                                         ),
                                       ),
@@ -1653,7 +1654,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                                               ? FontWeight.bold
                                               : FontWeight.normal,
                                           color: _tagSearchMode
-                                              ? scheme.primary
+                                              ? AccentTextTheme.of(context)
                                               : scheme.onSurfaceVariant,
                                         ),
                                       ),

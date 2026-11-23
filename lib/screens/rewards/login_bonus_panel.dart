@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../config/accent_text_theme.dart';
 import '../../l10n/login_bonus_labels.dart';
 import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
@@ -150,7 +151,7 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
               children: [
                 MissionPanelHeading(
                   icon: Icons.calendar_month_outlined,
-                  iconColor: scheme.primary,
+                  iconColor: AccentTextTheme.of(context),
                   title: t['title'],
                   action: IconButton(
                     tooltip: t['retry'],
@@ -224,7 +225,7 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                             ? Icons.priority_high_rounded
                             : Icons.flag_outlined,
                         color: eligible
-                            ? scheme.primary
+                            ? AccentTextTheme.of(context)
                             : scheme.onSurfaceVariant,
                       ),
                       title: keepTogetherWords(

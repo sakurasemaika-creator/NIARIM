@@ -19,10 +19,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
 
 /// テーマ・外観の「アクセントの文字・アイコン色」は、背景の上に差し色で
-/// 描く文字・アイコンのすべてに効く。差し色とは別の色を選んだテーマで、
-/// テーマの見本一覧（作品広場・プロジェクト一覧・
-/// プロジェクト詳細の模型）と、プロジェクト詳細のループがその色で描かれ、
-/// 塗り（引き出しの見出し・タブの下線）は差し色のままであることを見張る。
+/// 描く文字・アイコンのすべてに効く（所有者の判断、2026-11-23「全部に案Aの
+/// 色を効かせる」）。差し色とは別の色を選んだテーマで、引き出しのアイコン・
+/// ホームの選択中のタブ・お気に入りの星・テーマの見本一覧（作品広場・
+/// プロジェクト一覧・プロジェクト詳細の模型）・プロジェクト詳細のループが
+/// その色で描かれ、塗り（引き出しの見出し・タブの下線）は差し色のままで
+/// あることを見張る。
 void main() {
   const accent = Color(0xFF2E6B5E);
   const accentText = Color(0xFF8A1538);
@@ -72,7 +74,7 @@ void main() {
   Color? textColor(WidgetTester tester, Finder text) =>
       tester.widget<Text>(text).style?.color;
 
-  testWidgets('drawer icons and the header use the configured accent', (
+  testWidgets('drawer icons use it and the header keeps the accent fill', (
     tester,
   ) async {
     await open(tester);
@@ -80,7 +82,23 @@ void main() {
     await tester.pumpAndSettle();
     final drawer = find.byType(Drawer);
     final colors = iconColors(drawer).toList();
-    expect(colors, contains(accent));
+    // The owner's decision (2026-11-23): every text and icon drawn in the
+    // accent on a background uses the accent text colour.
+    expect(colors, contains(accentText));
+    expect(colors, isNot(contains(accent)));
+    final listIcon = find.descendant(
+      of: drawer,
+      matching: find.byType(ListTile),
+    );
+    expect(listIcon, findsWidgets);
+    expect(
+      IconTheme.of(
+        tester.element(
+          find.descendant(of: listIcon.first, matching: find.byType(Icon)),
+        ),
+      ).color,
+      accentText,
+    );
     // 見出しは差し色の塗り。
     expect(
       find.descendant(
@@ -94,6 +112,48 @@ void main() {
       ),
       findsWidgets,
     );
+  });
+
+  testWidgets('the selected Home tab uses it and the underline stays a fill', (
+    tester,
+  ) async {
+    await open(tester);
+    final tabBar = tester.widget<TabBar>(
+      find.descendant(
+        of: find.byType(HomeScreen),
+        matching: find.byType(TabBar),
+      ),
+    );
+    expect(tabBar.labelColor, accentText);
+    expect(tabBar.indicatorColor, accent);
+  });
+
+  testWidgets('a favourite star uses it', (tester) async {
+    final service = await open(tester);
+    await tester.runAsync(() async {
+      final project = await service.createProject(
+        name: 'ほし',
+        backgroundColor: 0xFFFFFFFF,
+        fps: 2,
+        durationSeconds: 1,
+        exportWidth: 64,
+        exportHeight: 36,
+      );
+      await service.setFavorite(project.id, true);
+    });
+    for (var i = 0; i < 4; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    final stars = find.byWidgetPredicate(
+      (w) => w is Icon && w.icon == Icons.star,
+    );
+    expect(stars, findsWidgets);
+    for (final star in stars.evaluate()) {
+      expect((star.widget as Icon).color, accentText);
+    }
   });
 
   testWidgets('the theme samples use it for text and icons', (tester) async {

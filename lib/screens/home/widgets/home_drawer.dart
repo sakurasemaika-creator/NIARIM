@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../config/accent_text_theme.dart';
 import '../../../services/community_service.dart';
 import '../../../services/google_auth_service.dart';
 import '../../../services/api/community_api.dart';
@@ -66,23 +67,25 @@ class _HomeDrawerState extends State<HomeDrawer> {
     final menuForeground =
         theme.appBarTheme.foregroundColor ?? scheme.onSurface;
     final drawerBackground = theme.cardTheme.color ?? scheme.surface;
-    // Drawer icons follow the current Appearance accent, never a copied
+    // Drawer icons are icons on the drawer: the Appearance accent text and
+    // icon colour (the accent itself unless one is chosen), never a copied
     // default-red swatch. Use a conditional theme-derived outline only when
-    // the accent is too close to the drawer surface.
+    // that colour is too close to the drawer surface.
+    final iconColor = AccentTextTheme.of(context);
     final iconShadows = CanvasIconButton.actionShadows(
-      scheme.primary,
+      iconColor,
       drawerBackground,
       scheme,
     );
     Widget drawerIcon(IconData icon) =>
-        Icon(icon, color: scheme.primary, shadows: iconShadows);
+        Icon(icon, color: iconColor, shadows: iconShadows);
     final l10n = AppLocalizations.of(context)!;
     return Drawer(
       width: HomeDrawer.widthFor(MediaQuery.sizeOf(context).width),
       backgroundColor: drawerBackground,
       child: ListTileTheme(
         data: theme.listTileTheme.copyWith(
-          iconColor: scheme.primary,
+          iconColor: iconColor,
           textColor: menuForeground,
           titleTextStyle: theme.listTileTheme.titleTextStyle?.copyWith(
             color: menuForeground,

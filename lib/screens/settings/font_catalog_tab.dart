@@ -2,6 +2,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../config/accent_text_theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/downloadable_font.dart';
 import '../../services/font_service.dart';
@@ -95,7 +96,7 @@ class _FontCatalogTabState extends State<FontCatalogTab>
                               Icons.filter_list,
                               color: _category == null
                                   ? scheme.onSurfaceVariant
-                                  : scheme.primary,
+                                  : AccentTextTheme.of(context),
                             ),
                           )
                         : null,

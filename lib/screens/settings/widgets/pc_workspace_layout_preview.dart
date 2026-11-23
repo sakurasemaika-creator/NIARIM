@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../config/accent_text_theme.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/canvas_dock_panel.dart';
 import '../../../services/settings_service.dart';
@@ -770,7 +771,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
           _ => Icons.tune_outlined,
         },
         size: 48,
-        color: scheme.primary,
+        color: AccentTextTheme.of(context),
       ),
     );
   }
