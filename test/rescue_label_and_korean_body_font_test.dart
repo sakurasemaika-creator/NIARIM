@@ -100,7 +100,7 @@ void main() {
           .widgetList<Text>(
             find.descendant(
               of: find.byType(ThemeRescueButton),
-              matching: find.byType(Text),
+              matching: find.bySubtype<Text>(),
             ),
           )
           .toList();
