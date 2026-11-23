@@ -2789,7 +2789,8 @@ void main() {
     expect(tester.widget<TextButton>(delete).onPressed, isNull);
     expect(tester.widget<TextButton>(restore).onPressed, isNotNull);
     expect(tester.widget<TextButton>(copy).onPressed, isNotNull);
-    // 押せない「完全削除」は、押せるときの色（赤）のままにしない。
+    // 押せない「完全削除」は、押せる「復元」と同じ色のままにしない（押せない
+    // ことが色でも分かる）。完全削除はエラーの赤では描かない。
     Color? inkOf(Finder button) => tester
         .widget<RichText>(
           find.descendant(of: button, matching: find.byType(RichText)),
@@ -2798,6 +2799,7 @@ void main() {
         .style
         ?.color;
     final scheme = Theme.of(tester.element(row)).colorScheme;
+    expect(inkOf(delete), isNot(inkOf(restore)));
     expect(inkOf(delete), isNot(scheme.error));
     expect(find.text('中身なし'), findsNothing);
     expect(
@@ -2852,7 +2854,8 @@ void main() {
     expect(tester.widget<TextButton>(restore).onPressed, isNotNull);
     expect(tester.widget<TextButton>(delete).onPressed, isNotNull);
     expect(tester.widget<TextButton>(copy).onPressed, isNotNull);
-    expect(inkOf(delete), scheme.error);
+    expect(inkOf(delete), inkOf(restore));
+    expect(inkOf(delete), isNot(scheme.error));
     expect(reason, findsNothing);
     expect(
       find.descendant(of: row, matching: find.textContaining('海')),
