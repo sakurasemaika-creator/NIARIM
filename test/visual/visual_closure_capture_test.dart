@@ -140,6 +140,15 @@ String _settings(Map<String, dynamic> json, Set<String> skip) {
   return parts.take(10).join(', ');
 }
 
+/// [value] for the settings text: colours (ARGB integers) as #AARRGGBB,
+/// nested settings as JSON.
+String _settingValue(String key, Object? value) {
+  if (value is int && value > 0xFFFFFF && key.toLowerCase().contains('color')) {
+    return '#${value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+  }
+  return value is Map || value is List ? jsonEncode(value) : '$value';
+}
+
 /// The filter's kind and the values that differ from a plain filter of the
 /// same kind (the settings that make this preset what it is).
 String _filterSettings(FilterDef filter) {
@@ -491,7 +500,7 @@ void main() {
           if (e.key != 'id' &&
               e.key != 'name' &&
               jsonEncode(e.value) != jsonEncode(base[e.key]))
-            '${e.key}=${e.value is Map ? jsonEncode(e.value) : e.value}',
+            '${e.key}=${_settingValue(e.key, e.value)}',
       ];
       _add(
         'brushmode',

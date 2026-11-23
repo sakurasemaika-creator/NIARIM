@@ -121,6 +121,11 @@ def main():
                 image = thumb(ROOT / item[key])
                 draw.text((x, y + 8), label, font=small, fill=(150, 60, 80))
                 page.paste(image, (x, y + 34))
+                # A thin frame, so a blank (white) canvas still shows.
+                draw.rectangle(
+                    (x - 1, y + 33, x + image.width, y + 34 + image.height),
+                    outline=(210, 210, 210),
+                )
                 x += image.width + 24
             y += ROW_H
         pages.append(page)
