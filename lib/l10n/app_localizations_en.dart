@@ -5850,7 +5850,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt5Body =>
-      '1. The fonts and other materials bundled with the App are used in accordance with the license terms listed on this screen under “About Fonts Used.”\n2. Regarding the rights relating to fonts, images, screentones, stamps, and other materials that a user has additionally registered or loaded into the App, the user is responsible for obtaining any necessary rights or permissions and using them lawfully.\n3. If a dispute arises with a third party arising from a user\'s use of third-party materials, the developer bears no responsibility for it, except where legally required to do so.';
+      '1. The fonts and other materials bundled with the App are used in accordance with the license terms listed on this screen under “Fonts Used.”\n2. Regarding the rights relating to fonts, images, screentones, stamps, and other materials that a user has additionally registered or loaded into the App, the user is responsible for obtaining any necessary rights or permissions and using them lawfully.\n3. If a dispute arises with a third party arising from a user\'s use of third-party materials, the developer bears no responsibility for it, except where legally required to do so.';
 
   @override
   String get licenseTermsArt6Title => 'Article 6 (Premium Features / Billing)';
@@ -5916,7 +5916,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt1Body =>
-      'This Privacy Policy (the “Policy”) sets out how information is handled in the app “NIARIM” (the “App”). In this Policy, the “developer” means the provider of the App. Upon request to the contact point in Article 9, the developer will promptly provide its name and address. For the general terms of use of the App, please refer separately to the “Terms of Service / License” screen.';
+      'This Privacy Policy (the “Policy”) sets out how information is handled in the app “NIARIM” (the “App”). In this Policy, the “developer” means the provider of the App. Upon request to the contact point in Article 9, the developer will promptly provide its name and address. For the general terms of use of the App, please refer separately to the “Terms & Licenses” screen.';
 
   @override
   String get privacyPolicyArt2Title =>

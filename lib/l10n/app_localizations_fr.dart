@@ -5947,7 +5947,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get licenseTermsArt5Body =>
-      '1. Les polices et autres matériaux intégrés à l’Application sont utilisés conformément aux conditions de licence indiquées sur cet écran, sous « À propos des polices utilisées ».\n2. En ce qui concerne les droits relatifs aux polices, images, trames, tampons et autres matériaux que l’utilisateur ajoute ou charge lui-même dans l’Application, celui-ci est responsable de l’obtention des droits ou autorisations nécessaires et de leur utilisation licite.\n3. En cas de litige avec un tiers résultant de l’utilisation par l’utilisateur de matériaux tiers, le développeur n’en assume aucune responsabilité, sauf dans les cas où la loi l’exige.';
+      '1. Les polices et autres matériaux intégrés à l’Application sont utilisés conformément aux conditions de licence indiquées sur cet écran, sous « Polices utilisées ».\n2. En ce qui concerne les droits relatifs aux polices, images, trames, tampons et autres matériaux que l’utilisateur ajoute ou charge lui-même dans l’Application, celui-ci est responsable de l’obtention des droits ou autorisations nécessaires et de leur utilisation licite.\n3. En cas de litige avec un tiers résultant de l’utilisation par l’utilisateur de matériaux tiers, le développeur n’en assume aucune responsabilité, sauf dans les cas où la loi l’exige.';
 
   @override
   String get licenseTermsArt6Title =>
@@ -6017,7 +6017,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get privacyPolicyArt1Body =>
-      'La présente politique de confidentialité (la « Politique ») décrit la manière dont les informations sont traitées dans l’application « NIARIM » (l’« Application »). Dans la présente Politique, le « développeur » désigne le fournisseur de l’Application. Sur demande adressée au point de contact de l’article 9, le développeur communique sans délai son nom et son adresse. Pour les conditions générales d’utilisation de l’Application, veuillez vous référer séparément à l’écran « Conditions d’utilisation / Licence ».';
+      'La présente politique de confidentialité (la « Politique ») décrit la manière dont les informations sont traitées dans l’application « NIARIM » (l’« Application »). Dans la présente Politique, le « développeur » désigne le fournisseur de l’Application. Sur demande adressée au point de contact de l’article 9, le développeur communique sans délai son nom et son adresse. Pour les conditions générales d’utilisation de l’Application, veuillez vous référer séparément à l’écran « Conditions et licences ».';
 
   @override
   String get privacyPolicyArt2Title =>
