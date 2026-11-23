@@ -3966,6 +3966,13 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 | DISC604 | App `e18d8e11`（YouTubeの応答をUTF-8のバイト列から読む）。 | `youtube_thumbnail_service_test`。 |
 | DISC605 | App `8555d1a6`（投稿のサムネイルの失敗の知らせにOSの例外の文を出さず、7言語の文と次にすること。元の例外はエラーの記録へ）。 | `font_coverage_test`・l10nのtest・`community_post_*`。 |
 | DISC601 | Web `0bbf72c5`・`1f95d979`（リンクの押せる大きさ44px、600〜641pxのトップのPC画面のはみ出し、仏語・西語のナビ、英語の「Guide」）。 | 全ページのレスポンシブ品質の監査（24幅×12ページ）。 |
+| DISC606 | App `234ef1ae`（公式の自動操作の手順のフィルターも組み込みの名前として扱い、表示の言語の名前を出す）。 | `preset_inventory_test`の自動操作の件、6言語。 |
+| DISC607 | App `2cb2e756`（タイルのファイル名を最後の「_」で分ける）。 | `niapro_format_robustness_test`の「_」の入ったレイヤーIDの件（直す前は失敗）。 |
+| DISC608 | App `2cb2e756`（アプリが書かない範囲のfps・書き出しの大きさ・長さ・描画範囲の倍率は壊れた作品として断る）。 | 同じtestの型・範囲の違う値の件（直す前はfps=0で読めた）。保存形式に触れるtest 73ファイル：成功676・失敗2（rootで権限が効かない既知の`project_favorite_delete_guard_test`）。 |
+| DISC609 | App `2cb2e756`（大きさ・名前の壊れたタイル1枚だけを読み飛ばす）。 | 同じtestの壊れたタイルの件（直す前は合成が例外で止まった）。 |
+| DISC610 | App `66c5057d`（共有カードの線も1回目を取り消してから描き直す）。 | `shared_asset_card_preview_fade_test`（直す前は失敗）、共有カードのtest 19件。 |
+| DISC074（案Aの文字色） | App `a9cce875`（所有者の判断2026-11-23「全部に案Aの色を効かせる」。lib配下の差し色145か所を1つずつ見て、背景の上の文字・アイコンだけをアクセントの文字・アイコン色に。塗りは差し色のまま）。 | `accent_text_screens_test` 6件（引き出し・ホームのタブ・お気に入りの星を足した）、色・ホーム・作品広場・報酬のtest 267件。 |
+| DISC611 | App `82808d33`（音の並べ方`export_audio.dart`、WebMはFFmpegのOpus・AVIはPCM・MP4は端末のAAC〔`HardwareVideoEncoder.kt`〕、入れられない音の件数を完了の画面で知らせる、ヘルプ・FFmpegの注記を7言語）・Web（ヘルプの同期と静的な文）。 | `export_audio_test` 9件（本物のffmpegで音の位置まで）、書き出しのtest 47件、文字・ライセンス・ヘルプのtest 115件、Webの字の収録7言語0件・ヘルプの静的な文。MP4の音は実機の確認（範囲外）。 |
 
 - **Webの監査一式（`visual-audit.yml`と同じ並び、ローカルの静的サーバー・Chromium）**：
   - 1回目（直す前）に失敗した監査：operations-seo（文字列の書き方違い）・intermediate-width（消えた`.hero`で停止）・ai-trust（更新日の決め打ち）・autonomous-browser v2（28件：消えた帯・ヒーロー、作品広場のAPIの404）・complete-scroll（pngjsが無い）・design-polish・hero-rendered-layout・real-capture-loading・home-rendered-capture-alignment・feature-rendered-alignment（後の4本はブラウザの起動の書き方の誤り）・cross-width（72か所が消えた部品）・page-heading（消えたspotlight・2つのキャプチャ・古い見出し）・multilang v4・final-visual-invariants v2・final-visual-screenshot v3（消えたプレビュー）・all-pages-responsive-quality（押せる大きさ・はみ出し＝DISC601）。
@@ -3973,3 +3980,16 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 - **Appの全件のtest（App `56081430`、3分割・-j 3）**：成功5939・スキップ23・失敗5（DISC489の同意で止まっていた`community_account_boundary_widget_test`の2件〔DISC600で直した〕と、rootで流すと権限が効かない既知の3件）。2分割目は100分の上限で`keep_together_text_caller_matrix_test`の途中で止まったので、その2ファイルを修正後に流して成功（関連181件）。`flutter analyze` 0件。
 - **実画面（Linux debug・Xvfb・en 1280×860、App `08eb5dac`）**：起動画面→ホーム（初回の6ページの使い方が出る→スキップ）→新しい作品→PC表示のキャンバスで線を描く→レイヤーをロック→描こうとすると描かれず「This layer is locked, so you can’t draw on it…」→ホームへ戻る確認→引き出し→会員の状況→プレミアム（Linuxはストアが無くプランは押せない・自動更新の案内が出る）。画像は`scratchpad/r3/shots/r4-*`（backup-pending）。
 - **人の作業（変わらず）**：規約・ポリシーの法務の確認、事業者の氏名・住所、Googleの公式のバッジの画像、実機・実課金・実広告・バックエンドのデプロイ。
+
+## 所有者の判断（2026-11-23、S56）— 案Aの文字色（DISC074の残り）
+
+- **原文**：「全部に案Aの色を効かせる（推奨）」（Claudeが、自作テーマで文字・アイコン色を差し色と別にしてもホームの選択中のタブ・お気に入りの星・作品広場の通知のアイコン・「フォロー中0人」のリンクが差し色のままであることを示し、選択肢つきで尋ねたことへの回答）。
+- **決まったこと**：背景の上に差し色で描く文字・アイコンは、どの画面でもテーマ・外観の「アクセントの文字・アイコン色」。下線・FAB・塗りのボタン・進捗・枠・選択の縁・チェック/ラジオ・タイムラインのクリップ・マーカー・キャンバスや絵の上に浮かぶアイコン・起動画面のロゴは差し色のまま。組み込みテーマは2色が同じなので見た目は変わらない。
+- **実装**：App `a9cce875`。CLAUDE.mdの段落も書き直した。
+
+## 所有者の判断（2026-11-23、S56）— 動画の書き出しの音（DISC611）
+
+- **原文**：「音を入れる（推奨）」（Claudeが、タイムラインの音声と動画素材の音がMP4・WebM・AVIのどれにも入らず、書き出し画面はGIFだけ「音のない」と書くことを示し、選択肢つきで尋ねたことへの回答）。
+- **決まったこと**：音はタイムラインの再生と同じ並べ方で入れる。WebM・AVIはFFmpegでまぜて入れ、この環境で実際の動画を確かめる。MP4は端末のエンコーダーで音声トラックを作り、音が正しく入るかの確認は実機（人の作業）に残る。音の無い作品の書き出しは変えない。
+- **実装**：App `82808d33`。
+
