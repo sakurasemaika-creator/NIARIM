@@ -65,17 +65,19 @@
    `debugPrint`を使う。以前はdev_branchの
    `lib/screens/settings/theme_preview_gallery_screen.dart`に7件あったが、
    2026-10-30にdev_branch `4751cbe`を取り込んだ時点で無くなり、例外なしの0件）
-3. `flutter test`（ベースライン：2026-10-30、dev_branch `dc0df19`を
-   取り込んだ`ccr-f56ee68e-77ag7y`（`67f3560`）で**成功2435・スキップ23・
-   失敗26**。26件ともdev_branchだけでも落ちる（作品広場の各テスト
-   〔`community_*`の18件〕・`app_smoke_test`の作品広場4件・
-   `home_bookmark_states_test`の2件・`l10n_unused_key_test`・
-   `startup_failure_recovery_test`）ので通常タスクでは直さない。
+3. `flutter test`（ベースライン：2026-11-23、dev_branch `e31f1b03`で
+   **成功5933・スキップ23・失敗3**。失敗の3件は書き込みを権限（chmod）で
+   断るtest（`project_favorite_delete_guard_test`の2件・
+   `storage_cache_isolation_test`の1件）で、rootで流すと権限が効かず落ちる
+   （このリモート実行環境はroot。CIは一般ユーザーで流す）。
    スキップのうち3件は
    `test/google_auth_init_once_test.dart`で、
    `--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`を付けたときだけ動く。
-   全件で約15〜25分かかるので、変更に関係するテストを先に流し、最後に
-   全件を流す）
+   全件は`-j 4`で約2時間かかり、バックグラウンドの2時間の上限を越える。
+   ファイルの一覧を3つに分け、`setsid nohup`で切り離して順に流し、
+   `--file-reporter json:<ファイル>`で結果を残すこと（コンパクトな表示は
+   流れている最中のtestしか出ない）。変更に関係するテストを先に流し、
+   最後に全件を流す）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
    `0319d57`）、整形済みの状態が正。手で字下げを合わせようとしないこと。
