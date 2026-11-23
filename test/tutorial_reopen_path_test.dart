@@ -85,5 +85,13 @@ void main() {
       expect(step, contains(l10n.homeDrawerTutorial), reason: step);
       expect(step, contains(l10n.helpTutorialButton), reason: step);
     });
+
+    test('the first step of the last page names the menu entry and the Help '
+        'tab ($tag)', () {
+      final l10n = lookupAppLocalizations(locale);
+      final step = l10n.tutorialPage6Step1;
+      expect(step, contains(l10n.homeDrawerTutorial), reason: step);
+      expect(step, contains(l10n.helpScreenTitle), reason: step);
+    });
   }
 }

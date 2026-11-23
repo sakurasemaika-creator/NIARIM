@@ -8388,7 +8388,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tutorialPage6Title => '困ったときは';
 
   @override
-  String get tutorialPage6Step1 => 'ホームの「ヘルプ」で機能の説明を検索できます';
+  String get tutorialPage6Step1 => 'ホームの右上のメニューの「使い方」にある「ヘルプ」で、機能の説明を検索できます';
 
   @override
   String get tutorialPage6Step2 => 'はじめて使う機能では、短い説明が出ます';

@@ -15114,7 +15114,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialPage6Step1.
   ///
   /// In ja, this message translates to:
-  /// **'ホームの「ヘルプ」で機能の説明を検索できます'**
+  /// **'ホームの右上のメニューの「使い方」にある「ヘルプ」で、機能の説明を検索できます'**
   String get tutorialPage6Step1;
 
   /// No description provided for @tutorialPage6Step2.

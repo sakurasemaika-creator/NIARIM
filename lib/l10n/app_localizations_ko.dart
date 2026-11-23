@@ -8433,7 +8433,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get tutorialPage6Title => '막힐 때는';
 
   @override
-  String get tutorialPage6Step1 => '홈 화면의 도움말에서 기능 설명을 검색할 수 있습니다.';
+  String get tutorialPage6Step1 =>
+      '홈 화면 오른쪽 위 메뉴의 \'사용법\'에 있는 \'도움말\'에서 기능 설명을 검색할 수 있습니다.';
 
   @override
   String get tutorialPage6Step2 => '처음 쓰는 기능에서는 짧은 설명이 나옵니다.';

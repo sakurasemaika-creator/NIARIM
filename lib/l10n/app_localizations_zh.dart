@@ -8291,7 +8291,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tutorialPage6Title => '遇到问题时';
 
   @override
-  String get tutorialPage6Step1 => '可在首页的帮助中搜索功能。';
+  String get tutorialPage6Step1 => '可在主页右上角菜单的“使用方法”里的“帮助”中搜索功能。';
 
   @override
   String get tutorialPage6Step2 => '首次使用某项功能时会显示简短说明。';
@@ -18743,7 +18743,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get tutorialPage6Title => '遇到問題時';
 
   @override
-  String get tutorialPage6Step1 => '可在首頁的說明中搜尋功能。';
+  String get tutorialPage6Step1 => '可在首頁右上角選單的「使用方法」裡的「說明」中搜尋功能。';
 
   @override
   String get tutorialPage6Step2 => '第一次使用某項功能時會顯示簡短說明。';

@@ -47,9 +47,12 @@ class _SplashScreenState extends State<SplashScreen> {
   // A pushed page can be replaced with context.go('/') instead of being
   // popped. In that case the Future returned by context.push may never
   // complete, so release the tap guard when the router returns to this route.
+  // GoRouter.push keeps currentConfiguration.uri at the previous location
+  // ('/'), so the top-most match tells whether this route is on top again.
   void _handleRouteChanged() {
     if (!mounted) return;
-    if (_router?.routerDelegate.currentConfiguration.uri.path == '/') {
+    final top = _router?.routerDelegate.currentConfiguration.lastOrNull;
+    if (top?.matchedLocation == '/') {
       _openingDestination = false;
     }
   }

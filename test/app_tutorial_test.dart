@@ -92,6 +92,39 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  testWidgets('the figures and steps match today\'s Home: four tabs, and '
+      'Help is reached from the menu', (tester) async {
+    await openApp(tester, firstLaunch: true);
+    final guide = find.byType(AppTutorial);
+    await tester.tap(find.byKey(const Key('tutorialNext')));
+    await tester.pumpAndSettle();
+    expect(find.text(ja.tutorialPage2Title), findsOneWidget);
+    for (var i = 0; i < 4; i++) {
+      expect(find.byKey(ValueKey('tutorialHomeTab$i')), findsOneWidget);
+    }
+    expect(
+      find.descendant(of: guide, matching: find.text(ja.homeTabBookmarked)),
+      findsNothing,
+      reason: 'Bookmarks live in the community, not on Home',
+    );
+    for (var page = 2; page < 6; page++) {
+      await tester.tap(find.byKey(const Key('tutorialNext')));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text(ja.tutorialPage6Title), findsOneWidget);
+    expect(find.byKey(const ValueKey('tutorialHelpSearch')), findsOneWidget);
+    expect(
+      find.descendant(of: guide, matching: find.byIcon(Icons.help_outline)),
+      findsNothing,
+      reason: 'Home has no ? button',
+    );
+    expect(ja.tutorialPage6Step1, contains(ja.homeDrawerTutorial));
+    expect(ja.tutorialPage6Step1, contains(ja.helpScreenTitle));
+    await tester.tap(find.byKey(const Key('tutorialStart')));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('first launch: Skip also closes the guide for good', (
     tester,
   ) async {

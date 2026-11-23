@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../config/font_fallback.dart';
 import '../l10n/app_localizations.dart';
 import '../services/theme_service.dart';
 import 'keep_together_text.dart';
@@ -60,6 +61,8 @@ class ThemeRescueButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // The label is a button label: heading face, like every other button.
+    final locale = Localizations.maybeLocaleOf(context);
     return DecoratedBox(
       decoration: const ShapeDecoration(
         shape: StadiumBorder(
@@ -151,22 +154,28 @@ class ThemeRescueButton extends StatelessWidget {
                               children: [
                                 Text(
                                   l10n.themeUnreadableResetButton,
-                                  style: TextStyle(
-                                    foreground: Paint()
-                                      ..style = PaintingStyle.stroke
-                                      ..strokeWidth = 3.5
-                                      ..strokeJoin = StrokeJoin.round
-                                      ..color = const Color(0xFFFFFFFF),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
+                                  style: headingStyleFor(
+                                    locale,
+                                    TextStyle(
+                                      foreground: Paint()
+                                        ..style = PaintingStyle.stroke
+                                        ..strokeWidth = 3.5
+                                        ..strokeJoin = StrokeJoin.round
+                                        ..color = const Color(0xFFFFFFFF),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                                 Text(
                                   l10n.themeUnreadableResetButton,
-                                  style: const TextStyle(
-                                    color: Color(0xFF000000),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
+                                  style: headingStyleFor(
+                                    locale,
+                                    const TextStyle(
+                                      color: Color(0xFF000000),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ],

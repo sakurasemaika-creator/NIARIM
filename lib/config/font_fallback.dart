@@ -86,6 +86,20 @@ const List<String> kChineseBodyFontFallback = <String>[
   'NotoSerifKRSubset',
 ];
 
+/// 韓国語の画面の本文の代替フォント列。主フォントは[bodyFontFamilyFor]が
+/// 返すNoto Serif KR（サブセット）。
+///
+/// 部分フォントに無い字（利用者が打つ作品名・フォルダ名・タグの全角英数字・
+/// かな・漢字）は明朝の白光明朝で補う。[kBodyFontFallback]を使うと先頭の
+/// 極太のDela Gothic Oneがそれらを描き、「ＡＢＣ全角」の「ＡＢＣ」だけが
+/// 極太になった。白光明朝に無い拡張ラテンだけをDela Gothic Oneが受け持つ。
+const List<String> kKoreanBodyFontFallback = <String>[
+  'HakkouMincho',
+  'DelaGothicOne',
+  'NotoSerifJP',
+  'NotoSerifSCSubset',
+];
+
 /// 表示言語[locale]の本文の主フォント。
 ///
 /// 白光明朝の漢字はどれも字幅0.65em（縦長の明朝）の日本の字形なので、
@@ -105,7 +119,11 @@ String bodyFontFamilyFor(Locale? locale) => switch (locale?.languageCode) {
 
 /// 表示言語[locale]の本文の代替フォント列（[bodyFontFamilyFor]と組で使う）。
 List<String> bodyFontFallbackFor(Locale? locale) =>
-    locale?.languageCode == 'zh' ? kChineseBodyFontFallback : kBodyFontFallback;
+    switch (locale?.languageCode) {
+      'zh' => kChineseBodyFontFallback,
+      'ko' => kKoreanBodyFontFallback,
+      _ => kBodyFontFallback,
+    };
 
 bool _usesUnifiedHeadingFont(Locale? locale) =>
     locale?.languageCode == 'zh' || locale?.languageCode == 'ko';

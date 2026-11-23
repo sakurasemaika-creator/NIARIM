@@ -8932,7 +8932,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tutorialPage6Step1 =>
-      'Busca explicaciones de las funciones en la Ayuda de la pantalla de inicio.';
+      'Busca explicaciones de las funciones en «Ayuda», dentro de «Cómo se usa», en el menú de arriba a la derecha de Inicio.';
 
   @override
   String get tutorialPage6Step2 =>

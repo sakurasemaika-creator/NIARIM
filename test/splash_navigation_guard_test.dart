@@ -98,6 +98,19 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('splashCreateActionButton')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('return-from-home')), findsOneWidget);
+
+      // Three quick taps before the next frame (the first navigation after a
+      // cold start is slow to build) still push a single page. push keeps the
+      // configuration's uri at '/', so the guard must not reset on that.
+      await tester.tap(find.byKey(const ValueKey('return-from-home')));
+      await tester.pumpAndSettle();
+      final create = find.byKey(const ValueKey('splashCreateActionButton'));
+      await tester.tap(create);
+      await tester.tap(create, warnIfMissed: false);
+      await tester.tap(create, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      expect(router.routerDelegate.currentConfiguration.matches, hasLength(2));
+      expect(find.byKey(const ValueKey('return-from-home')), findsOneWidget);
     },
   );
 }

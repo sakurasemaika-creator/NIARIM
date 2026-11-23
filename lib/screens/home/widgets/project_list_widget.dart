@@ -758,8 +758,48 @@ class ProjectListWidget extends StatelessWidget {
     final isSelected = selectedIds.contains(project.id);
     // 行の先頭の絵の大きさは詳細の大・中・小と画面の幅で決まる。
     final thumb = collectionDetailThumbExtent(context, 48);
+    final actionsBelow = _actionsBelowName(context);
+    final date = DateLineText(
+      [
+        l10n.homeProjectMeta(project.fps, project.durationSeconds),
+        l10n.projectListUpdatedOn(project.updatedAt),
+        if (_searchLocation(context, project.folderId) case final location?)
+          l10n.projectListInFolder(location),
+      ].join('\n'),
+      when: project.updatedAt,
+      localeName: l10n.localeName,
+      // 「12fps · 10秒」の数と単位も途中で折り返さない。日時に添える語
+      // （「更新」）も字の途中で折り返さない。
+      keep: [
+        ...numberUnitParts(
+          l10n.homeProjectMeta(project.fps, project.durationSeconds),
+        ),
+        ...dateLabelWords(l10n.projectListUpdatedOn(project.updatedAt)),
+      ],
+    );
+    // 星と︙の押せる所（48×48）が重ならないよう、隙間を分け合う。
+    final actions = CollectionActionRow(
+      children: [
+        CollectionFavoriteButton(
+          itemId: project.id,
+          favorite: project.isFavorite,
+          tooltip: project.isFavorite
+              ? l10n.colorPickerFavoriteRemove
+              : l10n.colorPickerFavoriteAdd,
+          onPressed: () => runProjectAction(
+            context,
+            () => context.read<ProjectService>().toggleFavorite(project.id),
+          ),
+        ),
+        CollectionActionFrame(child: _projectMenu(context, project)),
+      ],
+    );
     return ListTile(
       minTileHeight: collectionDetailMinRowHeight(thumb, 48),
+      contentPadding: actionsBelow
+          ? const EdgeInsets.symmetric(horizontal: 8)
+          : null,
+      horizontalTitleGap: actionsBelow ? 8 : 16,
       leading: isSelectionMode
           ? Checkbox(
               value: isSelected,
@@ -783,45 +823,23 @@ class ProjectListWidget extends StatelessWidget {
       ),
       // 2行目は最後に保存した日時（その言語の日付と時刻の書き方）。検索の
       // 結果には、入っているフォルダを添える。
-      subtitle: DateLineText(
-        [
-          l10n.homeProjectMeta(project.fps, project.durationSeconds),
-          l10n.projectListUpdatedOn(project.updatedAt),
-          if (_searchLocation(context, project.folderId) case final location?)
-            l10n.projectListInFolder(location),
-        ].join('\n'),
-        when: project.updatedAt,
-        localeName: l10n.localeName,
-        // 「12fps · 10秒」の数と単位も途中で折り返さない。日時に添える語
-        // （「更新」）も字の途中で折り返さない。
-        keep: [
-          ...numberUnitParts(
-            l10n.homeProjectMeta(project.fps, project.durationSeconds),
-          ),
-          ...dateLabelWords(l10n.projectListUpdatedOn(project.updatedAt)),
-        ],
-      ),
-      trailing: (isSelectionMode || onPickProject != null)
-          ? null
-          // 星と︙の押せる所（48×48）が重ならないよう、隙間を分け合う。
-          : CollectionActionRow(
+      subtitle: actionsBelow
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                CollectionFavoriteButton(
-                  itemId: project.id,
-                  favorite: project.isFavorite,
-                  tooltip: project.isFavorite
-                      ? l10n.colorPickerFavoriteRemove
-                      : l10n.colorPickerFavoriteAdd,
-                  onPressed: () => runProjectAction(
-                    context,
-                    () => context.read<ProjectService>().toggleFavorite(
-                      project.id,
-                    ),
-                  ),
+                date,
+                const SizedBox(height: 8),
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: actions,
                 ),
-                CollectionActionFrame(child: _projectMenu(context, project)),
               ],
-            ),
+            )
+          : date,
+      trailing: (isSelectionMode || onPickProject != null || actionsBelow)
+          ? null
+          : actions,
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
           : onPickProject != null
@@ -842,14 +860,19 @@ class ProjectListWidget extends StatelessWidget {
       ? null
       : () => isSelectionMode ? onSelectionChanged(id) : onLongPress(id);
 
+  /// 狭い画面（幅360以下）・大きな文字（1.5倍以上）の詳細の行は、星・︙を
+  /// 名前の横ではなく日時の下へ回す。横に置くと名前の欄が120px前後しか
+  /// 残らず、名前が語・数の途中で折れた（「Scene1 / 0」）。
+  bool _actionsBelowName(BuildContext context) =>
+      !isSelectionMode &&
+      onPickProject == null &&
+      MediaQuery.sizeOf(context).width <= 360 &&
+      MediaQuery.textScalerOf(context).scale(1) >= 1.5;
+
   Widget _folderDetailTile(BuildContext context, ProjectFolder folder) {
     final isSelected = selectedIds.contains(folder.id);
     final thumb = collectionDetailThumbExtent(context, 48);
-    final compactLargeTextLayout =
-        !isSelectionMode &&
-        onPickProject == null &&
-        MediaQuery.sizeOf(context).width <= 360 &&
-        MediaQuery.textScalerOf(context).scale(1) >= 1.5;
+    final compactLargeTextLayout = _actionsBelowName(context);
     final folderDate = DateLineText(
       [
         AppLocalizations.of(

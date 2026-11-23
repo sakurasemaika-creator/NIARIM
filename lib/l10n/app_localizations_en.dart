@@ -8789,7 +8789,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialPage6Step1 =>
-      'Search for feature descriptions in Help on the Home screen.';
+      'Search for feature descriptions under “Help” in “How to use”, in the menu at the top right of Home.';
 
   @override
   String get tutorialPage6Step2 =>

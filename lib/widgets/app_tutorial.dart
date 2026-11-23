@@ -778,37 +778,81 @@ class _HomeFigure extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(10, 8, 10, 4),
-                  child: Row(
-                    children: [
-                      for (final (i, label) in [
+                  // The same four tabs as Home, named when every name fits
+                  // and shown as their icons otherwise (as Home does).
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      const tabs = <(IconData, int)>[
+                        (Icons.movie_creation_outlined, 0),
+                        (Icons.video_library_outlined, 1),
+                        (Icons.share_outlined, 2),
+                        (Icons.delete_outline, 3),
+                      ];
+                      final labels = [
                         l10n.homeTabProjects,
                         l10n.homeTabWorks,
-                        l10n.homeTabBookmarked,
-                      ].indexed)
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Text(
-                                label,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: heading.copyWith(
-                                  color: i == 0
-                                      ? accentText
-                                      : scheme.onSurfaceVariant,
-                                ),
+                        l10n.homeTabShared,
+                        l10n.homeTabTrash,
+                      ];
+                      const iconSize = 12.0;
+                      const gap = 3.0;
+                      final cell = constraints.maxWidth / labels.length;
+                      final named = labels.every((label) {
+                        final painter = TextPainter(
+                          text: TextSpan(text: label, style: heading),
+                          textDirection: Directionality.of(context),
+                          locale: Localizations.maybeLocaleOf(context),
+                          maxLines: 1,
+                        )..layout();
+                        final fits = iconSize + gap + painter.width + 4 <= cell;
+                        painter.dispose();
+                        return fits;
+                      });
+                      return Row(
+                        children: [
+                          for (final (icon, i) in tabs)
+                            Expanded(
+                              key: ValueKey('tutorialHomeTab$i'),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        icon,
+                                        size: iconSize,
+                                        color: i == 0
+                                            ? accentText
+                                            : scheme.onSurfaceVariant,
+                                      ),
+                                      if (named) ...[
+                                        const SizedBox(width: gap),
+                                        Text(
+                                          labels[i],
+                                          maxLines: 1,
+                                          softWrap: false,
+                                          style: heading.copyWith(
+                                            color: i == 0
+                                                ? accentText
+                                                : scheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Container(
+                                    height: 2,
+                                    color: i == 0
+                                        ? scheme.primary
+                                        : Colors.transparent,
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 3),
-                              Container(
-                                height: 2,
-                                color: i == 0
-                                    ? scheme.primary
-                                    : Colors.transparent,
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                            ),
+                        ],
+                      );
+                    },
                   ),
                 ),
                 Padding(
@@ -1132,7 +1176,7 @@ class _ExportFigure extends StatelessWidget {
   }
 }
 
-/// 6ページ目：？・はじめての説明・ホームのメニューから見直す。
+/// 6ページ目：ヘルプの検索・はじめての説明・ホームのメニューから見直す。
 class _HelpFigure extends StatelessWidget {
   const _HelpFigure();
 
@@ -1151,19 +1195,41 @@ class _HelpFigure extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 10, 14, 8),
+                  padding: const EdgeInsets.fromLTRB(10, 10, 14, 6),
                   child: Row(
                     children: [
                       Icon(Icons.arrow_back, size: 16, color: ink),
                       const SizedBox(width: 10),
                       const _Bar(width: 70, height: 8),
-                      const Spacer(),
-                      _Marked(
-                        number: 1,
-                        circle: true,
-                        child: Icon(Icons.help_outline, size: 18, color: ink),
-                      ),
                     ],
+                  ),
+                ),
+                // The search field of the Help tab.
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 0, 0, 0),
+                  child: _Marked(
+                    number: 1,
+                    child: Container(
+                      key: const ValueKey('tutorialHelpSearch'),
+                      width: 170,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.search, size: 14, color: ink),
+                          const SizedBox(width: 6),
+                          const Expanded(
+                            child: _Bar(width: double.infinity, height: 6),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
                 Padding(
