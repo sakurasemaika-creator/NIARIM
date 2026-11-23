@@ -108,7 +108,6 @@ on:
       - "test/filter_engine_aurora_hologram_test.dart"
       - "test/visual/glitter_lame_render_capture_test.dart"
       - "tool/patch_glitter_hexagon.py"
-      - ".github/workflows/one-shot-glitter-actual-capture.yml"
       - ".github/workflows/texture-filter-captures.yml"
 
 permissions:

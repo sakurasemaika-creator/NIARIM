@@ -65,6 +65,8 @@ Use only the metrics exposed by Google Play Console for the first release:
 
 Use comparable periods for each experiment, and leave unavailable metrics blank.
 
+The app and the website collect no analytics of their own, and the website's store links carry no campaign (UTM) parameters (owner decision, 2026-11-23). Metrics that only in-app or web measurement could provide stay unmeasured.
+
 ## App Store specific
 
 - Keep app name and subtitle concise and localized.
@@ -93,7 +95,6 @@ Before a public store release:
 - Confirm support/privacy/marketing URLs use the final branded production domain.
 - Check App Store / Play Console previews for truncation in every locale.
 - After release, establish a baseline before changing multiple acquisition assets at once.
-
 
 ## 初回リリースの運用方針
 
