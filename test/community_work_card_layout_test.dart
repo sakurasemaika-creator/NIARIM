@@ -11,8 +11,10 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/load_app_fonts.dart';
+import 'helpers/paragraph_lines.dart';
 
 void main() {
+  titleLineStartTests();
   testWidgets(
     'narrow work cards keep scaled text and independent actions reachable',
     (tester) async {
@@ -435,6 +437,113 @@ void main() {
       );
       expect(tester.takeException(), isNull, reason: 'card width $width');
       await tester.pumpWidget(const SizedBox.shrink());
+    }
+  });
+}
+
+/// A Japanese title does not start a line with a long-vowel mark or a small
+/// kana (「最後のメロデ／ィ」 at 390dp, French, twice the text size), the same
+/// rule as the cards on Home. The title is still read aloud as written.
+void titleLineStartTests() {
+  testWidgets('community card titles keep small kana on the line before', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final theme = ThemeService();
+    await theme.init();
+    addTearDown(theme.dispose);
+    final community = CommunityService();
+    await community.contentFiltersReady;
+    addTearDown(community.dispose);
+    await loadAppFonts(tester);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    const titles = [
+      '最後のメロディ',
+      'ファーストショットのキャッチャーのジャンプショット',
+      'ショッピングモールのフェスティバルでキャッチボール',
+      'チョコレートシェイクとミルクティーのパーティー',
+    ];
+    const smallKana = 'ーぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ';
+    for (final locale in const [Locale('fr'), Locale('ja')]) {
+      for (final width in [320.0, 360.0, 390.0]) {
+        for (final scale in [1.0, 2.0]) {
+          tester.view.physicalSize = Size(width, 900);
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: theme.themeData,
+              locale: locale,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(textScaler: TextScaler.linear(scale)),
+                child: child!,
+              ),
+              home: ChangeNotifierProvider<CommunityService>.value(
+                value: community,
+                child: Scaffold(
+                  body: SingleChildScrollView(
+                    child: CommunityWorkGrid(
+                      works: [
+                        for (final (i, title) in titles.indexed)
+                          CommunityWork(
+                            id: 'w$i',
+                            title: title,
+                            authorId: 'creator',
+                            authorName: 'Creator',
+                            viewCount: 1,
+                            likeCount: 0,
+                            bookmarkCount: 1,
+                            postedAt: DateTime.utc(2026, 10, 22),
+                            durationSeconds: 12,
+                            thumbnailColorIndex: 0,
+                          ),
+                      ],
+                      bookmarkedIds: const {},
+                      onTapWork: (_) {},
+                      onToggleBookmark: (_) {},
+                      onTapAuthor: (_) {},
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          for (final title in titles) {
+            final paragraphs = tester
+                .renderObjectList<RenderParagraph>(
+                  find.descendant(
+                    of: find.byType(CommunityWorkGrid),
+                    matching: find.byType(RichText),
+                  ),
+                )
+                .where(
+                  (p) =>
+                      p.text
+                          .toPlainText(includeSemanticsLabels: false)
+                          .replaceAll('⁠', '') ==
+                      title,
+                );
+            expect(paragraphs, isNotEmpty, reason: title);
+            for (final paragraph in paragraphs) {
+              final lines = ParagraphLines(paragraph);
+              for (final at in lines.breaksWithin(0, lines.visible.length)) {
+                expect(
+                  smallKana.contains(lines.visible[at]),
+                  isFalse,
+                  reason:
+                      '$locale ${width}x$scale: a line starts with '
+                      '${lines.visible[at]} in $title',
+                );
+              }
+            }
+          }
+        }
+      }
     }
   });
 }

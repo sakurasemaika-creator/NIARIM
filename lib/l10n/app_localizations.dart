@@ -1070,7 +1070,7 @@ abstract class AppLocalizations {
   /// No description provided for @penSettingsCustomGraphHint.
   ///
   /// In ja, this message translates to:
-  /// **'グラフの空いている場所をタップすると点を追加（最大10個）、点をドラッグで移動、ダブルタップで削除できます（始点・終点は削除できません）。'**
+  /// **'グラフの空いている場所をタップすると点を追加、点をドラッグで移動、ダブルタップで削除できます（始点・終点は削除できません）。'**
   String get penSettingsCustomGraphHint;
 
   /// No description provided for @penSettingsResetCurveButton.
@@ -3456,7 +3456,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsClipDuplicateDesc.
   ///
   /// In ja, this message translates to:
-  /// **'タイムライン上の画像・動画・音声クリップをタップすると、詳細シートが開きます。\n詳細シートの複製ボタンを押すと、選んだクリップを複製できます。\n同じ効果音を繰り返したり、同じ画像を別の場面に配置したりするときに便利です。'**
+  /// **'タイムライン上の画像・動画・音声クリップをタップすると、詳細の画面が開きます。\n複製ボタンで選んだクリップを複製でき、削除ボタンで消せます。\nクリップを長押ししたままドラッグすると、表示を始める位置を動かせます。\n同じ効果音を繰り返したり、同じ画像を別の場面に配置したりするときに便利です。'**
   String get tipsClipDuplicateDesc;
 
   /// No description provided for @tipsTextCaptionTitle.

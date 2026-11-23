@@ -3047,7 +3047,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               children: [
                 for (final x in [
                   '2400f',
-                  '24fps',
+                  l.pcStatusFps(24),
                   '1920×1080',
                   workTimeLabel(l, 6 * 3600 + 40 * 60),
                   _date(DateTime(2026, 10, 13)),

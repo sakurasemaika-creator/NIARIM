@@ -11065,6 +11065,39 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
               ],
             ),
           ),
+          // The sheet was handed duplicate and delete but showed no button
+          // for them, so an audio clip could not be duplicated or deleted here
+          // (the Tips say it can).
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Wrap(
+              spacing: 4,
+              children: [
+                TextButton.icon(
+                  key: const ValueKey('timelineClipSheetDuplicate'),
+                  icon: const Icon(Icons.content_copy, size: 18),
+                  label: Text(l10n.commonDuplicate),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    widget.onDuplicate();
+                  },
+                ),
+                TextButton.icon(
+                  key: const ValueKey('timelineClipSheetDelete'),
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: Text(l10n.commonDelete),
+                  onPressed: () async {
+                    if (!await confirmDelete(context, itemName: _c.label)) {
+                      return;
+                    }
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                    widget.onDelete();
+                  },
+                ),
+              ],
+            ),
+          ),
           const Divider(height: 1),
           Expanded(
             child: ListView(

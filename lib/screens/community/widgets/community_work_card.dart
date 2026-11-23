@@ -10,6 +10,7 @@ import '../../../widgets/collection_tile_layout.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/community_work.dart';
+import '../../../utils/line_break.dart';
 import 'community_work_counts.dart';
 import 'community_ranking_work_list.dart'
     show CommunityRankBadge, CommunityRankingLayout, CommunityRankingWorkCard;
@@ -253,6 +254,9 @@ class CommunityWorkCard extends StatelessWidget {
                     height: titleHeight,
                     child: Align(
                       alignment: AlignmentDirectional.centerStart,
+                      // A title does not start a line with a long-vowel
+                      // mark or a small kana (「最後のメロデ／ィ」), the same
+                      // rule as the cards on Home. Read aloud as written.
                       child: Text(
                         isUnavailable
                             ? CommunityPlazaLabels.of(
@@ -260,6 +264,9 @@ class CommunityWorkCard extends StatelessWidget {
                               ).unavailablePlaceholder
                             : isMuted
                             ? CommunityPlazaLabels.of(context).mutedPlaceholder
+                            : keepJapaneseLineStartsAttached(work.title),
+                        semanticsLabel: isUnavailable || isMuted
+                            ? null
                             : work.title,
                         maxLines: kCollectionTileNameLines,
                         overflow: TextOverflow.ellipsis,

@@ -482,6 +482,69 @@ void main() {
     },
   );
 
+  testWidgets('DISC582: choosing slot saves shows each slot\'s number, '
+      'picture and memo like the slot screen', (tester) async {
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    await open(tester, tree: false);
+    final project = await newProject(tester, '選ぶ');
+    await save(tester, project, '線画', slot: 0);
+    await save(tester, project, '', slot: 1);
+    await save(tester, project, '彩色', slot: 2);
+    final flow = showSaveModeChangeFlowIfNeeded(
+      context: navKey.currentContext!,
+      projectId: project.id,
+      projectName: project.name,
+      saveService: saves,
+      newIsTreeMode: false,
+      newSlotMax: 1,
+    );
+    await settleIo(tester, 3);
+    final choose = find.text(l10n.saveTreeSelectDataButton);
+    await tester.scrollUntilVisible(choose, 140);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.ancestor(of: choose, matching: find.byType(OutlinedButton)),
+    );
+    await tester.pumpAndSettle();
+    for (final (slot, memo) in [(0, '線画'), (1, null), (2, '彩色')]) {
+      final row = find.byKey(ValueKey('selectableSlot$slot'));
+      expect(row, findsOneWidget, reason: 'slot $slot');
+      expect(
+        find.descendant(
+          of: row,
+          matching: find.text(l10n.saveTreeSlotLabel(slot + 1)),
+        ),
+        findsOneWidget,
+        reason: 'slot $slot number',
+      );
+      expect(
+        find.descendant(of: row, matching: find.byType(Checkbox)),
+        findsOneWidget,
+      );
+      // The save's picture (or its placeholder) beside the check box.
+      expect(
+        find.descendant(
+          of: row,
+          matching: find.byWidgetPredicate(
+            (w) => w is Image || (w is Icon && w.icon == Icons.image),
+          ),
+        ),
+        findsOneWidget,
+        reason: 'slot $slot picture',
+      );
+      if (memo != null) {
+        expect(
+          find.descendant(of: row, matching: find.text(memo)),
+          findsOneWidget,
+        );
+      }
+    }
+    expect(tester.takeException(), isNull);
+    Navigator.of(navKey.currentContext!).popUntil((route) => route.isFirst);
+    await tester.pumpAndSettle();
+    await flow;
+  });
+
   testWidgets('tree -> slots with fewer saves than slots: the saves are in '
       'the slot screen, also after a restart', (tester) async {
     await open(tester, tree: true);

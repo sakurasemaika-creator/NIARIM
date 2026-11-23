@@ -530,7 +530,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get penSettingsCustomGraphHint =>
-      '그래프의 빈 곳을 탭하면 점을 추가하고(최대 10개), 점을 드래그하면 이동, 더블 탭하면 삭제할 수 있습니다(시작점과 끝점은 삭제할 수 없습니다).';
+      '그래프의 빈 곳을 탭하면 점을 추가하고, 점을 드래그하면 이동, 더블 탭하면 삭제할 수 있습니다(시작점과 끝점은 삭제할 수 없습니다).';
 
   @override
   String get penSettingsResetCurveButton => '기본값으로 재설정';
@@ -1871,7 +1871,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsClipDuplicateDesc =>
-      '이미지·동영상·오디오 클립을 탭하면 열리는 상세 시트의 복사 아이콘으로 복제할 수 있습니다. 같은 효과음을 반복해서 쓰거나 같은 이미지를 장면마다 다시 배치하는 작업도 길게 눌러 드래그하고 복제 버튼을 누르는 것만으로 끝납니다.';
+      '이미지·동영상·오디오 클립을 탭하면 상세 화면이 열립니다. 복사 아이콘으로 복제하고, 삭제 아이콘으로 지울 수 있습니다. 클립을 길게 누른 채 드래그하면 시작 위치를 옮길 수 있습니다. 같은 효과음을 반복하거나 같은 이미지를 다른 장면에 배치할 때 편리합니다.';
 
   @override
   String get tipsTextCaptionTitle => '텍스트 도구로 자막 넣기';

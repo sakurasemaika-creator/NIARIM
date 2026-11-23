@@ -198,6 +198,66 @@ void main() {
     );
   }
 
+  test('DISC581: reducing slots keeps each save in its slot order', () async {
+    final (ps, p) = await project();
+    final service = SaveTreeService()..setSlotMax(4);
+    await slot(service, ps, p, 0, comment: 'First');
+    final second = await slot(service, ps, p, 1, comment: 'Second');
+    // Overwriting slot 1 adds the new save at the end of the list.
+    final overwritten = await slot(service, ps, p, 0, comment: 'Overwritten');
+    expect(await service.setSlotMemo(p.id, 0, 'Memo of slot 1'), isTrue);
+    expect(await service.setSlotMemo(p.id, 1, 'Memo of slot 2'), isTrue);
+    expect(
+      await service.applyModeChange(
+        projectId: p.id,
+        keepIds: [second.id, overwritten.id],
+        archive: false,
+        newIsTreeMode: false,
+        newSlotMax: 2,
+      ),
+      isTrue,
+    );
+    final reopened = await restart(slots: 2);
+    expect(reopened.getNodes(p.id).map((n) => (n.slotIndex, n.id)).toSet(), {
+      (0, overwritten.id),
+      (1, second.id),
+    });
+    expect(reopened.slotDisplayMemoOf(p.id, 0), 'Memo of slot 1');
+    expect(reopened.slotDisplayMemoOf(p.id, 1), 'Memo of slot 2');
+  });
+
+  test('DISC581: tree saves become slots newest first', () async {
+    final (ps, p) = await project();
+    final service = SaveTreeService()..setTreeMode(true);
+    final saved = <SaveNode>[];
+    for (final comment in ['Oldest', 'Middle', 'Newest']) {
+      saved.add(
+        await service.saveAsChild(
+          projectId: p.id,
+          project: p,
+          scenes: ps.scenesOf(p.id),
+          tileManager: ps.tileManagerOf(p.id),
+          comment: comment,
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+    }
+    expect(
+      await service.applyModeChange(
+        projectId: p.id,
+        keepIds: [for (final node in saved) node.id],
+        archive: false,
+        newIsTreeMode: false,
+        newSlotMax: 3,
+      ),
+      isTrue,
+    );
+    final bySlot = {
+      for (final node in service.getNodes(p.id)) node.slotIndex: node.comment,
+    };
+    expect(bySlot, {0: 'Newest', 1: 'Middle', 2: 'Oldest'});
+  });
+
   test('tree saves keep their parent after a restart', () async {
     final (ps, p) = await project();
     final service = SaveTreeService()..setTreeMode(true);

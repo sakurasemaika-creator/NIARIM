@@ -18,6 +18,7 @@ import '../../widgets/sort_mode_control.dart';
 import '../../widgets/stepped_slider.dart';
 import '../home/home_screen.dart';
 import '../home/widgets/project_list_widget.dart';
+import '../../widgets/frame_preview_background.dart';
 
 /// 起動画面ウィジェットに表示するフレームを選ぶフロー（2画面構成）。
 ///
@@ -891,6 +892,16 @@ class _ArtworkFrameThumbnailState extends State<ArtworkFrameThumbnail> {
         color: Theme.of(context).colorScheme.onSurfaceVariant,
       );
     }
-    return RawImage(image: image, fit: BoxFit.cover);
+    // The composite has no background: lay the work's background (or the
+    // transparency checkerboard) under it, like the other frame previews.
+    final background = context.select<ProjectService, int?>(
+      (ps) => ps.projects
+          .where((p) => p.id == widget.projectId)
+          .firstOrNull
+          ?.backgroundColor,
+    );
+    final picture = RawImage(image: image, fit: BoxFit.cover);
+    if (background == null) return picture;
+    return FramePreviewBackground(backgroundColor: background, child: picture);
   }
 }

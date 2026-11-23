@@ -1794,31 +1794,48 @@ class _SelectableSlotView extends StatelessWidget {
         if (node == null) return const SizedBox.shrink();
         final isSelected = selectedIds.contains(node.id);
         final isDisabled = limitReached && !isSelected;
+        // スロットの画面と同じく、番号の題・縮小画像・メモ・日時で見分ける
+        // （メモと日時だけでは、どのスロットの保存か分からなかった）。
+        final memo = givenSaveName(
+          saveService.slotDisplayMemoOf(projectId, slotIndex),
+        );
+        final muted = isDisabled
+            ? Theme.of(context).colorScheme.onSurfaceVariant
+            : null;
         return ListTile(
+          key: ValueKey('selectableSlot$slotIndex'),
           enabled: !isDisabled,
-          leading: Checkbox(
-            value: isSelected,
-            onChanged: isDisabled ? null : (_) => onToggle(node.id),
+          minTileHeight: 72,
+          leading: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Checkbox(
+                value: isSelected,
+                onChanged: isDisabled ? null : (_) => onToggle(node.id),
+              ),
+              _SaveNodeThumbnail(node: node, size: 40),
+            ],
           ),
-          // スロットの行・確認・知らせと同じ名前（鉛筆で変えた・消した
-          // スロットのメモ。保存したときの名前ではない）。
-          title: Text(
-            slotSaveName(
-              l10n,
-              saveService.slotDisplayMemoOf(projectId, slotIndex),
-              slotIndex,
-            ),
-            style: TextStyle(
-              color: isDisabled
-                  ? Theme.of(context).colorScheme.onSurfaceVariant
-                  : null,
-            ),
+          title: KeepTogetherText(
+            l10n.saveTreeSlotLabel(slotIndex + 1),
+            keep: [l10n.saveTreeSlotLabel(slotIndex + 1)],
+            style: localizedHeadingStyle(
+              context,
+              _slotTileTitleStyle,
+            ).copyWith(color: muted),
           ),
-          subtitle: Text(
-            formatSaveTime(
-              node.savedAt,
-              AppLocalizations.of(context)!.localeName,
-            ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (memo != null) Text(memo, style: TextStyle(color: muted)),
+              Text(
+                formatSaveTime(
+                  node.savedAt,
+                  AppLocalizations.of(context)!.localeName,
+                ),
+              ),
+            ],
           ),
           onTap: isDisabled ? null : () => onToggle(node.id),
         );

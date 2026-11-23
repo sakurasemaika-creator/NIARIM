@@ -543,7 +543,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 SettingsValueTile(
                   title: l10n.settingsDefaultFps,
                   subtitle: l10n.settingsDefaultFpsSubtitle,
-                  value: '${settings.defaultFps} fps',
+                  value: l10n.pcStatusFps(settings.defaultFps),
                   onTap: () async {
                     // 新規プロジェクト作成画面のFPS選択肢と統一（8/12/24のみ）。
                     final selected = await showDialog<int>(
@@ -555,7 +555,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               (fps) => SimpleDialogOption(
                                 onPressed: () => Navigator.pop(dctx, fps),
                                 child: Text(
-                                  '$fps fps',
+                                  l10n.pcStatusFps(fps),
                                   style: TextStyle(
                                     fontWeight: settings.defaultFps == fps
                                         ? FontWeight.bold

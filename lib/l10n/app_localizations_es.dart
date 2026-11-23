@@ -562,7 +562,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get penSettingsCustomGraphHint =>
-      'Toca un espacio vacío del gráfico para añadir un punto (hasta 10), arrastra un punto para moverlo o tócalo dos veces para eliminarlo (los puntos de inicio y fin no se pueden eliminar).';
+      'Toca un espacio vacío del gráfico para añadir un punto, arrastra un punto para moverlo o tócalo dos veces para eliminarlo (los puntos de inicio y fin no se pueden eliminar).';
 
   @override
   String get penSettingsResetCurveButton =>
@@ -1949,7 +1949,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsClipDuplicateDesc =>
-      'Toca un clip de imagen, vídeo o audio para abrir su hoja de detalles y usa el icono de copia para duplicarlo. Reutilizar el mismo efecto de sonido o reubicar la misma imagen en varias escenas solo requiere una pulsación larga y arrastrar, y un toque en el botón de duplicar.';
+      'Toca un clip de imagen, vídeo o audio para abrir sus detalles. Usa el icono de copia para duplicarlo y el de eliminar para quitarlo. Mantén pulsado un clip y arrástralo para mover dónde empieza. Es útil para repetir un efecto de sonido o colocar la misma imagen en otra escena.';
 
   @override
   String get tipsTextCaptionTitle =>

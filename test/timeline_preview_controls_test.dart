@@ -1843,6 +1843,66 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  testWidgets('the audio clip sheet duplicates and deletes the clip', (
+    tester,
+  ) async {
+    final id = await openTimeline(
+      tester,
+      project: const Size(64, 64),
+      screen: const Size(390, 844),
+      pc: false,
+      fraction: .36,
+      durationSeconds: 3,
+      setUpProject: (ps, id) {
+        final scene = ps.scenesOf(id).single.id;
+        ps.addAudioClip(
+          id,
+          scene,
+          const AudioClip(
+            id: 'sheet-audio',
+            label: 'Audio',
+            startFrame: 2,
+            lengthFrames: 3,
+          ),
+        );
+      },
+    );
+    final ps = tester
+        .element(find.byType(TimelineScreen))
+        .read<ProjectService>();
+    final scene = ps.scenesOf(id).single.id;
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+
+    Future<void> openSheet(String clipId) async {
+      final clip = find.byKey(ValueKey('timelineClip-$clipId'));
+      await tester.ensureVisible(clip);
+      await tester.tap(clip);
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.helpAudioClipTitle), findsOneWidget);
+    }
+
+    await openSheet('sheet-audio');
+    await tester.tap(find.byKey(const ValueKey('timelineClipSheetDuplicate')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+    expect(ps.audioClipsOf(id, scene), hasLength(2));
+
+    await openSheet('sheet-audio');
+    await tester.tap(find.byKey(const ValueKey('timelineClipSheetDelete')));
+    await tester.pumpAndSettle();
+    // Deleting asks first, like every other delete.
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+    expect(
+      ps.audioClipsOf(id, scene).map((clip) => clip.id),
+      isNot(contains('sheet-audio')),
+    );
+    expect(ps.audioClipsOf(id, scene), hasLength(1));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('material drags move the clip and the preview on DeX', (
     tester,
   ) async {

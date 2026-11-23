@@ -547,7 +547,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get penSettingsCustomGraphHint =>
-      'Tap an empty spot on the graph to add a point (up to 10), drag a point to move it, or double-tap a point to remove it (the start and end points can\'t be removed).';
+      'Tap an empty spot on the graph to add a point, drag a point to move it, or double-tap a point to remove it (the start and end points can\'t be removed).';
 
   @override
   String get penSettingsResetCurveButton => 'Reset to default';
@@ -1911,7 +1911,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsClipDuplicateDesc =>
-      'Tap an image, video, or audio clip to open its detail sheet, then use the copy icon to duplicate it. Reusing the same sound effect or repositioning the same image across scenes only takes a long-press drag and a tap of the duplicate button.';
+      'Tap an image, video, or audio clip to open its details. Use the copy icon to duplicate it and the delete icon to remove it. Long-press a clip and drag it to move where it starts. Handy for repeating a sound effect or placing the same image in another scene.';
 
   @override
   String get tipsTextCaptionTitle => 'Add captions with the text tool';

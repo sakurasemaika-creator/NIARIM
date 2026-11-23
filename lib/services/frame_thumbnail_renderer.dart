@@ -31,6 +31,7 @@ Future<ui.Image?> compositeFrameThumbnail(
   int? frameIndex,
   required int maxSize,
   List<Layer> Function(List<Layer> layers)? editLayers,
+  bool bakeBackground = false,
 }) async {
   final project = projectService.projects
       .where((p) => p.id == projectId)
@@ -65,10 +66,12 @@ Future<ui.Image?> compositeFrameThumbnail(
     (l) => projectService.tileKeyFor(projectId, scene.id, position, l.id),
     drawW,
     drawH,
-    paperColor: LayerCompositor.paperForBlendModes(
-      layers,
-      project?.backgroundColor,
-    ),
+    // A picture shown on its own (the home screen widget) carries the
+    // work's background colour; previews inside the app lay it underneath
+    // instead (FramePreviewBackground), so it follows a background change.
+    paperColor: bakeBackground && _opaque(project?.backgroundColor)
+        ? project!.backgroundColor
+        : LayerCompositor.paperForBlendModes(layers, project?.backgroundColor),
   );
   final offsetX = (drawW - exportW) / 2;
   final offsetY = (drawH - exportH) / 2;
@@ -90,6 +93,8 @@ Future<ui.Image?> compositeFrameThumbnail(
   picture.dispose();
   return thumb;
 }
+
+bool _opaque(int? argb) => argb != null && (argb >>> 24) == 0xFF;
 
 /// [compositeFrameThumbnail]と同じ条件でフレームを合成し、PNGとして
 /// キャッシュディレクトリへ保存してパスを返す。
@@ -115,6 +120,9 @@ Future<String?> saveArtworkWidgetThumbnail(
     sceneId: sceneId,
     frameIndex: frameIndex,
     maxSize: maxSize,
+    // The widget shows this picture by itself: without the background the
+    // work's paper was transparent (99% of a white work's pixels had α=0).
+    bakeBackground: true,
   );
   if (image == null) return null;
   final byteData = await image.toByteData(format: ui.ImageByteFormat.png);

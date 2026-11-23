@@ -1320,6 +1320,21 @@ class SaveTreeService extends ChangeNotifier {
     final all = _nodesByProject[projectId] ?? [];
     final keep = all.where((n) => keepIds.contains(n.id)).toList();
     final discard = all.where((n) => !keepIds.contains(n.id)).toList();
+    if (!newIsTreeMode) {
+      // Slots are given in order: from slots, keep each save's slot order
+      // (the save in slot 1 stays first); from the tree, newest first. Taking
+      // them in the order they were added put a save that overwrote slot 1
+      // into slot 2.
+      keep.sort((a, b) {
+        if (!_isTreeMode && a.slotIndex >= 0 && b.slotIndex >= 0) {
+          return a.slotIndex.compareTo(b.slotIndex);
+        }
+        if (!_isTreeMode && (a.slotIndex >= 0) != (b.slotIndex >= 0)) {
+          return a.slotIndex >= 0 ? -1 : 1;
+        }
+        return b.savedAt.compareTo(a.savedAt);
+      });
+    }
 
     if (archive) {
       _archivedByProject.putIfAbsent(projectId, () => []);

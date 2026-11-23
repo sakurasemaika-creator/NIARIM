@@ -343,6 +343,32 @@ void main() {
       image.dispose();
     }
 
+    // DISC585: the home screen widget shows the picture by itself, so the
+    // work's background is baked in where nothing is drawn (it was
+    // transparent). Frame 1 of the second scene has nothing drawn.
+    Future<List<int>> centerOf({required bool bake}) async {
+      final image = await tester.runAsync(
+        () => compositeFrameThumbnail(
+          ps,
+          projectId: project.id,
+          sceneId: secondScene.id,
+          frameIndex: 0,
+          maxSize: 64,
+          bakeBackground: bake,
+        ),
+      );
+      final data = await tester.runAsync(
+        () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
+      );
+      final bytes = data!.buffer.asUint8List();
+      final idx = ((image!.height ~/ 2) * image.width + image.width ~/ 2) * 4;
+      image.dispose();
+      return bytes.sublist(idx, idx + 4);
+    }
+
+    expect(await centerOf(bake: true), [0xB2, 0xDF, 0xDB, 255]);
+    expect((await centerOf(bake: false))[3], 0);
+
     // ── ここから実タップでの操作→キャプチャ→検証 ─────────────────────
     // 設定トップから実際にpush()で潜っていく（go()での直接ジャンプだと
     // 前画面がスタックに積まれず、戻るボタンの検証にならないため）。

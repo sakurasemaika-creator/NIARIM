@@ -605,7 +605,7 @@ class _ShortsPage extends StatelessWidget {
                       if (work.projectFps > 0)
                         _InfoItem(
                           icon: Icons.speed_rounded,
-                          text: '${work.projectFps}fps',
+                          text: l10n.pcStatusFps(work.projectFps),
                         ),
                       if (work.projectCanvasWidth > 0 &&
                           work.projectCanvasHeight > 0)

@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
-import 'package:flutter/foundation.dart' show compute;
+import 'package:flutter/foundation.dart' show compute, visibleForTesting;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
@@ -109,12 +109,24 @@ class ExportTiming {
       10;
 }
 
+/// The encoder for exported GIFs. The image package's default (neural
+/// quantizer + Floyd–Steinberg dithering) maps a flat white to a palette
+/// entry like 252 and dithers the difference, so flat paper showed streaks
+/// (39% of a 480×360 frame). The octree quantizer keeps the frame's own
+/// colours exactly and, without dithering, flat areas stay flat. (Its
+/// dithering mode darkens colours in this version, so it is not used.)
+@visibleForTesting
+img.GifEncoder newExportGifEncoder() => img.GifEncoder(
+  quantizerType: img.QuantizerType.octree,
+  dither: img.DitherKernel.none,
+);
+
 Uint8List _encodeGifFrames(
   ({String path, int width, int height, int frameCount, ExportTiming timing})
   request,
 ) {
   final (:path, :width, :height, :frameCount, :timing) = request;
-  final encoder = img.GifEncoder();
+  final encoder = newExportGifEncoder();
   final input = File(path).openSync();
   final frameBytes = width * height * 4;
   try {

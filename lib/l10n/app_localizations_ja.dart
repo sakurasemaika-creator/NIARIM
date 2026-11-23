@@ -527,7 +527,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get penSettingsCustomGraphHint =>
-      'グラフの空いている場所をタップすると点を追加（最大10個）、点をドラッグで移動、ダブルタップで削除できます（始点・終点は削除できません）。';
+      'グラフの空いている場所をタップすると点を追加、点をドラッグで移動、ダブルタップで削除できます（始点・終点は削除できません）。';
 
   @override
   String get penSettingsResetCurveButton => 'デフォルトにリセット';
@@ -1867,7 +1867,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tipsClipDuplicateDesc =>
-      'タイムライン上の画像・動画・音声クリップをタップすると、詳細シートが開きます。\n詳細シートの複製ボタンを押すと、選んだクリップを複製できます。\n同じ効果音を繰り返したり、同じ画像を別の場面に配置したりするときに便利です。';
+      'タイムライン上の画像・動画・音声クリップをタップすると、詳細の画面が開きます。\n複製ボタンで選んだクリップを複製でき、削除ボタンで消せます。\nクリップを長押ししたままドラッグすると、表示を始める位置を動かせます。\n同じ効果音を繰り返したり、同じ画像を別の場面に配置したりするときに便利です。';
 
   @override
   String get tipsTextCaptionTitle => 'テキストツールで字幕を入れる';

@@ -106,9 +106,9 @@ void main() {
       expect(find.byType(CommunityScreen), findsOneWidget);
 
       final communityContext = tester.element(find.byType(CommunityScreen));
-      communityContext.read<CommunityPreviewService>().show(
-        communityContext.read<CommunityService>().works.first,
-      );
+      // Keep the service: the plaza's context leaves the tree when it closes.
+      final preview = communityContext.read<CommunityPreviewService>();
+      preview.show(communityContext.read<CommunityService>().works.first);
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('communityPreviewClose')), findsOneWidget);
 
@@ -116,7 +116,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(SplashScreen), findsOneWidget);
       expect(find.byKey(const Key('communityPreviewClose')), findsNothing);
-      expect(communityContext.read<CommunityPreviewService>().work, isNull);
+      expect(preview.work, isNull);
 
       // The splash button's push future must have completed and released its
       // re-entry guard after the plaza returned to the launch screen.

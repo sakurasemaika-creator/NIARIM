@@ -522,7 +522,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get penSettingsCustomGraphHint =>
-      '点击图表空白处添加控制点（最多10个），拖动控制点移动，双击可删除（起点和终点无法删除）。';
+      '点击图表空白处添加控制点，拖动控制点移动，双击可删除（起点和终点无法删除）。';
 
   @override
   String get penSettingsResetCurveButton => '恢复默认';
@@ -1849,7 +1849,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsClipDuplicateDesc =>
-      '点击图片、视频或音频素材可打开详情面板，点击其中的复制图标即可复制该素材。反复使用同一段音效，或把同一张图片重新摆放到不同场景，只需长按拖动加上一次复制按钮就能完成。';
+      '点击图片、视频或音频素材可打开详情面板。点复制图标即可复制，点删除图标即可删除。长按素材并拖动，可以移动它开始出现的位置。反复使用同一段音效，或把同一张图片放到其他场景时很方便。';
 
   @override
   String get tipsTextCaptionTitle => '用文字工具添加字幕';
@@ -10978,7 +10978,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get penSettingsCustomGraphHint =>
-      '點擊圖表空白處新增控制點（最多10個），拖曳控制點移動，雙擊可刪除（起點和終點無法刪除）。';
+      '點擊圖表空白處新增控制點，拖曳控制點移動，雙擊可刪除（起點和終點無法刪除）。';
 
   @override
   String get penSettingsResetCurveButton => '重設為預設值';
@@ -12305,7 +12305,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsClipDuplicateDesc =>
-      '點擊圖片、影片或音訊素材可開啟詳細面板，點擊其中的複製圖示即可複製該素材。反覆使用同一段音效，或把同一張圖片重新放到不同場景，只需長按拖曳加上一次複製按鈕就能完成。';
+      '點擊圖片、影片或音訊素材可開啟詳細面板。點複製圖示即可複製，點刪除圖示即可刪除。長按素材並拖曳，可以移動它開始出現的位置。反覆使用同一段音效，或把同一張圖片放到其他場景時很方便。';
 
   @override
   String get tipsTextCaptionTitle => '用文字工具加入字幕';
