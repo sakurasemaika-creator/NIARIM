@@ -142,11 +142,18 @@ class SharedAssetCardPreview {
           );
         }
 
+        // Recorded like the canvas does, so the first pass can be taken back
+        // before the final one: a custom fade-out or an outline's 強弱 is only
+        // known once the stroke is complete, and drawing the final pass over
+        // the first left the untapered end showing under it.
+        tiles.beginUndoRecording('preview');
         engine.beginStroke(samplePoint(points.first, 0), 'preview');
         for (var i = 1; i < points.length; i++) {
           engine.continueStroke(samplePoint(points[i], i), 'preview');
         }
+        final firstPass = tiles.endUndoRecording();
         if (engine.needsFinalFadeReplay) {
+          tiles.applyTileSnapshot('preview', firstPass.before);
           engine.replayCurrentStrokeWithFinalFade();
         }
         engine.endStroke();
