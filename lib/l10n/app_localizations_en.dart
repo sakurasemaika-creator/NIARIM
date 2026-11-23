@@ -388,16 +388,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmDeleteGenericBody =>
-      'Are you sure you want to delete this? This can\'t be undone.';
+      'Are you sure you want to delete this? This can’t be undone.';
 
   @override
   String confirmDeleteNamedBody(String name) {
-    return 'Delete “$name”? This can\'t be undone.';
+    return 'Delete “$name”? This can’t be undone.';
   }
 
   @override
   String get commonFavoriteDeleteBlocked =>
-      'Can\'t delete a favorited item. Remove it from favorites first.';
+      'Can’t delete a favorited item. Remove it from favorites first.';
 
   @override
   String get commonSave => 'Save';
@@ -547,7 +547,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get penSettingsCustomGraphHint =>
-      'Tap an empty spot on the graph to add a point, drag a point to move it, or double-tap a point to remove it (the start and end points can\'t be removed).';
+      'Tap an empty spot on the graph to add a point, drag a point to move it, or double-tap a point to remove it (the start and end points can’t be removed).';
 
   @override
   String get penSettingsResetCurveButton => 'Reset to default';
@@ -587,7 +587,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bucketSettingsUnderLineHint =>
-      'Instead of painting over the line art directly, the expanded fill blends in behind existing pixels, keeping the line\'s appearance while closing gaps in its anti-aliased edges.';
+      'Instead of painting over the line art directly, the expanded fill blends in behind existing pixels, keeping the line’s appearance while closing gaps in its anti-aliased edges.';
 
   @override
   String get bucketSettingsUnderLineDisabledHint =>
@@ -690,9 +690,9 @@ class AppLocalizationsEn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'Imported the .niatra file. $count items were different on this device, so this device\'s versions were kept and the imported ones were added under names such as “$name”',
+          'Imported the .niatra file. $count items were different on this device, so this device’s versions were kept and the imported ones were added under names such as “$name”',
       one:
-          'Imported the .niatra file. 1 item was different on this device, so this device\'s version was kept and the imported one was added as “$name”',
+          'Imported the .niatra file. 1 item was different on this device, so this device’s version was kept and the imported one was added as “$name”',
     );
     return '$_temp0';
   }
@@ -1386,7 +1386,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpEraserToolDesc =>
-      'The counterpart to the pen tool, used to erase what you\'ve drawn. Like a brush, you can adjust its size and opacity, and brush settings such as fade and stroke decay apply to it as well. Rather than “adding” to the transparent parts of a layer, it “removes” existing drawing, so the layer below becomes visible through it.';
+      'The counterpart to the pen tool, used to erase what you’ve drawn. Like a brush, you can adjust its size and opacity, and brush settings such as fade and stroke decay apply to it as well. Rather than “adding” to the transparent parts of a layer, it “removes” existing drawing, so the layer below becomes visible through it.';
 
   @override
   String get helpBucketToolTitle => 'Bucket Tool';
@@ -1400,7 +1400,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpLassoFillDesc =>
-      'Trace with your finger to form a polygonal area, then fill the inside all at once. Unlike the bucket tool, you can define the area yourself even where the line art isn\'t closed, making it well suited for complex shapes or areas with gaps in the lines. With “Fill enclosed area” on, every area closed by lines inside your lasso is filled at once, however many there are, as with the bucket (the space between the lasso and the drawing is left as it is).';
+      'Trace with your finger to form a polygonal area, then fill the inside all at once. Unlike the bucket tool, you can define the area yourself even where the line art isn’t closed, making it well suited for complex shapes or areas with gaps in the lines. With “Fill enclosed area” on, every area closed by lines inside your lasso is filled at once, however many there are, as with the bucket (the space between the lasso and the drawing is left as it is).';
 
   @override
   String get helpEyedropperToolTitle => 'Eyedropper Tool';
@@ -1421,14 +1421,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpFingerToolDesc =>
-      'Warps pixels by pushing them in the direction you drag your finger, like smearing wet paint with a finger. It\'s used less for fine corrections and more when you want to organically warp lines you\'ve already drawn to give them more expression.';
+      'Warps pixels by pushing them in the direction you drag your finger, like smearing wet paint with a finger. It’s used less for fine corrections and more when you want to organically warp lines you’ve already drawn to give them more expression.';
 
   @override
   String get helpShapeToolTitle => 'Shape Tool';
 
   @override
   String get helpShapeToolDesc =>
-      'Draws precise shapes such as lines, rectangles, and circles with a single gesture. Dragging from the start point to the end point previews the shape live, and it\'s finalized when you lift your finger. Handy when you need straight lines or perfect circles that are hard to draw freehand.';
+      'Draws precise shapes such as lines, rectangles, and circles with a single gesture. Dragging from the start point to the end point previews the shape live, and it’s finalized when you lift your finger. Handy when you need straight lines or perfect circles that are hard to draw freehand.';
 
   @override
   String get helpTextToolTitle => 'Text Tool';
@@ -1470,7 +1470,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpCommonLayerDesc =>
-      'Ordinary layers are independent per frame, but a common layer shares the same content across multiple frames and scenes. Elements that don\'t move between frames, like backgrounds, can be drawn once instead of redrawn for every frame. It\'s shown as a dedicated track on the timeline. Converts a normal layer into a common layer (one that keeps showing the same content across multiple frames). You can also merge the currently visible layers into one before converting. Saves you redrawing something like a background that stays the same every frame.';
+      'Ordinary layers are independent per frame, but a common layer shares the same content across multiple frames and scenes. Elements that don’t move between frames, like backgrounds, can be drawn once instead of redrawn for every frame. It’s shown as a dedicated track on the timeline. Converts a normal layer into a common layer (one that keeps showing the same content across multiple frames). You can also merge the currently visible layers into one before converting. Saves you redrawing something like a background that stays the same every frame.';
 
   @override
   String get helpAutoFillTitle => 'Auto Fill';
@@ -1484,7 +1484,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpOnionSkinDesc =>
-      'Overlays the frames before and after the one you\'re currently editing at partial transparency, so you can draw while checking how the motion connects. You can adjust how many frames are shown (before and after) and their color and opacity in the performance settings.';
+      'Overlays the frames before and after the one you’re currently editing at partial transparency, so you can draw while checking how the motion connects. You can adjust how many frames are shown (before and after) and their color and opacity in the performance settings.';
 
   @override
   String get helpRulerTitle => 'Ruler';
@@ -1512,7 +1512,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      'While painting with a brush, blends the color already under the brush with the color you\'re about to apply. In the brush settings\' mixing mode, choose Digital to paint without mixing, Oil-style mixing to mix like paint and drag the picked-up color along, or Watercolor-style mixing to layer transparent washes that gather color at their edges as they dry.';
+      'While painting with a brush, blends the color already under the brush with the color you’re about to apply. In the brush settings’ mixing mode, choose Digital to paint without mixing, Oil-style mixing to mix like paint and drag the picked-up color along, or Watercolor-style mixing to layer transparent washes that gather color at their edges as they dry.';
 
   @override
   String get helpPressureCurveTitle => 'Pressure Curve';
@@ -1526,7 +1526,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame\'s drawing is in front is set in “Stacking order”, for the whole scene or for a range of frames. You can also long-press an item to select several and move them together.';
+      'The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame’s drawing is in front is set in “Stacking order”, for the whole scene or for a range of frames. You can also long-press an item to select several and move them together.';
 
   @override
   String get helpSceneTitle => 'Scene';
@@ -1540,14 +1540,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpCameraKeyframeDesc =>
-      'Records the camera\'s position, zoom level, and rotation at a specific point on the timeline. Since the values are automatically interpolated smoothly between keyframes, you can easily add camera work such as panning or zooming in/out.';
+      'Records the camera’s position, zoom level, and rotation at a specific point on the timeline. Since the values are automatically interpolated smoothly between keyframes, you can easily add camera work such as panning or zooming in/out.';
 
   @override
   String get helpEffectFilterTitle => 'Effect Filter';
 
   @override
   String get helpEffectFilterDesc =>
-      'A visual effect (blur, color correction, glow, pixel art, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Of the drawing filters, Tone Curve (a preset and its strength), Levels, Sharpen, Unsharp Mask, Vignette (color, range and density) and Watercolor Edge are effect filters too, so the same effect can be applied to many frames at once. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors in a regular pattern (dithering) that stays in place from frame to frame; edges stay crisp. Dithering can be switched off, to fill each dot with the nearest single color. Multiple effect filters can be stacked, and they\'re applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they\'re actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.';
+      'A visual effect (blur, color correction, glow, pixel art, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Of the drawing filters, Tone Curve (a preset and its strength), Levels, Sharpen, Unsharp Mask, Vignette (color, range and density) and Watercolor Edge are effect filters too, so the same effect can be applied to many frames at once. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors in a regular pattern (dithering) that stays in place from frame to frame; edges stay crisp. Dithering can be switched off, to fill each dot with the nearest single color. Multiple effect filters can be stacked, and they’re applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they’re actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.';
 
   @override
   String get helpEndCardTitle => 'End Mark';
@@ -1586,14 +1586,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpSaveSlotDesc =>
-      'A method of saving into a fixed number of save slots, where you choose which slot to save to each time. The number of slots is determined by the settings (5 for low quality, 10 for medium quality). Since you choose which slot to overwrite every time, it\'s an easy way to manage keeping a particular moment\'s state.';
+      'A method of saving into a fixed number of save slots, where you choose which slot to save to each time. The number of slots is determined by the settings (5 for low quality, 10 for medium quality). Since you choose which slot to overwrite every time, it’s an easy way to manage keeping a particular moment’s state.';
 
   @override
   String get helpSaveTreeTitle => 'Save Tree';
 
   @override
   String get helpSaveTreeDesc =>
-      'A save method where a new save point is created every time you save, and you can branch off from a past save point to create a different history. There\'s no limit on the number of saves, making it well suited for use cases like “I want to go back to that version and try a different direction.” On screen, save points are shown as a tree diagram growing from bottom to top.';
+      'A save method where a new save point is created every time you save, and you can branch off from a past save point to create a different history. There’s no limit on the number of saves, making it well suited for use cases like “I want to go back to that version and try a different direction.” On screen, save points are shown as a tree diagram growing from bottom to top.';
 
   @override
   String get helpFolderTitle => 'Folder';
@@ -1607,14 +1607,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTrashDesc =>
-      'The place where deleted projects are temporarily moved. You can restore them from here until they\'re permanently deleted. You can set the number of days until automatic deletion (OFF/30/60/90 days) in the settings.';
+      'The place where deleted projects are temporarily moved. You can restore them from here until they’re permanently deleted. You can set the number of days until automatic deletion (OFF/30/60/90 days) in the settings.';
 
   @override
   String get helpShareTitle => 'Share (.niashare)';
 
   @override
   String get helpShareDesc =>
-      'A dedicated file format for handing a project to someone else (or to another device of your own). When the recipient opens this file, it\'s duplicated and added to their own project list. The original .niashare file itself is not changed.';
+      'A dedicated file format for handing a project to someone else (or to another device of your own). When the recipient opens this file, it’s duplicated and added to their own project list. The original .niashare file itself is not changed.';
 
   @override
   String get helpTransferTitle => 'Transfer (.niatra)';
@@ -1638,7 +1638,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work\'s detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator\'s name to follow them — the “Following” tab then gathers just that creator\'s posts in chronological order. Only you can view the lists of users you follow, your followers, and works you have bookmarked. Other users see only your following and follower counts. Following, bookmarking, or reposting does not send the other user an individual notification about that action. You can repost anyone else\'s work (except your own) with the “Repost” button; when a creator you follow reposts someone else\'s work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on your own creator page. You can report posts and creators. Muting affects your view only. Blocking hides each person’s posts from the other while signed in. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members. The display filter button at the top right (the eye icon with a slash) lets you hide works you don\'t want to see. You can hide works marked “Contains generative-AI images or video”, and add hidden-title keywords (matched against work titles only) and hidden tags (matched only against Work Plaza tags), one entry at a time using “Add new”. Edit with the pencil or delete with the trash icon; no commas or # needed. These filters apply to New, Ranking, Following (including reposts), portrait mode, creator pages, work details, and bookmarks. “Contains generative-AI images or video” is declared by the poster when posting, and only the poster can change it afterwards (from “My posts” or the work\'s detail screen).';
+      'Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work’s detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator’s name to follow them — the “Following” tab then gathers just that creator’s posts in chronological order. Only you can view the lists of users you follow, your followers, and works you have bookmarked. Other users see only your following and follower counts. Following, bookmarking, or reposting does not send the other user an individual notification about that action. You can repost anyone else’s work (except your own) with the “Repost” button; when a creator you follow reposts someone else’s work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on your own creator page. You can report posts and creators. Muting affects your view only. Blocking hides each person’s posts from the other while signed in. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members. The display filter button at the top right (the eye icon with a slash) lets you hide works you don’t want to see. You can hide works marked “Contains generative-AI images or video”, and add hidden-title keywords (matched against work titles only) and hidden tags (matched only against Work Plaza tags), one entry at a time using “Add new”. Edit with the pencil or delete with the trash icon; no commas or # needed. These filters apply to New, Ranking, Following (including reposts), portrait mode, creator pages, work details, and bookmarks. “Contains generative-AI images or video” is declared by the poster when posting, and only the poster can change it afterwards (from “My posts” or the work’s detail screen).';
 
   @override
   String get helpWatermarkEntryTitle => 'Watermark';
@@ -1666,7 +1666,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpPerformanceSettingsDesc =>
-      'Choose from low, medium, or high quality presets based on your device\'s capability, or configure each item individually (custom). In addition to save method, performance, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here.';
+      'Choose from low, medium, or high quality presets based on your device’s capability, or configure each item individually (custom). In addition to save method, performance, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here.';
 
   @override
   String get helpMaterialClipTitle =>
@@ -1674,7 +1674,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpMaterialClipDesc =>
-      'Clips placed on the timeline\'s text, image, video and audio tracks. Long-press-drag a clip\'s body to move its start position, or drag the handles at either end to change how much of it is used. Materials shown at the same time go on rows of their own automatically. Tapping a text, image or video clip opens its edit panel below the preview: the text, font, colour and outline; the position, scale, X/Y/Z-axis rotation and opacity (you can also drag it on the preview, and adding keyframes makes it move); its mask (rectangle or ellipse, feathered, inverted); and the row it sits on. It can be duplicated or deleted there too. An audio clip\'s volume and fades are set in its detail sheet.';
+      'Clips placed on the timeline’s text, image, video and audio tracks. Long-press-drag a clip’s body to move its start position, or drag the handles at either end to change how much of it is used. Materials shown at the same time go on rows of their own automatically. Tapping a text, image or video clip opens its edit panel below the preview: the text, font, colour and outline; the position, scale, X/Y/Z-axis rotation and opacity (you can also drag it on the preview, and adding keyframes makes it move); its mask (rectangle or ellipse, feathered, inverted); and the row it sits on. It can be duplicated or deleted there too. An audio clip’s volume and fades are set in its detail sheet.';
 
   @override
   String get helpGestureSettingsTitle => 'Gesture settings';
@@ -1688,7 +1688,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpBucketDetailSettingsDesc =>
-      'From the “Bucket Fill” section in settings, you can adjust tolerance (how much color difference from the clicked pixel still counts as the same region), expand px (how far the filled area extends past the boundary to cover gaps in the lineart), and fill under line (composites the expanded fill behind existing pixels instead of painting over the lineart, keeping the line\'s look intact). Adjusting these helps when the lineart has small gaps or fills feel incomplete.';
+      'From the “Bucket Fill” section in settings, you can adjust tolerance (how much color difference from the clicked pixel still counts as the same region), expand px (how far the filled area extends past the boundary to cover gaps in the lineart), and fill under line (composites the expanded fill behind existing pixels instead of painting over the lineart, keeping the line’s look intact). Adjusting these helps when the lineart has small gaps or fills feel incomplete.';
 
   @override
   String get helpStampToolTitle => 'Stamp tool';
@@ -1702,7 +1702,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpToneFillDesc =>
-      'Switching the bucket tool\'s setting from solid fill to screentone fill lets you fill with a chosen halftone or line-pattern screentone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture. Great for frills, knitwear, tights, and other fine patterns that are tedious to draw by hand. You can also create and add your own custom screentones, or share them with other users. The tone list groups halftones, lines, fabric patterns, and pixel patterns. Pixel dither names show the grain size, matrix size, and coverage.';
+      'Switching the bucket tool’s setting from solid fill to screentone fill lets you fill with a chosen halftone or line-pattern screentone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture. Great for frills, knitwear, tights, and other fine patterns that are tedious to draw by hand. You can also create and add your own custom screentones, or share them with other users. The tone list groups halftones, lines, fabric patterns, and pixel patterns. Pixel dither names show the grain size, matrix size, and coverage.';
 
   @override
   String get helpPixelModeTitle => 'Pixel mode';
@@ -1765,7 +1765,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpSceneOperationsDesc =>
-      'The timeline\'s scene tab lets you add, duplicate, delete, rename, and reorder scenes. Multi-select mode lets you move, duplicate, or delete several scenes at once.';
+      'The timeline’s scene tab lets you add, duplicate, delete, rename, and reorder scenes. Multi-select mode lets you move, duplicate, or delete several scenes at once.';
 
   @override
   String get helpQuickToolManagementTitle => 'Quick tool management';
@@ -1821,7 +1821,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpLayerFolderDesc =>
-      'Lets you organize several layers into a folder. Keeps the layer panel manageable even in illustrations with many parts. Clipping can\'t cross folder boundaries, so if you use clipping, keep the relevant layers in the same folder.';
+      'Lets you organize several layers into a folder. Keeps the layer panel manageable even in illustrations with many parts. Clipping can’t cross folder boundaries, so if you use clipping, keep the relevant layers in the same folder.';
 
   @override
   String get helpLayerMultiSelectTitle =>
@@ -1829,21 +1829,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpLayerMultiSelectDesc =>
-      'Selection mode in the layer panel lets you check off several layers at once to merge or bulk-delete them. Merging only works between normal, autofill-lineart, and autofill layers (common layers, folders, and timeline materials can\'t be merged).';
+      'Selection mode in the layer panel lets you check off several layers at once to merge or bulk-delete them. Merging only works between normal, autofill-lineart, and autofill layers (common layers, folders, and timeline materials can’t be merged).';
 
   @override
   String get helpDrawingAreaTitle => 'Drawing area';
 
   @override
   String get helpDrawingAreaDesc =>
-      'Lets you draw beyond the export bounds. A red frame on the canvas marks the export area — anything drawn outside it isn\'t exported, but it leaves room to adjust what\'s shown later with camera moves like panning and zooming. Set the scale when creating a new project.';
+      'Lets you draw beyond the export bounds. A red frame on the canvas marks the export area — anything drawn outside it isn’t exported, but it leaves room to adjust what’s shown later with camera moves like panning and zooming. Set the scale when creating a new project.';
 
   @override
   String get helpCanvasBackgroundTitle => 'Canvas background color';
 
   @override
   String get helpCanvasBackgroundDesc =>
-      'Lets you set the project\'s canvas background color. It has no effect on transparent exports (transparent WebM), but you can change it to whatever\'s easiest to work against.';
+      'Lets you set the project’s canvas background color. It has no effect on transparent exports (transparent WebM), but you can change it to whatever’s easiest to work against.';
 
   @override
   String get helpProjectDetailTitle => 'Project details screen';
@@ -1864,7 +1864,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpAudioClipDesc =>
-      'An audio clip placed on the timeline can have its volume, fade-in, and fade-out durations adjusted from its detail sheet. Use it to balance sound effect and BGM volume, or smooth out a track\'s start and end.';
+      'An audio clip placed on the timeline can have its volume, fade-in, and fade-out durations adjusted from its detail sheet. Use it to balance sound effect and BGM volume, or smooth out a track’s start and end.';
 
   @override
   String get helpPenSubToolTitle => 'Pen';
@@ -1885,28 +1885,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpFontImportDesc =>
-      'Lets you load a font file straight from your device\'s storage. Add it from the “Import” tab in font management, in settings. Handy when you want to use a custom-made font that isn\'t distributed anywhere, or a commercial font you\'ve purchased.';
+      'Lets you load a font file straight from your device’s storage. Add it from the “Import” tab in font management, in settings. Handy when you want to use a custom-made font that isn’t distributed anywhere, or a commercial font you’ve purchased.';
 
   @override
   String get helpExportScreenTitle => 'Export screen';
 
   @override
   String get helpExportScreenDesc =>
-      'Choose “Standard”, “High Quality”, or “Custom” under “Preset”. With “Custom”, you can adjust the FPS. Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device\'s performance. Find your export by its project name in Works on the home screen. Choose Share to save it to Photos or open it in another app.';
+      'Choose “Standard”, “High Quality”, or “Custom” under “Preset”. With “Custom”, you can adjust the FPS. Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device’s performance. Find your export by its project name in Works on the home screen. Choose Share to save it to Photos or open it in another app.';
 
   @override
   String get helpDrawingFilterTitle => 'Draw filters';
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 26 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture, Background Blend, Ink Pool, Auto Line Art, Prism, Invert colors, Mosaic, Noise, Sphere Shading, and Watercolor Edge. Watercolor Edge gathers color along the edges of what is painted on the working layer and makes the inside sheer, like dried watercolor (with “Also at color borders”, borders between neighboring colors get an edge too). Anime Style reduces the colors and draws a line of the “Border width” on the darker side of every border where neighboring colors differ by at least the “Color difference threshold” (line art doesn\'t get thicker). Prism paints each shape on the layer with the six rainbow colors (red, green, cyan, blue, purple, red), blurs it and sets the layer to Linear Dodge. Draw small, slender leaf-like shapes in a dark color on their own layer first, and you get soft rainbow streaks of light over your picture (Blur amount is measured like an ordinary Gaussian blur). Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel\'s “Pen” and “Bucket” (corrected with “Eraser”; it starts from the selection or Selection layer if there is one). When the canvas has a selection, drawing filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors laid out in a regular pattern (dithering) that looks closer to the original; edges stay crisp. With a color count, the colors are taken from what most of the picture is made of. Dithering can be switched off, to fill each dot with the nearest single color. Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose “Add control point” next to Apply and tap a line to add a point, or choose “Delete control point” and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor\'s Undo and Redo. On the Tone Curve, tap an empty spot to add a point, drag a point to move it and long-press it to delete it; the R, G and B curves apply after the RGB curve. Levels can also be set for R, G and B on their own, and Gamma changes the midtones. The Outline\'s “Reach inside” widens the edge into the original shape, and the outline\'s new layer is placed right below the original layer. Chromatic Aberration lets you share the shift between X (sideways), Y (up and down) and Z (outward from the centre). The Fisheye\'s centre and radius can also be dragged on the canvas, with the + and the knob on the circle. Vignette softly darkens the four corners of the whole canvas (transparent, undrawn areas get the shadow too). “Range” sets how far in from the corners it reaches, and “Density” how dark the corners get. Lens Distortion works like real strong glasses: what is seen through the lens shrinks evenly towards the lens centre (negative values, for short sight) or grows (positive values, for long sight), and the outline steps out of line at the lens rim. Ink Pooling collects only inside corners where lines meet at the “Max angle” or less (at the default 90°, acute and right angles: a V, the narrow side of a crossing, a T-junction, a square corner), never in wider ones: at the meeting point it is the “Center width” beyond the line\'s edge, and it thins in a straight slope to nothing, a smooth point, at the end of the “Range” (however large the “Center width”, it never bulges past the straight line between the two pools\' ends: at its widest the middle is flat); where a line ends sooner, the pool along that line thins to nothing where the line ends, so each line can have its own length, and the two pools still meet in the middle of the corner, as thick from either line (the longer line\'s pool thins on from there to the end of the range). Auto line art traces the centre of the rough lines and draws them thin. Lines running close together stay separate lines as long as any gap shows between them; only tiny specks of paper inside a stroke are filled. Where two lines run into each other, they come together gradually as in the rough, rather than turning into one line down the middle. Where lines cross or lie over each other, each line carries on as drawn in the rough (it does not bend into the crossing, and two overlapping lines do not melt into one). Lines crossing at a shallow slant carry straight on through the crossing, and lines that only touch (such as a hair outline drawn along the head) stay separate lines, each on its own side. Dots such as eyes stay filled dots. Branches shorter than the “Rough line width” are left out. “Taper the ends” can be switched on or off; when off, lines keep the same width right to their ends. Background Blend lays the background’s light and shadow over the picture in the “Hard Light” blend mode (the shadow colour is not black or grey but the colour of the background’s own shadows, darkened). The surroundings’ colour goes over the whole picture in “Overlay” to set its overall colour, light bouncing up from below and reflected from around goes on in “Screen”, and a strong coloured light such as neon glows along the outline in “Addition (Glow)”. “Match the background’s tones” brings colours brighter or more vivid than the background back into its range, and gives the dark, middle and light tones the colour cast of the background’s tones of the same brightness (black line art stays as it is). “Blur amount” is how much the background is blurred before its colours are taken.';
+      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 26 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture, Background Blend, Ink Pool, Auto Line Art, Prism, Invert colors, Mosaic, Noise, Sphere Shading, and Watercolor Edge. Watercolor Edge gathers color along the edges of what is painted on the working layer and makes the inside sheer, like dried watercolor (with “Also at color borders”, borders between neighboring colors get an edge too). Anime Style reduces the colors and draws a line of the “Border width” on the darker side of every border where neighboring colors differ by at least the “Color difference threshold” (line art doesn’t get thicker). Prism paints each shape on the layer with the six rainbow colors (red, green, cyan, blue, purple, red), blurs it and sets the layer to Linear Dodge. Draw small, slender leaf-like shapes in a dark color on their own layer first, and you get soft rainbow streaks of light over your picture (Blur amount is measured like an ordinary Gaussian blur). Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel’s “Pen” and “Bucket” (corrected with “Eraser”; it starts from the selection or Selection layer if there is one). When the canvas has a selection, drawing filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors laid out in a regular pattern (dithering) that looks closer to the original; edges stay crisp. With a color count, the colors are taken from what most of the picture is made of. Dithering can be switched off, to fill each dot with the nearest single color. Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose “Add control point” next to Apply and tap a line to add a point, or choose “Delete control point” and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor’s Undo and Redo. On the Tone Curve, tap an empty spot to add a point, drag a point to move it and long-press it to delete it; the R, G and B curves apply after the RGB curve. Levels can also be set for R, G and B on their own, and Gamma changes the midtones. The Outline’s “Reach inside” widens the edge into the original shape, and the outline’s new layer is placed right below the original layer. Chromatic Aberration lets you share the shift between X (sideways), Y (up and down) and Z (outward from the centre). The Fisheye’s centre and radius can also be dragged on the canvas, with the + and the knob on the circle. Vignette softly darkens the four corners of the whole canvas (transparent, undrawn areas get the shadow too). “Range” sets how far in from the corners it reaches, and “Density” how dark the corners get. Lens Distortion works like real strong glasses: what is seen through the lens shrinks evenly towards the lens centre (negative values, for short sight) or grows (positive values, for long sight), and the outline steps out of line at the lens rim. Ink Pooling collects only inside corners where lines meet at the “Max angle” or less (at the default 90°, acute and right angles: a V, the narrow side of a crossing, a T-junction, a square corner), never in wider ones: at the meeting point it is the “Center width” beyond the line’s edge, and it thins in a straight slope to nothing, a smooth point, at the end of the “Range” (however large the “Center width”, it never bulges past the straight line between the two pools’ ends: at its widest the middle is flat); where a line ends sooner, the pool along that line thins to nothing where the line ends, so each line can have its own length, and the two pools still meet in the middle of the corner, as thick from either line (the longer line’s pool thins on from there to the end of the range). Auto line art traces the centre of the rough lines and draws them thin. Lines running close together stay separate lines as long as any gap shows between them; only tiny specks of paper inside a stroke are filled. Where two lines run into each other, they come together gradually as in the rough, rather than turning into one line down the middle. Where lines cross or lie over each other, each line carries on as drawn in the rough (it does not bend into the crossing, and two overlapping lines do not melt into one). Lines crossing at a shallow slant carry straight on through the crossing, and lines that only touch (such as a hair outline drawn along the head) stay separate lines, each on its own side. Dots such as eyes stay filled dots. Branches shorter than the “Rough line width” are left out. “Taper the ends” can be switched on or off; when off, lines keep the same width right to their ends. Background Blend lays the background’s light and shadow over the picture in the “Hard Light” blend mode (the shadow colour is not black or grey but the colour of the background’s own shadows, darkened). The surroundings’ colour goes over the whole picture in “Overlay” to set its overall colour, light bouncing up from below and reflected from around goes on in “Screen”, and a strong coloured light such as neon glows along the outline in “Addition (Glow)”. “Match the background’s tones” brings colours brighter or more vivid than the background back into its range, and gives the dark, middle and light tones the colour cast of the background’s tones of the same brightness (black line art stays as it is). “Blur amount” is how much the background is blurred before its colours are taken.';
 
   @override
   String get helpLayerKeyframeTitle => 'Layer keyframes (per-part animation)';
 
   @override
   String get helpLayerKeyframeDesc =>
-      'Set each layer\'s position, scale, and rotation per frame, with the keyframes interpolated automatically. Where camera keyframes move the whole screen, this moves an individual layer only. Since each autofill part is generated as its own separate layer, this works directly for per-part animation — moving just an arm, opening and closing just a mouth, and so on. Each keyframe can also be given its own easing — Linear, Ease in, Ease out, Ease in and out, or Bounce — controlling how it transitions into the next keyframe, so motion doesn\'t have to stay at a flat, constant speed. Set it up from the “Animation (keyframes)” entry in each layer\'s three-dot menu in the layer panel. The layer\'s artwork itself doesn\'t change — it\'s a non-destructive transform of where it\'s displayed. This only affects the timeline\'s display (preview / export) and has no effect on actual drawing in canvas mode.';
+      'Set each layer’s position, scale, and rotation per frame, with the keyframes interpolated automatically. Where camera keyframes move the whole screen, this moves an individual layer only. Since each autofill part is generated as its own separate layer, this works directly for per-part animation — moving just an arm, opening and closing just a mouth, and so on. Each keyframe can also be given its own easing — Linear, Ease in, Ease out, Ease in and out, or Bounce — controlling how it transitions into the next keyframe, so motion doesn’t have to stay at a flat, constant speed. Set it up from the “Animation (keyframes)” entry in each layer’s three-dot menu in the layer panel. The layer’s artwork itself doesn’t change — it’s a non-destructive transform of where it’s displayed. This only affects the timeline’s display (preview / export) and has no effect on actual drawing in canvas mode.';
 
   @override
   String get helpLayerGroupTitle =>
@@ -1914,7 +1914,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpLayerGroupDesc =>
-      'Moves several layers together with a single keyframe stream. For example, if an “arm” is made up of two autofill parts — skin and sleeve — grouping them lets you move both with one keyframe operation. Create a group by multi-selecting layers (checkboxes) in the layer panel and tapping the “Group” icon in the bottom bar. A group\'s motion is layered on top of each member layer\'s own keyframes (if set), so you can combine the group\'s overall movement with per-layer fine adjustments. A layer can belong to only one group at a time.';
+      'Moves several layers together with a single keyframe stream. For example, if an “arm” is made up of two autofill parts — skin and sleeve — grouping them lets you move both with one keyframe operation. Create a group by multi-selecting layers (checkboxes) in the layer panel and tapping the “Group” icon in the bottom bar. A group’s motion is layered on top of each member layer’s own keyframes (if set), so you can combine the group’s overall movement with per-layer fine adjustments. A layer can belong to only one group at a time.';
 
   @override
   String get tipsScreenTitle => 'Tips';
@@ -1966,7 +1966,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsAutofillBaseCoatDesc =>
-      'Autofill is meant for coloring part by part, but you don\'t have to divide everything carefully — using it as a single, one-color base-coat layer over the whole lineart is plenty useful on its own. It fills everything inside the lines in one pass, which prevents the missed spots (gaps where the background shows through) that often happen with manual bucket fill. Paint your colors by hand on top of that, and you get the benefit without the part-splitting work.';
+      'Autofill is meant for coloring part by part, but you don’t have to divide everything carefully — using it as a single, one-color base-coat layer over the whole lineart is plenty useful on its own. It fills everything inside the lines in one pass, which prevents the missed spots (gaps where the background shows through) that often happen with manual bucket fill. Paint your colors by hand on top of that, and you get the benefit without the part-splitting work.';
 
   @override
   String get tipsAutofillManualPartColorTitle =>
@@ -1982,7 +1982,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsBrushFavoriteDesc =>
-      'Tap the star icon on the brushes you use most to favorite them. The star icon at the top of the list lets you filter down to favorites only, cutting down on how long it takes to find one. Favorited brushes can\'t be deleted by accident.';
+      'Tap the star icon on the brushes you use most to favorite them. The star icon at the top of the list lets you filter down to favorites only, cutting down on how long it takes to find one. Favorited brushes can’t be deleted by accident.';
 
   @override
   String get tipsPressureCurveTitle =>
@@ -1990,7 +1990,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsPressureCurveDesc =>
-      'The pressure curve in settings lets you place control points freely. If the strength response doesn\'t feel right, adjust it to match your own pressure habits.';
+      'The pressure curve in settings lets you place control points freely. If the strength response doesn’t feel right, adjust it to match your own pressure habits.';
 
   @override
   String get tipsExportFormatTitle =>
@@ -2005,7 +2005,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsGestureShortcutDesc =>
-      'From “Gestures” in settings, you can assign undo/redo or the eyedropper to a two-finger tap, three-finger tap, or long press. Since you don\'t have to switch tools, it keeps your drawing rhythm from breaking.';
+      'From “Gestures” in settings, you can assign undo/redo or the eyedropper to a two-finger tap, three-finger tap, or long press. Since you don’t have to switch tools, it keeps your drawing rhythm from breaking.';
 
   @override
   String get tipsAudioRepeatTitle =>
@@ -2029,7 +2029,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsBrushTrySaveTreeDesc =>
-      'Before making a big change to brush thickness or stabilization, save to the save tree first for peace of mind. If you don\'t like the result, you can jump straight back to the previous state, making it easier to try bold adjustments.';
+      'Before making a big change to brush thickness or stabilization, save to the save tree first for peace of mind. If you don’t like the result, you can jump straight back to the previous state, making it easier to try bold adjustments.';
 
   @override
   String get tipsEyedropperGestureTitle =>
@@ -2037,7 +2037,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsEyedropperGestureDesc =>
-      'Assigning the eyedropper to a two-finger tap in gesture settings lets you grab a nearby color instantly without switching tools. Handy for coloring while staying true to a character\'s palette.';
+      'Assigning the eyedropper to a two-finger tap in gesture settings lets you grab a nearby color instantly without switching tools. Handy for coloring while staying true to a character’s palette.';
 
   @override
   String get tipsRulerOnionTitle =>
@@ -2045,7 +2045,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsRulerOnionDesc =>
-      'Lay out a background\'s depth with the perspective ruler, then move just the character while checking neighboring frames through onion skin — no need to redraw the background every frame.';
+      'Lay out a background’s depth with the perspective ruler, then move just the character while checking neighboring frames through onion skin — no need to redraw the background every frame.';
 
   @override
   String get tipsGradientTraceTitle =>
@@ -2109,7 +2109,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsMagicWandLassoDesc =>
-      'Select a broad area at once with the select tool\'s magic wand, then fine-tune just the overflow with lasso selection — even complex color separation goes fast this way.';
+      'Select a broad area at once with the select tool’s magic wand, then fine-tune just the overflow with lasso selection — even complex color separation goes fast this way.';
 
   @override
   String get tipsCommonLayerFolderTitle =>
@@ -2117,7 +2117,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsCommonLayerFolderDesc =>
-      'For a logo or credit text used in every episode of a series, turn it into a common layer and keep it organized in a folder — makes it easy to handle when copying it into a new episode\'s project.';
+      'For a logo or credit text used in every episode of a series, turn it into a common layer and keep it organized in a folder — makes it easy to handle when copying it into a new episode’s project.';
 
   @override
   String get tipsStrokeDecayFadeTitle =>
@@ -2141,7 +2141,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsOutlineAnimeStyleDesc =>
-      'Draw the outline onto a new layer with the draw filter\'s outline, then reduce the color count with the anime-style filter, for a crisp, cel-animation-like finish.';
+      'Draw the outline onto a new layer with the draw filter’s outline, then reduce the color count with the anime-style filter, for a crisp, cel-animation-like finish.';
 
   @override
   String get tipsLevelsToneCurveTitle =>
@@ -2189,7 +2189,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsCommunityYoutubeDesc =>
-      'When you post to the Work Plaza, your work is published through YouTube. NIARIM does not transmit, collect, or store the video file itself on the developer\'s servers. If you set the video to “Unlisted” on the YouTube side, it won\'t appear in YouTube\'s public listings and will only be posted within the Work Plaza.';
+      'When you post to the Work Plaza, your work is published through YouTube. NIARIM does not transmit, collect, or store the video file itself on the developer’s servers. If you set the video to “Unlisted” on the YouTube side, it won’t appear in YouTube’s public listings and will only be posted within the Work Plaza.';
 
   @override
   String get tipsToolbarCustomizeTitle =>
@@ -2201,7 +2201,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsAutofillBlendModeTitle =>
-      'Change shading texture with an autofill part\'s blend mode';
+      'Change shading texture with an autofill part’s blend mode';
 
   @override
   String get tipsAutofillBlendModeDesc =>
@@ -2213,7 +2213,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsStampBlendModeDesc =>
-      'Setting a placed stamp layer\'s blend mode to “screen” or “addition” makes glow lines or sparkle effects blend naturally into the background and really stand out.';
+      'Setting a placed stamp layer’s blend mode to “screen” or “addition” makes glow lines or sparkle effects blend naturally into the background and really stand out.';
 
   @override
   String get tipsQuickToolPenSubTitle =>
@@ -2221,11 +2221,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsQuickToolPenSubDesc =>
-      'Register your most-used tools to the quick tool, and also make use of the pen sub-tools (long-press the pen to switch to screentone fill or stamp placement) — you\'ll cut down how often you jump between panels and keep your rhythm going.';
+      'Register your most-used tools to the quick tool, and also make use of the pen sub-tools (long-press the pen to switch to screentone fill or stamp placement) — you’ll cut down how often you jump between panels and keep your rhythm going.';
 
   @override
   String get tipsAutofillToneReuseTitle =>
-      'Reuse a screentone fill just by redrawing the lineart, via autofill\'s screentone setting';
+      'Reuse a screentone fill just by redrawing the lineart, via autofill’s screentone setting';
 
   @override
   String get tipsAutofillToneReuseDesc =>
@@ -2245,7 +2245,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsHomeWidgetDesc =>
-      'Pick a work from Settings → Home screen widgets, and a single frame from it appears as a static image on your phone\'s home screen. The “Choose a work” screen shares the same sort, search, and favorites filter as the project list tab, and the frame picker gives you the same playback and seek controls as the timeline so you can find just the right frame. Add the New work and Plaza widgets alongside it for one-tap access to drawing and browsing posted works from your home screen.';
+      'Pick a work from Settings → Home screen widgets, and a single frame from it appears as a static image on your phone’s home screen. The “Choose a work” screen shares the same sort, search, and favorites filter as the project list tab, and the frame picker gives you the same playback and seek controls as the timeline so you can find just the right frame. Add the New work and Plaza widgets alongside it for one-tap access to drawing and browsing posted works from your home screen.';
 
   @override
   String get tipsAutofillTransparentFixTitle =>
@@ -2269,7 +2269,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsClippingGradientDesc =>
-      'Clip a gradient layer onto a character layer, and you can re-adjust the shading just by changing the gradient\'s extent and angle — no need to redraw its shape with a brush.';
+      'Clip a gradient layer onto a character layer, and you can re-adjust the shading just by changing the gradient’s extent and angle — no need to redraw its shape with a brush.';
 
   @override
   String get tipsToneCurveSepiaTitle =>
@@ -2305,7 +2305,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsVideoTrimReuseTitle =>
-      'Reuse the same video file by changing each clip\'s trim range';
+      'Reuse the same video file by changing each clip’s trim range';
 
   @override
   String get tipsVideoTrimReuseDesc =>
@@ -2325,7 +2325,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsQuickToolSwipeDesc =>
-      'To change what\'s registered in the quick tool, you can open the management popup with an upward swipe, not just a long press. Handy for reordering fast while operating one-handed.';
+      'To change what’s registered in the quick tool, you can open the management popup with an upward swipe, not just a long press. Handy for reordering fast while operating one-handed.';
 
   @override
   String get tipsDrawingAreaCameraTitle =>
@@ -2333,7 +2333,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsDrawingAreaCameraDesc =>
-      'Setting the drawing area wider than the export bounds means panning or zooming with camera keyframes won\'t risk cutting off the edge of the screen. Worth checking before adding a big camera move.';
+      'Setting the drawing area wider than the export bounds means panning or zooming with camera keyframes won’t risk cutting off the edge of the screen. Worth checking before adding a big camera move.';
 
   @override
   String get tipsWebmCommonLayerTitle =>
@@ -2341,7 +2341,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsWebmCommonLayerDesc =>
-      'If you\'re compositing a character exported as transparent WebM over a background in other video software, keeping the background on its own common layer avoids unwanted color bleeding into the transparent area, for a cleaner cutout.';
+      'If you’re compositing a character exported as transparent WebM over a background in other video software, keeping the background on its own common layer avoids unwanted color bleeding into the transparent area, for a cleaner cutout.';
 
   @override
   String get tipsLeftHandedWorkspaceTitle =>
@@ -2349,7 +2349,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsLeftHandedWorkspaceDesc =>
-      'If you\'re left-handed, turning on left-handed mode in workspace settings mirrors the docked panels, so they\'re less likely to sit under your drawing hand.';
+      'If you’re left-handed, turning on left-handed mode in workspace settings mirrors the docked panels, so they’re less likely to sit under your drawing hand.';
 
   @override
   String get tipsTransferDeviceTitle =>
@@ -2357,7 +2357,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsTransferDeviceDesc =>
-      'If you want to switch devices and keep drawing in the same environment, the transfer (.niatra) feature moves your settings, brushes, screentones, stamps, palettes, and more all together. To hand over a project you\'re working on, use “Share (.niashare)” instead.';
+      'If you want to switch devices and keep drawing in the same environment, the transfer (.niatra) feature moves your settings, brushes, screentones, stamps, palettes, and more all together. To hand over a project you’re working on, use “Share (.niashare)” instead.';
 
   @override
   String get fontSettingsTabDownloaded => 'Downloaded';
@@ -2479,7 +2479,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseFfmpegNote =>
-      'WebM and AVI export use FFmpeg (LGPL 3.0, via ffmpeg_kit_flutter_new_video). Source for the modified version: https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4 export uses the device\'s built-in hardware encoder directly and does not use FFmpeg.';
+      'WebM and AVI export use FFmpeg (LGPL 3.0, via ffmpeg_kit_flutter_new_video). Source for the modified version: https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4 export uses the device’s built-in hardware encoder directly and does not use FFmpeg.';
 
   @override
   String licenseFontCreditMeta(String author, String license) {
@@ -2531,7 +2531,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get toolbarStampColorLockedSnackbar =>
-      'Stamps carry their own color, so the color can\'t be changed';
+      'Stamps carry their own color, so the color can’t be changed';
 
   @override
   String get toolbarBrushSettingsTooltip => 'Brush Settings';
@@ -3119,14 +3119,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportCancelHint =>
-      'Finishing the final step — cancellation will apply once it\'s done';
+      'Finishing the final step — cancellation will apply once it’s done';
 
   @override
   String get exportOutdatedAutofillTitle => 'Auto-fill is not up to date';
 
   @override
   String get exportOutdatedAutofillBody =>
-      'Some auto-fill layers haven\'t been updated. Export anyway?';
+      'Some auto-fill layers haven’t been updated. Export anyway?';
 
   @override
   String get exportContinueButton => 'Continue';
@@ -3743,7 +3743,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String perfSettingsResetDialogBody(String preset) {
-    return 'The default restores the “$preset” settings that were automatically chosen from your device\'s performance at first launch.';
+    return 'The default restores the “$preset” settings that were automatically chosen from your device’s performance at first launch.';
   }
 
   @override
@@ -4396,7 +4396,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get autofillLineColorModeTraceAdjustInfo =>
-      'Keeps the original line color but shifts its hue, saturation, and lightness slightly. Use this when you want to keep the line art\'s shading instead of filling lines with a flat color.';
+      'Keeps the original line color but shifts its hue, saturation, and lightness slightly. Use this when you want to keep the line art’s shading instead of filling lines with a flat color.';
 
   @override
   String autofillPartGradientAngleLabel(int value) {
@@ -4508,11 +4508,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get saveTreeDeleteFailedSnackbar => 'Couldn\'t delete the save data';
+  String get saveTreeDeleteFailedSnackbar => 'Couldn’t delete the save data';
 
   @override
   String get saveTreeMemoNotSavedSnackbar =>
-      'Couldn\'t save the memo. Check your free storage';
+      'Couldn’t save the memo. Check your free storage';
 
   @override
   String saveTreeSaveFailedSnackbar(String error) {
@@ -4864,7 +4864,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String canvasHelpRubyBody(String example) {
-    return 'Typing something like “$example” shows small reading annotations above the base characters (in horizontal text) or to their right (in vertical text). It works in both directions, but text containing ruby text won\'t auto-wrap in horizontal mode (manual line breaks only).';
+    return 'Typing something like “$example” shows small reading annotations above the base characters (in horizontal text) or to their right (in vertical text). It works in both directions, but text containing ruby text won’t auto-wrap in horizontal mode (manual line breaks only).';
   }
 
   @override
@@ -4988,7 +4988,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelCommonDeleteMidDialogBody =>
-      'A shared layer\'s display range can only be a single continuous span, so it can\'t be deleted from a frame in the middle of that range. Choose whether to keep the part before or after this frame instead.';
+      'A shared layer’s display range can only be a single continuous span, so it can’t be deleted from a frame in the middle of that range. Choose whether to keep the part before or after this frame instead.';
 
   @override
   String get layerPanelCommonDeleteKeepBeforeButton => 'Keep before this frame';
@@ -5052,7 +5052,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canvasLayerLockedNotice =>
-      'This layer is locked, so you can\'t draw on it. Turn off “Lock” in the layer settings.';
+      'This layer is locked, so you can’t draw on it. Turn off “Lock” in the layer settings.';
 
   @override
   String brushPanelDeleteConfirmTitle(String name) {
@@ -5061,7 +5061,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushPanelDeleteConfirmBody =>
-      'A deleted brush can\'t be restored.';
+      'A deleted brush can’t be restored.';
 
   @override
   String get brushPanelResetRememberedValues =>
@@ -5182,7 +5182,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelOrphanFillFailSnackbar =>
-      'Couldn\'t process this: no part is assigned, or there\'s no fill shape.';
+      'Couldn’t process this: no part is assigned, or there’s no fill shape.';
 
   @override
   String get layerPanelAutofillUpdateHelpTitle => 'Auto-fill update mark';
@@ -5260,7 +5260,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineStackRangesTakePriority =>
-      'Frames in a frame range keep that range\'s order.';
+      'Frames in a frame range keep that range’s order.';
 
   @override
   String timelineStackRangeLabel(int start, int end) {
@@ -5274,7 +5274,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineStackRangeHint =>
-      'Only the frames in a range use the order set here; outside the ranges, the whole scene\'s order is used.';
+      'Only the frames in a range use the order set here; outside the ranges, the whole scene’s order is used.';
 
   @override
   String get timelineStackRangeEmpty =>
@@ -5531,7 +5531,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineAutofillUpdateHelpBody =>
-      'This scene/frame contains an auto-fill layer that isn\'t up to date. Tap the layer in the layer panel to update it.';
+      'This scene/frame contains an auto-fill layer that isn’t up to date. Tap the layer in the layer panel to update it.';
 
   @override
   String get timelineFrameTrackLabel => 'Frame';
@@ -5745,7 +5745,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerKeyframeSheetDesc =>
-      'Set this layer\'s position, scale, and rotation per frame; the keyframes are interpolated automatically. The layer\'s artwork itself doesn\'t change.';
+      'Set this layer’s position, scale, and rotation per frame; the keyframes are interpolated automatically. The layer’s artwork itself doesn’t change.';
 
   @override
   String layerKeyframeAddAtCurrentFrame(int n) {
@@ -5880,7 +5880,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt2Body =>
-      '1. For details on the App\'s supported OS versions and recommended operating environments, please refer to the relevant distribution store and the information displayed within the App.\n2. The App aims to run comfortably on devices with a wide range of performance levels; however, depending on your device\'s performance, OS version, available storage, settings, and other conditions of use, some features may be limited or may not function correctly.\n3. Minors must obtain the consent of a parent or other legal guardian before using the App, including its paid features.';
+      '1. For details on the App’s supported OS versions and recommended operating environments, please refer to the relevant distribution store and the information displayed within the App.\n2. The App aims to run comfortably on devices with a wide range of performance levels; however, depending on your device’s performance, OS version, available storage, settings, and other conditions of use, some features may be limited or may not function correctly.\n3. Minors must obtain the consent of a parent or other legal guardian before using the App, including its paid features.';
 
   @override
   String get licenseTermsArt3Title => 'Article 3 (Prohibited Acts)';
@@ -5894,7 +5894,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt4Body =>
-      '1. Copyright and other rights relating to illustrations, animations, and other content created by users using the App (including project data, exported images, videos, etc.; hereinafter “Created Content”) belong, to the extent permitted by law, to the user or third party who holds rights in such content.\n2. The App does not provide any function to transmit, collect, or synchronize Created Content to the developer\'s servers. Project data is, in principle, stored only on the user\'s device (see Article 12 for the handling that applies when a user chooses to post Created Content using the Work Plaza feature).\n3. Regardless of whether the free version or the premium version is used to create it, the developer will not restrict commercial use of Created Content based on the App\'s usage fee or edition (the differences between the free and premium versions are limited to functional aspects such as the display of the end mark and the upper limit on export time).\n4. Notwithstanding the preceding paragraph, fonts, images, materials, and other items that users add to the App and for which third parties hold rights are subject to the respective terms of use described in Article 5.';
+      '1. Copyright and other rights relating to illustrations, animations, and other content created by users using the App (including project data, exported images, videos, etc.; hereinafter “Created Content”) belong, to the extent permitted by law, to the user or third party who holds rights in such content.\n2. The App does not provide any function to transmit, collect, or synchronize Created Content to the developer’s servers. Project data is, in principle, stored only on the user’s device (see Article 12 for the handling that applies when a user chooses to post Created Content using the Work Plaza feature).\n3. Regardless of whether the free version or the premium version is used to create it, the developer will not restrict commercial use of Created Content based on the App’s usage fee or edition (the differences between the free and premium versions are limited to functional aspects such as the display of the end mark and the upper limit on export time).\n4. Notwithstanding the preceding paragraph, fonts, images, materials, and other items that users add to the App and for which third parties hold rights are subject to the respective terms of use described in Article 5.';
 
   @override
   String get licenseTermsArt5Title =>
@@ -5902,7 +5902,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt5Body =>
-      '1. The fonts and other materials bundled with the App are used in accordance with the license terms listed on this screen under “Fonts Used.”\n2. Regarding the rights relating to fonts, images, screentones, stamps, and other materials that a user has additionally registered or loaded into the App, the user is responsible for obtaining any necessary rights or permissions and using them lawfully.\n3. If a dispute arises with a third party arising from a user\'s use of third-party materials, the developer bears no responsibility for it, except where legally required to do so.';
+      '1. The fonts and other materials bundled with the App are used in accordance with the license terms listed on this screen under “Fonts Used.”\n2. Regarding the rights relating to fonts, images, screentones, stamps, and other materials that a user has additionally registered or loaded into the App, the user is responsible for obtaining any necessary rights or permissions and using them lawfully.\n3. If a dispute arises with a third party arising from a user’s use of third-party materials, the developer bears no responsibility for it, except where legally required to do so.';
 
   @override
   String get licenseTermsArt6Title => 'Article 6 (Premium Features / Billing)';
@@ -5923,7 +5923,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt8Body =>
-      '1. The App does not provide any function to transmit or collect to the developer\'s servers the illustrations, animations, and other content, or project data, created by users. These are, in principle, stored only on the user\'s device, and because the developer has no function to store this content on its own, there is no concept of a retention period on the developer\'s side.\n2. The handling of user information — including information collected by third-party services incorporated into the App (such as advertising delivery and in-app purchases) — is governed by the separately established Privacy Policy.\n3. If you uninstall the App, data stored on your device (projects, settings, added fonts, etc.) will be deleted.';
+      '1. The App does not provide any function to transmit or collect to the developer’s servers the illustrations, animations, and other content, or project data, created by users. These are, in principle, stored only on the user’s device, and because the developer has no function to store this content on its own, there is no concept of a retention period on the developer’s side.\n2. The handling of user information — including information collected by third-party services incorporated into the App (such as advertising delivery and in-app purchases) — is governed by the separately established Privacy Policy.\n3. If you uninstall the App, data stored on your device (projects, settings, added fonts, etc.) will be deleted.';
 
   @override
   String get licenseTermsArt9Title =>
@@ -5938,7 +5938,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt10Body =>
-      '1. The developer does not warrant that the App is free of factual or legal defects (including safety, reliability, accuracy, completeness, fitness for a particular purpose, and the absence of bugs or malfunctions).\n2. Users shall use the App at their own responsibility. Data may be lost due to device malfunction, misoperation, OS updates, or other circumstances; users are therefore recommended to make regular backups of work in progress using the export and share functions, among others.\n3. If damage is caused to a user by the developer\'s willful misconduct or gross negligence, the developer shall compensate for that damage.\n4. If damage is caused to a user by the developer\'s minor negligence (negligence other than gross negligence), the developer shall compensate only for the direct and ordinary damage actually incurred by the user.';
+      '1. The developer does not warrant that the App is free of factual or legal defects (including safety, reliability, accuracy, completeness, fitness for a particular purpose, and the absence of bugs or malfunctions).\n2. Users shall use the App at their own responsibility. Data may be lost due to device malfunction, misoperation, OS updates, or other circumstances; users are therefore recommended to make regular backups of work in progress using the export and share functions, among others.\n3. If damage is caused to a user by the developer’s willful misconduct or gross negligence, the developer shall compensate for that damage.\n4. If damage is caused to a user by the developer’s minor negligence (negligence other than gross negligence), the developer shall compensate only for the direct and ordinary damage actually incurred by the user.';
 
   @override
   String get licenseTermsArt11Title => 'Article 11 (Amendment of These Terms)';
@@ -5953,7 +5953,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt12Body =>
-      '1. The App optionally provides a feature that lets users post animation works they have created, via their own Google account, to YouTube, and publish and browse them on “the Work Plaza” (the “Community Feature”). Browsing and creating works is possible without using the Community Feature.\n2. The video files themselves are stored on YouTube, not on the developer\'s servers. However, the information needed to identify and display posted works (YouTube video ID, title, statistics, report information, etc.) and the NIARIM User ID issued for use of the posting, reporting, and blocking features (an identifier issued within the App, separate from the Google account) are managed on the developer\'s servers.\n3. Posting works, reporting, and blocking other users under the Community Feature require the user to be signed in with a Google account.\n4. There is a daily limit on the number of works that can be posted (the limit differs between free members and Premium members). This limit may be changed for operational reasons.\n5. If a user believes another user\'s posted work violates the law or public order and morals, or may fall under any item of Article 3, the user may report it to the developer through the App\'s reporting feature. After reviewing a report, the developer may take necessary measures, such as hiding the work from listings, for reasonable cause. False reports and abuse of the reporting feature are prohibited.\n6. If a user deletes a post, or disconnects their Google account from the App, the corresponding YouTube video may be deleted. If a video is made private or deleted on YouTube\'s side, the work will also stop being displayed on the Work Plaza.\n7. Use of the Community Feature is subject to YouTube\'s Terms of Service and Community Guidelines, in addition to these Terms.\n8. Users may follow other users and may bookmark or repost other users\' works. Only you can view the lists of users you follow, your followers, and works you have bookmarked. Other users see only your following and follower counts. Following, bookmarking, or reposting does not send the other user an individual notification about that action.\n9. Tags attached to a work may be added or removed by users other than the poster. A poster may lock the tags on their own work to prohibit editing by other users. Users must not attach tags that defame others, tags unrelated to the content of the work, or otherwise inappropriate tags. The developer may remove inappropriate tags.\n10. The developer displays notices about your own work submissions, publications, mission achievements, and similar events in the App’s notification list. If your device allows notifications, the App may send push notifications. Push notifications can be disabled in the App or device settings.\n11. Users must not use the Community Feature to harass other users, for advertising or solicitation, or for any other purpose outside its intended purpose (publishing and viewing works). Muting changes only what you see. Blocking hides each account’s posts from the other while signed in to Work Plaza. Neither action sends a notification.';
+      '1. The App optionally provides a feature that lets users post animation works they have created, via their own Google account, to YouTube, and publish and browse them on “the Work Plaza” (the “Community Feature”). Browsing and creating works is possible without using the Community Feature.\n2. The video files themselves are stored on YouTube, not on the developer’s servers. However, the information needed to identify and display posted works (YouTube video ID, title, statistics, report information, etc.) and the NIARIM User ID issued for use of the posting, reporting, and blocking features (an identifier issued within the App, separate from the Google account) are managed on the developer’s servers.\n3. Posting works, reporting, and blocking other users under the Community Feature require the user to be signed in with a Google account.\n4. There is a daily limit on the number of works that can be posted (the limit differs between free members and Premium members). This limit may be changed for operational reasons.\n5. If a user believes another user’s posted work violates the law or public order and morals, or may fall under any item of Article 3, the user may report it to the developer through the App’s reporting feature. After reviewing a report, the developer may take necessary measures, such as hiding the work from listings, for reasonable cause. False reports and abuse of the reporting feature are prohibited.\n6. If a user deletes a post, or disconnects their Google account from the App, the corresponding YouTube video may be deleted. If a video is made private or deleted on YouTube’s side, the work will also stop being displayed on the Work Plaza.\n7. Use of the Community Feature is subject to YouTube’s Terms of Service and Community Guidelines, in addition to these Terms.\n8. Users may follow other users and may bookmark or repost other users’ works. Only you can view the lists of users you follow, your followers, and works you have bookmarked. Other users see only your following and follower counts. Following, bookmarking, or reposting does not send the other user an individual notification about that action.\n9. Tags attached to a work may be added or removed by users other than the poster. A poster may lock the tags on their own work to prohibit editing by other users. Users must not attach tags that defame others, tags unrelated to the content of the work, or otherwise inappropriate tags. The developer may remove inappropriate tags.\n10. The developer displays notices about your own work submissions, publications, mission achievements, and similar events in the App’s notification list. If your device allows notifications, the App may send push notifications. Push notifications can be disabled in the App or device settings.\n11. Users must not use the Community Feature to harass other users, for advertising or solicitation, or for any other purpose outside its intended purpose (publishing and viewing works). Muting changes only what you see. Blocking hides each account’s posts from the other while signed in to Work Plaza. Neither action sends a notification.';
 
   @override
   String get licenseTermsArt13Title =>
@@ -5961,7 +5961,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt13Body =>
-      '1. These Terms shall be governed by and construed in accordance with the laws of Japan.\n2. In the event a dispute arises in connection with the App, the district court or summary court having jurisdiction over the developer\'s place of business, depending on the amount in dispute, shall have exclusive agreed jurisdiction as the court of first instance.';
+      '1. These Terms shall be governed by and construed in accordance with the laws of Japan.\n2. In the event a dispute arises in connection with the App, the district court or summary court having jurisdiction over the developer’s place of business, depending on the amount in dispute, shall have exclusive agreed jurisdiction as the court of first instance.';
 
   @override
   String get privacyPolicyArt1Title => 'Article 1 (Purpose of This Policy)';
@@ -5976,7 +5976,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt2Body =>
-      'The App does not provide any function to transmit, collect, or store on the developer\'s servers the illustrations, animations, and other content created by users (including project data, exported images, videos, etc.; the same applies hereinafter). This data is, in principle, stored only on the user\'s device (the App does not include a cloud sync feature). Because the developer has no function to store this content on its own, there is no concept of a retention period on the developer\'s side. Data stored on your device can be deleted at any time using the App\'s deletion features, and if you uninstall the App, data stored on your device — including projects, settings, and added fonts — will also be deleted (for the handling of information when a user chooses to sign in with a Google account and use the Work Plaza, opals or the verification of premium purchases, see Article 7).';
+      'The App does not provide any function to transmit, collect, or store on the developer’s servers the illustrations, animations, and other content created by users (including project data, exported images, videos, etc.; the same applies hereinafter). This data is, in principle, stored only on the user’s device (the App does not include a cloud sync feature). Because the developer has no function to store this content on its own, there is no concept of a retention period on the developer’s side. Data stored on your device can be deleted at any time using the App’s deletion features, and if you uninstall the App, data stored on your device — including projects, settings, and added fonts — will also be deleted (for the handling of information when a user chooses to sign in with a Google account and use the Work Plaza, opals or the verification of premium purchases, see Article 7).';
 
   @override
   String get privacyPolicyArt2AiTrainingClause =>
@@ -5988,7 +5988,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt3Body =>
-      'The App incorporates the following third-party services, and each service provider may collect information to the extent necessary to provide its respective service. The developer of the App has not implemented any function to independently acquire or store this information (the handling of information collected by each service is governed by that service provider\'s own privacy policy).\n\n[Advertising Delivery (Google AdMob)]\nIn the free version, advertisements are delivered through Google AdMob. For purposes such as ad delivery, effectiveness measurement, and fraud prevention, the Advertising ID and other device information may be collected and used by Google or its affiliated companies. For details on the collection and use of this information, please refer to Google\'s Privacy Policy (https://policies.google.com/privacy). You can reset your Advertising ID or disable personalized ads from your device settings (e.g., “Privacy” in the Android Settings app). If you are located in the European Economic Area (EEA), the United Kingdom, or Switzerland, you can choose your ad personalization consent settings via a consent form shown at launch, and change this choice at any time using the “Manage ad consent settings” button at the bottom of this screen.\n\n[In-App Purchases (Google Play Billing)]\nPurchases of premium features are made through Google Play\'s payment system. The developer does not directly acquire or hold payment information such as credit card numbers. The handling of payment-related information is governed by Google Play\'s rules.\n\n[Sign-In with a Google Account (Google Sign-In)]\nThe App signs in with a Google account only when you use the Work Plaza, opals or the verification of premium purchases. When you sign in, Google passes the App identity information that includes your account identifier, email address and display name. The developer\'s servers use this information only to confirm your identity and to issue and match your NIARIM User ID (Article 7), and do not store your email address or display name.\n\n[YouTube (YouTube API Services)]\nThe Work Plaza uses YouTube API Services. When you post a work, the App uses the permission you grant on your Google account to upload the video to your own YouTube channel and to obtain the channel name and icon. Posted videos are handled in accordance with the YouTube Terms of Service (https://www.youtube.com/t/terms) and the Google Privacy Policy (https://policies.google.com/privacy). You can revoke the App\'s access at any time on the Google security settings page (https://security.google.com/settings/security/permissions).\n\n[Push Notifications (Firebase Cloud Messaging)]\nOnly if you turn on Work Plaza notifications, Google (Firebase Cloud Messaging) issues a notification identifier for your device (device token) so that notifications can be delivered.\n\n[The Developer\'s Servers (Amazon Web Services)]\nThe developer\'s servers used for the Work Plaza, opals and the verification of premium purchases run on the cloud provided by Amazon Web Services, Inc. (Tokyo region, Japan).\n\n[Downloading Additional Fonts (GitHub)]\nCommunication with GitHub (GitHub, Inc.), the distributor of the font files, occurs only when you choose to download an additional font from “Font Management” in the settings screen. It does not occur when the app starts or during normal use. Only information required for the request (such as your IP address and which font file is requested) is sent; no artwork data or information identifying you is sent. Handling of the information obtained is governed by the GitHub Privacy Statement (https://docs.github.com/site-policy/privacy-policies/github-privacy-statement).\n\n[Crash Analytics / Usage Analytics]\nThe App does not currently incorporate any SDK for crash analytics or usage analytics. If such services are introduced in the future, this Policy will be updated and announced within the App.';
+      'The App incorporates the following third-party services, and each service provider may collect information to the extent necessary to provide its respective service. The developer of the App has not implemented any function to independently acquire or store this information (the handling of information collected by each service is governed by that service provider’s own privacy policy).\n\n[Advertising Delivery (Google AdMob)]\nIn the free version, advertisements are delivered through Google AdMob. For purposes such as ad delivery, effectiveness measurement, and fraud prevention, the Advertising ID and other device information may be collected and used by Google or its affiliated companies. For details on the collection and use of this information, please refer to Google’s Privacy Policy (https://policies.google.com/privacy). You can reset your Advertising ID or disable personalized ads from your device settings (e.g., “Privacy” in the Android Settings app). If you are located in the European Economic Area (EEA), the United Kingdom, or Switzerland, you can choose your ad personalization consent settings via a consent form shown at launch, and change this choice at any time using the “Manage ad consent settings” button at the bottom of this screen.\n\n[In-App Purchases (Google Play Billing)]\nPurchases of premium features are made through Google Play’s payment system. The developer does not directly acquire or hold payment information such as credit card numbers. The handling of payment-related information is governed by Google Play’s rules.\n\n[Sign-In with a Google Account (Google Sign-In)]\nThe App signs in with a Google account only when you use the Work Plaza, opals or the verification of premium purchases. When you sign in, Google passes the App identity information that includes your account identifier, email address and display name. The developer’s servers use this information only to confirm your identity and to issue and match your NIARIM User ID (Article 7), and do not store your email address or display name.\n\n[YouTube (YouTube API Services)]\nThe Work Plaza uses YouTube API Services. When you post a work, the App uses the permission you grant on your Google account to upload the video to your own YouTube channel and to obtain the channel name and icon. Posted videos are handled in accordance with the YouTube Terms of Service (https://www.youtube.com/t/terms) and the Google Privacy Policy (https://policies.google.com/privacy). You can revoke the App’s access at any time on the Google security settings page (https://security.google.com/settings/security/permissions).\n\n[Push Notifications (Firebase Cloud Messaging)]\nOnly if you turn on Work Plaza notifications, Google (Firebase Cloud Messaging) issues a notification identifier for your device (device token) so that notifications can be delivered.\n\n[The Developer’s Servers (Amazon Web Services)]\nThe developer’s servers used for the Work Plaza, opals and the verification of premium purchases run on the cloud provided by Amazon Web Services, Inc. (Tokyo region, Japan).\n\n[Downloading Additional Fonts (GitHub)]\nCommunication with GitHub (GitHub, Inc.), the distributor of the font files, occurs only when you choose to download an additional font from “Font Management” in the settings screen. It does not occur when the app starts or during normal use. Only information required for the request (such as your IP address and which font file is requested) is sent; no artwork data or information identifying you is sent. Handling of the information obtained is governed by the GitHub Privacy Statement (https://docs.github.com/site-policy/privacy-policies/github-privacy-statement).\n\n[Crash Analytics / Usage Analytics]\nThe App does not currently incorporate any SDK for crash analytics or usage analytics. If such services are introduced in the future, this Policy will be updated and announced within the App.';
 
   @override
   String get privacyPolicyArt4Title =>
@@ -6000,7 +6000,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt5Title =>
-      'Article 5 (Children\'s Personal Information)';
+      'Article 5 (Children’s Personal Information)';
 
   @override
   String get privacyPolicyArt5Body =>
@@ -6012,7 +6012,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt6Body =>
-      'The providers of the following services used by the App are businesses outside Japan, and information may be processed on servers outside Japan.\n・Google LLC (United States): Google AdMob, Google Play Billing, sign-in with a Google account, YouTube, Firebase Cloud Messaging\n・Amazon Web Services, Inc. (United States): operation of the developer\'s servers (the servers are located in the Tokyo region, Japan)\n・GitHub, Inc. (United States): downloading additional fonts\nThe personal information protection system of the United States can be checked in the “Survey of personal information protection systems in foreign countries” published by Japan\'s Personal Information Protection Commission. Each provider handles information in accordance with its own privacy policy.';
+      'The providers of the following services used by the App are businesses outside Japan, and information may be processed on servers outside Japan.\n・Google LLC (United States): Google AdMob, Google Play Billing, sign-in with a Google account, YouTube, Firebase Cloud Messaging\n・Amazon Web Services, Inc. (United States): operation of the developer’s servers (the servers are located in the Tokyo region, Japan)\n・GitHub, Inc. (United States): downloading additional fonts\nThe personal information protection system of the United States can be checked in the “Survey of personal information protection systems in foreign countries” published by Japan’s Personal Information Protection Commission. Each provider handles information in accordance with its own privacy policy.';
 
   @override
   String get privacyPolicyArt7Title =>
@@ -6020,7 +6020,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt7Body =>
-      '1. Only when a user chooses, of their own accord, to sign in with a Google account and use the “Work Plaza” feature (Article 12 of the Terms of Service), opals (login bonuses, missions and exchanges for rewards) or the verification of premium purchases, the developer manages the following information on its servers:\n・Information needed to identify and display a posted work (YouTube video ID, title, statistics, posting date and time, tags, etc.)\n・The NIARIM User ID issued to a signed-in user (an identifier issued within the App, separate from the Google account)\n・Public information about the linked YouTube channel (channel name and channel icon image URL). This is copied to and retained on the developer\'s servers in order to display the poster\'s name and icon\n・The content of any report submitted using the reporting feature, and the reporting user\'s NIARIM User ID\n・The NIARIM User ID of any user you block\n・The NIARIM User ID of any user you follow, and your following and follower counts\n・The IDs of works you bookmark and the date and time of each bookmark\n・The IDs of works you repost and the date and time of each repost\n・Tags attached to a work (see paragraph 4)\n・If you enable push notifications, your device token (an identifier issued by your device to identify the destination of a notification; used solely to send notifications)\n・Information for verifying premium purchases (the ID of the purchased product, the purchase token issued by Google Play, and the verification result and expiry date)\n・Opal balances and the history of increases and decreases, records of login bonuses and missions achieved and claimed, and records of exchanges for rewards\n・Records confirming that a rewarded ad was watched to the end (the transaction ID, reward amount, and date and time of the reward confirmation sent by Google AdMob)\n2. The video file itself is stored on YouTube, not on the developer\'s servers.\n3. The information described in the preceding two paragraphs is used only for the purposes of providing the features in this Article (displaying listings, rankings and search results, responding to reports, managing posting limits, reflecting follows, bookmarks and reposts, sending notifications, verifying premium purchases, granting and exchanging opals and preventing improper grants, etc.). The developer does not provide this information to third parties for advertising purposes.\n4. Tags may be added or removed by users other than the poster (a poster may lock the tags on their own work to prohibit editing). Tags are public on the Work Plaza, and the identity of the user who added a tag is not displayed.\n5. Only you can view the lists of users you follow, your followers, and works you have bookmarked. Other users see only your following and follower counts. Following, bookmarking, or reposting does not send the other user an individual notification about that action.\n6. If you make a posted work private or delete it, that work will no longer appear in the Work Plaza listings or rankings. You can delete your NIARIM account (NIARIM User ID) yourself on the deletion page, which opens from the app\'s settings or from the privacy policy on the official website, after confirming your identity with your Google account. Deleting the account erases, in turn, the Work Plaza posts, follows, bookmarks, reposts, blocks, and reports linked to it, your opal balance, history, and benefits, and your notifications and device tokens, among other data; this cannot be undone. After the deletion, we keep only the following: a hash of your Google account identifier to reject old sign-ins (2 hours), a code that does not identify you to confirm that the request is complete (24 hours), ad reward receipt records with identifying information removed to prevent duplicate rewards (until their existing expiry), and records containing only the IDs of deleted works so that they do not reappear. Data saved aside during outages is deleted automatically within 7 days, and server logs within 1 month. Works on your device, videos on YouTube, and Google Play subscriptions are not covered by this deletion; please manage or cancel them where they are. To request deletion of any other records, please contact us using the channel described in Article 9.\n7. To protect the information in the preceding paragraphs, the developer encrypts communication with its servers and limits who can handle the information on its servers, and with what permissions, to what is necessary.\n8. If a user does not use the features in this Article, no handling of information under this Article occurs. (In line with the principle in Article 2, nothing is transmitted to the developer\'s servers.)';
+      '1. Only when a user chooses, of their own accord, to sign in with a Google account and use the “Work Plaza” feature (Article 12 of the Terms of Service), opals (login bonuses, missions and exchanges for rewards) or the verification of premium purchases, the developer manages the following information on its servers:\n・Information needed to identify and display a posted work (YouTube video ID, title, statistics, posting date and time, tags, etc.)\n・The NIARIM User ID issued to a signed-in user (an identifier issued within the App, separate from the Google account)\n・Public information about the linked YouTube channel (channel name and channel icon image URL). This is copied to and retained on the developer’s servers in order to display the poster’s name and icon\n・The content of any report submitted using the reporting feature, and the reporting user’s NIARIM User ID\n・The NIARIM User ID of any user you block\n・The NIARIM User ID of any user you follow, and your following and follower counts\n・The IDs of works you bookmark and the date and time of each bookmark\n・The IDs of works you repost and the date and time of each repost\n・Tags attached to a work (see paragraph 4)\n・If you enable push notifications, your device token (an identifier issued by your device to identify the destination of a notification; used solely to send notifications)\n・Information for verifying premium purchases (the ID of the purchased product, the purchase token issued by Google Play, and the verification result and expiry date)\n・Opal balances and the history of increases and decreases, records of login bonuses and missions achieved and claimed, and records of exchanges for rewards\n・Records confirming that a rewarded ad was watched to the end (the transaction ID, reward amount, and date and time of the reward confirmation sent by Google AdMob)\n2. The video file itself is stored on YouTube, not on the developer’s servers.\n3. The information described in the preceding two paragraphs is used only for the purposes of providing the features in this Article (displaying listings, rankings and search results, responding to reports, managing posting limits, reflecting follows, bookmarks and reposts, sending notifications, verifying premium purchases, granting and exchanging opals and preventing improper grants, etc.). The developer does not provide this information to third parties for advertising purposes.\n4. Tags may be added or removed by users other than the poster (a poster may lock the tags on their own work to prohibit editing). Tags are public on the Work Plaza, and the identity of the user who added a tag is not displayed.\n5. Only you can view the lists of users you follow, your followers, and works you have bookmarked. Other users see only your following and follower counts. Following, bookmarking, or reposting does not send the other user an individual notification about that action.\n6. If you make a posted work private or delete it, that work will no longer appear in the Work Plaza listings or rankings. You can delete your NIARIM account (NIARIM User ID) yourself on the deletion page, which opens from the app’s settings or from the privacy policy on the official website, after confirming your identity with your Google account. Deleting the account erases, in turn, the Work Plaza posts, follows, bookmarks, reposts, blocks, and reports linked to it, your opal balance, history, and benefits, and your notifications and device tokens, among other data; this cannot be undone. After the deletion, we keep only the following: a hash of your Google account identifier to reject old sign-ins (2 hours), a code that does not identify you to confirm that the request is complete (24 hours), ad reward receipt records with identifying information removed to prevent duplicate rewards (until their existing expiry), and records containing only the IDs of deleted works so that they do not reappear. Data saved aside during outages is deleted automatically within 7 days, and server logs within 1 month. Works on your device, videos on YouTube, and Google Play subscriptions are not covered by this deletion; please manage or cancel them where they are. To request deletion of any other records, please contact us using the channel described in Article 9.\n7. To protect the information in the preceding paragraphs, the developer encrypts communication with its servers and limits who can handle the information on its servers, and with what permissions, to what is necessary.\n8. If a user does not use the features in this Article, no handling of information under this Article occurs. (In line with the principle in Article 2, nothing is transmitted to the developer’s servers.)';
 
   @override
   String get privacyPolicyArt8Title => 'Article 8 (Changes to This Policy)';
@@ -6141,7 +6141,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpMeshTransformDesc =>
-      'A transform tool for the whole layer, opened from the edit/settings menu in the top-right of the canvas. Unlike transforming a selection, no selection is needed — drag corners or individual grid points with your finger for a freeform result. The control panel\'s density slider can subdivide the mesh up to 10×10, and pinching two different points with two fingers at once gives an intuitive way to rotate or scale.';
+      'A transform tool for the whole layer, opened from the edit/settings menu in the top-right of the canvas. Unlike transforming a selection, no selection is needed — drag corners or individual grid points with your finger for a freeform result. The control panel’s density slider can subdivide the mesh up to 10×10, and pinching two different points with two fingers at once gives an intuitive way to rotate or scale.';
 
   @override
   String get layerPanelBrightnessToAlphaLabel => 'Transparency from Brightness';
@@ -6162,7 +6162,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsRoughLayerRescueDesc =>
-      'Even if you accidentally drew your line art on top of your rough sketch layer, you can pull the line art back out without deleting anything. 1) Add a new layer and set its blend mode to Divide. 2) Pick up the sketch\'s color with the eyedropper and fill that whole Divide layer with it (this fades the sketch). 3) Duplicate the Divide layer and the sketch disappears completely. 4) Use “Merge all visible layers” in the layer panel to flatten everything into one layer. 5) From that merged layer\'s three-dot menu, choose “Transparency from Brightness (Gray)” — the white areas become transparent, leaving just the line art.';
+      'Even if you accidentally drew your line art on top of your rough sketch layer, you can pull the line art back out without deleting anything. 1) Add a new layer and set its blend mode to Divide. 2) Pick up the sketch’s color with the eyedropper and fill that whole Divide layer with it (this fades the sketch). 3) Duplicate the Divide layer and the sketch disappears completely. 4) Use “Merge all visible layers” in the layer panel to flatten everything into one layer. 5) From that merged layer’s three-dot menu, choose “Transparency from Brightness (Gray)” — the white areas become transparent, leaving just the line art.';
 
   @override
   String get timelineEffectTypeMonochrome => 'Monochrome Filter';
@@ -6452,7 +6452,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsStockingDenierDesc =>
-      'The new stocking/tights screentones in the screentone list have tighter mesh spacing for lower denier values (thinner fabric) — the lowest, 10 denier, is deliberately fine enough that it can produce moiré depending on display or export resolution. Higher denier tights use wider spacing for a more opaque look, so pick the one that matches the character\'s legs.';
+      'The new stocking/tights screentones in the screentone list have tighter mesh spacing for lower denier values (thinner fabric) — the lowest, 10 denier, is deliberately fine enough that it can produce moiré depending on display or export resolution. Higher denier tights use wider spacing for a more opaque look, so pick the one that matches the character’s legs.';
 
   @override
   String get tipsFisheyeChromaticTitle =>
@@ -6460,7 +6460,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsFisheyeChromaticDesc =>
-      'The fisheye filter bulges the center of the frame and compresses the edges, recreating the curvature of a wide-angle or fisheye lens shot. The chromatic aberration filter shifts the RGB channels slightly to recreate the color fringing you\'d get from a cheap lens. Both are available as drawing filters (applied directly to a layer) and as effect filters (applied to a range on the timeline). The fisheye center can also be moved by dragging the + on the canvas.';
+      'The fisheye filter bulges the center of the frame and compresses the edges, recreating the curvature of a wide-angle or fisheye lens shot. The chromatic aberration filter shifts the RGB channels slightly to recreate the color fringing you’d get from a cheap lens. Both are available as drawing filters (applied directly to a layer) and as effect filters (applied to a range on the timeline). The fisheye center can also be moved by dragging the + on the canvas.';
 
   @override
   String get tipsLensDistortionTitle =>
@@ -6468,7 +6468,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsLensDistortionDesc =>
-      'Choose the Lens Distortion filter and paint the lens area (such as the lenses of a pair of glasses) on the canvas with the panel\'s “Pen”, or tap an area enclosed by lines with “Bucket” — the filter\'s local warp then applies only to that area. Remove overflow with “Eraser”; each stroke can be undone and redone one at a time. If there is a selection or a Selection layer, the area starts from it. The lens strength slider shrinks the area like a concave lens for negative values and magnifies it like a convex lens for positive values, and you can also fine-tune the center position. You can paint both lenses and apply the effect to both together. The painted area never appears in exports or the final artwork. It\'s also handy for reproducing the look of scenery seen through a camera lens — try painting a wide area, such as the background, and using a mild strength.';
+      'Choose the Lens Distortion filter and paint the lens area (such as the lenses of a pair of glasses) on the canvas with the panel’s “Pen”, or tap an area enclosed by lines with “Bucket” — the filter’s local warp then applies only to that area. Remove overflow with “Eraser”; each stroke can be undone and redone one at a time. If there is a selection or a Selection layer, the area starts from it. The lens strength slider shrinks the area like a concave lens for negative values and magnifies it like a convex lens for positive values, and you can also fine-tune the center position. You can paint both lenses and apply the effect to both together. The painted area never appears in exports or the final artwork. It’s also handy for reproducing the look of scenery seen through a camera lens — try painting a wide area, such as the background, and using a mild strength.';
 
   @override
   String get tipsSphereShadingTitle =>
@@ -6492,7 +6492,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsLineArtExtractionDesc =>
-      'Boost contrast with color adjust to make the lines stand out, then use the threshold filter to split the image into pure black and white — the lines separate cleanly from everything else. The threshold slider lets you fine-tune the line thickness and how faint or bold it looks. Finally, use “Brightness to alpha (gray)” from the layer\'s three-dot menu to make the white areas (everything but the lines) transparent, leaving just the line art. Handy for pulling clean line art out of a photo or rough sketch.';
+      'Boost contrast with color adjust to make the lines stand out, then use the threshold filter to split the image into pure black and white — the lines separate cleanly from everything else. The threshold slider lets you fine-tune the line thickness and how faint or bold it looks. Finally, use “Brightness to alpha (gray)” from the layer’s three-dot menu to make the white areas (everything but the lines) transparent, leaving just the line art. Handy for pulling clean line art out of a photo or rough sketch.';
 
   @override
   String get tipsLineColorUsageTitle =>
@@ -6682,11 +6682,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityVisibilityPublishedDesc =>
-      'Visible: shown in New Arrivals, Rankings, and this author\'s work list.';
+      'Visible: shown in New Arrivals, Rankings, and this author’s work list.';
 
   @override
   String get communityVisibilityHiddenDesc =>
-      'Hidden: removed from New Arrivals, Rankings, and this author\'s work list (independent of the YouTube-side visibility setting).';
+      'Hidden: removed from New Arrivals, Rankings, and this author’s work list (independent of the YouTube-side visibility setting).';
 
   @override
   String get communityVisibilityHiddenBadge => 'Hidden';
@@ -6828,7 +6828,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pixelColorModeLabel => 'Color mode';
 
   @override
-  String get pixelColorModeNone => 'Don\'t limit colors';
+  String get pixelColorModeNone => 'Don’t limit colors';
 
   @override
   String get pixelColorModePalette => 'Choose from palette';
@@ -7013,14 +7013,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpStorageDesc =>
-      'See how much storage NIARIM is using on your device, and a breakdown of what\'s inside NIARIM (projects, materials, exported files, custom brushes/screentones/stamps/fonts, cache, and trash) as pie charts. Clear the cache, bulk-remove unused materials across all projects, empty the trash, organize projects, or erase all data (reset).';
+      'See how much storage NIARIM is using on your device, and a breakdown of what’s inside NIARIM (projects, materials, exported files, custom brushes/screentones/stamps/fonts, cache, and trash) as pie charts. Clear the cache, bulk-remove unused materials across all projects, empty the trash, organize projects, or erase all data (reset).';
 
   @override
   String get helpWidgetSettingsTitle => 'Home screen widgets';
 
   @override
   String get helpWidgetSettingsDesc =>
-      'Settings for the three widget types you can place on your phone\'s home screen: a single frame from a work (launch screen), the New work widget, and the Plaza widget. Widgets themselves are added by long-pressing the home screen, not from inside the app. “Choose a work” uses the same sort, display mode, search, and favorites filter as the project list tab, then lets you pick the exact frame to show in a preview with playback controls. The New work and Plaza widgets let you choose whether the background follows the app theme or uses a color you set.';
+      'Settings for the three widget types you can place on your phone’s home screen: a single frame from a work (launch screen), the New work widget, and the Plaza widget. Widgets themselves are added by long-pressing the home screen, not from inside the app. “Choose a work” uses the same sort, display mode, search, and favorites filter as the project list tab, then lets you pick the exact frame to show in a preview with playback controls. The New work and Plaza widgets let you choose whether the background follows the app theme or uses a color you set.';
 
   @override
   String get colorPickerImportPaletteTooltip => 'Import palette';
@@ -7364,7 +7364,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushOutlineAccentHelp =>
-      'Thickens the outline toward the apex of each curve in the stroke: it keeps the outline width where the curve begins and ends, and gradually reaches this width at the apex (pressure and taper never change the outline\'s width, so this is how the outline gets its own variation). Applied when you lift the pen.';
+      'Thickens the outline toward the apex of each curve in the stroke: it keeps the outline width where the curve begins and ends, and gradually reaches this width at the apex (pressure and taper never change the outline’s width, so this is how the outline gets its own variation). Applied when you lift the pen.';
 
   @override
   String get brushFold => 'Fold mode';
@@ -7398,7 +7398,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      'Turn on Outline in the brush settings to use Fold mode. With it off, the brush draws exactly like the normal outline pen. With it on, the outline pen\'s own line folds and curls along the direction and bends of the stroke you draw; it does not generate waves automatically. At each bend, a fold line branches from the inner edge, curves and fades out. A stroke that keeps turning the same way gets a subtler fold line every 270°. There are five fold types. Wave (top view) brings the earlier part of the stroke forward, and Wave (low angle) the later part. Right curl decides front and back as if rolling to the right of the drawing direction, and Left curl to the left; they follow the stroke, not the screen. Crescent curl follows the C-shaped curves you draw to form connected crescents. Fold length sets the length of the fold line (it scales with the brush size), Fold angle sets how strongly it follows the stroke\'s curve (50% follows it naturally), and Fold line curve start sets how thick the material looks (at 0% it curves right from where it branches). On the outline pen, pressure and Fade (entry and exit) change only the overall shape, outline included; the outline keeps its width and the color never gets lighter. Turn off Keep overlaps under Outline to merge overlapping strokes: their joins are not outlined and no fold lines are drawn where they overlap, only the outside of the combined shape is outlined. Turn on Weight variation under Outline to thicken the outline toward the apex of each curve: it keeps the outline width where the curve begins and ends and gradually reaches the Outline width at the apex (applied when you lift the pen).';
+      'Turn on Outline in the brush settings to use Fold mode. With it off, the brush draws exactly like the normal outline pen. With it on, the outline pen’s own line folds and curls along the direction and bends of the stroke you draw; it does not generate waves automatically. At each bend, a fold line branches from the inner edge, curves and fades out. A stroke that keeps turning the same way gets a subtler fold line every 270°. There are five fold types. Wave (top view) brings the earlier part of the stroke forward, and Wave (low angle) the later part. Right curl decides front and back as if rolling to the right of the drawing direction, and Left curl to the left; they follow the stroke, not the screen. Crescent curl follows the C-shaped curves you draw to form connected crescents. Fold length sets the length of the fold line (it scales with the brush size), Fold angle sets how strongly it follows the stroke’s curve (50% follows it naturally), and Fold line curve start sets how thick the material looks (at 0% it curves right from where it branches). On the outline pen, pressure and Fade (entry and exit) change only the overall shape, outline included; the outline keeps its width and the color never gets lighter. Turn off Keep overlaps under Outline to merge overlapping strokes: their joins are not outlined and no fold lines are drawn where they overlap, only the outside of the combined shape is outlined. Turn on Weight variation under Outline to thicken the outline toward the apex of each curve: it keeps the outline width where the curve begins and ends and gradually reaches the Outline width at the apex (applied when you lift the pen).';
 
   @override
   String get tipsBrushFoldTitle =>
@@ -8317,7 +8317,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterBgBlendMaterialProtection => 'Protect material';
 
   @override
-  String get filterBgBlendToneMatch => 'Match the background\'s tones';
+  String get filterBgBlendToneMatch => 'Match the background’s tones';
 
   @override
   String get filterBgBlendSamplingBand => 'Surrounding sampling band';
@@ -9209,7 +9209,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creatorMissionActivityHistoryMore => 'Older notifications';
 
   @override
-  String get creatorMissionActivityError => 'Couldn\'t load notifications';
+  String get creatorMissionActivityError => 'Couldn’t load notifications';
 
   @override
   String get creatorMissionActivitySignIn =>
@@ -9252,7 +9252,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionClaimFailed =>
-      'Couldn\'t verify this claim. Refresh and try again.';
+      'Couldn’t verify this claim. Refresh and try again.';
 
   @override
   String get creatorMissionWorkSection => 'Achievements by work';
@@ -9269,7 +9269,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creatorMissionLoadMore => 'Check next 25 works';
 
   @override
-  String get creatorMissionWorkListError => 'Couldn\'t load work achievements.';
+  String get creatorMissionWorkListError => 'Couldn’t load work achievements.';
 
   @override
   String get creatorMissionSubtitle =>
@@ -9519,7 +9519,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockRewardPending =>
-      'Pending verification. Opals appear after Google\'s signed confirmation.';
+      'Pending verification. Opals appear after Google’s signed confirmation.';
 
   @override
   String get rewardUnlockRewardUnavailable =>
