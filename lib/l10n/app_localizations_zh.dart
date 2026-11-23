@@ -1046,6 +1046,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumCheckoutStartFailed => '无法打开 Google Play 购买页面。请重新选择方案。';
 
   @override
+  String get premiumErrorSignInRequired => '购买前，请使用Google账号登录，并连接到确认购买的服务器。';
+
+  @override
+  String get premiumErrorStoreUnavailable => '无法连接到 Google Play。请检查网络后重试。';
+
+  @override
+  String get premiumErrorProductUnavailable => '未能获取方案信息。请稍后重试。';
+
+  @override
+  String get premiumErrorVerifierUnavailable => '无法连接到确认购买的服务器，因此无法开始购买。请稍后重试。';
+
+  @override
+  String get premiumErrorNotConfirmed => '服务器未能确认此次购买。请通过“恢复购买”重新确认。';
+
+  @override
+  String get premiumErrorNoValidPurchase => '未能确认有效的 Google Play 购买。';
+
+  @override
+  String get premiumErrorVerificationFailed => '购买确认失败。请通过“恢复购买”重新确认。';
+
+  @override
+  String get premiumErrorPurchaseFailed => '未能完成购买。请重试。';
+
+  @override
   String get premiumRestoreFailed => '未能恢复购买记录，请重试。';
 
   @override
@@ -11514,6 +11538,31 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get premiumCheckoutStartFailed => '無法開啟 Google Play 購買頁面。請重新選擇方案。';
+
+  @override
+  String get premiumErrorSignInRequired => '購買前，請使用Google帳戶登入，並連線至確認購買的伺服器。';
+
+  @override
+  String get premiumErrorStoreUnavailable => '無法連線至 Google Play。請檢查網路後再試一次。';
+
+  @override
+  String get premiumErrorProductUnavailable => '無法取得方案資訊。請稍後再試一次。';
+
+  @override
+  String get premiumErrorVerifierUnavailable =>
+      '無法連線至確認購買的伺服器，因此無法開始購買。請稍後再試一次。';
+
+  @override
+  String get premiumErrorNotConfirmed => '伺服器無法確認此次購買。請透過「恢復購買」重新確認。';
+
+  @override
+  String get premiumErrorNoValidPurchase => '無法確認有效的 Google Play 購買。';
+
+  @override
+  String get premiumErrorVerificationFailed => '購買確認失敗。請透過「恢復購買」重新確認。';
+
+  @override
+  String get premiumErrorPurchaseFailed => '無法完成購買。請再試一次。';
 
   @override
   String get premiumRestoreFailed => '無法還原購買紀錄，請再試一次。';

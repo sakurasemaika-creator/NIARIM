@@ -1120,6 +1120,38 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo abrir la pantalla de compra de Google Play. Vuelve a seleccionar un plan.';
 
   @override
+  String get premiumErrorSignInRequired =>
+      'Para comprar, inicia sesión con tu cuenta de Google y conéctate al servidor que confirma las compras.';
+
+  @override
+  String get premiumErrorStoreUnavailable =>
+      'No se puede conectar con Google Play. Comprueba la conexión e inténtalo de nuevo.';
+
+  @override
+  String get premiumErrorProductUnavailable =>
+      'No se pudo cargar la información de los planes. Inténtalo de nuevo más tarde.';
+
+  @override
+  String get premiumErrorVerifierUnavailable =>
+      'No se pueden iniciar compras porque el servidor que las confirma no está disponible. Inténtalo de nuevo más tarde.';
+
+  @override
+  String get premiumErrorNotConfirmed =>
+      'No se pudo confirmar la compra con el servidor. Usa «Restaurar compras» para volver a comprobarla.';
+
+  @override
+  String get premiumErrorNoValidPurchase =>
+      'No se encontró ninguna compra válida de Google Play.';
+
+  @override
+  String get premiumErrorVerificationFailed =>
+      'No se pudo confirmar la compra. Usa «Restaurar compras» para volver a comprobarla.';
+
+  @override
+  String get premiumErrorPurchaseFailed =>
+      'No se pudo completar la compra. Inténtalo de nuevo.';
+
+  @override
   String get premiumRestoreFailed =>
       'No se pudieron restaurar las compras. Inténtalo de nuevo.';
 

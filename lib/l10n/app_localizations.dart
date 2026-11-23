@@ -2007,6 +2007,54 @@ abstract class AppLocalizations {
   /// **'Google Playの購入画面を開けませんでした。もう一度プランを選んでください。'**
   String get premiumCheckoutStartFailed;
 
+  /// No description provided for @premiumErrorSignInRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'購入するには、Googleアカウントでのログインと、購入を確認するサーバーへの接続が必要です。'**
+  String get premiumErrorSignInRequired;
+
+  /// No description provided for @premiumErrorStoreUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'Google Playに接続できません。通信状態を確かめて、もう一度お試しください。'**
+  String get premiumErrorStoreUnavailable;
+
+  /// No description provided for @premiumErrorProductUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'プランの情報を取得できませんでした。しばらくしてからもう一度お試しください。'**
+  String get premiumErrorProductUnavailable;
+
+  /// No description provided for @premiumErrorVerifierUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'購入を確認するサーバーに接続できないため、購入を始められません。しばらくしてからもう一度お試しください。'**
+  String get premiumErrorVerifierUnavailable;
+
+  /// No description provided for @premiumErrorNotConfirmed.
+  ///
+  /// In ja, this message translates to:
+  /// **'購入をサーバーで確認できませんでした。「購入を復元」から確認し直してください。'**
+  String get premiumErrorNotConfirmed;
+
+  /// No description provided for @premiumErrorNoValidPurchase.
+  ///
+  /// In ja, this message translates to:
+  /// **'Google Playで有効な購入を確認できませんでした。'**
+  String get premiumErrorNoValidPurchase;
+
+  /// No description provided for @premiumErrorVerificationFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'購入の確認に失敗しました。「購入を復元」から確認し直してください。'**
+  String get premiumErrorVerificationFailed;
+
+  /// No description provided for @premiumErrorPurchaseFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'購入を完了できませんでした。もう一度お試しください。'**
+  String get premiumErrorPurchaseFailed;
+
   /// No description provided for @premiumRestoreFailed.
   ///
   /// In ja, this message translates to:

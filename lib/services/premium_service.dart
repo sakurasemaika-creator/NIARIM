@@ -22,6 +22,17 @@ class PremiumService extends ChangeNotifier {
 
   static const checkoutStartFailed = 'Google Playの購入画面を開けませんでした';
 
+  // Why a purchase could not start or be confirmed. These are identifiers;
+  // the screen shows each one as a translated message.
+  static const signInRequired = '購入にはログインとサーバー検証が必要です';
+  static const storeUnavailable = 'ストアに接続できません';
+  static const productUnavailable = '商品情報を取得できませんでした';
+  static const verifierUnavailable = '購入検証サーバーが利用できないため購入を開始できません';
+  static const purchaseNotConfirmed = '購入をサーバーで検証できません';
+  static const noValidPurchase = 'Google Playの有効な購入を確認できませんでした';
+  static const verificationFailed = '購入検証に失敗しました。購入を復元して再確認してください';
+  static const purchaseFailed = '購入処理に失敗しました';
+
   // ストアに登録するサブスクリプション商品ID
   static const String monthlyProductId = 'niarim_premium_monthly';
   static const String yearlyProductId = 'niarim_premium_yearly';
@@ -559,18 +570,18 @@ class PremiumService extends ChangeNotifier {
     if (_boundGoogleAuth?.account == null ||
         _playVerifier == null ||
         _playPreflight == null) {
-      _purchaseError = '購入にはログインとサーバー検証が必要です';
+      _purchaseError = signInRequired;
       notifyListeners();
       return false;
     }
     if (!_storeAvailable) {
-      _purchaseError = 'ストアに接続できません';
+      _purchaseError = storeUnavailable;
       notifyListeners();
       return false;
     }
     final product = _products.where((p) => p.id == productId).firstOrNull;
     if (product == null) {
-      _purchaseError = '商品情報を取得できませんでした';
+      _purchaseError = productUnavailable;
       notifyListeners();
       return false;
     }
@@ -586,7 +597,7 @@ class PremiumService extends ChangeNotifier {
       ).onError((_, _) => false);
       if (_disposed) return false;
       if (!ready || _boundGoogleAuth?.account?.id != startingAccount) {
-        _purchaseError = '購入検証サーバーが利用できないため購入を開始できません';
+        _purchaseError = verifierUnavailable;
         return false;
       }
       if (_pendingProductIds.isNotEmpty) return false;
@@ -637,7 +648,7 @@ class PremiumService extends ChangeNotifier {
               purchaseToken.isEmpty ||
               !_productIds.contains(purchase.productID)) {
             checked = false;
-            _purchaseError = '購入をサーバーで検証できません';
+            _purchaseError = purchaseNotConfirmed;
             break;
           }
           try {
@@ -649,7 +660,7 @@ class PremiumService extends ChangeNotifier {
               DateTime.now(),
             )) {
               _invalidatePlayPremium();
-              _purchaseError = 'Google Playの有効な購入を確認できませんでした';
+              _purchaseError = noValidPurchase;
               break;
             }
             _applyVerifiedPlayPremium(result, accountId);
@@ -671,13 +682,13 @@ class PremiumService extends ChangeNotifier {
             if (_disposed || _boundGoogleAuth?.account?.id != accountId) break;
             checked = false;
             _verificationUnavailable = true;
-            _purchaseError = '購入検証に失敗しました。購入を復元して再確認してください';
+            _purchaseError = verificationFailed;
             // Leave purchase unacknowledged for a verified retry.
           }
           break;
         case PurchaseStatus.error:
           _pendingProductIds.remove(purchase.productID);
-          _purchaseError = purchase.error?.message ?? '購入処理に失敗しました';
+          _purchaseError = purchaseFailed;
           break;
         case PurchaseStatus.canceled:
           _pendingProductIds.remove(purchase.productID);

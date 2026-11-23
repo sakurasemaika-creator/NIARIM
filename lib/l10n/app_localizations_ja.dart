@@ -1060,6 +1060,36 @@ class AppLocalizationsJa extends AppLocalizations {
       'Google Playの購入画面を開けませんでした。もう一度プランを選んでください。';
 
   @override
+  String get premiumErrorSignInRequired =>
+      '購入するには、Googleアカウントでのログインと、購入を確認するサーバーへの接続が必要です。';
+
+  @override
+  String get premiumErrorStoreUnavailable =>
+      'Google Playに接続できません。通信状態を確かめて、もう一度お試しください。';
+
+  @override
+  String get premiumErrorProductUnavailable =>
+      'プランの情報を取得できませんでした。しばらくしてからもう一度お試しください。';
+
+  @override
+  String get premiumErrorVerifierUnavailable =>
+      '購入を確認するサーバーに接続できないため、購入を始められません。しばらくしてからもう一度お試しください。';
+
+  @override
+  String get premiumErrorNotConfirmed =>
+      '購入をサーバーで確認できませんでした。「購入を復元」から確認し直してください。';
+
+  @override
+  String get premiumErrorNoValidPurchase => 'Google Playで有効な購入を確認できませんでした。';
+
+  @override
+  String get premiumErrorVerificationFailed =>
+      '購入の確認に失敗しました。「購入を復元」から確認し直してください。';
+
+  @override
+  String get premiumErrorPurchaseFailed => '購入を完了できませんでした。もう一度お試しください。';
+
+  @override
   String get premiumRestoreFailed => '購入を復元できませんでした。もう一度お試しください。';
 
   @override

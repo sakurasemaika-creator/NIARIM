@@ -61,6 +61,7 @@ class _UnavailableCheckout extends _Store {
 }
 
 void main() {
+  premiumErrorMessagesAreTranslated();
   Future<AppLocalizations> show(WidgetTester tester, _Store store) async {
     SharedPreferences.setMockInitialValues({});
     addTearDown(store.dispose);
@@ -231,5 +232,96 @@ void main() {
     await tester.ensureVisible(retry);
     await tester.tap(retry);
     expect(store.retries, 1);
+  });
+}
+
+class _FailingStore extends _Store {
+  _FailingStore(this.purchaseError) : super(storeAvailable: true);
+
+  @override
+  final String? purchaseError;
+}
+
+void premiumErrorMessagesAreTranslated() {
+  // Every reason a purchase could not start or be confirmed is shown as a
+  // translated message, never as the service's Japanese identifier
+  // (DISC595: six of them were shown in Japanese in every language).
+  testWidgets('purchase errors are translated in every language', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    const reasons = [
+      PremiumService.checkoutStartFailed,
+      PremiumService.signInRequired,
+      PremiumService.storeUnavailable,
+      PremiumService.productUnavailable,
+      PremiumService.verifierUnavailable,
+      PremiumService.purchaseNotConfirmed,
+      PremiumService.noValidPurchase,
+      PremiumService.verificationFailed,
+      PremiumService.purchaseFailed,
+    ];
+    for (final locale in AppLocalizations.supportedLocales) {
+      final shown = <String>{};
+      for (final reason in reasons) {
+        final store = _FailingStore(reason);
+        addTearDown(store.dispose);
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: [
+              ChangeNotifierProvider<PremiumService>.value(value: store),
+              ChangeNotifierProvider(create: (_) => SettingsService()),
+            ],
+            child: MaterialApp(
+              locale: locale,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const PremiumScreen(),
+            ),
+          ),
+        );
+        await tester.pump();
+        if (locale.languageCode != 'ja') {
+          expect(find.text(reason), findsNothing, reason: '$locale $reason');
+        }
+        final notice = find.byWidgetPredicate(
+          (widget) =>
+              widget is Text &&
+              (widget.data?.isNotEmpty ?? false) &&
+              widget.data != reason &&
+              reasons.every((other) => widget.data != other),
+        );
+        expect(notice, findsWidgets);
+        final words = AppLocalizations.of(
+          tester.element(find.byType(PremiumScreen)),
+        )!;
+        final expected = switch (reason) {
+          PremiumService.checkoutStartFailed =>
+            words.premiumCheckoutStartFailed,
+          PremiumService.signInRequired => words.premiumErrorSignInRequired,
+          PremiumService.storeUnavailable => words.premiumErrorStoreUnavailable,
+          PremiumService.productUnavailable =>
+            words.premiumErrorProductUnavailable,
+          PremiumService.verifierUnavailable =>
+            words.premiumErrorVerifierUnavailable,
+          PremiumService.purchaseNotConfirmed => words.premiumErrorNotConfirmed,
+          PremiumService.noValidPurchase => words.premiumErrorNoValidPurchase,
+          PremiumService.verificationFailed =>
+            words.premiumErrorVerificationFailed,
+          _ => words.premiumErrorPurchaseFailed,
+        };
+        expect(
+          find.bySubtype<Text>().evaluate().any(
+            (element) =>
+                (element.widget as Text).data == expected ||
+                (element.widget as Text).textSpan?.toPlainText() == expected,
+          ),
+          isTrue,
+          reason: '$locale $reason',
+        );
+        shown.add(expected);
+      }
+      expect(shown.length, reasons.length, reason: '$locale');
+    }
   });
 }

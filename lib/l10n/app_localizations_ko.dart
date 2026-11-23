@@ -1063,6 +1063,36 @@ class AppLocalizationsKo extends AppLocalizations {
       'Google Play 결제 화면을 열 수 없습니다. 요금제를 다시 선택해 주세요.';
 
   @override
+  String get premiumErrorSignInRequired =>
+      '구매하려면 Google 계정으로 로그인하고 구매를 확인하는 서버에 연결해야 합니다.';
+
+  @override
+  String get premiumErrorStoreUnavailable =>
+      'Google Play에 연결할 수 없습니다. 통신 상태를 확인하고 다시 시도해 주세요.';
+
+  @override
+  String get premiumErrorProductUnavailable =>
+      '요금제 정보를 가져올 수 없습니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get premiumErrorVerifierUnavailable =>
+      '구매를 확인하는 서버에 연결할 수 없어 구매를 시작할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get premiumErrorNotConfirmed =>
+      '서버에서 구매를 확인할 수 없습니다.「구매 복원」에서 다시 확인해 주세요.';
+
+  @override
+  String get premiumErrorNoValidPurchase => 'Google Play에서 유효한 구매를 확인할 수 없습니다.';
+
+  @override
+  String get premiumErrorVerificationFailed =>
+      '구매 확인에 실패했습니다.「구매 복원」에서 다시 확인해 주세요.';
+
+  @override
+  String get premiumErrorPurchaseFailed => '구매를 완료할 수 없습니다. 다시 시도해 주세요.';
+
+  @override
   String get premiumRestoreFailed => '구매 내역을 복원할 수 없습니다. 다시 시도해 주세요.';
 
   @override

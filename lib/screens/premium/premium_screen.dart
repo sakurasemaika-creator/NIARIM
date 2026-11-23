@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -92,7 +93,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           const SizedBox(height: 8),
                           Text(
                             l10n.premiumRegisteredDateLabel(
-                              _formatDate(premium.purchaseDate!),
+                              _formatDate(l10n, premium.purchaseDate!),
                             ),
                             style: TextStyle(
                               color: scheme.onPrimary,
@@ -104,7 +105,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           const SizedBox(height: 2),
                           Text(
                             l10n.premiumNextRenewalDateLabel(
-                              _formatDate(premium.nextRenewalDate!),
+                              _formatDate(l10n, premium.nextRenewalDate!),
                             ),
                             style: TextStyle(
                               color: scheme.onPrimary,
@@ -278,13 +279,25 @@ class _PremiumScreenState extends State<PremiumScreen> {
     );
   }
 
-  String _purchaseErrorText(AppLocalizations l10n, String error) =>
-      error == PremiumService.checkoutStartFailed
-      ? l10n.premiumCheckoutStartFailed
-      : error;
+  String _purchaseErrorText(
+    AppLocalizations l10n,
+    String error,
+  ) => switch (error) {
+    PremiumService.checkoutStartFailed => l10n.premiumCheckoutStartFailed,
+    PremiumService.signInRequired => l10n.premiumErrorSignInRequired,
+    PremiumService.storeUnavailable => l10n.premiumErrorStoreUnavailable,
+    PremiumService.productUnavailable => l10n.premiumErrorProductUnavailable,
+    PremiumService.verifierUnavailable => l10n.premiumErrorVerifierUnavailable,
+    PremiumService.purchaseNotConfirmed => l10n.premiumErrorNotConfirmed,
+    PremiumService.noValidPurchase => l10n.premiumErrorNoValidPurchase,
+    PremiumService.verificationFailed => l10n.premiumErrorVerificationFailed,
+    _ => l10n.premiumErrorPurchaseFailed,
+  };
 
-  String _formatDate(DateTime d) =>
-      '${d.year}/${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}';
+  // The date in the language's own order (ja 2026/11/23, en 11/23/2026,
+  // fr 23/11/2026, ko 2026. 11. 23.).
+  String _formatDate(AppLocalizations l10n, DateTime d) =>
+      DateFormat.yMd(l10n.localeName).format(d);
 
   Widget _heroSection(BuildContext context, AppLocalizations l10n) {
     final scheme = Theme.of(context).colorScheme;

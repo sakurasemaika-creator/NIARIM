@@ -1091,6 +1091,38 @@ class AppLocalizationsEn extends AppLocalizations {
       'Google Play checkout could not open. Select a plan to try again.';
 
   @override
+  String get premiumErrorSignInRequired =>
+      'To purchase, sign in with your Google account and connect to the server that confirms purchases.';
+
+  @override
+  String get premiumErrorStoreUnavailable =>
+      'Cannot connect to Google Play. Check your connection and try again.';
+
+  @override
+  String get premiumErrorProductUnavailable =>
+      'Plan details could not be loaded. Please try again later.';
+
+  @override
+  String get premiumErrorVerifierUnavailable =>
+      'Purchases cannot start because the server that confirms them is unavailable. Please try again later.';
+
+  @override
+  String get premiumErrorNotConfirmed =>
+      'The purchase could not be confirmed with the server. Use “Restore Purchases” to check again.';
+
+  @override
+  String get premiumErrorNoValidPurchase =>
+      'No valid Google Play purchase was found.';
+
+  @override
+  String get premiumErrorVerificationFailed =>
+      'The purchase could not be confirmed. Use “Restore Purchases” to check again.';
+
+  @override
+  String get premiumErrorPurchaseFailed =>
+      'The purchase could not be completed. Please try again.';
+
+  @override
   String get premiumRestoreFailed =>
       'Purchases could not be restored. Please try again.';
 

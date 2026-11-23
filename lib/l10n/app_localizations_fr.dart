@@ -1116,6 +1116,38 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible d’ouvrir la page d’achat de Google Play. Sélectionnez à nouveau une formule.';
 
   @override
+  String get premiumErrorSignInRequired =>
+      'Pour acheter, connectez-vous avec votre compte Google et au serveur qui confirme les achats.';
+
+  @override
+  String get premiumErrorStoreUnavailable =>
+      'Impossible de se connecter à Google Play. Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get premiumErrorProductUnavailable =>
+      'Impossible de charger les informations des formules. Veuillez réessayer plus tard.';
+
+  @override
+  String get premiumErrorVerifierUnavailable =>
+      'Les achats ne peuvent pas commencer, car le serveur qui les confirme est indisponible. Veuillez réessayer plus tard.';
+
+  @override
+  String get premiumErrorNotConfirmed =>
+      'Impossible de confirmer l’achat auprès du serveur. Utilisez « Restaurer les achats » pour vérifier à nouveau.';
+
+  @override
+  String get premiumErrorNoValidPurchase =>
+      'Aucun achat Google Play valide n’a été trouvé.';
+
+  @override
+  String get premiumErrorVerificationFailed =>
+      'Impossible de confirmer l’achat. Utilisez « Restaurer les achats » pour vérifier à nouveau.';
+
+  @override
+  String get premiumErrorPurchaseFailed =>
+      'Impossible de finaliser l’achat. Veuillez réessayer.';
+
+  @override
   String get premiumRestoreFailed =>
       'Impossible de restaurer les achats. Veuillez réessayer.';
 
