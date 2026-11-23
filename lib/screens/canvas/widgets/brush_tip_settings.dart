@@ -205,6 +205,10 @@ class BrushTipSettings extends StatelessWidget {
                   : Image.file(
                       File(paths[i]),
                       fit: BoxFit.contain,
+                      // Decoded at the 40px it is shown at (an imported
+                      // brush image can be thousands of pixels wide).
+                      cacheWidth: (40 * MediaQuery.devicePixelRatioOf(context))
+                          .round(),
                       errorBuilder: (_, error, stack) =>
                           const Icon(Icons.broken_image_outlined),
                     ),
