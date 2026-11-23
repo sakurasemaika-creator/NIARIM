@@ -16,6 +16,7 @@ import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/widgets/legal_consent.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -91,7 +92,14 @@ Object _page(String owner) => {
 };
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  // Agreement to the terms is asked before a Google sign-in (legal_consent);
+  // these tests start after it was given, to look at the account boundary.
+  setUp(
+    () => SharedPreferences.setMockInitialValues({
+      kLegalConsentVersionKey: kLegalDocumentsVersion,
+      kLegalConsentAgreedAtKey: '2026-11-23T00:00:00.000Z',
+    }),
+  );
   for (final pc in [false, true]) {
     testWidgets(
       'owner UI drops previous private rows while the next account loads (${pc ? 'PC' : 'SP'})',

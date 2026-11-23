@@ -91,6 +91,22 @@ void main() {
     expect(await second, isTrue);
   });
 
+  testWidgets('a second press while asking shows no second question', (
+    tester,
+  ) async {
+    final context = await _pumpApp(tester);
+    final first = ensureLegalConsent(context);
+    await tester.pumpAndSettle();
+    final second = ensureLegalConsent(context);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('legalConsentDialog')), findsOneWidget);
+    expect(await second, isFalse);
+    await tester.tap(find.byKey(const Key('legalConsentAgree')));
+    await tester.pumpAndSettle();
+    expect(await first, isTrue);
+    expect(find.byKey(const Key('legalConsentDialog')), findsNothing);
+  });
+
   testWidgets('a new version of the documents asks again', (tester) async {
     SharedPreferences.setMockInitialValues({
       kLegalConsentVersionKey: '2026-01-01',

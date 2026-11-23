@@ -17,6 +17,11 @@ const String kLegalConsentVersionKey = 'legal.consent.version';
 /// When the user agreed (UTC, ISO 8601), saved with the version.
 const String kLegalConsentAgreedAtKey = 'legal.consent.agreedAt';
 
+/// Whether the question is on screen. A second press of the same button
+/// while it is asked does nothing (two questions stacked, and two purchases or
+/// posts after agreeing to both).
+bool _askingLegalConsent = false;
+
 /// Whether the user has agreed to the current version of both documents.
 Future<bool> hasCurrentLegalConsent() async {
   final preferences = await SharedPreferences.getInstance();
@@ -30,18 +35,25 @@ Future<bool> hasCurrentLegalConsent() async {
 /// Drawing never asks. Once the user agrees, the version and the time are
 /// saved on this device and the question is not asked again until
 /// [kLegalDocumentsVersion] changes. Returns whether the action may continue:
-/// false when the user cancels or the agreement could not be saved.
+/// false when the user cancels, the agreement could not be saved, or the
+/// question is already being asked (a second press).
 Future<bool> ensureLegalConsent(BuildContext context) async {
   final preferences = await SharedPreferences.getInstance();
   if (preferences.readString(kLegalConsentVersionKey) ==
       kLegalDocumentsVersion) {
     return true;
   }
-  if (!context.mounted) return false;
-  final agreed = await showDialog<bool>(
-    context: context,
-    builder: (_) => const LegalConsentDialog(),
-  );
+  if (!context.mounted || _askingLegalConsent) return false;
+  _askingLegalConsent = true;
+  final bool? agreed;
+  try {
+    agreed = await showDialog<bool>(
+      context: context,
+      builder: (_) => const LegalConsentDialog(),
+    );
+  } finally {
+    _askingLegalConsent = false;
+  }
   if (agreed != true) return false;
   final agreedAt = DateTime.now().toUtc().toIso8601String();
   // The time is written first, so a saved version always has its time.
