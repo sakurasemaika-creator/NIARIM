@@ -3891,5 +3891,22 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 | DISC551 | Web `46b4500`。演出の済んだ一覧に後から入った子にもその場で`is-visible`を付ける。 | 作品広場でタブを替えた後の不透明度0の字が0件（直す前24件）。`tests/community-ranking-visibility-browser.mjs`にカードが見えることを足した（直す前は時間切れ）。 |
 | DISC558 | Web `46b4500`。PCモードの画像の代替テキストをページの辞書の画面名とPCの呼び名で作る（7言語、言語を替えたら付け直す）。 | / と /features/ の ja・en・fr・ko。`page-bundle-runtime-keys.test.mjs`（スクリプトに日本語なし・2ページの辞書に7言語の名前）。 |
 | DISC441 | 直す所なし：/faq/の2つのボタンは公開前は「配信情報」で、/#download の配信準備中の案内へつなぐ（公開後はGoogle Playへ）。三巡目の「アプリをダウンロード」の文は今のコードに無い。 | /faq/の静的なHTML・7言語の辞書（`nav.releaseInfo`）を確かめた。 |
-
+| DISC514 | App `5dd350a9`。帯のスクロールの寸法が変わったときも末尾の＋を置き直す（ScrollMetricsNotification）。 | 実画面（Linux、120コマの末尾で一括追加→取り消し→やり直し→取り消し）で再現し、今のコマ・コマ数・線の入るコマは正しく、＋だけが古い位置に残っていたことを確かめた。`frame_bulk_add_undo_redo_test`（直す前は＋が今のコマの枠の下）。 |
+| DISC574 | App `5dd350a9`・`80886291`。前回の起動で残った、作品ファイルより新しく内容の違う自動保存があれば、キャンバスを開いたときに「自動保存から復元」を確かめる（起動ごとに1回）。 | `canvas_open_exit_audit_test`（確かめ・復元・1回だけ・古い自動保存は出さない・この起動の自動保存は出さない）。 |
+| DISC575 | App `5dd350a9`。選択の変形のスライダーの窓をたためるようにした（紙・全選択の段は動かない）。 | `selection_tool_bar_test`。 |
+| DISC576 | App `5dd350a9`。定規の「削除」を48×48にした。 | `ruler_panel_delete_target_test`。 |
+| DISC577・198の残り | App `5dd350a9`。知らせは`IconNotice`、メニューは`MenuActionLabel`、削除の確かめは色なしの塗り、削除のアイコンは色なし（約40か所）。 | `no_error_colour_notices_test`（lib配下のエラーの色の一覧）。 |
+| DISC579 | App `5dd350a9`。撮影を runAsync の中で待つ。動いたtestが見つけたスペイン語の「Fotograma」の切れ（320dp）も、トラック名の欄を94dpにして直した。 | 7言語×3幅で15秒で成功。 |
+| DISC580 | App `5dd350a9`。スライダーを置くダイアログ5つを`SizedBox(width: 480)`に。 | `slider_dialog_width_test`（lib配下の全ダイアログを走査）。 |
+| DISC578 | App `5dd350a9`。CLAUDE.mdの調整モードの段落を`shouldUseImmersiveFilterUi`の今の作りに書き直した。 | 資料。 |
+| DISC581 | App `1b22d394`。スロットへ付け直す前に、スロット方式からは元のスロットの順、ツリーからは新しい順に並べる（メモも一緒）。 | `save_tree_persistence_test`に2件（直す前のコードで2件とも落ちる）。 |
+| DISC582 | App `1b22d394`。「保存データを選択」のスロットの行に、番号の題・縮小画像・メモ・日時を出す。 | `save_mode_change_slots_test`。 |
+| DISC583 | App `1b22d394`。GIFはoctreeの減色・誤差拡散なし（平らな面はそのままの色。octreeの誤差拡散はこの版で色が暗くなるので使わない）。 | `test/engine/gif_export_flat_colours_test`（紙が255のまま、平均の誤差2未満）。1コマ300→35ms。 |
+| DISC584 | App `1b22d394`。筆圧カーブの説明から「最大10個」を外した（7言語）。 | 点の追加に上限が無いことをコードで確かめた（`addCustomPressurePoint`）。 |
+| DISC585 | App `1b22d394`。ホーム画面ウィジェットのPNGに作品の背景色を焼き込み、選ぶ画面の見本は`FramePreviewBackground`を敷く。 | `home_widget_artwork_picker_test`（何も描いていない所が背景色で不透明・見本の合成は透明のまま）。 |
+| DISC586 | App `1b22d394`。活用Tipsの本文に削除・移動を足した（7言語、新しい字なし）。音声クリップの詳細シートが複製・削除を受け取っていながらボタンを出していなかったので、「複製」「削除」（確かめつき）を足した。 | `timeline_preview_controls_test`に音声クリップのシートの複製・削除を足した。 |
+| DISC587 | App `1b22d394`。作品広場を出た後に外れたcontextから読まないよう、サービスを先に取っておく。 | `community_back_navigation_test`：2件成功。 |
+| DISC588 | App `1b22d394`。作品広場のカードの題を、ホームと同じく長音・小さいかなで行を始めない（読み上げは元の題）。 | `community_work_card_layout_test`（ja・fr×320〜390px×文字1・2倍。直す前のコードで落ちる）。 |
+| DISC546の残り | App `1b22d394`。手書きの`fps`を`pcStatusFps`（仏語は「i/s」）にした（設定2か所・作品広場の詳細・縦の一覧・テーマの見本）。 | `no_hand_written_fps_unit_test`。 |
+| DISC288の記録 | AUDIT_ROUTE.md の「DISC{N1}と同じ所」を「DISC285と同じ所」にした。 | `verify_audit_route.py`：errors 0。 |
 範囲外（AIだけでは決めない・確かめない。人間の作業の一覧に残す）：DISC470・471（利用規約・プライバシーポリシーの本文の変更、法務の確認）、DISC476の残り（遅いSPの/opals/のCLS 0.28。原因は日本語の大きな部分フォント〔315KB・550KB〕が`font-display: swap`で遅れて差し替わること。直すには「遅い回線の初回は端末の書体で出す（optional）」か「ブランドの書体が遅れて入る（swap）」かの所有者の判断が要る）、DISC437（終わったワークフローの扱い、所有者の判断）、DISC480〜482・484〜486・488〜490（ストアの文・素材の出所・事業者の情報・規約とポリシー、所有者・法務の判断）。
