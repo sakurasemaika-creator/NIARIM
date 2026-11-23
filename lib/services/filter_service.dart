@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/custom_automation_builtin_presets.dart';
 import '../models/filter_canvas_gizmo.dart';
 import '../models/filter_def.dart';
 import '../models/layer.dart';
@@ -955,6 +956,15 @@ class FilterService extends ChangeNotifier {
     }
   }
 
+  /// The filters inside the official automations, by id, with their
+  /// shipped names.
+  static final Map<String, String> _automationShippedFilterNames = {
+    for (final preset in CustomAutomationBuiltinPresets.all())
+      for (final step in preset.steps)
+        if (step.args['filter'] case final Map raw)
+          if (raw['id'] case final String id) id: '${raw['name']}',
+  };
+
   static final Set<String> _builtInIds = _defaultFilters()
       .map((f) => f.id)
       .toSet();
@@ -962,6 +972,9 @@ class FilterService extends ChangeNotifier {
 
   static bool usesBuiltInName(FilterDef filter) {
     if (_builtInIds.contains(filter.id)) return true;
+    // A filter inside an official automation ("Color Adjustment" of the
+    // analog line-art extraction) is shipped too, though it is not in the list.
+    if (_automationShippedFilterNames[filter.id] == filter.name) return true;
     final baseName = copySourceName(filter.name) ?? filter.name;
     return _shippedFilters.values.any(
       (builtin) => builtin.kind == filter.kind && builtin.name == baseName,
