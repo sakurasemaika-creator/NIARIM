@@ -665,8 +665,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
   }
 
-  /// Draws the bouncing ball into the first frames and keeps one manual save
-  /// of it, so the canvas, layers, onion skin, timeline and saves show work.
+  /// Draws the bouncing ball into the first frames and keeps a small tree of
+  /// saves, so the canvas, layers, onion skin, timeline and saves show work.
   Future<void> seedArtwork(
     WidgetTester tester,
     ({String projectId, String sceneId}) ids,
@@ -700,21 +700,33 @@ void main() {
       );
     }
     await tester.runAsync(() => ps.renameProject(ids.projectId, 'ボールのバウンド'));
-    final thumbnail = (await tester.runAsync(
-      () => _bounceThumbnail(width, height, 2),
-    ))!;
+    // A small save tree: the first take, two tries branching from it, and
+    // one more on top of the first try (the Web calls this screen the save
+    // tree, and shows how saves branch).
     final project = ps.projects.firstWhere((p) => p.id == ids.projectId);
-    await tester.runAsync(
-      () => context.read<SaveTreeService>().saveToSlot(
-        projectId: ids.projectId,
-        slotIndex: 0,
-        project: project,
-        scenes: ps.scenesOf(ids.projectId),
-        tileManager: tm,
-        comment: 'ボールのバウンド',
-        thumbnailPngBytes: thumbnail,
-      ),
-    );
+    final saves = context.read<SaveTreeService>()..setTreeMode(true);
+    Future<String> save(String comment, int frame, {String? parentId}) async {
+      final thumbnail = (await tester.runAsync(
+        () => _bounceThumbnail(width, height, frame),
+      ))!;
+      final node = await tester.runAsync(
+        () => saves.saveAsChild(
+          projectId: ids.projectId,
+          project: project,
+          scenes: ps.scenesOf(ids.projectId),
+          tileManager: tm,
+          parentId: parentId,
+          comment: comment,
+          thumbnailPngBytes: thumbnail,
+        ),
+      );
+      return node!.id;
+    }
+
+    final first = await save('ラフ', 0);
+    final squash = await save('つぶれを強く', 2, parentId: first);
+    await save('影を足す', 2, parentId: squash);
+    await save('別案：低く弾む', 3, parentId: first);
     // Show the squashed frame in the middle, so the onion skin has frames
     // on both sides.
     final middle = find.byKey(const ValueKey('frameStripCell2'));
