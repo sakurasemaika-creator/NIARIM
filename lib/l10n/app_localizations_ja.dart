@@ -1586,7 +1586,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'MP4・WebM・GIF・AVIで書き出せます。無料版で尺を伸ばせるのは90秒までです。90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。 書き出しFPSを変えても作品の再生時間を維持します。書き出す前に本編の長さとエンドマークの有無を確認できます。';
+      'MP4・WebM・GIF・AVIで書き出せます。無料版で尺を伸ばせるのは90秒までです。90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。 書き出しFPSを変えても作品の再生時間を維持します。書き出す前に本編の長さとエンドマークの有無を確認できます。タイムラインの音声と動画素材の音は、MP4・WebM・AVIに入ります（GIFは音なし）。';
 
   @override
   String get helpTransparentWebmTitle => '透過WebM';
@@ -2377,7 +2377,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get licenseFfmpegNote =>
-      'WebM・AVI書き出しにはFFmpeg（LGPL 3.0、ffmpeg_kit_flutter_new_video経由）を使用しています。改変版ソースコードの入手先：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4書き出しは端末内蔵のハードウェアエンコーダーを直接利用しており、FFmpegは使用していません。';
+      'WebM・AVIの書き出しと、MP4へ入れる音をまぜる処理にはFFmpeg（LGPL 3.0、ffmpeg_kit_flutter_new_video経由）を使用しています。改変版ソースコードの入手先：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4の映像と音声（AAC）は端末内蔵のエンコーダーで作っており、FFmpegでは作っていません。';
 
   @override
   String licenseFontCreditMeta(String author, String license) {
@@ -3009,6 +3009,16 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return '$count フレームの書き出しが完了しました。';
+  }
+
+  @override
+  String exportSoundsLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '音声$count件を書き出しに入れられませんでした（素材のファイルが無い・読めない）。映像はそのまま書き出しました。',
+    );
+    return '$_temp0';
   }
 
   @override

@@ -870,6 +870,15 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   `export_share_notice_test`・`share_sites_failure_notice_test`・
   `saved_niashare_share_notice_test`・`pixel_palette_footer_layout_test`。
   書き出し・作成の失敗の文はまだ例外の文を含む（DISC069）。
+- **動画の書き出しにはタイムラインの音が入る（所有者の判断、2026-11-23「音を入れる」、DISC611）**：
+  `lib/engine/export_audio.dart`の`buildExportAudioPlan`が、音声クリップと動画素材の音を
+  タイムラインの再生と同じ決まりで並べる（シーンは前のシーンの後、クリップはそのシーンの
+  間だけ、90秒の書き出しはそこまで、音量・フェード）。FFmpegで1つのWAV（48kHz・ステレオ、
+  エンドマークの間は無音）にまぜ、WebMはFFmpeg自身のOpus（アプリのFFmpegにlibopusは無い）、
+  AVIはPCM、MP4は端末のAACエンコーダー（`HardwareVideoEncoder.kt`の`encodeAac`、MP4は
+  FFmpegで音を作らない）。音の無い動画素材・無い素材は入れずに映像は書き、完了の画面で
+  件数を知らせる（`audioLeftOut`）。GIFは音なし。MP4の音は実機でしか確かめられない。
+  `test/export_audio_test.dart`が本物のffmpegで音の位置まで見張る。
 - **数と単位をコードでつなげない（ARBのICU pluralにする）**：特典交換の期間は
   `'${amount}$unit'`でつないでいて、英語「1hours」・スペイン語「1horas」・
   フランス語「1heures」と出ていた。`rewardDurationHours`等（`{count, plural,

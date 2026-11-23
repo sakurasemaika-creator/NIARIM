@@ -1628,7 +1628,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Export in MP4, WebM, GIF, or AVI. Exporting all of a project longer than 90 seconds requires Premium or the extended duration benefit. You can export the first 90 seconds. Changing the export FPS preserves the original play time. Check the main video duration and end mark before exporting.';
+      'Export in MP4, WebM, GIF, or AVI. Exporting all of a project longer than 90 seconds requires Premium or the extended duration benefit. You can export the first 90 seconds. Changing the export FPS preserves the original play time. Check the main video duration and end mark before exporting. Sounds on the timeline and the sound of video materials go into MP4, WebM and AVI (GIF has no sound).';
 
   @override
   String get helpTransparentWebmTitle => 'Transparent WebM';
@@ -2479,7 +2479,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseFfmpegNote =>
-      'WebM and AVI export use FFmpeg (LGPL 3.0, via ffmpeg_kit_flutter_new_video). Source for the modified version: https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4 export uses the device’s built-in hardware encoder directly and does not use FFmpeg.';
+      'WebM and AVI export, and mixing the sound put into MP4, use FFmpeg (LGPL 3.0, via ffmpeg_kit_flutter_new_video). Source for the modified version: https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4 video and its AAC sound are made by the device’s built-in encoders, not by FFmpeg.';
 
   @override
   String licenseFontCreditMeta(String author, String license) {
@@ -3137,6 +3137,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return 'Exported $count frame(s).';
+  }
+
+  @override
+  String exportSoundsLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count sounds could not be put in the export (their material files are missing or unreadable). The video was exported without them.',
+      one:
+          '$count sound could not be put in the export (its material file is missing or unreadable). The video was exported without it.',
+    );
+    return '$_temp0';
   }
 
   @override

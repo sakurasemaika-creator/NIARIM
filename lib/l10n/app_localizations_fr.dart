@@ -1657,7 +1657,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Exportez en MP4, WebM, GIF ou AVI. L’export intégral d’un projet de plus de 90 secondes nécessite Premium ou l’avantage de durée étendue. Vous pouvez exporter les 90 premières secondes. Changer la cadence d’export conserve la durée de lecture. Vérifiez la durée et le logo final avant l’export.';
+      'Exportez en MP4, WebM, GIF ou AVI. L’export intégral d’un projet de plus de 90 secondes nécessite Premium ou l’avantage de durée étendue. Vous pouvez exporter les 90 premières secondes. Changer la cadence d’export conserve la durée de lecture. Vérifiez la durée et le logo final avant l’export. Les sons de la chronologie et le son des vidéos de matériel sont inclus dans les fichiers MP4, WebM et AVI (le GIF n’a pas de son).';
 
   @override
   String get helpTransparentWebmTitle => 'WebM transparent';
@@ -2515,7 +2515,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get licenseFfmpegNote =>
-      'Les exports WebM et AVI utilisent FFmpeg (LGPL 3.0, via ffmpeg_kit_flutter_new_video). Source de la version modifiée : https://github.com/sk3llo/ffmpeg_kit_flutter\nL’export MP4 utilise directement l’encodeur matériel intégré de l’appareil et n’utilise pas FFmpeg.';
+      'Les exports WebM et AVI, ainsi que le mixage du son ajouté au MP4, utilisent FFmpeg (LGPL 3.0, via ffmpeg_kit_flutter_new_video). Source de la version modifiée : https://github.com/sk3llo/ffmpeg_kit_flutter\nLa vidéo MP4 et son son AAC sont créés par les encodeurs intégrés de l’appareil, et non par FFmpeg.';
 
   @override
   String licenseFontCreditMeta(String author, String license) {
@@ -3185,6 +3185,19 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return '$count image(s) exportée(s).';
+  }
+
+  @override
+  String exportSoundsLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count sons n’ont pas pu être ajoutés à l’export (leurs fichiers de matériel sont absents ou illisibles). La vidéo a été exportée sans eux.',
+      one:
+          '$count son n’a pas pu être ajouté à l’export (son fichier de matériel est absent ou illisible). La vidéo a été exportée sans lui.',
+    );
+    return '$_temp0';
   }
 
   @override

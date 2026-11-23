@@ -6,8 +6,10 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../widgets/premium_lock_widget.dart';
+import '../../engine/export_audio.dart';
 import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
+import '../../services/material_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
@@ -497,6 +499,18 @@ class _ExportScreenState extends State<ExportScreen> {
         defaultHidden,
       );
 
+      // The timeline's sounds (audio clips and the sound of video
+      // materials), placed as the timeline plays them. A GIF has no sound.
+      final materials = context.read<MaterialService>();
+      final audio = format == ExportFormat.gif
+          ? ExportAudioPlan.empty
+          : await buildExportAudioPlan(
+              scenes: scenes,
+              sourceFps: project.fps,
+              maxSeconds: maxSeconds,
+              pathOf: (id) => materials.pathOf(widget.projectId, id),
+            );
+
       String outputPath;
       switch (format) {
         case ExportFormat.mp4:
@@ -513,6 +527,7 @@ class _ExportScreenState extends State<ExportScreen> {
             height: project.exportHeight,
             backgroundColor: project.backgroundColor,
             appendEndCard: shouldAppendEndCard,
+            audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
           );
@@ -546,6 +561,7 @@ class _ExportScreenState extends State<ExportScreen> {
             height: project.exportHeight,
             backgroundColor: project.backgroundColor,
             appendEndCard: shouldAppendEndCard,
+            audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
           );
@@ -563,6 +579,7 @@ class _ExportScreenState extends State<ExportScreen> {
             height: project.exportHeight,
             backgroundColor: project.backgroundColor,
             appendEndCard: shouldAppendEndCard,
+            audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
           );
@@ -588,7 +605,11 @@ class _ExportScreenState extends State<ExportScreen> {
       // cover in the background so the completion dialog appears immediately;
       // the saved-work list also retries when an app is relaunched mid-cache.
       unawaited(ExportedWorkCoverStore.ensureCached(File(outputPath)));
-      await _showCompleteDialog(outputPath, totalFrames);
+      await _showCompleteDialog(
+        outputPath,
+        totalFrames,
+        soundsLeftOut: engine.audioLeftOut,
+      );
     } on ExportCancelledException {
       _closeProgressDialog();
       if (!mounted) return;
@@ -693,11 +714,18 @@ class _ExportScreenState extends State<ExportScreen> {
     );
   }
 
-  Future<void> _showCompleteDialog(String outputPath, int totalFrames) async {
+  Future<void> _showCompleteDialog(
+    String outputPath,
+    int totalFrames, {
+    int soundsLeftOut = 0,
+  }) async {
     final destination = await showDialog<ExportDestination>(
       context: context,
-      builder: (_) =>
-          ExportCompleteDialog(file: File(outputPath), frames: totalFrames),
+      builder: (_) => ExportCompleteDialog(
+        file: File(outputPath),
+        frames: totalFrames,
+        soundsLeftOut: soundsLeftOut,
+      ),
     );
     if (!mounted || destination == null) return;
     switch (destination) {

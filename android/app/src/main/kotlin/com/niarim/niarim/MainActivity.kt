@@ -93,6 +93,7 @@ class MainActivity : FlutterActivity() {
                         val width = call.argument<Int>("width")
                         val height = call.argument<Int>("height")
                         val outputPath = call.argument<String>("outputPath")
+                        val audioPath = call.argument<String>("audioPath")
                         if (
                             framePaths == null ||
                                 fps == null ||
@@ -109,14 +110,16 @@ class MainActivity : FlutterActivity() {
                         }
                         thread(name = "hw-video-encoder") {
                             try {
-                                HardwareVideoEncoder.encode(
-                                    framePaths,
-                                    fps,
-                                    width,
-                                    height,
-                                    outputPath,
-                                )
-                                mainHandler.post { result.success(null) }
+                                val audioIncluded =
+                                    HardwareVideoEncoder.encode(
+                                        framePaths,
+                                        fps,
+                                        width,
+                                        height,
+                                        outputPath,
+                                        audioPath,
+                                    )
+                                mainHandler.post { result.success(audioIncluded) }
                             } catch (e: Exception) {
                                 mainHandler.post { result.error("ENCODE_FAILED", e.message, null) }
                             }

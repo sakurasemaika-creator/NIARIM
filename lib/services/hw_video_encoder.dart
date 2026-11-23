@@ -9,19 +9,27 @@ class HardwareVideoEncoder {
   /// [framePaths]（表示順のPNGファイルパス一覧。同一パスを複数回指定すると
   /// 静止フレームの複製として扱われる）を指定[fps]でエンコードし、
   /// [outputPath]へMP4として書き出す。
-  static Future<void> encodeMp4({
+  ///
+  /// [audioPath] is the export's sound as a 16-bit PCM WAV (the mix made by
+  /// FFmpeg). The device's AAC encoder turns it into the MP4's sound track.
+  /// Returns whether the sound is in the file: false when there was none or
+  /// the device could not encode it (the video is written either way).
+  static Future<bool> encodeMp4({
     required List<String> framePaths,
     required int fps,
     required int width,
     required int height,
     required String outputPath,
+    String? audioPath,
   }) async {
-    await _channel.invokeMethod<void>('encodeMp4', {
+    final audioIncluded = await _channel.invokeMethod<bool>('encodeMp4', {
       'framePaths': framePaths,
       'fps': fps,
       'width': width,
       'height': height,
       'outputPath': outputPath,
+      'audioPath': ?audioPath,
     });
+    return audioIncluded == true;
   }
 }

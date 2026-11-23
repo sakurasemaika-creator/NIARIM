@@ -2964,7 +2964,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpVideoExportDesc.
   ///
   /// In ja, this message translates to:
-  /// **'MP4・WebM・GIF・AVIで書き出せます。無料版で尺を伸ばせるのは90秒までです。90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。 書き出しFPSを変えても作品の再生時間を維持します。書き出す前に本編の長さとエンドマークの有無を確認できます。'**
+  /// **'MP4・WebM・GIF・AVIで書き出せます。無料版で尺を伸ばせるのは90秒までです。90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。 書き出しFPSを変えても作品の再生時間を維持します。書き出す前に本編の長さとエンドマークの有無を確認できます。タイムラインの音声と動画素材の音は、MP4・WebM・AVIに入ります（GIFは音なし）。'**
   String get helpVideoExportDesc;
 
   /// No description provided for @helpTransparentWebmTitle.
@@ -4338,7 +4338,7 @@ abstract class AppLocalizations {
   /// No description provided for @licenseFfmpegNote.
   ///
   /// In ja, this message translates to:
-  /// **'WebM・AVI書き出しにはFFmpeg（LGPL 3.0、ffmpeg_kit_flutter_new_video経由）を使用しています。改変版ソースコードの入手先：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4書き出しは端末内蔵のハードウェアエンコーダーを直接利用しており、FFmpegは使用していません。'**
+  /// **'WebM・AVIの書き出しと、MP4へ入れる音をまぜる処理にはFFmpeg（LGPL 3.0、ffmpeg_kit_flutter_new_video経由）を使用しています。改変版ソースコードの入手先：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4の映像と音声（AAC）は端末内蔵のエンコーダーで作っており、FFmpegでは作っていません。'**
   String get licenseFfmpegNote;
 
   /// No description provided for @licenseFontCreditMeta.
@@ -5522,6 +5522,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{count} フレームの書き出しが完了しました。'**
   String exportCompleteFramesBody(int count);
+
+  /// No description provided for @exportSoundsLeftOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{音声{count}件を書き出しに入れられませんでした（素材のファイルが無い・読めない）。映像はそのまま書き出しました。}}'**
+  String exportSoundsLeftOut(int count);
 
   /// No description provided for @exportSaveLocationHint.
   ///

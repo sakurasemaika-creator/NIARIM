@@ -1663,7 +1663,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Exporta en MP4, WebM, GIF o AVI. Para exportar por completo un proyecto de más de 90 segundos necesitas Premium o la ventaja de duración ampliada. Puedes exportar los primeros 90 segundos. Cambiar los FPS de exportación conserva el tiempo de reproducción. Comprueba la duración y el logo antes de exportar.';
+      'Exporta en MP4, WebM, GIF o AVI. Para exportar por completo un proyecto de más de 90 segundos necesitas Premium o la ventaja de duración ampliada. Puedes exportar los primeros 90 segundos. Cambiar los FPS de exportación conserva el tiempo de reproducción. Comprueba la duración y el logo antes de exportar. Los sonidos de la línea de tiempo y el sonido de los vídeos de material se incluyen en MP4, WebM y AVI (GIF no tiene sonido).';
 
   @override
   String get helpTransparentWebmTitle => 'WebM transparente';
@@ -2520,7 +2520,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get licenseFfmpegNote =>
-      'Las exportaciones WebM y AVI usan FFmpeg (LGPL 3.0, a través de ffmpeg_kit_flutter_new_video). Origen del código fuente modificado: https://github.com/sk3llo/ffmpeg_kit_flutter\nLa exportación MP4 usa directamente el codificador de hardware integrado del dispositivo y no utiliza FFmpeg.';
+      'Las exportaciones WebM y AVI, y la mezcla del sonido que se incluye en MP4, usan FFmpeg (LGPL 3.0, a través de ffmpeg_kit_flutter_new_video). Origen del código fuente modificado: https://github.com/sk3llo/ffmpeg_kit_flutter\nEl vídeo MP4 y su sonido AAC los crean los codificadores integrados del dispositivo, no FFmpeg.';
 
   @override
   String licenseFontCreditMeta(String author, String license) {
@@ -3188,6 +3188,19 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return 'Se exportaron $count fotograma(s).';
+  }
+
+  @override
+  String exportSoundsLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'No se pudieron incluir $count sonidos en la exportación (faltan sus archivos de material o no se pueden leer). El vídeo se exportó sin ellos.',
+      one:
+          'No se pudo incluir $count sonido en la exportación (falta su archivo de material o no se puede leer). El vídeo se exportó sin él.',
+    );
+    return '$_temp0';
   }
 
   @override

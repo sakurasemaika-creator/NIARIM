@@ -9,6 +9,12 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.media.MediaMuxer
+import java.io.DataInputStream
+import java.io.EOFException
+import java.io.File
+import java.io.FileInputStream
+import java.io.RandomAccessFile
+import java.nio.ByteBuffer
 
 /**
  * Android標準のMediaCodec（端末内蔵ハードウェアH.264エンコーダー）と MediaMuxerによるMP4生成（仕様書13：ライセンス・特許ロイヤリティ対応）。
@@ -28,9 +34,31 @@ object HardwareVideoEncoder {
     private const val TIMEOUT_US = 10_000L
     private const val I_FRAME_INTERVAL = 2
 
-    fun encode(framePaths: List<String>, fps: Int, width: Int, height: Int, outputPath: String) {
+    /**
+     * [audioPath]は書き出しの音（FFmpegでまぜた16bit PCMのWAV）で、端末のAACエンコーダーで音声トラックにしてMP4へ入れる。
+     *
+     * 音を入れられたかを返す。音が無い・端末で音を作れないときはfalseで、映像はどちらでも書く。
+     */
+    fun encode(
+        framePaths: List<String>,
+        fps: Int,
+        width: Int,
+        height: Int,
+        outputPath: String,
+        audioPath: String? = null,
+    ): Boolean {
         if (framePaths.isEmpty()) throw IllegalArgumentException("framePaths is empty")
         if (fps <= 0) throw IllegalArgumentException("fps must be positive")
+
+        // 音は映像より先にAACへ変換しておく（MediaMuxerは全トラックを足してからでないと
+        // start()できず、映像の形式は最初のフレームを出すまで分からないため）。
+        val audio = audioPath?.let {
+            try {
+                encodeAac(File(it))
+            } catch (_: Exception) {
+                null
+            }
+        }
 
         // H.264エンコーダーは奇数幅・高さを受け付けない端末があるため2の倍数へ切り上げる
         val encWidth = (width + 1) / 2 * 2
@@ -100,8 +128,12 @@ object HardwareVideoEncoder {
                     outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                         if (muxerStarted) throw IllegalStateException("フォーマット変更が複数回発生しました")
                         muxerTrackIndex = muxer.addTrack(codec.outputFormat)
+                        val audioTrack = audio?.let { muxer.addTrack(it.format) }
                         muxer.start()
                         muxerStarted = true
+                        if (audio != null && audioTrack != null) {
+                            writeAudioSamples(muxer, audioTrack, audio)
+                        }
                     }
                     outputIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {
                         /* 旧API。Image API使用時は無視してよい */
@@ -136,6 +168,207 @@ object HardwareVideoEncoder {
                 } catch (_: Exception) {}
             }
             muxer.release()
+            if (audio != null) audio.file.delete()
+        }
+        return audio != null
+    }
+
+    /** AACへ変換した音：形式と、一時ファイルに並べたサンプル（位置・大きさ・時刻・印）。 */
+    private class EncodedAudio(
+        val format: MediaFormat,
+        val file: File,
+        val offsets: LongArray,
+        val sizes: IntArray,
+        val times: LongArray,
+        val flags: IntArray,
+    )
+
+    private const val AAC_MIME = "audio/mp4a-latm"
+    private const val AAC_BIT_RATE = 192_000
+
+    /** 16bit PCMのWAVを端末のAACエンコーダーで変換する。音が無ければnull。 */
+    private fun encodeAac(wav: File): EncodedAudio? {
+        val input = DataInputStream(FileInputStream(wav).buffered())
+        try {
+            // RIFFのヘッダーから「fmt 」と「data」の塊を探す。
+            val riff = ByteArray(12)
+            input.readFully(riff)
+            if (
+                String(riff, 0, 4, Charsets.US_ASCII) != "RIFF" ||
+                    String(riff, 8, 4, Charsets.US_ASCII) != "WAVE"
+            ) {
+                return null
+            }
+            var channels = 0
+            var sampleRate = 0
+            var bits = 0
+            var dataSize = -1L
+            while (dataSize < 0) {
+                val id = ByteArray(4)
+                input.readFully(id)
+                val size = Integer.reverseBytes(input.readInt()).toLong() and 0xFFFFFFFFL
+                when (String(id, Charsets.US_ASCII)) {
+                    "fmt " -> {
+                        val fmt = ByteArray(size.toInt())
+                        input.readFully(fmt)
+                        val b = ByteBuffer.wrap(fmt).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                        // PCM（1）か、PCMを中に持つ拡張形式（0xFFFE）だけ。
+                        val tag = b.getShort(0).toInt() and 0xFFFF
+                        if (tag != 1 && tag != 0xFFFE) return null
+                        channels = b.getShort(2).toInt()
+                        sampleRate = b.getInt(4)
+                        bits = b.getShort(14).toInt()
+                        if (size % 2 == 1L) input.skipBytes(1)
+                    }
+                    "data" -> dataSize = size
+                    else -> {
+                        var skip = size + (size % 2)
+                        while (skip > 0) {
+                            val skipped = input.skip(skip)
+                            if (skipped <= 0) throw EOFException()
+                            skip -= skipped
+                        }
+                    }
+                }
+            }
+            if (bits != 16 || channels !in 1..2 || sampleRate <= 0 || dataSize <= 0) {
+                return null
+            }
+            val frameBytes = channels * 2
+
+            val format =
+                MediaFormat.createAudioFormat(AAC_MIME, sampleRate, channels).apply {
+                    setInteger(
+                        MediaFormat.KEY_AAC_PROFILE,
+                        MediaCodecInfo.CodecProfileLevel.AACObjectLC,
+                    )
+                    setInteger(MediaFormat.KEY_BIT_RATE, AAC_BIT_RATE)
+                    setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 16 * 1024)
+                }
+            val codec = MediaCodec.createEncoderByType(AAC_MIME)
+            val out = File(wav.parentFile, wav.name + ".aac.tmp")
+            val offsets = ArrayList<Long>()
+            val sizes = ArrayList<Int>()
+            val times = ArrayList<Long>()
+            val flags = ArrayList<Int>()
+            var outputFormat: MediaFormat? = null
+            val raf = RandomAccessFile(out, "rw")
+            try {
+                raf.setLength(0)
+                codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+                codec.start()
+                val info = MediaCodec.BufferInfo()
+                var remaining = dataSize
+                var framesSubmitted = 0L
+                var inputDone = false
+                var outputDone = false
+                var chunk = ByteArray(0)
+                while (!outputDone) {
+                    if (!inputDone) {
+                        val index = codec.dequeueInputBuffer(TIMEOUT_US)
+                        if (index >= 0) {
+                            val buffer =
+                                codec.getInputBuffer(index)
+                                    ?: throw IllegalStateException("音声の入力バッファを取得できません")
+                            buffer.clear()
+                            val want =
+                                minOf(buffer.remaining().toLong(), remaining).toInt() / frameBytes *
+                                    frameBytes
+                            val pts = framesSubmitted * 1_000_000L / sampleRate
+                            if (want <= 0) {
+                                codec.queueInputBuffer(
+                                    index,
+                                    0,
+                                    0,
+                                    pts,
+                                    MediaCodec.BUFFER_FLAG_END_OF_STREAM,
+                                )
+                                inputDone = true
+                            } else {
+                                if (chunk.size < want) chunk = ByteArray(want)
+                                // 長さが書かれていないWAVもあるので、ファイルの終わりで止める。
+                                var got = 0
+                                while (got < want) {
+                                    val n = input.read(chunk, got, want - got)
+                                    if (n < 0) break
+                                    got += n
+                                }
+                                val usable = got / frameBytes * frameBytes
+                                buffer.put(chunk, 0, usable)
+                                codec.queueInputBuffer(index, 0, usable, pts, 0)
+                                framesSubmitted += usable / frameBytes
+                                remaining = if (got < want) 0 else remaining - want
+                            }
+                        }
+                    }
+                    val outIndex = codec.dequeueOutputBuffer(info, TIMEOUT_US)
+                    when {
+                        outIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+                            outputFormat = codec.outputFormat
+                        }
+                        outIndex >= 0 -> {
+                            val data =
+                                codec.getOutputBuffer(outIndex)
+                                    ?: throw IllegalStateException("音声の出力バッファを取得できません")
+                            if (
+                                info.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG == 0 &&
+                                    info.size > 0
+                            ) {
+                                val bytes = ByteArray(info.size)
+                                data.position(info.offset)
+                                data.get(bytes)
+                                offsets.add(raf.filePointer)
+                                sizes.add(info.size)
+                                times.add(info.presentationTimeUs)
+                                flags.add(info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM.inv())
+                                raf.write(bytes)
+                            }
+                            codec.releaseOutputBuffer(outIndex, false)
+                            if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
+                                outputDone = true
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                out.delete()
+                throw e
+            } finally {
+                raf.close()
+                try {
+                    codec.stop()
+                } catch (_: Exception) {}
+                codec.release()
+            }
+            val finalFormat = outputFormat
+            if (finalFormat == null || sizes.isEmpty()) {
+                out.delete()
+                return null
+            }
+            return EncodedAudio(
+                finalFormat,
+                out,
+                offsets.toLongArray(),
+                sizes.toIntArray(),
+                times.toLongArray(),
+                flags.toIntArray(),
+            )
+        } finally {
+            input.close()
+        }
+    }
+
+    /** AACのサンプルを音声トラックへ書く（映像のサンプルより前にまとめて書いてよい）。 */
+    private fun writeAudioSamples(muxer: MediaMuxer, track: Int, audio: EncodedAudio) {
+        val info = MediaCodec.BufferInfo()
+        RandomAccessFile(audio.file, "r").use { raf ->
+            for (i in audio.sizes.indices) {
+                val bytes = ByteArray(audio.sizes[i])
+                raf.seek(audio.offsets[i])
+                raf.readFully(bytes)
+                info.set(0, bytes.size, audio.times[i], audio.flags[i])
+                muxer.writeSampleData(track, ByteBuffer.wrap(bytes), info)
+            }
         }
     }
 

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../../../widgets/icon_notice.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/export_share_feedback.dart';
 
@@ -12,10 +13,14 @@ class ExportCompleteDialog extends StatefulWidget {
     super.key,
     required this.file,
     required this.frames,
+    this.soundsLeftOut = 0,
   });
 
   final File file;
   final int frames;
+
+  /// Sounds of the timeline that could not be put in the video.
+  final int soundsLeftOut;
 
   @override
   State<ExportCompleteDialog> createState() => _ExportCompleteDialogState();
@@ -56,6 +61,14 @@ class _ExportCompleteDialogState extends State<ExportCompleteDialog> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(l10n.exportCompleteFramesBody(widget.frames)),
+          if (widget.soundsLeftOut > 0) ...[
+            const SizedBox(height: 8),
+            IconNotice(
+              l10n.exportSoundsLeftOut(widget.soundsLeftOut),
+              icon: Icons.volume_off_outlined,
+              liveRegion: true,
+            ),
+          ],
           const SizedBox(height: 12),
           DecoratedBox(
             decoration: BoxDecoration(

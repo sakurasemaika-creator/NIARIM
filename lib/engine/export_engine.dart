@@ -4,12 +4,14 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_session.dart';
 import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
 import 'package:flutter/foundation.dart' show compute, visibleForTesting;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
+import 'export_audio.dart';
 import 'export_filename.dart';
 import '../engine/camera_engine.dart';
 import '../engine/filter_engine.dart';
@@ -627,6 +629,68 @@ class ExportEngine {
   /// エンドカード（約5秒）を本編フレーム列の末尾へ同一エンコード内で
   /// 追加する（動画結合ではなく同一パスの重複指定でエンコーダー側が
   /// 静止フレームとして扱う）。
+  /// How many sounds of the last video export could not be put in it (a
+  /// missing material, a file that could not be read, a device that could
+  /// not encode the sound). The video itself is still written.
+  int audioLeftOut = 0;
+
+  Future<ExportAudioMix> _mixSound(
+    ExportAudioPlan audio,
+    double totalSeconds,
+    Directory workDir,
+    ExportCancelToken? cancelToken,
+  ) async {
+    audioLeftOut = 0;
+    if (cancelToken?.isCancelled == true) {
+      throw const ExportCancelledException();
+    }
+    final mix = await mixExportAudio(
+      plan: audio,
+      totalSeconds: totalSeconds,
+      workDir: workDir,
+      cancelled: () => cancelToken?.isCancelled == true,
+    );
+    if (cancelToken?.isCancelled == true) {
+      throw const ExportCancelledException();
+    }
+    audioLeftOut = mix.leftOut;
+    return mix;
+  }
+
+  /// Runs FFmpeg on the frames ([video] input and [codecs]) with the mixed
+  /// [sound] as a second input. If FFmpeg cannot write the sound, the video
+  /// is written without it (and the sounds are counted as left out) rather
+  /// than not at all.
+  Future<void> _encodeWithSound({
+    required List<String> video,
+    required List<String> codecs,
+    required List<String> soundCodec,
+    required ExportAudioMix sound,
+    required ExportAudioPlan audio,
+    required String outputPath,
+  }) async {
+    Future<FFmpegSession> run(bool withSound) =>
+        FFmpegKit.executeWithArguments([
+          '-y',
+          ...video,
+          if (withSound) ...['-i', sound.path!],
+          if (withSound) ...['-map', '0:v', '-map', '1:a'],
+          ...codecs,
+          if (withSound) ...soundCodec,
+          outputPath,
+        ]);
+    var session = await run(sound.path != null);
+    if (sound.path != null &&
+        !ReturnCode.isSuccess(await session.getReturnCode())) {
+      await _discardPartialVideo(outputPath);
+      audioLeftOut = audio.sources.length + audio.missing;
+      session = await run(false);
+    }
+    if (!ReturnCode.isSuccess(await session.getReturnCode())) {
+      throw Exception('FFmpeg failed: ${await session.getOutput()}');
+    }
+  }
+
   Future<String> exportMp4({
     String? projectName,
     required List<Scene> scenes,
@@ -640,6 +704,7 @@ class ExportEngine {
     required int height,
     required int backgroundColor,
     bool appendEndCard = false,
+    ExportAudioPlan audio = ExportAudioPlan.empty,
     ExportProgressCallback? onProgress,
     ExportCancelToken? cancelToken,
   }) async {
@@ -724,16 +789,27 @@ class ExportEngine {
         }
       }
 
+      final sound = await _mixSound(
+        audio,
+        framePaths.length / fps,
+        framesDir,
+        cancelToken,
+      );
       final exportsDir = await ExportEngine.exportsDir();
       final outputPath = _freshOutputPath(exportsDir, projectName, 'mp4');
       partialOutput = outputPath;
-      await HardwareVideoEncoder.encodeMp4(
+      final audioIncluded = await HardwareVideoEncoder.encodeMp4(
         framePaths: framePaths,
         fps: fps,
         width: width,
         height: height,
         outputPath: outputPath,
+        audioPath: sound.path,
       );
+      if (sound.path != null && !audioIncluded) {
+        // The device could not encode the sound: the video is kept without it.
+        audioLeftOut = audio.sources.length + audio.missing;
+      }
       // 作品一覧が覚えている一覧を捨て、書き出した作品を次の一覧に入れる。
       ExportStorage.invalidate();
       return outputPath;
@@ -874,6 +950,7 @@ class ExportEngine {
     required int height,
     required int backgroundColor,
     bool appendEndCard = false,
+    ExportAudioPlan audio = ExportAudioPlan.empty,
     ExportProgressCallback? onProgress,
     ExportCancelToken? cancelToken,
   }) async {
@@ -959,22 +1036,27 @@ class ExportEngine {
       final exportsDir = await ExportEngine.exportsDir();
       final outputPath = _freshOutputPath(exportsDir, projectName, 'webm');
       partialOutput = outputPath;
-      final session = await FFmpegKit.executeWithArguments([
-        '-y',
-        '-framerate',
-        fps.toString(),
-        '-i',
-        '${framesDir.path}/frame_%06d.png',
-        '-c:v',
-        'libvpx-vp9',
-        '-pix_fmt',
-        'yuva420p',
-        outputPath,
-      ]);
-      final rc = await session.getReturnCode();
-      if (!ReturnCode.isSuccess(rc)) {
-        throw Exception('FFmpeg failed: ${await session.getOutput()}');
-      }
+      final sound = await _mixSound(
+        audio,
+        globalIndex / fps,
+        framesDir,
+        cancelToken,
+      );
+      await _encodeWithSound(
+        video: [
+          '-framerate',
+          fps.toString(),
+          '-i',
+          '${framesDir.path}/frame_%06d.png',
+        ],
+        codecs: ['-c:v', 'libvpx-vp9', '-pix_fmt', 'yuva420p'],
+        // WebM carries Opus. The app's FFmpeg has no libopus, so its own
+        // Opus encoder is used (marked experimental by FFmpeg).
+        soundCodec: ['-c:a', 'opus', '-strict', '-2', '-b:a', '128k'],
+        sound: sound,
+        audio: audio,
+        outputPath: outputPath,
+      );
       ExportStorage.invalidate();
       return outputPath;
     } catch (_) {
@@ -1008,6 +1090,7 @@ class ExportEngine {
     required int height,
     required int backgroundColor,
     bool appendEndCard = false,
+    ExportAudioPlan audio = ExportAudioPlan.empty,
     ExportProgressCallback? onProgress,
     ExportCancelToken? cancelToken,
   }) async {
@@ -1095,24 +1178,26 @@ class ExportEngine {
       partialOutput = outputPath;
       // mjpegはアルファ非対応のため、透過を破棄してbackgroundColorで合成済みの
       // RGBを不透明のyuvj420pへ変換する（yuva420p等は指定しない）。
-      final session = await FFmpegKit.executeWithArguments([
-        '-y',
-        '-framerate',
-        fps.toString(),
-        '-i',
-        '${framesDir.path}/frame_%06d.png',
-        '-c:v',
-        'mjpeg',
-        '-pix_fmt',
-        'yuvj420p',
-        '-q:v',
-        '3',
-        outputPath,
-      ]);
-      final rc = await session.getReturnCode();
-      if (!ReturnCode.isSuccess(rc)) {
-        throw Exception('FFmpeg failed: ${await session.getOutput()}');
-      }
+      final sound = await _mixSound(
+        audio,
+        globalIndex / fps,
+        framesDir,
+        cancelToken,
+      );
+      await _encodeWithSound(
+        video: [
+          '-framerate',
+          fps.toString(),
+          '-i',
+          '${framesDir.path}/frame_%06d.png',
+        ],
+        codecs: ['-c:v', 'mjpeg', '-pix_fmt', 'yuvj420p', '-q:v', '3'],
+        // Uncompressed PCM: the usual sound of an MJPEG AVI for editing.
+        soundCodec: ['-c:a', 'pcm_s16le'],
+        sound: sound,
+        audio: audio,
+        outputPath: outputPath,
+      );
       ExportStorage.invalidate();
       return outputPath;
     } catch (_) {

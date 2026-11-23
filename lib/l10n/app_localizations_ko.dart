@@ -1590,7 +1590,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'MP4, WebM, GIF, AVI로 내보낼 수 있습니다. 90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 내보내기 FPS를 바꿔도 재생 시간은 유지됩니다. 내보내기 전에 길이와 엔드마크를 확인할 수 있습니다.';
+      'MP4, WebM, GIF, AVI로 내보낼 수 있습니다. 90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 내보내기 FPS를 바꿔도 재생 시간은 유지됩니다. 내보내기 전에 길이와 엔드마크를 확인할 수 있습니다. 타임라인의 오디오와 동영상 소재의 소리는 MP4·WebM·AVI에 들어갑니다(GIF는 소리 없음).';
 
   @override
   String get helpTransparentWebmTitle => '투명 WebM';
@@ -2383,7 +2383,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get licenseFfmpegNote =>
-      'WebM·AVI 내보내기에는 FFmpeg（LGPL 3.0, ffmpeg_kit_flutter_new_video 경유）를 사용하고 있습니다. 수정판 소스 코드 입수처: https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4 내보내기는 기기 내장 하드웨어 인코더를 직접 사용하며, FFmpeg는 사용하지 않습니다.';
+      'WebM·AVI 내보내기와 MP4에 넣을 소리를 섞는 처리에는 FFmpeg（LGPL 3.0, ffmpeg_kit_flutter_new_video 경유）를 사용하고 있습니다. 수정판 소스 코드 입수처: https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4의 영상과 소리（AAC）는 기기 내장 인코더로 만들며, FFmpeg로 만들지 않습니다.';
 
   @override
   String licenseFontCreditMeta(String author, String license) {
@@ -3024,6 +3024,16 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return '$count개 프레임의 내보내기가 완료되었습니다.';
+  }
+
+  @override
+  String exportSoundsLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '음성 $count개를 내보내기에 넣지 못했습니다(소재 파일이 없거나 읽을 수 없음). 영상은 그대로 내보냈습니다.',
+    );
+    return '$_temp0';
   }
 
   @override

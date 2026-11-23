@@ -1562,7 +1562,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      '支持导出 MP4、WebM、GIF 和 AVI。完整导出超过90秒的作品需要高级会员或时长延长权益。你也可以导出开头90秒。 更改导出帧率会保留原播放时长。 ';
+      '支持导出 MP4、WebM、GIF 和 AVI。完整导出超过90秒的作品需要高级会员或时长延长权益。你也可以导出开头90秒。 更改导出帧率会保留原播放时长。导出前可以确认正片长度和是否有片尾标志。时间轴上的音频和视频素材的声音会放入 MP4、WebM 和 AVI（GIF 无声音）。';
 
   @override
   String get helpTransparentWebmTitle => '透明WebM';
@@ -2351,7 +2351,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get licenseFfmpegNote =>
-      'WebM、AVI导出使用了FFmpeg（LGPL 3.0，通过ffmpeg_kit_flutter_new_video调用）。修改版源代码获取地址：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4导出直接使用设备内置的硬件编码器，未使用FFmpeg。';
+      'WebM、AVI导出以及混合放入MP4的声音时，使用了FFmpeg（LGPL 3.0，通过ffmpeg_kit_flutter_new_video调用）。修改版源代码获取地址：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4的视频和声音（AAC）由设备内置的编码器生成，不由FFmpeg生成。';
 
   @override
   String licenseFontCreditMeta(String author, String license) {
@@ -2973,6 +2973,16 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String exportCompleteFramesBody(int count) {
     return '已完成$count帧的导出。';
+  }
+
+  @override
+  String exportSoundsLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有 $count 段声音未能放入导出文件（素材文件缺失或无法读取）。视频已照常导出。',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -12053,7 +12063,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpVideoExportDesc =>
-      '支援匯出 MP4、WebM、GIF 和 AVI。完整匯出超過90秒的作品需要高級會員或延長片長權益。你也可以匯出開頭90秒。 變更匯出影格率會保留原播放時間。 ';
+      '支援匯出 MP4、WebM、GIF 和 AVI。完整匯出超過90秒的作品需要高級會員或延長片長權益。你也可以匯出開頭90秒。 變更匯出影格率會保留原播放時間。匯出前可以確認正片長度和是否有片尾標誌。時間軸上的音訊和影片素材的聲音會放入 MP4、WebM 和 AVI（GIF 無聲音）。';
 
   @override
   String get helpTransparentWebmTitle => '透明WebM';
@@ -12842,7 +12852,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get licenseFfmpegNote =>
-      'WebM、AVI匯出使用了FFmpeg（LGPL 3.0，透過ffmpeg_kit_flutter_new_video呼叫）。修改版原始碼取得處：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4匯出直接使用裝置內建的硬體編碼器，未使用FFmpeg。';
+      'WebM、AVI匯出以及混合放入MP4的聲音時，使用了FFmpeg（LGPL 3.0，透過ffmpeg_kit_flutter_new_video呼叫）。修改版原始碼取得處：https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4的影片和聲音（AAC）由裝置內建的編碼器產生，不由FFmpeg產生。';
 
   @override
   String licenseFontCreditMeta(String author, String license) {
@@ -13464,6 +13474,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String exportCompleteFramesBody(int count) {
     return '已完成$count影格的匯出。';
+  }
+
+  @override
+  String exportSoundsLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有 $count 段聲音未能放入匯出檔案（素材檔案遺失或無法讀取）。影片已照常匯出。',
+    );
+    return '$_temp0';
   }
 
   @override
