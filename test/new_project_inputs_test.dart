@@ -128,6 +128,42 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  // The six size presets (全プリセットの棚卸し D033): choosing each one sets
+  // the export size the project is created with.
+  testWidgets('each size preset sets its export size', (tester) async {
+    await open(tester);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(NewProjectScreen)),
+    )!;
+    for (final (width, height) in const [
+      (1920, 1080),
+      (1280, 720),
+      (1080, 1080),
+      (1080, 1920),
+      (1080, 1350),
+      (1440, 1080),
+    ]) {
+      final chip = find.ancestor(
+        of: find.textContaining('$width×$height'),
+        matching: find.byType(ChoiceChip),
+      );
+      expect(chip, findsOneWidget, reason: '$width×$height');
+      await tester.ensureVisible(chip);
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<ChoiceChip>(chip).selected,
+        isTrue,
+        reason: '$width×$height',
+      );
+      expect(
+        find.textContaining(l10n.newProjectExportSizeInfo('$width×$height')),
+        findsOneWidget,
+        reason: '$width×$height',
+      );
+    }
+  });
+
   testWidgets('section spacing adapts to narrow phones without changing '
       'regular phone spacing', (tester) async {
     await open(tester);
