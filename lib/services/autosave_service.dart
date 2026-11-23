@@ -53,13 +53,13 @@ class AutosaveService extends ChangeNotifier {
         savedAtMs,
       );
       if (savedAt == null) continue;
-      _slots.add(
-        AutosaveSlot(
-          projectId: projectId,
-          savedAt: savedAt,
-          slotIndex: slotIndex,
-        ),
+      final slot = AutosaveSlot(
+        projectId: projectId,
+        savedAt: savedAt,
+        slotIndex: slotIndex,
       );
+      _slots.add(slot);
+      _fromEarlierLaunch.add(slot);
     }
     _nextSlotIndex = prefs.readInt('autosave_next_slot') ?? 0;
     notifyListeners();
@@ -181,6 +181,18 @@ class AutosaveService extends ChangeNotifier {
 
   final Set<String> _offeredProjectIds = {};
 
+  /// Snapshots read at start-up, i.e. written before this launch. Only these
+  /// can hold work that never reached the work file (the app was closed
+  /// first); a snapshot written during this launch is the session's own
+  /// history (the work may have been undone since), not something to offer.
+  final Set<AutosaveSlot> _fromEarlierLaunch = {};
+
+  /// Tests: treat the snapshots written so far as left by an earlier launch
+  /// (as if the app had been restarted and read them at start-up).
+  @visibleForTesting
+  void debugTreatSlotsAsFromEarlierLaunch() =>
+      _fromEarlierLaunch.addAll(_slots);
+
   /// The newest autosave of [projectId] when it is newer than the work file
   /// and holds different content (the app was closed before the work file
   /// caught up, e.g. it was forced to quit). Offered once per launch; null
@@ -200,6 +212,7 @@ class AutosaveService extends ChangeNotifier {
         .where((p) => p.id == projectId)
         .firstOrNull;
     if (slot == null || project == null) return null;
+    if (!_fromEarlierLaunch.contains(slot)) return null;
     if (!slot.savedAt.isAfter(project.updatedAt)) return null;
     final backup = await _loadSlot(slot);
     if (backup == null) return null;

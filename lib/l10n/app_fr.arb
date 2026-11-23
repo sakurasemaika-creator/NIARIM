@@ -498,7 +498,7 @@
   "saveDataAutosavesEmpty": "Ce projet n’a pas encore de sauvegarde automatique.",
   "projectAutosaveRecovered": "Impossible d’ouvrir le fichier du projet. Le projet a été récupéré depuis une sauvegarde automatique.",
   "canvasAutosaveRecoveryTitle": "Restaurer la sauvegarde automatique",
-  "canvasAutosaveRecoveryBody": "Une version enregistrée automatiquement contient des modifications différentes. Voulez-vous l’ouvrir ?",
+  "canvasAutosaveRecoveryBody": "Une version enregistrée automatiquement contient des modifications différentes. Voulez-vous l’ouvrir ?",
   "helpSaveSlotTitle": "Emplacement de sauvegarde",
   "helpSaveSlotDesc": "Une méthode d’enregistrement dans un nombre fixe d’emplacements de sauvegarde, où vous choisissez à chaque fois l’emplacement à utiliser. Le nombre d’emplacements est déterminé par les réglages (5 pour la qualité basse, 10 pour la qualité moyenne). Comme vous choisissez à chaque fois l’emplacement à écraser, c’est un moyen simple de gérer la conservation de l’état d’un moment particulier.",
   "helpSaveTreeTitle": "Arbre de sauvegarde",

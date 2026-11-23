@@ -280,8 +280,10 @@ void main() {
     await tester.runAsync(() async {
       tiles.getOrCreateTile(key, 0, 0).setRange(0, 4, drawn);
       await autosaves.save(id, projects);
-      // The work file was not written after the stroke (forced quit).
+      // The work file was not written after the stroke (forced quit), and
+      // the app is opened again.
       tiles.importAll(const {});
+      autosaves.debugTreatSlotsAsFromEarlierLaunch();
     });
     appRouter.go('/canvas/$id');
     await settleIo(tester);
@@ -324,6 +326,37 @@ void main() {
       // Later strokes reached the work file but not yet an autosave.
       tiles.getTile(key, 0, 0)!.setRange(0, 4, [30, 60, 220, 255]);
       await projects.saveProject(id);
+      autosaves.debugTreatSlotsAsFromEarlierLaunch();
+    });
+    appRouter.go('/canvas/$id');
+    await settleIo(tester);
+    expect(
+      find.widgetWithText(AlertDialog, l10n.canvasAutosaveRecoveryTitle),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('an autosave written during this launch is not offered', (
+    tester,
+  ) async {
+    final (service: projects, :id) = await open(tester);
+    final home = tester.element(find.byType(HomeScreen));
+    final autosaves = home.read<AutosaveService>();
+    final l10n = AppLocalizations.of(home)!;
+    final scene = projects.scenesOf(id).single;
+    final key = projects.tileKeyFor(
+      id,
+      scene.id,
+      0,
+      scene.frames.first.layers.first.id,
+    );
+    final tiles = projects.tileManagerOf(id);
+    await tester.runAsync(() async {
+      tiles.getOrCreateTile(key, 0, 0).setRange(0, 4, [30, 60, 220, 255]);
+      await autosaves.save(id, projects);
+      // Undone in this session (e.g. on the timeline) before the canvas opens.
+      tiles.importAll(const {});
     });
     appRouter.go('/canvas/$id');
     await settleIo(tester);
@@ -391,6 +424,8 @@ void main() {
         tiles.getTile(key, 0, 0)!.setRange(0, 4, latest);
         await autosaves.save(id, projects);
         tiles.importAll(const {});
+        // The app is opened again after it was closed.
+        autosaves.debugTreatSlotsAsFromEarlierLaunch();
       });
 
       appRouter.go('/project/$id');

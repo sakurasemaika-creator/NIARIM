@@ -1576,7 +1576,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasAutosaveRecoveryBody =>
-      'Une version enregistrée automatiquement contient des modifications différentes. Voulez-vous l’ouvrir ?';
+      'Une version enregistrée automatiquement contient des modifications différentes. Voulez-vous l’ouvrir ?';
 
   @override
   String get helpSaveSlotTitle => 'Emplacement de sauvegarde';
