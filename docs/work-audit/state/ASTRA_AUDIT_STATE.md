@@ -4892,4 +4892,6 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
 - D029（Visualの締め：全機能のBEFORE/SETTINGS/AFTERの3枚組とmanifest）・D033（全プリセットの棚卸しの子TODO）・D035（主な操作のp50/p95の計測）は、AIだけでできるが、まだ行っていない。
 - D032（実機の全操作）・実課金・実広告・バックエンドのデプロイは範囲外（人の作業）。
 - 全面監査completeは宣言しない。
+- D036（ソースの衛生）：`flutter analyze` 0件（使っていないimportは0）。pubspecの画像・書体など677ファイルのうち、どこからも参照されないのは`assets/.gitkeep`だけ。39の画面の行き先のうち、アプリの中から移る所が無いのは`/earn-coins`（オパールの画面の2つ目のタブを直接開く別名。`ad_mock_layout_test`・`admob_all_routes_visual_matrix_test`が開く）だけ。どちらも利用者に害は無いので残す。
+- D037（CIの全件）：最新`08eb5dac`の8分割の全件のCI（#286）を待っている。
 
