@@ -311,7 +311,7 @@ void main() {
           );
         }
         await tapVisible(submit);
-        final agree = find.text(l10n.communityPostingTermsAgree);
+        final agree = find.text(l10n.legalConsentAgree);
         for (var i = 0; agree.evaluate().isEmpty && i < 30; i++) {
           await pumpRealAsync(tester, const Duration(milliseconds: 40));
         }

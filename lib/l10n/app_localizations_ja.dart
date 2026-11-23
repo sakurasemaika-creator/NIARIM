@@ -5584,6 +5584,26 @@ class AppLocalizationsJa extends AppLocalizations {
   String get legalLastUpdated => '最終更新日：2026年11月23日';
 
   @override
+  String get legalConsentTitle => '利用規約とプライバシーポリシー';
+
+  @override
+  String get legalConsentBody =>
+      'プレミアムの購入、Googleアカウントでのログイン、作品広場への投稿の前に、利用規約とプライバシーポリシーへの同意をお願いしています。同意した版と日時はこの端末に記録します。';
+
+  @override
+  String get legalConsentReadTerms => '利用規約を読む';
+
+  @override
+  String get legalConsentReadPrivacy => 'プライバシーポリシーを読む';
+
+  @override
+  String get legalConsentAgree => '同意して続ける';
+
+  @override
+  String get premiumAutoRenewNote =>
+      '月額・年額プランは、解約しない限り自動で更新されます。解約はGoogle Playの「お支払いと定期購入」からいつでもできます。';
+
+  @override
   String get licenseTermsArt1Title => '第1条（適用）';
 
   @override
@@ -10532,12 +10552,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityBlockedUsersEmpty => 'ブロックしたユーザーはいません';
-
-  @override
-  String get communityPostingTermsPrompt => '作品広場に投稿する前に、利用規約をご確認ください。';
-
-  @override
-  String get communityPostingTermsAgree => '同意して続ける';
 
   @override
   String get canvasViewActions => 'キャンバスの表示';

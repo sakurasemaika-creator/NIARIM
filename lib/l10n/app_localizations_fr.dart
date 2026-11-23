@@ -5913,6 +5913,27 @@ class AppLocalizationsFr extends AppLocalizations {
   String get legalLastUpdated => 'Dernière mise à jour : 23 novembre 2026';
 
   @override
+  String get legalConsentTitle =>
+      'Conditions d’utilisation et politique de confidentialité';
+
+  @override
+  String get legalConsentBody =>
+      'Avant d’acheter Premium, de vous connecter avec un compte Google ou de publier sur la Place des œuvres, veuillez accepter les conditions d’utilisation et la politique de confidentialité. La version acceptée ainsi que la date et l’heure sont enregistrées sur cet appareil.';
+
+  @override
+  String get legalConsentReadTerms => 'Lire les conditions d’utilisation';
+
+  @override
+  String get legalConsentReadPrivacy => 'Lire la politique de confidentialité';
+
+  @override
+  String get legalConsentAgree => 'Accepter et continuer';
+
+  @override
+  String get premiumAutoRenewNote =>
+      'Les formules mensuelle et annuelle sont renouvelées automatiquement jusqu’à leur résiliation. Vous pouvez résilier à tout moment dans Google Play, sous « Paiements et abonnements ».';
+
+  @override
   String get licenseTermsArt1Title => 'Article 1 (Application)';
 
   @override
@@ -11509,13 +11530,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityBlockedUsersEmpty => 'Vous n’avez bloqué aucun compte.';
-
-  @override
-  String get communityPostingTermsPrompt =>
-      'Consultez les conditions d’utilisation avant de publier sur la Place des œuvres.';
-
-  @override
-  String get communityPostingTermsAgree => 'Accepter et continuer';
 
   @override
   String get canvasViewActions => 'Affichage de la toile';

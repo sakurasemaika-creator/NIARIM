@@ -5816,6 +5816,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get legalLastUpdated => 'Last updated: November 23, 2026';
 
   @override
+  String get legalConsentTitle => 'Terms of Service and Privacy Policy';
+
+  @override
+  String get legalConsentBody =>
+      'Before you purchase Premium, sign in with a Google account, or post to the Work Plaza, please agree to the Terms of Service and the Privacy Policy. The version you agree to and the date and time are recorded on this device.';
+
+  @override
+  String get legalConsentReadTerms => 'Read the Terms of Service';
+
+  @override
+  String get legalConsentReadPrivacy => 'Read the Privacy Policy';
+
+  @override
+  String get legalConsentAgree => 'Agree and continue';
+
+  @override
+  String get premiumAutoRenewNote =>
+      'Monthly and annual plans renew automatically until you cancel. You can cancel at any time in Google Play under “Payments & subscriptions”.';
+
+  @override
   String get licenseTermsArt1Title => 'Article 1 (Application)';
 
   @override
@@ -11335,13 +11355,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityBlockedUsersEmpty => 'You haven’t blocked any creators.';
-
-  @override
-  String get communityPostingTermsPrompt =>
-      'Review the Terms of Service before posting to Work Plaza.';
-
-  @override
-  String get communityPostingTermsAgree => 'Agree and continue';
 
   @override
   String get canvasViewActions => 'Canvas view';

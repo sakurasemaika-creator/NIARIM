@@ -5906,6 +5906,26 @@ class AppLocalizationsEs extends AppLocalizations {
       'Última actualización: 23 de noviembre de 2026';
 
   @override
+  String get legalConsentTitle => 'Términos de uso y Política de privacidad';
+
+  @override
+  String get legalConsentBody =>
+      'Antes de comprar Premium, iniciar sesión con una cuenta de Google o publicar en la Plaza de Obras, acepte los Términos de uso y la Política de privacidad. La versión aceptada y la fecha y hora se registran en este dispositivo.';
+
+  @override
+  String get legalConsentReadTerms => 'Leer los Términos de uso';
+
+  @override
+  String get legalConsentReadPrivacy => 'Leer la Política de privacidad';
+
+  @override
+  String get legalConsentAgree => 'Aceptar y continuar';
+
+  @override
+  String get premiumAutoRenewNote =>
+      'Los planes mensual y anual se renuevan automáticamente hasta que los cancele. Puede cancelarlos en cualquier momento en Google Play, en «Pagos y suscripciones».';
+
+  @override
   String get licenseTermsArt1Title => 'Artículo 1 (Aplicación)';
 
   @override
@@ -11497,13 +11517,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityBlockedUsersEmpty => 'No has bloqueado ninguna cuenta.';
-
-  @override
-  String get communityPostingTermsPrompt =>
-      'Revisa las condiciones de uso antes de publicar en la Plaza de obras.';
-
-  @override
-  String get communityPostingTermsAgree => 'Aceptar y continuar';
 
   @override
   String get canvasViewActions => 'Vista del lienzo';

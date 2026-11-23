@@ -26,6 +26,7 @@ import '../../widgets/menu_card.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/collection_action_controls.dart';
 import '../../widgets/collection_tile_layout.dart';
+import '../../widgets/legal_consent.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import 'widgets/community_work_card.dart'
     show CommunityWorkOrientation, communityThumbnailGradient;
@@ -370,6 +371,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       return;
     }
 
+    if (!await ensureLegalConsent(context) || !mounted) return;
     setState(() => _switchingAccount = true);
     try {
       // The interactive picker keeps the current session if it is dismissed.
@@ -431,6 +433,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final l10n = AppLocalizations.of(context)!;
     if (!auth.isSignedIn) {
       if (!await _confirmGoogleSignIn() || !mounted) return;
+      if (!await ensureLegalConsent(context) || !mounted) return;
       if (auth.authOperationInProgress) {
         _showSnackBar(l10n.communityGoogleAccountBusy);
         return;

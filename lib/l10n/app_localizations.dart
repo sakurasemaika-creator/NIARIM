@@ -10137,6 +10137,42 @@ abstract class AppLocalizations {
   /// **'最終更新日：2026年11月23日'**
   String get legalLastUpdated;
 
+  /// No description provided for @legalConsentTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用規約とプライバシーポリシー'**
+  String get legalConsentTitle;
+
+  /// No description provided for @legalConsentBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアムの購入、Googleアカウントでのログイン、作品広場への投稿の前に、利用規約とプライバシーポリシーへの同意をお願いしています。同意した版と日時はこの端末に記録します。'**
+  String get legalConsentBody;
+
+  /// No description provided for @legalConsentReadTerms.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用規約を読む'**
+  String get legalConsentReadTerms;
+
+  /// No description provided for @legalConsentReadPrivacy.
+  ///
+  /// In ja, this message translates to:
+  /// **'プライバシーポリシーを読む'**
+  String get legalConsentReadPrivacy;
+
+  /// No description provided for @legalConsentAgree.
+  ///
+  /// In ja, this message translates to:
+  /// **'同意して続ける'**
+  String get legalConsentAgree;
+
+  /// No description provided for @premiumAutoRenewNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'月額・年額プランは、解約しない限り自動で更新されます。解約はGoogle Playの「お支払いと定期購入」からいつでもできます。'**
+  String get premiumAutoRenewNote;
+
   /// No description provided for @licenseTermsArt1Title.
   ///
   /// In ja, this message translates to:
@@ -18566,18 +18602,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ブロックしたユーザーはいません'**
   String get communityBlockedUsersEmpty;
-
-  /// No description provided for @communityPostingTermsPrompt.
-  ///
-  /// In ja, this message translates to:
-  /// **'作品広場に投稿する前に、利用規約をご確認ください。'**
-  String get communityPostingTermsPrompt;
-
-  /// No description provided for @communityPostingTermsAgree.
-  ///
-  /// In ja, this message translates to:
-  /// **'同意して続ける'**
-  String get communityPostingTermsAgree;
 
   /// No description provided for @canvasViewActions.
   ///

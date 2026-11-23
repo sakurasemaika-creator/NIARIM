@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
@@ -25,6 +24,7 @@ import '../../utils/app_error_reporter.dart';
 import '../../utils/tolerant_preferences.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/icon_notice.dart';
+import '../../widgets/legal_consent.dart';
 
 /// Where posting stands, shown under the form.
 enum _PostStatus {
@@ -688,41 +688,6 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     });
   }
 
-  Future<bool> _acceptPostingTerms(String accountId) async {
-    const termsVersion = '1';
-    final preferences = await SharedPreferences.getInstance();
-    final key = 'community.postingTerms.$termsVersion.$accountId';
-    if (!mounted) return false;
-    if (preferences.containsKey(key)) return true;
-    final router = GoRouter.maybeOf(context);
-    final l10n = AppLocalizations.of(context)!;
-    final accepted = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.licenseSectionTerms),
-        content: Text(l10n.communityPostingTermsPrompt),
-        scrollable: true,
-        actions: [
-          if (router != null)
-            TextButton(
-              onPressed: () => router.push('/settings/license'),
-              child: Text(l10n.licenseSectionTerms),
-            ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(l10n.communityPostingTermsAgree),
-          ),
-        ],
-      ),
-    );
-    if (accepted != true || !mounted) return false;
-    return preferences.setString(key, DateTime.now().toUtc().toIso8601String());
-  }
-
   Future<void> _submit() async {
     if (_busy || _restoringPending) return;
     final file = _videoFile;
@@ -794,6 +759,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       return;
     }
 
+    // Agreement to the Terms and the Privacy Policy comes before the Google
+    // sign-in and the upload.
+    if (!await ensureLegalConsent(context) || !mounted) return;
+
     setState(() {
       _busy = true;
       _error = null;
@@ -805,9 +774,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     try {
       var postingAccount = auth.account;
       postingAccount ??= await auth.signInInteractively();
-      if (!await _acceptPostingTerms(postingAccount.id) ||
-          !mounted ||
-          auth.account?.id != postingAccount.id) {
+      if (!mounted || auth.account?.id != postingAccount.id) {
         if (mounted) setState(() => _status = null);
         return;
       }

@@ -5525,6 +5525,26 @@ class AppLocalizationsZh extends AppLocalizations {
   String get legalLastUpdated => '最后更新日期：2026年11月23日';
 
   @override
+  String get legalConsentTitle => '使用条款和隐私政策';
+
+  @override
+  String get legalConsentBody =>
+      '在购买高级功能、使用Google账号登录或在作品广场发布作品之前，请同意使用条款和隐私政策。所同意的版本及日期时间将记录在此设备上。';
+
+  @override
+  String get legalConsentReadTerms => '阅读使用条款';
+
+  @override
+  String get legalConsentReadPrivacy => '阅读隐私政策';
+
+  @override
+  String get legalConsentAgree => '同意并继续';
+
+  @override
+  String get premiumAutoRenewNote =>
+      '月度方案和年度方案在取消之前会自动续订。可随时在Google Play的“付款和订阅”中取消。';
+
+  @override
   String get licenseTermsArt1Title => '第1条（适用）';
 
   @override
@@ -10410,12 +10430,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityBlockedUsersEmpty => '你还没有屏蔽任何用户。';
-
-  @override
-  String get communityPostingTermsPrompt => '在作品广场投稿前，请阅读服务条款。';
-
-  @override
-  String get communityPostingTermsAgree => '同意并继续';
 
   @override
   String get canvasViewActions => '画布显示';
@@ -15981,6 +15995,26 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get legalLastUpdated => '最後更新日期：2026年11月23日';
 
   @override
+  String get legalConsentTitle => '使用條款及隱私權政策';
+
+  @override
+  String get legalConsentBody =>
+      '於購買進階功能、使用Google帳戶登入或在作品廣場發布作品之前，請同意使用條款及隱私權政策。所同意之版本及日期時間將記錄於此裝置。';
+
+  @override
+  String get legalConsentReadTerms => '閱讀使用條款';
+
+  @override
+  String get legalConsentReadPrivacy => '閱讀隱私權政策';
+
+  @override
+  String get legalConsentAgree => '同意並繼續';
+
+  @override
+  String get premiumAutoRenewNote =>
+      '月繳方案及年繳方案在取消之前會自動續訂。可隨時於Google Play之「付款和訂閱」中取消。';
+
+  @override
   String get licenseTermsArt1Title => '第1條（適用範圍）';
 
   @override
@@ -20868,12 +20902,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityBlockedUsersEmpty => '你還沒有封鎖任何使用者。';
-
-  @override
-  String get communityPostingTermsPrompt => '在作品廣場投稿前，請閱讀服務條款。';
-
-  @override
-  String get communityPostingTermsAgree => '同意並繼續';
 
   @override
   String get canvasViewActions => '畫布顯示';

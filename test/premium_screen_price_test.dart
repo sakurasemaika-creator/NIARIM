@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/premium/premium_screen.dart';
@@ -61,6 +62,7 @@ class _UnavailableCheckout extends _Store {
 
 void main() {
   Future<AppLocalizations> show(WidgetTester tester, _Store store) async {
+    SharedPreferences.setMockInitialValues({});
     addTearDown(store.dispose);
     await tester.pumpWidget(
       MultiProvider(
@@ -206,6 +208,10 @@ void main() {
       final monthly = find.text('€4');
       await tester.ensureVisible(monthly);
       await tester.tap(monthly);
+      await tester.pumpAndSettle();
+      // A purchase asks for agreement to the Terms and the Privacy Policy
+      // first; agreeing continues to the checkout.
+      await tester.tap(find.byKey(const Key('legalConsentAgree')));
       await tester.pumpAndSettle();
       expect(find.text(words.premiumCheckoutStartFailed), findsWidgets);
       expect(find.text(PremiumService.checkoutStartFailed), findsNothing);

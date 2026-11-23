@@ -141,6 +141,9 @@ class NiatraSerializer {
     'tool_opacity_',
     'community.pendingUpload.',
     'community.postingTerms.',
+    // The version of the Terms and the Privacy Policy agreed to on this
+    // device, and when. Agreement is asked on each device.
+    'legal.consent.',
     'community.ownerByAccount.',
     'community.savedSearches.v1',
     'community.searchHistory.v1',

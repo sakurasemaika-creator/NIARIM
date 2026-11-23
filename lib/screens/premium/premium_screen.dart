@@ -10,6 +10,8 @@ import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/menu_card.dart';
 import '../../widgets/icon_notice.dart';
+import '../../widgets/legal_consent.dart';
+import '../../widgets/keep_together_text.dart';
 
 /// プレミアム画面。ユーザー作品そのものを除くUI色はColorSchemeへ集約する。
 class PremiumScreen extends StatefulWidget {
@@ -239,6 +241,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   false,
                   premium,
                   PremiumService.monthlyProductId,
+                ),
+                const SizedBox(height: 12),
+                messageText(
+                  l10n.premiumAutoRenewNote,
+                  key: const Key('premiumAutoRenewNote'),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 16),
                 Center(
@@ -696,6 +704,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
           onTap: (!available || busy)
               ? null
               : () async {
+                  if (!await ensureLegalConsent(context) || !context.mounted) {
+                    return;
+                  }
                   final ok = await premium.buy(productId);
                   if (!ok && context.mounted && premium.purchaseError != null) {
                     ScaffoldMessenger.of(context).showSnackBar(

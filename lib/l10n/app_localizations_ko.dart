@@ -5615,6 +5615,26 @@ class AppLocalizationsKo extends AppLocalizations {
   String get legalLastUpdated => '최종 업데이트: 2026년 11월 23일';
 
   @override
+  String get legalConsentTitle => '이용약관 및 개인정보처리방침';
+
+  @override
+  String get legalConsentBody =>
+      '프리미엄 구매, Google 계정 로그인, 작품 광장 게시 전에는 이용약관과 개인정보처리방침에 대한 동의가 필요합니다. 동의한 버전과 일시는 이 단말기에 기록됩니다.';
+
+  @override
+  String get legalConsentReadTerms => '이용약관 읽기';
+
+  @override
+  String get legalConsentReadPrivacy => '개인정보처리방침 읽기';
+
+  @override
+  String get legalConsentAgree => '동의하고 계속';
+
+  @override
+  String get premiumAutoRenewNote =>
+      '월간·연간 플랜은 해지할 때까지 자동으로 갱신됩니다. 해지는 Google Play의「결제 및 정기 결제」에서 언제든지 할 수 있습니다.';
+
+  @override
   String get licenseTermsArt1Title => '제1조（적용）';
 
   @override
@@ -10589,12 +10609,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityBlockedUsersEmpty => '차단한 사용자가 없습니다.';
-
-  @override
-  String get communityPostingTermsPrompt => '작품 광장에 게시하기 전에 이용약관을 확인해 주세요.';
-
-  @override
-  String get communityPostingTermsAgree => '동의하고 계속';
 
   @override
   String get canvasViewActions => '캔버스 보기';
