@@ -13,6 +13,7 @@ import '../../../models/scene.dart';
 import '../../../services/frame_thumbnail_renderer.dart';
 import '../../../services/project_service.dart';
 import '../../../widgets/menu_surface.dart';
+import '../../../widgets/icon_notice.dart';
 
 /// A four-choice project thumbnail editor shared by owned and received
 /// projects. The selected frame is previewed with the same scene compositor
@@ -352,7 +353,6 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return AlertDialog(
       scrollable: true,
       title: Text(l10n.thumbnailChangeAction),
@@ -408,10 +408,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
             if (error != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  error!,
-                  style: TextStyle(color: theme.colorScheme.error),
-                ),
+                child: IconNotice(error!, liveRegion: true),
               ),
           ],
         ),

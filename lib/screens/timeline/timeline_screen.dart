@@ -98,6 +98,7 @@ import '../../widgets/typing_dialog_inset.dart';
 import 'widgets/material_edit_panel.dart';
 import 'widgets/material_gizmo.dart';
 import 'widgets/stack_order_panel.dart';
+import '../../widgets/icon_notice.dart';
 
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image, text }
@@ -4156,9 +4157,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
             onPressed: () {
               Navigator.pop(ctx);
               context.read<ProjectService>().removeScene(
@@ -4188,9 +4186,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
             onPressed: () {
               Navigator.pop(ctx);
               context.read<ProjectService>().removeScenes(
@@ -4972,7 +4967,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _centerFrameInList();
   }
 
-  static const double _trackLabelWidth = 84;
+  static const double _trackLabelWidth = 94;
 
   BoxDecoration get _trackRowDivider => BoxDecoration(
     border: Border(
@@ -4986,8 +4981,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Widget _buildTrackLabel(IconData icon, String label) {
     return Container(
       // 文字が切れないだけでなく、スマートフォンでも読みやすいサイズを確保する。
-      // 84dpの欄にアイコン14dp・間隔4dp・左右余白6dpを取り、11dpのラベルを置く。
-      // 7言語の長いラベルでも省略せず、320dp幅でも制作領域を確保する。
+      // 94dpの欄にアイコン14dp・間隔4dp・左右余白6dpを取り、11dpのラベルを
+      // 置く（残り70dp。7言語でいちばん広いスペイン語の「Fotograma」が
+      // くらむぼんで約68dp。84dpの欄では60dpしかなく末尾が切れた）。
       width: _trackLabelWidth,
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: Row(
@@ -6099,53 +6095,60 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
           title: Text(l10n.timelineWatermarkEditTitle),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                LabeledSlider(
-                  label: l10n.timelineWatermarkAngleLabel,
-                  value: angle,
-                  min: -180,
-                  max: 180,
-                  sliderLabel: '${angle.round()}°',
-                  valueText: '${angle.round()}°',
-                  onChanged: (v) => setS(() => angle = v),
-                ),
-                // 大きさ・不透明度は％で直接入力するので、スライダーも％の
-                // 目盛り（5〜100・0〜100）で持ち、0〜1の値へ戻して保存する。
-                LabeledSlider(
-                  label: l10n.timelineWatermarkSizeLabel,
-                  value: scale * 100,
-                  min: 5,
-                  max: 100,
-                  sliderLabel: '${(scale * 100).round()}%',
-                  valueText: '${(scale * 100).round()}%',
-                  onChanged: (v) => setS(() => scale = v / 100),
-                ),
-                LabeledSlider(
-                  label: l10n.timelineWatermarkOpacityLabel,
-                  value: opacity * 100,
-                  min: 0,
-                  max: 100,
-                  sliderLabel: '${(opacity * 100).round()}%',
-                  valueText: '${(opacity * 100).round()}%',
-                  onChanged: (v) => setS(() => opacity = v / 100),
-                ),
-                SwitchListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.timelineWatermarkLoopLabel),
-                  subtitle: Text(
-                    l10n.timelineWatermarkLoopSubtitle,
-                    style: const TextStyle(fontSize: 11),
+          content: SizedBox(
+            width: 480,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LabeledSlider(
+                    label: l10n.timelineWatermarkAngleLabel,
+                    value: angle,
+                    min: -180,
+                    max: 180,
+                    sliderLabel: '${angle.round()}°',
+                    valueText: '${angle.round()}°',
+                    onChanged: (v) => setS(() => angle = v),
                   ),
-                  value: loop,
-                  onChanged: (v) => setS(() => loop = v),
-                ),
-              ],
+                  // 大きさ・不透明度は％で直接入力するので、スライダーも％の
+                  // 目盛り（5〜100・0〜100）で持ち、0〜1の値へ戻して保存する。
+                  LabeledSlider(
+                    label: l10n.timelineWatermarkSizeLabel,
+                    value: scale * 100,
+                    min: 5,
+                    max: 100,
+                    sliderLabel: '${(scale * 100).round()}%',
+                    valueText: '${(scale * 100).round()}%',
+                    onChanged: (v) => setS(() => scale = v / 100),
+                  ),
+                  LabeledSlider(
+                    label: l10n.timelineWatermarkOpacityLabel,
+                    value: opacity * 100,
+                    min: 0,
+                    max: 100,
+                    sliderLabel: '${(opacity * 100).round()}%',
+                    valueText: '${(opacity * 100).round()}%',
+                    onChanged: (v) => setS(() => opacity = v / 100),
+                  ),
+                  SwitchListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.timelineWatermarkLoopLabel),
+                    subtitle: Text(
+                      l10n.timelineWatermarkLoopSubtitle,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    value: loop,
+                    onChanged: (v) => setS(() => loop = v),
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -6655,7 +6658,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       message: l10n.commonDelete,
                       child: Icon(
                         Icons.delete_outline,
-                        color: scheme.error,
                         semanticLabel: l10n.commonDelete,
                       ),
                     ),
@@ -6857,7 +6859,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             actions: [
               if (marker != null)
                 IconButton(
-                  icon: Icon(Icons.delete, color: scheme.error),
+                  icon: const Icon(Icons.delete),
                   tooltip: l10n.commonDelete,
                   onPressed: () async {
                     if (await _deleteTimestamp(sceneId, marker) &&
@@ -7427,42 +7429,53 @@ class _TimelineScreenState extends State<TimelineScreen> {
         controller: labelCtrl,
         builder: (ctx) => StatefulBuilder(
           builder: (ctx, setS) => AlertDialog(
-            insetPadding: typingDialogInsetPadding(ctx),
+            // スライダーを置くので、文字を入れるダイアログと同じく横に広げる
+            // （既定の幅280pxではスライダー本体が細すぎた）。
+            insetPadding: typingDialogInsetPadding(
+              ctx,
+              usual: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            ),
             title: Text(l10n.timelineAddClipDialogTitle(trackName)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: labelCtrl,
-                  decoration: InputDecoration(
-                    labelText: l10n.timelineClipLabelFieldLabel,
-                    border: const OutlineInputBorder(),
-                  ),
+            content: SizedBox(
+              width: 480,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      key: const Key('timelineAddClipLabelField'),
+                      controller: labelCtrl,
+                      decoration: InputDecoration(
+                        labelText: l10n.timelineClipLabelFieldLabel,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // 開始フレームは画面上の表示（F1〜）と同じ1始まりの目盛りで
+                    // 持ち、0始まりの添字へ戻して保存する。
+                    LabeledSlider(
+                      label: l10n.timelineClipStartLabel,
+                      value: (start + 1).toDouble(),
+                      min: 1,
+                      max: _totalFrames.toDouble(),
+                      divisions: _totalFrames > 1 ? _totalFrames - 1 : 1,
+                      sliderLabel: 'F${start + 1}',
+                      valueText: 'F${start + 1}',
+                      onChanged: (v) => setS(() => start = v.round() - 1),
+                    ),
+                    LabeledSlider(
+                      label: l10n.timelineClipLengthLabel,
+                      value: length.toDouble(),
+                      min: 1,
+                      max: _totalFrames.toDouble(),
+                      divisions: _totalFrames,
+                      sliderLabel: '${length}F',
+                      valueText: '${length}F',
+                      onChanged: (v) => setS(() => length = v.round()),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                // 開始フレームは画面上の表示（F1〜）と同じ1始まりの目盛りで
-                // 持ち、0始まりの添字へ戻して保存する。
-                LabeledSlider(
-                  label: l10n.timelineClipStartLabel,
-                  value: (start + 1).toDouble(),
-                  min: 1,
-                  max: _totalFrames.toDouble(),
-                  divisions: _totalFrames > 1 ? _totalFrames - 1 : 1,
-                  sliderLabel: 'F${start + 1}',
-                  valueText: 'F${start + 1}',
-                  onChanged: (v) => setS(() => start = v.round() - 1),
-                ),
-                LabeledSlider(
-                  label: l10n.timelineClipLengthLabel,
-                  value: length.toDouble(),
-                  min: 1,
-                  max: _totalFrames.toDouble(),
-                  divisions: _totalFrames,
-                  sliderLabel: '${length}F',
-                  valueText: '${length}F',
-                  onChanged: (v) => setS(() => length = v.round()),
-                ),
-              ],
+              ),
             ),
             actions: [
               TextButton(
@@ -8691,10 +8704,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               child: Text(l10n.commonCancel),
                             ),
                             FilledButton(
-                              style: FilledButton.styleFrom(
-                                backgroundColor:
-                                    ThemeService.activeColorScheme.error,
-                              ),
                               onPressed: () => Navigator.pop(dialogCtx, true),
                               child: Text(l10n.commonDelete),
                             ),
@@ -9212,155 +9221,159 @@ class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
         );
 
     return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       title: Text(l10n.timelineCanvasSizeChangeMenuItem),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n.timelineCanvasSizeDragHint,
-              style: const TextStyle(fontSize: 11),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            // The full handles must be inside the Stack's hit-test bounds,
-            // including when the crop touches the edge of the artwork.
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: SizedBox(
-                width: boxW + _handleSize,
-                height: boxH + _handleSize,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    // 回転前のキャンバスの外接矩形（回転時のみ薄く表示する参考枠）。
-                    if (angle != 0)
+      content: SizedBox(
+        width: 480,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.timelineCanvasSizeDragHint,
+                style: const TextStyle(fontSize: 11),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              // The full handles must be inside the Stack's hit-test bounds,
+              // including when the crop touches the edge of the artwork.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SizedBox(
+                  width: boxW + _handleSize,
+                  height: boxH + _handleSize,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // 回転前のキャンバスの外接矩形（回転時のみ薄く表示する参考枠）。
+                      if (angle != 0)
+                        Positioned(
+                          left: refLeft + handleRadius,
+                          top: refTop + handleRadius,
+                          width: refBoxW,
+                          height: refBoxH,
+                          child: IgnorePointer(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: scheme.outline.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       Positioned(
-                        left: refLeft + handleRadius,
-                        top: refTop + handleRadius,
-                        width: refBoxW,
-                        height: refBoxH,
+                        left: artworkLeft + handleRadius,
+                        top: artworkTop + handleRadius,
+                        width: artworkW,
+                        height: artworkH,
                         child: IgnorePointer(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: scheme.outline.withValues(alpha: 0.5),
+                          child: Transform.rotate(
+                            angle: angle * math.pi / 180,
+                            child: _TimelinePreview(
+                              backgroundColor: _projectBackgroundOf(
+                                ps,
+                                widget.projectId,
+                              ),
+                              tileManager: ps.tileManagerOf(widget.projectId),
+                              layers: ps
+                                  .stackedLayersOf(
+                                    widget.projectId,
+                                    widget.sceneId,
+                                    widget.frameIndex,
+                                  )
+                                  .layers,
+                              sceneId: widget.sceneId,
+                              frameIndex: widget.frameIndex,
+                              cameraKeyframes: ps.cameraKeyframesOf(
+                                widget.projectId,
+                                widget.sceneId,
+                              ),
+                              effectFilters: ps.effectFiltersOf(
+                                widget.projectId,
+                                widget.sceneId,
+                              ),
+                              layerHomes: ps.layerHomesOf(widget.projectId),
+                              groups: ps.layerGroupsOf(
+                                widget.projectId,
+                                widget.sceneId,
                               ),
                             ),
                           ),
                         ),
                       ),
-                    Positioned(
-                      left: artworkLeft + handleRadius,
-                      top: artworkTop + handleRadius,
-                      width: artworkW,
-                      height: artworkH,
-                      child: IgnorePointer(
-                        child: Transform.rotate(
-                          angle: angle * math.pi / 180,
-                          child: _TimelinePreview(
-                            backgroundColor: _projectBackgroundOf(
-                              ps,
-                              widget.projectId,
-                            ),
-                            tileManager: ps.tileManagerOf(widget.projectId),
-                            layers: ps
-                                .stackedLayersOf(
-                                  widget.projectId,
-                                  widget.sceneId,
-                                  widget.frameIndex,
-                                )
-                                .layers,
-                            sceneId: widget.sceneId,
-                            frameIndex: widget.frameIndex,
-                            cameraKeyframes: ps.cameraKeyframesOf(
-                              widget.projectId,
-                              widget.sceneId,
-                            ),
-                            effectFilters: ps.effectFiltersOf(
-                              widget.projectId,
-                              widget.sceneId,
-                            ),
-                            layerHomes: ps.layerHomesOf(widget.projectId),
-                            groups: ps.layerGroupsOf(
-                              widget.projectId,
-                              widget.sceneId,
+                      // 新キャンバスサイズの範囲を示す枠。枠内をドラッグすると位置
+                      // （cropX/cropY）を、四隅のハンドルをドラッグするとサイズ
+                      // （newW/newH）を変更できる。
+                      Positioned(
+                        left: cropLeft + handleRadius,
+                        top: cropTop + handleRadius,
+                        width: cropW,
+                        height: cropH,
+                        child: GestureDetector(
+                          onPanUpdate: (d) => _dragMove(d.delta / scale),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: markColor, width: 2),
+                              color: markColor.withValues(alpha: 0.15),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    // 新キャンバスサイズの範囲を示す枠。枠内をドラッグすると位置
-                    // （cropX/cropY）を、四隅のハンドルをドラッグするとサイズ
-                    // （newW/newH）を変更できる。
-                    Positioned(
-                      left: cropLeft + handleRadius,
-                      top: cropTop + handleRadius,
-                      width: cropW,
-                      height: cropH,
-                      child: GestureDetector(
-                        onPanUpdate: (d) => _dragMove(d.delta / scale),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: markColor, width: 2),
-                            color: markColor.withValues(alpha: 0.15),
-                          ),
-                        ),
+                      cornerHandle(_CropCorner.topLeft, cropLeft, cropTop),
+                      cornerHandle(
+                        _CropCorner.topRight,
+                        cropLeft + cropW,
+                        cropTop,
                       ),
-                    ),
-                    cornerHandle(_CropCorner.topLeft, cropLeft, cropTop),
-                    cornerHandle(
-                      _CropCorner.topRight,
-                      cropLeft + cropW,
-                      cropTop,
-                    ),
-                    cornerHandle(
-                      _CropCorner.bottomLeft,
-                      cropLeft,
-                      cropTop + cropH,
-                    ),
-                    cornerHandle(
-                      _CropCorner.bottomRight,
-                      cropLeft + cropW,
-                      cropTop + cropH,
-                    ),
-                  ],
+                      cornerHandle(
+                        _CropCorner.bottomLeft,
+                        cropLeft,
+                        cropTop + cropH,
+                      ),
+                      cornerHandle(
+                        _CropCorner.bottomRight,
+                        cropLeft + cropW,
+                        cropTop + cropH,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            LabeledSlider(
-              label: l10n.newProjectWidthShort,
-              min: _minEdge.toDouble(),
-              max: _maxEdge.toDouble(),
-              value: newW.clamp(_minEdge, _maxEdge).toDouble(),
-              sliderLabel: '${newW}px',
-              onChanged: (v) => setState(() => newW = v.round()),
-            ),
-            LabeledSlider(
-              label: l10n.newProjectHeightShort,
-              min: _minEdge.toDouble(),
-              max: _maxEdge.toDouble(),
-              value: newH.clamp(_minEdge, _maxEdge).toDouble(),
-              sliderLabel: '${newH}px',
-              onChanged: (v) => setState(() => newH = v.round()),
-            ),
-            LabeledSlider(
-              label: l10n.timelineCanvasSizeAngleLabel,
-              min: -180,
-              max: 180,
-              value: angle,
-              sliderLabel: '${angle.round()}°',
-              onChanged: (v) => setState(() => angle = v.abs() <= 2 ? 0 : v),
-            ),
-            Text(
-              '$newW × $newH px',
-              // 自律テスト（Task#128）がドラッグ後のサイズ変化を読み取れる
-              // ようキーを付与。
-              key: const ValueKey('canvasSizeDimensionsText'),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
+              const SizedBox(height: 12),
+              LabeledSlider(
+                label: l10n.newProjectWidthShort,
+                min: _minEdge.toDouble(),
+                max: _maxEdge.toDouble(),
+                value: newW.clamp(_minEdge, _maxEdge).toDouble(),
+                sliderLabel: '${newW}px',
+                onChanged: (v) => setState(() => newW = v.round()),
+              ),
+              LabeledSlider(
+                label: l10n.newProjectHeightShort,
+                min: _minEdge.toDouble(),
+                max: _maxEdge.toDouble(),
+                value: newH.clamp(_minEdge, _maxEdge).toDouble(),
+                sliderLabel: '${newH}px',
+                onChanged: (v) => setState(() => newH = v.round()),
+              ),
+              LabeledSlider(
+                label: l10n.timelineCanvasSizeAngleLabel,
+                min: -180,
+                max: 180,
+                value: angle,
+                sliderLabel: '${angle.round()}°',
+                onChanged: (v) => setState(() => angle = v.abs() <= 2 ? 0 : v),
+              ),
+              Text(
+                '$newW × $newH px',
+                // 自律テスト（Task#128）がドラッグ後のサイズ変化を読み取れる
+                // ようキーを付与。
+                key: const ValueKey('canvasSizeDimensionsText'),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -11234,10 +11247,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                 ),
                 if (widget.onDelete != null)
                   IconButton(
-                    icon: Icon(
-                      Icons.delete,
-                      color: ThemeService.activeColorScheme.error,
-                    ),
+                    icon: const Icon(Icons.delete),
                     tooltip: l10n.commonDelete,
                     onPressed: () async {
                       if (!await confirmDelete(
@@ -11336,11 +11346,9 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                       _update(_kf.copyWith(frameIndex: v.round() - 1)),
                 ),
                 if (occupied)
-                  Text(
+                  IconNotice(
                     l10n.timelineCameraFrameAlreadyHasKeyframe,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                    liveRegion: true,
                   ),
               ],
             ),

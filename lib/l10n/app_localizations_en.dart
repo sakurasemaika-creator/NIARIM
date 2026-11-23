@@ -1543,6 +1543,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'The project file could not be opened, so NIARIM recovered it from an autosave.';
 
   @override
+  String get canvasAutosaveRecoveryTitle => 'Restore autosave';
+
+  @override
+  String get canvasAutosaveRecoveryBody =>
+      'An autosave contains different changes from this project. Open the autosaved version?';
+
+  @override
   String get helpSaveSlotTitle => 'Save Slot';
 
   @override

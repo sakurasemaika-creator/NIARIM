@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../widgets/project_autosave_notice.dart';
+import '../../services/autosave_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/project_service.dart';
 import '../../services/layer_clipboard_service.dart';
@@ -208,6 +209,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // 反転自体はinvertSelectionTokenを増やすことでCanvasArea側へ指示する
   // （meshCommitToken等と同じトークン方式）。
   bool _hasActiveSelection = false;
+
+  /// The selection's move / scale / rotate sliders can be folded so the
+  /// window does not hide the corner of the paper under it (it sits on the
+  /// paper's bottom-left and cannot be moved). Kept for this screen.
+  bool _selectionSlidersFolded = false;
   // 画面下部のスライダーで指定する変形量。いずれも「いまの状態が0」で、
   // 右へ動かすとプラス・左へ動かすとマイナス。指を離した時点で実画素へ
   // 確定し、ここを0（拡大縮小だけは1.0＝等倍）へ戻す。
@@ -1439,7 +1445,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
         widget.projectId,
       );
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) showProjectAutosaveNotice(context, widget.projectId);
+        if (!mounted) return;
+        showProjectAutosaveNotice(context, widget.projectId);
+        _offerNewerAutosave();
       });
     }
     // 不足素材の検出（プロジェクトを開いた際に参照先の素材が
@@ -1485,6 +1493,42 @@ class _CanvasScreenState extends State<CanvasScreen> {
       );
     }
     super.dispose();
+  }
+
+  /// 作品ファイルより新しく、内容の違う自動保存が残っていれば（強制終了など
+  /// で作品ファイルへ書く前に閉じた）、その内容で開くかを確かめる。以前は
+  /// 作品ファイルの古い内容で黙って開き、自動保存にだけある描いた分は、開閉の
+  /// たびにできる新しい自動保存で3つの枠が回って消えた。
+  Future<void> _offerNewerAutosave() async {
+    final projects = context.read<ProjectService>();
+    // Screens built without the app's providers (some tests) have none.
+    final autosaves = context.read<AutosaveService?>();
+    if (autosaves == null) return;
+    final data = await autosaves.newerThanWorkFile(projects, widget.projectId);
+    if (data == null || !mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    final restore = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.canvasAutosaveRecoveryTitle),
+        content: messageText(l10n.canvasAutosaveRecoveryBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            key: const ValueKey('canvasAutosaveRecoveryRestore'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.commonRestore),
+          ),
+        ],
+      ),
+    );
+    if (mounted && restore == true) {
+      projects.useSavedVersion(widget.projectId, data);
+      setState(() => _canvasContentRevision++);
+    }
   }
 
   /// 不足素材の検出。プロジェクトを開いた際に参照先の素材ファイルが
@@ -3561,7 +3605,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_hasActiveSelection)
+        if (_hasActiveSelection && _selectionSlidersFolded)
+          Material(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(8),
+            child: IconButton(
+              key: const ValueKey('selectionSlidersExpand'),
+              icon: const Icon(Icons.expand_less),
+              tooltip: AppLocalizations.of(context)!.filterPanelExpand,
+              onPressed: () => setState(() => _selectionSlidersFolded = false),
+            ),
+          ),
+        if (_hasActiveSelection && !_selectionSlidersFolded)
           Material(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(8),
@@ -3570,28 +3625,46 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 maxWidth: 320,
                 maxHeight: canvasHeight / 3,
               ),
-              child: SelectionTransformSliders(
-                moveX: _selectionMoveX,
-                moveY: _selectionMoveY,
-                scale: _selectionScale,
-                rotateDeg: _selectionRotateDeg,
-                maxMove: _selectionSliderMaxMove(context),
-                onChanged: ({moveX, moveY, scale, rotateDeg}) => setState(() {
-                  _selectionMoveX = moveX ?? _selectionMoveX;
-                  _selectionMoveY = moveY ?? _selectionMoveY;
-                  _selectionScale = scale ?? _selectionScale;
-                  _selectionRotateDeg = rotateDeg ?? _selectionRotateDeg;
-                }),
-                onCommit: () => setState(() {
-                  _selectionTransformCommitValues = (
-                    moveX: _selectionMoveX,
-                    moveY: _selectionMoveY,
-                    scale: _selectionScale,
-                    rotateDeg: _selectionRotateDeg,
-                  );
-                  _selectionTransformCommitToken++;
-                  _resetSelectionSliders();
-                }),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  IconButton(
+                    key: const ValueKey('selectionSlidersFold'),
+                    icon: const Icon(Icons.expand_more),
+                    tooltip: AppLocalizations.of(context)!.filterPanelCollapse,
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () =>
+                        setState(() => _selectionSlidersFolded = true),
+                  ),
+                  Flexible(
+                    child: SelectionTransformSliders(
+                      moveX: _selectionMoveX,
+                      moveY: _selectionMoveY,
+                      scale: _selectionScale,
+                      rotateDeg: _selectionRotateDeg,
+                      maxMove: _selectionSliderMaxMove(context),
+                      onChanged: ({moveX, moveY, scale, rotateDeg}) =>
+                          setState(() {
+                            _selectionMoveX = moveX ?? _selectionMoveX;
+                            _selectionMoveY = moveY ?? _selectionMoveY;
+                            _selectionScale = scale ?? _selectionScale;
+                            _selectionRotateDeg =
+                                rotateDeg ?? _selectionRotateDeg;
+                          }),
+                      onCommit: () => setState(() {
+                        _selectionTransformCommitValues = (
+                          moveX: _selectionMoveX,
+                          moveY: _selectionMoveY,
+                          scale: _selectionScale,
+                          rotateDeg: _selectionRotateDeg,
+                        );
+                        _selectionTransformCommitToken++;
+                        _resetSelectionSliders();
+                      }),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

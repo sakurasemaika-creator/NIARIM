@@ -241,6 +241,27 @@ void main() {
       () => _capture(rootKey, '${out.path}/20_selection_tool_bar.png'),
     );
 
+    // The slider window sits on the paper's corner and cannot move, so it
+    // folds away (the select-all row and the paper stay where they are).
+    final sliderTop = tester.getRect(find.byType(SelectionTransformSliders));
+    await tester.tap(find.byKey(const ValueKey('selectionSlidersFold')));
+    await tester.pump();
+    expect(find.byType(SelectionTransformSliders), findsNothing);
+    expect(
+      find.byKey(const ValueKey('selectionSlidersExpand')),
+      findsOneWidget,
+    );
+    expect(
+      tester.getRect(find.byKey(const ValueKey('selectionSlidersExpand'))).top,
+      greaterThan(sliderTop.top),
+      reason: 'the folded window uncovers the paper above it',
+    );
+    expect(tester.getRect(canvas), canvasBounds);
+    expect(tester.getRect(selectAll), selectAllBounds);
+    await tester.tap(find.byKey(const ValueKey('selectionSlidersExpand')));
+    await tester.pump();
+    expect(find.byType(SelectionTransformSliders), findsOneWidget);
+
     // 全解除でスライダーが引っ込む。
     await tester.tap(find.text(l10n.canvasDeselectAllButton));
     // 選択有無の通知はビルド中を避けてポストフレームへ回るので、

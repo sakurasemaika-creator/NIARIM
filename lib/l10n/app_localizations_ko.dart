@@ -1507,6 +1507,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectAutosaveRecovered => '작품 파일을 열 수 없어 자동 저장본에서 복구했습니다.';
 
   @override
+  String get canvasAutosaveRecoveryTitle => '자동 저장 복원';
+
+  @override
+  String get canvasAutosaveRecoveryBody =>
+      '이 작품과 내용이 다른 자동 저장본이 있습니다. 자동 저장본을 여시겠습니까?';
+
+  @override
   String get helpSaveSlotTitle => '세이브 슬롯';
 
   @override

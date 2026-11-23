@@ -33,6 +33,7 @@ import 'widgets/save_slot_title.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/file_failure_reason.dart';
+import '../../widgets/icon_notice.dart';
 
 export 'save_tree_screen.dart' show SaveTreeEntryMode, parseSaveTreeEntryMode;
 
@@ -303,13 +304,11 @@ class _GameStyleSlotScreenState extends State<_GameStyleSlotScreen> {
                 if (failure != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
-                    child: Text(
+                    child: IconNotice(
                       failure!,
                       key: const Key('saveSlotDialogFailure'),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(ctx).colorScheme.error,
-                      ),
+                      fontSize: 12,
+                      liveRegion: true,
                     ),
                   ),
               ],

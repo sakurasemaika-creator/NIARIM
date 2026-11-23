@@ -9,6 +9,7 @@ import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/menu_card.dart';
+import '../../widgets/icon_notice.dart';
 
 /// プレミアム画面。ユーザー作品そのものを除くUI色はColorSchemeへ集約する。
 class PremiumScreen extends StatefulWidget {
@@ -214,9 +215,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 if (premium.purchaseError != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
+                    child: IconNotice(
                       _purchaseErrorText(l10n, premium.purchaseError!),
-                      style: TextStyle(fontSize: 12, color: scheme.error),
+                      fontSize: 12,
+                      liveRegion: true,
                     ),
                   ),
                 _planCard(

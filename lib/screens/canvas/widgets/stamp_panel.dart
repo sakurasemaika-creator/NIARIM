@@ -27,6 +27,7 @@ import '../../../widgets/asset_tag_label.dart';
 import '../../../widgets/preset_stroke_row.dart';
 import '../../../widgets/list_ink_clip.dart';
 import '../../../utils/file_failure_reason.dart';
+import '../../../widgets/menu_action_label.dart';
 
 /// スタンプの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作スタンプ・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -331,13 +332,9 @@ class _StampPanelState extends State<StampPanel> {
                                   if (!builtIn)
                                     PopupMenuItem(
                                       value: 'delete',
-                                      child: Text(
-                                        l10n.commonDelete,
-                                        style: TextStyle(
-                                          color: ThemeService
-                                              .activeColorScheme
-                                              .error,
-                                        ),
+                                      child: MenuActionLabel(
+                                        icon: Icons.delete_outline,
+                                        label: l10n.commonDelete,
                                       ),
                                     ),
                                 ],

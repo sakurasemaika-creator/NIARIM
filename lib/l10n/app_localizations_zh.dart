@@ -1486,6 +1486,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectAutosaveRecovered => '无法打开作品文件，已从自动保存恢复。';
 
   @override
+  String get canvasAutosaveRecoveryTitle => '恢复自动保存';
+
+  @override
+  String get canvasAutosaveRecoveryBody => '此作品有内容不同的自动保存版本。要打开该版本吗？';
+
+  @override
   String get helpSaveSlotTitle => '存档槽';
 
   @override
@@ -11934,6 +11940,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get projectAutosaveRecovered => '無法開啟作品檔案，已從自動儲存復原。';
+
+  @override
+  String get canvasAutosaveRecoveryTitle => '還原自動儲存';
+
+  @override
+  String get canvasAutosaveRecoveryBody => '此作品有內容不同的自動儲存版本。要開啟該版本嗎？';
 
   @override
   String get helpSaveSlotTitle => '存檔槽';

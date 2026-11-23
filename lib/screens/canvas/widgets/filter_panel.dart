@@ -56,6 +56,7 @@ import '../../../widgets/list_ink_clip.dart';
 import '../../../widgets/typing_dialog_inset.dart';
 import '../../../widgets/menu_card.dart';
 import '../../../utils/file_failure_reason.dart';
+import '../../../widgets/icon_notice.dart';
 
 enum FilterColorEyedropperTarget { inkPool, outline }
 
@@ -2690,12 +2691,10 @@ class _FilterPanelState extends State<FilterPanel> {
           children: [
             _lensMaskControls(l10n),
             if (widget.lensMask?.isEmpty ?? _previewMask == null)
-              Text(
+              IconNotice(
                 l10n.filterLensDistortionNoMaskHint,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Theme.of(context).colorScheme.error,
-                ),
+                icon: Icons.info_outline,
+                fontSize: 10,
               ),
             _paramSlider(
               l10n.filterLensDistortionStrength,

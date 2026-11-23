@@ -421,14 +421,8 @@ class CustomAutomationManagerSheet extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(
-                Icons.delete_outline,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              title: Text(
-                l10n.commonDelete,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
+              leading: const Icon(Icons.delete_outline),
+              title: Text(l10n.commonDelete),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _delete(context, item);

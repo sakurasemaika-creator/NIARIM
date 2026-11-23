@@ -1,5 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
-
 import 'dart:io';
 
 import 'package:flutter/material.dart' hide MaterialType;
@@ -120,7 +118,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                             Icon(
                               Icons.warning_amber_rounded,
                               size: 13,
-                              color: ThemeService.activeColorScheme.error,
+                              color: scheme.onSurface,
                             ),
                             const SizedBox(width: 3),
                           ],
@@ -142,7 +140,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                               style: TextStyle(
                                 fontSize: 11,
                                 color: isMissing
-                                    ? ThemeService.activeColorScheme.error
+                                    ? scheme.onSurface
                                     : scheme.onSurfaceVariant,
                               ),
                             ),
@@ -279,9 +277,6 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
             onPressed: () async {
               await context.read<MaterialService>().removeMaterial(
                 projectId: widget.projectId,
@@ -312,9 +307,6 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
             onPressed: () async {
               final removed = await context
                   .read<MaterialService>()

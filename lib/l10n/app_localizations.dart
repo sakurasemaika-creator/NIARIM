@@ -2823,6 +2823,18 @@ abstract class AppLocalizations {
   /// **'作品ファイルを読み込めなかったため、自動保存から復旧しました。'**
   String get projectAutosaveRecovered;
 
+  /// No description provided for @canvasAutosaveRecoveryTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動保存から復元'**
+  String get canvasAutosaveRecoveryTitle;
+
+  /// No description provided for @canvasAutosaveRecoveryBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品と内容が異なる自動保存があります。その内容で作品を開きますか？'**
+  String get canvasAutosaveRecoveryBody;
+
   /// No description provided for @helpSaveSlotTitle.
   ///
   /// In ja, this message translates to:

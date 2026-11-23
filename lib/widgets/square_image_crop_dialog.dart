@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/theme_service.dart';
+import 'icon_notice.dart';
 
 /// クロップ枠（プレビュー領域）の一辺の論理ピクセルサイズ。
 const double _kCropViewSize = 260;
@@ -162,13 +163,10 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
                     width: _kCropViewSize,
                     height: _kCropViewSize,
                     child: Center(
-                      child: Text(
+                      child: IconNotice(
                         l10n.autofillThumbnailCropLoadFailed,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                          fontSize: 12,
-                        ),
+                        fontSize: 12,
+                        liveRegion: true,
                       ),
                     ),
                   )

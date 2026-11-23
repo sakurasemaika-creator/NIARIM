@@ -689,6 +689,8 @@
   "saveDataManualTab": "手動保存",
   "saveDataAutosavesEmpty": "この作品の自動保存はまだありません。",
   "projectAutosaveRecovered": "作品ファイルを読み込めなかったため、自動保存から復旧しました。",
+  "canvasAutosaveRecoveryTitle": "自動保存から復元",
+  "canvasAutosaveRecoveryBody": "この作品と内容が異なる自動保存があります。その内容で作品を開きますか？",
   "helpSaveSlotTitle": "セーブスロット",
   "helpSaveSlotDesc": "決まった数の保存枠（スロット）に、自分で保存先を選びながら保存する方式です。スロット数は設定（低品質5件・中品質10件）で決まります。上書きしたい枠を毎回自分で選ぶため、「このタイミングの状態は残しておきたい」という管理がしやすい方式です。",
   "helpSaveTreeTitle": "セーブツリー",

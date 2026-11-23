@@ -24,6 +24,7 @@ import 'community_error_text.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/tolerant_preferences.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/icon_notice.dart';
 
 /// Where posting stands, shown under the form.
 enum _PostStatus {
@@ -501,24 +502,31 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         context: context,
         builder: (dialogContext) => StatefulBuilder(
           builder: (dialogContext, update) => AlertDialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
             title: Text(l10n.communityPostFramePickerTitle),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.communityPostFramePickerPosition(
-                    selectedSeconds.toStringAsFixed(1),
-                    duration.toStringAsFixed(1),
+            content: SizedBox(
+              width: 480,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.communityPostFramePickerPosition(
+                      selectedSeconds.toStringAsFixed(1),
+                      duration.toStringAsFixed(1),
+                    ),
                   ),
-                ),
-                Slider(
-                  key: const Key('communityPostFrameSlider'),
-                  min: 0,
-                  max: duration,
-                  value: selectedSeconds.clamp(0.0, duration),
-                  onChanged: (v) => update(() => selectedSeconds = v),
-                ),
-              ],
+                  Slider(
+                    key: const Key('communityPostFrameSlider'),
+                    min: 0,
+                    max: duration,
+                    value: selectedSeconds.clamp(0.0, duration),
+                    onChanged: (v) => update(() => selectedSeconds = v),
+                  ),
+                ],
+              ),
             ),
             actions: [
               TextButton(
@@ -1598,9 +1606,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                 ],
                 if (_error != null) ...[
                   const SizedBox(height: 8),
-                  Text(
+                  IconNotice(
                     l10n.communityPostErrorLabel(_errorText(l10n, _error!)),
-                    style: TextStyle(color: scheme.error),
+                    liveRegion: true,
                   ),
                 ],
                 const SizedBox(height: 20),

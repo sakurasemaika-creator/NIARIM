@@ -497,6 +497,8 @@
   "saveDataManualTab": "手動儲存",
   "saveDataAutosavesEmpty": "此作品還沒有自動儲存版本。",
   "projectAutosaveRecovered": "無法開啟作品檔案，已從自動儲存復原。",
+  "canvasAutosaveRecoveryTitle": "還原自動儲存",
+  "canvasAutosaveRecoveryBody": "此作品有內容不同的自動儲存版本。要開啟該版本嗎？",
   "helpSaveSlotTitle": "存檔槽",
   "helpSaveSlotDesc": "在固定數量的存檔槽中，由自己選擇儲存位置進行儲存的方式。存檔槽的數量由設定決定（低畫質5個、中畫質10個）。由於每次都需要自己選擇要覆寫的存檔槽，適合「想保留這個時間點的狀態」這類管理方式。",
   "helpSaveTreeTitle": "儲存樹",

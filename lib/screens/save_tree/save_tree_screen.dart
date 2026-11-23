@@ -36,6 +36,8 @@ import 'widgets/save_slot_title.dart';
 import 'widgets/save_restore_dialog.dart';
 import 'widgets/save_thumbnail_capture.dart';
 import '../../utils/file_failure_reason.dart';
+import '../../widgets/icon_notice.dart';
+import '../../widgets/menu_action_label.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
 /// 閾値。「容量が大きくなる場合はユーザーへ通知」するために使う。ツリー方式は
@@ -279,13 +281,11 @@ void _showTreeSaveDialog(
               if (failure != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
-                  child: Text(
+                  child: IconNotice(
                     failure!,
                     key: const Key('saveTreeDialogFailure'),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(ctx).colorScheme.error,
-                    ),
+                    fontSize: 12,
+                    liveRegion: true,
                   ),
                 ),
             ],
@@ -827,13 +827,11 @@ class _SlotSaveFailureTextState extends State<_SlotSaveFailureText> {
     if (message == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: Text(
+      child: IconNotice(
         message,
         key: const Key('saveSlotDialogFailure'),
-        style: TextStyle(
-          fontSize: 12,
-          color: Theme.of(context).colorScheme.error,
-        ),
+        fontSize: 12,
+        liveRegion: true,
       ),
     );
   }
@@ -1004,7 +1002,7 @@ class _SlotTile extends StatelessWidget {
                     _SaveTreeSlotActionButton(
                       icon: Icons.delete_outline,
                       tooltip: l10n.saveTreeSlotDeleteTooltip,
-                      color: scheme.error,
+                      color: scheme.onSurfaceVariant,
                       onPressed: onDelete,
                     ),
                   ],
@@ -1318,11 +1316,9 @@ class _TreeView extends StatelessWidget {
                 ),
                 PopupMenuItem(
                   value: 'delete',
-                  child: Text(
-                    l10n.commonDelete,
-                    style: TextStyle(
-                      color: ThemeService.activeColorScheme.error,
-                    ),
+                  child: MenuActionLabel(
+                    icon: Icons.delete_outline,
+                    label: l10n.commonDelete,
                   ),
                 ),
               ],

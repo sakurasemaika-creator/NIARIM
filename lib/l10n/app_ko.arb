@@ -497,6 +497,8 @@
   "saveDataManualTab": "수동 저장",
   "saveDataAutosavesEmpty": "이 작품에는 아직 자동 저장본이 없습니다.",
   "projectAutosaveRecovered": "작품 파일을 열 수 없어 자동 저장본에서 복구했습니다.",
+  "canvasAutosaveRecoveryTitle": "자동 저장 복원",
+  "canvasAutosaveRecoveryBody": "이 작품과 내용이 다른 자동 저장본이 있습니다. 자동 저장본을 여시겠습니까?",
   "helpSaveSlotTitle": "세이브 슬롯",
   "helpSaveSlotDesc": "정해진 수의 저장 칸（슬롯）에, 직접 저장 위치를 선택하며 저장하는 방식입니다. 슬롯 수는 설정（저품질 5개·중품질 10개）으로 정해집니다. 덮어쓸 칸을 매번 직접 선택하므로, 「이 시점의 상태는 남겨두고 싶다」는 관리가 쉬운 방식입니다.",
   "helpSaveTreeTitle": "세이브 트리",

@@ -6,6 +6,7 @@ import '../models/scene.dart';
 import 'list_ink_clip.dart';
 import 'typing_dialog_inset.dart';
 import 'menu_surface.dart';
+import 'icon_notice.dart';
 
 class LayerRangeDialog extends StatefulWidget {
   const LayerRangeDialog({
@@ -119,15 +120,7 @@ class _LayerRangeDialogState extends State<LayerRangeDialog> {
               if (error != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Semantics(
-                    liveRegion: true,
-                    child: Text(
-                      error,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ),
+                  child: IconNotice(error, liveRegion: true),
                 ),
               TextButton(
                 onPressed: () => setState(() {

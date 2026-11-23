@@ -495,7 +495,6 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
     int? picked,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
     final rows = _rowsOf(scene);
     final lastFrame = math.max(
       0,
@@ -611,11 +610,8 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
         Align(
           alignment: Alignment.centerRight,
           child: TextButton.icon(
-            icon: Icon(Icons.delete_outline, size: 18, color: scheme.error),
-            label: Text(
-              l10n.timelineStackRangeDelete,
-              style: TextStyle(color: scheme.error),
-            ),
+            icon: const Icon(Icons.delete_outline, size: 18),
+            label: Text(l10n.timelineStackRangeDelete),
             onPressed: () => _removeRange(ps, scene, selected!),
           ),
         ),

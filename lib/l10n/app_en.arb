@@ -498,6 +498,8 @@
   "saveDataManualTab": "Manual saves",
   "saveDataAutosavesEmpty": "There are no autosaves for this project yet.",
   "projectAutosaveRecovered": "The project file could not be opened, so NIARIM recovered it from an autosave.",
+  "canvasAutosaveRecoveryTitle": "Restore autosave",
+  "canvasAutosaveRecoveryBody": "An autosave contains different changes from this project. Open the autosaved version?",
   "helpSaveSlotTitle": "Save Slot",
   "helpSaveSlotDesc": "A method of saving into a fixed number of save slots, where you choose which slot to save to each time. The number of slots is determined by the settings (5 for low quality, 10 for medium quality). Since you choose which slot to overwrite every time, it's an easy way to manage keeping a particular moment's state.",
   "helpSaveTreeTitle": "Save Tree",

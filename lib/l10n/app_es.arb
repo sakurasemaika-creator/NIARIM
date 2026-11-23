@@ -497,6 +497,8 @@
   "saveDataManualTab": "Guardados manuales",
   "saveDataAutosavesEmpty": "Este proyecto aún no tiene guardados automáticos.",
   "projectAutosaveRecovered": "No se pudo abrir el archivo del proyecto. Se ha recuperado a partir de un guardado automático.",
+  "canvasAutosaveRecoveryTitle": "Restaurar guardado automático",
+  "canvasAutosaveRecoveryBody": "Hay una versión guardada automáticamente con contenido distinto. ¿Quieres abrirla?",
   "helpSaveSlotTitle": "Ranura de guardado",
   "helpSaveSlotDesc": "Un método de guardado en un número fijo de ranuras, donde eliges qué ranura usar cada vez. El número de ranuras lo determinan los ajustes (5 para calidad baja, 10 para calidad media). Como eliges qué ranura sobrescribir cada vez, es una forma sencilla de gestionar la conservación del estado de un momento concreto.",
   "helpSaveTreeTitle": "Árbol de guardado",

@@ -23,6 +23,7 @@ import '../../models/export_preset.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/menu_card.dart';
 import '../../utils/file_failure_reason.dart';
+import '../../widgets/icon_notice.dart';
 export '../../models/export_preset.dart';
 
 class ExportScreen extends StatefulWidget {
@@ -343,7 +344,7 @@ class _ExportScreenState extends State<ExportScreen> {
           liveRegion: true,
           child: Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Text(_error!, style: TextStyle(color: colors.error)),
+            child: IconNotice(_error!),
           ),
         ),
     ];

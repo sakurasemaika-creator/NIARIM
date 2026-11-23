@@ -30,6 +30,7 @@ import '../../config/font_fallback.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/menu_card.dart';
+import '../../widgets/icon_notice.dart';
 
 class NewProjectScreen extends StatefulWidget {
   const NewProjectScreen({super.key});
@@ -768,13 +769,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       if (durationError != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            durationError,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
+                          child: IconNotice(durationError, fontSize: 12),
                         ),
                       const SizedBox(height: 4),
                       SteppedSlider(
@@ -943,14 +938,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               if (_creationFailed)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: Semantics(
+                  child: IconNotice(
+                    l10n.newProjectCreateFailed,
                     liveRegion: true,
-                    child: Text(
-                      l10n.newProjectCreateFailed,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
                   ),
                 ),
               FilledButton.icon(

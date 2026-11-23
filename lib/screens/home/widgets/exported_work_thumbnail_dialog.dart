@@ -17,6 +17,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/tolerant_preferences.dart';
+import '../../../widgets/icon_notice.dart';
 
 /// Non-destructive display-only thumbnail metadata for exported media.
 /// Never rewrites the actual exported .mp4/.webm/.gif/.png file.
@@ -740,11 +741,7 @@ class _ExportedWorkThumbnailDialogState
                 : const SizedBox.shrink(),
           ),
           if (!ready) const LinearProgressIndicator(),
-          if (failure != null)
-            Text(
-              failure!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+          if (failure != null) IconNotice(failure!, liveRegion: true),
         ],
       ),
     ),

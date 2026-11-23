@@ -11,6 +11,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../services/theme_service.dart';
 import '../../../utils/app_error_reporter.dart';
 import '../../../widgets/docked_panel_scope.dart';
+import '../../../widgets/icon_notice.dart';
 
 /// Owns the image for the canvas session. Dock moves and folds may rebuild the
 /// view while the picker is still open.
@@ -97,14 +98,12 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
       builder: (context, _) {
         final bytes = controller._bytes;
         Widget? errorNotice() => controller._loadFailed
-            ? Semantics(
-                liveRegion: true,
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Text(
-                    l10n.thumbnailImageLoadFailed,
-                    style: TextStyle(fontSize: 12, color: scheme.error),
-                  ),
+            ? Padding(
+                padding: const EdgeInsets.all(6),
+                child: IconNotice(
+                  l10n.thumbnailImageLoadFailed,
+                  fontSize: 12,
+                  liveRegion: true,
                 ),
               )
             : null;

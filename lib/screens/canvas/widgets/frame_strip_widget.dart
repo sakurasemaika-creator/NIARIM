@@ -55,6 +55,13 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   bool _dragScrolled = false;
   int? _scrollSelectedFrame;
   Timer? _wheelSnap;
+
+  /// Bumped when the strip's scroll metrics change. When frames are removed
+  /// (undo of an add) the list shrinks and the scroll position is corrected
+  /// during layout without notifying the controller, so the "+" cell, which
+  /// is placed from the offset, would stay where it was and cover the current
+  /// frame (the current-frame outline then looked as if it were on "+").
+  final ValueNotifier<int> _metricsChanged = ValueNotifier<int>(0);
   static const double _itemExtent = 50;
   @override
   void initState() {
@@ -143,6 +150,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   void dispose() {
     _wheelSnap?.cancel();
     _scrollController.dispose();
+    _metricsChanged.dispose();
     super.dispose();
   }
 
@@ -374,129 +382,142 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
             onNotification: _handleScroll,
             child: Stack(
               children: [
-                ListView.builder(
-                  controller: _scrollController,
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: sidePadding),
-                  itemExtent: _itemExtent,
-                  itemCount: total,
-                  itemBuilder: (context, index) {
-                    final isChecked = widget.selectedFrames.contains(index);
-                    final isSelected = widget.multiSelectMode && isChecked;
-                    final hold = service.frameHold(
-                      widget.projectId,
-                      widget.sceneId,
-                      index,
-                    );
-                    return GestureDetector(
-                      key: ValueKey('frameStripCell$index'),
-                      onTap: widget.multiSelectMode
-                          ? () => widget.onFrameToggle?.call(index)
-                          : () => widget.onFrameSelected(index),
-                      onLongPress: widget.multiSelectMode
-                          ? null
-                          : () =>
-                                _showHoldDialog(context, service, index, hold),
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        margin: const EdgeInsets.symmetric(vertical: 7),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? scheme.surfaceContainerHighest
-                              : scheme.surfaceContainerHigh,
-                          border: Border.all(
-                            color: isSelected
-                                ? scheme.primary
-                                : scheme.outlineVariant,
-                            width: isSelected ? 2 : 1,
-                          ),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              // The background behind the picture's
-                              // own rectangle, as on the canvas.
-                              FramePreviewBackground(
-                                backgroundColor:
-                                    project?.backgroundColor ?? 0xFFFFFFFF,
-                                showTransparency: widget.showTransparency,
-                                aspectRatio: project == null
-                                    ? null
-                                    : project.exportWidth /
-                                          project.exportHeight,
-                                child: _FrameThumbnail(
-                                  key: ValueKey(
-                                    '$index-${_refreshTick[index] ?? 0}',
-                                  ),
-                                  projectId: widget.projectId,
-                                  sceneId: widget.sceneId,
-                                  frameIndex: index,
-                                  tileManager: tiles,
-                                  layers: service.layersOf(
-                                    widget.projectId,
-                                    widget.sceneId,
-                                    index,
-                                  ),
-                                  backgroundColor: widget.showTransparency
-                                      ? null
-                                      : project?.backgroundColor,
-                                ),
+                NotificationListener<ScrollMetricsNotification>(
+                  onNotification: (notification) {
+                    if (notification.depth == 0) _metricsChanged.value++;
+                    return false;
+                  },
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: sidePadding),
+                    itemExtent: _itemExtent,
+                    itemCount: total,
+                    itemBuilder: (context, index) {
+                      final isChecked = widget.selectedFrames.contains(index);
+                      final isSelected = widget.multiSelectMode && isChecked;
+                      final hold = service.frameHold(
+                        widget.projectId,
+                        widget.sceneId,
+                        index,
+                      );
+                      return GestureDetector(
+                        key: ValueKey('frameStripCell$index'),
+                        onTap: widget.multiSelectMode
+                            ? () => widget.onFrameToggle?.call(index)
+                            : () => widget.onFrameSelected(index),
+                        onLongPress: widget.multiSelectMode
+                            ? null
+                            : () => _showHoldDialog(
+                                context,
+                                service,
+                                index,
+                                hold,
                               ),
-                              if (hold > 1)
-                                Center(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 3,
-                                      vertical: 1,
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          margin: const EdgeInsets.symmetric(vertical: 7),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? scheme.surfaceContainerHighest
+                                : scheme.surfaceContainerHigh,
+                            border: Border.all(
+                              color: isSelected
+                                  ? scheme.primary
+                                  : scheme.outlineVariant,
+                              width: isSelected ? 2 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(3),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                // The background behind the picture's
+                                // own rectangle, as on the canvas.
+                                FramePreviewBackground(
+                                  backgroundColor:
+                                      project?.backgroundColor ?? 0xFFFFFFFF,
+                                  showTransparency: widget.showTransparency,
+                                  aspectRatio: project == null
+                                      ? null
+                                      : project.exportWidth /
+                                            project.exportHeight,
+                                  child: _FrameThumbnail(
+                                    key: ValueKey(
+                                      '$index-${_refreshTick[index] ?? 0}',
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: context
-                                          .watch<ThemeService>()
-                                          .current
-                                          .menuBgColor
-                                          .withValues(alpha: 0.7),
-                                      borderRadius: BorderRadius.circular(3),
+                                    projectId: widget.projectId,
+                                    sceneId: widget.sceneId,
+                                    frameIndex: index,
+                                    tileManager: tiles,
+                                    layers: service.layersOf(
+                                      widget.projectId,
+                                      widget.sceneId,
+                                      index,
                                     ),
-                                    child: Text(
-                                      '$hold',
-                                      style: TextStyle(
-                                        fontSize: 11,
+                                    backgroundColor: widget.showTransparency
+                                        ? null
+                                        : project?.backgroundColor,
+                                  ),
+                                ),
+                                if (hold > 1)
+                                  Center(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 3,
+                                        vertical: 1,
+                                      ),
+                                      decoration: BoxDecoration(
                                         color: context
                                             .watch<ThemeService>()
                                             .current
-                                            .updateMarkColor,
-                                        fontWeight: FontWeight.bold,
+                                            .menuBgColor
+                                            .withValues(alpha: 0.7),
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      child: Text(
+                                        '$hold',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: context
+                                              .watch<ThemeService>()
+                                              .current
+                                              .updateMarkColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              if (widget.multiSelectMode)
-                                Positioned(
-                                  right: 2,
-                                  top: 2,
-                                  child: Icon(
-                                    isChecked
-                                        ? Icons.check_box
-                                        : Icons.check_box_outline_blank,
-                                    size: 14,
-                                    color: isChecked
-                                        ? scheme.primary
-                                        : scheme.onSurfaceVariant,
+                                if (widget.multiSelectMode)
+                                  Positioned(
+                                    right: 2,
+                                    top: 2,
+                                    child: Icon(
+                                      isChecked
+                                          ? Icons.check_box
+                                          : Icons.check_box_outline_blank,
+                                      size: 14,
+                                      color: isChecked
+                                          ? scheme.primary
+                                          : scheme.onSurfaceVariant,
+                                    ),
                                   ),
-                                ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
                 AnimatedBuilder(
-                  animation: _scrollController,
+                  animation: Listenable.merge([
+                    _scrollController,
+                    _metricsChanged,
+                  ]),
                   builder: (context, child) {
                     final offset = _scrollController.hasClients
                         ? _scrollController.offset

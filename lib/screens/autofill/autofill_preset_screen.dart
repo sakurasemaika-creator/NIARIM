@@ -49,6 +49,7 @@ import '../../widgets/menu_surface.dart';
 import '../../widgets/menu_action_label.dart';
 import '../../widgets/menu_card.dart';
 import '../../utils/file_failure_reason.dart';
+import '../../widgets/icon_notice.dart';
 
 /// [taken]と重ならない複製の名前を付け、[taken]に加える（まとめて複製する
 /// ときに、同じ名前の複製を並べない）。
@@ -1209,27 +1210,23 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // 未設定パーツがある場合の警告バナー（赤文字で不足している
-            // パーツ名と設定内容を表示）
+            // 未設定パーツがある場合の知らせ（不足しているパーツ名を、
+            // 面の文字色と先頭の印で示す）
             if (unconfigured.isNotEmpty)
               Container(
                 width: double.infinity,
-                color: ThemeService.activeColorScheme.error.withValues(
-                  alpha: 0.12,
-                ),
+                color: Theme.of(context).colorScheme.surfaceContainerHigh,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 8,
                 ),
-                child: Text(
+                child: IconNotice(
                   l10n.autofillPartUnconfiguredBanner(
                     unconfigured.length,
                     unconfigured.map((p) => p.displayName(l10n)).join('・'),
                   ),
-                  style: TextStyle(
-                    color: ThemeService.activeColorScheme.error,
-                    fontSize: 11,
-                  ),
+                  icon: Icons.warning_amber_rounded,
+                  fontSize: 11,
                 ),
               ),
             Expanded(child: _partListBody()),
@@ -1364,10 +1361,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
             if (!isConfigured)
               Text(
                 l10n.autofillPartToneUnselected,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontSize: 10,
-                  color: ThemeService.activeColorScheme.error,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontSize: 10),
               ),
           ],
         ),
@@ -1380,7 +1376,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               size: 16,
               color: isConfigured
                   ? ThemeService.activeColorScheme.secondary
-                  : ThemeService.activeColorScheme.error,
+                  : null,
             ),
             // パーツ単位のお気に入りは不要（プリセット一覧側の
             // お気に入り機能に一本化したため削除）。

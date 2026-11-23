@@ -283,11 +283,7 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
                         onTap: () => _editKeyframe(kf, isNew: false),
                         trailing: IconButton(
                           tooltip: l10n.commonDelete,
-                          icon: Icon(
-                            Icons.delete,
-                            size: 20,
-                            color: ThemeService.activeColorScheme.error,
-                          ),
+                          icon: const Icon(Icons.delete, size: 20),
                           onPressed: () {
                             setState(
                               () => _keyframes = _keyframes
@@ -420,10 +416,7 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
                 if (widget.onDelete != null)
                   IconButton(
                     tooltip: l10n.commonDelete,
-                    icon: Icon(
-                      Icons.delete,
-                      color: ThemeService.activeColorScheme.error,
-                    ),
+                    icon: const Icon(Icons.delete),
                     onPressed: () {
                       Navigator.pop(context);
                       widget.onDelete!();

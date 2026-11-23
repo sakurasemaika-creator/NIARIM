@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/project.dart';
 import '../../../services/project_service.dart';
+import '../../../widgets/icon_notice.dart';
 
 /// A saved work which can be used as a folder cover.
 class FolderThumbnailChoice {
@@ -688,11 +689,7 @@ Future<void> showFolderThumbnailDialog(
                   _ => const SizedBox.shrink(),
                 },
               ),
-              if (failure != null)
-                Text(
-                  failure!,
-                  style: TextStyle(color: Theme.of(ctx).colorScheme.error),
-                ),
+              if (failure != null) IconNotice(failure!, liveRegion: true),
             ],
           ),
         ),

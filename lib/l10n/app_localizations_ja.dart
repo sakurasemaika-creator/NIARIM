@@ -1503,6 +1503,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectAutosaveRecovered => '作品ファイルを読み込めなかったため、自動保存から復旧しました。';
 
   @override
+  String get canvasAutosaveRecoveryTitle => '自動保存から復元';
+
+  @override
+  String get canvasAutosaveRecoveryBody =>
+      'この作品と内容が異なる自動保存があります。その内容で作品を開きますか？';
+
+  @override
   String get helpSaveSlotTitle => 'セーブスロット';
 
   @override

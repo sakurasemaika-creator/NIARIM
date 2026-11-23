@@ -1577,6 +1577,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo abrir el archivo del proyecto. Se ha recuperado a partir de un guardado automático.';
 
   @override
+  String get canvasAutosaveRecoveryTitle => 'Restaurar guardado automático';
+
+  @override
+  String get canvasAutosaveRecoveryBody =>
+      'Hay una versión guardada automáticamente con contenido distinto. ¿Quieres abrirla?';
+
+  @override
   String get helpSaveSlotTitle => 'Ranura de guardado';
 
   @override

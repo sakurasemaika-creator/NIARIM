@@ -6717,9 +6717,6 @@ class _TrashTabState extends State<_TrashTab> {
             // 文字は段落の幅いっぱいを取り、左に寄って描かれた）。
             textAlign: TextAlign.end,
             textWidthBasis: TextWidthBasis.longestLine,
-            style: unread
-                ? null
-                : TextStyle(color: Theme.of(context).colorScheme.error),
           ),
         ),
       ],
@@ -6830,7 +6827,6 @@ class _TrashTabState extends State<_TrashTab> {
           // 2行に折れても、行ごとに右端へそろえる（フォルダのカードと同じ）。
           textAlign: TextAlign.end,
           textWidthBasis: TextWidthBasis.longestLine,
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
         ),
       ),
     ];
@@ -6890,7 +6886,6 @@ class _TrashTabState extends State<_TrashTab> {
           // 2行に折れても、行ごとに右端へそろえる（フォルダのカードと同じ）。
           textAlign: TextAlign.end,
           textWidthBasis: TextWidthBasis.longestLine,
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
         ),
       ),
     ];

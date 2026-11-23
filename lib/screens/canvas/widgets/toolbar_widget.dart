@@ -236,12 +236,14 @@ class ToolbarWidget extends StatelessWidget {
                           shape: BoxShape.circle,
                           border: Border.all(color: outlineColor, width: 2),
                         ),
+                        // キャンバスの上に浮かぶアイコンと同じ差し色（赤は
+                        // 差し色から作られる色で、テーマで選ぶ色ではない）。
                         child: Icon(
                           Icons.block,
-                          color: ThemeService.activeColorScheme.error,
+                          color: ThemeService.activeColorScheme.primary,
                           size: 20,
                           shadows: CanvasIconButton.foregroundShadows(
-                            Theme.of(context).colorScheme.error,
+                            Theme.of(context).colorScheme.primary,
                             Theme.of(context).colorScheme,
                           ),
                         ),

@@ -1178,6 +1178,13 @@ onTap: ...)`だったために
   移る（保存せずに戻ったらその画面に残る）。キャンバスとタイムラインの両方が
   この形（2026-11-06の統合mergeで落ち、2026-11-10に戻した。タイムラインは
   `savedSince`で見る）。
+- **作品ファイルより新しく内容の違う自動保存があれば、キャンバスを開いたときに
+  「自動保存から復元」を確かめる（DISC574、2026-11-23）**：`AutosaveService.
+  newerThanWorkFile`（最新の自動保存の時刻が作品の`updatedAt`より後で、内容が違うとき
+  だけ。起動ごとに1回）→`canvas_screen.dart`の`_offerNewerAutosave`。強制終了で作品
+  ファイルへ書く前に閉じた分を、黙って古い内容で開かない（`b7f8ed0e`で外れていた）。
+  自動保存の方が古いとき（作品ファイルに最後の線まで書けたとき）は出さない。
+  `canvas_open_exit_audit_test`が見張る。
 - **`TileManager.importAll`（自動保存からの復元）はレイヤーの内容の変更を
   知らせる**：以前は知らせず、自動保存から戻した絵がデータには入っているのに
   キャンバスには前の絵が出たままだった（強制終了→起動し直しの実操作で発見）。
@@ -1401,6 +1408,15 @@ onTap: ...)`だったために
   `MenuActionLabel`も読むこと。カード・浮いた名前・ドロップダウンの値・
   メニューの中のアイコン・タブ・ほかの画面の危ない操作・救済ボタンの判定は
   まだ（DISC193〜199）。
+- **その場の知らせは`IconNotice`、エラーの赤で描かない（DISC577・198、2026-11-23）**：
+  読み込めなかった・足りない・重なっている等の文は`lib/widgets/icon_notice.dart`の
+  `IconNotice`（その面の文字色＋先頭の印、`liveRegion:`で読み上げへも）。メニューの危ない
+  操作は`MenuActionLabel`、削除の確かめのボタンは`confirmDelete`と同じ塗り（色を渡さない
+  `FilledButton`）、削除のアイコンにも色を渡さない。`colorScheme.error`を残してよい所は
+  `test/no_error_colour_notices_test.dart`の一覧だけ（入力欄の誤りの状態・テーマの見本・
+  タイムラインの今のコマの赤枠とフェードの色の見本・起動失敗画面の大きな印）。
+  スライダーを置く`AlertDialog`は`SizedBox(width: 480)`（`slider_dialog_width_test`が
+  lib配下の全ダイアログを走査する）。
 - **知らせ（SnackBar）は5秒以内に、少しずつ薄くなって消える（所有者の判断7、
   2026-11-11）**：アプリの知らせはすべて`lib/widgets/app_toast_messenger.dart`の
   `AppToastMessenger`（`MaterialApp.router`の`builder`と起動失敗画面で、画面を包む
@@ -1781,9 +1797,12 @@ onTap: ...)`だったために
   PC/DeXの横に出す編集中のフィルターパネルは`Material(type: transparency)`＋
   `hitTestBehavior: deferToChild`のスクロールで、**何も無い所のタッチは
   下のキャンバスへ通す**（`Card`や既定のScrollableは全面で吸う）。
-- **スマホのフィルター調整中は「調整モード」：キャンバスモードの表示を
+- **フィルターの調整中は「調整モード」：キャンバスモードの表示を
   隠し、プレビューはキャンバスへ直接出す**：`canvas_screen.dart`の
-  `filterAdjusting`（`_showFilterPanel && !isDesktop`）の間は、上部バー
+  `filterAdjusting`（`filter_immersive_policy.dart`の
+  `shouldUseImmersiveFilterUi`＝パネルが開いていて、スマホなら常に、PC/DeXなら
+  フィルターを1つ選んで調整している間。組み込み・複製・自作のどのフィルターも
+  同じ）の間は、上部バー
   （独自のUndo/Redoを持つ）・太さ/不透明度スライダー・ツールバー・
   フレーム一覧を出さず、`FilterPanel(bottomBar: true)`を画面下部に
   横幅いっぱいで出す（Undo/Redoボタンを2か所に出さない、というユーザー

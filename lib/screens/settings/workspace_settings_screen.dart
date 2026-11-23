@@ -35,6 +35,7 @@ import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../utils/file_failure_reason.dart';
+import '../../widgets/icon_notice.dart';
 
 class WorkspaceSettingsScreen extends StatelessWidget {
   const WorkspaceSettingsScreen({super.key});
@@ -1089,13 +1090,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
           if (_errorText != null)
             Padding(
               padding: EdgeInsets.only(top: 4),
-              child: Text(
-                _errorText!,
-                style: TextStyle(
-                  color: ThemeService.activeColorScheme.error,
-                  fontSize: 12,
-                ),
-              ),
+              child: IconNotice(_errorText!, fontSize: 12, liveRegion: true),
             ),
         ],
       ),

@@ -154,13 +154,17 @@ void main() {
         final boundary = tester.renderObject<RenderRepaintBoundary>(
           find.byKey(captureKey),
         );
-        final image = await boundary.toImage(pixelRatio: 1);
-        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-        File(
-          '${captures.path}/timeline_track_labels_${languageCode}_'
-          '${logicalWidth.toInt()}.png',
-        ).writeAsBytesSync(bytes!.buffer.asUint8List());
-        image.dispose();
+        // toImage and PNG encoding are real async work; under the fake clock
+        // they never finish unless awaited inside runAsync.
+        await tester.runAsync(() async {
+          final image = await boundary.toImage(pixelRatio: 1);
+          final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+          File(
+            '${captures.path}/timeline_track_labels_${languageCode}_'
+            '${logicalWidth.toInt()}.png',
+          ).writeAsBytesSync(bytes!.buffer.asUint8List());
+          image.dispose();
+        });
       }
     }
   });

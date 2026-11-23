@@ -262,9 +262,81 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('DISC574: opening restores the newer autosave when chosen, '
+      'once per launch', (tester) async {
+    final (service: projects, :id) = await open(tester);
+    final home = tester.element(find.byType(HomeScreen));
+    final autosaves = home.read<AutosaveService>();
+    final l10n = AppLocalizations.of(home)!;
+    final scene = projects.scenesOf(id).single;
+    final key = projects.tileKeyFor(
+      id,
+      scene.id,
+      0,
+      scene.frames.first.layers.first.id,
+    );
+    final tiles = projects.tileManagerOf(id);
+    const drawn = [30, 60, 220, 255];
+    await tester.runAsync(() async {
+      tiles.getOrCreateTile(key, 0, 0).setRange(0, 4, drawn);
+      await autosaves.save(id, projects);
+      // The work file was not written after the stroke (forced quit).
+      tiles.importAll(const {});
+    });
+    appRouter.go('/canvas/$id');
+    await settleIo(tester);
+    await tester.tap(
+      find.byKey(const ValueKey('canvasAutosaveRecoveryRestore')),
+    );
+    await settleIo(tester);
+    expect(tiles.getTile(key, 0, 0)?.take(4), drawn);
+    // Offered once per launch.
+    appRouter.go('/home');
+    await settleIo(tester);
+    appRouter.go('/canvas/$id');
+    await settleIo(tester);
+    expect(
+      find.widgetWithText(AlertDialog, l10n.canvasAutosaveRecoveryTitle),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('an autosave older than the work file is not offered', (
+    tester,
+  ) async {
+    final (service: projects, :id) = await open(tester);
+    final home = tester.element(find.byType(HomeScreen));
+    final autosaves = home.read<AutosaveService>();
+    final l10n = AppLocalizations.of(home)!;
+    final scene = projects.scenesOf(id).single;
+    final key = projects.tileKeyFor(
+      id,
+      scene.id,
+      0,
+      scene.frames.first.layers.first.id,
+    );
+    final tiles = projects.tileManagerOf(id);
+    await tester.runAsync(() async {
+      tiles.getOrCreateTile(key, 0, 0).setRange(0, 4, [210, 60, 20, 255]);
+      await autosaves.save(id, projects);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      // Later strokes reached the work file but not yet an autosave.
+      tiles.getTile(key, 0, 0)!.setRange(0, 4, [30, 60, 220, 255]);
+      await projects.saveProject(id);
+    });
+    appRouter.go('/canvas/$id');
+    await settleIo(tester);
+    expect(
+      find.widgetWithText(AlertDialog, l10n.canvasAutosaveRecoveryTitle),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   for (final tree in [false, true]) {
-    testWidgets('a readable work opens silently and the list can load '
-        'other versions (tree: $tree)', (tester) async {
+    testWidgets('a newer autosave is offered on opening; declined, the list '
+        'can still load other versions (tree: $tree)', (tester) async {
       if (tree) {
         SharedPreferences.setMockInitialValues({
           firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
@@ -327,6 +399,14 @@ void main() {
       await tester.tap(find.text(l10n.projectDetailStartEditButton));
       await settleIo(tester);
       expect(find.byType(CanvasScreen), findsOneWidget);
+      // The autosaves are newer than the work file and differ from it (the
+      // app closed before the file caught up): opening offers the newest.
+      expect(
+        find.widgetWithText(AlertDialog, l10n.canvasAutosaveRecoveryTitle),
+        findsOneWidget,
+      );
+      await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
+      await settleIo(tester);
       expect(find.byType(AlertDialog), findsNothing);
       expect(tiles.getTile(key, 0, 0), isNull);
 

@@ -41,36 +41,47 @@ class RulerPanel extends StatelessWidget {
         children: [
           PanelCenterCloseBar(onClose: onClose),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                Text(
-                  l10n.rulerPanelTitle,
-                  style: localizedHeadingStyle(
-                    context,
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                ),
-                const Spacer(),
-                if (activeRuler != null)
-                  TextButton(
-                    onPressed: () => onRulerChanged(null),
-                    // 上下の余白が0なので、行の外へ出る字（「Supprimer」の
-                    // p等）が面の縁にかかる。テーマのラベルの余白の仕組みで
-                    // 既定になる面の切り抜きをしない。
-                    clipBehavior: Clip.none,
-                    style: TextButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.onSurface,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      l10n.commonDelete,
-                      style: const TextStyle(fontSize: 11),
+            padding: const EdgeInsets.fromLTRB(12, 0, 4, 0),
+            // The row is as tall as the 48dp delete button, with or without it.
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: Row(
+                children: [
+                  Text(
+                    l10n.rulerPanelTitle,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
-              ],
+                  const Spacer(),
+                  if (activeRuler != null)
+                    TextButton(
+                      onPressed: () => onRulerChanged(null),
+                      // 上下の余白が0なので、行の外へ出る字（「Supprimer」の
+                      // p等）が面の縁にかかる。テーマのラベルの余白の仕組みで
+                      // 既定になる面の切り抜きをしない。
+                      clipBehavior: Clip.none,
+                      // 押せる所は48×48（以前は字11pxの約36×20pxで、押し損ねや
+                      // 押し間違いで確かめずに定規が消えた）。
+                      style: TextButton.styleFrom(
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onSurface,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: const Size(48, 48),
+                        tapTargetSize: MaterialTapTargetSize.padded,
+                      ),
+                      child: Text(
+                        l10n.commonDelete,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           if (activeRuler != null) ...[

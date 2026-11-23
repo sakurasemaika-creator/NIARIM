@@ -58,7 +58,6 @@ class _FolderDeleteDialogState extends State<FolderDeleteDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
     return PopScope(
       canPop: !_saving,
       child: AlertDialog(
@@ -90,10 +89,6 @@ class _FolderDeleteDialogState extends State<FolderDeleteDialog> {
             child: Text(l10n.commonCancel),
           ),
           FolderSaveButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: theme.colorScheme.error,
-              foregroundColor: theme.colorScheme.onError,
-            ),
             onPressed: _delete,
             label: widget.confirmLabel ?? l10n.commonDelete,
             saving: _saving,

@@ -1571,6 +1571,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible d’ouvrir le fichier du projet. Le projet a été récupéré depuis une sauvegarde automatique.';
 
   @override
+  String get canvasAutosaveRecoveryTitle =>
+      'Restaurer la sauvegarde automatique';
+
+  @override
+  String get canvasAutosaveRecoveryBody =>
+      'Une version enregistrée automatiquement contient des modifications différentes. Voulez-vous l’ouvrir ?';
+
+  @override
   String get helpSaveSlotTitle => 'Emplacement de sauvegarde';
 
   @override
