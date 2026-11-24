@@ -1083,41 +1083,28 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 残高は数＋単位（「60,000オパール」）だけで何の数か分かるので、
+              // 前に通貨の印を置かない（読み取ることの無い飾りだった）。
               Padding(
                 padding: const EdgeInsetsDirectional.only(start: 12),
-                child: Row(
-                  children: [
-                    // 通貨の印は補助の文字色（差し色は押す操作のために残す）。
-                    Icon(
-                      Icons.toll_outlined,
-                      size: 28,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      // 残高の数＋単位は1行に収め、入りきらなければ字を縮める
-                      // （合計の欄と同じ。大きな文字で「60,000歐 / 泊」と単位の
-                      // 途中で切れないように）。
-                      child: balance is int
-                          ? Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  l10n.coinAmount(balance),
-                                  style: theme.textTheme.headlineSmall,
-                                ),
-                              ),
-                            )
-                          : messageText(
-                              _walletLoading
-                                  ? t['loading']
-                                  : t['balancePending'],
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                    ),
-                  ],
-                ),
+                // 残高の数＋単位は1行に収め、入りきらなければ字を縮める
+                // （合計の欄と同じ。大きな文字で「60,000歐 / 泊」と単位の
+                // 途中で切れないように）。
+                child: balance is int
+                    ? Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            l10n.coinAmount(balance),
+                            style: theme.textTheme.headlineSmall,
+                          ),
+                        ),
+                      )
+                    : messageText(
+                        _walletLoading ? t['loading'] : t['balancePending'],
+                        style: theme.textTheme.bodyMedium,
+                      ),
               ),
               const SizedBox(height: 8),
               if (_lastAccountId != null)

@@ -227,7 +227,6 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   MissionPanelHeading(
-                    icon: Icons.event_repeat_outlined,
                     title: l10n.recurringMissionsTitle,
                     action: IconButton(
                       tooltip: l10n.missionRefresh,

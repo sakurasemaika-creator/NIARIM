@@ -156,9 +156,6 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   MissionPanelHeading(
-                    icon: Icons.calendar_month_outlined,
-                    // 欄の見出しの印は、ほかの欄（作品広場の滞在・ウィーク
-                    // リー）と同じ色（差し色にしない）。
                     title: t['title'],
                     action: IconButton(
                       tooltip: t['retry'],

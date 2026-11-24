@@ -101,60 +101,44 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             // 下の見出し・本文・ボタンと同じ左右の端にそろえる（カードの既定の
-            // 外側の余白で、カードだけ4px内側に寄っていた）。先頭の印で、
-            // プレミアム（オパールで解放中も）か無料かを一目で分ける。
+            // 外側の余白で、カードだけ4px内側に寄っていた）。プレミアムか
+            // 無料かは見出しの文で分かるので、前に印を置かない（印は見出しの
+            // 幅を取り、大きな文字で「Unlocke / d with opals」と語の途中で
+            // 折れる元にもなっていた）。
             GroupedSheet(
               key: const Key('membershipStatusCard'),
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 大きな文字では印を外して見出しの幅を取る（英語の文字
-                      // 2倍・320pxで「Unlocke / d with opals」と語の途中で
-                      // 折れた）。
-                      if (MediaQuery.textScalerOf(context).scale(1) < 1.5) ...[
-                        Icon(
-                          isPlayMember || premium.hasCoinPremium
-                              ? Icons.workspace_premium_outlined
-                              : Icons.person_outline,
-                          size: 28,
-                          color: AccentTextTheme.of(context),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tier,
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
-                        const SizedBox(width: 12),
-                      ],
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              tier,
-                              style: Theme.of(context).textTheme.titleLarge,
+                        if (isPlayMember && premium.verifiedExpiryDate != null)
+                          Text(
+                            l10n.rewardNavigationMembershipExpiresAt(
+                              premium.verifiedExpiryDate!.toLocal(),
                             ),
-                            if (isPlayMember &&
-                                premium.verifiedExpiryDate != null)
-                              Text(
-                                l10n.rewardNavigationMembershipExpiresAt(
-                                  premium.verifiedExpiryDate!.toLocal(),
-                                ),
-                              ),
-                            // 見出しがすでに「オパールで解放中」のときは期限だけを出す
-                            // （同じ語を2行続けない）。
-                            if (coinExpiry != null)
-                              Text(
-                                isPlayMember
-                                    ? l10n.rewardNavigationMembershipCoinExpiresAt(
-                                        coinExpiry.toLocal(),
-                                      )
-                                    : l10n.rewardNavigationMembershipExpiresAt(
-                                        coinExpiry.toLocal(),
-                                      ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
+                          ),
+                        // 見出しがすでに「オパールで解放中」のときは期限だけを出す
+                        // （同じ語を2行続けない）。
+                        if (coinExpiry != null)
+                          Text(
+                            isPlayMember
+                                ? l10n.rewardNavigationMembershipCoinExpiresAt(
+                                    coinExpiry.toLocal(),
+                                  )
+                                : l10n.rewardNavigationMembershipExpiresAt(
+                                    coinExpiry.toLocal(),
+                                  ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ],

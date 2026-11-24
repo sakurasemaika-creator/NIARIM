@@ -230,7 +230,6 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   MissionPanelHeading(
-                    icon: Icons.timer_outlined,
                     title: _l10n.plazaMissionsTitle,
                     action: IconButton(
                       tooltip: _l10n.missionRefresh,
