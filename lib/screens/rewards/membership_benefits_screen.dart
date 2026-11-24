@@ -186,7 +186,8 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
                   if (entries.isEmpty) {
                     return Text(t['membershipNoBenefit']);
                   }
-                  return Column(
+                  // 利用中の特典は1枚の面に行を並べる。
+                  return GroupedSheet(
                     children: entries.map((item) {
                       final feature = item['feature'] as String? ?? '';
                       final paused = item['status'] == 'paused';

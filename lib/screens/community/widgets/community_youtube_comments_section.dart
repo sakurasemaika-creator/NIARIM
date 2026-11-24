@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/community_youtube_comment_labels.dart';
 import '../../../services/community_service.dart';
 import '../../../utils/app_locale.dart';
-import '../../../widgets/menu_card.dart';
+import '../../../widgets/grouped_sheet.dart';
 
 /// View-only YouTube comments. A collapsed section issues NO YouTube requests.
 /// Comment text is held in widget memory only; never persisted to DynamoDB.
@@ -158,68 +158,77 @@ class _CommunityYoutubeCommentsSectionState
   @override
   Widget build(BuildContext context) {
     final labels = CommunityYoutubeCommentLabels.of(context);
-    return MenuCard(
-      child: ExpansionTile(
-        key: const Key('communityYoutubeCommentsExpansion'),
-        leading: const Icon(Icons.comment_outlined),
-        title: Text(labels.heading),
-        onExpansionChanged: (open) {
-          if (open && !_loaded && !_loading) _load();
-        },
-        childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              labels.attribution,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+    // 上の設定の面と同じ幅・同じ細い縁の面（MenuCardの外側の余白で、
+    // この欄だけ内側に寄っていた）。
+    return GroupedSheet(
+      children: [
+        ExpansionTile(
+          key: const Key('communityYoutubeCommentsExpansion'),
+          shape: const Border(),
+          collapsedShape: const Border(),
+          leading: Icon(
+            Icons.comment_outlined,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          if (_loading)
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: CircularProgressIndicator(),
-            )
-          else if (_unavailable || _failed) ...[
-            Text(labels.unavailable),
-            TextButton(onPressed: () => _load(), child: Text(labels.retry)),
-          ] else if (_loaded && _comments.isEmpty)
-            Text(labels.noComments),
-          for (final comment in _comments.take(_visibleCount)) ...[
-            _comment(comment),
-            for (final reply
-                in ((comment['replies'] as List?) ?? const [])
-                    .whereType<Map<String, dynamic>>())
-              _comment(reply, reply: true),
-            if ((comment['totalReplyCount'] as num? ?? 0) >
-                ((comment['replies'] as List?)?.length ?? 0))
-              Padding(
-                padding: const EdgeInsets.only(left: 28),
-                child: Text(
-                  labels.replies(
-                    (comment['totalReplyCount'] as num? ?? 0).toInt(),
-                  ),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+          title: Text(labels.heading),
+          onExpansionChanged: (open) {
+            if (open && !_loaded && !_loading) _load();
+          },
+          childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                labels.attribution,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
-            const Divider(height: 1),
-          ],
-          if (_visibleCount < _comments.length)
-            TextButton.icon(
-              key: const Key('communityYoutubeCommentsLoadMore'),
-              onPressed: () => setState(() => _visibleCount += _displayChunk),
-              icon: const Icon(Icons.expand_more),
-              label: Text(labels.loadMore),
-            )
-          else if (!_unavailable && !_failed && _hasMoreOnYouTube)
-            TextButton.icon(
-              key: const Key('communityYoutubeCommentsOpenYouTube'),
-              onPressed: widget.onOpenYouTube,
-              icon: const Icon(Icons.open_in_new),
-              label: Text(labels.openYouTube),
             ),
-        ],
-      ),
+            if (_loading)
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: CircularProgressIndicator(),
+              )
+            else if (_unavailable || _failed) ...[
+              Text(labels.unavailable),
+              TextButton(onPressed: () => _load(), child: Text(labels.retry)),
+            ] else if (_loaded && _comments.isEmpty)
+              Text(labels.noComments),
+            for (final comment in _comments.take(_visibleCount)) ...[
+              _comment(comment),
+              for (final reply
+                  in ((comment['replies'] as List?) ?? const [])
+                      .whereType<Map<String, dynamic>>())
+                _comment(reply, reply: true),
+              if ((comment['totalReplyCount'] as num? ?? 0) >
+                  ((comment['replies'] as List?)?.length ?? 0))
+                Padding(
+                  padding: const EdgeInsets.only(left: 28),
+                  child: Text(
+                    labels.replies(
+                      (comment['totalReplyCount'] as num? ?? 0).toInt(),
+                    ),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              const Divider(height: 1),
+            ],
+            if (_visibleCount < _comments.length)
+              TextButton.icon(
+                key: const Key('communityYoutubeCommentsLoadMore'),
+                onPressed: () => setState(() => _visibleCount += _displayChunk),
+                icon: const Icon(Icons.expand_more),
+                label: Text(labels.loadMore),
+              )
+            else if (!_unavailable && !_failed && _hasMoreOnYouTube)
+              TextButton.icon(
+                key: const Key('communityYoutubeCommentsOpenYouTube'),
+                onPressed: widget.onOpenYouTube,
+                icon: const Icon(Icons.open_in_new),
+                label: Text(labels.openYouTube),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }
