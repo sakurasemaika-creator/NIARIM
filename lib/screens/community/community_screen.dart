@@ -2291,7 +2291,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const EmptyFrameMark(icon: Icons.person_add_alt_1),
+            const EmptyStateIcon(icon: Icons.person_add_alt_1),
             const SizedBox(height: 16),
             messageText(
               l10n.communityFavoriteAuthorsEmptyTitle,

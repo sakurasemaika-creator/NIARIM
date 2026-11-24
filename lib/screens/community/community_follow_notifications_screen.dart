@@ -243,10 +243,10 @@ class _CommunityFollowNotificationsScreenState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 通知がまだ1つも無いときは、ほかの空の表示と同じ「中身の
-          // まだ無いコマ」の印を出す（文とボタンだけが浮いていた）。
+          // 通知がまだ1つも無いときは、ほかの空の表示と同じく通知の印を
+          // 出す（文とボタンだけだと、読み込みに失敗したように見えた）。
           if (local.isEmpty) ...[
-            const EmptyFrameMark(icon: Icons.notifications_none_outlined),
+            const EmptyStateIcon(icon: Icons.notifications_none_outlined),
             const SizedBox(height: 16),
           ],
           messageText(

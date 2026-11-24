@@ -55,10 +55,10 @@ class EmptyStateSliver extends StatelessWidget {
   );
 }
 
-/// 一覧画面が空のときに表示する共通プレースホルダー。円形の色付き
-/// アイコンバッジ・くらむぼんの太字タイトル・淡色の補足文という構成を、
-/// プロジェクト一覧・共有一覧・ゴミ箱一覧・作品一覧・素材一覧など
-/// すべての一覧画面で統一するために切り出している。
+/// 一覧画面が空のときに表示する共通プレースホルダー。その一覧の物の印
+/// （補助の文字色・台や枠なし）・くらむぼんの太字タイトル・淡色の補足文・
+/// 次の操作という構成を、プロジェクト一覧・共有一覧・ゴミ箱一覧・作品一覧・
+/// 素材一覧などすべての一覧画面で統一するために切り出している。
 class EmptyStatePlaceholder extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -77,7 +77,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
   /// スクロールして浮かぶボタンの上へ出せる）。
   final bool clearFloatingButtons;
 
-  /// 自分でスクロールしない（[scrollable]が偽の）ときに、丸い印を選ぶ大きさ
+  /// 自分でスクロールしない（[scrollable]が偽の）ときに、印の大きさを選ぶ大きさ
   /// （外の一覧の残りの幅と高さ）。渡すと、自分でスクロールするときと同じく
   /// 入る大きさの印にする（低い画面・大きな文字で、案内が浮かぶボタンの下へ
   /// 押し出されない）。
@@ -140,7 +140,8 @@ class EmptyStatePlaceholder extends StatelessWidget {
   TextStyle _hintStyle(ColorScheme scheme) =>
       TextStyle(color: scheme.onSurfaceVariant, fontSize: 14);
 
-  /// 丸い印の大きさ（0なら印を出さない）ごとの、上下の余白と印の下の間。
+  /// 印の段（88＝大きい印・56＝小さい印・0＝印を出さない）ごとの、上下の
+  /// 余白と印の下の間。
   static EdgeInsets _padding(double badge) => badge >= 88
       ? const EdgeInsets.all(24)
       : const EdgeInsets.symmetric(horizontal: 24, vertical: 12);
@@ -149,7 +150,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
       badge >= 88 ? 16 : (badge > 0 ? 8 : 0);
 
   /// 自分でスクロールする（高さの分かる）ときに、高さ[maxHeight]・幅
-  /// [maxWidth]に入る一番大きな丸い印（88・56・無し）。文の高さは描くときと
+  /// [maxWidth]に入る一番大きな印の段（88・56・無し）。文の高さは描くときと
   /// 同じ書式・文字の倍率で測る。どれも入らなければ印を出さない（文が
   /// スクロールせずに見える所を広く取る）。
   double _badgeThatFits(
@@ -160,7 +161,10 @@ class EmptyStatePlaceholder extends StatelessWidget {
   ) {
     final texts = _textsHeight(context, maxWidth, scheme);
     for (final badge in const [88.0, 56.0]) {
-      if (_padding(badge).vertical + badge + _badgeGap(badge) + texts <=
+      if (_padding(badge).vertical +
+              EmptyStateIcon.sizeFor(badge) +
+              _badgeGap(badge) +
+              texts <=
           maxHeight) {
         return badge;
       }
@@ -235,9 +239,11 @@ class EmptyStatePlaceholder extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (badge > 0)
-          // 中身のまだ無いコマ（点線の枠）。差し色の丸い台にしない：空の
-          // 一覧はどの画面にもあり、差し色は次の操作のボタンのために残す。
-          EmptyFrameMark(icon: icon, size: badge),
+          // どの一覧が空なのかを文を読む前に分かるよう、その一覧の物の印
+          // だけを出す。差し色の丸い台・点線の枠は付けない（空の一覧は
+          // どの画面にもあり、差し色は次の操作のボタンのために残す。枠は
+          // 何も伝えない飾りだった）。
+          EmptyStateIcon(icon: icon, large: badge >= 88),
         SizedBox(height: _badgeGap(badge)),
         Semantics(
           header: true,
@@ -335,64 +341,26 @@ class EmptyStatePlaceholder extends StatelessWidget {
   }
 }
 
-/// 中身のまだ無いコマ（角の丸い点線の枠）と、中央の補助の文字色の印。
-/// 空の一覧の印（[EmptyStatePlaceholder]）と同じ形を、自分で並べる空の表示
-/// （作品広場のフォロー・ブックマーク、ミッションの案内など）でも使う。
-class EmptyFrameMark extends StatelessWidget {
-  const EmptyFrameMark({super.key, required this.icon, this.size = 88});
+/// 空の一覧の印：その一覧の物の印（ゴミ箱・フォント・探して見つからない等）を、
+/// 補助の文字色で、台や枠を付けずに出す。[EmptyStatePlaceholder]と、自分で
+/// 並べる空の表示（作品広場のフォロー・ブックマーク・通知）で同じ大きさ・色に
+/// そろえる。
+class EmptyStateIcon extends StatelessWidget {
+  const EmptyStateIcon({super.key, required this.icon, this.large = true});
 
   final IconData icon;
-  final double size;
+
+  /// 大きい印（40px）か、低い画面・狭い所の小さい印（28px）か。
+  final bool large;
+
+  /// 印の段（88・56・0）ごとの印の大きさ。
+  static double sizeFor(double badge) =>
+      badge >= 88 ? 40 : (badge > 0 ? 28 : 0);
 
   @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return SizedBox.square(
-      dimension: size,
-      child: CustomPaint(
-        painter: _EmptyFramePainter(
-          scheme.onSurfaceVariant.withValues(alpha: .45),
-        ),
-        child: Icon(icon, size: size * 36 / 88, color: scheme.onSurfaceVariant),
-      ),
-    );
-  }
-}
-
-/// 空のコマの枠：角の丸い点線の四角。
-class _EmptyFramePainter extends CustomPainter {
-  const _EmptyFramePainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final stroke = size.shortestSide >= 80 ? 1.5 : 1.25;
-    final rect = (Offset.zero & size).deflate(stroke / 2);
-    final path = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(rect, Radius.circular(size.shortestSide / 5)),
-      );
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = stroke
-      ..strokeCap = StrokeCap.round;
-    const dash = 6.0, gap = 5.0;
-    for (final metric in path.computeMetrics()) {
-      // 一周がちょうど点線の組の数で割り切れるように間をそろえる。
-      final count = (metric.length / (dash + gap)).floor().clamp(1, 1000);
-      final step = metric.length / count;
-      for (var i = 0; i < count; i++) {
-        final start = i * step;
-        canvas.drawPath(
-          metric.extractPath(start, start + step * dash / (dash + gap)),
-          paint,
-        );
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_EmptyFramePainter old) => old.color != color;
+  Widget build(BuildContext context) => Icon(
+    icon,
+    size: large ? 40 : 28,
+    color: Theme.of(context).colorScheme.onSurfaceVariant,
+  );
 }

@@ -117,9 +117,9 @@ class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
                   if (loading)
                     CircularProgressIndicator(color: progress)
                   else
-                    // ほかの空の表示（ホームの一覧）と同じ「中身のまだ無い
-                    // コマ」の印。
-                    EmptyFrameMark(
+                    // ほかの空の表示（ホームの一覧）と同じ、その一覧の物の印
+                    // （読み込めないときは通信の印）。
+                    EmptyStateIcon(
                       icon: error != null
                           ? Icons.cloud_off_outlined
                           : Icons.bookmark_border,
