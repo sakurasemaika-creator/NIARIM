@@ -15,6 +15,7 @@ on:
       - 'lib/engine/video_frame_timeline.dart'
       - 'lib/engine/video_frame_decoder.dart'
       - 'lib/engine/video_frame_provider.dart'
+      - 'lib/engine/timeline_video_layer_pixels.dart'
       - 'lib/services/material_service.dart'
       - 'lib/screens/timeline/timeline_screen.dart'
       - 'test/export_audio_test.dart'
@@ -25,6 +26,8 @@ on:
       - 'test/video_frame_timeline_test.dart'
       - 'test/video_frame_provider_test.dart'
       - 'test/video_frame_ffmpeg_decoder_test.dart'
+      - 'test/layer_compositor_pixel_source_test.dart'
+      - 'test/layer_compositor_test.dart'
       - 'docs/AI設計書/26_タイムライン編集操作仕様.md'
       - 'docs/AI設計書/27_プレビュー書き出し一致性監査.md'
       - 'pubspec.yaml'
@@ -76,6 +79,8 @@ jobs:
         env:
           NIARIM_VIDEO_FRAME_FFMPEG_TESTS: '1'
         run: flutter test test/video_frame_ffmpeg_decoder_test.dart --reporter expanded
+      - name: Test decoded video frames through every layer compositing path
+        run: flutter test test/layer_compositor_pixel_source_test.dart test/layer_compositor_test.dart --reporter expanded
       - name: Analyze touched Dart files
         run: >-
           flutter analyze
@@ -87,6 +92,8 @@ jobs:
           lib/engine/video_frame_timeline.dart
           lib/engine/video_frame_decoder.dart
           lib/engine/video_frame_provider.dart
+          lib/engine/timeline_video_layer_pixels.dart
+          lib/engine/layer_compositor.dart
           lib/services/material_service.dart
           lib/screens/timeline/widgets/material_gizmo.dart
           lib/screens/timeline/timeline_screen.dart
@@ -98,4 +105,5 @@ jobs:
           test/video_frame_timeline_test.dart
           test/video_frame_provider_test.dart
           test/video_frame_ffmpeg_decoder_test.dart
+          test/layer_compositor_pixel_source_test.dart
           --no-fatal-infos

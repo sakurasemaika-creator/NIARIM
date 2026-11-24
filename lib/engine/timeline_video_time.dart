@@ -1,3 +1,33 @@
+import 'dart:math' as math;
+
+import '../models/layer.dart';
+
+/// Where a timeline video layer sits on its scene's timeline and which part
+/// of the source it plays: the one reading of a video layer's range, trim
+/// and rate that the timeline's clip list, the preview compositor, the
+/// export and the export sound plan share.
+typedef TimelineVideoClipTiming = ({
+  int startFrame,
+  int lengthFrames,
+  int trimStartFrame,
+  int trimEndFrame,
+  double playbackRate,
+});
+
+TimelineVideoClipTiming timelineVideoClipTiming(Layer layer) {
+  final start = (layer.rangeStart ?? 1) - 1;
+  final end = layer.rangeEnd ?? (start + 1);
+  final length = math.max(1, end - start);
+  final trimStart = layer.sourceTrimStart ?? 0;
+  return (
+    startFrame: start,
+    lengthFrames: length,
+    trimStartFrame: trimStart,
+    trimEndFrame: layer.sourceTrimEnd ?? (trimStart + length - 1),
+    playbackRate: 1.0,
+  );
+}
+
 /// Maps a timeline frame to the source-video timestamp for preview and
 /// future offline rendering. Both paths can call this pure evaluator. Source trim bounds are inclusive frame indices,
 /// matching Layer.sourceTrimStart/sourceTrimEnd and the existing timeline UI.
@@ -82,6 +112,25 @@ class TimelineVideoTimeMapper {
     if (sourceFrame == null) return null;
     return Duration(
       microseconds: (sourceFrame / framesPerSecond * 1000000).round(),
+    );
+  }
+
+  /// The source time of [layer] (a timeline video layer) at scene frame
+  /// [frameIndex], or null when the layer does not show a frame there.
+  static Duration? layerSourceTimeAt(
+    Layer layer,
+    int frameIndex,
+    double framesPerSecond,
+  ) {
+    final timing = timelineVideoClipTiming(layer);
+    return sourceTimeAt(
+      timelineFrame: frameIndex,
+      clipStartFrame: timing.startFrame,
+      clipLengthFrames: timing.lengthFrames,
+      sourceTrimStartFrame: timing.trimStartFrame,
+      sourceTrimEndFrame: timing.trimEndFrame,
+      framesPerSecond: framesPerSecond,
+      playbackRate: timing.playbackRate,
     );
   }
 }

@@ -113,6 +113,37 @@ int inheritedLayerOpacity(Layer layer, Map<String, Layer> byId) {
   return opacity.round();
 }
 
+/// Where one layer's pixels come from in a composite.
+sealed class LayerPixels {
+  const LayerPixels();
+}
+
+/// The pixels stored in the TileManager (the default for every layer).
+final class LayerPixelsFromTiles extends LayerPixels {
+  const LayerPixelsFromTiles();
+}
+
+/// An image supplied for this composite, covering the canvas (or the
+/// composite's raster size) the way the layer's stored pixels would. The
+/// compositor owns [image] and disposes it.
+final class LayerPixelsImage extends LayerPixels {
+  const LayerPixelsImage(this.image);
+
+  final ui.Image image;
+}
+
+/// The layer has nothing to draw in this composite (for example a video
+/// frame that could not be decoded). Its stored pixels are not used in its
+/// place.
+final class LayerPixelsEmpty extends LayerPixels {
+  const LayerPixelsEmpty();
+}
+
+/// Resolves the pixels of [layer] for one composite. [rasterSize] is the
+/// composite's raster size, or null for the canvas size.
+typedef LayerPixelSource =
+    Future<LayerPixels> Function(Layer layer, ui.Size? rasterSize);
+
 /// レイヤー群をタイル方式のピクセルデータから合成し1枚のui.Imageを生成する
 /// 共通処理。キャンバス表示・書き出し・オニオンスキン・バケツ参照などで共有する。
 class LayerCompositor {
@@ -152,6 +183,7 @@ class LayerCompositor {
     int? paperColor,
     List<LayerMaskGroup> maskGroups = const [],
     ui.Size? rasterSize,
+    LayerPixelSource? pixelsOf,
   }) async {
     final rasterWidth = rasterSize?.width.toInt() ?? width;
     final rasterHeight = rasterSize?.height.toInt() ?? height;
@@ -203,6 +235,7 @@ class LayerCompositor {
           keyframeOf,
           groupKeyframeOf,
           rasterSize,
+          pixelsOf,
         );
         final subtracted = await _blendImages(
           backdrop,
@@ -234,6 +267,7 @@ class LayerCompositor {
         keyframeOf,
         groupKeyframeOf,
         rasterSize: rasterSize,
+        pixelsOf: pixelsOf,
         // Inside a masked group the layers are drawn on one GPU layer, so
         // a mode only the CPU can blend takes its nearest GPU mode.
         blendModeOverride: masking.isOpen && _requiresCpuBlend(layer.blendMode)
@@ -266,6 +300,7 @@ class LayerCompositor {
     LayerKeyframe? Function(Layer layer)? keyframeOf,
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
     List<LayerMaskGroup> maskGroups = const [],
+    LayerPixelSource? pixelsOf,
   }) async {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
@@ -295,6 +330,7 @@ class LayerCompositor {
         keyframeOf,
         groupKeyframeOf,
         blendModeOverride: displayBlendMode(layer.blendMode),
+        pixelsOf: pixelsOf,
       );
     }
     masking.close(canvas);
@@ -382,6 +418,7 @@ class LayerCompositor {
     LayerKeyframe? Function(Layer layer)? keyframeOf,
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
     ui.Size? rasterSize,
+    LayerPixelSource? pixelsOf,
   ) async {
     final rasterWidth = rasterSize?.width.toInt() ?? width;
     final rasterHeight = rasterSize?.height.toInt() ?? height;
@@ -401,6 +438,7 @@ class LayerCompositor {
       groupKeyframeOf,
       blendModeOverride: ui.BlendMode.srcOver,
       rasterSize: rasterSize,
+      pixelsOf: pixelsOf,
     );
     final picture = recorder.endRecording();
     try {
@@ -423,11 +461,16 @@ class LayerCompositor {
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf, {
     ui.BlendMode? blendModeOverride,
     ui.Size? rasterSize,
+    LayerPixelSource? pixelsOf,
   }) async {
-    final img = await tileManager.compositeLayerToImage(
-      keyOf(layer),
-      rasterSize: rasterSize,
+    final img = await _layerImage(
+      tileManager,
+      keyOf,
+      layer,
+      rasterSize,
+      pixelsOf,
     );
+    if (img == null) return;
     final opacityByte = (layer.opacity.clamp(0, 100) * 255 / 100).round();
     final layerPaint = ui.Paint()
       ..color = ui.Color.fromARGB(opacityByte, 255, 255, 255)
@@ -462,12 +505,19 @@ class LayerCompositor {
 
     final rect = ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
     void drawImage(ui.Image image, ui.Paint paint) {
-      if (rasterSize == null) {
+      if (rasterSize == null &&
+          image.width == width &&
+          image.height == height) {
         canvas.drawImage(image, ui.Offset.zero, paint);
       } else {
         canvas.drawImageRect(
           image,
-          ui.Offset.zero & rasterSize,
+          ui.Rect.fromLTWH(
+            0,
+            0,
+            image.width.toDouble(),
+            image.height.toDouble(),
+          ),
           rect,
           paint..filterQuality = ui.FilterQuality.low,
         );
@@ -478,10 +528,19 @@ class LayerCompositor {
       final clipSourceId = findClipSourceLayerId(layers, index);
       if (clipSourceId != null) {
         final clipSourceLayer = layers.firstWhere((l) => l.id == clipSourceId);
-        final clipImg = await tileManager.compositeLayerToImage(
-          keyOf(clipSourceLayer),
-          rasterSize: rasterSize,
+        final clipImg = await _layerImage(
+          tileManager,
+          keyOf,
+          clipSourceLayer,
+          rasterSize,
+          pixelsOf,
         );
+        if (clipImg == null) {
+          // Clipped to a layer with nothing to draw: nothing shows.
+          if (hasTransform) canvas.restore();
+          img.dispose();
+          return;
+        }
         canvas.saveLayer(rect, layerPaint);
         drawImage(clipImg, ui.Paint());
         drawImage(img, ui.Paint()..blendMode = ui.BlendMode.srcIn);
@@ -511,6 +570,28 @@ class LayerCompositor {
     drawImage(img, layerPaint);
     if (hasTransform) canvas.restore();
     img.dispose();
+  }
+
+  /// The image to draw for [layer], or null when it has nothing to draw.
+  /// The caller disposes the returned image.
+  static Future<ui.Image?> _layerImage(
+    TileManager tileManager,
+    String Function(Layer layer) keyOf,
+    Layer layer,
+    ui.Size? rasterSize,
+    LayerPixelSource? pixelsOf,
+  ) async {
+    final pixels = pixelsOf == null
+        ? const LayerPixelsFromTiles()
+        : await pixelsOf(layer, rasterSize);
+    return switch (pixels) {
+      LayerPixelsFromTiles() => tileManager.compositeLayerToImage(
+        keyOf(layer),
+        rasterSize: rasterSize,
+      ),
+      LayerPixelsImage(:final image) => image,
+      LayerPixelsEmpty() => null,
+    };
   }
 
   /// backdrop - source を各RGBチャンネルへ適用し、透明度は通常のブレンド
