@@ -27,8 +27,9 @@ void main() {
 
     expect(source, contains('Alignment.centerRight'));
     expect(source, contains('Icons.close, size: 18'));
-    expect(source, contains('minWidth: 44'));
-    expect(source, contains('minHeight: 44'));
+    // 印は小さく（18px）、押せる所は他のボタンと同じ48×48。
+    expect(source, contains('minWidth: kMinInteractiveDimension'));
+    expect(source, contains('minHeight: kMinInteractiveDimension'));
     expect(source, isNot(contains('return Center(')));
   });
 

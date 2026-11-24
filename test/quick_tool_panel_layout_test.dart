@@ -164,10 +164,14 @@ void main() {
                       l10n.quickToolPanelTitle,
                 )
                 .toList();
-            if (titles.length != 1) {
+            // ドックでは窓の見出しが題を出すので、パネルの中には題を出さない
+            // （同じ題が2つ並んでいた）。浮かぶパネルは題を1つ。
+            final expectedTitles = dock == null ? 1 : 0;
+            if (titles.length != expectedTitles) {
               problems.add('$at: ${titles.length} titles');
               continue;
             }
+            if (titles.isEmpty) continue;
             final title = titles.single;
             final broken = brokenWordUnits(title);
             for (final word in broken.fits) {

@@ -85,24 +85,29 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
       width: 280,
       // 背の低い画面では、画面の下へはみ出さず設定部分がスクロールする。
       maxHeight: MediaQuery.sizeOf(context).height * 0.8,
+      // 見出しの行（題・入切・×）は×の押せる所がパネルの右端まで届くよう
+      // 右の余白を取らず、その下の中身は右にも12pxの余白を取る。
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsetsDirectional.fromSTEB(12, 4, 0, 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PanelCenterCloseBar(onClose: widget.onClose),
-            // ヘッダー：オニオンスキン全体ON/OFF
-            Row(
-              children: [
-                Text(
-                  l10n.onionSkinTitle,
-                  style: localizedHeadingStyle(
-                    context,
-                    const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+            // ヘッダー：オニオンスキン全体ON/OFFと閉じる×を同じ行に置く
+            // （以前は×だけの行が題の上にあり、44pxの空いた帯ができた）。
+            // 題は入切の名前を兼ねるので、ドックでも出す。
+            PanelHeaderRow(
+              onClose: widget.onClose,
+              showTitleWhenDocked: true,
+              padding: EdgeInsets.zero,
+              title: Text(
+                l10n.onionSkinTitle,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                const Spacer(),
+              ),
+              actions: [
                 Switch(
                   value: _settings.enabled,
                   onChanged: (v) => _update(_settings.copyWith(enabled: v)),
@@ -110,11 +115,12 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
               ],
             ),
             if (_settings.enabled) ...[
-              const Divider(),
+              const Divider(endIndent: 12),
               // 行に重ねたときの色を一覧の外（下の余白）へはみ出させない
               // （末尾のclipListInk）。
               Flexible(
                 child: SingleChildScrollView(
+                  padding: const EdgeInsetsDirectional.only(end: 12),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,6 +179,13 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                             .map(
                               (interval) => ChoiceChip(
                                 label: Text('$interval'),
+                                // パネルとチップの下地が同じ色なので、選んで
+                                // いないチップは縁で押せる物と分かるようにする。
+                                side: BorderSide(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
+                                ),
                                 selected: _settings.frameInterval == interval,
                                 onSelected: (selected) {
                                   if (selected) {
@@ -360,32 +373,36 @@ class _OnionSideSection extends StatelessWidget {
                 ),
               ],
             ),
-          // 色
-          Row(
-            children: [
-              SizedBox(
-                width: 56,
-                child: Text(
-                  l10n.onionSkinColorLabel,
-                  style: const TextStyle(fontSize: 11),
-                ),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => onShowColorPicker(color, onColorChanged),
-                child: Container(
-                  width: 28,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: color,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outline,
+          // 色：行のどこを押しても色を選べる（以前は28×20の見本だけが押せた）。
+          InkWell(
+            borderRadius: BorderRadius.circular(6),
+            onTap: () => onShowColorPicker(color, onColorChanged),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 40),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 56,
+                    child: Text(
+                      l10n.onionSkinColorLabel,
+                      style: const TextStyle(fontSize: 11),
                     ),
-                    borderRadius: BorderRadius.circular(3),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 28,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: color,
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           const SizedBox(height: 4),
           // 透明度（0〜1で持つが、直接入力と同じく百分率で動かす）

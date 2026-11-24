@@ -667,6 +667,9 @@ class _LayerPanelState extends State<LayerPanel> {
                                     ? l10n.layerPanelHideLayerTooltip
                                     : l10n.layerPanelShowLayerTooltip,
                                 child: GestureDetector(
+                                  // 押せる所は印の周り（20×40）。以前は16pxの
+                                  // 印だけで、押し損ねると行を選んでいた。
+                                  behavior: HitTestBehavior.opaque,
                                   onTap: () => context
                                       .read<ProjectService>()
                                       .updateLayer(
@@ -677,15 +680,23 @@ class _LayerPanelState extends State<LayerPanel> {
                                           isVisible: !layer.isVisible,
                                         ),
                                       ),
-                                  child: Icon(
-                                    layer.isVisible
-                                        ? Icons.visibility
-                                        : Icons.visibility_off,
-                                    size: 16,
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 40,
+                                    child: Align(
+                                      alignment:
+                                          AlignmentDirectional.centerStart,
+                                      child: Icon(
+                                        layer.isVisible
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
+                                        size: 16,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            const SizedBox(width: 4),
+                            if (_isSelectionMode) const SizedBox(width: 4),
                             _layerTypeIcon(context, layer.type),
                             const SizedBox(width: 4),
                             GestureDetector(
@@ -788,6 +799,7 @@ class _LayerPanelState extends State<LayerPanel> {
                               ).showMenuTooltip,
                               child: GestureDetector(
                                 key: ValueKey('canvasLayerMenu_${layer.id}'),
+                                behavior: HitTestBehavior.opaque,
                                 onTap: () =>
                                     _isTimelineMaterial(layer.type) ||
                                         layer.type == model.LayerType.common ||
@@ -795,16 +807,18 @@ class _LayerPanelState extends State<LayerPanel> {
                                             model.LayerType.autoFillLineart
                                     ? _showTimelineLayerMenu(context, layer)
                                     : _showLayerOptions(context, layer),
-                                child: const Icon(Icons.more_vert, size: 16),
+                                child: const _RowActionTarget(
+                                  child: Icon(Icons.more_vert, size: 16),
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 8),
                             // 下のレイヤーとワンタップで結合（複数選択モードを使わずに
                             // 済む一括操作の一つ）。ゴミ箱アイコンのすぐ隣に置くことで
                             // 「レイヤーへの操作」としてまとまって見えるようにしている。
                             Tooltip(
                               message: l10n.layerPanelMergeDownTooltip,
                               child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
                                 onTap: _layerBelow(layer, layers) != null
                                     ? () => _mergeWithLayerBelow(
                                         context,
@@ -812,19 +826,21 @@ class _LayerPanelState extends State<LayerPanel> {
                                         layers,
                                       )
                                     : null,
-                                child: Icon(
-                                  Icons.merge_type,
-                                  size: 16,
-                                  color: _layerBelow(layer, layers) != null
-                                      ? null
-                                      : Theme.of(context).disabledColor,
+                                child: _RowActionTarget(
+                                  child: Icon(
+                                    Icons.merge_type,
+                                    size: 16,
+                                    color: _layerBelow(layer, layers) != null
+                                        ? null
+                                        : Theme.of(context).disabledColor,
+                                  ),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
                             Tooltip(
                               message: l10n.commonDelete,
                               child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
                                 onTap: _canDeleteLayerRow(layer, layers)
                                     ? () => _deleteLayerRow(
                                         context,
@@ -832,21 +848,24 @@ class _LayerPanelState extends State<LayerPanel> {
                                         layers,
                                       )
                                     : null,
-                                child: Icon(
-                                  Icons.delete_outline,
-                                  size: 16,
-                                  color: _canDeleteLayerRow(layer, layers)
-                                      ? IconTheme.of(context).color
-                                      : Theme.of(context).disabledColor,
+                                child: _RowActionTarget(
+                                  child: Icon(
+                                    Icons.delete_outline,
+                                    size: 16,
+                                    color: _canDeleteLayerRow(layer, layers)
+                                        ? IconTheme.of(context).color
+                                        : Theme.of(context).disabledColor,
+                                  ),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
                             // ドラッグハンドル（並び替え用）。ゴミ箱等の操作アイコンと
                             // 重ならないよう、常にこの位置に明示的に配置する。
                             ReorderableDragStartListener(
                               index: index,
-                              child: const Icon(Icons.drag_handle, size: 16),
+                              child: const _RowActionTarget(
+                                child: Icon(Icons.drag_handle, size: 16),
+                              ),
                             ),
                           ],
                         ),
@@ -3210,4 +3229,19 @@ class _LayerThumbnailState extends State<_LayerThumbnail> {
       child: image == null ? null : RawImage(image: image, fit: BoxFit.contain),
     );
   }
+}
+
+/// レイヤーの行の右の操作（︙・結合・削除・並べ替え）の押せる所。
+///
+/// 印は16pxのまま、印の間の隙間（以前は8pxずつの空白）を押せる所に含めて
+/// 22×40にする。並びの幅は以前（印16px＋隙間8px）と同じなので名前の欄は
+/// 狭くならず、印と印の間を押しても何も起きない・行を選んでしまう、が無くなる。
+class _RowActionTarget extends StatelessWidget {
+  const _RowActionTarget({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) =>
+      SizedBox(width: 22, height: 40, child: Center(child: child));
 }

@@ -41,17 +41,17 @@ class MeshTransformPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // 下地・角・見出しの行は他の浮かぶパネル（定規・オニオンスキン）と同じ
+    // （以前はこのパネルだけ灰色の面・角8で、×だけの行が題の上にあった）。
     return PanelSurface(
       width: 240,
-      borderRadius: BorderRadius.circular(8),
-      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PanelCenterCloseBar(onClose: onClose),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Text(
+          PanelHeaderRow(
+            onClose: onClose,
+            title: Text(
               l10n.meshTransformPanelTitle,
               style: localizedHeadingStyle(
                 context,

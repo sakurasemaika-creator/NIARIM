@@ -29,60 +29,54 @@ class RulerPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // 文字を大きくしたときは幅も広げる（200pxのままでは文字2倍で
+    // 「One-Point Pe / rspectiv / e」と語の途中で折れた）。画面の幅は超えない。
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final width = math.min(
+      math.max(200.0, MediaQuery.textScalerOf(context).scale(200)),
+      math.max(200.0, screenWidth - 32),
+    );
+    // 下地・角は他の浮かぶパネル（ペン・オニオンスキン・早替えツール）と
+    // 同じカード（以前はこのパネルだけ灰色の面・角8で、別の部品に見えた）。
     return PanelSurface(
-      width: 200,
+      width: width,
       // On a short screen (or with large text) the list scrolls instead of
       // running off the bottom.
       maxHeight: MediaQuery.sizeOf(context).height * 0.75,
-      borderRadius: BorderRadius.circular(8),
-      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          PanelCenterCloseBar(onClose: onClose),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 4, 0),
-            // The row is as tall as the 48dp delete button, with or without it.
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 48),
-              child: Row(
-                children: [
-                  Text(
-                    l10n.rulerPanelTitle,
-                    style: localizedHeadingStyle(
-                      context,
-                      const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  if (activeRuler != null)
-                    TextButton(
-                      onPressed: () => onRulerChanged(null),
-                      // 上下の余白が0なので、行の外へ出る字（「Supprimer」の
-                      // p等）が面の縁にかかる。テーマのラベルの余白の仕組みで
-                      // 既定になる面の切り抜きをしない。
-                      clipBehavior: Clip.none,
-                      // 押せる所は48×48（以前は字11pxの約36×20pxで、押し損ねや
-                      // 押し間違いで確かめずに定規が消えた）。
-                      style: TextButton.styleFrom(
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.onSurface,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        minimumSize: const Size(48, 48),
-                        tapTargetSize: MaterialTapTargetSize.padded,
-                      ),
-                      child: Text(
-                        l10n.commonDelete,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                    ),
-                ],
+          PanelHeaderRow(
+            onClose: onClose,
+            title: Text(
+              l10n.rulerPanelTitle,
+              style: localizedHeadingStyle(
+                context,
+                const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
             ),
+            actions: [
+              if (activeRuler != null)
+                TextButton(
+                  onPressed: () => onRulerChanged(null),
+                  // 上下の余白が0なので、行の外へ出る字（「Supprimer」の
+                  // p等）が面の縁にかかる。テーマのラベルの余白の仕組みで
+                  // 既定になる面の切り抜きをしない。
+                  clipBehavior: Clip.none,
+                  // 押せる所は48×48（以前は字11pxの約36×20pxで、押し損ねや
+                  // 押し間違いで確かめずに定規が消えた）。
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(48, 48),
+                    tapTargetSize: MaterialTapTargetSize.padded,
+                  ),
+                  child: Text(
+                    l10n.commonDelete,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                ),
+            ],
           ),
           if (activeRuler != null) ...[
             const Divider(height: 1),
@@ -184,17 +178,22 @@ class RulerPanel extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsetsDirectional.only(start: 12, end: 4),
       child: Row(
         children: [
-          Text(l10n.rulerDivisions, style: const TextStyle(fontSize: 12)),
-          const Spacer(),
+          Expanded(
+            child: Text(
+              l10n.rulerDivisions,
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
+          // 押せる所は40×40（以前は印の大きさ16pxだけで、押し損ねた）。
           IconButton(
             icon: const Icon(Icons.remove, size: 16),
             tooltip: l10n.commonDecrease,
-            onPressed: () => update(divisions - 1),
+            onPressed: divisions > 2 ? () => update(divisions - 1) : null,
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+            constraints: const BoxConstraints.tightFor(width: 40, height: 40),
           ),
           SizedBox(
             width: 28,
@@ -207,9 +206,9 @@ class RulerPanel extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.add, size: 16),
             tooltip: l10n.commonIncrease,
-            onPressed: () => update(divisions + 1),
+            onPressed: divisions < 360 ? () => update(divisions + 1) : null,
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+            constraints: const BoxConstraints.tightFor(width: 40, height: 40),
           ),
         ],
       ),

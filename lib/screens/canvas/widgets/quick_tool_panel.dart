@@ -16,6 +16,7 @@ import '../../../widgets/keep_together_text.dart';
 import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart' show DrawingTool;
 import '../../../widgets/docked_panel_scope.dart';
+import 'docked_panel_close_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
@@ -103,20 +104,21 @@ class QuickToolPanel extends StatelessWidget {
     // 題はパネルの幅で折り返す（`Text`＋`Spacer`の行に置いていた頃は
     // 折り返さず、西語「Ajustes de herramientas rápidas」が行から
     // はみ出した）。韓国語の語は、1行に入れば途中で折らない。
+    final title = messageText(
+      l10n.quickToolPanelTitle,
+      style: localizedHeadingStyle(
+        context,
+        const TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
     final heading = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        messageText(
-          l10n.quickToolPanelTitle,
-          style: localizedHeadingStyle(
-            context,
-            const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-        const Divider(),
-      ],
+      children: [title, const Divider()],
     );
+    // 浮かぶパネルは題と×を同じ行に置く（[PanelHeaderRow]）。ドックでは窓の
+    // 見出しが同じ題を出すので、題も区切りの線も出さない。
+    final docked = DockedPanelCloseScope.isDocked(context);
     final empty = Text(
       l10n.quickToolEmpty,
       style: TextStyle(
@@ -128,66 +130,78 @@ class QuickToolPanel extends StatelessWidget {
     return PanelSurface(
       width: 260,
       height: height,
+      // ×の押せる所はパネルの右端まで届かせ、一覧・下の行は右にも12px空ける。
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsetsDirectional.fromSTEB(12, 4, 0, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PanelCenterCloseBar(onClose: onClose),
-            if (!compact) heading,
+            if (compact)
+              PanelCenterCloseBar(onClose: onClose)
+            else ...[
+              PanelHeaderRow(
+                onClose: onClose,
+                padding: EdgeInsets.zero,
+                title: title,
+              ),
+              if (!docked) const Divider(endIndent: 12),
+            ],
             Expanded(
-              child: entries.isEmpty
-                  ? compact
-                        ? ListView(children: [heading, empty])
-                        : Center(child: empty)
-                  // 行の幅（一覧の幅）で、名前を番号と操作の間に置くか、番号と
-                  // 操作の行の下に置くかを決める（[_QuickToolRows]）。
-                  : LayoutBuilder(
-                      builder: (context, box) {
-                        final rows = _QuickToolRows(
-                          context,
-                          rowWidth: box.maxWidth,
-                          count: entries.length,
-                        );
-                        return ReorderableListView.builder(
-                          // ドラッグハンドルを明示アイコンとして置く（既定の
-                          // ままだと行の長押しでしか並べ替えを開始できず、
-                          // 可視の目印が無いままだった）。
-                          buildDefaultDragHandles: false,
-                          header: compact ? heading : null,
-                          itemCount: entries.length,
-                          onReorderItem: (oldIndex, newIndex) =>
-                              service.reorder(
-                                oldIndex,
-                                preRemovalIndex(oldIndex, newIndex),
-                              ),
-                          itemBuilder: (context, index) {
-                            final e = entries[index];
-                            return rows.build(
-                              key: ValueKey(e.id),
-                              index: index,
-                              label: quickToolDisplayLabel(
-                                l10n,
-                                e,
-                                brushes,
-                                isBuiltIn: brushService.isBuiltIn,
-                              ),
-                              unavailable:
-                                  e.brushId != null &&
-                                      !brushes.any(
-                                        (brush) => brush.id == e.brushId,
-                                      )
-                                  ? l10n.quickToolBrushUnavailable
-                                  : null,
-                              deleteTooltip: l10n.commonDelete,
-                              onDelete: () => service.removeEntry(e.id),
-                            );
-                          },
-                        );
-                      },
-                    ),
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(end: 12),
+                child: entries.isEmpty
+                    ? compact
+                          ? ListView(children: [heading, empty])
+                          : Center(child: empty)
+                    // 行の幅（一覧の幅）で、名前を番号と操作の間に置くか、番号と
+                    // 操作の行の下に置くかを決める（[_QuickToolRows]）。
+                    : LayoutBuilder(
+                        builder: (context, box) {
+                          final rows = _QuickToolRows(
+                            context,
+                            rowWidth: box.maxWidth,
+                            count: entries.length,
+                          );
+                          return ReorderableListView.builder(
+                            // ドラッグハンドルを明示アイコンとして置く（既定の
+                            // ままだと行の長押しでしか並べ替えを開始できず、
+                            // 可視の目印が無いままだった）。
+                            buildDefaultDragHandles: false,
+                            header: compact ? heading : null,
+                            itemCount: entries.length,
+                            onReorderItem: (oldIndex, newIndex) =>
+                                service.reorder(
+                                  oldIndex,
+                                  preRemovalIndex(oldIndex, newIndex),
+                                ),
+                            itemBuilder: (context, index) {
+                              final e = entries[index];
+                              return rows.build(
+                                key: ValueKey(e.id),
+                                index: index,
+                                label: quickToolDisplayLabel(
+                                  l10n,
+                                  e,
+                                  brushes,
+                                  isBuiltIn: brushService.isBuiltIn,
+                                ),
+                                unavailable:
+                                    e.brushId != null &&
+                                        !brushes.any(
+                                          (brush) => brush.id == e.brushId,
+                                        )
+                                    ? l10n.quickToolBrushUnavailable
+                                    : null,
+                                deleteTooltip: l10n.commonDelete,
+                                onDelete: () => service.removeEntry(e.id),
+                              );
+                            },
+                          );
+                        },
+                      ),
+              ),
             ),
-            const Divider(height: 1),
+            const Divider(height: 1, endIndent: 12),
             TextButton.icon(
               icon: const Icon(Icons.add, size: 16),
               label: Text(l10n.commonAdd),
