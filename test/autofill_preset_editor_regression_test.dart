@@ -262,7 +262,8 @@ void main() {
     final partDelete = find.byTooltip(l10n.commonDelete);
     final partIcon = find.descendant(
       of: partDelete,
-      matching: find.byIcon(Icons.delete),
+      // パーツの削除の印も他の削除と同じ線の印（delete_outline）。
+      matching: find.byIcon(Icons.delete_outline),
     );
     expect(tester.widget<Icon>(partIcon).color, isNull);
     await tester.tap(partDelete);

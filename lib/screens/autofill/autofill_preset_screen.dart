@@ -45,6 +45,8 @@ import '../../widgets/scrollable_sheet_body.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import '../../widgets/grouped_sheet.dart';
+import '../canvas/widgets/neutral_list_icons.dart';
 import '../../widgets/menu_surface.dart';
 import '../../widgets/menu_action_label.dart';
 import '../../widgets/menu_card.dart';
@@ -332,57 +334,87 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                       hint: l10n.autofillPresetEmptyHint,
                       clearFloatingButtons: true,
                     )
-                  : ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(gutter, 8, gutter, 88),
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final preset = filtered[index];
-                        return _PresetCard(
-                          preset: preset,
-                          isSelectionMode: _isSelectionMode,
-                          isSelected: _selectedIds.contains(preset.id),
-                          onToggleFavorite: () => context
-                              .read<AutofillPresetService>()
-                              .updatePreset(
-                                preset.copyWith(isFavorite: !preset.isFavorite),
+                  // 設定は1枚の面（GroupedSheetと同じメニューの背景色・細い線・
+                  // 角16・影なし）に並べ、行の間は細い線で分ける（以前は設定
+                  // ごとに浮かぶカードを8pxずつ空けて積んでいた）。行は今までどおり
+                  // 見える分だけ作る。
+                  : CustomScrollView(
+                      slivers: [
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(
+                            gutter,
+                            8,
+                            gutter,
+                            88,
+                          ),
+                          sliver: DecoratedSliver(
+                            decoration: _presetSheetDecoration(context),
+                            sliver: SliverList.separated(
+                              itemCount: filtered.length,
+                              separatorBuilder: (context, _) => const Divider(
+                                height: 1,
+                                thickness: 1,
+                                indent: GroupedSheet.rowInset,
+                                endIndent: GroupedSheet.rowInset,
                               ),
-                          onEdit: () => _showEditDialog(preset),
-                          onDelete: () => _confirmDelete(preset),
-                          onSetThumbnail: () => _showThumbnailDialog(preset),
-                          onExport: () => _exportPresets([preset]),
-                          onExportCard: () =>
-                              SharedAssetCardService.exportSettings(
-                                context,
-                                kind: 'autofill',
-                                name: preset.displayName(l10n),
-                                settings: {
-                                  ...preset.toJson(),
-                                  'thumbnailPath': preset.thumbnailPath == null
-                                      ? null
-                                      : 'image',
-                                },
-                                sourceImagePath: preset.thumbnailPath,
-                              ),
-                          onLongPress: () => setState(() {
-                            _isSelectionMode = true;
-                            _selectedIds.add(preset.id);
-                          }),
-                          onTap: () {
-                            if (_isSelectionMode) {
-                              setState(() {
-                                if (!_selectedIds.remove(preset.id)) {
-                                  _selectedIds.add(preset.id);
-                                }
-                                if (_selectedIds.isEmpty) {
-                                  _isSelectionMode = false;
-                                }
-                              });
-                            } else {
-                              _showPresetDetail(preset);
-                            }
-                          },
-                        );
-                      },
+                              itemBuilder: (context, index) {
+                                final preset = filtered[index];
+                                return _PresetCard(
+                                  isFirst: index == 0,
+                                  isLast: index == filtered.length - 1,
+                                  preset: preset,
+                                  isSelectionMode: _isSelectionMode,
+                                  isSelected: _selectedIds.contains(preset.id),
+                                  onToggleFavorite: () => context
+                                      .read<AutofillPresetService>()
+                                      .updatePreset(
+                                        preset.copyWith(
+                                          isFavorite: !preset.isFavorite,
+                                        ),
+                                      ),
+                                  onEdit: () => _showEditDialog(preset),
+                                  onDelete: () => _confirmDelete(preset),
+                                  onSetThumbnail: () =>
+                                      _showThumbnailDialog(preset),
+                                  onExport: () => _exportPresets([preset]),
+                                  onExportCard: () =>
+                                      SharedAssetCardService.exportSettings(
+                                        context,
+                                        kind: 'autofill',
+                                        name: preset.displayName(l10n),
+                                        settings: {
+                                          ...preset.toJson(),
+                                          'thumbnailPath':
+                                              preset.thumbnailPath == null
+                                              ? null
+                                              : 'image',
+                                        },
+                                        sourceImagePath: preset.thumbnailPath,
+                                      ),
+                                  onLongPress: () => setState(() {
+                                    _isSelectionMode = true;
+                                    _selectedIds.add(preset.id);
+                                  }),
+                                  onTap: () {
+                                    if (_isSelectionMode) {
+                                      setState(() {
+                                        if (!_selectedIds.remove(preset.id)) {
+                                          _selectedIds.add(preset.id);
+                                        }
+                                        if (_selectedIds.isEmpty) {
+                                          _isSelectionMode = false;
+                                        }
+                                      });
+                                    } else {
+                                      _showPresetDetail(preset);
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
             ),
           ],
@@ -898,7 +930,25 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
 /// へ渡す。まとめての書き出しと、行のメニューの書き出しで共通）。
 const _niafillExportKey = 'niafill';
 
+/// 自動塗りの設定を載せる面（[GroupedSheet]と同じ：メニューの背景色・細い線・
+/// 角16）。
+BoxDecoration _presetSheetDecoration(BuildContext context) {
+  final theme = Theme.of(context);
+  return BoxDecoration(
+    color: theme.cardTheme.color ?? theme.colorScheme.surface,
+    borderRadius: BorderRadius.circular(GroupedSheet.radius),
+    border: Border.all(
+      color:
+          theme.dividerTheme.color ??
+          theme.colorScheme.outlineVariant.withValues(alpha: .6),
+    ),
+  );
+}
+
 class _PresetCard extends StatelessWidget {
+  /// 面の最初・最後の行（押したときの色・選んだ色を面の角の中に限る）。
+  final bool isFirst;
+  final bool isLast;
   final AutofillPreset preset;
   final bool isSelectionMode;
   final bool isSelected;
@@ -912,6 +962,8 @@ class _PresetCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _PresetCard({
+    this.isFirst = false,
+    this.isLast = false,
     required this.preset,
     required this.isSelectionMode,
     required this.isSelected,
@@ -972,12 +1024,14 @@ class _PresetCard extends StatelessWidget {
     final actions = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // お気に入りでない星は中立の色（差し色の空の星が全部の行に並んで
+        // いた）。お気に入りの星だけ色を付ける。
         IconButton(
           icon: Icon(
             preset.isFavorite ? Icons.star : Icons.star_border,
             color: preset.isFavorite
                 ? ThemeService.activeColorScheme.tertiary
-                : null,
+                : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           onPressed: onToggleFavorite,
           tooltip: preset.isFavorite
@@ -985,6 +1039,7 @@ class _PresetCard extends StatelessWidget {
               : l10n.colorPickerFavoriteAdd,
         ),
         PopupMenuButton<String>(
+          iconColor: Theme.of(context).colorScheme.onSurfaceVariant,
           onSelected: (v) {
             if (v == 'edit') onEdit();
             if (v == 'thumbnail') onSetThumbnail();
@@ -1019,53 +1074,65 @@ class _PresetCard extends StatelessWidget {
         ),
       ],
     );
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      color: isSelected
-          ? Theme.of(
-              context,
-            ).colorScheme.primaryContainer.withValues(alpha: 0.4)
-          : null,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final stacked =
-              !isSelectionMode &&
-              constraints.maxWidth <
-                  MediaQuery.textScalerOf(context).scale(16) * 14;
-          final row = ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-            onLongPress: onLongPress,
-            leading: isSelectionMode
-                ? Icon(
-                    isSelected ? Icons.check_circle : Icons.circle_outlined,
-                    color: isSelected ? AccentTextTheme.of(context) : null,
-                  )
-                : stacked
-                ? null
-                : thumbnail,
-            title: messageText(preset.displayName(l10n)),
-            subtitle: messageText(
-              l10n.autofillPresetPartsCount(preset.parts.length),
-              style: const TextStyle(fontSize: 13),
-            ),
-            trailing: isSelectionMode || stacked ? null : actions,
-            onTap: onTap,
-          );
-          if (!stacked) return row;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              row,
-              Padding(
-                padding: const EdgeInsets.fromLTRB(14, 0, 8, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [thumbnail, actions],
-                ),
+    const corner = Radius.circular(GroupedSheet.radius);
+    return MenuSurface(
+      child: Material(
+        color: isSelected
+            ? Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withValues(alpha: 0.4)
+            : Colors.transparent,
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? corner : Radius.zero,
+          bottom: isLast ? corner : Radius.zero,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final stacked =
+                !isSelectionMode &&
+                constraints.maxWidth <
+                    MediaQuery.textScalerOf(context).scale(16) * 14;
+            final row = ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+              onLongPress: onLongPress,
+              leading: isSelectionMode
+                  ? Icon(
+                      isSelected ? Icons.check_circle : Icons.circle_outlined,
+                      color: isSelected ? AccentTextTheme.of(context) : null,
+                    )
+                  : stacked
+                  ? null
+                  : thumbnail,
+              // 名前の最後の語を1字だけ次の行へ落とさない（「下塗 / り」）。
+              title: messageText(
+                preset.displayName(l10n),
+                keepLineStarts: true,
+                keepLastPhrase: true,
               ),
-            ],
-          );
-        },
+              subtitle: messageText(
+                l10n.autofillPresetPartsCount(preset.parts.length),
+                style: const TextStyle(fontSize: 13),
+              ),
+              trailing: isSelectionMode || stacked ? null : actions,
+              onTap: onTap,
+            );
+            if (!stacked) return row;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                row,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 0, 8, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [thumbnail, actions],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -1249,6 +1316,15 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         : _preset.parts
               .where((p) => p.displayName(l10n).toLowerCase().contains(query))
               .toList();
+    // 行の操作（名前の変更・削除・並べ替え）の印は中立の色（差し色は
+    // 選んでいる状態・主な操作のため）。
+    return NeutralListIcons(child: _partListContent(l10n, filteredParts));
+  }
+
+  Widget _partListContent(
+    AppLocalizations l10n,
+    List<AutofillPart> filteredParts,
+  ) {
     return _preset.parts.isEmpty
         ? Center(
             child: Text(
@@ -1323,8 +1399,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         ),
       );
     }
+    final scaler = MediaQuery.textScalerOf(context);
     return ListTile(
       key: ValueKey(part.id),
+      // 行のどこを押しても色・トーン・線画色の設定を開く（以前は左の小さな
+      // 色の丸だけが押せた）。
+      onTap: () => _showPartDetailDialog(part),
       leading: GestureDetector(
         onTap: () => _showPartDetailDialog(part),
         // 右下の小さな輪＝線画色プレビュー（塗り色だけでなく線画色も
@@ -1352,8 +1432,11 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           ],
         ),
       ),
+      // 操作は名前の欄が8字分（文字の大きさ込み）より狭くなるときだけ名前の
+      // 下へ回す（以前は180px固定で、360pxでは「髪」「肌」のような短い名前でも
+      // 操作が下の行へ回り、行が2倍の高さになっていた）。
       title: ActionBesideOrBelow(
-        minTextWidth: 180,
+        minTextWidth: scaler.scale(16) * 8,
         text: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1371,13 +1454,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           alignment: WrapAlignment.end,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Icon(
-              isConfigured ? Icons.check_circle : Icons.error_outline,
-              size: 16,
-              color: isConfigured
-                  ? ThemeService.activeColorScheme.secondary
-                  : null,
-            ),
+            // 設定が済んでいない（トーン未選択）行だけ印を出す（以前は済んだ
+            // 行にも全部チェックを出していて、未設定の行が目立たなかった）。
+            if (!isConfigured) const Icon(Icons.error_outline, size: 16),
             // パーツ単位のお気に入りは不要（プリセット一覧側の
             // お気に入り機能に一本化したため削除）。
             IconButton(
@@ -1386,7 +1465,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               onPressed: () => _showEditPartDialog(part),
             ),
             IconButton(
-              icon: const Icon(Icons.delete, size: 18),
+              icon: const Icon(Icons.delete_outline, size: 18),
               tooltip: l10n.commonDelete,
               onPressed: () async {
                 final usage = _partUsageWarning(context, [part]);
