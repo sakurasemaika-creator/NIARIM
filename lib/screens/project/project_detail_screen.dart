@@ -33,7 +33,6 @@ import '../../widgets/menu_action_label.dart';
 import '../../widgets/project_duplicated_snack_bar.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/stepped_slider.dart';
-import '../../config/font_fallback.dart';
 import '../../utils/duplicate_name.dart';
 import '../../utils/file_size_label.dart';
 import '../../utils/folder_tree.dart';
@@ -464,33 +463,32 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   _loopQuickAction(),
                 ],
               ),
+              // タグも下の情報と同じく、見出しの付いた面に載せる（見出しの
+              // 位置・字の大きさを画面の中でそろえる）。
               if (project.tags.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 9),
-                  child: Text(
-                    l10n.projectDetailTagsQuickAction,
-                    style: localizedHeadingStyle(
-                      context,
-                      TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                GroupedSheet(
+                  title: l10n.projectDetailTagsQuickAction,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: project.tags
+                            .map(
+                              (tag) => Chip(
+                                avatar: const Icon(
+                                  Icons.sell_outlined,
+                                  size: 16,
+                                ),
+                                label: Text('#$tag'),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
-                  ),
-                ),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: project.tags
-                      .map(
-                        (tag) => Chip(
-                          avatar: const Icon(Icons.sell_outlined, size: 16),
-                          label: Text('#$tag'),
-                        ),
-                      )
-                      .toList(),
+                  ],
                 ),
               ],
               const SizedBox(height: 24),
