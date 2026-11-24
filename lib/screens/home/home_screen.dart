@@ -7114,51 +7114,56 @@ class _TrashTabState extends State<_TrashTab> {
           // 最後は下の角）。区切りの線は名前の始まり（左の余白16＋絵48＋
           // 間12）から引く。
           final theme = Theme.of(context);
-          return Card(
-            margin: EdgeInsets.fromLTRB(8, first ? 4 : 0, 8, last ? 4 : 0),
-            color: theme.cardTheme.color ?? theme.colorScheme.surface,
-            shape: SheetSegmentBorder(
-              first: first,
-              last: last,
-              side: BorderSide(
-                color: theme.colorScheme.outlineVariant.withValues(alpha: .6),
+          // 面の上下の空きは面の外に取る（カードの大きさ＝見えている面にして、
+          // 名前の右のボタンを面の上下の真ん中に置く）。
+          return Padding(
+            padding: EdgeInsets.only(top: first ? 4 : 0, bottom: last ? 4 : 0),
+            child: Card(
+              margin: const EdgeInsets.symmetric(horizontal: 8),
+              color: theme.cardTheme.color ?? theme.colorScheme.surface,
+              shape: SheetSegmentBorder(
+                first: first,
+                last: last,
+                side: BorderSide(
+                  color: theme.colorScheme.outlineVariant.withValues(alpha: .6),
+                ),
+                dividerIndent: 16 + 48 + 12,
               ),
-              dividerIndent: 16 + 48 + 12,
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: surface(
-              // 広いカードは名前の右・上下の真ん中に、狭いカードは名前の下の
-              // 右端に並べる（所有者の判断1。作品・フォルダ・ファイルの
-              // カードで同じ）。広いカードでも、右に並べると名前の欄が名前の
-              // 文字15字分より狭くなるときは下に回す（600×倍率を少し超えた
-              // 幅で、名前が数十pxの欄に押し込まれ「clip_001.m | p4」の
-              // ように折れた）。名前の長さでは決めないので、同じ一覧の
-              // カードは同じ並べ方になる。
-              ActionBesideOrBelow(
-                text: details,
-                action: selecting
-                    ? const SizedBox.shrink()
-                    : OverflowBar(
-                        // 1行に入らず縦に並ぶときも右端にそろえる。
-                        overflowAlignment: OverflowBarAlignment.end,
-                        spacing: 8,
-                        overflowSpacing: 4,
-                        children: ownActions,
-                      ),
-                gap: 0,
-                // 名前の下に回したボタンの行は、押せる所（48px）の上の空きを
-                // 名前の行の下の余白（8px）に重ねる。重ねないと名前・日付と
-                // ボタンの文字の間（約40px）がカードの上下の余白より広く、
-                // ボタンの行がカードから離れた別の帯に見えた。ボタンは文より
-                // 先に押す所を調べるので、押せる大きさは変わらない。
-                spacing: -8,
-                minTextWidth: compact ? double.infinity : besideMinTile,
-                besideActionPadding: selecting
-                    ? EdgeInsets.zero
-                    : const EdgeInsetsDirectional.only(end: 8),
-                belowActionPadding: selecting
-                    ? EdgeInsets.zero
-                    : const EdgeInsets.fromLTRB(12, 0, 12, 8),
+              clipBehavior: Clip.antiAlias,
+              child: surface(
+                // 広いカードは名前の右・上下の真ん中に、狭いカードは名前の下の
+                // 右端に並べる（所有者の判断1。作品・フォルダ・ファイルの
+                // カードで同じ）。広いカードでも、右に並べると名前の欄が名前の
+                // 文字15字分より狭くなるときは下に回す（600×倍率を少し超えた
+                // 幅で、名前が数十pxの欄に押し込まれ「clip_001.m | p4」の
+                // ように折れた）。名前の長さでは決めないので、同じ一覧の
+                // カードは同じ並べ方になる。
+                ActionBesideOrBelow(
+                  text: details,
+                  action: selecting
+                      ? const SizedBox.shrink()
+                      : OverflowBar(
+                          // 1行に入らず縦に並ぶときも右端にそろえる。
+                          overflowAlignment: OverflowBarAlignment.end,
+                          spacing: 8,
+                          overflowSpacing: 4,
+                          children: ownActions,
+                        ),
+                  gap: 0,
+                  // 名前の下に回したボタンの行は、押せる所（48px）の上の空きを
+                  // 名前の行の下の余白（8px）に重ねる。重ねないと名前・日付と
+                  // ボタンの文字の間（約40px）がカードの上下の余白より広く、
+                  // ボタンの行がカードから離れた別の帯に見えた。ボタンは文より
+                  // 先に押す所を調べるので、押せる大きさは変わらない。
+                  spacing: -8,
+                  minTextWidth: compact ? double.infinity : besideMinTile,
+                  besideActionPadding: selecting
+                      ? EdgeInsets.zero
+                      : const EdgeInsetsDirectional.only(end: 8),
+                  belowActionPadding: selecting
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                ),
               ),
             ),
           );
