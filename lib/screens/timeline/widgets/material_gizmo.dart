@@ -21,6 +21,8 @@ class MaterialTransformGizmo extends StatefulWidget {
     super.key,
     required this.canvasWidth,
     required this.canvasHeight,
+    this.outputWidth,
+    this.outputHeight,
     required this.value,
     required this.onChanged,
     this.onChangeEnd,
@@ -31,6 +33,8 @@ class MaterialTransformGizmo extends StatefulWidget {
 
   final int canvasWidth;
   final int canvasHeight;
+  final int? outputWidth;
+  final int? outputHeight;
 
   /// The material's drawn part on its own layer (canvas pixels), or null
   /// when nothing is drawn.
@@ -57,14 +61,21 @@ class _GizmoGeometry {
     required Size box,
     required this.canvasWidth,
     required this.canvasHeight,
+    required this.outputWidth,
+    required this.outputHeight,
     required LayerKeyframe value,
     required this.camera,
     required Rect? bounds,
   }) {
     final w = canvasWidth.toDouble();
     final h = canvasHeight.toDouble();
-    fit = math.min(box.width / w, box.height / h);
-    origin = Offset((box.width - w * fit) / 2, (box.height - h * fit) / 2);
+    final outputW = outputWidth.toDouble();
+    final outputH = outputHeight.toDouble();
+    fit = math.min(box.width / outputW, box.height / outputH);
+    origin = Offset(
+      (box.width - outputW * fit) / 2,
+      (box.height - outputH * fit) / 2,
+    );
     matrix = perspectiveLayerMatrix(
       width: w,
       height: h,
@@ -94,6 +105,8 @@ class _GizmoGeometry {
 
   final int canvasWidth;
   final int canvasHeight;
+  final int outputWidth;
+  final int outputHeight;
   final CameraKeyframe? camera;
   late final double fit;
   late final Offset origin;
@@ -112,8 +125,16 @@ class _GizmoGeometry {
 
   /// A point of the composited picture as the preview shows it.
   Offset _toBox(Offset canvasPoint) {
-    final c = Offset(canvasWidth / 2, canvasHeight / 2);
-    var p = canvasPoint - c - Offset(camera?.x ?? 0, camera?.y ?? 0);
+    final c = Offset(outputWidth / 2, outputHeight / 2);
+    final crop = Offset(
+      (canvasWidth - outputWidth) / 2,
+      (canvasHeight - outputHeight) / 2,
+    );
+    var p =
+        canvasPoint -
+        crop -
+        c -
+        Offset(camera?.x ?? 0, camera?.y ?? 0);
     p = p * _cameraZoom;
     final turn = _cameraTurn;
     p = Offset(
@@ -153,6 +174,8 @@ class _MaterialTransformGizmoState extends State<MaterialTransformGizmo> {
     box: box,
     canvasWidth: widget.canvasWidth,
     canvasHeight: widget.canvasHeight,
+    outputWidth: widget.outputWidth ?? widget.canvasWidth,
+    outputHeight: widget.outputHeight ?? widget.canvasHeight,
     value: widget.value,
     camera: widget.camera,
     bounds: widget.contentBounds,
