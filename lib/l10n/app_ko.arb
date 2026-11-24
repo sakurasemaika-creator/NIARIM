@@ -880,6 +880,7 @@
   "themeUnreadableResetButton": "테마 되돌리기",
   "themeUnreadableResetDone": "테마를 기본 색으로 되돌렸습니다.",
   "themePresetSection": "테마 목록",
+  "themePresetInUseLabel": "사용 중",
   "themePresetDuplicateName": "{name}（사본）",
   "themeDuplicateAction": "복제",
   "themeAdoptColorsSnackbar": "「{name}」의 배색을 현재 색으로 반영했습니다. 색을 바꿔도 원래 테마는 그대로입니다",

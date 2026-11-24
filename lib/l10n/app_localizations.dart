@@ -5079,6 +5079,12 @@ abstract class AppLocalizations {
   /// **'テーマ一覧'**
   String get themePresetSection;
 
+  /// テーマ一覧で、いまアプリに使っている配色のテーマの行に出す印。
+  ///
+  /// In ja, this message translates to:
+  /// **'使用中'**
+  String get themePresetInUseLabel;
+
   /// No description provided for @themePresetDuplicateName.
   ///
   /// In ja, this message translates to:

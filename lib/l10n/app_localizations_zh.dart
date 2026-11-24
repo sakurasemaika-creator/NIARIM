@@ -2736,6 +2736,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themePresetSection => '主题列表';
 
   @override
+  String get themePresetInUseLabel => '使用中';
+
+  @override
   String themePresetDuplicateName(String name) {
     return '$name（副本）';
   }
@@ -13235,6 +13238,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get themePresetSection => '主題清單';
+
+  @override
+  String get themePresetInUseLabel => '使用中';
 
   @override
   String themePresetDuplicateName(String name) {

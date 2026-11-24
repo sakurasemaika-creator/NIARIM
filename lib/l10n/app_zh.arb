@@ -880,6 +880,7 @@
   "themeUnreadableResetButton": "还原主题",
   "themeUnreadableResetDone": "已将主题还原为默认配色。",
   "themePresetSection": "主题列表",
+  "themePresetInUseLabel": "使用中",
   "themePresetDuplicateName": "{name}（副本）",
   "themeDuplicateAction": "创建副本",
   "themeAdoptColorsSnackbar": "已把“{name}”的配色套用到当前颜色。之后修改颜色不会改动原主题",

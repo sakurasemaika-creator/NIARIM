@@ -1157,6 +1157,10 @@
     "description": "テーマをリセットしたときの通知"
   },
   "themePresetSection": "テーマ一覧",
+  "themePresetInUseLabel": "使用中",
+  "@themePresetInUseLabel": {
+    "description": "テーマ一覧で、いまアプリに使っている配色のテーマの行に出す印。"
+  },
   "themePresetDuplicateName": "{name} (コピー)",
   "@themePresetDuplicateName": {
     "placeholders": {

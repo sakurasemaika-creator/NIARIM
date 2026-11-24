@@ -2766,6 +2766,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themePresetSection => 'テーマ一覧';
 
   @override
+  String get themePresetInUseLabel => '使用中';
+
+  @override
   String themePresetDuplicateName(String name) {
     return '$name (コピー)';
   }

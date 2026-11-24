@@ -28,6 +28,7 @@ import '../../widgets/theme_rescue_button.dart';
 import 'theme_preview_gallery_screen.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/first_that_fits.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../utils/file_failure_reason.dart';
 
@@ -40,7 +41,6 @@ class ThemeSettingsScreen extends StatelessWidget {
     final themeService = context.watch<ThemeService>();
     final presets = themeService.presets;
     final current = themeService.current;
-    final locale = Localizations.localeOf(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -187,6 +187,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                       : null,
                 ),
                 current.accentColor,
+                role: _ThemeColorRole.accent,
+                roleLabel: l10n.themeColorAccent,
               ),
             ),
             _ColorCustomizeTile(
@@ -203,6 +205,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                       : null,
                 ),
                 current.textColor,
+                role: _ThemeColorRole.text,
+                roleLabel: l10n.themeColorText,
               ),
             ),
             _ColorCustomizeTile(
@@ -223,6 +227,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                       : null,
                 ),
                 current.buttonTextColor,
+                role: _ThemeColorRole.buttonText,
+                roleLabel: l10n.themeColorButtonText,
               ),
             ),
             _ColorCustomizeTile(
@@ -233,6 +239,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                 themeService,
                 (p, c) => p.copyWith(panelBgColor: c),
                 current.panelBgColor,
+                role: _ThemeColorRole.panelBg,
+                roleLabel: l10n.themeColorPanelBg,
               ),
             ),
             _ColorCustomizeTile(
@@ -243,6 +251,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                 themeService,
                 (p, c) => p.copyWith(menuBgColor: c),
                 current.menuBgColor,
+                role: _ThemeColorRole.menuBg,
+                roleLabel: l10n.themeColorMenuBg,
               ),
             ),
             _ColorCustomizeTile(
@@ -253,6 +263,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                 themeService,
                 (p, c) => p.copyWith(updateMarkColor: c),
                 current.updateMarkColor,
+                role: _ThemeColorRole.updateMark,
+                roleLabel: l10n.themeColorUpdateMark,
               ),
             ),
             ExpansionTile(
@@ -275,6 +287,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                     themeService,
                     (p, c) => p.copyWith(accentTextColor: c),
                     current.effectiveAccentTextColor,
+                    role: _ThemeColorRole.accentText,
+                    roleLabel: l10n.themeColorAccentText,
                   ),
                 ),
                 _ColorCustomizeTile(
@@ -286,6 +300,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                     themeService,
                     (p, c) => p.copyWith(menuTextColor: c),
                     current.menuTextColor,
+                    role: _ThemeColorRole.menuText,
+                    roleLabel: l10n.themeColorMenuText,
                   ),
                 ),
                 _ColorCustomizeTile(
@@ -296,6 +312,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                     themeService,
                     (p, c) => p.copyWith(selectionColor: c),
                     current.selectionColor,
+                    role: _ThemeColorRole.selection,
+                    roleLabel: l10n.themeColorSelection,
                   ),
                 ),
                 _ColorCustomizeTile(
@@ -307,6 +325,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                     themeService,
                     (p, c) => p.copyWith(selectionTextColor: c),
                     current.selectionTextColor,
+                    role: _ThemeColorRole.selectionText,
+                    roleLabel: l10n.themeColorSelectionText,
                   ),
                 ),
               ],
@@ -347,174 +367,12 @@ class ThemeSettingsScreen extends StatelessWidget {
                 // 「編集」から編集対象にする（そのときだけチェックが付き、
                 // 背景をprimaryContainerに敷いて区別する）。
                 for (final entry in presets.asMap().entries)
-                  Padding(
-                    key: ValueKey(entry.value.id),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    child: Material(
-                      color: current.id == entry.value.id
-                          ? Theme.of(context).colorScheme.primaryContainer
-                                .withValues(alpha: 0.4)
-                          : Theme.of(context).colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(14),
-                      elevation: 1,
-                      shadowColor: ThemeService.activeColorScheme.shadow
-                          .withValues(alpha: 0.15),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(14),
-                        onTap: () {
-                          themeService.adoptPresetColors(entry.value.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                l10n.themeAdoptColorsSnackbar(
-                                  themePresetLabel(entry.value, locale),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final name = messageText(
-                                themePresetLabel(entry.value, locale),
-                                keepLineStarts: true,
-                                style: localizedHeadingStyle(
-                                  context,
-                                  const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              );
-                              final swatch = _PresetColorSwatch(
-                                preset: entry.value,
-                              );
-                              final actions = <Widget>[
-                                if (current.id == entry.value.id)
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 4),
-                                    child: Icon(
-                                      Icons.check,
-                                      key: const Key('themePresetEditingCheck'),
-                                      color: AccentTextTheme.of(context),
-                                      size: 16,
-                                    ),
-                                  ),
-                                IconButton(
-                                  icon: Icon(
-                                    entry.value.isFavorite
-                                        ? Icons.star
-                                        : Icons.star_outline,
-                                    size: 16,
-                                    color: entry.value.isFavorite
-                                        ? ThemeService
-                                              .activeColorScheme
-                                              .tertiary
-                                        : null,
-                                  ),
-                                  tooltip: l10n.commonFavoriteToggle,
-                                  onPressed: () => themeService.toggleFavorite(
-                                    entry.value.id,
-                                  ),
-                                ),
-                                PopupMenuButton<String>(
-                                  icon: const Icon(Icons.more_vert, size: 16),
-                                  onSelected: (action) => _handleAction(
-                                    context,
-                                    action,
-                                    entry.value,
-                                    themeService,
-                                  ),
-                                  itemBuilder: (_) => [
-                                    PopupMenuItem(
-                                      value: 'edit',
-                                      child: Text(l10n.commonEdit),
-                                    ),
-                                    PopupMenuItem(
-                                      value: 'rename',
-                                      child: Text(l10n.commonRename),
-                                    ),
-                                    PopupMenuItem(
-                                      value: 'duplicate',
-                                      child: Text(l10n.themeDuplicateAction),
-                                    ),
-                                    PopupMenuItem(
-                                      value: 'exportCard',
-                                      child: Text(l10n.shareCardExportMenu),
-                                    ),
-                                    PopupMenuItem(
-                                      value: 'export',
-                                      // 書き出しと共有が終わるまで、同じ
-                                      // テーマをもう一度は書き出さない。
-                                      enabled: !ExportShareService.isRunning(
-                                        _exportKey(entry.value),
-                                      ),
-                                      child: Text(l10n.themeExportMenuItem),
-                                    ),
-                                    if (ThemeService.isBuiltInPreset(
-                                      entry.value.id,
-                                    ))
-                                      PopupMenuItem(
-                                        value: 'reset',
-                                        child: Text(
-                                          l10n.themeResetConfirmAction,
-                                        ),
-                                      )
-                                    else
-                                      PopupMenuItem(
-                                        value: 'delete',
-                                        child: Text(l10n.commonDelete),
-                                      ),
-                                  ],
-                                ),
-                                ReorderableDragStartListener(
-                                  index: entry.key,
-                                  child: const Icon(
-                                    Icons.drag_handle,
-                                    size: 18,
-                                  ),
-                                ),
-                              ];
-                              if (constraints.maxWidth <
-                                  370 *
-                                      MediaQuery.textScalerOf(
-                                        context,
-                                      ).scale(1)) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    name,
-                                    Row(
-                                      children: [
-                                        swatch,
-                                        const Spacer(),
-                                        ...actions,
-                                      ],
-                                    ),
-                                  ],
-                                );
-                              }
-                              return Row(
-                                children: [
-                                  swatch,
-                                  const SizedBox(width: 14),
-                                  Expanded(child: name),
-                                  ...actions,
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
+                  _presetRow(
+                    context,
+                    index: entry.key,
+                    preset: entry.value,
+                    current: current,
+                    themeService: themeService,
                   ),
               ],
             ),
@@ -547,6 +405,233 @@ class ThemeSettingsScreen extends StatelessWidget {
   // プレビュー中に一時的に同じ色を通過しても個別設定を保持する。
   static bool _sameColor(Color a, Color b) => a.toARGB32() == b.toARGB32();
 
+  /// [a]と[b]の配色（名前・お気に入り等を除く全ての色）が同じか。
+  /// 一覧のカードをタップすると配色だけが現在の色へ写る（idは写らない）
+  /// ので、いま使っている配色のテーマは色で見分ける。
+  static bool _samePalette(AppThemePreset a, AppThemePreset b) =>
+      _sameColor(a.accentColor, b.accentColor) &&
+      _sameColor(a.effectiveAccentTextColor, b.effectiveAccentTextColor) &&
+      _sameColor(a.textColor, b.textColor) &&
+      _sameColor(a.buttonTextColor, b.buttonTextColor) &&
+      _sameColor(a.menuTextColor, b.menuTextColor) &&
+      _sameColor(a.selectionTextColor, b.selectionTextColor) &&
+      _sameColor(a.panelBgColor, b.panelBgColor) &&
+      _sameColor(a.menuBgColor, b.menuBgColor) &&
+      _sameColor(a.selectionColor, b.selectionColor) &&
+      _sameColor(a.updateMarkColor, b.updateMarkColor);
+
+  /// テーマ一覧の1行。カードのタップは配色の取り込みだけで、テーマ自体の
+  /// 編集は三点メニューの「編集」から行う（そのときだけ鉛筆の印が付く）。
+  ///
+  /// いまアプリに使っている配色と同じテーマの行には「使用中」の印と縁を
+  /// 付ける。取り込んだ直後でも、どのテーマの配色で動いているかが一覧で
+  /// 分かる（以前はSnackBarが消えると、どの行にも印が無かった）。
+  Widget _presetRow(
+    BuildContext context, {
+    required int index,
+    required AppThemePreset preset,
+    required AppThemePreset current,
+    required ThemeService themeService,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final scheme = Theme.of(context).colorScheme;
+    final accentText = AccentTextTheme.of(context);
+    final editing = current.id == preset.id;
+    final inUse = editing || _samePalette(current, preset);
+    final label = themePresetLabel(preset, locale);
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+
+    // 「使用中」は入る幅では印と文字、入らない幅（320pxの仏語など）では
+    // 印だけ（文字は縮めない。名前は読み上げに残す）。
+    Widget statusIcon() => Icon(
+      editing ? Icons.edit_outlined : Icons.check_circle,
+      key: editing ? const Key('themePresetEditingCheck') : null,
+      size: 16,
+      color: accentText,
+    );
+    final status = inUse
+        ? FirstThatFits(
+            key: const Key('themePresetInUse'),
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  statusIcon(),
+                  const SizedBox(width: 4),
+                  Text(
+                    l10n.themePresetInUseLabel,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: localizedHeadingStyle(
+                      context,
+                      TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: accentText,
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Semantics(label: l10n.themePresetInUseLabel, child: statusIcon()),
+            ],
+          )
+        : null;
+
+    final name = messageText(
+      label,
+      keepLineStarts: true,
+      style: localizedHeadingStyle(
+        context,
+        const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+      ),
+    );
+    final swatch = _PresetColorSwatch(preset: preset);
+    final actions = <Widget>[
+      IconButton(
+        icon: Icon(
+          preset.isFavorite ? Icons.star : Icons.star_outline,
+          size: 20,
+          color: preset.isFavorite
+              ? ThemeService.activeColorScheme.tertiary
+              : null,
+        ),
+        tooltip: l10n.commonFavoriteToggle,
+        onPressed: () => themeService.toggleFavorite(preset.id),
+      ),
+      PopupMenuButton<String>(
+        icon: const Icon(Icons.more_vert, size: 20),
+        onSelected: (action) =>
+            _handleAction(context, action, preset, themeService),
+        itemBuilder: (_) => [
+          PopupMenuItem(value: 'edit', child: Text(l10n.commonEdit)),
+          PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+          PopupMenuItem(
+            value: 'duplicate',
+            child: Text(l10n.themeDuplicateAction),
+          ),
+          PopupMenuItem(
+            value: 'exportCard',
+            child: Text(l10n.shareCardExportMenu),
+          ),
+          PopupMenuItem(
+            value: 'export',
+            // 書き出しと共有が終わるまで、同じテーマをもう一度は書き出さない。
+            enabled: !ExportShareService.isRunning(_exportKey(preset)),
+            child: Text(l10n.themeExportMenuItem),
+          ),
+          if (ThemeService.isBuiltInPreset(preset.id))
+            PopupMenuItem(
+              value: 'reset',
+              child: Text(l10n.themeResetConfirmAction),
+            )
+          else
+            PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete)),
+        ],
+      ),
+      // つかめる所をアイコンの周りまで広げる（18pxの印だけだと指で
+      // つかみ損ねて、カードのタップ＝配色の取り込みになった）。
+      ReorderableDragStartListener(
+        index: index,
+        child: const Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(6, 12, 8, 12),
+          child: Icon(Icons.drag_handle, size: 22),
+        ),
+      ),
+    ];
+
+    return Padding(
+      key: ValueKey(preset.id),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Semantics(
+        selected: inUse,
+        child: Material(
+          color: inUse
+              ? scheme.primaryContainer.withValues(alpha: 0.4)
+              : scheme.surfaceContainerLow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: inUse
+                ? BorderSide(color: scheme.primary, width: 1.5)
+                : BorderSide.none,
+          ),
+          elevation: inUse ? 0 : 1,
+          shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+            alpha: 0.15,
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              themeService.adoptPresetColors(preset.id);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.themeAdoptColorsSnackbar(label))),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(12, 6, 4, 6),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < 370 * textScale) {
+                    // 狭い画面：名前を1行目に、見本・印・操作を2行目に。
+                    // 2行目の見本と操作の間の空きへ「使用中」を置くので、
+                    // 印を出しても行の高さは変わらない。
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(
+                            top: 4,
+                            end: 8,
+                          ),
+                          child: name,
+                        ),
+                        Row(
+                          children: [
+                            swatch,
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Align(
+                                alignment: AlignmentDirectional.centerStart,
+                                child: status,
+                              ),
+                            ),
+                            ...actions,
+                          ],
+                        ),
+                      ],
+                    );
+                  }
+                  return Row(
+                    children: [
+                      swatch,
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            name,
+                            if (status != null) ...[
+                              const SizedBox(height: 4),
+                              status,
+                            ],
+                          ],
+                        ),
+                      ),
+                      ...actions,
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// カラーピッカーダイアログを表示する（カラーカスタマイズ）。
   /// ドラッグ中は `ThemeService.previewCurrent()` でアプリ全体へ即時反映し、
   /// 閉じた時点でユーザーが選んだ色をそのまま保存する。
@@ -558,8 +643,10 @@ class ThemeSettingsScreen extends StatelessWidget {
     BuildContext context,
     ThemeService service,
     AppThemePreset Function(AppThemePreset preset, Color color) update,
-    Color initialColor,
-  ) async {
+    Color initialColor, {
+    required _ThemeColorRole role,
+    required String roleLabel,
+  }) async {
     var changed = false;
     await showDialog<void>(
       context: context,
@@ -569,8 +656,12 @@ class ThemeSettingsScreen extends StatelessWidget {
           ctx,
           usual: const EdgeInsets.all(16),
         ),
+        // ピッカーが画面のほとんどを覆うので、選んでいる色がアプリの
+        // どこに効くかを見出しの見本で示す（見本はThemeServiceの現在の色を
+        // 直接読むので、ドラッグ中もそのまま変わる）。
         child: ColorPickerPanel(
           currentColor: initialColor,
+          header: _ThemeColorRoleSample(role: role, label: roleLabel),
           onColorChanged: (color) {
             changed = true;
             service.previewCurrent(update(service.current, color));
@@ -941,4 +1032,250 @@ class _PresetColorSwatch extends StatelessWidget {
       ),
     );
   }
+}
+
+/// カラーカスタマイズで選んでいる色の役目。
+enum _ThemeColorRole {
+  accent,
+  text,
+  buttonText,
+  panelBg,
+  menuBg,
+  updateMark,
+  accentText,
+  menuText,
+  selection,
+  selectionText,
+}
+
+/// カラーピッカーの上に出す、選んでいる色がアプリのどこに効くかの見本。
+///
+/// 色はテーマ（ダイアログを開いた時点で写した`Theme`）ではなく
+/// [ThemeService]の現在の色から直接読む。ピッカーのドラッグ中の
+/// `previewCurrent`がそのまま見本へ届く。選んでいる役目の部分を
+/// 輪で囲み、名前（項目名）を上に出す。
+class _ThemeColorRoleSample extends StatelessWidget {
+  const _ThemeColorRoleSample({required this.role, required this.label});
+
+  final _ThemeColorRole role;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final c = context.watch<ThemeService>().current;
+    final scheme = Theme.of(context).colorScheme;
+
+    Widget ring({
+      required bool on,
+      required Color color,
+      required double radius,
+      required Widget child,
+    }) {
+      return Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(radius + 3),
+          border: Border.all(
+            color: on ? color : color.withValues(alpha: 0),
+            width: 2,
+          ),
+        ),
+        child: child,
+      );
+    }
+
+    TextStyle heading(double size, Color color) => localizedHeadingStyle(
+      context,
+      TextStyle(
+        fontSize: size,
+        fontWeight: FontWeight.w700,
+        color: color,
+        height: 1.2,
+      ),
+    );
+
+    final onPanel = c.textColor;
+    final sample = Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: BoxDecoration(
+        color: c.panelBgColor,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: role == _ThemeColorRole.panelBg
+              ? onPanel
+              : scheme.outlineVariant,
+          width: role == _ThemeColorRole.panelBg ? 2 : 1,
+        ),
+      ),
+      // 大きな文字・長い語でも見本の行をはみ出させない（見本は飾りで、
+      // 読ませる文は上の項目名）。
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ring(
+                on: role == _ThemeColorRole.text,
+                color: onPanel,
+                radius: 4,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Text(
+                      'Aa',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: c.textColor,
+                        height: 1.1,
+                      ),
+                    ),
+                    PositionedDirectional(
+                      top: -3,
+                      end: -9,
+                      child: ring(
+                        on: role == _ThemeColorRole.updateMark,
+                        color: onPanel,
+                        radius: 4,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: c.updateMarkColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ring(
+                on: role == _ThemeColorRole.accentText,
+                color: onPanel,
+                radius: 4,
+                child: Text(
+                  l10n.commonEdit,
+                  maxLines: 1,
+                  style: heading(13, c.effectiveAccentTextColor),
+                ),
+              ),
+            ),
+          ),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ring(
+                on:
+                    role == _ThemeColorRole.accent ||
+                    role == _ThemeColorRole.buttonText,
+                color: onPanel,
+                radius: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: c.accentColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    l10n.commonSave,
+                    maxLines: 1,
+                    style: heading(12, c.buttonTextColor),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ring(
+                on:
+                    role == _ThemeColorRole.selection ||
+                    role == _ThemeColorRole.selectionText,
+                color: onPanel,
+                radius: 8,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: c.selectionColor,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.check,
+                    size: 18,
+                    color: c.selectionTextColor,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final menuRole =
+        role == _ThemeColorRole.menuBg || role == _ThemeColorRole.menuText;
+    // ピッカーの面（メニューの背景色）の上に、見出しと画面の見本を並べる。
+    // メニューの色を選んでいるときは見出しの行（ピッカーの面そのもの）を囲む。
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ring(
+          on: menuRole,
+          color: c.menuTextColor,
+          radius: 6,
+          child: Row(
+            children: [
+              Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: _roleColor(c),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: c.menuTextColor, width: 1),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  key: const Key('themeColorRoleSampleTitle'),
+                  style: heading(14, c.menuTextColor),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        ExcludeSemantics(child: sample),
+      ],
+    );
+  }
+
+  Color _roleColor(AppThemePreset c) => switch (role) {
+    _ThemeColorRole.accent => c.accentColor,
+    _ThemeColorRole.text => c.textColor,
+    _ThemeColorRole.buttonText => c.buttonTextColor,
+    _ThemeColorRole.panelBg => c.panelBgColor,
+    _ThemeColorRole.menuBg => c.menuBgColor,
+    _ThemeColorRole.updateMark => c.updateMarkColor,
+    _ThemeColorRole.accentText => c.effectiveAccentTextColor,
+    _ThemeColorRole.menuText => c.menuTextColor,
+    _ThemeColorRole.selection => c.selectionColor,
+    _ThemeColorRole.selectionText => c.selectionTextColor,
+  };
 }

@@ -882,6 +882,7 @@
   "themeUnreadableResetButton": "Reset theme",
   "themeUnreadableResetDone": "The theme has been reset to the default colors.",
   "themePresetSection": "Themes",
+  "themePresetInUseLabel": "In use",
   "themePresetDuplicateName": "{name} (Copy)",
   "themeDuplicateAction": "Duplicate",
   "themeAdoptColorsSnackbar": "Applied the colors of “{name}” to your current colors. Editing them will not change the original theme.",

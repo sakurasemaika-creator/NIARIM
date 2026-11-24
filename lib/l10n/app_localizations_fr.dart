@@ -2926,6 +2926,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themePresetSection => 'Thèmes';
 
   @override
+  String get themePresetInUseLabel => 'Utilisé';
+
+  @override
   String themePresetDuplicateName(String name) {
     return '$name (copie)';
   }

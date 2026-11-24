@@ -2776,6 +2776,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themePresetSection => '테마 목록';
 
   @override
+  String get themePresetInUseLabel => '사용 중';
+
+  @override
   String themePresetDuplicateName(String name) {
     return '$name（사본）';
   }

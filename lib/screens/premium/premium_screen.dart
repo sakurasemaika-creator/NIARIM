@@ -13,6 +13,8 @@ import '../../widgets/menu_card.dart';
 import '../../widgets/icon_notice.dart';
 import '../../widgets/legal_consent.dart';
 import '../../widgets/keep_together_text.dart';
+import '../../widgets/action_beside_or_below.dart';
+import '../../utils/line_break.dart';
 
 /// プレミアム画面。ユーザー作品そのものを除くUI色はColorSchemeへ集約する。
 class PremiumScreen extends StatefulWidget {
@@ -279,6 +281,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
     );
   }
 
+  /// 読点（、，,）の後ろで区切った句。[KeepTogetherText]へ渡すと、句の
+  /// 途中では行を変えない（1行に入らない句だけは字の間で折る）。
+  static List<String> _clauses(String text) => [
+    for (final m in RegExp(r'[^、，,]+[、，,]?').allMatches(text))
+      if (m[0]!.trim().length > 1) m[0]!,
+  ];
+
   String _purchaseErrorText(
     AppLocalizations l10n,
     String error,
@@ -303,20 +312,15 @@ class _PremiumScreenState extends State<PremiumScreen> {
     final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(20),
+      // 平らな淡い面と細い縁で区切る（ぼかした影とグラデーションは、
+      // 中の文より面の飾りが先に目に入った）。
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [scheme.primaryContainer, scheme.surface],
+        color: Color.alphaBlend(
+          scheme.primaryContainer.withValues(alpha: 0.55),
+          scheme.surface,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: scheme.primary.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.22)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,8 +341,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 children: [
                   Semantics(
                     header: true,
-                    child: Text(
+                    // 日本語・中国語は読点の後でだけ行を変える（字の間で
+                    // 折ると「もっと自 / 由な制作を」と語の途中で切れた）。
+                    child: KeepTogetherText(
                       l10n.premiumHeroTitle,
+                      keep: _clauses(l10n.premiumHeroTitle),
                       style: localizedHeadingStyle(
                         context,
                         TextStyle(
@@ -424,8 +431,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
       decoration: BoxDecoration(
-        color: scheme.surface.withValues(alpha: 0.6),
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: Flex(
         direction: stacked ? Axis.horizontal : Axis.vertical,
@@ -482,6 +490,53 @@ class _PremiumScreenState extends State<PremiumScreen> {
     );
   }
 
+  /// 狭い幅・大きな文字の比較の一覧で、列の名前と値を1つの札にしたもの。
+  Widget _comparisonPill(
+    BuildContext context,
+    String column,
+    String value, {
+    bool premiumColumn = false,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsetsDirectional.fromSTEB(10, 5, 10, 5),
+      decoration: BoxDecoration(
+        color: premiumColumn
+            ? scheme.primaryContainer
+            : scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 8,
+        children: [
+          Flexible(
+            child: Text(
+              column,
+              style: localizedHeadingStyle(
+                context,
+                TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: premiumColumn
+                      ? scheme.onPrimaryContainer
+                      : scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+          Flexible(
+            child: _comparisonCell(
+              context,
+              value,
+              premiumColumn: premiumColumn,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _comparisonTable(BuildContext context, AppLocalizations l10n) {
     final scheme = Theme.of(context).colorScheme;
     final items = [
@@ -517,7 +572,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
     String rowLabel((String, String, String) item) =>
         '${item.$1}\n${l10n.premiumComparisonFree} ${spoken(item.$2)}\n${l10n.premiumComparisonPremium} ${spoken(item.$3)}';
     final premiumBg = scheme.primaryContainer;
-    if (MediaQuery.textScalerOf(context).scale(14) >= 21) {
+    Widget cardList() {
       return MenuCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -530,18 +585,40 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 label: rowLabel(item),
                 excludeSemantics: true,
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                  // 表と同じ記号と色で、無料とプレミアムの値を並べる
+                  // （文字だけの「無料 あり」「プレミアム あり」は、どちらが
+                  // 有利かが一目で分からなかった）。
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 4,
+                    spacing: 8,
                     children: [
-                      Text(
+                      messageText(
                         item.$1,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        keepLineStarts: true,
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.4,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurface,
+                        ),
                       ),
-                      Text('${l10n.premiumComparisonFree}  ${spoken(item.$2)}'),
-                      Text(
-                        '${l10n.premiumComparisonPremium}  ${spoken(item.$3)}',
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          _comparisonPill(
+                            context,
+                            l10n.premiumComparisonFree,
+                            item.$2,
+                          ),
+                          _comparisonPill(
+                            context,
+                            l10n.premiumComparisonPremium,
+                            item.$3,
+                            premiumColumn: true,
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -552,136 +629,273 @@ class _PremiumScreenState extends State<PremiumScreen> {
         ),
       );
     }
-    return MenuCard(
-      clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shadowColor: scheme.primary.withValues(alpha: 0.2),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4)),
-      ),
-      child: Table(
-        // セルの高さは既定（top）だと**各セルが自分の中身ぶんしか高さを
-        // 持たない**ため、機能名が2行に折り返した行だけ、他の列の背景色が
-        // 行の下端まで届かず白い帯が残る（実際に「アニメ制作・描画機能」の
-        // 行で発生していた）。intrinsicHeightにすると全セルが行内で最も
-        // 高いセルと同じ高さになり、背景が必ず行いっぱいに塗られる。
-        // fillは「全セルがfillだと行の高さが0になる」ため使わないこと。
-        defaultVerticalAlignment: TableCellVerticalAlignment.intrinsicHeight,
-        border: TableBorder(
-          horizontalInside: BorderSide(
-            color: scheme.outlineVariant.withValues(alpha: 0.4),
+
+    if (MediaQuery.textScalerOf(context).scale(14) >= 21) return cardList();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 表の語が列に入らない幅（320pxの仏語など）では、見出し・機能名を
+        // 語の途中で折る代わりに、項目ごとの一覧で出す。
+        // 表は外側のカードの余白の内側に並ぶ。
+        final cardMargin =
+            (Theme.of(context).cardTheme.margin ?? const EdgeInsets.all(4))
+                .horizontal;
+        if (!_comparisonTableFits(
+          context,
+          l10n,
+          items,
+          constraints.maxWidth - cardMargin,
+        )) {
+          return cardList();
+        }
+        return MenuCard(
+          clipBehavior: Clip.antiAlias,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: scheme.outlineVariant.withValues(alpha: 0.7),
+            ),
           ),
-        ),
-        columnWidths: const {
-          0: FlexColumnWidth(1.2),
-          1: FlexColumnWidth(1.4),
-          2: FlexColumnWidth(1.4),
-        },
-        children: [
-          TableRow(
+          child: Table(
+            // セルの高さは既定（top）だと**各セルが自分の中身ぶんしか高さを
+            // 持たない**ため、機能名が2行に折り返した行だけ、他の列の背景色が
+            // 行の下端まで届かず白い帯が残る（実際に「アニメ制作・描画機能」の
+            // 行で発生していた）。intrinsicHeightにすると全セルが行内で最も
+            // 高いセルと同じ高さになり、背景が必ず行いっぱいに塗られる。
+            // fillは「全セルがfillだと行の高さが0になる」ため使わないこと。
+            defaultVerticalAlignment:
+                TableCellVerticalAlignment.intrinsicHeight,
+            border: TableBorder(
+              horizontalInside: BorderSide(
+                color: scheme.outlineVariant.withValues(alpha: 0.4),
+              ),
+            ),
+            // 値の列（記号・「90秒」「2時間」等の短い語）は中身の幅だけ取り、
+            // 残りを機能名へ回す。3列を同じ割合で分けていた頃は、機能名が
+            // 7字ほどで折れ「ウォータ / ーマーク」と長音で始まる行ができた。
+            columnWidths: const {
+              0: FlexColumnWidth(),
+              1: MinColumnWidth(
+                IntrinsicColumnWidth(),
+                FractionColumnWidth(0.3),
+              ),
+              2: MinColumnWidth(
+                IntrinsicColumnWidth(),
+                FractionColumnWidth(0.34),
+              ),
+            },
             children: [
-              Container(
-                color: scheme.surfaceContainerHighest,
-                padding: const EdgeInsets.all(12),
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  l10n.premiumComparisonFeature,
-                  style: localizedHeadingStyle(
-                    context,
-                    TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: scheme.onSurface,
+              TableRow(
+                children: [
+                  Container(
+                    color: scheme.surfaceContainerHighest,
+                    padding: const EdgeInsets.all(12),
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      l10n.premiumComparisonFeature,
+                      style: localizedHeadingStyle(
+                        context,
+                        TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: scheme.onSurface,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              Container(
-                color: scheme.surfaceContainerHighest,
-                padding: const EdgeInsets.all(12),
-                alignment: Alignment.center,
-                child: Text(
-                  l10n.premiumComparisonFree,
-                  textAlign: TextAlign.center,
-                  style: localizedHeadingStyle(
-                    context,
-                    TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                color: premiumBg,
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.workspace_premium_rounded,
-                      size: 14,
-                      color: scheme.onPrimaryContainer,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l10n.premiumComparisonPremium,
+                  Container(
+                    color: scheme.surfaceContainerHighest,
+                    padding: const EdgeInsets.all(12),
+                    alignment: Alignment.center,
+                    child: Text(
+                      l10n.premiumComparisonFree,
                       textAlign: TextAlign.center,
                       style: localizedHeadingStyle(
                         context,
                         TextStyle(
                           fontWeight: FontWeight.bold,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    color: premiumBg,
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.workspace_premium_rounded,
+                          size: 14,
                           color: scheme.onPrimaryContainer,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          l10n.premiumComparisonPremium,
+                          textAlign: TextAlign.center,
+                          style: localizedHeadingStyle(
+                            context,
+                            TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: scheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              ...items.asMap().entries.map((entry) {
+                final zebra = entry.key.isOdd
+                    ? scheme.surfaceContainerLowest
+                    : scheme.surface;
+                final item = entry.value;
+                return TableRow(
+                  children: [
+                    Container(
+                      color: zebra,
+                      padding: const EdgeInsets.all(12),
+                      alignment: Alignment.centerLeft,
+                      // 長音符・小さいかな・閉じ括弧で行を始めない。
+                      child: KeepTogetherText(
+                        item.$1,
+                        keep: lineStartKeepParts(item.$1),
+                        semanticsLabel: rowLabel(item),
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.45,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      color: zebra,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      child: ExcludeSemantics(
+                        child: Center(child: _comparisonCell(context, item.$2)),
+                      ),
+                    ),
+                    Container(
+                      color: premiumBg,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      child: ExcludeSemantics(
+                        child: Center(
+                          child: _comparisonCell(
+                            context,
+                            item.$3,
+                            premiumColumn: true,
+                          ),
                         ),
                       ),
                     ),
                   ],
-                ),
-              ),
+                );
+              }),
             ],
           ),
-          ...items.asMap().entries.map((entry) {
-            final zebra = entry.key.isOdd
-                ? scheme.surfaceContainerLowest
-                : scheme.surface;
-            final item = entry.value;
-            return TableRow(
-              children: [
-                Container(
-                  color: zebra,
-                  padding: const EdgeInsets.all(12),
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    item.$1,
-                    semanticsLabel: rowLabel(item),
-                    style: TextStyle(fontSize: 14, color: scheme.onSurface),
-                  ),
-                ),
-                Container(
-                  color: zebra,
-                  padding: const EdgeInsets.all(12),
-                  child: ExcludeSemantics(
-                    child: Center(child: _comparisonCell(context, item.$2)),
-                  ),
-                ),
-                Container(
-                  color: premiumBg,
-                  padding: const EdgeInsets.all(12),
-                  child: ExcludeSemantics(
-                    child: Center(
-                      child: _comparisonCell(
-                        context,
-                        item.$3,
-                        premiumColumn: true,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }),
-        ],
+        );
+      },
+    );
+  }
+
+  /// 比較表を語の途中で折らずに組めるか。値の列は中身の幅（上限は表の幅の
+  /// 3割前後）、機能名の列は残りの幅として、見出しと各行の折れない部分
+  /// （欧文の語、つないだ数と単位）がそれぞれの列に入るかを測る。
+  bool _comparisonTableFits(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<(String, String, String)> items,
+    double width,
+  ) {
+    final base = DefaultTextStyle.of(context).style;
+    final scaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    final heading = base.merge(
+      localizedHeadingStyle(
+        context,
+        const TextStyle(fontWeight: FontWeight.bold),
       ),
     );
+    final body = base.merge(const TextStyle(fontSize: 14, height: 1.45));
+    final painters = <TextPainter>[];
+    TextPainter laid(String text, TextStyle style) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        textDirection: direction,
+        textScaler: scaler,
+      )..layout();
+      painters.add(painter);
+      return painter;
+    }
+
+    double widest(String text, TextStyle style) => laid(text, style).width;
+    double unbreakable(String text, TextStyle style) {
+      final painter = laid(text, style);
+      return widestUnbreakableWidth(
+        painter,
+        reported: painter.minIntrinsicWidth,
+      );
+    }
+
+    bool isMark(String v) => v == '○' || v == '×';
+    try {
+      const valuePadding = 24.0;
+      // 見出し（1語）と日本語・中国語の短い値（「2時間」「削除可」）は
+      // 字の間でも折らない1つの語として扱う。
+      final cjk = RegExp(r'[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]');
+      double word(String text, TextStyle style) =>
+          cjk.hasMatch(text) ? widest(text, style) : unbreakable(text, style);
+      const featurePadding = 24.0;
+      double column(String header, Iterable<String> values) => [
+        widest(header, heading),
+        for (final v in values)
+          if (!isMark(v)) widest(v, body),
+        20.0,
+      ].reduce((a, b) => a > b ? a : b);
+      final freeCap = width * 0.3;
+      final premiumCap = width * 0.34;
+      final free = column(l10n.premiumComparisonFree, items.map((i) => i.$2));
+      final premium = column(
+        l10n.premiumComparisonPremium,
+        items.map((i) => i.$3),
+      );
+      final freeWidth = (free + valuePadding).clamp(0.0, freeCap);
+      final premiumWidth = (premium + valuePadding).clamp(0.0, premiumCap);
+      if (widest(l10n.premiumComparisonFree, heading) + valuePadding >
+              freeCap ||
+          widest(l10n.premiumComparisonPremium, heading) + valuePadding >
+              premiumCap) {
+        return false;
+      }
+      for (final item in items) {
+        if (!isMark(item.$2) &&
+            word(item.$2, body) + valuePadding > freeWidth) {
+          return false;
+        }
+        if (!isMark(item.$3) &&
+            word(item.$3, body) + valuePadding > premiumWidth) {
+          return false;
+        }
+      }
+      final feature = width - freeWidth - premiumWidth - featurePadding;
+      if (widest(l10n.premiumComparisonFeature, heading) > feature) {
+        return false;
+      }
+      for (final item in items) {
+        if (unbreakable(item.$1, body) > feature) return false;
+      }
+      return true;
+    } finally {
+      for (final painter in painters) {
+        painter.dispose();
+      }
+    }
   }
 
   Widget _planCard(
@@ -698,17 +912,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
     final available = price != null;
     final featured = isRecommended && available;
     return MenuCard(
-      elevation: !available
-          ? 0
-          : featured
-          ? 6
-          : 1,
+      elevation: 0,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: featured
             ? BorderSide(color: scheme.primary, width: 2)
-            : BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.35)),
+            : BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.7)),
       ),
       child: Semantics(
         button: true,
@@ -732,16 +942,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   }
                 },
           child: Container(
-            decoration: featured
-                ? BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        scheme.primaryContainer.withValues(alpha: 0.6),
-                        scheme.surface,
-                      ],
-                    ),
+            color: featured
+                ? Color.alphaBlend(
+                    scheme.primaryContainer.withValues(alpha: 0.4),
+                    scheme.surface,
                   )
                 : null,
             padding: const EdgeInsets.all(16),

@@ -24,6 +24,7 @@ import '../../../widgets/scrollable_sheet_body.dart';
 import 'hsv_color_wheel.dart';
 import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
+import '../../../widgets/list_ink_clip.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/file_failure_reason.dart';
 
@@ -41,6 +42,10 @@ class ColorPickerPanel extends StatefulWidget {
   // 分かりにくい」ため非表示にできるようにしている。
   final bool showCloseBar;
 
+  /// 見出しの行（「色選択」と今の色の帯）の代わりに出す部品。テーマの
+  /// 色を選ぶときに、選んでいる色がアプリのどこに効くかの見本を出す。
+  final Widget? header;
+
   const ColorPickerPanel({
     super.key,
     required this.currentColor,
@@ -48,6 +53,7 @@ class ColorPickerPanel extends StatefulWidget {
     required this.onClose,
     this.onEyedropperTap,
     this.showCloseBar = true,
+    this.header,
   });
 
   @override
@@ -169,256 +175,287 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       selfScrolling: true,
       child: Padding(
         padding: EdgeInsets.fromLTRB(12, docked ? 4 : 8, 12, 12),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (widget.showCloseBar)
-                PanelCenterCloseBar(onClose: widget.onClose),
-              if (!docked) ...[
-                Row(
-                  children: [
-                    Text(
-                      l10n.colorPickerTitle,
-                      style: localizedHeadingStyle(
-                        context,
-                        const TextStyle(fontWeight: FontWeight.bold),
-                      ),
+        // 閉じるボタンと見出し（今の色）は固定し、その下だけをスクロール
+        // させる。全体を1つのスクロールにしていた頃は、色コードの欄へ
+        // 入ると欄を見せるためにスクロールし、閉じるボタンが上へ隠れた。
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.showCloseBar)
+              PanelCenterCloseBar(onClose: widget.onClose),
+            if (!docked && widget.header != null) ...[
+              widget.header!,
+              const SizedBox(height: 8),
+            ] else if (!docked) ...[
+              Row(
+                children: [
+                  Text(
+                    l10n.colorPickerTitle,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 200),
-                        child: Semantics(
-                          label: l10n.colorPickerCurrentColorSemanticsLabel(
-                            '#${_colorToHex(_currentColor)}',
-                          ),
-                          child: SizedBox(
-                            key: const ValueKey('selected-color-preview-chip'),
-                            // A height-only box inside Flexible can collapse to
-                            // zero width, hiding the preview entirely on phones.
-                            width: 200,
-                            height: 20,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(3),
-                              child: CustomPaint(
-                                painter: _CheckerboardPainter(),
-                                child: ColoredBox(color: _currentColor),
-                              ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 200),
+                      child: Semantics(
+                        label: l10n.colorPickerCurrentColorSemanticsLabel(
+                          '#${_colorToHex(_currentColor)}',
+                        ),
+                        child: SizedBox(
+                          key: const ValueKey('selected-color-preview-chip'),
+                          // A height-only box inside Flexible can collapse to
+                          // zero width, hiding the preview entirely on phones.
+                          width: 200,
+                          height: 20,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(3),
+                            child: CustomPaint(
+                              painter: _CheckerboardPainter(),
+                              child: ColoredBox(color: _currentColor),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
-              // カラーサークルは常時表示。右下のピルで数値スライダーを
-              // HSV/RGBから切り替える。現在色の値はモード変更で変えない。
-              // 正方形（彩度・明度）＋外側カラーサークル（色相）でタップ選択できる
-              // 方式。円の
-              // 外側・左下の空きスペースには透明色切り替えボタンを配置する。
-              Center(
-                child: LayoutBuilder(
-                  builder: (context, constraints) => HsvColorWheel(
-                    // Leave room for the HSV/RGB pill below the hue ring even
-                    // in a compact PC dock; mobile keeps the larger wheel.
-                    // The mode pills use the panel's full width, not the
-                    // ring width; the wheel can therefore fill more space.
-                    size: math.min(236.0, constraints.maxWidth),
-                    controlsWidth: constraints.maxWidth,
-                    onEyedropperTap: widget.onEyedropperTap,
-                    eyedropperTooltip: l10n.toolbarItemEyedropper,
-                    hue: _hue,
-                    saturation: _saturation,
-                    value: _value,
-                    onHueChanged: (h) {
-                      _hue = h;
-                      _applyHsv();
-                    },
-                    onSvChanged: (s, v) {
-                      _saturation = s;
-                      _value = v;
-                      _applyHsv();
-                    },
-                    onChangeEnd: _commitToRecent,
-                    isTransparent: _alpha == 0,
-                    onToggleTransparent: _toggleTransparent,
-                    showHsvSliders: _showHsvSliders,
-                    onSliderModeChanged: (hsv) =>
-                        setState(() => _showHsvSliders = hsv),
-                  ),
-                ),
-              ),
-              // Wheel controls already clear the ring: no extra spacer.
-              if (_showHsvSliders) ...[
-                _slider('H', _hue.roundToDouble(), 0, 360, (v) {
-                  _hue = v.roundToDouble();
-                  _applyHsv();
-                }, (_) => _commitToRecent()),
-                _slider('S', (_saturation * 100).roundToDouble(), 0, 100, (v) {
-                  _saturation = v.round() / 100;
-                  _applyHsv();
-                }, (_) => _commitToRecent()),
-                _slider('V', (_value * 100).roundToDouble(), 0, 100, (v) {
-                  _value = v.round() / 100;
-                  _applyHsv();
-                }, (_) => _commitToRecent()),
-              ] else ...[
-                _slider('R', _r.toDouble(), 0, 255, (v) {
-                  _r = v.round();
-                  _applyRgb();
-                }, (_) => _commitToRecent()),
-                _slider('G', _g.toDouble(), 0, 255, (v) {
-                  _g = v.round();
-                  _applyRgb();
-                }, (_) => _commitToRecent()),
-                _slider('B', _b.toDouble(), 0, 255, (v) {
-                  _b = v.round();
-                  _applyRgb();
-                }, (_) => _commitToRecent()),
-              ],
-              const SizedBox(height: 4),
-              // 不透明度スライダー（カラーピッカーは常に透明色も選択
-              // できるようにする）。チェッカー柄の上にプレビューを
-              // 重ねて透明度が視覚的に分かるようにする。見出しラベルを添え、
-              // 現在色プレビューは一目で分かるよう大きめに表示する。
-              // 0〜1で持つが、直接入力と同じく百分率で動かす。
-              LabeledSlider(
-                padding: EdgeInsets.zero,
-                label: l10n.colorPickerOpacityLabel,
-                labelStyle: TextStyle(
-                  fontSize: 10,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                value: _alpha * 100,
-                min: 0,
-                max: 100,
-                sliderLabel: '${(_alpha * 100).round()}%',
-                valueText: '${(_alpha * 100).round()}%',
-                valueStyle: const TextStyle(fontSize: 11),
-                onChanged: (v) {
-                  _alpha = v / 100;
-                  _applyAlpha();
-                },
-                onChangeEnd: (_) => _commitToRecent(),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Text('#'),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: TextField(
-                      controller: _hexController,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp('[0-9a-fA-F#]'),
-                        ),
-                        LengthLimitingTextInputFormatter(9),
-                      ],
-                      style: const TextStyle(fontSize: 12),
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 6,
-                        ),
-                        border: OutlineInputBorder(),
-                      ),
-                      onSubmitted: (hex) {
-                        final color = _hexToColor(hex);
-                        if (color != null) {
-                          _applyColor(color);
-                          _commitToRecent();
-                        } else {
-                          _hexController.text = _colorToHex(_currentColor);
-                        }
-                      },
-                    ),
-                  ),
-                  // HEXコピー・貼り付け（入力・コピー・貼り付けすべて対応）
-                  IconButton(
-                    icon: const Icon(Icons.copy, size: 16),
-                    tooltip: l10n.commonCopy,
-                    onPressed: () {
-                      Clipboard.setData(
-                        ClipboardData(text: '#${_colorToHex(_currentColor)}'),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(l10n.colorPickerHexCopiedSnackbar),
-                        ),
-                      );
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.paste, size: 16),
-                    tooltip: l10n.commonPaste,
-                    onPressed: () async {
-                      final data = await Clipboard.getData(
-                        Clipboard.kTextPlain,
-                      );
-                      final text = data?.text;
-                      if (text == null) return;
-                      final color = _hexToColor(text);
-                      if (color != null) {
-                        _hexController.text = _colorToHex(color);
-                        _applyColor(color);
-                        _commitToRecent();
-                      }
-                    },
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                l10n.colorPickerRecentColorsLabel,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 4),
-              if (paletteService.recentColors.isEmpty)
-                Text(
-                  l10n.colorPickerRecentColorsEmpty,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                )
-              else
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: paletteService.recentColors.map((argb) {
-                    final color = Color(argb);
-                    return GestureDetector(
-                      onTap: () => _applyColor(color),
-                      child: Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: color,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.outlineVariant,
-                          ),
+              const SizedBox(height: 8),
+            ],
+            Flexible(
+              // 半分隠れたボタンを押した色が、固定した見出し・閉じる
+              // ボタンの上へはみ出さないよう、スクロールの中に限る。
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // カラーサークルは常時表示。右下のピルで数値スライダーを
+                    // HSV/RGBから切り替える。現在色の値はモード変更で変えない。
+                    // 正方形（彩度・明度）＋外側カラーサークル（色相）でタップ選択できる
+                    // 方式。円の
+                    // 外側・左下の空きスペースには透明色切り替えボタンを配置する。
+                    Center(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) => HsvColorWheel(
+                          // Leave room for the HSV/RGB pill below the hue ring even
+                          // in a compact PC dock; mobile keeps the larger wheel.
+                          // The mode pills use the panel's full width, not the
+                          // ring width; the wheel can therefore fill more space.
+                          size: math.min(236.0, constraints.maxWidth),
+                          controlsWidth: constraints.maxWidth,
+                          onEyedropperTap: widget.onEyedropperTap,
+                          eyedropperTooltip: l10n.toolbarItemEyedropper,
+                          hue: _hue,
+                          saturation: _saturation,
+                          value: _value,
+                          onHueChanged: (h) {
+                            _hue = h;
+                            _applyHsv();
+                          },
+                          onSvChanged: (s, v) {
+                            _saturation = s;
+                            _value = v;
+                            _applyHsv();
+                          },
+                          onChangeEnd: _commitToRecent,
+                          isTransparent: _alpha == 0,
+                          onToggleTransparent: _toggleTransparent,
+                          showHsvSliders: _showHsvSliders,
+                          onSliderModeChanged: (hsv) =>
+                              setState(() => _showHsvSliders = hsv),
                         ),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                    // Wheel controls already clear the ring: no extra spacer.
+                    if (_showHsvSliders) ...[
+                      _slider('H', _hue.roundToDouble(), 0, 360, (v) {
+                        _hue = v.roundToDouble();
+                        _applyHsv();
+                      }, (_) => _commitToRecent()),
+                      _slider(
+                        'S',
+                        (_saturation * 100).roundToDouble(),
+                        0,
+                        100,
+                        (v) {
+                          _saturation = v.round() / 100;
+                          _applyHsv();
+                        },
+                        (_) => _commitToRecent(),
+                      ),
+                      _slider('V', (_value * 100).roundToDouble(), 0, 100, (v) {
+                        _value = v.round() / 100;
+                        _applyHsv();
+                      }, (_) => _commitToRecent()),
+                    ] else ...[
+                      _slider('R', _r.toDouble(), 0, 255, (v) {
+                        _r = v.round();
+                        _applyRgb();
+                      }, (_) => _commitToRecent()),
+                      _slider('G', _g.toDouble(), 0, 255, (v) {
+                        _g = v.round();
+                        _applyRgb();
+                      }, (_) => _commitToRecent()),
+                      _slider('B', _b.toDouble(), 0, 255, (v) {
+                        _b = v.round();
+                        _applyRgb();
+                      }, (_) => _commitToRecent()),
+                    ],
+                    const SizedBox(height: 4),
+                    // 不透明度スライダー（カラーピッカーは常に透明色も選択
+                    // できるようにする）。チェッカー柄の上にプレビューを
+                    // 重ねて透明度が視覚的に分かるようにする。見出しラベルを添え、
+                    // 現在色プレビューは一目で分かるよう大きめに表示する。
+                    // 0〜1で持つが、直接入力と同じく百分率で動かす。
+                    LabeledSlider(
+                      padding: EdgeInsets.zero,
+                      label: l10n.colorPickerOpacityLabel,
+                      labelStyle: TextStyle(
+                        fontSize: 10,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      value: _alpha * 100,
+                      min: 0,
+                      max: 100,
+                      sliderLabel: '${(_alpha * 100).round()}%',
+                      valueText: '${(_alpha * 100).round()}%',
+                      valueStyle: const TextStyle(fontSize: 11),
+                      onChanged: (v) {
+                        _alpha = v / 100;
+                        _applyAlpha();
+                      },
+                      onChangeEnd: (_) => _commitToRecent(),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Text('#'),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: TextField(
+                            controller: _hexController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp('[0-9a-fA-F#]'),
+                              ),
+                              LengthLimitingTextInputFormatter(9),
+                            ],
+                            style: const TextStyle(fontSize: 12),
+                            decoration: const InputDecoration(
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 6,
+                              ),
+                              border: OutlineInputBorder(),
+                            ),
+                            onSubmitted: (hex) {
+                              final color = _hexToColor(hex);
+                              if (color != null) {
+                                _applyColor(color);
+                                _commitToRecent();
+                              } else {
+                                _hexController.text = _colorToHex(
+                                  _currentColor,
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                        // HEXコピー・貼り付け（入力・コピー・貼り付けすべて対応）
+                        IconButton(
+                          icon: const Icon(Icons.copy, size: 16),
+                          tooltip: l10n.commonCopy,
+                          onPressed: () {
+                            Clipboard.setData(
+                              ClipboardData(
+                                text: '#${_colorToHex(_currentColor)}',
+                              ),
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  l10n.colorPickerHexCopiedSnackbar,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.paste, size: 16),
+                          tooltip: l10n.commonPaste,
+                          onPressed: () async {
+                            final data = await Clipboard.getData(
+                              Clipboard.kTextPlain,
+                            );
+                            final text = data?.text;
+                            if (text == null) return;
+                            final color = _hexToColor(text);
+                            if (color != null) {
+                              _hexController.text = _colorToHex(color);
+                              _applyColor(color);
+                              _commitToRecent();
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.colorPickerRecentColorsLabel,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (paletteService.recentColors.isEmpty)
+                      Text(
+                        l10n.colorPickerRecentColorsEmpty,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      )
+                    else
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: paletteService.recentColors.map((argb) {
+                          final color = Color(argb);
+                          return GestureDetector(
+                            onTap: () => _applyColor(color),
+                            child: Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    const SizedBox(height: 12),
+                    const Divider(height: 1),
+                    const SizedBox(height: 8),
+                    _paletteSection(context, l10n, paletteService),
+                  ],
                 ),
-              const SizedBox(height: 12),
-              const Divider(height: 1),
-              const SizedBox(height: 8),
-              _paletteSection(context, l10n, paletteService),
-            ],
-          ),
+              ).clipListInk(),
+            ),
+          ],
         ),
       ),
     );

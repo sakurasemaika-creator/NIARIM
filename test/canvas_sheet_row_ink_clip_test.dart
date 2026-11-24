@@ -171,13 +171,16 @@ void main() {
     var pressedEdges = 0;
     for (final edge in ['bottom', 'top']) {
       for (final rowElement in rows.evaluate().toList()) {
+        // スクロールの外に固定した部品（カラーピッカーの閉じるボタン等）は
+        // 隠れないので対象外。
         final scrollableElement = find
             .ancestor(
               of: find.byElementPredicate((e) => e == rowElement),
               matching: find.byType(Scrollable),
             )
             .evaluate()
-            .first;
+            .firstOrNull;
+        if (scrollableElement == null) continue;
         final position =
             ((scrollableElement as StatefulElement).state as ScrollableState)
                 .position;
