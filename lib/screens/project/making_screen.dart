@@ -95,6 +95,51 @@ class _MakingScreenState extends State<MakingScreen> {
     _MakingFormat.avi => 'avi',
   };
 
+  Future<void> _deleteHistory() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(MakingStrings.deleteHistory(context)),
+        content: Text(MakingStrings.deleteHistoryConfirm(context)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await MakingService.deleteHistory(widget.projectId);
+      if (!mounted) return;
+      setState(() {
+        _history = const MakingHistory(
+          snapshots: [],
+          sizeBytes: 0,
+          limitReached: false,
+        );
+        _index = 0;
+        _playing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(MakingStrings.historyDeleted(context))),
+      );
+    } catch (error, stackTrace) {
+      debugPrint('Could not delete making history: ' + error.toString() +
+          '\n' + stackTrace.toString());
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(MakingStrings.exportFailed(context))),
+      );
+    }
+  }
+
   Future<void> _export() async {
     final snapshots = _history?.snapshots ?? const <MakingSnapshot>[];
     if (snapshots.length < 2 || _exporting) return;
@@ -424,7 +469,16 @@ class _MakingScreenState extends State<MakingScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        key: const Key('makingDeleteHistoryButton'),
+                        onPressed: _exporting ? null : _deleteHistory,
+                        icon: const Icon(Icons.delete_outline),
+                        label: Text(MakingStrings.deleteHistory(context)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                   ],
                 ),
     );

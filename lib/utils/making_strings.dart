@@ -146,6 +146,29 @@ abstract final class MakingStrings {
     'zh_Hant': '無法匯出製作影片。',
   });
 
+  static String deleteHistory(BuildContext context) => _pick(context, {
+    'ja': 'メイキング履歴を削除', 'en': 'Delete making history',
+    'es': 'Eliminar historial', 'fr': 'Supprimer l’historique',
+    'ko': '메이킹 기록 삭제', 'zh': '删除制作记录', 'zh_Hant': '刪除製作記錄',
+  });
+
+  static String deleteHistoryConfirm(BuildContext context) => _pick(context, {
+    'ja': 'この作品のメイキング画像と記録情報をすべて削除します。この操作は元に戻せません。',
+    'en': 'Delete all making snapshots and history for this project? This cannot be undone.',
+    'es': '¿Eliminar todas las capturas y el historial de este proyecto? No se puede deshacer.',
+    'fr': 'Supprimer tous les instantanés et l’historique de ce projet ? Cette action est irréversible.',
+    'ko': '이 작품의 모든 메이킹 스냅샷과 기록을 삭제할까요? 되돌릴 수 없습니다.',
+    'zh': '删除此作品的所有制作快照和记录？此操作无法撤销。',
+    'zh_Hant': '刪除此作品的所有製作快照與記錄？此操作無法復原。',
+  });
+
+  static String historyDeleted(BuildContext context) => _pick(context, {
+    'ja': 'メイキング履歴を削除しました。', 'en': 'Making history deleted.',
+    'es': 'Historial eliminado.', 'fr': 'Historique supprimé.',
+    'ko': '메이킹 기록을 삭제했습니다.', 'zh': '制作记录已删除。',
+    'zh_Hant': '製作記錄已刪除。',
+  });
+
   static String frameCounter(BuildContext context, int current, int total) =>
       _pick(context, {
         'ja': '記録 $current / $total',
