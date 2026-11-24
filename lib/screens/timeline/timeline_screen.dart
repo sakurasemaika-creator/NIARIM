@@ -747,7 +747,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _cameraScrollCtrl,
     _commonLayerScrollCtrl,
     _effectFilterScrollCtrl,
-    if (_readAloudScrollController != null) _readAloudScrollController!,
+    ?_readAloudScrollController,
     ..._rowScrollCtrls.values,
   ];
 
@@ -3309,9 +3309,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(MakingStrings.noVoices(context))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(MakingStrings.noVoices(context))));
       return;
     }
     if (!mounted) return;
@@ -3352,7 +3352,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     var speechRate = 1.0;
     var pitch = 1.0;
     var startFrame = _currentFrame
-        .clamp(0, math.max(0, _totalFrames - 1)).toInt();
+        .clamp(0, math.max(0, _totalFrames - 1))
+        .toInt();
     var generating = false;
 
     await showDialog<void>(
@@ -3382,7 +3383,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     key: const Key('timelineReadAloudVoice'),
-                    value: selectedVoiceName,
+                    initialValue: selectedVoiceName,
                     isExpanded: true,
                     decoration: InputDecoration(
                       labelText: MakingStrings.voice(context),
@@ -3408,8 +3409,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    MakingStrings.rate(context) + ': ' +
-                        speechRate.toStringAsFixed(2) + '×',
+                    '${MakingStrings.rate(context)}: ${speechRate.toStringAsFixed(2)}×',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   Slider(
@@ -3422,8 +3422,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         : (value) => setDialogState(() => speechRate = value),
                   ),
                   Text(
-                    MakingStrings.pitch(context) + ': ' +
-                        pitch.toStringAsFixed(2) + '×',
+                    '${MakingStrings.pitch(context)}: ${pitch.toStringAsFixed(2)}×',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   Slider(
@@ -3436,8 +3435,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         : (value) => setDialogState(() => pitch = value),
                   ),
                   Text(
-                    MakingStrings.startFrame(context) + ': F' +
-                        (startFrame + 1).toString(),
+                    '${MakingStrings.startFrame(context)}: F${startFrame + 1}',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   Slider(
@@ -3447,9 +3445,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     divisions: _totalFrames > 1 ? _totalFrames - 1 : null,
                     onChanged: generating || _totalFrames <= 1
                         ? null
-                        : (value) => setDialogState(
-                            () => startFrame = value.round(),
-                          ),
+                        : (value) =>
+                              setDialogState(() => startFrame = value.round()),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -3512,19 +3509,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           asset.id,
                         );
                         if (!mounted || savedPath == null) {
-                          throw StateError('Generated audio could not be stored.');
+                          throw StateError(
+                            'Generated audio could not be stored.',
+                          );
                         }
-                        final project = context.read<ProjectService>().projects
+                        final project = context
+                            .read<ProjectService>()
+                            .projects
                             .where((p) => p.id == widget.projectId)
                             .firstOrNull;
                         final durationMs = asset.duration?.inMilliseconds ?? 0;
-                        final maxLength = math.max(
-                          1,
-                          _totalFrames - startFrame,
-                        ).toInt();
+                        final maxLength = math
+                            .max(1, _totalFrames - startFrame)
+                            .toInt();
                         final lengthFrames = durationMs > 0 && project != null
                             ? (durationMs * project.fps / 1000)
-                                .ceil().clamp(1, maxLength).toInt()
+                                  .ceil()
+                                  .clamp(1, maxLength)
+                                  .toInt()
                             : math.min(24, maxLength).toInt();
                         final label = timelineTextName(
                           textController.text,
@@ -3543,9 +3545,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         );
                         if (!mounted) return;
                         if (clip == null) {
-                          throw StateError('The speech clip could not be added.');
+                          throw StateError(
+                            'The speech clip could not be added.',
+                          );
                         }
-                        Navigator.pop(dialogContext);
+                        if (dialogContext.mounted) {
+                          Navigator.pop(dialogContext);
+                        }
                         setState(() => _audioClips.add(clip));
                       } catch (error, stackTrace) {
                         AppErrorReporter.record(error, stackTrace);
@@ -3560,7 +3566,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         final temporary = generatedWav;
                         if (temporary != null) {
                           try {
-                            if (await temporary.exists()) await temporary.delete();
+                            if (await temporary.exists()) {
+                              await temporary.delete();
+                            }
                           } catch (cleanupError, cleanupStack) {
                             AppErrorReporter.record(cleanupError, cleanupStack);
                           }
@@ -5488,7 +5496,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           // 変更不可のまま常時表示する。
           canRename
               ? GestureDetector(
-                  onTap: () => _showRenameTrackRowDialog(type, rowIndex, rowLabel),
+                  onTap: () =>
+                      _showRenameTrackRowDialog(type, rowIndex, rowLabel),
                   child: _buildTrackLabel(icon, rowLabel),
                 )
               : _buildTrackLabel(icon, rowLabel),
@@ -5697,7 +5706,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               key: ValueKey('wf_${clip.id}'),
                               filePath: clip.filePath!,
                               // Each clip gets its own cache for its exact source interval.
-                              cacheKey: 'wave_v2_${clip.id}_${clip.filePath}_'
+                              cacheKey:
+                                  'wave_v2_${clip.id}_${clip.filePath}_'
                                   '${clip.useStart}_${clip.lengthFrames}_${_projectFps(context.read<ProjectService>())}',
                               sourceStartFrame: clip.useStart,
                               lengthFrames: clip.lengthFrames,
@@ -8438,7 +8448,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       for (final other in existingOfType) {
         if (excludeIds.contains(other.id)) continue;
         if (other.trackRow != c.trackRow ||
-            other.isReadAloud != c.isReadAloud) continue;
+            other.isReadAloud != c.isReadAloud) {
+          continue;
+        }
         final oStart = other.startFrame;
         final oEnd = other.startFrame + other.lengthFrames;
         if (start < oEnd && oStart < end) {
@@ -8493,7 +8505,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
             final row = newRowsByType.putIfAbsent(type, () {
               final rowKind = _rowKindOf(type);
               ps.addTrackRow(widget.projectId, sceneId, rowKind);
-              return ps.rowNamesOf(widget.projectId, sceneId, rowKind).length - 1;
+              return ps.rowNamesOf(widget.projectId, sceneId, rowKind).length -
+                  1;
             });
             newRowForClipId[clip.id] = row;
           }
