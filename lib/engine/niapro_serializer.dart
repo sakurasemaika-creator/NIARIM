@@ -1102,6 +1102,7 @@ class NiaproSerializer {
       'exportHeight': d.project.exportHeight,
       'drawingAreaScale': d.project.drawingAreaScale,
       'enabledAutofillPresetIds': d.project.enabledAutofillPresetIds,
+      'makingEnabled': d.project.makingEnabled,
       if (d.project.hideEndCard != null) 'hideEndCard': d.project.hideEndCard,
       'scenes': [
         for (final scene in [
@@ -1147,6 +1148,7 @@ class NiaproSerializer {
     'exportWidth': p.exportWidth,
     'exportHeight': p.exportHeight,
     'drawingAreaScale': p.drawingAreaScale,
+    'makingEnabled': p.makingEnabled,
     'createdAt': p.createdAt.toIso8601String(),
     'updatedAt': (updatedAt ?? DateTime.now()).toIso8601String(),
     'totalWorkSeconds': p.totalWorkSeconds,
@@ -1331,6 +1333,7 @@ class NiaproSerializer {
     exportWidth: j['exportWidth'] as int? ?? 1920,
     exportHeight: j['exportHeight'] as int? ?? 1080,
     drawingAreaScale: (j['drawingAreaScale'] as num?)?.toDouble() ?? 1.0,
+    makingEnabled: j['makingEnabled'] as bool? ?? false,
     createdAt: DateTime.parse(j['createdAt'] as String),
     updatedAt: DateTime.parse(j['updatedAt'] as String),
     totalWorkSeconds: j['totalWorkSeconds'] as int? ?? 0,

@@ -4245,6 +4245,7 @@ class ProjectService extends ChangeNotifier {
     int exportHeight = 1080,
     double drawingAreaScale = 1.0,
     List<String>? enabledAutofillPresetIds,
+    bool makingEnabled = false,
   }) async {
     final projectId = _nextId('proj');
     // 作成と最終保存は同じ1回の時刻（別々に読むと数マイクロ秒ずれ、その値が
@@ -4263,6 +4264,7 @@ class ProjectService extends ChangeNotifier {
       exportHeight: exportHeight,
       drawingAreaScale: drawingAreaScale.clamp(1.0, 10.0),
       enabledAutofillPresetIds: enabledAutofillPresetIds,
+      makingEnabled: makingEnabled,
     );
     // 初期シーン・フレーム・レイヤーを生成（Scene0001/Frame0/Layer0001）
     final initialLayer = Layer(

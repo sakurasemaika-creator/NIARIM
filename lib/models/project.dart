@@ -50,6 +50,8 @@ class Project {
   // 項目。nullの場合は「すべてのプリセットを使用する」という従来通りの
   // 挙動（既存プロジェクトとの後方互換のためのデフォルト）。
   final List<String>? enabledAutofillPresetIds;
+  /// Making-history capture is opt-in per project. Older project files default OFF.
+  final bool makingEnabled;
 
   const Project({
     required this.id,
@@ -77,6 +79,7 @@ class Project {
     this.exportHeight = 1080,
     this.drawingAreaScale = 1.0,
     this.enabledAutofillPresetIds,
+    this.makingEnabled = false,
   });
 
   // 描画領域サイズ（書き出しサイズ × 倍率）
@@ -112,6 +115,7 @@ class Project {
     int? exportHeight,
     double? drawingAreaScale,
     Object? enabledAutofillPresetIds = _projectSentinel,
+    bool? makingEnabled,
   }) {
     return Project(
       id: id ?? this.id,
@@ -158,6 +162,7 @@ class Project {
       enabledAutofillPresetIds: enabledAutofillPresetIds == _projectSentinel
           ? this.enabledAutofillPresetIds
           : enabledAutofillPresetIds as List<String>?,
+      makingEnabled: makingEnabled ?? this.makingEnabled,
     );
   }
 

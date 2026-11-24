@@ -33,6 +33,7 @@ import '../../widgets/grouped_sheet.dart';
 import '../../widgets/icon_notice.dart';
 import 'widgets/canvas_size_choice_label.dart';
 import '../../widgets/keep_together_text.dart';
+import '../../utils/making_strings.dart';
 
 class NewProjectScreen extends StatefulWidget {
   const NewProjectScreen({super.key});
@@ -65,6 +66,8 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   // 描画領域設定（ホーム画面設定の初期値を引き継ぎ）
   bool _drawingAreaEnabled = false;
   double _drawingAreaScale = 2.0;
+  // Making capture is an explicit per-project choice. Never enable it by default.
+  bool _makingEnabled = false;
   // このプロジェクトで使う自動塗りプリセット。nullは
   // 「すべて使用する」を意味する。
   List<String>? _enabledPresetIds;
@@ -898,6 +901,24 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                         ],
                       ),
                     ),
+                  SwitchListTile(
+                    key: const ValueKey('newProjectMakingEnabled'),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: GroupedSheet.rowInset,
+                      vertical: 4,
+                    ),
+                    title: Text(
+                      MakingStrings.recordProject(context),
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    subtitle: Text(MakingStrings.recordProjectHint(context)),
+                    value: _makingEnabled,
+                    onChanged: (value) =>
+                        setState(() => _makingEnabled = value),
+                  ),
                   // このプロジェクトで使う自動塗りプリセットの選択。
                   // 新規作成時にも選べるようにする。
                   SheetRow(
@@ -1016,6 +1037,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
         exportHeight: _exportHeight,
         drawingAreaScale: _drawingAreaEnabled ? _drawingAreaScale : 1.0,
         enabledAutofillPresetIds: _enabledPresetIds,
+        makingEnabled: _makingEnabled,
       );
       // 作れたら作成中のまま（押せない）にしておく。戻すと、キャンバスを
       // 描く前に届いたダブルクリックの2回目で、もう1つ作品ができた。
