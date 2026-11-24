@@ -148,7 +148,7 @@ for r in rows:
         elif app_t:
             lines.append(
                 f"- test：この項目の実装を読み込むtest {len(app_t)}本（{shown}{more}）。"
-                f"この計算機の全件のtest（`0f926685`、956ファイル、成功5994。失敗はrootで権限が効かない既知の3件と、`b65a6aab`で直したドックのtest）と{ci_note}で成功。"
+                f"この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）と{ci_note}で成功。"
             )
         else:
             lines.append(
