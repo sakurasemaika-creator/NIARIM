@@ -17,6 +17,7 @@ class PressureCurveGraph extends StatefulWidget {
   final void Function(int index, double x, double y) onMovePoint;
   final void Function(int index) onRemovePoint;
   final double size;
+  final bool editable;
 
   const PressureCurveGraph({
     super.key,
@@ -25,7 +26,23 @@ class PressureCurveGraph extends StatefulWidget {
     required this.onMovePoint,
     required this.onRemovePoint,
     this.size = 240,
+    this.editable = true,
   });
+
+  /// 見るだけのグラフ（弱・普通・強の形を見せる）。偽なら点を足す・動かす・
+  /// 消す操作を受けず、点の丸も描かない。
+  const PressureCurveGraph.preview({
+    super.key,
+    required this.points,
+    this.size = 240,
+  }) : onAddPoint = _ignoreAdd,
+       onMovePoint = _ignoreMove,
+       onRemovePoint = _ignoreRemove,
+       editable = false;
+
+  static void _ignoreAdd(double x, double y) {}
+  static void _ignoreMove(int index, double x, double y) {}
+  static void _ignoreRemove(int index) {}
 
   @override
   State<PressureCurveGraph> createState() => _PressureCurveGraphState();
@@ -58,6 +75,27 @@ class _PressureCurveGraphState extends State<PressureCurveGraph> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final graph = Container(
+      width: widget.size,
+      height: widget.size,
+      // グラフは置かれた面の上にじかに描き、枠と目盛りの線だけを引く
+      // （面の上にもう1色の灰色の箱を重ねない）。
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: CustomPaint(
+        painter: _PressureCurvePainter(
+          points: widget.points,
+          color: AccentTextTheme.of(context),
+          handleOutlineColor:
+              Theme.of(context).cardTheme.color ?? scheme.surface,
+          gridColor: scheme.outlineVariant,
+          showHandles: widget.editable,
+        ),
+      ),
+    );
+    if (!widget.editable) return graph;
     return GestureDetector(
       onTapUp: (d) {
         final hit = _hitTestPoint(d.localPosition, radius: 8);
@@ -77,23 +115,7 @@ class _PressureCurveGraphState extends State<PressureCurveGraph> {
         widget.onMovePoint(idx, x, y);
       },
       onPanEnd: (_) => _dragIndex = null,
-      child: Container(
-        width: widget.size,
-        height: widget.size,
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: scheme.outlineVariant),
-        ),
-        child: CustomPaint(
-          painter: _PressureCurvePainter(
-            points: widget.points,
-            color: AccentTextTheme.of(context),
-            handleOutlineColor: scheme.surfaceContainerHighest,
-            gridColor: scheme.outlineVariant,
-          ),
-        ),
-      ),
+      child: graph,
     );
   }
 }
@@ -103,11 +125,13 @@ class _PressureCurvePainter extends CustomPainter {
   final Color color;
   final Color handleOutlineColor;
   final Color gridColor;
+  final bool showHandles;
   _PressureCurvePainter({
     required this.points,
     required this.color,
     required this.handleOutlineColor,
     required this.gridColor,
+    required this.showHandles,
   });
 
   @override
@@ -156,9 +180,11 @@ class _PressureCurvePainter extends CustomPainter {
         ..color = color
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3
-        ..strokeCap = StrokeCap.round,
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
     );
 
+    if (!showHandles) return;
     for (final p in sorted) {
       final handle = Offset(p.$1 * size.width, (1 - p.$2) * size.height);
       canvas.drawCircle(handle, 8, Paint()..color = color);
@@ -178,5 +204,6 @@ class _PressureCurvePainter extends CustomPainter {
       old.points != points ||
       old.color != color ||
       old.handleOutlineColor != handleOutlineColor ||
-      old.gridColor != gridColor;
+      old.gridColor != gridColor ||
+      old.showHandles != showHandles;
 }

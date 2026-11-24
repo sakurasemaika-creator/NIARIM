@@ -141,6 +141,9 @@
   "gestureHoldEyedropperTitle": "长按启动取色",
   "gestureHoldEyedropperHint": "使用画笔或橡皮擦绘图时，手指不动按住一段时间即可拾取该处颜色并设为当前颜色。",
   "gestureHoldEyedropperDurationLabel": "保持时长",
+  "gestureTouchSection": "手指操作",
+  "gestureHoldEyedropperNeedsLongPress": "将上方的“长按”设为“吸管”后即可使用。",
+  "gestureHoldEyedropperUseLongPress": "将长按设为吸管",
   "gestureHoldEyedropperSecondsValue": "{seconds}秒",
   "@gestureHoldEyedropperSecondsValue": {
     "placeholders": {
@@ -175,6 +178,7 @@
   "penSettingsCurveStrong": "强",
   "penSettingsCurveCustom": "自定义",
   "penSettingsCustomGraphHint": "点击图表空白处添加控制点，拖动控制点移动，双击可删除（起点和终点无法删除）。",
+  "penSettingsGraphAxes": "横轴：笔压　纵轴：对线条粗细和浓度的影响",
   "penSettingsResetCurveButton": "恢复默认",
   "penSettingsPerBrushNote": "※笔压的“反映到大小/不透明度”设置是各画笔单独设置的（在画笔设置面板中更改）。",
   "penSettingsButtonSection": "笔按钮设置",
@@ -811,7 +815,6 @@
   "widgetColorBase": "背景色",
   "widgetColorForeground": "文字与图标颜色",
   "widgetNoProjects": "还没有作品。创作后即可在这里选择。",
-  "widgetSettingsNote": "主屏幕小组件无法播放视频，因此以静止图像显示所选作品的一帧。",
   "assetTagLineArt": "线稿",
   "assetTagBasic": "基础",
   "assetTagMainLine": "主线",

@@ -440,6 +440,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gestureHoldEyedropperDurationLabel => '保持时长';
 
   @override
+  String get gestureTouchSection => '手指操作';
+
+  @override
+  String get gestureHoldEyedropperNeedsLongPress => '将上方的“长按”设为“吸管”后即可使用。';
+
+  @override
+  String get gestureHoldEyedropperUseLongPress => '将长按设为吸管';
+
+  @override
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '$seconds秒';
   }
@@ -523,6 +532,9 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get penSettingsCustomGraphHint =>
       '点击图表空白处添加控制点，拖动控制点移动，双击可删除（起点和终点无法删除）。';
+
+  @override
+  String get penSettingsGraphAxes => '横轴：笔压　纵轴：对线条粗细和浓度的影响';
 
   @override
   String get penSettingsResetCurveButton => '恢复默认';
@@ -2522,9 +2534,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get widgetNoProjects => '还没有作品。创作后即可在这里选择。';
-
-  @override
-  String get widgetSettingsNote => '主屏幕小组件无法播放视频，因此以静止图像显示所选作品的一帧。';
 
   @override
   String get assetTagLineArt => '线稿';
@@ -10950,6 +10959,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get gestureHoldEyedropperDurationLabel => '保持時長';
 
   @override
+  String get gestureTouchSection => '手指操作';
+
+  @override
+  String get gestureHoldEyedropperNeedsLongPress => '將上方的「長按」設為「滴管」後即可使用。';
+
+  @override
+  String get gestureHoldEyedropperUseLongPress => '將長按設為滴管';
+
+  @override
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '$seconds秒';
   }
@@ -11033,6 +11051,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get penSettingsCustomGraphHint =>
       '點擊圖表空白處新增控制點，拖曳控制點移動，雙擊可刪除（起點和終點無法刪除）。';
+
+  @override
+  String get penSettingsGraphAxes => '橫軸：筆壓　縱軸：對線條粗細和濃度的影響';
 
   @override
   String get penSettingsResetCurveButton => '重設為預設值';
@@ -13033,9 +13054,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get widgetNoProjects => '還沒有作品。創作後即可在這裡選擇。';
-
-  @override
-  String get widgetSettingsNote => '主畫面小工具無法播放影片，因此以靜止影像顯示所選作品的一格畫面。';
 
   @override
   String get assetTagLineArt => '線稿';

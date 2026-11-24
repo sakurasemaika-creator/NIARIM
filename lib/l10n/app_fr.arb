@@ -141,6 +141,9 @@
   "gestureHoldEyedropperTitle": "Activer la pipette par appui long",
   "gestureHoldEyedropperHint": "En dessinant avec le stylo ou la gomme, maintenir le doigt immobile un instant prélève la couleur sous le doigt comme couleur actuelle.",
   "gestureHoldEyedropperDurationLabel": "Durée de maintien",
+  "gestureTouchSection": "Gestes des doigts",
+  "gestureHoldEyedropperNeedsLongPress": "Disponible lorsque « Appui long », ci-dessus, est réglé sur « Pipette ».",
+  "gestureHoldEyedropperUseLongPress": "Régler l’appui long sur Pipette",
   "gestureHoldEyedropperSecondsValue": "{seconds} s",
   "@gestureHoldEyedropperSecondsValue": {
     "placeholders": {
@@ -175,6 +178,7 @@
   "penSettingsCurveStrong": "Fort",
   "penSettingsCurveCustom": "Personnalisé",
   "penSettingsCustomGraphHint": "Touchez un espace vide du graphique pour ajouter un point, faites glisser un point pour le déplacer, ou touchez-le deux fois pour le supprimer (les points de début et de fin ne peuvent pas être supprimés).",
+  "penSettingsGraphAxes": "Horizontal : pression du stylet. Vertical : effet sur l’épaisseur et l’opacité.",
   "penSettingsResetCurveButton": "Réinitialiser",
   "penSettingsPerBrushNote": "* Le réglage « Appliquer à la taille/opacité » de la pression est propre à chaque pinceau (à modifier dans le panneau de réglages du pinceau).",
   "penSettingsButtonSection": "Réglages des boutons du stylet",
@@ -811,7 +815,6 @@
   "widgetColorBase": "Couleur de fond",
   "widgetColorForeground": "Couleur du texte et des icônes",
   "widgetNoProjects": "Aucune œuvre pour l’instant. Dès que vous en créez une, vous pourrez la choisir ici.",
-  "widgetSettingsNote": "Les widgets de l’écran d’accueil ne peuvent pas lire de vidéo : une image de l’œuvre choisie est affichée en fixe.",
   "assetTagLineArt": "Trait",
   "assetTagBasic": "Basique",
   "assetTagMainLine": "Trait principal",

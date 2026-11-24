@@ -1,3 +1,4 @@
+import 'widgets/settings_choice_sheet.dart';
 import 'widgets/settings_value_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,7 @@ import '../../services/premium_service.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/app_locale.dart';
@@ -401,6 +403,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// 一覧のダイアログの選択肢：名前と、選んでいるものだけ右端の印。
+  Widget _checkedOption(
+    BuildContext dialogContext, {
+    required bool selected,
+    required Widget child,
+  }) => Semantics(
+    selected: selected,
+    child: Row(
+      children: [
+        Expanded(child: child),
+        if (selected)
+          Icon(Icons.check, size: 20, color: AccentTextTheme.of(dialogContext))
+        else
+          const SizedBox(width: 20),
+      ],
+    ),
+  );
+
   void _showWatermarkSetting() {
     if (!context.read<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
@@ -418,170 +438,171 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          minChildSize: 0.3,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (sheetContext, controller) {
-            final l10n = AppLocalizations.of(sheetContext)!;
-            return ListView(
-              controller: controller,
-              padding: const EdgeInsets.all(16),
-              children: [
-                Text(
-                  l10n.settingsBasicSheetTitle,
-                  style: localizedHeadingStyle(
-                    context,
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        builder: (ctx, setS) {
+          final l10n = AppLocalizations.of(ctx)!;
+          // シートは中身の高さだけ取る（以前は画面の6割で開き、下半分が
+          // 空いていた）。入らない高さ・文字の大きさではシートの中で
+          // スクロールする。題・項目名・説明・スイッチ・スライダーの左端を
+          // 16pxにそろえる（行は押せる範囲を端まで取り、自分の中で16px空ける）。
+          return ScrollableSheetBody(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 20, bottom: 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: Text(
+                      l10n.settingsBasicSheetTitle,
+                      style: settingsSheetTitleStyle(context),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                SettingsValueTile(
-                  title: l10n.settingsDefaultFps,
-                  subtitle: l10n.settingsDefaultFpsSubtitle,
-                  value: l10n.pcStatusFps(settings.defaultFps),
-                  onTap: () async {
-                    // 新規プロジェクト作成画面のFPS選択肢と統一（8/12/24のみ）。
-                    final selected = await showDialog<int>(
-                      context: ctx,
-                      builder: (dctx) => SimpleDialog(
-                        title: Text(l10n.settingsDefaultFps),
-                        children: [8, 12, 24]
-                            .map(
-                              (fps) => SimpleDialogOption(
+                  SettingsValueTile(
+                    title: l10n.settingsDefaultFps,
+                    subtitle: l10n.settingsDefaultFpsSubtitle,
+                    value: l10n.pcStatusFps(settings.defaultFps),
+                    onTap: () async {
+                      // 新規プロジェクト作成画面のFPS選択肢と統一（8/12/24のみ）。
+                      final selected = await showDialog<int>(
+                        context: ctx,
+                        builder: (dctx) => SimpleDialog(
+                          title: Text(l10n.settingsDefaultFps),
+                          // 選んでいる値は太字ではなく印で示す（白光明朝は
+                          // 太字にしても太くならず、どれを選んでいるか
+                          // 見分けられなかった。言語の一覧と同じ形）。
+                          children: [
+                            for (final fps in const [8, 12, 24])
+                              SimpleDialogOption(
                                 onPressed: () => Navigator.pop(dctx, fps),
-                                child: Text(
-                                  l10n.pcStatusFps(fps),
-                                  style: TextStyle(
-                                    fontWeight: settings.defaultFps == fps
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
+                                child: _checkedOption(
+                                  dctx,
+                                  selected: settings.defaultFps == fps,
+                                  child: Text(l10n.pcStatusFps(fps)),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                      if (selected != null) {
+                        await settings.setDefaultFps(selected);
+                        if (ctx.mounted) setS(() {});
+                      }
+                    },
+                  ),
+                  SettingsValueTile(
+                    title: l10n.settingsLanguage,
+                    value: _languageLabel(l10n, settings.language),
+                    onTap: () async {
+                      // 対応言語：日本語・English・简体中文・한국어・繁體中文・
+                      // Français・Español。
+                      final languages = <String>[
+                        'ja',
+                        'en',
+                        'zh',
+                        'ko',
+                        'zh_Hant',
+                        'fr',
+                        'es',
+                      ];
+                      final selected = await showDialog<String>(
+                        context: ctx,
+                        builder: (dctx) => SimpleDialog(
+                          title: Text(l10n.settingsLanguage),
+                          children: [
+                            for (final code in languages)
+                              SimpleDialogOption(
+                                onPressed: () => Navigator.pop(dctx, code),
+                                // 言語の名前はその言語の本文の書体で描く（UIの
+                                // 書体で描くと「简体中文」の「简」だけが別の書体・
+                                // 太さになった）。選んでいる言語は太字ではなく
+                                // 印で示す（白光明朝は太字にしても太くならず、
+                                // 中国語・韓国語の名前だけが太く見えた）。
+                                child: _checkedOption(
+                                  dctx,
+                                  selected: settings.language == code,
+                                  child: Text(
+                                    _languageLabel(l10n, code),
+                                    style: _languageNameStyle(code),
                                   ),
                                 ),
                               ),
-                            )
-                            .toList(),
-                      ),
-                    );
-                    if (selected != null) {
-                      await settings.setDefaultFps(selected);
-                      if (ctx.mounted) setS(() {});
-                    }
-                  },
-                ),
-                SettingsValueTile(
-                  title: l10n.settingsLanguage,
-                  value: _languageLabel(l10n, settings.language),
-                  onTap: () async {
-                    // 対応言語：日本語・English・简体中文・한국어・繁體中文・
-                    // Français・Español。
-                    final languages = <String>[
-                      'ja',
-                      'en',
-                      'zh',
-                      'ko',
-                      'zh_Hant',
-                      'fr',
-                      'es',
-                    ];
-                    final selected = await showDialog<String>(
-                      context: ctx,
-                      builder: (dctx) => SimpleDialog(
-                        title: Text(l10n.settingsLanguage),
-                        children: [
-                          for (final code in languages)
-                            SimpleDialogOption(
-                              onPressed: () => Navigator.pop(dctx, code),
-                              // 言語の名前はその言語の本文の書体で描く（UIの
-                              // 書体で描くと「简体中文」の「简」だけが別の書体・
-                              // 太さになった）。選んでいる言語は太字ではなく
-                              // 印で示す（白光明朝は太字にしても太くならず、
-                              // 中国語・韓国語の名前だけが太く見えた）。
-                              child: Semantics(
-                                selected: settings.language == code,
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        _languageLabel(l10n, code),
-                                        style: _languageNameStyle(code),
-                                      ),
-                                    ),
-                                    if (settings.language == code)
-                                      Icon(
-                                        Icons.check,
-                                        size: 20,
-                                        color: AccentTextTheme.of(dctx),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
-                    if (selected != null) {
-                      await settings.setLanguage(selected);
-                      if (ctx.mounted) setS(() {});
-                    }
-                  },
-                ),
-                const Divider(),
-                // 描画領域初期値
-                Text(
-                  l10n.settingsDrawingAreaTitle,
-                  style: localizedHeadingStyle(
-                    context,
-                    const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                messageText(
-                  l10n.settingsDrawingAreaHint,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.settingsDrawingAreaWiden),
-                  value: enabled,
-                  onChanged: (v) {
-                    setS(() => enabled = v);
-                    settings.setDefaultDrawingArea(enabled: v, scale: scale);
-                  },
-                ),
-                if (enabled) ...[
-                  LabeledSlider(
-                    label: l10n.settingsDrawingAreaScale,
-                    min: 1.0,
-                    max: 10.0,
-                    value: scale,
-                    divisions: 18,
-                    step: 0.5,
-                    isInt: false,
-                    sliderLabel: l10n.settingsScaleValue(
-                      scale.toStringAsFixed(1),
-                    ),
-                    valueText: l10n.settingsScaleValue(
-                      scale.toStringAsFixed(1),
-                    ),
-                    onChanged: (v) {
-                      setS(() => scale = v);
-                      settings.setDefaultDrawingArea(
-                        enabled: enabled,
-                        scale: v,
+                          ],
+                        ),
                       );
+                      if (selected != null) {
+                        await settings.setLanguage(selected);
+                        if (ctx.mounted) setS(() {});
+                      }
                     },
                   ),
+                  const Divider(height: 25, indent: 16, endIndent: 16),
+                  // 描画領域初期値
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      l10n.settingsDrawingAreaTitle,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: messageText(
+                      l10n.settingsDrawingAreaHint,
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1.4,
+                        color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  SwitchListTile(
+                    title: Text(l10n.settingsDrawingAreaWiden),
+                    value: enabled,
+                    onChanged: (v) {
+                      setS(() => enabled = v);
+                      settings.setDefaultDrawingArea(enabled: v, scale: scale);
+                    },
+                  ),
+                  if (enabled) ...[
+                    LabeledSlider(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      label: l10n.settingsDrawingAreaScale,
+                      min: 1.0,
+                      max: 10.0,
+                      value: scale,
+                      divisions: 18,
+                      step: 0.5,
+                      isInt: false,
+                      sliderLabel: l10n.settingsScaleValue(
+                        scale.toStringAsFixed(1),
+                      ),
+                      valueText: l10n.settingsScaleValue(
+                        scale.toStringAsFixed(1),
+                      ),
+                      onChanged: (v) {
+                        setS(() => scale = v);
+                        settings.setDefaultDrawingArea(
+                          enabled: enabled,
+                          scale: v,
+                        );
+                      },
+                    ),
+                  ],
                 ],
-              ],
-            );
-          },
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

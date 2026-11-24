@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../services/settings_service.dart';
-import '../../../config/accent_text_theme.dart';
 import '../../../widgets/action_beside_or_below.dart';
 
 /// 筆圧カーブの「試し書きコーナー」：適用前に
@@ -81,8 +80,10 @@ class _PressureCurveTryDrawState extends State<PressureCurveTryDraw> {
           child: Container(
             height: 120,
             width: double.infinity,
+            // 試し書きの紙は画面の用紙の色、線は文字の色（墨）で描く
+            // （設定の面の上にもう1色の灰色の面を重ねない）。
             decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest,
+              color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: scheme.outlineVariant),
             ),
@@ -93,7 +94,7 @@ class _PressureCurveTryDrawState extends State<PressureCurveTryDraw> {
                   points: _points,
                   pressures: _pressures,
                   curve: settings.applyPressureCurve,
-                  color: AccentTextTheme.of(context),
+                  color: scheme.onSurface,
                 ),
                 size: Size.infinite,
               ),

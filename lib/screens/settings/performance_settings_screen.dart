@@ -1,5 +1,5 @@
+import '../../widgets/grouped_sheet.dart';
 import 'widgets/settings_value_tile.dart';
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,9 +16,11 @@ import '../save_tree/save_tree_screen.dart';
 import '../../utils/line_break.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/action_beside_or_below.dart';
+import '../../widgets/button_row_or_stack.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/keep_together_text.dart';
+import '../../config/accent_text_theme.dart';
 import '../../config/font_fallback.dart';
 
 class PerformanceSettingsScreen extends StatefulWidget {
@@ -107,262 +109,317 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
               ]),
             ),
             children: [
-              Text(
-                l10n.perfSettingsQualitySection,
-                style: localizedHeadingStyle(context, _sectionStyle),
-              ),
-              const SizedBox(height: 8),
-              // 選択状態と変更通知はRadioGroupがまとめて持つ
-              // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-              // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる
-              // （ListViewの子としての並び方は spread と同じ）。
-              RadioGroup<QualityLevel>(
-                groupValue: perf.qualityLevel,
-                onChanged: (v) {
-                  if (v != null) _onQualityChanged(v);
-                },
-                child: Column(
-                  children: QualityLevel.values
-                      .map(
-                        (level) => _RadioRow<QualityLevel>(
-                          value: level,
-                          // 印は名前の後ろに並べ、入らなければ名前の下へ回す
-                          // （名前・印とも語の途中で折らない）。
-                          title: Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              _keepWords(_qualityLabel(l10n, level)),
-                              // この端末の性能から判定した推奨プリセット（初回起動時に
-                              // 自動選択されたもの）を、後から手動で変更していても
-                              // 常にわかるようにする。
-                              if (level == perf.defaultPreset)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    keepKoreanWordsTogether(
-                                      l10n.premiumPlanRecommendedBadge,
+              GroupedSheet(
+                title: l10n.perfSettingsQualitySection,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: // 選択状態と変更通知はRadioGroupがまとめて持つ
+                        // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+                        // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる
+                        // （ListViewの子としての並び方は spread と同じ）。
+                        RadioGroup<QualityLevel>(
+                          groupValue: perf.qualityLevel,
+                          onChanged: (v) {
+                            if (v != null) _onQualityChanged(v);
+                          },
+                          child: Column(
+                            children: QualityLevel.values
+                                .map(
+                                  (level) => _RadioRow<QualityLevel>(
+                                    value: level,
+                                    // 印は名前の後ろに並べ、入らなければ名前の下へ回す
+                                    // （名前・印とも語の途中で折らない）。
+                                    title: Wrap(
+                                      spacing: 8,
+                                      runSpacing: 4,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
+                                      children: [
+                                        _keepWords(_qualityLabel(l10n, level)),
+                                        // この端末の性能から判定した推奨プリセット（初回起動時に
+                                        // 自動選択されたもの）を、後から手動で変更していても
+                                        // 常にわかるようにする。
+                                        if (level == perf.defaultPreset)
+                                          Container(
+                                            // 印は塗らず細い枠と差し色の文字だけにする（差し色の塗りは
+                                            // 主な操作と選んだ状態のため）。
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 7,
+                                              vertical: 1,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: AccentTextTheme.of(
+                                                  context,
+                                                ),
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              keepKoreanWordsTogether(
+                                                l10n.premiumPlanRecommendedBadge,
+                                              ),
+                                              semanticsLabel: l10n
+                                                  .premiumPlanRecommendedBadge,
+                                              style: localizedHeadingStyle(
+                                                context,
+                                                TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AccentTextTheme.of(
+                                                    context,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
-                                    semanticsLabel:
-                                        l10n.premiumPlanRecommendedBadge,
-                                    style: localizedHeadingStyle(
-                                      context,
-                                      TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onPrimaryContainer,
+                                    subtitle: Text(
+                                      _qualityDesc(l10n, level),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        height: 1.45,
                                       ),
                                     ),
                                   ),
-                                ),
-                            ],
-                          ),
-                          subtitle: Text(
-                            _qualityDesc(l10n, level),
-                            style: const TextStyle(fontSize: 13, height: 1.45),
+                                )
+                                .toList(),
                           ),
                         ),
-                      )
-                      .toList(),
-                ),
+                  ),
+                ],
               ),
-              const Divider(height: 32),
+              // カスタムを選んだら、その下にすぐ項目を出す（以前は画面の
+              // 一番下にあり、選んでもスクロールしないと見えなかった）。
+              if (perf.qualityLevel == QualityLevel.custom) ...[
+                const SizedBox(height: 24),
+                _customCard(context, l10n, perf),
+              ],
               // アプリの容量・重さに影響する設定（旧・設定画面「詳細」カテゴリから
               // 移設。品質プリセットとは独立して常に変更可能）。
-              Text(
-                l10n.perfSettingsCapacitySection,
-                style: localizedHeadingStyle(context, _sectionStyle),
-              ),
-              SizedBox(height: 8),
-              Card(
-                elevation: 1,
-                shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                  alpha: 0.15,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                color: Theme.of(context).colorScheme.surfaceContainerLow,
-                child: Column(
-                  children: [
-                    SettingsValueTile(
-                      title: l10n.perfSettingsUndoLimitTitle,
-                      subtitle: l10n.perfSettingsUndoLimitSubtitle,
-                      value: l10n.perfSettingsUndoLimitValue(
-                        settings.undoLimit,
-                      ),
-                      onTap: () => _showUndoLimitDialog(context, settings),
-                    ),
-                    const Divider(height: 1),
-                    SettingsValueTile(
-                      title: l10n.perfSettingsTrashAutoDeleteTitle,
-                      subtitle: l10n.perfSettingsTrashAutoDeleteSubtitle,
-                      value: settings.trashAutoDeleteDays == 0
-                          ? l10n.perfSettingsTrashAutoDeleteOff
-                          : l10n.perfSettingsTrashAutoDeleteValue(
-                              settings.trashAutoDeleteDays,
-                            ),
-                      onTap: () =>
-                          _showTrashAutoDeleteDialog(context, settings),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 32),
-              Text(
-                l10n.perfSettingsCurrentSettingsSection,
-                style: localizedHeadingStyle(
-                  context,
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 8),
-              _infoTile(
-                l10n.perfSettingsTiltLabel,
-                perf.tiltEnabled
-                    ? l10n.perfSettingsTiltOn
-                    : l10n.perfSettingsTiltOff,
-              ),
-              _infoTile(
-                l10n.perfSettingsOnionPrevLabel,
-                perf.showPrevOnion
-                    ? l10n.perfSettingsOnionFrameCountValue(
-                        perf.prevOnionSkinFrames,
-                      )
-                    : l10n.commonOff,
-              ),
-              _infoTile(
-                l10n.perfSettingsOnionNextLabel,
-                perf.showNextOnion
-                    ? l10n.perfSettingsOnionFrameCountValue(
-                        perf.nextOnionSkinFrames,
-                      )
-                    : l10n.commonOff,
-              ),
-              _infoTile(
-                l10n.perfSettingsSaveModeLabel,
-                _saveModeLabel(l10n, perf.saveMode),
-              ),
-              if (perf.saveMode == SaveMode.slot)
-                _infoTile(
-                  l10n.perfSettingsSlotCountLabel,
-                  l10n.perfSettingsSlotCountValue(perf.slotCount),
-                ),
-              if (perf.qualityLevel == QualityLevel.custom) ...[
-                const Divider(height: 32),
-                // カスタム操作ボタン行
-                // 並べて入らなければ下の行へ回す（ボタンの名前を語の途中で
-                // 折らない）。
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.restart_alt, size: 16),
-                      label: _keepWords(
-                        l10n.perfSettingsResetButton,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      onPressed: () => _showResetDialog(context, perf),
-                    ),
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.copy, size: 16),
-                      label: _keepWords(
-                        l10n.perfSettingsCopyPresetButton,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      onPressed: () => _showCopyPresetDialog(context, perf),
-                    ),
-                  ],
-                ),
-                _SwitchRow(
-                  title: l10n.perfSettingsTiltSwitchTitle,
-                  value: perf.tiltEnabled,
-                  onChanged: (v) => perf.setCustomTilt(v),
-                ),
-                const SizedBox(height: 8),
-                _SwitchRow(
-                  title: l10n.perfSettingsShowPrevOnionTitle,
-                  value: perf.showPrevOnion,
-                  onChanged: (v) => perf.setCustomShowPrev(v),
-                ),
-                if (perf.showPrevOnion) ...[
-                  _onionSlider(
-                    l10n: l10n,
-                    label: l10n.perfSettingsOnionCountPrevLabel,
-                    value: perf.prevOnionSkinFrames,
-                    onChanged: (v) => perf.setCustomOnionSkinPrev(v),
+              const SizedBox(height: 24),
+              GroupedSheet(
+                title: l10n.perfSettingsCapacitySection,
+                children: [
+                  SettingsValueTile(
+                    title: l10n.perfSettingsUndoLimitTitle,
+                    subtitle: l10n.perfSettingsUndoLimitSubtitle,
+                    value: l10n.perfSettingsUndoLimitValue(settings.undoLimit),
+                    onTap: () => _showUndoLimitDialog(context, settings),
                   ),
-                ],
-                const SizedBox(height: 4),
-                _SwitchRow(
-                  title: l10n.perfSettingsShowNextOnionTitle,
-                  value: perf.showNextOnion,
-                  onChanged: (v) => perf.setCustomShowNext(v),
-                ),
-                if (perf.showNextOnion) ...[
-                  _onionSlider(
-                    l10n: l10n,
-                    label: l10n.perfSettingsOnionCountNextLabel,
-                    value: perf.nextOnionSkinFrames,
-                    onChanged: (v) => perf.setCustomOnionSkinNext(v),
-                  ),
-                ],
-                const SizedBox(height: 8),
-                Text(
-                  l10n.perfSettingsSaveModeLabel,
-                  style: localizedHeadingStyle(
-                    context,
-                    const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                // 選択状態と変更通知はRadioGroupがまとめて持つ
-                // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-                RadioGroup<SaveMode>(
-                  groupValue: perf.saveMode,
-                  onChanged: (v) {
-                    if (v == null || v == perf.saveMode) return;
-                    _onCustomSaveModeChanged(context, v, perf);
-                  },
-                  child: Column(
-                    children: SaveMode.values
-                        .map(
-                          (mode) => _RadioRow<SaveMode>(
-                            value: mode,
-                            title: _keepWords(_saveModeLabel(l10n, mode)),
+                  SettingsValueTile(
+                    title: l10n.perfSettingsTrashAutoDeleteTitle,
+                    subtitle: l10n.perfSettingsTrashAutoDeleteSubtitle,
+                    value: settings.trashAutoDeleteDays == 0
+                        ? l10n.perfSettingsTrashAutoDeleteOff
+                        : l10n.perfSettingsTrashAutoDeleteValue(
+                            settings.trashAutoDeleteDays,
                           ),
-                        )
-                        .toList(),
-                  ),
-                ),
-                if (perf.saveMode == SaveMode.slot) ...[
-                  const SizedBox(height: 8),
-                  _SlotCountSlider(
-                    label: l10n.perfSettingsSlotCountLabel,
-                    value: perf.slotCount,
-                    onChangeEnd: (newCount) =>
-                        _onCustomSlotCountChanged(context, newCount, perf),
+                    onTap: () => _showTrashAutoDeleteDialog(context, settings),
                   ),
                 ],
-              ],
+              ),
+              const SizedBox(height: 24),
+              GroupedSheet(
+                title: l10n.perfSettingsCurrentSettingsSection,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Column(
+                      children: [
+                        _infoTile(
+                          l10n.perfSettingsTiltLabel,
+                          perf.tiltEnabled
+                              ? l10n.perfSettingsTiltOn
+                              : l10n.perfSettingsTiltOff,
+                        ),
+                        _infoTile(
+                          l10n.perfSettingsOnionPrevLabel,
+                          perf.showPrevOnion
+                              ? l10n.perfSettingsOnionFrameCountValue(
+                                  perf.prevOnionSkinFrames,
+                                )
+                              : l10n.commonOff,
+                        ),
+                        _infoTile(
+                          l10n.perfSettingsOnionNextLabel,
+                          perf.showNextOnion
+                              ? l10n.perfSettingsOnionFrameCountValue(
+                                  perf.nextOnionSkinFrames,
+                                )
+                              : l10n.commonOff,
+                        ),
+                        _infoTile(
+                          l10n.perfSettingsSaveModeLabel,
+                          _saveModeLabel(l10n, perf.saveMode),
+                        ),
+                        if (perf.saveMode == SaveMode.slot)
+                          _infoTile(
+                            l10n.perfSettingsSlotCountLabel,
+                            l10n.perfSettingsSlotCountValue(perf.slotCount),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       ),
     );
   }
+
+  /// カスタムの項目（プリセットから写す・戻す、傾き、オニオンスキン、
+  /// 保存方式）。まとまりごとに区切る。
+  Widget _customCard(
+    BuildContext context,
+    AppLocalizations l10n,
+    PerformanceService perf,
+  ) {
+    // プリセットから写す・戻すは面の下（面の外の幅いっぱい）に置く。面の
+    // 中に置くと、大きな文字・長い言語でボタンの名前が語の途中で折れた。
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GroupedSheet(
+          title: l10n.perfSettingsQualityCustom,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: _SwitchRow(
+                title: l10n.perfSettingsTiltSwitchTitle,
+                value: perf.tiltEnabled,
+                onChanged: (v) => perf.setCustomTilt(v),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _SwitchRow(
+                    title: l10n.perfSettingsShowPrevOnionTitle,
+                    value: perf.showPrevOnion,
+                    onChanged: (v) => perf.setCustomShowPrev(v),
+                  ),
+                  if (perf.showPrevOnion)
+                    _onionSlider(
+                      l10n: l10n,
+                      label: l10n.perfSettingsOnionCountPrevLabel,
+                      value: perf.prevOnionSkinFrames,
+                      onChanged: (v) => perf.setCustomOnionSkinPrev(v),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _SwitchRow(
+                    title: l10n.perfSettingsShowNextOnionTitle,
+                    value: perf.showNextOnion,
+                    onChanged: (v) => perf.setCustomShowNext(v),
+                  ),
+                  if (perf.showNextOnion)
+                    _onionSlider(
+                      l10n: l10n,
+                      label: l10n.perfSettingsOnionCountNextLabel,
+                      value: perf.nextOnionSkinFrames,
+                      onChanged: (v) => perf.setCustomOnionSkinNext(v),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 12, bottom: 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      l10n.perfSettingsSaveModeLabel,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  // 選択状態と変更通知はRadioGroupがまとめて持つ
+                  // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+                  RadioGroup<SaveMode>(
+                    groupValue: perf.saveMode,
+                    onChanged: (v) {
+                      if (v == null || v == perf.saveMode) return;
+                      _onCustomSaveModeChanged(context, v, perf);
+                    },
+                    child: Column(
+                      children: SaveMode.values
+                          .map(
+                            (mode) => _RadioRow<SaveMode>(
+                              value: mode,
+                              title: _keepWords(_saveModeLabel(l10n, mode)),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                  if (perf.saveMode == SaveMode.slot)
+                    _SlotCountSlider(
+                      label: l10n.perfSettingsSlotCountLabel,
+                      value: perf.slotCount,
+                      onChangeEnd: (newCount) =>
+                          _onCustomSlotCountChanged(context, newCount, perf),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        // 並べて入らなければ1つずつの行に分け、どちらも行の幅いっぱいに
+        // する（ボタンの名前を語の途中で折らない。以前は名前の幅のまま
+        // 折り返して左に寄り、右端がそろわなかった）。
+        Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: ButtonRowOrStack(
+            children: [
+              OutlinedButton.icon(
+                icon: const Icon(Icons.copy, size: 16),
+                label: _keepWords(
+                  l10n.perfSettingsCopyPresetButton,
+                  style: const TextStyle(fontSize: 12),
+                ),
+                onPressed: () => _showCopyPresetDialog(context, perf),
+              ),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.restart_alt, size: 16),
+                label: _keepWords(
+                  l10n.perfSettingsResetButton,
+                  style: const TextStyle(fontSize: 12),
+                ),
+                onPressed: () => _showResetDialog(context, perf),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// まとまりの名前の書式（[GroupedSheet]の名前と同じ）。
+  TextStyle _sectionTitleStyle(BuildContext context) => localizedHeadingStyle(
+    context,
+    const TextStyle(fontSize: 13, height: 1.35),
+  );
 
   /// 左右の余白：ふだんは16px。[headings]の1語が入らないときだけ、入るまで
   /// 詰める（8pxまで）。
@@ -379,7 +436,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
             text: word,
             style: DefaultTextStyle.of(
               context,
-            ).style.merge(localizedHeadingStyle(context, _sectionStyle)),
+            ).style.merge(_sectionTitleStyle(context)),
           ),
           textDirection: Directionality.of(context),
           textScaler: MediaQuery.textScalerOf(context),
@@ -700,8 +757,8 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
     required ValueChanged<int> onChanged,
   }) {
     return LabeledSlider(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
       label: label,
-      labelStyle: localizedHeadingStyle(context, _sliderHeadingStyle),
       min: 1,
       max: 10,
       divisions: 9,
@@ -758,13 +815,6 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
   };
 }
 
-/// 品質・容量の節の見出し。
-const _sectionStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
-
-/// スライダーの項目名（オニオンスキン枚数・スロット数）。他の小見出しと
-/// 同じ太字の見出しフォント。
-const _sliderHeadingStyle = TextStyle(fontWeight: FontWeight.bold);
-
 /// スロット数スライダー：ドラッグ中はプレビュー表示のみ、指を離した時点で変更フローを起動
 class _SlotCountSlider extends StatefulWidget {
   final String label;
@@ -818,8 +868,8 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return LabeledSlider(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
       label: widget.label,
-      labelStyle: localizedHeadingStyle(context, _sliderHeadingStyle),
       min: 1,
       max: 20,
       divisions: 19,
@@ -911,7 +961,14 @@ class _RadioRow<T> extends StatelessWidget {
         canRequestFocus: false,
         onTap: () => RadioGroup.maybeOf<T>(context)?.onChanged(value),
         child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(8, 6, 16, 6),
+          // 説明の無い選択肢（保存方式）は丸の押せる高さ（48px）だけにし、
+          // 間延びさせない。
+          padding: EdgeInsetsDirectional.fromSTEB(
+            8,
+            subtitle == null ? 0 : 6,
+            16,
+            subtitle == null ? 0 : 6,
+          ),
           child: ActionBesideOrBelow(
             actionFirst: true,
             // 丸を名前の横に置くか上に置くかは、名前の文字12字分が残る幅か

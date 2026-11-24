@@ -141,6 +141,9 @@
   "gestureHoldEyedropperTitle": "Sample color on hold",
   "gestureHoldEyedropperHint": "While drawing with the pen or eraser, holding still for a moment picks up the color under your finger as the current color.",
   "gestureHoldEyedropperDurationLabel": "Hold duration",
+  "gestureTouchSection": "Finger gestures",
+  "gestureHoldEyedropperNeedsLongPress": "Available when “Long Press” above is set to “Eyedropper”.",
+  "gestureHoldEyedropperUseLongPress": "Set Long Press to Eyedropper",
   "gestureHoldEyedropperSecondsValue": "{seconds}s",
   "@gestureHoldEyedropperSecondsValue": {
     "placeholders": {
@@ -175,6 +178,7 @@
   "penSettingsCurveStrong": "Strong",
   "penSettingsCurveCustom": "Custom",
   "penSettingsCustomGraphHint": "Tap an empty spot on the graph to add a point, drag a point to move it, or double-tap a point to remove it (the start and end points can’t be removed).",
+  "penSettingsGraphAxes": "Horizontal: pen pressure. Vertical: effect on line width and opacity.",
   "penSettingsResetCurveButton": "Reset to default",
   "penSettingsPerBrushNote": "* The “Apply to size/opacity” pressure setting is per-brush (change it in the brush settings panel).",
   "penSettingsButtonSection": "Pen Button Settings",
@@ -813,7 +817,6 @@
   "widgetColorBase": "Background color",
   "widgetColorForeground": "Text and icon color",
   "widgetNoProjects": "No works yet. Once you create one, you can choose it here.",
-  "widgetSettingsNote": "Home screen widgets cannot play video, so a single frame of the chosen work is shown as a still image.",
   "assetTagLineArt": "Line art",
   "assetTagBasic": "Basic",
   "assetTagMainLine": "Main line",

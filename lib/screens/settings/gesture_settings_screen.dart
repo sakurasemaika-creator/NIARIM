@@ -1,7 +1,6 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 
-import '../../widgets/scrollable_sheet_body.dart';
+import '../../widgets/icon_notice.dart';
 
 import 'package:provider/provider.dart';
 
@@ -10,7 +9,8 @@ import '../../services/settings_service.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
-import '../../config/font_fallback.dart';
+import 'widgets/settings_choice_sheet.dart';
+import '../../widgets/grouped_sheet.dart';
 import 'widgets/settings_value_tile.dart';
 import '../../widgets/fit_or_hide_title.dart';
 
@@ -31,122 +31,119 @@ class GestureSettingsScreen extends StatelessWidget {
       body: desktopCentered(
         context,
         ListView(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            16 + MediaQuery.paddingOf(context).bottom,
+          ),
           children: [
-            Card(
-              margin: EdgeInsets.zero,
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: Column(
-                children: [
-                  _item(
-                    context,
-                    l10n.gestureTwoFingerTap,
-                    settings.twoFingerTap,
-                    (a) => settings.setGesture(GestureType.twoFingerTap, a),
-                  ),
-                  const Divider(height: 1),
-                  _item(
-                    context,
-                    l10n.gestureThreeFingerTap,
-                    settings.threeFingerTap,
-                    (a) => settings.setGesture(GestureType.threeFingerTap, a),
-                  ),
-                  const Divider(height: 1),
-                  _item(
-                    context,
-                    l10n.gestureFourOrMoreFingerTap,
-                    settings.fourOrMoreFingerTap,
-                    (a) =>
-                        settings.setGesture(GestureType.fourOrMoreFingerTap, a),
-                  ),
-                  const Divider(height: 1),
-                  // 2本指スワイプ左右のみ、連続動作前提の「フレーム移動」を選択肢に含める。
-                  _item(
-                    context,
-                    l10n.gestureTwoFingerSwipe,
-                    settings.twoFingerSwipe,
-                    (a) => settings.setGesture(GestureType.twoFingerSwipe, a),
-                    options: GestureAction.values,
-                  ),
-                  const Divider(height: 1),
-                  _item(
-                    context,
-                    l10n.gestureLongPress,
-                    settings.longPress,
-                    (a) => settings.setGesture(GestureType.longPress, a),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                l10n.gestureHoldEyedropperSection,
-                style: localizedHeadingStyle(
+            GroupedSheet(
+              title: l10n.gestureTouchSection,
+              children: [
+                _item(
                   context,
-                  TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  l10n.gestureTwoFingerTap,
+                  settings.twoFingerTap,
+                  (a) => settings.setGesture(GestureType.twoFingerTap, a),
                 ),
-              ),
+                _item(
+                  context,
+                  l10n.gestureThreeFingerTap,
+                  settings.threeFingerTap,
+                  (a) => settings.setGesture(GestureType.threeFingerTap, a),
+                ),
+                _item(
+                  context,
+                  l10n.gestureFourOrMoreFingerTap,
+                  settings.fourOrMoreFingerTap,
+                  (a) =>
+                      settings.setGesture(GestureType.fourOrMoreFingerTap, a),
+                ),
+                // 2本指スワイプ左右のみ、連続動作前提の「フレーム移動」を選択肢に含める。
+                _item(
+                  context,
+                  l10n.gestureTwoFingerSwipe,
+                  settings.twoFingerSwipe,
+                  (a) => settings.setGesture(GestureType.twoFingerSwipe, a),
+                  options: GestureAction.values,
+                ),
+                _item(
+                  context,
+                  l10n.gestureLongPress,
+                  settings.longPress,
+                  (a) => settings.setGesture(GestureType.longPress, a),
+                ),
+              ],
             ),
-            Card(
-              margin: EdgeInsets.zero,
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: Column(
-                children: [
-                  SwitchListTile(
-                    title: Text(l10n.gestureHoldEyedropperTitle),
-                    subtitle: Text(
-                      l10n.gestureHoldEyedropperHint,
-                      style: const TextStyle(fontSize: 13, height: 1.4),
+            const SizedBox(height: 24),
+            GroupedSheet(
+              title: l10n.gestureHoldEyedropperSection,
+              children: [
+                SwitchListTile(
+                  title: Text(l10n.gestureHoldEyedropperTitle),
+                  subtitle: Text(
+                    l10n.gestureHoldEyedropperHint,
+                    style: const TextStyle(fontSize: 13, height: 1.4),
+                  ),
+                  value: settings.holdEyedropperEnabled,
+                  onChanged: usesHoldEyedropper
+                      ? settings.setHoldEyedropperEnabled
+                      : null,
+                ),
+                // 長押しの割り当てがスポイトでないと、このスイッチは押せない。
+                // 押せない理由と、その場で長押しをスポイトにする道を出す
+                // （以前は灰色のスイッチだけで、なぜ押せないか分からなかった）。
+                if (!usesHoldEyedropper)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DefaultTextStyle.merge(
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 1.4,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                          child: IconNotice(
+                            l10n.gestureHoldEyedropperNeedsLongPress,
+                            icon: Icons.info_outline,
+                          ),
+                        ),
+                        Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: TextButton(
+                            onPressed: () => settings.setGesture(
+                              GestureType.longPress,
+                              GestureAction.eyedropper,
+                            ),
+                            child: Text(l10n.gestureHoldEyedropperUseLongPress),
+                          ),
+                        ),
+                      ],
                     ),
-                    value: settings.holdEyedropperEnabled,
+                  ),
+                if (settings.holdEyedropperEnabled)
+                  LabeledSlider(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                    label: l10n.gestureHoldEyedropperDurationLabel,
+                    value: settings.holdEyedropperSeconds,
+                    min: 0.2,
+                    max: 3.0,
+                    divisions: 28,
+                    step: 0.1,
+                    isInt: false,
+                    valueText: l10n.gestureHoldEyedropperSecondsValue(
+                      settings.holdEyedropperSeconds.toStringAsFixed(1),
+                    ),
                     onChanged: usesHoldEyedropper
-                        ? settings.setHoldEyedropperEnabled
+                        ? settings.setHoldEyedropperSeconds
                         : null,
                   ),
-                  if (settings.holdEyedropperEnabled) ...[
-                    const Divider(height: 1),
-                    LabeledSlider(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      label: l10n.gestureHoldEyedropperDurationLabel,
-                      value: settings.holdEyedropperSeconds,
-                      min: 0.2,
-                      max: 3.0,
-                      divisions: 28,
-                      step: 0.1,
-                      isInt: false,
-                      valueText: l10n.gestureHoldEyedropperSecondsValue(
-                        settings.holdEyedropperSeconds.toStringAsFixed(1),
-                      ),
-                      onChanged: usesHoldEyedropper
-                          ? settings.setHoldEyedropperSeconds
-                          : null,
-                    ),
-                  ],
-                ],
-              ),
+              ],
             ),
           ],
         ),
@@ -172,36 +169,18 @@ class GestureSettingsScreen extends StatelessWidget {
     return SettingsValueTile(
       title: title,
       value: _label(context, current),
-      onTap: () => showModalBottomSheet(
-        context: context,
-        // 選択肢は既定で9件あり、1件あたり約56dpなので約504dp必要になる。
-        // 一方`showModalBottomSheet`は既定で画面高の9/16（360x760の端末で
-        // 約427dp）までしか高さを取らないため、スクロールできないColumnの
-        // ままだと入りきらずRenderFlexがオーバーフローし、下の選択肢が
-        // 縞模様で潰れて選べなくなる（`ScrollableSheetBody`のdoc参照）。
-        builder: (ctx) => ScrollableSheetBody(
-          // 選択状態と変更通知はRadioGroupがまとめて持つ
-          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-          child: RadioGroup<GestureAction>(
-            groupValue: current,
-            onChanged: (v) {
-              if (v != null) onChanged(v);
-              Navigator.pop(ctx);
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: choices
-                  .map(
-                    (action) => RadioListTile<GestureAction>(
-                      title: Text(_label(ctx, action)),
-                      value: action,
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-        ),
-      ),
+      onTap: () async {
+        // 選択肢は既定で9件あり、シートの中でスクロールできる
+        // （`ScrollableSheetBody`のdoc参照）。
+        final selected = await showSettingsChoiceSheet<GestureAction>(
+          context: context,
+          title: title,
+          options: choices,
+          current: current,
+          labelOf: _label,
+        );
+        if (selected != null) onChanged(selected);
+      },
     );
   }
 

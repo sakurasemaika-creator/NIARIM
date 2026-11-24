@@ -446,6 +446,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get gestureHoldEyedropperDurationLabel => '유지 시간';
 
   @override
+  String get gestureTouchSection => '손가락 제스처';
+
+  @override
+  String get gestureHoldEyedropperNeedsLongPress =>
+      '위의 「길게 누르기」를 「스포이드」로 설정하면 사용할 수 있습니다.';
+
+  @override
+  String get gestureHoldEyedropperUseLongPress => '길게 누르기를 스포이드로 설정';
+
+  @override
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '$seconds초';
   }
@@ -531,6 +541,9 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get penSettingsCustomGraphHint =>
       '그래프의 빈 곳을 탭하면 점을 추가하고, 점을 드래그하면 이동, 더블 탭하면 삭제할 수 있습니다(시작점과 끝점은 삭제할 수 없습니다).';
+
+  @override
+  String get penSettingsGraphAxes => '가로: 펜의 필압, 세로: 선 굵기·농도에 반영되는 정도';
 
   @override
   String get penSettingsResetCurveButton => '기본값으로 재설정';
@@ -2559,10 +2572,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get widgetNoProjects => '아직 작품이 없습니다. 작품을 만들면 여기에서 고를 수 있습니다.';
-
-  @override
-  String get widgetSettingsNote =>
-      '홈 화면 위젯은 동영상을 재생할 수 없으므로, 선택한 작품의 한 컷을 정지 화상으로 표시합니다.';
 
   @override
   String get assetTagLineArt => '선화';

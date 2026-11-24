@@ -43,6 +43,9 @@ import '../../utils/transfer_merge.dart';
 import '../../widgets/export_share_feedback.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/grouped_sheet.dart';
+import '../../widgets/keep_together_text.dart';
+import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/projects_load_failure_notice.dart';
@@ -107,10 +110,10 @@ class _TransferScreenState extends State<TransferScreen> {
       _selectedProjectIds.clear();
     });
 
-    final instruction = Text(
+    final instruction = messageText(
       l10n.transferInstructionHint,
       style: TextStyle(
-        fontSize: 14,
+        fontSize: 13,
         height: 1.45,
         color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
@@ -147,124 +150,81 @@ class _TransferScreenState extends State<TransferScreen> {
         ),
       ],
     );
+    // 書き出す項目と作品は、それぞれ1枚の面に行として並べる（行ごとに影の
+    // ついたカードを浮かせない）。作品の説明は作品の面の下。
     final dataSections = <Widget>[
-      Card(
-        margin: EdgeInsets.zero,
-        elevation: 1,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-          alpha: 0.15,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        child: Column(
-          children: [
-            for (final key in _items.keys) ...[
-              if (key != _items.keys.first) const Divider(height: 1),
-              CheckboxListTile(
-                title: Text(_itemLabel(l10n, key)),
-                value: _items[key],
-                // 書き出し・読み込みの間は選び直せない（作品の
-                // 選択と同じ。途中で変えた項目が今の処理に
-                // 入ったか分からなくなる）。
-                onChanged: _isBusy
-                    ? null
-                    : (v) => setState(() => _items[key] = v!),
-              ),
-            ],
-          ],
-        ),
+      GroupedSheet(
+        children: [
+          for (final key in _items.keys)
+            CheckboxListTile(
+              title: Text(_itemLabel(l10n, key)),
+              value: _items[key],
+              // 書き出し・読み込みの間は選び直せない（作品の
+              // 選択と同じ。途中で変えた項目が今の処理に
+              // 入ったか分からなくなる）。
+              onChanged: _isBusy
+                  ? null
+                  : (v) => setState(() => _items[key] = v!),
+            ),
+        ],
       ),
-      const SizedBox(height: 16),
-      Text(
-        l10n.transferProjectsSectionTitle,
-        style: Theme.of(context).textTheme.titleSmall,
-      ),
-      Padding(
-        padding: const EdgeInsets.only(top: 5, bottom: 8),
-        child: Text(
-          l10n.transferProjectsHint,
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ),
+      const SizedBox(height: 24),
       // 保存先を読めなかったときは知らせて読み直せるようにし、
       // 「プロジェクトがありません。」とは言わない（引き継げる
       // 作品が無いように見える）。
       Consumer<ProjectService>(
         builder: (context, projectService, _) =>
             projectService.projectsLoadFailed
-            ? ProjectsLoadFailureNotice(
-                key: const Key('transferProjectsLoadFailed'),
-                onRetry: projectService.retryLoadProjects,
+            ? Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: ProjectsLoadFailureNotice(
+                  key: const Key('transferProjectsLoadFailed'),
+                  onRetry: projectService.retryLoadProjects,
+                ),
               )
             : const SizedBox.shrink(),
       ),
       Consumer<ProjectService>(
         builder: (context, projectService, _) {
-          if (projects.isEmpty) {
-            if (projectService.projectsLoadFailed) {
-              return const SizedBox.shrink();
-            }
-            return Card(
-              margin: EdgeInsets.zero,
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  l10n.transferProjectsEmpty,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+          if (projects.isEmpty && projectService.projectsLoadFailed) {
+            return const SizedBox.shrink();
+          }
+          return GroupedSheet(
+            title: l10n.transferProjectsSectionTitle,
+            footer: l10n.transferProjectsHint,
+            children: [
+              if (projects.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    l10n.transferProjectsEmpty,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
-              ),
-            );
-          }
-          return Card(
-            margin: EdgeInsets.zero,
-            elevation: 1,
-            shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-              alpha: 0.15,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            child: Column(
-              children: [
-                for (final p in projects) ...[
-                  if (p != projects.first) const Divider(height: 1),
-                  CheckboxListTile(
-                    key: ValueKey('transfer-project-${p.id}'),
-                    title: Text(p.name),
-                    subtitle: Text(
-                      [
-                        ?folderNames[p.folderId],
-                        lastSaved.format(p.updatedAt.toLocal()),
-                      ].join(' · '),
-                    ),
-                    value: selectedProjectIds.contains(p.id),
-                    onChanged: _isBusy
-                        ? null
-                        : (v) => setState(() {
-                            if (v == true) {
-                              _selectedProjectIds.add(p.id);
-                            } else {
-                              _selectedProjectIds.remove(p.id);
-                            }
-                          }),
+              for (final p in projects)
+                CheckboxListTile(
+                  key: ValueKey('transfer-project-${p.id}'),
+                  title: Text(p.name),
+                  subtitle: Text(
+                    [
+                      ?folderNames[p.folderId],
+                      lastSaved.format(p.updatedAt.toLocal()),
+                    ].join(' · '),
                   ),
-                ],
-              ],
-            ),
+                  value: selectedProjectIds.contains(p.id),
+                  onChanged: _isBusy
+                      ? null
+                      : (v) => setState(() {
+                          if (v == true) {
+                            _selectedProjectIds.add(p.id);
+                          } else {
+                            _selectedProjectIds.remove(p.id);
+                          }
+                        }),
+                ),
+            ],
           );
         },
       ),
@@ -367,13 +327,21 @@ class _TransferScreenState extends State<TransferScreen> {
                 ],
               );
             }
+            // 説明と「全選択・全解除」を1行目に並べ（入らなければ説明の下）、
+            // その下に面を置く。説明は面の中の行の文字と同じ位置から。
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                instruction,
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 16, end: 4),
+                  child: ActionBesideOrBelow(
+                    gap: 8,
+                    spacing: 4,
+                    text: instruction,
+                    action: selection,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                selection,
-                const SizedBox(height: 6),
                 ...dataSections,
               ],
             );

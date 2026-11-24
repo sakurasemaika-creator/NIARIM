@@ -30,6 +30,10 @@ import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/qr_import_dialog.dart';
 import '../../widgets/qr_share_dialog.dart';
 import 'pc_workspace_layout_settings_screen.dart';
+import 'widgets/settings_choice_sheet.dart';
+import '../../widgets/grouped_sheet.dart';
+import '../../widgets/labeled_slider.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/fit_or_hide_title.dart';
@@ -56,134 +60,117 @@ class WorkspaceSettingsScreen extends StatelessWidget {
         ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _sectionLabel(context, l10n.workspaceToolbarEditSection),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              // ツールバー編集機能に対応する説明文。
-              child: Text(
-                l10n.workspaceToolbarEditHint,
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.4,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            // 実際のキャンバス画面での横並び配置を模したプレビュー
-            // （設定項目の一覧だけでは仕上がりが分かりにくいため）。
-            _ToolbarPreview(
-              order: settings.toolbarOrder,
-              hidden: settings.hiddenToolbarItems,
-              sizeLevel: settings.toolbarSizeLevel,
-            ),
-            const SizedBox(height: 8),
-            Row(
+            GroupedSheet(
+              title: l10n.workspaceToolbarEditSection,
+              footer: l10n.workspaceToolbarEditHint,
               children: [
-                Expanded(
-                  child: Text(
-                    _toolbarSizeLabel(AppLocalizations.of(context)!),
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
-                Text('${settings.toolbarSizeLevel}/5'),
-              ],
-            ),
-            Slider(
-              key: const Key('workspaceToolbarSizeSlider'),
-              value: settings.toolbarSizeLevel.toDouble(),
-              min: 1,
-              max: 5,
-              divisions: 4,
-              label: '${settings.toolbarSizeLevel}/5',
-              onChanged: (value) => settings.setToolbarSizeLevel(value.round()),
-            ),
-            SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: Column(
-                children: [
-                  ReorderableListView(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    // ドラッグハンドルは行末に明示アイコンとして置く（既定の
-                    // ドラッグハンドルを有効にしたままだと、Flutterが自動で
-                    // もう1つハンドルを追加してしまい、二重に表示されるバグに
-                    // なっていた。テーマ設定の並べ替えと同じ不具合）。
-                    buildDefaultDragHandles: false,
-                    // onReorderItemはnewIndexを「削除後の位置」へ調整済みで
-                    // 渡すため、従来の `newIndex -= 1` 補正は不要。
-                    onReorderItem: (oldIndex, newIndex) {
-                      final order = List<ToolbarItemId>.of(
-                        settings.toolbarOrder,
-                      );
-                      final item = order.removeAt(oldIndex);
-                      order.insert(newIndex, item);
-                      settings.setToolbarOrder(order);
-                    },
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      for (final entry in settings.toolbarOrder.asMap().entries)
-                        Builder(
-                          key: ValueKey(entry.value),
-                          builder: (context) {
-                            final id = entry.value;
-                            // 手のひらツール：強制スマホモード中は
-                            // そもそもONにできないよう設定項目自体をグレーアウトする。
-                            // PCモード固定・自動判定の場合は設定可能で、ONにした
-                            // 場合でも実際の表示は横画面時のみ（canShowPanTool）。
-                            final isPanForcedOff =
-                                id == ToolbarItemId.pan &&
-                                settings.forcePcMode == false;
-                            return CheckboxListTile(
-                              title: Text(id.label(l10n)),
-                              subtitle: id == ToolbarItemId.pan
-                                  ? Text(
-                                      isPanForcedOff
-                                          ? l10n.workspaceToolbarPanDisabledHint
-                                          : l10n.workspaceToolbarPcOnlyHint,
-                                    )
-                                  : null,
-                              value: !settings.hiddenToolbarItems.contains(id),
-                              onChanged: isPanForcedOff
-                                  ? null
-                                  : (v) => settings.setToolbarItemVisible(
-                                      id,
-                                      v ?? true,
-                                    ),
-                              secondary: ReorderableDragStartListener(
-                                index: entry.key,
-                                child: const Icon(Icons.drag_handle),
-                              ),
-                              controlAffinity: ListTileControlAffinity.leading,
-                            );
-                          },
-                        ),
+                      // 実際のキャンバス画面での横並び配置を模したプレビュー
+                      // （設定項目の一覧だけでは仕上がりが分かりにくいため）。
+                      _ToolbarPreview(
+                        order: settings.toolbarOrder,
+                        hidden: settings.hiddenToolbarItems,
+                        sizeLevel: settings.toolbarSizeLevel,
+                      ),
+                      const SizedBox(height: 8),
+                      // ほかの設定の画面と同じスライダー（項目名と値の行＋－・＋）。
+                      LabeledSlider(
+                        key: const Key('workspaceToolbarSizeSlider'),
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        label: _toolbarSizeLabel(l10n),
+                        value: settings.toolbarSizeLevel.toDouble(),
+                        min: 1,
+                        max: 5,
+                        divisions: 4,
+                        editable: false,
+                        sliderLabel: '${settings.toolbarSizeLevel}/5',
+                        valueText: '${settings.toolbarSizeLevel}/5',
+                        onChanged: (value) =>
+                            settings.setToolbarSizeLevel(value.round()),
+                      ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () => settings.resetToolbarDefault(),
-                        child: Text(l10n.workspaceResetToolbarDefault),
+                ),
+                ReorderableListView(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  // ドラッグハンドルは行末に明示アイコンとして置く（既定の
+                  // ドラッグハンドルを有効にしたままだと、Flutterが自動で
+                  // もう1つハンドルを追加してしまい、二重に表示されるバグに
+                  // なっていた。テーマ設定の並べ替えと同じ不具合）。
+                  buildDefaultDragHandles: false,
+                  // onReorderItemはnewIndexを「削除後の位置」へ調整済みで
+                  // 渡すため、従来の `newIndex -= 1` 補正は不要。
+                  onReorderItem: (oldIndex, newIndex) {
+                    final order = List<ToolbarItemId>.of(settings.toolbarOrder);
+                    final item = order.removeAt(oldIndex);
+                    order.insert(newIndex, item);
+                    settings.setToolbarOrder(order);
+                  },
+                  children: [
+                    for (final entry in settings.toolbarOrder.asMap().entries)
+                      Builder(
+                        key: ValueKey(entry.value),
+                        builder: (context) {
+                          final id = entry.value;
+                          // 手のひらツール：強制スマホモード中は
+                          // そもそもONにできないよう設定項目自体をグレーアウトする。
+                          // PCモード固定・自動判定の場合は設定可能で、ONにした
+                          // 場合でも実際の表示は横画面時のみ（canShowPanTool）。
+                          final isPanForcedOff =
+                              id == ToolbarItemId.pan &&
+                              settings.forcePcMode == false;
+                          return CheckboxListTile(
+                            title: Text(id.label(l10n)),
+                            subtitle: id == ToolbarItemId.pan
+                                ? Text(
+                                    isPanForcedOff
+                                        ? l10n.workspaceToolbarPanDisabledHint
+                                        : l10n.workspaceToolbarPcOnlyHint,
+                                  )
+                                : null,
+                            value: !settings.hiddenToolbarItems.contains(id),
+                            onChanged: isPanForcedOff
+                                ? null
+                                : (v) => settings.setToolbarItemVisible(
+                                    id,
+                                    v ?? true,
+                                  ),
+                            secondary: ReorderableDragStartListener(
+                              index: entry.key,
+                              child: Icon(
+                                Icons.drag_handle,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            controlAffinity: ListTileControlAffinity.leading,
+                          );
+                        },
                       ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => settings.resetToolbarDefault(),
+                      child: Text(l10n.workspaceResetToolbarDefault),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            _sectionLabel(context, l10n.workspacePanelLayoutSection),
+            const SizedBox(height: 24),
             Builder(
               builder: (context) {
                 // スマホモードではツールバーが画面下部に固定表示されるため、
@@ -195,271 +182,226 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 // 初めてパネルがドッキング表示され、左利きモードが必要になる
                 // ため）。強制スマホモード時のみ無効化する。
                 final forceMobile = settings.forcePcMode == false;
-                return Card(
-                  elevation: 1,
-                  shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                    alpha: 0.15,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  color: Theme.of(context).colorScheme.surfaceContainerLow,
-                  child: SwitchListTile(
-                    title: Text(l10n.workspaceLeftHandedMode),
-                    subtitle: Text(
-                      forceMobile
-                          ? l10n.workspaceLeftHandedSubtitleMobile
-                          : l10n.workspaceLeftHandedSubtitlePc,
+                return GroupedSheet(
+                  title: l10n.workspacePanelLayoutSection,
+                  children: [
+                    SwitchListTile(
+                      title: Text(l10n.workspaceLeftHandedMode),
+                      subtitle: Text(
+                        forceMobile
+                            ? l10n.workspaceLeftHandedSubtitleMobile
+                            : l10n.workspaceLeftHandedSubtitlePc,
+                      ),
+                      value: settings.isLeftHanded,
+                      onChanged: forceMobile
+                          ? null
+                          : (v) => settings.setLeftHanded(v),
                     ),
-                    value: settings.isLeftHanded,
-                    onChanged: forceMobile
-                        ? null
-                        : (v) => settings.setLeftHanded(v),
-                  ),
+                  ],
                 );
               },
             ),
-            const SizedBox(height: 20),
-            _sectionLabel(context, l10n.workspacePcModeSection),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              // PC/DeXモードの手動固定機能に対応する説明文。
-              child: Text(
-                l10n.workspacePcModeHint,
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.4,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+            const SizedBox(height: 24),
+            GroupedSheet(
+              title: l10n.workspacePcModeSection,
+              footer: l10n.workspacePcModeHint,
+              children: [
+                // 選択状態と変更通知はRadioGroupがまとめて持つ
+                // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+                RadioGroup<bool?>(
+                  groupValue: settings.forcePcMode,
+                  onChanged: (v) => settings.setForcePcMode(v),
+                  child: Column(
+                    children: [
+                      RadioListTile<bool?>(
+                        title: Text(l10n.workspacePcModeAuto),
+                        value: null,
+                      ),
+                      RadioListTile<bool?>(
+                        title: Text(l10n.workspacePcModeAlwaysPc),
+                        value: true,
+                      ),
+                      RadioListTile<bool?>(
+                        title: Text(l10n.workspacePcModeAlwaysMobile),
+                        value: false,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
-            Card(
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              // 選択状態と変更通知はRadioGroupがまとめて持つ
-              // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-              child: RadioGroup<bool?>(
-                groupValue: settings.forcePcMode,
-                onChanged: (v) => settings.setForcePcMode(v),
-                child: Column(
+            const SizedBox(height: 24),
+            GroupedSheet(
+              title: l10n.workspaceDockPanelSection,
+              footer: l10n.workspaceDockPanelHint,
+              children: [
+                Column(
                   children: [
-                    RadioListTile<bool?>(
-                      title: Text(l10n.workspacePcModeAuto),
-                      value: null,
-                    ),
-                    RadioListTile<bool?>(
-                      title: Text(l10n.workspacePcModeAlwaysPc),
-                      value: true,
-                    ),
-                    RadioListTile<bool?>(
-                      title: Text(l10n.workspacePcModeAlwaysMobile),
-                      value: false,
-                    ),
+                    for (final panel in CanvasDockPanel.values.where(
+                      (p) => !isLegacyMaterialDock(p),
+                    ))
+                      CheckboxListTile(
+                        dense: true,
+                        title: Text(_dockPanelLabel(l10n, panel)),
+                        value: settings.defaultDockedPanels.contains(panel),
+                        onChanged: (v) {
+                          final next = Set<CanvasDockPanel>.of(
+                            settings.defaultDockedPanels,
+                          );
+                          if (v ?? false) {
+                            next.add(panel);
+                          } else {
+                            next.remove(panel);
+                          }
+                          settings.setDefaultDockedPanels(next);
+                        },
+                      ),
                   ],
                 ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            _sectionLabel(context, l10n.workspaceDockPanelSection),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              // PC/DeXモードでは複数パネルを同時にドッキング表示できる
-              // （スマホ版は誤操作防止のため対象外、常に非表示スタート）。
-              child: Text(
-                l10n.workspaceDockPanelHint,
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.4,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            Card(
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: Column(
-                children: [
-                  for (final panel in CanvasDockPanel.values.where(
-                    (p) => !isLegacyMaterialDock(p),
-                  ))
-                    CheckboxListTile(
-                      dense: true,
-                      title: Text(_dockPanelLabel(l10n, panel)),
-                      value: settings.defaultDockedPanels.contains(panel),
-                      onChanged: (v) {
-                        final next = Set<CanvasDockPanel>.of(
-                          settings.defaultDockedPanels,
-                        );
-                        if (v ?? false) {
-                          next.add(panel);
-                        } else {
-                          next.remove(panel);
-                        }
-                        settings.setDefaultDockedPanels(next);
-                      },
+                // 窓の並び・幅・高さの細かい設定は別の画面（同じ面の行から
+                // 進む。以前は面の外の大きな枠のボタンだった）。
+                SheetRow(
+                  icon: Icons.dashboard_customize_outlined,
+                  title: l10n.workspacePcLayoutButton,
+                  onTap: () => Navigator.push(
+                    context,
+                    adMockMaterialPageRoute(
+                      builder: (_) => const PcWorkspaceLayoutSettingsScreen(),
                     ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () => Navigator.push(
-                context,
-                adMockMaterialPageRoute(
-                  builder: (_) => const PcWorkspaceLayoutSettingsScreen(),
+                  ),
                 ),
-              ),
-              icon: const Icon(Icons.dashboard_customize_outlined),
-              label: Text(l10n.workspacePcLayoutButton),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-              ),
+              ],
             ),
-            const SizedBox(height: 20),
-            _sectionLabel(context, l10n.workspaceTimelineSection),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                l10n.workspaceTimelineHint,
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.4,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            Card(
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.workspaceTimelineTrackHeightLabel,
-                      style: localizedHeadingStyle(
-                        context,
-                        const TextStyle(fontSize: 13),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // 実物大プレビュー：数字だけでは実際の見え方が
-                    // 分かりにくいため、実際のクリップと同じ見た目・
-                    // 高さの見本を1:1スケールで表示する。
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        width: 160,
-                        height: SettingsService.trackHeightForLevel(
-                          settings.timelineTrackHeightLevel,
+            const SizedBox(height: 24),
+            GroupedSheet(
+              title: l10n.workspaceTimelineSection,
+              footer: l10n.workspaceTimelineHint,
+              children: [
+                // 実物大プレビュー：数字だけでは実際の見え方が
+                // 分かりにくいため、実際のクリップと同じ見た目・
+                // 高さの見本を1:1スケールで表示する。
+                // ほかの設定の画面と同じスライダー（項目名と段階、－・＋）。
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          start: 4,
+                          bottom: 4,
                         ),
-                        decoration: BoxDecoration(
-                          color: ThemeService.activeColorScheme.primary,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          l10n.workspaceTimelinePreviewLabel,
-                          style: localizedHeadingStyle(
-                            context,
-                            TextStyle(
-                              fontSize: 9,
-                              color: ThemeService.activeColorScheme.onSurface,
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Container(
+                            width: 160,
+                            height: SettingsService.trackHeightForLevel(
+                              settings.timelineTrackHeightLevel,
+                            ),
+                            decoration: BoxDecoration(
+                              color: ThemeService.activeColorScheme.primary,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              l10n.workspaceTimelinePreviewLabel,
+                              style: localizedHeadingStyle(
+                                context,
+                                TextStyle(
+                                  fontSize: 9,
+                                  color:
+                                      ThemeService.activeColorScheme.onSurface,
+                                ),
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    ),
-                    Slider(
-                      value: settings.timelineTrackHeightLevel.toDouble(),
-                      min: 1,
-                      max: 5,
-                      divisions: 4,
-                      label: '${settings.timelineTrackHeightLevel}',
-                      onChanged: (v) =>
-                          settings.setTimelineTrackHeightLevel(v.round()),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            _sectionLabel(context, l10n.workspaceEndCardSection),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                l10n.workspaceEndCardHint,
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.4,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            Card(
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: SwitchListTile(
-                secondary:
-                    premium.isFeatureAvailable(PremiumFeature.endCardEdit)
-                    ? null
-                    : Icon(
-                        Icons.lock,
-                        color: ThemeService.activeColorScheme.tertiary,
+                      LabeledSlider(
+                        padding: EdgeInsets.zero,
+                        label: l10n.workspaceTimelineTrackHeightLabel,
+                        value: settings.timelineTrackHeightLevel.toDouble(),
+                        min: 1,
+                        max: 5,
+                        divisions: 4,
+                        editable: false,
+                        sliderLabel: '${settings.timelineTrackHeightLevel}/5',
+                        valueText: '${settings.timelineTrackHeightLevel}/5',
+                        onChanged: (v) =>
+                            settings.setTimelineTrackHeightLevel(v.round()),
                       ),
-                title: Text(l10n.workspaceEndCardDefaultHiddenTitle),
-                value:
-                    premium.isFeatureAvailable(PremiumFeature.endCardEdit) &&
-                    settings.endCardDefaultHiddenForPremium,
-                onChanged:
-                    premium.isFeatureAvailable(PremiumFeature.endCardEdit)
-                    ? (v) => settings.setEndCardDefaultHiddenForPremium(v)
-                    : (_) => showPremiumBanner(
-                        context,
-                        feature: PremiumFeature.endCardEdit,
-                      ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            _sectionLabel(context, l10n.workspaceSaveSection),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                l10n.workspaceSaveHint,
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.4,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
+            const SizedBox(height: 24),
+            GroupedSheet(
+              title: l10n.workspaceEndCardSection,
+              footer: l10n.workspaceEndCardHint,
+              children: [
+                // 鍵の印は補助の文字色（差し色は状態と主な操作のため。
+                // 選択色から作るtertiaryは茶色に見えた）。
+                SwitchListTile(
+                  secondary:
+                      premium.isFeatureAvailable(PremiumFeature.endCardEdit)
+                      ? null
+                      : Icon(
+                          Icons.lock_outline,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  title: Text(l10n.workspaceEndCardDefaultHiddenTitle),
+                  value:
+                      premium.isFeatureAvailable(PremiumFeature.endCardEdit) &&
+                      settings.endCardDefaultHiddenForPremium,
+                  onChanged:
+                      premium.isFeatureAvailable(PremiumFeature.endCardEdit)
+                      ? (v) => settings.setEndCardDefaultHiddenForPremium(v)
+                      : (_) => showPremiumBanner(
+                          context,
+                          feature: PremiumFeature.endCardEdit,
+                        ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            // 名前を付けて残す・呼び出す・渡すは同じ面の行に並べ、押すと
+            // 何が起きるかを行の名前で読ませる（以前は大きさの同じ4つの
+            // 枠のボタンが縦に並び、どれが主な操作か分からなかった）。今の
+            // 設定がそのまま使われていることを確かめる「適用」だけを、
+            // 画面の主な操作として面の下に塗りのボタンで置く。
+            GroupedSheet(
+              title: l10n.workspaceSaveSection,
+              footer: l10n.workspaceSaveHint,
+              children: [
+                SheetRow(
+                  icon: Icons.save_outlined,
+                  title: l10n.workspaceSaveAsButton,
+                  onTap: () =>
+                      _showSaveDialog(context, settings, presetService),
+                ),
+                SheetRow(
+                  icon: Icons.folder_open_outlined,
+                  title: l10n.workspaceLoadButton,
+                  onTap: () => _showLoadSheet(context, settings, presetService),
+                ),
+                // 保存したワークスペースが無い間は渡せない（押せない行）。
+                _disabledUnless(
+                  presetService.presets.isNotEmpty,
+                  SheetRow(
+                    icon: Icons.ios_share,
+                    title: l10n.workspaceShareButton,
+                    onTap: presetService.presets.isEmpty
+                        ? null
+                        : () => _showShareSheet(context, presetService),
+                    showChevron: presetService.presets.isNotEmpty,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             // 「適用」は名前の登録を必要とせず、UI・外観設定と同じくその場で
             // アプリ全体へ反映するだけの操作（各設定項目は変更のたびに
             // 即座に反映済みだが、変更内容が確かに反映されたことを
@@ -471,38 +413,12 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 );
               },
               icon: const Icon(Icons.check),
-              label: Text(l10n.workspaceApplyCurrentButton),
+              label: messageText(
+                l10n.workspaceApplyCurrentButton,
+                keepLastPhrase: true,
+                textAlign: TextAlign.center,
+              ),
               style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-              ),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () =>
-                  _showSaveDialog(context, settings, presetService),
-              icon: const Icon(Icons.save),
-              label: Text(l10n.workspaceSaveAsButton),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-              ),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: presetService.presets.isEmpty
-                  ? null
-                  : () => _showShareSheet(context, presetService),
-              icon: const Icon(Icons.ios_share),
-              label: Text(l10n.workspaceShareButton),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-              ),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () => _showLoadSheet(context, settings, presetService),
-              icon: const Icon(Icons.folder_open),
-              label: Text(l10n.workspaceLoadButton),
-              style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(48),
               ),
             ),
@@ -512,22 +428,27 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _sectionLabel(BuildContext context, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        text,
-        style: localizedHeadingStyle(
-          context,
-          TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+  /// [enabled]でなければ行を押せない見た目（薄く・読み上げも押せない）に
+  /// する。
+  Widget _disabledUnless(bool enabled, Widget row) => enabled
+      ? row
+      : Semantics(enabled: false, child: Opacity(opacity: 0.38, child: row));
+
+  /// 設定のシートの題（基本設定・選択肢のシートと同じ書式・余白）。
+  Widget _sheetTitle(BuildContext context, String text) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+    child: Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: Semantics(
+        header: true,
+        child: messageText(
+          text,
+          keepLineStarts: true,
+          style: settingsSheetTitleStyle(context),
         ),
       ),
-    );
-  }
+    ),
+  );
 
   String _dockPanelLabel(AppLocalizations l10n, CanvasDockPanel panel) =>
       switch (panel) {
@@ -576,16 +497,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                l10n.workspaceShareSelectTitle,
-                style: localizedHeadingStyle(
-                  context,
-                  const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            _sheetTitle(context, l10n.workspaceShareSelectTitle),
             for (final preset in presetService.presets)
               Builder(
                 // シートの中のcontextは閉じると無くなるので、共有・ダイアログは
@@ -769,6 +681,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              _sheetTitle(context, l10n.workspaceLoadButton),
               // 端末内の一覧より上に、外部ファイル（.niaworkspace）からの
               // 読み込みを常設する。
               ListTile(

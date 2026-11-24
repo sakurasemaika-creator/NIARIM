@@ -445,6 +445,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get gestureHoldEyedropperDurationLabel => '保持時間';
 
   @override
+  String get gestureTouchSection => '指の操作';
+
+  @override
+  String get gestureHoldEyedropperNeedsLongPress =>
+      '上の「長押し」を「スポイト」にしているときに使えます。';
+
+  @override
+  String get gestureHoldEyedropperUseLongPress => '長押しをスポイトにする';
+
+  @override
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '$seconds秒';
   }
@@ -528,6 +538,9 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get penSettingsCustomGraphHint =>
       'グラフの空いている場所をタップすると点を追加、点をドラッグで移動、ダブルタップで削除できます（始点・終点は削除できません）。';
+
+  @override
+  String get penSettingsGraphAxes => '横軸：ペンの筆圧　縦軸：線の太さ・濃さへの反映';
 
   @override
   String get penSettingsResetCurveButton => 'デフォルトにリセット';
@@ -2549,10 +2562,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get widgetNoProjects => 'まだ作品がありません。作品を作るとここで選べるようになります。';
-
-  @override
-  String get widgetSettingsNote =>
-      'ホーム画面ウィジェットは動画を再生できないため、選んだ作品の1コマを静止画として表示します。';
 
   @override
   String get assetTagLineArt => '線画';

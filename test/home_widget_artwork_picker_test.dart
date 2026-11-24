@@ -374,6 +374,15 @@ void main() {
     // 前画面がスタックに積まれず、戻るボタンの検証にならないため）。
     appRouter.go('/settings');
     await settle();
+    // 設定の一覧は役目ごとの節に分けて並べたので、ウィジェットの項目は
+    // 「表示・カスタマイズ」の節（画面の下の方）にある。そこまで送ってから押す。
+    await tester.scrollUntilVisible(
+      find.text(l10n.widgetSettingsTitle),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(find.text(l10n.widgetSettingsTitle));
+    await settle();
     await tester.tap(find.text(l10n.widgetSettingsTitle));
     await capture('settings_before_pick');
     expect(find.text(l10n.widgetArtworkPickButton), findsOneWidget);

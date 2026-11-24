@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../config/accent_text_theme.dart';
 import '../../../widgets/action_beside_or_below.dart';
 import '../../../widgets/keep_together_text.dart';
 
@@ -67,9 +66,9 @@ class SettingsValueTile extends StatelessWidget {
                         child: messageText(
                           value,
                           textAlign: TextAlign.end,
-                          style: detailStyle?.copyWith(
-                            color: AccentTextTheme.of(context),
-                          ),
+                          // 今の値は状態なので補助の文字色（差し色はリンク・
+                          // 主な操作・選んでいる印のため）。
+                          style: detailStyle,
                         ),
                       ),
                       const SizedBox(width: 4),

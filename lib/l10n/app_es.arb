@@ -141,6 +141,9 @@
   "gestureHoldEyedropperTitle": "Activar el cuentagotas al mantener pulsado",
   "gestureHoldEyedropperHint": "Mientras dibujas con el lápiz o la goma, mantener el dedo quieto un momento toma el color de esa posición como color actual.",
   "gestureHoldEyedropperDurationLabel": "Duración de espera",
+  "gestureTouchSection": "Gestos con los dedos",
+  "gestureHoldEyedropperNeedsLongPress": "Disponible cuando «Pulsación larga», arriba, está configurada como «Cuentagotas».",
+  "gestureHoldEyedropperUseLongPress": "Usar el cuentagotas al pulsar largo",
   "gestureHoldEyedropperSecondsValue": "{seconds} s",
   "@gestureHoldEyedropperSecondsValue": {
     "placeholders": {
@@ -175,6 +178,7 @@
   "penSettingsCurveStrong": "Fuerte",
   "penSettingsCurveCustom": "Personalizada",
   "penSettingsCustomGraphHint": "Toca un espacio vacío del gráfico para añadir un punto, arrastra un punto para moverlo o tócalo dos veces para eliminarlo (los puntos de inicio y fin no se pueden eliminar).",
+  "penSettingsGraphAxes": "Horizontal: presión del lápiz. Vertical: efecto en el grosor y la opacidad.",
   "penSettingsResetCurveButton": "Restablecer valores predeterminados",
   "penSettingsPerBrushNote": "* El ajuste de presión «Aplicar al tamaño/opacidad» es específico de cada pincel (cámbialo en el panel de ajustes del pincel).",
   "penSettingsButtonSection": "Ajustes de botones del lápiz",
@@ -811,7 +815,6 @@
   "widgetColorBase": "Color de fondo",
   "widgetColorForeground": "Color de texto e iconos",
   "widgetNoProjects": "Aún no hay obras. Cuando crees una, podrás elegirla aquí.",
-  "widgetSettingsNote": "Los widgets de la pantalla de inicio no pueden reproducir vídeo, así que se muestra un fotograma de la obra como imagen fija.",
   "assetTagLineArt": "Línea",
   "assetTagBasic": "Básico",
   "assetTagMainLine": "Línea principal",

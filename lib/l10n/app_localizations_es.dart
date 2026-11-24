@@ -477,6 +477,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gestureHoldEyedropperDurationLabel => 'Duración de espera';
 
   @override
+  String get gestureTouchSection => 'Gestos con los dedos';
+
+  @override
+  String get gestureHoldEyedropperNeedsLongPress =>
+      'Disponible cuando «Pulsación larga», arriba, está configurada como «Cuentagotas».';
+
+  @override
+  String get gestureHoldEyedropperUseLongPress =>
+      'Usar el cuentagotas al pulsar largo';
+
+  @override
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '$seconds s';
   }
@@ -563,6 +574,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get penSettingsCustomGraphHint =>
       'Toca un espacio vacío del gráfico para añadir un punto, arrastra un punto para moverlo o tócalo dos veces para eliminarlo (los puntos de inicio y fin no se pueden eliminar).';
+
+  @override
+  String get penSettingsGraphAxes =>
+      'Horizontal: presión del lápiz. Vertical: efecto en el grosor y la opacidad.';
 
   @override
   String get penSettingsResetCurveButton =>
@@ -2708,10 +2723,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get widgetNoProjects =>
       'Aún no hay obras. Cuando crees una, podrás elegirla aquí.';
-
-  @override
-  String get widgetSettingsNote =>
-      'Los widgets de la pantalla de inicio no pueden reproducir vídeo, así que se muestra un fotograma de la obra como imagen fija.';
 
   @override
   String get assetTagLineArt => 'Línea';

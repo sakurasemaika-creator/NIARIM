@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,7 +8,8 @@ import '../../widgets/editable_slider_value.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/stepped_slider.dart';
-import '../../config/font_fallback.dart';
+import '../../widgets/keep_together_text.dart';
+import '../../widgets/grouped_sheet.dart';
 import '../../widgets/fit_or_hide_title.dart';
 
 /// バケツ塗り詳細設定（許容誤差・拡張px・線の下まで潜る）。
@@ -33,90 +33,77 @@ class BucketFillSettingsScreen extends StatelessWidget {
       body: desktopCentered(
         context,
         ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            16 + MediaQuery.paddingOf(context).bottom,
+          ),
           children: [
-            _sectionLabel(
-              context,
-              l10n.bucketSettingsToleranceSection,
-              value: EditableSliderValue(
-                text: '${settings.bucketTolerance.round()} / 100',
-                value: settings.bucketTolerance,
-                min: 0,
-                max: 100,
-                title: l10n.bucketSettingsToleranceSection,
-                onChanged: (v) => settings.setBucketTolerance(v.toDouble()),
-              ),
-            ),
-            Text(
-              l10n.bucketSettingsToleranceHint,
-              style: TextStyle(
-                fontSize: 13,
-                height: 1.45,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 8),
-            SteppedSlider(
-              value: settings.bucketTolerance,
-              min: 0,
-              max: 100,
-              divisions: 100,
-              compact: true,
-              onChanged: (v) => settings.setBucketTolerance(v),
-            ),
-            const SizedBox(height: 20),
-            _sectionLabel(
-              context,
-              l10n.bucketSettingsExpandSection,
-              value: EditableSliderValue(
-                text: '${settings.bucketExpandPx}px',
-                value: settings.bucketExpandPx,
-                min: 0,
-                max: 10,
-                title: l10n.bucketSettingsExpandSection,
-                unit: 'px',
-                onChanged: (v) => settings.setBucketExpandPx(v.round()),
-              ),
-            ),
-            Text(
-              l10n.bucketSettingsExpandHint,
-              style: TextStyle(
-                fontSize: 13,
-                height: 1.45,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 8),
-            SteppedSlider(
-              value: settings.bucketExpandPx.toDouble(),
-              min: 0,
-              max: 10,
-              divisions: 10,
-              compact: true,
-              onChanged: (v) => settings.setBucketExpandPx(v.round()),
-            ),
-            SizedBox(height: 8),
-            Card(
-              margin: EdgeInsets.zero,
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: SwitchListTile(
-                title: Text(l10n.bucketSettingsUnderLineTitle),
-                subtitle: Text(
-                  settings.bucketExpandPx == 0
-                      ? '${l10n.bucketSettingsUnderLineHint}\n${l10n.bucketSettingsUnderLineDisabledHint}'
-                      : l10n.bucketSettingsUnderLineHint,
-                  style: const TextStyle(fontSize: 13, height: 1.45),
+            // 項目ごとに欄へ収める（ほかの設定の画面と同じ欄）。「線の下まで
+            // 潜る」は拡張の幅を使う設定なので、拡張と同じ欄に置く。
+            GroupedSheet(
+              children: [
+                _sliderBlock(
+                  context,
+                  title: l10n.bucketSettingsToleranceSection,
+                  hint: l10n.bucketSettingsToleranceHint,
+                  value: EditableSliderValue(
+                    text: '${settings.bucketTolerance.round()} / 100',
+                    value: settings.bucketTolerance,
+                    min: 0,
+                    max: 100,
+                    title: l10n.bucketSettingsToleranceSection,
+                    onChanged: (v) => settings.setBucketTolerance(v.toDouble()),
+                  ),
+                  slider: SteppedSlider(
+                    value: settings.bucketTolerance,
+                    min: 0,
+                    max: 100,
+                    divisions: 100,
+                    compact: true,
+                    onChanged: (v) => settings.setBucketTolerance(v),
+                  ),
                 ),
-                value: settings.bucketFillUnderLine,
-                onChanged: (v) => settings.setBucketFillUnderLine(v),
-              ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            GroupedSheet(
+              children: [
+                _sliderBlock(
+                  context,
+                  title: l10n.bucketSettingsExpandSection,
+                  hint: l10n.bucketSettingsExpandHint,
+                  value: EditableSliderValue(
+                    text: '${settings.bucketExpandPx}px',
+                    value: settings.bucketExpandPx,
+                    min: 0,
+                    max: 10,
+                    title: l10n.bucketSettingsExpandSection,
+                    unit: 'px',
+                    onChanged: (v) => settings.setBucketExpandPx(v.round()),
+                  ),
+                  slider: SteppedSlider(
+                    value: settings.bucketExpandPx.toDouble(),
+                    min: 0,
+                    max: 10,
+                    divisions: 10,
+                    compact: true,
+                    onChanged: (v) => settings.setBucketExpandPx(v.round()),
+                  ),
+                ),
+                SwitchListTile(
+                  title: Text(l10n.bucketSettingsUnderLineTitle),
+                  subtitle: Text(
+                    settings.bucketExpandPx == 0
+                        ? '${l10n.bucketSettingsUnderLineHint}\n${l10n.bucketSettingsUnderLineDisabledHint}'
+                        : l10n.bucketSettingsUnderLineHint,
+                    style: const TextStyle(fontSize: 13, height: 1.45),
+                  ),
+                  value: settings.bucketFillUnderLine,
+                  onChanged: (v) => settings.setBucketFillUnderLine(v),
+                ),
+              ],
             ),
           ],
         ),
@@ -124,31 +111,56 @@ class BucketFillSettingsScreen extends StatelessWidget {
     );
   }
 
-  /// 見出しと、その行の右端に置くスライダーの値。スライダー本体は下の行で
-  /// 横幅いっぱいを使う。
-  Widget _sectionLabel(
-    BuildContext context,
-    String text, {
+  /// 欄の中の1項目：題と値（並べて入らなければ値を下へ）、説明、横幅いっぱいの
+  /// スライダー。題・説明はスイッチの行と同じ16pxから始める。
+  Widget _sliderBlock(
+    BuildContext context, {
+    required String title,
+    required String hint,
     required Widget value,
+    required Widget slider,
   }) {
+    final theme = Theme.of(context);
+    // 左右の空きはLabeledSliderを欄に置いたとき（12px＋項目名の4px）と
+    // そろえ、ジェスチャー・パフォーマンスのスライダーと同じ位置に－・＋を置く。
     return Padding(
-      // 値の右の鉛筆マークは右へはみ出して描かれるので、そのぶん空ける。
-      padding: const EdgeInsetsDirectional.only(end: 10, bottom: 6),
-      child: ActionBesideOrBelow(
-        gap: 12,
-        spacing: 4,
-        text: Text(
-          text,
-          style: localizedHeadingStyle(
-            context,
-            TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            // 値の右の鉛筆マークは右へはみ出して描かれるので、そのぶん空ける。
+            padding: const EdgeInsetsDirectional.only(
+              start: 4,
+              end: 9,
+              bottom: 4,
+            ),
+            child: ActionBesideOrBelow(
+              gap: 12,
+              spacing: 4,
+              text: Text(
+                title,
+                style:
+                    theme.listTileTheme.titleTextStyle ??
+                    theme.textTheme.titleMedium,
+              ),
+              action: value,
             ),
           ),
-        ),
-        action: value,
+          Padding(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 4),
+            child: messageText(
+              hint,
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.45,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          slider,
+        ],
       ),
     );
   }

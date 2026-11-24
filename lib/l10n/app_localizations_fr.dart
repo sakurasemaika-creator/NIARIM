@@ -476,6 +476,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get gestureHoldEyedropperDurationLabel => 'Durée de maintien';
 
   @override
+  String get gestureTouchSection => 'Gestes des doigts';
+
+  @override
+  String get gestureHoldEyedropperNeedsLongPress =>
+      'Disponible lorsque « Appui long », ci-dessus, est réglé sur « Pipette ».';
+
+  @override
+  String get gestureHoldEyedropperUseLongPress =>
+      'Régler l’appui long sur Pipette';
+
+  @override
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '$seconds s';
   }
@@ -563,6 +574,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get penSettingsCustomGraphHint =>
       'Touchez un espace vide du graphique pour ajouter un point, faites glisser un point pour le déplacer, ou touchez-le deux fois pour le supprimer (les points de début et de fin ne peuvent pas être supprimés).';
+
+  @override
+  String get penSettingsGraphAxes =>
+      'Horizontal : pression du stylet. Vertical : effet sur l’épaisseur et l’opacité.';
 
   @override
   String get penSettingsResetCurveButton => 'Réinitialiser';
@@ -2704,10 +2719,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get widgetNoProjects =>
       'Aucune œuvre pour l’instant. Dès que vous en créez une, vous pourrez la choisir ici.';
-
-  @override
-  String get widgetSettingsNote =>
-      'Les widgets de l’écran d’accueil ne peuvent pas lire de vidéo : une image de l’œuvre choisie est affichée en fixe.';
 
   @override
   String get assetTagLineArt => 'Trait';

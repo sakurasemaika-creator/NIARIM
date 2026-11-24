@@ -911,6 +911,24 @@ abstract class AppLocalizations {
   /// **'保持時間'**
   String get gestureHoldEyedropperDurationLabel;
 
+  /// No description provided for @gestureTouchSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'指の操作'**
+  String get gestureTouchSection;
+
+  /// No description provided for @gestureHoldEyedropperNeedsLongPress.
+  ///
+  /// In ja, this message translates to:
+  /// **'上の「長押し」を「スポイト」にしているときに使えます。'**
+  String get gestureHoldEyedropperNeedsLongPress;
+
+  /// No description provided for @gestureHoldEyedropperUseLongPress.
+  ///
+  /// In ja, this message translates to:
+  /// **'長押しをスポイトにする'**
+  String get gestureHoldEyedropperUseLongPress;
+
   /// No description provided for @gestureHoldEyedropperSecondsValue.
   ///
   /// In ja, this message translates to:
@@ -1072,6 +1090,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'グラフの空いている場所をタップすると点を追加、点をドラッグで移動、ダブルタップで削除できます（始点・終点は削除できません）。'**
   String get penSettingsCustomGraphHint;
+
+  /// No description provided for @penSettingsGraphAxes.
+  ///
+  /// In ja, this message translates to:
+  /// **'横軸：ペンの筆圧　縦軸：線の太さ・濃さへの反映'**
+  String get penSettingsGraphAxes;
 
   /// No description provided for @penSettingsResetCurveButton.
   ///
@@ -4664,12 +4688,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'まだ作品がありません。作品を作るとここで選べるようになります。'**
   String get widgetNoProjects;
-
-  /// No description provided for @widgetSettingsNote.
-  ///
-  /// In ja, this message translates to:
-  /// **'ホーム画面ウィジェットは動画を再生できないため、選んだ作品の1コマを静止画として表示します。'**
-  String get widgetSettingsNote;
 
   /// No description provided for @assetTagLineArt.
   ///

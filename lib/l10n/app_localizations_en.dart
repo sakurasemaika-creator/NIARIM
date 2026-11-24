@@ -463,6 +463,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gestureHoldEyedropperDurationLabel => 'Hold duration';
 
   @override
+  String get gestureTouchSection => 'Finger gestures';
+
+  @override
+  String get gestureHoldEyedropperNeedsLongPress =>
+      'Available when “Long Press” above is set to “Eyedropper”.';
+
+  @override
+  String get gestureHoldEyedropperUseLongPress =>
+      'Set Long Press to Eyedropper';
+
+  @override
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '${seconds}s';
   }
@@ -548,6 +559,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get penSettingsCustomGraphHint =>
       'Tap an empty spot on the graph to add a point, drag a point to move it, or double-tap a point to remove it (the start and end points can’t be removed).';
+
+  @override
+  String get penSettingsGraphAxes =>
+      'Horizontal: pen pressure. Vertical: effect on line width and opacity.';
 
   @override
   String get penSettingsResetCurveButton => 'Reset to default';
@@ -2664,10 +2679,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get widgetNoProjects =>
       'No works yet. Once you create one, you can choose it here.';
-
-  @override
-  String get widgetSettingsNote =>
-      'Home screen widgets cannot play video, so a single frame of the chosen work is shown as a still image.';
 
   @override
   String get assetTagLineArt => 'Line art';

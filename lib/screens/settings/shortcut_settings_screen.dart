@@ -20,7 +20,7 @@ import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/fit_or_hide_title.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
 
 /// キーボード・左手デバイス用ショートカットの設定画面。
 /// ツール選択（早替えツールと同じ粒度：ツール＋ブラシ＋太さ）と、
@@ -119,7 +119,8 @@ class ShortcutSettingsScreen extends StatelessWidget {
         Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 15, 16, 12),
+              // 面の中の行の文字と同じ位置から書き始める。
+              padding: const EdgeInsets.fromLTRB(32, 16, 32, 12),
               // 韓国語の語は、1行に入れば途中で折らない（「도 / 구」と折れた）。
               child: messageText(
                 l10n.shortcutSettingsHint,
@@ -140,88 +141,104 @@ class ShortcutSettingsScreen extends StatelessWidget {
                         ),
                       ),
                     )
-                  : ListView.builder(
+                  : ListView(
                       // 一覧の下端に「追加」の浮かぶボタンの分の余白を取る
                       // （取らないと、最後までスクロールしても最後の行の削除の
                       // ボタンが浮かぶボタンの下に入ったまま押せなかった）。
                       // 画面の下の帯（ジェスチャーの帯）の分は、一覧を包む
                       // SafeArea（desktopCentered）が一覧の外に取る。
-                      padding: const EdgeInsets.only(
-                        bottom: _floatingButtonClearance,
+                      padding: const EdgeInsets.fromLTRB(
+                        16,
+                        0,
+                        16,
+                        _floatingButtonClearance,
                       ),
-                      itemCount: bindings.length,
-                      itemBuilder: (context, index) {
-                        final b = bindings[index];
-                        return MenuCard(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 4,
-                          ),
-                          // キーのチップが1行で項目名の前に入らない幅（大きな
-                          // 文字・字の広い言語）では、項目名の上に置く（「…」で
-                          // 切らない）。チップが入っても、残りの名前の欄に名前の
-                          // いちばん広い語が入らないときも上に置く（英語320px・
-                          // 文字2倍で「Re / do」と語の途中で折れた）。
-                          child: LayoutBuilder(
-                            builder: (context, box) {
-                              final chip = _KeyChip(b.comboLabel);
-                              final label = shortcutDisplayLabel(
-                                l10n,
-                                b,
-                                brushes: brushes,
-                              );
-                              // 韓国語の語は、1行に入れば途中で折らない。
-                              final name = messageText(
-                                label,
-                                style: localizedHeadingStyle(
-                                  context,
-                                  _nameStyle,
-                                ),
-                              );
-                              final chipWidth = _KeyChip.widthOf(
-                                context,
-                                b.comboLabel,
-                              );
-                              final beside =
-                                  chipWidth <=
-                                      math.max(120, box.maxWidth * 0.4) &&
-                                  _widestWordOf(context, name, label) <=
-                                      _nameWidthBeside(
-                                        context,
-                                        box.maxWidth,
-                                        chipWidth,
+                      children: [
+                        // 割り当ては1枚の面に行として並べ、細い線で分ける
+                        // （行ごとに浮かせたカードにしない）。
+                        GroupedSheet(
+                          children: [
+                            for (final b in bindings)
+                              Builder(
+                                builder: (context) {
+                                  // キーのチップが1行で項目名の前に入らない幅（大きな
+                                  // 文字・字の広い言語）では、項目名の上に置く（「…」で
+                                  // 切らない）。チップが入っても、残りの名前の欄に名前の
+                                  // いちばん広い語が入らないときも上に置く（英語320px・
+                                  // 文字2倍で「Re / do」と語の途中で折れた）。
+                                  return LayoutBuilder(
+                                    builder: (context, box) {
+                                      final chip = _KeyChip(b.comboLabel);
+                                      final label = shortcutDisplayLabel(
+                                        l10n,
+                                        b,
+                                        brushes: brushes,
                                       );
-                              return ListTile(
-                                leading: beside ? chip : null,
-                                title: beside
-                                    ? name
-                                    : Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          chip,
-                                          const SizedBox(height: 6),
-                                          name,
-                                        ],
-                                      ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete_outline),
-                                  tooltip: l10n.commonDelete,
-                                  onPressed: () async {
-                                    if (!await confirmDelete(
-                                      context,
-                                      itemName: label,
-                                    )) {
-                                      return;
-                                    }
-                                    service.removeBinding(b.id);
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
+                                      // 韓国語の語は、1行に入れば途中で折らない。
+                                      final name = messageText(
+                                        label,
+                                        style: localizedHeadingStyle(
+                                          context,
+                                          _nameStyle,
+                                        ),
+                                      );
+                                      final chipWidth = _KeyChip.widthOf(
+                                        context,
+                                        b.comboLabel,
+                                      );
+                                      final beside =
+                                          chipWidth <=
+                                              math.max(
+                                                120,
+                                                box.maxWidth * 0.4,
+                                              ) &&
+                                          _widestWordOf(context, name, label) <=
+                                              _nameWidthBeside(
+                                                context,
+                                                box.maxWidth,
+                                                chipWidth,
+                                              );
+                                      return ListTile(
+                                        leading: beside ? chip : null,
+                                        title: beside
+                                            ? name
+                                            : Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  chip,
+                                                  const SizedBox(height: 6),
+                                                  name,
+                                                ],
+                                              ),
+                                        // 削除の印は補助の文字色（行の先頭の
+                                        // アイコンの色＝差し色にしない）。
+                                        trailing: IconButton(
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                          ),
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                          tooltip: l10n.commonDelete,
+                                          onPressed: () async {
+                                            if (!await confirmDelete(
+                                              context,
+                                              itemName: label,
+                                            )) {
+                                              return;
+                                            }
+                                            service.removeBinding(b.id);
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
             ),
           ],
@@ -848,7 +865,8 @@ class _KeyChip extends StatelessWidget {
       locale: Localizations.maybeLocaleOf(context),
       maxLines: 1,
     )..layout();
-    final width = painter.width + _padding.horizontal;
+    // 左右の枠（1pxずつ）も含める。
+    final width = painter.width + _padding.horizontal + 2;
     painter.dispose();
     return width;
   }
@@ -883,11 +901,20 @@ class _KeyChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // キーの形：画面の用紙の色の地に細い枠、下だけ少し太い枠（キーボードの
+    // キーの見た目）。面の上にもう1色の灰色の箱を重ねない。
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: _padding,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(6),
+        border: Border(
+          top: BorderSide(color: scheme.outlineVariant),
+          left: BorderSide(color: scheme.outlineVariant),
+          right: BorderSide(color: scheme.outlineVariant),
+          bottom: BorderSide(color: scheme.outlineVariant, width: 2),
+        ),
       ),
       // 修飾キーの後の「+」の後だけで折り返す（読み上げは元の文）。
       child: Text(
