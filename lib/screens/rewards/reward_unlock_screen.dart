@@ -1128,7 +1128,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         key: const Key('coinHistoryButton'),
                         icon: const Icon(Icons.receipt_long_outlined),
                         onPressed: _showCoinHistory,
-                        label: messageText(t['coinHistory']),
+                        // くらむぼんの字は行の外へはみ出すので、以前と同じく
+                        // 上下に4px取る（大きな文字でボタンの外へ出た）。
+                        label: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: messageText(t['coinHistory']),
+                        ),
                       ),
                     TextButton.icon(
                       icon: const Icon(Icons.refresh),

@@ -261,9 +261,10 @@ void main() {
         app(themes, locale, const MembershipBenefitsScreen(), premium: premium),
       );
       await settle(tester);
+      // 契約状態の面（GroupedSheet）の見出し。
       final heading = _paragraphOf(
         tester,
-        find.byType(Card).first,
+        find.byKey(const Key('membershipStatusCard')),
         l10n.rewardNavigationMembershipCoin,
       );
       expect(_breaksInsideWords(ParagraphLines(heading)), isEmpty);
