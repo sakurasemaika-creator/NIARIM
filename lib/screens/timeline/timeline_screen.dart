@@ -10213,12 +10213,7 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
           ? null
           : _layerKeyframeEngine.valueAt(l.keyframes, request.frameIndex),
       groupKeyframeOf: (l) => _groupKeyframeOf(request, l),
-      // Use the same opaque paper as export before applying effects. This
-      // matters for filters that operate on the full output frame, not only
-      // on non-transparent drawing pixels.
-      paperColor: (request.backgroundColor >>> 24) == 0xFF
-          ? request.backgroundColor
-          : null,
+      paperColor: request.backgroundColor,
       maskGroups: request.maskGroups,
     );
 
@@ -10237,6 +10232,16 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     );
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
+    // Match export: the paper is part of the output before camera and effects.
+    canvas.drawRect(
+      ui.Rect.fromLTWH(
+        0,
+        0,
+        outputWidth.toDouble(),
+        outputHeight.toDouble(),
+      ),
+      ui.Paint()..color = ui.Color(request.backgroundColor),
+    );
     canvas.save();
     _cameraEngine.apply(
       canvas,
