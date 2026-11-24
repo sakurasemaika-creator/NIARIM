@@ -116,20 +116,76 @@ class KeepTogetherText extends Text {
     for (final char in text.characters) {
       boundaries.add(boundaries.last + char.length);
     }
+    (int, int)? widen(int at, String part) {
+      final begin = boundaries.lastWhere((b) => b <= at);
+      final end = boundaries.firstWhere((b) => b >= at + part.length);
+      return text.substring(begin, end).characters.length > 1 ||
+              part.contains(' ')
+          ? (begin, end)
+          : null;
+    }
+
     final ranges = <(int, int)>[];
     var start = 0;
     while (start < text.length) {
       final (at, part) = _nextKept(text, start);
       if (at < 0) break;
-      final begin = boundaries.lastWhere((b) => b <= at);
-      final end = boundaries.firstWhere((b) => b >= at + part.length);
-      if (text.substring(begin, end).characters.length > 1 ||
-          part.contains(' ')) {
-        ranges.add((begin, end));
-      }
-      start = end;
+      final range = widen(at, part);
+      if (range != null) ranges.add(range);
+      start = range?.$2 ?? at + part.length;
     }
-    return ranges;
+    if (ranges.isEmpty) return ranges;
+    // 大きな部分の中に入った小さな部分（長音符・小さいかなをその前の字と
+    // つなぐ部分等）も残す。大きな部分が欄の1行に入らずつながないときも、
+    // 小さな部分はつないだままにする（「…レイヤー」の最後の語が入らない
+    // 欄で、「レイヤ／ー」と長音符から行が始まった）。
+    final inner = <(int, int)>[];
+    for (final (outerStart, outerEnd) in List.of(ranges)) {
+      var from = outerStart;
+      while (from < outerEnd) {
+        (int, int)? next;
+        void consider(int index, String candidate) {
+          if (index < from || index + candidate.length > outerEnd) return;
+          final range = widen(index, candidate);
+          if (range == null ||
+              range.$2 > outerEnd ||
+              (range.$1 == outerStart && range.$2 == outerEnd)) {
+            return;
+          }
+          if (next == null ||
+              range.$1 < next!.$1 ||
+              (range.$1 == next!.$1 && range.$2 > next!.$2)) {
+            next = range;
+          }
+        }
+
+        for (final candidate in keep) {
+          if (candidate.isEmpty) continue;
+          final number = _isDigit(candidate.codeUnitAt(0));
+          var index = text.indexOf(candidate, from);
+          while (index >= 0 && index < outerEnd) {
+            // 数の途中からは始めない（[_nextKept]と同じ）。
+            if (!(index > 0 &&
+                number &&
+                _isDigit(text.codeUnitAt(index - 1)))) {
+              consider(index, candidate);
+            }
+            index = text.indexOf(candidate, index + 1);
+          }
+        }
+        for (final unit in _numberWithUnit.allMatches(text, from)) {
+          if (unit.start >= outerEnd) break;
+          consider(unit.start, unit.group(0)!);
+        }
+        if (next == null) break;
+        inner.add(next!);
+        from = next!.$2;
+      }
+    }
+    // 始まりの順、同じ始まりなら大きい方を先に。
+    return [...ranges, ...inner]..sort(
+      (a, b) => a.$1 != b.$1 ? a.$1.compareTo(b.$1) : b.$2.compareTo(a.$2),
+    );
   }
 
   /// [style]の書式で、どの部分もつないだ文（描く部品がすべての部分をつないで
@@ -566,17 +622,21 @@ class _KeptParts {
           offset += char.length;
         }
 
-        var source = 0;
-        var range = 0;
-        for (final char in text.characters) {
-          while (range < ranges.length && ranges[range].$2 <= source) {
-            range++;
+        // つないだ部分が入れ子のこともある（大きな部分の中の小さな部分）。
+        // その字を含むつないだ部分のどれかがあれば、つないだ部分の中の字。
+        bool inJoined(int source, {required bool atStart}) {
+          for (var r = 0; r < ranges.length; r++) {
+            final (start, end) = ranges[r];
+            if (!joined[r] || start > source || end <= source) continue;
+            if (atStart || start < source) return true;
           }
-          final inPart =
-              range < ranges.length &&
-              joined[range] &&
-              ranges[range].$1 <= source;
-          if (inPart && ranges[range].$1 < source) {
+          return false;
+        }
+
+        var source = 0;
+        for (final char in text.characters) {
+          final inPart = inJoined(source, atStart: true);
+          if (inJoined(source, atStart: false)) {
             insert(_wordJoiner);
           } else if (breakBefore.contains(source)) {
             insert(_zeroWidthSpace);
@@ -641,13 +701,31 @@ class _KeptParts {
       final variant = _variant(joined, sent);
       _layout(painter, variant.span, maxWidth: width);
       var changed = false;
-      for (var i = 0; i < ranges.length; i++) {
-        if (!joined[i]) continue;
-        final (start, end) = _attached(i);
-        if (_crossesLines(painter, variant.at[start]!, variant.at[end]!)) {
-          joined[i] = false;
-          changed = true;
-        }
+      final crossing = <int>[
+        for (var i = 0; i < ranges.length; i++)
+          if (joined[i] &&
+              _crossesLines(
+                painter,
+                variant.at[_attached(i).$1]!,
+                variant.at[_attached(i).$2]!,
+              ))
+            i,
+      ];
+      for (final i in crossing) {
+        // 大きな部分の中の小さな部分は、大きな部分をつながずに並べ直して
+        // から確かめる（大きな部分が字の途中で折れたせいで、小さな部分も
+        // 行をまたいで見えるため）。
+        final (start, end) = ranges[i];
+        final inside = crossing.any(
+          (j) =>
+              j != i &&
+              ranges[j].$1 <= start &&
+              end <= ranges[j].$2 &&
+              (ranges[j].$1, ranges[j].$2) != (start, end),
+        );
+        if (inside) continue;
+        joined[i] = false;
+        changed = true;
       }
       if (changed) continue;
       for (var i = 0; i < tails.length; i++) {
