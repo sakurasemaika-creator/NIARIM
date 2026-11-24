@@ -251,7 +251,8 @@ void main() {
       final card = [
         for (final text in tester.widgetList<Text>(
           find.descendant(
-            of: find.byType(Card).first,
+            // 契約状態の面（GroupedSheet）。
+            of: find.byKey(const Key('membershipStatusCard')),
             matching: find.bySubtype<Text>(),
           ),
         ))
