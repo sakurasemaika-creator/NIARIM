@@ -24,10 +24,12 @@ class TimelineVideoTimeMapper {
     final elapsed = timelineFrame - clipStartFrame;
     if (elapsed < 0 || elapsed >= clipLengthFrames) return null;
     final source = sourceTrimStartFrame + elapsed * playbackRate;
-    return source.clamp(
-      sourceTrimStartFrame.toDouble(),
-      sourceTrimEndFrame.toDouble(),
-    );
+    return source
+        .clamp(
+          sourceTrimStartFrame.toDouble(),
+          sourceTrimEndFrame.toDouble(),
+        )
+        .toDouble();
   }
 
   /// Converts a mapped source-frame position to the player timestamp.
