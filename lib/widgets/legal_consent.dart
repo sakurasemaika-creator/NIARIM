@@ -88,17 +88,26 @@ class LegalConsentDialog extends StatelessWidget {
               key: const Key('legalConsentReadTerms'),
               onPressed: () => router.push('/settings/license'),
               icon: const Icon(Icons.description_outlined),
-              label: Text(l10n.legalConsentReadTerms),
+              label: messageText(
+                l10n.legalConsentReadTerms,
+                keepLastPhrase: true,
+              ),
             ),
             TextButton.icon(
               key: const Key('legalConsentReadPrivacy'),
               onPressed: () => router.push('/settings/privacy-policy'),
               icon: const Icon(Icons.privacy_tip_outlined),
-              label: Text(l10n.legalConsentReadPrivacy),
+              label: messageText(
+                l10n.legalConsentReadPrivacy,
+                keepLastPhrase: true,
+              ),
             ),
           ],
         ],
       ),
+      // 狭い画面で2つが1行に入らないときは、「同意して続ける」を上に、
+      // 「キャンセル」をその下に積む（既定の向きでは取り消しが上に来た）。
+      actionsOverflowDirection: VerticalDirection.up,
       actions: [
         TextButton(
           key: const Key('legalConsentCancel'),

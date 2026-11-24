@@ -8,6 +8,7 @@ import '../utils/app_error_reporter.dart';
 import '../utils/app_locale.dart';
 import '../utils/line_break.dart';
 import 'app_toast_messenger.dart';
+import 'keep_together_text.dart';
 
 /// 起動処理が失敗したときに、アプリ本体の代わりに出す画面。
 ///
@@ -136,13 +137,13 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
                   const SizedBox(height: 16),
                   // 韓国語は語の途中で折り返さない（「다시 시도／해 주세요」の
                   // ように割れていた）。ハングルを含まない文はそのまま。
-                  _KeptKoreanText(
+                  _keptText(
                     l10n.startupFailedTitle,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleLarge,
                   ),
                   const SizedBox(height: 12),
-                  _KeptKoreanText(
+                  _keptText(
                     l10n.startupFailedBody,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium,
@@ -222,4 +223,23 @@ class _KeptKoreanText extends StatelessWidget {
       textAlign: textAlign,
     );
   }
+}
+
+/// 日本語・中国語・欧文の見出しと本文：文ごとに最後の語を途中で折らず、
+/// 句点を行の頭に送らない（「…できませんで / した」「…お試しくださ / い。」
+/// になっていた）。韓国語は[_KeptKoreanText]（語結合子で語を保つ）。
+Widget _keptText(String text, {TextStyle? style, TextAlign? textAlign}) {
+  if (RegExp(r'[\uac00-\ud7af]').hasMatch(text)) {
+    return _KeptKoreanText(text, style: style, textAlign: textAlign);
+  }
+  return messageText(
+    text,
+    keepLineStarts: true,
+    keep: [
+      for (final sentence in RegExp(r'[^。．！？]+[。．！？]?').allMatches(text))
+        ...japaneseLastPhraseParts(sentence[0]!),
+    ],
+    textAlign: textAlign,
+    style: style,
+  );
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../l10n/app_localizations.dart';
+import 'empty_state_placeholder.dart';
 import 'fit_or_hide_title.dart';
 
 /// ゴミ箱へ移した・消した作品や、古いリンク・存在しないIDから開いたときの
@@ -17,32 +18,23 @@ class ProjectNotFoundView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: FitOrHideTitle(l10n.projectDetailNotFoundTitle)),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(l10n.projectDetailNotFoundBody, textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              FilledButton(
-                key: homeButtonKey,
-                // 長い言語・大きな文字で文字が折り返すと、上下の余白の無い
-                // ボタンでは見出しの書体の下の出っ張りが外へはみ出したので、
-                // 上下にも余白を取り、各行を中央にそろえる。
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                onPressed: () => context.go('/home'),
-                child: Text(
-                  l10n.projectDetailNotFoundBackToList,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
+      // ほかの画面の「ありません」と同じ形（淡い丸の印・文・道）にそろえる
+      // （文とボタンだけでは、何が起きたかが目に入らなかった）。
+      body: EmptyStatePlaceholder(
+        icon: Icons.search_off_rounded,
+        title: l10n.projectDetailNotFoundBody,
+        action: FilledButton(
+          key: homeButtonKey,
+          // 長い言語・大きな文字で文字が折り返すと、上下の余白の無い
+          // ボタンでは見出しの書体の下の出っ張りが外へはみ出したので、
+          // 上下にも余白を取り、各行を中央にそろえる。
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+          onPressed: () => context.go('/home'),
+          child: Text(
+            l10n.projectDetailNotFoundBackToList,
+            textAlign: TextAlign.center,
           ),
         ),
       ),

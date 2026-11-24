@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../services/premium_service.dart';
 import '../config/font_fallback.dart';
+import 'keep_together_text.dart';
 
 /// Premium限定機能の共通ロックウィジェット。
 ///
@@ -341,8 +342,9 @@ class _PremiumBannerDialog extends StatelessWidget {
                   FilledButton.icon(
                     icon: const Icon(Icons.workspace_premium_outlined),
                     onPressed: () => onChoose('premium'),
-                    label: Text(
+                    label: messageText(
                       labels.premiumBannerMembershipDetails,
+                      keepLastPhrase: true,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -353,8 +355,9 @@ class _PremiumBannerDialog extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Flexible(
-                          child: Text(
+                          child: messageText(
                             labels.premiumBannerBenefitDetails,
+                            keepLastPhrase: true,
                             textAlign: TextAlign.center,
                           ),
                         ),

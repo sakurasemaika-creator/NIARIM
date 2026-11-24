@@ -256,7 +256,13 @@ Widget messageText(
     for (final m in _spacedCount.allMatches(text)) m[0]!,
     ...koreanWordParts(text, except: keep),
     if (keepLineStarts) ...lineStartKeepParts(text),
-    if (keepLastPhrase) ...japaneseLastPhraseParts(text),
+    // 前にひらがなの境目が無く、3字の語に広げられないとき（「プライバシー
+    // ポリシーを読む」）は、2字の最後の語（「読む」）だけでもつなぐ。
+    if (keepLastPhrase)
+      ...switch (japaneseLastPhraseParts(text)) {
+        final parts when parts.isNotEmpty => parts,
+        _ => japaneseLastPhraseParts(text, minLetters: 2),
+      },
   ];
   if (parts.isEmpty && !text.contains(RegExp(r'\d'))) {
     return Text(text, key: key, style: style, textAlign: textAlign);
