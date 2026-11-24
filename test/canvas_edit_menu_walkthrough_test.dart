@@ -358,10 +358,16 @@ void main() {
     await tapEntry(tester, 'Réglage des couleurs');
     await capture(tester, '14_color_adjust_fr_x2');
     expect(tester.takeException(), isNull);
-    // 一番下の「追加する」まで送って押せる位置に出せる。
+    // 取り消し・適用はスクロールの外で押せる位置にあり、フィルターとして
+    // 残す「追加する」は題の右のメニューから選べる。
+    for (final label in ['Annuler', 'Appliquer']) {
+      final button = find.text(label).last;
+      expect(tester.getRect(button).right, lessThanOrEqualTo(320));
+      expect(tester.getRect(button).bottom, lessThanOrEqualTo(700));
+    }
+    await tester.tap(find.byKey(const ValueKey('color-adjust-save-menu')));
+    await settle(tester, 3);
     final add = find.text('Ajouter aux filtres d’effet');
-    await tester.ensureVisible(add);
-    await tester.pump();
     expect(tester.getRect(add).right, lessThanOrEqualTo(320));
     expect(tester.takeException(), isNull);
   });
@@ -391,10 +397,16 @@ void main() {
       await tapEntry(tester, l10n.canvasColorAdjustMenuTitle);
     }
 
+    // フィルターとして残す2つは、パネルの題の右のメニューの中。
     Future<void> prompt(String label) async {
-      final buttons = find.descendant(of: panel, matching: find.text(label));
-      await tester.ensureVisible(buttons);
-      await tester.tap(buttons);
+      await tester.tap(
+        find.descendant(
+          of: panel,
+          matching: find.byKey(const ValueKey('color-adjust-save-menu')),
+        ),
+      );
+      await settle(tester, 3);
+      await tester.tap(find.text(label).last);
       await settle(tester, 4);
     }
 

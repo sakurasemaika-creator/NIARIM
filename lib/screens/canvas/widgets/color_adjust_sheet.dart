@@ -333,92 +333,116 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final screenHeight = MediaQuery.sizeOf(context).height;
+    final header = Row(
+      children: [
+        Expanded(
+          child: Text(
+            l10n.canvasColorAdjustTitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: localizedHeadingStyle(
+              context,
+              const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ),
+        ),
+        // 調整をフィルターとして残す2つは、題の右のメニューにまとめる
+        // （下の操作の行は取り消し・適用の1行だけにして、スライダーの場所を
+        // 取らない）。
+        PopupMenuButton<bool>(
+          key: const ValueKey('color-adjust-save-menu'),
+          icon: const Icon(Icons.more_vert, size: 20),
+          enabled: !_naming,
+          onSelected: (effect) =>
+              effect ? _addToEffectFilter() : _addToDrawFilter(),
+          itemBuilder: (_) => [
+            PopupMenuItem(
+              value: false,
+              child: Text(l10n.canvasColorAdjustAddToDrawFilter),
+            ),
+            PopupMenuItem(
+              value: true,
+              enabled: widget.totalFrames > 0,
+              child: Text(l10n.canvasColorAdjustAddToEffectFilter),
+            ),
+          ],
+        ),
+        IconButton(
+          icon: const Icon(Icons.close, size: 18),
+          tooltip: l10n.commonCancel,
+          onPressed: _cancel,
+        ),
+      ],
+    );
+    // 取り消し・適用はスクロールの外に固定し、右へそろえる（ダイアログと同じ
+    // 並び）。以前はフィルターとして残す2つと合わせて4つを中央寄せで
+    // スライダーの下に並べ、360pxでは残す2つがスクロールの下に隠れていた。
+    final actions = Align(
+      alignment: AlignmentDirectional.centerEnd,
+      child: Wrap(
+        alignment: WrapAlignment.end,
+        spacing: 8,
+        children: [
+          TextButton(onPressed: _cancel, child: Text(l10n.commonCancel)),
+          FilledButton(
+            onPressed: _applying || widget.layerId == null ? null : _apply,
+            child: Text(l10n.filterApplyButton),
+          ),
+        ],
+      ),
+    );
+    // 下地はフィルターの調整（FilterPanelの画面下部の帯）と同じく持たない
+    // （画面の地＝キャンバスの外周の上に置く。以前はこの帯だけ
+    // surfaceContainerHighの別の灰色だった）。
     return Material(
       key: const ValueKey('color-adjust-bottom-bar'),
-      color: Theme.of(context).colorScheme.surfaceContainerHigh,
-      elevation: 0,
+      type: MaterialType.transparency,
       child: SafeArea(
         top: false,
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: screenHeight * 0.38),
-          child: SingleChildScrollView(
+          child: Padding(
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.canvasColorAdjustTitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: localizedHeadingStyle(
-                          context,
-                          const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
+                header,
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _slider(
+                          l10n.filterColorAdjustSaturationLabel,
+                          _saturation,
+                          (v) {
+                            setState(() => _saturation = v);
+                            unawaited(_updatePreview());
+                          },
                         ),
-                      ),
+                        _slider(
+                          l10n.filterColorAdjustBrightnessLabel,
+                          _brightness,
+                          (v) {
+                            setState(() => _brightness = v);
+                            unawaited(_updatePreview());
+                          },
+                        ),
+                        _slider(
+                          l10n.filterColorAdjustContrastLabel,
+                          _contrast,
+                          (v) {
+                            setState(() => _contrast = v);
+                            unawaited(_updatePreview());
+                          },
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 18),
-                      tooltip: l10n.commonCancel,
-                      onPressed: _cancel,
-                    ),
-                  ],
+                  ),
                 ),
-                _slider(l10n.filterColorAdjustSaturationLabel, _saturation, (
-                  v,
-                ) {
-                  setState(() => _saturation = v);
-                  unawaited(_updatePreview());
-                }),
-                _slider(l10n.filterColorAdjustBrightnessLabel, _brightness, (
-                  v,
-                ) {
-                  setState(() => _brightness = v);
-                  unawaited(_updatePreview());
-                }),
-                _slider(l10n.filterColorAdjustContrastLabel, _contrast, (v) {
-                  setState(() => _contrast = v);
-                  unawaited(_updatePreview());
-                }),
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 8,
-                  runSpacing: 0,
-                  children: [
-                    TextButton(
-                      onPressed: _cancel,
-                      child: Text(l10n.commonCancel),
-                    ),
-                    FilledButton(
-                      onPressed: _applying || widget.layerId == null
-                          ? null
-                          : _apply,
-                      child: Text(l10n.filterApplyButton),
-                    ),
-                    TextButton(
-                      onPressed: _naming ? null : _addToDrawFilter,
-                      child: Text(
-                        l10n.canvasColorAdjustAddToDrawFilter,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: _naming || widget.totalFrames <= 0
-                          ? null
-                          : _addToEffectFilter,
-                      child: Text(
-                        l10n.canvasColorAdjustAddToEffectFilter,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                    ),
-                  ],
-                ),
+                actions,
               ],
             ),
           ),
