@@ -46,7 +46,6 @@ import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../widgets/grouped_sheet.dart';
-import '../canvas/widgets/neutral_list_icons.dart';
 import '../../widgets/menu_surface.dart';
 import '../../widgets/menu_action_label.dart';
 import '../../widgets/menu_card.dart';
@@ -1316,9 +1315,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         : _preset.parts
               .where((p) => p.displayName(l10n).toLowerCase().contains(query))
               .toList();
-    // 行の操作（名前の変更・削除・並べ替え）の印は中立の色（差し色は
-    // 選んでいる状態・主な操作のため）。
-    return NeutralListIcons(child: _partListContent(l10n, filteredParts));
+    return _partListContent(l10n, filteredParts);
   }
 
   Widget _partListContent(

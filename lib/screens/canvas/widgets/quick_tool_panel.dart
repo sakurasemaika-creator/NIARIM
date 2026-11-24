@@ -17,7 +17,6 @@ import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart' show DrawingTool;
 import '../../../widgets/docked_panel_scope.dart';
 import 'docked_panel_close_scope.dart';
-import 'neutral_list_icons.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
@@ -163,44 +162,40 @@ class QuickToolPanel extends StatelessWidget {
                             rowWidth: box.maxWidth,
                             count: entries.length,
                           );
-                          // 行の削除・並べ替えの印は中立の色（差し色は
-                          // 主な操作と選んでいる状態のため）。
-                          return NeutralListIcons(
-                            child: ReorderableListView.builder(
-                              // ドラッグハンドルを明示アイコンとして置く（既定の
-                              // ままだと行の長押しでしか並べ替えを開始できず、
-                              // 可視の目印が無いままだった）。
-                              buildDefaultDragHandles: false,
-                              header: compact ? heading : null,
-                              itemCount: entries.length,
-                              onReorderItem: (oldIndex, newIndex) =>
-                                  service.reorder(
-                                    oldIndex,
-                                    preRemovalIndex(oldIndex, newIndex),
-                                  ),
-                              itemBuilder: (context, index) {
-                                final e = entries[index];
-                                return rows.build(
-                                  key: ValueKey(e.id),
-                                  index: index,
-                                  label: quickToolDisplayLabel(
-                                    l10n,
-                                    e,
-                                    brushes,
-                                    isBuiltIn: brushService.isBuiltIn,
-                                  ),
-                                  unavailable:
-                                      e.brushId != null &&
-                                          !brushes.any(
-                                            (brush) => brush.id == e.brushId,
-                                          )
-                                      ? l10n.quickToolBrushUnavailable
-                                      : null,
-                                  deleteTooltip: l10n.commonDelete,
-                                  onDelete: () => service.removeEntry(e.id),
-                                );
-                              },
-                            ),
+                          return ReorderableListView.builder(
+                            // ドラッグハンドルを明示アイコンとして置く（既定の
+                            // ままだと行の長押しでしか並べ替えを開始できず、
+                            // 可視の目印が無いままだった）。
+                            buildDefaultDragHandles: false,
+                            header: compact ? heading : null,
+                            itemCount: entries.length,
+                            onReorderItem: (oldIndex, newIndex) =>
+                                service.reorder(
+                                  oldIndex,
+                                  preRemovalIndex(oldIndex, newIndex),
+                                ),
+                            itemBuilder: (context, index) {
+                              final e = entries[index];
+                              return rows.build(
+                                key: ValueKey(e.id),
+                                index: index,
+                                label: quickToolDisplayLabel(
+                                  l10n,
+                                  e,
+                                  brushes,
+                                  isBuiltIn: brushService.isBuiltIn,
+                                ),
+                                unavailable:
+                                    e.brushId != null &&
+                                        !brushes.any(
+                                          (brush) => brush.id == e.brushId,
+                                        )
+                                    ? l10n.quickToolBrushUnavailable
+                                    : null,
+                                deleteTooltip: l10n.commonDelete,
+                                onDelete: () => service.removeEntry(e.id),
+                              );
+                            },
                           );
                         },
                       ),
@@ -262,77 +257,75 @@ class QuickToolPanel extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => ScrollableSheetBody(
-        child: NeutralListIcons(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 「現在のブラシを追加」：使用中のブラシ設定をそのまま登録
-              if (currentTool == DrawingTool.pen && currentBrushId != null)
-                ListTile(
-                  leading: Icon(
-                    Icons.bolt,
-                    color: ThemeService.activeColorScheme.tertiary,
-                  ),
-                  title: Text(l10n.quickToolAddCurrentBrush),
-                  subtitle: Text('$currentName ${currentSize.round()}px'),
-                  onTap: () {
-                    service.addEntry(
-                      QuickToolEntry(
-                        id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
-                        label: '$currentName ${currentSize.round()}px',
-                        toolKey: 'pen',
-                        brushId: currentBrushId,
-                        sizeOverride: currentSize,
-                      ),
-                    );
-                    Navigator.pop(ctx);
-                  },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 「現在のブラシを追加」：使用中のブラシ設定をそのまま登録
+            if (currentTool == DrawingTool.pen && currentBrushId != null)
+              ListTile(
+                leading: Icon(
+                  Icons.bolt,
+                  color: ThemeService.activeColorScheme.tertiary,
                 ),
-              if (currentTool == DrawingTool.pen && currentBrushId != null)
-                const Divider(height: 1),
-              for (final brush in brushService.brushes)
-                ListTile(
-                  leading: const Icon(Icons.brush),
-                  title: Text(nameOf(brush)),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _showSizeDialog(
-                      context,
-                      service,
-                      brush.id,
-                      nameOf(brush),
-                      brush.size,
-                    );
-                  },
-                ),
-              ListTile(
-                // ツールバーの消しゴムと同じ印（魔法の杖の印は自動選択と
-                // 見分けられなかった）。
-                leading: const FaIcon(FontAwesomeIcons.eraser, size: 20),
-                title: Text(l10n.quickToolEraser),
+                title: Text(l10n.quickToolAddCurrentBrush),
+                subtitle: Text('$currentName ${currentSize.round()}px'),
                 onTap: () {
-                  _addSimple(service, 'eraser', l10n.quickToolEraser);
+                  service.addEntry(
+                    QuickToolEntry(
+                      id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
+                      label: '$currentName ${currentSize.round()}px',
+                      toolKey: 'pen',
+                      brushId: currentBrushId,
+                      sizeOverride: currentSize,
+                    ),
+                  );
                   Navigator.pop(ctx);
                 },
               ),
+            if (currentTool == DrawingTool.pen && currentBrushId != null)
+              const Divider(height: 1),
+            for (final brush in brushService.brushes)
               ListTile(
-                leading: const Icon(Icons.colorize),
-                title: Text(l10n.quickToolEyedropper),
+                leading: const Icon(Icons.brush),
+                title: Text(nameOf(brush)),
                 onTap: () {
-                  _addSimple(service, 'eyedropper', l10n.quickToolEyedropper);
                   Navigator.pop(ctx);
+                  _showSizeDialog(
+                    context,
+                    service,
+                    brush.id,
+                    nameOf(brush),
+                    brush.size,
+                  );
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.format_color_fill),
-                title: Text(l10n.quickToolBucket),
-                onTap: () {
-                  _addSimple(service, 'bucket', l10n.quickToolBucket);
-                  Navigator.pop(ctx);
-                },
-              ),
-            ],
-          ),
+            ListTile(
+              // ツールバーの消しゴムと同じ印（魔法の杖の印は自動選択と
+              // 見分けられなかった）。
+              leading: const FaIcon(FontAwesomeIcons.eraser, size: 20),
+              title: Text(l10n.quickToolEraser),
+              onTap: () {
+                _addSimple(service, 'eraser', l10n.quickToolEraser);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.colorize),
+              title: Text(l10n.quickToolEyedropper),
+              onTap: () {
+                _addSimple(service, 'eyedropper', l10n.quickToolEyedropper);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.format_color_fill),
+              title: Text(l10n.quickToolBucket),
+              onTap: () {
+                _addSimple(service, 'bucket', l10n.quickToolBucket);
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -562,8 +555,7 @@ class _QuickToolRows {
           index: index,
           child: SizedBox.fromSize(
             size: _handleSize,
-            // 削除の印と同じ中立の色（一覧はNeutralListIconsの中。この行の
-            // contextはその外のパネルのものなので、色を直に渡す）。
+            // 削除の印（テーマの一覧の印の色）と同じ中立の色。
             child: Icon(
               Icons.drag_handle,
               size: 18,

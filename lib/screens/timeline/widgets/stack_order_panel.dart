@@ -548,10 +548,6 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
         children: [
           for (var i = 0; i < ranges.length; i++)
             ChoiceChip(
-              // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
-              side: BorderSide(
-                color: Theme.of(context).colorScheme.outlineVariant,
-              ),
               avatar: Icon(
                 Icons.date_range,
                 size: 16,
@@ -666,10 +662,6 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
         children: [
           for (final s in all)
             FilterChip(
-              // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
-              side: BorderSide(
-                color: Theme.of(context).colorScheme.outlineVariant,
-              ),
               label: Text(s.displayName),
               selected: chosen.contains(s.id),
               // At least one scene stays chosen.

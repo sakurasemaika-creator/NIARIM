@@ -446,28 +446,16 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
           runSpacing: 4,
           children: [
             FilterChip(
-              // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
-              side: BorderSide(
-                color: Theme.of(context).colorScheme.outlineVariant,
-              ),
               label: Text(l10n.canvasTextBold),
               selected: text.isBold,
               onSelected: (v) => _editText((t) => t.copyWith(isBold: v)),
             ),
             FilterChip(
-              // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
-              side: BorderSide(
-                color: Theme.of(context).colorScheme.outlineVariant,
-              ),
               label: Text(l10n.canvasTextItalic),
               selected: text.isItalic,
               onSelected: (v) => _editText((t) => t.copyWith(isItalic: v)),
             ),
             FilterChip(
-              // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
-              side: BorderSide(
-                color: Theme.of(context).colorScheme.outlineVariant,
-              ),
               avatar: const Icon(Icons.text_rotate_vertical, size: 16),
               label: Text(l10n.canvasTextVertical),
               selected: text.direction == TextWritingDirection.vertical,
@@ -1003,10 +991,6 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     child: ChoiceChip(
-                      // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
-                      side: BorderSide(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
                       avatar: Icon(sectionIcon(s), size: 16),
                       label: Text(sectionLabel(s)),
                       selected: s == section,

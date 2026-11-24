@@ -179,13 +179,6 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                             .map(
                               (interval) => ChoiceChip(
                                 label: Text('$interval'),
-                                // パネルとチップの下地が同じ色なので、選んで
-                                // いないチップは縁で押せる物と分かるようにする。
-                                side: BorderSide(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.outlineVariant,
-                                ),
                                 selected: _settings.frameInterval == interval,
                                 onSelected: (selected) {
                                   if (selected) {

@@ -14,7 +14,6 @@ import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/responsive.dart';
 import '../canvas_screen.dart';
 import 'canvas_icon_button.dart';
-import 'neutral_list_icons.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/list_ink_clip.dart';
 import '../../../l10n/creative_preset_labels.dart';
@@ -426,151 +425,147 @@ class ToolbarWidget extends StatelessWidget {
           final useTone = toneService.bucketUseTone;
           final lastBucketTone = toneService.lastBucketTone;
           return SafeArea(
-            child: NeutralListIcons(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.sizeOf(ctx).height * 0.85,
-                ),
-                // 行を押したときの色・選んだ行の色をスクロールの中に限る（シートの
-                // 面へ描くと、半分隠れた行の色が下の余白〔ナビゲーションバーの
-                // 下〕へはみ出す）。
-                child: CustomScrollView(
-                  primary: false,
-                  shrinkWrap: true,
-                  slivers: [
-                    SliverList.list(
-                      children: [
-                        // 行は指先・図形・選択の長押しのシートと同じ大きさ
-                        // （以前はこのシートだけ13pxの詰めた行だった）。
-                        ListTile(
-                          leading: const Icon(Icons.format_color_fill),
-                          title: Text(l10n.toolbarBucketFlatFill),
-                          selected: !useTone,
-                          onTap: () {
-                            toneService.setBucketUseTone(false);
-                            Navigator.pop(ctx);
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.gesture),
-                          title: Text(l10n.penSubToolTabLassoFill),
-                          onTap: () {
-                            onLassoFillSelected();
-                            Navigator.pop(ctx);
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (sheetCtx) => SizedBox(
-                                height:
-                                    MediaQuery.sizeOf(sheetCtx).height * 0.6,
-                                child: LassoFillToneSheet(
-                                  onClose: () => Navigator.pop(sheetCtx),
-                                ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(ctx).height * 0.85,
+              ),
+              // 行を押したときの色・選んだ行の色をスクロールの中に限る（シートの
+              // 面へ描くと、半分隠れた行の色が下の余白〔ナビゲーションバーの
+              // 下〕へはみ出す）。
+              child: CustomScrollView(
+                primary: false,
+                shrinkWrap: true,
+                slivers: [
+                  SliverList.list(
+                    children: [
+                      // 行は指先・図形・選択の長押しのシートと同じ大きさ
+                      // （以前はこのシートだけ13pxの詰めた行だった）。
+                      ListTile(
+                        leading: const Icon(Icons.format_color_fill),
+                        title: Text(l10n.toolbarBucketFlatFill),
+                        selected: !useTone,
+                        onTap: () {
+                          toneService.setBucketUseTone(false);
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.gesture),
+                        title: Text(l10n.penSubToolTabLassoFill),
+                        onTap: () {
+                          onLassoFillSelected();
+                          Navigator.pop(ctx);
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (sheetCtx) => SizedBox(
+                              height: MediaQuery.sizeOf(sheetCtx).height * 0.6,
+                              child: LassoFillToneSheet(
+                                onClose: () => Navigator.pop(sheetCtx),
                               ),
-                            );
-                          },
+                            ),
+                          );
+                        },
+                      ),
+                      const Divider(height: 1),
+                      // 一覧の見出しは設定/編集メニューのまとまりの見出しと
+                      // 同じ形（以前は11pxの注釈の文字で、見出しに見えなかった）。
+                      Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                          16,
+                          12,
+                          16,
+                          4,
                         ),
-                        const Divider(height: 1),
-                        // 一覧の見出しは設定/編集メニューのまとまりの見出しと
-                        // 同じ形（以前は11pxの注釈の文字で、見出しに見えなかった）。
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                            16,
-                            12,
-                            16,
-                            4,
+                        child: Text(
+                          l10n.toolbarBucketToneListLabel,
+                          style: localizedHeadingStyle(
+                            context,
+                            TextStyle(
+                              fontSize: 13,
+                              color: ThemeService
+                                  .activeColorScheme
+                                  .onSurfaceVariant,
+                            ),
                           ),
-                          child: Text(
-                            l10n.toolbarBucketToneListLabel,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SliverToneFillGrid(
+                    tones: tones,
+                    selectedId: useTone ? lastBucketTone?.id : null,
+                    labelOf: (tone) => creativePresetLabel(
+                      l10n,
+                      tone.name,
+                      builtIn: toneService.isBuiltIn(tone.id),
+                    ),
+                    onSelected: (tone) {
+                      toneService.setBucketUseTone(true);
+                      toneService.setLastBucketTone(tone);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                  SliverList.list(
+                    children: [
+                      const Divider(height: 1),
+                      Theme(
+                        data: Theme.of(
+                          ctx,
+                        ).copyWith(dividerColor: Colors.transparent),
+                        child: ExpansionTile(
+                          leading: const Icon(Icons.tune),
+                          title: Text(
+                            l10n.bucketSettingsTitle,
                             style: localizedHeadingStyle(
                               context,
-                              TextStyle(
-                                fontSize: 13,
-                                color: ThemeService
-                                    .activeColorScheme
-                                    .onSurfaceVariant,
-                              ),
+                              const TextStyle(),
                             ),
                           ),
+                          childrenPadding: const EdgeInsets.fromLTRB(
+                            16,
+                            0,
+                            16,
+                            12,
+                          ),
+                          children: [
+                            _bucketDetailSlider(
+                              ctx: ctx,
+                              label: l10n.bucketSettingsToleranceSection,
+                              value: settings.bucketTolerance,
+                              min: 0,
+                              max: 100,
+                              divisions: 100,
+                              onChanged: (v) => settings.setBucketTolerance(v),
+                            ),
+                            _bucketDetailSlider(
+                              ctx: ctx,
+                              label: l10n.bucketSettingsExpandSection,
+                              value: settings.bucketExpandPx.toDouble(),
+                              min: 0,
+                              max: 10,
+                              divisions: 10,
+                              onChanged: (v) =>
+                                  settings.setBucketExpandPx(v.round()),
+                            ),
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              dense: true,
+                              title: Text(
+                                l10n.bucketSettingsUnderLineTitle,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                              value: settings.bucketFillUnderLine,
+                              onChanged: (v) =>
+                                  settings.setBucketFillUnderLine(v),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    SliverToneFillGrid(
-                      tones: tones,
-                      selectedId: useTone ? lastBucketTone?.id : null,
-                      labelOf: (tone) => creativePresetLabel(
-                        l10n,
-                        tone.name,
-                        builtIn: toneService.isBuiltIn(tone.id),
                       ),
-                      onSelected: (tone) {
-                        toneService.setBucketUseTone(true);
-                        toneService.setLastBucketTone(tone);
-                        Navigator.pop(ctx);
-                      },
-                    ),
-                    SliverList.list(
-                      children: [
-                        const Divider(height: 1),
-                        Theme(
-                          data: Theme.of(
-                            ctx,
-                          ).copyWith(dividerColor: Colors.transparent),
-                          child: ExpansionTile(
-                            leading: const Icon(Icons.tune),
-                            title: Text(
-                              l10n.bucketSettingsTitle,
-                              style: localizedHeadingStyle(
-                                context,
-                                const TextStyle(),
-                              ),
-                            ),
-                            childrenPadding: const EdgeInsets.fromLTRB(
-                              16,
-                              0,
-                              16,
-                              12,
-                            ),
-                            children: [
-                              _bucketDetailSlider(
-                                ctx: ctx,
-                                label: l10n.bucketSettingsToleranceSection,
-                                value: settings.bucketTolerance,
-                                min: 0,
-                                max: 100,
-                                divisions: 100,
-                                onChanged: (v) =>
-                                    settings.setBucketTolerance(v),
-                              ),
-                              _bucketDetailSlider(
-                                ctx: ctx,
-                                label: l10n.bucketSettingsExpandSection,
-                                value: settings.bucketExpandPx.toDouble(),
-                                min: 0,
-                                max: 10,
-                                divisions: 10,
-                                onChanged: (v) =>
-                                    settings.setBucketExpandPx(v.round()),
-                              ),
-                              SwitchListTile(
-                                contentPadding: EdgeInsets.zero,
-                                dense: true,
-                                title: Text(
-                                  l10n.bucketSettingsUnderLineTitle,
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                                value: settings.bucketFillUnderLine,
-                                onChanged: (v) =>
-                                    settings.setBucketFillUnderLine(v),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ).clipListInk(),
-              ),
+                    ],
+                  ),
+                ],
+              ).clipListInk(),
             ),
           );
         },
@@ -602,42 +597,40 @@ class ToolbarWidget extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
-        child: NeutralListIcons(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 印はツールバーの選択のボタンが種類ごとに出す印と同じ
-              // （矩形に魔法の杖の印を出していて、自動選択と見分けにくかった）。
-              // 今の種類は選んだ行の色で分かるようにする。
-              ListTile(
-                leading: const Icon(Icons.highlight_alt),
-                title: Text(l10n.toolbarSelectRect),
-                selected: currentTool == DrawingTool.selectRect,
-                onTap: () {
-                  onToolSelected(DrawingTool.selectRect);
-                  Navigator.pop(ctx);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.gesture),
-                title: Text(l10n.toolbarSelectLasso),
-                selected: currentTool == DrawingTool.selectLasso,
-                onTap: () {
-                  onToolSelected(DrawingTool.selectLasso);
-                  Navigator.pop(ctx);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.auto_awesome),
-                title: Text(l10n.toolbarSelectMagicWand),
-                selected: currentTool == DrawingTool.selectMagicWand,
-                onTap: () {
-                  onToolSelected(DrawingTool.selectMagicWand);
-                  Navigator.pop(ctx);
-                },
-              ),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 印はツールバーの選択のボタンが種類ごとに出す印と同じ
+            // （矩形に魔法の杖の印を出していて、自動選択と見分けにくかった）。
+            // 今の種類は選んだ行の色で分かるようにする。
+            ListTile(
+              leading: const Icon(Icons.highlight_alt),
+              title: Text(l10n.toolbarSelectRect),
+              selected: currentTool == DrawingTool.selectRect,
+              onTap: () {
+                onToolSelected(DrawingTool.selectRect);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.gesture),
+              title: Text(l10n.toolbarSelectLasso),
+              selected: currentTool == DrawingTool.selectLasso,
+              onTap: () {
+                onToolSelected(DrawingTool.selectLasso);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.auto_awesome),
+              title: Text(l10n.toolbarSelectMagicWand),
+              selected: currentTool == DrawingTool.selectMagicWand,
+              onTap: () {
+                onToolSelected(DrawingTool.selectMagicWand);
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
         ),
       ),
     );
