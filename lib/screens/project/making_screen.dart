@@ -230,7 +230,7 @@ class _MakingScreenState extends State<MakingScreen> {
       debugPrint('Making export failed: ' + error.toString() + '\n' + stackTrace.toString());
       if (partialOutput != null) {
         try {
-          final partial = File(partialOutput);
+          final partial = File(partialOutput!);
           if (await partial.exists()) await partial.delete();
           ExportStorage.invalidate();
         } catch (cleanupError) {
@@ -257,7 +257,7 @@ class _MakingScreenState extends State<MakingScreen> {
       switch (format) {
         _MakingFormat.mp4 => l10n.exportFormatMp4,
         _MakingFormat.gif => l10n.exportFormatGif,
-        _MakingFormat.webm => l10n.helpTransparentWebmTitle,
+        _MakingFormat.webm => MakingStrings.formatWebm(context),
         _MakingFormat.avi => l10n.exportFormatAvi,
       };
 
@@ -352,7 +352,9 @@ class _MakingScreenState extends State<MakingScreen> {
                                 icon: Icon(
                                   _playing ? Icons.pause : Icons.play_arrow,
                                 ),
-                                onPressed: _exporting ? null : _togglePlayback,
+                                onPressed: _exporting || snapshots.length < 2
+                                    ? null
+                                    : _togglePlayback,
                                 tooltip: _playing
                                     ? l10n.commonPause
                                     : l10n.commonPlay,
@@ -404,7 +406,9 @@ class _MakingScreenState extends State<MakingScreen> {
                               ),
                               const SizedBox(width: 12),
                               FilledButton.icon(
-                                onPressed: _exporting ? null : _export,
+                                onPressed: _exporting || snapshots.length < 2
+                                    ? null
+                                    : _export,
                                 icon: _exporting
                                     ? const SizedBox.square(
                                         dimension: 16,

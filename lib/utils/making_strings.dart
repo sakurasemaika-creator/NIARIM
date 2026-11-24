@@ -121,6 +121,11 @@ abstract final class MakingStrings {
     'zh_Hant': '製作記錄已達到64MB上限。新快照已停止，現有記錄會保留。',
   });
 
+  static String formatWebm(BuildContext context) => _pick(context, {
+    'ja': 'WebM', 'en': 'WebM', 'es': 'WebM', 'fr': 'WebM',
+    'ko': 'WebM', 'zh': 'WebM', 'zh_Hant': 'WebM',
+  });
+
   static String exportLabel(BuildContext context) => _pick(context, {
     'ja': '動画を書き出す', 'en': 'Export video', 'es': 'Exportar vídeo',
     'fr': 'Exporter la vidéo', 'ko': '동영상 내보내기', 'zh': '导出视频',

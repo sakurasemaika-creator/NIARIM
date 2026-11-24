@@ -147,6 +147,12 @@ class MainActivity : FlutterActivity() {
                 when (call.method) {
                     "openVoiceSettings" -> {
                         try {
+                            // Release the old engine so the next dialog sees a
+                            // newly selected engine or newly installed voice data.
+                            textToSpeech?.stop()
+                            textToSpeech?.shutdown()
+                            textToSpeech = null
+                            textToSpeechReady = false
                             startActivity(
                                 Intent(android.provider.Settings.ACTION_TEXT_TO_SPEECH_SETTINGS)
                             )

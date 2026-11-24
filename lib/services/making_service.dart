@@ -104,44 +104,47 @@ abstract final class MakingService {
     }
     if (decoded == null) return _emptyManifest(dir);
 
-    final snapshots = decoded['snapshots'] is List
-        ? List<dynamic>.from(decoded['snapshots'] as List)
-        : <dynamic>[];
-    final known = snapshots
-        .whereType<Map>()
-        .map((entry) => entry['file'])
-        .whereType<String>()
-        .toSet();
-    var sizeBytes = decoded['sizeBytes'] is int
-        ? decoded['sizeBytes'] as int
-        : 0;
-
-    // Include files written just before an interrupted manifest update.
-    final orphans = <File>[];
-    await for (final entry in dir.list(followLinks: false)) {
-      if (entry is File) {
-        final name = entry.uri.pathSegments.last;
-        if (_isSnapshotName(name) && !known.contains(name)) {
-          orphans.add(entry);
-        }
+    final metadataByName = <String, Map>{};
+    final rawSnapshots = decoded['snapshots'] is List
+        ? decoded['snapshots'] as List
+        : const <dynamic>[];
+    for (final raw in rawSnapshots) {
+      if (raw is! Map) continue;
+      final name = raw['file'];
+      if (name is String && _isSnapshotName(name)) {
+        metadataByName[name] = raw;
       }
     }
-    orphans.sort((a, b) => a.path.compareTo(b.path));
-    for (final file in orphans) {
-      final stat = await file.stat();
+
+    // Recalculate the exact on-disk size instead of trusting a possibly stale
+    // manifest. This keeps the cap effective after interrupted writes or file
+    // loss, and it also recovers snapshots saved just before a crash.
+    final files = <File>[];
+    await for (final entry in dir.list(followLinks: false)) {
+      if (entry is File &&
+          _isSnapshotName(entry.uri.pathSegments.last)) {
+        files.add(entry);
+      }
+    }
+    files.sort((a, b) => a.path.compareTo(b.path));
+
+    final snapshots = <dynamic>[];
+    var sizeBytes = 0;
+    for (final imageFile in files) {
+      final name = imageFile.uri.pathSegments.last;
+      final stat = await imageFile.stat();
       sizeBytes += stat.size;
+      final metadata = metadataByName[name];
+      final capturedAt = metadata?['capturedAt'] as String?;
       snapshots.add({
-        'file': file.uri.pathSegments.last,
-        'capturedAt': stat.modified.toIso8601String(),
-        'sceneId': '',
-        'frameIndex': 0,
+        'file': name,
+        'capturedAt': DateTime.tryParse(capturedAt ?? '')?.toIso8601String() ??
+            stat.modified.toIso8601String(),
+        'sceneId': metadata?['sceneId'] as String? ?? '',
+        'frameIndex': metadata?['frameIndex'] as int? ?? 0,
         'sizeBytes': stat.size,
       });
     }
-    snapshots.sort(
-      (a, b) => ((a as Map)['file'] as String)
-          .compareTo((b as Map)['file'] as String),
-    );
     return {
       'version': 1,
       'sizeBytes': sizeBytes,
