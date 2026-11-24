@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'export_audio.dart';
 import 'export_filename.dart';
+import 'timeline_output_viewport.dart';
 import '../engine/camera_engine.dart';
 import '../engine/filter_engine.dart';
 import '../engine/layer_compositor.dart';
@@ -316,13 +317,21 @@ class ExportEngine {
       ui.Paint()..color = ui.Color.fromARGB(bgA, bgR, bgG, bgB),
     );
 
-    // 描画領域の中央から書き出しサイズ分だけ切り出す（赤枠＝書き出し範囲）
-    final offsetX = (drawingWidth - width) / 2;
-    final offsetY = (drawingHeight - height) / 2;
+    // The preview and export use the same centred output viewport.
+    final viewport = TimelineOutputViewport(
+      drawingWidth: drawingWidth,
+      drawingHeight: drawingHeight,
+      outputWidth: width,
+      outputHeight: height,
+    );
     final kf = _cameraEngine.valueAt(cameraKeyframes, frameIndex);
     canvas.save();
     _cameraEngine.apply(canvas, kf, width.toDouble(), height.toDouble());
-    canvas.drawImage(fullImage, ui.Offset(-offsetX, -offsetY), ui.Paint());
+    canvas.drawImage(
+      fullImage,
+      ui.Offset(viewport.imageOffsetX, viewport.imageOffsetY),
+      ui.Paint(),
+    );
     canvas.restore();
     fullImage.dispose();
 
