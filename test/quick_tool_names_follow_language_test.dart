@@ -7,8 +7,8 @@
 // 「橡皮擦」が繁体字・英語の画面にも残る）だった。
 //
 // 消しゴム・スポイト・バケツは今の言語のツール名、ブラシのツールは今の
-// ブラシの名前（利用者のデータなので訳さない。名前を変えれば新しい名前）と
-// 太さ。ブラシが無くなっていれば保存した名前。保存の形（名前も）と引き継ぎ
+// ブラシの名前（組み込みのブラシは今の言語の名前、自作のブラシは利用者の
+// データなので訳さない。名前を変えれば新しい名前）と太さ。ブラシが無くなっていれば保存した名前。保存の形（名前も）と引き継ぎ
 // （.niatra）は変えない。7言語を切り替えて、一覧の名前・保存が変わらないことを
 // 見る。
 import 'dart:convert';
@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/l10n/creative_preset_labels.dart';
 import 'package:niarim/models/quick_tool_entry.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart' show DrawingTool;
 import 'package:niarim/screens/canvas/widgets/quick_tool_panel.dart';
@@ -232,11 +233,15 @@ void main() {
       if (!showedMissingBrush) {
         problems.add('$tag: missing brush status was not shown');
       }
+      // 組み込みのブラシは、ブラシの一覧と同じく今の言語の名前
+      // （`creativePresetLabel`。英語の画面に「Gペン 3px」と出ていた）。
+      String builtIn(String name) =>
+          creativePresetLabel(l10n, name, builtIn: true);
       final expected = [
-        // 最初からある5つ（ブラシの名前は組み込みの名前のまま。DISC107）。
-        '$gPen 3px',
-        '$gPen 8px',
-        airbrush,
+        // 最初からある5つ。
+        '${builtIn(gPen)} 3px',
+        '${builtIn(gPen)} 8px',
+        builtIn(airbrush),
         l10n.quickToolEraser,
         l10n.quickToolEyedropper,
         // 簡体字の画面で足した5つ。

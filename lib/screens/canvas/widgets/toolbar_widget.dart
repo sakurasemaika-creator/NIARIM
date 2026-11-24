@@ -599,9 +599,13 @@ class ToolbarWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // 印はツールバーの選択のボタンが種類ごとに出す印と同じ
+            // （矩形に魔法の杖の印を出していて、自動選択と見分けにくかった）。
+            // 今の種類は選んだ行の色で分かるようにする。
             ListTile(
-              leading: const Icon(Icons.auto_fix_high),
+              leading: const Icon(Icons.highlight_alt),
               title: Text(l10n.toolbarSelectRect),
+              selected: currentTool == DrawingTool.selectRect,
               onTap: () {
                 onToolSelected(DrawingTool.selectRect);
                 Navigator.pop(ctx);
@@ -610,6 +614,7 @@ class ToolbarWidget extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.gesture),
               title: Text(l10n.toolbarSelectLasso),
+              selected: currentTool == DrawingTool.selectLasso,
               onTap: () {
                 onToolSelected(DrawingTool.selectLasso);
                 Navigator.pop(ctx);
@@ -618,6 +623,7 @@ class ToolbarWidget extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.auto_awesome),
               title: Text(l10n.toolbarSelectMagicWand),
+              selected: currentTool == DrawingTool.selectMagicWand,
               onTap: () {
                 onToolSelected(DrawingTool.selectMagicWand);
                 Navigator.pop(ctx);

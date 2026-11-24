@@ -498,7 +498,15 @@ class _BrushPanelState extends State<BrushPanel> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.brushPanelDeleteConfirmTitle(brush.name)),
+        title: Text(
+          l10n.brushPanelDeleteConfirmTitle(
+            creativePresetLabel(
+              l10n,
+              brush.name,
+              builtIn: service.isBuiltIn(brush.id),
+            ),
+          ),
+        ),
         content: messageText(l10n.brushPanelDeleteConfirmBody),
         actions: [
           TextButton(
@@ -719,7 +727,12 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            _brush.name,
+            // 組み込みのブラシは一覧と同じく今の言語の名前。
+            creativePresetLabel(
+              AppLocalizations.of(context)!,
+              _brush.name,
+              builtIn: context.read<BrushService>().isBuiltIn(_brush.id),
+            ),
             style: localizedHeadingStyle(
               context,
               const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

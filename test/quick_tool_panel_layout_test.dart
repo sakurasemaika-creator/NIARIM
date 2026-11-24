@@ -243,7 +243,12 @@ void main() {
           await tester.pumpAndSettle();
           final names = {
             for (final e in pumped.quickTools.entries)
-              e.id: quickToolDisplayLabel(l10n, e, pumped.brushes.brushes),
+              e.id: quickToolDisplayLabel(
+                l10n,
+                e,
+                pumped.brushes.brushes,
+                isBuiltIn: pumped.brushes.isBuiltIn,
+              ),
           };
           for (final scale in _scales) {
             tester.platformDispatcher.textScaleFactorTestValue = scale;

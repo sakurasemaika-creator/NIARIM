@@ -2,9 +2,11 @@ import 'dart:math' as math;
 
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../l10n/creative_preset_labels.dart';
 import '../../../models/brush.dart';
 import '../../../models/quick_tool_entry.dart';
 import '../../../services/brush_service.dart';
@@ -27,17 +29,20 @@ import '../../../widgets/scrollable_sheet_body.dart';
 /// 切り替えても足したときの言語のまま残った。
 ///
 /// - 消しゴム・スポイト・バケツは、今の言語のツールの名前。
-/// - ブラシのツールは、[brushes]の中のそのブラシの今の名前（利用者のデータ
-///   なので訳さない。名前を変えれば新しい名前）と、決めた太さ。ブラシが
-///   無くなっていれば保存した名前。
+/// - ブラシのツールは、[brushes]の中のそのブラシの今の名前と、決めた太さ。
+///   組み込みのブラシ（[isBuiltIn]）は今の言語の名前（ブラシの一覧と同じ
+///   `creativePresetLabel`。訳さないと英語の画面に「Gペン 3px」と出た）、
+///   自作のブラシは利用者のデータなので訳さない（名前を変えれば新しい名前）。
+///   ブラシが無くなっていれば保存した名前。
 ///
 /// 保存の形（`label`）は、前の版・引き継ぎ（.niatra）が読めるよう今までどおり
 /// 残す。
 String quickToolDisplayLabel(
   AppLocalizations l10n,
   QuickToolEntry entry,
-  Iterable<Brush> brushes,
-) {
+  Iterable<Brush> brushes, {
+  bool Function(String brushId)? isBuiltIn,
+}) {
   switch (entry.toolKey) {
     case 'eraser':
       return l10n.quickToolEraser;
@@ -49,8 +54,13 @@ String quickToolDisplayLabel(
       final id = entry.brushId;
       final brush = brushes.where((b) => b.id == id).firstOrNull;
       if (brush == null) return entry.label;
+      final name = creativePresetLabel(
+        l10n,
+        brush.name,
+        builtIn: isBuiltIn?.call(brush.id) ?? false,
+      );
       final size = entry.sizeOverride;
-      return size == null ? brush.name : '${brush.name} ${size.round()}px';
+      return size == null ? name : '$name ${size.round()}px';
   }
   return entry.label;
 }
@@ -80,7 +90,8 @@ class QuickToolPanel extends StatelessWidget {
     final service = context.watch<QuickToolService>();
     final entries = service.entries;
     // ブラシの名前を変えたら、一覧の名前も変わる。
-    final brushes = context.watch<BrushService>().brushes;
+    final brushService = context.watch<BrushService>();
+    final brushes = brushService.brushes;
 
     final height = _floatingHeight(context);
     // 浮かぶパネルが置ける場所より低くなるとき（横向きのスマホ）は、題を
@@ -155,7 +166,12 @@ class QuickToolPanel extends StatelessWidget {
                             return rows.build(
                               key: ValueKey(e.id),
                               index: index,
-                              label: quickToolDisplayLabel(l10n, e, brushes),
+                              label: quickToolDisplayLabel(
+                                l10n,
+                                e,
+                                brushes,
+                                isBuiltIn: brushService.isBuiltIn,
+                              ),
                               unavailable:
                                   e.brushId != null &&
                                       !brushes.any(
@@ -212,6 +228,18 @@ class QuickToolPanel extends StatelessWidget {
   void _showAddDialog(BuildContext context, QuickToolService service) {
     final brushService = context.read<BrushService>();
     final l10n = AppLocalizations.of(context)!;
+    // 組み込みのブラシは今の言語の名前で出す（一覧の行と同じ）。
+    String nameOf(Brush brush) => creativePresetLabel(
+      l10n,
+      brush.name,
+      builtIn: brushService.isBuiltIn(brush.id),
+    );
+    final currentBrush = brushService.brushes
+        .where((brush) => brush.id == currentBrushId)
+        .firstOrNull;
+    final currentName = currentBrush == null
+        ? currentBrushName
+        : nameOf(currentBrush);
     showModalBottomSheet(
       context: context,
       builder: (ctx) => ScrollableSheetBody(
@@ -226,12 +254,12 @@ class QuickToolPanel extends StatelessWidget {
                   color: ThemeService.activeColorScheme.tertiary,
                 ),
                 title: Text(l10n.quickToolAddCurrentBrush),
-                subtitle: Text('$currentBrushName ${currentSize.round()}px'),
+                subtitle: Text('$currentName ${currentSize.round()}px'),
                 onTap: () {
                   service.addEntry(
                     QuickToolEntry(
                       id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
-                      label: '$currentBrushName ${currentSize.round()}px',
+                      label: '$currentName ${currentSize.round()}px',
                       toolKey: 'pen',
                       brushId: currentBrushId,
                       sizeOverride: currentSize,
@@ -245,20 +273,22 @@ class QuickToolPanel extends StatelessWidget {
             for (final brush in brushService.brushes)
               ListTile(
                 leading: const Icon(Icons.brush),
-                title: Text(brush.name),
+                title: Text(nameOf(brush)),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showSizeDialog(
                     context,
                     service,
                     brush.id,
-                    brush.name,
+                    nameOf(brush),
                     brush.size,
                   );
                 },
               ),
             ListTile(
-              leading: const Icon(Icons.auto_fix_high),
+              // ツールバーの消しゴムと同じ印（魔法の杖の印は自動選択と
+              // 見分けられなかった）。
+              leading: const FaIcon(FontAwesomeIcons.eraser, size: 20),
               title: Text(l10n.quickToolEraser),
               onTap: () {
                 _addSimple(service, 'eraser', l10n.quickToolEraser);
