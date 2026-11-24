@@ -5695,11 +5695,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             _AudioWaveformThumb(
                               key: ValueKey('wf_${clip.id}'),
                               filePath: clip.filePath!,
-                              // 読み上げ音声は通常音源と別キャッシュにする。
-                              // 同じ素材IDの古い波形キャッシュ（生成失敗のnullを含む）
-                              // を共有せず、クリップごとに確実に波形を生成する。
-                              // Both audio tracks use an independent cache per clip and
-                              // per source range, so trimming cannot show a stale waveform.
+                              // Each clip gets its own cache for its exact source interval.
                               cacheKey: 'wave_v2_${clip.id}_${clip.filePath}_'
                                   '${clip.useStart}_${clip.lengthFrames}_${_projectFps(context.read<ProjectService>())}',
                               sourceStartFrame: clip.useStart,
