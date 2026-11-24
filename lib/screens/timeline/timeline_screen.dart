@@ -46,6 +46,7 @@ import '../../engine/layer_range_resolver.dart';
 import '../../engine/watermark_render.dart';
 import '../../engine/tile_manager.dart';
 import '../../engine/timeline_material.dart';
+import '../../engine/timeline_video_time.dart';
 import '../../engine/timeline_stack.dart';
 import '../../engine/timeline_output_viewport.dart';
 import '../../engine/undo_manager.dart';
@@ -1156,11 +1157,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
     if (!controller.value.isInitialized) return;
     await controller.setVolume(clip.volume.clamp(0.0, 1.0));
-    final elapsedFrames = _currentFrame - clip.startFrame;
-    final targetFrame = clip.useStart + elapsedFrames;
-    final targetPos = Duration(
-      milliseconds: (targetFrame / fps * 1000).round(),
+    // Keep preview seeking on the same pure timeline-to-source mapping
+    // that offline video rendering will consume. Trim end is inclusive.
+    final targetPos = TimelineVideoTimeMapper.sourcePositionAt(
+      timelineFrame: _currentFrame,
+      clipStartFrame: clip.startFrame,
+      clipLengthFrames: clip.lengthFrames,
+      sourceTrimStartFrame: clip.useStart,
+      sourceTrimEndFrame: clip.useEnd,
+      framesPerSecond: fps,
     );
+    if (targetPos == null) return;
     if (!_isPlaying) {
       if (controller.value.isPlaying) await controller.pause();
       await controller.seekTo(targetPos);
