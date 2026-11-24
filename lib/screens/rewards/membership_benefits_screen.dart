@@ -111,14 +111,19 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        isPlayMember || premium.hasCoinPremium
-                            ? Icons.workspace_premium_outlined
-                            : Icons.person_outline,
-                        size: 28,
-                        color: AccentTextTheme.of(context),
-                      ),
-                      const SizedBox(width: 12),
+                      // 大きな文字では印を外して見出しの幅を取る（英語の文字
+                      // 2倍・320pxで「Unlocke / d with opals」と語の途中で
+                      // 折れた）。
+                      if (MediaQuery.textScalerOf(context).scale(1) < 1.5) ...[
+                        Icon(
+                          isPlayMember || premium.hasCoinPremium
+                              ? Icons.workspace_premium_outlined
+                              : Icons.person_outline,
+                          size: 28,
+                          color: AccentTextTheme.of(context),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
