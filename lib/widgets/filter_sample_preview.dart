@@ -183,11 +183,13 @@ class _FilterSamplePreviewState extends State<FilterSamplePreview> {
 
   @override
   Widget build(BuildContext context) {
+    // 見本ができるまでは下地を塗らず、置かれた面（パネル）の色のまま枠だけを
+    // 見せる（白で塗ると、暗いテーマでは読み込み中の白い箱が並んだ）。見本の
+    // 絵は不透明なので、できたら枠の中を覆う。
     return Container(
       width: widget.width,
       height: widget.height,
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
