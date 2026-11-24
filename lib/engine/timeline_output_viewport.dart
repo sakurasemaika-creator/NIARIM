@@ -1,5 +1,8 @@
 import 'dart:ui' as ui;
 
+import '../models/camera_keyframe.dart';
+import 'camera_engine.dart';
+
 /// Geometry shared by timeline preview and export for the visible output area.
 ///
 /// The drawing canvas may be larger than the requested output. In that case
@@ -41,4 +44,45 @@ void paintOutputViewport(
     ui.Offset(viewport.imageOffsetX, viewport.imageOffsetY),
     ui.Paint(),
   );
+}
+
+/// Renders the output frame identically for timeline preview and export.
+/// The background is outside the camera transform; the drawing image is
+/// cropped and then transformed around the output frame's centre.
+Future<ui.Image> renderOutputViewportImage({
+  required ui.Image drawingImage,
+  required TimelineOutputViewport viewport,
+  required int backgroundColor,
+  required CameraEngine cameraEngine,
+  required CameraKeyframe? cameraKeyframe,
+}) async {
+  final recorder = ui.PictureRecorder();
+  final canvas = ui.Canvas(recorder);
+  canvas.drawRect(
+    ui.Rect.fromLTWH(
+      0,
+      0,
+      viewport.outputWidth.toDouble(),
+      viewport.outputHeight.toDouble(),
+    ),
+    ui.Paint()..color = ui.Color(backgroundColor),
+  );
+  canvas.save();
+  cameraEngine.apply(
+    canvas,
+    cameraKeyframe,
+    viewport.outputWidth.toDouble(),
+    viewport.outputHeight.toDouble(),
+  );
+  paintOutputViewport(canvas, drawingImage, viewport);
+  canvas.restore();
+  final picture = recorder.endRecording();
+  try {
+    return await picture.toImage(
+      viewport.outputWidth,
+      viewport.outputHeight,
+    );
+  } finally {
+    picture.dispose();
+  }
 }
