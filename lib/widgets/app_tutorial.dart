@@ -9,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../utils/app_error_reporter.dart';
 import '../utils/line_break.dart';
 import 'export_share_feedback.dart';
+import 'keep_together_text.dart';
 
 /// アプリの使い方（はじめのガイド）。初回起動のホームと、ホームのメニュー・
 /// ヘルプの「使い方」から開く。図（アプリの画面を簡略化した絵に、操作する場所の
@@ -187,8 +188,12 @@ class _AppTutorialState extends State<AppTutorial> {
                     _TutorialPageView(page: pages[index]),
               ),
             ),
+            // 左の「スキップ」は文字のボタン（中に12pxの余白がある）なので
+            // 12px、右の「次へ」は塗りのボタンなので24px空け、どちらも
+            // ページの文と同じ左右の端（24px）にそろえる。下も画面の端に
+            // 詰めすぎないよう16px。
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+              padding: const EdgeInsets.fromLTRB(12, 4, 24, 16),
               child: Column(
                 children: [
                   if (_saving) ...[
@@ -332,12 +337,11 @@ class _TutorialPageView extends StatelessWidget {
     final figure = MediaQuery.withNoTextScaling(
       child: FittedBox(child: page.figure),
     );
-    // 韓国語は語の途中で折り返さない。描く文にだけ語結合子を入れ、読み上げ・
-    // 探す文には元の文を渡す。
-    Widget words(String text, TextStyle style) => Text.rich(
-      TextSpan(text: keepKoreanWordsTogether(text), semanticsLabel: text),
-      style: style,
-    );
+    // 韓国語は語の途中で折り返さない。日本語は最後の語だけの行（「書き出 /
+    // せます」）を作らない。描く文にだけ語結合子を入れ、読み上げ・探す文には
+    // 元の文を渡す。
+    Widget words(String text, TextStyle style) =>
+        messageText(text, style: style, keepLastPhrase: true);
     final text = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
