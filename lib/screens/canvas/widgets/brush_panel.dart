@@ -129,17 +129,9 @@ class _BrushPanelState extends State<BrushPanel> {
             // DockedPanelScopeの中では出ない）。
             if (!widget.dockedMode && !widget.embedded)
               PanelCenterCloseBar(onClose: widget.onClose),
-            // 入らない幅ではアイコンだけ（名前は吹き出しと読み上げ）。
-            AssetPanelActions(
-              onFolder: () => _openFolderManagement(context, brushService),
-              onCreate: () => _createFromImage(context, brushService),
-              onImport: () => SharedAssetCardService.pickAndImport(
-                context,
-                brushService: brushService,
-              ),
-            ),
-            // 一覧の名前・お気に入りのみ・検索。入らない幅では文字を縮めず、
-            // お気に入りを星だけにする（名前は吹き出しと読み上げ）。
+            // 一覧の名前・お気に入りのみ・検索と、フォルダ・新規・読込。名前の
+            // 無い一覧（ペンのタブ・ドック）では1行にまとめる。入らない幅では
+            // 文字を縮めず、アイコンだけにする（名前は吹き出しと読み上げ）。
             AssetListHeaderRow(
               title:
                   !DockedPanelScope.of(context) &&
@@ -158,6 +150,15 @@ class _BrushPanelState extends State<BrushPanel> {
                   _searchController.clear();
                 }
               }),
+              actions: AssetPanelActions.list(
+                l10n,
+                onFolder: () => _openFolderManagement(context, brushService),
+                onCreate: () => _createFromImage(context, brushService),
+                onImport: () => SharedAssetCardService.pickAndImport(
+                  context,
+                  brushService: brushService,
+                ),
+              ),
             ),
             // フォルダ管理・自作ブラシ・読み込み。
             // 【不具合修正】PC/DeXモードのドッキングパネルは既定幅

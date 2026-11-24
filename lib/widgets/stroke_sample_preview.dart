@@ -94,6 +94,12 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // 見本の紙：パネルの淡い面。描く色がその面と見分けにくいとき（暗い
+    // テーマで黒のペン）は、反対の明るさの面（inverseSurface）にする
+    // （以前は暗いテーマで黒い線が暗い面に溶け、見本が見えなかった）。
+    var paper = scheme.surfaceContainerLow;
+    final ink = Color.alphaBlend(widget.color, paper);
+    if (_contrast(ink, paper) < 2.5) paper = scheme.inverseSurface;
     return Semantics(
       image: true,
       child: ClipRRect(
@@ -104,7 +110,7 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
           ),
           height: widget.height,
           child: ColoredBox(
-            color: scheme.surfaceContainerLow,
+            color: paper,
             child: _sample == null
                 ? const SizedBox.expand()
                 : RawImage(
@@ -128,4 +134,13 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
       ),
     );
   }
+}
+
+/// 2色の明るさの比（WCAGのコントラスト比、1〜21）。
+double _contrast(Color a, Color b) {
+  final la = a.computeLuminance();
+  final lb = b.computeLuminance();
+  final hi = la > lb ? la : lb;
+  final lo = la > lb ? lb : la;
+  return (hi + 0.05) / (lo + 0.05);
 }

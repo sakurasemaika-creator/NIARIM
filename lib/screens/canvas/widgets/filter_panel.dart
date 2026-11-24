@@ -1090,6 +1090,11 @@ class _FilterPanelState extends State<FilterPanel> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final columns = constraints.maxWidth >= 390 ? 3 : 2;
+        // 名前は11pxで2行まで（以前は9pxで、見本の下で読みにくかった）。
+        // 名前の行は文字の大きさに合わせて高くし、見本の高さは今までどおり。
+        final scaler = MediaQuery.textScalerOf(context);
+        final nameRowHeight = math.max(40.0, scaler.scale(11) * 1.25 * 2 + 4);
+        final previewHeight = 81 + scaler.scale(18) - 18;
         // カードを押したときの色を一覧の中に限る（パネルの面へ描くと、
         // スクロールで半分隠れたカードの色が一覧の上下へはみ出す）。
         return GridView.builder(
@@ -1100,7 +1105,7 @@ class _FilterPanelState extends State<FilterPanel> {
             crossAxisCount: columns,
             mainAxisSpacing: 6,
             crossAxisSpacing: 6,
-            mainAxisExtent: 116 + MediaQuery.textScalerOf(context).scale(18),
+            mainAxisExtent: previewHeight + 13 + nameRowHeight,
           ),
           itemCount: filters.length,
           itemBuilder: (context, index) {
@@ -1159,7 +1164,7 @@ class _FilterPanelState extends State<FilterPanel> {
                         ),
                         const SizedBox(height: 3),
                         SizedBox(
-                          height: 40,
+                          height: nameRowHeight,
                           child: Row(
                             children: [
                               const SizedBox(width: 32),
@@ -1169,10 +1174,17 @@ class _FilterPanelState extends State<FilterPanel> {
                                   maxLines: 2,
                                   textAlign: TextAlign.start,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 9),
+                                  // 名前はブラシ・トーン・スタンプの一覧と同じ
+                                  // 見出しの書体。
+                                  style: localizedHeadingStyle(
+                                    context,
+                                    const TextStyle(fontSize: 11, height: 1.25),
+                                  ),
                                 ),
                               ),
-                              const SizedBox(width: 32),
+                              // 右の書き出しのボタンは自作のフィルターだけ。
+                              // 組み込みでは名前の欄に使う。
+                              SizedBox(width: builtIn ? 6 : 32),
                             ],
                           ),
                         ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../config/accent_text_theme.dart';
 import '../../../config/font_fallback.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/first_that_fits.dart';
@@ -24,52 +23,100 @@ class AssetPanelActions extends StatelessWidget {
   final VoidCallback onCreate;
   final VoidCallback onImport;
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final actions = [
-      (Icons.folder_outlined, l10n.creativePanelFolderButton, onFolder),
-      (
-        Icons.add_photo_alternate_outlined,
-        l10n.creativePanelCreateButton,
-        onCreate,
-      ),
-      (Icons.file_upload_outlined, l10n.creativePanelImportButton, onImport),
-    ];
+  /// フォルダ・新規・読込の3つ（印・名前・押したとき）。
+  static List<AssetPanelAction> list(
+    AppLocalizations l10n, {
+    required VoidCallback onFolder,
+    required VoidCallback onCreate,
+    required VoidCallback onImport,
+  }) => [
+    (
+      icon: Icons.folder_outlined,
+      name: l10n.creativePanelFolderButton,
+      onPressed: onFolder,
+    ),
+    (
+      icon: Icons.add_photo_alternate_outlined,
+      name: l10n.creativePanelCreateButton,
+      onPressed: onCreate,
+    ),
+    (
+      icon: Icons.file_upload_outlined,
+      name: l10n.creativePanelImportButton,
+      onPressed: onImport,
+    ),
+  ];
+
+  /// 名前つきのボタンの並び（文字は縮めない）。
+  static Widget labelled(BuildContext context, List<AssetPanelAction> actions) {
     final labelStyle = localizedHeadingStyle(
       context,
       const TextStyle(fontSize: 11),
     );
+    final ink = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final action in actions)
+          TextButton.icon(
+            style: TextButton.styleFrom(foregroundColor: ink),
+            icon: Icon(action.icon, size: 15),
+            label: Text(action.name, style: labelStyle),
+            onPressed: action.onPressed,
+          ),
+      ],
+    );
+  }
+
+  /// アイコンだけのボタン（名前は長押し・ホバーの吹き出しと読み上げ）。
+  /// [wrap]では入らない幅で次の行へ折り返す。
+  static Widget iconOnly(
+    BuildContext context,
+    List<AssetPanelAction> actions, {
+    bool wrap = false,
+  }) {
+    final ink = Theme.of(context).colorScheme.onSurfaceVariant;
+    final buttons = [
+      for (final action in actions)
+        IconButton(
+          icon: Icon(action.icon, size: 20),
+          color: ink,
+          tooltip: action.name,
+          onPressed: action.onPressed,
+        ),
+    ];
+    return wrap
+        ? Wrap(children: buttons)
+        : Row(mainAxisSize: MainAxisSize.min, children: buttons);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final actions = list(
+      AppLocalizations.of(context)!,
+      onFolder: onFolder,
+      onCreate: onCreate,
+      onImport: onImport,
+    );
+    // 管理の操作（よく使うのは一覧から選ぶこと）なので、差し色ではなく
+    // 中立の色で描く。
     return Align(
       alignment: AlignmentDirectional.centerStart,
       child: FirstThatFits(
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final (icon, name, onPressed) in actions)
-                TextButton.icon(
-                  icon: Icon(icon, size: 15),
-                  label: Text(name, style: labelStyle),
-                  onPressed: onPressed,
-                ),
-            ],
-          ),
+          labelled(context, actions),
           // 最後の形：アイコンも1行に入らないほど狭い（ドックを縮めた等）
           // ときは次の行へ折り返す（はみ出さない）。
-          Wrap(
-            children: [
-              for (final (icon, name, onPressed) in actions)
-                IconButton(
-                  icon: Icon(icon, size: 20),
-                  color: AccentTextTheme.of(context),
-                  tooltip: name,
-                  onPressed: onPressed,
-                ),
-            ],
-          ),
+          iconOnly(context, actions, wrap: true),
         ],
       ),
     );
   }
 }
+
+/// ブラシ・トーン・スタンプのパネルの管理の操作（フォルダ・新規・読込）。
+typedef AssetPanelAction = ({
+  IconData icon,
+  String name,
+  VoidCallback onPressed,
+});

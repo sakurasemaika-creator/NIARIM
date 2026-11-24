@@ -4,6 +4,7 @@ import '../../../config/font_fallback.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/theme_service.dart';
 import '../../../widgets/first_that_fits.dart';
+import 'asset_panel_actions.dart';
 
 /// The heading row of the brush, screentone and stamp lists: the list's name
 /// (when the panel shows one), the "favorites only" filter and the search
@@ -23,10 +24,18 @@ class AssetListHeaderRow extends StatelessWidget {
     required this.onFavoritesOnlyChanged,
     required this.searching,
     required this.onSearchPressed,
+    this.actions = const [],
   });
 
   /// The list's name, or null where the window around it already shows it.
   final String? title;
+
+  /// The folder / create / import actions. Where the list has no name of its
+  /// own (inside the pen panel's tabs or a dock window), they share this row
+  /// with the filters: the filters (which change the list below) at the
+  /// start, the actions at the end. Only when neither fits beside the other
+  /// do the actions take a row of their own above the filters.
+  final List<AssetPanelAction> actions;
   final bool favoritesOnly;
   final ValueChanged<bool> onFavoritesOnlyChanged;
   final bool searching;
@@ -106,11 +115,67 @@ class AssetListHeaderRow extends StatelessWidget {
       );
     }
 
+    if (actions.isEmpty) {
+      return FirstThatFits(
+        children: [
+          row(labelled, withTitle: true),
+          row(iconOnly, withTitle: true),
+          if (title != null) row(iconOnly, withTitle: false),
+        ],
+      );
+    }
+    if (title != null) {
+      // 一覧の名前を出すパネルは、操作の行・名前と絞り込みの行の2行のまま。
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: FirstThatFits(
+              children: [
+                AssetPanelActions.labelled(context, actions),
+                AssetPanelActions.iconOnly(context, actions, wrap: true),
+              ],
+            ),
+          ),
+          FirstThatFits(
+            children: [
+              row(labelled, withTitle: true),
+              row(iconOnly, withTitle: true),
+              row(iconOnly, withTitle: false),
+            ],
+          ),
+        ],
+      );
+    }
+    // 絞り込み（お気に入りのみ・検索）を先頭、管理の操作を末尾に1行で置く
+    // （以前は操作の行と絞り込みの行の2行で、一覧が1行ぶん下がっていた）。
+    // どの形も同じ操作を同じ順に持つ（[FirstThatFits]のフォーカスの決まり）。
+    Widget combined(Widget filter, Widget actionButtons) => Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(mainAxisSize: MainAxisSize.min, children: [filter, search]),
+        actionButtons,
+      ],
+    );
     return FirstThatFits(
       children: [
-        row(labelled, withTitle: true),
-        row(iconOnly, withTitle: true),
-        if (title != null) row(iconOnly, withTitle: false),
+        combined(labelled, AssetPanelActions.labelled(context, actions)),
+        combined(labelled, AssetPanelActions.iconOnly(context, actions)),
+        combined(iconOnly, AssetPanelActions.iconOnly(context, actions)),
+        // 最後の形：1行に入らない幅（ドックを縮めた等）では、絞り込みを
+        // 上の行の末尾、操作を下の行（入らなければ折り返す）に置く。
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Row(mainAxisSize: MainAxisSize.min, children: [iconOnly, search]),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: AssetPanelActions.iconOnly(context, actions, wrap: true),
+            ),
+          ],
+        ),
       ],
     );
   }
