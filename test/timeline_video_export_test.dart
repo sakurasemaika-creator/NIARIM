@@ -18,6 +18,7 @@ import 'package:niarim/engine/video_material_snapshot.dart';
 import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/models/effect_filter_instance.dart';
 import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/layer_crop.dart';
 import 'package:niarim/models/material_asset.dart';
 import 'package:niarim/models/scene.dart';
 import 'package:niarim/services/export_storage.dart';
@@ -82,12 +83,20 @@ const _video = Layer(
 );
 const _ink = Layer(id: 'ink', name: 'ink', type: LayerType.normal);
 
-Scene _scene({List<EffectFilterInstance> effects = const []}) => Scene(
+Scene _scene({
+  List<EffectFilterInstance> effects = const [],
+  LayerCrop? crop,
+}) => Scene(
   id: 'S1',
   index: 0,
   frames: [
     for (var i = 0; i < 12; i++)
-      Frame(index: i, layers: i == 0 ? const [_ink, _video] : const [_ink]),
+      Frame(
+        index: i,
+        layers: i == 0
+            ? [_ink, crop == null ? _video : _video.copyWith(crop: crop)]
+            : const [_ink],
+      ),
   ],
   cameraKeyframes: const [
     CameraKeyframe(frameIndex: 0),
@@ -254,8 +263,8 @@ void main() {
       );
 
   group('preview and export draw the same frame', () {
-    for (final (label, effects) in [
-      ('without effects', const <EffectFilterInstance>[]),
+    for (final (label, effects, crop) in [
+      ('without effects', const <EffectFilterInstance>[], null),
       (
         'with an effect filter',
         const [
@@ -266,10 +275,16 @@ void main() {
             endFrame: 11,
           ),
         ],
+        null,
+      ),
+      (
+        'with the video cropped',
+        const <EffectFilterInstance>[],
+        const LayerCrop(left: 0.25, top: 0.25, right: 0.75, bottom: 0.75),
       ),
     ]) {
       test('every timeline frame, $label', () async {
-        final scene = _scene(effects: effects);
+        final scene = _scene(effects: effects, crop: crop);
         final tiles = _tiles(scene);
         addTearDown(tiles.dispose);
         // Separate providers, as the preview and an export job have.
@@ -293,6 +308,26 @@ void main() {
         }
       });
     }
+
+    test('the crop cuts the decoded frame, in the preview and the '
+        'export alike', () async {
+      final plain = _scene();
+      final cropped = _scene(
+        crop: const LayerCrop(left: 0.5, top: 0, right: 1, bottom: 1),
+      );
+      final tiles = _tiles(plain);
+      addTearDown(tiles.dispose);
+      final frames = VideoFrameProvider(
+        snapshot: _materials(),
+        decoder: _NumberedDecoder(),
+      );
+      addTearDown(frames.dispose);
+      // Frame 4 shows the video.
+      final whole = await exportRgba(plain, tiles, 4, pixelsWith(frames));
+      final cut = await exportRgba(cropped, tiles, 4, pixelsWith(frames));
+      expect(cut, isNot(whole));
+      expect(await previewRgba(cropped, tiles, 4, pixelsWith(frames)), cut);
+    });
 
     test(
       'the video frame follows the trim and replaces the placeholder',

@@ -1,6 +1,7 @@
 import 'dart:ui' show Offset;
 
 import 'layer_keyframe.dart';
+import 'layer_crop.dart';
 import 'layer_mask.dart';
 import 'text_object.dart';
 
@@ -53,6 +54,11 @@ class Layer {
   /// タイムライン素材（テキスト・画像・動画）の見える範囲を限るマスク。
   final LayerMask? mask;
 
+  /// The part of a timeline image or video that shows (null: all of it).
+  /// Applied to the material's own picture before its position, scale,
+  /// turn and mask.
+  final LayerCrop? crop;
+
   const Layer({
     required this.id,
     required this.name,
@@ -87,6 +93,7 @@ class Layer {
     this.trackRow = 0,
     this.keyframes = const [],
     this.mask,
+    this.crop,
   });
 
   Layer copyWith({
@@ -122,6 +129,7 @@ class Layer {
     int? trackRow,
     List<LayerKeyframe>? keyframes,
     Object? mask = _sentinel,
+    Object? crop = _sentinel,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -175,6 +183,7 @@ class Layer {
       trackRow: trackRow ?? this.trackRow,
       keyframes: keyframes ?? this.keyframes,
       mask: mask == _sentinel ? this.mask : mask as LayerMask?,
+      crop: crop == _sentinel ? this.crop : crop as LayerCrop?,
     );
   }
 }

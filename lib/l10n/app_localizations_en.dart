@@ -5355,6 +5355,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineEditSectionMask => 'Mask';
 
   @override
+  String get timelineEditSectionCrop => 'Crop';
+
+  @override
+  String get timelineCropHint =>
+      'Trims what shows from the edges of the material. You can also drag the corners and edges of the frame on the preview. The original image or video is not changed.';
+
+  @override
+  String get timelineCropLeft => 'Cut from left';
+
+  @override
+  String get timelineCropRight => 'Cut from right';
+
+  @override
+  String get timelineCropTop => 'Cut from top';
+
+  @override
+  String get timelineCropBottom => 'Cut from bottom';
+
+  @override
+  String get timelineCropReset => 'Reset crop';
+
+  @override
   String get timelineTransformRotationX => 'X-axis rotation';
 
   @override

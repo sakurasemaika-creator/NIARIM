@@ -5064,6 +5064,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineEditSectionMask => '蒙版';
 
   @override
+  String get timelineEditSectionCrop => '裁剪';
+
+  @override
+  String get timelineCropHint => '从素材的边缘裁掉可见的部分。也可以在预览上拖动边框的角和边。原图片或视频不会改变。';
+
+  @override
+  String get timelineCropLeft => '裁剪左侧';
+
+  @override
+  String get timelineCropRight => '裁剪右侧';
+
+  @override
+  String get timelineCropTop => '裁剪顶部';
+
+  @override
+  String get timelineCropBottom => '裁剪底部';
+
+  @override
+  String get timelineCropReset => '重置裁剪';
+
+  @override
   String get timelineTransformRotationX => 'X轴旋转';
 
   @override
@@ -15771,6 +15792,27 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineEditSectionMask => '遮罩';
+
+  @override
+  String get timelineEditSectionCrop => '裁切';
+
+  @override
+  String get timelineCropHint => '從素材的邊緣裁掉可見的部分。也可以在預覽上拖曳邊框的角和邊。原圖片或影片不會改變。';
+
+  @override
+  String get timelineCropLeft => '裁切左側';
+
+  @override
+  String get timelineCropRight => '裁切右側';
+
+  @override
+  String get timelineCropTop => '裁切頂部';
+
+  @override
+  String get timelineCropBottom => '裁切底部';
+
+  @override
+  String get timelineCropReset => '重設裁切';
 
   @override
   String get timelineTransformRotationX => 'X軸旋轉';

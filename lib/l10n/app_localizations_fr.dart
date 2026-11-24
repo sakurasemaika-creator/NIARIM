@@ -5444,6 +5444,28 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineEditSectionMask => 'Masque';
 
   @override
+  String get timelineEditSectionCrop => 'Recadrer';
+
+  @override
+  String get timelineCropHint =>
+      'Rogne la partie visible depuis les bords de l’élément. Vous pouvez aussi faire glisser les coins et les bords du cadre sur l’aperçu. L’image ou la vidéo d’origine n’est pas modifiée.';
+
+  @override
+  String get timelineCropLeft => 'Rogner à gauche';
+
+  @override
+  String get timelineCropRight => 'Rogner à droite';
+
+  @override
+  String get timelineCropTop => 'Rogner en haut';
+
+  @override
+  String get timelineCropBottom => 'Rogner en bas';
+
+  @override
+  String get timelineCropReset => 'Réinitialiser le recadrage';
+
+  @override
   String get timelineTransformRotationX => 'Rotation X';
 
   @override

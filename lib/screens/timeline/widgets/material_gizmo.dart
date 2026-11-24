@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../../engine/perspective_transform.dart';
+import '../../../models/layer_crop.dart';
 import '../../../models/camera_keyframe.dart';
 import '../../../models/layer_keyframe.dart';
 
@@ -130,11 +131,7 @@ class _GizmoGeometry {
       (canvasWidth - outputWidth) / 2,
       (canvasHeight - outputHeight) / 2,
     );
-    var p =
-        canvasPoint -
-        crop -
-        c -
-        Offset(camera?.x ?? 0, camera?.y ?? 0);
+    var p = canvasPoint - crop - c - Offset(camera?.x ?? 0, camera?.y ?? 0);
     p = p * _cameraZoom;
     final turn = _cameraTurn;
     p = Offset(
@@ -353,4 +350,304 @@ class _GizmoPainter extends CustomPainter {
     }
     return true;
   }
+}
+
+/// Which edges of the crop a handle of [MaterialCropGizmo] moves.
+typedef CropHandle = ({bool left, bool top, bool right, bool bottom});
+
+/// Handles over the timeline preview for cropping the material being edited:
+/// drag a corner to move two edges, or the middle of an edge to move that
+/// edge. The crop's frame lies where the preview shows the material (its
+/// position, turn and the camera are followed), and the crop stays inside
+/// the material's drawn part ([frame]).
+class MaterialCropGizmo extends StatefulWidget {
+  const MaterialCropGizmo({
+    super.key,
+    required this.canvasWidth,
+    required this.canvasHeight,
+    this.outputWidth,
+    this.outputHeight,
+    required this.value,
+    required this.frame,
+    required this.crop,
+    required this.onChanged,
+    this.onChangeEnd,
+    this.camera,
+    this.color,
+  });
+
+  final int canvasWidth;
+  final int canvasHeight;
+  final int? outputWidth;
+  final int? outputHeight;
+
+  /// Where the material is at the frame shown.
+  final LayerKeyframe value;
+
+  /// The material's drawn part on its layer (canvas pixels).
+  final Rect frame;
+
+  /// The crop now (null: nothing is cut).
+  final LayerCrop? crop;
+
+  /// Called while dragging with the new crop (null when nothing is cut).
+  final ValueChanged<LayerCrop?> onChanged;
+  final VoidCallback? onChangeEnd;
+  final CameraKeyframe? camera;
+  final Color? color;
+
+  /// The handles: the four corners, then the middles of the four edges.
+  static const List<CropHandle> handles = [
+    (left: true, top: true, right: false, bottom: false),
+    (left: false, top: true, right: true, bottom: false),
+    (left: false, top: false, right: true, bottom: true),
+    (left: true, top: false, right: false, bottom: true),
+    (left: false, top: true, right: false, bottom: false),
+    (left: false, top: false, right: true, bottom: false),
+    (left: false, top: false, right: false, bottom: true),
+    (left: true, top: false, right: false, bottom: false),
+  ];
+
+  /// Where each handle sits on [rect] (layer pixels), in [handles] order.
+  static List<Offset> handlePoints(Rect rect) => [
+    rect.topLeft,
+    rect.topRight,
+    rect.bottomRight,
+    rect.bottomLeft,
+    rect.topCenter,
+    rect.centerRight,
+    rect.bottomCenter,
+    rect.centerLeft,
+  ];
+
+  /// The kept part of the layer (pixels) that [crop] shows of [frame].
+  static Rect keptRect(LayerCrop? crop, Rect frame, double w, double h) {
+    if (crop == null) return frame;
+    final kept = crop.rectIn(w, h).intersect(frame);
+    return kept.width > 0 && kept.height > 0 ? kept : frame;
+  }
+
+  /// [rect] (layer pixels) as a crop of a [w] × [h] layer, or null when it
+  /// keeps the whole [frame].
+  static LayerCrop? cropOf(Rect rect, Rect frame, double w, double h) {
+    const near = 0.5;
+    if ((rect.left - frame.left).abs() < near &&
+        (rect.top - frame.top).abs() < near &&
+        (rect.right - frame.right).abs() < near &&
+        (rect.bottom - frame.bottom).abs() < near) {
+      return null;
+    }
+    final crop = LayerCrop(
+      left: (rect.left / w).clamp(0, 1),
+      top: (rect.top / h).clamp(0, 1),
+      right: (rect.right / w).clamp(0, 1),
+      bottom: (rect.bottom / h).clamp(0, 1),
+    );
+    return crop.isValid ? crop : null;
+  }
+
+  /// [start] with [handle]'s edges moved by [delta] (layer pixels), kept
+  /// inside [frame] and at least 1% of it across and down.
+  static Rect dragged(Rect start, CropHandle handle, Offset delta, Rect frame) {
+    final minW = math.max(1.0, frame.width / 100);
+    final minH = math.max(1.0, frame.height / 100);
+    var l = start.left, t = start.top, r = start.right, b = start.bottom;
+    if (handle.left) l = (l + delta.dx).clamp(frame.left, r - minW);
+    if (handle.right) r = (r + delta.dx).clamp(l + minW, frame.right);
+    if (handle.top) t = (t + delta.dy).clamp(frame.top, b - minH);
+    if (handle.bottom) b = (b + delta.dy).clamp(t + minH, frame.bottom);
+    return Rect.fromLTRB(l, t, r, b);
+  }
+
+  @override
+  State<MaterialCropGizmo> createState() => _MaterialCropGizmoState();
+}
+
+class _MaterialCropGizmoState extends State<MaterialCropGizmo> {
+  static const double _hitRadius = 24;
+
+  Size _box = Size.zero;
+  CropHandle? _handle;
+  late Rect _startRect;
+  late Offset _startPoint;
+
+  /// Layer pixels per preview pixel along the layer's x and y at the handle,
+  /// so a drag follows the handle under the finger whatever the material's
+  /// turn, scale and the camera.
+  late Offset _boxPerLayerX;
+  late Offset _boxPerLayerY;
+
+  _GizmoGeometry _geometry(Rect bounds) => _GizmoGeometry(
+    box: _box,
+    canvasWidth: widget.canvasWidth,
+    canvasHeight: widget.canvasHeight,
+    outputWidth: widget.outputWidth ?? widget.canvasWidth,
+    outputHeight: widget.outputHeight ?? widget.canvasHeight,
+    value: widget.value,
+    camera: widget.camera,
+    bounds: bounds,
+  );
+
+  Rect get _kept => MaterialCropGizmo.keptRect(
+    widget.crop,
+    widget.frame,
+    widget.canvasWidth.toDouble(),
+    widget.canvasHeight.toDouble(),
+  );
+
+  void _onStart(DragStartDetails d) {
+    final rect = _kept;
+    final g = _geometry(rect);
+    final points = MaterialCropGizmo.handlePoints(rect);
+    _handle = null;
+    var best = _hitRadius;
+    for (var i = 0; i < points.length; i++) {
+      final distance = (g._layerToBox(points[i]) - d.localPosition).distance;
+      if (distance < best) {
+        best = distance;
+        _handle = MaterialCropGizmo.handles[i];
+        _startPoint = points[i];
+      }
+    }
+    if (_handle == null) return;
+    _startRect = rect;
+    final at = g._layerToBox(_startPoint);
+    _boxPerLayerX = g._layerToBox(_startPoint + const Offset(1, 0)) - at;
+    _boxPerLayerY = g._layerToBox(_startPoint + const Offset(0, 1)) - at;
+    _startBox = d.localPosition;
+  }
+
+  Offset _startBox = Offset.zero;
+
+  void _onUpdate(DragUpdateDetails d) {
+    final handle = _handle;
+    if (handle == null) return;
+    // Solve boxDelta = dx · perX + dy · perY for the layer movement.
+    final delta = d.localPosition - _startBox;
+    final ax = _boxPerLayerX, ay = _boxPerLayerY;
+    final det = ax.dx * ay.dy - ay.dx * ax.dy;
+    if (det.abs() < 1e-9) return;
+    final dx = (delta.dx * ay.dy - ay.dx * delta.dy) / det;
+    final dy = (ax.dx * delta.dy - delta.dx * ax.dy) / det;
+    final rect = MaterialCropGizmo.dragged(
+      _startRect,
+      handle,
+      Offset(dx, dy),
+      widget.frame,
+    );
+    widget.onChanged(
+      MaterialCropGizmo.cropOf(
+        rect,
+        widget.frame,
+        widget.canvasWidth.toDouble(),
+        widget.canvasHeight.toDouble(),
+      ),
+    );
+  }
+
+  void _onEnd() {
+    if (_handle == null) return;
+    _handle = null;
+    widget.onChangeEnd?.call();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = widget.color ?? Theme.of(context).colorScheme.primary;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        _box = constraints.biggest;
+        final kept = _kept;
+        final g = _geometry(kept);
+        final frame = _geometry(widget.frame).corners;
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          dragStartBehavior: DragStartBehavior.down,
+          onPanStart: _onStart,
+          onPanUpdate: _onUpdate,
+          onPanEnd: (_) => _onEnd(),
+          onPanCancel: _onEnd,
+          child: CustomPaint(
+            size: _box,
+            painter: _CropGizmoPainter(
+              frame: frame ?? const [],
+              kept: g.corners ?? const [],
+              handles: [
+                for (final p in MaterialCropGizmo.handlePoints(kept))
+                  g._layerToBox(p),
+              ],
+              color: color,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CropGizmoPainter extends CustomPainter {
+  _CropGizmoPainter({
+    required this.frame,
+    required this.kept,
+    required this.handles,
+    required this.color,
+  });
+
+  final List<Offset> frame;
+  final List<Offset> kept;
+  final List<Offset> handles;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (kept.length != 4) return;
+    final keptPath = Path()..addPolygon(kept, true);
+    if (frame.length == 4) {
+      // The cut-away part of the picture is shaded.
+      final cut = Path.combine(
+        PathOperation.difference,
+        Path()..addPolygon(frame, true),
+        keptPath,
+      );
+      canvas.drawPath(
+        cut,
+        Paint()..color = Colors.black.withValues(alpha: 0.4),
+      );
+    }
+    final shadow = Paint()
+      ..color = Colors.black.withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5;
+    final line = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    canvas.drawPath(keptPath, shadow);
+    canvas.drawPath(keptPath, line);
+    final fill = Paint()..color = color;
+    final ring = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    for (var i = 0; i < handles.length; i++) {
+      final radius = i < 4 ? 7.0 : 5.5;
+      canvas.drawCircle(handles[i], radius, fill);
+      canvas.drawCircle(handles[i], radius, ring);
+    }
+  }
+
+  static bool _same(List<Offset> a, List<Offset> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  @override
+  bool shouldRepaint(_CropGizmoPainter old) =>
+      old.color != color ||
+      !_same(old.kept, kept) ||
+      !_same(old.frame, frame) ||
+      !_same(old.handles, handles);
 }

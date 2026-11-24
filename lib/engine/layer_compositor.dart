@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import '../models/layer.dart';
+import '../models/layer_crop.dart';
 import '../models/layer_keyframe.dart';
 import '../models/layer_mask.dart';
 import 'layer_keyframe_engine.dart';
@@ -584,14 +585,40 @@ class LayerCompositor {
     final pixels = pixelsOf == null
         ? const LayerPixelsFromTiles()
         : await pixelsOf(layer, rasterSize);
-    return switch (pixels) {
-      LayerPixelsFromTiles() => tileManager.compositeLayerToImage(
+    final image = switch (pixels) {
+      LayerPixelsFromTiles() => await tileManager.compositeLayerToImage(
         keyOf(layer),
         rasterSize: rasterSize,
       ),
       LayerPixelsImage(:final image) => image,
       LayerPixelsEmpty() => null,
     };
+    final crop = layer.crop;
+    if (image == null || crop == null || crop.isFull || !crop.isValid) {
+      return image;
+    }
+    return cropLayerImage(image, crop);
+  }
+
+  /// [image] (a layer's own picture, canvas-size or at the raster size) with
+  /// everything outside [crop] made transparent. Disposes [image]; the
+  /// caller disposes the result. Cropping here, before the layer's
+  /// transform and mask are drawn, makes every way of drawing a layer
+  /// (normal, CPU blend, clipping) cut the same part.
+  static Future<ui.Image> cropLayerImage(ui.Image image, LayerCrop crop) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.clipRect(
+      crop.rectIn(image.width.toDouble(), image.height.toDouble()),
+    );
+    canvas.drawImage(image, ui.Offset.zero, ui.Paint());
+    final picture = recorder.endRecording();
+    try {
+      return await picture.toImage(image.width, image.height);
+    } finally {
+      picture.dispose();
+      image.dispose();
+    }
   }
 
   /// backdrop - source を各RGBチャンネルへ適用し、透明度は通常のブレンド

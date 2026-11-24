@@ -9273,6 +9273,48 @@ abstract class AppLocalizations {
   /// **'マスク'**
   String get timelineEditSectionMask;
 
+  /// No description provided for @timelineEditSectionCrop.
+  ///
+  /// In ja, this message translates to:
+  /// **'トリミング'**
+  String get timelineEditSectionCrop;
+
+  /// No description provided for @timelineCropHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'見える範囲を素材の辺から切り詰めます。プレビューの枠の角や辺をドラッグしても変えられます。元の画像・動画は変わりません。'**
+  String get timelineCropHint;
+
+  /// No description provided for @timelineCropLeft.
+  ///
+  /// In ja, this message translates to:
+  /// **'左を切る'**
+  String get timelineCropLeft;
+
+  /// No description provided for @timelineCropRight.
+  ///
+  /// In ja, this message translates to:
+  /// **'右を切る'**
+  String get timelineCropRight;
+
+  /// No description provided for @timelineCropTop.
+  ///
+  /// In ja, this message translates to:
+  /// **'上を切る'**
+  String get timelineCropTop;
+
+  /// No description provided for @timelineCropBottom.
+  ///
+  /// In ja, this message translates to:
+  /// **'下を切る'**
+  String get timelineCropBottom;
+
+  /// No description provided for @timelineCropReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'トリミングを戻す'**
+  String get timelineCropReset;
+
   /// No description provided for @timelineTransformRotationX.
   ///
   /// In ja, this message translates to:

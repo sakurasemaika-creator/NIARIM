@@ -5121,6 +5121,28 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineEditSectionMask => 'マスク';
 
   @override
+  String get timelineEditSectionCrop => 'トリミング';
+
+  @override
+  String get timelineCropHint =>
+      '見える範囲を素材の辺から切り詰めます。プレビューの枠の角や辺をドラッグしても変えられます。元の画像・動画は変わりません。';
+
+  @override
+  String get timelineCropLeft => '左を切る';
+
+  @override
+  String get timelineCropRight => '右を切る';
+
+  @override
+  String get timelineCropTop => '上を切る';
+
+  @override
+  String get timelineCropBottom => '下を切る';
+
+  @override
+  String get timelineCropReset => 'トリミングを戻す';
+
+  @override
   String get timelineTransformRotationX => 'X軸回転';
 
   @override

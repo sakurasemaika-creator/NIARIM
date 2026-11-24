@@ -5150,6 +5150,28 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineEditSectionMask => '마스크';
 
   @override
+  String get timelineEditSectionCrop => '자르기';
+
+  @override
+  String get timelineCropHint =>
+      '소재의 가장자리에서 보이는 범위를 잘라냅니다. 미리보기에서 틀의 모서리나 변을 드래그해도 바꿀 수 있습니다. 원본 이미지와 동영상은 바뀌지 않습니다.';
+
+  @override
+  String get timelineCropLeft => '왼쪽 자르기';
+
+  @override
+  String get timelineCropRight => '오른쪽 자르기';
+
+  @override
+  String get timelineCropTop => '위쪽 자르기';
+
+  @override
+  String get timelineCropBottom => '아래쪽 자르기';
+
+  @override
+  String get timelineCropReset => '자르기 초기화';
+
+  @override
   String get timelineTransformRotationX => 'X축 회전';
 
   @override

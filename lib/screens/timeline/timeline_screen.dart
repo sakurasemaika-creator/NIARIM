@@ -39,6 +39,7 @@ import '../../engine/autofill_batch_runner.dart';
 import '../../engine/autofill_engine.dart' show AutofillMode;
 import '../../engine/camera_engine.dart';
 import '../../engine/clip_speed.dart';
+import '../../engine/crop_frame.dart';
 import '../../engine/export_engine.dart';
 import '../../engine/export_audio.dart';
 import '../../engine/filter_engine.dart';
@@ -383,6 +384,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 全画素を走査するので、素材か文字が変わったときだけ求め直す。
   Rect? _editingBounds;
   Object? _editingBoundsKey;
+
+  /// Whether the material panel shows its crop: the preview's handles then
+  /// move the crop's edges instead of the material.
+  bool _cropEditing = false;
+
+  /// Video materials' picture sizes, read from their frames (the crop is of
+  /// the part a video's frames are fitted into). A key with a null value is
+  /// being read.
+  final Map<String, Size?> _videoDisplaySizes = {};
 
   // クリップの長押しドラッグ（表示開始位置の移動）・端のハンドルドラッグ
   // （使用範囲の変更）用の一時状態。ジェスチャー中は
@@ -2407,6 +2417,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   void _closeEditPanels() {
     _finishMaterialDrag();
     setState(() {
+      _cropEditing = false;
       _editingMaterialId = null;
       _showStackOrder = false;
       _editingBounds = null;
@@ -2580,6 +2591,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
       layerId: found.layer.id,
       currentFrame: _currentFrameNotifier,
       onLayerChanged: _onMaterialLayerChanged,
+      cropFrameOf: (layer) => _materialFrameOf(ps, layer, found.home),
+      onCropEditingChanged: (editing) {
+        // Told from the panel's build or disposal: change after this frame.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _cropEditing != editing) {
+            setState(() => _cropEditing = editing);
+          }
+        });
+      },
       videoSpeedEndFrameAt:
           clip == null || clip.trackType != _ClipTrackType.video
           ? null
@@ -2648,6 +2668,52 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// The drag handles over the preview for the material being edited at
   /// [frameIndex], or a note when it is not on screen at that frame.
+  /// The part of [layer]'s picture the material is drawn in (canvas pixels):
+  /// the crop is of this part. An image's drawn part comes from its pixels;
+  /// a video's frames are fitted, centred, into the canvas by their picture
+  /// size (the whole canvas until that size is read).
+  Rect _materialFrameOf(ProjectService ps, Layer layer, LayerHome home) {
+    final tm = ps.tileManagerOf(widget.projectId);
+    final w = tm.canvasWidth.toDouble();
+    final h = tm.canvasHeight.toDouble();
+    final whole = Rect.fromLTWH(0, 0, w, h);
+    if (layer.type == LayerType.timelineVideo) {
+      final id = layer.materialId;
+      final size = id == null ? null : _videoDisplaySizeOf(id);
+      return size == null ? whole : fittedContentRect(size, w, h);
+    }
+    return tm.contentBounds(
+          ps.tileKeyFor(
+            widget.projectId,
+            home.sceneId,
+            home.frameIndex,
+            layer.id,
+          ),
+        ) ??
+        whole;
+  }
+
+  /// The picture size of video material [materialId], or null while it is
+  /// read (the timeline is rebuilt when it is known).
+  Size? _videoDisplaySizeOf(String materialId) {
+    if (_videoDisplaySizes.containsKey(materialId)) {
+      return _videoDisplaySizes[materialId];
+    }
+    final frames = _previewVideoFrames;
+    if (frames == null) return null;
+    _videoDisplaySizes[materialId] = null;
+    frames.timelineOf(materialId).then((result) {
+      if (!mounted || result is! VideoTimelineReady) return;
+      final w = result.timeline.displayWidth;
+      final h = result.timeline.displayHeight;
+      if (w == null || h == null || w <= 0 || h <= 0) return;
+      setState(
+        () => _videoDisplaySizes[materialId] = Size(w.toDouble(), h.toDouble()),
+      );
+    }, onError: (Object _) {});
+    return null;
+  }
+
   Widget? _buildMaterialGizmo(ProjectService ps, int frameIndex) {
     if (_showStackOrder) return null;
     final found = _editingMaterial(ps);
@@ -2694,6 +2760,43 @@ class _TimelineScreenState extends State<TimelineScreen> {
       widget.projectId,
       found.home.sceneId,
     );
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    if (_cropEditing &&
+        (layer.type == LayerType.timelineImage ||
+            layer.type == LayerType.timelineVideo)) {
+      return MaterialCropGizmo(
+        key: ValueKey('material-crop-gizmo-${layer.id}'),
+        canvasWidth: tm.canvasWidth,
+        canvasHeight: tm.canvasHeight,
+        outputWidth: project?.exportWidth,
+        outputHeight: project?.exportHeight,
+        value: materialTransformAt(layer, frameIndex),
+        frame: _materialFrameOf(ps, layer, found.home),
+        crop: layer.crop,
+        camera: cameraKeyframes.isEmpty
+            ? null
+            : CameraEngine().valueAt(cameraKeyframes, frameIndex),
+        onChangeEnd: _finishMaterialDrag,
+        onChanged: (next) {
+          final current = _editingMaterial(ps);
+          if (current == null || current.layer.id != layer.id) return;
+          if (current.layer.crop == next) return;
+          final undo = context.read<UndoManager?>();
+          if (undo != null) {
+            _materialDrag ??= (before: current.layer, undo: undo);
+          }
+          ps.updateLayer(
+            projectId: widget.projectId,
+            sceneId: current.home.sceneId,
+            frameIndex: current.home.frameIndex,
+            recordUndo: false,
+            layer: current.layer.copyWith(crop: next),
+          );
+        },
+      );
+    }
     return MaterialTransformGizmo(
       key: ValueKey('material-gizmo-${layer.id}'),
       onChangeEnd: _finishMaterialDrag,

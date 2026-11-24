@@ -5436,6 +5436,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineEditSectionMask => 'Máscara';
 
   @override
+  String get timelineEditSectionCrop => 'Recortar';
+
+  @override
+  String get timelineCropHint =>
+      'Recorta lo que se ve desde los bordes del material. También puedes arrastrar las esquinas y los bordes del marco en la vista previa. La imagen o el vídeo original no cambia.';
+
+  @override
+  String get timelineCropLeft => 'Recortar por la izquierda';
+
+  @override
+  String get timelineCropRight => 'Recortar por la derecha';
+
+  @override
+  String get timelineCropTop => 'Recortar por arriba';
+
+  @override
+  String get timelineCropBottom => 'Recortar por abajo';
+
+  @override
+  String get timelineCropReset => 'Restablecer recorte';
+
+  @override
   String get timelineTransformRotationX => 'Rotación en X';
 
   @override

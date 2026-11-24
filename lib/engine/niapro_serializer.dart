@@ -17,6 +17,7 @@ import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
 import '../models/layer_group.dart';
 import '../models/layer_keyframe.dart';
+import '../models/layer_crop.dart';
 import '../models/layer_mask.dart';
 import '../models/pixel_color_mode.dart';
 import '../models/project.dart';
@@ -1300,6 +1301,7 @@ class NiaproSerializer {
       'keyframes': l.keyframes.map((k) => k.toJson()).toList(),
     if (l.textObject != null) 'textObject': _serializeTextObject(l.textObject!),
     if (l.mask != null) 'mask': l.mask!.toJson(),
+    if (l.crop case final crop? when !crop.isFull) 'crop': crop.toJson(),
   };
 
   static Map<String, dynamic> _serializeTextObject(TextObject t) => {
@@ -1566,6 +1568,7 @@ class NiaproSerializer {
         ? _deserializeTextObject(j['textObject'] as Map<String, dynamic>)
         : null,
     mask: LayerMask.fromJson(j['mask']),
+    crop: LayerCrop.fromJson(j['crop']),
   );
 
   static TextObject _deserializeTextObject(Map<String, dynamic> j) {

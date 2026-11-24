@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ import '../../../services/font_service.dart';
 import '../../../services/project_service.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../engine/clip_speed.dart';
+import '../../../engine/crop_frame.dart';
 import '../../../widgets/labeled_slider.dart';
 import 'clip_speed_control.dart';
 import 'keyframe_retime_dialog.dart';
@@ -28,7 +30,7 @@ import '../../../widgets/typing_dialog_inset.dart';
 import '../../../widgets/menu_surface.dart';
 import '../../../widgets/responsive.dart';
 
-enum _Section { text, transform, mask, video }
+enum _Section { text, transform, crop, mask, video }
 
 /// Colours offered with one tap for a timeline text and its outline.
 const List<int> _textColours = [
@@ -100,6 +102,8 @@ class TimelineMaterialEditPanel extends StatefulWidget {
     this.onLayerChanged,
     this.videoSpeedEndFrameAt,
     this.onVideoSpeedChange,
+    this.cropFrameOf,
+    this.onCropEditingChanged,
   });
 
   final String projectId;
@@ -126,6 +130,14 @@ class TimelineMaterialEditPanel extends StatefulWidget {
   /// was refused, or null.
   final int Function(double rate)? videoSpeedEndFrameAt;
   final String? Function(double rate)? onVideoSpeedChange;
+
+  /// The drawn part of an image or video on its layer (canvas pixels): the
+  /// crop's percentages are of this. Null uses the whole layer.
+  final Rect Function(Layer layer)? cropFrameOf;
+
+  /// Told when the crop section opens (true) or closes (false), so the
+  /// preview's handles can move the crop's edges.
+  final ValueChanged<bool>? onCropEditingChanged;
 
   @override
   State<TimelineMaterialEditPanel> createState() =>
@@ -179,6 +191,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
 
   @override
   void dispose() {
+    if (_cropShown) widget.onCropEditingChanged?.call(false);
     _finishSlider(widget.projectId, duringBuild: true);
     _flushText();
     _textCtrl.dispose();
@@ -232,6 +245,101 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
   }
 
   void _finishSliderDrag(double _) => _finishSlider(widget.projectId);
+
+  // ─── Crop ───────────────────────────────────────────────────────────────
+
+  /// Whether the crop section was shown at the last build (the timeline is
+  /// told when that changes).
+  bool _cropShown = false;
+
+  Widget _cropSection(Layer layer) {
+    final l10n = AppLocalizations.of(context)!;
+    final tm = _projects.tileManagerOf(widget.projectId);
+    final width = tm.canvasWidth.toDouble();
+    final height = tm.canvasHeight.toDouble();
+    final frame =
+        widget.cropFrameOf?.call(layer) ?? Rect.fromLTWH(0, 0, width, height);
+    final cuts = cropCutsIn(layer.crop, frame, width, height);
+    const most = 100 - minCropKeptPercent;
+
+    Widget cutSlider({
+      required Key key,
+      required String label,
+      required double value,
+      required double opposite,
+      required CropCuts Function(double v) withValue,
+    }) => LabeledSlider(
+      key: key,
+      label: label,
+      value: value.clamp(0, most - opposite),
+      min: 0,
+      max: math.max(1, most - opposite),
+      step: 1,
+      isInt: false,
+      valueText: '${value.round()}%',
+      onChanged: (v) => _update(
+        (l) =>
+            l.copyWith(crop: cropFromCuts(withValue(v), frame, width, height)),
+        preview: true,
+      ),
+      onChangeEnd: _finishSliderDrag,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          l10n.timelineCropHint,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        cutSlider(
+          key: const ValueKey('cropLeft'),
+          label: l10n.timelineCropLeft,
+          value: cuts.left,
+          opposite: cuts.right,
+          withValue: (v) =>
+              (left: v, top: cuts.top, right: cuts.right, bottom: cuts.bottom),
+        ),
+        cutSlider(
+          key: const ValueKey('cropRight'),
+          label: l10n.timelineCropRight,
+          value: cuts.right,
+          opposite: cuts.left,
+          withValue: (v) =>
+              (left: cuts.left, top: cuts.top, right: v, bottom: cuts.bottom),
+        ),
+        cutSlider(
+          key: const ValueKey('cropTop'),
+          label: l10n.timelineCropTop,
+          value: cuts.top,
+          opposite: cuts.bottom,
+          withValue: (v) =>
+              (left: cuts.left, top: v, right: cuts.right, bottom: cuts.bottom),
+        ),
+        cutSlider(
+          key: const ValueKey('cropBottom'),
+          label: l10n.timelineCropBottom,
+          value: cuts.bottom,
+          opposite: cuts.top,
+          withValue: (v) =>
+              (left: cuts.left, top: cuts.top, right: cuts.right, bottom: v),
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: OutlinedButton.icon(
+            key: const ValueKey('cropReset'),
+            icon: const Icon(Icons.crop_free, size: 18),
+            label: Text(l10n.timelineCropReset),
+            onPressed: layer.crop == null
+                ? null
+                : () => _update((l) => l.copyWith(crop: null)),
+          ),
+        ),
+      ],
+    );
+  }
 
   // ─── Text ───────────────────────────────────────────────────────────────
 
@@ -968,20 +1076,31 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     final sections = [
       if (isText) _Section.text,
       _Section.transform,
+      if (!isText) _Section.crop,
       _Section.mask,
       if (isVideo) _Section.video,
     ];
     final section = sections.contains(_section) ? _section! : sections.first;
+    final cropShown = section == _Section.crop;
+    if (cropShown != _cropShown) {
+      _cropShown = cropShown;
+      // Not during build: the timeline swaps the preview's handles.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onCropEditingChanged?.call(cropShown);
+      });
+    }
     final scheme = Theme.of(context).colorScheme;
     String sectionLabel(_Section s) => switch (s) {
       _Section.text => l10n.timelineEditSectionText,
       _Section.transform => l10n.timelineEditSectionTransform,
+      _Section.crop => l10n.timelineEditSectionCrop,
       _Section.mask => l10n.timelineEditSectionMask,
       _Section.video => l10n.projectListMaterialVideo,
     };
     IconData sectionIcon(_Section s) => switch (s) {
       _Section.text => Icons.text_fields,
       _Section.transform => Icons.open_with,
+      _Section.crop => Icons.crop,
       _Section.mask => Icons.vignette_outlined,
       _Section.video => Icons.videocam,
     };
@@ -1085,6 +1204,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
                   builder: (context, frame, _) =>
                       _transformSection(layer, found.home, frame),
                 ),
+                _Section.crop => _cropSection(layer),
                 _Section.mask => LayerMaskEditor(
                   mask: layer.mask,
                   onChanged: (m) => _update((l) => l.copyWith(mask: m)),
