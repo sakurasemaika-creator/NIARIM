@@ -2,6 +2,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/camera_engine.dart';
+import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/engine/timeline_output_viewport.dart';
 
 void main() {
@@ -86,13 +88,14 @@ void main() {
         outputHeight: 2,
       );
 
-      Future<Uint8List> renderThroughSharedPainter() async {
-        final recorder = ui.PictureRecorder();
-        final canvas = ui.Canvas(recorder);
-        paintOutputViewport(canvas, source, viewport);
-        final picture = recorder.endRecording();
-        final image = await picture.toImage(4, 2);
-        picture.dispose();
+      Future<Uint8List> renderThroughSharedFrameRenderer() async {
+        final image = await renderOutputViewportImage(
+          drawingImage: source,
+          viewport: viewport,
+          backgroundColor: 0x00000000,
+          cameraEngine: CameraEngine(),
+          cameraKeyframe: const CameraKeyframe(frameIndex: 0),
+        );
         final data = await image.toByteData(
           format: ui.ImageByteFormat.rawRgba,
         );
@@ -100,8 +103,8 @@ void main() {
         return data!.buffer.asUint8List();
       }
 
-      final previewPixels = await renderThroughSharedPainter();
-      final exportPixels = await renderThroughSharedPainter();
+      final previewPixels = await renderThroughSharedFrameRenderer();
+      final exportPixels = await renderThroughSharedFrameRenderer();
       expect(previewPixels, orderedEquals(exportPixels));
 
       // The output is the centred x=1..4, y=1..2 rectangle of the source.
