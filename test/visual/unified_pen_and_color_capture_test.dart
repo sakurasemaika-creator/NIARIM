@@ -160,9 +160,11 @@ void main() {
       stampService.toggleFavorite(stampService.stamps.first.id);
 
       Future<void> captureStarAndSearch(String kind, Finder panel) async {
+        // 星の切り替えは、文字つきでも星だけでも同じキー。星だけの形では
+        // 吹き出しが名前（お気に入りのみ）になるので、吹き出しの文で探さない。
         final favorite = find.descendant(
           of: panel,
-          matching: find.byTooltip('お気に入りのみ表示'),
+          matching: find.byKey(const ValueKey('asset-favorites-only')),
         );
         final search = find.descendant(
           of: panel,
@@ -170,13 +172,6 @@ void main() {
         );
         expect(favorite, findsOneWidget);
         expect(search, findsOneWidget);
-        expect(
-          find.descendant(
-            of: panel,
-            matching: find.byKey(const ValueKey('asset-favorites-only')),
-          ),
-          findsOneWidget,
-        );
         await tester.tap(favorite);
         await shot('${kind}_favorite_only');
         await tester.tap(favorite);
