@@ -4920,3 +4920,10 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
 - **D034（設定のmutation）**：`test/visual/settings_mutation_capture_test.dart`。テーマ（組み込みのダーク・自作の文字色）・表示言語（仏・韓）・端末の文字の大きさ2倍を変え、起動し直した後のホーム・設定・ヘルプがどれも変わり、例外・はみ出しが無い。目視で、自作の文字色がホームの選択中のタブに効いていないこと（DISC074の残り）を見つけ、所有者の判断「全部に案Aの色を効かせる」で直した（App `a9cce875`）。既存の見張り（`accent_text_screens_test`・`theme_accent_only_test`・`popup_opaque_background_test`・`theme_button_font_test`・`text_scale_layout_test`・`initial_language_test`・`home_reduced_motion_*`・`performance_settings_text_fit`・`save_mode_change_slots_test`）も根拠。
 - **D029（見た目の締め）**：PDFを最新（`a9cce875`）から作り直した：256件・37頁（描画フィルター26・ブラシ40・ブラシの設定26〔縁取りペンの縁取り幅・重なりを維持のオン/オフ・強弱、折り畳みの5種、入り抜き5種、先端の形5種、横に並べる、散布、ピクセルモード、混色3種〕・トーン63・スタンプ24・テーマ28・設定の変更15〔前・設定の画面・起動し直した後〕・作品広場の画面34）。目視で、共有カードのブラシの線にカスタムの抜きが出ないこと（DISC610）を見つけて直した。
 - **判定**：D034・D029のAIでできる部分は済んだ。残るのは実機（MP4の映像と音、端末の書き出し時間）。D030（品質の掛け合わせ）・D031（締めの前の門）・D032（全操作の実操作）は、実機・実課金・実広告・法務を除く範囲を続ける。全面監査completeは宣言しない。
+
+### D031 四巡目（2026-11-24、Claude・S56）— 棚卸しの照合
+
+- `verify_audit_route.py --peer`（Webの写しとの一致）・`verify_audit_delta.py`・`verify_full_audit_state.py`：どれもok。ベースラインの棚卸し（1115ファイル・21980アンカー・127要件・アプリ34画面・Web 12ページ・バックエンド22本）で未割当0。
+- ベースライン（2026-09-09）の後に足された製品のファイル569件（lib・android・backend・assets・tool）を`assign_delta_files.py`で監査のIDへ割り当てた（`D031_DELTA_FILE_ASSIGNMENT.md`）：機能の語で532件、同じフォルダのベースラインのIDで37件（共通の部品：文字の折り方・ボタンの並べ方・知らせ等はA101・A103）、未割当0。語の取り違え（「marker」の名のブラシの先端・「filter」の名のホームの絞り込み・「clip」の名のクリップボード・「reference」を含むpreferences）は直してから数えた。
+- 役目を終えた一度きりの修正スクリプト5本（`tool/one_shot_fix_pinch_and_automation_proof.py`・`patch_custom_automation_*.py`2本・`rewrite_custom_automation_visual_proof.py`・`normal_task_final_residual_fix.sh`。どこからも呼ばれず、最後のものは自分を消す行を持つ）は、消そうとしたが自動の権限の判定で止められたので残した（所有者に伝える）。
+- 判定：未割当の機能・ファイル・画面は0。D031の残りの条件（未完了のDelta・未登録のDiscoveryが0、最後の全件のtest・analyze・見た目の締めが最新で済む）は、全件のtestとAPKのビルドの結果を待って書く。
