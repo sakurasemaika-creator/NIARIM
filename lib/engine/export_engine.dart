@@ -304,20 +304,8 @@ class ExportEngine {
       maskGroups: stacked.maskGroups,
     );
 
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-
-    // 背景色
-    final bgA = (backgroundColor >> 24) & 0xFF;
-    final bgR = (backgroundColor >> 16) & 0xFF;
-    final bgG = (backgroundColor >> 8) & 0xFF;
-    final bgB = backgroundColor & 0xFF;
-    canvas.drawRect(
-      ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
-      ui.Paint()..color = ui.Color.fromARGB(bgA, bgR, bgG, bgB),
-    );
-
-    // The preview and export use the same centred output viewport.
+    // Render the background, centred crop, and camera transform through the
+    // same output-frame path used by the timeline preview.
     final viewport = TimelineOutputViewport(
       drawingWidth: drawingWidth,
       drawingHeight: drawingHeight,
@@ -325,14 +313,15 @@ class ExportEngine {
       outputHeight: height,
     );
     final kf = _cameraEngine.valueAt(cameraKeyframes, frameIndex);
-    canvas.save();
-    _cameraEngine.apply(canvas, kf, width.toDouble(), height.toDouble());
-    paintOutputViewport(canvas, fullImage, viewport);
-    canvas.restore();
+    final uiImage = await renderOutputViewportImage(
+      drawingImage: fullImage,
+      viewport: viewport,
+      backgroundColor: backgroundColor,
+      cameraEngine: _cameraEngine,
+      cameraKeyframe: kf,
+    );
     fullImage.dispose();
 
-    final picture = recorder.endRecording();
-    final uiImage = await picture.toImage(width, height);
     final byteData = await uiImage.toByteData(
       format: ui.ImageByteFormat.rawRgba,
     );
