@@ -21,6 +21,7 @@ import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/action_beside_or_below.dart';
 import 'package:niarim/widgets/sort_mode_control.dart';
+import 'package:niarim/widgets/sheet_list_segment.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -932,13 +933,13 @@ Future<void> _sweep(
       }
       // ゴミ箱のカードの操作（所有者の判断1）：幅が600×文字の倍率より
       // 狭いと名前の下の右端、広いと名前の右。ただし右に置くと名前の欄が
-      // 名前の文字15字分（先頭の絵48と余白16＋16＋24を足した幅）より狭く
-      // なるなら名前の下。
+      // 名前の文字15字分（先頭の絵48と、左の余白16・絵と名前の間12・右の
+      // 余白16を足した幅）より狭くなるなら名前の下。
       if (layout.trashCompact != null) {
         final room = scan.trashBesideRoom;
         final below =
             w < 600 * scale ||
-            (room != null && room < 16 + 48 + 16 + 24 + 15 * 16 * scale);
+            (room != null && room < 16 + 48 + 12 + 16 + 15 * 16 * scale);
         if (room == null && w >= 600 * scale) {
           found.add('trash card name/actions not measured');
         } else if (layout.trashCompact != below) {
@@ -1375,11 +1376,14 @@ class _Scan {
     return (tile: tile!, bar: bar!, row: row.renderObject! as RenderBox);
   }
 
-  /// 最初のゴミ箱のカードで、操作が名前の行の下にあるか。
+  /// 最初のゴミ箱のカードで、操作が名前の行の下にあるか。下に回した操作の
+  /// 行は、押せる所の上の空きを名前の行の下の余白に重ねる（間を詰める）ので、
+  /// 上下ではなく左右で見る：名前の右に並べたときは操作が名前の行より右、
+  /// 下に回したときは名前の行の幅の中にある。
   bool? get trashActionsBelow {
     final boxes = _trashRowBoxes;
     if (boxes == null) return null;
-    return _globalRect(boxes.bar).top >= _globalRect(boxes.tile).bottom - 0.5;
+    return _globalRect(boxes.bar).left < _globalRect(boxes.tile).right - 0.5;
   }
 
   /// 操作を名前の右に1行で並べたとき、名前の行に残る幅（操作の右の余白8を
@@ -1428,7 +1432,8 @@ class _Scan {
         if (where.trashList && trashItemCount == null) {
           trashItemCount = delegate.estimatedChildCount;
         }
-      case Card():
+      // ゴミ箱の行（1枚の面の一部として描く行。以前は行ごとのCard）。
+      case Card() || SheetListSegment():
         if (where.trash) {
           trashCards = true;
           next = next.copy(card: true);
