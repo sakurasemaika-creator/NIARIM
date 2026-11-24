@@ -25,8 +25,8 @@ import '../../widgets/coin_history_sheet.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/grouped_sheet.dart';
 import '../../widgets/icon_notice.dart';
-import '../../widgets/menu_card.dart';
 import 'rewards_sign_in_button.dart';
 
 enum RewardPageMode { exchange, earnCoins }
@@ -1074,76 +1074,79 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   }) {
     final theme = Theme.of(context);
     final balance = _rewardState?['balanceCoins'];
-    return MenuCard(
+    return GroupedSheet(
       key: const Key('rewardWalletCard'),
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(4, 16, 16, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: 12),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.toll_outlined,
-                    size: 28,
-                    color: AccentTextTheme.of(context),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    // 残高の数＋単位は1行に収め、入りきらなければ字を縮める
-                    // （合計の欄と同じ。大きな文字で「60,000歐 / 泊」と単位の
-                    // 途中で切れないように）。
-                    child: balance is int
-                        ? Align(
-                            alignment: AlignmentDirectional.centerStart,
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                l10n.coinAmount(balance),
-                                style: theme.textTheme.headlineSmall,
-                              ),
-                            ),
-                          )
-                        : messageText(
-                            _walletLoading ? t['loading'] : t['balancePending'],
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (_lastAccountId != null)
-              Wrap(
-                spacing: 4,
-                children: [
-                  if (!earn && _rewardState != null)
-                    TextButton.icon(
-                      key: const Key('coinHistoryButton'),
-                      icon: const Icon(Icons.receipt_long_outlined),
-                      onPressed: _showCoinHistory,
-                      label: messageText(t['coinHistory']),
+      children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(4, 16, 16, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 12),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.toll_outlined,
+                      size: 28,
+                      color: AccentTextTheme.of(context),
                     ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: !_walletLoading
-                        ? () => _loadWallet(_lastAccountId!)
-                        : null,
-                    label: messageText(t['rewardRefresh']),
-                  ),
-                ],
-              )
-            else
-              const Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(12, 4, 0, 8),
-                child: RewardsSignInButton(),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      // 残高の数＋単位は1行に収め、入りきらなければ字を縮める
+                      // （合計の欄と同じ。大きな文字で「60,000歐 / 泊」と単位の
+                      // 途中で切れないように）。
+                      child: balance is int
+                          ? Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  l10n.coinAmount(balance),
+                                  style: theme.textTheme.headlineSmall,
+                                ),
+                              ),
+                            )
+                          : messageText(
+                              _walletLoading
+                                  ? t['loading']
+                                  : t['balancePending'],
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                    ),
+                  ],
+                ),
               ),
-          ],
+              const SizedBox(height: 8),
+              if (_lastAccountId != null)
+                Wrap(
+                  spacing: 4,
+                  children: [
+                    if (!earn && _rewardState != null)
+                      TextButton.icon(
+                        key: const Key('coinHistoryButton'),
+                        icon: const Icon(Icons.receipt_long_outlined),
+                        onPressed: _showCoinHistory,
+                        label: messageText(t['coinHistory']),
+                      ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: !_walletLoading
+                          ? () => _loadWallet(_lastAccountId!)
+                          : null,
+                      label: messageText(t['rewardRefresh']),
+                    ),
+                  ],
+                )
+              else
+                const Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(12, 4, 0, 8),
+                  child: RewardsSignInButton(),
+                ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -1304,93 +1307,97 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
               Divider(color: scheme.outlineVariant),
               for (final target in _bundles) _targetTile(context, t, target),
               const SizedBox(height: 16),
-              MenuCard(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      messageText(
-                        t['total'],
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      if (_selected.isEmpty)
-                        // 準備中であることの説明なので、合計の数の見出しの
-                        // 大きな字ではなく本文の書体・大きさで出す（見出しの
-                        // 字では、長い言語・大きな文字で1つの語が欄より広く
-                        // なり、「conver / sion」「disponibl / es」と語の途中で
-                        // 折れた）。韓国語の語も途中で折らない。
+              GroupedSheet(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                         messageText(
-                          t['unavailable'],
-                          key: const Key('rewardTotalCoins'),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        )
-                      else
-                        // 合計の数＋単位は1行に収め、入りきらなければ字を
-                        // 縮める（大きな文字で「55000コイ」「ン」と単位の
-                        // 途中で切れた）。
-                        Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              serverPrice != null
-                                  ? l10n.coinAmount(serverPrice)
-                                  : quote != null
-                                  ? l10n.coinAmount(quote.requiredCoins)
-                                  : l10n.coinAmount(referenceTotal),
-                              key: const Key('rewardTotalCoins'),
-                              style: Theme.of(context).textTheme.headlineSmall,
+                          t['total'],
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        if (_selected.isEmpty)
+                          // 準備中であることの説明なので、合計の数の見出しの
+                          // 大きな字ではなく本文の書体・大きさで出す（見出しの
+                          // 字では、長い言語・大きな文字で1つの語が欄より広く
+                          // なり、「conver / sion」「disponibl / es」と語の途中で
+                          // 折れた）。韓国語の語も途中で折らない。
+                          messageText(
+                            t['unavailable'],
+                            key: const Key('rewardTotalCoins'),
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          )
+                        else
+                          // 合計の数＋単位は1行に収め、入りきらなければ字を
+                          // 縮める（大きな文字で「55000コイ」「ン」と単位の
+                          // 途中で切れた）。
+                          Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                serverPrice != null
+                                    ? l10n.coinAmount(serverPrice)
+                                    : quote != null
+                                    ? l10n.coinAmount(quote.requiredCoins)
+                                    : l10n.coinAmount(referenceTotal),
+                                key: const Key('rewardTotalCoins'),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineSmall,
+                              ),
                             ),
                           ),
+                        // 確定価格（交換準備中）の注記は注釈なので、見出しの
+                        // 大きな字に混ぜず本文の書体の別の行に出す（見出しに
+                        // つなぐと、長い言語・大きな文字で単語の途中で切れた）。
+                        if (serverPrice == null &&
+                            quote == null &&
+                            !individualOffer &&
+                            !fullPremiumOffer &&
+                            _selected.isNotEmpty)
+                          messageText(
+                            l10n.rewardUnlockFixedPrice,
+                            key: const Key('rewardTotalReferenceNote'),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          key: const Key('rewardOverlapPreviewButton'),
+                          icon: const Icon(Icons.fact_check_outlined),
+                          onPressed: _selected.isNotEmpty
+                              ? _reviewSelections
+                              : null,
+                          label: messageText(l10n.rewardUnlockReviewButton),
                         ),
-                      // 確定価格（交換準備中）の注記は注釈なので、見出しの
-                      // 大きな字に混ぜず本文の書体の別の行に出す（見出しに
-                      // つなぐと、長い言語・大きな文字で単語の途中で切れた）。
-                      if (serverPrice == null &&
-                          quote == null &&
-                          !individualOffer &&
-                          !fullPremiumOffer &&
-                          _selected.isNotEmpty)
-                        messageText(
-                          l10n.rewardUnlockFixedPrice,
-                          key: const Key('rewardTotalReferenceNote'),
-                          style: Theme.of(context).textTheme.bodySmall,
+                        const SizedBox(height: 8),
+                        // Once the authenticated quote/goal API is connected,
+                        // these buttons become available. Never claim a saved
+                        // goal or a completed redemption without a server ack.
+                        FilledButton(
+                          key: const Key('rewardSetGoalButton'),
+                          onPressed: null,
+                          child: messageText(t['goal']),
                         ),
-                      const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        key: const Key('rewardOverlapPreviewButton'),
-                        icon: const Icon(Icons.fact_check_outlined),
-                        onPressed: _selected.isNotEmpty
-                            ? _reviewSelections
-                            : null,
-                        label: messageText(l10n.rewardUnlockReviewButton),
-                      ),
-                      const SizedBox(height: 8),
-                      // Once the authenticated quote/goal API is connected,
-                      // these buttons become available. Never claim a saved
-                      // goal or a completed redemption without a server ack.
-                      FilledButton(
-                        key: const Key('rewardSetGoalButton'),
-                        onPressed: null,
-                        child: messageText(t['goal']),
-                      ),
-                      const SizedBox(height: 8),
-                      OutlinedButton(
-                        key: const Key('rewardRedeemButton'),
-                        onPressed: canRedeem && fullPremiumOffer
-                            ? (serverPrice != null
-                                  ? _redeemFullPremium
-                                  : _redeemFlexibleFullPremium)
-                            : canRedeem && individualOffer
-                            ? _redeemSelectedBenefits
-                            : null,
-                        child: messageText(t['redeem']),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        OutlinedButton(
+                          key: const Key('rewardRedeemButton'),
+                          onPressed: canRedeem && fullPremiumOffer
+                              ? (serverPrice != null
+                                    ? _redeemFullPremium
+                                    : _redeemFlexibleFullPremium)
+                              : canRedeem && individualOffer
+                              ? _redeemSelectedBenefits
+                              : null,
+                          child: messageText(t['redeem']),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
               const SizedBox(height: 16),
               messageText(
