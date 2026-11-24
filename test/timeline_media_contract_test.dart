@@ -55,11 +55,18 @@ void main() {
     expect(s, contains('final targets = _allClips'));
     expect(s, contains('_clipsOfType(clip.trackType).add(clip)'));
     expect(s, contains('sourceStartFrame: rightSourceStart'));
-    expect(s, contains('sourceTrimStart: isVideo ? rightSourceStart : null'));
+    // A video's right half starts at the split's source position (or on the
+    // held last frame); test/timeline_split_test.dart checks every frame.
+    expect(s, contains('sourceTrimStart: isVideo ? videoRightStart : null'));
+    expect(
+      s,
+      contains(
+        'final videoRightStart = heldRight ? clip.useEnd : rightSourceStart;',
+      ),
+    );
     expect(s, contains('fadeIn: 0'));
     expect(s, contains('fadeOut: 0'));
   });
-
 
   test('video preview seek uses the shared source-time mapper', () {
     final s = File(
@@ -70,5 +77,4 @@ void main() {
     expect(s, contains('sourceTrimStartFrame: clip.useStart'));
     expect(s, contains('sourceTrimEndFrame: clip.useEnd'));
   });
-
 }

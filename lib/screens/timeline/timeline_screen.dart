@@ -9136,6 +9136,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 再生ヘッド位置で、そこをまたいでいる全トラックのクリップを分割する。
   /// 音声・読み上げ音声・動画・画像・テキストを同じ操作で扱い、
   /// 素材内の再生位置（sourceTrim/sourceStartFrame）と外側のフェードを保つ。
+  /// The inclusive source end of the left half of [clip] (a video) split
+  /// after [leftLength] frames.
+  static int _videoSplitLeftEnd(_TrackClip clip, int leftLength) {
+    final last = clip.sourceAfter(leftLength - 1);
+    return math.min(
+      last.fraction > 0 ? last.frame + 1 : last.frame,
+      clip.useEnd,
+    );
+  }
+
   void _applySplitAtCurrentFrame() {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
@@ -9161,7 +9171,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
         // (a fraction of a frame is kept so it plays exactly as before).
         final rightSource = clip.sourceAfter(leftLength);
         final rightSourceStart = rightSource.frame;
-        final leftSourceEnd = clip.sourceAfter(leftLength - 1).frame;
+        // A video's picture: the left half's last frame may sit part-way into
+        // a source frame (at a speed other than 1x), so its inclusive end is
+        // the next frame (not past the clip's own end) or that frame would be
+        // held from its start. Past the clip's end the last frame is held, so
+        // a right half that starts there starts on it.
+        final videoLeftEnd = _videoSplitLeftEnd(clip, leftLength);
+        final heldRight = rightSourceStart > clip.useEnd;
+        final videoRightStart = heldRight ? clip.useEnd : rightSourceStart;
+        final videoRightFraction = heldRight ? 0.0 : rightSource.fraction;
         final rightId = clip.trackType == _ClipTrackType.audio
             ? 'audio_split_${DateTime.now().microsecondsSinceEpoch}_$index'
             : 'layer_split_${DateTime.now().microsecondsSinceEpoch}_$index';
@@ -9271,7 +9289,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             rangeMode: LayerRangeMode.frameRange,
             rangeStart: clip.startFrame + 1,
             rangeEnd: splitFrame,
-            sourceTrimEnd: isVideo ? leftSourceEnd : null,
+            sourceTrimEnd: isVideo ? videoLeftEnd : null,
           ),
         );
         projectService.updateLayer(
@@ -9284,12 +9302,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
             rangeMode: LayerRangeMode.frameRange,
             rangeStart: splitFrame + 1,
             rangeEnd: clip.startFrame + clip.lengthFrames,
-            sourceTrimStart: isVideo ? rightSourceStart : null,
-            sourceTrimStartFraction: isVideo ? rightSource.fraction : null,
+            sourceTrimStart: isVideo ? videoRightStart : null,
+            sourceTrimStartFraction: isVideo ? videoRightFraction : null,
             sourceTrimEnd: isVideo ? clip.useEnd : null,
             textObject: sourceLayer.textObject?.copyWith(id: newLayer.id),
           ),
         );
+        // The right half moves with the left half's group, as before.
+        final group = projectService.groupContainingLayer(
+          widget.projectId,
+          home.sceneId,
+          clip.id,
+        );
+        if (group != null) {
+          projectService.updateLayerGroup(
+            widget.projectId,
+            home.sceneId,
+            group.copyWith(
+              memberLayerIds: [...group.memberLayerIds, newLayer.id],
+            ),
+          );
+        }
         processedClips.add(clip);
         rightClips.add(
           _TrackClip(
@@ -9301,9 +9334,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             trackType: clip.trackType,
             filePath: clip.filePath,
             materialId: clip.materialId,
-            useStart: isVideo ? rightSourceStart : clip.useStart,
+            useStart: isVideo ? videoRightStart : clip.useStart,
             useEnd: clip.useEnd,
-            sourceFraction: isVideo ? rightSource.fraction : 0,
+            sourceFraction: isVideo ? videoRightFraction : 0,
             playbackRate: clip.playbackRate,
             soundFollowsSpeed: clip.soundFollowsSpeed,
             volume: clip.volume,
@@ -9320,7 +9353,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         final leftLength = splitFrame - clip.startFrame;
         clip.lengthFrames = leftLength;
         if (clip.trackType == _ClipTrackType.video) {
-          clip.useEnd = clip.sourceAfter(leftLength - 1).frame;
+          clip.useEnd = _videoSplitLeftEnd(clip, leftLength);
         } else if (clip.trackType == _ClipTrackType.audio) {
           clip.fadeOut = 0;
           clip.useEnd = clip.sourceAfter(leftLength - 1).frame;
