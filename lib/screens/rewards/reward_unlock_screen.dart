@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../config/accent_text_theme.dart';
+import '../../config/font_fallback.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -1286,18 +1287,73 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
               // 主な操作のボタンと同じ重さに見えた）。
               GroupedSheet(
                 children: [
-                  SheetRow(
-                    icon: Icons.schedule,
-                    title: t['duration'],
-                    trailing: KeyedSubtree(
-                      key: const Key('rewardDurationButton'),
-                      child: Text(
-                        coinUnlockDurationLabel(l10n, _duration),
-                        style: Theme.of(context).textTheme.titleSmall,
+                  // 名前と今の値を並べ、名前が語の途中で折れる幅（大きな文字・
+                  // 長い言語）では値を名前の下へ回す。
+                  InkWell(
+                    onTap: () => _chooseDuration(t),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 56),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: GroupedSheet.rowInset,
+                          vertical: 12,
+                        ),
+                        // 狭い幅・大きな文字では印を外して名前の幅を取る
+                        // （SheetRowと同じ決まり）。
+                        child: LayoutBuilder(
+                          builder: (context, row) => Row(
+                            children: [
+                              if (row.maxWidth /
+                                      MediaQuery.textScalerOf(
+                                        context,
+                                      ).scale(1) >=
+                                  232) ...[
+                                Icon(
+                                  Icons.schedule,
+                                  size: 22,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                                const SizedBox(width: 16),
+                              ],
+                              Expanded(
+                                child: ActionBesideOrBelow(
+                                  text: messageText(
+                                    t['duration'],
+                                    keepLineStarts: true,
+                                    style: localizedHeadingStyle(
+                                      context,
+                                      const TextStyle(
+                                        fontSize: 15,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ),
+                                  action: KeyedSubtree(
+                                    key: const Key('rewardDurationButton'),
+                                    child: Text(
+                                      coinUnlockDurationLabel(l10n, _duration),
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleSmall,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                size: 20,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                    showChevron: true,
-                    onTap: () => _chooseDuration(t),
                   ),
                 ],
               ),
