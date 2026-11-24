@@ -283,7 +283,53 @@ class ProjectService extends ChangeNotifier {
   // TileManager をプロジェクトIDごとに保持
   final Map<String, TileManager> _tileManagers = {};
 
+  /// Works listed without reading their picture tiles: the work's id and its
+  /// file. Every tile of every work used to be read into memory at start-up
+  /// (several hundred MB each for a long 1920×1080 work), so a phone with a
+  /// few long works could run out of memory while starting. The tiles are
+  /// read the first time the work's [TileManager] is used ([_tilesOf]).
+  final Map<String, String> _tilesLeftInFile = {};
+
+  /// Works whose tiles could not be read when they were opened. Their file is
+  /// never written over (it still holds the picture).
+  final Set<String> _unreadableTiles = {};
+
+  /// Whether the picture of [projectId] could not be read from its file when
+  /// it was opened; nothing may save over that file then.
+  bool tilesUnreadable(String projectId) =>
+      _unreadableTiles.contains(projectId);
+
+  /// Whether the picture tiles of [projectId] are in memory (false while the
+  /// work has not been opened since it was listed).
+  @visibleForTesting
+  bool tilesRead(String projectId) => !_tilesLeftInFile.containsKey(projectId);
+
+  /// The work's [TileManager], with the tiles read from the file the first
+  /// time (see [_tilesLeftInFile]).
+  TileManager? _tilesOf(String projectId) {
+    final path = _tilesLeftInFile.remove(projectId);
+    final tiles = _tileManagers[projectId];
+    if (path != null && tiles != null) {
+      try {
+        tiles.importAll(NiaproSerializer.loadTilesSync(path));
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+        _unreadableTiles.add(projectId);
+      }
+    }
+    return tiles;
+  }
+
+  /// Forgets the tiles kept for [projectId] (the work is gone or its tiles
+  /// are replaced).
+  void _forgetTiles(String projectId) {
+    _tilesLeftInFile.remove(projectId);
+    _unreadableTiles.remove(projectId);
+  }
+
   TileManager tileManagerOf(String projectId) {
+    final listed = _tilesOf(projectId);
+    if (listed != null) return listed;
     return _tileManagers.putIfAbsent(projectId, () {
       final p = _projects.where((p) => p.id == projectId).firstOrNull;
       return TileManager(
@@ -476,7 +522,7 @@ class ProjectService extends ChangeNotifier {
     if (index < 0) return;
     _scenes[projectId] = List.of(state.scenes);
     _layerHomes[projectId] = Map.of(state.homes);
-    _tileManagers[projectId]?.restoreStructuralLayers(tiles);
+    _tilesOf(projectId)?.restoreStructuralLayers(tiles);
     final snapshot = state.project;
     if (snapshot != null) {
       _projects[index] = _projects[index].copyWith(
@@ -807,7 +853,11 @@ class ProjectService extends ChangeNotifier {
         DateTime? recoveredAt;
         var damaged = false;
         try {
-          final loaded = await NiaproSerializer.load(niaproFile.path);
+          // The pictures stay in the file until the work is opened.
+          final loaded = await NiaproSerializer.load(
+            niaproFile.path,
+            withTiles: false,
+          );
           if (loaded.project.id != projectId || !loaded.hasEditableFrames) {
             throw const FormatException(
               'Project archive ID or scene data is invalid',
@@ -1270,6 +1320,9 @@ class ProjectService extends ChangeNotifier {
     );
     tm.importAll(data.tileData);
     _tileManagers[projectId] = tm;
+    _forgetTiles(projectId);
+    final leftIn = data.tilesLeftIn;
+    if (leftIn != null) _tilesLeftInFile[projectId] = leftIn;
     _layerIdCounters[projectId] = _maxLayerCounter(data.scenes);
   }
 
@@ -1602,7 +1655,7 @@ class ProjectService extends ChangeNotifier {
     final source = scenes[sourceIdx];
     final n = _nextSceneIndex(projectId);
     final newSceneId = 'Scene${n.toString().padLeft(4, '0')}';
-    final tm = _tileManagers[projectId];
+    final tm = _tilesOf(projectId);
 
     final idMap = <String, String>{};
     bool copiesLayer(Layer layer) =>
@@ -1712,7 +1765,7 @@ class ProjectService extends ChangeNotifier {
     final idsToRemove = sceneIds.toSet();
     final remaining = scenes.where((s) => !idsToRemove.contains(s.id)).toList();
     if (remaining.isEmpty || remaining.length == scenes.length) return;
-    final tm = _tileManagers[projectId];
+    final tm = _tilesOf(projectId);
     for (final id in idsToRemove) {
       tm?.removeSceneTiles(id);
     }
@@ -2682,6 +2735,9 @@ class ProjectService extends ChangeNotifier {
   }
 
   void _installAutosave(String projectId, int idx, NiaproData data) {
+    // The saved version brings the whole picture back: the work can be saved
+    // again even if its file could not be read.
+    _unreadableTiles.remove(projectId);
     final live = _projects[idx];
     _projects[idx] = data.project.copyWith(
       id: projectId,
@@ -3033,7 +3089,7 @@ class ProjectService extends ChangeNotifier {
     // frameLayerKey(sceneId, frameIndex, layerId)でTileManagerに保存されている
     // ため、後ろ側から順に付け替えることでまだ移動していない位置への
     // 上書きを避ける。
-    final tm = _tileManagers[projectId];
+    final tm = _tilesOf(projectId);
     if (tm != null) {
       for (int i = targetScene.frames.length - 1; i >= clampedInsertAt; i--) {
         for (final layer in targetScene.frames[i].layers) {
@@ -3158,7 +3214,7 @@ class ProjectService extends ChangeNotifier {
     if (frameIndex < 0 || frameIndex >= scene.frames.length) return;
 
     final newLength = scene.frames.length - 1;
-    final tm = _tileManagers[projectId];
+    final tm = _tilesOf(projectId);
     final keptLayers = List.generate(newLength, (_) => <Layer>[]);
     final movedHomes = <({String oldKey, String newKey})>[];
 
@@ -3273,7 +3329,7 @@ class ProjectService extends ChangeNotifier {
         )) {
       return true;
     }
-    final tm = _tileManagers[projectId];
+    final tm = _tilesOf(projectId);
     final tiles = tm?.exportAll();
     for (int i = targetCount; i < currentCount; i++) {
       final frame = scene.frames[i];
@@ -3383,7 +3439,7 @@ class ProjectService extends ChangeNotifier {
       return;
     }
 
-    final tm = _tileManagers[projectId];
+    final tm = _tilesOf(projectId);
     if (tm != null) {
       // 入れ替えでの衝突を避けるため、いったん一時キーへ退避してから最終位置へ
       // 付け替える。
@@ -4027,7 +4083,7 @@ class ProjectService extends ChangeNotifier {
     final bottomLayer = layers[bottomIndex];
     final selectedLayers = indices.map((i) => layers[i]).toList();
 
-    final tm = _tileManagers[projectId];
+    final tm = _tilesOf(projectId);
     Uint8List? mergedPixels;
     if (tm != null) {
       final mergedImage = await LayerCompositor.composite(
@@ -4133,7 +4189,7 @@ class ProjectService extends ChangeNotifier {
     required int rangeEnd,
     String? rangeSceneId,
   }) async {
-    final tm = _tileManagers[projectId];
+    final tm = _tilesOf(projectId);
     if (tm == null) return;
     final layers = layersOf(projectId, sceneId, frameIndex);
     if (layers.isEmpty) return;
@@ -4347,8 +4403,17 @@ class ProjectService extends ChangeNotifier {
   }) async {
     final project = _projects.where((p) => p.id == projectId).firstOrNull;
     final scenes = _scenes[projectId];
-    final tm = _tileManagers[projectId];
+    final rewrite = _needsArchiveRewrite.contains(projectId);
+    // A work not opened since it was listed keeps the tiles of its file.
+    final keepStoredTiles = !rewrite && _tilesLeftInFile.containsKey(projectId);
+    final tm = keepStoredTiles ? _tileManagers[projectId] : _tilesOf(projectId);
     if (project == null || scenes == null || tm == null) return;
+    if (_unreadableTiles.contains(projectId)) {
+      throw FileSystemException(
+        'The picture of this work could not be read; its file is kept as is',
+        projectId,
+      );
+    }
     // 最終保存の日時は1回だけ読み、ファイルと一覧の両方へ同じ値を書く
     // （別々に読むと数ミリ秒ずれ、ゴミ箱へ移す前の保存〔一覧の値を書く〕が
     // 作品を変えていないのにファイルを書き換えた）。
@@ -4358,7 +4423,8 @@ class ProjectService extends ChangeNotifier {
       scenes: scenes,
       tileManager: tm,
       updatedAt: updatedAt,
-      rewrite: _needsArchiveRewrite.contains(projectId),
+      rewrite: rewrite,
+      keepStoredTiles: keepStoredTiles,
     );
     _needsArchiveRewrite.remove(projectId);
     // 容量と最終保存の時刻は、ファイルに書いたものに合わせる。保存は
@@ -4441,6 +4507,7 @@ class ProjectService extends ChangeNotifier {
     _layerIdCounters.remove(id);
     _layerHomes.remove(id);
     _tileManagers.remove(id)?.dispose();
+    _forgetTiles(id);
   }
 
   Future<void> restoreProject(String id) =>
@@ -4531,6 +4598,7 @@ class ProjectService extends ChangeNotifier {
         _layerIdCounters[id] = counter;
         _tileManagers.remove(id)?.dispose();
         _tileManagers[id] = tm;
+        _forgetTiles(id);
         committed = true;
         _notifyFolders();
       } finally {
@@ -4595,6 +4663,7 @@ class ProjectService extends ChangeNotifier {
       _layerHomes.remove(id);
       _layerIdCounters.remove(id);
       _tileManagers.remove(id)?.dispose();
+      _forgetTiles(id);
       try {
         await _persistTrashState(_trashDeletedAt);
       } catch (error, stackTrace) {
@@ -4720,7 +4789,14 @@ class ProjectService extends ChangeNotifier {
       // 描画データ（タイル）も複製先IDへコピーする。TileManager.importAllは
       // ピクセルバッファをUint8List.fromListで複製するため、複製元・複製先は
       // 完全に独立したバッファになる。
-      final sourceTm = _tileManagers[id];
+      final sourceTm = _tilesOf(id);
+      if (_unreadableTiles.contains(id)) {
+        // An empty copy of a picture that could not be read is not a copy.
+        throw FileSystemException(
+          'The picture of this work could not be read',
+          id,
+        );
+      }
       final newTm = TileManager(
         canvasWidth: original.drawingWidth,
         canvasHeight: original.drawingHeight,
@@ -4816,7 +4892,7 @@ class ProjectService extends ChangeNotifier {
   }) async {
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx < 0) return;
-    final sourceTm = _tileManagers[projectId];
+    final sourceTm = _tilesOf(projectId);
     if (sourceTm == null) return;
 
     final newTm = TileManager(
@@ -4979,9 +5055,11 @@ class ProjectService extends ChangeNotifier {
         // 保存のファイルが無い（アプリの外で消えた）ときは、作品を書き直して
         // 残す（最終保存の日時は前のまま）。
         final scenes = _scenes[id];
-        final tileManager = _tileManagers[id];
+        final tileManager = _tilesOf(id);
         try {
-          if (scenes == null || tileManager == null) {
+          if (scenes == null ||
+              tileManager == null ||
+              _unreadableTiles.contains(id)) {
             throw StateError('Project content is unavailable for saving');
           }
           await NiaproSerializer.save(
@@ -5095,7 +5173,7 @@ class ProjectService extends ChangeNotifier {
     final project = _projects[idx];
     if (!force && project.thumbnailMode != 'latest') return;
     final scenes = _scenes[projectId];
-    final tm = _tileManagers[projectId];
+    final tm = _tilesOf(projectId);
     if (scenes == null || scenes.isEmpty || tm == null) return;
     final requestedScene = sceneId ?? project.thumbnailLastSceneId;
     final scene =

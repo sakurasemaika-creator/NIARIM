@@ -115,12 +115,18 @@ class NiaproSerializer {
   /// （渡さなければ今。作品を変えずに書くだけの保存〔ゴミ箱へ移す前〕で、
   /// 並び順に使う日時を変えないため）。
   /// [rewrite] rebuilds a damaged archive without reusing any old entries.
+  ///
+  /// [keepStoredTiles] writes the project and its scenes and keeps every
+  /// picture tile of the existing file as it is (for a work whose tiles were
+  /// not read since it was listed, see [loadFromBytes]); [tileManager] is not
+  /// read then.
   static Future<File> save({
     required Project project,
     required List<Scene> scenes,
     required TileManager tileManager,
     DateTime? updatedAt,
     bool rewrite = false,
+    bool keepStoredTiles = false,
   }) {
     return _queueSave(project.id, () async {
       final dir = await _projectDir(project.id);
@@ -132,6 +138,7 @@ class NiaproSerializer {
               scenes,
               tileManager,
               updatedAt: updatedAt,
+              keepStoredTiles: keepStoredTiles,
             )
           : _writeArchive(
               filePath,
@@ -722,6 +729,7 @@ class NiaproSerializer {
     List<Scene> scenes,
     TileManager tileManager, {
     DateTime? updatedAt,
+    bool keepStoredTiles = false,
   }) async {
     final oldBytes = await File(filePath).readAsBytes();
     final oldArchive = ZipDecoder().decodeBytes(oldBytes);
@@ -748,6 +756,21 @@ class NiaproSerializer {
         );
       }
 
+      if (keepStoredTiles) {
+        // The tiles were not read since the work was listed, so they are the
+        // ones in the file: every entry but the project and the scenes stays.
+        for (final entry in oldArchive.files) {
+          if (!entry.isFile ||
+              entry.name == _manifestFile ||
+              _isScenesEntry(entry.name)) {
+            continue;
+          }
+          encoder.addArchiveFile(
+            ArchiveFile(entry.name, 0, entry.content as List<int>),
+          );
+        }
+        return;
+      }
       final allTiles = tileManager.exportAll();
       for (final layerEntry in allTiles.entries) {
         final layerId = layerEntry.key;
@@ -768,7 +791,13 @@ class NiaproSerializer {
           }
         }
       }
-    }, savedTiles: tileManager);
+    }, savedTiles: keepStoredTiles ? null : tileManager);
+  }
+
+  /// Whether [name] is a scene's frame list (`Scene/{sceneId}/frames.json`).
+  static bool _isScenesEntry(String name) {
+    final parts = name.split('/');
+    return parts.length == 3 && parts[0] == 'Scene' && parts[2] == _framesFile;
   }
 
   /// Finish a ZIP beside its destination before replacing the last good save.
@@ -829,13 +858,31 @@ class NiaproSerializer {
     return bytes;
   }
 
-  static Future<NiaproData> load(String filePath) async {
+  /// [withTiles] false leaves the picture tiles in the file (the returned
+  /// data has no tiles and [NiaproData.tilesLeftIn] is [filePath]); read them
+  /// with [loadTilesSync] when the work is opened.
+  static Future<NiaproData> load(
+    String filePath, {
+    bool withTiles = true,
+  }) async {
     final source = File(filePath);
     ArchiveSecurity.validateFileSize(await source.length());
-    return loadFromBytes(await source.readAsBytes());
+    final data = loadFromBytes(
+      await source.readAsBytes(),
+      withTiles: withTiles,
+    );
+    return withTiles ? data : data.withTilesLeftIn(filePath);
   }
 
-  static NiaproData loadFromBytes(List<int> bytes) {
+  /// The picture tiles of the work file at [filePath], read at once (a work
+  /// listed with `withTiles: false` is opened).
+  static Map<String, Map<String, Uint8List>> loadTilesSync(String filePath) {
+    final source = File(filePath);
+    ArchiveSecurity.validateFileSize(source.lengthSync());
+    return loadFromBytes(source.readAsBytesSync()).tileData;
+  }
+
+  static NiaproData loadFromBytes(List<int> bytes, {bool withTiles = true}) {
     final archive = ArchiveSecurity.decodeZip(bytes);
 
     final manifestFile = archive.findFile(_manifestFile);
@@ -918,72 +965,82 @@ class NiaproSerializer {
 
     final tileData = <String, Map<String, Uint8List>>{};
     var skippedTiles = 0;
-    void addTile(String compositeKey, String tileKey, ArchiveFile file) {
-      // A tile of the wrong size or with a key that is not "x,y" cannot be
-      // drawn: one such tile made every composite of its layer throw, so
-      // the whole layer vanished from the canvas. Only that tile is left out.
-      if (!_tileKeyPattern.hasMatch(tileKey) ||
-          file.size != TileManager.tileSize * TileManager.tileSize * 4) {
-        skippedTiles++;
-        return;
-      }
-      tileData.putIfAbsent(compositeKey, () => {})[tileKey] = _readTilePixels(
-        file,
-      );
-    }
-
-    // 新形式：Tiles/{sceneId}/{frameIndex}/{layerId}_{tileKey}.bin
-    // 旧形式（プロジェクト全体で1箇所・フレーム非依存）：Tiles/{layerId}_{tileKey}.bin
-    //   → 当時はフレーム間で描画データが共有されていたため、該当layerIdを
-    //     使用する全フレームへ同じ内容を複製することで見た目を保ったまま
-    //     新形式（フレーム独立）へ移行する。
-    for (final file in archive.files) {
-      if (!file.name.startsWith('$_rootTilesDir/')) continue;
-      final rel = file.name.substring(_rootTilesDir.length + 1);
-      final segments = rel.split('/');
-      if (segments.length == 3) {
-        final sceneId = segments[0];
-        final frameIndex = int.tryParse(segments[1]);
-        if (frameIndex == null) continue;
-        final withoutExt = segments[2].replaceAll('.bin', '');
-        final underscoreIdx = withoutExt.lastIndexOf('_');
-        if (underscoreIdx < 0) continue;
-        final layerId = withoutExt.substring(0, underscoreIdx);
-        final tileKey = withoutExt.substring(underscoreIdx + 1);
-        addTile(frameLayerKey(sceneId, frameIndex, layerId), tileKey, file);
-      } else {
-        final withoutExt = segments.last.replaceAll('.bin', '');
-        final underscoreIdx = withoutExt.lastIndexOf('_');
-        if (underscoreIdx < 0) continue;
-        final layerId = withoutExt.substring(0, underscoreIdx);
-        final tileKey = withoutExt.substring(underscoreIdx + 1);
-        final targets = framesByLayerId[layerId];
-        if (targets == null) continue;
-        for (final target in targets) {
-          addTile(frameLayerKey(target.$1, target.$2, layerId), tileKey, file);
+    if (withTiles) {
+      void addTile(String compositeKey, String tileKey, ArchiveFile file) {
+        // A tile of the wrong size or with a key that is not "x,y" cannot be
+        // drawn: one such tile made every composite of its layer throw, so
+        // the whole layer vanished from the canvas. Only that tile is left out.
+        if (!_tileKeyPattern.hasMatch(tileKey) ||
+            file.size != TileManager.tileSize * TileManager.tileSize * 4) {
+          skippedTiles++;
+          return;
         }
+        tileData.putIfAbsent(compositeKey, () => {})[tileKey] = _readTilePixels(
+          file,
+        );
       }
-    }
 
-    // さらに古い旧々形式（Scene毎重複保存）：Scene/{sceneId}/tiles/{layerId}_{tileKey}.bin
-    // 同一シーン内で該当layerIdを使う全フレームへ複製する。
-    for (final scene in scenes) {
+      // 新形式：Tiles/{sceneId}/{frameIndex}/{layerId}_{tileKey}.bin
+      // 旧形式（プロジェクト全体で1箇所・フレーム非依存）：Tiles/{layerId}_{tileKey}.bin
+      //   → 当時はフレーム間で描画データが共有されていたため、該当layerIdを
+      //     使用する全フレームへ同じ内容を複製することで見た目を保ったまま
+      //     新形式（フレーム独立）へ移行する。
       for (final file in archive.files) {
-        if (!file.name.startsWith('Scene/${scene.id}/$_tilesDir/')) continue;
-        final fileName = file.name.split('/').last;
-        final withoutExt = fileName.replaceAll('.bin', '');
-        final underscoreIdx = withoutExt.lastIndexOf('_');
-        if (underscoreIdx < 0) continue;
-        final layerId = withoutExt.substring(0, underscoreIdx);
-        final tileKey = withoutExt.substring(underscoreIdx + 1);
-        for (final frame in scene.frames) {
-          if (!frame.layers.any((l) => l.id == layerId)) continue;
-          addTile(frameLayerKey(scene.id, frame.index, layerId), tileKey, file);
+        if (!file.name.startsWith('$_rootTilesDir/')) continue;
+        final rel = file.name.substring(_rootTilesDir.length + 1);
+        final segments = rel.split('/');
+        if (segments.length == 3) {
+          final sceneId = segments[0];
+          final frameIndex = int.tryParse(segments[1]);
+          if (frameIndex == null) continue;
+          final withoutExt = segments[2].replaceAll('.bin', '');
+          final underscoreIdx = withoutExt.lastIndexOf('_');
+          if (underscoreIdx < 0) continue;
+          final layerId = withoutExt.substring(0, underscoreIdx);
+          final tileKey = withoutExt.substring(underscoreIdx + 1);
+          addTile(frameLayerKey(sceneId, frameIndex, layerId), tileKey, file);
+        } else {
+          final withoutExt = segments.last.replaceAll('.bin', '');
+          final underscoreIdx = withoutExt.lastIndexOf('_');
+          if (underscoreIdx < 0) continue;
+          final layerId = withoutExt.substring(0, underscoreIdx);
+          final tileKey = withoutExt.substring(underscoreIdx + 1);
+          final targets = framesByLayerId[layerId];
+          if (targets == null) continue;
+          for (final target in targets) {
+            addTile(
+              frameLayerKey(target.$1, target.$2, layerId),
+              tileKey,
+              file,
+            );
+          }
         }
       }
-    }
-    if (skippedTiles > 0) {
-      debugPrint('[NiaproSerializer] 大きさ・名前の壊れたタイルを$skippedTiles枚読み飛ばしました。');
+
+      // さらに古い旧々形式（Scene毎重複保存）：Scene/{sceneId}/tiles/{layerId}_{tileKey}.bin
+      // 同一シーン内で該当layerIdを使う全フレームへ複製する。
+      for (final scene in scenes) {
+        for (final file in archive.files) {
+          if (!file.name.startsWith('Scene/${scene.id}/$_tilesDir/')) continue;
+          final fileName = file.name.split('/').last;
+          final withoutExt = fileName.replaceAll('.bin', '');
+          final underscoreIdx = withoutExt.lastIndexOf('_');
+          if (underscoreIdx < 0) continue;
+          final layerId = withoutExt.substring(0, underscoreIdx);
+          final tileKey = withoutExt.substring(underscoreIdx + 1);
+          for (final frame in scene.frames) {
+            if (!frame.layers.any((l) => l.id == layerId)) continue;
+            addTile(
+              frameLayerKey(scene.id, frame.index, layerId),
+              tileKey,
+              file,
+            );
+          }
+        }
+      }
+      if (skippedTiles > 0) {
+        debugPrint('[NiaproSerializer] 大きさ・名前の壊れたタイルを$skippedTiles枚読み飛ばしました。');
+      }
     }
 
     // 同梱素材（.niashare作成時に選択した画像/動画/音声の実ファイル）。
@@ -1543,6 +1600,10 @@ class NiaproData {
   final Map<String, Uint8List> fontFiles;
   final String? fontsManifest;
 
+  /// The file whose picture tiles were not read ([tileData] is empty then),
+  /// or null when [tileData] holds the tiles.
+  final String? tilesLeftIn;
+
   bool get hasEditableFrames =>
       scenes.isNotEmpty && scenes.every((scene) => scene.frames.isNotEmpty);
 
@@ -1554,5 +1615,17 @@ class NiaproData {
     this.materialsManifest,
     this.fontFiles = const {},
     this.fontsManifest,
+    this.tilesLeftIn,
   });
+
+  NiaproData withTilesLeftIn(String filePath) => NiaproData(
+    project: project,
+    scenes: scenes,
+    tileData: tileData,
+    materialFiles: materialFiles,
+    materialsManifest: materialsManifest,
+    fontFiles: fontFiles,
+    fontsManifest: fontsManifest,
+    tilesLeftIn: filePath,
+  );
 }

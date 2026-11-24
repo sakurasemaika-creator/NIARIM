@@ -130,6 +130,9 @@ class AutosaveService extends ChangeNotifier {
     bool skipUnchanged,
   ) async {
     if (_disposed) return;
+    // A work whose picture could not be read would be saved empty and push
+    // the last good automatic saves out.
+    if (projectService.tilesUnreadable(projectId)) return;
     final lastSlot = skipUnchanged
         ? slotsForProject(projectId).firstOrNull
         : null;

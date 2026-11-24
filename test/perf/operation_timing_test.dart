@@ -1,21 +1,27 @@
 // 主な操作の実行時間（全面監査のD035）。
 //
 // 1920×1080（新規作成の既定の大きさ）で、線を描く・レイヤーを合成する・
-// 全部の組み込みフィルターを当てる・作品名の並べ替えと検索をくり返し、
+// 全部の組み込みフィルターを当てる・作品名の並べ替えと検索・作品の保存と
+// 読み込み・書き出しの1コマの合成とGIFの書き出しをくり返し、
 // p50/p95 を build/perf/operation_timing.json に書く。端末ではなく、この
 // testを流した計算機の時間なので、同じ計算機での前後の比較（遅くなった
 // 処理を見つける）に使う。あまりに遅い処理（下の上限）は失敗にする。
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:niarim/engine/drawing_engine.dart';
+import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/engine/filter_preview.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/filter_def.dart';
+import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/project.dart';
+import 'package:niarim/models/scene.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/utils/name_collation.dart';
@@ -157,5 +163,158 @@ void main() {
     report['sortNames5000'] = _stats(sorts);
     report['searchNames5000'] = _stats(searches);
     expect(_stats(sorts)['p95Ms']! < 2000, isTrue);
+  });
+
+  testWidgets('作品の保存・読み込み・書き出し（1920×1080、6コマ×2レイヤー）', (tester) async {
+    const size = TileManager.tileSize;
+    final picture = _sample();
+    Uint8List tile(int tx, int ty, int shift) {
+      final out = Uint8List(size * size * 4);
+      for (var y = 0; y < size; y++) {
+        final sy = ty * size + y;
+        if (sy >= _h) break;
+        for (var x = 0; x < size; x++) {
+          final sx = (tx * size + x + shift) % _w;
+          final from = (sy * _w + sx) * 4, to = (y * size + x) * 4;
+          for (var c = 0; c < 4; c++) {
+            out[to + c] = picture[from + c];
+          }
+        }
+      }
+      return out;
+    }
+
+    const layerIds = ['Layer0001', 'Layer0002'];
+    final scene = Scene(
+      id: 'Scene0001',
+      index: 0,
+      name: 'シーン1',
+      frames: [
+        for (var f = 0; f < 6; f++)
+          Frame(
+            index: f,
+            layers: [
+              for (final id in layerIds)
+                Layer(id: id, name: id, type: LayerType.normal),
+            ],
+          ),
+      ],
+    );
+    final data = <String, Map<String, Uint8List>>{};
+    for (var f = 0; f < 6; f++) {
+      for (var l = 0; l < layerIds.length; l++) {
+        data[frameLayerKey(scene.id, f, layerIds[l])] = {
+          for (var ty = 0; ty * size < _h; ty++)
+            for (var tx = 0; tx * size < _w; tx++)
+              '$tx,$ty': tile(tx, ty, f * 40 + l * 300),
+        };
+      }
+    }
+    final at = DateTime.utc(2026, 11, 24);
+    final project = Project(
+      id: 'perf',
+      name: 'perf',
+      fps: 12,
+      durationSeconds: 1,
+      backgroundColor: 0xFFFFFFFF,
+      createdAt: at,
+      updatedAt: at,
+      totalWorkSeconds: 0,
+      exportWidth: _w,
+      exportHeight: _h,
+    );
+    final temp = Directory.systemTemp.createTempSync('niarim-perf-');
+    const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      pathChannel,
+      (_) async => temp.path,
+    );
+    addTearDown(() {
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        pathChannel,
+        null,
+      );
+      temp.deleteSync(recursive: true);
+    });
+
+    final saves = <int>[], loads = <int>[], frames = <int>[], gifs = <int>[];
+    var fileBytes = 0;
+    await tester.runAsync(() async {
+      final tiles = TileManager(canvasWidth: _w, canvasHeight: _h);
+      try {
+        tiles.importAll(data);
+        for (var run = 0; run < 3; run++) {
+          final path = '${temp.path}/perf_$run.niapro';
+          final save = Stopwatch()..start();
+          await NiaproSerializer.saveToPath(
+            filePath: path,
+            project: project,
+            scenes: [scene],
+            tileManager: tiles,
+          );
+          saves.add(save.elapsedMicroseconds);
+          final bytes = File(path).readAsBytesSync();
+          fileBytes = bytes.length;
+          final load = Stopwatch()..start();
+          final loaded = NiaproSerializer.loadFromBytes(bytes);
+          loads.add(load.elapsedMicroseconds);
+          expect(loaded.tileData.length, data.length);
+        }
+        final engine = ExportEngine();
+        for (var run = 0; run < 2; run++) {
+          for (var f = 0; f < 6; f++) {
+            final clock = Stopwatch()..start();
+            await engine.renderFrame(
+              layers: scene.frames[f].layers,
+              tileManager: tiles,
+              sceneId: scene.id,
+              frameIndex: f,
+              drawingWidth: _w,
+              drawingHeight: _h,
+              width: _w,
+              height: _h,
+              backgroundColor: 0xFFFFFFFF,
+              scene: scene,
+            );
+            frames.add(clock.elapsedMicroseconds);
+          }
+        }
+        for (var run = 0; run < 2; run++) {
+          final clock = Stopwatch()..start();
+          final out = await engine.exportGif(
+            projectName: 'perf',
+            scenes: [scene],
+            tileManager: tiles,
+            fps: 12,
+            drawingWidth: _w,
+            drawingHeight: _h,
+            width: 640,
+            height: 360,
+            backgroundColor: 0xFFFFFFFF,
+          );
+          gifs.add(clock.elapsedMicroseconds);
+          File(out).deleteSync();
+        }
+      } finally {
+        tiles.dispose();
+      }
+    });
+    report['saveNiapro (6 frames x 2 layers)'] = {
+      ..._stats(saves),
+      'fileBytes': fileBytes,
+    };
+    report['loadNiapro (6 frames x 2 layers)'] = _stats(loads);
+    report['exportRenderFrame (1920x1080)'] = _stats(frames);
+    report['exportGif (6 frames, 640x360)'] = _stats(gifs);
+    for (final (name, times, limit) in [
+      ('save', saves, 60000),
+      ('load', loads, 60000),
+      ('renderFrame', frames, 10000),
+      ('gif', gifs, 120000),
+    ]) {
+      final p95 = _stats(times)['p95Ms']!;
+      if (p95 > limit) slow.add('$name ${p95}ms');
+    }
+    expect(slow, isEmpty, reason: slow.join('\n'));
   });
 }

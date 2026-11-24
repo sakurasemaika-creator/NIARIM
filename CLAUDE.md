@@ -950,6 +950,17 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   消しゴムでなくなる）。マウスの筆圧は`InputHandler`で常に1.0（Linuxの
   デスクトップは0を渡し、筆圧で太さが変わるブラシが2割の太さになった）。
   `test/eraser_transparent_colour_test.dart`・`input_handler_pressure_test.dart`。
+- **作品の絵（タイル）は、その作品を初めて使うときに読む（DISC612、2026-11-24）**：
+  起動のとき（`_loadProjectsFromDisk`）は`NiaproSerializer.load(path, withTiles: false)`で
+  作品の情報とシーンだけを読み、絵はファイルに残す（`_tilesLeftInFile`）。以前は全部の
+  作品の絵を画素のままメモリへ読んでいて、1920×1080の作品は1コマ1レイヤーで最大約8MB、
+  長い作品が数本ある端末では起動の途中でメモリが尽きうった。`ProjectService`の中で
+  タイルを読むときは`_tileManagers[id]`ではなく`_tilesOf(id)`（外からは
+  `tileManagerOf`）を通すこと（読んでいない作品は空の`TileManager`なので、コマの挿入・
+  削除・保存が空の絵で動く）。開いていない作品を保存し直すとき（名前の変更・ゴミ箱へ
+  移す前）は`save(keepStoredTiles: true)`でファイルの絵をそのまま残す。開いたときに絵を
+  読めなかった作品（`tilesUnreadable`）は保存・自動保存をしない（空の絵でファイルや
+  良い自動保存を上書きしない）。`test/project_tiles_on_open_test.dart`が見張る。
 - **`TileManager`のタイル画像のキャッシュは複製（clone）を返す**：本体を
   返すと、受け取ってから描くまで（awaitの続き）の間に同時に走る別の合成が
   追い出して破棄し、破棄済みの画像を描いた（小さいキャンバスで油彩風の
