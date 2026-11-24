@@ -10213,10 +10213,12 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
           ? null
           : _layerKeyframeEngine.valueAt(l.keyframes, request.frameIndex),
       groupKeyframeOf: (l) => _groupKeyframeOf(request, l),
-      paperColor: LayerCompositor.paperForBlendModes(
-        request.layers,
-        request.backgroundColor,
-      ),
+      // Use the same opaque paper as export before applying effects. This
+      // matters for filters that operate on the full output frame, not only
+      // on non-transparent drawing pixels.
+      paperColor: (request.backgroundColor >>> 24) == 0xFF
+          ? request.backgroundColor
+          : null,
       maskGroups: request.maskGroups,
     );
 
@@ -10242,11 +10244,7 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       outputWidth.toDouble(),
       outputHeight.toDouble(),
     );
-    canvas.drawImage(
-      layered,
-      ui.Offset(viewport.imageOffsetX, viewport.imageOffsetY),
-      ui.Paint(),
-    );
+    paintOutputViewport(canvas, layered, viewport);
     canvas.restore();
     layered.dispose();
     final picture = recorder.endRecording();
