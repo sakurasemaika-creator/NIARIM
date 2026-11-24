@@ -3303,6 +3303,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
               onPressed: () => Navigator.pop(ctx),
               child: Text(l10n.commonClose),
             ),
+            FilledButton.tonal(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                try {
+                  await tts.openVoiceSettings();
+                } catch (error, stackTrace) {
+                  AppErrorReporter.record(error, stackTrace);
+                }
+              },
+              child: Text(MakingStrings.manageVoices(context)),
+            ),
           ],
         ),
       );
@@ -3429,6 +3440,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
           ),
           actions: [
+            TextButton(
+              onPressed: generating
+                  ? null
+                  : () async {
+                      Navigator.pop(dialogContext);
+                      try {
+                        await tts.openVoiceSettings();
+                      } catch (error, stackTrace) {
+                        AppErrorReporter.record(error, stackTrace);
+                      }
+                    },
+              child: Text(MakingStrings.manageVoices(context)),
+            ),
             TextButton(
               onPressed: generating ? null : () => Navigator.pop(dialogContext),
               child: Text(l10n.commonCancel),

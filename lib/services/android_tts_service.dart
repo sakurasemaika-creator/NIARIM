@@ -31,6 +31,10 @@ class AndroidTtsService {
   static const MethodChannel _channel =
       MethodChannel('com.niarim.niarim/text_to_speech');
 
+  Future<void> openVoiceSettings() async {
+    await _channel.invokeMethod<bool>('openVoiceSettings');
+  }
+
   Future<List<AndroidTtsVoice>> offlineVoices() async {
     final raw = await _channel.invokeMethod<List<Object?>>('offlineVoices');
     if (raw == null) return const [];

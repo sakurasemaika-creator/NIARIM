@@ -145,6 +145,20 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, textToSpeechChannelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "openVoiceSettings" -> {
+                        try {
+                            startActivity(
+                                Intent(android.provider.Settings.ACTION_TEXT_TO_SPEECH_SETTINGS)
+                            )
+                            result.success(true)
+                        } catch (error: Exception) {
+                            result.error(
+                                "TTS_SETTINGS_UNAVAILABLE",
+                                error.message ?: "Text-to-speech settings are unavailable",
+                                null,
+                            )
+                        }
+                    }
                     "offlineVoices" -> withTextToSpeech { engine ->
                         if (engine == null) {
                             result.error(

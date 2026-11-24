@@ -64,6 +64,12 @@ abstract final class MakingStrings {
     'zh_Hant': '語音由此裝置上安裝的引擎產生。商業使用前請確認引擎與語音資料的使用條款。',
   });
 
+  static String manageVoices(BuildContext context) => _pick(context, {
+    'ja': '音声の追加・管理', 'en': 'Add or manage voices',
+    'es': 'Añadir o administrar voces', 'fr': 'Ajouter ou gérer des voix',
+    'ko': '음성 추가 및 관리', 'zh': '添加或管理语音', 'zh_Hant': '新增或管理語音',
+  });
+
   static String noVoices(BuildContext context) => _pick(context, {
     'ja': '利用できるオフライン音声がありません。Androidのテキスト読み上げ設定で音声データをインストールしてください。',
     'en': 'No offline voices are available. Install voice data in Android text-to-speech settings.',
