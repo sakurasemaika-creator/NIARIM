@@ -2718,6 +2718,18 @@
   "timelineFrameTrackLabel": "フレーム",
   "timelineTrackRowRenameTitle": "行名を変更",
   "timelineCameraTrackLabel": "カメラ",
+  "timelineTrackRowName": "{kind}{number}",
+  "@timelineTrackRowName": {
+    "description": "タイムラインの素材の行の既定の名前（種類と行の番号）。欧文と韓国語は改行しない空白でつなぐ",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "timelineEndCardDefaultLogoLabel": "NIARIMロゴ",
   "timelineEndCardHiddenLabel": "非表示",
   "timelineEndCardTrackLabel": "エンドマークトラック",

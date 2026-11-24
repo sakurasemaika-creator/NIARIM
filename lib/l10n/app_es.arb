@@ -2222,6 +2222,7 @@
   "timelineFrameTrackLabel": "Fotograma",
   "timelineTrackRowRenameTitle": "Renombrar fila",
   "timelineCameraTrackLabel": "Cámara",
+  "timelineTrackRowName": "{kind} {number}",
   "timelineEndCardDefaultLogoLabel": "Logo de NIARIM",
   "timelineEndCardHiddenLabel": "Oculto",
   "timelineEndCardTrackLabel": "Pista de la marca final",

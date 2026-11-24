@@ -67,6 +67,7 @@ import '../../services/autofill_preset_service.dart';
 import '../../services/material_service.dart';
 import '../../services/android_tts_service.dart';
 import '../../utils/making_strings.dart';
+import '../../utils/color_contrast.dart';
 import '../../services/premium_service.dart';
 import '../../services/custom_automation_service.dart';
 import '../../services/project_service.dart';
@@ -101,6 +102,7 @@ import '../../widgets/typing_dialog_inset.dart';
 import 'widgets/material_edit_panel.dart';
 import 'widgets/material_gizmo.dart';
 import 'widgets/stack_order_panel.dart';
+import 'widgets/track_label.dart';
 import '../../widgets/icon_notice.dart';
 import '../../widgets/menu_surface.dart';
 
@@ -239,6 +241,25 @@ class _AudioWaveformThumbState extends State<_AudioWaveformThumb> {
     );
   }
 }
+
+/// タイムラインの行の名前のうち、言語で決まっているもの（行の名前の欄の幅を
+/// 決めるのに使う。利用者が付けた名前は入らなければ「…」）。
+@visibleForTesting
+List<String> timelineFixedTrackLabels(AppLocalizations l10n) => [
+  l10n.timelineFrameTrackLabel,
+  l10n.timelineCameraTrackLabel,
+  l10n.timelineEndCardTrackLabel,
+  l10n.makingReadAloud,
+  for (final kind in [
+    l10n.timelineMaterialText,
+    l10n.projectListMaterialImage,
+    l10n.projectListMaterialVideo,
+    l10n.projectListMaterialAudio,
+  ])
+    l10n.timelineTrackRowName(kind, 1),
+  for (final type in EffectFilterType.values)
+    _EffectFilterSheet._typeLabel(l10n, type),
+];
 
 class TimelineScreen extends StatefulWidget {
   final String projectId;
@@ -5378,7 +5399,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _centerFrameInList();
   }
 
-  static const double _trackLabelWidth = 94;
+  /// 行の名前の欄の幅。この言語の決まった行の名前がどれも語の途中で折れず、
+  /// 2行までに入る幅（いつもは94dp）。
+  double get _trackLabelWidth => TrackLabelMetrics.columnWidth(
+    locale: Localizations.maybeLocaleOf(context),
+    textScaler: MediaQuery.textScalerOf(context),
+    fixedLabels: timelineFixedTrackLabels(AppLocalizations.of(context)!),
+  );
 
   BoxDecoration get _trackRowDivider => BoxDecoration(
     border: Border(
@@ -5389,39 +5416,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     ),
   );
 
-  Widget _buildTrackLabel(IconData icon, String label) {
-    return Container(
-      // 文字が切れないだけでなく、スマートフォンでも読みやすいサイズを確保する。
-      // 94dpの欄にアイコン14dp・間隔4dp・左右余白6dpを取り、11dpのラベルを
-      // 置く（残り70dp。7言語でいちばん広いスペイン語の「Fotograma」が
-      // くらむぼんで約68dp。84dpの欄では60dpしかなく末尾が切れた）。
-      width: _trackLabelWidth,
-      padding: const EdgeInsets.symmetric(horizontal: 3),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 14,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              label,
-              style: localizedHeadingStyle(
-                context,
-                TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildTrackLabel(IconData icon, String label) =>
+      TrackLabel(icon: icon, label: label, width: _trackLabelWidth);
 
   /// 素材種別（画像・動画・音源）ごとのタイムライン行グループ。
   /// 行数・行名はシーンごとにProjectServiceで管理する。1行目の右端＋は
@@ -5460,7 +5456,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
           _buildClipTrackRow(
             type: type,
             rowIndex: row,
-            rowLabel: rowNames[row] ?? '$defaultLabel${row + 1}',
+            rowLabel:
+                rowNames[row] ??
+                AppLocalizations.of(
+                  context,
+                )!.timelineTrackRowName(defaultLabel, row + 1),
             icon: icon,
             clips: allClips.where((c) => c.trackRow == row).toList(),
             scrollCtrl: _rowScrollCtrl(type, row),
@@ -5761,25 +5761,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               lengthFrames: clip.lengthFrames,
                               fps: _projectFps(context.read<ProjectService>()),
                             ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                clip.label,
-                                style: localizedHeadingStyle(
-                                  context,
-                                  TextStyle(
-                                    fontSize: 9,
-                                    color: ThemeService
-                                        .activeColorScheme
-                                        .onSurface,
-                                  ),
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
+                          _buildClipName(clip),
                         ],
                       ),
                     ),
@@ -5810,6 +5792,61 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ),
         );
       },
+    );
+  }
+
+  /// クリップの名前の左の空き。左端の長さを変えるつまみ（幅8dp、真ん中に
+  /// 縦の線）に字が重ならないように、つまみの幅だけ空ける。
+  static const double _clipNameInset = 8;
+
+  /// クリップの名前。音声のクリップは波形の上に重ねず、左上の帯（クリップと
+  /// 同じ色の不透明な台）に載せる（以前は波形の真ん中に9pxの字で重なり、
+  /// 韓国語・中国語の細い明朝ではほとんど読めなかった）。字の色はテーマの
+  /// 文字色とパネルの背景色のうち、クリップの色の上で読みやすい方。
+  Widget _buildClipName(_TrackClip clip) {
+    final scheme = ThemeService.activeColorScheme;
+    // クリップの帯と同じ色（帯は不透明度85%で行の面の上に重なる）。
+    final fill = opaqueOver(
+      clip.color.withValues(alpha: 0.85),
+      scheme.surfaceContainerLow,
+    );
+    final ink =
+        contrastRatio(scheme.onSurface, fill) >=
+            contrastRatio(scheme.surface, fill)
+        ? scheme.onSurface
+        : scheme.surface;
+    final text = Text(
+      clip.label,
+      key: ValueKey('timelineClipName-${clip.id}'),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: localizedHeadingStyle(
+        context,
+        TextStyle(fontSize: 10, height: 1.2, color: ink),
+      ),
+    );
+    final onWaveform =
+        clip.trackType == _ClipTrackType.audio && clip.filePath != null;
+    if (!onWaveform) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: _clipNameInset),
+        child: Align(alignment: Alignment.centerLeft, child: text),
+      );
+    }
+    return Align(
+      alignment: Alignment.topLeft,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: fill,
+          borderRadius: const BorderRadius.only(
+            bottomRight: Radius.circular(4),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(_clipNameInset, 1, 5, 1),
+          child: text,
+        ),
+      ),
     );
   }
 

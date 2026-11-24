@@ -9651,6 +9651,12 @@ abstract class AppLocalizations {
   /// **'カメラ'**
   String get timelineCameraTrackLabel;
 
+  /// タイムラインの素材の行の既定の名前（種類と行の番号）。欧文と韓国語は改行しない空白でつなぐ
+  ///
+  /// In ja, this message translates to:
+  /// **'{kind}{number}'**
+  String timelineTrackRowName(String kind, int number);
+
   /// No description provided for @timelineEndCardDefaultLogoLabel.
   ///
   /// In ja, this message translates to:
