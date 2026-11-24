@@ -127,7 +127,13 @@ class PresetStrokeRow extends StatelessWidget {
             : ActionBesideOrBelow(
                 text: label,
                 action: dockActions,
-                minTextWidth: MediaQuery.textScalerOf(context).scale(72),
+                // 名前のいちばん広い語が横の幅に入らない行だけ、操作を名前の
+                // 下へ回す（狭いドックで「Cuadrado redondeado」が1行の「…」に
+                // 切れた）。
+                minTextWidth: math.max(
+                  MediaQuery.textScalerOf(context).scale(72),
+                  _widestWord(context, shown, style),
+                ),
                 gap: 8,
               ),
       ),
@@ -142,4 +148,34 @@ class PresetStrokeRow extends StatelessWidget {
       onLongPress: onLongPress,
     );
   }
+}
+
+/// [shown]の名前の、行の途中で折れないいちばん広いかたまりの幅（欧文の語、
+/// 行頭禁則でつないだ字、数と単位）。日本語・中国語の字の間は折れるので
+/// 1字ずつ数える。
+double _widestWord(
+  BuildContext context,
+  KeepTogetherText shown,
+  TextStyle style,
+) {
+  final merged = DefaultTextStyle.of(context).style.merge(style);
+  final painter = TextPainter(
+    text: shown.joinedSpan(merged),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+    locale: Localizations.maybeLocaleOf(context),
+  )..layout();
+  var widest = painter.minIntrinsicWidth;
+  if (_cjk.hasMatch(shown.data ?? '')) {
+    painter.layout(maxWidth: 1);
+    widest = math.min(widest, painter.minIntrinsicWidth);
+  }
+  for (final part in shown.keptParts()) {
+    painter
+      ..text = TextSpan(text: part, style: merged)
+      ..layout();
+    widest = math.max(widest, painter.width);
+  }
+  painter.dispose();
+  return widest;
 }

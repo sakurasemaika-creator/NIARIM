@@ -173,7 +173,14 @@ class DesktopDockColumnFit {
     }
 
     final desiredTotal = preferred.values.fold<double>(0, (s, v) => s + v);
-    if (desiredTotal <= budget) return preferred;
+    if (desiredTotal <= budget) {
+      // 余った高さは、窓ごとの好みの高さの比で配って列を埋める（比は利用者が
+      // つまみで決めたまま）。好みの高さのまま並べると、1080pxの画面では
+      // 列の下半分が空いたまま、ブラシの一覧は1件しか見えなかった。
+      if (desiredTotal <= 0) return preferred;
+      final scale = budget / desiredTotal;
+      return {for (final p in expanded) p: preferred[p]! * scale};
+    }
 
     final assigned = <CanvasDockPanel, double>{};
     final pending = expanded.toSet();
