@@ -4030,6 +4030,7 @@
   "makingViewMaking": "Ver el proceso",
   "makingTitle": "Proceso",
   "makingEmpty": "No hay historial de este proceso. Activa la grabación en los detalles del proyecto y sigue editando.",
+  "makingLoadFailed": "No se pudo cargar el historial del proceso",
   "makingStorageLimit": "Se alcanzó el límite de 64 MB. Se detuvieron nuevas capturas; el historial existente se conserva.",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "Exportar vídeo",

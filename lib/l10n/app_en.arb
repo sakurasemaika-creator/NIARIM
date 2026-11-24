@@ -4067,6 +4067,7 @@
   "makingViewMaking": "View making",
   "makingTitle": "Making",
   "makingEmpty": "There is no making history for this project. Enable recording in the project details and continue editing.",
+  "makingLoadFailed": "Could not load the making history",
   "makingStorageLimit": "The 64 MB making-history limit has been reached. New snapshots have stopped; existing history is kept.",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "Export video",

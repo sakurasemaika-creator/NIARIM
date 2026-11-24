@@ -10789,6 +10789,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get makingEmpty => '이 작품의 제작 기록이 없습니다. 작품 상세에서 기록을 켜고 계속 편집하세요.';
 
   @override
+  String get makingLoadFailed => '제작 기록을 불러오지 못했습니다';
+
+  @override
   String get makingStorageLimit =>
       '메이킹 기록 64MB 한도에 도달했습니다. 새 기록은 중지되었으며 기존 기록은 유지됩니다.';
 

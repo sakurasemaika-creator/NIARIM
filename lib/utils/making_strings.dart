@@ -44,6 +44,8 @@ abstract final class MakingStrings {
   static String makingTitle(BuildContext context) => _l(context).makingTitle;
 
   static String makingEmpty(BuildContext context) => _l(context).makingEmpty;
+  static String loadFailed(BuildContext context) =>
+      _l(context).makingLoadFailed;
 
   static String storageLimit(BuildContext context) =>
       _l(context).makingStorageLimit;

@@ -11708,6 +11708,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'No hay historial de este proceso. Activa la grabación en los detalles del proyecto y sigue editando.';
 
   @override
+  String get makingLoadFailed => 'No se pudo cargar el historial del proceso';
+
+  @override
   String get makingStorageLimit =>
       'Se alcanzó el límite de 64 MB. Se detuvieron nuevas capturas; el historial existente se conserva.';
 

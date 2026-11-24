@@ -11546,6 +11546,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'There is no making history for this project. Enable recording in the project details and continue editing.';
 
   @override
+  String get makingLoadFailed => 'Could not load the making history';
+
+  @override
   String get makingStorageLimit =>
       'The 64 MB making-history limit has been reached. New snapshots have stopped; existing history is kept.';
 

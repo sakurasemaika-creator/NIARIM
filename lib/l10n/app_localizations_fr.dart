@@ -11720,6 +11720,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Aucun historique de création. Activez l’enregistrement dans les détails du projet et continuez à créer.';
 
   @override
+  String get makingLoadFailed =>
+      'Impossible de charger l’historique de création';
+
+  @override
   String get makingStorageLimit =>
       'La limite de 64 Mo est atteinte. Les nouvelles captures sont arrêtées et l’historique existant est conservé.';
 

@@ -10733,6 +10733,9 @@ class AppLocalizationsJa extends AppLocalizations {
       'この作品のメイキング記録はありません。新規作成時に記録をONにするか、作品詳細で記録を有効にしてから制作してください。';
 
   @override
+  String get makingLoadFailed => 'メイキングの記録を読み込めませんでした';
+
+  @override
   String get makingStorageLimit =>
       'メイキングの保存上限（64MB）に達しました。これ以上の自動記録は停止しています。既存の記録は保持されています。';
 

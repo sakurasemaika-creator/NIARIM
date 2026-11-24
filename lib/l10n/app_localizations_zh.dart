@@ -10602,6 +10602,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get makingEmpty => '此作品没有制作记录。请在作品详情中开启记录后继续编辑。';
 
   @override
+  String get makingLoadFailed => '无法加载制作记录';
+
+  @override
   String get makingStorageLimit => '制作记录已达到64MB上限。新快照已停止，现有记录会保留。';
 
   @override
@@ -21236,6 +21239,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get makingEmpty => '此作品沒有製作記錄。請在作品詳細資訊中開啟記錄後繼續編輯。';
+
+  @override
+  String get makingLoadFailed => '無法載入製作記錄';
 
   @override
   String get makingStorageLimit => '製作記錄已達到64MB上限。新快照已停止，現有記錄會保留。';

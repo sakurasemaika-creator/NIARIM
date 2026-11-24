@@ -18927,6 +18927,12 @@ abstract class AppLocalizations {
   /// **'この作品のメイキング記録はありません。新規作成時に記録をONにするか、作品詳細で記録を有効にしてから制作してください。'**
   String get makingEmpty;
 
+  /// メイキング：この作品のメイキング記録を読めなかったときの知らせ（「再試行」と並べる）
+  ///
+  /// In ja, this message translates to:
+  /// **'メイキングの記録を読み込めませんでした'**
+  String get makingLoadFailed;
+
   /// メイキング・読み上げ：メイキングの保存上限（64MB）に達しました。これ以上の自動記録は停止しています
   ///
   /// In ja, this message translates to:
