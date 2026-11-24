@@ -305,6 +305,38 @@ void main() {
       ]);
     });
 
+    test('export matches preview when fade-out exceeds clip duration', () {
+      final filters = AudioClipEnvelope.ffmpegFilters(
+        clipSeconds: 1,
+        durationSeconds: 1,
+        volume: 0.8,
+        fadeOutSeconds: 2,
+      );
+      // Preview gain is (1 - elapsed) / 2, multiplied by 0.8.
+      expect(filters, [
+        'volume=0.400',
+        'afade=t=out:st=0.000:d=1.000',
+      ]);
+      expect(
+        AudioClipEnvelope.gainAt(
+          elapsedSeconds: 0,
+          clipSeconds: 1,
+          volume: 0.8,
+          fadeOutSeconds: 2,
+        ),
+        closeTo(0.4, 1e-9),
+      );
+      expect(
+        AudioClipEnvelope.gainAt(
+          elapsedSeconds: 0.5,
+          clipSeconds: 1,
+          volume: 0.8,
+          fadeOutSeconds: 2,
+        ),
+        closeTo(0.2, 1e-9),
+      );
+    });
+
     test('export does not fade a clip cut off before its own fade-out', () {
       final filters = AudioClipEnvelope.ffmpegFilters(
         clipSeconds: 5,
