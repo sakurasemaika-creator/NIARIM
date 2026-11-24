@@ -868,93 +868,116 @@ class _HelpScreenState extends State<HelpScreen>
                           );
                         }
                         final entry = row.entry!;
-                        return Padding(
+                        // 狭い幅・大きな文字では印を外して名前の幅を取る
+                        // （SheetRowと同じ決まり。仏語の文字2倍・320pxでは
+                        // 印のぶん「Command / es de base」と語の途中で折れた）。
+                        // 区切りの線と開いた説明は名前の始まりからそろえる。
+                        return LayoutBuilder(
                           key: ValueKey(entry.topicKey),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: SheetListSegment(
-                            first: row.first,
-                            last: row.last,
-                            dividerIndent: 16 + 24 + 16,
-                            child: ExpansionTile(
-                              expandedAlignment:
-                                  AlignmentDirectional.centerStart,
-                              expandedCrossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                              // 各画面のヘルプボタンから遷移した場合、該当項目を
-                              // 自動展開して探す手間を省く。topicKeyはHelpButton(topic:)の
-                              // 呼び出し元と一致させる固定の内部識別子（翻訳対象外）。
-                              initiallyExpanded: entry.topicKey == _topic,
-                              onExpansionChanged: (expanded) {
-                                if (expanded && _searchFocus.hasFocus) {
-                                  _searchFocus.unfocus();
-                                }
-                              },
-                              shape: const Border(),
-                              collapsedShape: const Border(),
-                              // 印は補助の文字色（差し色の四角の台に載せない）。
-                              leading: SizedBox.square(
-                                dimension: 24,
-                                child: Center(
-                                  child: switch (_topicIcons[entry.topicKey]) {
-                                    final FaIconData fa => FaIcon(
-                                      fa,
-                                      color: scheme.onSurfaceVariant,
-                                      size: 18,
-                                    ),
-                                    final IconData icon => Icon(
-                                      icon,
-                                      color: scheme.onSurfaceVariant,
-                                      size: 22,
-                                    ),
-                                    _ => Icon(
-                                      categoryIcons[entry.category] ??
-                                          Icons.help_outline,
-                                      color: scheme.onSurfaceVariant,
-                                      size: 22,
-                                    ),
+                          builder: (context, constraints) {
+                            final textScale =
+                                MediaQuery.textScalerOf(context).scale(15) / 15;
+                            final showLeading =
+                                (constraints.maxWidth - 32) / textScale >= 232;
+                            final textStart = showLeading
+                                ? 16.0 + 24 + 16
+                                : 16.0;
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: SheetListSegment(
+                                first: row.first,
+                                last: row.last,
+                                dividerIndent: textStart,
+                                child: ExpansionTile(
+                                  expandedAlignment:
+                                      AlignmentDirectional.centerStart,
+                                  expandedCrossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  // 各画面のヘルプボタンから遷移した場合、該当項目を
+                                  // 自動展開して探す手間を省く。topicKeyはHelpButton(topic:)の
+                                  // 呼び出し元と一致させる固定の内部識別子（翻訳対象外）。
+                                  initiallyExpanded: entry.topicKey == _topic,
+                                  onExpansionChanged: (expanded) {
+                                    if (expanded && _searchFocus.hasFocus) {
+                                      _searchFocus.unfocus();
+                                    }
                                   },
-                                ),
-                              ),
-                              // 項目名用フォント（くらむぼん）。
-                              title: Text(
-                                entry.title,
-                                style: localizedHeadingStyle(
-                                  context,
-                                  const TextStyle(fontSize: 15, height: 1.3),
-                                ),
-                              ),
-                              subtitle: row.showCategory
-                                  ? Text(
-                                      entry.category,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: scheme.onSurfaceVariant,
+                                  shape: const Border(),
+                                  collapsedShape: const Border(),
+                                  // 印は補助の文字色（差し色の四角の台に載せない）。
+                                  leading: !showLeading
+                                      ? null
+                                      : SizedBox.square(
+                                          dimension: 24,
+                                          child: Center(
+                                            child: switch (_topicIcons[entry
+                                                .topicKey]) {
+                                              final FaIconData fa => FaIcon(
+                                                fa,
+                                                color: scheme.onSurfaceVariant,
+                                                size: 18,
+                                              ),
+                                              final IconData icon => Icon(
+                                                icon,
+                                                color: scheme.onSurfaceVariant,
+                                                size: 22,
+                                              ),
+                                              _ => Icon(
+                                                categoryIcons[entry.category] ??
+                                                    Icons.help_outline,
+                                                color: scheme.onSurfaceVariant,
+                                                size: 22,
+                                              ),
+                                            },
+                                          ),
+                                        ),
+                                  // 項目名用フォント（くらむぼん）。
+                                  title: Text(
+                                    entry.title,
+                                    style: localizedHeadingStyle(
+                                      context,
+                                      const TextStyle(
+                                        fontSize: 15,
+                                        height: 1.3,
                                       ),
-                                    )
-                                  : null,
-                              children: [
-                                // 実画面の簡易図解は用いず、文章での説明のみとする。
-                                // 説明は名前と同じ位置から書き始める。
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                    56,
-                                    0,
-                                    16,
-                                    16,
-                                  ),
-                                  // 説明テキスト用フォント（白光明朝。アプリ全体の
-                                  // 基本フォントを継承するため明示指定不要）。
-                                  child: Text(
-                                    entry.description,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      height: 1.6,
                                     ),
                                   ),
+                                  subtitle: row.showCategory
+                                      ? Text(
+                                          entry.category,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: scheme.onSurfaceVariant,
+                                          ),
+                                        )
+                                      : null,
+                                  children: [
+                                    // 実画面の簡易図解は用いず、文章での説明のみとする。
+                                    // 説明は名前と同じ位置から書き始める。
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                        textStart,
+                                        0,
+                                        16,
+                                        16,
+                                      ),
+                                      // 説明テキスト用フォント（白光明朝。アプリ全体の
+                                      // 基本フォントを継承するため明示指定不要）。
+                                      child: Text(
+                                        entry.description,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          height: 1.6,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
+                              ),
+                            );
+                          },
                         );
                       },
                     ),
