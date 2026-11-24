@@ -43,10 +43,8 @@ void main() {
     expect(s, contains('onTogglePlay: _togglePlay'));
     expect(s, contains('widget.onTogglePlay();'));
   });
-}
 
-
-test('timeline split mode applies to every material track type', () {
+  test('timeline split mode applies to every material track type', () {
   final s = File(
     'lib/screens/timeline/timeline_screen.dart',
   ).readAsStringSync();
@@ -61,3 +59,5 @@ test('timeline split mode applies to every material track type', () {
   expect(s, contains('fadeIn: 0'));
   expect(s, contains('fadeOut: 0'));
 });
+
+}
