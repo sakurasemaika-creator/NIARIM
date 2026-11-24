@@ -149,14 +149,9 @@ Future<bool> showPremiumBanner(
 /// 分からず、押せない画面に見えた。機能の名前と使える条件を出し、プレミアムの
 /// 紹介と特典（オパールでの期間限定の解放）へ進む道を並べる。
 class PremiumFeatureIntro extends StatelessWidget {
-  const PremiumFeatureIntro({
-    super.key,
-    required this.feature,
-    required this.icon,
-  });
+  const PremiumFeatureIntro({super.key, required this.feature});
 
   final PremiumFeature feature;
-  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -170,14 +165,13 @@ class PremiumFeatureIntro extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 機能でできあがるものを見せる（差し色の丸に印を載せない）。
-          // 透かしは描いたコマの隅に名前が重なった見本。
-          Center(
-            child: feature == PremiumFeature.watermark
-                ? const WatermarkFrameSample()
-                : Icon(icon, size: 40, color: colors.onSurfaceVariant),
-          ),
-          const SizedBox(height: 20),
+          // 機能でできあがるものが一目で分かるときだけ見本を出す（透かしは
+          // 描いたコマの隅に名前が重なった見本）。ほかの機能に飾りの大きな
+          // 印は置かない（何を表すか読み取れず、文と同じことしか言わない）。
+          if (feature == PremiumFeature.watermark) ...[
+            const Center(child: WatermarkFrameSample()),
+            const SizedBox(height: 20),
+          ],
           Semantics(
             header: true,
             child: messageText(
@@ -235,7 +229,7 @@ class PremiumFeatureIntro extends StatelessWidget {
 }
 
 /// 透かしの見本：描いたコマ（用紙の色に墨の線）の右下に、作者の名前の
-/// 透かしが重なっている。左上はコマの番号（差し色の小さな印）。
+/// 透かしが重なっている（それだけが見える。飾りの番号・跡は描かない）。
 class WatermarkFrameSample extends StatelessWidget {
   const WatermarkFrameSample({super.key, this.width = 240});
 

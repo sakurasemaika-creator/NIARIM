@@ -6,7 +6,6 @@ import 'tip_diagram.dart';
 import 'tip_diagram_data.dart';
 import 'tip_capture_data.dart';
 import '../../config/font_fallback.dart';
-import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/grouped_sheet.dart';
@@ -97,7 +96,6 @@ class _TipsScreenState extends State<TipsScreen>
         .map(
           (c) => _TipCategory(
             title: c.title,
-            icon: c.icon,
             tips: c.tips.where((t) => _matches(t, c.title)).toList(),
           ),
         )
@@ -191,38 +189,27 @@ class _TipsScreenState extends State<TipsScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+                              // 分類の名前だけ（分類の印は付けない。名前と同じ
+                              // ことしか言わない）。1行に入らない名前（仏語・
+                              // 西語・大きな文字）は折り返す。韓国語の語は、
+                              // 1行に入れば途中で折らない。
                               Padding(
                                 padding: const EdgeInsetsDirectional.symmetric(
                                   horizontal: GroupedSheet.rowInset,
                                 ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      category.icon,
-                                      size: 16,
-                                      color: scheme.onSurfaceVariant,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    // 1行に入らない名前（仏語・西語・大きな
-                                    // 文字）は折り返す。韓国語の語は、1行に
-                                    // 入れば途中で折らない。
-                                    Flexible(
-                                      child: Semantics(
-                                        header: true,
-                                        child: messageText(
-                                          category.title,
-                                          style: localizedHeadingStyle(
-                                            context,
-                                            TextStyle(
-                                              fontSize: 13,
-                                              height: 1.35,
-                                              color: scheme.onSurfaceVariant,
-                                            ),
-                                          ),
-                                        ),
+                                child: Semantics(
+                                  header: true,
+                                  child: messageText(
+                                    category.title,
+                                    style: localizedHeadingStyle(
+                                      context,
+                                      TextStyle(
+                                        fontSize: 13,
+                                        height: 1.35,
+                                        color: scheme.onSurfaceVariant,
                                       ),
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -248,7 +235,6 @@ class _TipsScreenState extends State<TipsScreen>
 List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
   _TipCategory(
     title: l10n.tipsCategoryVideo,
-    icon: Icons.movie_creation_outlined,
     tips: [
       _Tip(
         TipTopic.clipDuplicate,
@@ -304,7 +290,6 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
   ),
   _TipCategory(
     title: l10n.tipsCategoryEfficiency,
-    icon: Icons.speed_outlined,
     tips: [
       _Tip(
         TipTopic.autofillPreset,
@@ -415,7 +400,6 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
   ),
   _TipCategory(
     title: l10n.tipsCategoryDrawing,
-    icon: Icons.brush_outlined,
     tips: [
       _Tip(
         TipTopic.transparentColor,
@@ -507,7 +491,6 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
   ),
   _TipCategory(
     title: l10n.tipsCategoryEffects,
-    icon: Icons.auto_awesome_outlined,
     tips: [
       _Tip(TipTopic.rainNoise, l10n.tipsRainNoiseTitle, l10n.tipsRainNoiseDesc),
       _Tip(
@@ -579,7 +562,6 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
   ),
   _TipCategory(
     title: l10n.tipsCategoryExport,
-    icon: Icons.ios_share_outlined,
     tips: [
       _Tip(
         TipTopic.exportFormat,
@@ -635,8 +617,8 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
   ),
 ];
 
-/// 一覧に並ぶ1件のTipsの行。図解のミニアイコンとタイトルだけを表示する
-/// コンパクトな行で、タップすると詳細ポップアップ（_TipDetailDialog）を開く。
+/// 一覧に並ぶ1件のTipsの行（面の行）。名前と矢印だけで、押すと詳細の
+/// ポップアップ（_TipDetailDialog）を開く。
 class _TipListTile extends StatelessWidget {
   final _Tip tip;
   const _TipListTile({required this.tip});
@@ -645,9 +627,10 @@ class _TipListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     // 面（GroupedSheet）の中の1行：名前と矢印。どの行にも同じ電球の印を
     // 付けない（同じ印の繰り返しは見分けの役に立たない）。
-    // 行の大きさ・余白は面の行（SheetRow）と同じ。題は長音符・小さいかな・
-    // 閉じ括弧で行を始めず、韓国語の語は1行に入れば途中で折らない
-    // （最後の句をつなぐ折り方と重ねると「レイヤ / ー」と折れたので使わない）。
+    // 行の大きさは面の行（SheetRow）と同じ。題は長音符・小さいかな・閉じ括弧・
+    // 最後の語で行を始めず、韓国語の語は1行に入れば途中で折らない。
+    // SheetRowより字を1px小さく、矢印の側を詰める（320px・文字2倍で英語・
+    // 仏語・西語・韓国語の長い語が1行に入る幅を取る）。
     final scheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: () => showDialog(
@@ -671,6 +654,7 @@ class _TipListTile extends StatelessWidget {
                 child: messageText(
                   tip.title,
                   keepLineStarts: true,
+                  keepLastPhrase: true,
                   style: localizedHeadingStyle(
                     context,
                     const TextStyle(fontSize: 14, height: 1.35),
@@ -951,11 +935,11 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                   keepLastPhrase: true,
                   style: localizedHeadingStyle(
                     context,
-                    TextStyle(
+                    // 題は面の文字色（差し色は押せる物・選んでいる物だけ）。
+                    const TextStyle(
                       fontSize: 15,
                       height: 1.4,
                       fontWeight: FontWeight.w700,
-                      color: AccentTextTheme.of(context),
                     ),
                   ),
                 ),
@@ -1098,13 +1082,8 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
 
 class _TipCategory {
   final String title;
-  final IconData icon;
   final List<_Tip> tips;
-  const _TipCategory({
-    required this.title,
-    required this.icon,
-    required this.tips,
-  });
+  const _TipCategory({required this.title, required this.tips});
 }
 
 class _Tip {

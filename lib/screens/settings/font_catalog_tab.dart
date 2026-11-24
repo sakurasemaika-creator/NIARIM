@@ -182,11 +182,8 @@ class _FontCatalogTabState extends State<FontCatalogTab>
                       return SheetListSegment(
                         first: index == 0,
                         last: index == filtered.length - 1,
+                        // 行ごとに同じ印を付けない（見分けの役に立たない）。
                         child: ListTile(
-                          leading: Icon(
-                            Icons.font_download_outlined,
-                            color: scheme.onSurfaceVariant,
-                          ),
                           title: Text(entry.displayName),
                           subtitle: Text(
                             l10n.fontCatalogEntrySubtitle(

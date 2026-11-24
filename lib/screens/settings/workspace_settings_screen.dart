@@ -487,7 +487,6 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                   return ListTile(
                     // 書き出しと共有が終わるまで、同じものをもう一度は出さない。
                     enabled: !ExportShareService.isRunning(_shareKey(preset)),
-                    leading: const Icon(Icons.dashboard_customize),
                     title: Text(preset.name),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -691,7 +690,6 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               if (presetService.presets.isNotEmpty) const Divider(height: 1),
               for (final preset in presetService.presets)
                 ListTile(
-                  leading: const Icon(Icons.dashboard_customize),
                   title: Text(preset.name),
                   subtitle: Text(
                     preset.isLeftHanded
@@ -918,7 +916,6 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
             ),
             for (final preset in widget.presetService.presets)
               ListTile(
-                leading: const Icon(Icons.dashboard_customize),
                 title: Text(preset.name),
                 onTap: () => Navigator.pop(ctx, preset),
               ),

@@ -1,5 +1,5 @@
-// ヘルプの「活用Tips」で、カテゴリの見出しの行（アイコン＋カテゴリ名）が
-// 横にはみ出さない（DISC160）。
+// ヘルプの「活用Tips」で、カテゴリの見出しの行（カテゴリ名。以前はアイコン＋
+// カテゴリ名）が横にはみ出さない（DISC160）。
 //
 // 見出しの行はアイコンとカテゴリ名を幅の決まらない`Row`に並べていたので、
 // カテゴリ名が1行で画面に入らない言語・文字の大きさ（仏語360px・文字2倍の
@@ -97,8 +97,9 @@ void main() {
               if (paragraph.didExceedMaxLines) {
                 problems.add('$at「$title」is cut short');
               }
+              // 見出しの行（名前を置く余白つきの行。分類の印は付けなくなった）。
               final row = tester.getRect(
-                find.ancestor(of: header, matching: find.byType(Row)).first,
+                find.ancestor(of: header, matching: find.byType(Padding)).first,
               );
               final text = tester.getRect(header);
               if (text.right > row.right + 0.5 || row.right > width + 0.5) {

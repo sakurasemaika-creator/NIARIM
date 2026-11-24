@@ -110,16 +110,13 @@ void main() {
               problems.add('$at: no row for $name');
               continue;
             }
-            // 名前の欄が取れる幅（行の幅から、先頭の印と行の左右の余白を
-            // 除いた幅）。これに入る語は途中で折らない。
+            // 名前の欄が取れる幅（行の幅から、行の左右の余白を除いた幅。
+            // 先頭の印は無い）。これに入る語は途中で折らない。
             final tile = tester.getRect(
               find.descendant(of: row, matching: find.byType(ListTile)),
             );
-            final room = tile.width - 16 - 40 - 16 - 24;
+            final room = tile.width - 16 - 24;
             for (final paragraph in textParagraphsIn(row)) {
-              if (paragraph.text.toPlainText() == 'Aa') {
-                continue; // 先頭の書体の見本。
-              }
               for (final broken in wordsBrokenThatFit(
                 paragraph,
                 fitWidth: room,

@@ -59,7 +59,6 @@ class WatermarkSettingsScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
               child: const PremiumFeatureIntro(
                 feature: PremiumFeature.watermark,
-                icon: Icons.branding_watermark_outlined,
               ),
             ),
           ),

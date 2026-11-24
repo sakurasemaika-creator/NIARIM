@@ -9,6 +9,7 @@ import '../../utils/name_collation.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/grouped_sheet.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/sheet_list_segment.dart';
 
 /// ツールの項目は、キャンバスのツールバーのボタンと同じ印で出す（分類の
@@ -30,6 +31,7 @@ const Map<String, Object> _topicIcons = {
   'スタンプツール': Icons.auto_fix_high_outlined,
   'ペンサブツール': Icons.brush_outlined,
   '選択範囲の変形': Icons.transform,
+  '自由変形・メッシュ変形': Icons.crop_free,
   'カラーピッカー': Icons.palette,
 };
 
@@ -685,20 +687,6 @@ class _HelpScreenState extends State<HelpScreen>
     final searchLabelStyle = TextStyle(
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
-    final categoryIcons = {
-      l10n.helpCategoryTool: Icons.edit,
-      l10n.helpCategoryBrush: Icons.brush,
-      l10n.helpCategoryPenInput: Icons.tune,
-      l10n.helpCategoryDrawing: Icons.straighten,
-      l10n.helpCategoryLayer: Icons.layers,
-      l10n.helpCategoryAnimation: Icons.movie_filter,
-      l10n.helpCategorySave: Icons.save_outlined,
-      l10n.helpCategoryProjectManagement: Icons.folder,
-      l10n.helpCategoryExport: Icons.file_download,
-      l10n.helpCategoryCommunity: Icons.image,
-      l10n.helpCategoryPremium: Icons.star,
-      l10n.helpCategorySettings: Icons.settings,
-    };
     final entries = _buildEntries(l10n);
     final query = foldName(_searchQuery).trim();
     final filtered = _filtered(entries, query);
@@ -710,8 +698,14 @@ class _HelpScreenState extends State<HelpScreen>
     // ごとに影のついたカードと差し色の四角の印、行ごとに分類の名前）。
     // 探しているときは関連の高い順のまま1枚の面に並べ、分類の名前は行の
     // 2行目に出す。
+    // 先頭の印はツールの項目だけ（ツールバーのボタンと同じ印で、どのボタンの
+    // 説明かが分かる）。ほかの項目に分類の印を繰り返して付けない（面の上の
+    // 分類の名前と同じことしか言わない）。印のある項目を含む面では、印の無い
+    // 行も名前の始まりをそろえる。
+    bool hasIcon(_HelpEntry entry) => _topicIcons.containsKey(entry.topicKey);
     final rows = <_HelpRow>[];
     if (query.isNotEmpty) {
+      final iconColumn = filtered.any(hasIcon);
       for (var i = 0; i < filtered.length; i++) {
         rows.add(
           _HelpRow.entry(
@@ -719,18 +713,32 @@ class _HelpScreenState extends State<HelpScreen>
             first: i == 0,
             last: i == filtered.length - 1,
             showCategory: true,
+            iconColumn: iconColumn,
           ),
         );
       }
     } else {
+      var iconColumn = false;
       for (var i = 0; i < filtered.length; i++) {
         final entry = filtered[i];
         final first = i == 0 || filtered[i - 1].category != entry.category;
         final last =
             i == filtered.length - 1 ||
             filtered[i + 1].category != entry.category;
-        if (first) rows.add(_HelpRow.header(entry.category));
-        rows.add(_HelpRow.entry(entry, first: first, last: last));
+        if (first) {
+          rows.add(_HelpRow.header(entry.category));
+          iconColumn = filtered
+              .where((other) => other.category == entry.category)
+              .any(hasIcon);
+        }
+        rows.add(
+          _HelpRow.entry(
+            entry,
+            first: first,
+            last: last,
+            iconColumn: iconColumn,
+          ),
+        );
       }
     }
     return Scaffold(
@@ -878,7 +886,9 @@ class _HelpScreenState extends State<HelpScreen>
                             final textScale =
                                 MediaQuery.textScalerOf(context).scale(15) / 15;
                             final showLeading =
+                                row.iconColumn &&
                                 (constraints.maxWidth - 32) / textScale >= 232;
+                            final icon = _topicIcons[entry.topicKey];
                             final textStart = showLeading
                                 ? 16.0 + 24 + 16
                                 : 16.0;
@@ -912,8 +922,7 @@ class _HelpScreenState extends State<HelpScreen>
                                       : SizedBox.square(
                                           dimension: 24,
                                           child: Center(
-                                            child: switch (_topicIcons[entry
-                                                .topicKey]) {
+                                            child: switch (icon) {
                                               final FaIconData fa => FaIcon(
                                                 fa,
                                                 color: scheme.onSurfaceVariant,
@@ -924,18 +933,17 @@ class _HelpScreenState extends State<HelpScreen>
                                                 color: scheme.onSurfaceVariant,
                                                 size: 22,
                                               ),
-                                              _ => Icon(
-                                                categoryIcons[entry.category] ??
-                                                    Icons.help_outline,
-                                                color: scheme.onSurfaceVariant,
-                                                size: 22,
-                                              ),
+                                              _ => null,
                                             },
                                           ),
                                         ),
-                                  // 項目名用フォント（くらむぼん）。
-                                  title: Text(
+                                  // 項目名用フォント（くらむぼん）。最後の語・長音符・
+                                  // 小さいかなで行を始めない（「長押 / し」と折れた）。
+                                  title: messageText(
                                     entry.title,
+                                    keepLineStarts: true,
+                                    keepLastPhrase: true,
+                                    keep: _listedWords(entry.title),
                                     style: localizedHeadingStyle(
                                       context,
                                       const TextStyle(
@@ -1013,19 +1021,32 @@ class _TutorialEntry extends StatelessWidget {
   }
 }
 
+/// 中黒（・）で並べた語（「タップ・長押し・スワイプ」の「長押し」）。項目名の
+/// 1行に入れば途中で折らない（入らない語は[KeepTogetherText]が普通に折る）。
+List<String> _listedWords(String title) => !title.contains('・')
+    ? const []
+    : [
+        // 後ろの「・」「）」も一緒に（行の始めに来ない字のつなぎと重ねない）。
+        for (final match in RegExp(r'([^・（）()、\s]+)[・）)]?').allMatches(title))
+          if (match.group(1)!.length >= 2 && match.group(1)!.length <= 8)
+            match.group(0)!,
+      ];
+
 /// ヘルプの一覧の1行：分類の名前（面の上）か、項目（面の行）。
 class _HelpRow {
   const _HelpRow.header(String this.header)
     : entry = null,
       first = false,
       last = false,
-      showCategory = false;
+      showCategory = false,
+      iconColumn = false;
 
   const _HelpRow.entry(
     _HelpEntry this.entry, {
     required this.first,
     required this.last,
     this.showCategory = false,
+    this.iconColumn = false,
   }) : header = null;
 
   final String? header;
@@ -1033,6 +1054,9 @@ class _HelpRow {
   final bool first;
   final bool last;
   final bool showCategory;
+
+  /// この行の面に印のある項目があるか（印の無い行も名前の始まりをそろえる）。
+  final bool iconColumn;
 }
 
 class _HelpEntry {

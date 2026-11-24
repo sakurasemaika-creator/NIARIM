@@ -239,22 +239,9 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                         first: index == 0,
                         last: index == sorted.length - 1,
                         child: ListTile(
-                          // 先頭はその書体そのもので書いた「Aa」（形式の頭文字を
-                          // 差し色の丸に載せる代わりに、書体の見本を見せる）。
-                          leading: SizedBox(
-                            width: 40,
-                            child: Center(
-                              child: Text(
-                                'Aa',
-                                style: TextStyle(
-                                  fontFamily: service.familyNameOf(f),
-                                  fontSize: 20,
-                                  height: 1.2,
-                                  color: scheme.onSurface,
-                                ),
-                              ),
-                            ),
-                          ),
+                          // 名前そのものをその書体で書く（それが見本）。先頭に
+                          // 同じ書体の「Aa」を重ねない（名前と同じことしか
+                          // 言わず、名前と操作の幅を取っていた）。
                           // 狭い一覧では、すべてのカードで名前と操作を
                           // 上下に揃える。短い名前にも同じ幅を確保する。
                           title: ActionBesideOrBelow(
