@@ -671,6 +671,13 @@ class HomeMatrix {
     await frames(2);
   }
 
+  /// 画面の絵（作品の表紙など、ファイルから読むもの）がどれも描けたか。
+  /// 読み込み中の絵は撮る間に出てきて、画素を比べるtestが食い違う。
+  bool _imagesDrawn() => find
+      .byType(RawImage)
+      .evaluate()
+      .every((e) => (e.widget as RawImage).image != null);
+
   /// [view]の読み込みが終わったか。
   bool _ready(HomeView view) {
     bool any(Finder f) => f.evaluate().isNotEmpty;
@@ -691,19 +698,15 @@ class HomeMatrix {
     if (contents != HomeContents.seeded) return true;
     return switch (view) {
       HomeView.projects => true,
-      HomeView.works => any(find.byType(ExportedWorkCard)),
+      // 書き出した作品のカードと、その表紙の絵（ファイルを読む）。
+      HomeView.works => any(find.byType(ExportedWorkCard)) && _imagesDrawn(),
       HomeView.sharedReceived => keys('receivedShareMenu_') > 0,
       HomeView.sharedOutgoing => keys('outgoingShareMenu_') > 0,
       // ファイルのゴミ箱（書き出した作品・共有ファイル）を読み終え、
       // ゴミ箱の作品の表紙（作品のサムネイルのファイル）も描けた。
       // いちばん新しい書き出した作品が先頭に来る。表紙は実際のファイルを
       // 読むので、待たないと撮る間に表紙が出て画素が変わる。
-      HomeView.trash =>
-        keys('trash-restore-local-') > 0 &&
-            find
-                .byType(RawImage)
-                .evaluate()
-                .every((e) => (e.widget as RawImage).image != null),
+      HomeView.trash => keys('trash-restore-local-') > 0 && _imagesDrawn(),
     };
   }
 

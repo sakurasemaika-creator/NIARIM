@@ -642,7 +642,7 @@ Future<void> _leftHandedCell(HomeMatrix m, String what) async {
   await m.frames(4);
   final on = await m.pixels();
   final name = m.cellName('lefthanded', what);
-  final same = off.length == on.length && _sameBytes(off, on);
+  final same = off.length == on.length && _samePixels(off, on);
   if (!same) await m.capture('${name}_on');
   await m.tester.runAsync(() => m.settings.setLeftHanded(false));
   await m.frames(4);
@@ -657,9 +657,22 @@ Future<void> _leftHandedCell(HomeMatrix m, String what) async {
   );
 }
 
-bool _sameBytes(List<int> a, List<int> b) {
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != b[i]) return false;
+/// 2枚の画素が同じか。左利きで並びや向きが変われば、文字・縁・ボタンが
+/// 動き、多くの画素の色が大きく変わる。行ごとに1枚の面を描く一覧（ゴミ箱・
+/// 引き出し）の角の丸みは、同じ絵でも描くたびにアンチエイリアスが数段ずれる
+/// ことがある（ゴミ箱の面の角の3〜4画素が最大6段食い違い、後で撮り直すと
+/// 同じだった）。色の差が16段以内で、2段を超えて違う画素が16個（0.5倍の
+/// 画像で）以内なら同じとみなす。
+bool _samePixels(List<int> a, List<int> b) {
+  var differing = 0;
+  for (var i = 0; i < a.length; i += 4) {
+    var most = 0;
+    for (var c = 0; c < 4; c++) {
+      final d = (a[i + c] - b[i + c]).abs();
+      if (d > 16) return false;
+      if (d > most) most = d;
+    }
+    if (most > 2 && ++differing > 16) return false;
   }
   return true;
 }
