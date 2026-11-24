@@ -54,7 +54,7 @@ Future<ui.Image> renderOutputViewportImage({
   required TimelineOutputViewport viewport,
   required int backgroundColor,
   required CameraEngine cameraEngine,
-  required CameraKeyframe? cameraKeyframe,
+  required CameraKeyframe cameraKeyframe,
 }) async {
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
