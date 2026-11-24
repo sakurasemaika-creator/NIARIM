@@ -70,9 +70,13 @@ class _ExportCompleteDialogState extends State<ExportCompleteDialog> {
             ),
           ],
           const SizedBox(height: 12),
+          // ファイル名はダイアログの面のまま細い線で囲む（以前は灰色の
+          // 塗りの箱で、ダイアログの中にもう1段の面ができていた）。
           DecoratedBox(
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHigh,
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: .6),
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Padding(
