@@ -7,6 +7,7 @@ import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
 import '../models/layer.dart';
 import '../models/scene.dart';
 import 'clip_speed.dart';
+import 'timeline_video_time.dart';
 
 /// One sound in an exported video: a stretch of an audio file (a clip on an
 /// audio track) or the sound of a video material.
@@ -90,14 +91,22 @@ Future<ExportAudioPlan> buildExportAudioPlan({
     double fadeOut = 0,
     double sourceFraction = 0,
     double rate = 1,
+    double? soundingFrames,
   }) async {
     if (materialId == null || volume <= 0 || lengthFrames <= 0) return;
     final start = math.max(0, startFrame);
-    // Within the scene and before the export's end.
-    final end = math.min(
-      math.min(startFrame + lengthFrames, sceneFrames) + sceneStart,
-      limitFrames,
-    );
+    // Within the scene and before the export's end, and for a video only
+    // over the part of the clip that plays its used range (silent where the
+    // picture holds the last frame).
+    var end = math
+        .min(
+          math.min(startFrame + lengthFrames, sceneFrames) + sceneStart,
+          limitFrames,
+        )
+        .toDouble();
+    if (soundingFrames != null) {
+      end = math.min(end, sceneStart + startFrame + soundingFrames);
+    }
     final from = sceneStart + start;
     if (end <= from) return;
     final path = await pathOf(materialId);
@@ -160,6 +169,7 @@ Future<ExportAudioPlan> buildExportAudioPlan({
           volume: layer.videoVolume,
           sourceFraction: layer.sourceTrimStartFraction,
           rate: layer.videoSoundFollowsSpeed ? layer.playbackRate : 1,
+          soundingFrames: TimelineVideoTimeMapper.layerSoundingFrames(layer),
         );
       }
     }

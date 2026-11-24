@@ -55,15 +55,12 @@ void main() {
     expect(s, contains('final targets = _allClips'));
     expect(s, contains('_clipsOfType(clip.trackType).add(clip)'));
     expect(s, contains('sourceStartFrame: rightSourceStart'));
-    // A video's right half starts at the split's source position (or on the
-    // held last frame); test/timeline_split_test.dart checks every frame.
+    // A video's right half starts at the split's source position, also when
+    // that is past the used range (its picture then holds the last used frame
+    // and it is silent); test/timeline_split_test.dart checks every frame and
+    // the exported sound.
     expect(s, contains('sourceTrimStart: isVideo ? videoRightStart : null'));
-    expect(
-      s,
-      contains(
-        'final videoRightStart = heldRight ? clip.useEnd : rightSourceStart;',
-      ),
-    );
+    expect(s, contains('final videoRightStart = rightSourceStart;'));
     expect(s, contains('fadeIn: 0'));
     expect(s, contains('fadeOut: 0'));
   });

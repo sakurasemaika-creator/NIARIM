@@ -36,6 +36,11 @@ class TimelineVideoTimeMapper {
 
   /// Returns the source frame position (fractional frames are retained) or
   /// null when the timeline frame is outside the clip or the inputs are invalid.
+  ///
+  /// The picture never goes past [sourceTrimEndFrame]: after the used range
+  /// it holds that frame. A clip whose start is already past its trim end
+  /// (the right half of a clip split where it held its last frame) holds
+  /// that frame throughout.
   static double? sourceFrameAt({
     required int timelineFrame,
     required int clipStartFrame,
@@ -46,7 +51,7 @@ class TimelineVideoTimeMapper {
   }) {
     if (clipLengthFrames <= 0 ||
         sourceTrimStartFrame < 0 ||
-        sourceTrimEndFrame < sourceTrimStartFrame.floor() ||
+        sourceTrimEndFrame < 0 ||
         !playbackRate.isFinite ||
         playbackRate <= 0) {
       return null;
@@ -54,12 +59,44 @@ class TimelineVideoTimeMapper {
     final elapsed = timelineFrame - clipStartFrame;
     if (elapsed < 0 || elapsed >= clipLengthFrames) return null;
     final source = sourceTrimStartFrame + elapsed * playbackRate;
-    return source
-        .clamp(
-          sourceTrimStartFrame.toDouble(),
-          math.max(sourceTrimStartFrame.toDouble(), sourceTrimEndFrame + 0.0),
-        )
-        .toDouble();
+    return math.min(source.toDouble(), sourceTrimEndFrame.toDouble());
+  }
+
+  /// How many timeline frames from the clip's start a video's sound plays:
+  /// the used source range, from [sourceTrimStartFrame] (its fraction
+  /// included) to the end of the last used frame [sourceTrimEndFrame], read
+  /// at [soundRate], and never past [clipLengthFrames]. Where the picture
+  /// holds the last used frame after that, the video is silent; a clip that
+  /// starts past its used range has no sound. The preview's player, the
+  /// export's sound and the row's waveform all stop here.
+  static double soundingFrames({
+    required int clipLengthFrames,
+    required num sourceTrimStartFrame,
+    required int sourceTrimEndFrame,
+    required double soundRate,
+  }) {
+    if (clipLengthFrames <= 0 ||
+        sourceTrimStartFrame < 0 ||
+        sourceTrimEndFrame < 0 ||
+        !soundRate.isFinite ||
+        soundRate <= 0) {
+      return 0;
+    }
+    final used = sourceTrimEndFrame + 1 - sourceTrimStartFrame;
+    if (used <= 0) return 0;
+    return math.min(clipLengthFrames.toDouble(), used / soundRate);
+  }
+
+  /// [soundingFrames] of [layer] (a timeline video layer), whose sound plays
+  /// at its speed or, with [Layer.videoSoundFollowsSpeed] off, at 1x.
+  static double layerSoundingFrames(Layer layer) {
+    final timing = timelineVideoClipTiming(layer);
+    return soundingFrames(
+      clipLengthFrames: timing.lengthFrames,
+      sourceTrimStartFrame: timing.trimStartFrame,
+      sourceTrimEndFrame: timing.trimEndFrame,
+      soundRate: layer.videoSoundFollowsSpeed ? timing.playbackRate : 1,
+    );
   }
 
   /// Converts a mapped source-frame position to the player timestamp.

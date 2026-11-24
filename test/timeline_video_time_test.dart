@@ -63,6 +63,51 @@ void main() {
       expect(map(4, end: -1), isNull);
     });
 
+    test('a clip that starts past its trim end holds that frame', () {
+      for (final frame in [4, 5, 6]) {
+        expect(
+          TimelineVideoTimeMapper.sourceFrameAt(
+            timelineFrame: frame,
+            clipStartFrame: 4,
+            clipLengthFrames: 3,
+            sourceTrimStartFrame: 7.5,
+            sourceTrimEndFrame: 5,
+            playbackRate: 2,
+          ),
+          5,
+        );
+      }
+    });
+
+    test('the sound plays the used range at its speed, within the clip', () {
+      double sounding({
+        int length = 10,
+        num start = 0,
+        int end = 5,
+        double rate = 1,
+      }) => TimelineVideoTimeMapper.soundingFrames(
+        clipLengthFrames: length,
+        sourceTrimStartFrame: start,
+        sourceTrimEndFrame: end,
+        soundRate: rate,
+      );
+
+      // Frames 0–5 (six frames), then the last frame is held.
+      expect(sounding(), 6);
+      expect(sounding(rate: 2), 3);
+      expect(sounding(rate: 0.5), 10);
+      expect(sounding(start: 1.25), 4.75);
+      expect(sounding(end: 40), 10);
+      // Starts past its used range: only the held frame, no sound.
+      expect(sounding(start: 7, end: 5), 0);
+      expect(sounding(start: 6, end: 5), 0);
+      // Invalid inputs.
+      expect(sounding(length: 0), 0);
+      expect(sounding(rate: 0), 0);
+      expect(sounding(rate: double.nan), 0);
+      expect(sounding(end: -1), 0);
+    });
+
     test('converts source frames to rounded player timestamps', () {
       expect(
         TimelineVideoTimeMapper.sourcePositionAt(

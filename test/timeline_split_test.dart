@@ -344,6 +344,7 @@ void main() {
       );
       // Source frames 0–5 over 10 timeline frames: frames 6–9 hold frame 5.
       video = layer.copyWith(
+        materialId: 'm',
         rangeMode: LayerRangeMode.frameRange,
         rangeStart: 1,
         rangeEnd: 10,
@@ -359,6 +360,14 @@ void main() {
       return project.id;
     });
     final projectId = created!;
+    Future<List<ExportAudioSource>> soundPlan() async => (await tester.runAsync(
+      () => buildExportAudioPlan(
+        scenes: [ps.sceneOf(projectId, sceneId)!],
+        sourceFps: 10,
+        pathOf: (_) async => Platform.resolvedExecutable,
+      ),
+    ))!.sources;
+    final soundBefore = await soundPlan();
     appRouter.go('/timeline/$projectId?frame=7');
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     await tester.tap(find.byKey(const Key('timelineSplitModeButton')));
@@ -379,5 +388,20 @@ void main() {
         reason: 'frame $frame',
       );
     }
+
+    // The sound: source frames 0–5 over timeline frames 0–5, then silent
+    // where frame 5 is held. The right half lies wholly in the held part, so
+    // it is silent, and the halves together sound exactly as before.
+    expect(soundBefore, hasLength(1));
+    expect(soundBefore.single.durationSeconds, closeTo(0.6, 1e-9));
+    expect(TimelineVideoTimeMapper.layerSoundingFrames(halves[1]), 0);
+    final soundAfter = await soundPlan();
+    expect(soundAfter, hasLength(1));
+    expect(soundAfter.single.startSeconds, soundBefore.single.startSeconds);
+    expect(soundAfter.single.sourceSeconds, soundBefore.single.sourceSeconds);
+    expect(
+      soundAfter.single.durationSeconds,
+      closeTo(soundBefore.single.durationSeconds, 1e-9),
+    );
   });
 }

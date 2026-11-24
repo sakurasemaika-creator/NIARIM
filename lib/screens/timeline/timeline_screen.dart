@@ -201,6 +201,16 @@ class _TrackClip {
   /// The speed the clip's sound plays at.
   double get soundRate => soundFollowsSpeed ? playbackRate : 1.0;
 
+  /// For a video: how many frames from its start its sound plays (its used
+  /// range at [soundRate]); after that the picture holds the last used frame
+  /// and the clip is silent, as in the export.
+  double get videoSoundingFrames => TimelineVideoTimeMapper.soundingFrames(
+    clipLengthFrames: lengthFrames,
+    sourceTrimStartFrame: useStart + sourceFraction,
+    sourceTrimEndFrame: useEnd,
+    soundRate: soundRate,
+  );
+
   /// The source position (in project frames) [elapsedFrames] into the clip.
   SourcePosition sourceAfter(int elapsedFrames) => sourcePositionAfter(
     startFrame: useStart,
@@ -1235,6 +1245,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
       if (mounted) setState(() {});
     }
     if (!controller.value.isInitialized) return;
+    // Where the picture holds the last used frame the video is silent (the
+    // export stops its sound there too), so the player does not run on into
+    // the rest of the file.
+    if (_currentFrame - clip.startFrame >= clip.videoSoundingFrames) {
+      if (controller.value.isPlaying) await controller.pause();
+      return;
+    }
     await controller.setVolume(clip.volume.clamp(0.0, 1.0));
     // Keep preview seeking on the same pure timeline-to-source mapping
     // that offline video rendering will consume. Trim end is inclusive.
@@ -2484,6 +2501,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final sourceFrames = clip.trackType == _ClipTrackType.video
         ? clip.useEnd + 1 - (clip.useStart + clip.sourceFraction)
         : clip.lengthFrames * clip.playbackRate;
+    // A video that starts past its used range only holds its last frame:
+    // there is no source time to speed up, so its length stays.
+    if (sourceFrames <= 0) return clip.lengthFrames;
     return timelineLengthForSource(sourceFrames, rate);
   }
 
@@ -6309,8 +6329,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
     final fps = _projectFps(context.read<ProjectService>());
     final sourceStart = clip.useStart + clip.sourceFraction;
-    final sourceFrames = clip.lengthFrames * clip.soundRate;
-    return _AudioWaveformThumb(
+    // A video sounds only over its used range: the waveform covers that part
+    // of the clip from its left edge, and nothing where the last frame is
+    // held.
+    final soundingFrames = clip.trackType == _ClipTrackType.video
+        ? clip.videoSoundingFrames
+        : clip.lengthFrames.toDouble();
+    if (soundingFrames <= 0) return null;
+    final sourceFrames = soundingFrames * clip.soundRate;
+    final waveform = _AudioWaveformThumb(
       key: ValueKey('wf_${clip.id}'),
       filePath: path,
       // Each clip gets its own cache for its exact source interval.
@@ -6319,6 +6346,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
       sourceStartFrame: sourceStart,
       sourceFrames: sourceFrames,
       fps: fps,
+    );
+    if (soundingFrames >= clip.lengthFrames) return waveform;
+    return FractionallySizedBox(
+      key: ValueKey('wfPart_${clip.id}'),
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: soundingFrames / clip.lengthFrames,
+      child: waveform,
     );
   }
 
@@ -9368,12 +9402,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
         // A video's picture: the left half's last frame may sit part-way into
         // a source frame (at a speed other than 1x), so its inclusive end is
         // the next frame (not past the clip's own end) or that frame would be
-        // held from its start. Past the clip's end the last frame is held, so
-        // a right half that starts there starts on it.
+        // held from its start. A right half that starts past the used range
+        // keeps that source start: its picture holds the last used frame and
+        // it is silent, as that part of the clip was.
         final videoLeftEnd = _videoSplitLeftEnd(clip, leftLength);
-        final heldRight = rightSourceStart > clip.useEnd;
-        final videoRightStart = heldRight ? clip.useEnd : rightSourceStart;
-        final videoRightFraction = heldRight ? 0.0 : rightSource.fraction;
+        final videoRightStart = rightSourceStart;
+        final videoRightFraction = rightSource.fraction;
         final rightId = clip.trackType == _ClipTrackType.audio
             ? 'audio_split_${DateTime.now().microsecondsSinceEpoch}_$index'
             : 'layer_split_${DateTime.now().microsecondsSinceEpoch}_$index';

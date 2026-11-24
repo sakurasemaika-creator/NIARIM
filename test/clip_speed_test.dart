@@ -375,6 +375,10 @@ void main() {
       expect(video.startSeconds, 2.0);
       expect(video.sourceSeconds, closeTo(0.75, 1e-9));
       expect(video.playbackRate, 3);
+      // The video uses source frames 7.5 to the end of 16 (its trim end is
+      // its start + length − 1): 9.5 frames, 3.17 timeline frames at 3x.
+      // After that the picture holds frame 16 and the video is silent.
+      expect(video.durationSeconds, closeTo(9.5 / 3 / 10, 1e-9));
 
       // With the video's sound at normal speed, only the picture is faster.
       final soundAtNormalSpeed = await buildExportAudioPlan(
@@ -412,18 +416,85 @@ void main() {
       );
       final plainSound = soundAtNormalSpeed.sources.single;
       expect(plainSound.sourceSeconds, closeTo(0.75, 1e-9));
-      expect(plainSound.durationSeconds, 1.0);
+      // The same 9.5 source frames at 1x, within the 10-frame clip.
+      expect(plainSound.durationSeconds, closeTo(0.95, 1e-9));
       expect(plainSound.playbackRate, 1);
       final plainArgs = exportAudioSourceArguments(plainSound, '/out.wav');
-      expect(plainArgs[plainArgs.indexOf('-t') + 1], '1.000');
+      expect(plainArgs[plainArgs.indexOf('-t') + 1], '0.950');
       expect(
         plainArgs[plainArgs.indexOf('-af') + 1],
         isNot(contains('atempo')),
       );
 
       final args = exportAudioSourceArguments(video, '/out.wav');
-      expect(args[args.indexOf('-t') + 1], '3.000');
+      // It reads only the used 9.5 source frames.
+      expect(args[args.indexOf('-t') + 1], '0.950');
       expect(args[args.indexOf('-af') + 1], startsWith('atempo=3.0,volume='));
+    });
+
+    test('a video sounds only over its used range: silent where its last '
+        'frame is held', () async {
+      final dir = Directory.systemTemp.createTempSync('niarim-held-plan-');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final file = File('${dir.path}/v.mp4')..writeAsBytesSync([0]);
+      Future<List<ExportAudioSource>> sound(Layer layer) async =>
+          (await buildExportAudioPlan(
+            scenes: [
+              Scene(
+                id: 'S',
+                index: 0,
+                frames: [
+                  for (var i = 0; i < 30; i++)
+                    Frame(index: i, layers: i == 0 ? [layer] : const []),
+                ],
+              ),
+            ],
+            sourceFps: 10,
+            pathOf: (_) async => file.path,
+          )).sources;
+      // Source frames 0–5 over 10 timeline frames from frame 4: frames 10–13
+      // hold frame 5.
+      const held = Layer(
+        id: 'v',
+        name: 'v',
+        type: LayerType.timelineVideo,
+        materialId: 'v',
+        rangeMode: LayerRangeMode.frameRange,
+        rangeStart: 5,
+        rangeEnd: 14,
+        sourceTrimStart: 0,
+        sourceTrimEnd: 5,
+      );
+      var source = (await sound(held)).single;
+      expect(source.startSeconds, closeTo(0.4, 1e-9));
+      expect(source.durationSeconds, closeTo(0.6, 1e-9));
+      expect(source.sourceSeconds, 0);
+
+      // At 2x the six frames last three; at 2x with the sound at 1x the
+      // sound still plays the six source frames.
+      source = (await sound(held.copyWith(playbackRate: 2))).single;
+      expect(source.durationSeconds, closeTo(0.3, 1e-9));
+      source = (await sound(
+        held.copyWith(playbackRate: 2, videoSoundFollowsSpeed: false),
+      )).single;
+      expect(source.durationSeconds, closeTo(0.6, 1e-9));
+
+      // A fractional start plays to the end of the last used frame.
+      source = (await sound(
+        held.copyWith(sourceTrimStart: 1, sourceTrimStartFraction: 0.25),
+      )).single;
+      expect(source.sourceSeconds, closeTo(0.125, 1e-9));
+      expect(source.durationSeconds, closeTo(0.475, 1e-9));
+
+      // A clip that starts past its used range only holds its last frame.
+      expect(
+        await sound(held.copyWith(sourceTrimStart: 7, sourceTrimEnd: 5)),
+        isEmpty,
+      );
+
+      // Without a held part, the whole clip sounds.
+      source = (await sound(held.copyWith(sourceTrimEnd: 40))).single;
+      expect(source.durationSeconds, closeTo(1.0, 1e-9));
     });
 
     test(
