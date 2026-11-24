@@ -47,6 +47,7 @@ import '../../engine/watermark_render.dart';
 import '../../engine/tile_manager.dart';
 import '../../engine/timeline_material.dart';
 import '../../engine/timeline_stack.dart';
+import '../../engine/timeline_output_viewport.dart';
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/audio_clip.dart';
@@ -2406,6 +2407,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
       onChangeEnd: _finishMaterialDrag,
       canvasWidth: tm.canvasWidth,
       canvasHeight: tm.canvasHeight,
+      outputWidth: ps.projects
+          .where((p) => p.id == widget.projectId)
+          .firstOrNull
+          ?.exportWidth,
+      outputHeight: ps.projects
+          .where((p) => p.id == widget.projectId)
+          .firstOrNull
+          ?.exportHeight,
       contentBounds: _editingBounds,
       value: materialTransformAt(layer, frameIndex),
       camera: cameraKeyframes.isEmpty
@@ -2663,6 +2672,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   maskGroups: stacked.maskGroups,
                   sceneId: sceneId,
                   frameIndex: frameIndex,
+                  outputWidth: ps.projects
+                      .where((p) => p.id == widget.projectId)
+                      .firstOrNull
+                      ?.exportWidth,
+                  outputHeight: ps.projects
+                      .where((p) => p.id == widget.projectId)
+                      .firstOrNull
+                      ?.exportHeight,
                   cameraKeyframes: ps.cameraKeyframesOf(
                     widget.projectId,
                     sceneId,
@@ -10089,6 +10106,8 @@ class _TimelinePreview extends StatefulWidget {
   final List<LayerMaskGroup> maskGroups;
   final String sceneId;
   final int frameIndex;
+  final int? outputWidth;
+  final int? outputHeight;
   final int historyRevision;
   final List<CameraKeyframe> cameraKeyframes;
   final List<EffectFilterInstance> effectFilters;
@@ -10105,6 +10124,8 @@ class _TimelinePreview extends StatefulWidget {
     this.maskGroups = const [],
     required this.sceneId,
     required this.frameIndex,
+    this.outputWidth,
+    this.outputHeight,
     this.historyRevision = 0,
     this.cameraKeyframes = const [],
     this.effectFilters = const [],
@@ -10148,6 +10169,8 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
         old.tileManager != widget.tileManager ||
         old.sceneId != widget.sceneId ||
         old.frameIndex != widget.frameIndex ||
+        old.outputWidth != widget.outputWidth ||
+        old.outputHeight != widget.outputHeight ||
         old.cameraKeyframes != widget.cameraKeyframes ||
         old.effectFilters != widget.effectFilters ||
         old.groups != widget.groups ||
@@ -10197,7 +10220,15 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       maskGroups: request.maskGroups,
     );
 
-    // カメラ変換を適用する（カメラは表示のみを変更する）
+    // Match the export's centred output crop and camera pivot exactly.
+    final outputWidth = request.outputWidth ?? tm.canvasWidth;
+    final outputHeight = request.outputHeight ?? tm.canvasHeight;
+    final viewport = TimelineOutputViewport(
+      drawingWidth: tm.canvasWidth,
+      drawingHeight: tm.canvasHeight,
+      outputWidth: outputWidth,
+      outputHeight: outputHeight,
+    );
     final kf = _cameraEngine.valueAt(
       request.cameraKeyframes,
       request.frameIndex,
@@ -10208,28 +10239,32 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     _cameraEngine.apply(
       canvas,
       kf,
-      tm.canvasWidth.toDouble(),
-      tm.canvasHeight.toDouble(),
+      outputWidth.toDouble(),
+      outputHeight.toDouble(),
     );
-    canvas.drawImage(layered, ui.Offset.zero, ui.Paint());
+    canvas.drawImage(
+      layered,
+      ui.Offset(viewport.imageOffsetX, viewport.imageOffsetY),
+      ui.Paint(),
+    );
     canvas.restore();
     layered.dispose();
     final picture = recorder.endRecording();
-    var img = await picture.toImage(tm.canvasWidth, tm.canvasHeight);
+    var img = await picture.toImage(outputWidth, outputHeight);
 
-    // 演出フィルター：合成・カメラ適用後の映像へ非破壊で適用する
+    // Apply effects after cropping, as the export renderer does.
     if (request.effectFilters.isNotEmpty) {
       final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
       if (byteData != null) {
         final filtered = _filterEngine.applyEffectFilters(
           byteData.buffer.asUint8List(),
-          tm.canvasWidth,
-          tm.canvasHeight,
+          outputWidth,
+          outputHeight,
           request.effectFilters,
           request.frameIndex,
         );
         final composed = img;
-        img = await _decodeRgba(filtered, tm.canvasWidth, tm.canvasHeight);
+        img = await _decodeRgba(filtered, outputWidth, outputHeight);
         composed.dispose();
       }
     }
