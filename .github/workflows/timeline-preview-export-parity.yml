@@ -9,9 +9,11 @@ on:
       - 'lib/engine/export_engine.dart'
       - 'lib/engine/layer_compositor.dart'
       - 'lib/engine/timeline_stack.dart'
+      - 'lib/engine/timeline_output_viewport.dart'
       - 'lib/screens/timeline/timeline_screen.dart'
       - 'test/export_audio_test.dart'
       - 'test/timeline_media_contract_test.dart'
+      - 'test/timeline_output_viewport_test.dart'
       - 'docs/AI設計書/26_タイムライン編集操作仕様.md'
       - 'docs/AI設計書/27_プレビュー書き出し一致性監査.md'
       - 'pubspec.yaml'
@@ -43,12 +45,17 @@ jobs:
         run: flutter test test/export_audio_test.dart --reporter expanded
       - name: Test timeline media contracts
         run: flutter test test/timeline_media_contract_test.dart --reporter expanded
+      - name: Test shared output viewport geometry
+        run: flutter test test/timeline_output_viewport_test.dart --reporter expanded
       - name: Analyze touched Dart files
         run: >-
           flutter analyze
           lib/engine/export_audio.dart
           lib/engine/export_engine.dart
+          lib/engine/timeline_output_viewport.dart
+          lib/screens/timeline/widgets/material_gizmo.dart
           lib/screens/timeline/timeline_screen.dart
           test/export_audio_test.dart
           test/timeline_media_contract_test.dart
+          test/timeline_output_viewport_test.dart
           --no-fatal-infos
