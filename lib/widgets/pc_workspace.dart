@@ -45,7 +45,11 @@ class PcWorkspaceColors {
       onChrome: onChrome,
       mutedOnChrome: onChrome.withValues(alpha: 0.72),
       pane: pane,
-      paneHeader: opaqueOver(scheme.surfaceContainerHigh, pane),
+      // 窓の見出しはペインと同じ面で、下の細い線で区切る（以前は
+      // surfaceContainerHighの3つ目の灰色で、上部バー・ペインと合わせて
+      // 面が3段になっていた。面は上部バー・ステータスバー〔メニューの
+      // 背景色〕とペイン〔用紙〕の2つだけ）。
+      paneHeader: pane,
       onPane: scheme.onSurface,
       mutedOnPane: scheme.onSurfaceVariant,
       divider: scheme.outlineVariant,

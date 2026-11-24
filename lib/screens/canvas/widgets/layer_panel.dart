@@ -15,6 +15,8 @@ import '../../../engine/layer_keyframe_engine.dart';
 import '../../../engine/tile_manager.dart' show frameLayerKey;
 import '../../../engine/undo_manager.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/fit_or_hide_title.dart';
+import '../../../widgets/menu_surface.dart';
 import '../../../l10n/autofill_names.dart';
 import '../../../l10n/creative_preset_labels.dart';
 import '../../../models/layer.dart' as model;
@@ -119,7 +121,13 @@ class _LayerPanelState extends State<LayerPanel> {
       // 名前つきのボタンは名前を読み上げる（吹き出しの文を重ねて読まない）。
       excludeFromSemantics: labelled,
       child: TextButton(
-        style: labelled ? _shortcutButtonStyle : _shortcutIconButtonStyle,
+        // 追加の操作は中立の色（差し色は選んでいるレイヤーと主な操作のため）。
+        style: (labelled ? _shortcutButtonStyle : _shortcutIconButtonStyle)
+            .copyWith(
+              foregroundColor: WidgetStatePropertyAll(
+                Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
         onPressed: item.onPressed,
         child: labelled
             ? Row(
@@ -316,24 +324,30 @@ class _LayerPanelState extends State<LayerPanel> {
     }
 
     final header = <Widget>[
-      if (!widget.dockedMode) PanelCenterCloseBar(onClose: widget.onClose),
-      // ヘッダー
+      // ヘッダー：題・一括結合・ヘルプ・検索と、閉じる×を1行に置く（以前は
+      // ×だけの行が題の上にあり、一覧が1行ぶん下がっていた。他の浮かぶ
+      // パネルと同じ並び）。×の押せる所はパネルの右端まで。
       Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: EdgeInsetsDirectional.fromSTEB(
+          8,
+          4,
+          widget.dockedMode ? 8 : 0,
+          4,
+        ),
         child: Row(
           children: [
             // ドックを狭めたとき（下限200）でも右のボタンを押せるよう、
             // 見出しの方を省略する。
+            // 入らない幅（大きな文字）では題を出さない（「レイ…」と切らない。
+            // 画面名と同じ決まり）。
             if (!widget.dockedMode)
               Expanded(
-                child: Text(
-                  l10n.layerPanelTitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: DefaultTextStyle.merge(
                   style: localizedHeadingStyle(
                     context,
                     const TextStyle(fontWeight: FontWeight.bold),
                   ),
+                  child: FitOrHideTitle(l10n.layerPanelTitle),
                 ),
               ),
             // 表示中の全レイヤーをワンタップで結合する（複数選択モードを
@@ -371,6 +385,8 @@ class _LayerPanelState extends State<LayerPanel> {
               },
               tooltip: l10n.creativePanelSearchTooltip,
             ),
+            if (!widget.dockedMode)
+              PanelCenterCloseBar(onClose: widget.onClose),
           ],
         ),
       ),
@@ -520,8 +536,17 @@ class _LayerPanelState extends State<LayerPanel> {
     // （「ListTile background color or ink splashes may be invisible」）。
     // Materialに替えることで、背景色を保ちつつ内部のリップル効果も
     // 正しく表示されるようにする。
-    return Material(
-      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+    // 面の色は他のパネルとそろえる：ドックでは窓の面（colorScheme.surface、
+    // PanelSurfaceのドックと同じ）、スマホの横のシートでは浮かぶパネルの
+    // カードと同じメニューの背景色（以前はこのパネルだけ灰色の
+    // surfaceContainerHighで、隣の窓・パネルと別の面に見えた）。中の文字は
+    // ダイアログ・シートと同じメニューの面のテーマで描く。
+    final theme = Theme.of(context);
+    final surfaceColor = widget.dockedMode
+        ? theme.colorScheme.surface
+        : theme.cardTheme.color ?? theme.colorScheme.surfaceContainerLow;
+    final panel = Material(
+      color: surfaceColor,
       child: LayoutBuilder(
         builder: (context, limits) {
           // Short docks need the same scrollable area for the layer rows and
@@ -538,6 +563,10 @@ class _LayerPanelState extends State<LayerPanel> {
               // （末尾のclipListInk）。
               Expanded(
                 child: ReorderableListView.builder(
+                  // 選んだ行の塗りがパネルの端に接しないよう左右を少し空ける
+                  // （ブラシ・トーン・スタンプの一覧と同じく、塗りの角が
+                  // 面の中に収まる）。
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
                   header: scrollControls ? Column(children: header) : null,
                   footer: scrollControls && footer.isNotEmpty
                       ? Column(children: footer)
@@ -921,6 +950,7 @@ class _LayerPanelState extends State<LayerPanel> {
         },
       ),
     );
+    return widget.dockedMode ? panel : MenuSurface(child: panel);
   }
 
   Future<void> _copyLayerWithGesture(
