@@ -3973,6 +3973,7 @@ Appの対象テストは93件・8件・166件の各セットと、新規の通�
 | DISC610 | App `66c5057d`（共有カードの線も1回目を取り消してから描き直す）。 | `shared_asset_card_preview_fade_test`（直す前は失敗）、共有カードのtest 19件。 |
 | DISC074（案Aの文字色） | App `a9cce875`（所有者の判断2026-11-23「全部に案Aの色を効かせる」。lib配下の差し色145か所を1つずつ見て、背景の上の文字・アイコンだけをアクセントの文字・アイコン色に。塗りは差し色のまま）。 | `accent_text_screens_test` 6件（引き出し・ホームのタブ・お気に入りの星を足した）、色・ホーム・作品広場・報酬のtest 267件。 |
 | DISC611 | App `82808d33`（音の並べ方`export_audio.dart`、WebMはFFmpegのOpus・AVIはPCM・MP4は端末のAAC〔`HardwareVideoEncoder.kt`〕、入れられない音の件数を完了の画面で知らせる、ヘルプ・FFmpegの注記を7言語）・Web（ヘルプの同期と静的な文）。 | `export_audio_test` 9件（本物のffmpegで音の位置まで）、書き出しのtest 47件、文字・ライセンス・ヘルプのtest 115件、Webの字の収録7言語0件・ヘルプの静的な文。MP4の音は実機の確認（範囲外）。 |
+| DISC612 | App `c8b9454b`（一覧に出すときは作品の情報とシーンだけを読み、絵は初めて使うときに読む。開いていない作品の保存し直しはファイルの絵を残す。開いたときに読めなかった作品は保存・自動保存・複製をしない）。 | `project_tiles_on_open_test`（新規4件）、保存・ゴミ箱・自動保存・起動・引き継ぎ・複製・共有・フォルダの関連test 183ファイル：成功1152・スキップ3・失敗2（rootで権限が効かない既知の2件）、`operation_timing_test`、`flutter analyze` 0件。 |
 
 - **Webの監査一式（`visual-audit.yml`と同じ並び、ローカルの静的サーバー・Chromium）**：
   - 1回目（直す前）に失敗した監査：operations-seo（文字列の書き方違い）・intermediate-width（消えた`.hero`で停止）・ai-trust（更新日の決め打ち）・autonomous-browser v2（28件：消えた帯・ヒーロー、作品広場のAPIの404）・complete-scroll（pngjsが無い）・design-polish・hero-rendered-layout・real-capture-loading・home-rendered-capture-alignment・feature-rendered-alignment（後の4本はブラウザの起動の書き方の誤り）・cross-width（72か所が消えた部品）・page-heading（消えたspotlight・2つのキャプチャ・古い見出し）・multilang v4・final-visual-invariants v2・final-visual-screenshot v3（消えたプレビュー）・all-pages-responsive-quality（押せる大きさ・はみ出し＝DISC601）。
