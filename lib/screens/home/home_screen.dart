@@ -79,6 +79,7 @@ import '../../utils/name_collation.dart';
 import '../../utils/saved_list_reader.dart';
 import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/scrollable_sheet_body.dart';
+import '../../widgets/sheet_segment_border.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/duplicate_name.dart';
 import '../../utils/file_size_label.dart';
@@ -6666,7 +6667,12 @@ class _TrashTabState extends State<_TrashTab> {
     }
   }
 
-  Widget _folderRow(TrashedFolder record, AppLocalizations l10n) {
+  Widget _folderRow(
+    TrashedFolder record,
+    AppLocalizations l10n, {
+    required bool first,
+    required bool last,
+  }) {
     final id = record.folder.id;
     final projectNames = [
       for (final projectId in record.projectIds)
@@ -6714,6 +6720,8 @@ class _TrashTabState extends State<_TrashTab> {
     }.toList();
     return _trashCard(
       selectionId: 'trash_folder:$id',
+      first: first,
+      last: last,
       detailsKey: ValueKey('trashedFolder_$id'),
       leading: const Icon(Icons.folder_delete_outlined, size: 36),
       title: record.folder.name,
@@ -6822,8 +6830,10 @@ class _TrashTabState extends State<_TrashTab> {
   Widget _projectRow(
     Project project,
     TrashEntryKind kind,
-    AppLocalizations l10n,
-  ) {
+    AppLocalizations l10n, {
+    required bool first,
+    required bool last,
+  }) {
     final deleted = context.read<ProjectService>().deletedAtOf(project.id);
     final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
     final deletedLabel = _deletedLabel(deleted, l10n);
@@ -6874,6 +6884,8 @@ class _TrashTabState extends State<_TrashTab> {
     ];
     return _trashCard(
       selectionId: 'trash_project:${project.id}',
+      first: first,
+      last: last,
       leading: _trashProjectCover(project),
       title: project.name,
       subtitle: subtitle,
@@ -6918,8 +6930,10 @@ class _TrashTabState extends State<_TrashTab> {
   Widget _fileRow(
     LocalTrashedFile entry,
     TrashEntryKind kind,
-    AppLocalizations l10n,
-  ) {
+    AppLocalizations l10n, {
+    required bool first,
+    required bool last,
+  }) {
     final actions = <Widget>[
       if (widget.onCopyEntry != null)
         TextButton(
@@ -6959,6 +6973,8 @@ class _TrashTabState extends State<_TrashTab> {
     ];
     return _trashCard(
       selectionId: 'trash_local:${entry.id}',
+      first: first,
+      last: last,
       leading: Icon(
         entry.isFolder
             ? Icons.folder_delete_outlined
@@ -6979,6 +6995,8 @@ class _TrashTabState extends State<_TrashTab> {
 
   Widget _trashCard({
     required String selectionId,
+    required bool first,
+    required bool last,
     required Widget leading,
     required String title,
     required String subtitle,
@@ -7091,9 +7109,22 @@ class _TrashTabState extends State<_TrashTab> {
           final nameFont = Theme.of(context).textTheme.titleMedium?.fontSize;
           final besideMinTile =
               16 + 48 + 12 + 16 + textScaler.scale(nameFont ?? 16) * 15;
+          // 行ごとに浮かせたカードにせず、ゴミ箱の一覧を1枚の面にして
+          // 行を細い線で区切る（各行が自分の分の面を描く。先頭は上の角、
+          // 最後は下の角）。区切りの線は名前の始まり（左の余白16＋絵48＋
+          // 間12）から引く。
+          final theme = Theme.of(context);
           return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
+            margin: EdgeInsets.fromLTRB(8, first ? 4 : 0, 8, last ? 4 : 0),
+            color: theme.cardTheme.color ?? theme.colorScheme.surface,
+            shape: SheetSegmentBorder(
+              first: first,
+              last: last,
+              side: BorderSide(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: .6),
+              ),
+              dividerIndent: 16 + 48 + 12,
+            ),
             clipBehavior: Clip.antiAlias,
             child: surface(
               // 広いカードは名前の右・上下の真ん中に、狭いカードは名前の下の
@@ -7307,14 +7338,29 @@ class _TrashTabState extends State<_TrashTab> {
             if (position < lead + loadingRow) {
               return _TrashFilesLoading(text: l10n.homeTrashLoadingFiles);
             }
-            final row = rows[position - lead - loadingRow];
+            final index = position - lead - loadingRow;
+            final row = rows[index];
+            final first = index == 0;
+            final last = index == rows.length - 1;
             if (row.project != null) {
-              return _projectRow(row.project!, row.kind, l10n);
+              return _projectRow(
+                row.project!,
+                row.kind,
+                l10n,
+                first: first,
+                last: last,
+              );
             }
             if (row.folder != null) {
-              return _folderRow(row.folder!, l10n);
+              return _folderRow(row.folder!, l10n, first: first, last: last);
             }
-            return _fileRow(row.local!, row.kind, l10n);
+            return _fileRow(
+              row.local!,
+              row.kind,
+              l10n,
+              first: first,
+              last: last,
+            );
           },
         );
       },
