@@ -14,6 +14,7 @@ import '../../widgets/responsive.dart';
 import 'login_bonus_panel.dart';
 import 'recurring_missions_panel.dart';
 import 'plaza_missions_panel.dart';
+import 'rewards_sign_in_button.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/menu_card.dart';
 
@@ -820,14 +821,32 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
   /// 出す。画面の端から余白を取り、中央にそろえて折り返す（余白の無い
   /// `Center`の`Text`だった頃は、長い文が画面の左端〔x=0〕から始まった）。
   /// 韓国語の語は途中で折らない。大きな文字でも縦にはみ出さない。
-  Widget _notice(String text, {Widget? action}) => Center(
+  /// [icon]があれば文の上に出す（ホームの一覧の空の表示と同じ、中立の色の
+  /// 丸の印）。
+  Widget _notice(String text, {Widget? action, IconData? icon}) => Center(
     child: SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          messageText(text, textAlign: TextAlign.center),
-          if (action != null) ...[const SizedBox(height: 12), action],
+          if (icon != null) ...[
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 40,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          messageText(text, textAlign: TextAlign.center, keepLastPhrase: true),
+          if (action != null) ...[const SizedBox(height: 16), action],
         ],
       ),
     ),
@@ -853,7 +872,11 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           ? null
           : AppBar(title: FitOrHideTitle(t.get('title'))),
       body: owner == null
-          ? _notice(t.get('login'))
+          ? _notice(
+              t.get('login'),
+              icon: Icons.flag_outlined,
+              action: const RewardsSignInButton(),
+            )
           : api == null
           ? _notice(t.get('offline'))
           : FutureBuilder<Map<String, dynamic>>(

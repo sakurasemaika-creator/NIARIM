@@ -14,6 +14,7 @@ import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/menu_card.dart';
+import 'rewards_sign_in_button.dart';
 
 /// Current entitlements are read from the authenticated server; plan details
 /// are shown only when Google Play verification is still valid.
@@ -99,31 +100,55 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
         ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // 下の見出し・本文・ボタンと同じ左右の端にそろえる（カードの既定の
+            // 外側の余白で、カードだけ4px内側に寄っていた）。先頭の印で、
+            // プレミアム（オパールで解放中も）か無料かを一目で分ける。
             MenuCard(
+              key: const Key('membershipStatusCard'),
+              margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tier, style: Theme.of(context).textTheme.titleLarge),
-                    if (isPlayMember && premium.verifiedExpiryDate != null)
-                      Text(
-                        l10n.rewardNavigationMembershipExpiresAt(
-                          premium.verifiedExpiryDate!.toLocal(),
-                        ),
-                      ),
-                    // 見出しがすでに「オパールで解放中」のときは期限だけを出す
-                    // （同じ語を2行続けない）。
-                    if (coinExpiry != null)
-                      Text(
-                        isPlayMember
-                            ? l10n.rewardNavigationMembershipCoinExpiresAt(
-                                coinExpiry.toLocal(),
-                              )
-                            : l10n.rewardNavigationMembershipExpiresAt(
-                                coinExpiry.toLocal(),
+                    Icon(
+                      isPlayMember || premium.hasCoinPremium
+                          ? Icons.workspace_premium_outlined
+                          : Icons.person_outline,
+                      size: 28,
+                      color: AccentTextTheme.of(context),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            tier,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          if (isPlayMember &&
+                              premium.verifiedExpiryDate != null)
+                            Text(
+                              l10n.rewardNavigationMembershipExpiresAt(
+                                premium.verifiedExpiryDate!.toLocal(),
                               ),
+                            ),
+                          // 見出しがすでに「オパールで解放中」のときは期限だけを出す
+                          // （同じ語を2行続けない）。
+                          if (coinExpiry != null)
+                            Text(
+                              isPlayMember
+                                  ? l10n.rewardNavigationMembershipCoinExpiresAt(
+                                      coinExpiry.toLocal(),
+                                    )
+                                  : l10n.rewardNavigationMembershipExpiresAt(
+                                      coinExpiry.toLocal(),
+                                    ),
+                            ),
+                        ],
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -134,9 +159,14 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            if (_owner == null)
-              Text(t['membershipLogin'])
-            else if (_api == null)
+            if (_owner == null) ...[
+              messageText(t['membershipLogin']),
+              const SizedBox(height: 12),
+              const Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: RewardsSignInButton(filled: false),
+              ),
+            ] else if (_api == null)
               Text(t['membershipUnavailable'])
             else
               FutureBuilder<Map<String, dynamic>>(

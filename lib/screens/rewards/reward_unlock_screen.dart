@@ -25,7 +25,9 @@ import '../../widgets/coin_history_sheet.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/icon_notice.dart';
 import '../../widgets/menu_card.dart';
+import 'rewards_sign_in_button.dart';
 
 enum RewardPageMode { exchange, earnCoins }
 
@@ -1002,6 +1004,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         onTap: enabled ? () => _toggle(target) : null,
         // 題と価格の2行の行（CheckboxListTileの2行の行と同じ高さ）。
         minTileHeight: 72,
+        // 一覧は画面の余白（16px）の内側にあるので、行の左の余白は取らない
+        // （取ると見出し・区切り線より16px内側にチェックボックスが寄った）。
+        contentPadding: const EdgeInsetsDirectional.only(end: 8),
         title: ActionBesideOrBelow(
           actionFirst: true,
           gap: 16,
@@ -1054,6 +1059,92 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     } on StateError {
       return false;
     }
+  }
+
+  /// オパールの残高の欄。残高（無ければ確認中・準備中の文）を印と並べ、
+  /// その下に取引履歴・残高の更新（ログインしていなければ連携のボタン）を
+  /// 置く。以前は残高が本文の1行で、更新・履歴のボタンが画面の別の所に
+  /// 散っていた。ボタンの印は残高の印と同じ左の端にそろえる（文字の
+  /// ボタンは中に左12pxの余白を持つので、欄の左の余白をそのぶん減らす）。
+  Widget _walletCard(
+    BuildContext context,
+    RewardUnlockLabels t,
+    AppLocalizations l10n, {
+    required bool earn,
+  }) {
+    final theme = Theme.of(context);
+    final balance = _rewardState?['balanceCoins'];
+    return MenuCard(
+      key: const Key('rewardWalletCard'),
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(4, 16, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsetsDirectional.only(start: 12),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.toll_outlined,
+                    size: 28,
+                    color: AccentTextTheme.of(context),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    // 残高の数＋単位は1行に収め、入りきらなければ字を縮める
+                    // （合計の欄と同じ。大きな文字で「60,000歐 / 泊」と単位の
+                    // 途中で切れないように）。
+                    child: balance is int
+                        ? Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                l10n.coinAmount(balance),
+                                style: theme.textTheme.headlineSmall,
+                              ),
+                            ),
+                          )
+                        : messageText(
+                            _walletLoading ? t['loading'] : t['balancePending'],
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (_lastAccountId != null)
+              Wrap(
+                spacing: 4,
+                children: [
+                  if (!earn && _rewardState != null)
+                    TextButton.icon(
+                      key: const Key('coinHistoryButton'),
+                      icon: const Icon(Icons.receipt_long_outlined),
+                      onPressed: _showCoinHistory,
+                      label: messageText(t['coinHistory']),
+                    ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: !_walletLoading
+                        ? () => _loadWallet(_lastAccountId!)
+                        : null,
+                    label: messageText(t['rewardRefresh']),
+                  ),
+                ],
+              )
+            else
+              const Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(12, 4, 0, 8),
+                child: RewardsSignInButton(),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -1115,21 +1206,18 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            messageText(
-              earn ? nav['earnDescription'] : nav['exchange'],
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            messageText(
-              _rewardState != null && _rewardState!['balanceCoins'] is int
-                  ? l10n.coinAmount(_rewardState!['balanceCoins'] as int)
-                  : _walletLoading
-                  ? t['loading']
-                  : t['balancePending'],
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            // 交換のタブの見出しはタブ・画面の名前と同じなので出さない。
+            // 広告のタブは、何ができるかの説明を見出しにする。
+            if (earn) ...[
+              messageText(
+                nav['earnDescription'],
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12),
+            ],
+            _walletCard(context, t, l10n, earn: earn),
             if (earn && _rewardState?['rewardEarningEnabled'] == true) ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               FilledButton.icon(
                 key: const Key('rewardWatchAdButton'),
                 icon: _rewardBusy
@@ -1175,28 +1263,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             ],
             if (earn && _rewardState?['rewardEarningEnabled'] != true)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: messageText(nav['earnUnavailable']),
-              ),
-            if (_lastAccountId != null) ...[
-              if (!earn && _rewardState != null)
-                TextButton.icon(
-                  key: const Key('coinHistoryButton'),
-                  icon: const Icon(Icons.receipt_long_outlined),
-                  onPressed: _showCoinHistory,
-                  label: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: messageText(t['coinHistory']),
-                  ),
+                padding: const EdgeInsets.only(top: 16),
+                child: IconNotice(
+                  nav['earnUnavailable'],
+                  icon: Icons.info_outline,
                 ),
-              TextButton.icon(
-                icon: const Icon(Icons.refresh),
-                onPressed: !_walletLoading
-                    ? () => _loadWallet(_lastAccountId!)
-                    : null,
-                label: messageText(t['rewardRefresh']),
               ),
-            ],
             if (!earn) ...[
               const SizedBox(height: 16),
               // Shared duration goes BEFORE the list of checkboxes.
