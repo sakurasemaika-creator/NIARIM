@@ -25,10 +25,7 @@ class TimelineVideoTimeMapper {
     if (elapsed < 0 || elapsed >= clipLengthFrames) return null;
     final source = sourceTrimStartFrame + elapsed * playbackRate;
     return source
-        .clamp(
-          sourceTrimStartFrame.toDouble(),
-          sourceTrimEndFrame.toDouble(),
-        )
+        .clamp(sourceTrimStartFrame.toDouble(), sourceTrimEndFrame.toDouble())
         .toDouble();
   }
 
@@ -56,6 +53,35 @@ class TimelineVideoTimeMapper {
     if (sourceFrame == null) return null;
     return Duration(
       milliseconds: (sourceFrame / framesPerSecond * 1000).round(),
+    );
+  }
+
+  /// The source timestamp used to choose a decoded video frame, at
+  /// microsecond precision. Preview compositing and offline export both
+  /// pass this value to the shared frame selection rule
+  /// (`VideoFrameTimeline.frameIndexAt`), so neither path rounds to the
+  /// millisecond grid of [sourcePositionAt] (which is only for player seeks).
+  static Duration? sourceTimeAt({
+    required int timelineFrame,
+    required int clipStartFrame,
+    required int clipLengthFrames,
+    required int sourceTrimStartFrame,
+    required int sourceTrimEndFrame,
+    required double framesPerSecond,
+    double playbackRate = 1,
+  }) {
+    if (!framesPerSecond.isFinite || framesPerSecond <= 0) return null;
+    final sourceFrame = sourceFrameAt(
+      timelineFrame: timelineFrame,
+      clipStartFrame: clipStartFrame,
+      clipLengthFrames: clipLengthFrames,
+      sourceTrimStartFrame: sourceTrimStartFrame,
+      sourceTrimEndFrame: sourceTrimEndFrame,
+      playbackRate: playbackRate,
+    );
+    if (sourceFrame == null) return null;
+    return Duration(
+      microseconds: (sourceFrame / framesPerSecond * 1000000).round(),
     );
   }
 }

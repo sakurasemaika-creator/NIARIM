@@ -12,6 +12,9 @@ on:
       - 'lib/engine/timeline_output_viewport.dart'
       - 'lib/engine/timeline_video_time.dart'
       - 'lib/engine/video_material_snapshot.dart'
+      - 'lib/engine/video_frame_timeline.dart'
+      - 'lib/engine/video_frame_decoder.dart'
+      - 'lib/engine/video_frame_provider.dart'
       - 'lib/services/material_service.dart'
       - 'lib/screens/timeline/timeline_screen.dart'
       - 'test/export_audio_test.dart'
@@ -19,6 +22,9 @@ on:
       - 'test/timeline_output_viewport_test.dart'
       - 'test/timeline_video_time_test.dart'
       - 'test/video_material_snapshot_test.dart'
+      - 'test/video_frame_timeline_test.dart'
+      - 'test/video_frame_provider_test.dart'
+      - 'test/video_frame_ffmpeg_decoder_test.dart'
       - 'docs/AI設計書/26_タイムライン編集操作仕様.md'
       - 'docs/AI設計書/27_プレビュー書き出し一致性監査.md'
       - 'pubspec.yaml'
@@ -44,6 +50,12 @@ jobs:
           flutter-version: '3.47.2'
           channel: stable
           cache: false
+      - name: Install FFmpeg for real video frame decoding tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          ffmpeg -version | head -n 1
+          ffprobe -version | head -n 1
       - name: Resolve dependencies
         run: flutter pub get --enforce-lockfile
       - name: Test shared preview/export audio envelope
@@ -56,6 +68,14 @@ jobs:
         run: flutter test test/timeline_video_time_test.dart --reporter expanded
       - name: Test immutable video material snapshots
         run: flutter test test/video_material_snapshot_test.dart --reporter expanded
+      - name: Test shared video frame selection rule
+        run: flutter test test/video_frame_timeline_test.dart --reporter expanded
+      - name: Test video frame cache, ownership, seek races and cancellation
+        run: flutter test test/video_frame_provider_test.dart --reporter expanded
+      - name: Test real FFmpeg video frame decoding and preview/export RGBA parity
+        env:
+          NIARIM_VIDEO_FRAME_FFMPEG_TESTS: '1'
+        run: flutter test test/video_frame_ffmpeg_decoder_test.dart --reporter expanded
       - name: Analyze touched Dart files
         run: >-
           flutter analyze
@@ -64,6 +84,9 @@ jobs:
           lib/engine/timeline_output_viewport.dart
           lib/engine/timeline_video_time.dart
           lib/engine/video_material_snapshot.dart
+          lib/engine/video_frame_timeline.dart
+          lib/engine/video_frame_decoder.dart
+          lib/engine/video_frame_provider.dart
           lib/services/material_service.dart
           lib/screens/timeline/widgets/material_gizmo.dart
           lib/screens/timeline/timeline_screen.dart
@@ -72,4 +95,7 @@ jobs:
           test/timeline_output_viewport_test.dart
           test/timeline_video_time_test.dart
           test/video_material_snapshot_test.dart
+          test/video_frame_timeline_test.dart
+          test/video_frame_provider_test.dart
+          test/video_frame_ffmpeg_decoder_test.dart
           --no-fatal-infos
