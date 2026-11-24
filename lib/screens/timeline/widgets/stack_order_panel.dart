@@ -14,6 +14,7 @@ import '../../../models/scene.dart';
 import '../../../models/scene_stack.dart';
 import '../../../models/timeline_row_kind.dart';
 import '../../../services/project_service.dart';
+import '../../../widgets/grouped_sheet.dart';
 import '../../../widgets/layer_mask_editor.dart';
 import '../../../config/accent_text_theme.dart';
 
@@ -217,11 +218,19 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
           forward: forward,
         );
 
+    // 行の並ぶ面は[GroupedSheet]と同じ（メニューの背景色・細い線の縁）。
+    final theme = Theme.of(context);
+    final sheet = theme.cardTheme.color ?? scheme.surface;
+    final rule =
+        theme.dividerTheme.color ?? scheme.outlineVariant.withValues(alpha: .6);
     final list = ReorderableListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       buildDefaultDragHandles: false,
       itemCount: order.length,
+      // つかんで動かしている行だけが面から浮く。
+      proxyDecorator: (child, index, animation) =>
+          Material(color: sheet, elevation: 3, child: child),
       onReorderItem: (from, to) {
         if (from != to) {
           onReordered(dragStackSelection(order, picked, from, to));
@@ -233,105 +242,112 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
         final isPicked = _selecting && picked.contains(key);
         final up = step(key, forward: true);
         final down = step(key, forward: false);
-        return Card(
-          key: ValueKey('stack-$key'),
-          margin: const EdgeInsets.symmetric(vertical: 3),
-          color: key == kStackFrame
-              ? scheme.secondaryContainer
-              : scheme.surfaceContainerHigh,
-          shape: isPicked
-              ? RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: scheme.primary, width: 2),
-                )
-              : null,
-          child: ListTile(
-            dense: true,
-            contentPadding: const EdgeInsets.only(left: 4, right: 0),
-            onLongPress: _selecting
-                ? null
-                : () => setState(() {
-                    _selecting = true;
-                    _picked
-                      ..clear()
-                      ..add(key);
-                  }),
-            onTap: _selecting ? () => _toggle(key) : null,
-            leading: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ReorderableDragStartListener(
-                  index: i,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: _selecting ? 4 : 8,
-                      vertical: 8,
-                    ),
-                    child: Icon(
-                      Icons.drag_indicator,
-                      color: scheme.onSurfaceVariant,
-                    ),
+        // 行ごとの色つきのカードにせず、1枚の面の中を細い線で分ける
+        // （描いたフレームの行は筆の印で見分ける）。選んでいるかは
+        // チェックボックスで表し、行は塗らない（塗ると差し色の箱が差し色の
+        // 行に溶けて見えなくなる）。
+        final tile = ListTile(
+          dense: true,
+          shape: const RoundedRectangleBorder(),
+          contentPadding: const EdgeInsetsDirectional.only(start: 4),
+          onLongPress: _selecting
+              ? null
+              : () => setState(() {
+                  _selecting = true;
+                  _picked
+                    ..clear()
+                    ..add(key);
+                }),
+          onTap: _selecting ? () => _toggle(key) : null,
+          leading: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ReorderableDragStartListener(
+                index: i,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: _selecting ? 4 : 8,
+                    vertical: 8,
+                  ),
+                  child: Icon(
+                    Icons.drag_indicator,
+                    color: scheme.onSurfaceVariant,
                   ),
                 ),
-                // The whole item toggles too, so the box can be small.
-                if (_selecting)
-                  Checkbox(
-                    value: isPicked,
-                    visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    onChanged: (_) => _toggle(key),
-                  ),
-              ],
-            ),
-            title: Row(
-              children: [
-                Icon(_iconOf(key), size: 16),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    _labelOf(ps, sceneId, key),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            subtitle: names.isEmpty
-                ? null
-                : Text(
-                    names.join('・'),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 11),
-                  ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_upward),
-                  tooltip: l10n.timelineStackMoveUp,
+              ),
+              // The whole item toggles too, so the box can be small.
+              if (_selecting)
+                Checkbox(
+                  value: isPicked,
                   visualDensity: VisualDensity.compact,
-                  onPressed: listEquals(up, order)
-                      ? null
-                      : () => onReordered(up),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  onChanged: (_) => _toggle(key),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_downward),
-                  tooltip: l10n.timelineStackMoveDown,
-                  visualDensity: VisualDensity.compact,
-                  onPressed: listEquals(down, order)
-                      ? null
-                      : () => onReordered(down),
-                ),
-              ],
-            ),
+            ],
           ),
+          title: Row(
+            children: [
+              Icon(_iconOf(key), size: 16, color: scheme.onSurfaceVariant),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  _labelOf(ps, sceneId, key),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          subtitle: names.isEmpty
+              ? null
+              : Text(
+                  names.join('・'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 11),
+                ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_upward),
+                tooltip: l10n.timelineStackMoveUp,
+                visualDensity: VisualDensity.compact,
+                onPressed: listEquals(up, order) ? null : () => onReordered(up),
+              ),
+              IconButton(
+                icon: const Icon(Icons.arrow_downward),
+                tooltip: l10n.timelineStackMoveDown,
+                visualDensity: VisualDensity.compact,
+                onPressed: listEquals(down, order)
+                    ? null
+                    : () => onReordered(down),
+              ),
+            ],
+          ),
+        );
+        return Column(
+          key: ValueKey('stack-$key'),
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (i > 0) Divider(height: 1, thickness: 1, color: rule),
+            tile,
+          ],
         );
       },
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        list,
+        Material(
+          color: sheet,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(GroupedSheet.radius),
+            side: BorderSide(color: rule),
+          ),
+          child: list,
+        ),
         if (!_selecting) _hint(l10n.timelineStackMultiSelectHint),
       ],
     );
@@ -368,8 +384,17 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
       ),
     );
 
-    return Material(
-      color: scheme.surfaceContainerHighest,
+    // 帯を別の灰色で塗らず、パネルと同じ面に細い線で区切って置く。
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color:
+                Theme.of(context).dividerTheme.color ??
+                scheme.outlineVariant.withValues(alpha: .6),
+          ),
+        ),
+      ),
       child: SafeArea(
         top: false,
         child: Padding(
