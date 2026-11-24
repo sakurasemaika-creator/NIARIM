@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../config/font_fallback.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/home_widget_refresh.dart';
 import '../../services/shortcut_widget_renderer.dart';
@@ -360,7 +359,13 @@ class _ShortcutWidgetPreview extends StatelessWidget {
     final colors = shortcutWidgetColors(widgets, kind);
     final foreground = shortcutWidgetForeground(widgets, theme, kind);
     final locale = Localizations.localeOf(context);
-    final subLabel = shortcutWidgetSubLabel(l10n, kind);
+    // ホーム画面へ焼く画像と同じく、入らない文言はアイコン・文字を小さくして
+    // 収める（省略記号で切らない・語の途中で折らない）。
+    final fit = ShortcutWidgetFit.of(
+      label: shortcutWidgetLabel(l10n, kind),
+      subLabel: shortcutWidgetSubLabel(l10n, kind),
+      locale: locale,
+    );
     const size = ShortcutWidgetDesign.tileSize;
     return ExcludeSemantics(
       child: SizedBox.square(
@@ -389,36 +394,29 @@ class _ShortcutWidgetPreview extends StatelessWidget {
                     children: [
                       Icon(
                         shortcutWidgetIcon(kind),
-                        size: ShortcutWidgetDesign.iconSize,
+                        size: fit.iconSize,
                         color: foreground,
                       ),
                       const SizedBox(height: ShortcutWidgetDesign.gapAfterIcon),
                       Text(
-                        shortcutWidgetLabel(l10n, kind),
+                        fit.label,
                         textAlign: TextAlign.center,
-                        maxLines: subLabel == null ? 2 : 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: shortcutWidgetTextStyle(
+                          locale: locale,
                           color: foreground,
-                          fontSize: ShortcutWidgetDesign.labelSize,
-                          fontWeight: FontWeight.bold,
-                          height: 1.2,
-                          fontFamily: headingFontFamilyFor(locale),
-                          fontFamilyFallback: headingFontFallbackFor(locale),
+                          size: fit.labelSize,
+                          bold: true,
                         ),
                       ),
-                      if (subLabel != null)
+                      if (fit.subLabel != null)
                         Text(
-                          subLabel,
+                          fit.subLabel!,
                           textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: shortcutWidgetTextStyle(
+                            locale: locale,
                             color: foreground,
-                            fontSize: ShortcutWidgetDesign.subLabelSize,
-                            height: 1.2,
-                            fontFamily: headingFontFamilyFor(locale),
-                            fontFamilyFallback: headingFontFallbackFor(locale),
+                            size: fit.subLabelSize,
+                            bold: false,
                           ),
                         ),
                     ],
