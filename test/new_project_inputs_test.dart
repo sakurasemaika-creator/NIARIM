@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niarim/screens/project/widgets/canvas_size_choice_label.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
@@ -122,7 +123,7 @@ void main() {
   }
 
   Future<void> chooseCustom(WidgetTester tester) async {
-    final custom = find.widgetWithText(ChoiceChip, 'カスタム');
+    final custom = find.widgetWithText(CanvasSizeOptionRow, 'カスタム');
     await tester.ensureVisible(custom);
     await tester.tap(custom);
     await tester.pumpAndSettle();
@@ -145,14 +146,14 @@ void main() {
     ]) {
       final chip = find.ancestor(
         of: find.textContaining('$width×$height'),
-        matching: find.byType(ChoiceChip),
+        matching: find.byType(CanvasSizeOptionRow),
       );
       expect(chip, findsOneWidget, reason: '$width×$height');
       await tester.ensureVisible(chip);
       await tester.tap(chip);
       await tester.pumpAndSettle();
       expect(
-        tester.widget<ChoiceChip>(chip).selected,
+        tester.widget<CanvasSizeOptionRow>(chip).selected,
         isTrue,
         reason: '$width×$height',
       );
@@ -357,7 +358,7 @@ void main() {
       expectNoOverflow('$code presets');
     }
     final custom = find.byWidgetPredicate(
-      (w) => w is ChoiceChip && w.selected == false,
+      (w) => w is CanvasSizeOptionRow && !w.selected,
     );
     await tester.ensureVisible(custom.last);
     await tester.tap(custom.last);

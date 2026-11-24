@@ -471,102 +471,48 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 ],
               ),
               const SizedBox(height: 8),
+              // 大きさは1枚の面に行を並べ、選んでいる行は先頭の丸い印
+              // （選択の色）で示す。以前は選んだ行を差し色で塗りつぶした
+              // ピルにし、ほかの行も1つずつ浮いたカードだったので、画面で
+              // いちばん強い色の塊になり、行どうしのまとまりも読めなかった。
+              // 名前が欄に入らないときは行を増やして全部出す（「…」で
+              // 切らない）。
               Consumer<SettingsService>(
                 builder: (context, settings, _) => LayoutBuilder(
                   builder: (context, constraints) {
-                    // ChoiceChipはWrap内で自身の自然幅を要求するため、長い
-                    // ローカライズ文言（特に9:16縦型）が狭いスマホ幅より長いと
-                    // 例外を出さず画面端で文字だけ不自然に切れる。各チップを
-                    // 親幅以下へ制約し、入らない名前は行を増やして全部出す
-                    // （「…」で切らない）。
-                    final maxChipWidth = constraints.maxWidth;
-                    // ChoiceChipの既定の選んだ印（チェック）は名前の高さと
-                    // 同じ幅を取るので、2行・3行の名前では選んだとたんに名前の
-                    // 幅が縮み、チップの高さに入らない最後の行が切れた（字の
-                    // 広い中国語の本文の書体で、文字1.3倍から）。印は決まった
-                    // 大きさで名前の前に出し、名前の幅は印・余白の分を先に
-                    // 引いて決める（選ぶ前後で折り返しが変わらない）。印は
-                    // チップの中身の最も低い高さ（32 − 上下の余白16）に収まる
-                    // 16px（より大きいと、1行の名前の低いチップで印が中身から
-                    // はみ出す）。
-                    const chipPadding = EdgeInsets.all(8);
-                    const labelPadding = EdgeInsets.symmetric(horizontal: 8);
-                    const checkSize = 16.0;
+                    // 行の左右の余白・印・印と名前の間を引いた名前の欄の幅。
                     final labelMaxWidth = math.max(
                       0.0,
-                      maxChipWidth -
-                          chipPadding.horizontal -
-                          labelPadding.horizontal -
-                          checkSize,
+                      constraints.maxWidth -
+                          CanvasSizeOptionRow.leadingWidth -
+                          GroupedSheet.rowInset,
                     );
 
-                    Widget sizeChip({
+                    Widget sizeRow({
                       required String text,
                       required int width,
                       required int height,
                       required bool selected,
                       required VoidCallback onSelected,
-                    }) {
-                      return ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: maxChipWidth),
-                        child: ChoiceChip(
-                          padding: chipPadding,
-                          labelPadding: labelPadding,
-                          // 1行ではテーマのピル形と同じ丸み、2行以上でも
-                          // 楕円にならない角丸。
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(20)),
-                          ),
-                          showCheckmark: false,
-                          // 選んでいない行も印の場所を空けておく（空けないと
-                          // 選んだ行だけ16px広く、絵・名前の始まりも16px
-                          // ずれた）。どの行も同じ幅で、印・絵・名前が縦に
-                          // そろう。
-                          avatar: selected
-                              ? Icon(
-                                  Icons.check,
-                                  size: checkSize,
-                                  color: Theme.of(
-                                    context,
-                                  ).chipTheme.checkmarkColor,
-                                )
-                              : const SizedBox.square(dimension: checkSize),
-                          avatarBoxConstraints: const BoxConstraints.tightFor(
-                            width: checkSize,
-                            height: checkSize,
-                          ),
-                          // チップは名前を1行で描く（DefaultTextStyleの
-                          // maxLines: 1・softWrap: false）ので、その決まりを
-                          // 置き換えて行を増やせるようにする。
-                          label: Builder(
-                            builder: (context) => DefaultTextStyle(
-                              style: DefaultTextStyle.of(context).style,
-                              child: CanvasSizeChoiceLabel(
-                                text: text,
-                                canvasWidth: width,
-                                canvasHeight: height,
-                                width: labelMaxWidth,
-                              ),
-                            ),
-                          ),
-                          selected: selected,
-                          onSelected: (s) {
-                            if (s) onSelected();
-                          },
-                        ),
-                      );
-                    }
+                    }) => CanvasSizeOptionRow(
+                      selected: selected,
+                      onSelected: onSelected,
+                      child: CanvasSizeChoiceLabel(
+                        text: text,
+                        canvasWidth: width,
+                        canvasHeight: height,
+                        width: labelMaxWidth,
+                      ),
+                    );
 
                     _followChosenPreset(settings);
-                    return Wrap(
-                      spacing: 8,
-                      runSpacing: 6,
+                    return GroupedSheet(
                       children: [
                         ...sizePresets.map((preset) {
                           final (w, h, kind) = preset;
                           final label = _presetLabel(l10n, w, h);
                           final key = 'builtin:$kind';
-                          return sizeChip(
+                          return sizeRow(
                             text: label,
                             width: w,
                             height: h,
@@ -576,7 +522,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                         }),
                         ...settings.customSizePresets.map((preset) {
                           final key = 'custom:${preset.id}';
-                          return sizeChip(
+                          return sizeRow(
                             text: preset.name,
                             width: preset.width,
                             height: preset.height,
@@ -585,33 +531,18 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                                 _selectPreset(preset.width, preset.height, key),
                           );
                         }),
-                        ChoiceChip(
-                          padding: chipPadding,
-                          labelPadding: labelPadding,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(20)),
-                          ),
-                          showCheckmark: false,
-                          avatar: _customSize
-                              ? Icon(
-                                  Icons.check,
-                                  size: checkSize,
-                                  color: Theme.of(
-                                    context,
-                                  ).chipTheme.checkmarkColor,
-                                )
-                              : const SizedBox.square(dimension: checkSize),
-                          avatarBoxConstraints: const BoxConstraints.tightFor(
-                            width: checkSize,
-                            height: checkSize,
-                          ),
-                          // 押せる高さ（48）を見た目の高さにする。1行の
-                          // 名前のままだと見た目が34pxで、押せる所の上下の
-                          // 空き（7px）のぶん上の行との間だけが広かった。
-                          label: ConstrainedBox(
-                            constraints: BoxConstraints.tightFor(
-                              width: labelMaxWidth,
-                            ).copyWith(minHeight: 32),
+                        CanvasSizeOptionRow(
+                          selected: _customSize,
+                          onSelected: () => setState(() {
+                            if (_customSize) return;
+                            _customSize = true;
+                            // 欄とスライダーは今の大きさから始める。
+                            _selectedPresetKey = null;
+                            _customWidthController.text = '$_exportWidth';
+                            _customHeightController.text = '$_exportHeight';
+                          }),
+                          child: SizedBox(
+                            width: labelMaxWidth,
                             child: Row(
                               children: [
                                 const SizedBox(
@@ -620,21 +551,18 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                                 ),
                                 const SizedBox(width: 10),
                                 Flexible(
-                                  child: Text(l10n.newProjectCustomSize),
+                                  child: Text(
+                                    l10n.newProjectCustomSize,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      height: 1.3,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          selected: _customSize,
-                          onSelected: (s) => setState(() {
-                            _customSize = s;
-                            if (s) {
-                              // 欄とスライダーは今の大きさから始める。
-                              _selectedPresetKey = null;
-                              _customWidthController.text = '$_exportWidth';
-                              _customHeightController.text = '$_exportHeight';
-                            }
-                          }),
                         ),
                       ],
                     );

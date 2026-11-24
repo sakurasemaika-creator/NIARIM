@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/screens/project/widgets/canvas_size_choice_label.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
@@ -194,12 +195,13 @@ void main() {
   testWidgets('a saved size equal to a built-in one is chosen on its own, '
       'and follows edits', (tester) async {
     final settings = await open(tester, presets: [wide]);
-    ChoiceChip chip(String start) => tester.widget<ChoiceChip>(
-      find.ancestor(
-        of: find.textContaining(start),
-        matching: find.byType(ChoiceChip),
-      ),
-    );
+    CanvasSizeOptionRow chip(String start) =>
+        tester.widget<CanvasSizeOptionRow>(
+          find.ancestor(
+            of: find.textContaining(start),
+            matching: find.byType(CanvasSizeOptionRow),
+          ),
+        );
     // 最初は組み込みのFull HDだけ。
     expect(chip('Full HD').selected, isTrue);
     expect(chip('横長').selected, isFalse);
@@ -240,7 +242,7 @@ void main() {
       find.descendant(
         of: find.ancestor(
           of: find.text('大きすぎ'),
-          matching: find.byType(ChoiceChip),
+          matching: find.byType(CanvasSizeOptionRow),
         ),
         matching: find.text('1920×1920'),
       ),

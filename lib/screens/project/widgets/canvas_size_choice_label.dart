@@ -143,3 +143,80 @@ class CanvasAspectGlyph extends StatelessWidget {
     );
   }
 }
+
+/// 新規プロジェクトの大きさの面の1行：先頭の丸い印（選んでいる行は選択の
+/// 色の輪と点）と、大きさの名前・用途・画素数（[child]）。
+///
+/// 行全体を押して選ぶ。選んでいる行を差し色で塗りつぶさない（塗ると画面で
+/// いちばん強い色の塊になり、主な操作の「作成」より目立った）。読み上げでは
+/// 1つだけ選べるまとまりの中の、選んでいる・いないの項目として伝える。
+class CanvasSizeOptionRow extends StatelessWidget {
+  const CanvasSizeOptionRow({
+    super.key,
+    required this.selected,
+    required this.onSelected,
+    required this.child,
+  });
+
+  final bool selected;
+  final VoidCallback onSelected;
+  final Widget child;
+
+  static const double _markSize = 20;
+  static const double _start = 16;
+  static const double _gap = 12;
+
+  /// 名前の欄より前（行の左の余白・印・印と名前の間）の幅。
+  static const double leadingWidth = _start + _markSize + _gap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final selection =
+        theme.checkboxTheme.fillColor?.resolve({WidgetState.selected}) ??
+        scheme.primary;
+    return Semantics(
+      inMutuallyExclusiveGroup: true,
+      checked: selected,
+      selected: selected,
+      child: InkWell(
+        onTap: onSelected,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 56),
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(_start, 10, 16, 10),
+            child: Row(
+              children: [
+                Container(
+                  width: _markSize,
+                  height: _markSize,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: selected ? selection : scheme.onSurfaceVariant,
+                      width: 2,
+                    ),
+                  ),
+                  child: selected
+                      ? Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: selection,
+                            shape: BoxShape.circle,
+                          ),
+                        )
+                      : null,
+                ),
+                const SizedBox(width: _gap),
+                Expanded(child: child),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
