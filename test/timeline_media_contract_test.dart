@@ -45,19 +45,19 @@ void main() {
   });
 
   test('timeline split mode applies to every material track type', () {
-  final s = File(
-    'lib/screens/timeline/timeline_screen.dart',
-  ).readAsStringSync();
-  expect(s, contains("Key('timelineSplitModeButton')"));
-  expect(s, contains("Key('timelineSplitApplyButton')"));
-  expect(s, contains("Key('timelineSplitCancelButton')"));
-  expect(s, contains('void _applySplitAtCurrentFrame()'));
-  expect(s, contains('final targets = _allClips'));
-  expect(s, contains('_clipsOfType(clip.trackType).add(clip)'));
-  expect(s, contains('sourceStartFrame: rightSourceStart'));
-  expect(s, contains('sourceTrimStart: isVideo ? rightSourceStart : null'));
-  expect(s, contains('fadeIn: 0'));
-  expect(s, contains('fadeOut: 0'));
-});
+    final s = File(
+      'lib/screens/timeline/timeline_screen.dart',
+    ).readAsStringSync();
+    expect(s, contains("Key('timelineSplitModeButton')"));
+    expect(s, contains("Key('timelineSplitApplyButton')"));
+    expect(s, contains("Key('timelineSplitCancelButton')"));
+    expect(s, contains('void _applySplitAtCurrentFrame()'));
+    expect(s, contains('final targets = _allClips'));
+    expect(s, contains('_clipsOfType(clip.trackType).add(clip)'));
+    expect(s, contains('sourceStartFrame: rightSourceStart'));
+    expect(s, contains('sourceTrimStart: isVideo ? rightSourceStart : null'));
+    expect(s, contains('fadeIn: 0'));
+    expect(s, contains('fadeOut: 0'));
+  });
 
 }
