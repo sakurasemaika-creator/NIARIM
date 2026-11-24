@@ -3518,6 +3518,14 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Replaces the scene's camera keys with [keyframes] (one Undo step), e.g.
+  /// after retiming a range of them.
+  void replaceCameraKeyframes(
+    String projectId,
+    String sceneId,
+    List<CameraKeyframe> keyframes,
+  ) => _updateSceneCameraKeyframes(projectId, sceneId, keyframes);
+
   /// キーフレームを追加する。同じframeIndexが既にあれば置き換える。
   void addCameraKeyframe(String projectId, String sceneId, CameraKeyframe kf) {
     final current = cameraKeyframesOf(projectId, sceneId);

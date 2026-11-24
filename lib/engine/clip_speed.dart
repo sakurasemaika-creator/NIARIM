@@ -118,6 +118,56 @@ List<LayerKeyframe>? retimeKeyframes(
   return result;
 }
 
+/// Where each key of a range moves when the range plays [rate] times as
+/// fast: the keys from [fromFrame] to [toFrame] (inclusive) are spaced by
+/// 1 / [rate] from [fromFrame]; keys outside the range stay put. Returns old
+/// frame → new frame for every key, or null when [rate] is not a speed, the
+/// range has fewer than two keys, two keys would share a frame, a key would
+/// pass a key after the range, or one would go past [lastFrame].
+Map<int, int>? retimeKeyRange(
+  Iterable<int> frames, {
+  required int fromFrame,
+  required int toFrame,
+  required double rate,
+  int? lastFrame,
+}) {
+  if (!isValidPlaybackRate(rate) || toFrame <= fromFrame) return null;
+  final keys = frames.toSet().toList()..sort();
+  final inRange = [
+    for (final f in keys)
+      if (f >= fromFrame && f <= toFrame) f,
+  ];
+  if (inRange.length < 2) return null;
+  final next = keys.where((f) => f > toFrame).firstOrNull;
+  final moved = <int, int>{};
+  final used = <int>{
+    for (final f in keys)
+      if (f < fromFrame || f > toFrame) f,
+  };
+  for (final f in inRange) {
+    final to = fromFrame + ((f - fromFrame) / rate).round();
+    if ((next != null && to >= next) ||
+        (lastFrame != null && to > lastFrame) ||
+        !used.add(to)) {
+      return null;
+    }
+    moved[f] = to;
+  }
+  return {for (final f in keys) f: moved[f] ?? f};
+}
+
+/// [keyframes] moved by [frames] (from [retimeKeyRange]); values and easing
+/// are kept.
+List<T> moveKeyframes<T>(
+  List<T> keyframes,
+  Map<int, int> frames, {
+  required int Function(T key) frameOf,
+  required T Function(T key, int frame) withFrame,
+}) => [
+  for (final key in keyframes)
+    withFrame(key, frames[frameOf(key)] ?? frameOf(key)),
+]..sort((a, b) => frameOf(a).compareTo(frameOf(b)));
+
 /// The FFmpeg `atempo` factors that change the speed by [rate]. One filter
 /// accepts 0.5–100, so slower speeds chain halvings.
 List<double> atempoChain(double rate) {

@@ -9,6 +9,7 @@ import 'package:niarim/engine/video_frame_decoder.dart';
 import 'package:niarim/engine/video_frame_timeline.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/audio_clip.dart';
+import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/layer_keyframe.dart';
 import 'package:niarim/router.dart';
@@ -221,5 +222,173 @@ void main() {
     expect(video().playbackRate, 1.0);
     expect(video().rangeEnd, 10);
     expect(video().keyframes.map((k) => k.frameIndex), [0, 8]);
+  });
+
+  testWidgets('a range of camera keys and of a material\'s keys plays at a '
+      'chosen speed; a speed that would leave the scene is refused; one Undo '
+      'puts them back', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ja',
+      'force_pc_mode': 0,
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final directory = Directory.systemTemp.createTempSync('timeline-retime-');
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (_) async => directory.path);
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(channel, null);
+      if (directory.existsSync()) directory.deleteSync(recursive: true);
+    });
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    appRouter.go('/');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    final ps = tester
+        .element(find.byType(MaterialApp).first)
+        .read<ProjectService>();
+
+    late String sceneId;
+    late String imageId;
+    final created = await tester.runAsync(() async {
+      final project = await ps.createProject(
+        name: 'retime',
+        fps: 10,
+        durationSeconds: 3,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 160,
+        exportHeight: 90,
+      );
+      sceneId = ps.scenesOf(project.id).first.id;
+      for (final f in [0, 10, 20]) {
+        ps.addCameraKeyframe(
+          project.id,
+          sceneId,
+          CameraKeyframe(frameIndex: f, x: f.toDouble()),
+        );
+      }
+      final layer = ps.addLayer(
+        projectId: project.id,
+        sceneId: sceneId,
+        frameIndex: 0,
+        type: LayerType.timelineImage,
+        name: 'picture',
+      );
+      imageId = layer.id;
+      ps.updateLayer(
+        projectId: project.id,
+        sceneId: sceneId,
+        frameIndex: 0,
+        layer: layer.copyWith(
+          rangeMode: LayerRangeMode.frameRange,
+          rangeStart: 1,
+          rangeEnd: 20,
+          keyframes: const [
+            LayerKeyframe(frameIndex: 0),
+            LayerKeyframe(frameIndex: 6, x: 10),
+            LayerKeyframe(frameIndex: 12, x: 20),
+          ],
+        ),
+      );
+      return project.id;
+    });
+    final projectId = created!;
+    appRouter.go('/timeline/$projectId');
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(TimelineScreen)),
+    )!;
+    List<int> cameraKeys() => [
+      for (final k in ps.cameraKeyframesOf(projectId, sceneId)) k.frameIndex,
+    ];
+    List<int> imageKeys() => [
+      for (final k
+          in ps
+              .storedLayersOf(projectId, sceneId, 0)
+              .firstWhere((l) => l.id == imageId)
+              .keyframes)
+        k.frameIndex,
+    ];
+    String previewText() => tester
+        .widget<IconNotice>(find.byKey(const ValueKey('keyframeRetimePreview')))
+        .message;
+    Future<void> tapQuick(double rate) async {
+      final chip = find.byKey(ValueKey('clipSpeedQuick$rate'));
+      await tester.ensureVisible(chip);
+      await tester.pump();
+      await tester.tap(chip);
+      await tester.pump();
+    }
+
+    // ── Camera: the whole range at 2x ──
+    final cameraButton = find.byKey(const ValueKey('cameraKeyframeRetime'));
+    await tester.ensureVisible(cameraButton);
+    await tester.tap(cameraButton);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(
+      previewText(),
+      l10n.keyframeRetimePreview('F1 · F11 · F21', 'F1 · F11 · F21'),
+    );
+    await tapQuick(2.0);
+    expect(
+      previewText(),
+      l10n.keyframeRetimePreview('F1 · F11 · F21', 'F1 · F6 · F11'),
+    );
+    // 0.25x would put the last key at F81, past the scene's 30 frames.
+    await tapQuick(0.25);
+    expect(
+      tester
+          .widget<IconNotice>(find.byKey(const ValueKey('clipSpeedProblem')))
+          .message,
+      l10n.keyframeRetimeClash,
+    );
+    await tester.tap(find.byKey(const ValueKey('keyframeRetimeApply')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(cameraKeys(), [0, 5, 10]);
+    expect(ps.cameraKeyframesOf(projectId, sceneId).map((k) => k.x), [
+      0,
+      10,
+      20,
+    ]);
+    await tester.tap(find.byIcon(Icons.undo).first);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(cameraKeys(), [0, 10, 20]);
+
+    // ── Image: the keys F7–F13 at 0.5x; F1 stays put ──
+    final clip = find.byKey(ValueKey('timelineClip-$imageId'));
+    await tester.ensureVisible(clip);
+    await tester.pump();
+    await tester.tapAt(tester.getTopLeft(clip) + const Offset(60, 20));
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    final transformChip = find.widgetWithIcon(ChoiceChip, Icons.open_with);
+    if (transformChip.evaluate().isNotEmpty) {
+      await tester.ensureVisible(transformChip);
+      await tester.tap(transformChip);
+      await tester.pump();
+    }
+    final retimeButton = find.byKey(const ValueKey('keyframeRetimeButton'));
+    await tester.ensureVisible(retimeButton);
+    await tester.pump();
+    await tester.tap(retimeButton);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    await tester.tap(find.byKey(const ValueKey('keyframeRetimeFrom')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    await tester.tap(find.text('F7').last);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    await tapQuick(0.5);
+    expect(previewText(), l10n.keyframeRetimePreview('F7 · F13', 'F7 · F19'));
+    await tester.tap(find.byKey(const ValueKey('keyframeRetimeApply')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(imageKeys(), [0, 6, 18]);
+    await tester.tap(find.byIcon(Icons.undo).first);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(imageKeys(), [0, 6, 12]);
   });
 }

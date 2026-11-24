@@ -11453,6 +11453,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Showing the sound waveform (tap to show video frames)';
 
   @override
+  String get keyframeRetimeTitle => 'Keyframe speed';
+
+  @override
+  String get keyframeRetimeHint =>
+      'Changes the spacing of the keys in the chosen range to match the speed. Their values and easing stay the same, and keys outside the range do not move.';
+
+  @override
+  String get keyframeRetimeFrom => 'First key of the range';
+
+  @override
+  String get keyframeRetimeTo => 'Last key of the range';
+
+  @override
+  String get keyframeRetimeClash =>
+      'This speed would put two keys on one frame, pass a key after the range, or go past the end of the scene.';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return 'Key positions: $before → $after';
+  }
+
+  @override
   String get keyframePreviewGestureHint =>
       'Drag the preview to move. Pinch or twist to resize or rotate.';
 

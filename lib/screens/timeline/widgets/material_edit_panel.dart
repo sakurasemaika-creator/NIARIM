@@ -17,8 +17,10 @@ import '../../../models/timeline_row_kind.dart';
 import '../../../services/font_service.dart';
 import '../../../services/project_service.dart';
 import '../../../widgets/confirm_delete.dart';
+import '../../../engine/clip_speed.dart';
 import '../../../widgets/labeled_slider.dart';
 import 'clip_speed_control.dart';
+import 'keyframe_retime_dialog.dart';
 import '../../../widgets/layer_mask_editor.dart';
 import '../../canvas/widgets/color_picker_panel.dart';
 import '../../../config/accent_text_theme.dart';
@@ -659,6 +661,39 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     _update(transform, preview: preview);
   }
 
+  /// Plays a chosen range of the material's keys faster or slower (one Undo
+  /// step; values and easing are kept, keys outside the range stay put).
+  Future<void> _retimeKeyframes(Layer layer, LayerHome home) async {
+    final lastFrame =
+        (_projects.sceneOf(widget.projectId, home.sceneId)?.frames.length ??
+            1) -
+        1;
+    final choice = await showKeyframeRetimeDialog(
+      context,
+      keyFrames: [for (final k in layer.keyframes) k.frameIndex],
+      lastFrame: lastFrame,
+    );
+    if (choice == null || !mounted) return;
+    _update((l) {
+      final moves = retimeKeyRange(
+        [for (final k in l.keyframes) k.frameIndex],
+        fromFrame: choice.fromFrame,
+        toFrame: choice.toFrame,
+        rate: choice.rate,
+        lastFrame: lastFrame,
+      );
+      if (moves == null) return l;
+      return l.copyWith(
+        keyframes: moveKeyframes(
+          l.keyframes,
+          moves,
+          frameOf: (k) => k.frameIndex,
+          withFrame: (k, f) => k.copyWith(frameIndex: f),
+        ),
+      );
+    });
+  }
+
   Widget _transformSection(Layer layer, LayerHome home, int frame) {
     final l10n = AppLocalizations.of(context)!;
     final tm = _projects.tileManagerOf(widget.projectId);
@@ -722,6 +757,13 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
                       ),
                     ),
             ),
+            if (animated)
+              OutlinedButton.icon(
+                key: const ValueKey('keyframeRetimeButton'),
+                icon: const Icon(Icons.speed, size: 18),
+                label: Text(l10n.keyframeRetimeTitle),
+                onPressed: () => _retimeKeyframes(layer, home),
+              ),
             if (animated)
               for (final k in keyframes)
                 ActionChip(

@@ -108,6 +108,7 @@ import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import 'widgets/clip_speed_control.dart';
+import 'widgets/keyframe_retime_dialog.dart';
 import 'widgets/material_edit_panel.dart';
 import 'widgets/video_filmstrip.dart';
 import 'widgets/material_gizmo.dart';
@@ -3718,9 +3719,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(dialogContext),
           title: Text(MakingStrings.readAloud(context)),
           content: SizedBox(
-            width: 520,
+            width: 480,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -7182,12 +7184,74 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         ),
                       ),
                     ),
+                    // The speed of a range of the camera's keys.
+                    if (cameraKfs.length >= 2)
+                      Positioned(
+                        right: 28,
+                        top: 4,
+                        child: Tooltip(
+                          message: l10n.keyframeRetimeTitle,
+                          child: GestureDetector(
+                            key: const ValueKey('cameraKeyframeRetime'),
+                            onTap: _retimeCameraKeyframes,
+                            child: Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: ThemeService.activeColorScheme.secondary
+                                    .withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.speed,
+                                size: 14,
+                                color: ThemeService.activeColorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 );
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Plays a chosen range of the camera's keys faster or slower (one Undo
+  /// step; the keys' values and easing are kept).
+  Future<void> _retimeCameraKeyframes() async {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final projects = context.read<ProjectService>();
+    final keys = projects.cameraKeyframesOf(widget.projectId, sceneId);
+    if (keys.length < 2) return;
+    final choice = await showKeyframeRetimeDialog(
+      context,
+      keyFrames: [for (final k in keys) k.frameIndex],
+      lastFrame: _totalFrames - 1,
+    );
+    if (choice == null || !mounted || _selectedSceneId != sceneId) return;
+    final current = projects.cameraKeyframesOf(widget.projectId, sceneId);
+    final moves = retimeKeyRange(
+      [for (final k in current) k.frameIndex],
+      fromFrame: choice.fromFrame,
+      toFrame: choice.toFrame,
+      rate: choice.rate,
+      lastFrame: _totalFrames - 1,
+    );
+    if (moves == null) return;
+    projects.replaceCameraKeyframes(
+      widget.projectId,
+      sceneId,
+      moveKeyframes(
+        current,
+        moves,
+        frameOf: (k) => k.frameIndex,
+        withFrame: (k, f) => k.copyWith(frameIndex: f),
       ),
     );
   }

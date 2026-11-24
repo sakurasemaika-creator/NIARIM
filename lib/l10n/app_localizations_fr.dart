@@ -11627,6 +11627,28 @@ class AppLocalizationsFr extends AppLocalizations {
       'Forme d’onde du son affichée (touchez pour afficher les images de la vidéo)';
 
   @override
+  String get keyframeRetimeTitle => 'Vitesse des images clés';
+
+  @override
+  String get keyframeRetimeHint =>
+      'Modifie l’espacement des clés de la plage choisie selon la vitesse. Leurs valeurs et leur lissage ne changent pas, et les clés hors de la plage ne bougent pas.';
+
+  @override
+  String get keyframeRetimeFrom => 'Première clé de la plage';
+
+  @override
+  String get keyframeRetimeTo => 'Dernière clé de la plage';
+
+  @override
+  String get keyframeRetimeClash =>
+      'Avec cette vitesse, deux clés tomberaient sur la même image, une clé dépasserait une clé située après la plage ou sortirait de la fin de la scène.';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return 'Position des clés : $before → $after';
+  }
+
+  @override
   String get keyframePreviewGestureHint =>
       'Faites glisser l’aperçu pour déplacer. Pincez ou tournez avec deux doigts pour redimensionner ou faire pivoter.';
 

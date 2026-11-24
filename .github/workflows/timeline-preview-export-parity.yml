@@ -24,6 +24,7 @@ on:
       - 'lib/screens/timeline/widgets/clip_speed_control.dart'
       - 'lib/screens/timeline/widgets/material_edit_panel.dart'
       - 'lib/screens/timeline/widgets/video_filmstrip.dart'
+      - 'lib/screens/timeline/widgets/keyframe_retime_dialog.dart'
       - 'lib/models/scene.dart'
       - 'lib/models/video_track_display.dart'
       - 'lib/services/project_service.dart'
@@ -136,6 +137,7 @@ jobs:
           lib/screens/timeline/widgets/clip_speed_control.dart
           lib/screens/timeline/widgets/material_edit_panel.dart
           lib/screens/timeline/widgets/video_filmstrip.dart
+          lib/screens/timeline/widgets/keyframe_retime_dialog.dart
           lib/models/scene.dart
           lib/models/video_track_display.dart
           lib/services/project_service.dart

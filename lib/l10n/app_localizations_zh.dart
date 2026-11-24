@@ -10512,6 +10512,26 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineVideoTrackShowingWaveform => '正在显示声音波形（点按切换为视频画面）';
 
   @override
+  String get keyframeRetimeTitle => '关键帧速度';
+
+  @override
+  String get keyframeRetimeHint => '按速度改变所选范围内关键帧的间隔。值和缓动保持不变，范围外的关键帧不会移动。';
+
+  @override
+  String get keyframeRetimeFrom => '范围的第一个关键帧';
+
+  @override
+  String get keyframeRetimeTo => '范围的最后一个关键帧';
+
+  @override
+  String get keyframeRetimeClash => '使用此速度会让两个关键帧落在同一帧、超过范围后面的关键帧，或超出场景的结尾。';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return '关键帧位置：$before → $after';
+  }
+
+  @override
   String get keyframePreviewGestureHint => '拖动预览可移动。双指捏合或旋转可缩放或转动。';
 
   @override
@@ -21111,6 +21131,26 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineVideoTrackShowingWaveform => '正在顯示聲音波形（點按切換為影片畫面）';
+
+  @override
+  String get keyframeRetimeTitle => '關鍵影格速度';
+
+  @override
+  String get keyframeRetimeHint => '依速度改變所選範圍內關鍵影格的間隔。值和緩動保持不變，範圍外的關鍵影格不會移動。';
+
+  @override
+  String get keyframeRetimeFrom => '範圍的第一個關鍵影格';
+
+  @override
+  String get keyframeRetimeTo => '範圍的最後一個關鍵影格';
+
+  @override
+  String get keyframeRetimeClash => '使用此速度會讓兩個關鍵影格落在同一影格、超過範圍後面的關鍵影格，或超出場景的結尾。';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return '關鍵影格位置：$before → $after';
+  }
 
   @override
   String get keyframePreviewGestureHint => '拖曳預覽可移動。用雙指捏合或旋轉就能縮放或轉動。';

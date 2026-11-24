@@ -10642,6 +10642,28 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineVideoTrackShowingWaveform => '音声の波形を表示中（タップで映像のコマに切り替え）';
 
   @override
+  String get keyframeRetimeTitle => 'キーフレームの速度';
+
+  @override
+  String get keyframeRetimeHint =>
+      '選んだ範囲のキーの間隔を、速度に合わせて変えます。値と補間はそのままで、範囲の外のキーは動きません。';
+
+  @override
+  String get keyframeRetimeFrom => '範囲の始めのキー';
+
+  @override
+  String get keyframeRetimeTo => '範囲の終わりのキー';
+
+  @override
+  String get keyframeRetimeClash =>
+      'キーが同じフレームに重なる、範囲の後ろのキーを追い越す、またはシーンの外へ出るため、この速度にはできません。';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return 'キーの位置：$before → $after';
+  }
+
+  @override
   String get keyframePreviewGestureHint => 'プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。';
 
   @override

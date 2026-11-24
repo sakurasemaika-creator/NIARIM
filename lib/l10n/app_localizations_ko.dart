@@ -10700,6 +10700,28 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineVideoTrackShowingWaveform => '소리 파형 표시 중(탭하면 영상 프레임으로 전환)';
 
   @override
+  String get keyframeRetimeTitle => '키프레임 속도';
+
+  @override
+  String get keyframeRetimeHint =>
+      '선택한 범위의 키 간격을 속도에 맞춰 바꿉니다. 값과 보간은 그대로이며, 범위 밖의 키는 움직이지 않습니다.';
+
+  @override
+  String get keyframeRetimeFrom => '범위의 첫 키';
+
+  @override
+  String get keyframeRetimeTo => '범위의 마지막 키';
+
+  @override
+  String get keyframeRetimeClash =>
+      '키가 같은 프레임에 겹치거나, 범위 뒤의 키를 앞지르거나, 신 밖으로 나가므로 이 속도로 할 수 없습니다.';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return '키 위치: $before → $after';
+  }
+
+  @override
   String get keyframePreviewGestureHint =>
       '미리보기를 드래그하여 이동하세요. 두 손가락으로 확대, 축소 또는 회전할 수 있습니다.';
 

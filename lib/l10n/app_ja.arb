@@ -6485,6 +6485,22 @@
   "timelineAddTrackRowTooltip": "トラックに行を追加",
   "timelineVideoTrackShowingFrames": "映像のコマを表示中（タップで音声の波形に切り替え）",
   "timelineVideoTrackShowingWaveform": "音声の波形を表示中（タップで映像のコマに切り替え）",
+  "keyframeRetimeTitle": "キーフレームの速度",
+  "keyframeRetimeHint": "選んだ範囲のキーの間隔を、速度に合わせて変えます。値と補間はそのままで、範囲の外のキーは動きません。",
+  "keyframeRetimeFrom": "範囲の始めのキー",
+  "keyframeRetimeTo": "範囲の終わりのキー",
+  "keyframeRetimeClash": "キーが同じフレームに重なる、範囲の後ろのキーを追い越す、またはシーンの外へ出るため、この速度にはできません。",
+  "keyframeRetimePreview": "キーの位置：{before} → {after}",
+  "@keyframeRetimePreview": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
   "keyframePreviewGestureHint": "プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。",
   "settingsAccountDeletionTitle": "NIARIMアカウントを削除",
   "settingsAccountDeletionSubtitle": "公式サイトで手続きする",

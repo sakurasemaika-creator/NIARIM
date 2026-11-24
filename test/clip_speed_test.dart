@@ -211,6 +211,97 @@ void main() {
     });
   });
 
+  group('key range retiming', () {
+    const keys = [0, 4, 8, 12, 20];
+
+    test('spaces the range\'s keys by 1 / speed from its first key; keys '
+        'outside it stay put', () {
+      expect(retimeKeyRange(keys, fromFrame: 4, toFrame: 12, rate: 2), {
+        0: 0,
+        4: 4,
+        8: 6,
+        12: 8,
+        20: 20,
+      });
+      expect(retimeKeyRange(keys, fromFrame: 0, toFrame: 8, rate: 0.75), {
+        0: 0,
+        4: 5,
+        8: 11,
+        12: 12,
+        20: 20,
+      });
+    });
+
+    test('refuses keys on one frame, passing a later key, leaving the scene '
+        'or a range without two keys', () {
+      // 100x puts 4, 8 and 12 on frame 4.
+      expect(
+        retimeKeyRange(keys, fromFrame: 4, toFrame: 12, rate: 100),
+        isNull,
+      );
+      // 0.5x would move 12 to 20, onto the key after the range.
+      expect(
+        retimeKeyRange(keys, fromFrame: 4, toFrame: 12, rate: 0.5),
+        isNull,
+      );
+      // 0.25x would move 8 past 12 (the key after the range).
+      expect(
+        retimeKeyRange(keys, fromFrame: 0, toFrame: 8, rate: 0.25),
+        isNull,
+      );
+      // The last range reaching past the scene's last frame.
+      expect(
+        retimeKeyRange(
+          keys,
+          fromFrame: 12,
+          toFrame: 20,
+          rate: 0.5,
+          lastFrame: 23,
+        ),
+        isNull,
+      );
+      expect(
+        retimeKeyRange(
+          keys,
+          fromFrame: 12,
+          toFrame: 20,
+          rate: 0.5,
+          lastFrame: 28,
+        ),
+        {0: 0, 4: 4, 8: 8, 12: 12, 20: 28},
+      );
+      expect(retimeKeyRange(keys, fromFrame: 5, toFrame: 7, rate: 2), isNull);
+      expect(retimeKeyRange(keys, fromFrame: 4, toFrame: 4, rate: 2), isNull);
+      expect(retimeKeyRange(keys, fromFrame: 0, toFrame: 20, rate: 0), isNull);
+    });
+
+    test('moves keys keeping their values and easing', () {
+      const animation = [
+        LayerKeyframe(frameIndex: 0, x: 1),
+        LayerKeyframe(
+          frameIndex: 10,
+          x: 2,
+          easing: LayerKeyframeEasing.easeOut,
+        ),
+        LayerKeyframe(frameIndex: 20, x: 3),
+      ];
+      final moved = moveKeyframes(
+        animation,
+        retimeKeyRange(
+          [for (final k in animation) k.frameIndex],
+          fromFrame: 0,
+          toFrame: 20,
+          rate: 2,
+        )!,
+        frameOf: (k) => k.frameIndex,
+        withFrame: (k, f) => k.copyWith(frameIndex: f),
+      );
+      expect(moved.map((k) => k.frameIndex), [0, 5, 10]);
+      expect(moved.map((k) => k.x), [1, 2, 3]);
+      expect(moved[1].easing, LayerKeyframeEasing.easeOut);
+    });
+  });
+
   group('export sound', () {
     test('atempo chains halvings for slow speeds', () {
       double product(List<double> chain) => chain.fold(1.0, (a, b) => a * b);

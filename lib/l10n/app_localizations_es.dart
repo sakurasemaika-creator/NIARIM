@@ -11613,6 +11613,28 @@ class AppLocalizationsEs extends AppLocalizations {
       'Mostrando la forma de onda del sonido (toca para ver los fotogramas del vídeo)';
 
   @override
+  String get keyframeRetimeTitle => 'Velocidad de los fotogramas clave';
+
+  @override
+  String get keyframeRetimeHint =>
+      'Cambia la separación de las claves del rango elegido según la velocidad. Sus valores y su suavizado no cambian, y las claves fuera del rango no se mueven.';
+
+  @override
+  String get keyframeRetimeFrom => 'Primera clave del rango';
+
+  @override
+  String get keyframeRetimeTo => 'Última clave del rango';
+
+  @override
+  String get keyframeRetimeClash =>
+      'Con esta velocidad dos claves quedarían en el mismo fotograma, una pasaría a una clave posterior al rango o saldría del final de la escena.';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return 'Posiciones de las claves: $before → $after';
+  }
+
+  @override
   String get keyframePreviewGestureHint =>
       'Arrastra la vista previa para mover. Pellizca o gira con dos dedos para cambiar el tamaño o rotar.';
 

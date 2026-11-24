@@ -18729,6 +18729,42 @@ abstract class AppLocalizations {
   /// **'音声の波形を表示中（タップで映像のコマに切り替え）'**
   String get timelineVideoTrackShowingWaveform;
 
+  /// No description provided for @keyframeRetimeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーフレームの速度'**
+  String get keyframeRetimeTitle;
+
+  /// No description provided for @keyframeRetimeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ範囲のキーの間隔を、速度に合わせて変えます。値と補間はそのままで、範囲の外のキーは動きません。'**
+  String get keyframeRetimeHint;
+
+  /// No description provided for @keyframeRetimeFrom.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲の始めのキー'**
+  String get keyframeRetimeFrom;
+
+  /// No description provided for @keyframeRetimeTo.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲の終わりのキー'**
+  String get keyframeRetimeTo;
+
+  /// No description provided for @keyframeRetimeClash.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーが同じフレームに重なる、範囲の後ろのキーを追い越す、またはシーンの外へ出るため、この速度にはできません。'**
+  String get keyframeRetimeClash;
+
+  /// No description provided for @keyframeRetimePreview.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーの位置：{before} → {after}'**
+  String keyframeRetimePreview(String before, String after);
+
   /// No description provided for @keyframePreviewGestureHint.
   ///
   /// In ja, this message translates to:
