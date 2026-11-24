@@ -910,20 +910,25 @@ class _FilterPanelState extends State<FilterPanel> {
   /// bottom bar, the close button).
   Widget _listTitleRow(AppLocalizations l10n, {bool withClose = false}) {
     final bulk = widget.bulkFrameIndices;
+    // ドックでは窓の見出しが「フィルター」を出すので、同じ題を重ねない
+    // （一括適用の件数の題は窓の見出しに無いので出す）。
+    final hideTitle = bulk == null && DockedPanelScope.of(context);
     return Row(
       children: [
         Expanded(
-          child: Text(
-            bulk != null
-                ? l10n.filterPanelTitleBulk(bulk.length)
-                : l10n.filterPanelTitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: localizedHeadingStyle(
-              context,
-              const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
-          ),
+          child: hideTitle
+              ? const SizedBox.shrink()
+              : Text(
+                  bulk != null
+                      ? l10n.filterPanelTitleBulk(bulk.length)
+                      : l10n.filterPanelTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ),
         ),
         IconButton(
           visualDensity: VisualDensity.compact,
