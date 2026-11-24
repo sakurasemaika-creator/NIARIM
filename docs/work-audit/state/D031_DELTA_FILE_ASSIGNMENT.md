@@ -2,8 +2,8 @@
 
 `assign_delta_files.py`が作る。ベースラインの棚卸し（AUDIT_INVENTORY.json、2026-09-09）に無い製品のファイル（lib・android・backend・assets・tool）を、パスの機能の語（brush・timeline・export…）、無ければ同じフォルダのベースラインのファイルのIDで、監査のIDへ割り当てる。
 
-- 対象：569件、割り当て：569件、未割当：0件
-- 機能の語で：532件、フォルダで：37件
+- 対象：565件、割り当て：565件、未割当：0件
+- 機能の語で：529件、フォルダで：36件
 
 | ファイル | ID | 決め方 |
 | --- | --- | --- |
@@ -439,6 +439,7 @@
 | `lib/screens/home/widgets/project_thumbnail_dialog.dart` | A003・A004 | name: home |
 | `lib/screens/home/widgets/shared_direction_switch.dart` | A065 | name: share |
 | `lib/screens/home/widgets/work_folder_move_sheet.dart` | A006 | name: folder |
+| `lib/screens/project/widgets/canvas_size_choice_label.dart` | A008 | name: canvas_size |
 | `lib/screens/project/widgets/canvas_size_fields.dart` | A008 | name: canvas_size |
 | `lib/screens/project/widgets/project_playback_status.dart` | A004・A009 | name: project |
 | `lib/screens/rewards/coin_benefits_screen.dart` | A089 | name: reward |
@@ -571,8 +572,3 @@
 | `tool/export_flutter_dependency_inventory.py` | A085・A104 | name: dependency_inventory |
 | `tool/feature_capture_gallery.py` | A104 | directory: tool |
 | `tool/live_backend_smoke_test.dart` | A104 | directory: tool |
-| `tool/normal_task_final_residual_fix.sh` | A104 | directory: tool |
-| `tool/one_shot_fix_pinch_and_automation_proof.py` | A043・A044 | name: automation |
-| `tool/patch_custom_automation_keep_surfaces.py` | A043・A044 | name: automation |
-| `tool/patch_custom_automation_rewrite_anchor.py` | A043・A044 | name: automation |
-| `tool/rewrite_custom_automation_visual_proof.py` | A043・A044 | name: automation |
