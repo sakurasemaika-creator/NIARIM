@@ -22,6 +22,7 @@ on:
       - 'lib/models/layer.dart'
       - 'lib/models/audio_clip.dart'
       - 'lib/screens/timeline/widgets/clip_speed_control.dart'
+      - 'lib/screens/timeline/widgets/clip_time_range_control.dart'
       - 'lib/screens/timeline/widgets/material_edit_panel.dart'
       - 'lib/screens/timeline/widgets/video_filmstrip.dart'
       - 'lib/screens/timeline/widgets/keyframe_retime_dialog.dart'
@@ -52,6 +53,7 @@ on:
       - 'test/timeline_preview_video_frames_test.dart'
       - 'test/clip_speed_test.dart'
       - 'test/timeline_clip_speed_test.dart'
+      - 'test/timeline_time_range_test.dart'
       - 'test/timeline_split_test.dart'
       - 'test/layer_crop_test.dart'
       - 'test/timeline_crop_test.dart'
@@ -125,6 +127,8 @@ jobs:
         run: flutter test test/clip_speed_test.dart --reporter expanded
       - name: Test changing clip speed in the timeline screen (refusal, cancel, Undo)
         run: flutter test test/timeline_clip_speed_test.dart --reporter expanded
+      - name: Test the 長さ調整 time range (typed start/end for materials and audio, refusals, Undo, Cancel)
+        run: flutter test test/timeline_time_range_test.dart --reporter expanded
       - name: Test cropping (drawn like cut pixels on every path, panel and preview handles, Undo)
         run: flutter test test/layer_crop_test.dart test/timeline_crop_test.dart --reporter expanded
       - name: Test selected parts moved, copied and erased (drawn like edited pixels on every path, saving, preview handles, panel, Undo)
@@ -152,6 +156,7 @@ jobs:
           lib/models/layer.dart
           lib/models/audio_clip.dart
           lib/screens/timeline/widgets/clip_speed_control.dart
+          lib/screens/timeline/widgets/clip_time_range_control.dart
           lib/screens/timeline/widgets/material_edit_panel.dart
           lib/screens/timeline/widgets/video_filmstrip.dart
           lib/screens/timeline/widgets/keyframe_retime_dialog.dart
@@ -181,6 +186,7 @@ jobs:
           test/timeline_preview_video_frames_test.dart
           test/clip_speed_test.dart
           test/timeline_clip_speed_test.dart
+          test/timeline_time_range_test.dart
           test/timeline_split_test.dart
           test/layer_crop_test.dart
           test/timeline_crop_test.dart

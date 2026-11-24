@@ -5237,6 +5237,40 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineRegionRemoveAll => '범위 편집 모두 제거';
 
   @override
+  String get timelineEditSectionDuration => '길이 조정';
+
+  @override
+  String get timelineDurationRangeTitle => '시간 범위';
+
+  @override
+  String get timelineDurationRangeHint =>
+      '타임라인에서 클립이 차지하는 첫 프레임과 마지막 프레임입니다. 타임라인에서 클립의 가장자리를 드래그해도 바꿀 수 있습니다.';
+
+  @override
+  String get timelineDurationStartLabel => '시작 프레임';
+
+  @override
+  String get timelineDurationEndLabel => '종료 프레임';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    return '길이: $frames프레임($seconds초)';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return '1~$max 사이의 정수를 입력하세요. 시작이 끝보다 뒤에 올 수 없습니다.';
+  }
+
+  @override
+  String get timelineDurationOverlap =>
+      '이 범위로 하면 같은 줄의 다른 클립과 겹치므로 변경하지 않았습니다.';
+
+  @override
+  String get timelineDurationBeforeSource =>
+      '소리의 처음보다 앞으로는 늘릴 수 없으므로 변경하지 않았습니다.';
+
+  @override
   String get timelineTransformRotationX => 'X축 회전';
 
   @override

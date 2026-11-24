@@ -5208,6 +5208,38 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineRegionRemoveAll => '範囲の編集をすべて外す';
 
   @override
+  String get timelineEditSectionDuration => '長さ調整';
+
+  @override
+  String get timelineDurationRangeTitle => '時間範囲';
+
+  @override
+  String get timelineDurationRangeHint =>
+      'タイムライン上で表示する最初と最後のフレームです。タイムラインのクリップの端をドラッグしても変えられます。';
+
+  @override
+  String get timelineDurationStartLabel => '開始フレーム';
+
+  @override
+  String get timelineDurationEndLabel => '終了フレーム';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    return '長さ：$framesフレーム（$seconds秒）';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return '1〜$maxの整数を入れてください。開始は終了より後にできません。';
+  }
+
+  @override
+  String get timelineDurationOverlap => 'この範囲にすると同じ列の別のクリップと重なるため、変更しませんでした。';
+
+  @override
+  String get timelineDurationBeforeSource => '音声の先頭より前には広げられないため、変更しませんでした。';
+
+  @override
   String get timelineTransformRotationX => 'X軸回転';
 
   @override

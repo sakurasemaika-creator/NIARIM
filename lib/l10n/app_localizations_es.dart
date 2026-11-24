@@ -5531,6 +5531,46 @@ class AppLocalizationsEs extends AppLocalizations {
       'Quitar todas las ediciones de selección';
 
   @override
+  String get timelineEditSectionDuration => 'Duración';
+
+  @override
+  String get timelineDurationRangeTitle => 'Intervalo de tiempo';
+
+  @override
+  String get timelineDurationRangeHint =>
+      'Los fotogramas primero y último que ocupa el clip en la línea de tiempo. También puedes arrastrar los bordes del clip en la línea de tiempo.';
+
+  @override
+  String get timelineDurationStartLabel => 'Fotograma inicial';
+
+  @override
+  String get timelineDurationEndLabel => 'Fotograma final';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      frames,
+      locale: localeName,
+      other: 'Duración: $frames fotogramas ($seconds s)',
+      one: 'Duración: $frames fotograma ($seconds s)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return 'Introduce un número entero del 1 al $max. El inicio no puede ir después del final.';
+  }
+
+  @override
+  String get timelineDurationOverlap =>
+      'No se cambió: con este intervalo el clip se superpondría a otro clip de la misma fila.';
+
+  @override
+  String get timelineDurationBeforeSource =>
+      'No se cambió: el clip no puede empezar antes del comienzo de su sonido.';
+
+  @override
   String get timelineTransformRotationX => 'Rotación en X';
 
   @override

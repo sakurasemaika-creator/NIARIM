@@ -9429,6 +9429,60 @@ abstract class AppLocalizations {
   /// **'範囲の編集をすべて外す'**
   String get timelineRegionRemoveAll;
 
+  /// No description provided for @timelineEditSectionDuration.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さ調整'**
+  String get timelineEditSectionDuration;
+
+  /// No description provided for @timelineDurationRangeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'時間範囲'**
+  String get timelineDurationRangeTitle;
+
+  /// No description provided for @timelineDurationRangeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムライン上で表示する最初と最後のフレームです。タイムラインのクリップの端をドラッグしても変えられます。'**
+  String get timelineDurationRangeHint;
+
+  /// No description provided for @timelineDurationStartLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始フレーム'**
+  String get timelineDurationStartLabel;
+
+  /// No description provided for @timelineDurationEndLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了フレーム'**
+  String get timelineDurationEndLabel;
+
+  /// No description provided for @timelineDurationLength.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さ：{frames}フレーム（{seconds}秒）'**
+  String timelineDurationLength(int frames, String seconds);
+
+  /// No description provided for @timelineDurationInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'1〜{max}の整数を入れてください。開始は終了より後にできません。'**
+  String timelineDurationInvalid(int max);
+
+  /// No description provided for @timelineDurationOverlap.
+  ///
+  /// In ja, this message translates to:
+  /// **'この範囲にすると同じ列の別のクリップと重なるため、変更しませんでした。'**
+  String get timelineDurationOverlap;
+
+  /// No description provided for @timelineDurationBeforeSource.
+  ///
+  /// In ja, this message translates to:
+  /// **'音声の先頭より前には広げられないため、変更しませんでした。'**
+  String get timelineDurationBeforeSource;
+
   /// No description provided for @timelineTransformRotationX.
   ///
   /// In ja, this message translates to:

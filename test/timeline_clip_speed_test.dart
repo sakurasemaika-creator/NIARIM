@@ -192,9 +192,10 @@ void main() {
     // ── Video ──
     final clipV = find.byKey(ValueKey('timelineClip-$videoId'));
     await tapClip(clipV);
-    final videoChip = find.widgetWithIcon(ChoiceChip, Icons.videocam);
-    await tester.ensureVisible(videoChip);
-    await tester.tap(videoChip);
+    // The speed is in the panel's 長さ調整 section, with the time range.
+    final durationChip = find.widgetWithIcon(ChoiceChip, Icons.timelapse);
+    await tester.ensureVisible(durationChip);
+    await tester.tap(durationChip);
     await tester.pump();
     expect(find.byType(ClipSpeedControl), findsOneWidget);
 

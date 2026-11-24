@@ -5448,6 +5448,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineRegionRemoveAll => 'Remove all selection edits';
 
   @override
+  String get timelineEditSectionDuration => 'Duration';
+
+  @override
+  String get timelineDurationRangeTitle => 'Time range';
+
+  @override
+  String get timelineDurationRangeHint =>
+      'The first and last frames the clip covers on the timeline. You can also drag the clip’s edges on the timeline.';
+
+  @override
+  String get timelineDurationStartLabel => 'Start frame';
+
+  @override
+  String get timelineDurationEndLabel => 'End frame';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      frames,
+      locale: localeName,
+      other: 'Length: $frames frames ($seconds s)',
+      one: 'Length: $frames frame ($seconds s)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return 'Enter a whole number from 1 to $max. The start cannot come after the end.';
+  }
+
+  @override
+  String get timelineDurationOverlap =>
+      'Not changed: with this range the clip would overlap another clip in the same row.';
+
+  @override
+  String get timelineDurationBeforeSource =>
+      'Not changed: the clip cannot start before the beginning of its sound.';
+
+  @override
   String get timelineTransformRotationX => 'X-axis rotation';
 
   @override

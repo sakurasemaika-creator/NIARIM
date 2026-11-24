@@ -5150,6 +5150,38 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineRegionRemoveAll => '移除全部选区编辑';
 
   @override
+  String get timelineEditSectionDuration => '长度调整';
+
+  @override
+  String get timelineDurationRangeTitle => '时间范围';
+
+  @override
+  String get timelineDurationRangeHint =>
+      '片段在时间轴上占用的第一帧和最后一帧。也可以在时间轴上拖动片段的边缘来更改。';
+
+  @override
+  String get timelineDurationStartLabel => '起始帧';
+
+  @override
+  String get timelineDurationEndLabel => '结束帧';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    return '长度：$frames帧（$seconds秒）';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return '请输入1到$max之间的整数。起始不能晚于结束。';
+  }
+
+  @override
+  String get timelineDurationOverlap => '未更改：使用此范围会与同一行的其他片段重叠。';
+
+  @override
+  String get timelineDurationBeforeSource => '未更改：片段不能早于其音频的开头。';
+
+  @override
   String get timelineTransformRotationX => 'X轴旋转';
 
   @override
@@ -15904,7 +15936,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineRegionHint =>
-      '在預覽上拖曳圈出一個範圍，然後選擇移動/變形、建立副本或刪除。影片的每一格都會套用相同的編輯。原圖片或影片不會改變。';
+      '在預覽上拖曳圈出一個範圍，然後選擇移動/變形、建立副本或刪除。影片的每個影格都會套用相同的編輯。原圖片或影片不會改變。';
 
   @override
   String get timelineRegionShapeFreehand => '自由形狀';
@@ -15963,6 +15995,38 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineRegionRemoveAll => '移除全部選取範圍編輯';
+
+  @override
+  String get timelineEditSectionDuration => '長度調整';
+
+  @override
+  String get timelineDurationRangeTitle => '時間範圍';
+
+  @override
+  String get timelineDurationRangeHint =>
+      '片段在時間軸上占用的第一個影格和最後一個影格。也可以在時間軸上拖曳片段的邊緣來變更。';
+
+  @override
+  String get timelineDurationStartLabel => '起始影格';
+
+  @override
+  String get timelineDurationEndLabel => '結束影格';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    return '長度：$frames個影格（$seconds秒）';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return '請輸入1到$max之間的整數。起始不能晚於結束。';
+  }
+
+  @override
+  String get timelineDurationOverlap => '未變更：使用此範圍會與同一列的其他片段重疊。';
+
+  @override
+  String get timelineDurationBeforeSource => '未變更：片段不能早於其音訊的開頭。';
 
   @override
   String get timelineTransformRotationX => 'X軸旋轉';

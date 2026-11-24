@@ -23,6 +23,7 @@ import '../../../engine/clip_speed.dart';
 import '../../../engine/crop_frame.dart';
 import '../../../widgets/labeled_slider.dart';
 import 'clip_speed_control.dart';
+import 'clip_time_range_control.dart';
 import 'material_region_controller.dart';
 import 'keyframe_retime_dialog.dart';
 import '../../../widgets/layer_mask_editor.dart';
@@ -32,7 +33,7 @@ import '../../../widgets/typing_dialog_inset.dart';
 import '../../../widgets/menu_surface.dart';
 import '../../../widgets/responsive.dart';
 
-enum _Section { text, transform, crop, region, mask, video }
+enum _Section { text, transform, duration, crop, region, mask, video }
 
 /// Colours offered with one tap for a timeline text and its outline.
 const List<int> _textColours = [
@@ -107,6 +108,9 @@ class TimelineMaterialEditPanel extends StatefulWidget {
     this.cropFrameOf,
     this.onCropEditingChanged,
     this.regionController,
+    this.totalFrames,
+    this.framesPerSecond,
+    this.onTimeRangeChange,
   });
 
   final String projectId;
@@ -145,6 +149,13 @@ class TimelineMaterialEditPanel extends StatefulWidget {
   /// Shared with the preview's handles for selecting and changing parts of
   /// an image or video (範囲選択). Null leaves the section out.
   final MaterialRegionController? regionController;
+
+  /// The scene's frames and frame rate, and the change of the material's
+  /// first and last frame on the timeline (from 0), which returns why it
+  /// was refused, or null. Without them the 長さ調整 section is left out.
+  final int? totalFrames;
+  final double? framesPerSecond;
+  final String? Function(int start, int end)? onTimeRangeChange;
 
   @override
   State<TimelineMaterialEditPanel> createState() =>
@@ -1393,21 +1404,37 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     );
   }
 
-  // ─── Video ──────────────────────────────────────────────────────────────
+  // ─── Duration (長さ調整) ─────────────────────────────────────────────────
 
-  Widget _videoSection(Layer layer) {
+  /// 長さ調整: the material's time range on the timeline and, for a video,
+  /// its speed (spec: the two items of one section).
+  Widget _durationSection(Layer layer) {
     final l10n = AppLocalizations.of(context)!;
+    final heading = Theme.of(context).textTheme.titleSmall;
     final start = materialFirstFrame(layer);
-    final end = (layer.rangeEnd ?? start + 1) - 1;
-    final last = (end - start).clamp(0, 1 << 30);
-    final useStart = (layer.sourceTrimStart ?? 0).clamp(0, last);
-    final useEnd = (layer.sourceTrimEnd ?? last).clamp(useStart, last);
+    final end = math.max(start, (layer.rangeEnd ?? start + 1) - 1);
+    final changeRange = widget.onTimeRangeChange;
+    final total = widget.totalFrames;
     final endFrameAt = widget.videoSpeedEndFrameAt;
     final changeSpeed = widget.onVideoSpeedChange;
+    final isVideo = layer.type == LayerType.timelineVideo;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (endFrameAt != null && changeSpeed != null) ...[
+        Text(l10n.timelineDurationRangeTitle, style: heading),
+        const SizedBox(height: 6),
+        if (changeRange != null && total != null)
+          ClipTimeRangeControl(
+            start: start,
+            end: end,
+            totalFrames: total,
+            framesPerSecond: widget.framesPerSecond ?? 24,
+            onApply: changeRange,
+          ),
+        if (isVideo && endFrameAt != null && changeSpeed != null) ...[
+          const Divider(height: 24),
+          Text(l10n.timelineClipSpeedLabel, style: heading),
+          const SizedBox(height: 6),
           ClipSpeedControl(
             rate: layer.playbackRate,
             hasSound: layer.videoVolume > 0,
@@ -1423,8 +1450,23 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
             onChanged: (on) =>
                 _update((l) => l.copyWith(videoSoundFollowsSpeed: on)),
           ),
-          const SizedBox(height: 8),
         ],
+      ],
+    );
+  }
+
+  // ─── Video ──────────────────────────────────────────────────────────────
+
+  Widget _videoSection(Layer layer) {
+    final l10n = AppLocalizations.of(context)!;
+    final start = materialFirstFrame(layer);
+    final end = (layer.rangeEnd ?? start + 1) - 1;
+    final last = (end - start).clamp(0, 1 << 30);
+    final useStart = (layer.sourceTrimStart ?? 0).clamp(0, last);
+    final useEnd = (layer.sourceTrimEnd ?? last).clamp(useStart, last);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
         LabeledSlider(
           label: l10n.timelineClipVolumeLabel,
           value: (layer.videoVolume * 100).clamp(0, 100),
@@ -1493,6 +1535,8 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     final sections = [
       if (isText) _Section.text,
       _Section.transform,
+      if (widget.onTimeRangeChange != null && widget.totalFrames != null)
+        _Section.duration,
       if (!isText) _Section.crop,
       if (!isText && widget.regionController != null) _Section.region,
       _Section.mask,
@@ -1519,6 +1563,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     String sectionLabel(_Section s) => switch (s) {
       _Section.text => l10n.timelineEditSectionText,
       _Section.transform => l10n.timelineEditSectionTransform,
+      _Section.duration => l10n.timelineEditSectionDuration,
       _Section.crop => l10n.timelineEditSectionCrop,
       _Section.region => l10n.timelineEditSectionRegion,
       _Section.mask => l10n.timelineEditSectionMask,
@@ -1527,6 +1572,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     IconData sectionIcon(_Section s) => switch (s) {
       _Section.text => Icons.text_fields,
       _Section.transform => Icons.open_with,
+      _Section.duration => Icons.timelapse,
       _Section.crop => Icons.crop,
       _Section.region => Icons.highlight_alt,
       _Section.mask => Icons.vignette_outlined,
@@ -1632,6 +1678,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
                   builder: (context, frame, _) =>
                       _transformSection(layer, found.home, frame),
                 ),
+                _Section.duration => _durationSection(layer),
                 _Section.crop => _cropSection(layer),
                 _Section.region => _regionSection(layer),
                 _Section.mask => LayerMaskEditor(

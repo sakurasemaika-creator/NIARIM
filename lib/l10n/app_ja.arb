@@ -2650,6 +2650,32 @@
   },
   "timelineRegionEditRemove": "この編集を外す",
   "timelineRegionRemoveAll": "範囲の編集をすべて外す",
+  "timelineEditSectionDuration": "長さ調整",
+  "timelineDurationRangeTitle": "時間範囲",
+  "timelineDurationRangeHint": "タイムライン上で表示する最初と最後のフレームです。タイムラインのクリップの端をドラッグしても変えられます。",
+  "timelineDurationStartLabel": "開始フレーム",
+  "timelineDurationEndLabel": "終了フレーム",
+  "timelineDurationLength": "長さ：{frames}フレーム（{seconds}秒）",
+  "@timelineDurationLength": {
+    "placeholders": {
+      "frames": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineDurationInvalid": "1〜{max}の整数を入れてください。開始は終了より後にできません。",
+  "@timelineDurationInvalid": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineDurationOverlap": "この範囲にすると同じ列の別のクリップと重なるため、変更しませんでした。",
+  "timelineDurationBeforeSource": "音声の先頭より前には広げられないため、変更しませんでした。",
   "timelineTransformRotationX": "X軸回転",
   "timelineTransformRotationY": "Y軸回転",
   "timelineTransformRotationZ": "Z軸回転",

@@ -5539,6 +5539,46 @@ class AppLocalizationsFr extends AppLocalizations {
       'Retirer toutes les modifications de sélection';
 
   @override
+  String get timelineEditSectionDuration => 'Durée';
+
+  @override
+  String get timelineDurationRangeTitle => 'Plage temporelle';
+
+  @override
+  String get timelineDurationRangeHint =>
+      'La première et la dernière image occupées par le clip dans la chronologie. Vous pouvez aussi faire glisser les bords du clip dans la chronologie.';
+
+  @override
+  String get timelineDurationStartLabel => 'Image de début';
+
+  @override
+  String get timelineDurationEndLabel => 'Image de fin';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      frames,
+      locale: localeName,
+      other: 'Durée : $frames images ($seconds s)',
+      one: 'Durée : $frames image ($seconds s)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return 'Saisissez un nombre entier de 1 à $max. Le début ne peut pas venir après la fin.';
+  }
+
+  @override
+  String get timelineDurationOverlap =>
+      'Non modifié : avec cette plage, le clip chevaucherait un autre clip de la même piste.';
+
+  @override
+  String get timelineDurationBeforeSource =>
+      'Non modifié : le clip ne peut pas commencer avant le début de son audio.';
+
+  @override
   String get timelineTransformRotationX => 'Rotation X';
 
   @override

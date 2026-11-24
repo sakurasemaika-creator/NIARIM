@@ -111,6 +111,7 @@ import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import 'widgets/clip_speed_control.dart';
+import 'widgets/clip_time_range_control.dart';
 import 'widgets/keyframe_retime_dialog.dart';
 import 'widgets/material_edit_panel.dart';
 import 'widgets/video_filmstrip.dart';
@@ -2525,15 +2526,67 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final l10n = AppLocalizations.of(context)!;
     final end = clip.startFrame + length;
     if (end > _totalFrames) return l10n.timelineClipSpeedPastSceneEnd;
-    final overlaps = _clipsOfType(clip.trackType).any(
-      (other) =>
-          !identical(other, clip) &&
-          other.trackRow == clip.trackRow &&
-          other.isReadAloud == clip.isReadAloud &&
-          other.startFrame < end &&
-          other.startFrame + other.lengthFrames > clip.startFrame,
-    );
-    return overlaps ? l10n.timelineClipSpeedOverlap : null;
+    return _overlapsOnRow(clip, clip.startFrame, end)
+        ? l10n.timelineClipSpeedOverlap
+        : null;
+  }
+
+  /// Whether [clip] placed over frames [start] up to (not including) [end]
+  /// would overlap another clip on its row.
+  bool _overlapsOnRow(_TrackClip clip, int start, int end) =>
+      _clipsOfType(clip.trackType).any(
+        (other) =>
+            !identical(other, clip) &&
+            other.trackRow == clip.trackRow &&
+            other.isReadAloud == clip.isReadAloud &&
+            other.startFrame < end &&
+            other.startFrame + other.lengthFrames > start,
+      );
+
+  /// Places [clip] over timeline frames [start] to [end] (from 0, the last
+  /// one included), as typed in 長さ調整's time range, or returns why not.
+  /// Like dragging its edges: the end stays when the start moves, an audio
+  /// clip's sound keeps its timing (it starts later or earlier in its file
+  /// as its start moves), and a video keeps its used part.
+  String? _applyClipTimeRange(_TrackClip clip, int start, int end) {
+    final l10n = AppLocalizations.of(context)!;
+    if (start < 0 || end < start || end >= _totalFrames) {
+      return l10n.timelineDurationInvalid(_totalFrames);
+    }
+    final length = end - start + 1;
+    if (_overlapsOnRow(clip, start, start + length)) {
+      return l10n.timelineDurationOverlap;
+    }
+    var source = (frame: clip.useStart, fraction: clip.sourceFraction);
+    if (clip.trackType == _ClipTrackType.audio && start != clip.startFrame) {
+      final earliest =
+          clip.startFrame -
+          ((clip.useStart + clip.sourceFraction) / clip.playbackRate).floor();
+      if (start < earliest) return l10n.timelineDurationBeforeSource;
+      source = sourcePositionAfter(
+        startFrame: clip.useStart,
+        startFraction: clip.sourceFraction,
+        elapsedFrames: start - clip.startFrame,
+        rate: clip.playbackRate,
+      );
+    }
+    setState(() {
+      clip.startFrame = start;
+      clip.lengthFrames = length;
+      if (clip.trackType == _ClipTrackType.audio) {
+        clip.useStart = source.frame;
+        clip.sourceFraction = source.fraction;
+        clip.useEnd = clip.sourceAfter(length - 1).frame;
+      }
+    });
+    // An audio clip is saved with its sheet's other settings when the sheet
+    // closes; a material is saved now (one Undo).
+    final sceneId = _selectedSceneId;
+    if (clip.trackType != _ClipTrackType.audio && sceneId != null) {
+      _persistClipUpdate(clip, sceneId);
+    }
+    _syncMediaPlayback();
+    return null;
   }
 
   /// Changes an audio or read-aloud clip's speed (saved with the clip's
@@ -2643,6 +2696,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
       onLayerChanged: _onMaterialLayerChanged,
       cropFrameOf: (layer) => _materialFrameOf(ps, layer, found.home),
       regionController: _regionEdit,
+      totalFrames: _totalFrames,
+      framesPerSecond: _projectFps(ps).toDouble(),
+      onTimeRangeChange: clip == null
+          ? null
+          : (start, end) => _applyClipTimeRange(clip, start, end),
       onCropEditingChanged: (editing) {
         // Told from the panel's build or disposal: change after this frame.
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -9937,6 +9995,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         totalFrames: _totalFrames,
         speedEndFrameAt: (rate) => _speedEndFrame(clip, rate),
         onSpeedChange: (rate) => _applyAudioSpeed(clip, rate),
+        framesPerSecond: _projectFps(context.read<ProjectService>()).toDouble(),
+        onTimeRangeChange: (start, end) =>
+            _applyClipTimeRange(clip, start, end),
         onDelete: () {
           setState(() {
             _audioClips.remove(clip);
@@ -12523,11 +12584,15 @@ class _ClipDetailSheet extends StatefulWidget {
   final VoidCallback onTogglePlay;
   final int Function(double rate) speedEndFrameAt;
   final String? Function(double rate) onSpeedChange;
+  final double framesPerSecond;
+  final String? Function(int start, int end) onTimeRangeChange;
   const _ClipDetailSheet({
     required this.clip,
     required this.totalFrames,
     required this.speedEndFrameAt,
     required this.onSpeedChange,
+    required this.framesPerSecond,
+    required this.onTimeRangeChange,
     required this.onDelete,
     required this.onDuplicate,
     required this.onChanged,
@@ -12546,6 +12611,9 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
   late double _initialRate;
   late int _initialLength;
   late int _initialUseEnd;
+  late int _initialStart;
+  late int _initialUseStart;
+  late double _initialFraction;
 
   @override
   void initState() {
@@ -12558,6 +12626,9 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
     _initialRate = _c.playbackRate;
     _initialLength = _c.lengthFrames;
     _initialUseEnd = _c.useEnd;
+    _initialStart = _c.startFrame;
+    _initialUseStart = _c.useStart;
+    _initialFraction = _c.sourceFraction;
   }
 
   void _notify() {
@@ -12631,6 +12702,9 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     _c.playbackRate = _initialRate;
                     _c.lengthFrames = _initialLength;
                     _c.useEnd = _initialUseEnd;
+                    _c.startFrame = _initialStart;
+                    _c.useStart = _initialUseStart;
+                    _c.sourceFraction = _initialFraction;
                     widget.onChanged();
                     Navigator.pop(context);
                   },
@@ -12678,6 +12752,34 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
                 if (_c.trackType == _ClipTrackType.audio) ...[
+                  // 長さ調整: the time range and the speed.
+                  Text(
+                    l10n.timelineEditSectionDuration,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.timelineDurationRangeTitle,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 6),
+                  ClipTimeRangeControl(
+                    start: _c.startFrame,
+                    end: _c.startFrame + _c.lengthFrames - 1,
+                    totalFrames: widget.totalFrames,
+                    framesPerSecond: widget.framesPerSecond,
+                    onApply: (start, end) {
+                      final problem = widget.onTimeRangeChange(start, end);
+                      setState(() {});
+                      return problem;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.timelineClipSpeedLabel,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 6),
                   ClipSpeedControl(
                     rate: _c.playbackRate,
                     hasSound: true,
@@ -12688,7 +12790,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                       return problem;
                     },
                   ),
-                  const SizedBox(height: 8),
+                  const Divider(height: 24),
                   _row(
                     l10n.timelineClipVolumeLabel,
                     _c.volume,
