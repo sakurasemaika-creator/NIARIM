@@ -13,7 +13,6 @@ import '../../widgets/grouped_sheet.dart';
 import '../../widgets/menu_card.dart';
 import '../../widgets/icon_notice.dart';
 import '../../widgets/legal_consent.dart';
-import '../../widgets/premium_lock_widget.dart' show WatermarkFrameSample;
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../utils/line_break.dart';
@@ -316,10 +315,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
   String _formatDate(AppLocalizations l10n, DateTime d) =>
       DateFormat.yMd(l10n.localeName).format(d);
 
-  /// プレミアムの最初の欄：用紙の上に題、できあがりの見本（自分の透かしを
-  /// 重ねたコマ）、主な違い3つの面（同じ3つを並べた説明の文は重なるので
-  /// 出さない）。差し色の淡い面・丸い札・行ごとの
-  /// 枠は使わない（差し色は下の「プランを見る」だけ）。
+  /// プレミアムの最初の欄：用紙の上に題と、主な違い3つの面（同じ3つを
+  /// 並べた説明の文は重なるので出さない）。飾りの図は置かない（以前の
+  /// 「透かしを重ねたコマ」の図は、何を表すのか読み取れなかった）。差し色の
+  /// 淡い面・丸い札・行ごとの枠は使わない（差し色は下の「プランを見る」だけ）。
   Widget _heroSection(BuildContext context, AppLocalizations l10n) {
     final scheme = Theme.of(context).colorScheme;
     final copy = Column(
@@ -354,30 +353,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final textScale = MediaQuery.textScalerOf(context).scale(20) / 20;
-            // 広い幅では題の横に見本、狭い幅では題の下に見本。
-            if ((constraints.maxWidth - 200) / textScale >= 220) {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                spacing: 16,
-                children: [
-                  Expanded(child: copy),
-                  const WatermarkFrameSample(width: 184),
-                ],
-              );
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 16,
-              children: [
-                copy,
-                const Center(child: WatermarkFrameSample()),
-              ],
-            );
-          },
-        ),
+        copy,
         const SizedBox(height: 16),
         GroupedSheet(
           children: [

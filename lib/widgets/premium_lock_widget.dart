@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/premium_service.dart';
-import '../config/accent_text_theme.dart';
 import '../config/font_fallback.dart';
 import 'keep_together_text.dart';
 
@@ -258,7 +257,6 @@ class WatermarkFrameSample extends StatelessWidget {
                 theme.dividerTheme.color ??
                 scheme.outlineVariant.withValues(alpha: .6),
             ink: scheme.onSurface,
-            mark: AccentTextTheme.of(context),
             textDirection: Directionality.of(context),
             fontFamily: localizedHeadingStyle(
               context,
@@ -276,7 +274,6 @@ class _WatermarkFramePainter extends CustomPainter {
     required this.paper,
     required this.rule,
     required this.ink,
-    required this.mark,
     required this.textDirection,
     required this.fontFamily,
   });
@@ -284,7 +281,6 @@ class _WatermarkFramePainter extends CustomPainter {
   final Color paper;
   final Color rule;
   final Color ink;
-  final Color mark;
   final TextDirection textDirection;
   final String? fontFamily;
 
@@ -301,7 +297,8 @@ class _WatermarkFramePainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..color = rule,
     );
-    // 手で描いたような線：丘と、跳ねる小さな玉（アニメの1コマ）。
+    // 手で描いたような線：丘と小さな玉（描いた絵）。透かしの見本なので、
+    // 絵の側には印・番号を足さない（何の図か読み取りにくくなる）。
     final pen = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.6
@@ -317,31 +314,6 @@ class _WatermarkFramePainter extends CustomPainter {
       pen,
     );
     canvas.drawCircle(Offset(w * 0.42, h * 0.38), h * 0.11, pen);
-    // 跳ねた跡（薄い点線のような短い線）。
-    final trail = Paint()
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round
-      ..color = ink.withValues(alpha: 0.35);
-    for (var i = 0; i < 3; i++) {
-      final x = w * (0.24 + i * 0.05);
-      final y = h * (0.62 - i * 0.07);
-      canvas.drawLine(Offset(x, y), Offset(x + w * 0.02, y - h * 0.03), trail);
-    }
-    // コマの番号。
-    final number = TextPainter(
-      text: TextSpan(
-        text: '12',
-        style: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: mark,
-        ),
-      ),
-      textDirection: textDirection,
-    )..layout();
-    number.paint(canvas, const Offset(10, 8));
-    number.dispose();
     // 透かし：右下に作者の名前を、絵の邪魔をしない薄さで重ねる。
     final watermark = TextPainter(
       text: TextSpan(
@@ -367,7 +339,6 @@ class _WatermarkFramePainter extends CustomPainter {
       old.paper != paper ||
       old.rule != rule ||
       old.ink != ink ||
-      old.mark != mark ||
       old.textDirection != textDirection ||
       old.fontFamily != fontFamily;
 }
