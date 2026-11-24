@@ -8,6 +8,7 @@ import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../utils/color_contrast.dart';
 import '../../widgets/collection_tile_layout.dart';
+import '../../widgets/keep_together_text.dart';
 import 'community_edit_feedback.dart';
 import 'community_error_text.dart';
 import 'widgets/community_work_card.dart';
@@ -115,20 +116,31 @@ class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
                   if (loading)
                     CircularProgressIndicator(color: progress)
                   else
-                    Icon(
-                      error != null
-                          ? Icons.cloud_off_outlined
-                          : Icons.bookmark_border,
-                      size: 64,
-                      color: foreground,
+                    // ほかの空の表示（ホームの一覧）と同じ中立の丸の印。
+                    Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHighest,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        error != null
+                            ? Icons.cloud_off_outlined
+                            : Icons.bookmark_border,
+                        size: 40,
+                        color: bodyForeground,
+                      ),
                     ),
                   const SizedBox(height: 16),
                   Semantics(
                     liveRegion: true,
                     header: true,
-                    child: Text(
+                    // 最後の語だけの行（「…ありま / せん」）を作らない。
+                    child: messageText(
                       title,
                       textAlign: TextAlign.center,
+                      keepLastPhrase: true,
                       style: localizedHeadingStyle(
                         context,
                         TextStyle(
@@ -141,9 +153,10 @@ class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
                   ),
                   if (body != null) ...[
                     const SizedBox(height: 8),
-                    Text(
+                    messageText(
                       body,
                       textAlign: TextAlign.center,
+                      keepLastPhrase: true,
                       style: TextStyle(color: bodyForeground),
                     ),
                   ],

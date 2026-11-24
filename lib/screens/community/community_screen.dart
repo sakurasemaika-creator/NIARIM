@@ -1529,17 +1529,27 @@ class _CommunityScreenState extends State<CommunityScreen>
                       }
                     });
                   },
+                  // 並び順も動画の種類と同じ印の付く項目にする（選んだ並び順に
+                  // 印が無く、項目名の始まりも下の種類の項目と32pxずれていた）。
+                  // 選んだことが無い間はサーバーの順なので、どれにも印を付けない。
                   itemBuilder: (_) => [
-                    PopupMenuItem(
+                    CheckedPopupMenuItem(
                       value: 'newest',
+                      checked:
+                          _plazaSortChosen && _plazaSort == _PlazaSort.newest,
                       child: Text(l10n.communityTabNew),
                     ),
-                    PopupMenuItem(
+                    CheckedPopupMenuItem(
                       value: 'bookmarks',
+                      checked:
+                          _plazaSortChosen &&
+                          _plazaSort == _PlazaSort.bookmarks,
                       child: Text(l10n.communityRankingSortBookmarks),
                     ),
-                    PopupMenuItem(
+                    CheckedPopupMenuItem(
                       value: 'name',
+                      checked:
+                          _plazaSortChosen && _plazaSort == _PlazaSort.name,
                       child: Text(l10n.homeSortFieldName),
                     ),
                     if (!showDirectionButton)
@@ -2268,32 +2278,59 @@ class _CommunityScreenState extends State<CommunityScreen>
     );
   }
 
+  /// フォロー中の作者がいないときの表示。ブックマークのタブ・ホームの一覧の
+  /// 空の表示と同じ形（中立の丸の印・題・説明・「新着」へのボタン）に
+  /// そろえる。以前は題が左寄せで、次にどこへ行けばよいかのボタンが無かった。
   Widget _buildNoFavoriteAuthorsState(AppLocalizations l10n) {
     final scheme = Theme.of(context).colorScheme;
+    final accent = AccentTextTheme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.person_add_alt_1,
-              size: 64,
-              color: AccentTextTheme.of(context).withValues(alpha: 0.6),
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.person_add_alt_1,
+                size: 40,
+                color: scheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 16),
-            Text(
+            messageText(
               l10n.communityFavoriteAuthorsEmptyTitle,
+              textAlign: TextAlign.center,
+              keepLastPhrase: true,
               style: localizedHeadingStyle(
                 context,
-                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                TextStyle(
+                  color: scheme.onSurface,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 8),
-            Text(
+            messageText(
               l10n.communityFavoriteAuthorsEmptyBody,
               textAlign: TextAlign.center,
+              keepLastPhrase: true,
               style: TextStyle(color: scheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              key: const Key('communityFollowEmptyBrowseNew'),
+              style: OutlinedButton.styleFrom(foregroundColor: accent),
+              onPressed: () => _tabController.animateTo(0),
+              icon: const Icon(Icons.explore_outlined),
+              label: Text(l10n.communityTabNew),
             ),
           ],
         ),
