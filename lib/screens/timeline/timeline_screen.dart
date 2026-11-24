@@ -767,6 +767,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     for (final ctrl in _trackScrollCtrls) {
       ctrl.dispose();
     }
+    _readAloudScrollController?.dispose();
     for (final p in _audioPlayers.values) {
       p.dispose();
     }
@@ -8449,6 +8450,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
               .map((c) => c.trackType)
               .toSet();
           for (final type in conflictingTypes) {
+            // Speech has its own dedicated row; it must not create or consume
+            // ordinary audio rows when the user chooses the overlap strategy.
+            if (type == _ClipTrackType.audio &&
+                clipboard.clips.any(
+                  (c) => c.trackType == type &&
+                      conflictingClipIds.contains(c.id) &&
+                      c.isReadAloud,
+                )) {
+              newRowForType[type] = 0;
+              continue;
+            }
             final rowKind = _rowKindOf(type);
             ps.addTrackRow(widget.projectId, sceneId, rowKind);
             newRowForType[type] =
