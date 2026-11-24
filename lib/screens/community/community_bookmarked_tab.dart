@@ -8,6 +8,7 @@ import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../utils/color_contrast.dart';
 import '../../widgets/collection_tile_layout.dart';
+import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/keep_together_text.dart';
 import 'community_edit_feedback.dart';
 import 'community_error_text.dart';
@@ -116,21 +117,12 @@ class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
                   if (loading)
                     CircularProgressIndicator(color: progress)
                   else
-                    // ほかの空の表示（ホームの一覧）と同じ中立の丸の印。
-                    Container(
-                      width: 88,
-                      height: 88,
-                      decoration: BoxDecoration(
-                        color: scheme.surfaceContainerHighest,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        error != null
-                            ? Icons.cloud_off_outlined
-                            : Icons.bookmark_border,
-                        size: 40,
-                        color: bodyForeground,
-                      ),
+                    // ほかの空の表示（ホームの一覧）と同じ「中身のまだ無い
+                    // コマ」の印。
+                    EmptyFrameMark(
+                      icon: error != null
+                          ? Icons.cloud_off_outlined
+                          : Icons.bookmark_border,
                     ),
                   const SizedBox(height: 16),
                   Semantics(

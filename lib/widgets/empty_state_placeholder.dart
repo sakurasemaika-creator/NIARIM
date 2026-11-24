@@ -237,19 +237,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
         if (badge > 0)
           // 中身のまだ無いコマ（点線の枠）。差し色の丸い台にしない：空の
           // 一覧はどの画面にもあり、差し色は次の操作のボタンのために残す。
-          SizedBox.square(
-            dimension: badge,
-            child: CustomPaint(
-              painter: _EmptyFramePainter(
-                scheme.onSurfaceVariant.withValues(alpha: .45),
-              ),
-              child: Icon(
-                icon,
-                size: badge * 36 / 88,
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-          ),
+          EmptyFrameMark(icon: icon, size: badge),
         SizedBox(height: _badgeGap(badge)),
         Semantics(
           header: true,
@@ -343,6 +331,30 @@ class EmptyStatePlaceholder extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// 中身のまだ無いコマ（角の丸い点線の枠）と、中央の補助の文字色の印。
+/// 空の一覧の印（[EmptyStatePlaceholder]）と同じ形を、自分で並べる空の表示
+/// （作品広場のフォロー・ブックマーク、ミッションの案内など）でも使う。
+class EmptyFrameMark extends StatelessWidget {
+  const EmptyFrameMark({super.key, required this.icon, this.size = 88});
+
+  final IconData icon;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox.square(
+      dimension: size,
+      child: CustomPaint(
+        painter: _EmptyFramePainter(
+          scheme.onSurfaceVariant.withValues(alpha: .45),
+        ),
+        child: Icon(icon, size: size * 36 / 88, color: scheme.onSurfaceVariant),
+      ),
     );
   }
 }

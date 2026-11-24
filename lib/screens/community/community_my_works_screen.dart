@@ -13,6 +13,7 @@ import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../l10n/community_channel_refresh_labels.dart';
+import '../../widgets/grouped_sheet.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'community_error_text.dart';
 import 'community_author_works_screen.dart';
@@ -896,167 +897,146 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // アカウント・投稿・自分のページへの道を1枚の面にまとめる。
+                    // 主な操作の「投稿する」だけを塗りのボタンにし、ほかは
+                    // 面の中の行にする（以前は塗りのボタンの下に幅の違う枠の
+                    // ボタンが3つ積まれ、どれも同じ重さに見えた）。
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                      child: Card(
-                        elevation: 0,
-                        color: scheme.surfaceContainerLow,
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 20,
-                                    backgroundColor: scheme.primaryContainer,
-                                    child: Icon(
-                                      account == null
-                                          ? Icons.person_outline
-                                          : Icons.account_circle,
-                                      color: scheme.onPrimaryContainer,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          accountLabel,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        if (account != null &&
-                                            account.email != accountLabel) ...[
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            account.email,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: scheme.onSurfaceVariant,
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (ownerId != null) ...[
-                                const SizedBox(height: 8),
-                                Wrap(
-                                  key: const Key(
-                                    'communityMyWorksSocialCounts',
-                                  ),
-                                  spacing: 16,
-                                  runSpacing: 4,
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                      child: GroupedSheet(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
                                   children: [
-                                    Text(
-                                      l10n.communityAuthorFollowerCount(
-                                        communityService.followerCountOf(
-                                          ownerId,
-                                        ),
+                                    CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor:
+                                          scheme.surfaceContainerHighest,
+                                      child: Icon(
+                                        account == null
+                                            ? Icons.person_outline
+                                            : Icons.account_circle,
+                                        color: scheme.onSurfaceVariant,
                                       ),
                                     ),
-                                    Text(
-                                      l10n.communityAuthorFollowingCount(
-                                        communityService.followingCountOf(
-                                          ownerId,
-                                        ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            accountLabel,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          if (account != null &&
+                                              account.email !=
+                                                  accountLabel) ...[
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              account.email,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: scheme.onSurfaceVariant,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
-                              ],
-                              const SizedBox(height: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  FilledButton.icon(
-                                    key: const Key(
-                                      'communityMyWorksPostButton',
-                                    ),
-                                    onPressed: _handlePostTap,
-                                    icon: const Icon(Icons.video_call_outlined),
-                                    label: Text(l10n.communityPostButton),
-                                  ),
+                                if (ownerId != null) ...[
                                   const SizedBox(height: 8),
-                                  OutlinedButton.icon(
+                                  Wrap(
                                     key: const Key(
-                                      'communityMyWorksViewAuthorPage',
+                                      'communityMyWorksSocialCounts',
                                     ),
-                                    onPressed: () => _openOwnAuthorPage(works),
-                                    icon: const Icon(
-                                      Icons.collections_outlined,
-                                    ),
-                                    label: Text(
-                                      l10n.communityMyWorksViewAuthorPage,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  if (account != null &&
-                                      communityService.api != null) ...[
-                                    OutlinedButton.icon(
-                                      key: const Key(
-                                        'communityMyWorksYoutubeChannelRefresh',
-                                      ),
-                                      onPressed: _refreshingYouTubeChannel
-                                          ? null
-                                          : _refreshYoutubeChannel,
-                                      icon: _refreshingYouTubeChannel
-                                          ? const SizedBox(
-                                              width: 16,
-                                              height: 16,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                              ),
-                                            )
-                                          : const Icon(Icons.refresh_outlined),
-                                      label: Text(
-                                        CommunityChannelRefreshLabels.of(
-                                          context,
-                                        ).button,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                  ],
-                                  OutlinedButton.icon(
-                                    key: const Key(
-                                      'communityMyWorksAccountButton',
-                                    ),
-                                    onPressed: _switchingAccount
-                                        ? null
-                                        : _switchOrAddGoogleAccount,
-                                    icon: _switchingAccount
-                                        ? const SizedBox(
-                                            width: 16,
-                                            height: 16,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          )
-                                        : const Icon(
-                                            Icons.manage_accounts_outlined,
+                                    spacing: 16,
+                                    runSpacing: 4,
+                                    children: [
+                                      Text(
+                                        l10n.communityAuthorFollowerCount(
+                                          communityService.followerCountOf(
+                                            ownerId,
                                           ),
-                                    label: Text(
-                                      account == null
-                                          ? l10n.communityMyWorksAddAccount
-                                          : l10n.communityMyWorksSwitchAccount,
-                                    ),
+                                        ),
+                                      ),
+                                      Text(
+                                        l10n.communityAuthorFollowingCount(
+                                          communityService.followingCountOf(
+                                            ownerId,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
-                              ),
-                            ],
+                                const SizedBox(height: 16),
+                                FilledButton.icon(
+                                  key: const Key('communityMyWorksPostButton'),
+                                  onPressed: _handlePostTap,
+                                  icon: const Icon(Icons.video_call_outlined),
+                                  label: Text(l10n.communityPostButton),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                          SheetRow(
+                            key: const Key('communityMyWorksViewAuthorPage'),
+                            icon: Icons.collections_outlined,
+                            title: l10n.communityMyWorksViewAuthorPage,
+                            onTap: () => _openOwnAuthorPage(works),
+                          ),
+                          if (account != null && communityService.api != null)
+                            SheetRow(
+                              key: const Key(
+                                'communityMyWorksYoutubeChannelRefresh',
+                              ),
+                              leading: _refreshingYouTubeChannel
+                                  ? const SizedBox.square(
+                                      dimension: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.refresh_outlined),
+                              title: CommunityChannelRefreshLabels.of(
+                                context,
+                              ).button,
+                              showChevron: false,
+                              onTap: _refreshingYouTubeChannel
+                                  ? null
+                                  : _refreshYoutubeChannel,
+                            ),
+                          SheetRow(
+                            key: const Key('communityMyWorksAccountButton'),
+                            leading: _switchingAccount
+                                ? const SizedBox.square(
+                                    dimension: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.manage_accounts_outlined),
+                            title: account == null
+                                ? l10n.communityMyWorksAddAccount
+                                : l10n.communityMyWorksSwitchAccount,
+                            onTap: _switchingAccount
+                                ? null
+                                : _switchOrAddGoogleAccount,
+                          ),
+                        ],
                       ),
                     ),
                     Padding(

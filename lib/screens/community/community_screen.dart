@@ -38,6 +38,7 @@ import '../../utils/color_contrast.dart';
 import '../../widgets/collection_tile_layout.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/menu_surface.dart';
 
@@ -2290,19 +2291,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerHighest,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.person_add_alt_1,
-                size: 40,
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
+            const EmptyFrameMark(icon: Icons.person_add_alt_1),
             const SizedBox(height: 16),
             messageText(
               l10n.communityFavoriteAuthorsEmptyTitle,

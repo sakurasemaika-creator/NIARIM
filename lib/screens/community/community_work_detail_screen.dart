@@ -13,6 +13,7 @@ import 'widgets/community_playback_status_view.dart';
 import 'widgets/community_youtube_player.dart';
 import 'widgets/community_work_description.dart';
 import 'widgets/community_youtube_comments_section.dart';
+import '../../widgets/grouped_sheet.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
@@ -697,12 +698,14 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                         children: [
                           CircleAvatar(
                             radius: 14,
-                            backgroundColor: scheme.primaryContainer,
+                            // 作者の頭文字の丸は中立の面の色（差し色の淡い
+                            // 丸は飾りで、名前のリンクの差し色と重なった）。
+                            backgroundColor: scheme.surfaceContainerHighest,
                             child: Text(
                               work.authorName.substring(0, 1),
                               style: TextStyle(
                                 fontSize: 13,
-                                color: scheme.onPrimaryContainer,
+                                color: scheme.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -760,25 +763,29 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 const SizedBox(height: 12),
                 _ProjectMetadataCard(work: work),
               ],
+              // 自分の作品の2つの設定は、別々の色の箱にせず1枚の面に並べる。
               if (isAuthorSelf) ...[
-                const SizedBox(height: 12),
-                _NiarimVisibilitySwitch(
-                  isPublished: work.isNiarimPublished,
-                  onChanged: () => _reportFailedEdit(
-                    communityService,
-                    communityService.toggleNiarimVisibility(work.id),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _AiImageVideoSwitch(
-                  value: work.containsGenerativeAiImageOrVideo,
-                  onChanged: _aiDisclosureBusy
-                      ? null
-                      : (value) => _setAiImageVideoDisclosure(
-                          communityService,
-                          work.id,
-                          value,
-                        ),
+                const SizedBox(height: 16),
+                GroupedSheet(
+                  children: [
+                    _NiarimVisibilitySwitch(
+                      isPublished: work.isNiarimPublished,
+                      onChanged: () => _reportFailedEdit(
+                        communityService,
+                        communityService.toggleNiarimVisibility(work.id),
+                      ),
+                    ),
+                    _AiImageVideoSwitch(
+                      value: work.containsGenerativeAiImageOrVideo,
+                      onChanged: _aiDisclosureBusy
+                          ? null
+                          : (value) => _setAiImageVideoDisclosure(
+                              communityService,
+                              work.id,
+                              value,
+                            ),
+                    ),
+                  ],
                 ),
               ],
               const SizedBox(height: 16),
@@ -940,14 +947,14 @@ class _ProjectMetadataCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final workTime = formatProjectWorkTime(l10n, work.projectWorkSeconds);
-    return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(12),
+    // 作品の情報（コマ数・fps・大きさ・制作時間）は用紙の上に並べる（淡い色の
+    // 箱に入れると、下の設定の面とも違う3つ目の面になっていた）。
+    return Semantics(
+      container: true,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 4),
         child: Wrap(
           spacing: 14,
           runSpacing: 8,
@@ -1068,55 +1075,50 @@ class _NiarimVisibilitySwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onChanged,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                isPublished ? Icons.public : Icons.lock_outline,
-                color: isPublished
-                    ? AccentTextTheme.of(context)
-                    : scheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.communityVisibilityCardTitle,
-                      style: localizedHeadingStyle(
-                        context,
-                        const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
+    return InkWell(
+      onTap: onChanged,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              isPublished ? Icons.public : Icons.lock_outline,
+              color: isPublished
+                  ? AccentTextTheme.of(context)
+                  : scheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.communityVisibilityCardTitle,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      isPublished
-                          ? l10n.communityVisibilityPublishedDesc
-                          : l10n.communityVisibilityHiddenDesc,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                        height: 1.4,
-                      ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    isPublished
+                        ? l10n.communityVisibilityPublishedDesc
+                        : l10n.communityVisibilityHiddenDesc,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      height: 1.4,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Switch(value: isPublished, onChanged: (_) => onChanged()),
-            ],
-          ),
+            ),
+            const SizedBox(width: 8),
+            Switch(value: isPublished, onChanged: (_) => onChanged()),
+          ],
         ),
       ),
     );
@@ -1134,57 +1136,52 @@ class _AiImageVideoSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onChanged == null ? null : () => onChanged!(!value),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.smart_toy_outlined,
-                color: value
-                    ? AccentTextTheme.of(context)
-                    : scheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.communityContainsGenerativeAiImageVideo,
-                      style: localizedHeadingStyle(
-                        context,
-                        const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
+    return InkWell(
+      onTap: onChanged == null ? null : () => onChanged!(!value),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.smart_toy_outlined,
+              color: value
+                  ? AccentTextTheme.of(context)
+                  : scheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.communityContainsGenerativeAiImageVideo,
+                    style: localizedHeadingStyle(
+                      context,
+                      const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l10n.communityContainsGenerativeAiImageVideoHelp,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                        height: 1.4,
-                      ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n.communityContainsGenerativeAiImageVideoHelp,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      height: 1.4,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Switch(
-                key: const ValueKey('communityDetailAiImageVideoSwitch'),
-                value: value,
-                onChanged: onChanged,
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 8),
+            Switch(
+              key: const ValueKey('communityDetailAiImageVideoSwitch'),
+              value: value,
+              onChanged: onChanged,
+            ),
+          ],
         ),
       ),
     );
