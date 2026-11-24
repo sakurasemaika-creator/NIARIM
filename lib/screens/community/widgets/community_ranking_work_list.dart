@@ -11,10 +11,10 @@ import '../../../services/community_service.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/keep_together_text.dart';
 import '../../canvas/widgets/canvas_icon_button.dart';
+import 'community_sample_artwork.dart';
 import 'community_work_card.dart'
     show
         CommunityWorkOrientation,
-        communityThumbnailGradient,
         formatDurationLabel,
         toggleCommunityWorkVisibility;
 
@@ -206,17 +206,8 @@ class CommunityRankingWorkCard extends StatelessWidget {
             ),
           )
         else
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: communityThumbnailGradient(
-                  scheme,
-                  work.thumbnailColorIndex,
-                ),
-              ),
-            ),
+          CommunitySampleArtwork(
+            variant: work.thumbnailColorIndex,
             child: work.thumbnailUrl.startsWith('https://')
                 ? Image.network(
                     work.thumbnailUrl,

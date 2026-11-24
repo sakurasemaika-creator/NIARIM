@@ -29,8 +29,8 @@ import '../../widgets/collection_action_controls.dart';
 import '../../widgets/collection_tile_layout.dart';
 import '../../widgets/legal_consent.dart';
 import '../../utils/responsive_tile_defaults.dart';
-import 'widgets/community_work_card.dart'
-    show CommunityWorkOrientation, communityThumbnailGradient;
+import 'widgets/community_sample_artwork.dart';
+import 'widgets/community_work_card.dart' show CommunityWorkOrientation;
 import 'widgets/community_list_controls.dart';
 import 'widgets/video_type_filter.dart';
 
@@ -655,15 +655,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final thumbnail = Stack(
       fit: StackFit.expand,
       children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: communityThumbnailGradient(
-                scheme,
-                work.thumbnailColorIndex,
-              ),
-            ),
-          ),
+        CommunitySampleArtwork(
+          variant: work.thumbnailColorIndex,
           child: !deleted && work.thumbnailUrl.startsWith('https://')
               ? Image.network(
                   work.thumbnailUrl,

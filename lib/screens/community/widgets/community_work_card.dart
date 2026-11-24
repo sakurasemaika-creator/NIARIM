@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -11,6 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../../../models/community_work.dart';
 import '../../../utils/line_break.dart';
+import 'community_sample_artwork.dart';
 import 'community_work_counts.dart';
 import 'community_ranking_work_list.dart'
     show CommunityRankBadge, CommunityRankingLayout, CommunityRankingWorkCard;
@@ -20,26 +20,6 @@ String formatDurationLabel(int seconds) {
   final s = seconds % 60;
   return '$m:${s.toString().padLeft(2, '0')}';
 }
-
-List<List<Color>> communityThumbnailGradients(ColorScheme scheme) =>
-    <List<Color>>[
-      [scheme.primaryContainer, scheme.primary],
-      [scheme.secondaryContainer, scheme.secondary],
-      [scheme.tertiaryContainer, scheme.tertiary],
-      [scheme.primary.withValues(alpha: 0.55), scheme.secondary],
-      [scheme.secondary.withValues(alpha: 0.55), scheme.tertiary],
-      [scheme.tertiary.withValues(alpha: 0.55), scheme.primary],
-    ];
-
-List<Color> communityThumbnailGradient(ColorScheme scheme, int colorIndex) {
-  final gradients = communityThumbnailGradients(scheme);
-  return gradients[colorIndex % gradients.length];
-}
-
-/// Compatibility accessor for community views that share this palette.
-/// The value is recalculated from the current active theme on every access.
-List<List<Color>> get kCommunityThumbnailGradients =>
-    communityThumbnailGradients(ThemeService.activeColorScheme);
 
 class CommunityWorkCard extends StatelessWidget {
   final CommunityWork work;
@@ -158,20 +138,11 @@ class CommunityWorkCard extends StatelessWidget {
                   ),
                 if (!obscured)
                   Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: communityThumbnailGradient(
-                            scheme,
-                            work.thumbnailColorIndex,
-                          ),
-                        ),
-                      ),
+                    child: CommunitySampleArtwork(
+                      variant: work.thumbnailColorIndex,
                       // Draw real YouTube artwork whenever the backend
-                      // supplies it. A theme-derived gradient remains
-                      // visible while loading or if the URL fails.
+                      // supplies it. The neutral sketch remains visible
+                      // while loading or if the URL fails.
                       child: work.thumbnailUrl.startsWith('https://')
                           ? Image.network(
                               work.thumbnailUrl,
