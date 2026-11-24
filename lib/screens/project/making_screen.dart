@@ -115,6 +115,7 @@ class _MakingScreenState extends State<MakingScreen> {
       ),
     );
     if (confirmed != true) return;
+    _playTimer?.cancel();
     try {
       await MakingService.deleteHistory(widget.projectId);
       if (!mounted) return;
@@ -135,7 +136,7 @@ class _MakingScreenState extends State<MakingScreen> {
           '\n' + stackTrace.toString());
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(MakingStrings.exportFailed(context))),
+        SnackBar(content: Text(MakingStrings.deleteFailed(context))),
       );
     }
   }

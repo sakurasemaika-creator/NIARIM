@@ -162,6 +162,16 @@ abstract final class MakingStrings {
     'zh_Hant': '刪除此作品的所有製作快照與記錄？此操作無法復原。',
   });
 
+  static String deleteFailed(BuildContext context) => _pick(context, {
+    'ja': 'メイキング履歴を削除できませんでした。',
+    'en': 'Could not delete making history.',
+    'es': 'No se pudo eliminar el historial.',
+    'fr': 'Impossible de supprimer l’historique.',
+    'ko': '메이킹 기록을 삭제하지 못했습니다.',
+    'zh': '无法删除制作记录。',
+    'zh_Hant': '無法刪除製作記錄。',
+  });
+
   static String historyDeleted(BuildContext context) => _pick(context, {
     'ja': 'メイキング履歴を削除しました。', 'en': 'Making history deleted.',
     'es': 'Historial eliminado.', 'fr': 'Historique supprimé.',
