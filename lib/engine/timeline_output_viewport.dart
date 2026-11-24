@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 /// Geometry shared by timeline preview and export for the visible output area.
 ///
 /// The drawing canvas may be larger than the requested output. In that case
@@ -25,4 +27,18 @@ class TimelineOutputViewport {
   /// Position at which the full drawing image is placed on the output canvas.
   double get imageOffsetX => -cropLeft;
   double get imageOffsetY => -cropTop;
+}
+
+/// Paints the drawing image into the output frame using the shared crop.
+/// Callers apply the camera transform to [canvas] before calling this method.
+void paintOutputViewport(
+  ui.Canvas canvas,
+  ui.Image image,
+  TimelineOutputViewport viewport,
+) {
+  canvas.drawImage(
+    image,
+    ui.Offset(viewport.imageOffsetX, viewport.imageOffsetY),
+    ui.Paint(),
+  );
 }
