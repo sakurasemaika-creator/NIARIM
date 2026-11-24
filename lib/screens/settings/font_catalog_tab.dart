@@ -1,4 +1,4 @@
-import 'widgets/sheet_list_segment.dart';
+import '../../widgets/sheet_list_segment.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

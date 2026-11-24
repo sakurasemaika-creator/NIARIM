@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -10,6 +9,7 @@ import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/grouped_sheet.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/keep_together_text.dart';
 
@@ -136,10 +136,24 @@ class _TipsScreenState extends State<TipsScreen>
                         ),
                   prefixIconColor: scheme.onSurfaceVariant,
                   filled: true,
-                  fillColor: scheme.surfaceContainerLow,
+                  // 検索欄も面と同じ色・細い縁（面の色は2種類だけ）。
+                  fillColor:
+                      Theme.of(context).cardTheme.color ?? scheme.surface,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(
+                      color:
+                          Theme.of(context).dividerTheme.color ??
+                          scheme.outlineVariant.withValues(alpha: .6),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(
+                      color:
+                          Theme.of(context).dividerTheme.color ??
+                          scheme.outlineVariant.withValues(alpha: .6),
+                    ),
                   ),
                   isDense: true,
                 ),
@@ -165,45 +179,59 @@ class _TipsScreenState extends State<TipsScreen>
                       controller: _resultsScroll,
                       keyboardDismissBehavior:
                           ScrollViewKeyboardDismissBehavior.onDrag,
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
                         final category = categories[index];
+                        // 分類ごとに1枚の面。分類の名前は面の上に、補助の
+                        // 文字色の小さな印と一緒に置く（差し色の見出し・行ごと
+                        // のカードと電球の台をやめた）。
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.only(bottom: 24),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    category.icon,
-                                    size: 19,
-                                    color: AccentTextTheme.of(context),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  // 1行に入らない名前（仏語・西語・大きな文字）は
-                                  // 折り返す（幅を決めずに並べていたので、行が
-                                  // 画面の外へはみ出していた）。韓国語の語は、
-                                  // 1行に入れば途中で折らない。
-                                  Flexible(
-                                    child: messageText(
-                                      category.title,
-                                      style: localizedHeadingStyle(
-                                        context,
-                                        TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: AccentTextTheme.of(context),
+                              Padding(
+                                padding: const EdgeInsetsDirectional.symmetric(
+                                  horizontal: GroupedSheet.rowInset,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      category.icon,
+                                      size: 16,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    // 1行に入らない名前（仏語・西語・大きな
+                                    // 文字）は折り返す。韓国語の語は、1行に
+                                    // 入れば途中で折らない。
+                                    Flexible(
+                                      child: Semantics(
+                                        header: true,
+                                        child: messageText(
+                                          category.title,
+                                          style: localizedHeadingStyle(
+                                            context,
+                                            TextStyle(
+                                              fontSize: 13,
+                                              height: 1.35,
+                                              color: scheme.onSurfaceVariant,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                               const SizedBox(height: 8),
-                              for (final tip in category.tips)
-                                _TipListTile(tip: tip),
+                              GroupedSheet(
+                                children: [
+                                  for (final tip in category.tips)
+                                    _TipListTile(tip: tip),
+                                ],
+                              ),
                             ],
                           ),
                         );
@@ -615,73 +643,47 @@ class _TipListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 面（GroupedSheet）の中の1行：名前と矢印。どの行にも同じ電球の印を
+    // 付けない（同じ印の繰り返しは見分けの役に立たない）。
+    // 行の大きさ・余白は面の行（SheetRow）と同じ。題は長音符・小さいかな・
+    // 閉じ括弧で行を始めず、韓国語の語は1行に入れば途中で折らない
+    // （最後の句をつなぐ折り方と重ねると「レイヤ / ー」と折れたので使わない）。
     final scheme = Theme.of(context).colorScheme;
-    final showBadge = MediaQuery.textScalerOf(context).scale(14) < 21;
-    return Padding(
-      padding: EdgeInsets.only(bottom: 6),
-      child: Material(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        elevation: 1,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-          alpha: 0.15,
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => showDialog(
-            context: context,
-            builder: (_) => _TipDetailDialog(tip: tip),
+    return InkWell(
+      onTap: () => showDialog(
+        context: context,
+        builder: (_) => _TipDetailDialog(tip: tip),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Padding(
+          // 題は文の長さがあるので14px、矢印の側は8pxまで詰めて名前の幅を
+          // 取る（320px・文字2倍で英語の長い語が1行に入る幅）。
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            GroupedSheet.rowInset,
+            12,
+            8,
+            12,
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
-            child: Row(
-              children: [
-                if (showBadge) ...[
-                  Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(9),
-                      gradient: LinearGradient(
-                        colors: [
-                          scheme.tertiary.withValues(alpha: 0.25),
-                          scheme.tertiary.withValues(alpha: 0.1),
-                        ],
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.lightbulb_outline,
-                      color: scheme.tertiary,
-                      size: 16,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                ],
-                Expanded(
-                  // 韓国語の語は、1行に入れば途中で折らない（「부 / 위별로」と
-                  // 折れた）。長音符・小さいかな・閉じ括弧で行を始めない
-                  // （「パ / ーツ」と長音符で始まる行に折れた）。
-                  child: messageText(
-                    tip.title,
-                    keepLineStarts: true,
-                    style: localizedHeadingStyle(
-                      context,
-                      const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        height: 1.3,
-                      ),
-                    ),
+          child: Row(
+            children: [
+              Expanded(
+                child: messageText(
+                  tip.title,
+                  keepLineStarts: true,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontSize: 14, height: 1.35),
                   ),
                 ),
-                const SizedBox(width: 6),
-                Icon(
-                  Icons.chevron_right,
-                  size: 20,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 6),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
           ),
         ),
       ),

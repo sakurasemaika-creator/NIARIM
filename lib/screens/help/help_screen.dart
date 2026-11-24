@@ -1,15 +1,15 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../config/font_fallback.dart';
-import '../../config/accent_text_theme.dart';
 import '../../widgets/app_tutorial.dart';
 import '../../utils/name_collation.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/grouped_sheet.dart';
+import '../../widgets/sheet_list_segment.dart';
 
 /// ツールの項目は、キャンバスのツールバーのボタンと同じ印で出す（分類の
 /// 印〔鉛筆〕だけでは17項目が同じに見え、どのボタンの説明か分からなかった）。
@@ -706,6 +706,33 @@ class _HelpScreenState extends State<HelpScreen>
     // 開ける。
     final showTutorial = query.isEmpty && _topic == null;
     final showHeader = showTutorial || query.isNotEmpty;
+    // 一覧は分類ごとの1枚の面にし、分類の名前は面の上に置く（以前は項目
+    // ごとに影のついたカードと差し色の四角の印、行ごとに分類の名前）。
+    // 探しているときは関連の高い順のまま1枚の面に並べ、分類の名前は行の
+    // 2行目に出す。
+    final rows = <_HelpRow>[];
+    if (query.isNotEmpty) {
+      for (var i = 0; i < filtered.length; i++) {
+        rows.add(
+          _HelpRow.entry(
+            filtered[i],
+            first: i == 0,
+            last: i == filtered.length - 1,
+            showCategory: true,
+          ),
+        );
+      }
+    } else {
+      for (var i = 0; i < filtered.length; i++) {
+        final entry = filtered[i];
+        final first = i == 0 || filtered[i - 1].category != entry.category;
+        final last =
+            i == filtered.length - 1 ||
+            filtered[i + 1].category != entry.category;
+        if (first) rows.add(_HelpRow.header(entry.category));
+        rows.add(_HelpRow.entry(entry, first: first, last: last));
+      }
+    }
     return Scaffold(
       appBar: widget.embedded
           ? null
@@ -754,13 +781,12 @@ class _HelpScreenState extends State<HelpScreen>
                       context,
                     ).colorScheme.onSurfaceVariant,
                     filled: true,
-                    fillColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerLow,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
+                    // 検索欄も面と同じ色・細い縁（面の色は2種類だけ）。
+                    fillColor:
+                        Theme.of(context).cardTheme.color ??
+                        Theme.of(context).colorScheme.surface,
+                    border: _searchBorder(context),
+                    enabledBorder: _searchBorder(context),
                     isDense: true,
                   ),
                   onChanged: _updateSearch,
@@ -793,7 +819,7 @@ class _HelpScreenState extends State<HelpScreen>
                       keyboardDismissBehavior:
                           ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.only(top: 4, bottom: 12),
-                      itemCount: filtered.length + (showHeader ? 1 : 0),
+                      itemCount: rows.length + (showHeader ? 1 : 0),
                       itemBuilder: (context, index) {
                         final scheme = Theme.of(context).colorScheme;
                         if (showHeader) {
@@ -815,21 +841,40 @@ class _HelpScreenState extends State<HelpScreen>
                           }
                           index--;
                         }
-                        final entry = filtered[index];
-                        // 各項目を独立したカードとして浮かせる。
+                        final row = rows[index];
+                        final header = row.header;
+                        if (header != null) {
+                          return Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                              32,
+                              index == 0 && !showHeader ? 8 : 20,
+                              32,
+                              8,
+                            ),
+                            child: Semantics(
+                              header: true,
+                              child: Text(
+                                header,
+                                style: localizedHeadingStyle(
+                                  context,
+                                  TextStyle(
+                                    fontSize: 13,
+                                    height: 1.35,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        final entry = row.entry!;
                         return Padding(
                           key: ValueKey(entry.topicKey),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 4,
-                          ),
-                          child: Material(
-                            color: scheme.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(14),
-                            elevation: 1,
-                            shadowColor: ThemeService.activeColorScheme.shadow
-                                .withValues(alpha: 0.15),
-                            clipBehavior: Clip.antiAlias,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: SheetListSegment(
+                            first: row.first,
+                            last: row.last,
+                            dividerIndent: 16 + 24 + 16,
                             child: ExpansionTile(
                               expandedAlignment:
                                   AlignmentDirectional.centerStart,
@@ -845,57 +890,54 @@ class _HelpScreenState extends State<HelpScreen>
                                 }
                               },
                               shape: const Border(),
-                              leading: Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: scheme.primaryContainer,
-                                ),
-                                child: switch (_topicIcons[entry.topicKey]) {
-                                  final FaIconData fa => Center(
-                                    child: FaIcon(
+                              collapsedShape: const Border(),
+                              // 印は補助の文字色（差し色の四角の台に載せない）。
+                              leading: SizedBox.square(
+                                dimension: 24,
+                                child: Center(
+                                  child: switch (_topicIcons[entry.topicKey]) {
+                                    final FaIconData fa => FaIcon(
                                       fa,
-                                      color: scheme.onPrimaryContainer,
-                                      size: 16,
+                                      color: scheme.onSurfaceVariant,
+                                      size: 18,
                                     ),
-                                  ),
-                                  final IconData icon => Icon(
-                                    icon,
-                                    color: scheme.onPrimaryContainer,
-                                    size: 18,
-                                  ),
-                                  _ => Icon(
-                                    categoryIcons[entry.category] ??
-                                        Icons.help_outline,
-                                    color: scheme.onPrimaryContainer,
-                                    size: 18,
-                                  ),
-                                },
+                                    final IconData icon => Icon(
+                                      icon,
+                                      color: scheme.onSurfaceVariant,
+                                      size: 22,
+                                    ),
+                                    _ => Icon(
+                                      categoryIcons[entry.category] ??
+                                          Icons.help_outline,
+                                      color: scheme.onSurfaceVariant,
+                                      size: 22,
+                                    ),
+                                  },
+                                ),
                               ),
                               // 項目名用フォント（くらむぼん）。
                               title: Text(
                                 entry.title,
                                 style: localizedHeadingStyle(
                                   context,
-                                  const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15,
-                                  ),
+                                  const TextStyle(fontSize: 15, height: 1.3),
                                 ),
                               ),
-                              subtitle: Text(
-                                entry.category,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: scheme.onSurfaceVariant,
-                                ),
-                              ),
+                              subtitle: row.showCategory
+                                  ? Text(
+                                      entry.category,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: scheme.onSurfaceVariant,
+                                      ),
+                                    )
+                                  : null,
                               children: [
                                 // 実画面の簡易図解は用いず、文章での説明のみとする。
+                                // 説明は名前と同じ位置から書き始める。
                                 Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                    56,
                                     0,
                                     16,
                                     16,
@@ -904,7 +946,10 @@ class _HelpScreenState extends State<HelpScreen>
                                   // 基本フォントを継承するため明示指定不要）。
                                   child: Text(
                                     entry.description,
-                                    style: const TextStyle(height: 1.5),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      height: 1.6,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -927,53 +972,44 @@ class _TutorialEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
-    final accentText = AccentTextTheme.of(context);
+    // 使い方（図つきの数ページ）は分類の一覧の前に1行だけの面で置く。
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Material(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(14),
-        elevation: 1,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-          alpha: 0.15,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: ListTile(
-          key: const Key('helpTutorialButton'),
-          onTap: () => AppTutorial.show(context),
-          leading: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  scheme.primary.withValues(alpha: 0.22),
-                  scheme.primary.withValues(alpha: 0.1),
-                ],
-              ),
-            ),
-            child: Icon(Icons.school_outlined, color: accentText, size: 18),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+      child: GroupedSheet(
+        children: [
+          SheetRow(
+            key: const Key('helpTutorialButton'),
+            icon: Icons.school_outlined,
+            title: l10n.helpTutorialButton,
+            subtitle: l10n.helpTutorialSubtitle,
+            onTap: () => AppTutorial.show(context),
           ),
-          title: Text(
-            l10n.helpTutorialButton,
-            style: localizedHeadingStyle(
-              context,
-              const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-            ),
-          ),
-          subtitle: Text(
-            l10n.helpTutorialSubtitle,
-            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-          ),
-          trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
-        ),
+        ],
       ),
     );
   }
+}
+
+/// ヘルプの一覧の1行：分類の名前（面の上）か、項目（面の行）。
+class _HelpRow {
+  const _HelpRow.header(String this.header)
+    : entry = null,
+      first = false,
+      last = false,
+      showCategory = false;
+
+  const _HelpRow.entry(
+    _HelpEntry this.entry, {
+    required this.first,
+    required this.last,
+    this.showCategory = false,
+  }) : header = null;
+
+  final String? header;
+  final _HelpEntry? entry;
+  final bool first;
+  final bool last;
+  final bool showCategory;
 }
 
 class _HelpEntry {
@@ -990,4 +1026,17 @@ class _HelpEntry {
     required this.description,
     required this.category,
   });
+}
+
+/// 検索欄の枠（面と同じ細い縁）。
+InputBorder _searchBorder(BuildContext context) {
+  final theme = Theme.of(context);
+  return OutlineInputBorder(
+    borderRadius: BorderRadius.circular(14),
+    borderSide: BorderSide(
+      color:
+          theme.dividerTheme.color ??
+          theme.colorScheme.outlineVariant.withValues(alpha: .6),
+    ),
+  );
 }

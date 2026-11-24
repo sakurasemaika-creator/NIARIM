@@ -19,7 +19,7 @@ import '../../widgets/first_that_fits.dart';
 import '../../widgets/fit_or_icon_tab_bar.dart';
 import '../../widgets/help_button.dart';
 import 'font_catalog_tab.dart';
-import 'widgets/sheet_list_segment.dart';
+import '../../widgets/sheet_list_segment.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../widgets/grouped_sheet.dart';
-import '../../../widgets/menu_surface.dart';
+import 'grouped_sheet.dart';
+import 'menu_surface.dart';
 
 /// 長さの決まらない一覧（`SliverList.builder`・`ListView.builder`）の1行を、
 /// [GroupedSheet]と同じ1枚の面の一部として描く。

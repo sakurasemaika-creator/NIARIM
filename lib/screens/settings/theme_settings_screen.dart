@@ -29,7 +29,7 @@ import 'theme_preview_gallery_screen.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/grouped_sheet.dart';
-import 'widgets/sheet_list_segment.dart';
+import '../../widgets/sheet_list_segment.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../utils/file_failure_reason.dart';

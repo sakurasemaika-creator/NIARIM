@@ -12,7 +12,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:niarim/screens/settings/widgets/sheet_list_segment.dart';
+import 'package:niarim/widgets/sheet_list_segment.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/font_settings_screen.dart';
