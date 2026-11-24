@@ -114,6 +114,7 @@ import 'widgets/video_filmstrip.dart';
 import 'widgets/material_gizmo.dart';
 import 'widgets/stack_order_panel.dart';
 import '../../widgets/icon_notice.dart';
+import '../../widgets/menu_surface.dart';
 
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image, text }
@@ -796,7 +797,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _cameraScrollCtrl,
     _commonLayerScrollCtrl,
     _effectFilterScrollCtrl,
-    if (_readAloudScrollController != null) _readAloudScrollController!,
+    ?_readAloudScrollController,
     ..._rowScrollCtrls.values,
   ];
 
@@ -3607,7 +3608,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-          bottom: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
         ),
       ),
       child: Row(
@@ -3678,9 +3681,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(MakingStrings.noVoices(context))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(MakingStrings.noVoices(context))));
       return;
     }
     if (!mounted) return;
@@ -3721,239 +3724,293 @@ class _TimelineScreenState extends State<TimelineScreen> {
     var speechRate = 1.0;
     var pitch = 1.0;
     var startFrame = _currentFrame
-        .clamp(0, math.max(0, _totalFrames - 1)).toInt();
+        .clamp(0, math.max(0, _totalFrames - 1))
+        .toInt();
     var generating = false;
+    var failed = false;
 
+    // 打った文の欄は、閉じる動きが終わってからダイアログと一緒に破棄する
+    // （showDialogが返った直後に破棄すると、閉じる途中の欄が破棄済みの
+    // コントローラーを使う）。
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) => AlertDialog(
-          insetPadding: typingDialogInsetPadding(dialogContext),
-          title: Text(MakingStrings.readAloud(context)),
-          content: SizedBox(
-            width: 480,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextField(
-                    key: const Key('timelineReadAloudTextField'),
-                    controller: textController,
-                    minLines: 4,
-                    maxLines: 8,
-                    maxLength: 3500,
-                    onChanged: (_) => setDialogState(() {}),
-                    decoration: InputDecoration(
-                      labelText: MakingStrings.speechText(context),
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    key: const Key('timelineReadAloudVoice'),
-                    value: selectedVoiceName,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      labelText: MakingStrings.voice(context),
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: [
-                      for (final voice in voices)
-                        DropdownMenuItem(
-                          value: voice.name,
-                          child: Text(
-                            voice.displayName,
-                            overflow: TextOverflow.ellipsis,
+      builder: (_) => DisposeOnUnmount(
+        controller: textController,
+        builder: (_) => StatefulBuilder(
+          builder: (dialogContext, setDialogState) => PopScope(
+            // 作っている間は閉じない（閉じた後に結果をダイアログへ書けない）。
+            canPop: !generating,
+            child: AlertDialog(
+              insetPadding: typingDialogInsetPadding(
+                dialogContext,
+                usual: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              ),
+              title: Text(MakingStrings.readAloud(context)),
+              content: SizedBox(
+                width: 480,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextField(
+                        key: const Key('timelineReadAloudTextField'),
+                        controller: textController,
+                        minLines: 4,
+                        maxLines: 8,
+                        maxLength: 3500,
+                        enabled: !generating,
+                        onChanged: (_) => setDialogState(() => failed = false),
+                        decoration: InputDecoration(
+                          labelText: MakingStrings.speechText(context),
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // 選ぶ一覧は画面の書式で用紙の上に出すので、欄も
+                      // メニューの面のテーマで描く。
+                      MenuSurface(
+                        child: DropdownButtonFormField<String>(
+                          key: const Key('timelineReadAloudVoice'),
+                          initialValue: selectedVoiceName,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            labelText: MakingStrings.voice(context),
+                            border: const OutlineInputBorder(),
+                          ),
+                          items: [
+                            for (final voice in voices)
+                              DropdownMenuItem(
+                                value: voice.name,
+                                child: Text(
+                                  voice.displayName,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                          ],
+                          onChanged: generating
+                              ? null
+                              : (value) {
+                                  if (value != null) {
+                                    setDialogState(
+                                      () => selectedVoiceName = value,
+                                    );
+                                  }
+                                },
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      LabeledSlider(
+                        label: MakingStrings.rate(context),
+                        value: speechRate,
+                        min: 0.5,
+                        max: 2.0,
+                        divisions: 15,
+                        step: 0.1,
+                        isInt: false,
+                        valueText: '${speechRate.toStringAsFixed(2)}×',
+                        onChanged: generating
+                            ? null
+                            : (value) =>
+                                  setDialogState(() => speechRate = value),
+                      ),
+                      LabeledSlider(
+                        label: MakingStrings.pitch(context),
+                        value: pitch,
+                        min: 0.5,
+                        max: 2.0,
+                        divisions: 15,
+                        step: 0.1,
+                        isInt: false,
+                        valueText: '${pitch.toStringAsFixed(2)}×',
+                        onChanged: generating
+                            ? null
+                            : (value) => setDialogState(() => pitch = value),
+                      ),
+                      // フレームは表示（F1〜）と同じ1始まりの目盛りで持つ。
+                      // 1フレームの作品でもスライダーが成り立つよう幅は2以上。
+                      LabeledSlider(
+                        label: MakingStrings.startFrame(context),
+                        value: (startFrame + 1).toDouble(),
+                        min: 1,
+                        max: math.max(2, _totalFrames).toDouble(),
+                        divisions: math.max(1, _totalFrames - 1),
+                        valueText: 'F${startFrame + 1}',
+                        onChanged: generating || _totalFrames <= 1
+                            ? null
+                            : (value) => setDialogState(
+                                () => startFrame = (value.round() - 1)
+                                    .clamp(0, _totalFrames - 1)
+                                    .toInt(),
+                              ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        MakingStrings.speechNotice(context),
+                        style: Theme.of(dialogContext).textTheme.bodySmall
+                            ?.copyWith(
+                              color: Theme.of(
+                                dialogContext,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                      ),
+                      // 知らせはダイアログの幕の下に隠れるので、失敗は
+                      // ダイアログの中に出す（打った文は残す）。
+                      if (failed)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: IconNotice(
+                            MakingStrings.speechFailed(context),
+                            liveRegion: true,
                           ),
                         ),
                     ],
-                    onChanged: generating
-                        ? null
-                        : (value) {
-                            if (value != null) {
-                              setDialogState(() => selectedVoiceName = value);
-                            }
-                          },
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    MakingStrings.rate(context) + ': ' +
-                        speechRate.toStringAsFixed(2) + '×',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  Slider(
-                    value: speechRate,
-                    min: 0.5,
-                    max: 2.0,
-                    divisions: 15,
-                    onChanged: generating
-                        ? null
-                        : (value) => setDialogState(() => speechRate = value),
-                  ),
-                  Text(
-                    MakingStrings.pitch(context) + ': ' +
-                        pitch.toStringAsFixed(2) + '×',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  Slider(
-                    value: pitch,
-                    min: 0.5,
-                    max: 2.0,
-                    divisions: 15,
-                    onChanged: generating
-                        ? null
-                        : (value) => setDialogState(() => pitch = value),
-                  ),
-                  Text(
-                    MakingStrings.startFrame(context) + ': F' +
-                        (startFrame + 1).toString(),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  Slider(
-                    value: startFrame.toDouble(),
-                    min: 0,
-                    max: math.max(0, _totalFrames - 1).toDouble(),
-                    divisions: _totalFrames > 1 ? _totalFrames - 1 : null,
-                    onChanged: generating || _totalFrames <= 1
-                        ? null
-                        : (value) => setDialogState(
-                            () => startFrame = value.round(),
-                          ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    MakingStrings.speechNotice(context),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+                ),
               ),
+              actions: [
+                TextButton(
+                  onPressed: generating
+                      ? null
+                      : () async {
+                          Navigator.pop(dialogContext);
+                          try {
+                            await tts.openVoiceSettings();
+                          } catch (error, stackTrace) {
+                            AppErrorReporter.record(error, stackTrace);
+                          }
+                        },
+                  child: Text(MakingStrings.manageVoices(context)),
+                ),
+                TextButton(
+                  onPressed: generating
+                      ? null
+                      : () => Navigator.pop(dialogContext),
+                  child: Text(l10n.commonCancel),
+                ),
+                FilledButton.icon(
+                  key: const Key('timelineReadAloudGenerateButton'),
+                  onPressed: generating || textController.text.trim().isEmpty
+                      ? null
+                      : () async {
+                          final sceneId = _selectedSceneId;
+                          if (sceneId == null) return;
+                          setDialogState(() {
+                            generating = true;
+                            failed = false;
+                          });
+                          File? generatedWav;
+                          try {
+                            final voice = voices.firstWhere(
+                              (v) => v.name == selectedVoiceName,
+                            );
+                            final wav = await tts.synthesizeToFile(
+                              text: textController.text,
+                              voice: voice,
+                              rate: speechRate,
+                              pitch: pitch,
+                            );
+                            generatedWav = wav;
+                            if (!mounted) return;
+                            final materialService = context
+                                .read<MaterialService>();
+                            final asset = await materialService.addMaterial(
+                              projectId: widget.projectId,
+                              sourcePath: wav.path,
+                              type: MaterialType.audio,
+                            );
+                            final savedPath = await materialService.pathOf(
+                              widget.projectId,
+                              asset.id,
+                            );
+                            if (!mounted || savedPath == null) {
+                              throw StateError(
+                                'Generated audio could not be stored.',
+                              );
+                            }
+                            final project = context
+                                .read<ProjectService>()
+                                .projects
+                                .where((p) => p.id == widget.projectId)
+                                .firstOrNull;
+                            final durationMs =
+                                asset.duration?.inMilliseconds ?? 0;
+                            final maxLength = math
+                                .max(1, _totalFrames - startFrame)
+                                .toInt();
+                            final lengthFrames =
+                                durationMs > 0 && project != null
+                                ? (durationMs * project.fps / 1000)
+                                      .ceil()
+                                      .clamp(1, maxLength)
+                                      .toInt()
+                                : math.min(24, maxLength).toInt();
+                            final label = timelineTextName(
+                              textController.text,
+                              MakingStrings.readAloud(context),
+                            );
+                            final clip = await _createPersistedClip(
+                              sceneId: sceneId,
+                              label: label,
+                              startFrame: startFrame,
+                              lengthFrames: lengthFrames,
+                              color: ThemeService.activeColorScheme.tertiary,
+                              trackType: _ClipTrackType.audio,
+                              isReadAloud: true,
+                              filePath: savedPath,
+                              asset: asset,
+                            );
+                            if (!mounted) return;
+                            if (clip == null) {
+                              throw StateError(
+                                'The speech clip could not be added.',
+                              );
+                            }
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
+                            }
+                            setState(() => _audioClips.add(clip));
+                          } catch (error, stackTrace) {
+                            AppErrorReporter.record(error, stackTrace);
+                            if (!mounted || !dialogContext.mounted) return;
+                            setDialogState(() {
+                              generating = false;
+                              failed = true;
+                            });
+                          } finally {
+                            final temporary = generatedWav;
+                            if (temporary != null) {
+                              try {
+                                if (await temporary.exists()) {
+                                  await temporary.delete();
+                                }
+                              } catch (cleanupError, cleanupStack) {
+                                AppErrorReporter.record(
+                                  cleanupError,
+                                  cleanupStack,
+                                );
+                              }
+                            }
+                          }
+                        },
+                  icon: generating
+                      ? const SizedBox.square(
+                          dimension: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.record_voice_over_outlined),
+                  label: Text(
+                    generating
+                        ? l10n.newProjectCreating
+                        : MakingStrings.generateAndAdd(context),
+                  ),
+                ),
+              ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: generating
-                  ? null
-                  : () async {
-                      Navigator.pop(dialogContext);
-                      try {
-                        await tts.openVoiceSettings();
-                      } catch (error, stackTrace) {
-                        AppErrorReporter.record(error, stackTrace);
-                      }
-                    },
-              child: Text(MakingStrings.manageVoices(context)),
-            ),
-            TextButton(
-              onPressed: generating ? null : () => Navigator.pop(dialogContext),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton.icon(
-              key: const Key('timelineReadAloudGenerateButton'),
-              onPressed: generating || textController.text.trim().isEmpty
-                  ? null
-                  : () async {
-                      final sceneId = _selectedSceneId;
-                      if (sceneId == null) return;
-                      setDialogState(() => generating = true);
-                      File? generatedWav;
-                      try {
-                        final voice = voices.firstWhere(
-                          (v) => v.name == selectedVoiceName,
-                        );
-                        final wav = await tts.synthesizeToFile(
-                          text: textController.text,
-                          voice: voice,
-                          rate: speechRate,
-                          pitch: pitch,
-                        );
-                        generatedWav = wav;
-                        if (!mounted) return;
-                        final materialService = context.read<MaterialService>();
-                        final asset = await materialService.addMaterial(
-                          projectId: widget.projectId,
-                          sourcePath: wav.path,
-                          type: MaterialType.audio,
-                        );
-                        final savedPath = await materialService.pathOf(
-                          widget.projectId,
-                          asset.id,
-                        );
-                        if (!mounted || savedPath == null) {
-                          throw StateError('Generated audio could not be stored.');
-                        }
-                        final project = context.read<ProjectService>().projects
-                            .where((p) => p.id == widget.projectId)
-                            .firstOrNull;
-                        final durationMs = asset.duration?.inMilliseconds ?? 0;
-                        final maxLength = math.max(
-                          1,
-                          _totalFrames - startFrame,
-                        ).toInt();
-                        final lengthFrames = durationMs > 0 && project != null
-                            ? (durationMs * project.fps / 1000)
-                                .ceil().clamp(1, maxLength).toInt()
-                            : math.min(24, maxLength).toInt();
-                        final label = timelineTextName(
-                          textController.text,
-                          MakingStrings.readAloud(context),
-                        );
-                        final clip = await _createPersistedClip(
-                          sceneId: sceneId,
-                          label: label,
-                          startFrame: startFrame,
-                          lengthFrames: lengthFrames,
-                          color: ThemeService.activeColorScheme.tertiary,
-                          trackType: _ClipTrackType.audio,
-                          isReadAloud: true,
-                          filePath: savedPath,
-                          asset: asset,
-                        );
-                        if (!mounted) return;
-                        if (clip == null) {
-                          throw StateError('The speech clip could not be added.');
-                        }
-                        Navigator.pop(dialogContext);
-                        setState(() => _audioClips.add(clip));
-                      } catch (error, stackTrace) {
-                        AppErrorReporter.record(error, stackTrace);
-                        if (!mounted) return;
-                        setDialogState(() => generating = false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(MakingStrings.speechFailed(context)),
-                          ),
-                        );
-                      } finally {
-                        final temporary = generatedWav;
-                        if (temporary != null) {
-                          try {
-                            if (await temporary.exists()) await temporary.delete();
-                          } catch (cleanupError, cleanupStack) {
-                            AppErrorReporter.record(cleanupError, cleanupStack);
-                          }
-                        }
-                      }
-                    },
-              icon: generating
-                  ? const SizedBox.square(
-                      dimension: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.record_voice_over_outlined),
-              label: Text(
-                generating
-                    ? l10n.newProjectCreating
-                    : MakingStrings.generateAndAdd(context),
-              ),
-            ),
-          ],
         ),
       ),
     );
-    textController.dispose();
   }
 
   /// 登録済みウォーターマーク一覧から選択して追加する（
@@ -5871,7 +5928,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           if (videoRow) _buildVideoRowDisplayToggle(rowIndex),
           canRename
               ? GestureDetector(
-                  onTap: () => _showRenameTrackRowDialog(type, rowIndex, rowLabel),
+                  onTap: () =>
+                      _showRenameTrackRowDialog(type, rowIndex, rowLabel),
                   child: videoRow
                       ? _buildTrackLabel(
                           null,
@@ -9007,7 +9065,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       for (final other in existingOfType) {
         if (excludeIds.contains(other.id)) continue;
         if (other.trackRow != c.trackRow ||
-            other.isReadAloud != c.isReadAloud) continue;
+            other.isReadAloud != c.isReadAloud) {
+          continue;
+        }
         final oStart = other.startFrame;
         final oEnd = other.startFrame + other.lengthFrames;
         if (start < oEnd && oStart < end) {
@@ -9062,7 +9122,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
             final row = newRowsByType.putIfAbsent(type, () {
               final rowKind = _rowKindOf(type);
               ps.addTrackRow(widget.projectId, sceneId, rowKind);
-              return ps.rowNamesOf(widget.projectId, sceneId, rowKind).length - 1;
+              return ps.rowNamesOf(widget.projectId, sceneId, rowKind).length -
+                  1;
             });
             newRowForClipId[clip.id] = row;
           }
@@ -9249,7 +9310,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           continue;
         }
 
-        final home = projectService.homeOf(widget.projectId, clip.id) ??
+        final home =
+            projectService.homeOf(widget.projectId, clip.id) ??
             (sceneId: sceneId, frameIndex: splitFrame - 1);
         final sourceLayer = projectService
             .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
@@ -9265,20 +9327,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
           name: sourceLayer.name,
           id: rightId,
         );
-        projectService.tileManagerOf(widget.projectId).copyLayer(
-          projectService.tileKeyFor(
-            widget.projectId,
-            home.sceneId,
-            home.frameIndex,
-            clip.id,
-          ),
-          projectService.tileKeyFor(
-            widget.projectId,
-            home.sceneId,
-            home.frameIndex,
-            newLayer.id,
-          ),
-        );
+        projectService
+            .tileManagerOf(widget.projectId)
+            .copyLayer(
+              projectService.tileKeyFor(
+                widget.projectId,
+                home.sceneId,
+                home.frameIndex,
+                clip.id,
+              ),
+              projectService.tileKeyFor(
+                widget.projectId,
+                home.sceneId,
+                home.frameIndex,
+                newLayer.id,
+              ),
+            );
 
         final isVideo = clip.trackType == _ClipTrackType.video;
         projectService.updateLayer(

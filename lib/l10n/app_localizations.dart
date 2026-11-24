@@ -18956,6 +18956,168 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'フィルター設定を保存しました'**
   String get filterSettingsSaved;
+
+  /// メイキング・読み上げ：この作品のメイキングを記録
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品のメイキングを記録'**
+  String get makingRecordProject;
+
+  /// メイキング・読み上げ：OFFが初期設定です。ONにすると制作中のキャンバス画像を別保存領域へ記録します
+  ///
+  /// In ja, this message translates to:
+  /// **'OFFが初期設定です。ONにすると制作中のキャンバス画像を別保存領域へ記録します。容量を使用します。'**
+  String get makingRecordProjectHint;
+
+  /// メイキング・読み上げ：読み上げ
+  ///
+  /// In ja, this message translates to:
+  /// **'読み上げ'**
+  String get makingReadAloud;
+
+  /// メイキング・読み上げ：読み上げるテキスト
+  ///
+  /// In ja, this message translates to:
+  /// **'読み上げるテキスト'**
+  String get makingSpeechText;
+
+  /// メイキング・読み上げ：音声
+  ///
+  /// In ja, this message translates to:
+  /// **'音声'**
+  String get makingVoice;
+
+  /// メイキング・読み上げ：読み上げ速度
+  ///
+  /// In ja, this message translates to:
+  /// **'読み上げ速度'**
+  String get makingRate;
+
+  /// メイキング・読み上げ：音程
+  ///
+  /// In ja, this message translates to:
+  /// **'音程'**
+  String get makingPitch;
+
+  /// メイキング・読み上げ：音声は端末にインストールされた音声エンジンで生成されます。商用利用・配信に使う場
+  ///
+  /// In ja, this message translates to:
+  /// **'音声は端末にインストールされた音声エンジンで生成されます。商用利用・配信に使う場合は、選択した音声エンジンと音声データの提供元の利用条件を確認してください。'**
+  String get makingSpeechNotice;
+
+  /// メイキング・読み上げ：音声の追加・管理
+  ///
+  /// In ja, this message translates to:
+  /// **'音声の追加・管理'**
+  String get makingManageVoices;
+
+  /// メイキング・読み上げ：利用できるオフライン音声がありません。Androidのテキスト読み上げ設定で音声
+  ///
+  /// In ja, this message translates to:
+  /// **'利用できるオフライン音声がありません。Androidのテキスト読み上げ設定で音声データをインストールしてください。'**
+  String get makingNoVoices;
+
+  /// メイキング・読み上げ：生成して追加
+  ///
+  /// In ja, this message translates to:
+  /// **'生成して追加'**
+  String get makingGenerateAndAdd;
+
+  /// メイキング・読み上げ：開始フレーム
+  ///
+  /// In ja, this message translates to:
+  /// **'開始フレーム'**
+  String get makingStartFrame;
+
+  /// メイキング・読み上げ：メイキングを見る
+  ///
+  /// In ja, this message translates to:
+  /// **'メイキングを見る'**
+  String get makingViewMaking;
+
+  /// メイキング・読み上げ：メイキング
+  ///
+  /// In ja, this message translates to:
+  /// **'メイキング'**
+  String get makingTitle;
+
+  /// メイキング・読み上げ：この作品のメイキング記録はありません。新規作成時に記録をONにするか、作品詳細で
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品のメイキング記録はありません。新規作成時に記録をONにするか、作品詳細で記録を有効にしてから制作してください。'**
+  String get makingEmpty;
+
+  /// メイキング：この作品のメイキング記録を読めなかったときの知らせ（「再試行」と並べる）
+  ///
+  /// In ja, this message translates to:
+  /// **'メイキングの記録を読み込めませんでした'**
+  String get makingLoadFailed;
+
+  /// メイキング・読み上げ：メイキングの保存上限（64MB）に達しました。これ以上の自動記録は停止しています
+  ///
+  /// In ja, this message translates to:
+  /// **'メイキングの保存上限（64MB）に達しました。これ以上の自動記録は停止しています。既存の記録は保持されています。'**
+  String get makingStorageLimit;
+
+  /// メイキング・読み上げ：WebM
+  ///
+  /// In ja, this message translates to:
+  /// **'WebM'**
+  String get makingFormatWebm;
+
+  /// メイキング・読み上げ：動画を書き出す
+  ///
+  /// In ja, this message translates to:
+  /// **'動画を書き出す'**
+  String get makingExportLabel;
+
+  /// メイキング・読み上げ：メイキング動画を書き出しました。
+  ///
+  /// In ja, this message translates to:
+  /// **'メイキング動画を書き出しました。'**
+  String get makingExportComplete;
+
+  /// メイキング・読み上げ：メイキング動画を書き出せませんでした。
+  ///
+  /// In ja, this message translates to:
+  /// **'メイキング動画を書き出せませんでした。'**
+  String get makingExportFailed;
+
+  /// メイキング・読み上げ：メイキング履歴を削除
+  ///
+  /// In ja, this message translates to:
+  /// **'メイキング履歴を削除'**
+  String get makingDeleteHistory;
+
+  /// メイキング・読み上げ：この作品のメイキング画像と記録情報をすべて削除します。この操作は元に戻せません。
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品のメイキング画像と記録情報をすべて削除します。この操作は元に戻せません。'**
+  String get makingDeleteHistoryConfirm;
+
+  /// メイキング・読み上げ：メイキング履歴を削除できませんでした。
+  ///
+  /// In ja, this message translates to:
+  /// **'メイキング履歴を削除できませんでした。'**
+  String get makingDeleteFailed;
+
+  /// メイキング・読み上げ：メイキング履歴を削除しました。
+  ///
+  /// In ja, this message translates to:
+  /// **'メイキング履歴を削除しました。'**
+  String get makingHistoryDeleted;
+
+  /// メイキング・読み上げ：記録 $current / $total
+  ///
+  /// In ja, this message translates to:
+  /// **'記録 {current} / {total}'**
+  String makingFrameCounter(int current, int total);
+
+  /// メイキング・読み上げ：音声を生成できませんでした。選択した音声データを確認してください。
+  ///
+  /// In ja, this message translates to:
+  /// **'音声を生成できませんでした。選択した音声データを確認してください。'**
+  String get makingSpeechFailed;
 }
 
 class _AppLocalizationsDelegate

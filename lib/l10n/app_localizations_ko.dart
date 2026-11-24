@@ -10819,4 +10819,91 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get filterSettingsSaved => '필터 설정을 저장했습니다';
+
+  @override
+  String get makingRecordProject => '이 작품의 제작 과정 기록';
+
+  @override
+  String get makingRecordProjectHint => '기본값은 꺼짐입니다. 켜면 캔버스 스냅샷을 별도 영역에 저장합니다.';
+
+  @override
+  String get makingReadAloud => '음성 읽기';
+
+  @override
+  String get makingSpeechText => '읽을 텍스트';
+
+  @override
+  String get makingVoice => '음성';
+
+  @override
+  String get makingRate => '말하기 속도';
+
+  @override
+  String get makingPitch => '음높이';
+
+  @override
+  String get makingSpeechNotice =>
+      '음성은 이 기기에 설치된 엔진으로 생성됩니다. 상업적 이용 전에 엔진과 음성 데이터의 이용 조건을 확인하세요.';
+
+  @override
+  String get makingManageVoices => '음성 추가 및 관리';
+
+  @override
+  String get makingNoVoices =>
+      '사용 가능한 오프라인 음성이 없습니다. Android 설정에서 음성 데이터를 설치하세요.';
+
+  @override
+  String get makingGenerateAndAdd => '생성하여 추가';
+
+  @override
+  String get makingStartFrame => '시작 프레임';
+
+  @override
+  String get makingViewMaking => '메이킹 보기';
+
+  @override
+  String get makingTitle => '메이킹';
+
+  @override
+  String get makingEmpty => '이 작품의 제작 기록이 없습니다. 작품 상세에서 기록을 켜고 계속 편집하세요.';
+
+  @override
+  String get makingLoadFailed => '제작 기록을 불러오지 못했습니다';
+
+  @override
+  String get makingStorageLimit =>
+      '메이킹 기록 64MB 한도에 도달했습니다. 새 기록은 중지되었으며 기존 기록은 유지됩니다.';
+
+  @override
+  String get makingFormatWebm => 'WebM';
+
+  @override
+  String get makingExportLabel => '동영상 내보내기';
+
+  @override
+  String get makingExportComplete => '메이킹 동영상을 내보냈습니다.';
+
+  @override
+  String get makingExportFailed => '메이킹 동영상을 내보내지 못했습니다.';
+
+  @override
+  String get makingDeleteHistory => '메이킹 기록 삭제';
+
+  @override
+  String get makingDeleteHistoryConfirm =>
+      '이 작품의 모든 메이킹 스냅샷과 기록을 삭제할까요? 되돌릴 수 없습니다.';
+
+  @override
+  String get makingDeleteFailed => '메이킹 기록을 삭제하지 못했습니다.';
+
+  @override
+  String get makingHistoryDeleted => '메이킹 기록을 삭제했습니다.';
+
+  @override
+  String makingFrameCounter(int current, int total) {
+    return '기록 $current / $total';
+  }
+
+  @override
+  String get makingSpeechFailed => '음성을 생성하지 못했습니다. 음성 데이터를 확인하세요.';
 }

@@ -15,9 +15,15 @@ import '../../services/export_storage.dart';
 import '../../services/hw_video_encoder.dart';
 import '../../services/making_service.dart';
 import '../../services/project_service.dart';
+import '../../utils/app_error_reporter.dart';
+import '../../utils/file_size_label.dart';
 import '../../utils/making_strings.dart';
+import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/icon_notice.dart';
+import '../../widgets/menu_surface.dart';
 
+/// 書き出しの形式。名前（[Enum.name]）がそのままファイルの拡張子。
 enum _MakingFormat { mp4, gif, webm, avi }
 
 class MakingScreen extends StatefulWidget {
@@ -32,6 +38,10 @@ class MakingScreen extends StatefulWidget {
 class _MakingScreenState extends State<MakingScreen> {
   MakingHistory? _history;
   bool _loading = true;
+
+  /// 記録を読めなかった。読めていない間は「記録はありません」と言わず、
+  /// 知らせと「再試行」を出す。
+  bool _loadFailed = false;
   bool _playing = false;
   bool _exporting = false;
   int _index = 0;
@@ -58,11 +68,24 @@ class _MakingScreenState extends State<MakingScreen> {
         _history = history;
         _index = 0;
         _loading = false;
+        _loadFailed = false;
       });
-    } catch (error) {
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
       if (!mounted) return;
-      setState(() => _loading = false);
+      setState(() {
+        _loading = false;
+        _loadFailed = true;
+      });
     }
+  }
+
+  void _retryLoad() {
+    setState(() {
+      _loading = true;
+      _loadFailed = false;
+    });
+    _load();
   }
 
   void _togglePlayback() {
@@ -88,13 +111,6 @@ class _MakingScreenState extends State<MakingScreen> {
       }
     });
   }
-
-  String _extension(_MakingFormat format) => switch (format) {
-    _MakingFormat.mp4 => 'mp4',
-    _MakingFormat.gif => 'gif',
-    _MakingFormat.webm => 'webm',
-    _MakingFormat.avi => 'avi',
-  };
 
   Future<void> _deleteHistory() async {
     final l10n = AppLocalizations.of(context)!;
@@ -133,7 +149,7 @@ class _MakingScreenState extends State<MakingScreen> {
         SnackBar(content: Text(MakingStrings.historyDeleted(context))),
       );
     } catch (error, stackTrace) {
-      debugPrint('Could not delete making history: $error\n$stackTrace');
+      AppErrorReporter.record(error, stackTrace);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(MakingStrings.deleteFailed(context))),
@@ -162,7 +178,7 @@ class _MakingScreenState extends State<MakingScreen> {
       const fps = 8;
       final exportDirectory = await ExportEngine.exportsDir();
       final outputPath =
-          '${exportDirectory.path}/Making_${widget.projectId}_${DateTime.now().millisecondsSinceEpoch}.${_extension(_format)}';
+          '${exportDirectory.path}/Making_${widget.projectId}_${DateTime.now().millisecondsSinceEpoch}.${_format.name}';
       partialOutput = outputPath;
 
       switch (_format) {
@@ -280,7 +296,7 @@ class _MakingScreenState extends State<MakingScreen> {
         SnackBar(content: Text(MakingStrings.exportComplete(context))),
       );
     } catch (error, stackTrace) {
-      debugPrint('Making export failed: $error\n$stackTrace');
+      AppErrorReporter.record(error, stackTrace);
       if (partialOutput != null) {
         try {
           final partial = File(partialOutput);
@@ -329,6 +345,28 @@ class _MakingScreenState extends State<MakingScreen> {
       appBar: AppBar(title: FitOrHideTitle(MakingStrings.makingTitle(context))),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
+          : _loadFailed
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconNotice(
+                      MakingStrings.loadFailed(context),
+                      liveRegion: true,
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      key: const Key('makingRetryLoadButton'),
+                      onPressed: _retryLoad,
+                      icon: const Icon(Icons.refresh),
+                      label: Text(l10n.communityRetry),
+                    ),
+                  ],
+                ),
+              ),
+            )
           : snapshots.isEmpty
           ? Center(
               child: Padding(
@@ -336,7 +374,8 @@ class _MakingScreenState extends State<MakingScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.movie_outlined, size: 44),
+                    // 空の表示の印は補助の文字色・台や枠なし（ほかの一覧と同じ）。
+                    const EmptyStateIcon(icon: Icons.movie_outlined),
                     const SizedBox(height: 16),
                     Text(
                       MakingStrings.makingEmpty(context),
@@ -416,47 +455,48 @@ class _MakingScreenState extends State<MakingScreen> {
                                 : l10n.commonPlay,
                           ),
                           const Spacer(),
-                          Text(
-                            _history!.sizeBytes < 1024 * 1024
-                                ? '${(_history!.sizeBytes / 1024).round()} KB'
-                                : '${(_history!.sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB',
-                          ),
+                          // 言語ごとの書き方（fr「1,4 Ko」等）で、数と単位を
+                          // 改行しない空白でつなぐ。
+                          Text(fileSizeLabel(l10n, _history!.sizeBytes)),
                         ],
                       ),
                       if (_history?.limitReached == true)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(
+                          // その場の知らせはエラーの赤にせず、面の文字色と印で。
+                          child: IconNotice(
                             MakingStrings.storageLimit(context),
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
+                            liveRegion: true,
                           ),
                         ),
                       Row(
                         children: [
                           Expanded(
-                            child: DropdownButtonFormField<_MakingFormat>(
-                              initialValue: _format,
-                              isExpanded: true,
-                              decoration: InputDecoration(
-                                labelText: l10n.exportFormatSection,
-                                border: const OutlineInputBorder(),
+                            // 塗った欄の下地はメニューの背景色なので、選んだ値も
+                            // メニューの文字色で描く。
+                            child: MenuSurface(
+                              child: DropdownButtonFormField<_MakingFormat>(
+                                initialValue: _format,
+                                isExpanded: true,
+                                decoration: InputDecoration(
+                                  labelText: l10n.exportFormatSection,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                items: [
+                                  for (final format in _MakingFormat.values)
+                                    DropdownMenuItem(
+                                      value: format,
+                                      child: Text(_formatName(l10n, format)),
+                                    ),
+                                ],
+                                onChanged: _exporting
+                                    ? null
+                                    : (value) {
+                                        if (value != null) {
+                                          setState(() => _format = value);
+                                        }
+                                      },
                               ),
-                              items: [
-                                for (final format in _MakingFormat.values)
-                                  DropdownMenuItem(
-                                    value: format,
-                                    child: Text(_formatName(l10n, format)),
-                                  ),
-                              ],
-                              onChanged: _exporting
-                                  ? null
-                                  : (value) {
-                                      if (value != null) {
-                                        setState(() => _format = value);
-                                      }
-                                    },
                             ),
                           ),
                           const SizedBox(width: 12),

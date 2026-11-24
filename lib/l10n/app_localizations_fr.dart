@@ -11753,4 +11753,95 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterSettingsSaved => 'Réglages du filtre enregistrés';
+
+  @override
+  String get makingRecordProject => 'Enregistrer le processus de ce projet';
+
+  @override
+  String get makingRecordProjectHint =>
+      'Désactivé par défaut. Les instantanés du canevas sont enregistrés séparément.';
+
+  @override
+  String get makingReadAloud => 'Synthèse vocale';
+
+  @override
+  String get makingSpeechText => 'Texte à lire';
+
+  @override
+  String get makingVoice => 'Voix';
+
+  @override
+  String get makingRate => 'Vitesse';
+
+  @override
+  String get makingPitch => 'Hauteur';
+
+  @override
+  String get makingSpeechNotice =>
+      'La voix est générée par un moteur installé sur cet appareil. Vérifiez les conditions du moteur et des données vocales avant toute utilisation commerciale.';
+
+  @override
+  String get makingManageVoices => 'Ajouter ou gérer des voix';
+
+  @override
+  String get makingNoVoices =>
+      'Aucune voix hors ligne. Installez des données vocales dans les paramètres Android.';
+
+  @override
+  String get makingGenerateAndAdd => 'Générer et ajouter';
+
+  @override
+  String get makingStartFrame => 'Image de début';
+
+  @override
+  String get makingViewMaking => 'Voir le making-of';
+
+  @override
+  String get makingTitle => 'Making-of';
+
+  @override
+  String get makingEmpty =>
+      'Aucun historique de création. Activez l’enregistrement dans les détails du projet et continuez à créer.';
+
+  @override
+  String get makingLoadFailed =>
+      'Impossible de charger l’historique de création';
+
+  @override
+  String get makingStorageLimit =>
+      'La limite de 64 Mo est atteinte. Les nouvelles captures sont arrêtées et l’historique existant est conservé.';
+
+  @override
+  String get makingFormatWebm => 'WebM';
+
+  @override
+  String get makingExportLabel => 'Exporter la vidéo';
+
+  @override
+  String get makingExportComplete => 'Vidéo du making-of exportée.';
+
+  @override
+  String get makingExportFailed => 'Impossible d’exporter la vidéo.';
+
+  @override
+  String get makingDeleteHistory => 'Supprimer l’historique';
+
+  @override
+  String get makingDeleteHistoryConfirm =>
+      'Supprimer tous les instantanés et l’historique de ce projet ? Cette action est irréversible.';
+
+  @override
+  String get makingDeleteFailed => 'Impossible de supprimer l’historique.';
+
+  @override
+  String get makingHistoryDeleted => 'Historique supprimé.';
+
+  @override
+  String makingFrameCounter(int current, int total) {
+    return 'Instantané $current / $total';
+  }
+
+  @override
+  String get makingSpeechFailed =>
+      'La synthèse vocale a échoué. Vérifiez les données vocales.';
 }

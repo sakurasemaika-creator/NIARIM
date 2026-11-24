@@ -11741,4 +11741,94 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filterSettingsSaved => 'Ajustes del filtro guardados';
+
+  @override
+  String get makingRecordProject => 'Grabar el proceso de este proyecto';
+
+  @override
+  String get makingRecordProjectHint =>
+      'Desactivado por defecto. Al activarlo, se guardan capturas del lienzo en un área separada.';
+
+  @override
+  String get makingReadAloud => 'Texto a voz';
+
+  @override
+  String get makingSpeechText => 'Texto para leer';
+
+  @override
+  String get makingVoice => 'Voz';
+
+  @override
+  String get makingRate => 'Velocidad';
+
+  @override
+  String get makingPitch => 'Tono';
+
+  @override
+  String get makingSpeechNotice =>
+      'La voz se genera con un motor instalado en este dispositivo. Comprueba las condiciones del motor y los datos de voz antes del uso comercial.';
+
+  @override
+  String get makingManageVoices => 'Añadir o administrar voces';
+
+  @override
+  String get makingNoVoices =>
+      'No hay voces sin conexión. Instala datos de voz en los ajustes de Android.';
+
+  @override
+  String get makingGenerateAndAdd => 'Generar y añadir';
+
+  @override
+  String get makingStartFrame => 'Fotograma inicial';
+
+  @override
+  String get makingViewMaking => 'Ver el proceso';
+
+  @override
+  String get makingTitle => 'Proceso';
+
+  @override
+  String get makingEmpty =>
+      'No hay historial de este proceso. Activa la grabación en los detalles del proyecto y sigue editando.';
+
+  @override
+  String get makingLoadFailed => 'No se pudo cargar el historial del proceso';
+
+  @override
+  String get makingStorageLimit =>
+      'Se alcanzó el límite de 64 MB. Se detuvieron nuevas capturas; el historial existente se conserva.';
+
+  @override
+  String get makingFormatWebm => 'WebM';
+
+  @override
+  String get makingExportLabel => 'Exportar vídeo';
+
+  @override
+  String get makingExportComplete => 'Vídeo del proceso exportado.';
+
+  @override
+  String get makingExportFailed => 'No se pudo exportar el vídeo.';
+
+  @override
+  String get makingDeleteHistory => 'Eliminar historial';
+
+  @override
+  String get makingDeleteHistoryConfirm =>
+      '¿Eliminar todas las capturas y el historial de este proyecto? No se puede deshacer.';
+
+  @override
+  String get makingDeleteFailed => 'No se pudo eliminar el historial.';
+
+  @override
+  String get makingHistoryDeleted => 'Historial eliminado.';
+
+  @override
+  String makingFrameCounter(int current, int total) {
+    return 'Captura $current / $total';
+  }
+
+  @override
+  String get makingSpeechFailed =>
+      'No se pudo generar la voz. Comprueba los datos de voz.';
 }
