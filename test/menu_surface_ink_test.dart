@@ -151,11 +151,12 @@ void main() {
         'field ${_fieldInk(tester, find.byKey(const ValueKey('sheetField')))}',
     ];
     expect(wrong, isEmpty, reason: 'sheet content not in menuTextColor $ink');
-    // 一覧の行の先頭のアイコンは差し色の文字・アイコン色のまま（自動で
-    // 差し替えない）。
+    // 一覧の行の先頭のアイコンは補助の文字色：メニューの面ではメニューの
+    // 文字色から作る（差し色にしない。暗いメニューの上でも読める）。
     expect(
-      _painted(tester, find.byIcon(Icons.folder_outlined)),
-      _darkMenu.accentTextColor,
+      _sameInk(_painted(tester, find.byIcon(Icons.folder_outlined)), ink),
+      isTrue,
+      reason: '${_painted(tester, find.byIcon(Icons.folder_outlined))}',
     );
   });
 
