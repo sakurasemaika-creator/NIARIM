@@ -10230,30 +10230,18 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       request.cameraKeyframes,
       request.frameIndex,
     );
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    // Match export: the paper is part of the output before camera and effects.
-    canvas.drawRect(
-      ui.Rect.fromLTWH(
-        0,
-        0,
-        outputWidth.toDouble(),
-        outputHeight.toDouble(),
-      ),
-      ui.Paint()..color = ui.Color(request.backgroundColor),
+    final kf = _cameraEngine.valueAt(
+      request.cameraKeyframes,
+      request.frameIndex,
     );
-    canvas.save();
-    _cameraEngine.apply(
-      canvas,
-      kf,
-      outputWidth.toDouble(),
-      outputHeight.toDouble(),
+    var img = await renderOutputViewportImage(
+      drawingImage: layered,
+      viewport: viewport,
+      backgroundColor: request.backgroundColor,
+      cameraEngine: _cameraEngine,
+      cameraKeyframe: kf,
     );
-    paintOutputViewport(canvas, layered, viewport);
-    canvas.restore();
     layered.dispose();
-    final picture = recorder.endRecording();
-    var img = await picture.toImage(outputWidth, outputHeight);
 
     // Apply effects after cropping, as the export renderer does.
     if (request.effectFilters.isNotEmpty) {
