@@ -84,6 +84,68 @@ abstract final class MakingStrings {
     'fr': 'Image de début', 'ko': '시작 프레임', 'zh': '开始帧', 'zh_Hant': '開始影格',
   });
 
+  static String viewMaking(BuildContext context) => _pick(context, {
+    'ja': 'メイキングを見る', 'en': 'View making', 'es': 'Ver el proceso',
+    'fr': 'Voir le making-of', 'ko': '메이킹 보기', 'zh': '查看制作过程',
+    'zh_Hant': '查看製作過程',
+  });
+
+  static String makingTitle(BuildContext context) => _pick(context, {
+    'ja': 'メイキング', 'en': 'Making', 'es': 'Proceso', 'fr': 'Making-of',
+    'ko': '메이킹', 'zh': '制作过程', 'zh_Hant': '製作過程',
+  });
+
+  static String makingEmpty(BuildContext context) => _pick(context, {
+    'ja': 'この作品のメイキング記録はありません。新規作成時に記録をONにするか、作品詳細で記録を有効にしてから制作してください。',
+    'en': 'There is no making history for this project. Enable recording in the project details and continue editing.',
+    'es': 'No hay historial de este proceso. Activa la grabación en los detalles del proyecto y sigue editando.',
+    'fr': 'Aucun historique de création. Activez l’enregistrement dans les détails du projet et continuez à créer.',
+    'ko': '이 작품의 제작 기록이 없습니다. 작품 상세에서 기록을 켜고 계속 편집하세요.',
+    'zh': '此作品没有制作记录。请在作品详情中开启记录后继续编辑。',
+    'zh_Hant': '此作品沒有製作記錄。請在作品詳細資訊中開啟記錄後繼續編輯。',
+  });
+
+  static String storageLimit(BuildContext context) => _pick(context, {
+    'ja': 'メイキングの保存上限（64MB）に達しました。これ以上の自動記録は停止しています。既存の記録は保持されています。',
+    'en': 'The 64 MB making-history limit has been reached. New snapshots have stopped; existing history is kept.',
+    'es': 'Se alcanzó el límite de 64 MB. Se detuvieron nuevas capturas; el historial existente se conserva.',
+    'fr': 'La limite de 64 Mo est atteinte. Les nouvelles captures sont arrêtées et l’historique existant est conservé.',
+    'ko': '메이킹 기록 64MB 한도에 도달했습니다. 새 기록은 중지되었으며 기존 기록은 유지됩니다.',
+    'zh': '制作记录已达到64MB上限。新快照已停止，现有记录会保留。',
+    'zh_Hant': '製作記錄已達到64MB上限。新快照已停止，現有記錄會保留。',
+  });
+
+  static String exportLabel(BuildContext context) => _pick(context, {
+    'ja': '動画を書き出す', 'en': 'Export video', 'es': 'Exportar vídeo',
+    'fr': 'Exporter la vidéo', 'ko': '동영상 내보내기', 'zh': '导出视频',
+    'zh_Hant': '匯出影片',
+  });
+
+  static String exportComplete(BuildContext context) => _pick(context, {
+    'ja': 'メイキング動画を書き出しました。', 'en': 'Making video exported.',
+    'es': 'Vídeo del proceso exportado.', 'fr': 'Vidéo du making-of exportée.',
+    'ko': '메이킹 동영상을 내보냈습니다.', 'zh': '制作视频已导出。',
+    'zh_Hant': '製作影片已匯出。',
+  });
+
+  static String exportFailed(BuildContext context) => _pick(context, {
+    'ja': 'メイキング動画を書き出せませんでした。', 'en': 'Could not export making video.',
+    'es': 'No se pudo exportar el vídeo.', 'fr': 'Impossible d’exporter la vidéo.',
+    'ko': '메이킹 동영상을 내보내지 못했습니다.', 'zh': '无法导出制作视频。',
+    'zh_Hant': '無法匯出製作影片。',
+  });
+
+  static String frameCounter(BuildContext context, int current, int total) =>
+      _pick(context, {
+        'ja': '記録 $current / $total',
+        'en': 'Snapshot $current / $total',
+        'es': 'Captura $current / $total',
+        'fr': 'Instantané $current / $total',
+        'ko': '기록 $current / $total',
+        'zh': '快照 $current / $total',
+        'zh_Hant': '快照 $current / $total',
+      });
+
   static String speechFailed(BuildContext context) => _pick(context, {
     'ja': '音声を生成できませんでした。選択した音声データを確認してください。',
     'en': 'Speech could not be generated. Check the selected voice data.',

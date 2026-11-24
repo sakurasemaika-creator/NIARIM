@@ -12,6 +12,7 @@ import 'screens/settings/community_notification_settings_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/project/new_project_screen.dart';
 import 'screens/project/project_detail_screen.dart';
+import 'screens/project/making_screen.dart';
 import 'screens/canvas/canvas_screen.dart';
 import 'screens/timeline/timeline_screen.dart';
 import 'screens/settings/settings_screen.dart';
@@ -117,6 +118,12 @@ final appRouter = GoRouter(
       path: '/project/:id',
       builder: (context, state) => AdMockPageFrame(
         child: ProjectDetailScreen(projectId: state.pathParameters['id']!),
+      ),
+    ),
+    GoRoute(
+      path: '/making/:id',
+      builder: (context, state) => AdMockPageFrame(
+        child: MakingScreen(projectId: state.pathParameters['id']!),
       ),
     ),
     GoRoute(

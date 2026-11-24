@@ -38,6 +38,7 @@ import '../../utils/file_size_label.dart';
 import '../../utils/folder_tree.dart';
 import '../../utils/immersive_mode.dart';
 import '../../utils/work_time_label.dart';
+import '../../utils/making_strings.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../home/widgets/project_list_widget.dart' show niashareKey;
 import '../../widgets/typing_dialog_inset.dart';
@@ -398,6 +399,28 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 label: Text(l10n.projectDetailStartEditButton),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
+                ),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                key: const Key('projectDetailViewMaking'),
+                onPressed: () => context.push('/making/' + widget.projectId),
+                icon: const Icon(Icons.movie_outlined),
+                label: Text(MakingStrings.viewMaking(context)),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(46),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SwitchListTile(
+                key: const Key('projectDetailMakingEnabled'),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                title: Text(MakingStrings.recordProject(context)),
+                subtitle: Text(MakingStrings.recordProjectHint(context)),
+                value: project.makingEnabled,
+                onChanged: (value) => projectService.setMakingEnabled(
+                  project.id,
+                  value,
                 ),
               ),
               const SizedBox(height: 16),

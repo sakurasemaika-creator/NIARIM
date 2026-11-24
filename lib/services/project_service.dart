@@ -2650,7 +2650,11 @@ class ProjectService extends ChangeNotifier {
       updatedAt: now,
       isSharedImport: isSharedImport,
     );
-    _projects.add(project);
+    _projects.add(
+      project.copyWith(
+        makingEnabled: isSharedImport ? false : project.makingEnabled,
+      ),
+    );
     _scenes[newId] = data.scenes;
     _layerHomes[newId] = buildLayerHomeIndex(data.scenes);
     final tm = TileManager(
@@ -5100,6 +5104,16 @@ class ProjectService extends ChangeNotifier {
   /// このプロジェクトで使用する自動塗りプリセットを設定する。
   /// プロジェクトごとに使うプリセットだけを選べるようにする。
   /// [ids]がnullの場合は「すべて使用する」に戻す。
+  /// Imported shared works begin with making recording OFF so another
+  /// creator's preference cannot silently consume the recipient's storage.
+  Future<void> setMakingEnabled(String projectId, bool enabled) async {
+    final index = _projects.indexWhere((project) => project.id == projectId);
+    if (index < 0 || _projects[index].makingEnabled == enabled) return;
+    _projects[index] = _projects[index].copyWith(makingEnabled: enabled);
+    _saveAsync(projectId, keepUpdatedAt: true);
+    notifyListeners();
+  }
+
   Future<void> setEnabledAutofillPresetIds(
     String projectId,
     List<String>? ids,
