@@ -1,5 +1,5 @@
-/// Maps a timeline frame to the source-video timestamp used by preview
-/// and offline rendering. Source trim bounds are inclusive frame indices,
+/// Maps a timeline frame to the source-video timestamp for preview and
+/// future offline rendering. Both paths can call this pure evaluator. Source trim bounds are inclusive frame indices,
 /// matching Layer.sourceTrimStart/sourceTrimEnd and the existing timeline UI.
 class TimelineVideoTimeMapper {
   const TimelineVideoTimeMapper._();
