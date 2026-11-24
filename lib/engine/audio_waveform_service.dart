@@ -33,22 +33,38 @@ class AudioWaveformService {
 
   static Future<Uint8List?> getWaveform({
     required String filePath,
-    String? cacheKey,
+    required String cacheKey,
+    required double sourceStartSeconds,
+    required double durationSeconds,
   }) {
-    final key = cacheKey ?? filePath;
+    final key = cacheKey;
     if (_memoryCache.containsKey(key)) return Future.value(_memoryCache[key]);
     final existing = _inFlight[key];
     if (existing != null) return existing;
-    final future = _generate(filePath, key);
+    final future = _generate(
+      filePath,
+      key,
+      sourceStartSeconds: sourceStartSeconds,
+      durationSeconds: durationSeconds,
+    );
     _inFlight[key] = future;
     future.whenComplete(() => _inFlight.remove(key));
     return future;
   }
 
-  static Future<Uint8List?> _generate(String filePath, String key) async {
+  static Future<Uint8List?> _generate(
+    String filePath,
+    String key, {
+    required double sourceStartSeconds,
+    required double durationSeconds,
+  }) async {
     try {
       final srcFile = File(filePath);
       if (!await srcFile.exists()) {
+        _memoryCache[key] = null;
+        return null;
+      }
+      if (sourceStartSeconds < 0 || durationSeconds <= 0) {
         _memoryCache[key] = null;
         return null;
       }
@@ -60,9 +76,16 @@ class AudioWaveformService {
         _memoryCache[key] = bytes;
         return bytes;
       }
+      // Generate only the source interval represented by this timeline clip.
+      // This keeps the waveform's left/right edges aligned with the clip's
+      // sourceStartFrame and lengthFrames rather than stretching the whole file.
+      final start = sourceStartSeconds.toStringAsFixed(6);
+      final duration = durationSeconds.toStringAsFixed(6);
       final session = await FFmpegKit.execute(
         '-y -i "${srcFile.path}" -filter_complex '
-        '"[0:a:0]showwavespic=s=${renderWidth}x$renderHeight:colors=white[wave]" '
+        '"[0:a:0]atrim=start=$start:duration=$duration,'
+        'asetpts=PTS-STARTPTS,'
+        'showwavespic=s=${renderWidth}x$renderHeight:colors=white[wave]" '
         '-map "[wave]" -frames:v 1 "${outFile.path}"',
       );
       final rc = await session.getReturnCode();
