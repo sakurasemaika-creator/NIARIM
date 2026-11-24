@@ -3441,6 +3441,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       final sceneId = _selectedSceneId;
                       if (sceneId == null) return;
                       setDialogState(() => generating = true);
+                      File? generatedWav;
                       try {
                         final voice = voices.firstWhere(
                           (v) => v.name == selectedVoiceName,
@@ -3451,17 +3452,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           rate: speechRate,
                           pitch: pitch,
                         );
-                        if (!mounted) {
-                          await wav.delete();
-                          return;
-                        }
+                        generatedWav = wav;
+                        if (!mounted) return;
                         final materialService = context.read<MaterialService>();
                         final asset = await materialService.addMaterial(
                           projectId: widget.projectId,
                           sourcePath: wav.path,
                           type: MaterialType.audio,
                         );
-                        await wav.delete();
                         final savedPath = await materialService.pathOf(
                           widget.projectId,
                           asset.id,
@@ -3510,6 +3508,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             content: Text(MakingStrings.speechFailed(context)),
                           ),
                         );
+                      } finally {
+                        final temporary = generatedWav;
+                        if (temporary != null) {
+                          try {
+                            if (await temporary.exists()) await temporary.delete();
+                          } catch (cleanupError, cleanupStack) {
+                            AppErrorReporter.record(cleanupError, cleanupStack);
+                          }
+                        }
                       }
                     },
               icon: generating

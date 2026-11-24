@@ -104,6 +104,7 @@ class _MakingScreenState extends State<MakingScreen> {
     });
     _playTimer?.cancel();
     Directory? staging;
+    String? partialOutput;
     try {
       final firstBytes = await File(snapshots.first.path).readAsBytes();
       final firstImage = img.decodeImage(firstBytes);
@@ -118,6 +119,7 @@ class _MakingScreenState extends State<MakingScreen> {
           '/Making_' + widget.projectId + '_' +
           DateTime.now().millisecondsSinceEpoch.toString() + '.' +
           _extension(_format);
+      partialOutput = outputPath;
 
       switch (_format) {
         case _MakingFormat.mp4:
@@ -133,19 +135,19 @@ class _MakingScreenState extends State<MakingScreen> {
           // GIF palette frames remain resident in the encoder. Downsample and
           // cap this format to keep export memory bounded on phones.
           final step =
-              (snapshots.length / 80).ceil().clamp(1, snapshots.length).toInt();
+              (snapshots.length / 50).ceil().clamp(1, snapshots.length).toInt();
           for (var i = 0; i < snapshots.length; i += step) {
             final bytes = await File(snapshots[i].path).readAsBytes();
             final decoded = img.decodeImage(bytes);
             if (decoded == null) continue;
             final maxSide = math.max(decoded.width, decoded.height);
-            final gifFrame = maxSide > 480
+            final gifFrame = maxSide > 360
                 ? img.copyResize(
                     decoded,
-                    width: (decoded.width * 480 / maxSide)
-                        .round().clamp(1, 480).toInt(),
-                    height: (decoded.height * 480 / maxSide)
-                        .round().clamp(1, 480).toInt(),
+                    width: (decoded.width * 360 / maxSide)
+                        .round().clamp(1, 360).toInt(),
+                    height: (decoded.height * 360 / maxSide)
+                        .round().clamp(1, 360).toInt(),
                   )
                 : decoded;
             encoder.addFrame(gifFrame, duration: 100 ~/ fps);
@@ -154,13 +156,13 @@ class _MakingScreenState extends State<MakingScreen> {
           final lastDecoded = img.decodeImage(lastBytes);
           if (lastDecoded != null && (snapshots.length - 1) % step != 0) {
             final maxSide = math.max(lastDecoded.width, lastDecoded.height);
-            final finalFrame = maxSide > 480
+            final finalFrame = maxSide > 360
                 ? img.copyResize(
                     lastDecoded,
-                    width: (lastDecoded.width * 480 / maxSide)
-                        .round().clamp(1, 480).toInt(),
-                    height: (lastDecoded.height * 480 / maxSide)
-                        .round().clamp(1, 480).toInt(),
+                    width: (lastDecoded.width * 360 / maxSide)
+                        .round().clamp(1, 360).toInt(),
+                    height: (lastDecoded.height * 360 / maxSide)
+                        .round().clamp(1, 360).toInt(),
                   )
                 : lastDecoded;
             encoder.addFrame(finalFrame, duration: 100 ~/ fps);
@@ -192,6 +194,8 @@ class _MakingScreenState extends State<MakingScreen> {
             '-i',
             staging.path + '/frame_%06d.jpg',
           ];
+          // YUV 4:2:0 encoders need even dimensions on some devices.
+          args.addAll(['-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2']);
           if (_format == _MakingFormat.webm) {
             args.addAll([
               '-c:v', 'libvpx-vp9',
@@ -212,6 +216,11 @@ class _MakingScreenState extends State<MakingScreen> {
           }
       }
 
+      final outputFile = File(outputPath);
+      if (!await outputFile.exists() || await outputFile.length() == 0) {
+        throw StateError('The making export produced no output file.');
+      }
+      partialOutput = null;
       ExportStorage.invalidate();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -219,13 +228,26 @@ class _MakingScreenState extends State<MakingScreen> {
       );
     } catch (error, stackTrace) {
       debugPrint('Making export failed: ' + error.toString() + '\n' + stackTrace.toString());
+      if (partialOutput != null) {
+        try {
+          final partial = File(partialOutput);
+          if (await partial.exists()) await partial.delete();
+          ExportStorage.invalidate();
+        } catch (cleanupError) {
+          debugPrint('Could not remove partial making export: ' + cleanupError.toString());
+        }
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(MakingStrings.exportFailed(context))),
       );
     } finally {
-      if (staging != null && await staging.exists()) {
-        await staging.delete(recursive: true);
+      if (staging != null) {
+        try {
+          if (await staging.exists()) await staging.delete(recursive: true);
+        } catch (cleanupError) {
+          debugPrint('Could not remove making export staging files: ' + cleanupError.toString());
+        }
       }
       if (mounted) setState(() => _exporting = false);
     }

@@ -36,6 +36,7 @@ import '../../../engine/tile_manager.dart';
 import '../../../engine/tone_engine.dart';
 import '../../../engine/undo_manager.dart' as app_undo;
 import '../../../utils/app_error_reporter.dart';
+import '../../../utils/making_strings.dart';
 import '../../../models/filter_canvas_gizmo.dart';
 import '../../../models/layer.dart';
 import '../../../models/layer_keyframe.dart';
@@ -2344,6 +2345,8 @@ class CanvasAreaState extends State<CanvasArea> {
   String? _undoRecordingLayerKey;
   app_undo.HistoryFrame? _undoRecordingFrame;
   DateTime? _lastMakingCaptureAt;
+  bool _makingCaptureInFlight = false;
+  bool _makingLimitNoticeShown = false;
 
   /// 描画操作（ストローク・バケツ・投げ縄塗り・トーン・スタンプ・移動・
   /// 変形・図形）の直前に呼び、現在のレイヤーへのタイル変更差分の記録を開始する。
@@ -2455,10 +2458,16 @@ class CanvasAreaState extends State<CanvasArea> {
         (last != null && now.difference(last) < const Duration(seconds: 1))) {
       return;
     }
+    if (_makingCaptureInFlight) return;
     _lastMakingCaptureAt = now;
-    unawaited(_captureMakingSnapshot(project).catchError((Object error, StackTrace stack) {
-      AppErrorReporter.record(error, stack);
-    }));
+    _makingCaptureInFlight = true;
+    unawaited(
+      _captureMakingSnapshot(project)
+          .catchError((Object error, StackTrace stack) {
+            AppErrorReporter.record(error, stack);
+          })
+          .whenComplete(() => _makingCaptureInFlight = false),
+    );
   }
 
   Future<void> _captureMakingSnapshot(Project project) async {
@@ -2520,12 +2529,23 @@ class CanvasAreaState extends State<CanvasArea> {
             )
           : source;
       final jpeg = img.encodeJpg(resized, quality: 60);
-      await MakingService.recordSnapshot(
+      // Recording may have been switched off while compositing or encoding.
+      if (!mounted || widget.project?.makingEnabled != true) return;
+      final saved = await MakingService.recordSnapshot(
         projectId: project.id,
         sceneId: scene.id,
         frameIndex: widget.currentFrame,
         bytes: jpeg,
       );
+      if (!saved && !_makingLimitNoticeShown && mounted) {
+        final history = await MakingService.history(project.id);
+        if (history.limitReached && mounted) {
+          _makingLimitNoticeShown = true;
+          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+            SnackBar(content: Text(MakingStrings.storageLimit(context))),
+          );
+        }
+      }
     } finally {
       composite.dispose();
     }
