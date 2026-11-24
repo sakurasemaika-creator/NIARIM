@@ -163,40 +163,44 @@ class QuickToolPanel extends StatelessWidget {
                             rowWidth: box.maxWidth,
                             count: entries.length,
                           );
-                          return ReorderableListView.builder(
-                            // ドラッグハンドルを明示アイコンとして置く（既定の
-                            // ままだと行の長押しでしか並べ替えを開始できず、
-                            // 可視の目印が無いままだった）。
-                            buildDefaultDragHandles: false,
-                            header: compact ? heading : null,
-                            itemCount: entries.length,
-                            onReorderItem: (oldIndex, newIndex) =>
-                                service.reorder(
-                                  oldIndex,
-                                  preRemovalIndex(oldIndex, newIndex),
-                                ),
-                            itemBuilder: (context, index) {
-                              final e = entries[index];
-                              return rows.build(
-                                key: ValueKey(e.id),
-                                index: index,
-                                label: quickToolDisplayLabel(
-                                  l10n,
-                                  e,
-                                  brushes,
-                                  isBuiltIn: brushService.isBuiltIn,
-                                ),
-                                unavailable:
-                                    e.brushId != null &&
-                                        !brushes.any(
-                                          (brush) => brush.id == e.brushId,
-                                        )
-                                    ? l10n.quickToolBrushUnavailable
-                                    : null,
-                                deleteTooltip: l10n.commonDelete,
-                                onDelete: () => service.removeEntry(e.id),
-                              );
-                            },
+                          // 行の削除・並べ替えの印は中立の色（差し色は
+                          // 主な操作と選んでいる状態のため）。
+                          return NeutralListIcons(
+                            child: ReorderableListView.builder(
+                              // ドラッグハンドルを明示アイコンとして置く（既定の
+                              // ままだと行の長押しでしか並べ替えを開始できず、
+                              // 可視の目印が無いままだった）。
+                              buildDefaultDragHandles: false,
+                              header: compact ? heading : null,
+                              itemCount: entries.length,
+                              onReorderItem: (oldIndex, newIndex) =>
+                                  service.reorder(
+                                    oldIndex,
+                                    preRemovalIndex(oldIndex, newIndex),
+                                  ),
+                              itemBuilder: (context, index) {
+                                final e = entries[index];
+                                return rows.build(
+                                  key: ValueKey(e.id),
+                                  index: index,
+                                  label: quickToolDisplayLabel(
+                                    l10n,
+                                    e,
+                                    brushes,
+                                    isBuiltIn: brushService.isBuiltIn,
+                                  ),
+                                  unavailable:
+                                      e.brushId != null &&
+                                          !brushes.any(
+                                            (brush) => brush.id == e.brushId,
+                                          )
+                                      ? l10n.quickToolBrushUnavailable
+                                      : null,
+                                  deleteTooltip: l10n.commonDelete,
+                                  onDelete: () => service.removeEntry(e.id),
+                                );
+                              },
+                            ),
                           );
                         },
                       ),
@@ -558,14 +562,12 @@ class _QuickToolRows {
           index: index,
           child: SizedBox.fromSize(
             size: _handleSize,
-            // 名前の下に回した行でも、1行の行（ListTileの末尾のアイコンの
-            // 色）と同じ色で描く。
+            // 削除の印と同じ中立の色（一覧はNeutralListIconsの中。この行の
+            // contextはその外のパネルのものなので、色を直に渡す）。
             child: Icon(
               Icons.drag_handle,
               size: 18,
-              color:
-                  ListTileTheme.of(context).iconColor ??
-                  Theme.of(context).colorScheme.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ),

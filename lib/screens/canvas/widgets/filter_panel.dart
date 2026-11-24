@@ -1135,31 +1135,16 @@ class _FilterPanelState extends State<FilterPanel> {
                     padding: const EdgeInsets.all(5),
                     child: Column(
                       children: [
+                        // 見本は実際にかけた結果だけを見せる（右下に重ねて
+                        // いた種類の小さな印は、見本と名前で分かることを
+                        // 繰り返すだけで、何を表すか読み取れなかった）。
                         Expanded(
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              LayoutBuilder(
-                                builder: (context, size) => FilterSamplePreview(
-                                  filter,
-                                  width: math.max(1.0, size.maxWidth),
-                                  height: math.max(1.0, size.maxHeight),
-                                ),
-                              ),
-                              Positioned(
-                                right: 1,
-                                bottom: 1,
-                                child: DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: scheme.surface.withValues(
-                                      alpha: .85,
-                                    ),
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                  child: Icon(_iconForFilter(filter), size: 12),
-                                ),
-                              ),
-                            ],
+                          child: LayoutBuilder(
+                            builder: (context, size) => FilterSamplePreview(
+                              filter,
+                              width: math.max(1.0, size.maxWidth),
+                              height: math.max(1.0, size.maxHeight),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 3),
@@ -3381,39 +3366,6 @@ class _FilterPanelState extends State<FilterPanel> {
     AuroraHologramPreset.darkRainbow =>
       l10n.filterAuroraHologramPresetDarkRainbow,
   };
-
-  IconData _iconForFilter(FilterDef filter) {
-    if (_isPrism(filter)) return Icons.gradient;
-    if (_isVhs(filter)) return Icons.video_settings;
-    return switch (filter.kind) {
-      FilterKind.prism => Icons.gradient,
-      FilterKind.gaussianBlur => Icons.blur_on,
-      FilterKind.lensBlur => Icons.blur_circular,
-      FilterKind.animeStyle => Icons.auto_awesome,
-      FilterKind.outline => Icons.border_outer,
-      FilterKind.toneCurve => Icons.show_chart,
-      FilterKind.levels => Icons.bar_chart,
-      FilterKind.sharpen => Icons.filter_center_focus,
-      FilterKind.unsharpMask => Icons.blur_off,
-      FilterKind.vignette => Icons.vignette,
-      FilterKind.watercolorBorder => Icons.water_drop_outlined,
-      FilterKind.noise => Icons.grain,
-      FilterKind.retroAnime => Icons.movie_filter,
-      FilterKind.crt => Icons.tv,
-      FilterKind.colorAdjust => Icons.tune,
-      FilterKind.threshold => Icons.contrast,
-      FilterKind.fisheye => Icons.panorama_fish_eye,
-      FilterKind.chromaticAberration => Icons.color_lens,
-      FilterKind.lensDistortion => Icons.remove_red_eye,
-      FilterKind.pixelate => Icons.grid_view,
-      FilterKind.mosaic => Icons.grid_on,
-      FilterKind.auroraHologram => Icons.auto_awesome_mosaic,
-      FilterKind.backgroundBlend => Icons.wb_twilight,
-      FilterKind.inkPool => Icons.gesture_rounded,
-      FilterKind.autoLineart => Icons.auto_fix_high,
-      FilterKind.sphereShading => Icons.brightness_medium,
-    };
-  }
 
   PremiumFeature? _premiumFeatureFor(FilterKind kind) {
     return switch (kind) {
