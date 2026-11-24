@@ -177,9 +177,19 @@ class _TrackClip {
 /// 間・失敗した場合は何も表示しない（プレーンな色帯のままフォールバック）。
 class _AudioWaveformThumb extends StatefulWidget {
   final String filePath;
-  final String? cacheKey;
+  final String cacheKey;
+  final int sourceStartFrame;
+  final int lengthFrames;
+  final int fps;
 
-  const _AudioWaveformThumb({super.key, required this.filePath, this.cacheKey});
+  const _AudioWaveformThumb({
+    super.key,
+    required this.filePath,
+    required this.cacheKey,
+    required this.sourceStartFrame,
+    required this.lengthFrames,
+    required this.fps,
+  });
 
   @override
   State<_AudioWaveformThumb> createState() => _AudioWaveformThumbState();
@@ -188,24 +198,28 @@ class _AudioWaveformThumb extends StatefulWidget {
 class _AudioWaveformThumbState extends State<_AudioWaveformThumb> {
   late Future<Uint8List?> _future;
 
+  Future<Uint8List?> _load() => AudioWaveformService.getWaveform(
+    filePath: widget.filePath,
+    cacheKey: widget.cacheKey,
+    sourceStartSeconds: widget.sourceStartFrame / widget.fps,
+    durationSeconds: widget.lengthFrames / widget.fps,
+  );
+
   @override
   void initState() {
     super.initState();
-    _future = AudioWaveformService.getWaveform(
-      filePath: widget.filePath,
-      cacheKey: widget.cacheKey,
-    );
+    _future = _load();
   }
 
   @override
   void didUpdateWidget(covariant _AudioWaveformThumb oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.filePath != widget.filePath ||
-        oldWidget.cacheKey != widget.cacheKey) {
-      _future = AudioWaveformService.getWaveform(
-        filePath: widget.filePath,
-        cacheKey: widget.cacheKey,
-      );
+        oldWidget.cacheKey != widget.cacheKey ||
+        oldWidget.sourceStartFrame != widget.sourceStartFrame ||
+        oldWidget.lengthFrames != widget.lengthFrames ||
+        oldWidget.fps != widget.fps) {
+      _future = _load();
     }
   }
 
@@ -5684,9 +5698,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               // 読み上げ音声は通常音源と別キャッシュにする。
                               // 同じ素材IDの古い波形キャッシュ（生成失敗のnullを含む）
                               // を共有せず、クリップごとに確実に波形を生成する。
-                              cacheKey: clip.isReadAloud
-                                  ? 'read_aloud_${clip.id}_${clip.filePath}'
-                                  : clip.materialId,
+                              // Both audio tracks use an independent cache per clip and
+                              // per source range, so trimming cannot show a stale waveform.
+                              cacheKey: 'wave_v2_${clip.id}_${clip.filePath}_'
+                                  '${clip.useStart}_${clip.lengthFrames}_${_projectFps(context.read<ProjectService>())}',
+                              sourceStartFrame: clip.useStart,
+                              lengthFrames: clip.lengthFrames,
+                              fps: _projectFps(context.read<ProjectService>()),
                             ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
