@@ -313,16 +313,21 @@ class _OnionSideSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 表示トグル（カスタム時は操作可、プリセット時は固定ON）
+        // 名前は残りの幅で折り返す（以前は名前を縮められない行に並べていて、
+        // 文字2倍の英語で「Previous Frame」と「ON (Fixed)」が行から
+        // はみ出した）。
         Row(
           children: [
-            Text(
-              label,
-              style: localizedHeadingStyle(
-                context,
-                const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            Expanded(
+              child: Text(
+                label,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: 8),
             if (isCustom)
               Switch(value: showToggle, onChanged: onShowChanged)
             else
