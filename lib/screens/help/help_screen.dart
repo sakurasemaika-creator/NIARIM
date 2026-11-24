@@ -1,6 +1,7 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../config/font_fallback.dart';
@@ -9,6 +10,28 @@ import '../../widgets/app_tutorial.dart';
 import '../../utils/name_collation.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
+
+/// ツールの項目は、キャンバスのツールバーのボタンと同じ印で出す（分類の
+/// 印〔鉛筆〕だけでは17項目が同じに見え、どのボタンの説明か分からなかった）。
+/// 値は[IconData]か、消しゴムの[FaIconData]。
+const Map<String, Object> _topicIcons = {
+  '基本操作': Icons.touch_app,
+  'ペンツール': Icons.brush,
+  '消しゴムツール': FontAwesomeIcons.eraser,
+  'バケツツール': Icons.format_color_fill,
+  '投げ縄塗り': Icons.gesture,
+  'スポイトツール': Icons.colorize,
+  '選択ツール': Icons.highlight_alt,
+  '指ツール（歪みツール）': Icons.pan_tool_alt,
+  '図形ツール': Icons.category,
+  'テキストツール': Icons.text_fields,
+  '早替えツール管理': Icons.loop,
+  '早替えツール': Icons.loop,
+  'スタンプツール': Icons.auto_fix_high_outlined,
+  'ペンサブツール': Icons.brush_outlined,
+  '選択範囲の変形': Icons.transform,
+  'カラーピッカー': Icons.palette,
+};
 
 class HelpScreen extends StatefulWidget {
   // 各画面のヘルプボタンから「この画面に関連する項目」を指定して開いた
@@ -829,12 +852,26 @@ class _HelpScreenState extends State<HelpScreen>
                                   borderRadius: BorderRadius.circular(10),
                                   color: scheme.primaryContainer,
                                 ),
-                                child: Icon(
-                                  categoryIcons[entry.category] ??
-                                      Icons.help_outline,
-                                  color: scheme.onPrimaryContainer,
-                                  size: 18,
-                                ),
+                                child: switch (_topicIcons[entry.topicKey]) {
+                                  final FaIconData fa => Center(
+                                    child: FaIcon(
+                                      fa,
+                                      color: scheme.onPrimaryContainer,
+                                      size: 16,
+                                    ),
+                                  ),
+                                  final IconData icon => Icon(
+                                    icon,
+                                    color: scheme.onPrimaryContainer,
+                                    size: 18,
+                                  ),
+                                  _ => Icon(
+                                    categoryIcons[entry.category] ??
+                                        Icons.help_outline,
+                                    color: scheme.onPrimaryContainer,
+                                    size: 18,
+                                  ),
+                                },
                               ),
                               // 項目名用フォント（くらむぼん）。
                               title: Text(

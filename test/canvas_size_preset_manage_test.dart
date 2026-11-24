@@ -235,7 +235,17 @@ void main() {
     expect(settings.customSizePresets.single.width, 1920);
     expect(settings.customSizePresets.single.height, 1920);
     await tester.ensureVisible(find.textContaining('大きすぎ'));
-    expect(find.textContaining('大きすぎ (1920×1920)'), findsOneWidget);
+    // 名前と画素数は同じ選択肢の中に別々の文で並ぶ。
+    expect(
+      find.descendant(
+        of: find.ancestor(
+          of: find.text('大きすぎ'),
+          matching: find.byType(ChoiceChip),
+        ),
+        matching: find.text('1920×1920'),
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.textContaining('大きすぎ'));
     await tester.pumpAndSettle();
     expect(find.text('書き出しサイズ: 1920×1920'), findsOneWidget);

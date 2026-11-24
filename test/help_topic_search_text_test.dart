@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
@@ -47,10 +48,13 @@ void main() {
           .widgetList<ExpansionTile>(find.byType(ExpansionTile))
           .first;
       expect((first.title as Text).data, l10n.helpEraserToolTitle);
+      // ツールの項目は、ツールバーのボタンと同じ印（消しゴム）で出る。
       expect(
         find.descendant(
           of: find.byWidget(first),
-          matching: find.byIcon(Icons.edit),
+          matching: find.byWidgetPredicate(
+            (w) => w is FaIcon && w.icon == FontAwesomeIcons.eraser.data,
+          ),
         ),
         findsOneWidget,
       );

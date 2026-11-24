@@ -31,6 +31,8 @@ import '../../utils/app_error_reporter.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/menu_card.dart';
 import '../../widgets/icon_notice.dart';
+import '../../widgets/action_beside_or_below.dart';
+import '../../widgets/keep_together_text.dart';
 
 class NewProjectScreen extends StatefulWidget {
   const NewProjectScreen({super.key});
@@ -465,8 +467,94 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                           checkSize,
                     );
 
+                    // 行の中身：比率の図形・名前（下に用途）・右に画素数。
+                    // チップを全幅にそろえ、画素数の列を右端でそろえる
+                    // （名前・用途・画素数を1つの文でつないだ長さばらばらの
+                    // チップが折り返して並び、比べにくかった）。画素数が横に
+                    // 入らない幅・文字の倍率では名前の下へ回す。
+                    Widget sizeLabel({
+                      required String text,
+                      required int width,
+                      required int height,
+                    }) {
+                      final parts = RegExp(
+                        r'^(.*?)\s*[（(](.*)[）)]$',
+                      ).firstMatch(text);
+                      final title = parts?.group(1) ?? text;
+                      final note = parts?.group(2);
+                      return SizedBox(
+                        width: labelMaxWidth,
+                        child: Builder(
+                          builder: (context) {
+                            final ink = DefaultTextStyle.of(context).style;
+                            return Row(
+                              children: [
+                                _AspectGlyph(
+                                  width: width,
+                                  height: height,
+                                  color: ink.color,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: ActionBesideOrBelow(
+                                    gap: 8,
+                                    text: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        messageText(
+                                          title,
+                                          keepLineStarts: true,
+                                          keepLastPhrase: true,
+                                          style: ink.copyWith(
+                                            fontSize: 14,
+                                            height: 1.3,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        if (note != null && note.isNotEmpty)
+                                          messageText(
+                                            note,
+                                            keepLineStarts: true,
+                                            keepLastPhrase: true,
+                                            // 「…投稿向 / け」と最後の1字だけを
+                                            // 次の行へ送らない（ひらがなの境目の
+                                            // 無い語は最後の語として見つからない）。
+                                            keep: _lastCjkRun(note),
+                                            style: ink.copyWith(
+                                              fontSize: 12,
+                                              height: 1.35,
+                                              color: ink.color?.withValues(
+                                                alpha: 0.72,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    action: Text(
+                                      '$width×$height',
+                                      style: ink.copyWith(
+                                        fontSize: 12.5,
+                                        height: 1.3,
+                                        fontFeatures: const [
+                                          FontFeature.tabularFigures(),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      );
+                    }
+
                     Widget sizeChip({
                       required String text,
+                      required int width,
+                      required int height,
                       required bool selected,
                       required VoidCallback onSelected,
                     }) {
@@ -496,18 +584,14 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                           ),
                           // チップは名前を1行で描く（DefaultTextStyleの
                           // maxLines: 1・softWrap: false）ので、その決まりを
-                          // 外して行を増やせるようにする。
-                          label: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: labelMaxWidth,
-                            ),
-                            child: Builder(
-                              builder: (context) => DefaultTextStyle(
-                                style: DefaultTextStyle.of(
-                                  context,
-                                ).style.copyWith(height: 1.3),
-                                textAlign: TextAlign.center,
-                                child: Text(text),
+                          // 置き換えて行を増やせるようにする。
+                          label: Builder(
+                            builder: (context) => DefaultTextStyle(
+                              style: DefaultTextStyle.of(context).style,
+                              child: sizeLabel(
+                                text: text,
+                                width: width,
+                                height: height,
                               ),
                             ),
                           ),
@@ -522,14 +606,16 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     _followChosenPreset(settings);
                     return Wrap(
                       spacing: 8,
-                      runSpacing: 8,
+                      runSpacing: 6,
                       children: [
                         ...sizePresets.map((preset) {
                           final (w, h, kind) = preset;
                           final label = _presetLabel(l10n, w, h);
                           final key = 'builtin:$kind';
                           return sizeChip(
-                            text: '$label ($w×$h)',
+                            text: label,
+                            width: w,
+                            height: h,
                             selected: !_customSize && _selectedPresetKey == key,
                             onSelected: () => _selectPreset(w, h, key),
                           );
@@ -537,15 +623,49 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                         ...settings.customSizePresets.map((preset) {
                           final key = 'custom:${preset.id}';
                           return sizeChip(
-                            text:
-                                '${preset.name} (${preset.width}×${preset.height})',
+                            text: preset.name,
+                            width: preset.width,
+                            height: preset.height,
                             selected: !_customSize && _selectedPresetKey == key,
                             onSelected: () =>
                                 _selectPreset(preset.width, preset.height, key),
                           );
                         }),
                         ChoiceChip(
-                          label: Text(l10n.newProjectCustomSize),
+                          padding: chipPadding,
+                          labelPadding: labelPadding,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                          ),
+                          showCheckmark: false,
+                          avatar: _customSize
+                              ? Icon(
+                                  Icons.check,
+                                  size: checkSize,
+                                  color: Theme.of(
+                                    context,
+                                  ).chipTheme.checkmarkColor,
+                                )
+                              : null,
+                          avatarBoxConstraints: const BoxConstraints.tightFor(
+                            width: checkSize,
+                            height: checkSize,
+                          ),
+                          label: SizedBox(
+                            width: labelMaxWidth,
+                            child: Row(
+                              children: [
+                                const SizedBox(
+                                  width: 22,
+                                  child: Icon(Icons.aspect_ratio, size: 18),
+                                ),
+                                const SizedBox(width: 10),
+                                Flexible(
+                                  child: Text(l10n.newProjectCustomSize),
+                                ),
+                              ],
+                            ),
+                          ),
                           selected: _customSize,
                           onSelected: (s) => setState(() {
                             _customSize = s;
@@ -1004,5 +1124,54 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
         _creationFailed = true;
       });
     }
+  }
+}
+
+/// [text]の終わりの、日本語・中国語の字だけが続く4字（無ければ空）。
+List<String> _lastCjkRun(String text) {
+  if (text.length < 6) return const [];
+  final tail = text.substring(text.length - 4);
+  return RegExp(r'^[\u3040-\u30ff\u3400-\u9fff]{4}$').hasMatch(tail) &&
+          text.indexOf(tail) == text.length - 4
+      ? [tail]
+      : const [];
+}
+
+/// 書き出しの大きさの比率を表す小さな枠（長い辺を18pxにそろえる）。
+class _AspectGlyph extends StatelessWidget {
+  const _AspectGlyph({
+    required this.width,
+    required this.height,
+    required this.color,
+  });
+
+  final int width;
+  final int height;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    const longest = 18.0;
+    final w = width >= height ? longest : longest * width / height;
+    final h = height >= width ? longest : longest * height / width;
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: 22,
+        height: 22,
+        child: Center(
+          child: Container(
+            width: w,
+            height: h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(2),
+              border: Border.all(
+                color: color ?? Theme.of(context).colorScheme.onSurface,
+                width: 1.5,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
