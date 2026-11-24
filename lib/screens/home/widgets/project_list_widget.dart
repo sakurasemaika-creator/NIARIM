@@ -1308,6 +1308,7 @@ class ProjectListWidget extends StatelessWidget {
               : l10n.colorPickerFavoriteAdd,
         ),
       ),
+      const PopupMenuDivider(),
       PopupMenuItem(
         value: 'delete',
         // メニューの文字色のまま、印のアイコンと文で知らせる。
@@ -1343,6 +1344,7 @@ class ProjectListWidget extends StatelessWidget {
               : l10n.colorPickerFavoriteAdd,
         ),
       ),
+      const PopupMenuDivider(),
       PopupMenuItem(
         value: 'delete',
         child: MenuActionLabel(

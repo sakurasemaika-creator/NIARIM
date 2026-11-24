@@ -4525,12 +4525,33 @@ class _TrashScreenState extends State<TrashScreen>
               spacing: 6,
               runSpacing: 0,
               children: [
+                // 種類の絞り込みは、ふだん全部を出している（全部選んでいる）ので、
+                // 選んだチップを差し色で塗ると、何も絞っていないのに4つの桃色の
+                // ピルが並び、画面でいちばん強い色になっていた。チップは用紙の
+                // 上の細い縁の形にし、選んでいることは差し色の印（チェック）と
+                // 字の濃さで示す（外した種類は印が無く、字が薄い）。
                 for (final kind in TrashEntryKind.values)
                   ChipFocusRing(
                     builder: (context, focusSide) => FilterChip(
                       key: ValueKey('trashKind_${kind.name}'),
-                      side: focusSide,
-                      label: Text(_trashKindLabel(context, kind)),
+                      side: _quietChipSide(
+                        context,
+                        focusSide,
+                        selected: _selectedKinds.contains(kind),
+                      ),
+                      backgroundColor: Colors.transparent,
+                      selectedColor:
+                          Theme.of(context).cardTheme.color ??
+                          Theme.of(context).colorScheme.surface,
+                      checkmarkColor: AccentTextTheme.of(context),
+                      label: Text(
+                        _trashKindLabel(context, kind),
+                        style: TextStyle(
+                          color: _selectedKinds.contains(kind)
+                              ? Theme.of(context).colorScheme.onSurface
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                       selected: _selectedKinds.contains(kind),
                       onSelected: (selected) => setState(() {
                         if (selected) {
@@ -4610,6 +4631,22 @@ class _HomeCollectionSortHeader extends StatelessWidget {
         ),
       ],
     ),
+  );
+}
+
+/// 用紙の上に置く控えめな絞り込みのチップの縁：キーボードのフォーカスの
+/// 輪（[ChipFocusRing]）があればそれ、無ければ選んでいる間は本文の縁の色、
+/// 外している間は淡い線の色。
+WidgetStateBorderSide _quietChipSide(
+  BuildContext context,
+  WidgetStateBorderSide focusSide, {
+  required bool selected,
+}) {
+  final scheme = Theme.of(context).colorScheme;
+  return WidgetStateBorderSide.resolveWith(
+    (states) =>
+        focusSide.resolve(states) ??
+        BorderSide(color: selected ? scheme.outline : scheme.outlineVariant),
   );
 }
 
@@ -5163,6 +5200,7 @@ Widget _receivedShareMenu(
               : l10n.colorPickerFavoriteAdd,
         ),
       ),
+      const PopupMenuDivider(),
       PopupMenuItem(
         value: 'delete',
         // メニューの文字色のまま、印のアイコンと文で知らせる。
@@ -5461,6 +5499,7 @@ class _OutgoingSharesList extends StatelessWidget {
               value: 'duplicate',
               child: Text(l10n.themeDuplicateAction),
             ),
+            const PopupMenuDivider(),
             PopupMenuItem(
               value: 'delete',
               child: MenuActionLabel(
@@ -6313,6 +6352,7 @@ class _FolderableList<T> extends StatelessWidget {
               child: Text(l10n.thumbnailChangeAction),
             ),
           PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+          const PopupMenuDivider(),
           PopupMenuItem(
             value: 'delete',
             child: MenuActionLabel(
@@ -6834,18 +6874,44 @@ class _TrashTabState extends State<_TrashTab> {
     ];
     return _trashCard(
       selectionId: 'trash_project:${project.id}',
-      leading: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: Color(project.backgroundColor),
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
+      leading: _trashProjectCover(project),
       title: project.name,
       subtitle: subtitle,
       subtitleDate: deleted,
       actions: actions,
+    );
+  }
+
+  /// ゴミ箱の作品の表紙。一覧のカードと同じく、作品の用紙（透明なら市松
+  /// 模様）の上に最後に保存した絵を出す。用紙の色だけの四角では、どの作品
+  /// だったか見分けられず、透明な用紙の作品は何も描かれなかった。
+  Widget _trashProjectCover(Project project) {
+    final placeholder = Center(
+      child: Icon(
+        Icons.image,
+        size: 20,
+        color: paperMarkColor(project.backgroundColor),
+      ),
+    );
+    final path = project.thumbnailPath;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox.square(
+        dimension: 48,
+        child: FramePreviewBackground(
+          backgroundColor: project.backgroundColor,
+          checkerSize: 6,
+          child: path == null
+              ? placeholder
+              : Image.file(
+                  File(path),
+                  fit: BoxFit.cover,
+                  cacheWidth: (48 * MediaQuery.devicePixelRatioOf(context))
+                      .round(),
+                  errorBuilder: (context, error, stackTrace) => placeholder,
+                ),
+        ),
+      ),
     );
   }
 
@@ -6928,7 +6994,14 @@ class _TrashTabState extends State<_TrashTab> {
     final selecting = selection?.active ?? false;
     final details = ListTile(
       key: detailsKey,
-      leading: leading,
+      // 先頭の絵・印はどの種類のカードも48×48の枠の真ん中に置く（印の
+      // アイコン〔36px〕と作品の表紙〔48px〕で名前の始まりが12pxずれた）。
+      leading: SizedBox.square(dimension: 48, child: Center(child: leading)),
+      // 右にtrailingを置かないので、左右の余白を同じ16pxにし、絵と名前の間は
+      // 12px（狭い画面・大きな文字でも、ファイル名が拡張子の前で折れない幅を
+      // 名前に残す）。
+      contentPadding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
+      horizontalTitleGap: 12,
       // 韓国語の名前・2行目は語の途中で、日付は日付の途中で行を変えない
       // （「삭제 / 됨」「2026. 11. / 14.」と切れた）。日付の中に空白がある
       // （行を変えうる）のは韓国語の書き方だけなので、ほかの言語の2行目は
@@ -7014,10 +7087,10 @@ class _TrashTabState extends State<_TrashTab> {
           final textScaler = MediaQuery.textScalerOf(context);
           final compact = constraints.maxWidth < 600 * textScaler.scale(1);
           // 名前の右に並べるときに名前の行（ListTile）に残す幅：先頭の絵
-          // （48）と余白（16＋16＋24）に、名前の文字15字分。
+          // （48）と余白（左右16ずつ＋絵と名前の間12）に、名前の文字15字分。
           final nameFont = Theme.of(context).textTheme.titleMedium?.fontSize;
           final besideMinTile =
-              16 + 48 + 16 + 24 + textScaler.scale(nameFont ?? 16) * 15;
+              16 + 48 + 12 + 16 + textScaler.scale(nameFont ?? 16) * 15;
           return Card(
             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -7042,7 +7115,12 @@ class _TrashTabState extends State<_TrashTab> {
                         children: ownActions,
                       ),
                 gap: 0,
-                spacing: 0,
+                // 名前の下に回したボタンの行は、押せる所（48px）の上の空きを
+                // 名前の行の下の余白（8px）に重ねる。重ねないと名前・日付と
+                // ボタンの文字の間（約40px）がカードの上下の余白より広く、
+                // ボタンの行がカードから離れた別の帯に見えた。ボタンは文より
+                // 先に押す所を調べるので、押せる大きさは変わらない。
+                spacing: -8,
                 minTextWidth: compact ? double.infinity : besideMinTile,
                 besideActionPadding: selecting
                     ? EdgeInsets.zero

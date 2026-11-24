@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/accent_text_theme.dart';
@@ -94,63 +95,78 @@ class _HomeDrawerState extends State<HomeDrawer> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            Container(
-              // 横向きで画面の端にボタンの帯・切り欠きがあるときも、見出しの
-              // 字は帯の下に描かない（色の帯は端まで。下の行はListTileが
-              // 避ける）。帯が無ければ今までどおり。
+            // 見出しは引き出しと同じ面に、アプリの印（起動画面と同じ
+            // モノグラム）・名前・ひとことを並べる。以前は差し色で塗った帯
+            // だったが、差し色は押す操作・選んでいる状態の印に取っておき、
+            // 飾りの面には使わない（帯の桃色が画面でいちばん強い色になり、
+            // 項目より目立っていた）。横向きで画面の端にボタンの帯・切り欠きが
+            // あるときも、見出しの字は帯の下に描かない。
+            Padding(
               padding: EdgeInsets.fromLTRB(
-                20 + MediaQuery.paddingOf(context).left,
-                56,
-                20 + MediaQuery.paddingOf(context).right,
-                20,
+                16 + MediaQuery.paddingOf(context).left,
+                24 + MediaQuery.paddingOf(context).top,
+                16 + MediaQuery.paddingOf(context).right,
+                16,
               ),
-              decoration: BoxDecoration(color: scheme.primary),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 44,
+                    height: 44,
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: scheme.onPrimary.withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
+                      color: scheme.primary,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(
-                      Icons.movie_creation_outlined,
-                      color: scheme.onPrimary,
-                      size: 26,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // アプリ名は見出しなので、ほかの見出し・引き出しの項目と同じ
-                  // くらむぼん（以前は、今は無いホームの上部バーの「NIARIM」に
-                  // そろえた明朝だった）。
-                  Text(
-                    'NIARIM',
-                    style: localizedHeadingStyle(
-                      context,
-                      TextStyle(
-                        color: scheme.onPrimary,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.5,
-                        height: 1.5,
+                    child: SvgPicture.asset(
+                      'assets/logo/app_logo.svg',
+                      colorFilter: ColorFilter.mode(
+                        scheme.onPrimary,
+                        BlendMode.srcIn,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  // 韓国語は語の途中で行を変えない（引き出しが狭い画面では
-                  // 「제 / 작」と切れた）。読み上げは元の文。
-                  Text.rich(
-                    TextSpan(
-                      text: keepKoreanWordsTogether(l10n.homeDrawerAppTagline),
-                      semanticsLabel: l10n.homeDrawerAppTagline,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // アプリ名は見出しなので、ほかの見出し・引き出しの
+                        // 項目と同じくらむぼん。
+                        Text(
+                          'NIARIM',
+                          style: localizedHeadingStyle(
+                            context,
+                            TextStyle(
+                              color: menuForeground,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.5,
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                        // 韓国語は語の途中で行を変えない（引き出しが狭い画面
+                        // では「제 / 작」と切れた）。読み上げは元の文。
+                        Text.rich(
+                          TextSpan(
+                            text: keepKoreanWordsTogether(
+                              l10n.homeDrawerAppTagline,
+                            ),
+                            semanticsLabel: l10n.homeDrawerAppTagline,
+                          ),
+                          style: TextStyle(
+                            color: scheme.onSurfaceVariant,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
-                    style: TextStyle(color: scheme.onPrimary, fontSize: 12),
                   ),
                 ],
               ),
             ),
+            const Divider(height: 1),
             const SizedBox(height: 4),
             // コイン・特典 → 契約状態 → 使い方 → 設定 → 容量削減
             ListTile(

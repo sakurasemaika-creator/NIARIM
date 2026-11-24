@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -84,11 +85,23 @@ void main() {
       ink,
     );
 
-    // メニュー（引き出し）の見出し。
+    // メニュー（引き出し）の見出し：差し色で塗るのはアプリの印（モノグラム）
+    // だけで、その中の絵はボタンの文字色。名前・ひとことは引き出しの面の
+    // 上なので塗りの文字色にしない。
     await tester.tap(find.byKey(const Key('homeMenuButton')));
     await tester.pumpAndSettle();
-    expect(paintedColor(tester, find.text('NIARIM')), ink);
-    expect(paintedColor(tester, find.text(l10n.homeDrawerAppTagline)), ink);
+    final monogram = tester.widget<SvgPicture>(
+      find.descendant(
+        of: find.byType(Drawer),
+        matching: find.byType(SvgPicture),
+      ),
+    );
+    expect(monogram.colorFilter, ColorFilter.mode(ink, BlendMode.srcIn));
+    expect(paintedColor(tester, find.text('NIARIM')), isNot(ink));
+    expect(
+      paintedColor(tester, find.text(l10n.homeDrawerAppTagline)),
+      isNot(ink),
+    );
 
     // 使い方：番号の丸と「次へ」。
     final guide = find.byKey(const Key('homeGuideMenuItem'));

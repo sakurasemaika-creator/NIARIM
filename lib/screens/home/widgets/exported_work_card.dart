@@ -223,6 +223,7 @@ class ExportedWorkCard extends StatelessWidget {
                 value: 'thumbnail',
                 child: Text(l10n.thumbnailChangeAction),
               ),
+            const PopupMenuDivider(),
             PopupMenuItem(
               value: 'delete',
               enabled: onDelete != null,
