@@ -10230,10 +10230,6 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       request.cameraKeyframes,
       request.frameIndex,
     );
-    final kf = _cameraEngine.valueAt(
-      request.cameraKeyframes,
-      request.frameIndex,
-    );
     var img = await renderOutputViewportImage(
       drawingImage: layered,
       viewport: viewport,
