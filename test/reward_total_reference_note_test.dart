@@ -25,6 +25,7 @@ import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/widgets/grouped_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -194,8 +195,11 @@ void main() {
           l10n.coinAmount(referenceTotal),
         );
 
-        // 注記は合計のカードの中の、見出しの下の別の行に、注釈の書体で出る。
-        final card = find.ancestor(of: total, matching: find.byType(Card));
+        // 注記は合計の面の中の、見出しの下の別の行に、注釈の書体で出る。
+        final card = find.ancestor(
+          of: total,
+          matching: find.byType(GroupedSheet),
+        );
         final note = find.descendant(
           of: card,
           matching: find.text(l10n.rewardUnlockFixedPrice),
@@ -228,7 +232,7 @@ void main() {
                 .style!;
         expect(headlineStyle.fontFamily, 'Kuramubon', reason: '$name: 合計の書体');
 
-        // 合計のカードの文はどれも単語の途中で切れない。
+        // 合計の面の文はどれも単語の途中で切れない。
         final broken = <String>[];
         for (final element
             in find

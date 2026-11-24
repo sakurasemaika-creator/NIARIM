@@ -7444,7 +7444,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpCustomAutomationTitle =>
-      'Automatizaciones personalizadas (grabación de acciones)';
+      'Automatización personalizada (grabación de acciones)';
 
   @override
   String get helpCustomAutomationDesc =>
@@ -9786,7 +9786,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardUnlockCustomAutomation =>
-      'Automatizaciones personalizadas (grabación de acciones)';
+      'Automatización personalizada (grabación de acciones)';
 
   @override
   String get rewardUnlockCommunityPostQuota => 'Publicar: 1 a 3 por día';
