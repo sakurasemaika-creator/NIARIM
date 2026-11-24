@@ -38,6 +38,7 @@ import '../../engine/autofill_batch_runner.dart';
 import '../../engine/autofill_engine.dart' show AutofillMode;
 import '../../engine/camera_engine.dart';
 import '../../engine/export_engine.dart';
+import '../../engine/export_audio.dart';
 import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/layer_keyframe_engine.dart';
@@ -1111,17 +1112,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
       return;
     }
     final elapsedFrames = _currentFrame - clip.startFrame;
-    // フェードイン・フェードアウトを音量へ反映
-    double vol = clip.volume;
-    final elapsedSec = elapsedFrames / fps;
-    final remainingSec = (clip.lengthFrames - elapsedFrames) / fps;
-    if (clip.fadeIn > 0 && elapsedSec < clip.fadeIn) {
-      vol *= (elapsedSec / clip.fadeIn).clamp(0.0, 1.0);
-    }
-    if (clip.fadeOut > 0 && remainingSec < clip.fadeOut) {
-      vol *= (remainingSec / clip.fadeOut).clamp(0.0, 1.0);
-    }
-    await player.setVolume(vol.clamp(0.0, 1.0));
+    // Preview and offline export share the same clip-relative linear
+    // fade envelope so the audible gain at a timeline time is consistent.
+    final vol = AudioClipEnvelope.gainAt(
+      elapsedSeconds: elapsedFrames / fps,
+      clipSeconds: clip.lengthFrames / fps,
+      volume: clip.volume,
+      fadeInSeconds: clip.fadeIn,
+      fadeOutSeconds: clip.fadeOut,
+    );
+    await player.setVolume(vol);
     if (player.state != ap.PlayerState.playing) {
       final targetFrame = clip.useStart + elapsedFrames;
       await player.play(
