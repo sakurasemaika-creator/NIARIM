@@ -5143,6 +5143,71 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineCropReset => 'トリミングを戻す';
 
   @override
+  String get timelineEditSectionRegion => '範囲選択';
+
+  @override
+  String get timelineRegionHint =>
+      'プレビューの上をドラッグして範囲を囲み、「移動・変形」「複製」「削除」から選びます。動画はどのコマにも同じ編集がかかります。元の画像・動画は変わりません。';
+
+  @override
+  String get timelineRegionShapeFreehand => '自由な形';
+
+  @override
+  String get timelineRegionNoSelection => 'まだ範囲を選んでいません。';
+
+  @override
+  String get timelineRegionMove => '移動・変形';
+
+  @override
+  String get timelineRegionSelectAll => '全体を選ぶ';
+
+  @override
+  String get timelineRegionClearSelection => '選択を解除';
+
+  @override
+  String timelineRegionLimit(int count) {
+    return '範囲の編集は$count個までです。';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      'プレビューでドラッグすると移動、角の丸で拡大縮小、辺の丸で縦か横に伸縮、上の丸で回転できます。2本指でも操作できます。';
+
+  @override
+  String get timelineRegionScaleX => '横の大きさ';
+
+  @override
+  String get timelineRegionScaleY => '縦の大きさ';
+
+  @override
+  String get timelineRegionFlipHorizontal => '左右反転';
+
+  @override
+  String get timelineRegionFlipVertical => '上下反転';
+
+  @override
+  String get timelineRegionResetTransform => '元の位置に戻す';
+
+  @override
+  String get timelineRegionDone => '完了';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return '範囲の編集（$count）';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => 'この編集を外す';
+
+  @override
+  String get timelineRegionRemoveAll => '範囲の編集をすべて外す';
+
+  @override
   String get timelineTransformRotationX => 'X軸回転';
 
   @override

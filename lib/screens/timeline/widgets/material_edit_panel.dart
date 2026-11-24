@@ -13,6 +13,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/bundled_fonts.dart';
 import '../../../models/layer.dart';
 import '../../../models/layer_keyframe.dart';
+import '../../../models/layer_region_edit.dart';
 import '../../../models/text_object.dart';
 import '../../../models/timeline_row_kind.dart';
 import '../../../services/font_service.dart';
@@ -22,6 +23,7 @@ import '../../../engine/clip_speed.dart';
 import '../../../engine/crop_frame.dart';
 import '../../../widgets/labeled_slider.dart';
 import 'clip_speed_control.dart';
+import 'material_region_controller.dart';
 import 'keyframe_retime_dialog.dart';
 import '../../../widgets/layer_mask_editor.dart';
 import '../../canvas/widgets/color_picker_panel.dart';
@@ -30,7 +32,7 @@ import '../../../widgets/typing_dialog_inset.dart';
 import '../../../widgets/menu_surface.dart';
 import '../../../widgets/responsive.dart';
 
-enum _Section { text, transform, crop, mask, video }
+enum _Section { text, transform, crop, region, mask, video }
 
 /// Colours offered with one tap for a timeline text and its outline.
 const List<int> _textColours = [
@@ -104,6 +106,7 @@ class TimelineMaterialEditPanel extends StatefulWidget {
     this.onVideoSpeedChange,
     this.cropFrameOf,
     this.onCropEditingChanged,
+    this.regionController,
   });
 
   final String projectId;
@@ -138,6 +141,10 @@ class TimelineMaterialEditPanel extends StatefulWidget {
   /// Told when the crop section opens (true) or closes (false), so the
   /// preview's handles can move the crop's edges.
   final ValueChanged<bool>? onCropEditingChanged;
+
+  /// Shared with the preview's handles for selecting and changing parts of
+  /// an image or video (範囲選択). Null leaves the section out.
+  final MaterialRegionController? regionController;
 
   @override
   State<TimelineMaterialEditPanel> createState() =>
@@ -336,6 +343,416 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
                 ? null
                 : () => _update((l) => l.copyWith(crop: null)),
           ),
+        ),
+      ],
+    );
+  }
+
+  // ─── Region (範囲選択) ────────────────────────────────────────────────────
+
+  /// How far a new copy is put from its part (a fraction of the picture),
+  /// so it shows at once.
+  static const double _copyOffset = 0.04;
+
+  void _addRegionEdit(RegionEditKind kind) {
+    final region = widget.regionController;
+    final selection = region?.selection;
+    final found = _find();
+    if (region == null || selection == null || found == null) return;
+    if (found.layer.regionEdits.length >= LayerRegionEdit.maxCount) return;
+    final tm = _projects.tileManagerOf(widget.projectId);
+    final w = tm.canvasWidth.toDouble();
+    final h = tm.canvasHeight.toDouble();
+    final copy = kind == RegionEditKind.duplicate;
+    final edit = LayerRegionEdit(
+      id: 'region_${DateTime.now().microsecondsSinceEpoch}',
+      kind: kind,
+      region: selection,
+      // Whole pixels, so the copy is as sharp as its part.
+      dx: copy ? (w * _copyOffset).roundToDouble() / w : 0,
+      dy: copy ? (h * _copyOffset).roundToDouble() / h : 0,
+    );
+    _update((l) => l.copyWith(regionEdits: [...l.regionEdits, edit]));
+    region.selection = null;
+    region.activeEditId = edit.drawsPiece ? edit.id : null;
+  }
+
+  void _editRegion(
+    String id,
+    LayerRegionEdit Function(LayerRegionEdit edit) change, {
+    bool preview = false,
+  }) => _update(
+    (l) => l.copyWith(
+      regionEdits: [for (final e in l.regionEdits) e.id == id ? change(e) : e],
+    ),
+    preview: preview,
+  );
+
+  void _removeRegionEdit(String id) {
+    _update(
+      (l) => l.copyWith(
+        regionEdits: [
+          for (final e in l.regionEdits)
+            if (e.id != id) e,
+        ],
+      ),
+    );
+    final region = widget.regionController;
+    if (region?.activeEditId == id) region?.activeEditId = null;
+  }
+
+  /// Selects the material's whole drawn part (inside its crop).
+  void _selectWholeRegion(Layer layer, MaterialRegionController region) {
+    final tm = _projects.tileManagerOf(widget.projectId);
+    final w = tm.canvasWidth.toDouble();
+    final h = tm.canvasHeight.toDouble();
+    var frame = widget.cropFrameOf?.call(layer) ?? Rect.fromLTWH(0, 0, w, h);
+    final crop = layer.crop;
+    if (crop != null && crop.isValid) {
+      final kept = frame.intersect(crop.rectIn(w, h));
+      if (kept.width > 0 && kept.height > 0) frame = kept;
+    }
+    final whole = RegionSelection.box(
+      region.shape == RegionShape.ellipse
+          ? RegionShape.ellipse
+          : RegionShape.rectangle,
+      Rect.fromLTRB(
+        (frame.left / w).clamp(0.0, 1.0),
+        (frame.top / h).clamp(0.0, 1.0),
+        (frame.right / w).clamp(0.0, 1.0),
+        (frame.bottom / h).clamp(0.0, 1.0),
+      ),
+    );
+    if (whole.isValid) region.selection = whole;
+  }
+
+  String _regionKindLabel(AppLocalizations l10n, RegionEditKind kind) =>
+      switch (kind) {
+        RegionEditKind.move => l10n.timelineRegionMove,
+        RegionEditKind.duplicate => l10n.commonDuplicate,
+        RegionEditKind.erase => l10n.commonDelete,
+      };
+
+  static IconData _regionKindIcon(RegionEditKind kind) => switch (kind) {
+    RegionEditKind.move => Icons.open_with,
+    RegionEditKind.duplicate => Icons.copy_all,
+    RegionEditKind.erase => Icons.delete_outline,
+  };
+
+  String _regionShapeLabel(AppLocalizations l10n, RegionShape shape) =>
+      switch (shape) {
+        RegionShape.rectangle => l10n.timelineMaskRectangle,
+        RegionShape.ellipse => l10n.timelineMaskEllipse,
+        RegionShape.freehand => l10n.timelineRegionShapeFreehand,
+      };
+
+  static IconData _regionShapeIcon(RegionShape shape) => switch (shape) {
+    RegionShape.rectangle => Icons.crop_square,
+    RegionShape.ellipse => Icons.circle_outlined,
+    RegionShape.freehand => Icons.gesture,
+  };
+
+  Widget _regionSection(Layer layer) {
+    final region = widget.regionController;
+    if (region == null) return const SizedBox.shrink();
+    return ListenableBuilder(
+      listenable: region,
+      builder: (context, _) => _regionContent(layer, region),
+    );
+  }
+
+  Widget _regionContent(Layer layer, MaterialRegionController region) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final small = theme.textTheme.bodySmall;
+    final edits = layer.regionEdits;
+    final active = region.activeIn(edits);
+    final selection = region.selection;
+    final full = edits.length >= LayerRegionEdit.maxCount;
+    final canAct = selection != null && !full;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (active == null) ...[
+          Text(l10n.timelineRegionHint, style: small),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final shape in RegionShape.values)
+                ChoiceChip(
+                  key: ValueKey('regionShape.${shape.name}'),
+                  avatar: Icon(_regionShapeIcon(shape), size: 16),
+                  label: Text(_regionShapeLabel(l10n, shape)),
+                  selected: region.shape == shape,
+                  showCheckmark: false,
+                  onSelected: (_) => region.shape = shape,
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (selection == null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                l10n.timelineRegionNoSelection,
+                key: const ValueKey('regionNoSelection'),
+                style: small,
+              ),
+            ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              FilledButton.icon(
+                key: const ValueKey('regionMove'),
+                icon: Icon(_regionKindIcon(RegionEditKind.move), size: 18),
+                label: Text(l10n.timelineRegionMove),
+                onPressed: canAct
+                    ? () => _addRegionEdit(RegionEditKind.move)
+                    : null,
+              ),
+              OutlinedButton.icon(
+                key: const ValueKey('regionDuplicate'),
+                icon: Icon(_regionKindIcon(RegionEditKind.duplicate), size: 18),
+                label: Text(l10n.commonDuplicate),
+                onPressed: canAct
+                    ? () => _addRegionEdit(RegionEditKind.duplicate)
+                    : null,
+              ),
+              OutlinedButton.icon(
+                key: const ValueKey('regionErase'),
+                icon: Icon(_regionKindIcon(RegionEditKind.erase), size: 18),
+                label: Text(l10n.commonDelete),
+                onPressed: canAct
+                    ? () => _addRegionEdit(RegionEditKind.erase)
+                    : null,
+              ),
+              TextButton.icon(
+                key: const ValueKey('regionSelectAll'),
+                icon: const Icon(Icons.select_all, size: 18),
+                label: Text(l10n.timelineRegionSelectAll),
+                onPressed: () => _selectWholeRegion(layer, region),
+              ),
+              TextButton.icon(
+                key: const ValueKey('regionClearSelection'),
+                icon: const Icon(Icons.deselect, size: 18),
+                label: Text(l10n.timelineRegionClearSelection),
+                onPressed: selection == null
+                    ? null
+                    : () => region.selection = null,
+              ),
+            ],
+          ),
+          if (full)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                l10n.timelineRegionLimit(LayerRegionEdit.maxCount),
+                key: const ValueKey('regionLimit'),
+                style: small,
+              ),
+            ),
+        ] else
+          _regionPieceControls(active, region),
+        if (edits.isNotEmpty) ...[
+          const Divider(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.timelineRegionEditsTitle(edits.length),
+                  style: theme.textTheme.titleSmall,
+                ),
+              ),
+            ],
+          ),
+          for (final (i, edit) in edits.indexed)
+            ListTile(
+              key: ValueKey('regionEdit.${edit.id}'),
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              leading: Icon(_regionKindIcon(edit.kind)),
+              title: Text(
+                l10n.timelineRegionEditNumbered(
+                  i + 1,
+                  _regionKindLabel(l10n, edit.kind),
+                ),
+              ),
+              subtitle: Text(_regionShapeLabel(l10n, edit.region.shape)),
+              selected: edit.id == active?.id,
+              onTap: edit.drawsPiece
+                  ? () {
+                      region.selection = null;
+                      region.activeEditId = edit.id;
+                    }
+                  : null,
+              trailing: IconButton(
+                key: ValueKey('regionEditRemove.${edit.id}'),
+                icon: const Icon(Icons.close),
+                tooltip: l10n.timelineRegionEditRemove,
+                onPressed: () => _removeRegionEdit(edit.id),
+              ),
+            ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: OutlinedButton.icon(
+              key: const ValueKey('regionRemoveAll'),
+              icon: const Icon(Icons.layers_clear_outlined, size: 18),
+              label: Text(l10n.timelineRegionRemoveAll),
+              onPressed: () {
+                _update((l) => l.copyWith(regionEdits: const []));
+                region.activeEditId = null;
+              },
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Sliders and buttons for the moved or copied part being changed.
+  Widget _regionPieceControls(
+    LayerRegionEdit edit,
+    MaterialRegionController region,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final tm = _projects.tileManagerOf(widget.projectId);
+    final w = tm.canvasWidth.toDouble();
+    final h = tm.canvasHeight.toDouble();
+    final x = edit.dx * w;
+    final y = edit.dy * h;
+
+    Widget sizeSlider(String key, String label, double scale, bool across) =>
+        LabeledSlider(
+          key: ValueKey(key),
+          label: label,
+          value: scale.abs().clamp(LayerRegionEdit.minScale, 5.0),
+          min: LayerRegionEdit.minScale,
+          max: 5.0,
+          step: 0.01,
+          isInt: false,
+          valueText: '×${scale.abs().toStringAsFixed(2)}',
+          onChanged: (v) => _editRegion(edit.id, (e) {
+            final size = (v * 100).roundToDouble() / 100;
+            return across
+                ? e.copyWith(scaleX: e.scaleX < 0 ? -size : size)
+                : e.copyWith(scaleY: e.scaleY < 0 ? -size : size);
+          }, preview: true),
+          onChangeEnd: _finishSliderDrag,
+        );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          l10n.timelineRegionAdjustHint,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        LabeledSlider(
+          key: const ValueKey('regionMoveX'),
+          label: l10n.timelineCameraMoveXLabel,
+          value: x.clamp(-w, w),
+          min: -w,
+          max: w,
+          divisions: (w * 2).round(),
+          valueText: '${x.round()}',
+          onChanged: (v) => _editRegion(
+            edit.id,
+            (e) => e.copyWith(dx: v.roundToDouble() / w),
+            preview: true,
+          ),
+          onChangeEnd: _finishSliderDrag,
+        ),
+        LabeledSlider(
+          key: const ValueKey('regionMoveY'),
+          label: l10n.timelineCameraMoveYLabel,
+          value: y.clamp(-h, h),
+          min: -h,
+          max: h,
+          divisions: (h * 2).round(),
+          valueText: '${y.round()}',
+          onChanged: (v) => _editRegion(
+            edit.id,
+            (e) => e.copyWith(dy: v.roundToDouble() / h),
+            preview: true,
+          ),
+          onChangeEnd: _finishSliderDrag,
+        ),
+        sizeSlider(
+          'regionScaleX',
+          l10n.timelineRegionScaleX,
+          edit.scaleX,
+          true,
+        ),
+        sizeSlider(
+          'regionScaleY',
+          l10n.timelineRegionScaleY,
+          edit.scaleY,
+          false,
+        ),
+        LabeledSlider(
+          key: const ValueKey('regionRotation'),
+          label: l10n.timelineCameraRotationLabel,
+          value: edit.rotation.clamp(-180, 180),
+          min: -180,
+          max: 180,
+          divisions: 360,
+          valueText: '${edit.rotation.round()}°',
+          onChanged: (v) => _editRegion(
+            edit.id,
+            (e) => e.copyWith(rotation: v.roundToDouble()),
+            preview: true,
+          ),
+          onChangeEnd: _finishSliderDrag,
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            OutlinedButton.icon(
+              key: const ValueKey('regionFlipHorizontal'),
+              icon: const Icon(Icons.flip, size: 18),
+              label: Text(l10n.timelineRegionFlipHorizontal),
+              onPressed: () =>
+                  _editRegion(edit.id, (e) => e.copyWith(scaleX: -e.scaleX)),
+            ),
+            OutlinedButton.icon(
+              key: const ValueKey('regionFlipVertical'),
+              icon: const RotatedBox(
+                quarterTurns: 1,
+                child: Icon(Icons.flip, size: 18),
+              ),
+              label: Text(l10n.timelineRegionFlipVertical),
+              onPressed: () =>
+                  _editRegion(edit.id, (e) => e.copyWith(scaleY: -e.scaleY)),
+            ),
+            TextButton.icon(
+              key: const ValueKey('regionResetTransform'),
+              icon: const Icon(Icons.restart_alt, size: 18),
+              label: Text(l10n.timelineRegionResetTransform),
+              onPressed: edit.isIdentityTransform
+                  ? null
+                  : () => _editRegion(
+                      edit.id,
+                      (e) => e.copyWith(
+                        dx: 0,
+                        dy: 0,
+                        scaleX: 1,
+                        scaleY: 1,
+                        rotation: 0,
+                      ),
+                    ),
+            ),
+            FilledButton.icon(
+              key: const ValueKey('regionDone'),
+              icon: const Icon(Icons.check, size: 18),
+              label: Text(l10n.timelineRegionDone),
+              onPressed: () => region.activeEditId = null,
+            ),
+          ],
         ),
       ],
     );
@@ -1077,6 +1494,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
       if (isText) _Section.text,
       _Section.transform,
       if (!isText) _Section.crop,
+      if (!isText && widget.regionController != null) _Section.region,
       _Section.mask,
       if (isVideo) _Section.video,
     ];
@@ -1089,11 +1507,20 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
         if (mounted) widget.onCropEditingChanged?.call(cropShown);
       });
     }
+    final region = widget.regionController;
+    final regionShown = section == _Section.region;
+    if (region != null && region.editing != regionShown) {
+      // Not during build: the timeline swaps the preview's handles.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) region.editing = regionShown;
+      });
+    }
     final scheme = Theme.of(context).colorScheme;
     String sectionLabel(_Section s) => switch (s) {
       _Section.text => l10n.timelineEditSectionText,
       _Section.transform => l10n.timelineEditSectionTransform,
       _Section.crop => l10n.timelineEditSectionCrop,
+      _Section.region => l10n.timelineEditSectionRegion,
       _Section.mask => l10n.timelineEditSectionMask,
       _Section.video => l10n.projectListMaterialVideo,
     };
@@ -1101,6 +1528,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
       _Section.text => Icons.text_fields,
       _Section.transform => Icons.open_with,
       _Section.crop => Icons.crop,
+      _Section.region => Icons.highlight_alt,
       _Section.mask => Icons.vignette_outlined,
       _Section.video => Icons.videocam,
     };
@@ -1205,6 +1633,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
                       _transformSection(layer, found.home, frame),
                 ),
                 _Section.crop => _cropSection(layer),
+                _Section.region => _regionSection(layer),
                 _Section.mask => LayerMaskEditor(
                   mask: layer.mask,
                   onChanged: (m) => _update((l) => l.copyWith(mask: m)),

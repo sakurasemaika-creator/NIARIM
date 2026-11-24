@@ -69,6 +69,7 @@ import '../../models/layer_group.dart';
 import '../../models/timeline_marker.dart';
 import '../../models/material_asset.dart';
 import '../../models/pixel_color_mode.dart';
+import '../../models/project.dart';
 import '../../models/scene.dart';
 import '../../models/timeline_row_kind.dart';
 import '../../models/watermark_asset.dart';
@@ -114,6 +115,7 @@ import 'widgets/keyframe_retime_dialog.dart';
 import 'widgets/material_edit_panel.dart';
 import 'widgets/video_filmstrip.dart';
 import 'widgets/material_gizmo.dart';
+import 'widgets/material_region_controller.dart';
 import 'widgets/stack_order_panel.dart';
 import 'widgets/track_label.dart';
 import '../../widgets/icon_notice.dart';
@@ -419,6 +421,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// Whether the material panel shows its crop: the preview's handles then
   /// move the crop's edges instead of the material.
   bool _cropEditing = false;
+
+  /// The selection and the part being changed in the material panel's
+  /// 範囲選択 section, shared with the preview's handles.
+  final MaterialRegionController _regionEdit = MaterialRegionController();
 
   /// Video materials' picture sizes, read from their frames (the crop is of
   /// the part a video's frames are fitted into). A key with a null value is
@@ -868,6 +874,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   void dispose() {
     _finishMaterialDrag(deferred: true);
     _stopTimelineDrag(snap: false);
+    _regionEdit.dispose();
     _screenFocus.dispose();
     ImmersiveMode.exitWorkspace();
     _playTimer?.cancel();
@@ -2411,6 +2418,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// is on screen so it can be seen (and dragged) in the preview.
   void _openMaterialEditor(String layerId) {
     _finishMaterialDrag();
+    if (_editingMaterialId != layerId) _regionEdit.reset();
     final ps = context.read<ProjectService>();
     final home = ps.homeOf(widget.projectId, layerId);
     final layer = home == null
@@ -2454,6 +2462,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   void _closeEditPanels() {
     _finishMaterialDrag();
+    _regionEdit.reset();
     setState(() {
       _cropEditing = false;
       _editingMaterialId = null;
@@ -2633,6 +2642,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       currentFrame: _currentFrameNotifier,
       onLayerChanged: _onMaterialLayerChanged,
       cropFrameOf: (layer) => _materialFrameOf(ps, layer, found.home),
+      regionController: _regionEdit,
       onCropEditingChanged: (editing) {
         // Told from the panel's build or disposal: change after this frame.
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2804,9 +2814,81 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final project = ps.projects
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
-    if (_cropEditing &&
-        (layer.type == LayerType.timelineImage ||
-            layer.type == LayerType.timelineVideo)) {
+    final camera = cameraKeyframes.isEmpty
+        ? null
+        : CameraEngine().valueAt(cameraKeyframes, frameIndex);
+    final isPicture =
+        layer.type == LayerType.timelineImage ||
+        layer.type == LayerType.timelineVideo;
+    if (isPicture) {
+      // The panel's 範囲選択 section swaps in its own handles.
+      return ListenableBuilder(
+        listenable: _regionEdit,
+        builder: (context, _) => _regionEdit.editing
+            ? _buildRegionGizmo(ps, layer, frameIndex, project, camera)
+            : _buildPictureGizmo(ps, found, frameIndex, project, camera),
+      );
+    }
+    return _buildTransformGizmo(ps, layer, frameIndex, camera);
+  }
+
+  /// The preview's handles for selecting parts of the image or video being
+  /// edited and changing a moved or copied part.
+  Widget _buildRegionGizmo(
+    ProjectService ps,
+    Layer layer,
+    int frameIndex,
+    Project? project,
+    CameraKeyframe? camera,
+  ) {
+    final tm = ps.tileManagerOf(widget.projectId);
+    return MaterialRegionGizmo(
+      key: ValueKey('material-region-gizmo-${layer.id}'),
+      canvasWidth: tm.canvasWidth,
+      canvasHeight: tm.canvasHeight,
+      outputWidth: project?.exportWidth,
+      outputHeight: project?.exportHeight,
+      value: materialTransformAt(layer, frameIndex),
+      camera: camera,
+      shape: _regionEdit.shape,
+      selection: _regionEdit.selection,
+      onSelectionChanged: (next) => _regionEdit.selection = next,
+      edit: _regionEdit.activeIn(layer.regionEdits),
+      onChangeEnd: _finishMaterialDrag,
+      onEditChanged: (next) {
+        final current = _editingMaterial(ps);
+        if (current == null || current.layer.id != layer.id) return;
+        final edits = current.layer.regionEdits;
+        if (!edits.any((e) => e.id == next.id)) return;
+        final undo = context.read<UndoManager?>();
+        if (undo != null) {
+          _materialDrag ??= (before: current.layer, undo: undo);
+        }
+        ps.updateLayer(
+          projectId: widget.projectId,
+          sceneId: current.home.sceneId,
+          frameIndex: current.home.frameIndex,
+          recordUndo: false,
+          layer: current.layer.copyWith(
+            regionEdits: [for (final e in edits) e.id == next.id ? next : e],
+          ),
+        );
+      },
+    );
+  }
+
+  /// The crop's handles while the panel shows the crop, otherwise the
+  /// material's own.
+  Widget _buildPictureGizmo(
+    ProjectService ps,
+    ({Layer layer, LayerHome home}) found,
+    int frameIndex,
+    Project? project,
+    CameraKeyframe? camera,
+  ) {
+    final layer = found.layer;
+    final tm = ps.tileManagerOf(widget.projectId);
+    if (_cropEditing) {
       return MaterialCropGizmo(
         key: ValueKey('material-crop-gizmo-${layer.id}'),
         canvasWidth: tm.canvasWidth,
@@ -2816,9 +2898,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         value: materialTransformAt(layer, frameIndex),
         frame: _materialFrameOf(ps, layer, found.home),
         crop: layer.crop,
-        camera: cameraKeyframes.isEmpty
-            ? null
-            : CameraEngine().valueAt(cameraKeyframes, frameIndex),
+        camera: camera,
         onChangeEnd: _finishMaterialDrag,
         onChanged: (next) {
           final current = _editingMaterial(ps);
@@ -2838,6 +2918,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
         },
       );
     }
+    return _buildTransformGizmo(ps, layer, frameIndex, camera);
+  }
+
+  /// The material's own handles: move, resize and turn it.
+  Widget _buildTransformGizmo(
+    ProjectService ps,
+    Layer layer,
+    int frameIndex,
+    CameraKeyframe? camera,
+  ) {
+    final tm = ps.tileManagerOf(widget.projectId);
     return MaterialTransformGizmo(
       key: ValueKey('material-gizmo-${layer.id}'),
       onChangeEnd: _finishMaterialDrag,
@@ -2853,9 +2944,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ?.exportHeight,
       contentBounds: _editingBounds,
       value: materialTransformAt(layer, frameIndex),
-      camera: cameraKeyframes.isEmpty
-          ? null
-          : CameraEngine().valueAt(cameraKeyframes, frameIndex),
+      camera: camera,
       onChanged: (next) {
         final current = _editingMaterial(ps);
         if (current == null || current.layer.id != layer.id) return;

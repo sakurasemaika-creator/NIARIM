@@ -5377,6 +5377,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineCropReset => 'Reset crop';
 
   @override
+  String get timelineEditSectionRegion => 'Selection';
+
+  @override
+  String get timelineRegionHint =>
+      'Drag on the preview to outline a part, then choose Move/transform, Duplicate or Delete. A video gets the same edit on every frame. The original image or video is not changed.';
+
+  @override
+  String get timelineRegionShapeFreehand => 'Freehand';
+
+  @override
+  String get timelineRegionNoSelection => 'No part is selected yet.';
+
+  @override
+  String get timelineRegionMove => 'Move/transform';
+
+  @override
+  String get timelineRegionSelectAll => 'Select all';
+
+  @override
+  String get timelineRegionClearSelection => 'Clear selection';
+
+  @override
+  String timelineRegionLimit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Up to $count selection edits can be added.',
+      one: 'Up to $count selection edit can be added.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      'Drag on the preview to move it, a corner dot to resize, a side dot to stretch and the top dot to rotate. Two fingers work too.';
+
+  @override
+  String get timelineRegionScaleX => 'Width scale';
+
+  @override
+  String get timelineRegionScaleY => 'Height scale';
+
+  @override
+  String get timelineRegionFlipHorizontal => 'Flip horizontally';
+
+  @override
+  String get timelineRegionFlipVertical => 'Flip vertically';
+
+  @override
+  String get timelineRegionResetTransform => 'Reset position';
+
+  @override
+  String get timelineRegionDone => 'Done';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return 'Selection edits ($count)';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => 'Remove this edit';
+
+  @override
+  String get timelineRegionRemoveAll => 'Remove all selection edits';
+
+  @override
   String get timelineTransformRotationX => 'X-axis rotation';
 
   @override

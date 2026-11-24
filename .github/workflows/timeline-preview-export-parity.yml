@@ -27,6 +27,8 @@ on:
       - 'lib/screens/timeline/widgets/keyframe_retime_dialog.dart'
       - 'lib/screens/timeline/widgets/material_gizmo.dart'
       - 'lib/models/layer_crop.dart'
+      - 'lib/models/layer_region_edit.dart'
+      - 'lib/screens/timeline/widgets/material_region_controller.dart'
       - 'lib/engine/crop_frame.dart'
       - 'lib/models/scene.dart'
       - 'lib/models/video_track_display.dart'
@@ -53,6 +55,9 @@ on:
       - 'test/timeline_split_test.dart'
       - 'test/layer_crop_test.dart'
       - 'test/timeline_crop_test.dart'
+      - 'test/layer_region_edit_test.dart'
+      - 'test/material_region_gizmo_test.dart'
+      - 'test/timeline_region_edit_ui_test.dart'
       - 'test/timeline_video_track_display_test.dart'
       - 'test/audio_waveform_service_test.dart'
       - 'docs/AI設計書/26_タイムライン編集操作仕様.md'
@@ -122,6 +127,8 @@ jobs:
         run: flutter test test/timeline_clip_speed_test.dart --reporter expanded
       - name: Test cropping (drawn like cut pixels on every path, panel and preview handles, Undo)
         run: flutter test test/layer_crop_test.dart test/timeline_crop_test.dart --reporter expanded
+      - name: Test selected parts moved, copied and erased (drawn like edited pixels on every path, saving, preview handles, panel, Undo)
+        run: flutter test test/layer_region_edit_test.dart test/material_region_gizmo_test.dart test/timeline_region_edit_ui_test.dart --reporter expanded
       - name: Test splitting every track type at the playhead (source times, fades, groups, Undo)
         run: flutter test test/timeline_split_test.dart --reporter expanded
       - name: Test video track rows (filmstrip frames, sound waveform, saving)
@@ -150,6 +157,8 @@ jobs:
           lib/screens/timeline/widgets/keyframe_retime_dialog.dart
           lib/screens/timeline/widgets/material_gizmo.dart
           lib/models/layer_crop.dart
+          lib/models/layer_region_edit.dart
+          lib/screens/timeline/widgets/material_region_controller.dart
           lib/engine/crop_frame.dart
           lib/models/scene.dart
           lib/models/video_track_display.dart
@@ -175,6 +184,9 @@ jobs:
           test/timeline_split_test.dart
           test/layer_crop_test.dart
           test/timeline_crop_test.dart
+          test/layer_region_edit_test.dart
+          test/material_region_gizmo_test.dart
+          test/timeline_region_edit_ui_test.dart
           test/timeline_video_track_display_test.dart
           test/audio_waveform_service_test.dart
           --no-fatal-infos

@@ -190,6 +190,7 @@ void main() {
       List<LayerMaskGroup> maskGroups = const [],
       ui.Size? rasterSize,
       bool viaSuppliedImage = false,
+      Set<int> partialRows = const {},
     }) async {
       Future<Uint8List> run(TileManager tiles, List<Layer> drawn) async =>
           _rgba(
@@ -219,7 +220,28 @@ void main() {
         for (final l in layers) l.id == 'picture' ? l.copyWith(crop: null) : l,
       ]);
       final actual = await run(cropped, layers);
-      expect(actual, expected);
+      if (partialRows.isEmpty) {
+        expect(actual, expected);
+      } else {
+        // Every row the crop's edge does not cross matches exactly.
+        final rowBytes = (rasterSize?.width.toInt() ?? _w) * 4;
+        expect(actual.length, expected.length);
+        for (var row = 0; row * rowBytes < actual.length; row++) {
+          if (partialRows.contains(row)) continue;
+          final from = row * rowBytes;
+          expect(
+            actual.sublist(from, from + rowBytes),
+            expected.sublist(from, from + rowBytes),
+            reason: 'row $row',
+          );
+        }
+      }
+      // The crop shows in this drawing (the material is not hidden behind
+      // another layer), so the comparison means something.
+      final uncut = await run(cropped, [
+        for (final l in layers) l.id == 'picture' ? l.copyWith(crop: null) : l,
+      ]);
+      expect(uncut, isNot(expected));
     }
 
     Layer pictureLayer({
@@ -240,27 +262,28 @@ void main() {
 
     test('on its own and over other layers', () async {
       await expectLikeCutPixels([pictureLayer()]);
-      await expectLikeCutPixels([baseLayer, pictureLayer()]);
+      // The first layer is the front one.
+      await expectLikeCutPixels([pictureLayer(), baseLayer]);
     });
 
     test('with a blend mode the GPU has and one drawn on the CPU', () async {
       for (final blend in [LayerBlendMode.multiply, LayerBlendMode.subtract]) {
-        await expectLikeCutPixels([baseLayer, pictureLayer(blend: blend)]);
+        await expectLikeCutPixels([pictureLayer(blend: blend), baseLayer]);
       }
     });
 
     test(
       'clipped to a layer, and as the layer another is clipped to',
       () async {
-        await expectLikeCutPixels([baseLayer, pictureLayer(hasClipping: true)]);
+        await expectLikeCutPixels([pictureLayer(hasClipping: true), baseLayer]);
         await expectLikeCutPixels([
-          pictureLayer(),
           const Layer(
             id: 'over',
             name: 'over',
             type: LayerType.normal,
             hasClipping: true,
           ),
+          pictureLayer(),
         ]);
       },
     );
@@ -269,10 +292,10 @@ void main() {
       'with a mask: the crop and the mask both cut, in either order',
       () async {
         await expectLikeCutPixels([
-          baseLayer,
           pictureLayer(
             mask: const LayerMask(centerX: 40, centerY: 50, width: 50),
           ),
+          baseLayer,
         ]);
       },
     );
@@ -284,11 +307,11 @@ void main() {
             ? const LayerKeyframe(frameIndex: 0, x: 3, y: -2, scale: 1.5)
             : null;
         await expectLikeCutPixels([
-          baseLayer,
           pictureLayer(),
+          baseLayer,
         ], keyframeOf: moved);
         await expectLikeCutPixels(
-          [baseLayer, pictureLayer()],
+          [pictureLayer(), baseLayer],
           groupKeyframeOf: (l) => l.id == 'picture'
               ? const LayerKeyframe(frameIndex: 0, rotation: 30)
               : null,
@@ -299,13 +322,18 @@ void main() {
     test(
       'at a smaller raster (the preview) and on a supplied video frame',
       () async {
+        // At half size the crop's top and bottom (rows 3 and 9) fall half
+        // way through preview rows 1 and 4: cutting the smaller picture
+        // and shrinking the cut picture mix those rows' colours in a
+        // different order, so only the other rows are compared exactly.
+        await expectLikeCutPixels(
+          [pictureLayer(), baseLayer],
+          rasterSize: const ui.Size(8, 6),
+          partialRows: const {1, 4},
+        );
         await expectLikeCutPixels([
-          baseLayer,
-          pictureLayer(),
-        ], rasterSize: const ui.Size(8, 6));
-        await expectLikeCutPixels([
-          baseLayer,
           pictureLayer(type: LayerType.timelineVideo),
+          baseLayer,
         ], viaSuppliedImage: true);
       },
     );

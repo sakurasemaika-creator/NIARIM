@@ -6,6 +6,7 @@ import '../models/layer.dart';
 import '../models/layer_crop.dart';
 import '../models/layer_keyframe.dart';
 import '../models/layer_mask.dart';
+import '../models/layer_region_edit.dart';
 import 'layer_keyframe_engine.dart';
 import 'timeline_stack.dart';
 import 'tile_manager.dart';
@@ -593,11 +594,68 @@ class LayerCompositor {
       LayerPixelsImage(:final image) => image,
       LayerPixelsEmpty() => null,
     };
+    if (image == null) return null;
     final crop = layer.crop;
-    if (image == null || crop == null || crop.isFull || !crop.isValid) {
-      return image;
+    final cropped = crop == null || crop.isFull || !crop.isValid
+        ? image
+        : await cropLayerImage(image, crop);
+    if (layer.regionEdits.isEmpty) return cropped;
+    return applyRegionEdits(cropped, layer.regionEdits);
+  }
+
+  /// [image] (a layer's own picture, canvas-size or at the raster size, after
+  /// its crop) with [edits] drawn onto it in order: each selected part is
+  /// moved and changed, copied, or erased. Disposes [image]; the caller
+  /// disposes the result. Like the crop this is before the layer's transform
+  /// and mask, so the preview, the export and every way of drawing a layer
+  /// change the same parts, and the parts are fractions of the picture so a
+  /// smaller preview picture changes the same parts as the export.
+  static Future<ui.Image> applyRegionEdits(
+    ui.Image image,
+    List<LayerRegionEdit> edits,
+  ) async {
+    var current = image;
+    for (final edit in edits) {
+      if (!edit.isValid) continue;
+      if (!edit.clearsSource && edit.isIdentityTransform) {
+        // A copy drawn exactly over its part would only make its
+        // half-transparent pixels (its edges) more solid: it is not drawn.
+        continue;
+      }
+      final w = current.width.toDouble();
+      final h = current.height.toDouble();
+      final path = edit.region.pathIn(w, h);
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(recorder);
+      final whole = ui.Rect.fromLTWH(0, 0, w, h);
+      if (edit.clearsSource) {
+        canvas.saveLayer(whole, ui.Paint());
+        canvas.drawImage(current, ui.Offset.zero, ui.Paint());
+        canvas.drawPath(path, ui.Paint()..blendMode = ui.BlendMode.clear);
+        canvas.restore();
+      } else {
+        canvas.drawImage(current, ui.Offset.zero, ui.Paint());
+      }
+      if (edit.drawsPiece) {
+        canvas.save();
+        canvas.clipRect(whole);
+        canvas.transform(edit.matrixIn(w, h));
+        canvas.clipPath(path);
+        // Sampled like the layer's own move, scale and turn (the default
+        // filter), so a part and the rest of the picture look alike.
+        canvas.drawImage(current, ui.Offset.zero, ui.Paint());
+        canvas.restore();
+      }
+      final picture = recorder.endRecording();
+      try {
+        final next = await picture.toImage(current.width, current.height);
+        current.dispose();
+        current = next;
+      } finally {
+        picture.dispose();
+      }
     }
-    return cropLayerImage(image, crop);
+    return current;
   }
 
   /// [image] (a layer's own picture, canvas-size or at the raster size) with

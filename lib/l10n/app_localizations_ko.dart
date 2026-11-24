@@ -5172,6 +5172,71 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineCropReset => '자르기 초기화';
 
   @override
+  String get timelineEditSectionRegion => '범위 선택';
+
+  @override
+  String get timelineRegionHint =>
+      '미리보기에서 드래그해 범위를 둘러싼 뒤 이동·변형, 복제, 삭제 중에서 고르세요. 동영상은 모든 프레임에 같은 편집이 적용됩니다. 원본 이미지와 동영상은 바뀌지 않습니다.';
+
+  @override
+  String get timelineRegionShapeFreehand => '자유 형태';
+
+  @override
+  String get timelineRegionNoSelection => '아직 범위를 선택하지 않았습니다.';
+
+  @override
+  String get timelineRegionMove => '이동·변형';
+
+  @override
+  String get timelineRegionSelectAll => '전체 선택';
+
+  @override
+  String get timelineRegionClearSelection => '선택 해제';
+
+  @override
+  String timelineRegionLimit(int count) {
+    return '범위 편집은 $count개까지 추가할 수 있습니다.';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      '미리보기에서 드래그하면 이동, 모서리 점으로 크기 조절, 변의 점으로 가로나 세로로 늘이기, 위쪽 점으로 회전합니다. 두 손가락으로도 조작할 수 있습니다.';
+
+  @override
+  String get timelineRegionScaleX => '가로 크기';
+
+  @override
+  String get timelineRegionScaleY => '세로 크기';
+
+  @override
+  String get timelineRegionFlipHorizontal => '좌우 반전';
+
+  @override
+  String get timelineRegionFlipVertical => '상하 반전';
+
+  @override
+  String get timelineRegionResetTransform => '원래 위치로';
+
+  @override
+  String get timelineRegionDone => '완료';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return '범위 편집($count)';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => '이 편집 제거';
+
+  @override
+  String get timelineRegionRemoveAll => '범위 편집 모두 제거';
+
+  @override
   String get timelineTransformRotationX => 'X축 회전';
 
   @override

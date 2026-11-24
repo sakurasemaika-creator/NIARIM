@@ -19,6 +19,7 @@ import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/models/effect_filter_instance.dart';
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/layer_crop.dart';
+import 'package:niarim/models/layer_region_edit.dart';
 import 'package:niarim/models/material_asset.dart';
 import 'package:niarim/models/scene.dart';
 import 'package:niarim/services/export_storage.dart';
@@ -83,9 +84,44 @@ const _video = Layer(
 );
 const _ink = Layer(id: 'ink', name: 'ink', type: LayerType.normal);
 
+/// A part of the video moved, a part copied turned, and a part erased.
+final _regionEdits = [
+  LayerRegionEdit(
+    id: 'move',
+    kind: RegionEditKind.move,
+    region: RegionSelection.box(
+      RegionShape.rectangle,
+      const ui.Rect.fromLTRB(0.1, 0.1, 0.4, 0.5),
+    ),
+    dx: 0.3,
+    dy: 0.2,
+    scaleX: 1.5,
+  ),
+  LayerRegionEdit(
+    id: 'copy',
+    kind: RegionEditKind.duplicate,
+    region: RegionSelection.box(
+      RegionShape.ellipse,
+      const ui.Rect.fromLTRB(0.5, 0.2, 0.9, 0.6),
+    ),
+    dx: -0.3,
+    rotation: 30,
+  ),
+  LayerRegionEdit(
+    id: 'erase',
+    kind: RegionEditKind.erase,
+    region: RegionSelection.freehand(const [
+      ui.Offset(0.6, 0.6),
+      ui.Offset(0.95, 0.7),
+      ui.Offset(0.7, 0.95),
+    ]),
+  ),
+];
+
 Scene _scene({
   List<EffectFilterInstance> effects = const [],
   LayerCrop? crop,
+  List<LayerRegionEdit> regionEdits = const [],
 }) => Scene(
   id: 'S1',
   index: 0,
@@ -94,7 +130,7 @@ Scene _scene({
       Frame(
         index: i,
         layers: i == 0
-            ? [_ink, crop == null ? _video : _video.copyWith(crop: crop)]
+            ? [_ink, _video.copyWith(crop: crop, regionEdits: regionEdits)]
             : const [_ink],
       ),
   ],
@@ -263,8 +299,13 @@ void main() {
       );
 
   group('preview and export draw the same frame', () {
-    for (final (label, effects, crop) in [
-      ('without effects', const <EffectFilterInstance>[], null),
+    for (final (label, effects, crop, regions) in [
+      (
+        'without effects',
+        const <EffectFilterInstance>[],
+        null,
+        const <LayerRegionEdit>[],
+      ),
       (
         'with an effect filter',
         const [
@@ -276,15 +317,27 @@ void main() {
           ),
         ],
         null,
+        const <LayerRegionEdit>[],
       ),
       (
         'with the video cropped',
         const <EffectFilterInstance>[],
         const LayerCrop(left: 0.25, top: 0.25, right: 0.75, bottom: 0.75),
+        const <LayerRegionEdit>[],
+      ),
+      (
+        'with parts of the video moved, copied and erased',
+        const <EffectFilterInstance>[],
+        const LayerCrop(left: 0.05, top: 0, right: 1, bottom: 1),
+        _regionEdits,
       ),
     ]) {
       test('every timeline frame, $label', () async {
-        final scene = _scene(effects: effects, crop: crop);
+        final scene = _scene(
+          effects: effects,
+          crop: crop,
+          regionEdits: regions,
+        );
         final tiles = _tiles(scene);
         addTearDown(tiles.dispose);
         // Separate providers, as the preview and an export job have.
@@ -327,6 +380,35 @@ void main() {
       final cut = await exportRgba(cropped, tiles, 4, pixelsWith(frames));
       expect(cut, isNot(whole));
       expect(await previewRgba(cropped, tiles, 4, pixelsWith(frames)), cut);
+    });
+
+    test('the parts selected are changed on the decoded frame, in the '
+        'preview and the export alike', () async {
+      final plain = _scene();
+      final edited = _scene(regionEdits: _regionEdits);
+      final tiles = _tiles(plain);
+      addTearDown(tiles.dispose);
+      final frames = VideoFrameProvider(
+        snapshot: _materials(),
+        decoder: _NumberedDecoder(),
+      );
+      addTearDown(frames.dispose);
+      // Frames 4 and 7 show different video frames, each edited alike.
+      for (final frame in [4, 7]) {
+        final whole = await exportRgba(plain, tiles, frame, pixelsWith(frames));
+        final changed = await exportRgba(
+          edited,
+          tiles,
+          frame,
+          pixelsWith(frames),
+        );
+        expect(changed, isNot(whole), reason: 'frame $frame');
+        expect(
+          await previewRgba(edited, tiles, frame, pixelsWith(frames)),
+          changed,
+          reason: 'frame $frame',
+        );
+      }
     });
 
     test(

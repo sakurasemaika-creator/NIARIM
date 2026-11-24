@@ -9315,6 +9315,120 @@ abstract class AppLocalizations {
   /// **'トリミングを戻す'**
   String get timelineCropReset;
 
+  /// No description provided for @timelineEditSectionRegion.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲選択'**
+  String get timelineEditSectionRegion;
+
+  /// No description provided for @timelineRegionHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューの上をドラッグして範囲を囲み、「移動・変形」「複製」「削除」から選びます。動画はどのコマにも同じ編集がかかります。元の画像・動画は変わりません。'**
+  String get timelineRegionHint;
+
+  /// No description provided for @timelineRegionShapeFreehand.
+  ///
+  /// In ja, this message translates to:
+  /// **'自由な形'**
+  String get timelineRegionShapeFreehand;
+
+  /// No description provided for @timelineRegionNoSelection.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ範囲を選んでいません。'**
+  String get timelineRegionNoSelection;
+
+  /// No description provided for @timelineRegionMove.
+  ///
+  /// In ja, this message translates to:
+  /// **'移動・変形'**
+  String get timelineRegionMove;
+
+  /// No description provided for @timelineRegionSelectAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'全体を選ぶ'**
+  String get timelineRegionSelectAll;
+
+  /// No description provided for @timelineRegionClearSelection.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択を解除'**
+  String get timelineRegionClearSelection;
+
+  /// No description provided for @timelineRegionLimit.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲の編集は{count}個までです。'**
+  String timelineRegionLimit(int count);
+
+  /// No description provided for @timelineRegionAdjustHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューでドラッグすると移動、角の丸で拡大縮小、辺の丸で縦か横に伸縮、上の丸で回転できます。2本指でも操作できます。'**
+  String get timelineRegionAdjustHint;
+
+  /// No description provided for @timelineRegionScaleX.
+  ///
+  /// In ja, this message translates to:
+  /// **'横の大きさ'**
+  String get timelineRegionScaleX;
+
+  /// No description provided for @timelineRegionScaleY.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦の大きさ'**
+  String get timelineRegionScaleY;
+
+  /// No description provided for @timelineRegionFlipHorizontal.
+  ///
+  /// In ja, this message translates to:
+  /// **'左右反転'**
+  String get timelineRegionFlipHorizontal;
+
+  /// No description provided for @timelineRegionFlipVertical.
+  ///
+  /// In ja, this message translates to:
+  /// **'上下反転'**
+  String get timelineRegionFlipVertical;
+
+  /// No description provided for @timelineRegionResetTransform.
+  ///
+  /// In ja, this message translates to:
+  /// **'元の位置に戻す'**
+  String get timelineRegionResetTransform;
+
+  /// No description provided for @timelineRegionDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了'**
+  String get timelineRegionDone;
+
+  /// No description provided for @timelineRegionEditsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲の編集（{count}）'**
+  String timelineRegionEditsTitle(int count);
+
+  /// No description provided for @timelineRegionEditNumbered.
+  ///
+  /// In ja, this message translates to:
+  /// **'{number}. {action}'**
+  String timelineRegionEditNumbered(int number, String action);
+
+  /// No description provided for @timelineRegionEditRemove.
+  ///
+  /// In ja, this message translates to:
+  /// **'この編集を外す'**
+  String get timelineRegionEditRemove;
+
+  /// No description provided for @timelineRegionRemoveAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲の編集をすべて外す'**
+  String get timelineRegionRemoveAll;
+
   /// No description provided for @timelineTransformRotationX.
   ///
   /// In ja, this message translates to:

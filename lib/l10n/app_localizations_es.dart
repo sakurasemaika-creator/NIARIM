@@ -5458,6 +5458,79 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineCropReset => 'Restablecer recorte';
 
   @override
+  String get timelineEditSectionRegion => 'Selección';
+
+  @override
+  String get timelineRegionHint =>
+      'Arrastra en la vista previa para rodear una parte y elige Mover/transformar, Duplicar o Eliminar. En un vídeo, el mismo cambio se aplica a todos los fotogramas. La imagen o el vídeo original no cambia.';
+
+  @override
+  String get timelineRegionShapeFreehand => 'A mano alzada';
+
+  @override
+  String get timelineRegionNoSelection =>
+      'Aún no hay ninguna parte seleccionada.';
+
+  @override
+  String get timelineRegionMove => 'Mover/transformar';
+
+  @override
+  String get timelineRegionSelectAll => 'Seleccionar todo';
+
+  @override
+  String get timelineRegionClearSelection => 'Quitar selección';
+
+  @override
+  String timelineRegionLimit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se pueden añadir hasta $count ediciones de selección.',
+      one: 'Se puede añadir hasta $count edición de selección.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      'Arrastra en la vista previa para moverlo, un punto de esquina para cambiar el tamaño, un punto lateral para estirarlo y el punto superior para girarlo. También funciona con dos dedos.';
+
+  @override
+  String get timelineRegionScaleX => 'Escala horizontal';
+
+  @override
+  String get timelineRegionScaleY => 'Escala vertical';
+
+  @override
+  String get timelineRegionFlipHorizontal => 'Voltear horizontalmente';
+
+  @override
+  String get timelineRegionFlipVertical => 'Voltear verticalmente';
+
+  @override
+  String get timelineRegionResetTransform => 'Restablecer posición';
+
+  @override
+  String get timelineRegionDone => 'Listo';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return 'Ediciones de selección ($count)';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => 'Quitar esta edición';
+
+  @override
+  String get timelineRegionRemoveAll =>
+      'Quitar todas las ediciones de selección';
+
+  @override
   String get timelineTransformRotationX => 'Rotación en X';
 
   @override

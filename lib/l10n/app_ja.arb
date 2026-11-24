@@ -2607,6 +2607,49 @@
   "timelineCropTop": "上を切る",
   "timelineCropBottom": "下を切る",
   "timelineCropReset": "トリミングを戻す",
+  "timelineEditSectionRegion": "範囲選択",
+  "timelineRegionHint": "プレビューの上をドラッグして範囲を囲み、「移動・変形」「複製」「削除」から選びます。動画はどのコマにも同じ編集がかかります。元の画像・動画は変わりません。",
+  "timelineRegionShapeFreehand": "自由な形",
+  "timelineRegionNoSelection": "まだ範囲を選んでいません。",
+  "timelineRegionMove": "移動・変形",
+  "timelineRegionSelectAll": "全体を選ぶ",
+  "timelineRegionClearSelection": "選択を解除",
+  "timelineRegionLimit": "範囲の編集は{count}個までです。",
+  "@timelineRegionLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineRegionAdjustHint": "プレビューでドラッグすると移動、角の丸で拡大縮小、辺の丸で縦か横に伸縮、上の丸で回転できます。2本指でも操作できます。",
+  "timelineRegionScaleX": "横の大きさ",
+  "timelineRegionScaleY": "縦の大きさ",
+  "timelineRegionFlipHorizontal": "左右反転",
+  "timelineRegionFlipVertical": "上下反転",
+  "timelineRegionResetTransform": "元の位置に戻す",
+  "timelineRegionDone": "完了",
+  "timelineRegionEditsTitle": "範囲の編集（{count}）",
+  "@timelineRegionEditsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineRegionEditNumbered": "{number}. {action}",
+  "@timelineRegionEditNumbered": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineRegionEditRemove": "この編集を外す",
+  "timelineRegionRemoveAll": "範囲の編集をすべて外す",
   "timelineTransformRotationX": "X軸回転",
   "timelineTransformRotationY": "Y軸回転",
   "timelineTransformRotationZ": "Z軸回転",

@@ -5085,6 +5085,71 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineCropReset => '重置裁剪';
 
   @override
+  String get timelineEditSectionRegion => '选区';
+
+  @override
+  String get timelineRegionHint =>
+      '在预览上拖动圈出一个范围，然后选择移动/变形、创建副本或删除。视频的每一帧都会应用相同的编辑。原图片或视频不会改变。';
+
+  @override
+  String get timelineRegionShapeFreehand => '自由形状';
+
+  @override
+  String get timelineRegionNoSelection => '尚未选择范围。';
+
+  @override
+  String get timelineRegionMove => '移动/变形';
+
+  @override
+  String get timelineRegionSelectAll => '全选';
+
+  @override
+  String get timelineRegionClearSelection => '取消选择';
+
+  @override
+  String timelineRegionLimit(int count) {
+    return '最多可添加$count个选区编辑。';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      '在预览上拖动可移动，拖动角上的圆点可缩放，拖动边上的圆点可横向或纵向拉伸，拖动上方的圆点可旋转。也可以用两指操作。';
+
+  @override
+  String get timelineRegionScaleX => '横向缩放';
+
+  @override
+  String get timelineRegionScaleY => '纵向缩放';
+
+  @override
+  String get timelineRegionFlipHorizontal => '水平翻转';
+
+  @override
+  String get timelineRegionFlipVertical => '垂直翻转';
+
+  @override
+  String get timelineRegionResetTransform => '恢复原位';
+
+  @override
+  String get timelineRegionDone => '完成';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return '选区编辑（$count）';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => '移除此编辑';
+
+  @override
+  String get timelineRegionRemoveAll => '移除全部选区编辑';
+
+  @override
   String get timelineTransformRotationX => 'X轴旋转';
 
   @override
@@ -15818,6 +15883,71 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineCropReset => '重設裁切';
+
+  @override
+  String get timelineEditSectionRegion => '選取範圍';
+
+  @override
+  String get timelineRegionHint =>
+      '在預覽上拖曳圈出一個範圍，然後選擇移動/變形、建立副本或刪除。影片的每一格都會套用相同的編輯。原圖片或影片不會改變。';
+
+  @override
+  String get timelineRegionShapeFreehand => '自由形狀';
+
+  @override
+  String get timelineRegionNoSelection => '尚未選取範圍。';
+
+  @override
+  String get timelineRegionMove => '移動/變形';
+
+  @override
+  String get timelineRegionSelectAll => '全選';
+
+  @override
+  String get timelineRegionClearSelection => '取消選取';
+
+  @override
+  String timelineRegionLimit(int count) {
+    return '最多可新增$count個選取範圍編輯。';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      '在預覽上拖曳可移動，拖曳角落的圓點可縮放，拖曳邊上的圓點可橫向或縱向拉伸，拖曳上方的圓點可旋轉。也可以用兩指操作。';
+
+  @override
+  String get timelineRegionScaleX => '橫向縮放';
+
+  @override
+  String get timelineRegionScaleY => '縱向縮放';
+
+  @override
+  String get timelineRegionFlipHorizontal => '水平翻轉';
+
+  @override
+  String get timelineRegionFlipVertical => '垂直翻轉';
+
+  @override
+  String get timelineRegionResetTransform => '恢復原位';
+
+  @override
+  String get timelineRegionDone => '完成';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return '選取範圍編輯（$count）';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => '移除此編輯';
+
+  @override
+  String get timelineRegionRemoveAll => '移除全部選取範圍編輯';
 
   @override
   String get timelineTransformRotationX => 'X軸旋轉';

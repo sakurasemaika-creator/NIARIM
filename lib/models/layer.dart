@@ -3,6 +3,7 @@ import 'dart:ui' show Offset;
 import 'layer_keyframe.dart';
 import 'layer_crop.dart';
 import 'layer_mask.dart';
+import 'layer_region_edit.dart';
 import 'text_object.dart';
 
 class Layer {
@@ -59,6 +60,11 @@ class Layer {
   /// turn and mask.
   final LayerCrop? crop;
 
+  /// Edits of selected parts of a timeline image or video (moved, copied or
+  /// erased), drawn in order onto the material's own picture after [crop]
+  /// and before its position, scale, turn and mask.
+  final List<LayerRegionEdit> regionEdits;
+
   const Layer({
     required this.id,
     required this.name,
@@ -94,6 +100,7 @@ class Layer {
     this.keyframes = const [],
     this.mask,
     this.crop,
+    this.regionEdits = const [],
   });
 
   Layer copyWith({
@@ -130,6 +137,7 @@ class Layer {
     List<LayerKeyframe>? keyframes,
     Object? mask = _sentinel,
     Object? crop = _sentinel,
+    List<LayerRegionEdit>? regionEdits,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -184,6 +192,7 @@ class Layer {
       keyframes: keyframes ?? this.keyframes,
       mask: mask == _sentinel ? this.mask : mask as LayerMask?,
       crop: crop == _sentinel ? this.crop : crop as LayerCrop?,
+      regionEdits: regionEdits ?? this.regionEdits,
     );
   }
 }
