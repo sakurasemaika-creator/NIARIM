@@ -7462,6 +7462,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityRetry => '重试';
 
   @override
+  String get communityPlazaLoading => '正在加载作品…';
+
+  @override
+  String get communityPlazaLoadFailedTitle => '无法加载作品';
+
+  @override
+  String get communityPlazaLoadFailedBody => '请检查网络后重试。';
+
+  @override
+  String get communityPlazaEmptyTitle => '还没有作品';
+
+  @override
+  String get communityPlazaEmptyBody => '发布用NIARIM制作的动画后，作品会显示在这里。';
+
+  @override
   String get communityReloadTooltip => '刷新';
 
   @override
@@ -18261,6 +18276,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityRetry => '重試';
+
+  @override
+  String get communityPlazaLoading => '正在載入作品…';
+
+  @override
+  String get communityPlazaLoadFailedTitle => '無法載入作品';
+
+  @override
+  String get communityPlazaLoadFailedBody => '請檢查網路後再試一次。';
+
+  @override
+  String get communityPlazaEmptyTitle => '還沒有作品';
+
+  @override
+  String get communityPlazaEmptyBody => '發佈用NIARIM製作的動畫後，作品會顯示在這裡。';
 
   @override
   String get communityReloadTooltip => '重新整理';

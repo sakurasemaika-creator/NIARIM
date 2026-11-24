@@ -7544,6 +7544,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityRetry => '再試行';
 
   @override
+  String get communityPlazaLoading => '作品を読み込んでいます…';
+
+  @override
+  String get communityPlazaLoadFailedTitle => '作品を読み込めませんでした';
+
+  @override
+  String get communityPlazaLoadFailedBody => '通信状態を確認して、もう一度お試しください。';
+
+  @override
+  String get communityPlazaEmptyTitle => 'まだ作品がありません';
+
+  @override
+  String get communityPlazaEmptyBody => 'NIARIMで作ったアニメを投稿すると、ここに並びます。';
+
+  @override
   String get communityReloadTooltip => '再読み込み';
 
   @override

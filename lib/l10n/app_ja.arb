@@ -3762,6 +3762,26 @@
   "communityContainsGenerativeAiImageVideoHelp": "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等は「AI画像・AI動画使用」の対象外です。",
   "communityAiImageVideoUpdateFailed": "「AI画像・AI動画使用」を変更できませんでした。通信状態を確認して、もう一度お試しください。",
   "communityRetry": "再試行",
+  "communityPlazaLoading": "作品を読み込んでいます…",
+  "@communityPlazaLoading": {
+    "description": "作品広場の一覧をサーバーから初めて読み込んでいる間の表示"
+  },
+  "communityPlazaLoadFailedTitle": "作品を読み込めませんでした",
+  "@communityPlazaLoadFailedTitle": {
+    "description": "作品広場の一覧をサーバーから読み込めなかったときの題"
+  },
+  "communityPlazaLoadFailedBody": "通信状態を確認して、もう一度お試しください。",
+  "@communityPlazaLoadFailedBody": {
+    "description": "作品広場の一覧を読み込めなかったときの説明（下に再試行のボタン）"
+  },
+  "communityPlazaEmptyTitle": "まだ作品がありません",
+  "@communityPlazaEmptyTitle": {
+    "description": "作品広場にまだ1つも作品が投稿されていないときの題"
+  },
+  "communityPlazaEmptyBody": "NIARIMで作ったアニメを投稿すると、ここに並びます。",
+  "@communityPlazaEmptyBody": {
+    "description": "作品広場が空のときの説明（下に「投稿する」のボタン）"
+  },
   "communityReloadTooltip": "再読み込み",
   "communityGoogleSignInNotConfigured": "Googleアカウントが連携されていません",
   "communityGoogleAccountBusy": "Googleアカウントの別の操作を処理中です。完了してから、もう一度お試しください。",
