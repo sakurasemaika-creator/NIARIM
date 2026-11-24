@@ -298,12 +298,16 @@ class CommunityRankingWorkCard extends StatelessWidget {
           : work.title,
       maxLines: large ? 2 : 2,
       overflow: TextOverflow.ellipsis,
-      style: localizedHeadingStyle(
+      style: localizedUserNameStyle(
         context,
-        TextStyle(
-          color: scheme.onSurface,
-          fontSize: large ? 19 : 17,
-          fontWeight: FontWeight.bold,
+        work.title,
+        localizedHeadingStyle(
+          context,
+          TextStyle(
+            color: scheme.onSurface,
+            fontSize: large ? 19 : 17,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -329,9 +333,13 @@ class CommunityRankingWorkCard extends StatelessWidget {
                         : work.authorName),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: localizedHeadingStyle(
+              style: localizedUserNameStyle(
                 context,
-                TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
+                work.authorName,
+                localizedHeadingStyle(
+                  context,
+                  TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
+                ),
               ),
             ),
           ),

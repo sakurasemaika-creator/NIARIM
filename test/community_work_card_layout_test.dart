@@ -154,9 +154,22 @@ void main() {
                 );
                 expect(menu, findsOneWidget, reason: scope);
                 final menuRect = tester.getRect(menu);
-                final orientation = find.byKey(
+                final orientationText = find.byKey(
                   const ValueKey('community-orientation-fixture'),
                 );
+                final orientationIcon = find.byKey(
+                  const ValueKey('community-orientation-icon-fixture'),
+                );
+                // 名前が入る幅では縮めない名前、入らない幅では縦横の印。
+                final textShown = orientationText.evaluate().isNotEmpty;
+                expect(
+                  textShown || orientationIcon.evaluate().isNotEmpty,
+                  isTrue,
+                  reason: '$scope orientation must show a label or its mark',
+                );
+                final orientation = textShown
+                    ? orientationText
+                    : orientationIcon;
                 final orientationRect = tester.getRect(orientation);
                 expect(
                   orientationRect.right,
@@ -168,13 +181,24 @@ void main() {
                   lessThanOrEqualTo(49),
                   reason: '$scope orientation must fit in the action row',
                 );
-                expect(
-                  tester
-                      .renderObject<RenderParagraph>(orientation)
-                      .didExceedMaxLines,
-                  isFalse,
-                  reason: '$scope orientation must show the full label',
-                );
+                if (textShown) {
+                  final paragraph = tester.renderObject<RenderParagraph>(
+                    orientation,
+                  );
+                  expect(
+                    paragraph.didExceedMaxLines,
+                    isFalse,
+                    reason: '$scope orientation must show the full label',
+                  );
+                  // 字を縮めて押し込まない（描いた幅が字の本来の幅のまま）。
+                  expect(
+                    orientationRect.width,
+                    greaterThanOrEqualTo(
+                      paragraph.getMaxIntrinsicWidth(double.infinity) - 0.5,
+                    ),
+                    reason: '$scope orientation label must not be shrunk',
+                  );
+                }
                 // ︙はカードの右端に寄せる。押せる所（丸の外へ6px）がカードの
                 // 中に収まる分だけ離す（DISC240：カードの余白4px＋右の余白
                 // 6px＋ボタンと丸の差4px）。

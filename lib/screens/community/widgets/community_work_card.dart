@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../../config/font_fallback.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/community_plaza_labels.dart';
 import '../../../services/community_service.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
+import '../../../widgets/first_that_fits.dart';
 
 import 'package:provider/provider.dart';
 
@@ -240,9 +242,13 @@ class CommunityWorkCard extends StatelessWidget {
                             : work.title,
                         maxLines: kCollectionTileNameLines,
                         overflow: TextOverflow.ellipsis,
-                        style: collectionTileCaptionStyle(
+                        style: localizedUserNameStyle(
                           context,
-                        ).copyWith(color: textColor),
+                          work.title,
+                          collectionTileCaptionStyle(
+                            context,
+                          ).copyWith(color: textColor),
+                        ),
                       ),
                     ),
                   ),
@@ -269,9 +275,13 @@ class CommunityWorkCard extends StatelessWidget {
                                     author,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: detailColor,
+                                    style: localizedUserNameStyle(
+                                      context,
+                                      author,
+                                      TextStyle(
+                                        fontSize: 11,
+                                        color: detailColor,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -383,6 +393,10 @@ class CommunityWorkOrientation extends StatelessWidget {
     final label = work.isShort
         ? l10n.communityShortsBadge
         : l10n.communityLandscapeBadge;
+    final style = Theme.of(context).textTheme.labelSmall;
+    // 入らない幅では字を縮めず、縦横の印にする（名前は吹き出しと読み上げ）。
+    // 以前は FittedBox で縮めていて、3列のカードでは「Landscape」が
+    // 5px ほどの読めない字になっていた。
     return Padding(
       padding: const EdgeInsetsDirectional.only(start: 4, end: 1),
       child: Align(
@@ -390,16 +404,25 @@ class CommunityWorkOrientation extends StatelessWidget {
         child: Tooltip(
           message: label,
           excludeFromSemantics: true,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: AlignmentDirectional.centerStart,
-            child: Text(
-              label,
-              key: ValueKey('community-orientation-${work.id}'),
-              maxLines: 1,
-              softWrap: false,
-              style: Theme.of(context).textTheme.labelSmall,
-            ),
+          child: FirstThatFits(
+            children: [
+              Text(
+                label,
+                key: ValueKey('community-orientation-${work.id}'),
+                maxLines: 1,
+                softWrap: false,
+                style: style,
+              ),
+              Semantics(
+                label: label,
+                child: Icon(
+                  work.isShort ? Icons.crop_portrait : Icons.crop_16_9,
+                  key: ValueKey('community-orientation-icon-${work.id}'),
+                  size: 18,
+                  color: style?.color,
+                ),
+              ),
+            ],
           ),
         ),
       ),

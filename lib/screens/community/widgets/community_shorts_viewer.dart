@@ -530,9 +530,13 @@ class _ShortsPage extends StatelessWidget {
                                         work.title,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
+                                        style: localizedUserNameStyle(
+                                          context,
+                                          work.title,
+                                          const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ),
                                     ],
