@@ -8426,7 +8426,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       'Paste clips',
       () {
         int? beforeShift, afterShift;
-        final newRowForType = <_ClipTrackType, int>{};
+        final newRowForClipId = <String, int>{};
         if (strategy == 'before') {
           final earliestConflictStart = conflicts
               .map((c) => c.start)
@@ -8445,26 +8445,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
           afterShift = latestConflictEnd - batchMinStart;
         } else if (strategy == 'newRow') {
           final ps = context.read<ProjectService>();
-          final conflictingTypes = clipboard.clips
-              .where((c) => conflictingClipIds.contains(c.id))
-              .map((c) => c.trackType)
-              .toSet();
-          for (final type in conflictingTypes) {
-            // Speech has its own dedicated row; it must not create or consume
-            // ordinary audio rows when the user chooses the overlap strategy.
-            if (type == _ClipTrackType.audio &&
-                clipboard.clips.any(
-                  (c) => c.trackType == type &&
-                      conflictingClipIds.contains(c.id) &&
-                      c.isReadAloud,
-                )) {
-              newRowForType[type] = 0;
+          final newRowsByType = <_ClipTrackType, int>{};
+          for (final clip in clipboard.clips.where(
+            (c) => conflictingClipIds.contains(c.id),
+          )) {
+            // Speech already has a dedicated row. Ordinary audio keeps its
+            // own row namespace even when both kinds are pasted together.
+            if (clip.isReadAloud) {
+              newRowForClipId[clip.id] = 0;
               continue;
             }
-            final rowKind = _rowKindOf(type);
-            ps.addTrackRow(widget.projectId, sceneId, rowKind);
-            newRowForType[type] =
-                ps.rowNamesOf(widget.projectId, sceneId, rowKind).length - 1;
+            final type = clip.trackType;
+            final row = newRowsByType.putIfAbsent(type, () {
+              final rowKind = _rowKindOf(type);
+              ps.addTrackRow(widget.projectId, sceneId, rowKind);
+              return ps.rowNamesOf(widget.projectId, sceneId, rowKind).length - 1;
+            });
+            newRowForClipId[clip.id] = row;
           }
         }
 
@@ -8477,7 +8474,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             start = (start + afterShift).clamp(0, 1 << 30);
           } else if (strategy == 'newRow' &&
               conflictingClipIds.contains(c.id)) {
-            overrideRow = newRowForType[c.trackType];
+            overrideRow = newRowForClipId[c.id];
           }
           _duplicateClipAt(c, start, overrideTrackRow: overrideRow);
         }
