@@ -108,6 +108,8 @@ class _ProjectFolderEditDialogState extends State<ProjectFolderEditDialog> {
                   Semantics(
                     selected: _color == color,
                     child: IconButton(
+                      // 丸（40）＋上下左右4pxで、押せる所はちょうど48×48。
+                      padding: const EdgeInsets.all(4),
                       tooltip: color == null
                           ? l10n.folderNone
                           : l10n.folderColorOptionSemanticsLabel(
@@ -116,9 +118,12 @@ class _ProjectFolderEditDialogState extends State<ProjectFolderEditDialog> {
                       onPressed: _saving
                           ? null
                           : () => setState(() => _color = color),
+                      // 色の丸は押せる所（48）いっぱいに近い40pxにして、名前の
+                      // 欄の左の端とのずれを4pxに抑え、色も見分けやすくする
+                      // （32pxでは丸が欄より8px内側から並び、間も20px空いた）。
                       icon: Container(
-                        width: 32,
-                        height: 32,
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: color == null ? null : Color(color),
                           shape: BoxShape.circle,
@@ -132,12 +137,12 @@ class _ProjectFolderEditDialogState extends State<ProjectFolderEditDialog> {
                         child: color == null
                             ? Icon(
                                 Icons.block,
-                                size: 16,
+                                size: 18,
                                 color: scheme.onSurfaceVariant,
                               )
                             : _color == color
                             ? Padding(
-                                padding: const EdgeInsets.all(5),
+                                padding: const EdgeInsets.all(8),
                                 child: DecoratedBox(
                                   decoration: BoxDecoration(
                                     color: scheme.surface,
