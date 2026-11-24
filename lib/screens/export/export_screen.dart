@@ -18,12 +18,13 @@ import '../../widgets/labeled_slider.dart';
 import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../config/accent_text_theme.dart';
 import '../../config/font_fallback.dart';
 import '../home/widgets/exported_work_thumbnail_dialog.dart';
 import 'widgets/export_preset_selector.dart';
 import '../../models/export_preset.dart';
 import '../../widgets/fit_or_hide_title.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
 import '../../utils/file_failure_reason.dart';
 import '../../widgets/icon_notice.dart';
 export '../../models/export_preset.dart';
@@ -174,20 +175,29 @@ class _ExportScreenState extends State<ExportScreen> {
       ),
       (ExportFormat.avi, l10n.exportFormatAvi, l10n.exportFormatAviSubtitle),
     ];
-    final presetSection = <Widget>[
-      Semantics(
-        header: true,
+    // 見出しは中身（選ぶもの）より控えめな小さい見出しにし、下の面の文字の
+    // 始まりにそろえる（以前は15pxの太字で、選ぶものより目立っていた）。
+    // 位置と書式は下の面（GroupedSheet）のまとまりの名前と同じ。
+    Widget sectionLabel(String text) => Semantics(
+      header: true,
+      child: Padding(
+        padding: const EdgeInsetsDirectional.only(
+          start: GroupedSheet.rowInset,
+          bottom: 8,
+        ),
         child: Text(
-          l10n.exportPresetSection,
+          text,
           style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
+            fontSize: 13,
+            color: colors.onSurfaceVariant,
             fontFamily: headingFontFamilyFor(locale),
             fontFamilyFallback: headingFontFallbackFor(locale),
           ),
         ),
       ),
-      const SizedBox(height: 8),
+    );
+    final presetSection = <Widget>[
+      sectionLabel(l10n.exportPresetSection),
       ExportPresetSelector(
         value: _preset,
         onChanged: (value) => setState(() => _preset = value),
@@ -200,77 +210,72 @@ class _ExportScreenState extends State<ExportScreen> {
             ? const SizedBox.shrink()
             : Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: MenuCard(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.exportAdvancedSettings,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            fontFamily: headingFontFamilyFor(locale),
-                            fontFamilyFallback: headingFontFallbackFor(locale),
+                child: GroupedSheet(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.exportAdvancedSettings,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              fontFamily: headingFontFamilyFor(locale),
+                              fontFamilyFallback: headingFontFallbackFor(
+                                locale,
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        LabeledSlider(
-                          label: l10n.exportFpsLabel,
-                          value: _customFps.toDouble(),
-                          min: 12,
-                          max: 60,
-                          divisions: 48,
-                          sliderLabel: '$_customFps',
-                          valueText: '$_customFps',
-                          onChanged: (v) =>
-                              setState(() => _customFps = v.round()),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          LabeledSlider(
+                            label: l10n.exportFpsLabel,
+                            value: _customFps.toDouble(),
+                            min: 12,
+                            max: 60,
+                            divisions: 48,
+                            sliderLabel: '$_customFps',
+                            valueText: '$_customFps',
+                            onChanged: (v) =>
+                                setState(() => _customFps = v.round()),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
       ),
     ];
+    // 形式は1枚の面に並べ、行の間は細い線で分ける（以前は1つずつ枠の付いた
+    // カードを7pxずつ空けて積み、選んだ形式は灰色の塗り＋差し色の枠で、
+    // 画面の主役の「書き出し開始」と同じ強さで目立っていた）。選んだ形式は
+    // 丸の印と、題の差し色で示す。
+    final accentText = AccentTextTheme.of(context);
     final formatSection = <Widget>[
-      Semantics(
-        header: true,
-        child: Text(
-          l10n.exportFormatSection,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            fontFamily: headingFontFamilyFor(locale),
-            fontFamilyFallback: headingFontFallbackFor(locale),
-          ),
-        ),
-      ),
-      const SizedBox(height: 9),
       RadioGroup<ExportFormat>(
         groupValue: _format,
         onChanged: (v) => setState(() => _format = v!),
-        child: Column(
-          spacing: 7,
+        child: GroupedSheet(
+          title: l10n.exportFormatSection,
           children: [
             for (final (format, title, description) in formats)
               RadioListTile<ExportFormat>(
                 value: format,
                 selected: _format == format,
-                selectedTileColor: colors.surfaceContainerHigh,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: _format == format
-                        ? colors.primary
-                        : colors.outlineVariant,
-                  ),
+                // 選んだ行も面の色のまま（塗りで選んだと示さない）。
+                selectedTileColor: Colors.transparent,
+                contentPadding: const EdgeInsetsDirectional.only(
+                  start: 8,
+                  end: 16,
                 ),
                 title: Text(
                   title,
                   style: TextStyle(
-                    color: colors.onSurface,
+                    fontSize: 15,
+                    height: 1.3,
+                    color: _format == format ? accentText : colors.onSurface,
                     fontFamily: headingFontFamilyFor(locale),
                     fontFamilyFallback: headingFontFallbackFor(locale),
                   ),
@@ -278,6 +283,8 @@ class _ExportScreenState extends State<ExportScreen> {
                 subtitle: Text(
                   description,
                   style: TextStyle(
+                    fontSize: 13,
+                    height: 1.45,
                     color: colors.onSurfaceVariant,
                     fontFamily: bodyFontFamilyFor(locale),
                     fontFamilyFallback: bodyFontFallbackFor(locale),
