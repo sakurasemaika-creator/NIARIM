@@ -2545,9 +2545,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // The back button has two glyphs. Give the project name a full row
-          // whenever the controls themselves take up the available width.
-          if (constraints.maxWidth < 304) {
+          // ボタン（キャンバスへ戻る〔2つの印〕・ホーム・取り消し・やり直し・
+          // 三点・ヘルプ）を1行に並べると作品名に残る幅。作品名が数文字しか
+          // 出ない幅（360pxで「散…」の1字だった）では2行にし、1行目に
+          // 戻る・作品名・ホーム、2行目の左に取り消し・やり直し（キャンバスの
+          // 上部バーと同じ側）、右に三点・ヘルプを置く。
+          const buttons = 58.0 + 5 * kMinInteractiveDimension;
+          final titleRoom = constraints.maxWidth - buttons;
+          if (titleRoom < MediaQuery.textScalerOf(context).scale(112)) {
             return Column(
               children: [
                 Row(
@@ -2558,8 +2563,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ],
                 ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: actions,
+                  children: [
+                    ...actions.take(2),
+                    const Spacer(),
+                    ...actions.skip(2),
+                  ],
                 ),
               ],
             );
@@ -3000,7 +3008,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return PopupMenuButton<Object>(
       key: const Key('timelineAddMaterialMenu'),
       style: style,
-      icon: const Icon(Icons.add_circle_outline, size: 18),
+      // PCの上部バーでは隣のボタン（PcToolButton）と同じ18px、スマホの
+      // ツールバーでは隣のボタンと同じ20px。
+      icon: Icon(Icons.add_circle_outline, size: style == null ? 20 : 18),
       tooltip: l10n.timelineAddMaterialTooltip,
       onSelected: (action) {
         if (action is _ClipTrackType) {
@@ -3140,22 +3150,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final controls = <Widget>[
       _addMaterialMenu(l10n),
       IconButton(
-        icon: const Icon(Icons.movie_filter, size: 18),
+        icon: const Icon(Icons.movie_filter, size: 20),
         onPressed: _showEffectFilterDialog,
         tooltip: l10n.timelineEffectFilterLabel,
       ),
       IconButton(
-        icon: const Icon(Icons.camera, size: 18),
+        icon: const Icon(Icons.camera, size: 20),
         onPressed: _addCameraKf,
         tooltip: l10n.timelineAddCameraKfTooltip,
       ),
       IconButton(
-        icon: const Icon(Icons.push_pin_outlined, size: 18),
+        icon: const Icon(Icons.push_pin_outlined, size: 20),
         onPressed: _showAddMarkerDialog,
         tooltip: l10n.timelineMarkerTrackLabel,
       ),
       IconButton(
-        icon: const Icon(Icons.layers_outlined, size: 18),
+        icon: const Icon(Icons.layers_outlined, size: 20),
         onPressed: _selectedSceneId == null
             ? null
             : () => setState(() {
@@ -3165,14 +3175,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
         tooltip: l10n.timelineStackOrderTitle,
       ),
     ];
+    // 帯は画面の地の色のまま、上下の細い線だけで区切る（以前は灰色の面の
+    // 帯で、プレビューとタイムラインの間に別の面がもう1段できていた）。
+    final lines = BorderSide(
+      color: Theme.of(context).colorScheme.outlineVariant,
+    );
     return Container(
-      height: 49,
+      height: 50,
       padding: EdgeInsets.symmetric(horizontal: width <= 360 ? 0 : 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        border: Border(
-          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-        ),
+        border: Border(top: lines, bottom: lines),
       ),
       child: Row(
         children: [
@@ -3194,7 +3206,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             height: 48,
             child: IconButton(
               key: const Key('timelineExportButton'),
-              icon: const Icon(Icons.upload_file, size: 18),
+              icon: const Icon(Icons.upload_file, size: 20),
               onPressed: () => context.push('/export/${widget.projectId}'),
               tooltip: l10n.transferExport,
             ),
@@ -4436,14 +4448,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                                 ),
                                               ),
                                             Positioned(
-                                              left: 1,
-                                              bottom: 1,
+                                              // 今のフレームの赤枠（3px）の内側に
+                                              // 出す（角に置いていたので、今の
+                                              // フレームでは番号が枠に隠れた）。
+                                              left: 4,
+                                              bottom: 3,
                                               // Outlined, to read over any
                                               // project background colour.
                                               child: Text(
                                                 '${index + 1}',
                                                 style: TextStyle(
-                                                  fontSize: 8,
+                                                  fontSize: 9,
                                                   color: ThemeService
                                                       .activeColorScheme
                                                       .onSurface,
