@@ -2476,24 +2476,28 @@ class CanvasAreaState extends State<CanvasArea> {
         widget.project?.makingEnabled != true) {
       return;
     }
-    final scene = _projects.sceneOf(project.id, widget.sceneId);
+    // Freeze the target before any asynchronous work so a quick frame switch
+    // cannot attach the captured pixels to the wrong frame in the manifest.
+    final sceneId = widget.sceneId;
+    final frameIndex = widget.currentFrame;
+    final scene = _projects.sceneOf(project.id, sceneId);
     if (scene == null ||
-        widget.currentFrame < 0 ||
-        widget.currentFrame >= scene.frames.length) {
+        frameIndex < 0 ||
+        frameIndex >= scene.frames.length) {
       return;
     }
     final stacked = _projects.stackedLayersOf(
       project.id,
-      scene.id,
-      widget.currentFrame,
+      sceneId,
+      frameIndex,
     );
     final composite = await LayerCompositor.composite(
       _tileManager,
       stacked.layers,
       (layer) => _projects.tileKeyFor(
         project.id,
-        scene.id,
-        widget.currentFrame,
+        sceneId,
+        frameIndex,
         layer.id,
       ),
       _tileManager.canvasWidth,
@@ -2563,11 +2567,15 @@ class CanvasAreaState extends State<CanvasArea> {
         captured.dispose();
       }
       // Recording may have been switched off while compositing or encoding.
-      if (!mounted || widget.project?.makingEnabled != true) return;
+      if (!mounted ||
+          widget.project?.id != project.id ||
+          widget.project?.makingEnabled != true) {
+        return;
+      }
       final saved = await MakingService.recordSnapshot(
         projectId: project.id,
-        sceneId: scene.id,
-        frameIndex: widget.currentFrame,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
         bytes: jpeg,
       );
       if (!saved && !_makingLimitNoticeShown && mounted) {
