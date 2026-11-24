@@ -14,12 +14,11 @@ class AndroidTtsVoice {
   final String locale;
   final int quality;
 
-  factory AndroidTtsVoice.fromMap(Map<Object?, Object?> map) =>
-      AndroidTtsVoice(
-        name: map['name'] as String,
-        locale: map['locale'] as String? ?? '',
-        quality: map['quality'] as int? ?? 0,
-      );
+  factory AndroidTtsVoice.fromMap(Map<Object?, Object?> map) => AndroidTtsVoice(
+    name: map['name'] as String,
+    locale: map['locale'] as String? ?? '',
+    quality: map['quality'] as int? ?? 0,
+  );
 
   String get displayName => '$locale · $name';
 }
@@ -28,8 +27,9 @@ class AndroidTtsVoice {
 class AndroidTtsService {
   AndroidTtsService._();
   static final AndroidTtsService instance = AndroidTtsService._();
-  static const MethodChannel _channel =
-      MethodChannel('com.niarim.niarim/text_to_speech');
+  static const MethodChannel _channel = MethodChannel(
+    'com.niarim.niarim/text_to_speech',
+  );
 
   Future<void> openVoiceSettings() async {
     await _channel.invokeMethod<bool>('openVoiceSettings');
@@ -54,8 +54,9 @@ class AndroidTtsService {
     if (trimmed.isEmpty) throw ArgumentError.value(text, 'text');
     if (trimmed.length > 3500) throw ArgumentError('Text is too long.');
     final temp = await getTemporaryDirectory();
-    final output = File(temp.path + '/niarim_tts_' +
-        DateTime.now().microsecondsSinceEpoch.toString() + '.wav');
+    final output = File(
+      '${temp.path}/niarim_tts_${DateTime.now().microsecondsSinceEpoch}.wav',
+    );
     await output.parent.create(recursive: true);
     final path = await _channel.invokeMethod<String>('synthesizeToFile', {
       'text': trimmed,

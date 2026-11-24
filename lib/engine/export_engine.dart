@@ -6,7 +6,7 @@ import 'dart:ui' as ui;
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_session.dart';
 import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
-import 'package:flutter/foundation.dart' show compute, visibleForTesting;
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
@@ -117,7 +117,6 @@ class ExportTiming {
 /// (39% of a 480×360 frame). The octree quantizer keeps the frame's own
 /// colours exactly and, without dithering, flat areas stay flat. (Its
 /// dithering mode darkens colours in this version, so it is not used.)
-@visibleForTesting
 img.GifEncoder newExportGifEncoder() => img.GifEncoder(
   quantizerType: img.QuantizerType.octree,
   dither: img.DitherKernel.none,

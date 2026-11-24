@@ -1599,6 +1599,10 @@ void main() {
           1,
           '打ち終わってから文字の素材を描き直す',
         ),
+        'lib/screens/project/making_screen.dart': (
+          1,
+          'メイキングの再生で1/8秒ごとに次のコマへ進める',
+        ),
         'lib/services/api/niarim_api_client.dart': (1, '通信をやり直すまでの間'),
         'lib/services/advertising_service.dart': (1, '広告読み込みの待ち時間の上限'),
         'lib/services/autosave_service.dart': (2, '自動保存の間隔と、変更の後のまとめ'),

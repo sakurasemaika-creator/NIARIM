@@ -43,21 +43,19 @@ abstract final class MakingService {
     }
     final documents = await getApplicationDocumentsDirectory();
     final dir = Directory(
-      documents.path + '/niarim/projects/' + projectId + '/Making',
+      '${documents.path}/niarim/projects/$projectId/Making',
     );
     await dir.create(recursive: true);
     return dir;
   }
 
   static String _snapshotName(int number) =>
-      'making_' + number.toString().padLeft(6, '0') + '.jpg';
+      'making_${number.toString().padLeft(6, '0')}.jpg';
 
   static bool _isSnapshotName(String name) =>
       RegExp(r'^making_[0-9]{6}\.jpg$').hasMatch(name);
 
-  static Future<Map<String, dynamic>> _emptyManifest(
-    Directory dir,
-  ) async {
+  static Future<Map<String, dynamic>> _emptyManifest(Directory dir) async {
     final recovered = <dynamic>[];
     var recoveredBytes = 0;
     final files = <File>[];
@@ -86,11 +84,9 @@ abstract final class MakingService {
     };
   }
 
-  static Future<Map<String, dynamic>> _readManifest(
-    String projectId,
-  ) async {
+  static Future<Map<String, dynamic>> _readManifest(String projectId) async {
     final dir = await _directory(projectId);
-    final file = File(dir.path + '/making.json');
+    final file = File('${dir.path}/making.json');
     if (!await file.exists()) return _emptyManifest(dir);
 
     Map<String, dynamic>? decoded;
@@ -121,8 +117,7 @@ abstract final class MakingService {
     // loss, and it also recovers snapshots saved just before a crash.
     final files = <File>[];
     await for (final entry in dir.list(followLinks: false)) {
-      if (entry is File &&
-          _isSnapshotName(entry.uri.pathSegments.last)) {
+      if (entry is File && _isSnapshotName(entry.uri.pathSegments.last)) {
         files.add(entry);
       }
     }
@@ -138,7 +133,8 @@ abstract final class MakingService {
       final capturedAt = metadata?['capturedAt'] as String?;
       snapshots.add({
         'file': name,
-        'capturedAt': DateTime.tryParse(capturedAt ?? '')?.toIso8601String() ??
+        'capturedAt':
+            DateTime.tryParse(capturedAt ?? '')?.toIso8601String() ??
             stat.modified.toIso8601String(),
         'sceneId': metadata?['sceneId'] as String? ?? '',
         'frameIndex': metadata?['frameIndex'] as int? ?? 0,
@@ -148,8 +144,8 @@ abstract final class MakingService {
     return {
       'version': 1,
       'sizeBytes': sizeBytes,
-      'limitReached': decoded['limitReached'] == true ||
-          sizeBytes >= maxBytesPerProject,
+      'limitReached':
+          decoded['limitReached'] == true || sizeBytes >= maxBytesPerProject,
       'snapshots': snapshots,
     };
   }
@@ -159,8 +155,8 @@ abstract final class MakingService {
     Map<String, dynamic> manifest,
   ) async {
     final dir = await _directory(projectId);
-    final file = File(dir.path + '/making.json');
-    final temporary = File(file.path + '.tmp');
+    final file = File('${dir.path}/making.json');
+    final temporary = File('${file.path}.tmp');
     await temporary.writeAsString(jsonEncode(manifest), flush: true);
     // On Android this is an atomic rename over the old index.
     await temporary.rename(file.path);
@@ -191,12 +187,12 @@ abstract final class MakingService {
         .toSet();
     var number = snapshots.length + 1;
     while (usedNames.contains(_snapshotName(number)) ||
-        await File(dir.path + '/' + _snapshotName(number)).exists()) {
+        await File('${dir.path}/${_snapshotName(number)}').exists()) {
       number++;
     }
     final name = _snapshotName(number);
-    final target = File(dir.path + '/' + name);
-    final staging = File(target.path + '.tmp');
+    final target = File('${dir.path}/$name');
+    final staging = File('${target.path}.tmp');
     await staging.writeAsBytes(bytes, flush: true);
     await staging.rename(target.path);
 
@@ -221,15 +217,13 @@ abstract final class MakingService {
       if (raw is! Map) continue;
       final name = raw['file'];
       if (name is! String || !_isSnapshotName(name)) continue;
-      final file = File(dir.path + '/' + name);
+      final file = File('${dir.path}/$name');
       if (!await file.exists()) continue;
-      final capturedAt =
-          DateTime.tryParse(raw['capturedAt'] as String? ?? '');
+      final capturedAt = DateTime.tryParse(raw['capturedAt'] as String? ?? '');
       snapshots.add(
         MakingSnapshot(
           path: file.path,
-          capturedAt:
-              capturedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+          capturedAt: capturedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
           sceneId: raw['sceneId'] as String? ?? '',
           frameIndex: raw['frameIndex'] as int? ?? 0,
           sizeBytes: raw['sizeBytes'] as int? ?? await file.length(),

@@ -16,6 +16,7 @@ import '../../services/hw_video_encoder.dart';
 import '../../services/making_service.dart';
 import '../../services/project_service.dart';
 import '../../utils/making_strings.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 enum _MakingFormat { mp4, gif, webm, avi }
 
@@ -132,8 +133,7 @@ class _MakingScreenState extends State<MakingScreen> {
         SnackBar(content: Text(MakingStrings.historyDeleted(context))),
       );
     } catch (error, stackTrace) {
-      debugPrint('Could not delete making history: ' + error.toString() +
-          '\n' + stackTrace.toString());
+      debugPrint('Could not delete making history: $error\n$stackTrace');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(MakingStrings.deleteFailed(context))),
@@ -161,10 +161,8 @@ class _MakingScreenState extends State<MakingScreen> {
       final height = firstImage.height;
       const fps = 8;
       final exportDirectory = await ExportEngine.exportsDir();
-      final outputPath = exportDirectory.path +
-          '/Making_' + widget.projectId + '_' +
-          DateTime.now().millisecondsSinceEpoch.toString() + '.' +
-          _extension(_format);
+      final outputPath =
+          '${exportDirectory.path}/Making_${widget.projectId}_${DateTime.now().millisecondsSinceEpoch}.${_extension(_format)}';
       partialOutput = outputPath;
 
       switch (_format) {
@@ -180,8 +178,10 @@ class _MakingScreenState extends State<MakingScreen> {
           final encoder = newExportGifEncoder();
           // GIF palette frames remain resident in the encoder. Downsample and
           // cap this format to keep export memory bounded on phones.
-          final step =
-              (snapshots.length / 50).ceil().clamp(1, snapshots.length).toInt();
+          final step = (snapshots.length / 50)
+              .ceil()
+              .clamp(1, snapshots.length)
+              .toInt();
           for (var i = 0; i < snapshots.length; i += step) {
             final bytes = await File(snapshots[i].path).readAsBytes();
             final decoded = img.decodeImage(bytes);
@@ -191,9 +191,13 @@ class _MakingScreenState extends State<MakingScreen> {
                 ? img.copyResize(
                     decoded,
                     width: (decoded.width * 360 / maxSide)
-                        .round().clamp(1, 360).toInt(),
+                        .round()
+                        .clamp(1, 360)
+                        .toInt(),
                     height: (decoded.height * 360 / maxSide)
-                        .round().clamp(1, 360).toInt(),
+                        .round()
+                        .clamp(1, 360)
+                        .toInt(),
                   )
                 : decoded;
             encoder.addFrame(gifFrame, duration: 100 ~/ fps);
@@ -206,9 +210,13 @@ class _MakingScreenState extends State<MakingScreen> {
                 ? img.copyResize(
                     lastDecoded,
                     width: (lastDecoded.width * 360 / maxSide)
-                        .round().clamp(1, 360).toInt(),
+                        .round()
+                        .clamp(1, 360)
+                        .toInt(),
                     height: (lastDecoded.height * 360 / maxSide)
-                        .round().clamp(1, 360).toInt(),
+                        .round()
+                        .clamp(1, 360)
+                        .toInt(),
                   )
                 : lastDecoded;
             encoder.addFrame(finalFrame, duration: 100 ~/ fps);
@@ -222,14 +230,12 @@ class _MakingScreenState extends State<MakingScreen> {
         case _MakingFormat.avi:
           final temp = await getTemporaryDirectory();
           staging = Directory(
-            temp.path + '/niarim_making_export_' +
-                DateTime.now().microsecondsSinceEpoch.toString(),
+            '${temp.path}/niarim_making_export_${DateTime.now().microsecondsSinceEpoch}',
           );
           await staging.create(recursive: true);
           for (var i = 0; i < snapshots.length; i++) {
             final target = File(
-              staging.path + '/frame_' +
-                  i.toString().padLeft(6, '0') + '.jpg',
+              '${staging.path}/frame_${i.toString().padLeft(6, '0')}.jpg',
             );
             await File(snapshots[i].path).copy(target.path);
           }
@@ -238,27 +244,28 @@ class _MakingScreenState extends State<MakingScreen> {
             '-framerate',
             fps.toString(),
             '-i',
-            staging.path + '/frame_%06d.jpg',
+            '${staging.path}/frame_%06d.jpg',
           ];
           // YUV 4:2:0 encoders need even dimensions on some devices.
           args.addAll(['-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2']);
           if (_format == _MakingFormat.webm) {
             args.addAll([
-              '-c:v', 'libvpx-vp9',
-              '-pix_fmt', 'yuv420p',
-              '-b:v', '2M',
+              '-c:v',
+              'libvpx-vp9',
+              '-pix_fmt',
+              'yuv420p',
+              '-b:v',
+              '2M',
             ]);
           } else {
-            args.addAll([
-              '-c:v', 'mjpeg',
-              '-q:v', '3',
-              '-pix_fmt', 'yuvj420p',
-            ]);
+            args.addAll(['-c:v', 'mjpeg', '-q:v', '3', '-pix_fmt', 'yuvj420p']);
           }
           args.add(outputPath);
           final session = await FFmpegKit.executeWithArguments(args);
           if (!ReturnCode.isSuccess(await session.getReturnCode())) {
-            throw StateError('Video encoder failed: ' + (await session.getOutput() ?? ''));
+            throw StateError(
+              'Video encoder failed: ${await session.getOutput() ?? ''}',
+            );
           }
       }
 
@@ -273,14 +280,14 @@ class _MakingScreenState extends State<MakingScreen> {
         SnackBar(content: Text(MakingStrings.exportComplete(context))),
       );
     } catch (error, stackTrace) {
-      debugPrint('Making export failed: ' + error.toString() + '\n' + stackTrace.toString());
+      debugPrint('Making export failed: $error\n$stackTrace');
       if (partialOutput != null) {
         try {
-          final partial = File(partialOutput!);
+          final partial = File(partialOutput);
           if (await partial.exists()) await partial.delete();
           ExportStorage.invalidate();
         } catch (cleanupError) {
-          debugPrint('Could not remove partial making export: ' + cleanupError.toString());
+          debugPrint('Could not remove partial making export: $cleanupError');
         }
       }
       if (!mounted) return;
@@ -292,7 +299,9 @@ class _MakingScreenState extends State<MakingScreen> {
         try {
           if (await staging.exists()) await staging.delete(recursive: true);
         } catch (cleanupError) {
-          debugPrint('Could not remove making export staging files: ' + cleanupError.toString());
+          debugPrint(
+            'Could not remove making export staging files: $cleanupError',
+          );
         }
       }
       if (mounted) setState(() => _exporting = false);
@@ -310,178 +319,178 @@ class _MakingScreenState extends State<MakingScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final project = context.watch<ProjectService>().projects
+    final project = context
+        .watch<ProjectService>()
+        .projects
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
     final snapshots = _history?.snapshots ?? const <MakingSnapshot>[];
     return Scaffold(
-      appBar: AppBar(title: Text(MakingStrings.makingTitle(context))),
+      appBar: AppBar(title: FitOrHideTitle(MakingStrings.makingTitle(context))),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : snapshots.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.movie_outlined, size: 44),
-                        const SizedBox(height: 16),
-                        Text(
-                          MakingStrings.makingEmpty(context),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        if (project != null)
-                          SwitchListTile(
-                            title: Text(MakingStrings.recordProject(context)),
-                            value: project.makingEnabled,
-                            onChanged: (value) =>
-                                context.read<ProjectService>().setMakingEnabled(
-                                  project.id,
-                                  value,
-                                ),
-                          ),
-                      ],
-                    ),
-                  ),
-                )
-              : Column(
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Container(
-                        width: double.infinity,
-                        color: Colors.black,
-                        alignment: Alignment.center,
-                        child: Image.file(
-                          File(snapshots[_index.clamp(0, snapshots.length - 1).toInt()].path),
-                          key: ValueKey(
-                            snapshots[_index.clamp(0, snapshots.length - 1).toInt()].path,
-                          ),
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
-                                Icons.broken_image_outlined,
-                                color: Colors.white,
-                                size: 48,
-                              ),
-                        ),
+                    const Icon(Icons.movie_outlined, size: 44),
+                    const SizedBox(height: 16),
+                    Text(
+                      MakingStrings.makingEmpty(context),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    if (project != null)
+                      SwitchListTile(
+                        title: Text(MakingStrings.recordProject(context)),
+                        value: project.makingEnabled,
+                        onChanged: (value) => context
+                            .read<ProjectService>()
+                            .setMakingEnabled(project.id, value),
+                      ),
+                  ],
+                ),
+              ),
+            )
+          : Column(
+              children: [
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    color: Colors.black,
+                    alignment: Alignment.center,
+                    child: Image.file(
+                      File(
+                        snapshots[_index.clamp(0, snapshots.length - 1).toInt()]
+                            .path,
+                      ),
+                      key: ValueKey(
+                        snapshots[_index.clamp(0, snapshots.length - 1).toInt()]
+                            .path,
+                      ),
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.broken_image_outlined,
+                        color: Colors.white,
+                        size: 48,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                      child: Column(
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Column(
+                    children: [
+                      Text(
+                        MakingStrings.frameCounter(
+                          context,
+                          _index + 1,
+                          snapshots.length,
+                        ),
+                      ),
+                      Slider(
+                        value: _index.toDouble(),
+                        min: 0,
+                        max: (snapshots.length - 1).toDouble(),
+                        divisions: snapshots.length > 1
+                            ? snapshots.length - 1
+                            : null,
+                        onChanged: _playing || snapshots.length < 2
+                            ? null
+                            : (value) => setState(() => _index = value.round()),
+                      ),
+                      Row(
                         children: [
-                          Text(
-                            MakingStrings.frameCounter(
-                              context,
-                              _index + 1,
-                              snapshots.length,
+                          IconButton(
+                            icon: Icon(
+                              _playing ? Icons.pause : Icons.play_arrow,
                             ),
-                          ),
-                          Slider(
-                            value: _index.toDouble(),
-                            min: 0,
-                            max: (snapshots.length - 1).toDouble(),
-                            divisions: snapshots.length > 1
-                                ? snapshots.length - 1
-                                : null,
-                            onChanged: _playing || snapshots.length < 2
+                            onPressed: _exporting || snapshots.length < 2
                                 ? null
-                                : (value) => setState(
-                                    () => _index = value.round(),
-                                  ),
+                                : _togglePlayback,
+                            tooltip: _playing
+                                ? l10n.commonPause
+                                : l10n.commonPlay,
                           ),
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  _playing ? Icons.pause : Icons.play_arrow,
-                                ),
-                                onPressed: _exporting || snapshots.length < 2
-                                    ? null
-                                    : _togglePlayback,
-                                tooltip: _playing
-                                    ? l10n.commonPause
-                                    : l10n.commonPlay,
-                              ),
-                              const Spacer(),
-                              Text(
-                                _history!.sizeBytes < 1024 * 1024
-                                    ? (_history!.sizeBytes / 1024).round().toString() + ' KB'
-                                    : (_history!.sizeBytes / (1024 * 1024))
-                                        .toStringAsFixed(1) + ' MB',
-                              ),
-                            ],
-                          ),
-                          if (_history?.limitReached == true)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: Text(
-                                MakingStrings.storageLimit(context),
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
-                              ),
-                            ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: DropdownButtonFormField<_MakingFormat>(
-                                  value: _format,
-                                  isExpanded: true,
-                                  decoration: InputDecoration(
-                                    labelText: l10n.exportFormatSection,
-                                    border: const OutlineInputBorder(),
-                                  ),
-                                  items: [
-                                    for (final format in _MakingFormat.values)
-                                      DropdownMenuItem(
-                                        value: format,
-                                        child: Text(_formatName(l10n, format)),
-                                      ),
-                                  ],
-                                  onChanged: _exporting
-                                      ? null
-                                      : (value) {
-                                          if (value != null) {
-                                            setState(() => _format = value);
-                                          }
-                                        },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              FilledButton.icon(
-                                onPressed: _exporting || snapshots.length < 2
-                                    ? null
-                                    : _export,
-                                icon: _exporting
-                                    ? const SizedBox.square(
-                                        dimension: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Icon(Icons.file_download_outlined),
-                                label: Text(MakingStrings.exportLabel(context)),
-                              ),
-                            ],
+                          const Spacer(),
+                          Text(
+                            _history!.sizeBytes < 1024 * 1024
+                                ? '${(_history!.sizeBytes / 1024).round()} KB'
+                                : '${(_history!.sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB',
                           ),
                         ],
                       ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton.icon(
-                        key: const Key('makingDeleteHistoryButton'),
-                        onPressed: _exporting ? null : _deleteHistory,
-                        icon: const Icon(Icons.delete_outline),
-                        label: Text(MakingStrings.deleteHistory(context)),
+                      if (_history?.limitReached == true)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            MakingStrings.storageLimit(context),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<_MakingFormat>(
+                              initialValue: _format,
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                labelText: l10n.exportFormatSection,
+                                border: const OutlineInputBorder(),
+                              ),
+                              items: [
+                                for (final format in _MakingFormat.values)
+                                  DropdownMenuItem(
+                                    value: format,
+                                    child: Text(_formatName(l10n, format)),
+                                  ),
+                              ],
+                              onChanged: _exporting
+                                  ? null
+                                  : (value) {
+                                      if (value != null) {
+                                        setState(() => _format = value);
+                                      }
+                                    },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          FilledButton.icon(
+                            onPressed: _exporting || snapshots.length < 2
+                                ? null
+                                : _export,
+                            icon: _exporting
+                                ? const SizedBox.square(
+                                    dimension: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.file_download_outlined),
+                            label: Text(MakingStrings.exportLabel(context)),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
+                    ],
+                  ),
                 ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    key: const Key('makingDeleteHistoryButton'),
+                    onPressed: _exporting ? null : _deleteHistory,
+                    icon: const Icon(Icons.delete_outline),
+                    label: Text(MakingStrings.deleteHistory(context)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
     );
   }
 }

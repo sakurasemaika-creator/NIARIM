@@ -404,7 +404,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 key: const Key('projectDetailViewMaking'),
-                onPressed: () => context.push('/making/' + widget.projectId),
+                onPressed: () => context.push('/making/${widget.projectId}'),
                 icon: const Icon(Icons.movie_outlined),
                 label: Text(MakingStrings.viewMaking(context)),
                 style: OutlinedButton.styleFrom(
@@ -418,10 +418,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 title: Text(MakingStrings.recordProject(context)),
                 subtitle: Text(MakingStrings.recordProjectHint(context)),
                 value: project.makingEnabled,
-                onChanged: (value) => projectService.setMakingEnabled(
-                  project.id,
-                  value,
-                ),
+                onChanged: (value) =>
+                    projectService.setMakingEnabled(project.id, value),
               ),
               const SizedBox(height: 16),
               // フォルダ・タグ・お気に入り・共有・ループのクイックアクセス
