@@ -1005,9 +1005,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         onTap: enabled ? () => _toggle(target) : null,
         // 題と価格の2行の行（CheckboxListTileの2行の行と同じ高さ）。
         minTileHeight: 72,
-        // 一覧は画面の余白（16px）の内側にあるので、行の左の余白は取らない
-        // （取ると見出し・区切り線より16px内側にチェックボックスが寄った）。
-        contentPadding: const EdgeInsetsDirectional.only(end: 8),
+        // 面の中の行。チェックボックス（押せる所40px、印18px）の印が面の
+        // 字の始まり（16px）の近くに来るよう、左は4pxだけ空ける。
+        contentPadding: const EdgeInsetsDirectional.only(start: 4, end: 8),
         title: ActionBesideOrBelow(
           actionFirst: true,
           gap: 16,
@@ -1161,7 +1161,6 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   Widget build(BuildContext context) {
     final t = RewardUnlockLabels.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
     final quote = _quote();
     final referenceTotal = _selected.fold<int>(
       0,
@@ -1368,16 +1367,24 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               messageText(l10n.premiumPackPriceBasis),
-              _targetTile(context, t, CoinUnlockTarget.fullPremium),
-              Divider(color: scheme.outlineVariant),
-              for (final target in _standardTargets)
-                _targetTile(context, t, target),
-              Divider(color: scheme.outlineVariant),
-              for (final target in _placementTargets)
-                _targetTile(context, t, target),
-              Divider(color: scheme.outlineVariant),
-              for (final target in _bundles) _targetTile(context, t, target),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+              // 特典はまとまり（コンプリートパック・機能・広告なし・すべての
+              // 広告なし）ごとに1枚の面に並べ、行の間は細い線で区切る
+              // （以前は用紙の上に行が並び、まとまりの間だけ線があった）。
+              for (final (index, group) in [
+                [CoinUnlockTarget.fullPremium],
+                _standardTargets,
+                _placementTargets,
+                _bundles,
+              ].indexed) ...[
+                if (index > 0) const SizedBox(height: 12),
+                GroupedSheet(
+                  children: [
+                    for (final target in group) _targetTile(context, t, target),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 24),
               GroupedSheet(
                 children: [
                   Padding(
