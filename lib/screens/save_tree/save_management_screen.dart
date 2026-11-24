@@ -15,7 +15,9 @@ import '../../widgets/confirm_delete.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/action_beside_or_below.dart';
+import '../../widgets/grouped_sheet.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/menu_surface.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/responsive.dart';
@@ -31,7 +33,6 @@ import 'widgets/save_rename_button.dart';
 import 'widgets/save_screen_app_bar.dart';
 import 'widgets/save_slot_title.dart';
 import '../../config/font_fallback.dart';
-import '../../config/accent_text_theme.dart';
 import '../../utils/file_failure_reason.dart';
 import '../../widgets/icon_notice.dart';
 
@@ -111,46 +112,71 @@ class _GameStyleSlotScreenState extends State<_GameStyleSlotScreen> {
                 ? AutosaveList(projectId: projectId)
                 : desktopCentered(
                     context,
-                    ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 10,
-                      ),
-                      itemCount: saveService.slotMax,
-                      itemBuilder: (context, slotIndex) {
-                        final node = bySlot[slotIndex];
-                        return _GameSaveSlotTile(
-                          key: ValueKey('manual-save-slot-$slotIndex'),
-                          projectId: projectId,
-                          slotIndex: slotIndex,
-                          memo: saveService.slotDisplayMemoOf(
-                            projectId,
-                            slotIndex,
+                    // スロットは1枚の面（メニューの背景色・細い線・角16、
+                    // 影なし）に並べ、行の間は細い線で分ける（以前はスロット
+                    // ごとに影と枠の付いたカードを隙間を空けて積み、保存の
+                    // あるスロットだけ影が付いていた）。行は今までどおり
+                    // 見える分だけ作る。
+                    CustomScrollView(
+                      slivers: [
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                          sliver: DecoratedSliver(
+                            decoration: _slotSheetDecoration(context),
+                            sliver: SliverList.separated(
+                              itemCount: saveService.slotMax,
+                              separatorBuilder: (context, _) => const Divider(
+                                height: 1,
+                                thickness: 1,
+                                indent: GroupedSheet.rowInset,
+                                endIndent: GroupedSheet.rowInset,
+                              ),
+                              itemBuilder: (context, slotIndex) {
+                                final node = bySlot[slotIndex];
+                                return _GameSaveSlotTile(
+                                  key: ValueKey('manual-save-slot-$slotIndex'),
+                                  isFirst: slotIndex == 0,
+                                  isLast: slotIndex == saveService.slotMax - 1,
+                                  projectId: projectId,
+                                  slotIndex: slotIndex,
+                                  memo: saveService.slotDisplayMemoOf(
+                                    projectId,
+                                    slotIndex,
+                                  ),
+                                  node: node,
+                                  listUnread: saveService.saveListUnreadable(
+                                    projectId,
+                                  ),
+                                  // メモ＋ペン＝書き込み、ノート＝読み込み、ゴミ箱＝削除。
+                                  // 3つを全スロットへ常に出し、使えない操作は無効化して
+                                  // 見せる（空スロットは読み込み・削除ができない、
+                                  // 読み込みは確認してから行う）。
+                                  onWrite: () => _writeToSlot(
+                                    context,
+                                    saveService,
+                                    slotIndex,
+                                    node,
+                                  ),
+                                  onLoad: node == null
+                                      ? null
+                                      : () => _confirmAndRestore(
+                                          context,
+                                          saveService,
+                                          node,
+                                        ),
+                                  onDelete: node == null
+                                      ? null
+                                      : () => _deleteSlot(
+                                          context,
+                                          saveService,
+                                          node,
+                                        ),
+                                );
+                              },
+                            ),
                           ),
-                          node: node,
-                          listUnread: saveService.saveListUnreadable(projectId),
-                          // メモ＋ペン＝書き込み、ノート＝読み込み、ゴミ箱＝削除。
-                          // 3つを全スロットへ常に出し、使えない操作は無効化して
-                          // 見せる（空スロットは読み込み・削除ができない、
-                          // 読み込みは確認してから行う）。
-                          onWrite: () => _writeToSlot(
-                            context,
-                            saveService,
-                            slotIndex,
-                            node,
-                          ),
-                          onLoad: node == null
-                              ? null
-                              : () => _confirmAndRestore(
-                                  context,
-                                  saveService,
-                                  node,
-                                ),
-                          onDelete: node == null
-                              ? null
-                              : () => _deleteSlot(context, saveService, node),
-                        );
-                      },
+                        ),
+                      ],
                     ),
                   ),
           ),
@@ -547,6 +573,20 @@ class _SlotConfirmationSummary extends StatelessWidget {
 /// Three explicit actions are available for every slot. A phone-sized row
 /// moves the controls beneath the preview, preserving readable names while
 /// providing separated, at least 56dp-wide touch targets.
+/// スロットを載せる面（[GroupedSheet]と同じ：メニューの背景色・細い線・角16）。
+BoxDecoration _slotSheetDecoration(BuildContext context) {
+  final theme = Theme.of(context);
+  return BoxDecoration(
+    color: theme.cardTheme.color ?? theme.colorScheme.surface,
+    borderRadius: BorderRadius.circular(GroupedSheet.radius),
+    border: Border.all(
+      color:
+          theme.dividerTheme.color ??
+          theme.colorScheme.outlineVariant.withValues(alpha: .6),
+    ),
+  );
+}
+
 class _GameSaveSlotTile extends StatelessWidget {
   final String projectId;
   final int slotIndex;
@@ -560,8 +600,14 @@ class _GameSaveSlotTile extends StatelessWidget {
   /// 「保存データなし」と言わない）。
   final bool listUnread;
 
+  /// 面の最初・最後の行（押したときの色を面の角の丸みの中に限る）。
+  final bool isFirst;
+  final bool isLast;
+
   const _GameSaveSlotTile({
     super.key,
+    this.isFirst = false,
+    this.isLast = false,
     required this.projectId,
     required this.slotIndex,
     required this.memo,
@@ -587,34 +633,32 @@ class _GameSaveSlotTile extends StatelessWidget {
           color: scheme.onSurfaceVariant,
           onPressed: onWrite,
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 8),
         _SlotActionButton(
           icon: Icons.menu_book_outlined,
           tooltip: l10n.saveTreeSlotLoadTooltip,
           color: scheme.onSurfaceVariant,
           onPressed: onLoad,
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 8),
+        // 削除の印にも差し色を付けない（確かめのダイアログで止める）。
         _SlotActionButton(
           icon: Icons.delete_outline,
           tooltip: l10n.saveTreeSlotDeleteTooltip,
-          color: AccentTextTheme.of(context),
+          color: scheme.onSurfaceVariant,
           onPressed: onDelete,
         ),
       ],
     );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+    const corner = Radius.circular(GroupedSheet.radius);
+    return MenuSurface(
       child: Material(
-        color: hasData
-            ? scheme.surfaceContainerLow
-            : scheme.surfaceContainerLowest,
-        elevation: hasData ? 2 : 0,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-          alpha: 0.16,
+        type: MaterialType.transparency,
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? corner : Radius.zero,
+          bottom: isLast ? corner : Radius.zero,
         ),
-        borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           // The full row still opens the overwrite confirmation.
@@ -738,18 +782,7 @@ class _GameSaveSlotTile extends StatelessWidget {
               );
               return Container(
                 constraints: const BoxConstraints(minHeight: 82),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: hasData
-                        ? scheme.outlineVariant
-                        : scheme.outlineVariant.withValues(alpha: 0.65),
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 13,
-                  vertical: 11,
-                ),
+                padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
                 child: stacked
                     ? Column(
                         mainAxisSize: MainAxisSize.min,
@@ -788,18 +821,15 @@ class _SlotActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
-    final scheme = Theme.of(context).colorScheme;
+    // 面の中の操作は下地も枠も付けない（以前は56pxの灰色の塗り＋枠で、
+    // 押せる書き込みだけ塗りがあり、押せない読み込み・削除は塗りが無く
+    // 選んでいるように見えた）。押せないときは印を無効の色にする。
     return IconButton(
       tooltip: tooltip,
       onPressed: onPressed,
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints.tightFor(width: 56, height: 56),
-      style: IconButton.styleFrom(
-        backgroundColor: scheme.surfaceContainerHighest,
-        side: BorderSide(color: scheme.outlineVariant),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      iconSize: 28,
+      constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+      iconSize: 24,
       icon: Icon(
         icon,
         color: enabled ? color : Theme.of(context).disabledColor,

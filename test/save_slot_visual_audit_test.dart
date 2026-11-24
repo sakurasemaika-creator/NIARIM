@@ -201,10 +201,12 @@ void main() {
           (tester.widget<IconButton>(f).icon as Icon).color;
       expect(iconColor(writes.first), colors.onSurfaceVariant);
       expect(iconColor(loads.first), colors.onSurfaceVariant);
+      // 削除の印にも差し色を付けない（CLAUDE.mdの「その場の知らせは
+      // IconNotice」の決まり。差し色は選んでいる状態・主な操作だけ）。
       expect(
         iconColor(deletes.first),
-        colors.primary,
-        reason: 'ゴミ箱は元の書き込みアイコンのテーマ・アクセント色',
+        colors.onSurfaceVariant,
+        reason: 'ゴミ箱も書き込み・読み込みと同じ中立の色',
       );
       expect(
         iconColor(loads.at(1)),

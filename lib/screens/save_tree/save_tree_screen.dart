@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/widgets/grouped_sheet.dart';
+import 'package:niarim/widgets/menu_surface.dart';
 
 import 'dart:io';
 
@@ -514,40 +516,73 @@ class _SlotView extends StatelessWidget {
     // firstWhereで線形探索すると行数×ノード数の走査になり、
     // castのラッパーも毎行生成されていた。
     final bySlot = _nodesBySlot(saveService.getNodes(projectId));
-    return ListView.builder(
-      itemCount: saveService.slotMax,
-      itemBuilder: (context, slotIndex) {
-        final node = bySlot[slotIndex];
-        return _SlotTile(
-          projectId: projectId,
-          slotIndex: slotIndex,
-          node: node,
-          listUnread: saveService.saveListUnreadable(projectId),
-          onSave: () => _showSlotSaveDialog(context, slotIndex, node),
-          onRestore: node == null ? null : () => _restore(context, node),
-          onDelete: node != null
-              ? () async {
-                  if (!await confirmDelete(
-                    context,
-                    itemName: slotSaveName(
-                      AppLocalizations.of(context)!,
-                      saveService.slotDisplayMemoOf(projectId, slotIndex),
-                      slotIndex,
-                    ),
-                  )) {
-                    return;
-                  }
-                  if (!context.mounted) return;
-                  await deleteSaveWithFeedback(
-                    context,
-                    saveService,
-                    projectId,
-                    node.id,
-                  );
-                }
-              : null,
-        );
-      },
+    final theme = Theme.of(context);
+    // スロットは1枚の面（メニューの背景色・細い線・角16、影なし）に並べ、
+    // 行の間は細い線で分ける（以前はスロットごとに影の付いたカードを
+    // 隙間を空けて積んでいた）。行は今までどおり見える分だけ作る。
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          sliver: DecoratedSliver(
+            decoration: BoxDecoration(
+              color: theme.cardTheme.color ?? theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(GroupedSheet.radius),
+              border: Border.all(
+                color:
+                    theme.dividerTheme.color ??
+                    theme.colorScheme.outlineVariant.withValues(alpha: .6),
+              ),
+            ),
+            sliver: SliverList.separated(
+              itemCount: saveService.slotMax,
+              separatorBuilder: (context, _) => const Divider(
+                height: 1,
+                thickness: 1,
+                indent: GroupedSheet.rowInset,
+                endIndent: GroupedSheet.rowInset,
+              ),
+              itemBuilder: (context, slotIndex) {
+                final node = bySlot[slotIndex];
+                return _SlotTile(
+                  projectId: projectId,
+                  slotIndex: slotIndex,
+                  node: node,
+                  listUnread: saveService.saveListUnreadable(projectId),
+                  onSave: () => _showSlotSaveDialog(context, slotIndex, node),
+                  onRestore: node == null
+                      ? null
+                      : () => _restore(context, node),
+                  onDelete: node != null
+                      ? () async {
+                          if (!await confirmDelete(
+                            context,
+                            itemName: slotSaveName(
+                              AppLocalizations.of(context)!,
+                              saveService.slotDisplayMemoOf(
+                                projectId,
+                                slotIndex,
+                              ),
+                              slotIndex,
+                            ),
+                          )) {
+                            return;
+                          }
+                          if (!context.mounted) return;
+                          await deleteSaveWithFeedback(
+                            context,
+                            saveService,
+                            projectId,
+                            node.id,
+                          );
+                        }
+                      : null,
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -870,17 +905,12 @@ class _SlotTile extends StatelessWidget {
       projectId,
       slotIndex,
     );
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+    // 行は面（_SlotView）の中に置く。中の文字はメニューの面のテーマで描く。
+    return MenuSurface(
       child: Material(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        elevation: 1,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-          alpha: 0.15,
-        ),
+        type: MaterialType.transparency,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -979,7 +1009,7 @@ class _SlotTile extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 4),
               Align(
                 alignment: Alignment.centerRight,
                 child: Row(
@@ -991,14 +1021,14 @@ class _SlotTile extends StatelessWidget {
                       color: scheme.onSurfaceVariant,
                       onPressed: onSave,
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 8),
                     _SaveTreeSlotActionButton(
                       icon: Icons.menu_book_outlined,
                       tooltip: l10n.saveTreeSlotLoadTooltip,
                       color: scheme.onSurfaceVariant,
                       onPressed: onRestore,
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 8),
                     _SaveTreeSlotActionButton(
                       icon: Icons.delete_outline,
                       tooltip: l10n.saveTreeSlotDeleteTooltip,
@@ -1031,18 +1061,15 @@ class _SaveTreeSlotActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    // 面の中の操作は下地も枠も付けない（以前は56pxの灰色の塗り＋枠で、
+    // 押せる書き込みだけ塗りがあり、押せない読み込み・削除は塗りが無く
+    // 選んでいるように見えた）。押せないときは印を無効の色にする。
     return IconButton(
       tooltip: tooltip,
       onPressed: onPressed,
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints.tightFor(width: 56, height: 56),
-      style: IconButton.styleFrom(
-        backgroundColor: scheme.surfaceContainerHighest,
-        side: BorderSide(color: scheme.outlineVariant),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      iconSize: 28,
+      constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+      iconSize: 24,
       icon: Icon(
         icon,
         color: onPressed == null ? Theme.of(context).disabledColor : color,
