@@ -416,9 +416,13 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     )
                     .toList(),
               ),
+              // 上のFPSのチップの押せる所（48px）の下の空き（8px）と、
+              // 「サイズ設定」のボタンの高さ（48px）に合わせて見出しの上に
+              // できる空きのぶん詰める。詰めないと、見えている間がほかの
+              // 区切り（名前の欄→FPS）の約2倍（51px）に開いた。
               SizedBox(
                 key: const ValueKey('new-project-section-gap-2'),
-                height: sectionSpacing,
+                height: sectionSpacing - 16,
               ),
               // 見出しと「サイズ設定」が1行に入らなければ、ボタンを次の行へ
               // （Rowに並べていた頃は、英・西・仏語の大きな文字ではみ出した）。
@@ -514,6 +518,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                             borderRadius: BorderRadius.all(Radius.circular(20)),
                           ),
                           showCheckmark: false,
+                          // 選んでいない行も印の場所を空けておく（空けないと
+                          // 選んだ行だけ16px広く、絵・名前の始まりも16px
+                          // ずれた）。どの行も同じ幅で、印・絵・名前が縦に
+                          // そろう。
                           avatar: selected
                               ? Icon(
                                   Icons.check,
@@ -522,7 +530,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                                     context,
                                   ).chipTheme.checkmarkColor,
                                 )
-                              : null,
+                              : const SizedBox.square(dimension: checkSize),
                           avatarBoxConstraints: const BoxConstraints.tightFor(
                             width: checkSize,
                             height: checkSize,
@@ -592,13 +600,18 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                                     context,
                                   ).chipTheme.checkmarkColor,
                                 )
-                              : null,
+                              : const SizedBox.square(dimension: checkSize),
                           avatarBoxConstraints: const BoxConstraints.tightFor(
                             width: checkSize,
                             height: checkSize,
                           ),
-                          label: SizedBox(
-                            width: labelMaxWidth,
+                          // 押せる高さ（48）を見た目の高さにする。1行の
+                          // 名前のままだと見た目が34pxで、押せる所の上下の
+                          // 空き（7px）のぶん上の行との間だけが広かった。
+                          label: ConstrainedBox(
+                            constraints: BoxConstraints.tightFor(
+                              width: labelMaxWidth,
+                            ).copyWith(minHeight: 32),
                             child: Row(
                               children: [
                                 const SizedBox(
@@ -880,9 +893,11 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 selectedColor: _backgroundColor,
                 onChanged: (color) => setState(() => _backgroundColor = color),
               ),
+              // 下の切り替えの行（SwitchListTile）は自分で上に8px空けるので、
+              // そのぶん詰めてほかの区切りと同じ間にする。
               SizedBox(
                 key: const ValueKey('new-project-section-gap-5'),
-                height: sectionSpacing,
+                height: sectionSpacing - 8,
               ),
               // 描画領域設定
               SwitchListTile(
@@ -978,9 +993,14 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 key: const ValueKey('new-project-section-gap-6'),
                 height: sectionSpacing,
               ),
+              // 上下のボタンと同じ幅（カードの既定の外側の余白を取らない）。
               MenuCard(
+                margin: EdgeInsets.zero,
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

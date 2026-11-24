@@ -188,6 +188,7 @@ class _PresetTile extends StatelessWidget {
                         value: 'duplicate',
                         child: Text(l10n.commonDuplicate),
                       ),
+                      const PopupMenuDivider(),
                       PopupMenuItem(
                         value: 'delete',
                         child: MenuActionLabel(

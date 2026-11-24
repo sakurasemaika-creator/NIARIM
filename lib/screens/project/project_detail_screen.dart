@@ -360,6 +360,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 value: 'materials',
                 child: Text(l10n.materialListTitle),
               ),
+              const PopupMenuDivider(),
               PopupMenuItem(
                 value: 'delete',
                 // メニューの文字色のまま、印のアイコンと文で知らせる。
