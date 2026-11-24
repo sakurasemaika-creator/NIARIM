@@ -2505,30 +2505,63 @@ class CanvasAreaState extends State<CanvasArea> {
       maskGroups: stacked.maskGroups,
     );
     try {
-      final data = await composite.toByteData(
-        format: ui.ImageByteFormat.rawRgba,
-      );
-      if (data == null) return;
-      final source = img.Image.fromBytes(
-        width: composite.width,
-        height: composite.height,
-        bytes: data.buffer,
-        bytesOffset: data.offsetInBytes,
-        numChannels: 4,
-      );
+      // Downsample on the rendering engine before reading pixels back. Converting
+      // a full 4K canvas to raw RGBA would briefly allocate more than 30 MB.
       const maxEdge = 720;
       final scale = math.min(
         1.0,
-        maxEdge / math.max(source.width, source.height),
+        maxEdge / math.max(composite.width, composite.height),
       );
-      final resized = scale < 1.0
-          ? img.copyResize(
-              source,
-              width: math.max(1, (source.width * scale).round()).toInt(),
-              height: math.max(1, (source.height * scale).round()).toInt(),
-            )
-          : source;
-      final jpeg = img.encodeJpg(resized, quality: 60);
+      final captureWidth = math.max(
+        1,
+        (composite.width * scale).round(),
+      ).toInt();
+      final captureHeight = math.max(
+        1,
+        (composite.height * scale).round(),
+      ).toInt();
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(recorder);
+      canvas.drawImageRect(
+        composite,
+        ui.Rect.fromLTWH(
+          0,
+          0,
+          composite.width.toDouble(),
+          composite.height.toDouble(),
+        ),
+        ui.Rect.fromLTWH(
+          0,
+          0,
+          captureWidth.toDouble(),
+          captureHeight.toDouble(),
+        ),
+        ui.Paint()..filterQuality = ui.FilterQuality.medium,
+      );
+      final picture = recorder.endRecording();
+      ui.Image captured;
+      try {
+        captured = await picture.toImage(captureWidth, captureHeight);
+      } finally {
+        picture.dispose();
+      }
+      late final List<int> jpeg;
+      try {
+        final data = await captured.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
+        if (data == null) return;
+        final smallImage = img.Image.fromBytes(
+          width: captureWidth,
+          height: captureHeight,
+          bytes: data.buffer,
+          bytesOffset: data.offsetInBytes,
+          numChannels: 4,
+        );
+        jpeg = img.encodeJpg(smallImage, quality: 60);
+      } finally {
+        captured.dispose();
+      }
       // Recording may have been switched off while compositing or encoding.
       if (!mounted || widget.project?.makingEnabled != true) return;
       final saved = await MakingService.recordSnapshot(
