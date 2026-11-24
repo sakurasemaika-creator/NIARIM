@@ -732,6 +732,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _cameraScrollCtrl,
     _commonLayerScrollCtrl,
     _effectFilterScrollCtrl,
+    if (_readAloudScrollController != null) _readAloudScrollController!,
     ..._rowScrollCtrls.values,
   ];
 
@@ -767,7 +768,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
     for (final ctrl in _trackScrollCtrls) {
       ctrl.dispose();
     }
-    _readAloudScrollController?.dispose();
     for (final p in _audioPlayers.values) {
       p.dispose();
     }
