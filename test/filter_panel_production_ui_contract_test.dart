@@ -18,7 +18,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/pump_real_async.dart';
 
+/// The gallery's scrolling grid (its cards are built as they scroll in).
+final _galleryScrollable = find.descendant(
+  of: find.byKey(const ValueKey('filter-tile-grid')),
+  matching: find.byType(Scrollable),
+);
+
 Future<void> _tapFilterCard(WidgetTester tester, Finder card) async {
+  // NIARIMならではのフィルターが一覧の先に並ぶので、ほかのカードは一覧を
+  // 送って探す。
+  if (card.evaluate().isEmpty) {
+    await tester.scrollUntilVisible(card, 120, scrollable: _galleryScrollable);
+  }
   await Scrollable.ensureVisible(tester.element(card), alignment: 0.5);
   await tester.pump();
   expect(card.hitTestable(), findsOneWidget);
@@ -198,14 +209,35 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    // ガウスぼかしのカード（NIARIMならではのフィルターの後に並ぶ）。
+    final gaussianCard = find.byKey(const ValueKey('filter-card-Filter0001'));
+    await tester.scrollUntilVisible(
+      gaussianCard,
+      120,
+      scrollable: _galleryScrollable,
+    );
+    await tester.ensureVisible(gaussianCard);
+    await tester.pumpAndSettle();
     final favoriteFinder = find.byKey(
       const ValueKey('filter-favorite-Filter0001'),
     );
     final favorite = tester.getRect(favoriteFinder);
     expect(find.byKey(const ValueKey('filter-menu-Filter0001')), findsNothing);
-    final preview = tester.getRect(find.byType(FilterSamplePreview).first);
+    // The card's tap surface lies over the picture and name in one stack.
+    final gaussianTile = find
+        .ancestor(of: gaussianCard, matching: find.byType(Stack))
+        .first;
+    final preview = tester.getRect(
+      find.descendant(
+        of: gaussianTile,
+        matching: find.byType(FilterSamplePreview),
+      ),
+    );
     final filterName = tester.getRect(
-      find.text(l10n.filterNameGaussianBlur).first,
+      find.descendant(
+        of: gaussianTile,
+        matching: find.text(l10n.filterNameGaussianBlur),
+      ),
     );
     // The star is drawn in the name row's leading slot, below the picture
     // and before the name, and keeps a 48x48 touch target on every platform

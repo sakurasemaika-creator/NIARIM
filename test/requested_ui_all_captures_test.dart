@@ -252,7 +252,8 @@ void main() {
           final service = tester
               .element(find.byType(FilterPanel).first)
               .read<FilterService>();
-          final candidates = service.filters.take(2).toList();
+          // 一覧の先頭の2枚（見本の並び）。
+          final candidates = service.galleryFilters.take(2).toList();
           expect(candidates, hasLength(2));
           await tester.tap(
             find.byKey(ValueKey('filter-card-${candidates.first.id}')),

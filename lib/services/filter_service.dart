@@ -54,6 +54,36 @@ class FilterService extends ChangeNotifier {
 
   List<FilterDef> get filters =>
       List.unmodifiable(_filters.where((f) => !_isMergedNoisePreset(f)));
+
+  /// 組み込みのうち、ほかの描画アプリに無いNIARIMならではのフィルター。
+  /// フィルターの見本の一覧ではこの順で先に並べる。
+  static const signatureFilterIds = [
+    'Filter0023', // 自動線画
+    'Filter0021', // 墨溜まり
+    'Filter0020', // 背景馴染ませ
+    watercolorBorderFilterId, // 水彩境界
+    sphereShadingFilterId, // 球体陰影
+    prismFilterId, // プリズム
+    'Filter0017', // 眼鏡断層
+    'Filter0019', // 質感変更
+  ];
+
+  /// [filters] in the order the filter gallery shows them: the signature
+  /// built-ins ([signatureFilterIds]) first, then every other filter in its
+  /// own order (the other built-ins, then the user's own filters as they
+  /// were added). Every filter is in it once.
+  List<FilterDef> get galleryFilters {
+    final all = filters;
+    final byId = {for (final f in all) f.id: f};
+    final first = [for (final id in signatureFilterIds) ?byId[id]];
+    final firstIds = {for (final f in first) f.id};
+    return List.unmodifiable([
+      ...first,
+      for (final f in all)
+        if (!firstIds.contains(f.id)) f,
+    ]);
+  }
+
   FilterDef? get currentFilter =>
       _presetDraft ??
       _filters.where((f) => f.id == _currentFilterId).firstOrNull;

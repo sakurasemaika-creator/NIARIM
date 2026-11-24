@@ -743,7 +743,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final l10n = AppLocalizations.of(context)!;
     final service = context.watch<FilterService>();
     final query = service.searchQuery;
-    final filters = service.filters.where((f) {
+    final filters = service.galleryFilters.where((f) {
       if (_showFavoritesOnly && !f.isFavorite) return false;
       return filterNameMatches(filterDisplayName(l10n, f), query);
     }).toList();

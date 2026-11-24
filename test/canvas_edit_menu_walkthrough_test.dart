@@ -16,6 +16,7 @@ import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/utils/filter_display_name.dart';
 import 'package:niarim/widgets/labeled_slider.dart';
 import 'package:niarim/widgets/filter_sample_preview.dart';
 import 'package:provider/provider.dart';
@@ -149,11 +150,15 @@ void main() {
       expect(panel, findsOneWidget);
       final context = tester.element(panel);
       final l10n = AppLocalizations.of(context)!;
-      expect(context.read<FilterService>().currentFilter, isNull);
+      final service = context.read<FilterService>();
+      expect(service.currentFilter, isNull);
+      // 一覧の先頭のカード（NIARIMならではのフィルターが先に並ぶ）。
       expect(
         find.descendant(
           of: panel,
-          matching: find.text(l10n.filterNameGaussianBlur),
+          matching: find.text(
+            filterDisplayName(l10n, service.galleryFilters.first),
+          ),
         ),
         findsOneWidget,
       );
