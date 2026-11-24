@@ -298,6 +298,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 使用し、指を離した時点でSettingsServiceへ確定保存してnullへ戻す）。
   double? _previewHeightDragOverride;
 
+  // タイムラインクリップの分割モード。再生ヘッド位置を適用した時点で
+  // そのフレームを境に、現在位置を含む全種類のクリップを分割する。
+  bool _isSplitMode = false;
+
   // カーソル固定方式の移動モード
   bool _isMoveMode = false;
   int _moveCursorPos = 0;
@@ -3193,6 +3197,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   Widget _buildToolbar() {
     final l10n = AppLocalizations.of(context)!;
+    if (_isSplitMode) return _buildSplitToolbar(l10n);
     if (_isSceneCursorActive || _isFrameCursorActive) {
       return _buildTimelinePlacementToolbar(l10n);
     }
@@ -3202,6 +3207,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final showLabels = width >= 600;
     final controls = <Widget>[
       _addMaterialMenu(l10n),
+      IconButton(
+        key: const Key('timelineSplitModeButton'),
+        icon: const Icon(Icons.call_split, size: 20),
+        onPressed: () {
+          if (_isPlaying) _togglePlay();
+          setState(() => _isSplitMode = true);
+        },
+        tooltip: Localizations.localeOf(context).languageCode == 'ja'
+            ? '分割'
+            : 'Split',
+      ),
       IconButton(
         icon: const Icon(Icons.movie_filter, size: 20),
         onPressed: _showEffectFilterDialog,
@@ -3263,6 +3279,51 @@ class _TimelineScreenState extends State<TimelineScreen> {
               onPressed: () => context.push('/export/${widget.projectId}'),
               tooltip: l10n.transferExport,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSplitToolbar(AppLocalizations l10n) {
+    final isJapanese = Localizations.localeOf(context).languageCode == 'ja';
+    final targets = _allClips.where(
+      (clip) =>
+          _currentFrame > clip.startFrame &&
+          _currentFrame < clip.startFrame + clip.lengthFrames,
+    );
+    final canApply = targets.isNotEmpty;
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+          bottom: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              isJapanese
+                  ? '分割モード：再生ヘッド位置で分割'
+                  : 'Split mode: split at the playhead',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          IconButton(
+            key: const Key('timelineSplitApplyButton'),
+            tooltip: l10n.commonApply,
+            onPressed: canApply ? _applySplitAtCurrentFrame : null,
+            icon: const Icon(Icons.check),
+          ),
+          IconButton(
+            key: const Key('timelineSplitCancelButton'),
+            tooltip: l10n.commonCancel,
+            onPressed: () => setState(() => _isSplitMode = false),
+            icon: const Icon(Icons.close),
           ),
         ],
       ),
@@ -8562,6 +8623,193 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ],
       ),
     );
+  }
+
+  /// 再生ヘッド位置で、そこをまたいでいる全トラックのクリップを分割する。
+  /// 音声・読み上げ音声・動画・画像・テキストを同じ操作で扱い、
+  /// 素材内の再生位置（sourceTrim/sourceStartFrame）と外側のフェードを保つ。
+  void _applySplitAtCurrentFrame() {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final splitFrame = _currentFrame;
+    final targets = _allClips
+        .where(
+          (clip) =>
+              splitFrame > clip.startFrame &&
+              splitFrame < clip.startFrame + clip.lengthFrames,
+        )
+        .toList();
+    if (targets.isEmpty) return;
+
+    final projectService = context.read<ProjectService>();
+    final rightClips = <_TrackClip>[];
+    final processedClips = <_TrackClip>[];
+    projectService.editTimeline(widget.projectId, 'Split timeline clips', () {
+      for (var index = 0; index < targets.length; index++) {
+        final clip = targets[index];
+        final leftLength = splitFrame - clip.startFrame;
+        final rightLength = clip.lengthFrames - leftLength;
+        final rightSourceStart = clip.useStart + leftLength;
+        final rightId = clip.trackType == _ClipTrackType.audio
+            ? 'audio_split_${DateTime.now().microsecondsSinceEpoch}_$index'
+            : 'layer_split_${DateTime.now().microsecondsSinceEpoch}_$index';
+
+        if (clip.trackType == _ClipTrackType.audio) {
+          projectService.updateAudioClip(
+            widget.projectId,
+            sceneId,
+            AudioClip(
+              id: clip.id,
+              label: clip.label,
+              materialId: clip.materialId,
+              startFrame: clip.startFrame,
+              lengthFrames: leftLength,
+              volume: clip.volume,
+              fadeIn: clip.fadeIn,
+              fadeOut: 0,
+              sourceStartFrame: clip.useStart,
+              trackRow: clip.trackRow,
+              isReadAloud: clip.isReadAloud,
+            ),
+          );
+          projectService.addAudioClip(
+            widget.projectId,
+            sceneId,
+            AudioClip(
+              id: rightId,
+              label: clip.label,
+              materialId: clip.materialId,
+              startFrame: splitFrame,
+              lengthFrames: rightLength,
+              volume: clip.volume,
+              fadeIn: 0,
+              fadeOut: clip.fadeOut,
+              sourceStartFrame: rightSourceStart,
+              trackRow: clip.trackRow,
+              isReadAloud: clip.isReadAloud,
+            ),
+          );
+          processedClips.add(clip);
+          rightClips.add(
+            _TrackClip(
+              id: rightId,
+              label: clip.label,
+              startFrame: splitFrame,
+              lengthFrames: rightLength,
+              color: clip.color,
+              trackType: clip.trackType,
+              filePath: clip.filePath,
+              materialId: clip.materialId,
+              volume: clip.volume,
+              fadeIn: 0,
+              fadeOut: clip.fadeOut,
+              useStart: rightSourceStart,
+              useEnd: clip.useEnd,
+              trackRow: clip.trackRow,
+              isReadAloud: clip.isReadAloud,
+            ),
+          );
+          continue;
+        }
+
+        final home = projectService.homeOf(widget.projectId, clip.id) ??
+            (sceneId: sceneId, frameIndex: splitFrame - 1);
+        final sourceLayer = projectService
+            .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
+            .where((layer) => layer.id == clip.id)
+            .firstOrNull;
+        if (sourceLayer == null) continue;
+
+        final newLayer = projectService.addLayer(
+          projectId: widget.projectId,
+          sceneId: home.sceneId,
+          frameIndex: home.frameIndex,
+          type: sourceLayer.type,
+          name: sourceLayer.name,
+          id: rightId,
+        );
+        projectService.tileManagerOf(widget.projectId).copyLayer(
+          projectService.tileKeyFor(
+            widget.projectId,
+            home.sceneId,
+            home.frameIndex,
+            clip.id,
+          ),
+          projectService.tileKeyFor(
+            widget.projectId,
+            home.sceneId,
+            home.frameIndex,
+            newLayer.id,
+          ),
+        );
+
+        final isVideo = clip.trackType == _ClipTrackType.video;
+        projectService.updateLayer(
+          projectId: widget.projectId,
+          sceneId: home.sceneId,
+          frameIndex: home.frameIndex,
+          layer: sourceLayer.copyWith(
+            rangeMode: LayerRangeMode.frameRange,
+            rangeStart: clip.startFrame + 1,
+            rangeEnd: splitFrame,
+            sourceTrimEnd: isVideo ? clip.useStart + leftLength - 1 : null,
+          ),
+        );
+        projectService.updateLayer(
+          projectId: widget.projectId,
+          sceneId: home.sceneId,
+          frameIndex: home.frameIndex,
+          layer: sourceLayer.copyWith(
+            id: newLayer.id,
+            name: sourceLayer.name,
+            rangeMode: LayerRangeMode.frameRange,
+            rangeStart: splitFrame + 1,
+            rangeEnd: clip.startFrame + clip.lengthFrames,
+            sourceTrimStart: isVideo ? rightSourceStart : null,
+            sourceTrimEnd: isVideo ? clip.useEnd : null,
+            textObject: sourceLayer.textObject?.copyWith(id: newLayer.id),
+          ),
+        );
+        processedClips.add(clip);
+        rightClips.add(
+          _TrackClip(
+            id: newLayer.id,
+            label: clip.label,
+            startFrame: splitFrame,
+            lengthFrames: rightLength,
+            color: clip.color,
+            trackType: clip.trackType,
+            filePath: clip.filePath,
+            materialId: clip.materialId,
+            useStart: isVideo ? rightSourceStart : clip.useStart,
+            useEnd: clip.useEnd,
+            volume: clip.volume,
+            videoOpacity: clip.videoOpacity,
+            trackRow: clip.trackRow,
+          ),
+        );
+      }
+    });
+
+    if (!mounted) return;
+    setState(() {
+      for (final clip in processedClips) {
+        final leftLength = splitFrame - clip.startFrame;
+        clip.lengthFrames = leftLength;
+        if (clip.trackType == _ClipTrackType.video) {
+          clip.useEnd = clip.useStart + leftLength - 1;
+        } else if (clip.trackType == _ClipTrackType.audio) {
+          clip.fadeOut = 0;
+          clip.useEnd = clip.useStart + leftLength - 1;
+        }
+      }
+      for (final clip in rightClips) {
+        _clipsOfType(clip.trackType).add(clip);
+      }
+      _isSplitMode = false;
+      _selectedClipIds.clear();
+    });
+    _syncMediaPlayback();
   }
 
   /// クリップ詳細シートを閉じた時点で、編集内容（音量・フェード・不透明度・
