@@ -65,6 +65,8 @@ import '../../models/watermark_asset.dart';
 import '../../models/custom_automation.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/material_service.dart';
+import '../../services/android_tts_service.dart';
+import '../../utils/making_strings.dart';
 import '../../services/premium_service.dart';
 import '../../services/custom_automation_service.dart';
 import '../../services/project_service.dart';
@@ -106,7 +108,7 @@ enum _ClipTrackType { audio, video, image, text }
 
 enum _PcTimelineArea { bin, monitor, inspector, tracks }
 
-enum _TimelineToolbarAction { watermark }
+enum _TimelineToolbarAction { watermark, readAloud }
 
 enum _TimelineSelection { scenes, frames, clips }
 
@@ -3021,6 +3023,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
       onSelected: (action) {
         if (action is _ClipTrackType) {
           _addMaterialOfType(action);
+        } else if (action == _TimelineToolbarAction.readAloud) {
+          _showReadAloudDialog();
         } else if (action == _TimelineToolbarAction.watermark) {
           // Recheck at selection, including changes while the menu is open.
           if (context.read<PremiumService>().isFeatureAvailable(
@@ -3062,6 +3066,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ],
             ),
           ),
+        PopupMenuItem<Object>(
+          key: const Key('timelineReadAloudMenuItem'),
+          value: _TimelineToolbarAction.readAloud,
+          child: Row(
+            children: [
+              Icon(
+                Icons.record_voice_over_outlined,
+                size: 20,
+                color: PopupMenuTheme.of(context).iconColor,
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  MakingStrings.readAloud(context),
+                  style: localizedHeadingStyle(context, const TextStyle()),
+                ),
+              ),
+            ],
+          ),
+        ),
         const PopupMenuDivider(),
         PopupMenuItem<Object>(
           key: const Key('timelineAddWatermarkMenuItem'),
@@ -3251,6 +3275,260 @@ class _TimelineScreenState extends State<TimelineScreen> {
           type,
         );
     }
+  }
+
+  Future<void> _showReadAloudDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final tts = AndroidTtsService.instance;
+    List<AndroidTtsVoice> voices;
+    try {
+      voices = await tts.offlineVoices();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(MakingStrings.noVoices(context))),
+      );
+      return;
+    }
+    if (!mounted) return;
+    if (voices.isEmpty) {
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(MakingStrings.readAloud(context)),
+          content: Text(MakingStrings.noVoices(context)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonClose),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final language = Localizations.localeOf(context).languageCode;
+    final preferred = voices
+        .where((voice) => voice.locale.startsWith(language))
+        .firstOrNull;
+    final textController = TextEditingController();
+    var selectedVoiceName = (preferred ?? voices.first).name;
+    var speechRate = 1.0;
+    var pitch = 1.0;
+    var startFrame = _currentFrame
+        .clamp(0, math.max(0, _totalFrames - 1)).toInt();
+    var generating = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: Text(MakingStrings.readAloud(context)),
+          content: SizedBox(
+            width: 520,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    key: const Key('timelineReadAloudTextField'),
+                    controller: textController,
+                    minLines: 4,
+                    maxLines: 8,
+                    maxLength: 3500,
+                    onChanged: (_) => setDialogState(() {}),
+                    decoration: InputDecoration(
+                      labelText: MakingStrings.speechText(context),
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    key: const Key('timelineReadAloudVoice'),
+                    value: selectedVoiceName,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      labelText: MakingStrings.voice(context),
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: [
+                      for (final voice in voices)
+                        DropdownMenuItem(
+                          value: voice.name,
+                          child: Text(
+                            voice.displayName,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ],
+                    onChanged: generating
+                        ? null
+                        : (value) {
+                            if (value != null) {
+                              setDialogState(() => selectedVoiceName = value);
+                            }
+                          },
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    MakingStrings.rate(context) + ': ' +
+                        speechRate.toStringAsFixed(2) + '×',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  Slider(
+                    value: speechRate,
+                    min: 0.5,
+                    max: 2.0,
+                    divisions: 15,
+                    onChanged: generating
+                        ? null
+                        : (value) => setDialogState(() => speechRate = value),
+                  ),
+                  Text(
+                    MakingStrings.pitch(context) + ': ' +
+                        pitch.toStringAsFixed(2) + '×',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  Slider(
+                    value: pitch,
+                    min: 0.5,
+                    max: 2.0,
+                    divisions: 15,
+                    onChanged: generating
+                        ? null
+                        : (value) => setDialogState(() => pitch = value),
+                  ),
+                  Text(
+                    MakingStrings.startFrame(context) + ': F' +
+                        (startFrame + 1).toString(),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  Slider(
+                    value: startFrame.toDouble(),
+                    min: 0,
+                    max: math.max(0, _totalFrames - 1).toDouble(),
+                    divisions: _totalFrames > 1 ? _totalFrames - 1 : null,
+                    onChanged: generating || _totalFrames <= 1
+                        ? null
+                        : (value) => setDialogState(
+                            () => startFrame = value.round(),
+                          ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    MakingStrings.speechNotice(context),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: generating ? null : () => Navigator.pop(dialogContext),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton.icon(
+              key: const Key('timelineReadAloudGenerateButton'),
+              onPressed: generating || textController.text.trim().isEmpty
+                  ? null
+                  : () async {
+                      final sceneId = _selectedSceneId;
+                      if (sceneId == null) return;
+                      setDialogState(() => generating = true);
+                      try {
+                        final voice = voices.firstWhere(
+                          (v) => v.name == selectedVoiceName,
+                        );
+                        final wav = await tts.synthesizeToFile(
+                          text: textController.text,
+                          voice: voice,
+                          rate: speechRate,
+                          pitch: pitch,
+                        );
+                        if (!mounted) {
+                          await wav.delete();
+                          return;
+                        }
+                        final materialService = context.read<MaterialService>();
+                        final asset = await materialService.addMaterial(
+                          projectId: widget.projectId,
+                          sourcePath: wav.path,
+                          type: MaterialType.audio,
+                        );
+                        await wav.delete();
+                        final savedPath = await materialService.pathOf(
+                          widget.projectId,
+                          asset.id,
+                        );
+                        if (!mounted || savedPath == null) {
+                          throw StateError('Generated audio could not be stored.');
+                        }
+                        final project = context.read<ProjectService>().projects
+                            .where((p) => p.id == widget.projectId)
+                            .firstOrNull;
+                        final durationMs = asset.duration?.inMilliseconds ?? 0;
+                        final maxLength = math.max(
+                          1,
+                          _totalFrames - startFrame,
+                        ).toInt();
+                        final lengthFrames = durationMs > 0 && project != null
+                            ? (durationMs * project.fps / 1000)
+                                .ceil().clamp(1, maxLength).toInt()
+                            : math.min(24, maxLength).toInt();
+                        final label = timelineTextName(
+                          textController.text,
+                          MakingStrings.readAloud(context),
+                        );
+                        final clip = await _createPersistedClip(
+                          sceneId: sceneId,
+                          label: label,
+                          startFrame: startFrame,
+                          lengthFrames: lengthFrames,
+                          color: ThemeService.activeColorScheme.tertiary,
+                          trackType: _ClipTrackType.audio,
+                          filePath: savedPath,
+                          asset: asset,
+                        );
+                        if (!mounted) return;
+                        if (clip == null) {
+                          throw StateError('The speech clip could not be added.');
+                        }
+                        Navigator.pop(dialogContext);
+                        setState(() => _audioClips.add(clip));
+                      } catch (error, stackTrace) {
+                        AppErrorReporter.record(error, stackTrace);
+                        if (!mounted) return;
+                        setDialogState(() => generating = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(MakingStrings.speechFailed(context)),
+                          ),
+                        );
+                      }
+                    },
+              icon: generating
+                  ? const SizedBox.square(
+                      dimension: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.record_voice_over_outlined),
+              label: Text(
+                generating
+                    ? l10n.newProjectCreating
+                    : MakingStrings.generateAndAdd(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    textController.dispose();
   }
 
   /// 登録済みウォーターマーク一覧から選択して追加する（
