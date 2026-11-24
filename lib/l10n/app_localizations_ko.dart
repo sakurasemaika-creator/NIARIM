@@ -1053,10 +1053,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumHeroTitle => '프리미엄으로 더 자유롭게';
 
   @override
-  String get premiumHeroSubtitle =>
-      '최대 2시간 길이로 만들고 공식 엔드마크를 표시하거나 숨기며 톤 커브와 레벨 보정 그리기 필터를 사용할 수 있습니다.';
-
-  @override
   String get premiumHeroHighlightDuration => '길이 최대 2시간';
 
   @override

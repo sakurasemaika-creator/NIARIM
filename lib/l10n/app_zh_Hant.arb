@@ -371,7 +371,6 @@
   "premiumRestoreFailed": "無法還原購買紀錄，請再試一次。",
   "premiumStoreUnavailable": "無法載入商店的購買資訊。請檢查網路連線後再試一次。",
   "premiumHeroTitle": "開通進階版，創作更自由",
-  "premiumHeroSubtitle": "最長可製作2小時動畫，可顯示或隱藏官方片尾標記，並使用色調曲線和色階校正繪圖濾鏡。",
   "premiumHeroHighlightDuration": "時長最長2小時",
   "premiumHeroHighlightWatermark": "顯示或隱藏官方片尾標記",
   "premiumHeroHighlightGrading": "色調曲線 /\n階調調整",

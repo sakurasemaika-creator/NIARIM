@@ -1989,12 +1989,6 @@ abstract class AppLocalizations {
   /// **'プレミアムで、もっと自由な制作を'**
   String get premiumHeroTitle;
 
-  /// No description provided for @premiumHeroSubtitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'最大尺2時間・公式エンドマークの表示切り替え・描画フィルターのトーンカーブ／レベル補正などが使えます'**
-  String get premiumHeroSubtitle;
-
   /// No description provided for @premiumHeroHighlightDuration.
   ///
   /// In ja, this message translates to:

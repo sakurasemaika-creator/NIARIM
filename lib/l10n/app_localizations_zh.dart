@@ -1037,9 +1037,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumHeroTitle => '开通高级版，创作更自由';
 
   @override
-  String get premiumHeroSubtitle => '最长可制作2小时动画，可显示或隐藏官方片尾标记，并使用色调曲线和色阶校正绘图滤镜。';
-
-  @override
   String get premiumHeroHighlightDuration => '时长最长2小时';
 
   @override
@@ -11566,9 +11563,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get premiumHeroTitle => '開通進階版，創作更自由';
-
-  @override
-  String get premiumHeroSubtitle => '最長可製作2小時動畫，可顯示或隱藏官方片尾標記，並使用色調曲線和色階校正繪圖濾鏡。';
 
   @override
   String get premiumHeroHighlightDuration => '時長最長2小時';

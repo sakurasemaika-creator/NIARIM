@@ -1050,10 +1050,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumHeroTitle => 'プレミアムで、もっと自由な制作を';
 
   @override
-  String get premiumHeroSubtitle =>
-      '最大尺2時間・公式エンドマークの表示切り替え・描画フィルターのトーンカーブ／レベル補正などが使えます';
-
-  @override
   String get premiumHeroHighlightDuration => '尺は最大2時間';
 
   @override

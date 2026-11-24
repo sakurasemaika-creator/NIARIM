@@ -175,7 +175,7 @@ class PremiumFeatureIntro extends StatelessWidget {
           // 透かしは描いたコマの隅に名前が重なった見本。
           Center(
             child: feature == PremiumFeature.watermark
-                ? const _WatermarkFrameSample()
+                ? const WatermarkFrameSample()
                 : Icon(icon, size: 40, color: colors.onSurfaceVariant),
           ),
           const SizedBox(height: 20),
@@ -237,8 +237,11 @@ class PremiumFeatureIntro extends StatelessWidget {
 
 /// 透かしの見本：描いたコマ（用紙の色に墨の線）の右下に、作者の名前の
 /// 透かしが重なっている。左上はコマの番号（差し色の小さな印）。
-class _WatermarkFrameSample extends StatelessWidget {
-  const _WatermarkFrameSample();
+class WatermarkFrameSample extends StatelessWidget {
+  const WatermarkFrameSample({super.key, this.width = 240});
+
+  /// 見本の幅（高さは幅の5分の3）。
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -246,8 +249,8 @@ class _WatermarkFrameSample extends StatelessWidget {
     final scheme = theme.colorScheme;
     return ExcludeSemantics(
       child: SizedBox(
-        width: 240,
-        height: 150,
+        width: width,
+        height: width * 0.625,
         child: CustomPaint(
           painter: _WatermarkFramePainter(
             paper: theme.cardTheme.color ?? scheme.surface,
@@ -309,8 +312,8 @@ class _WatermarkFramePainter extends CustomPainter {
     final h = size.height;
     canvas.drawPath(
       Path()
-        ..moveTo(w * 0.08, h * 0.78)
-        ..cubicTo(w * 0.3, h * 0.6, w * 0.5, h * 0.86, w * 0.92, h * 0.7),
+        ..moveTo(w * 0.08, h * 0.74)
+        ..cubicTo(w * 0.3, h * 0.56, w * 0.5, h * 0.8, w * 0.92, h * 0.6),
       pen,
     );
     canvas.drawCircle(Offset(w * 0.42, h * 0.38), h * 0.11, pen);

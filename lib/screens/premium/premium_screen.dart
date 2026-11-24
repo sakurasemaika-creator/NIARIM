@@ -9,9 +9,11 @@ import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/grouped_sheet.dart';
 import '../../widgets/menu_card.dart';
 import '../../widgets/icon_notice.dart';
 import '../../widgets/legal_consent.dart';
+import '../../widgets/premium_lock_widget.dart' show WatermarkFrameSample;
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../utils/line_break.dart';
@@ -65,59 +67,65 @@ class _PremiumScreenState extends State<PremiumScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (premium.hasPurchasedPremium) ...[
-                Card(
-                  color: scheme.primary,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.check_circle, color: scheme.onPrimary),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                l10n.premiumActiveLabel,
-                                style: localizedHeadingStyle(
-                                  context,
-                                  TextStyle(
-                                    color: scheme.onPrimary,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
+                // 加入中は面の1行で示し、差し色は加入中の印だけ（面ごと差し色で
+                // 塗らない）。
+                GroupedSheet(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                color: AccentTextTheme.of(context),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  l10n.premiumActiveLabel,
+                                  style: localizedHeadingStyle(
+                                    context,
+                                    TextStyle(
+                                      color: scheme.onSurface,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
                               ),
+                            ],
+                          ),
+                          if (premium.purchaseDate != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              l10n.premiumRegisteredDateLabel(
+                                _formatDate(l10n, premium.purchaseDate!),
+                              ),
+                              style: TextStyle(
+                                color: scheme.onSurfaceVariant,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
-                        ),
-                        if (premium.purchaseDate != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            l10n.premiumRegisteredDateLabel(
-                              _formatDate(l10n, premium.purchaseDate!),
+                          if (premium.nextRenewalDate != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              l10n.premiumNextRenewalDateLabel(
+                                _formatDate(l10n, premium.nextRenewalDate!),
+                              ),
+                              style: TextStyle(
+                                color: scheme.onSurfaceVariant,
+                                fontSize: 13,
+                              ),
                             ),
-                            style: TextStyle(
-                              color: scheme.onPrimary,
-                              fontSize: 13,
-                            ),
-                          ),
+                          ],
                         ],
-                        if (premium.nextRenewalDate != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            l10n.premiumNextRenewalDateLabel(
-                              _formatDate(l10n, premium.nextRenewalDate!),
-                            ),
-                            style: TextStyle(
-                              color: scheme.onPrimary,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
                 const SizedBox(height: 24),
               ],
@@ -308,153 +316,97 @@ class _PremiumScreenState extends State<PremiumScreen> {
   String _formatDate(AppLocalizations l10n, DateTime d) =>
       DateFormat.yMd(l10n.localeName).format(d);
 
+  /// プレミアムの最初の欄：用紙の上に題、できあがりの見本（自分の透かしを
+  /// 重ねたコマ）、主な違い3つの面（同じ3つを並べた説明の文は重なるので
+  /// 出さない）。差し色の淡い面・丸い札・行ごとの
+  /// 枠は使わない（差し色は下の「プランを見る」だけ）。
   Widget _heroSection(BuildContext context, AppLocalizations l10n) {
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      // 平らな淡い面と細い縁で区切る（ぼかした影とグラデーションは、
-      // 中の文より面の飾りが先に目に入った）。
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Color.alphaBlend(
-          scheme.primaryContainer.withValues(alpha: 0.55),
-          scheme.surface,
-        ),
-        border: Border.all(color: scheme.primary.withValues(alpha: 0.22)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final badge = ExcludeSemantics(
-                child: CircleAvatar(
-                  radius: 23,
-                  backgroundColor: scheme.primary,
-                  foregroundColor: scheme.onPrimary,
-                  child: const Icon(Icons.workspace_premium_rounded, size: 25),
-                ),
-              );
-              final copy = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 6,
-                children: [
-                  Semantics(
-                    header: true,
-                    // 日本語・中国語は読点の後でだけ行を変える（字の間で
-                    // 折ると「もっと自 / 由な制作を」と語の途中で切れた）。
-                    child: KeepTogetherText(
-                      l10n.premiumHeroTitle,
-                      keep: _clauses(l10n.premiumHeroTitle),
-                      style: localizedHeadingStyle(
-                        context,
-                        TextStyle(
-                          fontSize: 20,
-                          height: 1.24,
-                          fontWeight: FontWeight.bold,
-                          color: scheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    l10n.premiumHeroSubtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.5,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              );
-              final textScale = MediaQuery.textScalerOf(context).scale(20) / 20;
-              if ((constraints.maxWidth - 58) / textScale < 190) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 10,
-                  children: [badge, copy],
-                );
-              }
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 12,
-                children: [
-                  badge,
-                  Expanded(child: copy),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final stacked =
-                  constraints.maxWidth /
-                      MediaQuery.textScalerOf(context).scale(1) <
-                  365;
-              final highlights = [
-                (Icons.schedule, l10n.premiumHeroHighlightDuration),
-                (Icons.hide_image_outlined, l10n.premiumHeroHighlightWatermark),
-                (Icons.tune, l10n.premiumHeroHighlightGrading),
-              ];
-              final tiles = [
-                for (final (icon, label) in highlights)
-                  _heroHighlight(context, icon, label, stacked: stacked),
-              ];
-              return stacked
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: 6,
-                      children: tiles,
-                    )
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 8,
-                      children: [
-                        for (final tile in tiles) Expanded(child: tile),
-                      ],
-                    );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _heroHighlight(
-    BuildContext context,
-    IconData icon,
-    String label, {
-    required bool stacked,
-  }) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
-      ),
-      child: Flex(
-        direction: stacked ? Axis.horizontal : Axis.vertical,
-        mainAxisSize: MainAxisSize.min,
-        spacing: 8,
-        children: [
-          Icon(icon, size: 20, color: AccentTextTheme.of(context)),
-          Flexible(
-            flex: stacked ? 1 : 0,
-            child: Text(
-              stacked ? label.replaceAll('\n', ' ') : label,
-              textAlign: stacked ? TextAlign.start : TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.35,
+    final copy = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 6,
+      children: [
+        Semantics(
+          header: true,
+          // 日本語・中国語は読点の後でだけ行を変える（字の間で
+          // 折ると「もっと自 / 由な制作を」と語の途中で切れた）。
+          child: KeepTogetherText(
+            l10n.premiumHeroTitle,
+            keep: _clauses(l10n.premiumHeroTitle),
+            style: localizedHeadingStyle(
+              context,
+              TextStyle(
+                fontSize: 22,
+                height: 1.24,
+                fontWeight: FontWeight.bold,
                 color: scheme.onSurface,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+    final highlights = [
+      (Icons.schedule, l10n.premiumHeroHighlightDuration),
+      (Icons.hide_image_outlined, l10n.premiumHeroHighlightWatermark),
+      (Icons.tune, l10n.premiumHeroHighlightGrading),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final textScale = MediaQuery.textScalerOf(context).scale(20) / 20;
+            // 広い幅では題の横に見本、狭い幅では題の下に見本。
+            if ((constraints.maxWidth - 200) / textScale >= 220) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 16,
+                children: [
+                  Expanded(child: copy),
+                  const WatermarkFrameSample(width: 184),
+                ],
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 16,
+              children: [
+                copy,
+                const Center(child: WatermarkFrameSample()),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+        GroupedSheet(
+          children: [
+            for (final (icon, label) in highlights)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: Row(
+                  spacing: 16,
+                  children: [
+                    Icon(icon, size: 22, color: scheme.onSurfaceVariant),
+                    Expanded(
+                      child: Text(
+                        label.replaceAll('\n', ' '),
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.4,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -464,14 +416,14 @@ class _PremiumScreenState extends State<PremiumScreen> {
     bool premiumColumn = false,
   }) {
     final scheme = Theme.of(context).colorScheme;
-    final foreground = premiumColumn
-        ? scheme.onPrimaryContainer
-        : scheme.onSurface;
+    // プレミアムで使えるものの印だけ差し色（意味のある小さな印）。列を
+    // 差し色の面で塗らない。
+    final foreground = scheme.onSurface;
     if (value == '○') {
       return Icon(
         Icons.check_circle_rounded,
         color: premiumColumn
-            ? scheme.onPrimaryContainer
+            ? AccentTextTheme.of(context)
             : scheme.onSurfaceVariant,
         size: 20,
       );
@@ -479,7 +431,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
     if (value == '×') {
       return Icon(
         Icons.remove_circle_outline_rounded,
-        color: premiumColumn ? scheme.onPrimaryContainer : scheme.outline,
+        color: scheme.outline,
         size: 20,
       );
     }
@@ -498,13 +450,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
     bool premiumColumn = false,
   }) {
     final scheme = Theme.of(context).colorScheme;
+    // 札は塗らず細い縁だけ（面の色は2種類だけ）。
     return Container(
       padding: const EdgeInsetsDirectional.fromSTEB(10, 5, 10, 5),
       decoration: BoxDecoration(
-        color: premiumColumn
-            ? scheme.primaryContainer
-            : scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: scheme.outlineVariant),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -519,7 +470,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: premiumColumn
-                      ? scheme.onPrimaryContainer
+                      ? AccentTextTheme.of(context)
                       : scheme.onSurfaceVariant,
                 ),
               ),
@@ -571,9 +522,14 @@ class _PremiumScreenState extends State<PremiumScreen> {
     };
     String rowLabel((String, String, String) item) =>
         '${item.$1}\n${l10n.premiumComparisonFree} ${spoken(item.$2)}\n${l10n.premiumComparisonPremium} ${spoken(item.$3)}';
-    final premiumBg = scheme.primaryContainer;
     Widget cardList() {
       return MenuCard(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.6)),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -634,26 +590,19 @@ class _PremiumScreenState extends State<PremiumScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         // 表の語が列に入らない幅（320pxの仏語など）では、見出し・機能名を
-        // 語の途中で折る代わりに、項目ごとの一覧で出す。
-        // 表は外側のカードの余白の内側に並ぶ。
-        final cardMargin =
-            (Theme.of(context).cardTheme.margin ?? const EdgeInsets.all(4))
-                .horizontal;
-        if (!_comparisonTableFits(
-          context,
-          l10n,
-          items,
-          constraints.maxWidth - cardMargin,
-        )) {
+        // 語の途中で折る代わりに、項目ごとの一覧で出す。表の面は外側の
+        // 余白を取らない（ほかの面と同じ左右の端）。
+        if (!_comparisonTableFits(context, l10n, items, constraints.maxWidth)) {
           return cardList();
         }
         return MenuCard(
           clipBehavior: Clip.antiAlias,
           elevation: 0,
+          margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
             side: BorderSide(
-              color: scheme.outlineVariant.withValues(alpha: 0.7),
+              color: scheme.outlineVariant.withValues(alpha: 0.6),
             ),
           ),
           child: Table(
@@ -688,7 +637,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
               TableRow(
                 children: [
                   Container(
-                    color: scheme.surfaceContainerHighest,
                     padding: const EdgeInsets.all(12),
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -703,7 +651,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     ),
                   ),
                   Container(
-                    color: scheme.surfaceContainerHighest,
                     padding: const EdgeInsets.all(12),
                     alignment: Alignment.center,
                     child: Text(
@@ -719,14 +666,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     ),
                   ),
                   Container(
-                    color: premiumBg,
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       children: [
                         Icon(
                           Icons.workspace_premium_rounded,
                           size: 14,
-                          color: scheme.onPrimaryContainer,
+                          color: AccentTextTheme.of(context),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -736,7 +682,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                             context,
                             TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: scheme.onPrimaryContainer,
+                              color: AccentTextTheme.of(context),
                             ),
                           ),
                         ),
@@ -746,14 +692,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 ],
               ),
               ...items.asMap().entries.map((entry) {
-                final zebra = entry.key.isOdd
-                    ? scheme.surfaceContainerLowest
-                    : scheme.surface;
+                // 行は細い線で分け、縞の色は付けない。
                 final item = entry.value;
                 return TableRow(
                   children: [
                     Container(
-                      color: zebra,
                       padding: const EdgeInsets.all(12),
                       alignment: Alignment.centerLeft,
                       // 長音符・小さいかな・閉じ括弧で行を始めない。
@@ -769,7 +712,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
                       ),
                     ),
                     Container(
-                      color: zebra,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 12,
@@ -779,7 +721,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
                       ),
                     ),
                     Container(
-                      color: premiumBg,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 12,
@@ -912,13 +853,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
     final available = price != null;
     final featured = isRecommended && available;
     return MenuCard(
+      margin: EdgeInsets.zero,
       elevation: 0,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: featured
-            ? BorderSide(color: scheme.primary, width: 2)
-            : BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.7)),
+        // おすすめは塗りや色の枠ではなく、題の上の小さな印で示す。
+        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.6)),
       ),
       child: Semantics(
         button: true,
@@ -942,12 +883,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   }
                 },
           child: Container(
-            color: featured
-                ? Color.alphaBlend(
-                    scheme.primaryContainer.withValues(alpha: 0.4),
-                    scheme.surface,
-                  )
-                : null,
             padding: const EdgeInsets.all(16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -964,10 +899,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           ),
                           margin: const EdgeInsets.only(bottom: 6),
                           decoration: BoxDecoration(
-                            color: scheme.primaryContainer,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: scheme.primary.withValues(alpha: 0.45),
+                              color: AccentTextTheme.of(context),
                             ),
                           ),
                           child: Row(
@@ -986,7 +920,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                                     context,
                                     TextStyle(
                                       fontSize: 12,
-                                      color: scheme.onPrimaryContainer,
+                                      color: AccentTextTheme.of(context),
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),

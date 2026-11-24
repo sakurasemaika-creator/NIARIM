@@ -1111,10 +1111,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get premiumHeroTitle => 'Más libertad con Premium';
 
   @override
-  String get premiumHeroSubtitle =>
-      'Crea animaciones de hasta 2 horas, muestra u oculta la marca final oficial y usa los filtros Curva de tonos y Corrección de niveles.';
-
-  @override
   String get premiumHeroHighlightDuration => 'Hasta 2 horas';
 
   @override

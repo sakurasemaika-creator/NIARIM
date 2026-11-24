@@ -53,7 +53,6 @@ const _endMarkTerms = {
 };
 
 const _endMarkLabels = [
-  'premiumHeroSubtitle',
   'premiumHeroHighlightWatermark',
   'premiumFeatureEndLogo',
   'premiumBannerEndCardBody',
