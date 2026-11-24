@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../config/font_fallback.dart';
-import '../config/accent_text_theme.dart';
 import '../utils/line_break.dart';
 
 /// Centers an empty state in the space after its header. When the contents
@@ -236,17 +235,19 @@ class EmptyStatePlaceholder extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (badge > 0)
-          Container(
-            width: badge,
-            height: badge,
-            decoration: BoxDecoration(
-              color: scheme.primaryContainer,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: badge * 40 / 88,
-              color: AccentTextTheme.of(context),
+          // 中身のまだ無いコマ（点線の枠）。差し色の丸い台にしない：空の
+          // 一覧はどの画面にもあり、差し色は次の操作のボタンのために残す。
+          SizedBox.square(
+            dimension: badge,
+            child: CustomPaint(
+              painter: _EmptyFramePainter(
+                scheme.onSurfaceVariant.withValues(alpha: .45),
+              ),
+              child: Icon(
+                icon,
+                size: badge * 36 / 88,
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ),
         SizedBox(height: _badgeGap(badge)),
@@ -344,4 +345,42 @@ class EmptyStatePlaceholder extends StatelessWidget {
       },
     );
   }
+}
+
+/// 空のコマの枠：角の丸い点線の四角。
+class _EmptyFramePainter extends CustomPainter {
+  const _EmptyFramePainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stroke = size.shortestSide >= 80 ? 1.5 : 1.25;
+    final rect = (Offset.zero & size).deflate(stroke / 2);
+    final path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(rect, Radius.circular(size.shortestSide / 5)),
+      );
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round;
+    const dash = 6.0, gap = 5.0;
+    for (final metric in path.computeMetrics()) {
+      // 一周がちょうど点線の組の数で割り切れるように間をそろえる。
+      final count = (metric.length / (dash + gap)).floor().clamp(1, 1000);
+      final step = metric.length / count;
+      for (var i = 0; i < count; i++) {
+        final start = i * step;
+        canvas.drawPath(
+          metric.extractPath(start, start + step * dash / (dash + gap)),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_EmptyFramePainter old) => old.color != color;
 }
