@@ -10569,6 +10569,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsSupportTitle => '도움말 및 문의';
 
   @override
+  String get settingsGroupGeneral => '일반';
+
+  @override
+  String get settingsGroupDrawing => '그리기·입력';
+
+  @override
+  String get settingsGroupAppearance => '모양·화면';
+
+  @override
+  String get settingsGroupDataSupport => '데이터·지원';
+
+  @override
   String get settingsSupportForm => '문의 양식 열기';
 
   @override

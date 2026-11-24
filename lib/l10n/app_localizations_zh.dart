@@ -10385,6 +10385,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsSupportTitle => '帮助与联系';
 
   @override
+  String get settingsGroupGeneral => '常规';
+
+  @override
+  String get settingsGroupDrawing => '绘画与输入';
+
+  @override
+  String get settingsGroupAppearance => '外观与界面';
+
+  @override
+  String get settingsGroupDataSupport => '数据与支持';
+
+  @override
   String get settingsSupportForm => '打开联系表单';
 
   @override
@@ -20884,6 +20896,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get settingsSupportTitle => '說明與聯絡';
+
+  @override
+  String get settingsGroupGeneral => '一般';
+
+  @override
+  String get settingsGroupDrawing => '繪畫與輸入';
+
+  @override
+  String get settingsGroupAppearance => '外觀與介面';
+
+  @override
+  String get settingsGroupDataSupport => '資料與支援';
 
   @override
   String get settingsSupportForm => '開啟聯絡表單';

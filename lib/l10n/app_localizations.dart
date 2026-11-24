@@ -18501,6 +18501,30 @@ abstract class AppLocalizations {
   /// **'ヘルプ・お問い合わせ'**
   String get settingsSupportTitle;
 
+  /// 設定の一覧で、基本・パフォーマンス・通知などをまとめた欄の見出し。
+  ///
+  /// In ja, this message translates to:
+  /// **'全般'**
+  String get settingsGroupGeneral;
+
+  /// 設定の一覧で、ペン入力・ジェスチャー・ショートカット・バケツなど描く操作の設定をまとめた欄の見出し。
+  ///
+  /// In ja, this message translates to:
+  /// **'描く・操作'**
+  String get settingsGroupDrawing;
+
+  /// 設定の一覧で、テーマ・フォント・ワークスペース・ウィジェットをまとめた欄の見出し。
+  ///
+  /// In ja, this message translates to:
+  /// **'見た目・画面'**
+  String get settingsGroupAppearance;
+
+  /// 設定の一覧で、引き継ぎ・エラーの記録・お問い合わせなどをまとめた欄の見出し。
+  ///
+  /// In ja, this message translates to:
+  /// **'データ・サポート'**
+  String get settingsGroupDataSupport;
+
   /// No description provided for @settingsSupportForm.
   ///
   /// In ja, this message translates to:

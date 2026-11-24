@@ -10512,6 +10512,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsSupportTitle => 'ヘルプ・お問い合わせ';
 
   @override
+  String get settingsGroupGeneral => '全般';
+
+  @override
+  String get settingsGroupDrawing => '描く・操作';
+
+  @override
+  String get settingsGroupAppearance => '見た目・画面';
+
+  @override
+  String get settingsGroupDataSupport => 'データ・サポート';
+
+  @override
   String get settingsSupportForm => 'お問い合わせフォームを開く';
 
   @override

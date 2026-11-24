@@ -6402,6 +6402,22 @@
   "communityPreviewBackward": "5秒戻る",
   "communityPreviewForward": "5秒進む",
   "settingsSupportTitle": "ヘルプ・お問い合わせ",
+  "settingsGroupGeneral": "全般",
+  "@settingsGroupGeneral": {
+    "description": "設定の一覧で、基本・パフォーマンス・通知などをまとめた欄の見出し。"
+  },
+  "settingsGroupDrawing": "描く・操作",
+  "@settingsGroupDrawing": {
+    "description": "設定の一覧で、ペン入力・ジェスチャー・ショートカット・バケツなど描く操作の設定をまとめた欄の見出し。"
+  },
+  "settingsGroupAppearance": "見た目・画面",
+  "@settingsGroupAppearance": {
+    "description": "設定の一覧で、テーマ・フォント・ワークスペース・ウィジェットをまとめた欄の見出し。"
+  },
+  "settingsGroupDataSupport": "データ・サポート",
+  "@settingsGroupDataSupport": {
+    "description": "設定の一覧で、引き継ぎ・エラーの記録・お問い合わせなどをまとめた欄の見出し。"
+  },
   "settingsSupportForm": "お問い合わせフォームを開く",
   "settingsSupportLinkFailed": "お問い合わせフォームを開けませんでした。",
   "canvasToolbarToggleTooltip": "ツールバーを開閉",

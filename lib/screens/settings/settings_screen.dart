@@ -20,6 +20,7 @@ import '../../utils/app_locale.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/grouped_sheet.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -142,151 +143,151 @@ class _SettingsScreenState extends State<SettingsScreen> {
       (
         icon: Icons.settings,
         title: l10n.settingsBasicTitle,
+        group: _SettingsGroup.general,
         subtitle: l10n.settingsBasicSubtitle,
         keywords: 'fps 言語 描画領域初期値',
         onTap: _showBasicSettings,
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         // 容量・重さに影響する設定（Undo回数・ゴミ箱自動削除等）は全て
         // パフォーマンス設定へ統合した（旧「詳細」カテゴリは廃止）。
         icon: Icons.speed,
         title: l10n.settingsPerformanceTitle,
+        group: _SettingsGroup.general,
         subtitle: l10n.settingsPerformanceSubtitle,
         keywords:
             '品質 タイルキャッシュ 低品質 中品質 高品質 カスタム オニオンスキン 傾き検知 undo ゴミ箱 削除 performance quality cache',
         onTap: () => context.push('/settings/performance'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.touch_app,
         title: l10n.settingsGestureTitle,
+        group: _SettingsGroup.drawing,
         subtitle: l10n.settingsGestureSubtitle,
         keywords: 'タップ スワイプ 長押し ペンボタン gesture tap swipe',
         onTap: () => context.push('/settings/gestures'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.keyboard,
         title: l10n.settingsShortcutTitle,
+        group: _SettingsGroup.drawing,
         subtitle: l10n.settingsShortcutSubtitle,
         keywords: 'ショートカット キーボード 左手デバイス キー割り当て shortcut keyboard key',
         onTap: () => context.push('/settings/shortcuts'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.edit,
         title: l10n.settingsPenTitle,
+        group: _SettingsGroup.drawing,
         subtitle: l10n.settingsPenSubtitle,
         keywords: '筆圧 傾き ペンボタン 筆圧カーブ pen pressure tilt',
         onTap: () => context.push('/settings/pen'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.desktop_windows,
         title: l10n.settingsWorkspaceTitle,
+        group: _SettingsGroup.appearance,
         subtitle: l10n.settingsWorkspaceSubtitle,
         keywords: 'ツールバー パネル配置 右利き 左利き dex デックス workspace toolbar panel',
         onTap: () => context.push('/settings/workspace'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.format_color_fill,
         title: l10n.settingsBucketTitle,
+        group: _SettingsGroup.drawing,
         subtitle: l10n.settingsBucketSubtitle,
         keywords: 'バケツ 塗り つぶし 許容誤差 拡張 隙間 線の下 bucket fill tolerance expand',
         onTap: () => context.push('/settings/bucket'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         // 自動塗りプリセットを制作関連の設定から管理する。
         icon: Icons.auto_fix_high_outlined,
         title: l10n.homeDrawerAutofillPreset,
+        group: _SettingsGroup.drawing,
         subtitle: l10n.tipsAutofillPresetTitle,
         keywords: '制作 自動塗り パーツ 色セット プリセット autofill presets',
         onTap: () => context.push('/autofill-presets'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.widgets_outlined,
         title: l10n.widgetSettingsTitle,
+        group: _SettingsGroup.appearance,
         subtitle: l10n.widgetSettingsSubtitle,
         keywords: 'ウィジェット ホーム画面 widget home screen 作品 色',
         onTap: () => context.push('/settings/widget'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.palette,
         title: l10n.settingsThemeTitle,
+        group: _SettingsGroup.appearance,
         subtitle: l10n.settingsThemeSubtitle,
         keywords: 'テーマ 配色 ベースカラー アクセントカラー theme color',
         onTap: () => context.push('/settings/theme'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.notifications_outlined,
         title: devicePushLabel(l10n),
+        group: _SettingsGroup.general,
         subtitle: devicePushDescription(l10n),
         keywords: '通知 プッシュ push notifications',
         onTap: () => context.push(communityNotificationSettingsRoute),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       // 無料会員はMaterialのlockアイコンで表示
       (
         icon: isPremium ? Icons.water : Icons.lock_outline,
         title: l10n.settingsWatermarkTitle,
+        group: _SettingsGroup.general,
         subtitle: l10n.settingsWatermarkSubtitle,
         keywords: 'ウォーターマーク premium プレミアム watermark',
         onTap: _showWatermarkSetting,
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.import_export,
         title: l10n.settingsTransferTitle,
+        group: _SettingsGroup.data,
         subtitle: l10n.settingsTransferSubtitle,
         keywords: '引き継ぎ エクスポート インポート 他端末 niatra transfer export import',
         onTap: () => context.push('/settings/transfer'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.font_download_outlined,
         title: l10n.settingsFontTitle,
+        group: _SettingsGroup.appearance,
         subtitle: l10n.settingsFontSubtitle,
         keywords: 'フォント ttf otf font',
         onTap: () => context.push('/settings/fonts'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.lightbulb_outline,
         title: l10n.settingsTipsResetTitle,
+        group: _SettingsGroup.data,
         subtitle: l10n.settingsTipsResetSubtitle,
         keywords: '説明 吹き出し ヒント もう一度 再表示 リセット tips hint reset',
         onTap: _resetFeatureTips,
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.bug_report_outlined,
         title: l10n.settingsErrorLogTitle,
+        group: _SettingsGroup.data,
         subtitle: l10n.settingsErrorLogSubtitle,
         keywords: 'エラー 不具合 報告 ログ コピー error log bug report copy',
         onTap: () => context.push('/settings/error-log'),
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.support_agent_outlined,
         title: l10n.settingsSupportTitle,
+        group: _SettingsGroup.data,
         subtitle: _supportEmail,
         keywords: 'サポート メール support contact help',
         onTap: _showSupport,
-        accent: Theme.of(context).colorScheme.primary,
       ),
       (
         icon: Icons.person_remove_outlined,
         title: l10n.settingsAccountDeletionTitle,
+        group: _SettingsGroup.data,
         subtitle: l10n.settingsAccountDeletionSubtitle,
         keywords: 'アカウント 退会 削除 delete account',
         onTap: _openAccountDeletion,
-        accent: Theme.of(context).colorScheme.primary,
       ),
     ];
     final filtered = _query.isEmpty
@@ -335,147 +336,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               )
             : ListView(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                 children: [
-                  for (final e in filtered)
-                    _item(e.icon, e.title, e.subtitle, e.onTap, e.accent),
+                  for (final (i, group) in [
+                    for (final g in _SettingsGroup.values)
+                      if (filtered.any((e) => e.group == g)) g,
+                  ].indexed) ...[
+                    if (i > 0) const SizedBox(height: 24),
+                    GroupedSheet(
+                      title: group.title(l10n),
+                      children: [
+                        for (final e in filtered)
+                          if (e.group == group)
+                            SheetRow(
+                              icon: e.icon,
+                              title: e.title,
+                              subtitle: e.subtitle,
+                              onTap: e.onTap,
+                            ),
+                      ],
+                    ),
+                  ],
                   if (_query.isEmpty) ...[
-                    const Divider(height: 24),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      child: TextButton(
-                        onPressed: () => context.push('/settings/license'),
-                        child: Text(
-                          l10n.settingsTermsLicense,
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                            fontSize: 12,
-                          ),
+                    const SizedBox(height: 24),
+                    GroupedSheet(
+                      children: [
+                        SheetRow(
+                          title: l10n.settingsTermsLicense,
+                          onTap: () => context.push('/settings/license'),
                         ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      child: TextButton(
-                        onPressed: () =>
-                            context.push('/settings/privacy-policy'),
-                        child: Text(
-                          l10n.privacyPolicyScreenTitle,
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                            fontSize: 12,
-                          ),
+                        SheetRow(
+                          title: l10n.privacyPolicyScreenTitle,
+                          onTap: () => context.push('/settings/privacy-policy'),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
                   ],
                 ],
               ),
-      ),
-    );
-  }
-
-  // 各項目を独立したカードとして浮かせる（影・角丸・タップ時のインク
-  // エフェクトを角丸に沿わせる）。
-  Widget _item(
-    IconData icon,
-    String title,
-    String subtitle,
-    VoidCallback onTap,
-    Color accent,
-  ) {
-    final textScale = MediaQuery.textScalerOf(context).scale(15) / 15;
-    final showBadge =
-        (MediaQuery.sizeOf(context).width - 32) / textScale >= 198;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(14),
-        elevation: 1,
-        shadowColor: Theme.of(
-          context,
-        ).colorScheme.shadow.withValues(alpha: 0.15),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-            child: Row(
-              children: [
-                if (showBadge) ...[
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          accent.withValues(alpha: 0.22),
-                          accent.withValues(alpha: 0.1),
-                        ],
-                      ),
-                    ),
-                    // 淡い下地は差し色、アイコンは背景の上の差し色＝アクセントの
-                    // 文字・アイコン色（明るい差し色でも読めるように）。
-                    child: Icon(
-                      icon,
-                      color: AccentTextTheme.of(context),
-                      size: 21,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      messageText(
-                        title,
-                        style: localizedHeadingStyle(
-                          context,
-                          const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      messageText(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 13,
-                          height: 1.42,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -687,4 +585,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+}
+
+/// 設定の一覧のまとまり（上から並べる順）。
+enum _SettingsGroup {
+  general,
+  drawing,
+  appearance,
+  data;
+
+  String title(AppLocalizations l10n) => switch (this) {
+    general => l10n.settingsGroupGeneral,
+    drawing => l10n.settingsGroupDrawing,
+    appearance => l10n.settingsGroupAppearance,
+    data => l10n.settingsGroupDataSupport,
+  };
 }

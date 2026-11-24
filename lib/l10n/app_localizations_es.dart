@@ -11474,6 +11474,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsSupportTitle => 'Ayuda y contacto';
 
   @override
+  String get settingsGroupGeneral => 'Aplicación';
+
+  @override
+  String get settingsGroupDrawing => 'Dibujo y entrada';
+
+  @override
+  String get settingsGroupAppearance => 'Aspecto y pantalla';
+
+  @override
+  String get settingsGroupDataSupport => 'Datos y asistencia';
+
+  @override
   String get settingsSupportForm => 'Abrir el formulario de contacto';
 
   @override
