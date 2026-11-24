@@ -2996,6 +2996,16 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有 $count 段视频素材的画面未能放入导出文件（素材文件缺失或无法读取）。该部分未绘制任何内容。',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get exportSaveLocationHint =>
       '在首页的“作品列表”中，可以按项目名称查找导出的文件。选择“分享”即可将文件保存到相册或用其他应用打开。';
 
@@ -13545,6 +13555,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       count,
       locale: localeName,
       other: '有 $count 段聲音未能放入匯出檔案（素材檔案遺失或無法讀取）。影片已照常匯出。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有 $count 段影片素材的畫面未能放入匯出檔案（素材檔案遺失或無法讀取）。該部分未繪製任何內容。',
     );
     return '$_temp0';
   }

@@ -3214,6 +3214,19 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'No se pudieron mostrar $count vídeos en la exportación (faltan sus archivos de material o no se pueden leer). No se dibujó nada en su lugar.',
+      one:
+          'No se pudo mostrar $count vídeo en la exportación (falta su archivo de material o no se puede leer). No se dibujó nada en su lugar.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get exportSaveLocationHint =>
       'Busca el archivo por el nombre del proyecto en Obras, en la pantalla de inicio. Elige Compartir para guardarlo en Fotos o abrirlo en otra aplicación.';
 

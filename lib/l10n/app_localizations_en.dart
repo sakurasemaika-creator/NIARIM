@@ -3163,6 +3163,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count video materials could not be shown in the export (their material files are missing or unreadable). Nothing was drawn in their place.',
+      one:
+          '$count video material could not be shown in the export (its material file is missing or unreadable). Nothing was drawn in its place.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get exportSaveLocationHint =>
       'Find your export by its project name in Works on the home screen. Choose Share to save it to Photos or open it in another app.';
 

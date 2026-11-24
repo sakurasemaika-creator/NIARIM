@@ -13,19 +13,18 @@ import 'package:path_provider/path_provider.dart';
 
 import 'export_audio.dart';
 import 'export_filename.dart';
-import 'timeline_output_viewport.dart';
-import '../engine/camera_engine.dart';
-import '../engine/filter_engine.dart';
-import '../engine/layer_compositor.dart';
-import '../engine/layer_keyframe_engine.dart';
 import '../engine/layer_range_resolver.dart';
 import '../engine/timeline_stack.dart';
 import '../engine/tile_manager.dart';
+import '../engine/timeline_frame_renderer.dart';
+import '../engine/timeline_video_layer_pixels.dart';
+import '../engine/video_frame_decoder.dart';
+import '../engine/video_frame_provider.dart';
+import '../engine/video_material_snapshot.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
 import '../models/layer_group.dart';
-import '../models/layer_keyframe.dart';
 import '../models/scene.dart';
 import '../services/hw_video_encoder.dart';
 import '../services/export_storage.dart';
@@ -155,9 +154,20 @@ Uint8List _encodeGifFrames(
 }
 
 class ExportEngine {
-  final CameraEngine _cameraEngine = CameraEngine();
-  final LayerKeyframeEngine _layerKeyframeEngine = LayerKeyframeEngine();
-  final FilterEngine _filterEngine = FilterEngine();
+  ExportEngine({
+    VideoFrameDecoder Function(Directory workDirectory)? videoDecoderFor,
+  }) : videoDecoderFor = videoDecoderFor ?? FfmpegVideoFrameDecoder.ffmpegKit;
+
+  /// Makes the decoder one export job uses for its video materials' frames,
+  /// writing its scratch files under the job's own folder.
+  final VideoFrameDecoder Function(Directory workDirectory) videoDecoderFor;
+
+  /// How many video layers of the last export could not show their frames
+  /// (a missing or unreadable material file, a frame that could not be
+  /// decoded). Those layers drew nothing; the rest of the export is written.
+  int videoLeftOut = 0;
+
+  final TimelineFrameRenderer _frameRenderer = TimelineFrameRenderer();
 
   /// 書き出し結果（MP4/GIF/WebM）の保存先。`getTemporaryDirectory()`
   /// （OSがいつ削除してもよいキャッシュ領域）ではなく、他の保存データと
@@ -273,67 +283,30 @@ class ExportEngine {
     Map<String, LayerHome> layerHomes = const {},
     List<LayerGroup> groups = const [],
     Scene? scene,
+    TimelineVideoLayerPixels? videoPixels,
   }) async {
     // In the scene's 重なり順, with its frame mask.
     final stacked = scene == null
         ? (layers: layers, maskGroups: const <LayerMaskGroup>[])
         : stackFrameLayers(scene, frameIndex, layers);
-    LayerKeyframe? groupKeyframeOf(Layer layer) {
-      for (final g in groups) {
-        if (g.memberLayerIds.contains(layer.id)) {
-          return g.keyframes.isEmpty
-              ? null
-              : _layerKeyframeEngine.valueAt(g.keyframes, frameIndex);
-        }
-      }
-      return null;
-    }
-
-    final fullImage = await LayerCompositor.composite(
-      tileManager,
-      stacked.layers,
-      (l) => resolveTileKey(layerHomes, sceneId, frameIndex, l.id),
-      drawingWidth,
-      drawingHeight,
-      keyframeOf: (l) => l.keyframes.isEmpty
-          ? null
-          : _layerKeyframeEngine.valueAt(l.keyframes, frameIndex),
-      groupKeyframeOf: groupKeyframeOf,
-      // The paper takes part in blend modes (Linear Dodge brightens it).
-      paperColor: backgroundColor,
-      maskGroups: stacked.maskGroups,
-    );
-
-    // Render the background, centred crop, and camera transform through the
-    // same output-frame path used by the timeline preview.
-    final viewport = TimelineOutputViewport(
-      drawingWidth: drawingWidth,
-      drawingHeight: drawingHeight,
-      outputWidth: width,
-      outputHeight: height,
-    );
-    final kf = _cameraEngine.valueAt(cameraKeyframes, frameIndex);
-    final uiImage = await renderOutputViewportImage(
-      drawingImage: fullImage,
-      viewport: viewport,
-      backgroundColor: backgroundColor,
-      cameraEngine: _cameraEngine,
-      cameraKeyframe: kf,
-    );
-    fullImage.dispose();
-
-    final byteData = await uiImage.toByteData(
-      format: ui.ImageByteFormat.rawRgba,
-    );
-    uiImage.dispose();
-    final rgba = byteData!.buffer.asUint8List();
-    if (effectFilters.isEmpty) return rgba;
-    return _filterEngine.applyEffectFilters(
-      rgba,
-      width,
-      height,
-      effectFilters,
-      frameIndex,
+    // The same pipeline the timeline preview draws the frame with.
+    return _frameRenderer.renderRgba(
+      TimelineFrameRequest(
+        tileManager: tileManager,
+        layers: stacked.layers,
+        keyOf: (l) => resolveTileKey(layerHomes, sceneId, frameIndex, l.id),
+        frameIndex: frameIndex,
+        drawingWidth: drawingWidth,
+        drawingHeight: drawingHeight,
+        outputWidth: width,
+        outputHeight: height,
+        backgroundColor: backgroundColor,
+        maskGroups: stacked.maskGroups,
+        groups: groups,
+        cameraKeyframes: cameraKeyframes,
+        effectFilters: effectFilters,
+        pixelsOf: videoPixels?.atFrame(frameIndex),
+      ),
     );
   }
 
@@ -373,53 +346,65 @@ class ExportEngine {
     required int height,
     required int backgroundColor,
     required bool asJpeg,
+    int? sourceFps,
+    VideoMaterialSnapshot? videoMaterials,
   }) async {
-    final layerHomes = buildLayerHomeIndex(scenes);
-    final scene = scenes.firstWhere((s) => s.id == sceneId);
-    final frame = scene.frames.firstWhere((f) => f.index == frameIndex);
-    final rgba = await renderFrame(
-      layers: resolveFrameLayers(
-        scenes,
-        layerHomes,
-        sceneId,
-        frameIndex,
-        frame.layers,
-      ),
-      tileManager: tileManager,
-      sceneId: sceneId,
-      scene: scene,
-      frameIndex: frameIndex,
+    return _withVideoFrames(
+      materials: videoMaterials,
+      framesPerSecond: sourceFps,
       drawingWidth: drawingWidth,
       drawingHeight: drawingHeight,
-      width: width,
-      height: height,
-      backgroundColor: backgroundColor,
-      cameraKeyframes: scene.cameraKeyframes,
-      effectFilters: scene.effectFilters,
-      layerHomes: layerHomes,
-      groups: scene.groups,
+      cancelToken: null,
+      body: (video) async {
+        final layerHomes = buildLayerHomeIndex(scenes);
+        final scene = scenes.firstWhere((s) => s.id == sceneId);
+        final frame = scene.frames.firstWhere((f) => f.index == frameIndex);
+        final rgba = await renderFrame(
+          layers: resolveFrameLayers(
+            scenes,
+            layerHomes,
+            sceneId,
+            frameIndex,
+            frame.layers,
+          ),
+          tileManager: tileManager,
+          sceneId: sceneId,
+          scene: scene,
+          frameIndex: frameIndex,
+          drawingWidth: drawingWidth,
+          drawingHeight: drawingHeight,
+          width: width,
+          height: height,
+          backgroundColor: backgroundColor,
+          cameraKeyframes: scene.cameraKeyframes,
+          effectFilters: scene.effectFilters,
+          layerHomes: layerHomes,
+          groups: scene.groups,
+          videoPixels: video,
+        );
+        if (!asJpeg) _straightenPngPixels(rgba);
+        final image = img.Image.fromBytes(
+          width: width,
+          height: height,
+          bytes: rgba.buffer,
+          bytesOffset: rgba.offsetInBytes,
+          numChannels: 4,
+        );
+        final bytes = asJpeg
+            ? img.encodeJpg(image, quality: 92)
+            : img.encodePng(image);
+        final dir = await ExportEngine.exportsDir();
+        final ext = asJpeg ? 'jpg' : 'png';
+        final outputPath = _freshOutputPath(
+          dir,
+          projectName,
+          ext,
+          frameIndex: frameIndex,
+        );
+        await _publishImageExport(outputPath, bytes);
+        return outputPath;
+      },
     );
-    if (!asJpeg) _straightenPngPixels(rgba);
-    final image = img.Image.fromBytes(
-      width: width,
-      height: height,
-      bytes: rgba.buffer,
-      bytesOffset: rgba.offsetInBytes,
-      numChannels: 4,
-    );
-    final bytes = asJpeg
-        ? img.encodeJpg(image, quality: 92)
-        : img.encodePng(image);
-    final dir = await ExportEngine.exportsDir();
-    final ext = asJpeg ? 'jpg' : 'png';
-    final outputPath = _freshOutputPath(
-      dir,
-      projectName,
-      ext,
-      frameIndex: frameIndex,
-    );
-    await _publishImageExport(outputPath, bytes);
-    return outputPath;
   }
 
   /// 無料版のエンドカード（中央にアプリアイコン、下にアプリタイトルロゴ、
@@ -627,6 +612,56 @@ class ExportEngine {
   /// not encode the sound). The video itself is still written.
   int audioLeftOut = 0;
 
+  /// Runs one export [body] with the frames of the job's video materials:
+  /// only the files in [materials] (captured when the job started) are read,
+  /// decoded frames are chosen by the timeline's shared rule at
+  /// [framesPerSecond], and the decoder, its cache and its scratch folder are
+  /// released when the job ends, fails or is cancelled.
+  Future<T> _withVideoFrames<T>({
+    required VideoMaterialSnapshot? materials,
+    required int? framesPerSecond,
+    required int drawingWidth,
+    required int drawingHeight,
+    required ExportCancelToken? cancelToken,
+    required Future<T> Function(TimelineVideoLayerPixels? video) body,
+  }) async {
+    videoLeftOut = 0;
+    if (materials == null ||
+        materials.sources.isEmpty ||
+        framesPerSecond == null ||
+        framesPerSecond <= 0) {
+      return body(null);
+    }
+    final workDir = _newFramesDir(
+      await getTemporaryDirectory(),
+      'export_video_frames',
+    );
+    final problemLayers = <String>{};
+    final frames = VideoFrameProvider(
+      snapshot: materials,
+      decoder: videoDecoderFor(workDir),
+      // Export walks forward through time, so a few frames are enough to
+      // share a decode between scenes' identical frames and layers.
+      cacheBudgetBytes: drawingWidth * drawingHeight * 4 * 3,
+    );
+    try {
+      return await body(
+        TimelineVideoLayerPixels(
+          frames: frames,
+          framesPerSecond: framesPerSecond.toDouble(),
+          canvasWidth: drawingWidth,
+          canvasHeight: drawingHeight,
+          isCancelled: () => cancelToken?.isCancelled == true,
+          onProblem: (problem) => problemLayers.add(problem.layerId),
+        ),
+      );
+    } finally {
+      videoLeftOut = problemLayers.length;
+      frames.dispose();
+      _removeFrames(workDir);
+    }
+  }
+
   Future<ExportAudioMix> _mixSound(
     ExportAudioPlan audio,
     double totalSeconds,
@@ -700,118 +735,129 @@ class ExportEngine {
     ExportAudioPlan audio = ExportAudioPlan.empty,
     ExportProgressCallback? onProgress,
     ExportCancelToken? cancelToken,
+    VideoMaterialSnapshot? videoMaterials,
   }) async {
-    final tmpDir = await getTemporaryDirectory();
-    // 書き出しごとに別のフォルダ（同時に走る書き出しのコマを消さない）。
-    final framesDir = _newFramesDir(tmpDir, 'export_frames');
-    String? partialOutput;
-    try {
-      int globalIndex = 0;
-      final timing = ExportTiming(
-        sourceFps: sourceFps ?? fps,
-        outputFps: fps,
-        maxSeconds: maxSeconds,
-      );
-      final totalFrames = timing.outputFrames(scenes);
-      // 共通・タイムライン素材・ウォーターマークレイヤーの表示範囲を反映するため、
-      // 書き出しジョブ開始時に一度だけホーム位置インデックスを構築する。
-      final layerHomes = buildLayerHomeIndex(scenes);
-      final framePaths = <String>[];
-
-      Scene? lastScene;
-      Frame? lastFrame;
-      Uint8List? lastPng;
-      for (final (:scene, :frame) in timing.samples(scenes)) {
-        if (cancelToken?.isCancelled == true) {
-          throw const ExportCancelledException();
-        }
-        if (!identical(lastScene, scene) ||
-            !identical(lastFrame, frame) ||
-            lastPng == null) {
-          final rgba = await renderFrame(
-            layers: resolveFrameLayers(
-              scenes,
-              layerHomes,
-              scene.id,
-              frame.index,
-              frame.layers,
-            ),
-            tileManager: tileManager,
-            sceneId: scene.id,
-            scene: scene,
-            frameIndex: frame.index,
-            drawingWidth: drawingWidth,
-            drawingHeight: drawingHeight,
-            width: width,
-            height: height,
-            backgroundColor: backgroundColor,
-            cameraKeyframes: scene.cameraKeyframes,
-            effectFilters: scene.effectFilters,
-            layerHomes: layerHomes,
-            groups: scene.groups,
+    return _withVideoFrames(
+      materials: videoMaterials,
+      framesPerSecond: sourceFps ?? fps,
+      drawingWidth: drawingWidth,
+      drawingHeight: drawingHeight,
+      cancelToken: cancelToken,
+      body: (video) async {
+        final tmpDir = await getTemporaryDirectory();
+        // 書き出しごとに別のフォルダ（同時に走る書き出しのコマを消さない）。
+        final framesDir = _newFramesDir(tmpDir, 'export_frames');
+        String? partialOutput;
+        try {
+          int globalIndex = 0;
+          final timing = ExportTiming(
+            sourceFps: sourceFps ?? fps,
+            outputFps: fps,
+            maxSeconds: maxSeconds,
           );
-          lastPng = img.encodePng(
-            img.Image.fromBytes(
+          final totalFrames = timing.outputFrames(scenes);
+          // 共通・タイムライン素材・ウォーターマークレイヤーの表示範囲を反映するため、
+          // 書き出しジョブ開始時に一度だけホーム位置インデックスを構築する。
+          final layerHomes = buildLayerHomeIndex(scenes);
+          final framePaths = <String>[];
+
+          Scene? lastScene;
+          Frame? lastFrame;
+          Uint8List? lastPng;
+          for (final (:scene, :frame) in timing.samples(scenes)) {
+            if (cancelToken?.isCancelled == true) {
+              throw const ExportCancelledException();
+            }
+            if (!identical(lastScene, scene) ||
+                !identical(lastFrame, frame) ||
+                lastPng == null) {
+              final rgba = await renderFrame(
+                layers: resolveFrameLayers(
+                  scenes,
+                  layerHomes,
+                  scene.id,
+                  frame.index,
+                  frame.layers,
+                ),
+                tileManager: tileManager,
+                sceneId: scene.id,
+                scene: scene,
+                frameIndex: frame.index,
+                drawingWidth: drawingWidth,
+                drawingHeight: drawingHeight,
+                width: width,
+                height: height,
+                backgroundColor: backgroundColor,
+                cameraKeyframes: scene.cameraKeyframes,
+                effectFilters: scene.effectFilters,
+                layerHomes: layerHomes,
+                groups: scene.groups,
+                videoPixels: video,
+              );
+              lastPng = img.encodePng(
+                img.Image.fromBytes(
+                  width: width,
+                  height: height,
+                  bytes: rgba.buffer,
+                  numChannels: 4,
+                ),
+              );
+              lastScene = scene;
+              lastFrame = frame;
+            }
+            final file = File(
+              '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+            );
+            await file.writeAsBytes(lastPng);
+            framePaths.add(file.path);
+            onProgress?.call(globalIndex + 1, totalFrames);
+            globalIndex++;
+          }
+
+          if (appendEndCard) {
+            final endCardBytes = await _renderEndCardPng(
               width: width,
               height: height,
-              bytes: rgba.buffer,
-              numChannels: 4,
-            ),
+            );
+            final endCardFile = File('${framesDir.path}/endcard.png');
+            await endCardFile.writeAsBytes(endCardBytes);
+            for (int i = 0; i < fps * 5; i++) {
+              framePaths.add(endCardFile.path);
+            }
+          }
+
+          final sound = await _mixSound(
+            audio,
+            framePaths.length / fps,
+            framesDir,
+            cancelToken,
           );
-          lastScene = scene;
-          lastFrame = frame;
+          final exportsDir = await ExportEngine.exportsDir();
+          final outputPath = _freshOutputPath(exportsDir, projectName, 'mp4');
+          partialOutput = outputPath;
+          final audioIncluded = await HardwareVideoEncoder.encodeMp4(
+            framePaths: framePaths,
+            fps: fps,
+            width: width,
+            height: height,
+            outputPath: outputPath,
+            audioPath: sound.path,
+          );
+          if (sound.path != null && !audioIncluded) {
+            // The device could not encode the sound: the video is kept without it.
+            audioLeftOut = audio.sources.length + audio.missing;
+          }
+          // 作品一覧が覚えている一覧を捨て、書き出した作品を次の一覧に入れる。
+          ExportStorage.invalidate();
+          return outputPath;
+        } catch (_) {
+          if (partialOutput != null) await _discardPartialVideo(partialOutput);
+          rethrow;
+        } finally {
+          _removeFrames(framesDir);
         }
-        final file = File(
-          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-        );
-        await file.writeAsBytes(lastPng);
-        framePaths.add(file.path);
-        onProgress?.call(globalIndex + 1, totalFrames);
-        globalIndex++;
-      }
-
-      if (appendEndCard) {
-        final endCardBytes = await _renderEndCardPng(
-          width: width,
-          height: height,
-        );
-        final endCardFile = File('${framesDir.path}/endcard.png');
-        await endCardFile.writeAsBytes(endCardBytes);
-        for (int i = 0; i < fps * 5; i++) {
-          framePaths.add(endCardFile.path);
-        }
-      }
-
-      final sound = await _mixSound(
-        audio,
-        framePaths.length / fps,
-        framesDir,
-        cancelToken,
-      );
-      final exportsDir = await ExportEngine.exportsDir();
-      final outputPath = _freshOutputPath(exportsDir, projectName, 'mp4');
-      partialOutput = outputPath;
-      final audioIncluded = await HardwareVideoEncoder.encodeMp4(
-        framePaths: framePaths,
-        fps: fps,
-        width: width,
-        height: height,
-        outputPath: outputPath,
-        audioPath: sound.path,
-      );
-      if (sound.path != null && !audioIncluded) {
-        // The device could not encode the sound: the video is kept without it.
-        audioLeftOut = audio.sources.length + audio.missing;
-      }
-      // 作品一覧が覚えている一覧を捨て、書き出した作品を次の一覧に入れる。
-      ExportStorage.invalidate();
-      return outputPath;
-    } catch (_) {
-      if (partialOutput != null) await _discardPartialVideo(partialOutput);
-      rethrow;
-    } finally {
-      _removeFrames(framesDir);
-    }
+      },
+    );
   }
 
   Future<String> exportGif({
@@ -828,80 +874,91 @@ class ExportEngine {
     required int backgroundColor,
     ExportProgressCallback? onProgress,
     ExportCancelToken? cancelToken,
+    VideoMaterialSnapshot? videoMaterials,
   }) async {
-    final timing = ExportTiming(
-      sourceFps: sourceFps ?? fps,
-      outputFps: fps,
-      maxSeconds: maxSeconds,
-    );
-    final totalFrames = timing.outputFrames(scenes);
-    if (totalFrames == 0) {
-      throw StateError('GIF export needs at least one frame');
-    }
-    final layerHomes = buildLayerHomeIndex(scenes);
-    final tmpDir = await getTemporaryDirectory();
-    final framesDir = _newFramesDir(tmpDir, 'gif_export_frames');
-    final input = File('${framesDir.path}/frames.rgba');
+    return _withVideoFrames(
+      materials: videoMaterials,
+      framesPerSecond: sourceFps ?? fps,
+      drawingWidth: drawingWidth,
+      drawingHeight: drawingHeight,
+      cancelToken: cancelToken,
+      body: (video) async {
+        final timing = ExportTiming(
+          sourceFps: sourceFps ?? fps,
+          outputFps: fps,
+          maxSeconds: maxSeconds,
+        );
+        final totalFrames = timing.outputFrames(scenes);
+        if (totalFrames == 0) {
+          throw StateError('GIF export needs at least one frame');
+        }
+        final layerHomes = buildLayerHomeIndex(scenes);
+        final tmpDir = await getTemporaryDirectory();
+        final framesDir = _newFramesDir(tmpDir, 'gif_export_frames');
+        final input = File('${framesDir.path}/frames.rgba');
 
-    try {
-      // Stage the frames on disk so long exports do not retain every RGBA
-      // frame in memory or copy the full animation to the encoding isolate.
-      final frames = await input.open(mode: FileMode.write);
-      try {
-        int index = 0;
-        for (final (:scene, :frame) in timing.samples(scenes)) {
+        try {
+          // Stage the frames on disk so long exports do not retain every RGBA
+          // frame in memory or copy the full animation to the encoding isolate.
+          final frames = await input.open(mode: FileMode.write);
+          try {
+            int index = 0;
+            for (final (:scene, :frame) in timing.samples(scenes)) {
+              if (cancelToken?.isCancelled == true) {
+                throw const ExportCancelledException();
+              }
+              final rgba = await renderFrame(
+                layers: resolveFrameLayers(
+                  scenes,
+                  layerHomes,
+                  scene.id,
+                  frame.index,
+                  frame.layers,
+                ),
+                tileManager: tileManager,
+                sceneId: scene.id,
+                scene: scene,
+                frameIndex: frame.index,
+                drawingWidth: drawingWidth,
+                drawingHeight: drawingHeight,
+                width: width,
+                height: height,
+                backgroundColor: backgroundColor,
+                cameraKeyframes: scene.cameraKeyframes,
+                effectFilters: scene.effectFilters,
+                layerHomes: layerHomes,
+                groups: scene.groups,
+                videoPixels: video,
+              );
+              await frames.writeFrom(rgba);
+              onProgress?.call(++index, totalFrames);
+            }
+          } finally {
+            await frames.close();
+          }
+
           if (cancelToken?.isCancelled == true) {
             throw const ExportCancelledException();
           }
-          final rgba = await renderFrame(
-            layers: resolveFrameLayers(
-              scenes,
-              layerHomes,
-              scene.id,
-              frame.index,
-              frame.layers,
-            ),
-            tileManager: tileManager,
-            sceneId: scene.id,
-            scene: scene,
-            frameIndex: frame.index,
-            drawingWidth: drawingWidth,
-            drawingHeight: drawingHeight,
+          final gifBytes = await compute(_encodeGifFrames, (
+            path: input.path,
             width: width,
             height: height,
-            backgroundColor: backgroundColor,
-            cameraKeyframes: scene.cameraKeyframes,
-            effectFilters: scene.effectFilters,
-            layerHomes: layerHomes,
-            groups: scene.groups,
-          );
-          await frames.writeFrom(rgba);
-          onProgress?.call(++index, totalFrames);
+            frameCount: totalFrames,
+            timing: timing,
+          ), debugLabel: 'Encode export GIF');
+          final exportsDir = await ExportEngine.exportsDir();
+          if (cancelToken?.isCancelled == true) {
+            throw const ExportCancelledException();
+          }
+          final outputPath = _freshOutputPath(exportsDir, projectName, 'gif');
+          await _publishImageExport(outputPath, gifBytes);
+          return outputPath;
+        } finally {
+          _removeFrames(framesDir);
         }
-      } finally {
-        await frames.close();
-      }
-
-      if (cancelToken?.isCancelled == true) {
-        throw const ExportCancelledException();
-      }
-      final gifBytes = await compute(_encodeGifFrames, (
-        path: input.path,
-        width: width,
-        height: height,
-        frameCount: totalFrames,
-        timing: timing,
-      ), debugLabel: 'Encode export GIF');
-      final exportsDir = await ExportEngine.exportsDir();
-      if (cancelToken?.isCancelled == true) {
-        throw const ExportCancelledException();
-      }
-      final outputPath = _freshOutputPath(exportsDir, projectName, 'gif');
-      await _publishImageExport(outputPath, gifBytes);
-      return outputPath;
-    } finally {
-      _removeFrames(framesDir);
-    }
+      },
+    );
   }
 
   Future<void> _publishImageExport(String path, List<int> bytes) async {
@@ -946,118 +1003,129 @@ class ExportEngine {
     ExportAudioPlan audio = ExportAudioPlan.empty,
     ExportProgressCallback? onProgress,
     ExportCancelToken? cancelToken,
+    VideoMaterialSnapshot? videoMaterials,
   }) async {
-    final tmpDir = await getTemporaryDirectory();
-    // 書き出しごとに別のフォルダ（同時に走る書き出しのコマを消さない）。
-    final framesDir = _newFramesDir(tmpDir, 'export_webm_frames');
-    String? partialOutput;
-    try {
-      int globalIndex = 0;
-      final timing = ExportTiming(
-        sourceFps: sourceFps ?? fps,
-        outputFps: fps,
-        maxSeconds: maxSeconds,
-      );
-      final totalFrames = timing.outputFrames(scenes);
-      final layerHomes = buildLayerHomeIndex(scenes);
-
-      Scene? lastScene;
-      Frame? lastFrame;
-      Uint8List? lastPng;
-      for (final (:scene, :frame) in timing.samples(scenes)) {
-        if (cancelToken?.isCancelled == true) {
-          throw const ExportCancelledException();
-        }
-        if (!identical(lastScene, scene) ||
-            !identical(lastFrame, frame) ||
-            lastPng == null) {
-          final rgba = await renderFrame(
-            layers: resolveFrameLayers(
-              scenes,
-              layerHomes,
-              scene.id,
-              frame.index,
-              frame.layers,
-            ),
-            tileManager: tileManager,
-            sceneId: scene.id,
-            scene: scene,
-            frameIndex: frame.index,
-            drawingWidth: drawingWidth,
-            drawingHeight: drawingHeight,
-            width: width,
-            height: height,
-            backgroundColor: backgroundColor,
-            cameraKeyframes: scene.cameraKeyframes,
-            effectFilters: scene.effectFilters,
-            layerHomes: layerHomes,
-            groups: scene.groups,
+    return _withVideoFrames(
+      materials: videoMaterials,
+      framesPerSecond: sourceFps ?? fps,
+      drawingWidth: drawingWidth,
+      drawingHeight: drawingHeight,
+      cancelToken: cancelToken,
+      body: (video) async {
+        final tmpDir = await getTemporaryDirectory();
+        // 書き出しごとに別のフォルダ（同時に走る書き出しのコマを消さない）。
+        final framesDir = _newFramesDir(tmpDir, 'export_webm_frames');
+        String? partialOutput;
+        try {
+          int globalIndex = 0;
+          final timing = ExportTiming(
+            sourceFps: sourceFps ?? fps,
+            outputFps: fps,
+            maxSeconds: maxSeconds,
           );
-          lastPng = img.encodePng(
-            img.Image.fromBytes(
+          final totalFrames = timing.outputFrames(scenes);
+          final layerHomes = buildLayerHomeIndex(scenes);
+
+          Scene? lastScene;
+          Frame? lastFrame;
+          Uint8List? lastPng;
+          for (final (:scene, :frame) in timing.samples(scenes)) {
+            if (cancelToken?.isCancelled == true) {
+              throw const ExportCancelledException();
+            }
+            if (!identical(lastScene, scene) ||
+                !identical(lastFrame, frame) ||
+                lastPng == null) {
+              final rgba = await renderFrame(
+                layers: resolveFrameLayers(
+                  scenes,
+                  layerHomes,
+                  scene.id,
+                  frame.index,
+                  frame.layers,
+                ),
+                tileManager: tileManager,
+                sceneId: scene.id,
+                scene: scene,
+                frameIndex: frame.index,
+                drawingWidth: drawingWidth,
+                drawingHeight: drawingHeight,
+                width: width,
+                height: height,
+                backgroundColor: backgroundColor,
+                cameraKeyframes: scene.cameraKeyframes,
+                effectFilters: scene.effectFilters,
+                layerHomes: layerHomes,
+                groups: scene.groups,
+                videoPixels: video,
+              );
+              lastPng = img.encodePng(
+                img.Image.fromBytes(
+                  width: width,
+                  height: height,
+                  bytes: rgba.buffer,
+                  numChannels: 4,
+                ),
+              );
+              lastScene = scene;
+              lastFrame = frame;
+            }
+            final file = File(
+              '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+            );
+            await file.writeAsBytes(lastPng);
+            onProgress?.call(globalIndex + 1, totalFrames);
+            globalIndex++;
+          }
+
+          if (appendEndCard) {
+            final endCardBytes = await _renderEndCardPng(
               width: width,
               height: height,
-              bytes: rgba.buffer,
-              numChannels: 4,
-            ),
-          );
-          lastScene = scene;
-          lastFrame = frame;
-        }
-        final file = File(
-          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-        );
-        await file.writeAsBytes(lastPng);
-        onProgress?.call(globalIndex + 1, totalFrames);
-        globalIndex++;
-      }
+            );
+            for (int i = 0; i < fps * 5; i++) {
+              final file = File(
+                '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+              );
+              await file.writeAsBytes(endCardBytes);
+              globalIndex++;
+            }
+          }
 
-      if (appendEndCard) {
-        final endCardBytes = await _renderEndCardPng(
-          width: width,
-          height: height,
-        );
-        for (int i = 0; i < fps * 5; i++) {
-          final file = File(
-            '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+          final exportsDir = await ExportEngine.exportsDir();
+          final outputPath = _freshOutputPath(exportsDir, projectName, 'webm');
+          partialOutput = outputPath;
+          final sound = await _mixSound(
+            audio,
+            globalIndex / fps,
+            framesDir,
+            cancelToken,
           );
-          await file.writeAsBytes(endCardBytes);
-          globalIndex++;
+          await _encodeWithSound(
+            video: [
+              '-framerate',
+              fps.toString(),
+              '-i',
+              '${framesDir.path}/frame_%06d.png',
+            ],
+            codecs: ['-c:v', 'libvpx-vp9', '-pix_fmt', 'yuva420p'],
+            // WebM carries Opus. The app's FFmpeg has no libopus, so its own
+            // Opus encoder is used (marked experimental by FFmpeg).
+            soundCodec: ['-c:a', 'opus', '-strict', '-2', '-b:a', '128k'],
+            sound: sound,
+            audio: audio,
+            outputPath: outputPath,
+          );
+          ExportStorage.invalidate();
+          return outputPath;
+        } catch (_) {
+          if (partialOutput != null) await _discardPartialVideo(partialOutput);
+          rethrow;
+        } finally {
+          _removeFrames(framesDir);
         }
-      }
-
-      final exportsDir = await ExportEngine.exportsDir();
-      final outputPath = _freshOutputPath(exportsDir, projectName, 'webm');
-      partialOutput = outputPath;
-      final sound = await _mixSound(
-        audio,
-        globalIndex / fps,
-        framesDir,
-        cancelToken,
-      );
-      await _encodeWithSound(
-        video: [
-          '-framerate',
-          fps.toString(),
-          '-i',
-          '${framesDir.path}/frame_%06d.png',
-        ],
-        codecs: ['-c:v', 'libvpx-vp9', '-pix_fmt', 'yuva420p'],
-        // WebM carries Opus. The app's FFmpeg has no libopus, so its own
-        // Opus encoder is used (marked experimental by FFmpeg).
-        soundCodec: ['-c:a', 'opus', '-strict', '-2', '-b:a', '128k'],
-        sound: sound,
-        audio: audio,
-        outputPath: outputPath,
-      );
-      ExportStorage.invalidate();
-      return outputPath;
-    } catch (_) {
-      if (partialOutput != null) await _discardPartialVideo(partialOutput);
-      rethrow;
-    } finally {
-      _removeFrames(framesDir);
-    }
+      },
+    );
   }
 
   /// AVI書き出し（Motion JPEG）。コーデックにはFFmpeg本体が内蔵する
@@ -1086,118 +1154,129 @@ class ExportEngine {
     ExportAudioPlan audio = ExportAudioPlan.empty,
     ExportProgressCallback? onProgress,
     ExportCancelToken? cancelToken,
+    VideoMaterialSnapshot? videoMaterials,
   }) async {
-    final tmpDir = await getTemporaryDirectory();
-    // 書き出しごとに別のフォルダ（同時に走る書き出しのコマを消さない）。
-    final framesDir = _newFramesDir(tmpDir, 'export_avi_frames');
-    String? partialOutput;
-    try {
-      int globalIndex = 0;
-      final timing = ExportTiming(
-        sourceFps: sourceFps ?? fps,
-        outputFps: fps,
-        maxSeconds: maxSeconds,
-      );
-      final totalFrames = timing.outputFrames(scenes);
-      final layerHomes = buildLayerHomeIndex(scenes);
-
-      Scene? lastScene;
-      Frame? lastFrame;
-      Uint8List? lastPng;
-      for (final (:scene, :frame) in timing.samples(scenes)) {
-        if (cancelToken?.isCancelled == true) {
-          throw const ExportCancelledException();
-        }
-        if (!identical(lastScene, scene) ||
-            !identical(lastFrame, frame) ||
-            lastPng == null) {
-          final rgba = await renderFrame(
-            layers: resolveFrameLayers(
-              scenes,
-              layerHomes,
-              scene.id,
-              frame.index,
-              frame.layers,
-            ),
-            tileManager: tileManager,
-            sceneId: scene.id,
-            scene: scene,
-            frameIndex: frame.index,
-            drawingWidth: drawingWidth,
-            drawingHeight: drawingHeight,
-            width: width,
-            height: height,
-            backgroundColor: backgroundColor,
-            cameraKeyframes: scene.cameraKeyframes,
-            effectFilters: scene.effectFilters,
-            layerHomes: layerHomes,
-            groups: scene.groups,
+    return _withVideoFrames(
+      materials: videoMaterials,
+      framesPerSecond: sourceFps ?? fps,
+      drawingWidth: drawingWidth,
+      drawingHeight: drawingHeight,
+      cancelToken: cancelToken,
+      body: (video) async {
+        final tmpDir = await getTemporaryDirectory();
+        // 書き出しごとに別のフォルダ（同時に走る書き出しのコマを消さない）。
+        final framesDir = _newFramesDir(tmpDir, 'export_avi_frames');
+        String? partialOutput;
+        try {
+          int globalIndex = 0;
+          final timing = ExportTiming(
+            sourceFps: sourceFps ?? fps,
+            outputFps: fps,
+            maxSeconds: maxSeconds,
           );
-          lastPng = img.encodePng(
-            img.Image.fromBytes(
+          final totalFrames = timing.outputFrames(scenes);
+          final layerHomes = buildLayerHomeIndex(scenes);
+
+          Scene? lastScene;
+          Frame? lastFrame;
+          Uint8List? lastPng;
+          for (final (:scene, :frame) in timing.samples(scenes)) {
+            if (cancelToken?.isCancelled == true) {
+              throw const ExportCancelledException();
+            }
+            if (!identical(lastScene, scene) ||
+                !identical(lastFrame, frame) ||
+                lastPng == null) {
+              final rgba = await renderFrame(
+                layers: resolveFrameLayers(
+                  scenes,
+                  layerHomes,
+                  scene.id,
+                  frame.index,
+                  frame.layers,
+                ),
+                tileManager: tileManager,
+                sceneId: scene.id,
+                scene: scene,
+                frameIndex: frame.index,
+                drawingWidth: drawingWidth,
+                drawingHeight: drawingHeight,
+                width: width,
+                height: height,
+                backgroundColor: backgroundColor,
+                cameraKeyframes: scene.cameraKeyframes,
+                effectFilters: scene.effectFilters,
+                layerHomes: layerHomes,
+                groups: scene.groups,
+                videoPixels: video,
+              );
+              lastPng = img.encodePng(
+                img.Image.fromBytes(
+                  width: width,
+                  height: height,
+                  bytes: rgba.buffer,
+                  numChannels: 4,
+                ),
+              );
+              lastScene = scene;
+              lastFrame = frame;
+            }
+            final file = File(
+              '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+            );
+            await file.writeAsBytes(lastPng);
+            onProgress?.call(globalIndex + 1, totalFrames);
+            globalIndex++;
+          }
+
+          if (appendEndCard) {
+            final endCardBytes = await _renderEndCardPng(
               width: width,
               height: height,
-              bytes: rgba.buffer,
-              numChannels: 4,
-            ),
-          );
-          lastScene = scene;
-          lastFrame = frame;
-        }
-        final file = File(
-          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-        );
-        await file.writeAsBytes(lastPng);
-        onProgress?.call(globalIndex + 1, totalFrames);
-        globalIndex++;
-      }
+            );
+            for (int i = 0; i < fps * 5; i++) {
+              final file = File(
+                '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+              );
+              await file.writeAsBytes(endCardBytes);
+              globalIndex++;
+            }
+          }
 
-      if (appendEndCard) {
-        final endCardBytes = await _renderEndCardPng(
-          width: width,
-          height: height,
-        );
-        for (int i = 0; i < fps * 5; i++) {
-          final file = File(
-            '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+          final exportsDir = await ExportEngine.exportsDir();
+          final outputPath = _freshOutputPath(exportsDir, projectName, 'avi');
+          partialOutput = outputPath;
+          // mjpegはアルファ非対応のため、透過を破棄してbackgroundColorで合成済みの
+          // RGBを不透明のyuvj420pへ変換する（yuva420p等は指定しない）。
+          final sound = await _mixSound(
+            audio,
+            globalIndex / fps,
+            framesDir,
+            cancelToken,
           );
-          await file.writeAsBytes(endCardBytes);
-          globalIndex++;
+          await _encodeWithSound(
+            video: [
+              '-framerate',
+              fps.toString(),
+              '-i',
+              '${framesDir.path}/frame_%06d.png',
+            ],
+            codecs: ['-c:v', 'mjpeg', '-pix_fmt', 'yuvj420p', '-q:v', '3'],
+            // Uncompressed PCM: the usual sound of an MJPEG AVI for editing.
+            soundCodec: ['-c:a', 'pcm_s16le'],
+            sound: sound,
+            audio: audio,
+            outputPath: outputPath,
+          );
+          ExportStorage.invalidate();
+          return outputPath;
+        } catch (_) {
+          if (partialOutput != null) await _discardPartialVideo(partialOutput);
+          rethrow;
+        } finally {
+          _removeFrames(framesDir);
         }
-      }
-
-      final exportsDir = await ExportEngine.exportsDir();
-      final outputPath = _freshOutputPath(exportsDir, projectName, 'avi');
-      partialOutput = outputPath;
-      // mjpegはアルファ非対応のため、透過を破棄してbackgroundColorで合成済みの
-      // RGBを不透明のyuvj420pへ変換する（yuva420p等は指定しない）。
-      final sound = await _mixSound(
-        audio,
-        globalIndex / fps,
-        framesDir,
-        cancelToken,
-      );
-      await _encodeWithSound(
-        video: [
-          '-framerate',
-          fps.toString(),
-          '-i',
-          '${framesDir.path}/frame_%06d.png',
-        ],
-        codecs: ['-c:v', 'mjpeg', '-pix_fmt', 'yuvj420p', '-q:v', '3'],
-        // Uncompressed PCM: the usual sound of an MJPEG AVI for editing.
-        soundCodec: ['-c:a', 'pcm_s16le'],
-        sound: sound,
-        audio: audio,
-        outputPath: outputPath,
-      );
-      ExportStorage.invalidate();
-      return outputPath;
-    } catch (_) {
-      if (partialOutput != null) await _discardPartialVideo(partialOutput);
-      rethrow;
-    } finally {
-      _removeFrames(framesDir);
-    }
+      },
+    );
   }
 }

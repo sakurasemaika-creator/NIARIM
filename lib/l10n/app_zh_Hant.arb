@@ -958,6 +958,7 @@
   "exportCompleteTitle": "匯出完成",
   "exportCompleteFramesBody": "已完成{count}影格的匯出。",
   "exportSoundsLeftOut": "{count, plural, other{有 {count} 段聲音未能放入匯出檔案（素材檔案遺失或無法讀取）。影片已照常匯出。}}",
+  "exportVideosLeftOut": "{count, plural, other{有 {count} 段影片素材的畫面未能放入匯出檔案（素材檔案遺失或無法讀取）。該部分未繪製任何內容。}}",
   "exportSaveLocationHint": "在首頁的「作品列表」可用專案名稱搜尋匯出的檔案。選取「分享」即可存到「照片」或用其他 App 開啟。",
   "exportOpenWorks": "開啟作品列表",
   "exportBackToProjectsButton": "返回專案列表",

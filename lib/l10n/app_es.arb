@@ -958,6 +958,7 @@
   "exportCompleteTitle": "Exportación completa",
   "exportCompleteFramesBody": "Se exportaron {count} fotograma(s).",
   "exportSoundsLeftOut": "{count, plural, one{No se pudo incluir {count} sonido en la exportación (falta su archivo de material o no se puede leer). El vídeo se exportó sin él.} other{No se pudieron incluir {count} sonidos en la exportación (faltan sus archivos de material o no se pueden leer). El vídeo se exportó sin ellos.}}",
+  "exportVideosLeftOut": "{count, plural, one{No se pudo mostrar {count} vídeo en la exportación (falta su archivo de material o no se puede leer). No se dibujó nada en su lugar.} other{No se pudieron mostrar {count} vídeos en la exportación (faltan sus archivos de material o no se pueden leer). No se dibujó nada en su lugar.}}",
   "exportSaveLocationHint": "Busca el archivo por el nombre del proyecto en Obras, en la pantalla de inicio. Elige Compartir para guardarlo en Fotos o abrirlo en otra aplicación.",
   "exportOpenWorks": "Abrir Obras",
   "exportBackToProjectsButton": "Volver a proyectos",

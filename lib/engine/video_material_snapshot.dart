@@ -29,6 +29,20 @@ class VideoMaterialSnapshot {
 
   bool contains(String materialId) => sources.containsKey(materialId);
 
+  /// Whether [other] lists the same materials at the same files.
+  bool hasSameSources(VideoMaterialSnapshot other) {
+    if (other.sources.length != sources.length) return false;
+    for (final MapEntry(:key, :value) in sources.entries) {
+      final theirs = other.sources[key];
+      if (theirs == null ||
+          theirs.path != value.path ||
+          theirs.duration != value.duration) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   static VideoMaterialSnapshot fromAssets(
     Iterable<MaterialAsset> assets,
     Map<String, String?> paths,

@@ -960,6 +960,7 @@
   "exportCompleteTitle": "Export Complete",
   "exportCompleteFramesBody": "Exported {count} frame(s).",
   "exportSoundsLeftOut": "{count, plural, one{{count} sound could not be put in the export (its material file is missing or unreadable). The video was exported without it.} other{{count} sounds could not be put in the export (their material files are missing or unreadable). The video was exported without them.}}",
+  "exportVideosLeftOut": "{count, plural, one{{count} video material could not be shown in the export (its material file is missing or unreadable). Nothing was drawn in its place.} other{{count} video materials could not be shown in the export (their material files are missing or unreadable). Nothing was drawn in their place.}}",
   "exportSaveLocationHint": "Find your export by its project name in Works on the home screen. Choose Share to save it to Photos or open it in another app.",
   "exportOpenWorks": "Open Works",
   "exportBackToProjectsButton": "Back to Projects",

@@ -517,6 +517,9 @@ class _ExportScreenState extends State<ExportScreen> {
               maxSeconds: maxSeconds,
               pathOf: (id) => materials.pathOf(widget.projectId, id),
             );
+      // The video materials this job reads, fixed before the first frame so
+      // a material changed during the export does not change what it shows.
+      final videoMaterials = await materials.videoSnapshotOf(widget.projectId);
 
       String outputPath;
       switch (format) {
@@ -537,6 +540,7 @@ class _ExportScreenState extends State<ExportScreen> {
             audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
+            videoMaterials: videoMaterials,
           );
         case ExportFormat.gif:
           outputPath = await engine.exportGif(
@@ -553,6 +557,7 @@ class _ExportScreenState extends State<ExportScreen> {
             backgroundColor: project.backgroundColor,
             onProgress: onProgress,
             cancelToken: cancelToken,
+            videoMaterials: videoMaterials,
           );
         case ExportFormat.webm:
           outputPath = await engine.exportWebm(
@@ -571,6 +576,7 @@ class _ExportScreenState extends State<ExportScreen> {
             audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
+            videoMaterials: videoMaterials,
           );
         case ExportFormat.avi:
           outputPath = await engine.exportAvi(
@@ -589,6 +595,7 @@ class _ExportScreenState extends State<ExportScreen> {
             audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
+            videoMaterials: videoMaterials,
           );
       }
 
@@ -616,6 +623,7 @@ class _ExportScreenState extends State<ExportScreen> {
         outputPath,
         totalFrames,
         soundsLeftOut: engine.audioLeftOut,
+        videosLeftOut: engine.videoLeftOut,
       );
     } on ExportCancelledException {
       _closeProgressDialog();
@@ -725,6 +733,7 @@ class _ExportScreenState extends State<ExportScreen> {
     String outputPath,
     int totalFrames, {
     int soundsLeftOut = 0,
+    int videosLeftOut = 0,
   }) async {
     final destination = await showDialog<ExportDestination>(
       context: context,
@@ -732,6 +741,7 @@ class _ExportScreenState extends State<ExportScreen> {
         file: File(outputPath),
         frames: totalFrames,
         soundsLeftOut: soundsLeftOut,
+        videosLeftOut: videosLeftOut,
       ),
     );
     if (!mounted || destination == null) return;

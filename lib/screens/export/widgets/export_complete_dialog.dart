@@ -14,6 +14,7 @@ class ExportCompleteDialog extends StatefulWidget {
     required this.file,
     required this.frames,
     this.soundsLeftOut = 0,
+    this.videosLeftOut = 0,
   });
 
   final File file;
@@ -21,6 +22,9 @@ class ExportCompleteDialog extends StatefulWidget {
 
   /// Sounds of the timeline that could not be put in the video.
   final int soundsLeftOut;
+
+  /// Video materials whose frames could not be drawn in the export.
+  final int videosLeftOut;
 
   @override
   State<ExportCompleteDialog> createState() => _ExportCompleteDialogState();
@@ -66,6 +70,14 @@ class _ExportCompleteDialogState extends State<ExportCompleteDialog> {
             IconNotice(
               l10n.exportSoundsLeftOut(widget.soundsLeftOut),
               icon: Icons.volume_off_outlined,
+              liveRegion: true,
+            ),
+          ],
+          if (widget.videosLeftOut > 0) ...[
+            const SizedBox(height: 8),
+            IconNotice(
+              l10n.exportVideosLeftOut(widget.videosLeftOut),
+              icon: Icons.videocam_off_outlined,
               liveRegion: true,
             ),
           ],

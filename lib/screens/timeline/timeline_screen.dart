@@ -19,6 +19,7 @@ import 'package:flutter/material.dart' hide MaterialType;
 import 'package:flutter/scheduler.dart' show SchedulerPhase;
 import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -46,9 +47,13 @@ import '../../engine/layer_range_resolver.dart';
 import '../../engine/watermark_render.dart';
 import '../../engine/tile_manager.dart';
 import '../../engine/timeline_material.dart';
+import '../../engine/timeline_frame_renderer.dart';
+import '../../engine/timeline_video_layer_pixels.dart';
 import '../../engine/timeline_video_time.dart';
+import '../../engine/video_frame_decoder.dart';
+import '../../engine/video_frame_provider.dart';
+import '../../engine/video_material_snapshot.dart';
 import '../../engine/timeline_stack.dart';
-import '../../engine/timeline_output_viewport.dart';
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/audio_clip.dart';
@@ -58,7 +63,6 @@ import '../../models/filter_def.dart'
     show AuroraHologramPreset, ToneCurvePreset, kPixelArtMaxBlockSize;
 import '../../models/layer.dart';
 import '../../models/layer_group.dart';
-import '../../models/layer_keyframe.dart';
 import '../../models/timeline_marker.dart';
 import '../../models/material_asset.dart';
 import '../../models/pixel_color_mode.dart';
@@ -253,6 +257,12 @@ class TimelineScreen extends StatefulWidget {
     this.initialSceneId,
     this.initialFrame = 0,
   });
+
+  /// Makes the decoder the previews use for video materials' frames (the
+  /// export uses its own per job). Tests replace it.
+  @visibleForTesting
+  static VideoFrameDecoder Function(Directory workDirectory) videoDecoderFor =
+      FfmpegVideoFrameDecoder.ffmpegKit;
 
   @override
   State<TimelineScreen> createState() => _TimelineScreenState();
@@ -740,6 +750,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
     context.read<UndoManager>().selectProject(widget.projectId);
     _workTrackingLease = _projectService.beginWorkTracking(widget.projectId);
+    _watchPreviewVideoMaterials();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) showProjectAutosaveNotice(context, widget.projectId);
     });
@@ -796,6 +807,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     for (final v in _videoControllers.values) {
       v.dispose();
     }
+    _releasePreviewVideoFrames();
     _moveThumbnail?.dispose();
     _currentFrameNotifier.removeListener(_onCurrentFrameChanged);
     _currentFrameNotifier.dispose();
@@ -1179,8 +1191,110 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
+  // ─── Decoded video frames for the previews ───────────────
+  // The previews composite the frames of video materials through the same
+  // VideoFrameProvider rules as the export. The provider reads only the
+  // files in a snapshot of the project's video materials, made again when
+  // the materials change.
+  MaterialService? _previewVideoMaterialService;
+  VideoMaterialSnapshot? _previewVideoMaterials;
+  VideoFrameProvider? _previewVideoFrames;
+  Directory? _previewVideoWorkDir;
+  int _previewVideoGeneration = 0;
+  TimelineVideoLayerPixels? _previewVideoPixels;
+
+  void _watchPreviewVideoMaterials() {
+    final MaterialService materials;
+    try {
+      materials = context.read<MaterialService>();
+    } on ProviderNotFoundException {
+      return;
+    }
+    _previewVideoMaterialService = materials
+      ..addListener(_refreshPreviewVideoFrames);
+    _refreshPreviewVideoFrames();
+  }
+
+  Future<void> _refreshPreviewVideoFrames() async {
+    final materials = _previewVideoMaterialService;
+    if (materials == null) return;
+    final generation = ++_previewVideoGeneration;
+    try {
+      final snapshot = await materials.videoSnapshotOf(widget.projectId);
+      if (!mounted || generation != _previewVideoGeneration) return;
+      final current = _previewVideoMaterials;
+      if (current != null && current.hasSameSources(snapshot)) return;
+      final workDir = _previewVideoWorkDir ??= (await getTemporaryDirectory())
+          .createTempSync('timeline_preview_video_frames_');
+      if (!mounted || generation != _previewVideoGeneration) return;
+      final frames = VideoFrameProvider(
+        snapshot: snapshot,
+        decoder: TimelineScreen.videoDecoderFor(workDir),
+      );
+      final previous = _previewVideoFrames;
+      setState(() {
+        _previewVideoMaterials = snapshot;
+        _previewVideoFrames = frames;
+        _previewVideoPixels = null;
+      });
+      // Pictures still being built with the old frames are not shown.
+      previous?.dispose();
+    } catch (error, stackTrace) {
+      // Without a frame source the previews draw no video frames.
+      AppErrorReporter.record(error, stackTrace);
+    }
+  }
+
+  /// The frame source for the previews at the project's current frame rate
+  /// and canvas size (a new one when either changes, so the previews redraw).
+  TimelineVideoLayerPixels? _previewVideoPixelsFor(ProjectService ps) {
+    final frames = _previewVideoFrames;
+    if (frames == null) return null;
+    final fps = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull
+        ?.fps;
+    final tiles = ps.tileManagerOf(widget.projectId);
+    if (fps == null || fps <= 0) return null;
+    final current = _previewVideoPixels;
+    if (current != null &&
+        identical(current.frames, frames) &&
+        current.framesPerSecond == fps &&
+        current.canvasWidth == tiles.canvasWidth &&
+        current.canvasHeight == tiles.canvasHeight) {
+      return current;
+    }
+    return _previewVideoPixels = TimelineVideoLayerPixels(
+      frames: frames,
+      framesPerSecond: fps.toDouble(),
+      canvasWidth: tiles.canvasWidth,
+      canvasHeight: tiles.canvasHeight,
+    );
+  }
+
+  void _releasePreviewVideoFrames() {
+    _previewVideoGeneration++;
+    _previewVideoMaterialService?.removeListener(_refreshPreviewVideoFrames);
+    _previewVideoMaterialService = null;
+    _previewVideoFrames?.dispose();
+    _previewVideoFrames = null;
+    _previewVideoPixels = null;
+    final workDir = _previewVideoWorkDir;
+    _previewVideoWorkDir = null;
+    if (workDir != null) {
+      unawaited(
+        workDir.delete(recursive: true).then<void>((_) {}, onError: (_) {}),
+      );
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => _TimelinePreviewVideoFrames(
+    videoPixels: _previewVideoPixelsFor(context.watch<ProjectService>()),
+    child: _buildScreen(context),
+  );
+
+  Widget _buildScreen(BuildContext context) {
     // シーンは実プロジェクトデータ（ProjectService）から取得する。
     // 選択中シーンが未設定・削除済みの場合は先頭シーンへ同期する。
     final scenes = context.watch<ProjectService>().scenesOf(widget.projectId);
@@ -9250,9 +9364,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (project == null) return;
     final scenes = ps.scenesOf(widget.projectId);
     final tileManager = ps.tileManagerOf(widget.projectId);
+    final materials = context.read<MaterialService>();
 
     try {
-      final path = await ExportEngine().exportFrameImage(
+      final videoMaterials = await materials.videoSnapshotOf(widget.projectId);
+      final engine = ExportEngine();
+      final path = await engine.exportFrameImage(
         projectName: project.name,
         scenes: scenes,
         tileManager: tileManager,
@@ -9264,15 +9381,25 @@ class _TimelineScreenState extends State<TimelineScreen> {
         height: project.exportHeight,
         backgroundColor: project.backgroundColor,
         asJpeg: asJpeg,
+        sourceFps: project.fps,
+        videoMaterials: videoMaterials,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(
         SnackBar(
           content: Text(
             l10n.timelineExportFrameSuccessSnackbar(path.split('/').last),
           ),
         ),
       );
+      if (engine.videoLeftOut > 0) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.exportVideosLeftOut(engine.videoLeftOut)),
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -10104,6 +10231,25 @@ int _projectBackgroundOf(ProjectService ps, String projectId) =>
     ps.projects.where((p) => p.id == projectId).firstOrNull?.backgroundColor ??
     0xFFFFFFFF;
 
+/// The timeline screen's source of decoded video frames for its previews
+/// (null while it is not available, e.g. before the materials are read).
+class _TimelinePreviewVideoFrames extends InheritedWidget {
+  const _TimelinePreviewVideoFrames({
+    required this.videoPixels,
+    required super.child,
+  });
+
+  final TimelineVideoLayerPixels? videoPixels;
+
+  static TimelineVideoLayerPixels? of(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<_TimelinePreviewVideoFrames>()
+      ?.videoPixels;
+
+  @override
+  bool updateShouldNotify(_TimelinePreviewVideoFrames oldWidget) =>
+      !identical(videoPixels, oldWidget.videoPixels);
+}
+
 class _TimelinePreview extends StatefulWidget {
   final TileManager tileManager;
 
@@ -10145,18 +10291,24 @@ class _TimelinePreview extends StatefulWidget {
 }
 
 class _TimelinePreviewState extends State<_TimelinePreview> {
-  final CameraEngine _cameraEngine = CameraEngine();
-  final LayerKeyframeEngine _layerKeyframeEngine = LayerKeyframeEngine();
-  final FilterEngine _filterEngine = FilterEngine();
+  final TimelineFrameRenderer _renderer = TimelineFrameRenderer();
   ui.Image? _image;
   bool _building = false;
   // A change that came while a picture was being built: build again after
   // (else dragging a slider or a material left the preview a step behind).
   bool _rebuildPending = false;
 
+  /// The decoded frames of video materials, shared by the timeline screen.
+  TimelineVideoLayerPixels? _videoPixels;
+  bool _started = false;
+
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final videoPixels = _TimelinePreviewVideoFrames.of(context);
+    if (_started && identical(videoPixels, _videoPixels)) return;
+    _started = true;
+    _videoPixels = videoPixels;
     _rebuild();
   }
 
@@ -10186,17 +10338,6 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     }
   }
 
-  LayerKeyframe? _groupKeyframeOf(_TimelinePreview request, Layer layer) {
-    for (final g in request.groups) {
-      if (g.memberLayerIds.contains(layer.id)) {
-        return g.keyframes.isEmpty
-            ? null
-            : _layerKeyframeEngine.valueAt(g.keyframes, request.frameIndex);
-      }
-    }
-    return null;
-  }
-
   Future<void> _rebuild() async {
     if (_building) {
       _rebuildPending = true;
@@ -10204,71 +10345,43 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     }
     _building = true;
     final request = widget;
+    final videoPixels = _videoPixels;
     final tm = request.tileManager;
-    final layered = await LayerCompositor.composite(
-      tm,
-      request.layers,
-      (l) => resolveTileKey(
-        request.layerHomes,
-        request.sceneId,
-        request.frameIndex,
-        l.id,
-      ),
-      tm.canvasWidth,
-      tm.canvasHeight,
-      keyframeOf: (l) => l.keyframes.isEmpty
-          ? null
-          : _layerKeyframeEngine.valueAt(l.keyframes, request.frameIndex),
-      groupKeyframeOf: (l) => _groupKeyframeOf(request, l),
-      paperColor: request.backgroundColor,
-      maskGroups: request.maskGroups,
-    );
-
-    // Match the export's centred output crop and camera pivot exactly.
-    final outputWidth = request.outputWidth ?? tm.canvasWidth;
-    final outputHeight = request.outputHeight ?? tm.canvasHeight;
-    final viewport = TimelineOutputViewport(
-      drawingWidth: tm.canvasWidth,
-      drawingHeight: tm.canvasHeight,
-      outputWidth: outputWidth,
-      outputHeight: outputHeight,
-    );
-    final kf = _cameraEngine.valueAt(
-      request.cameraKeyframes,
-      request.frameIndex,
-    );
-    var img = await renderOutputViewportImage(
-      drawingImage: layered,
-      viewport: viewport,
-      backgroundColor: request.backgroundColor,
-      cameraEngine: _cameraEngine,
-      cameraKeyframe: kf,
-    );
-    layered.dispose();
-
-    // Apply effects after cropping, as the export renderer does.
-    if (request.effectFilters.isNotEmpty) {
-      final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
-      if (byteData != null) {
-        final filtered = _filterEngine.applyEffectFilters(
-          byteData.buffer.asUint8List(),
-          outputWidth,
-          outputHeight,
-          request.effectFilters,
+    // The export draws the frame with this same pipeline, including the
+    // decoded frames of video materials (TimelineFrameRenderer).
+    final img = await _renderer.renderImage(
+      TimelineFrameRequest(
+        tileManager: tm,
+        layers: request.layers,
+        keyOf: (l) => resolveTileKey(
+          request.layerHomes,
+          request.sceneId,
           request.frameIndex,
-        );
-        final composed = img;
-        img = await _decodeRgba(filtered, outputWidth, outputHeight);
-        composed.dispose();
-      }
-    }
+          l.id,
+        ),
+        frameIndex: request.frameIndex,
+        drawingWidth: tm.canvasWidth,
+        drawingHeight: tm.canvasHeight,
+        outputWidth: request.outputWidth ?? tm.canvasWidth,
+        outputHeight: request.outputHeight ?? tm.canvasHeight,
+        backgroundColor: request.backgroundColor,
+        maskGroups: request.maskGroups,
+        groups: request.groups,
+        cameraKeyframes: request.cameraKeyframes,
+        effectFilters: request.effectFilters,
+        pixelsOf: videoPixels?.atFrame(request.frameIndex),
+      ),
+    );
 
     if (!mounted) {
       img.dispose();
       return;
     }
     _building = false;
-    if (request.historyRevision == widget.historyRevision) {
+    // A picture made with video frames from a source that has since been
+    // replaced (materials changed) is not shown; the next one is.
+    if (request.historyRevision == widget.historyRevision &&
+        identical(videoPixels, _videoPixels)) {
       setState(() {
         _image?.dispose();
         _image = img;
@@ -10280,18 +10393,6 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       _rebuildPending = false;
       _rebuild();
     }
-  }
-
-  Future<ui.Image> _decodeRgba(Uint8List bytes, int width, int height) {
-    final completer = Completer<ui.Image>();
-    ui.decodeImageFromPixels(
-      bytes,
-      width,
-      height,
-      ui.PixelFormat.rgba8888,
-      completer.complete,
-    );
-    return completer.future;
   }
 
   @override

@@ -958,6 +958,7 @@
   "exportCompleteTitle": "Export terminé",
   "exportCompleteFramesBody": "{count} image(s) exportée(s).",
   "exportSoundsLeftOut": "{count, plural, one{{count} son n’a pas pu être ajouté à l’export (son fichier de matériel est absent ou illisible). La vidéo a été exportée sans lui.} other{{count} sons n’ont pas pu être ajoutés à l’export (leurs fichiers de matériel sont absents ou illisibles). La vidéo a été exportée sans eux.}}",
+  "exportVideosLeftOut": "{count, plural, one{{count} vidéo n’a pas pu être affichée dans l’export (son fichier de matériel est absent ou illisible). Rien n’a été dessiné à sa place.} other{{count} vidéos n’ont pas pu être affichées dans l’export (leurs fichiers de matériel sont absents ou illisibles). Rien n’a été dessiné à leur place.}}",
   "exportSaveLocationHint": "Dans Œuvres, sur l’écran d’accueil, recherchez le fichier par le nom du projet. Choisissez Partager pour l’enregistrer dans Photos ou l’ouvrir dans une autre application.",
   "exportOpenWorks": "Ouvrir les œuvres",
   "exportBackToProjectsButton": "Retour aux projets",

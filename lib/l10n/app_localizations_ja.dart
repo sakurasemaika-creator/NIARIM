@@ -3030,6 +3030,17 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '動画素材$count件の映像を書き出しに入れられませんでした（素材のファイルが無い・読めない）。その部分には何も描かずに書き出しました。',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get exportSaveLocationHint =>
       '書き出した作品はホームの「作品一覧」でプロジェクト名から探せます。写真アプリに保存したり、ほかのアプリで開いたりするには「共有」を選んでください。';
 

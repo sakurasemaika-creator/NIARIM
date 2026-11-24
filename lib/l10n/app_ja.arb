@@ -1308,6 +1308,14 @@
       }
     }
   },
+  "exportVideosLeftOut": "{count, plural, other{動画素材{count}件の映像を書き出しに入れられませんでした（素材のファイルが無い・読めない）。その部分には何も描かずに書き出しました。}}",
+  "@exportVideosLeftOut": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "exportSaveLocationHint": "書き出した作品はホームの「作品一覧」でプロジェクト名から探せます。写真アプリに保存したり、ほかのアプリで開いたりするには「共有」を選んでください。",
   "exportOpenWorks": "作品一覧を開く",
   "exportBackToProjectsButton": "プロジェクト一覧へ戻る",

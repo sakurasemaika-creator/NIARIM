@@ -5547,6 +5547,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, other{音声{count}件を書き出しに入れられませんでした（素材のファイルが無い・読めない）。映像はそのまま書き出しました。}}'**
   String exportSoundsLeftOut(int count);
 
+  /// No description provided for @exportVideosLeftOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{動画素材{count}件の映像を書き出しに入れられませんでした（素材のファイルが無い・読めない）。その部分には何も描かずに書き出しました。}}'**
+  String exportVideosLeftOut(int count);
+
   /// No description provided for @exportSaveLocationHint.
   ///
   /// In ja, this message translates to:

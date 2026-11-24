@@ -3045,6 +3045,17 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '동영상 소재 $count개의 영상을 내보내기에 넣지 못했습니다(소재 파일이 없거나 읽을 수 없음). 그 부분에는 아무것도 그리지 않고 내보냈습니다.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get exportSaveLocationHint =>
       '홈 화면의 작품 목록에서 프로젝트 이름으로 내보낸 파일을 찾을 수 있습니다. 사진 앱에 저장하거나 다른 앱에서 열려면 공유를 선택하세요.';
 

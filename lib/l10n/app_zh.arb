@@ -958,6 +958,7 @@
   "exportCompleteTitle": "导出完成",
   "exportCompleteFramesBody": "已完成{count}帧的导出。",
   "exportSoundsLeftOut": "{count, plural, other{有 {count} 段声音未能放入导出文件（素材文件缺失或无法读取）。视频已照常导出。}}",
+  "exportVideosLeftOut": "{count, plural, other{有 {count} 段视频素材的画面未能放入导出文件（素材文件缺失或无法读取）。该部分未绘制任何内容。}}",
   "exportSaveLocationHint": "在首页的“作品列表”中，可以按项目名称查找导出的文件。选择“分享”即可将文件保存到相册或用其他应用打开。",
   "exportOpenWorks": "打开作品列表",
   "exportBackToProjectsButton": "返回项目列表",
