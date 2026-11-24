@@ -83,8 +83,12 @@ class SavedListCarryOver {
   static int get total =>
       _byKey.values.fold(0, (sum, entries) => sum + entries.length);
 
+  /// 全部忘れる（全データを削除した後。覚えたままだと、次に保存し直す一覧の
+  /// 後ろへ削除した項目を書き戻す）。
+  static void forgetAll() => _byKey.clear();
+
   @visibleForTesting
-  static void reset() => _byKey.clear();
+  static void reset() => forgetAll();
 }
 
 /// 保存した一覧を書く。読めなかった項目（[SavedListCarryOver]）を後ろへ残す。

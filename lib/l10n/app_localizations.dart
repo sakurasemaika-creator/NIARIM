@@ -12204,8 +12204,50 @@ abstract class AppLocalizations {
   /// No description provided for @storageEraseAllConfirmBody.
   ///
   /// In ja, this message translates to:
-  /// **'プロジェクト・素材・アプリ管理の書き出し済みファイル・自作ブラシ/トーン/スタンプ/フォント・設定など、NIARIMのデータを完全に削除します。以前の共有フォルダにある書き出しは残ります。この操作は元に戻せません。削除後はアプリを再起動してください。'**
+  /// **'NIARIMを入れたばかりの状態に戻し、最初の画面から起動し直します。この操作は元に戻せません。'**
   String get storageEraseAllConfirmBody;
+
+  /// No description provided for @storageEraseAllErasedTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除するもの'**
+  String get storageEraseAllErasedTitle;
+
+  /// No description provided for @storageEraseAllErasedItems.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品と素材（ゴミ箱・セーブ・自動保存を含む）\n書き出したファイル\n自作のブラシ・トーン・スタンプ・パレット・テーマ・フォント・自動操作\nすべての設定（Googleアカウントからもログアウトします）'**
+  String get storageEraseAllErasedItems;
+
+  /// No description provided for @storageEraseAllKeptTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'残るもの'**
+  String get storageEraseAllKeptTitle;
+
+  /// No description provided for @storageEraseAllKeptItems.
+  ///
+  /// In ja, this message translates to:
+  /// **'オパール・ミッション・プレミアムの契約（Googleアカウントに残り、同じアカウントでログインすると戻ります）\n作品広場へ投稿した作品\n他のアプリへ共有したファイルと、以前の共有フォルダにある書き出し'**
+  String get storageEraseAllKeptItems;
+
+  /// No description provided for @storageEraseAllConfirmWord.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除'**
+  String get storageEraseAllConfirmWord;
+
+  /// No description provided for @storageEraseAllConfirmPrompt.
+  ///
+  /// In ja, this message translates to:
+  /// **'確認のため「{word}」と入力してください'**
+  String storageEraseAllConfirmPrompt(String word);
+
+  /// No description provided for @storageEraseAllInProgress.
+  ///
+  /// In ja, this message translates to:
+  /// **'全データを削除しています…'**
+  String get storageEraseAllInProgress;
 
   /// No description provided for @storageEraseAllDoneSnackbar.
   ///

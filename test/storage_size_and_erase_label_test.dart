@@ -11,6 +11,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/project/project_detail_screen.dart';
+import 'package:niarim/screens/settings/widgets/erase_all_dialog.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
@@ -268,7 +269,15 @@ void main() {
 
       await tester.tap(find.text(erase, skipOffstage: false).first);
       await tester.pumpAndSettle();
+      // 確かめの言葉を打つと押せる塗りになる（その塗りの上で字の空きを測る）。
+      await tester.enterText(
+        find.byKey(EraseAllDataDialog.wordFieldKey),
+        l10n.storageEraseAllConfirmWord,
+      );
+      await tester.pumpAndSettle();
       final button = find.byType(FilledButton);
+      await tester.ensureVisible(button);
+      await tester.pumpAndSettle();
       final label = find.descendant(of: button, matching: find.text(erase));
       final paragraph = paragraphOf(tester, label);
       problems.addAll(wrapProblems(paragraph, erase, '$where ボタン'));
@@ -280,6 +289,8 @@ void main() {
           '（${ParagraphLines(paragraph).lines.join(' / ')}）',
         );
       }
+      await tester.ensureVisible(find.text(l10n.commonCancel));
+      await tester.pumpAndSettle();
       await tester.tap(find.text(l10n.commonCancel));
       await tester.pumpAndSettle();
       return problems;

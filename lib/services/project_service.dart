@@ -4337,6 +4337,14 @@ class ProjectService extends ChangeNotifier {
     });
   }
 
+  /// 並んでいる作品の保存・フォルダの処理がすべて終わるまで待つ（全データを
+  /// 削除する前。削除の後に書き終わると、消した作品・フォルダが戻る）。
+  Future<void> settleWrites() async {
+    while (_projectSaves.isNotEmpty || _folderOperations != null) {
+      await Future.wait([..._projectSaves.values, ?_folderOperations]);
+    }
+  }
+
   Future<T> _queueFolder<T>(Future<T> Function() write) {
     if (_folderDisposed) {
       return Future.error(StateError('Project folders disposed'));

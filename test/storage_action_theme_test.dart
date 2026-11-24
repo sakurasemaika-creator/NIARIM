@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
+import 'package:niarim/screens/settings/widgets/erase_all_dialog.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -116,6 +117,12 @@ void main() {
         preset.menuTextColor.withValues(alpha: 0.38),
       );
       await tester.tap(erase);
+      await tester.pumpAndSettle();
+      // 確かめの言葉を打つまで押せない。打つと塗りのボタンになる。
+      await tester.enterText(
+        find.byKey(EraseAllDataDialog.wordFieldKey),
+        l10n.storageEraseAllConfirmWord,
+      );
       await tester.pumpAndSettle();
       final confirm = find.byType(FilledButton);
       final fill = tester.widget<Material>(

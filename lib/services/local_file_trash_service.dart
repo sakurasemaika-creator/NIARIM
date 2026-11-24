@@ -97,6 +97,9 @@ abstract final class LocalFileTrashService {
   static bool? get hasItems => _hasItems;
   static bool? _hasItems;
 
+  /// 全データを削除した後：ゴミ箱の控えはフォルダごと消えた。
+  static void forgetAfterErase() => _hasItems = false;
+
   /// The Trash items, newest first.
   ///
   /// The records (meta.json) are read in a background isolate with

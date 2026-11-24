@@ -7,8 +7,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/app_error_reporter.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
+import 'advertising_service.dart';
 import 'export_storage.dart';
+import 'layer_clipboard_service.dart';
 import 'local_file_trash_service.dart';
 
 /// 容量削減画面（ホーム画面ハンバーガーメニュー）で表示するNIARIMの
@@ -610,42 +613,75 @@ class StorageInfoService {
     }
   }
 
-  /// NIARIMの全データを削除する（初期化・工場出荷状態に戻す）。
-  /// ディスク上のniarim/（アプリ管理のexports/を含む）・キャッシュに加え、
-  /// SharedPreferences（全Serviceの設定・素材メタデータ・プロジェクト
-  /// 一覧索引等が保存されている）も全消去する。以前の共有exports/は保持する。
+  /// NIARIMの全データを削除する（初期化・入れたばかりの状態に戻す）。
   ///
-  /// 【重要】この呼び出しの時点で既にメモリ上に初期化済みの各Service
-  /// （ProjectService・MaterialService等、main()で一度だけ生成される）
-  /// は古い状態を保持したままになる。ディスク上の実体が消えた後もこれら
-  /// のServiceを使い続けると、存在しないファイルを参照するなどの不整合が
-  /// 起きうるため、呼び出し側（UI）は必ずこの後にアプリの再起動を促す
-  /// こと（本サービス側では対応しない。プロセス全体の再起動が必要な
-  /// ため、Flutterの画面遷移だけでは完全にはリセットできない）。
+  /// 消すもの：
+  /// - 書類のフォルダの`niarim/`（作品・ゴミ箱・セーブ・自動保存・素材・
+  ///   アプリが持つ書き出し・自作のブラシ／トーン／スタンプ・フォント・
+  ///   ウォーターマーク・自動塗りの見本・共有の控え）
+  /// - 書類のフォルダの直下に共有のために書いた`.niabrush`等（[_shareFileExtensions]）
+  /// - アプリの領域の表紙・サムネイルの控え（[_supportFolders]）
+  /// - キャッシュのフォルダの中身
+  /// - SharedPreferences（全Serviceの設定・自作のパレット・テーマ・自動操作・
+  ///   ショートカット・初回の案内を見た記録など）
+  /// - 広告の同意の記録（次の起動で、対象の地域では同意フォームを出し直す）
+  /// - メモリの中の、削除した物を書き戻しうる覚え（読めなかった一覧の項目・
+  ///   写したレイヤー・ゴミ箱の有無・書き出しの一覧）
+  ///
+  /// 以前の共有の`exports/`は消さない（書類のフォルダはほかのアプリと共有の
+  /// 端末があり、ほかのアプリのファイルが入りうる）。
+  ///
+  /// 動いている各Serviceはメモリに古い内容を持ったままなので、呼ぶ前に
+  /// Serviceを止め、呼んだ後に起動し直すこと（アプリでは`AppRunner`が行う）。
+  /// 消せなかったファイルは記録して残りを続ける。
   Future<void> eraseAllData() async {
+    Future<void> remove(FileSystemEntity entity) async {
+      try {
+        if (await entity.exists()) await entity.delete(recursive: true);
+      } catch (error, stack) {
+        // 一部のファイルが使用中等で消せなくても、できる所まで続ける。
+        AppErrorReporter.record(error, stack);
+      }
+    }
+
     try {
       final docs = await getApplicationDocumentsDirectory();
-      for (final dir in [Directory('${docs.path}/niarim')]) {
-        if (dir.existsSync()) {
-          try {
-            await dir.delete(recursive: true);
-          } catch (_) {
-            // 一部ファイルが使用中等で削除できなくても、可能な範囲で続行する。
-          }
+      await remove(Directory('${docs.path}/niarim'));
+      try {
+        await for (final entry in docs.list(followLinks: false)) {
+          if (entry is! File) continue;
+          final name = entry.uri.pathSegments.last.toLowerCase();
+          if (_shareFileExtensions.any(name.endsWith)) await remove(entry);
         }
+      } catch (error, stack) {
+        AppErrorReporter.record(error, stack);
       }
       ExportStorage.invalidate();
+      try {
+        final support = await getApplicationSupportDirectory();
+        for (final folder in _supportFolders) {
+          await remove(Directory('${support.path}/$folder'));
+        }
+      } catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+      }
       final cacheDir = await getApplicationCacheDirectory();
       if (cacheDir.existsSync()) {
         for (final entry in cacheDir.listSync()) {
-          try {
-            await entry.delete(recursive: true);
-          } catch (_) {}
+          await remove(entry);
         }
       }
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
+      try {
+        await AdvertisingService.forgetConsent();
+      } catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+      }
     } finally {
+      SavedListCarryOver.forgetAll();
+      LayerClipboardService.instance.clear();
+      LocalFileTrashService.forgetAfterErase();
       invalidate();
       // 並びの見込みの保存も消えたので、覚えも捨てる。削除の後の集計は、
       // 前に覚えていた見込みと同じでも保存し直す（同じなら保存しないままに
@@ -655,6 +691,24 @@ class StorageInfoService {
       _lastBreakdownIncomplete = false;
     }
   }
+
+  /// 共有のために書類のフォルダの直下へ書くファイル（ブラシ・トーン・
+  /// スタンプ・パレット・ドット絵のパレット・ワークスペース）。
+  static const _shareFileExtensions = [
+    '.niabrush',
+    '.niatone',
+    '.niastamp',
+    '.niapalette',
+    '.niapixelpalette',
+    '.niaworkspace',
+  ];
+
+  /// アプリの領域（getApplicationSupportDirectory）の、表紙・サムネイルの控え。
+  static const _supportFolders = [
+    'post_thumbnails',
+    'exported_covers',
+    'folder_thumbnails',
+  ];
 
   /// [dir]の中のファイルの大きさを、リンクをたどらずに合計する。
   /// 読めないフォルダ・ファイルは飛ばして残りを数え、最初のエラーを

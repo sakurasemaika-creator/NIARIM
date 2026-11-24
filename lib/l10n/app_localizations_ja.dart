@@ -6733,7 +6733,32 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get storageEraseAllConfirmBody =>
-      'プロジェクト・素材・アプリ管理の書き出し済みファイル・自作ブラシ/トーン/スタンプ/フォント・設定など、NIARIMのデータを完全に削除します。以前の共有フォルダにある書き出しは残ります。この操作は元に戻せません。削除後はアプリを再起動してください。';
+      'NIARIMを入れたばかりの状態に戻し、最初の画面から起動し直します。この操作は元に戻せません。';
+
+  @override
+  String get storageEraseAllErasedTitle => '削除するもの';
+
+  @override
+  String get storageEraseAllErasedItems =>
+      '作品と素材（ゴミ箱・セーブ・自動保存を含む）\n書き出したファイル\n自作のブラシ・トーン・スタンプ・パレット・テーマ・フォント・自動操作\nすべての設定（Googleアカウントからもログアウトします）';
+
+  @override
+  String get storageEraseAllKeptTitle => '残るもの';
+
+  @override
+  String get storageEraseAllKeptItems =>
+      'オパール・ミッション・プレミアムの契約（Googleアカウントに残り、同じアカウントでログインすると戻ります）\n作品広場へ投稿した作品\n他のアプリへ共有したファイルと、以前の共有フォルダにある書き出し';
+
+  @override
+  String get storageEraseAllConfirmWord => '削除';
+
+  @override
+  String storageEraseAllConfirmPrompt(String word) {
+    return '確認のため「$word」と入力してください';
+  }
+
+  @override
+  String get storageEraseAllInProgress => '全データを削除しています…';
 
   @override
   String get storageEraseAllDoneSnackbar => '全データを削除しました。アプリを再起動してください';

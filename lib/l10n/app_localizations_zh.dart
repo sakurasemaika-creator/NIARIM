@@ -6664,7 +6664,32 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get storageEraseAllConfirmBody =>
-      '这将永久删除NIARIM的项目、素材、由应用管理的导出文件、自制画笔/网点/图章/字体及设置。以前导出到共享文件夹的文件会保留。此操作无法撤销。删除后请重启应用。';
+      '将NIARIM恢复到刚安装时的状态，并从启动画面重新启动。此操作无法撤销。';
+
+  @override
+  String get storageEraseAllErasedTitle => '将删除';
+
+  @override
+  String get storageEraseAllErasedItems =>
+      '项目和素材（包括回收站、存档和自动保存）\n导出的文件\n自制的画笔、网点、图章、调色盘、主题、字体和自动操作\n所有设置（同时退出Google账号）';
+
+  @override
+  String get storageEraseAllKeptTitle => '将保留';
+
+  @override
+  String get storageEraseAllKeptItems =>
+      '欧泊、任务和Premium订阅（保留在Google账号中，使用同一账号登录即可恢复）\n发布到作品广场的作品\n分享到其他应用的文件，以及以前导出到共享文件夹的文件';
+
+  @override
+  String get storageEraseAllConfirmWord => '删除';
+
+  @override
+  String storageEraseAllConfirmPrompt(String word) {
+    return '请输入“$word”以确认';
+  }
+
+  @override
+  String get storageEraseAllInProgress => '正在删除全部数据…';
 
   @override
   String get storageEraseAllDoneSnackbar => '已删除全部数据，请重启应用。';
@@ -17190,7 +17215,32 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get storageEraseAllConfirmBody =>
-      '這將永久刪除NIARIM的專案、素材、由應用程式管理的匯出檔案、自製筆刷/網點/圖章/字型及設定。先前匯出到共用資料夾的檔案會保留。此操作無法復原。刪除後請重新啟動應用程式。';
+      '將NIARIM恢復到剛安裝時的狀態，並從啟動畫面重新啟動。此操作無法復原。';
+
+  @override
+  String get storageEraseAllErasedTitle => '將刪除';
+
+  @override
+  String get storageEraseAllErasedItems =>
+      '專案和素材（包括垃圾桶、存檔和自動儲存）\n匯出的檔案\n自製的筆刷、網點、圖章、調色盤、主題、字型和自動操作\n所有設定（同時登出Google帳號）';
+
+  @override
+  String get storageEraseAllKeptTitle => '將保留';
+
+  @override
+  String get storageEraseAllKeptItems =>
+      '歐泊、任務和Premium訂閱（保留在Google帳號中，使用同一帳號登入即可恢復）\n發布到作品廣場的作品\n分享到其他應用程式的檔案，以及先前匯出到共用資料夾的檔案';
+
+  @override
+  String get storageEraseAllConfirmWord => '刪除';
+
+  @override
+  String storageEraseAllConfirmPrompt(String word) {
+    return '請輸入「$word」以確認';
+  }
+
+  @override
+  String get storageEraseAllInProgress => '正在刪除全部資料…';
 
   @override
   String get storageEraseAllDoneSnackbar => '已刪除全部資料，請重新啟動應用程式。';

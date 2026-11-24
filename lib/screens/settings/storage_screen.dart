@@ -6,10 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../app_runner.dart';
 import '../../l10n/app_localizations.dart';
+import '../../services/google_auth_service.dart';
 import '../../services/local_file_trash_service.dart';
 import '../../services/material_service.dart';
 import '../../services/project_service.dart';
+import '../../services/settings_service.dart';
 import '../../services/storage_info_service.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/file_size_label.dart';
@@ -21,6 +24,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/grouped_sheet.dart';
+import 'widgets/erase_all_dialog.dart';
 
 /// 容量削減画面（ホーム画面ハンバーガーメニューから遷移）。
 /// 端末容量に対するNIARIMの使用量・NIARIM内部のデータ内訳を2つの棒
@@ -1140,7 +1144,7 @@ class _StorageScreenState extends State<StorageScreen> {
       // Korean word, which can add an unnecessary line in compact layouts.
       // KeepTogetherText still keeps a closing bracket with the preceding
       // character when the full bracketed phrase does not fit.
-      title: KeepTogetherText(title, keep: _bracketedWords(title)),
+      title: KeepTogetherText(title, keep: bracketedWords(title)),
       subtitle: subtitle == null
           ? null
           : Text(
@@ -1454,99 +1458,31 @@ class _StorageScreenState extends State<StorageScreen> {
     return attempted;
   });
 
-  /// 「全データを削除」の確認のボタンの余白。文字が大きく名前が2行以上に
-  /// 折れたとき、上下に余白が無いと文字がボタンの縁に付いて見えた（既定の
-  /// 上下の余白は0）。ボタンは表示の詰め方（VisualDensity）の分だけ上下の
-  /// 余白を減らす（PC〔Linux 等〕の詰めた表示は8pxずつで、文字2倍では字と
-  /// 縁の間が2〜4pxになった）ので、減らされる分を足しておく。高さの低い
-  /// 画面（横向き・分割の窓）では、警告と操作欄を続けて読めるように、上下の
-  /// 余白を足さない。左右は既定と同じく文字の大きさで縮める。
-  EdgeInsetsGeometry _eraseButtonPadding(BuildContext context) {
-    final squeezed = math.max(
-      0.0,
-      -Theme.of(context).visualDensity.baseSizeAdjustment.dy,
-    );
-    final vertical = MediaQuery.sizeOf(context).height >= 480
-        ? 10 + squeezed
-        : 0.0;
-    return ButtonStyleButton.scaledPadding(
-      EdgeInsets.symmetric(horizontal: 24, vertical: vertical),
-      EdgeInsets.symmetric(horizontal: 12, vertical: vertical),
-      EdgeInsets.symmetric(horizontal: 6, vertical: vertical),
-      MediaQuery.textScalerOf(context).scale(14) / 14,
-    );
-  }
-
   Future<void> _confirmEraseAll() => _runAction(() async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) {
-        final compact = MediaQuery.sizeOf(ctx).height < 320;
-        final actions = [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              padding: _eraseButtonPadding(ctx),
-              // The custom padding already accounts for wrapped labels.
-              foregroundBuilder: (context, states, child) =>
-                  child ?? const SizedBox.shrink(),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: KeepTogetherText(
-              l10n.storageEraseAllButton,
-              keep: _bracketedWords(l10n.storageEraseAllButton),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ];
-        final warning = messageText(l10n.storageEraseAllConfirmBody);
-        return AlertDialog(
-          insetPadding: compact
-              ? const EdgeInsets.symmetric(horizontal: 20, vertical: 8)
-              : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-          constraints: const BoxConstraints(maxWidth: 560),
-          scrollable: true,
-          titlePadding: compact
-              ? const EdgeInsets.fromLTRB(16, 12, 16, 0)
-              : null,
-          contentPadding: compact
-              ? const EdgeInsets.fromLTRB(16, 8, 16, 12)
-              : null,
-          title: Text(l10n.storageEraseAllConfirmTitle),
-          // Tall action labels can leave only one line of warning visible in a
-          // short window. Give the warning and buttons the same scroll area.
-          content: compact
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    warning,
-                    const SizedBox(height: 12),
-                    Wrap(
-                      alignment: WrapAlignment.end,
-                      spacing: 8,
-                      children: actions,
-                    ),
-                  ],
-                )
-              : warning,
-          actions: compact ? null : actions,
-        );
-      },
+      builder: (_) => const EraseAllDataDialog(),
     );
     if (confirmed != true || !mounted) return false;
+    // 入れたばかりの状態に戻す：Googleからログアウトし、Serviceを止めてから
+    // 消し、初めから起動し直す（初回の案内もまた出る）。動いている各Serviceは
+    // メモリに古い内容を持つので、消したまま使い続けない。
+    final runner = AppRunner.current;
+    if (runner != null) {
+      final auth = context.read<GoogleAuthService?>();
+      await runner.resetToFactory(
+        languageCode: context.read<SettingsService?>()?.language,
+        prepare: () async {
+          if (auth?.account != null) await auth!.signOut();
+        },
+        erase: _service.eraseAllData,
+      );
+      return true;
+    }
+    // 画面だけを載せたテストでは起動し直す先が無いので、消して知らせる。
     _projectListOutdated = true;
     _willEmpty(StorageCategory.values);
-    // 実際の全データ削除は、他の全Serviceが保持するメモリ上の状態も
-    // まとめて破棄する必要があり影響範囲が大きいため、ここでは
-    // ディスク上のNIARIMデータ（プロジェクト・素材・書き出し・自作
-    // アセット・キャッシュ）のみを削除し、アプリの再起動を促す
-    // 案内にとどめる（中途半端な状態のままメモリ上の各Serviceを
-    // 使い続けるリスクを避けるため）。
     await _work(_service.eraseAllData);
     if (!mounted) return true;
     ScaffoldMessenger.of(
@@ -1632,16 +1568,6 @@ class _StorageNotice extends StatelessWidget {
     );
   }
 }
-
-/// 文の中の、括弧でくくった空白の無い語（「（初期化）」「(reset)」）。行の
-/// 途中で切らずに1つのかたまりにする（「全データを削除（初 / 期化）」と括弧の
-/// 中で折れた）。1行に入らない幅では[KeepTogetherText]がつながずに普通に
-/// 折る。空白を含む括弧の中（「(remise à zéro)」）はかたまりにしない（語の
-/// 間で折れる方が読める）。
-List<String> _bracketedWords(String text) => [
-  for (final match in RegExp(r'[（(][^（）()\s]+[）)]').allMatches(text))
-    match.group(0)!,
-];
 
 class _StorageAmount {
   final double value;

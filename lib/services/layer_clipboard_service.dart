@@ -32,6 +32,10 @@ class LayerClipboardService {
 
   bool get hasLayer => _snapshot != null;
 
+  /// 写したレイヤーを忘れる（全データを削除した後。削除した作品の絵を
+  /// 貼り付けられないように）。
+  void clear() => _snapshot = null;
+
   Future<bool> copy({
     required ProjectService projectService,
     required String projectId,

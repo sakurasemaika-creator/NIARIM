@@ -7022,7 +7022,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storageEraseAllConfirmBody =>
-      'This permanently deletes NIARIM projects, materials, app-managed exports, custom brushes/screentones/stamps/fonts, and settings. Older exports in shared folders are kept. This cannot be undone. Restart the app afterward.';
+      'NIARIM returns to how it was when first installed and restarts from the start screen. This cannot be undone.';
+
+  @override
+  String get storageEraseAllErasedTitle => 'Erased';
+
+  @override
+  String get storageEraseAllErasedItems =>
+      'Projects and materials (including Trash, saves and auto saves)\nExported files\nYour brushes, screentones, stamps, palettes, themes, fonts and automations\nAll settings (you are also signed out of Google)';
+
+  @override
+  String get storageEraseAllKeptTitle => 'Kept';
+
+  @override
+  String get storageEraseAllKeptItems =>
+      'Opals, missions and your Premium plan (kept with your Google account; sign in with the same account to get them back)\nWorks posted to the Work Plaza\nFiles shared to other apps, and older exports in shared folders';
+
+  @override
+  String get storageEraseAllConfirmWord => 'DELETE';
+
+  @override
+  String storageEraseAllConfirmPrompt(String word) {
+    return 'To confirm, type $word';
+  }
+
+  @override
+  String get storageEraseAllInProgress => 'Erasing all data…';
 
   @override
   String get storageEraseAllDoneSnackbar =>

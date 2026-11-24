@@ -83,6 +83,14 @@ class AdvertisingService extends ChangeNotifier {
     return completer.future;
   }
 
+  /// 広告の同意の記録（UMP SDKが端末に残すもの）を消す。全データを削除して
+  /// 入れたばかりの状態に戻すとき、次の起動で同意フォームを出し直す
+  /// （対象の地域だけ。対象外の地域では何も起こらない）。
+  static Future<void> forgetConsent() async {
+    if (!supportsMobilePluginRuntime) return;
+    await ConsentInformation.instance.reset();
+  }
+
   /// 設定画面等から「広告の同意設定を変更」ボタンを出すべきかどうか
   /// （EEA・英国等、同意管理の対象ユーザーにのみtrueを返す）。
   Future<PrivacyOptionsRequirementStatus> privacyOptionsRequirementStatus() =>

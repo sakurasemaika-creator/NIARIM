@@ -9,6 +9,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
+import 'package:niarim/screens/settings/widgets/erase_all_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,7 +19,8 @@ import 'helpers/pump_real_async.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  testWidgets('reset confirmation remains usable across 42 layout profiles', (
+  testWidgets('reset confirmation remains usable across 42 layout profiles '
+      '(the erase button waits for the typed word; cancel keeps the data)', (
     tester,
   ) async {
     final root = Directory.systemTemp.createTempSync('storage-dialog-layout-');
@@ -81,10 +83,10 @@ void main() {
           expect(tester.takeException(), isNull, reason: profile);
           if (size.height == 220 && scale == 2) {
             final dialog = find.byType(AlertDialog);
-            final viewport = find.descendant(
-              of: dialog,
-              matching: find.byType(Scrollable),
-            );
+            // ダイアログの中身のスクロール（打つ欄の中のスクロールより外側）。
+            final viewport = find
+                .descendant(of: dialog, matching: find.byType(Scrollable))
+                .first;
             final title = find.text(l10n.storageEraseAllConfirmTitle);
             final body = find.text(l10n.storageEraseAllConfirmBody);
             final viewportRect = tester.getRect(viewport);
@@ -117,9 +119,30 @@ void main() {
             l10n.storageEraseAllButton,
           );
           final cancel = find.widgetWithText(TextButton, l10n.commonCancel);
+          // 確かめの言葉を打つまで削除のボタンは押せない。打つ欄もボタンも
+          // スクロールで届く。
+          final word = find.byKey(EraseAllDataDialog.wordFieldKey);
           await tester.ensureVisible(confirm);
           await tester.pumpAndSettle();
           expect(confirm.hitTestable(), findsOneWidget, reason: profile);
+          expect(
+            tester.widget<FilledButton>(confirm).onPressed,
+            isNull,
+            reason: profile,
+          );
+          await tester.ensureVisible(word);
+          await tester.pumpAndSettle();
+          expect(word.hitTestable(), findsOneWidget, reason: profile);
+          await tester.enterText(word, l10n.storageEraseAllConfirmWord);
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(confirm);
+          await tester.pumpAndSettle();
+          expect(confirm.hitTestable(), findsOneWidget, reason: profile);
+          expect(
+            tester.widget<FilledButton>(confirm).onPressed,
+            isNotNull,
+            reason: profile,
+          );
           await tester.ensureVisible(cancel);
           await tester.pumpAndSettle();
           expect(cancel.hitTestable(), findsOneWidget, reason: profile);

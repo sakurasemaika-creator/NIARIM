@@ -839,6 +839,20 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   `probeLayoutIfUnknown`で中身のある分類だけを軽く調べる（大きさは数えない。
   調べないと初めて開いた画面だけ6本ぶんの高さを取り、2回目と行の位置が違った、
   DISC097）。集計の数え方・振り分けを変えたら、この調べも同じにすること。
+- **「全データを削除」は出荷時の状態に戻す（所有者の判断、2026-11-24「念のため単語を入力する
+  必要があるようにしましょうか。削除後は出荷時の状態に戻るイメージで。」）**：確かめは
+  `lib/screens/settings/widgets/erase_all_dialog.dart`の`EraseAllDataDialog`（消えるもの・残るものを
+  並べ、言語ごとの言葉`storageEraseAllConfirmWord`を打つまで押せない。前後の空白・大文字小文字・
+  全角半角は問わない`eraseConfirmWordMatches`）。押すと`AppRunner.resetToFactory`
+  （`lib/app_runner.dart`、`main`が`AppRunner.current`に入れる）が、進んでいる画面へ差し替え→
+  Googleからログアウト→Serviceを止める（並んでいる保存を書き終えてから破棄。止める前に消すと
+  後から書き終えた保存・設定が戻る）→`StorageInfoService.eraseAllData`→履歴を起動画面だけにして
+  `buildAppProviders`からやり直す（初回の案内もまた出る）。オパール・ミッション・プレミアムは
+  Googleアカウント（サーバー・Google Play）に残るので消えない（ダイアログに書いてある）。
+  **新しい保存場所（書類・アプリの領域のフォルダ、共有のために書く形式）やメモリの覚え（削除した物を
+  書き戻しうるもの）を足したら、`eraseAllData`にも足すこと**：`test/factory_reset_test.dart`が、
+  使い込んだアプリを消した後のキー・値・ファイルが入れたばかりのアプリと同じかを見張る（以前の
+  共有の`exports/`とほかのアプリの書類は消さない）。
 - **ペンの線は、押して線を始めた指（`_strokePointer`）だけが描く**：
   `DrawingEngine.continueStroke`は線が無ければ新しく始めるので、押した時点で
   描かなかった指（手のひら除外・フィルターの調整中・ペンのボタン・ロック）の

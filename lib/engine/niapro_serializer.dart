@@ -151,6 +151,14 @@ class NiaproSerializer {
     });
   }
 
+  /// 始まっている・並んでいる保存がすべて終わるまで待つ（全データを削除する
+  /// 前。削除の後に書き終わると、消した作品のファイルが戻る）。
+  static Future<void> settlePendingSaves() async {
+    while (_pendingSaves.isNotEmpty) {
+      await Future.wait(List.of(_pendingSaves.values));
+    }
+  }
+
   static Future<T> _queueSave<T>(String projectId, Future<T> Function() write) {
     final previous = _pendingSaves[projectId] ?? Future<void>.value();
     final result = previous.then((_) => write());

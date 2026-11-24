@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
+import 'package:niarim/screens/settings/widgets/erase_all_dialog.dart';
 import 'package:niarim/services/storage_info_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/app_locale.dart';
@@ -188,7 +189,17 @@ void main() {
     AppLocalizations l10n,
     String confirmLabel,
   ) async {
-    await tester.tap(find.widgetWithText(FilledButton, confirmLabel));
+    // 全データの削除は、確かめの言葉を打ってから押す。
+    final word = find.byKey(EraseAllDataDialog.wordFieldKey);
+    final button = find.widgetWithText(FilledButton, confirmLabel);
+    if (word.evaluate().isNotEmpty) {
+      await tester.enterText(word, l10n.storageEraseAllConfirmWord);
+      await tester.pump();
+      // 大きな文字では、ボタンは確かめの文の下（ダイアログの中のスクロール）。
+      await tester.ensureVisible(button);
+      await tester.pump();
+    }
+    await tester.tap(button);
     await tester.pump();
     await tester.pump();
     final closing = rows(tester, l10n);

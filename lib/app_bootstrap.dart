@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
+import 'engine/niapro_serializer.dart';
 import 'engine/undo_manager.dart' as app_undo;
 import 'services/advertising_service.dart';
 import 'services/premium_service.dart';
@@ -39,6 +40,7 @@ import 'services/google_auth_service.dart';
 import 'services/home_widget_service.dart';
 import 'services/storage_info_service.dart';
 import 'services/export_storage.dart';
+import 'utils/app_error_reporter.dart';
 
 /// 起動処理のどこかが失敗したことを表す。[step]は失敗した初期化処理の
 /// 名前で、起動失敗画面の詳細とエラー記録に出す。
@@ -77,11 +79,17 @@ typedef StartupStepHook = FutureOr<void> Function(String step);
 /// 逆に破棄してから[AppStartupException]を投げる。破棄しないまま
 /// 起動をやり直すと、課金の購入通知の購読やService間のリスナーが
 /// 二重に残り、同じ購入を二度処理する等の副作用が出るため。
+///
+/// 起動できたときは[onStarted]へ、作ったServiceを止める処理を渡す（全データを
+/// 削除して起動し直す前に呼ぶ。並んでいる作品の保存を書き終えてから、作った
+/// 順の逆に破棄する）。
 Future<List<SingleChildWidget>> buildAppProviders({
   StartupStepHook? beforeStep,
   @visibleForTesting void Function(ChangeNotifier service)? debugOnCreated,
+  void Function(Future<void> Function() stop)? onStarted,
 }) async {
   final disposers = <void Function()>[];
+  final settlers = <Future<void> Function()>[];
   T own<T extends ChangeNotifier>(T service) {
     disposers.add(service.dispose);
     debugOnCreated?.call(service);
@@ -97,9 +105,40 @@ Future<List<SingleChildWidget>> buildAppProviders({
   }
 
   try {
-    return await _buildAppProviders(own, enter, disposers, (code) {
-      languageCode = code;
+    final providers = await _buildAppProviders(
+      own,
+      enter,
+      disposers,
+      settlers,
+      (code) {
+        languageCode = code;
+      },
+    );
+    onStarted?.call(() async {
+      for (final settle in settlers) {
+        try {
+          await settle();
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+        }
+      }
+      for (final dispose in disposers.reversed) {
+        try {
+          dispose();
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+        }
+      }
+      // 破棄の中で書き出した保存（ブラシの太さ等）も書き終えてから戻る。
+      for (final settle in settlers) {
+        try {
+          await settle();
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+        }
+      }
     });
+    return providers;
   } catch (error, stackTrace) {
     for (final dispose in disposers.reversed) {
       try {
@@ -125,6 +164,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   T Function<T extends ChangeNotifier>(T service) own,
   Future<void> Function(String step) enter,
   List<void Function()> disposers,
+  List<Future<void> Function()> settlers,
   void Function(String languageCode) languageLoaded,
 ) async {
   await enter('settings');
@@ -155,6 +195,9 @@ Future<List<SingleChildWidget>> _buildAppProviders(
 
   await enter('project');
   final projectService = own(ProjectService(autosaveService));
+  settlers
+    ..add(projectService.settleWrites)
+    ..add(NiaproSerializer.settlePendingSaves);
   projectService.configureTileCacheBudget(
     switch (performanceService.qualityLevel) {
       QualityLevel.low => 6,

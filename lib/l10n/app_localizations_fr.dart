@@ -7149,7 +7149,32 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storageEraseAllConfirmBody =>
-      'Ceci supprime définitivement les projets NIARIM, matériaux, fichiers exportés gérés par l’application, brosses/trames/tampons/polices personnalisés et paramètres. Les anciens fichiers exportés dans les dossiers partagés sont conservés. Action irréversible. Redémarrez l’application ensuite.';
+      'NIARIM revient à son état d’installation et redémarre depuis l’écran d’accueil. Action irréversible.';
+
+  @override
+  String get storageEraseAllErasedTitle => 'Ce qui est effacé';
+
+  @override
+  String get storageEraseAllErasedItems =>
+      'Les projets et matériaux (corbeille, sauvegardes et enregistrement automatique compris)\nLes fichiers exportés\nVos brosses, trames, tampons, palettes, thèmes, polices et macros\nTous les paramètres (vous êtes aussi déconnecté de Google)';
+
+  @override
+  String get storageEraseAllKeptTitle => 'Ce qui est conservé';
+
+  @override
+  String get storageEraseAllKeptItems =>
+      'Les opales, les missions et votre abonnement Premium (conservés avec votre compte Google ; reconnectez-vous avec le même compte pour les retrouver)\nLes œuvres publiées sur la Place des œuvres\nLes fichiers partagés avec d’autres applications et les anciens exports dans les dossiers partagés';
+
+  @override
+  String get storageEraseAllConfirmWord => 'SUPPRIMER';
+
+  @override
+  String storageEraseAllConfirmPrompt(String word) {
+    return 'Pour confirmer, saisissez $word';
+  }
+
+  @override
+  String get storageEraseAllInProgress => 'Effacement de toutes les données…';
 
   @override
   String get storageEraseAllDoneSnackbar =>
