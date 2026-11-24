@@ -98,7 +98,7 @@ class CanvasSizeChoiceLabel extends StatelessWidget {
 List<String> _lastCjkRun(String text) {
   if (text.length < 6) return const [];
   final tail = text.substring(text.length - 4);
-  return RegExp(r'^[぀-ヿ㐀-鿿]{4}$').hasMatch(tail) &&
+  return RegExp(r'^[\u3040-\u30FF\u3400-\u9FFF]{4}$').hasMatch(tail) &&
           text.indexOf(tail) == text.length - 4
       ? [tail]
       : const [];

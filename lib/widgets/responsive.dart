@@ -12,16 +12,26 @@ import '../services/settings_service.dart';
 /// [listen]は既定でtrue（build時の使用を想定し、設定変更時に再ビルド
 /// される）。イベントハンドラ（onPressed等）から呼ぶ場合はfalseを渡す
 /// こと（build外でwatch()すると例外になる）。
+///
+/// 窓の幅が[kMinPcWorkspaceWidth]より狭いときは、PCモードを選んでいても
+/// スマホの画面にする（PCの作業画面はキャンバスの横に2つのドック、
+/// タイムラインは3つの欄を並べるので、狭い窓ではドックの中身がはみ出し
+/// 使えなかった）。
 bool isWideScreen(BuildContext context, {bool listen = true}) {
   final settings = listen
       ? context.watch<SettingsService>()
       : context.read<SettingsService>();
+  final size = MediaQuery.sizeOf(context);
+  if (size.width < kMinPcWorkspaceWidth) return false;
   final forced = settings.forcePcMode;
   if (forced != null) return forced;
-  final size = MediaQuery.sizeOf(context);
   final isLandscape = size.width > size.height;
   return isLandscape && settings.hasNonTouchPointer;
 }
+
+/// PCの作業画面（キャンバスの両側のドック・タイムラインの3つの欄）が
+/// 収まる一番狭い窓の幅。
+const double kMinPcWorkspaceWidth = 600;
 
 /// 手のひらツール（画面移動専用）を実際にツールバーへ表示してよいかを
 /// 判定する。強制スマホモード（forcePcMode==false）では

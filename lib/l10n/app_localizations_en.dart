@@ -1282,7 +1282,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get workspacePcModeHint =>
-      'On wide screens the app switches automatically to the pro layout with panels docked in place. Set it manually here if you want to force it.';
+      'On wide screens the app switches automatically to the pro layout with panels docked in place. Set it manually here if you want to force it. Screens narrower than 600 px use the mobile layout even when PC mode is fixed.';
 
   @override
   String get workspacePcModeAuto =>
@@ -5856,9 +5856,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get progressDialogTipLabel => 'Tip';
-
-  @override
-  String get premiumBannerRegisterButton => 'Upgrade to Premium';
 
   @override
   String get legalLastUpdated => 'Last updated: November 23, 2026';

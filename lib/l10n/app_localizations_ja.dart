@@ -1243,7 +1243,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get workspacePcModeHint =>
-      '画面幅の広い環境では、パネルを常時表示するプロ向けの画面構成に自動で切り替わります。手動で固定したい場合はここで指定してください。';
+      '画面幅の広い環境では、パネルを常時表示するプロ向けの画面構成に自動で切り替わります。手動で固定したい場合はここで指定してください。幅600px未満の画面では、PCモードに固定していてもスマホモードの画面構成になります。';
 
   @override
   String get workspacePcModeAuto => '自動（画面幅で判定・推奨）';
@@ -5619,9 +5619,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get progressDialogTipLabel => 'ヒント';
-
-  @override
-  String get premiumBannerRegisterButton => 'プレミアムに登録';
 
   @override
   String get legalLastUpdated => '最終更新日：2026年11月23日';

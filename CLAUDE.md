@@ -1319,6 +1319,14 @@ onTap: ...)`だったために
   `test/canvas_pc_workspace_test.dart`・`test/timeline_pc_workspace_test.dart`が
   配置・スマホと同じボタン・窓の移動・ホイール・各窓の大きさ・仏語・左利きを
   見張り、`build/canvas-pc-workspace/`・`build/timeline-pc-workspace/`へ撮る。
+- **PCの作業画面は幅600px以上の窓だけ（DISC613、2026-11-24）**：`isWideScreen`
+  （`lib/widgets/responsive.dart`）は、窓の幅が`kMinPcWorkspaceWidth`（600）より
+  狭いと、PCモードに固定していても・自動でPCと判定しても`false`を返す（スマホの
+  画面になる）。キャンバスの両側のドックは最小200pxで、それより狭い窓では
+  ドックが約50〜130pxに詰められ中身がはみ出していた（全部の画面×24の幅×
+  スマホ/PC×7言語の`test/visual/all_routes_cell_matrix_test.dart`で発見）。
+  ワークスペースの設定の説明（`workspacePcModeHint`）にも書いてある。PCの
+  画面を確かめるテストは幅600以上の窓で動かすこと。
 - **見つからない作品の画面は`ProjectNotFoundView`**
   （`lib/widgets/project_not_found_view.dart`）：古いリンク・ゴミ箱へ移した後に
   プロジェクト詳細・キャンバスを開くと、空の画面を出さずに一覧へ戻す道を出す。

@@ -1247,7 +1247,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get workspacePcModeHint =>
-      '화면 폭이 넓은 환경에서는 패널이 고정 배치되는 전문가용 화면 구성으로 자동 전환됩니다. 수동으로 고정하려면 여기서 지정하세요.';
+      '화면 폭이 넓은 환경에서는 패널이 고정 배치되는 전문가용 화면 구성으로 자동 전환됩니다. 수동으로 고정하려면 여기서 지정하세요. 폭이 600px 미만인 화면에서는 PC 모드로 고정해도 모바일 모드의 화면 구성이 사용됩니다.';
 
   @override
   String get workspacePcModeAuto => '자동（화면 폭으로 판단·권장）';
@@ -5650,9 +5650,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get progressDialogTipLabel => '팁';
-
-  @override
-  String get premiumBannerRegisterButton => 'Premium에 가입';
 
   @override
   String get legalLastUpdated => '최종 업데이트: 2026년 11월 23일';

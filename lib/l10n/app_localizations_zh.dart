@@ -1221,7 +1221,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspacePcModeSection => 'PC模式（DeX）';
 
   @override
-  String get workspacePcModeHint => '在宽屏环境下会自动切换为面板固定排列的专业布局。如需手动固定，请在此处指定。';
+  String get workspacePcModeHint =>
+      '在宽屏环境下会自动切换为面板固定排列的专业布局。如需手动固定，请在此处指定。在宽度小于600px的屏幕上，即使固定为PC模式，也会使用手机模式的布局。';
 
   @override
   String get workspacePcModeAuto => '自动（按屏幕宽度判断、推荐）';
@@ -5554,9 +5555,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get progressDialogTipLabel => '提示';
-
-  @override
-  String get premiumBannerRegisterButton => '升级Premium';
 
   @override
   String get legalLastUpdated => '最后更新日期：2026年11月23日';
@@ -11725,7 +11723,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspacePcModeSection => 'PC模式（DeX）';
 
   @override
-  String get workspacePcModeHint => '在寬螢幕環境下會自動切換為面板固定排列的專業版面配置。若要手動固定，請於此處指定。';
+  String get workspacePcModeHint =>
+      '在寬螢幕環境下會自動切換為面板固定排列的專業版面配置。若要手動固定，請於此處指定。在寬度小於600px的螢幕上，即使固定為PC模式，也會使用手機模式的版面配置。';
 
   @override
   String get workspacePcModeAuto => '自動（依螢幕寬度判斷、建議）';
@@ -16058,9 +16057,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get progressDialogTipLabel => '提示';
-
-  @override
-  String get premiumBannerRegisterButton => '升級Premium';
 
   @override
   String get legalLastUpdated => '最後更新日期：2026年11月23日';

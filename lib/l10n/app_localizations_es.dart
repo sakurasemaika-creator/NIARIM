@@ -1315,7 +1315,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get workspacePcModeHint =>
-      'En pantallas anchas, la aplicación cambia automáticamente a la disposición profesional con los paneles fijos. Configúralo manualmente aquí si quieres forzarlo.';
+      'En pantallas anchas, la aplicación cambia automáticamente a la disposición profesional con los paneles fijos. Configúralo manualmente aquí si quieres forzarlo. En pantallas de menos de 600 px de ancho se usa la disposición del modo móvil aunque el modo PC esté fijado.';
 
   @override
   String get workspacePcModeAuto =>
@@ -5945,9 +5945,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get progressDialogTipLabel => 'Consejo';
-
-  @override
-  String get premiumBannerRegisterButton => 'Pasar a Premium';
 
   @override
   String get legalLastUpdated =>

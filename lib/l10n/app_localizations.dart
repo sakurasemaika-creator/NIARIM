@@ -2358,7 +2358,7 @@ abstract class AppLocalizations {
   /// No description provided for @workspacePcModeHint.
   ///
   /// In ja, this message translates to:
-  /// **'画面幅の広い環境では、パネルを常時表示するプロ向けの画面構成に自動で切り替わります。手動で固定したい場合はここで指定してください。'**
+  /// **'画面幅の広い環境では、パネルを常時表示するプロ向けの画面構成に自動で切り替わります。手動で固定したい場合はここで指定してください。幅600px未満の画面では、PCモードに固定していてもスマホモードの画面構成になります。'**
   String get workspacePcModeHint;
 
   /// No description provided for @workspacePcModeAuto.
@@ -10184,12 +10184,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ヒント'**
   String get progressDialogTipLabel;
-
-  /// No description provided for @premiumBannerRegisterButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'プレミアムに登録'**
-  String get premiumBannerRegisterButton;
 
   /// No description provided for @legalLastUpdated.
   ///

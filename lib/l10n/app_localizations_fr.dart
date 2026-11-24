@@ -1309,7 +1309,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get workspacePcModeHint =>
-      'Sur les écrans larges, l’application passe automatiquement à la disposition professionnelle avec les panneaux fixés en place. Réglez-le manuellement ici pour le forcer.';
+      'Sur les écrans larges, l’application passe automatiquement à la disposition professionnelle avec les panneaux fixés en place. Réglez-le manuellement ici pour le forcer. Sur les écrans de moins de 600 px de large, la disposition du mode mobile est utilisée même si le mode PC est fixé.';
 
   @override
   String get workspacePcModeAuto =>
@@ -5953,9 +5953,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get progressDialogTipLabel => 'Astuce';
-
-  @override
-  String get premiumBannerRegisterButton => 'Passer à Premium';
 
   @override
   String get legalLastUpdated => 'Dernière mise à jour : 23 novembre 2026';
