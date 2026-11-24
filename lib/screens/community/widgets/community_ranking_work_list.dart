@@ -11,7 +11,7 @@ import '../../../services/community_service.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/keep_together_text.dart';
 import '../../canvas/widgets/canvas_icon_button.dart';
-import 'community_sample_artwork.dart';
+import 'community_thumbnail_placeholder.dart';
 import 'community_work_card.dart'
     show
         CommunityWorkOrientation,
@@ -206,8 +206,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
             ),
           )
         else
-          CommunitySampleArtwork(
-            variant: work.thumbnailColorIndex,
+          CommunityThumbnailPlaceholder(
             child: work.thumbnailUrl.startsWith('https://')
                 ? Image.network(
                     work.thumbnailUrl,

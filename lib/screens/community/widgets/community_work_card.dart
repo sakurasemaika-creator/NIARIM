@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../../../models/community_work.dart';
 import '../../../utils/line_break.dart';
-import 'community_sample_artwork.dart';
+import 'community_thumbnail_placeholder.dart';
 import 'community_work_counts.dart';
 import 'community_ranking_work_list.dart'
     show CommunityRankBadge, CommunityRankingLayout, CommunityRankingWorkCard;
@@ -138,11 +138,10 @@ class CommunityWorkCard extends StatelessWidget {
                   ),
                 if (!obscured)
                   Positioned.fill(
-                    child: CommunitySampleArtwork(
-                      variant: work.thumbnailColorIndex,
+                    child: CommunityThumbnailPlaceholder(
                       // Draw real YouTube artwork whenever the backend
-                      // supplies it. The neutral sketch remains visible
-                      // while loading or if the URL fails.
+                      // supplies it. The plain paper with a play mark stays
+                      // visible while loading or if the URL fails.
                       child: work.thumbnailUrl.startsWith('https://')
                           ? Image.network(
                               work.thumbnailUrl,
