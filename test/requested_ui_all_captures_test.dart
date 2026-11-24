@@ -539,6 +539,9 @@ void main() {
     );
     if (pcLayout.evaluate().isNotEmpty) {
       await tester.ensureVisible(pcLayout.last);
+      // ensureVisible moves the list without laying it out again: settle
+      // before tapping, or the tap lands where the row used to be.
+      await tester.pumpAndSettle();
       await tester.tap(pcLayout.last);
       await settle();
       expect(find.byType(PcWorkspaceLayoutSettingsScreen), findsOneWidget);
