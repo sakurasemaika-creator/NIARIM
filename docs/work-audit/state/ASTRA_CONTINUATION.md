@@ -121,12 +121,12 @@ Standalone実行物は3partをmetadata/raw SHA/CRC/計64file照合して復元�
 
 route_version: 2026-09-09-initial-v1
 route_state: locked
-current_id: A003
+current_id: complete
 current_status: in_progress
 last_completed_id: A002
 next_id: A003
-discovery_current_id: DISC001
-delta_current_id: not_started
+discovery_current_id: none
+delta_current_id: complete
 app_baseline: 46949156156850f8e49dcd9919ca6a7eeaf3bfac
 web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 
