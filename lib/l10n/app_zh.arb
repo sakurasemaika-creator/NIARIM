@@ -2602,7 +2602,6 @@
       }
     }
   },
-  "workspaceApplyCurrentButton": "应用已设置的工作区",
   "workspaceAppliedSnackbar": "已应用工作区设置。",
   "workspaceSaveAsButton": "将工作区命名保存、覆盖保存",
   "workspaceShareButton": "共享工作区",
@@ -3627,7 +3626,7 @@
   "rewardUnlockToneCurve": "色调曲线",
   "rewardUnlockLevelAdjustment": "色阶校正",
   "rewardUnlockUnlimitedDuration": "最长2小时",
-  "rewardUnlockCustomAutomation": "自定义自动操作",
+  "rewardUnlockCustomAutomation": "自定义自动操作（操作录制）",
   "rewardUnlockCommunityPostQuota": "作品广场每日1篇→3篇",
   "rewardUnlockProjectListAds": "项目列表无广告",
   "rewardUnlockCanvasAds": "画布无广告",

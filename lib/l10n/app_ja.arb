@@ -3140,7 +3140,6 @@
       }
     }
   },
-  "workspaceApplyCurrentButton": "設定したワークスペースを適用",
   "workspaceAppliedSnackbar": "ワークスペース設定を反映しました",
   "workspaceSaveAsButton": "ワークスペースに名前を付けて保存・上書き保存",
   "workspaceShareButton": "ワークスペースを共有",
@@ -4651,7 +4650,7 @@
   "rewardUnlockToneCurve": "トーンカーブ",
   "rewardUnlockLevelAdjustment": "レベル補正",
   "rewardUnlockUnlimitedDuration": "最大尺2時間",
-  "rewardUnlockCustomAutomation": "カスタムオートアクション",
+  "rewardUnlockCustomAutomation": "自動操作（操作記録）",
   "rewardUnlockCommunityPostQuota": "作品広場の投稿枠（1日1作品→3作品）",
   "rewardUnlockProjectListAds": "プロジェクト一覧の広告なし",
   "rewardUnlockCanvasAds": "キャンバスの広告なし",

@@ -6314,9 +6314,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get workspaceApplyCurrentButton => '설정한 워크스페이스 적용';
-
-  @override
   String get workspaceAppliedSnackbar => '워크스페이스 설정을 반영했습니다.';
 
   @override
@@ -9232,7 +9229,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockUnlimitedDuration => '최대 2시간';
 
   @override
-  String get rewardUnlockCustomAutomation => '사용자 지정 자동 액션';
+  String get rewardUnlockCustomAutomation => '사용자 지정 자동 작업(동작 기록)';
 
   @override
   String get rewardUnlockCommunityPostQuota => '작품 광장 하루 1개→3개 게시';

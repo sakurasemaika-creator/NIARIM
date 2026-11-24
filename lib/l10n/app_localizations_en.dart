@@ -6555,9 +6555,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get workspaceApplyCurrentButton => 'Apply Configured Workspace';
-
-  @override
   String get workspaceAppliedSnackbar => 'Workspace settings applied.';
 
   @override
@@ -9645,7 +9642,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockUnlimitedDuration => 'Up to 2-hour projects';
 
   @override
-  String get rewardUnlockCustomAutomation => 'Custom auto actions';
+  String get rewardUnlockCustomAutomation =>
+      'Custom automations (action recording)';
 
   @override
   String get rewardUnlockCommunityPostQuota =>

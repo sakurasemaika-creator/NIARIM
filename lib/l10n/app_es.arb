@@ -2602,7 +2602,6 @@
       }
     }
   },
-  "workspaceApplyCurrentButton": "Aplicar espacio de trabajo configurado",
   "workspaceAppliedSnackbar": "Se aplicaron los ajustes del espacio de trabajo.",
   "workspaceSaveAsButton": "Guardar espacio de trabajo con nombre / Sobrescribir",
   "workspaceShareButton": "Compartir espacio de trabajo",
@@ -3627,7 +3626,7 @@
   "rewardUnlockToneCurve": "Curva de tonos",
   "rewardUnlockLevelAdjustment": "Niveles",
   "rewardUnlockUnlimitedDuration": "Proyectos de hasta 2\u00a0horas",
-  "rewardUnlockCustomAutomation": "Acciones automáticas personalizadas",
+  "rewardUnlockCustomAutomation": "Automatizaciones personalizadas (grabación de acciones)",
   "rewardUnlockCommunityPostQuota": "Publicar: 1\u00a0a\u00a03 por día",
   "rewardUnlockProjectListAds": "Sin anuncios en proyectos",
   "rewardUnlockCanvasAds": "Sin anuncios en el lienzo",

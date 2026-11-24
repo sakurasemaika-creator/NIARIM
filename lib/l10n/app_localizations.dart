@@ -11385,12 +11385,6 @@ abstract class AppLocalizations {
   /// **'次回更新日: {date}'**
   String premiumNextRenewalDateLabel(String date);
 
-  /// No description provided for @workspaceApplyCurrentButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'設定したワークスペースを適用'**
-  String get workspaceApplyCurrentButton;
-
   /// No description provided for @workspaceAppliedSnackbar.
   ///
   /// In ja, this message translates to:
@@ -16512,7 +16506,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockCustomAutomation.
   ///
   /// In ja, this message translates to:
-  /// **'カスタムオートアクション'**
+  /// **'自動操作（操作記録）'**
   String get rewardUnlockCustomAutomation;
 
   /// No description provided for @rewardUnlockCommunityPostQuota.

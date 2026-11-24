@@ -6280,9 +6280,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get workspaceApplyCurrentButton => '設定したワークスペースを適用';
-
-  @override
   String get workspaceAppliedSnackbar => 'ワークスペース設定を反映しました';
 
   @override
@@ -9184,7 +9181,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockUnlimitedDuration => '最大尺2時間';
 
   @override
-  String get rewardUnlockCustomAutomation => 'カスタムオートアクション';
+  String get rewardUnlockCustomAutomation => '自動操作（操作記録）';
 
   @override
   String get rewardUnlockCommunityPostQuota => '作品広場の投稿枠（1日1作品→3作品）';

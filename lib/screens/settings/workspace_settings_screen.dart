@@ -401,27 +401,6 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            // 「適用」は名前の登録を必要とせず、UI・外観設定と同じくその場で
-            // アプリ全体へ反映するだけの操作（各設定項目は変更のたびに
-            // 即座に反映済みだが、変更内容が確かに反映されたことを
-            // 明示的に確認できるようにする）。
-            FilledButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.workspaceAppliedSnackbar)),
-                );
-              },
-              icon: const Icon(Icons.check),
-              label: messageText(
-                l10n.workspaceApplyCurrentButton,
-                keepLastPhrase: true,
-                textAlign: TextAlign.center,
-              ),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-              ),
-            ),
           ],
         ),
       ),

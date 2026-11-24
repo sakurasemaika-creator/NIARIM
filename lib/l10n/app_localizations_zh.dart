@@ -6216,9 +6216,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get workspaceApplyCurrentButton => '应用已设置的工作区';
-
-  @override
   String get workspaceAppliedSnackbar => '已应用工作区设置。';
 
   @override
@@ -9067,7 +9064,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockUnlimitedDuration => '最长2小时';
 
   @override
-  String get rewardUnlockCustomAutomation => '自定义自动操作';
+  String get rewardUnlockCustomAutomation => '自定义自动操作（操作录制）';
 
   @override
   String get rewardUnlockCommunityPostQuota => '作品广场每日1篇→3篇';
@@ -16745,9 +16742,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get workspaceApplyCurrentButton => '套用已設定的工作區';
-
-  @override
   String get workspaceAppliedSnackbar => '已套用工作區設定。';
 
   @override
@@ -19598,7 +19592,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockUnlimitedDuration => '最長2小時';
 
   @override
-  String get rewardUnlockCustomAutomation => '自訂自動操作';
+  String get rewardUnlockCustomAutomation => '自訂自動操作（操作錄製）';
 
   @override
   String get rewardUnlockCommunityPostQuota => '作品廣場每日1篇→3篇';

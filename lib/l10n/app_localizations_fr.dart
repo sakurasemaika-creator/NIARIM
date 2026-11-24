@@ -6669,10 +6669,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get workspaceApplyCurrentButton =>
-      'Appliquer l’espace de travail configuré';
-
-  @override
   String get workspaceAppliedSnackbar =>
       'Les réglages de l’espace de travail ont été appliqués.';
 
@@ -9815,7 +9811,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockCustomAutomation =>
-      'Actions automatiques personnalisées';
+      'Automatisations personnalisées (enregistrement d’actions)';
 
   @override
   String get rewardUnlockCommunityPostQuota => 'Publications : 1 à 3 par jour';

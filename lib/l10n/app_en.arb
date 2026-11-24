@@ -2625,7 +2625,6 @@
       }
     }
   },
-  "workspaceApplyCurrentButton": "Apply Configured Workspace",
   "workspaceAppliedSnackbar": "Workspace settings applied.",
   "workspaceSaveAsButton": "Save Workspace As / Overwrite",
   "workspaceShareButton": "Share Workspace",
@@ -3657,7 +3656,7 @@
   "rewardUnlockToneCurve": "Tone curve",
   "rewardUnlockLevelAdjustment": "Levels",
   "rewardUnlockUnlimitedDuration": "Up to 2-hour projects",
-  "rewardUnlockCustomAutomation": "Custom auto actions",
+  "rewardUnlockCustomAutomation": "Custom automations (action recording)",
   "rewardUnlockCommunityPostQuota": "Work Plaza: 1\u00a0to\u00a03 posts per day",
   "rewardUnlockProjectListAds": "No ads in projects",
   "rewardUnlockCanvasAds": "No ads on canvas",
