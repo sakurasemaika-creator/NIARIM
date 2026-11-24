@@ -10,6 +10,8 @@ import java.io.FileOutputStream
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.os.Handler
 import android.os.Looper
 import io.flutter.embedding.android.FlutterActivity
@@ -28,6 +30,13 @@ class MainActivity : FlutterActivity() {
     private val hwVideoEncoderChannelName = "com.niarim.niarim/hw_video_encoder"
     private val postChannelName = "com.niarim.niarim/post_notification"
     private val videoFrameChannelName = "com.niarim.niarim/video_frame"
+    private val textToSpeechChannelName = "com.niarim.niarim/text_to_speech"
+    private var textToSpeech: TextToSpeech? = null
+    private var textToSpeechReady = false
+    private var textToSpeechInitializing = false
+    private val textToSpeechReadyCallbacks = mutableListOf<(TextToSpeech?) -> Unit>()
+    private val pendingSpeechResults = mutableMapOf<String, MethodChannel.Result>()
+    private val pendingSpeechFiles = mutableMapOf<String, File>()
     private var pendingPostNotification: Triple<String, String, Boolean>? = null
     private var methodChannel: MethodChannel? = null
     private var widgetChannel: MethodChannel? = null
@@ -122,6 +131,110 @@ class MainActivity : FlutterActivity() {
                                 mainHandler.post { result.success(audioIncluded) }
                             } catch (e: Exception) {
                                 mainHandler.post { result.error("ENCODE_FAILED", e.message, null) }
+                            }
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+
+        // NIARIM does not bundle or redistribute speech engines or voice models.
+        // Only offline voices already installed by the user's Android TTS provider
+        // are exposed here; each provider's own commercial-use terms still apply.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, textToSpeechChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "offlineVoices" -> withTextToSpeech { engine ->
+                        if (engine == null) {
+                            result.error(
+                                "TTS_UNAVAILABLE",
+                                "Android text-to-speech is unavailable",
+                                null,
+                            )
+                        } else {
+                            val voices = engine.voices
+                                ?.filter { !it.isNetworkConnectionRequired }
+                                ?.sortedWith(compareBy({ it.locale.toLanguageTag() }, { it.name }))
+                                ?.map {
+                                    mapOf(
+                                        "name" to it.name,
+                                        "locale" to it.locale.toLanguageTag(),
+                                        "quality" to it.quality,
+                                    )
+                                } ?: emptyList()
+                            result.success(voices)
+                        }
+                    }
+                    "synthesizeToFile" -> {
+                        val text = call.argument<String>("text")?.trim()
+                        val voiceName = call.argument<String>("voiceName")
+                        val outputPath = call.argument<String>("outputPath")
+                        val rate = (call.argument<Double>("rate") ?: 1.0)
+                            .toFloat().coerceIn(0.5f, 2.0f)
+                        val pitch = (call.argument<Double>("pitch") ?: 1.0)
+                            .toFloat().coerceIn(0.5f, 2.0f)
+                        if (text.isNullOrBlank() ||
+                            voiceName.isNullOrBlank() ||
+                            outputPath.isNullOrBlank()
+                        ) {
+                            result.error("INVALID_ARGS", "text, voiceName and outputPath are required", null)
+                            return@setMethodCallHandler
+                        }
+                        if (text.length > 3500) {
+                            result.error("TEXT_TOO_LONG", "Text exceeds the supported request limit", null)
+                            return@setMethodCallHandler
+                        }
+                        val target = try {
+                            File(outputPath).canonicalFile
+                        } catch (_: Exception) {
+                            result.error("INVALID_PATH", "Invalid output path", null)
+                            return@setMethodCallHandler
+                        }
+                        val cacheRoot = cacheDir.canonicalFile.path + File.separator
+                        if (!target.path.startsWith(cacheRoot)) {
+                            result.error("INVALID_PATH", "Speech output must stay inside the app cache", null)
+                            return@setMethodCallHandler
+                        }
+                        withTextToSpeech { engine ->
+                            if (engine == null) {
+                                result.error("TTS_UNAVAILABLE", "Android text-to-speech is unavailable", null)
+                                return@withTextToSpeech
+                            }
+                            val voice = engine.voices?.firstOrNull {
+                                it.name == voiceName && !it.isNetworkConnectionRequired
+                            }
+                            if (voice == null) {
+                                result.error("VOICE_UNAVAILABLE", "The selected offline voice is no longer available", null)
+                                return@withTextToSpeech
+                            }
+                            if (pendingSpeechResults.isNotEmpty()) {
+                                result.error("TTS_BUSY", "Another speech generation is in progress", null)
+                                return@withTextToSpeech
+                            }
+                            try {
+                                target.parentFile?.mkdirs()
+                                if (target.exists()) target.delete()
+                                engine.voice = voice
+                                engine.setSpeechRate(rate)
+                                engine.setPitch(pitch)
+                                val utteranceId = "niarim_" + System.nanoTime()
+                                pendingSpeechResults[utteranceId] = result
+                                pendingSpeechFiles[utteranceId] = target
+                                val status = engine.synthesizeToFile(
+                                    text,
+                                    Bundle(),
+                                    target,
+                                    utteranceId,
+                                )
+                                if (status != TextToSpeech.SUCCESS) {
+                                    pendingSpeechResults.remove(utteranceId)
+                                    pendingSpeechFiles.remove(utteranceId)?.delete()
+                                    result.error("TTS_QUEUE_FAILED", "The voice engine rejected the request", null)
+                                }
+                            } catch (error: Exception) {
+                                pendingSpeechResults.values.remove(result)
+                                result.error("TTS_FAILED", error.message ?: "Speech generation failed", null)
                             }
                         }
                     }
@@ -273,6 +386,88 @@ class MainActivity : FlutterActivity() {
                 android.util.Log.w("CommunityNotices", "Post notification unavailable: ${error.javaClass.simpleName}")
             }
         }
+    }
+
+    private fun withTextToSpeech(callback: (TextToSpeech?) -> Unit) {
+        val ready = textToSpeech
+        if (textToSpeechReady && ready != null) {
+            callback(ready)
+            return
+        }
+        textToSpeechReadyCallbacks.add(callback)
+        if (textToSpeechInitializing) return
+        textToSpeechInitializing = true
+        try {
+            textToSpeech = TextToSpeech(this) { status ->
+                mainHandler.post {
+                    textToSpeechInitializing = false
+                    val engine = textToSpeech
+                    if (status == TextToSpeech.SUCCESS && engine != null) {
+                        textToSpeechReady = true
+                        engine.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                            override fun onStart(utteranceId: String) {}
+
+                            override fun onDone(utteranceId: String) {
+                                mainHandler.post {
+                                    val pending = pendingSpeechResults.remove(utteranceId)
+                                        ?: return@post
+                                    val file = pendingSpeechFiles.remove(utteranceId)
+                                    if (file != null && file.exists() && file.length() > 44L) {
+                                        pending.success(file.absolutePath)
+                                    } else {
+                                        file?.delete()
+                                        pending.error(
+                                            "TTS_EMPTY_OUTPUT",
+                                            "The voice engine returned an empty audio file",
+                                            null,
+                                        )
+                                    }
+                                }
+                            }
+
+                            override fun onError(utteranceId: String) {
+                                mainHandler.post {
+                                    pendingSpeechFiles.remove(utteranceId)?.delete()
+                                    pendingSpeechResults.remove(utteranceId)?.error(
+                                        "TTS_SYNTHESIS_FAILED",
+                                        "The selected voice could not synthesize the text",
+                                        null,
+                                    )
+                                }
+                            }
+                        })
+                    } else {
+                        engine?.shutdown()
+                        textToSpeech = null
+                        textToSpeechReady = false
+                    }
+                    val callbacks = textToSpeechReadyCallbacks.toList()
+                    textToSpeechReadyCallbacks.clear()
+                    callbacks.forEach {
+                        it(if (textToSpeechReady) textToSpeech else null)
+                    }
+                }
+            }
+        } catch (_: Exception) {
+            textToSpeechInitializing = false
+            textToSpeech = null
+            val callbacks = textToSpeechReadyCallbacks.toList()
+            textToSpeechReadyCallbacks.clear()
+            callbacks.forEach { it(null) }
+        }
+    }
+
+    override fun onDestroy() {
+        pendingSpeechResults.values.forEach {
+            it.error("ACTIVITY_DESTROYED", "Speech generation was interrupted", null)
+        }
+        pendingSpeechResults.clear()
+        pendingSpeechFiles.values.forEach { it.delete() }
+        pendingSpeechFiles.clear()
+        textToSpeech?.stop()
+        textToSpeech?.shutdown()
+        textToSpeech = null
+        super.onDestroy()
     }
 
     private fun extractUri(intent: Intent?): String? {
