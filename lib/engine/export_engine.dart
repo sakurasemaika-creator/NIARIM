@@ -327,11 +327,7 @@ class ExportEngine {
     final kf = _cameraEngine.valueAt(cameraKeyframes, frameIndex);
     canvas.save();
     _cameraEngine.apply(canvas, kf, width.toDouble(), height.toDouble());
-    canvas.drawImage(
-      fullImage,
-      ui.Offset(viewport.imageOffsetX, viewport.imageOffsetY),
-      ui.Paint(),
-    );
+    paintOutputViewport(canvas, fullImage, viewport);
     canvas.restore();
     fullImage.dispose();
 
