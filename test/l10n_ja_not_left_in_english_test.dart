@@ -22,6 +22,7 @@ const _sameAsEnglish = {
   'exportFormatMp4': 'ファイル形式の名前',
   'exportFormatGif': 'ファイル形式の名前',
   'exportFormatAvi': 'ファイル形式の名前',
+  'makingFormatWebm': 'ファイル形式の名前',
   'penSubToolBrushSizeOpacity': '単位（px・%）だけ',
   'brushSettingsFadeOff': '日本語のUIでも「OFF」と書く',
   'commonOff': '日本語のUIでも「OFF」と書く',

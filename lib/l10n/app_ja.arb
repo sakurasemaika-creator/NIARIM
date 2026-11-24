@@ -6485,5 +6485,117 @@
   "filterLoadSettings": "保存済みの設定を適用する",
   "filterSettingsName": "設定の名前",
   "filterSettingsEmpty": "このフィルターの保存済み設定はありません。",
-  "filterSettingsSaved": "フィルター設定を保存しました"
+  "filterSettingsSaved": "フィルター設定を保存しました",
+  "makingRecordProject": "この作品のメイキングを記録",
+  "@makingRecordProject": {
+    "description": "メイキング・読み上げ：この作品のメイキングを記録"
+  },
+  "makingRecordProjectHint": "OFFが初期設定です。ONにすると制作中のキャンバス画像を別保存領域へ記録します。容量を使用します。",
+  "@makingRecordProjectHint": {
+    "description": "メイキング・読み上げ：OFFが初期設定です。ONにすると制作中のキャンバス画像を別保存領域へ記録します"
+  },
+  "makingReadAloud": "読み上げ",
+  "@makingReadAloud": {
+    "description": "メイキング・読み上げ：読み上げ"
+  },
+  "makingSpeechText": "読み上げるテキスト",
+  "@makingSpeechText": {
+    "description": "メイキング・読み上げ：読み上げるテキスト"
+  },
+  "makingVoice": "音声",
+  "@makingVoice": {
+    "description": "メイキング・読み上げ：音声"
+  },
+  "makingRate": "読み上げ速度",
+  "@makingRate": {
+    "description": "メイキング・読み上げ：読み上げ速度"
+  },
+  "makingPitch": "音程",
+  "@makingPitch": {
+    "description": "メイキング・読み上げ：音程"
+  },
+  "makingSpeechNotice": "音声は端末にインストールされた音声エンジンで生成されます。商用利用・配信に使う場合は、選択した音声エンジンと音声データの提供元の利用条件を確認してください。",
+  "@makingSpeechNotice": {
+    "description": "メイキング・読み上げ：音声は端末にインストールされた音声エンジンで生成されます。商用利用・配信に使う場"
+  },
+  "makingManageVoices": "音声の追加・管理",
+  "@makingManageVoices": {
+    "description": "メイキング・読み上げ：音声の追加・管理"
+  },
+  "makingNoVoices": "利用できるオフライン音声がありません。Androidのテキスト読み上げ設定で音声データをインストールしてください。",
+  "@makingNoVoices": {
+    "description": "メイキング・読み上げ：利用できるオフライン音声がありません。Androidのテキスト読み上げ設定で音声"
+  },
+  "makingGenerateAndAdd": "生成して追加",
+  "@makingGenerateAndAdd": {
+    "description": "メイキング・読み上げ：生成して追加"
+  },
+  "makingStartFrame": "開始フレーム",
+  "@makingStartFrame": {
+    "description": "メイキング・読み上げ：開始フレーム"
+  },
+  "makingViewMaking": "メイキングを見る",
+  "@makingViewMaking": {
+    "description": "メイキング・読み上げ：メイキングを見る"
+  },
+  "makingTitle": "メイキング",
+  "@makingTitle": {
+    "description": "メイキング・読み上げ：メイキング"
+  },
+  "makingEmpty": "この作品のメイキング記録はありません。新規作成時に記録をONにするか、作品詳細で記録を有効にしてから制作してください。",
+  "@makingEmpty": {
+    "description": "メイキング・読み上げ：この作品のメイキング記録はありません。新規作成時に記録をONにするか、作品詳細で"
+  },
+  "makingStorageLimit": "メイキングの保存上限（64MB）に達しました。これ以上の自動記録は停止しています。既存の記録は保持されています。",
+  "@makingStorageLimit": {
+    "description": "メイキング・読み上げ：メイキングの保存上限（64MB）に達しました。これ以上の自動記録は停止しています"
+  },
+  "makingFormatWebm": "WebM",
+  "@makingFormatWebm": {
+    "description": "メイキング・読み上げ：WebM"
+  },
+  "makingExportLabel": "動画を書き出す",
+  "@makingExportLabel": {
+    "description": "メイキング・読み上げ：動画を書き出す"
+  },
+  "makingExportComplete": "メイキング動画を書き出しました。",
+  "@makingExportComplete": {
+    "description": "メイキング・読み上げ：メイキング動画を書き出しました。"
+  },
+  "makingExportFailed": "メイキング動画を書き出せませんでした。",
+  "@makingExportFailed": {
+    "description": "メイキング・読み上げ：メイキング動画を書き出せませんでした。"
+  },
+  "makingDeleteHistory": "メイキング履歴を削除",
+  "@makingDeleteHistory": {
+    "description": "メイキング・読み上げ：メイキング履歴を削除"
+  },
+  "makingDeleteHistoryConfirm": "この作品のメイキング画像と記録情報をすべて削除します。この操作は元に戻せません。",
+  "@makingDeleteHistoryConfirm": {
+    "description": "メイキング・読み上げ：この作品のメイキング画像と記録情報をすべて削除します。この操作は元に戻せません。"
+  },
+  "makingDeleteFailed": "メイキング履歴を削除できませんでした。",
+  "@makingDeleteFailed": {
+    "description": "メイキング・読み上げ：メイキング履歴を削除できませんでした。"
+  },
+  "makingHistoryDeleted": "メイキング履歴を削除しました。",
+  "@makingHistoryDeleted": {
+    "description": "メイキング・読み上げ：メイキング履歴を削除しました。"
+  },
+  "makingFrameCounter": "記録 {current} / {total}",
+  "@makingFrameCounter": {
+    "description": "メイキング・読み上げ：記録 $current / $total",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "makingSpeechFailed": "音声を生成できませんでした。選択した音声データを確認してください。",
+  "@makingSpeechFailed": {
+    "description": "メイキング・読み上げ：音声を生成できませんでした。選択した音声データを確認してください。"
+  }
 }

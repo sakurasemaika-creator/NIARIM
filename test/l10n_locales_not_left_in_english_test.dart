@@ -18,6 +18,7 @@ const _sameEverywhere = {
   'exportFormatMp4': 'ファイル形式の名前',
   'exportFormatGif': 'ファイル形式の名前',
   'exportFormatAvi': 'ファイル形式の名前',
+  'makingFormatWebm': 'ファイル形式の名前',
   'penSubToolBrushSizeOpacity': '単位（px・%）だけ',
   'storageCategoryNiarimTotal': 'アプリ名',
   'helpCategoryPremium': 'プランの名前（Premium）',

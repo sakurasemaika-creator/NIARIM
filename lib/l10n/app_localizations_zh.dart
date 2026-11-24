@@ -10555,6 +10555,86 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterSettingsSaved => '已保存滤镜设置';
+
+  @override
+  String get makingRecordProject => '记录此作品的制作过程';
+
+  @override
+  String get makingRecordProjectHint => '默认关闭。开启后会在独立位置保存画布快照。';
+
+  @override
+  String get makingReadAloud => '文字转语音';
+
+  @override
+  String get makingSpeechText => '要朗读的文字';
+
+  @override
+  String get makingVoice => '语音';
+
+  @override
+  String get makingRate => '语速';
+
+  @override
+  String get makingPitch => '音调';
+
+  @override
+  String get makingSpeechNotice => '语音由此设备上安装的引擎生成。商业使用前请确认引擎和语音数据的使用条款。';
+
+  @override
+  String get makingManageVoices => '添加或管理语音';
+
+  @override
+  String get makingNoVoices => '没有可用的离线语音。请在 Android 设置中安装语音数据。';
+
+  @override
+  String get makingGenerateAndAdd => '生成并添加';
+
+  @override
+  String get makingStartFrame => '开始帧';
+
+  @override
+  String get makingViewMaking => '查看制作过程';
+
+  @override
+  String get makingTitle => '制作过程';
+
+  @override
+  String get makingEmpty => '此作品没有制作记录。请在作品详情中开启记录后继续编辑。';
+
+  @override
+  String get makingStorageLimit => '制作记录已达到64MB上限。新快照已停止，现有记录会保留。';
+
+  @override
+  String get makingFormatWebm => 'WebM';
+
+  @override
+  String get makingExportLabel => '导出视频';
+
+  @override
+  String get makingExportComplete => '制作视频已导出。';
+
+  @override
+  String get makingExportFailed => '无法导出制作视频。';
+
+  @override
+  String get makingDeleteHistory => '删除制作记录';
+
+  @override
+  String get makingDeleteHistoryConfirm => '删除此作品的所有制作快照和记录？此操作无法撤销。';
+
+  @override
+  String get makingDeleteFailed => '无法删除制作记录。';
+
+  @override
+  String get makingHistoryDeleted => '制作记录已删除。';
+
+  @override
+  String makingFrameCounter(int current, int total) {
+    return '快照 $current / $total';
+  }
+
+  @override
+  String get makingSpeechFailed => '无法生成语音。请检查所选语音数据。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -21111,4 +21191,84 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterSettingsSaved => '已儲存濾鏡設定';
+
+  @override
+  String get makingRecordProject => '記錄此作品的製作過程';
+
+  @override
+  String get makingRecordProjectHint => '預設關閉。開啟後會在獨立位置儲存畫布快照。';
+
+  @override
+  String get makingReadAloud => '文字轉語音';
+
+  @override
+  String get makingSpeechText => '要朗讀的文字';
+
+  @override
+  String get makingVoice => '語音';
+
+  @override
+  String get makingRate => '語速';
+
+  @override
+  String get makingPitch => '音調';
+
+  @override
+  String get makingSpeechNotice => '語音由此裝置上安裝的引擎產生。商業使用前請確認引擎與語音資料的使用條款。';
+
+  @override
+  String get makingManageVoices => '新增或管理語音';
+
+  @override
+  String get makingNoVoices => '沒有可用的離線語音。請在 Android 設定中安裝語音資料。';
+
+  @override
+  String get makingGenerateAndAdd => '產生並新增';
+
+  @override
+  String get makingStartFrame => '開始影格';
+
+  @override
+  String get makingViewMaking => '查看製作過程';
+
+  @override
+  String get makingTitle => '製作過程';
+
+  @override
+  String get makingEmpty => '此作品沒有製作記錄。請在作品詳細資訊中開啟記錄後繼續編輯。';
+
+  @override
+  String get makingStorageLimit => '製作記錄已達到64MB上限。新快照已停止，現有記錄會保留。';
+
+  @override
+  String get makingFormatWebm => 'WebM';
+
+  @override
+  String get makingExportLabel => '匯出影片';
+
+  @override
+  String get makingExportComplete => '製作影片已匯出。';
+
+  @override
+  String get makingExportFailed => '無法匯出製作影片。';
+
+  @override
+  String get makingDeleteHistory => '刪除製作記錄';
+
+  @override
+  String get makingDeleteHistoryConfirm => '刪除此作品的所有製作快照與記錄？此操作無法復原。';
+
+  @override
+  String get makingDeleteFailed => '無法刪除製作記錄。';
+
+  @override
+  String get makingHistoryDeleted => '製作記錄已刪除。';
+
+  @override
+  String makingFrameCounter(int current, int total) {
+    return '快照 $current / $total';
+  }
+
+  @override
+  String get makingSpeechFailed => '無法產生語音。請檢查所選語音資料。';
 }

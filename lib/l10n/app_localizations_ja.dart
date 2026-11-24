@@ -10682,4 +10682,90 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get filterSettingsSaved => 'フィルター設定を保存しました';
+
+  @override
+  String get makingRecordProject => 'この作品のメイキングを記録';
+
+  @override
+  String get makingRecordProjectHint =>
+      'OFFが初期設定です。ONにすると制作中のキャンバス画像を別保存領域へ記録します。容量を使用します。';
+
+  @override
+  String get makingReadAloud => '読み上げ';
+
+  @override
+  String get makingSpeechText => '読み上げるテキスト';
+
+  @override
+  String get makingVoice => '音声';
+
+  @override
+  String get makingRate => '読み上げ速度';
+
+  @override
+  String get makingPitch => '音程';
+
+  @override
+  String get makingSpeechNotice =>
+      '音声は端末にインストールされた音声エンジンで生成されます。商用利用・配信に使う場合は、選択した音声エンジンと音声データの提供元の利用条件を確認してください。';
+
+  @override
+  String get makingManageVoices => '音声の追加・管理';
+
+  @override
+  String get makingNoVoices =>
+      '利用できるオフライン音声がありません。Androidのテキスト読み上げ設定で音声データをインストールしてください。';
+
+  @override
+  String get makingGenerateAndAdd => '生成して追加';
+
+  @override
+  String get makingStartFrame => '開始フレーム';
+
+  @override
+  String get makingViewMaking => 'メイキングを見る';
+
+  @override
+  String get makingTitle => 'メイキング';
+
+  @override
+  String get makingEmpty =>
+      'この作品のメイキング記録はありません。新規作成時に記録をONにするか、作品詳細で記録を有効にしてから制作してください。';
+
+  @override
+  String get makingStorageLimit =>
+      'メイキングの保存上限（64MB）に達しました。これ以上の自動記録は停止しています。既存の記録は保持されています。';
+
+  @override
+  String get makingFormatWebm => 'WebM';
+
+  @override
+  String get makingExportLabel => '動画を書き出す';
+
+  @override
+  String get makingExportComplete => 'メイキング動画を書き出しました。';
+
+  @override
+  String get makingExportFailed => 'メイキング動画を書き出せませんでした。';
+
+  @override
+  String get makingDeleteHistory => 'メイキング履歴を削除';
+
+  @override
+  String get makingDeleteHistoryConfirm =>
+      'この作品のメイキング画像と記録情報をすべて削除します。この操作は元に戻せません。';
+
+  @override
+  String get makingDeleteFailed => 'メイキング履歴を削除できませんでした。';
+
+  @override
+  String get makingHistoryDeleted => 'メイキング履歴を削除しました。';
+
+  @override
+  String makingFrameCounter(int current, int total) {
+    return '記録 $current / $total';
+  }
+
+  @override
+  String get makingSpeechFailed => '音声を生成できませんでした。選択した音声データを確認してください。';
 }
