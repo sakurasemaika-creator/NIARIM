@@ -41,7 +41,11 @@ import 'widgets/video_type_filter.dart';
 /// NIARIM author id on-device. Hidden works are included here and can be toggled
 /// with PATCH /works/{videoId}; the work id remains the YouTube video id.
 class CommunityMyWorksScreen extends StatefulWidget {
-  const CommunityMyWorksScreen({super.key});
+  const CommunityMyWorksScreen({super.key, this.startPosting = false});
+
+  /// 開いたらすぐ投稿を始める（作品広場の「投稿する」から来たとき）。
+  /// ログインしていなければ、いつもの「投稿する」と同じくログインから。
+  final bool startPosting;
 
   @override
   State<CommunityMyWorksScreen> createState() => _CommunityMyWorksScreenState();
@@ -174,7 +178,10 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   void initState() {
     super.initState();
     _worksScrollController.addListener(_onWorksScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _reloadOwnerWorks());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _reloadOwnerWorks();
+      if (widget.startPosting && mounted) _handlePostTap();
+    });
   }
 
   @override

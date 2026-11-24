@@ -7859,6 +7859,24 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityRetry => 'Réessayer';
 
   @override
+  String get communityPlazaLoading => 'Chargement des œuvres…';
+
+  @override
+  String get communityPlazaLoadFailedTitle =>
+      'Impossible de charger les œuvres';
+
+  @override
+  String get communityPlazaLoadFailedBody =>
+      'Vérifiez la connexion et réessayez.';
+
+  @override
+  String get communityPlazaEmptyTitle => 'Pas encore d’œuvres';
+
+  @override
+  String get communityPlazaEmptyBody =>
+      'Les animations créées avec NIARIM apparaîtront ici une fois publiées.';
+
+  @override
   String get communityReloadTooltip => 'Actualiser';
 
   @override

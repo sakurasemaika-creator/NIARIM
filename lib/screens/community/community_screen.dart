@@ -802,6 +802,14 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   /// Refresh the selected tab only; other tab requests, scroll positions and
   /// displayed page counts remain untouched.
+  /// 作品広場を読み直す。空の表示はどのタブでも新着の読み込みを見るので、
+  /// 新着を取り直してから、いま見ているタブも取り直す。
+  Future<void> _retryPlaza() async {
+    await _refreshTab(0);
+    final tab = _tabController.index;
+    if (mounted && tab != 0) await _refreshTab(tab);
+  }
+
   Future<void> _refreshTab(int tab) async {
     if (!mounted || _refreshingTabs[tab]) return;
     final service = context.read<CommunityService>();
@@ -1145,11 +1153,11 @@ class _CommunityScreenState extends State<CommunityScreen>
     );
   }
 
-  void _openMyWorks() {
+  void _openMyWorks({bool startPosting = false}) {
     context.read<CommunityService>().clearTemporaryUnmutes();
     Navigator.of(context).push(
       adMockMaterialPageRoute<void>(
-        builder: (_) => const CommunityMyWorksScreen(),
+        builder: (_) => CommunityMyWorksScreen(startPosting: startPosting),
       ),
     );
   }
@@ -1898,7 +1906,15 @@ class _CommunityScreenState extends State<CommunityScreen>
                       Column(
                         children: [
                           searchRowFor(0),
-                          _buildSearchEmptyState(l10n),
+                          _buildPlazaEmptyState(
+                            l10n,
+                            communityService,
+                            plazaEmpty:
+                                (communityService.isBackendConnected
+                                        ? communityService.latestPageWorks
+                                        : allWorks)
+                                    .isEmpty,
+                          ),
                           _pageFooter(0, communityService),
                         ],
                       ),
@@ -2095,7 +2111,13 @@ class _CommunityScreenState extends State<CommunityScreen>
                               : filtered,
                           1,
                         );
-                        if (ranked.isEmpty) return _buildSearchEmptyState(l10n);
+                        if (ranked.isEmpty) {
+                          return _buildPlazaEmptyState(
+                            l10n,
+                            communityService,
+                            plazaEmpty: allWorks.isEmpty,
+                          );
+                        }
                         if (_rankingLayout ==
                             CommunityRankingLayout.largeThumbnail) {
                           return CommunityWorkGrid(
@@ -2322,6 +2344,109 @@ class _CommunityScreenState extends State<CommunityScreen>
               label: Text(l10n.communityTabNew),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// 新着・ランキングの一覧が空のときの表示。作品広場そのものが空のとき
+  /// （[plazaEmpty]）は、検索・絞り込みで隠れたのではないので「作品が
+  /// ありません」と言わず、読み込み中・読み込めない（再試行）・まだ投稿が
+  /// 無い（投稿の案内）を分けて出す。以前はどれも検索の×の印と「作品が
+  /// ありません」で、サーバーにつないだ直後・通信の失敗でも作品が無いように
+  /// 見え、公開したばかりの空の広場では次に何をすればよいか分からなかった。
+  Widget _buildPlazaEmptyState(
+    AppLocalizations l10n,
+    CommunityService service, {
+    required bool plazaEmpty,
+  }) {
+    if (!plazaEmpty || _searchQuery.trim().isNotEmpty) {
+      return _buildSearchEmptyState(l10n);
+    }
+    final scheme = Theme.of(context).colorScheme;
+    final connected = service.isBackendConnected;
+    final failed = connected && service.lastError != null && !service.isLoading;
+    final loading =
+        connected &&
+        !failed &&
+        (service.isLoading || !service.hasFetchedLatest);
+    final title = loading
+        ? l10n.communityPlazaLoading
+        : failed
+        ? l10n.communityPlazaLoadFailedTitle
+        : l10n.communityPlazaEmptyTitle;
+    final body = loading
+        ? null
+        : failed
+        ? l10n.communityPlazaLoadFailedBody
+        : l10n.communityPlazaEmptyBody;
+    return Padding(
+      key: Key(
+        loading
+            ? 'communityPlazaLoading'
+            : failed
+            ? 'communityPlazaLoadFailed'
+            : 'communityPlazaEmpty',
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Semantics(
+            liveRegion: true,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                EmptyStateIcon(
+                  icon: loading
+                      ? Icons.hourglass_empty
+                      : failed
+                      ? Icons.cloud_off_outlined
+                      : Icons.video_library_outlined,
+                ),
+                const SizedBox(height: 16),
+                messageText(
+                  title,
+                  textAlign: TextAlign.center,
+                  keepLastPhrase: true,
+                  style: localizedHeadingStyle(
+                    context,
+                    TextStyle(
+                      color: scheme.onSurface,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                if (body != null) ...[
+                  const SizedBox(height: 8),
+                  messageText(
+                    body,
+                    textAlign: TextAlign.center,
+                    keepLastPhrase: true,
+                    style: TextStyle(color: scheme.onSurfaceVariant),
+                  ),
+                ],
+                if (!loading) ...[
+                  const SizedBox(height: 20),
+                  if (failed)
+                    OutlinedButton.icon(
+                      key: const Key('communityPlazaRetry'),
+                      onPressed: _retryPlaza,
+                      icon: const Icon(Icons.refresh),
+                      label: Text(l10n.communityRetry),
+                    )
+                  else
+                    FilledButton.icon(
+                      key: const Key('communityPlazaPostFirst'),
+                      onPressed: () => _openMyWorks(startPosting: true),
+                      icon: const Icon(Icons.video_call_outlined),
+                      label: Text(l10n.communityPostButton),
+                    ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );

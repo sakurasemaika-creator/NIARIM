@@ -7450,6 +7450,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityRetry => '다시 시도';
 
   @override
+  String get communityPlazaLoading => '작품을 불러오는 중…';
+
+  @override
+  String get communityPlazaLoadFailedTitle => '작품을 불러오지 못했습니다';
+
+  @override
+  String get communityPlazaLoadFailedBody => '통신 상태를 확인하고 다시 시도해 주세요.';
+
+  @override
+  String get communityPlazaEmptyTitle => '아직 작품이 없습니다';
+
+  @override
+  String get communityPlazaEmptyBody => 'NIARIM으로 만든 애니메이션을 게시하면 이곳에 표시됩니다.';
+
+  @override
   String get communityReloadTooltip => '새로고침';
 
   @override

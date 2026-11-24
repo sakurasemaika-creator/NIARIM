@@ -134,6 +134,11 @@ class CommunityService extends ChangeNotifier {
   /// バックエンドから一覧を取得中かどうか。
   bool get isLoading => _isLoading;
   bool _isLoading = false;
+
+  /// バックエンドの新着一覧を一度でも取れたか。取れる前の空の一覧を
+  /// 「作品がありません」と言わないために使う。
+  bool get hasFetchedLatest => _hasFetchedLatest;
+  bool _hasFetchedLatest = false;
   static const int pageSize = 25;
   String? _latestCursor;
   String? _rankingCursor;
@@ -224,6 +229,7 @@ class CommunityService extends ChangeNotifier {
       if (_disposed || epoch != _latestEpoch) return false;
       _latestCursor = page.nextCursor;
       _mergeLatest([for (final w in page.works) w.toCommunityWork()]);
+      _hasFetchedLatest = true;
       return true;
     } on NiarimApiException catch (e) {
       if (_disposed) return false;

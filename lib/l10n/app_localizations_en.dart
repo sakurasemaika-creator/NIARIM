@@ -7726,6 +7726,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityRetry => 'Retry';
 
   @override
+  String get communityPlazaLoading => 'Loading works…';
+
+  @override
+  String get communityPlazaLoadFailedTitle => 'Could not load works';
+
+  @override
+  String get communityPlazaLoadFailedBody =>
+      'Check your connection and try again.';
+
+  @override
+  String get communityPlazaEmptyTitle => 'No works yet';
+
+  @override
+  String get communityPlazaEmptyBody =>
+      'Animations made with NIARIM appear here once they are posted.';
+
+  @override
   String get communityReloadTooltip => 'Reload';
 
   @override

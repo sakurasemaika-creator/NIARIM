@@ -13485,6 +13485,36 @@ abstract class AppLocalizations {
   /// **'再試行'**
   String get communityRetry;
 
+  /// 作品広場の一覧をサーバーから初めて読み込んでいる間の表示
+  ///
+  /// In ja, this message translates to:
+  /// **'作品を読み込んでいます…'**
+  String get communityPlazaLoading;
+
+  /// 作品広場の一覧をサーバーから読み込めなかったときの題
+  ///
+  /// In ja, this message translates to:
+  /// **'作品を読み込めませんでした'**
+  String get communityPlazaLoadFailedTitle;
+
+  /// 作品広場の一覧を読み込めなかったときの説明（下に再試行のボタン）
+  ///
+  /// In ja, this message translates to:
+  /// **'通信状態を確認して、もう一度お試しください。'**
+  String get communityPlazaLoadFailedBody;
+
+  /// 作品広場にまだ1つも作品が投稿されていないときの題
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ作品がありません'**
+  String get communityPlazaEmptyTitle;
+
+  /// 作品広場が空のときの説明（下に「投稿する」のボタン）
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMで作ったアニメを投稿すると、ここに並びます。'**
+  String get communityPlazaEmptyBody;
+
   /// No description provided for @communityReloadTooltip.
   ///
   /// In ja, this message translates to:
