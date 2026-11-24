@@ -13,7 +13,6 @@ import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/layer_keyframe.dart';
 import 'package:niarim/models/layer_mask.dart';
 import 'package:niarim/router.dart';
-import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
