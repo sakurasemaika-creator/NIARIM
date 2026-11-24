@@ -20,6 +20,7 @@ import '../../utils/work_time_label.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import 'package:intl/intl.dart';
 import '../../widgets/menu_card.dart';
+import '../project/widgets/canvas_size_choice_label.dart';
 
 /// Lightweight preview of main creation and community screens only.
 /// Tab variants, settings/management pages, menus and floating panels are
@@ -2382,19 +2383,19 @@ class _ThemeSampleScreen extends StatelessWidget {
         builder: (context, box) => Wrap(
           key: const Key('themePreviewMockSizes'),
           spacing: 8,
-          runSpacing: 8,
+          runSpacing: 6,
           children: [
             for (final item in [
-              (l.newProjectPresetFullHd, '1920×1080'),
-              (l.newProjectPresetHd, '1280×720'),
-              (l.newProjectPresetSquare, '1080×1080'),
-              (l.newProjectPresetVertical, '1080×1920'),
-              (l.newProjectPresetPortrait, '1080×1350'),
-              (l.newProjectPresetAnalog, '1440×1080'),
+              (l.newProjectPresetFullHd, 1920, 1080),
+              (l.newProjectPresetHd, 1280, 720),
+              (l.newProjectPresetSquare, 1080, 1080),
+              (l.newProjectPresetVertical, 1080, 1920),
+              (l.newProjectPresetPortrait, 1080, 1350),
+              (l.newProjectPresetAnalog, 1440, 1080),
             ].asMap().entries)
-              // 本物の新規作成の画面と同じ作り：名前は「…」で切らず、入らな
-              // ければ行を増やして全部出す。選んだ印は決まった大きさで名前の
-              // 前に出す（選ぶ前後で折り返しが変わらない）。
+              // 本物の新規作成の画面と同じ作り（CanvasSizeChoiceLabel）：
+              // 全幅の行に比率の枠・名前と用途・右端の画素数。選んだ印は
+              // 決まった大きさで名前の前に出す。
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: box.maxWidth),
                 child: ChoiceChip(
@@ -2415,15 +2416,14 @@ class _ThemeSampleScreen extends StatelessWidget {
                     width: 16,
                     height: 16,
                   ),
-                  label: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: math.max(0.0, box.maxWidth - 16 - 16 - 16),
-                    ),
-                    child: Builder(
-                      builder: (context) => DefaultTextStyle(
-                        style: DefaultTextStyle.of(context).style,
-                        textAlign: TextAlign.center,
-                        child: Text('${item.value.$1} (${item.value.$2})'),
+                  label: Builder(
+                    builder: (context) => DefaultTextStyle(
+                      style: DefaultTextStyle.of(context).style,
+                      child: CanvasSizeChoiceLabel(
+                        text: item.value.$1,
+                        canvasWidth: item.value.$2,
+                        canvasHeight: item.value.$3,
+                        width: math.max(0.0, box.maxWidth - 16 - 16 - 16),
                       ),
                     ),
                   ),
@@ -2432,7 +2432,25 @@ class _ThemeSampleScreen extends StatelessWidget {
                 ),
               ),
             ChoiceChip(
-              label: Text(l.newProjectCustomSize),
+              padding: const EdgeInsets.all(8),
+              labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+              ),
+              showCheckmark: false,
+              label: SizedBox(
+                width: math.max(0.0, box.maxWidth - 16 - 16 - 16),
+                child: Row(
+                  children: [
+                    const SizedBox(
+                      width: 22,
+                      child: Icon(Icons.aspect_ratio, size: 18),
+                    ),
+                    const SizedBox(width: 10),
+                    Flexible(child: Text(l.newProjectCustomSize)),
+                  ],
+                ),
+              ),
               selected: false,
               onSelected: (_) {},
             ),

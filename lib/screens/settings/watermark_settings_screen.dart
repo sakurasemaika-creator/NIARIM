@@ -54,23 +54,10 @@ class WatermarkSettingsScreen extends StatelessWidget {
           context,
           Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: PremiumLockWidget(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              child: const PremiumFeatureIntro(
                 feature: PremiumFeature.watermark,
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.lock_outline, size: 44),
-                      const SizedBox(height: 12),
-                      Text(
-                        l10n.premiumBannerRegisterButton,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
+                icon: Icons.branding_watermark_outlined,
               ),
             ),
           ),

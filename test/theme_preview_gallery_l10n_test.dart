@@ -184,6 +184,13 @@ void main() {
           if (_sameInEveryLanguage.contains(s)) continue;
           if (_numberWithUnit.hasMatch(s)) continue;
           if (arb.contains(s)) continue;
+          // その言語の文を分けて出したもの（大きさの選択肢の「Full HD」
+          // 「9:16 Vertical」と、下に小さく出す用途）は、その言語の文の
+          // 一部（語結合子・幅の無い空白を除き、改行しない空白を空白として比べる）。
+          String plain(String v) => v
+              .replaceAll(RegExp('[\u2060\u200b]'), '')
+              .replaceAll('\u00a0', ' ');
+          if (arb.any((value) => plain(value).contains(plain(s)))) continue;
           final leftover =
               (en[page]?.contains(s) ?? false) ||
               (ja[page]?.contains(s) ?? false);
