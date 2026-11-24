@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
@@ -129,11 +130,40 @@ class _MakingScreenState extends State<MakingScreen> {
           );
         case _MakingFormat.gif:
           final encoder = newExportGifEncoder();
-          for (final snapshot in snapshots) {
-            final bytes = await File(snapshot.path).readAsBytes();
-            final image = img.decodeImage(bytes);
-            if (image == null) continue;
-            encoder.addFrame(image, duration: 100 ~/ fps);
+          // GIF palette frames remain resident in the encoder. Downsample and
+          // cap this format to keep export memory bounded on phones.
+          final step =
+              (snapshots.length / 80).ceil().clamp(1, snapshots.length).toInt();
+          for (var i = 0; i < snapshots.length; i += step) {
+            final bytes = await File(snapshots[i].path).readAsBytes();
+            final decoded = img.decodeImage(bytes);
+            if (decoded == null) continue;
+            final maxSide = math.max(decoded.width, decoded.height);
+            final gifFrame = maxSide > 480
+                ? img.copyResize(
+                    decoded,
+                    width: (decoded.width * 480 / maxSide)
+                        .round().clamp(1, 480).toInt(),
+                    height: (decoded.height * 480 / maxSide)
+                        .round().clamp(1, 480).toInt(),
+                  )
+                : decoded;
+            encoder.addFrame(gifFrame, duration: 100 ~/ fps);
+          }
+          final lastBytes = await File(snapshots.last.path).readAsBytes();
+          final lastDecoded = img.decodeImage(lastBytes);
+          if (lastDecoded != null && (snapshots.length - 1) % step != 0) {
+            final maxSide = math.max(lastDecoded.width, lastDecoded.height);
+            final finalFrame = maxSide > 480
+                ? img.copyResize(
+                    lastDecoded,
+                    width: (lastDecoded.width * 480 / maxSide)
+                        .round().clamp(1, 480).toInt(),
+                    height: (lastDecoded.height * 480 / maxSide)
+                        .round().clamp(1, 480).toInt(),
+                  )
+                : lastDecoded;
+            encoder.addFrame(finalFrame, duration: 100 ~/ fps);
           }
           final gif = encoder.finish();
           if (gif == null || gif.isEmpty) {
@@ -205,7 +235,7 @@ class _MakingScreenState extends State<MakingScreen> {
       switch (format) {
         _MakingFormat.mp4 => l10n.exportFormatMp4,
         _MakingFormat.gif => l10n.exportFormatGif,
-        _MakingFormat.webm => l10n.exportFormatWebm,
+        _MakingFormat.webm => l10n.helpTransparentWebmTitle,
         _MakingFormat.avi => l10n.exportFormatAvi,
       };
 
@@ -256,9 +286,9 @@ class _MakingScreenState extends State<MakingScreen> {
                         color: Colors.black,
                         alignment: Alignment.center,
                         child: Image.file(
-                          File(snapshots[_index.clamp(0, snapshots.length - 1)].path),
+                          File(snapshots[_index.clamp(0, snapshots.length - 1).toInt()].path),
                           key: ValueKey(
-                            snapshots[_index.clamp(0, snapshots.length - 1)].path,
+                            snapshots[_index.clamp(0, snapshots.length - 1).toInt()].path,
                           ),
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) =>
@@ -285,8 +315,10 @@ class _MakingScreenState extends State<MakingScreen> {
                             value: _index.toDouble(),
                             min: 0,
                             max: (snapshots.length - 1).toDouble(),
-                            divisions: snapshots.length - 1,
-                            onChanged: _playing
+                            divisions: snapshots.length > 1
+                                ? snapshots.length - 1
+                                : null,
+                            onChanged: _playing || snapshots.length < 2
                                 ? null
                                 : (value) => setState(
                                     () => _index = value.round(),

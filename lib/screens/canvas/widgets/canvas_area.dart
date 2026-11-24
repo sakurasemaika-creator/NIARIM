@@ -2515,8 +2515,8 @@ class CanvasAreaState extends State<CanvasArea> {
       final resized = scale < 1.0
           ? img.copyResize(
               source,
-              width: math.max(1, (source.width * scale).round()),
-              height: math.max(1, (source.height * scale).round()),
+              width: math.max(1, (source.width * scale).round()).toInt(),
+              height: math.max(1, (source.height * scale).round()).toInt(),
             )
           : source;
       final jpeg = img.encodeJpg(resized, quality: 60);

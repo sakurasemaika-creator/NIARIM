@@ -2650,11 +2650,10 @@ class ProjectService extends ChangeNotifier {
       updatedAt: now,
       isSharedImport: isSharedImport,
     );
-    _projects.add(
-      project.copyWith(
-        makingEnabled: isSharedImport ? false : project.makingEnabled,
-      ),
+    final importedProject = project.copyWith(
+      makingEnabled: isSharedImport ? false : project.makingEnabled,
     );
+    _projects.add(importedProject);
     _scenes[newId] = data.scenes;
     _layerHomes[newId] = buildLayerHomeIndex(data.scenes);
     final tm = TileManager(
@@ -2669,7 +2668,7 @@ class ProjectService extends ChangeNotifier {
     await NiaproSerializer.restoreBundledMaterials(newId, data);
     _saveAsync(newId);
     notifyListeners();
-    return project;
+    return importedProject;
   }
 
   /// Load the selected snapshot into the editable work, keeping its history.
@@ -5101,11 +5100,7 @@ class ProjectService extends ChangeNotifier {
     });
   }
 
-  /// このプロジェクトで使用する自動塗りプリセットを設定する。
-  /// プロジェクトごとに使うプリセットだけを選べるようにする。
-  /// [ids]がnullの場合は「すべて使用する」に戻す。
-  /// Imported shared works begin with making recording OFF so another
-  /// creator's preference cannot silently consume the recipient's storage.
+  /// Save the per-project opt-in setting for optional making-history capture.
   Future<void> setMakingEnabled(String projectId, bool enabled) async {
     final index = _projects.indexWhere((project) => project.id == projectId);
     if (index < 0 || _projects[index].makingEnabled == enabled) return;

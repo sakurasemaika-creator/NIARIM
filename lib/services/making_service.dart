@@ -54,7 +54,8 @@ abstract final class MakingService {
   }
 
   static Future<Map<String, dynamic>> _readManifest(String projectId) async {
-    final file = await _manifest(projectId);
+    final dir = await _directory(projectId);
+    final file = File(dir.path + '/making.json');
     if (!await file.exists()) {
       return {
         'version': 1,
@@ -77,11 +78,119 @@ abstract final class MakingService {
     } catch (_) {
       // Keep existing image files rather than deleting them on index damage.
     }
+    // Recover orphaned snapshots from disk so a damaged manifest cannot reset
+    // the 64 MB cap or make older making frames disappear.
+    final recovered = <dynamic>[];
+    var recoveredBytes = 0;
+    await for (final entry in dir.list(followLinks: false)) {
+      if (entry is! File) continue;
+      final name = entry.uri.pathSegments.last;
+      if (!RegExp(r'^making_[0-9]{6}\.jpg
+  }
+
+  static Future<void> _writeManifest(
+    String projectId,
+    Map<String, dynamic> manifest,
+  ) async {
+    final file = await _manifest(projectId);
+    final temporary = File(file.path + '.tmp');
+    await temporary.writeAsString(jsonEncode(manifest), flush: true);
+    if (await file.exists()) await file.delete();
+    await temporary.rename(file.path);
+  }
+
+  static Future<bool> recordSnapshot({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required List<int> bytes,
+  }) async {
+    if (bytes.isEmpty || frameIndex < 0) return false;
+    final dir = await _directory(projectId);
+    final manifest = await _readManifest(projectId);
+    if (manifest['limitReached'] == true) return false;
+    final currentBytes = manifest['sizeBytes'] as int;
+    if (currentBytes + bytes.length > maxBytesPerProject) {
+      manifest['limitReached'] = true;
+      await _writeManifest(projectId, manifest);
+      return false;
+    }
+    final snapshots = List<dynamic>.from(manifest['snapshots'] as List);
+    final number = snapshots.length + 1;
+    final name = 'making_' + number.toString().padLeft(6, '0') + '.jpg';
+    final target = File(dir.path + '/' + name);
+    final staging = File(target.path + '.tmp');
+    await staging.writeAsBytes(bytes, flush: true);
+    if (await target.exists()) await target.delete();
+    await staging.rename(target.path);
+    snapshots.add({
+      'file': name,
+      'capturedAt': DateTime.now().toIso8601String(),
+      'sceneId': sceneId,
+      'frameIndex': frameIndex,
+      'sizeBytes': bytes.length,
+    });
+    manifest['snapshots'] = snapshots;
+    manifest['sizeBytes'] = currentBytes + bytes.length;
+    await _writeManifest(projectId, manifest);
+    return true;
+  }
+
+  static Future<MakingHistory> history(String projectId) async {
+    final dir = await _directory(projectId);
+    final manifest = await _readManifest(projectId);
+    final snapshots = <MakingSnapshot>[];
+    for (final raw in manifest['snapshots'] as List) {
+      if (raw is! Map) continue;
+      final name = raw['file'];
+      if (name is! String ||
+          !RegExp(r'^making_[0-9]{6}\.jpg$').hasMatch(name)) {
+        continue;
+      }
+      final file = File(dir.path + '/' + name);
+      if (!await file.exists()) continue;
+      final capturedAt =
+          DateTime.tryParse(raw['capturedAt'] as String? ?? '');
+      snapshots.add(
+        MakingSnapshot(
+          path: file.path,
+          capturedAt:
+              capturedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+          sceneId: raw['sceneId'] as String? ?? '',
+          frameIndex: raw['frameIndex'] as int? ?? 0,
+          sizeBytes: raw['sizeBytes'] as int? ?? await file.length(),
+        ),
+      );
+    }
+    return MakingHistory(
+      snapshots: List.unmodifiable(snapshots),
+      sizeBytes: manifest['sizeBytes'] as int,
+      limitReached: manifest['limitReached'] == true,
+    );
+  }
+
+  static Future<void> deleteHistory(String projectId) async {
+    final dir = await _directory(projectId);
+    if (await dir.exists()) await dir.delete(recursive: true);
+  }
+}
+).hasMatch(name)) continue;
+      final stat = await entry.stat();
+      recoveredBytes += stat.size;
+      recovered.add({
+        'file': name,
+        'capturedAt': stat.modified.toIso8601String(),
+        'sceneId': '',
+        'frameIndex': 0,
+        'sizeBytes': stat.size,
+      });
+    }
+    recovered.sort((a, b) => (a['file'] as String).compareTo(b['file'] as String));
     return {
       'version': 1,
-      'sizeBytes': 0,
-      'limitReached': false,
-      'snapshots': <dynamic>[],
+      'sizeBytes': recoveredBytes,
+      'limitReached': recoveredBytes >= maxBytesPerProject,
+      'snapshots': recovered,
     };
   }
 
