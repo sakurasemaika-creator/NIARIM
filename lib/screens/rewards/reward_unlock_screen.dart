@@ -1086,10 +1086,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 padding: const EdgeInsetsDirectional.only(start: 12),
                 child: Row(
                   children: [
+                    // 通貨の印は補助の文字色（差し色は押す操作のために残す）。
                     Icon(
                       Icons.toll_outlined,
                       size: 28,
-                      color: AccentTextTheme.of(context),
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -1275,18 +1276,27 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             if (!earn) ...[
               const SizedBox(height: 16),
               // Shared duration goes BEFORE the list of checkboxes.
-              messageText(
-                t['duration'],
-                style: Theme.of(context).textTheme.titleMedium,
+              // 期間は「利用期間」の行に今の値を出し、押すと選ぶシートを開く
+              // （以前は見出しの下に差し色の枠のピル「1時間」があり、
+              // 主な操作のボタンと同じ重さに見えた）。
+              GroupedSheet(
+                children: [
+                  SheetRow(
+                    icon: Icons.schedule,
+                    title: t['duration'],
+                    trailing: KeyedSubtree(
+                      key: const Key('rewardDurationButton'),
+                      child: Text(
+                        coinUnlockDurationLabel(l10n, _duration),
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                    showChevron: true,
+                    onTap: () => _chooseDuration(t),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                key: const Key('rewardDurationButton'),
-                icon: const Icon(Icons.schedule),
-                label: Text(coinUnlockDurationLabel(l10n, _duration)),
-                onPressed: () => _chooseDuration(t),
-              ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 24),
               messageText(
                 t['chooseBenefits'],
                 style: Theme.of(context).textTheme.titleMedium,

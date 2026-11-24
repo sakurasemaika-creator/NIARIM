@@ -8,7 +8,7 @@ import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
 
 /// Server counts visits by JST day; only a confirmed POST claim can credit coins.
 class RecurringMissionsPanel extends StatefulWidget {
@@ -189,77 +189,80 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
   Widget build(BuildContext context) {
     if (_owner == null || _api == null) return const SizedBox.shrink();
     final l10n = appLocalizationsOf(context);
-    return MenuCard(
+    // ほかの画面と同じ、細い縁の面（影なし・ほかの面と同じ幅）。
+    return GroupedSheet(
       key: const Key('recurringMissionsPanel'),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: FutureBuilder<Map<String, dynamic>>(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Padding(
-                padding: EdgeInsets.all(12),
-                child: LinearProgressIndicator(),
-              );
-            }
-            if (snapshot.hasError || !snapshot.hasData) {
-              return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: FutureBuilder<Map<String, dynamic>>(
+            future: _future,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: LinearProgressIndicator(),
+                );
+              }
+              if (snapshot.hasError || !snapshot.hasData) {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: messageText(l10n.recurringMissionsUnavailable),
+                    ),
+                    IconButton(
+                      tooltip: l10n.creatorMissionRetry,
+                      onPressed: () => setState(() => _future = _load(_api!)),
+                      icon: const Icon(Icons.refresh),
+                    ),
+                  ],
+                );
+              }
+              final data = snapshot.data!;
+              final enabled = data['enabled'] == true;
+              final missions = (data['missions'] as List? ?? const [])
+                  .whereType<Map>()
+                  .toList();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: messageText(l10n.recurringMissionsUnavailable),
+                  MissionPanelHeading(
+                    icon: Icons.event_repeat_outlined,
+                    title: l10n.recurringMissionsTitle,
+                    action: IconButton(
+                      tooltip: l10n.missionRefresh,
+                      onPressed: () => setState(() => _future = _load(_api!)),
+                      icon: const Icon(Icons.refresh),
+                    ),
                   ),
-                  IconButton(
-                    tooltip: l10n.creatorMissionRetry,
-                    onPressed: () => setState(() => _future = _load(_api!)),
-                    icon: const Icon(Icons.refresh),
-                  ),
-                ],
-              );
-            }
-            final data = snapshot.data!;
-            final enabled = data['enabled'] == true;
-            final missions = (data['missions'] as List? ?? const [])
-                .whereType<Map>()
-                .toList();
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                MissionPanelHeading(
-                  icon: Icons.event_repeat_outlined,
-                  title: l10n.recurringMissionsTitle,
-                  action: IconButton(
-                    tooltip: l10n.missionRefresh,
-                    onPressed: () => setState(() => _future = _load(_api!)),
-                    icon: const Icon(Icons.refresh),
-                  ),
-                ),
-                messageText(
-                  l10n.recurringMissionsNote,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                if (!enabled)
                   messageText(
-                    l10n.recurringMissionsPayoutPending,
+                    l10n.recurringMissionsNote,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                for (final period in ['week', 'month']) ...[
-                  const SizedBox(height: 8),
-                  messageText(
-                    period == 'week'
-                        ? l10n.missionPeriodWeekly
-                        : l10n.missionPeriodMonthly,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  for (final row in missions.where(
-                    (m) => m['period'] == period,
-                  ))
-                    _item(context, row, enabled),
+                  if (!enabled)
+                    messageText(
+                      l10n.recurringMissionsPayoutPending,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  for (final period in ['week', 'month']) ...[
+                    const SizedBox(height: 8),
+                    messageText(
+                      period == 'week'
+                          ? l10n.missionPeriodWeekly
+                          : l10n.missionPeriodMonthly,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    for (final row in missions.where(
+                      (m) => m['period'] == period,
+                    ))
+                      _item(context, row, enabled),
+                  ],
                 ],
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
 }

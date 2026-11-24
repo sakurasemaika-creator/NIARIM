@@ -10,7 +10,7 @@ import '../../utils/coin_duration_label.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
 
 /// Authenticated, read-only view until the server explicitly enables payouts.
 /// A permanently open Plaza page counts: video playback is not a requirement.
@@ -194,72 +194,77 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
   @override
   Widget build(BuildContext context) {
     if (_owner == null || _api == null) return const SizedBox.shrink();
-    return MenuCard(
+    // ほかの画面と同じ、細い縁の面（影なし・ほかの面と同じ幅）。
+    return GroupedSheet(
       key: const Key('plazaMissionsPanel'),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: FutureBuilder<Map<String, dynamic>>(
-          future: _state,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              if (snapshot.hasError) {
-                return Row(
-                  children: [
-                    Expanded(
-                      child: messageText(_l10n.plazaMissionsUnavailable),
-                    ),
-                    IconButton(
-                      tooltip: _l10n.creatorMissionRetry,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: FutureBuilder<Map<String, dynamic>>(
+            future: _state,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                if (snapshot.hasError) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: messageText(_l10n.plazaMissionsUnavailable),
+                      ),
+                      IconButton(
+                        tooltip: _l10n.creatorMissionRetry,
+                        onPressed: () =>
+                            setState(() => _state = _api!.myPlazaMissions()),
+                        icon: const Icon(Icons.refresh),
+                      ),
+                    ],
+                  );
+                }
+                return const LinearProgressIndicator();
+              }
+              final data = snapshot.data!;
+              final missions = (data['missions'] as List? ?? const [])
+                  .whereType<Map>()
+                  .toList();
+              final enabled = data['enabled'] == true;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  MissionPanelHeading(
+                    icon: Icons.timer_outlined,
+                    title: _l10n.plazaMissionsTitle,
+                    action: IconButton(
+                      tooltip: _l10n.missionRefresh,
                       onPressed: () =>
                           setState(() => _state = _api!.myPlazaMissions()),
                       icon: const Icon(Icons.refresh),
                     ),
-                  ],
-                );
-              }
-              return const LinearProgressIndicator();
-            }
-            final data = snapshot.data!;
-            final missions = (data['missions'] as List? ?? const [])
-                .whereType<Map>()
-                .toList();
-            final enabled = data['enabled'] == true;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                MissionPanelHeading(
-                  icon: Icons.timer_outlined,
-                  title: _l10n.plazaMissionsTitle,
-                  action: IconButton(
-                    tooltip: _l10n.missionRefresh,
-                    onPressed: () =>
-                        setState(() => _state = _api!.myPlazaMissions()),
-                    icon: const Icon(Icons.refresh),
                   ),
-                ),
-                messageText(
-                  _l10n.plazaMissionsNote,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                if (!enabled)
                   messageText(
-                    _l10n.missionPayoutPending,
+                    _l10n.plazaMissionsNote,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                for (final period in ['day', 'week', 'month']) ...[
-                  const SizedBox(height: 8),
-                  messageText(
-                    _period(period),
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  for (final m in missions.where((x) => x['period'] == period))
-                    _row(m, enabled),
+                  if (!enabled)
+                    messageText(
+                      _l10n.missionPayoutPending,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  for (final period in ['day', 'week', 'month']) ...[
+                    const SizedBox(height: 8),
+                    messageText(
+                      _period(period),
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    for (final m in missions.where(
+                      (x) => x['period'] == period,
+                    ))
+                      _row(m, enabled),
+                  ],
                 ],
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
 }

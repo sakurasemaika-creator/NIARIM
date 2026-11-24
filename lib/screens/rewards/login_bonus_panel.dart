@@ -10,7 +10,7 @@ import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
 
 bool canClaimLoginBonus({
   required bool enabled,
@@ -101,169 +101,177 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
     final l10n = appLocalizationsOf(context);
     final scheme = Theme.of(context).colorScheme;
     if (_owner == null || _api == null) return const SizedBox.shrink();
-    return MenuCard(
+    // ほかの画面と同じ、細い縁の面（影なし・ほかの面と同じ幅）。
+    return GroupedSheet(
       key: const Key('loginBonusPanel'),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: FutureBuilder<Map<String, dynamic>>(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(12),
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-            if (snapshot.hasError || !snapshot.hasData) {
-              return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: FutureBuilder<Map<String, dynamic>>(
+            future: _future,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(12),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              if (snapshot.hasError || !snapshot.hasData) {
+                return Row(
+                  children: [
+                    Expanded(child: messageText(t['unknown'])),
+                    IconButton(
+                      tooltip: l10n.loginBonusRetry,
+                      onPressed: () => setState(() => _future = _load(_api!)),
+                      icon: const Icon(Icons.refresh),
+                    ),
+                  ],
+                );
+              }
+              final status = snapshot.data!;
+              final days = (status['totalDays'] as num?)?.toInt() ?? 0;
+              final amount = (status['dailyCoins'] as num?)?.toInt() ?? 10;
+              final enabled = status['rewardEnabled'] == true;
+              final visited = status['visitedToday'] == true;
+              final dailyClaimed = status['dailyClaimed'] == true;
+              final milestones = (status['milestones'] as List? ?? const [])
+                  .whereType<Map>()
+                  .map((m) => Map<String, dynamic>.from(m))
+                  .toList();
+              milestones.sort((a, b) {
+                final ap = a['eligible'] == true && a['claimed'] != true
+                    ? 0
+                    : 1;
+                final bp = b['eligible'] == true && b['claimed'] != true
+                    ? 0
+                    : 1;
+                if (ap != bp) return ap - bp;
+                return ((a['days'] as num?)?.toInt() ?? 0).compareTo(
+                  (b['days'] as num?)?.toInt() ?? 0,
+                );
+              });
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: messageText(t['unknown'])),
-                  IconButton(
-                    tooltip: l10n.loginBonusRetry,
-                    onPressed: () => setState(() => _future = _load(_api!)),
-                    icon: const Icon(Icons.refresh),
+                  MissionPanelHeading(
+                    icon: Icons.calendar_month_outlined,
+                    // 欄の見出しの印は、ほかの欄（作品広場の滞在・ウィーク
+                    // リー）と同じ色（差し色にしない）。
+                    title: t['title'],
+                    action: IconButton(
+                      tooltip: t['retry'],
+                      onPressed: () => setState(() => _future = _load(_api!)),
+                      icon: const Icon(Icons.refresh),
+                    ),
+                  ),
+                  // 日数・コインの数と単位（「31日」「1코인」）は途中で行を
+                  // 変えない。
+                  keepTogetherWords(l10n.loginBonusDays(days), keep: const []),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            messageText(t['daily']),
+                            keepTogetherWords(
+                              l10n.loginBonusDailyCoins(amount),
+                              keep: [l10n.coinAmount(amount)],
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                      FilledButton(
+                        key: const Key('loginDailyClaimButton'),
+                        onPressed:
+                            canClaimLoginBonus(
+                                  enabled: enabled,
+                                  achieved: visited,
+                                  claimed: dailyClaimed,
+                                ) &&
+                                !_busy.contains('daily0')
+                            ? () => _claim('daily', null)
+                            : null,
+                        child: messageText(
+                          dailyClaimed ? t['claimed'] : t['claim'],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (!visited)
+                    messageText(
+                      t['visitMissing'],
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  if (!enabled)
+                    messageText(
+                      t['unavailable'],
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  const SizedBox(height: 8),
+                  messageText(
+                    t['utc'],
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  ExpansionTile(
+                    key: const Key('loginMilestoneExpansion'),
+                    title: messageText(t['milestones']),
+                    children: milestones.map((m) {
+                      final goal = (m['days'] as num?)?.toInt() ?? 0;
+                      final coins = (m['coins'] as num?)?.toInt() ?? 0;
+                      final claimed = m['claimed'] == true;
+                      final eligible = m['eligible'] == true;
+                      return ListTile(
+                        key: Key('loginMilestone$goal'),
+                        leading: Icon(
+                          eligible && !claimed
+                              ? Icons.priority_high_rounded
+                              : Icons.flag_outlined,
+                          color: eligible
+                              ? AccentTextTheme.of(context)
+                              : scheme.onSurfaceVariant,
+                        ),
+                        title: keepTogetherWords(
+                          l10n.loginBonusMilestone(goal),
+                          keep: const [],
+                        ),
+                        // 受け取るボタンはコインの横か下に置き、題には行の幅を
+                        // すべて使わせる。
+                        subtitle: ActionBesideOrBelow(
+                          text: keepTogetherWords(
+                            l10n.coinAmount(coins),
+                            keep: [l10n.coinAmount(coins)],
+                          ),
+                          action: claimed
+                              ? Text(t['claimed'])
+                              : OutlinedButton(
+                                  onPressed:
+                                      canClaimLoginBonus(
+                                            enabled: enabled,
+                                            achieved: eligible,
+                                            claimed: claimed,
+                                          ) &&
+                                          !_busy.contains('milestone$goal')
+                                      ? () => _claim('milestone', goal)
+                                      : null,
+                                  child: Text(
+                                    eligible ? t['claim'] : t['notYet'],
+                                  ),
+                                ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ],
               );
-            }
-            final status = snapshot.data!;
-            final days = (status['totalDays'] as num?)?.toInt() ?? 0;
-            final amount = (status['dailyCoins'] as num?)?.toInt() ?? 10;
-            final enabled = status['rewardEnabled'] == true;
-            final visited = status['visitedToday'] == true;
-            final dailyClaimed = status['dailyClaimed'] == true;
-            final milestones = (status['milestones'] as List? ?? const [])
-                .whereType<Map>()
-                .map((m) => Map<String, dynamic>.from(m))
-                .toList();
-            milestones.sort((a, b) {
-              final ap = a['eligible'] == true && a['claimed'] != true ? 0 : 1;
-              final bp = b['eligible'] == true && b['claimed'] != true ? 0 : 1;
-              if (ap != bp) return ap - bp;
-              return ((a['days'] as num?)?.toInt() ?? 0).compareTo(
-                (b['days'] as num?)?.toInt() ?? 0,
-              );
-            });
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                MissionPanelHeading(
-                  icon: Icons.calendar_month_outlined,
-                  iconColor: AccentTextTheme.of(context),
-                  title: t['title'],
-                  action: IconButton(
-                    tooltip: t['retry'],
-                    onPressed: () => setState(() => _future = _load(_api!)),
-                    icon: const Icon(Icons.refresh),
-                  ),
-                ),
-                // 日数・コインの数と単位（「31日」「1코인」）は途中で行を
-                // 変えない。
-                keepTogetherWords(l10n.loginBonusDays(days), keep: const []),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          messageText(t['daily']),
-                          keepTogetherWords(
-                            l10n.loginBonusDailyCoins(amount),
-                            keep: [l10n.coinAmount(amount)],
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                    FilledButton(
-                      key: const Key('loginDailyClaimButton'),
-                      onPressed:
-                          canClaimLoginBonus(
-                                enabled: enabled,
-                                achieved: visited,
-                                claimed: dailyClaimed,
-                              ) &&
-                              !_busy.contains('daily0')
-                          ? () => _claim('daily', null)
-                          : null,
-                      child: messageText(
-                        dailyClaimed ? t['claimed'] : t['claim'],
-                      ),
-                    ),
-                  ],
-                ),
-                if (!visited)
-                  messageText(
-                    t['visitMissing'],
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                if (!enabled)
-                  messageText(
-                    t['unavailable'],
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                const SizedBox(height: 8),
-                messageText(
-                  t['utc'],
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                ExpansionTile(
-                  key: const Key('loginMilestoneExpansion'),
-                  title: messageText(t['milestones']),
-                  children: milestones.map((m) {
-                    final goal = (m['days'] as num?)?.toInt() ?? 0;
-                    final coins = (m['coins'] as num?)?.toInt() ?? 0;
-                    final claimed = m['claimed'] == true;
-                    final eligible = m['eligible'] == true;
-                    return ListTile(
-                      key: Key('loginMilestone$goal'),
-                      leading: Icon(
-                        eligible && !claimed
-                            ? Icons.priority_high_rounded
-                            : Icons.flag_outlined,
-                        color: eligible
-                            ? AccentTextTheme.of(context)
-                            : scheme.onSurfaceVariant,
-                      ),
-                      title: keepTogetherWords(
-                        l10n.loginBonusMilestone(goal),
-                        keep: const [],
-                      ),
-                      // 受け取るボタンはコインの横か下に置き、題には行の幅を
-                      // すべて使わせる。
-                      subtitle: ActionBesideOrBelow(
-                        text: keepTogetherWords(
-                          l10n.coinAmount(coins),
-                          keep: [l10n.coinAmount(coins)],
-                        ),
-                        action: claimed
-                            ? Text(t['claimed'])
-                            : OutlinedButton(
-                                onPressed:
-                                    canClaimLoginBonus(
-                                          enabled: enabled,
-                                          achieved: eligible,
-                                          claimed: claimed,
-                                        ) &&
-                                        !_busy.contains('milestone$goal')
-                                    ? () => _claim('milestone', goal)
-                                    : null,
-                                child: Text(
-                                  eligible ? t['claim'] : t['notYet'],
-                                ),
-                              ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            );
-          },
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
 }
