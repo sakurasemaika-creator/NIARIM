@@ -2272,7 +2272,10 @@ class _HomeScreenState extends State<HomeScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.note_add_outlined),
+              leading: Icon(
+                Icons.note_add_outlined,
+                color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+              ),
               title: Text(l10n.homeAddSheetNewProject),
               onTap: () {
                 Navigator.pop(ctx);
@@ -2280,7 +2283,10 @@ class _HomeScreenState extends State<HomeScreen>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.create_new_folder_outlined),
+              leading: Icon(
+                Icons.create_new_folder_outlined,
+                color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+              ),
               title: Text(l10n.homeAddSheetNewFolder),
               onTap: () {
                 Navigator.pop(ctx);
@@ -7014,7 +7020,18 @@ class _TrashTabState extends State<_TrashTab> {
       key: detailsKey,
       // 先頭の絵・印はどの種類のカードも48×48の枠の真ん中に置く（印の
       // アイコン〔36px〕と作品の表紙〔48px〕で名前の始まりが12pxずれた）。
-      leading: SizedBox.square(dimension: 48, child: Center(child: leading)),
+      // 種類の印は補助の文字色（行の先頭の印に差し色を使わない）。
+      leading: SizedBox.square(
+        dimension: 48,
+        child: Center(
+          child: IconTheme.merge(
+            data: IconThemeData(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            child: leading,
+          ),
+        ),
+      ),
       // 右にtrailingを置かないので、左右の余白を同じ16pxにし、絵と名前の間は
       // 12px（狭い画面・大きな文字でも、ファイル名が拡張子の前で折れない幅を
       // 名前に残す）。
