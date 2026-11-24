@@ -2230,6 +2230,7 @@
   "timelineFrameTrackLabel": "Image",
   "timelineTrackRowRenameTitle": "Renommer la ligne",
   "timelineCameraTrackLabel": "Caméra",
+  "timelineTrackRowName": "{kind} {number}",
   "timelineEndCardDefaultLogoLabel": "Logo NIARIM",
   "timelineEndCardHiddenLabel": "Masqué",
   "timelineEndCardTrackLabel": "Piste de la marque de fin",

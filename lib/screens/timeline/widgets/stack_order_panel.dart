@@ -126,7 +126,7 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
     };
     final names = ps.rowNamesOf(widget.projectId, sceneId, kind);
     final custom = track.row < names.length ? names[track.row] : null;
-    return custom ?? '$base${track.row + 1}';
+    return custom ?? l10n.timelineTrackRowName(base, track.row + 1);
   }
 
   IconData _iconOf(String key) {

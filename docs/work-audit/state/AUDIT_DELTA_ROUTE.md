@@ -17,43 +17,43 @@
 
 | ID | status |
 |---|---|
-| D001 | todo |
-| D002 | todo |
-| D003 | todo |
-| D004 | todo |
-| D005 | todo |
-| D006 | todo |
-| D007 | todo |
-| D008 | todo |
-| D009 | todo |
-| D010 | todo |
-| D011 | todo |
-| D012 | todo |
-| D013 | todo |
-| D014 | todo |
-| D015 | todo |
-| D016 | todo |
-| D017 | todo |
-| D018 | todo |
-| D019 | todo |
-| D020 | todo |
-| D021 | todo |
-| D022 | todo |
-| D023 | todo |
-| D024 | todo |
-| D025 | todo |
-| D026 | todo |
-| D027 | todo |
-| D028 | todo |
-| D029 | todo |
-| D030 | todo |
-| D031 | todo |
-| D032 | todo |
-| D033 | todo |
-| D034 | todo |
-| D035 | todo |
-| D036 | todo |
-| D037 | todo |
+| D001 | done |
+| D002 | done |
+| D003 | done |
+| D004 | done |
+| D005 | done |
+| D006 | done |
+| D007 | done |
+| D008 | done |
+| D009 | done |
+| D010 | done |
+| D011 | done |
+| D012 | done |
+| D013 | done |
+| D014 | done |
+| D015 | done |
+| D016 | done |
+| D017 | done |
+| D018 | done |
+| D019 | done |
+| D020 | done |
+| D021 | done |
+| D022 | done |
+| D023 | done |
+| D024 | done |
+| D025 | done |
+| D026 | done |
+| D027 | done |
+| D028 | done |
+| D029 | done |
+| D030 | done |
+| D031 | done |
+| D032 | done |
+| D033 | done |
+| D034 | done |
+| D035 | done |
+| D036 | done |
+| D037 | done |
 
 delta_current_id は、この表の先頭未完了D-IDと一致させる。`not_started` はBaseline/Discoveryが未完了の間だけ使用し、D001以降へ入ったら必ずD-IDを記録する。
 ## 実行順
@@ -99,216 +99,216 @@ blockedは環境・実機・外部サービス等の実在制約だけに使用�
 
 ## D001.1 — Home navigation・scrolling追加差分
 
-status: `todo`。2026-10-29 App9bce4010、旧1449adeeからの追加。左上Back・右端drawer・scroll-to-top・filter header in-list scroll・空sliver・favorite表示をPC/SP/7言語/境界幅/検索・folder・scroll継続性で実操作し、旧Home証拠との差分回帰を行う。A003のcurrent scopeに影響する部分は同ID中でも優先確認する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-10-29 App9bce4010、旧1449adeeからの追加。左上Back・右端drawer・scroll-to-top・filter header in-list scroll・空sliver・favorite表示をPC/SP/7言語/境界幅/検索・folder・scroll継続性で実操作し、旧Home証拠との差分回帰を行う。A003のcurrent scopeに影響する部分は同ID中でも優先確認する。
 
 ## D001.2 — 28 built-in palette復元とcustom保持・live accent
 
-status: `todo`。同HEAD差分。28色値のone-time restore、invalid saved themesを上書きしないこと、custom保持、drawer icon/outline、Home tab・preview accent一致を実設定変更・再訪・restartで確認。以前のpalette結果は現HEADへ無条件継承しない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。同HEAD差分。28色値のone-time restore、invalid saved themesを上書きしないこと、custom保持、drawer icon/outline、Home tab・preview accent一致を実設定変更・再訪・restartで確認。以前のpalette結果は現HEADへ無条件継承しない。
 
 ## D001.3 — 作品広場advanced filters・saved search・mute editing
 
-status: `todo`。同HEAD差分。数値filter、saved searches、mute word/tag追加・個別編集・collapse、AI除外、compact query/tag switch・clear、sign-in promptを各control・apply/cancel・persistence・PC/SP/7言語で実操作。各選択肢は実行時inventoryへ展開する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。同HEAD差分。数値filter、saved searches、mute word/tag追加・個別編集・collapse、AI除外、compact query/tag switch・clear、sign-in promptを各control・apply/cancel・persistence・PC/SP/7言語で実操作。各選択肢は実行時inventoryへ展開する。
 
 ## D001.4 — Owner work management・settings新route
 
-status: `todo`。同HEAD差分。my works選択・bulk hide・公開状態・削除確認・owner tag management・community_work_settings_screen routeの全control/state、auth/owner境界・保存・失敗/retry・private/non-ownerを実UI/APIと照合。Help/Tips/Web追随も後続で確認する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。同HEAD差分。my works選択・bulk hide・公開状態・削除確認・owner tag management・community_work_settings_screen routeの全control/state、auth/owner境界・保存・失敗/retry・private/non-ownerを実UI/APIと照合。Help/Tips/Web追随も後続で確認する。
 
 ## D001.5 — Creator mute・FF非操作表示
 
-status: `todo`。同HEAD差分。author worksのmute/解除、FF countsを操作しない表示へ変更した状態、visibility toggle削除、表示公開範囲・導線・説明の整合を実UI/backend contractで確認。法適合性はLEGAL_IP_STANDARDの別gateで判定し、この登録で保証しない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。同HEAD差分。author worksのmute/解除、FF countsを操作しない表示へ変更した状態、visibility toggle削除、表示公開範囲・導線・説明の整合を実UI/backend contractで確認。法適合性はLEGAL_IP_STANDARDの別gateで判定し、この登録で保証しない。
 
 2026-10-29追加照合: 66fff30b/4999e363は未使用FF dialog/public state helpersを削除。旧test参照19errorはcurrent sourceへ追随修正しservice30/UI1を検証したが、D001.5全体の実backend/法適合性/全条件closureは未完了。
 
 ## D001.6 — YouTube launcher依存固定・追加されたcapture flow
 
-status: `todo`。同HEAD差分。youtube_explode_dart/url_launcher等の固定された依存・URL遷移・platform条件・failure/cancelを確認。新capture workflowやfixtureの存在をproduction UI確認へ代用しない。全46upstream変更pathはS23証拠oct29-head-and-policy.jsonに保持。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。同HEAD差分。youtube_explode_dart/url_launcher等の固定された依存・URL遷移・platform条件・failure/cancelを確認。新capture workflowやfixtureの存在をproduction UI確認へ代用しない。全46upstream変更pathはS23証拠oct29-head-and-policy.jsonに保持。
 
 ## D001.7 — 作品広場の常設検索・履歴・saved search・tile size追加差分
 
-status: `todo`。2026-10-29 App0c02171d、41a37bf以降の28path差分。常設full-width検索・明示Search・compact二段操作・完全/部分一致・space-separated tags、account-local履歴/saved search（各10件）・accordion・bookmark-save・削除確認、tile size保存・advanced thresholds・creator mute確認を全control/state/PC/SP/7言語/狭幅/再訪/restart/account切替で実操作。D001.3との重複は証拠を相互参照するが現追加分を未確認のまま消さない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-10-29 App0c02171d、41a37bf以降の28path差分。常設full-width検索・明示Search・compact二段操作・完全/部分一致・space-separated tags、account-local履歴/saved search（各10件）・accordion・bookmark-save・削除確認、tile size保存・advanced thresholds・creator mute確認を全control/state/PC/SP/7言語/狭幅/再訪/restart/account切替で実操作。D001.3との重複は証拠を相互参照するが現追加分を未確認のまま消さない。
 
 ## D001.8 — FF count一括取得・端末内milestone・owner-only bookmarks差分
 
-status: `todo`。同HEAD差分。public FF count pair一括request・owner-only following・identity/list/visibility endpoint削除、匿名device-local milestone historyとaccount分離、新community_milestone_store、bookmark owner-onlyと他author bookmark入口/API削除をinventoryしUI/backend契約・公開/本人/別account/匿名/late completion/error/retry/通知既読/保存互換を実操作。追加workflow/fixtureを実backend/PASSへ代用しない。28path manifestはS24 resume0c021-recovery.json、旧CI8失敗はs23-followup-full-gates-CI.logに保存し現在HEADで切り分ける。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。同HEAD差分。public FF count pair一括request・owner-only following・identity/list/visibility endpoint削除、匿名device-local milestone historyとaccount分離、新community_milestone_store、bookmark owner-onlyと他author bookmark入口/API削除をinventoryしUI/backend契約・公開/本人/別account/匿名/late completion/error/retry/通知既読/保存互換を実操作。追加workflow/fixtureを実backend/PASSへ代用しない。28path manifestはS24 resume0c021-recovery.json、旧CI8失敗はs23-followup-full-gates-CI.logに保存し現在HEADで切り分ける。
 
 
 2026-10-30差分登録: App32e1b79→dc0df194704e11923d029c5fddda55689ddc522bの24pathを確認。以下は新対象の登録であり、D001全体の再inventory/監査完了を意味しない。tab/画面の安定した実装順に追記する。
 
 ## D001.9 — Community 新着の25件ページング
 
-status: todo。community_screen/community_service/CommunityApi/worksLatest。初回25件・次cursor・終端・空page・重複・再読込・失敗/retry・少数/全非表示時のload-more導線、7locale/PC-SP/keyboard/保持状態を実操作する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。community_screen/community_service/CommunityApi/worksLatest。初回25件・次cursor・終端・空page・重複・再読込・失敗/retry・少数/全非表示時のload-more導線、7locale/PC-SP/keyboard/保持状態を実操作する。
 
 ## D001.10 — Community ランキングの25件ページング
 
-status: todo。ranking API/ランキングlayout。server順位母集団と順序・同順位tie・cursor境界を保ち、非表示/ミュート/再生不可のplaceholderが順位を詰めないこと、表示切替と次page/戻る/refreshを確認する。旧filter前提へ製品を戻さない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。ranking API/ランキングlayout。server順位母集団と順序・同順位tie・cursor境界を保ち、非表示/ミュート/再生不可のplaceholderが順位を詰めないこと、表示切替と次page/戻る/refreshを確認する。旧filter前提へ製品を戻さない。
 
 ## D001.11 — Community フォロー投稿・repost統合ページング
 
-status: todo。reposts/userWorks/community_service。投稿とrepostをUTC時刻で時系列統合、25件境界/同時刻/同一作品イベント/追加page/ミュート/所有者状態/refresh/error/retryを実データとUIで検証する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。reposts/userWorks/community_service。投稿とrepostをUTC時刻で時系列統合、25件境界/同時刻/同一作品イベント/追加page/ミュート/所有者状態/refresh/error/retryを実データとUIで検証する。
 
 ## D001.12 — Community 検索タブのページングと条件変更
 
-status: todo。独立検索タブでquery/tag/exact/saved/historyとpage cursorの対応、検索条件変更時の旧応答排除、全filter後0件でも続きがある場合の到達、全件終了を検証する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。独立検索タブでquery/tag/exact/saved/historyとpage cursorの対応、検索条件変更時の旧応答排除、全filter後0件でも続きがある場合の到達、全件終了を検証する。
 
 ## D001.13 — Community 作者投稿一覧の25件ページング
 
-status: todo。community_author_works_screen/userWorks。初回page全非表示でも次pageを要求できること、作者変更/ミュート/次page失敗/retry/scroll/戻る保持を確認する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。community_author_works_screen/userWorks。初回page全非表示でも次pageを要求できること、作者変更/ミュート/次page失敗/retry/scroll/戻る保持を確認する。
 
 ## D001.14 — Community 自分の投稿一覧の25件ページング
 
-status: todo。community_my_works_screen/worksByAuthorPage。owner/account revision・private/AI/muteの意図した扱い、25件以後の公開変更/削除/タグ・遅延応答・refreshを追跡する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。community_my_works_screen/worksByAuthorPage。owner/account revision・private/AI/muteの意図した扱い、25件以後の公開変更/削除/タグ・遅延応答・refreshを追跡する。
 
 ## D001.15 — Project preview transport両端の秒数
 
-status: todo。project_detail_screen/project_playback_status。現在秒数は先頭frame移動の左、総秒数は最終frame移動の右、中央frame/loopを含む全controlsの意味/seek/end/全画面/PC-SP/文字拡大/7locale/保存互換を実操作する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。project_detail_screen/project_playback_status。現在秒数は先頭frame移動の左、総秒数は最終frame移動の右、中央frame/loopを含む全controlsの意味/seek/end/全画面/PC-SP/文字拡大/7locale/保存互換を実操作する。
 
 ## D001.16 — 新規project背景色見本の全面描画
 
-status: todo。background_color_picker。白/黒/透明の丸全面が内容色/透明市松で描画され、アクセントが内部へ漏れないこと。未選択白の輪郭は正式theme roleを使い、選択/保存preset/7locale/PC-SPを確認する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。background_color_picker。白/黒/透明の丸全面が内容色/透明市松で描画され、アクセントが内部へ漏れないこと。未選択白の輪郭は正式theme roleを使い、選択/保存preset/7locale/PC-SPを確認する。
 
 ## D001.17 — Save slot actionと確認の最新差分
 
-status: todo。save_management_screen/save_slot_action_buttons_test。保存/読込/削除の各固有icon/label/tooltip/confirm target/cancel/実行/失敗/retry/slot保持/7locale/PC-SPを最新実装から確認する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。save_management_screen/save_slot_action_buttons_test。保存/読込/削除の各固有icon/label/tooltip/confirm target/cancel/実行/失敗/retry/slot保持/7locale/PC-SPを最新実装から確認する。
 
 ## D001.18 — Splash entry labels・subtitleのKuramubon固定差分
 
-status: todo。2d2a2aebで追加。両entry tile label/subtitleの正式font/fallback、7locale/PC-SP/文字拡大/28theme/当たり判定/初回導線を最新sourceから確認する。A002の過去証拠をこの変更の最新Visual closureへ昇格させない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2d2a2aebで追加。両entry tile label/subtitleの正式font/fallback、7locale/PC-SP/文字拡大/28theme/当たり判定/初回導線を最新sourceから確認する。A002の過去証拠をこの変更の最新Visual closureへ昇格させない。
 
 ## D001.19 — Project preview frame overlay・等間隔transport・loop/share配置
 
-status: todo。5bdd4cd6以降。現在時間/全長と全transportの等間隔、frame count overlay、loop/share隣接、再生/停止/先頭末尾/fullscreen、全幅/7locale/PC-SP/文字拡大/theme、実操作・原本・保存再訪。旧画像を新配置のclosureに流用しない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。5bdd4cd6以降。現在時間/全長と全transportの等間隔、frame count overlay、loop/share隣接、再生/停止/先頭末尾/fullscreen、全幅/7locale/PC-SP/文字拡大/theme、実操作・原本・保存再訪。旧画像を新配置のclosureに流用しない。
 
 ## D001.20 — Plaza card右rail menu/bookmarkと48dp当たり判定
 
-status: todo。3059c181–c6571fda。title横compact menu、右rail下bookmark、22dp icon/48dp target、preview/details/menu/bookmarkの誤操作・long press/keyboard、全layout/7locale/PC-SP/狭幅/文字拡大/theme/owner権限と状態保持。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。3059c181–c6571fda。title横compact menu、右rail下bookmark、22dp icon/48dp target、preview/details/menu/bookmarkの誤操作・long press/keyboard、全layout/7locale/PC-SP/狭幅/文字拡大/theme/owner権限と状態保持。
 
 ## D001.21 — Ranking横型thumbnailのtile高追従とcompact actions
 
-status: todo。a82f0ac1/7dcf9ffd。画像aspectと横縦種別、tile高、順位masked slot/未取得/非公開/再生可否、compact actionsの位置・48dp・導線、全幅/7locale/PC-SP/文字拡大/themeと実結果。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。a82f0ac1/7dcf9ffd。画像aspectと横縦種別、tile高、順位masked slot/未取得/非公開/再生可否、compact actionsの位置・48dp・導線、全幅/7locale/PC-SP/文字拡大/themeと実結果。
 
 ## D001.22 — Search隣接keyword/tag pill・翻訳幅制約・明示feed limit25
 
-status: todo。95527d63–8670f3d8。keyword/tag選択と検索確定、入力保持/clear/back/retry/paging、pill/button隣接、320px/長い翻訳/textScale、keyboard/IME/focus/semantic/PC-SP/7locale/theme。author feedの明示limit25をD001.9–15の条件にも含める。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。95527d63–8670f3d8。keyword/tag選択と検索確定、入力保持/clear/back/retry/paging、pill/button隣接、320px/長い翻訳/textScale、keyboard/IME/focus/semantic/PC-SP/7locale/theme。author feedの明示limit25をD001.9–15の条件にも含める。
 
 ## D001.23 — Project thumbnail checkerboardの枠内clip
 
-status: todo。fbc48103。project listのthumbnail/Canvas背景/透明格子のclipと角丸、実画像の縦横比/透過/scale、PC-SP/全width/theme/文字拡大とcache/revisit。ProjectListのS27 await変更と共存することも確認する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。fbc48103。project listのthumbnail/Canvas背景/透明格子のclipと角丸、実画像の縦横比/透過/scale、PC-SP/全width/theme/文字拡大とcache/revisit。ProjectListのS27 await変更と共存することも確認する。
 
 ## D001.24 — Canvas mode切替ボタンと上部メニューの高さ揃え
 
-status: todo。fbc48103。canvas右上timeline切替と上部controlのbaseline/高さ/余白、矢印・label・当たり判定、PC-SP/文字拡大/全幅/toolbar設定/7locale/左利き/再訪。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。fbc48103。canvas右上timeline切替と上部controlのbaseline/高さ/余白、矢印・label・当たり判定、PC-SP/文字拡大/全幅/toolbar設定/7locale/左利き/再訪。
 
 ## D001.25 — Toolbarの5段階size設定とlive/preview伝播・永続化
 
-status: todo。03ace188–47116e30。toolbar_size_levelの1/2/3/4/5（scale 0.75/0.88/1.0/1.15/1.3）、default3、clamp/legacy/invalid、全実iconと設定previewの一致、並び替え/非表示/docking/左利き/7locale（zh/Hant区別）/theme/PC-SP/48dp・gesture、保存false/throw/再試行/coldを実操作する。sourceだけで保存失敗を不具合確定しない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。03ace188–47116e30。toolbar_size_levelの1/2/3/4/5（scale 0.75/0.88/1.0/1.15/1.3）、default3、clamp/legacy/invalid、全実iconと設定previewの一致、並び替え/非表示/docking/左利き/7locale（zh/Hant区別）/theme/PC-SP/48dp・gesture、保存false/throw/再試行/coldを実操作する。sourceだけで保存失敗を不具合確定しない。
 
 ## D001.26 — Project背景色のpreviewへの一致
 
-status: todo。fbc48103/c2e3495d。ProjectDetail/canvas color-adjust/filterの実previewがproject由来背景・透明格子を正しく描画し、UI背景のtheme roleと混同しないこと、透過/不透明色/alpha/適用Cancel/元データ/保存再訪/全preview callerを確認。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。fbc48103/c2e3495d。ProjectDetail/canvas color-adjust/filterの実previewがproject由来背景・透明格子を正しく描画し、UI背景のtheme roleと混同しないこと、透過/不透明色/alpha/適用Cancel/元データ/保存再訪/全preview callerを確認。
 
 ## D001.27 — Loop default OFF・label・fullscreen compact row
 
-status: todo。ecc8d37c/4bc378c2。既定OFF、切替とicon/label/semantics、通常/fullscreen、48px seek行の横幅/文字拡大/7locale/PC-SP/再生末尾挙動/戻る再訪と保存の意図仕様を確認。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。ecc8d37c/4bc378c2。既定OFF、切替とicon/label/semantics、通常/fullscreen、48px seek行の横幅/文字拡大/7locale/PC-SP/再生末尾挙動/戻る再訪と保存の意図仕様を確認。
 
 ## D001.28 — Dialogのoutline/shadow除去の全caller追従
 
-status: todo。ecc8d37c。ThemeService dialog elevation0/BorderSide.noneとcolor-adjust/filterの明示shapeを確認。全modal/確認/危険操作/失敗/文字拡大/全幅/7locale/PC-SP/28themeで、境界・focus・表示階層・操作性を実画面から判定する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。ecc8d37c。ThemeService dialog elevation0/BorderSide.noneとcolor-adjust/filterの明示shapeを確認。全modal/確認/危険操作/失敗/文字拡大/全幅/7locale/PC-SP/28themeで、境界・focus・表示階層・操作性を実画面から判定する。
 
 ## D001.29 — Project favorite badge左下配置とpreview loop集約
 
-status: todo。2026-10-31 App38eb0702→2eb01ed3。ProjectListのfavorite badgeを透明格子/画像/選択中/PC-SP/全幅/theme/文字拡大で確認し、menuとの独立配置・保存/再訪を追跡する。Timeline previewの重複loop除去後も残るcontrolで同じ再生能力に到達できることを実操作する。S29保存修正と意味的に共存させる。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-10-31 App38eb0702→2eb01ed3。ProjectListのfavorite badgeを透明格子/画像/選択中/PC-SP/全幅/theme/文字拡大で確認し、menuとの独立配置・保存/再訪を追跡する。Timeline previewの重複loop除去後も残るcontrolで同じ再生能力に到達できることを実操作する。S29保存修正と意味的に共存させる。
 
 ## D001.30 — PC dock window表示・移動・列順序
 
-status: todo。a17b0bf7/b6445ec1/408802bc。Canvas/Timelineの表示menuから各windowを開閉し、常設drag handle・列内/列間移動・順序・復帰・未表示panelへの到達、mouse/keyboardとgesture競合を実操作する。全window/presetをinventoryし、SP導線/操作能力を減らさず、全幅/7locale/themeで確認する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。a17b0bf7/b6445ec1/408802bc。Canvas/Timelineの表示menuから各windowを開閉し、常設drag handle・列内/列間移動・順序・復帰・未表示panelへの到達、mouse/keyboardとgesture競合を実操作する。全window/presetをinventoryし、SP導線/操作能力を減らさず、全幅/7locale/themeで確認する。
 
 ## D001.31 — PC dock高さ・layout editor・toolbar preview永続化
 
-status: todo。同HEADのsettings_service/pc_workspace_layout_settings_screen/workspace_settings_screen。window別高さ/列順序の保存・移行/不正値/失敗/retry/cold、layout editorとの双方向同期、live-sized toolbar previewと実toolbarの一致を確認する。Sourceとcapture fixtureの存在だけではPASSにしない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。同HEADのsettings_service/pc_workspace_layout_settings_screen/workspace_settings_screen。window別高さ/列順序の保存・移行/不正値/失敗/retry/cold、layout editorとの双方向同期、live-sized toolbar previewと実toolbarの一致を確認する。Sourceとcapture fixtureの存在だけではPASSにしない。
 
 2026-10-31 b8506a0e追加照合: PC panel別widthのglobal保存とedge drag（b86a3158/8cd2ecd2）はD001.30–31で各windowの高さと別値として追跡。長いcolor-adjust action折返し（293422f2）はD001.26/28、透明thumbnail FramePreviewBackground内clip（b8506a0e）はD001.23/29へ追加し、現HEADの実control・設定・保存/失敗・再訪・実画面を未確認のままPASSにしない。capture fixture追加は製品実操作の代用にしない。
 
 ## D001.32 — Outline pen canvas samplingの到達経路
 
-status: todo。12d2e2f8/bc56d870。Canvasで縁取りpenのスポイト/実canvas色採取へ到達し、設定確定/取消/ツール復帰/描画/undo-redo/保存再読込を実操作する。D024と証拠を相互参照し、7locale/PC-SP/入力差とテーマのUI色・採取した固有色を区別する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。12d2e2f8/bc56d870。Canvasで縁取りpenのスポイト/実canvas色採取へ到達し、設定確定/取消/ツール復帰/描画/undo-redo/保存再読込を実操作する。D024と証拠を相互参照し、7locale/PC-SP/入力差とテーマのUI色・採取した固有色を区別する。
 
 2026-11-06差分登録: Appb8506a0e→5be595b9の414commit/196path。全差分pathはnov06-head-and-inventory.json。以下は独立した追加対象の登録であり、D001の全inventory消化/検証済みを意味しない。
 
 ## D001.33 — Homeミッション通知・累計ログイン日
 
-status: todo。7fabd205/39755e9c/63d17cf3。ログイン/復帰/JST日境界/未受取badgeとdrawer更新、offline・同日retry・account切替・重複request・実API保存を確認。失敗後のdedupeも反例検証。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。7fabd205/39755e9c/63d17cf3。ログイン/復帰/JST日境界/未受取badgeとdrawer更新、offline・同日retry・account切替・重複request・実API保存を確認。失敗後のdedupeも反例検証。
 
 ## D001.34 — Home初期タイルサイズとユーザー指定の保持
 
-status: todo。6527cc9d。PC/SP・幅変更・3タブ・初回/既存指定/invalid/restart、一覧/検索/選択の到達性、画像切抜きとthemeを確認。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。6527cc9d。PC/SP・幅変更・3タブ・初回/既存指定/invalid/restart、一覧/検索/選択の到達性、画像切抜きとthemeを確認。
 
 ## D001.35 — Rewarded ad報酬の検証
 
-status: todo。rewardedAd/admobSsv/rewardAdQuota/rewardEntitlement。広告再生完了/中断/失敗/同意と署名・replay・quota・account境界・永続結果を実操作/APIで確認。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。rewardedAd/admobSsv/rewardAdQuota/rewardEntitlement。広告再生完了/中断/失敗/同意と署名・replay・quota・account境界・永続結果を実操作/APIで確認。
 
 ## D001.36 — Coin残高・履歴・交換
 
-status: todo。coinEconomyScale/coinRedemption/rewardState。単位換算/残高境界/claim・取消/同時実行/retry・履歴/互換性を検証。Free/Premium/説明・契約・法務は別判定。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。coinEconomyScale/coinRedemption/rewardState。単位換算/残高境界/claim・取消/同時実行/retry・履歴/互換性を検証。Free/Premium/説明・契約・法務は別判定。
 
 S34発見/DISC057: productionのEN SP期間初期表示が`1hours`。数値と複数形unitの直接連結を確認。期間全選択肢の単複/空白/7言語、sheetとprice/expiryの意味一致をD001.36の未完了対象に追加。
 
 ## D001.37 — Play Premium購入検証・復元
 
-status: todo。playPremium/playVerification。テスト購入/保留/失敗/復元/期限/失効と本人・商品・署名・replay/本番設定境界を確認。実課金や公開は行わない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。playPremium/playVerification。テスト購入/保留/失敗/復元/期限/失効と本人・商品・署名・replay/本番設定境界を確認。実課金や公開は行わない。
 
 ## D001.38 — Creator mission作品条件と報酬受取
 
-status: todo。creatorMissions/qualifiedWorksScan/workCountGrid/claim/workAchievements。全条件・達成/未達/受取/二重請求・非公開/削除・auth/同期/7localeを確認。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。creatorMissions/qualifiedWorksScan/workCountGrid/claim/workAchievements。全条件・達成/未達/受取/二重請求・非公開/削除・auth/同期/7localeを確認。
 
 ## D001.39 — 制作時間の活動判定・idle・明示保存
 
-status: todo。e115ecf6/168a6131/2e5d9f1f/cc519236/ee1b6055。実編集1秒断片、再開/離脱/背景/重複route・idle、明示saveとautosave差、任意送信失敗でも保存成功、backend集計を追跡。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。e115ecf6/168a6131/2e5d9f1f/cc519236/ee1b6055。実編集1秒断片、再開/離脱/背景/重複route・idle、明示saveとautosave差、任意送信失敗でも保存成功、backend集計を追跡。
 
 ## D001.40 — NIARIMとYouTube投稿欄の独立編集・双方向コピー
 
-status: todo。40ac35e3/91970584/65cea20c/5be595b9。title/説明欄の独立保存、2,000字・空/境界・上書き確認/取消/再試行、7locale/PC-SP/投稿既存データの互換性を実操作。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。40ac35e3/91970584/65cea20c/5be595b9。title/説明欄の独立保存、2,000字・空/境界・上書き確認/取消/再試行、7locale/PC-SP/投稿既存データの互換性を実操作。
 
 ## D001.41 — YouTubeコメント参照の短期cache
 
-status: todo。8e0cd7c3/219672a9。読取専用cache hit/miss/期限/無効化/失敗、件数/順序とquota/プライバシー、作品切替の漏えい防止を確認。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。8e0cd7c3/219672a9。読取専用cache hit/miss/期限/無効化/失敗、件数/順序とquota/プライバシー、作品切替の漏えい防止を確認。
 
 ## D001.42 — GitHub OIDC・CIからのdeploy権限境界
 
-status: todo。009fe8e9/backend stack。branch/subject/環境・最小権限・誤発火・secretログ・無効認証を公式一次資料とCIで追跡。実deployは監査結果に含めない。 App08b46505のbackend-aws-preflight/backend-ci変更を追加。手動実行・アカウント/role/リージョン制約、CDK template diff、FCM key非注入、デプロイ後の公開API smokeと失敗時の扱いを検証対象へ含める。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。009fe8e9/backend stack。branch/subject/環境・最小権限・誤発火・secretログ・無効認証を公式一次資料とCIで追跡。実deployは監査結果に含めない。 App08b46505のbackend-aws-preflight/backend-ci変更を追加。手動実行・アカウント/role/リージョン制約、CDK template diff、FCM key非注入、デプロイ後の公開API smokeと失敗時の扱いを検証対象へ含める。
 
 ## D001.43 — Community最新ranking・公開作品・bookmark API差分
 
-status: todo。b850→5beのranking/_publicWork/bookmarks/worksUpdate/Delete。順位集合・mask/公開範囲/失敗・quota・再訪、App/Webの現表示と旧CI23失敗の期待値を別々に確認。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。b850→5beのranking/_publicWork/bookmarks/worksUpdate/Delete。順位集合・mask/公開範囲/失敗・quota・再訪、App/Webの現表示と旧CI23失敗の期待値を別々に確認。
 
 ## D001.44 — PC dock左手デフォルトとカスタム全project共有
 
-status: todo。fc0e1831/ae00c313前後。未設定左右反転、ユーザー指定の位置/幅/高さ/開閉・手切替・別作品・再起動、保存pending中の最新状態、D001.30–31との重複証拠を確認。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。fc0e1831/ae00c313前後。未設定左右反転、ユーザー指定の位置/幅/高さ/開閉・手切替・別作品・再起動、保存pending中の最新状態、D001.30–31との重複証拠を確認。
 
 ## D001.45 — 監査差分取り込み後の現dev_branch受入れ
 
-status: todo。cac1c08b→a6beの180path。初回/ヘルプ・Splash/設定とテーマ、CJK font、ホーム/新規制作/保存サイズ、キャンバス/PC dock・ショートカット・描画/消しゴム、保存ツリー・半透明raw/書出しの追加を現dev_branchで照合。DISC007・DISC051を含む。旧枝証拠だけでdoneにしない。実操作、互換性、font license/coverage、保存/再訪、境界と関連回帰を個別に追う。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。cac1c08b→a6beの180path。初回/ヘルプ・Splash/設定とテーマ、CJK font、ホーム/新規制作/保存サイズ、キャンバス/PC dock・ショートカット・描画/消しゴム、保存ツリー・半透明raw/書出しの追加を現dev_branchで照合。DISC007・DISC051を含む。旧枝証拠だけでdoneにしない。実操作、互換性、font license/coverage、保存/再訪、境界と関連回帰を個別に追う。
 
 ## D001.46 — 投稿・予約公開・通知・収益化の最新差分
 
-status: todo。a6be→b92の53path（`s30-latest-b92-incoming-paths.txt`）。YouTube処理後のShortsサムネイル、予約の公開/再実行/GSI cleanup、通知と詳細deep link、自分だけの非公開・公開不能状態、削除/権限、Android通知・ログイン、収益化campaign削除。成功/中断/通信失敗/再試行/非公開/公開切替・実auth/backendの経路を分け、保存・プライバシー・App/Web表示を照合。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。a6be→b92の53path（`s30-latest-b92-incoming-paths.txt`）。YouTube処理後のShortsサムネイル、予約の公開/再実行/GSI cleanup、通知と詳細deep link、自分だけの非公開・公開不能状態、削除/権限、Android通知・ログイン、収益化campaign削除。成功/中断/通信失敗/再試行/非公開/公開切替・実auth/backendの経路を分け、保存・プライバシー・App/Web表示を照合。
 
 ## D001.47 — 広告のroute・modal・狭幅制御とSSV検証の増分
 
-status: todo。3397a23e→a0d74dcfの45 commit/19 net path（`s31-app-incoming-paths.txt`）。root広告枠・route遷移・modal/IME・横幅と短高、コンテンツありHomeと全route debugモックの画面matrix、署名付きURL確認と報酬grant・不正/重複・診断ログの境界を確認する。mockと実表示を区別し、Samsung実機/DeX・実consent・動的route・実配信と独立した規約確認が残る。S31では配信設定やbackendを変更していない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。3397a23e→a0d74dcfの45 commit/19 net path（`s31-app-incoming-paths.txt`）。root広告枠・route遷移・modal/IME・横幅と短高、コンテンツありHomeと全route debugモックの画面matrix、署名付きURL確認と報酬grant・不正/重複・診断ログの境界を確認する。mockと実表示を区別し、Samsung実機/DeX・実consent・動的route・実配信と独立した規約確認が残る。S31では配信設定やbackendを変更していない。
 
 S33追加: fc24までのroute別広告制限とcaption/比較capture差分もD001.47へ保持。最新all-route capture successとWeb比較4FAILを区別。
 
 ## D001.48 — FCM通知の登録・配送と通知からの復帰
 
-status: todo。S32→fc24のPushNotificationService/main/app・Firebase構成・Android plugin設定、push/missionNotifications/backend stackと通知導入資料。permission/token登録・更新・sign-out/owner境界、foreground/background/終了後の通知tap→作品詳細、重複/無効data・offline/retry・起動失敗fallback・非対応desktop、secret/PIIと失効、実機/同意/Privacyの必要条件を別々に追う。S33では通常の依存/起動・Home回帰だけで、通知配送や実auth/backendの完了としない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。S32→fc24のPushNotificationService/main/app・Firebase構成・Android plugin設定、push/missionNotifications/backend stackと通知導入資料。permission/token登録・更新・sign-out/owner境界、foreground/background/終了後の通知tap→作品詳細、重複/無効data・offline/retry・起動失敗fallback・非対応desktop、secret/PIIと失効、実機/同意/Privacyの必要条件を別々に追う。S33では通常の依存/起動・Home回帰だけで、通知配送や実auth/backendの完了としない。
 
 ## D001.49 — Rewarded SSV保存境界とDynamoDB Local検証の増分
 
-status: todo。S33公開cae5c893→38815daの8commit/6netpath。rewardedAd route、署名flow/API/DynamoDB Localの3test、DynamoDB Local workflowとpreapproval資料。signed callback→報酬確定の原子性・再送/idempotency・競合・署名/期限・owner/最小権限・保存false/throw/partial failure、同意/広告/実backend境界を確認する。S34では変更を登録しHome依存回帰の起動を確認するだけで、SSV署名/実Google callback/DynamoDB本番/広告実機の完了としない。詳細6pathと20正本hashはstart-heads-and-documents.json。D001.47の広告導線・SSV前提と関連付ける。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。S33公開cae5c893→38815daの8commit/6netpath。rewardedAd route、署名flow/API/DynamoDB Localの3test、DynamoDB Local workflowとpreapproval資料。signed callback→報酬確定の原子性・再送/idempotency・競合・署名/期限・owner/最小権限・保存false/throw/partial failure、同意/広告/実backend境界を確認する。S34では変更を登録しHome依存回帰の起動を確認するだけで、SSV署名/実Google callback/DynamoDB本番/広告実機の完了としない。詳細6pathと20正本hashはstart-heads-and-documents.json。D001.47の広告導線・SSV前提と関連付ける。
 
 ## D001.50 — 現SDKと正規format・Community/Premium試験hostの増分
 
-status: todo。S35中断後のb6a6db14→0bed53b9は21commit/367path。Flutter 3.47.2のDart format、保存gateのSDK固定、Communityのauth provider/viewport/request期待とpaid-preview host、広告のno-content/consent条件、Markdown技術ID保護等。旧失敗ログと最新CIを分け、単にassertを弱めず実UI/本番auth境界を保持する。全変更pathはincoming-latest-paths.txt。S34の33PASSや旧capture結果を最新の全greenへ転記しない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。S35中断後のb6a6db14→0bed53b9は21commit/367path。Flutter 3.47.2のDart format、保存gateのSDK固定、Communityのauth provider/viewport/request期待とpaid-preview host、広告のno-content/consent条件、Markdown技術ID保護等。旧失敗ログと最新CIを分け、単にassertを弱めず実UI/本番auth境界を保持する。全変更pathはincoming-latest-paths.txt。S34の33PASSや旧capture結果を最新の全greenへ転記しない。
 
 S35公開後の51b7ac93 CI: Save safety save-regressionsが既存niapro_serializer.dartの書式差分でcache9件の前に停止。SDK3.47.2のlocal formatはlib/test 900中230差分、今回storage3fileは0差分。全体gateは保持し、cache隔離のformat/analyze/9testsを独立storage-cache-regressionsで実行する。Functional Visual Auditのfeature_operation_capture_test.dart:139 null failureも現HEADの未解決として保持し、旧S34の失敗や成功に置き換えない。公開receipt ZIP 1DrtZFIT5Rc_BNgpTWj0mVthQsAMzv95l（43740B/SHA2d00249a…/18hash）を検証済み。
 
@@ -316,19 +316,19 @@ S36追跡: 独立storage-cache-regressions job129035511757でS35 cache9件/forma
 
 ## D001.51 — 接続済みGoogle OAuth debug APKと自動preflight
 
-status: todo。prelaunch-connected-debug-apk/google-android-oauth-preflightのworkflow導入。既存の接続済みclient/signing設定の利用、artifactの非公開性/期限/署名、設定変更時の検査、secret非出力、debug/releaseと端末の実callback境界を確認。S35ではbranch増分登録のみで、実機Googleログイン/Play公開/実credentialの完了としない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。prelaunch-connected-debug-apk/google-android-oauth-preflightのworkflow導入。既存の接続済みclient/signing設定の利用、artifactの非公開性/期限/署名、設定変更時の検査、secret非出力、debug/releaseと端末の実callback境界を確認。S35ではbranch増分登録のみで、実機Googleログイン/Play公開/実credentialの完了としない。
 
 ## D001.52 — Timelineの実描画矩形と狭幅corner overlay
 
-status: todo。52f3a977/0bed53b9のfitted pictureを実preview画像と一致させる変更と320dp corner重なりの許容条件。中央の作画を覆わない実hit/見た目、frame更新・zoom/resize・全幅/拡大/7locale、旧predicateの過剰/不足、source/engine/alpha/export回帰を確認。S35のStorage起動回帰だけでTimeline全体を閉じない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。52f3a977/0bed53b9のfitted pictureを実preview画像と一致させる変更と320dp corner重なりの許容条件。中央の作画を覆わない実hit/見た目、frame更新・zoom/resize・全幅/拡大/7locale、旧predicateの過剰/不足、source/engine/alpha/export回帰を確認。S35のStorage起動回帰だけでTimeline全体を閉じない。
 
 ## D001.53 — Webプレローンチ導線とcreation中心の公開ページ再設計
 
-status: todo。S35のWeb9fdb7e46→3de5c4e9の4commitでhome/features/community/premium、hero showcase/CSS/各script/i18nを更新。全visible control・到達性・App実仕様との対応、7locale/PC-SP/短高/keyboard/読上げ・公開前表示/価格/会員/広告説明/リンク/保存設定/性能を実サイトで確認。S35では差分を保持・登録し、HTMLやsmokeの存在だけで品質PASSにしない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。S35のWeb9fdb7e46→3de5c4e9の4commitでhome/features/community/premium、hero showcase/CSS/各script/i18nを更新。全visible control・到達性・App実仕様との対応、7locale/PC-SP/短高/keyboard/読上げ・公開前表示/価格/会員/広告説明/リンク/保存設定/性能を実サイトで確認。S35では差分を保持・登録し、HTMLやsmokeの存在だけで品質PASSにしない。
 
 ## D001.54 — Webの実Premiumキャプチャ36点と検証workflow
 
-status: todo。同上の実App9画面×4版のAVIF/WebP、source.txtとrefresh-2026/real-app-screensのCI・7locale smoke。source App SHA/paid-preview/広告なしの条件、画像内容/比率/各mode/alt/導線/読込・cache/レスポンシブを個別目視し、最新Appのproduction UIと照合。incoming-web-latest.jsonの全変更pathを正本とし、画像があるだけでApp機能や公開ページを監査済みにしない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。同上の実App9画面×4版のAVIF/WebP、source.txtとrefresh-2026/real-app-screensのCI・7locale smoke。source App SHA/paid-preview/広告なしの条件、画像内容/比率/各mode/alt/導線/読込・cache/レスポンシブを個別目視し、最新Appのproduction UIと照合。incoming-web-latest.jsonの全変更pathを正本とし、画像があるだけでApp機能や公開ページを監査済みにしない。
 
 S36でWeb9bdbeb39の1commitを保持。refresh-2026-smoke.ymlに日本語PC/SPの全ページfull-height captureと14日artifactを追加。出力画像の個別目視、実操作/全7localeの完了とはしない。
 
@@ -336,31 +336,31 @@ S36公開CI記録の反映直前にWeb c510745a→6dec82f9の2commit/4pathを検
 
 ## D001.55 — Webの実読み取り専用ランキングfeedとPC/SP captureの増分
 
-status: todo。S37開始Web8bb3cd58→56ca2444の3commit/85pathを保持。f327515/471e0d3の対応PC版36画像（AVIF/WebPの72files）とcapture workflow/metadataはD001.54へ追加。56ca2444のCommunity模擬ランキング撤去・NIARIM Lambdaのread-only feed、worker src/community-feed.js/API取次、Community loading/empty/error/ranking/7locale、画像/リンク/公開前導線・CORS/入力/limit/cache/個人情報/可用性・モックでない実契約を検証する。S37では増分登録のみで、実feed/全新画像/PC-SP対称性・法務/性能のPASSへ代用しない。incoming-web-paths.txtと現在HEADの20正本hashを証跡へ保存。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。S37開始Web8bb3cd58→56ca2444の3commit/85pathを保持。f327515/471e0d3の対応PC版36画像（AVIF/WebPの72files）とcapture workflow/metadataはD001.54へ追加。56ca2444のCommunity模擬ランキング撤去・NIARIM Lambdaのread-only feed、worker src/community-feed.js/API取次、Community loading/empty/error/ranking/7locale、画像/リンク/公開前導線・CORS/入力/limit/cache/個人情報/可用性・モックでない実契約を検証する。S37では増分登録のみで、実feed/全新画像/PC-SP対称性・法務/性能のPASSへ代用しない。incoming-web-paths.txtと現在HEADの20正本hashを証跡へ保存。
 
 ## D001.56 — App作品広場の先頭gesture更新と自分だけのフォロー一覧
 
-status: todo。S37再開App a12c9fa4→6e8ce38aの60commit/26path内。community_top_edge_refreshとランキング/新着/私的bookmark/作者/自分の管理一覧への先頭gesture単位の再取得、自分のprofileフォロー数から開くowner-only following directory・follow/unfollow/re-followを登録。非先頭開始/途中jump・連続pointer/refresh中のdedupe、表示中feedだけ取得、header/scroll/input保持、owner境界/ログアウト/非公開作者・実auth/backend/PC-SP/7locale/keyboard/読上げを実操作する。S37の保存/プレビュー結果をこれらのPASSへ代用しない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。S37再開App a12c9fa4→6e8ce38aの60commit/26path内。community_top_edge_refreshとランキング/新着/私的bookmark/作者/自分の管理一覧への先頭gesture単位の再取得、自分のprofileフォロー数から開くowner-only following directory・follow/unfollow/re-followを登録。非先頭開始/途中jump・連続pointer/refresh中のdedupe、表示中feedだけ取得、header/scroll/input保持、owner境界/ログアウト/非公開作者・実auth/backend/PC-SP/7locale/keyboard/読上げを実操作する。S37の保存/プレビュー結果をこれらのPASSへ代用しない。
 
 ## D001.57 — 実期間bookmarkランキングと取得後の公開状態の再確認
 
-status: todo。同上のbackend bookmark/ranking/latest/periodBookmarkRanking/Dynamo型とApp ranking list/API/model、可視性回帰。日/週/月/年の実増加数と原子的記録・期間境界/時刻/重複、公開/限定公開の初期eligible集合・Top50/ascending、取得後private/deletedと再取得/クリック直前照合、伏字slotとcompact動作の最新仕様との対応、title/thumb/owner等の漏洩・stale GSIとconsistent read・bookmark解除のtombstone、再表示/失敗/復旧を確認。途中commitの異なる仕様を混ぜず現在HEADの実装/正本から再確認する。単なるtest追加/CI成功を実UI/実backendの完了にしない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。同上のbackend bookmark/ranking/latest/periodBookmarkRanking/Dynamo型とApp ranking list/API/model、可視性回帰。日/週/月/年の実増加数と原子的記録・期間境界/時刻/重複、公開/限定公開の初期eligible集合・Top50/ascending、取得後private/deletedと再取得/クリック直前照合、伏字slotとcompact動作の最新仕様との対応、title/thumb/owner等の漏洩・stale GSIとconsistent read・bookmark解除のtombstone、再表示/失敗/復旧を確認。途中commitの異なる仕様を混ぜず現在HEADの実装/正本から再確認する。単なるtest追加/CI成功を実UI/実backendの完了にしない。
 
 ## D001.58 — Webの全page整備・実PC captureとliveランキング更新
 
-status: todo。Web56ca2444→4972a3e6の39commit/84path。7locale CJK字形/見出し/コピー/404・legal含む全page、native PC/DeX captureとSP対応/palette/provenance、配布前store link状態、旧mock/runtime撤去・script重複/lateDOM bootstrap/8幅監査、real period ranking/visibility proxy・no-store/cache bust/非公開metadata/compact再取得/click時再照合を既存D001.53–55と対応して追加登録。全controls/実link/幅連続変化/短高/文字拡大/読上げ/画像pixel/軽量性/法務を現在HEADの製品で確認する。incoming paths/commit logはnov10-latest-heads-and-delta.json。S37で登録のみ、全Web合格とはしない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。Web56ca2444→4972a3e6の39commit/84path。7locale CJK字形/見出し/コピー/404・legal含む全page、native PC/DeX captureとSP対応/palette/provenance、配布前store link状態、旧mock/runtime撤去・script重複/lateDOM bootstrap/8幅監査、real period ranking/visibility proxy・no-store/cache bust/非公開metadata/compact再取得/click時再照合を既存D001.53–55と対応して追加登録。全controls/実link/幅連続変化/短高/文字拡大/読上げ/画像pixel/軽量性/法務を現在HEADの製品で確認する。incoming paths/commit logはnov10-latest-heads-and-delta.json。S37で登録のみ、全Web合格とはしない。
 
 ## D001.59 — App/Webの詳細・再生前privacy再照合
 
-status: todo。S37追加App6e8ce38a→7a9162fbの13commit/10path、Web4972a3e6→578904b5の5commit/4pathを保持。App Community preview/detail/playbackの取得後private/削除/不明状態、ownerだけのprivate作品閲覧、非ownerのcacheからの到達をfail closedにする変更とbackend YouTube unknown除外、Web click時live playback preflight/no-cache/invalid IDを登録。本人/他人/未ログイン・公開変更・通信失敗/遅延/再試行・再訪/戻る・PC/SP/7localeで実backendを含めて確認する。追加testやCI実行だけでPASSにしない。入力差分nov10-second-incoming.json。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。S37追加App6e8ce38a→7a9162fbの13commit/10path、Web4972a3e6→578904b5の5commit/4pathを保持。App Community preview/detail/playbackの取得後private/削除/不明状態、ownerだけのprivate作品閲覧、非ownerのcacheからの到達をfail closedにする変更とbackend YouTube unknown除外、Web click時live playback preflight/no-cache/invalid IDを登録。本人/他人/未ログイン・公開変更・通信失敗/遅延/再試行・再訪/戻る・PC/SP/7localeで実backendを含めて確認する。追加testやCI実行だけでPASSにしない。入力差分nov10-second-incoming.json。
 
 ## D001.60 — 広告App ID・一日一回SSV報酬と接続debug APK
 
-status: todo。同上のAndroidManifest、backend/cdk設定、admob activation記録とAWS-connected debug APK workflowを登録。現在HEADの正式仕様に基づき、実広告/テスト広告の区別、rewarded表示/完了/中断/重複callback・日付境界・SSV署名/ユーザー照合・残高反映・Free/Premium・実Galaxy設定を確認する。S37では登録のみ。本番deploy・課金・実広告による報酬付与を実行したとはせず、保存/PNG検証や設定の存在を実広告/SSVのPASSへ代用しない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。同上のAndroidManifest、backend/cdk設定、admob activation記録とAWS-connected debug APK workflowを登録。現在HEADの正式仕様に基づき、実広告/テスト広告の区別、rewarded表示/完了/中断/重複callback・日付境界・SSV署名/ユーザー照合・残高反映・Free/Premium・実Galaxy設定を確認する。S37では登録のみ。本番deploy・課金・実広告による報酬付与を実行したとはせず、保存/PNG検証や設定の存在を実広告/SSVのPASSへ代用しない。
 
 ## D001.61 — 直近Backend 49 HTTPルート・App/Web/外部サービス横断の不足分（2026-11-10追加）
 
-status: `todo`。現行App dev_branchの `backend/src/api/handler.ts` は登録時点で **49 HTTPルート**、`backend/src/api/routes/**` に **32 moduleファイル**を持つ。これは異なる集計単位であり、locked Baseline snapshotの `backend_routes: 22` を現在網羅済みとみなさない。最新HEADから全HTTP method/path・route実装・App/Web呼出元・DynamoDB副作用を再inventoryし、**ルート単位の認証・本人/他人・公開/非公開・入力境界・失敗/遅延/再送・冪等性・秘密保持・実画面結果まで照合する正式追加対象**とする。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。現行App dev_branchの `backend/src/api/handler.ts` は登録時点で **49 HTTPルート**、`backend/src/api/routes/**` に **32 moduleファイル**を持つ。これは異なる集計単位であり、locked Baseline snapshotの `backend_routes: 22` を現在網羅済みとみなさない。最新HEADから全HTTP method/path・route実装・App/Web呼出元・DynamoDB副作用を再inventoryし、**ルート単位の認証・本人/他人・公開/非公開・入力境界・失敗/遅延/再送・冪等性・秘密保持・実画面結果まで照合する正式追加対象**とする。
 
 監査観点と49ルートの登録時棚卸しは `docs/work-audit/BACKEND_API_AUDIT_CHECKLIST.md`（BE-01～BE-08 / API-001～API-049）。とくに owner-only following/follower氏名非公開と自分の人数タップ導線、ranking公開状態の変化・再生/詳細直前check、YouTube/Google OAuth・FCM・AdMob SSV・Play購入・コイン/mission/ログイン特典の副作用、CDK/IAM/OIDC/flag/secret・DynamoDB GSI/競合・Web read-only proxyを検証する。
 
@@ -369,15 +369,15 @@ status: `todo`。現行App dev_branchの `backend/src/api/handler.ts` は登録�
 
 ## D001.62 — ブラシごとの太さ・不透明度の記憶と共有失敗の知らせ（2026-11-10追加）
 
-status: `todo`。S38の製品変更を登録する。App `dd1974d7`・`308c019`：キャンバスで変えた太さ・不透明度をブラシごとに覚える（保存キー`brush_builtin_working_values`、操作の終わりに保存、ペンのブラシだけ、早替えツール・自動操作は一時的な値、一覧のメニュー「既定の太さ・不透明度に戻す」、Help「カスタムブラシ」の説明、数値欄の押下範囲、一覧で選んだ行のアイコン色）。App `07323398`：書き出した作品の行・プレビュー・書き出し完了の共有失敗の知らせ（`ExportShareService`、`export_share_feedback.dart`、正式なメニュー文字色と印）。App `0a008bb4`・`670d666e`：特典交換の期間の表記（ICU plural 4件×7locale、`coin_duration_label.dart`、確認dialogのscroll、選択行の読み上げ）。全ブラシ（組み込み25＋自作）×切り替え/再起動/早替え/ショートカット/自動操作/複製/書き出し/設定の引き継ぎ、スライダー・±・数値入力・PC/SP・7locale・文字拡大、Android/touch/筆圧、共有はAndroid/iPadの実共有・取消・失敗・二重操作を実機で確認する。S38の限定的な検証をこのIDのPASSへ代用しない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。S38の製品変更を登録する。App `dd1974d7`・`308c019`：キャンバスで変えた太さ・不透明度をブラシごとに覚える（保存キー`brush_builtin_working_values`、操作の終わりに保存、ペンのブラシだけ、早替えツール・自動操作は一時的な値、一覧のメニュー「既定の太さ・不透明度に戻す」、Help「カスタムブラシ」の説明、数値欄の押下範囲、一覧で選んだ行のアイコン色）。App `07323398`：書き出した作品の行・プレビュー・書き出し完了の共有失敗の知らせ（`ExportShareService`、`export_share_feedback.dart`、正式なメニュー文字色と印）。App `0a008bb4`・`670d666e`：特典交換の期間の表記（ICU plural 4件×7locale、`coin_duration_label.dart`、確認dialogのscroll、選択行の読み上げ）。全ブラシ（組み込み25＋自作）×切り替え/再起動/早替え/ショートカット/自動操作/複製/書き出し/設定の引き継ぎ、スライダー・±・数値入力・PC/SP・7locale・文字拡大、Android/touch/筆圧、共有はAndroid/iPadの実共有・取消・失敗・二重操作を実機で確認する。S38の限定的な検証をこのIDのPASSへ代用しない。
 
 ## D001.63 — 容量削減の欄ごとの読み込みと、保存の読み込みの耐性（2026-11-10追加）
 
-status: `todo`。S38の製品変更を登録する。App `84dd0344`・`81af3731`・`d1f809cf`：容量削減の画面（内訳・端末・整理するが別々に読み込み中/失敗/一部だけ/再試行、覚えた結果で再訪は即表示、古い値は集計中、30秒より古い集計は共有しない、削除で`StorageInfoService().invalidate()`、読めないfolderで止めない集計、7localeの文言4件、確認dialogのkeyboard focus、集計中の欄の高さ）。App `3f0a43d3`：保存の読み込み（`readSavedJsonList`で13の保存を1件ずつ、読めない保存を起動で書き換えない、ブラシは読めない項目を保存へ残す、ブラシの整数の小数、undo_limit・autosave_count・日時の範囲、WorkspacePreset）。容量は全theme×7locale×PC/SP/短高/文字拡大、大量の作品・遅いstorage・権限の無いfolder・集計中の操作・他画面の変更の反映・Android/読み上げ、保存は全キー×（型違い/壊れた1件/範囲外）×起動/保存し直し/設定の引き継ぎ/初期化、Androidの実保存を確認する。S38の限定的な検証をこのIDのPASSへ代用しない。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。S38の製品変更を登録する。App `84dd0344`・`81af3731`・`d1f809cf`：容量削減の画面（内訳・端末・整理するが別々に読み込み中/失敗/一部だけ/再試行、覚えた結果で再訪は即表示、古い値は集計中、30秒より古い集計は共有しない、削除で`StorageInfoService().invalidate()`、読めないfolderで止めない集計、7localeの文言4件、確認dialogのkeyboard focus、集計中の欄の高さ）。App `3f0a43d3`：保存の読み込み（`readSavedJsonList`で13の保存を1件ずつ、読めない保存を起動で書き換えない、ブラシは読めない項目を保存へ残す、ブラシの整数の小数、undo_limit・autosave_count・日時の範囲、WorkspacePreset）。容量は全theme×7locale×PC/SP/短高/文字拡大、大量の作品・遅いstorage・権限の無いfolder・集計中の操作・他画面の変更の反映・Android/読み上げ、保存は全キー×（型違い/壊れた1件/範囲外）×起動/保存し直し/設定の引き継ぎ/初期化、Androidの実保存を確認する。S38の限定的な検証をこのIDのPASSへ代用しない。
 
 ## D001.64 — 所有者の判断10件（ホーム・トースト・多言語）と品質の方針（2026-11-11追加）
 
-status: `todo`。2026-11-11、監査で「判断をお願いする事項」として挙げた10件に所有者が回答した。回答（原文）と、それぞれの実装単位を登録する。どれも実装→対象test→本番相当の実操作→目視→回帰→最新HEADまで確認してから閉じる。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-11、監査で「判断をお願いする事項」として挙げた10件に所有者が回答した。回答（原文）と、それぞれの実装単位を登録する。どれも実装→対象test→本番相当の実操作→目視→回帰→最新HEADまで確認してから閉じる。
 
 1. **ゴミ箱のカードの「復元」「完全削除」**：「広い画面で名前の右に置く」。幅が600×文字の倍率以上のカードは名前の右・上下の真ん中、狭いカードは名前の下の右端の行（作品・フォルダ・ファイルのカードとも同じ。いまは3つの操作〔コピー・復元・完全削除〕）。A003-8b。**公開（2026-11-13）：App `06f5113f`・`d087559e`・`4b38d3bc`**（作品・フォルダ・書き出したファイルのカードとも同じ置き場所。広いカードでも名前の欄が名前の文字15字分より狭くなる幅では名前の下へ。折り返した「完全削除」の文字も右へそろえる）。
 2. **フォルダのメニューの「削除」**：「ゴミ箱と同じく中身ごとゴミ箱へ移す」。選択→ゴミ箱と同じ動き（`moveFolderToTrash`、「元に戻す」、お気に入りの作品の決まり）に揃える。A006・A003-D1b。**公開（2026-11-13）：App `f8b28d73`・`6277e6ba`**（フォルダの︙・右クリックの「ゴミ箱へ移動」は、選んで移すときと同じ件数つきの確認・お気に入りの決まり・「元に戻す」。お気に入りで断る知らせは他の知らせを閉じない）。実Linux：中の作品2件・フォルダ3件と出て、元に戻すで孫のフォルダまで戻る。
@@ -394,51 +394,51 @@ status: `todo`。2026-11-11、監査で「判断をお願いする事項」と�
 
 ## D001.65 — 公式Webのオパール・ミッションと統合比較表（2026-11-16追加）
 
-status: todo。Web 141d462a→29cec006〜ca5b6c2に、公開ページのスタジオデザイン、/coins/、Premium相互CTA、ミッション目標・ログインの節目、7言語の通貨表記、12特典・5期間・2比較のオパール料金表が追加・変更。S39で表のcaption/領域名と旧smokeを修正し、Chromiumで実ナビ・キーボード・5つの開閉・表示を確認した。W007/W009・D001.53–58・Appのオパール/特典仕様を現行backendの実装・公開条件と照合。全利用者状態・書体/価格の7言語・全viewport・読み上げ・アプリへの導線・交換と期限切れの実相当検証・法務/IP・公開条件・全Visual evidenceは未完。CI成功だけでこの項目を閉じない。証跡は A003_S39_20261116_EVIDENCE.md。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。Web 141d462a→29cec006〜ca5b6c2に、公開ページのスタジオデザイン、/coins/、Premium相互CTA、ミッション目標・ログインの節目、7言語の通貨表記、12特典・5期間・2比較のオパール料金表が追加・変更。S39で表のcaption/領域名と旧smokeを修正し、Chromiumで実ナビ・キーボード・5つの開閉・表示を確認した。W007/W009・D001.53–58・Appのオパール/特典仕様を現行backendの実装・公開条件と照合。全利用者状態・書体/価格の7言語・全viewport・読み上げ・アプリへの導線・交換と期限切れの実相当検証・法務/IP・公開条件・全Visual evidenceは未完。CI成功だけでこの項目を閉じない。証跡は A003_S39_20261116_EVIDENCE.md。
 
 ## D001.66 — NIARIMアカウントの本人による削除（App・Web・Backend、2026-11-20追加）
 
-status: todo。App `f4118200`（設定→公式の削除ページ、410を受けたら対象のセッションだけサインアウト）、Web `20b7564`・`c22bb00`（Googleで本人確認→範囲・取り消せないことの確認→処理・途中再開・二重実行の防止）、Backend（処理待ち・書き込みの制限・所有者のデータ消去・他のアカウントを巻き込まない）。7言語・PC/SP・失敗/再試行・削除後のログイン・保持する記録の範囲を実操作とDynamoDB Localで確認する。公開環境のGoogle認証での削除は人の作業（human-action-pending）。関係：DISC487・563、W035〜W040、A094。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。App `f4118200`（設定→公式の削除ページ、410を受けたら対象のセッションだけサインアウト）、Web `20b7564`・`c22bb00`（Googleで本人確認→範囲・取り消せないことの確認→処理・途中再開・二重実行の防止）、Backend（処理待ち・書き込みの制限・所有者のデータ消去・他のアカウントを巻き込まない）。7言語・PC/SP・失敗/再試行・削除後のログイン・保持する記録の範囲を実操作とDynamoDB Localで確認する。公開環境のGoogle認証での削除は人の作業（human-action-pending）。関係：DISC487・563、W035〜W040、A094。
 
 ## D001.67 — 壊れた作品の復旧と保存した版の選択・プレビュー（2026-11-20追加）
 
-status: todo。App `b7f8ed0e`（壊れた作品を読める版から戻し、利用者が版を選ぶ）・`f947ebda`（保存した版のプレビュー、保存のTipsの更新）・`ba498400`（時計に頼らない自動保存の復旧）。壊れた作品・版の一覧・プレビュー・選んで戻す・取り消し・起動し直し・7言語・PC/SPを実操作する。関係：A059〜A061。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。App `b7f8ed0e`（壊れた作品を読める版から戻し、利用者が版を選ぶ）・`f947ebda`（保存した版のプレビュー、保存のTipsの更新）・`ba498400`（時計に頼らない自動保存の復旧）。壊れた作品・版の一覧・プレビュー・選んで戻す・取り消し・起動し直し・7言語・PC/SPを実操作する。関係：A059〜A061。
 
 ## D001.68 — 書き出しの目的別の案内・描画前の最終設定・共有の続き（2026-11-20追加）
 
-status: todo。App `f6de961d`（目的から形式を選ぶ案内、描画前に最終の設定を見せる）・`3f3e2a7c`（GIFの圧縮を別のisolateへ、書き出しのダイアログを保つ）・`e9b7f86e`（書き出した作品を共有に残し作品一覧のタブを直接開く）・`b78bbc0a`（特典が切れても書き出しを壊さない）。全形式・目的・特典の有無・戻る・キャンセル・7言語を実操作する。関係：A063〜A064、DISC528・529・531、Web `d39aa82`・`89b3716`・`f4e5aaa`。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。App `f6de961d`（目的から形式を選ぶ案内、描画前に最終の設定を見せる）・`3f3e2a7c`（GIFの圧縮を別のisolateへ、書き出しのダイアログを保つ）・`e9b7f86e`（書き出した作品を共有に残し作品一覧のタブを直接開く）・`b78bbc0a`（特典が切れても書き出しを壊さない）。全形式・目的・特典の有無・戻る・キャンセル・7言語を実操作する。関係：A063〜A064、DISC528・529・531、Web `d39aa82`・`89b3716`・`f4e5aaa`。
 
 ## D001.69 — 作品広場の通報・ブロック（モデレーション、2026-11-20追加）
 
-status: todo。App `0b8dfdd5`・`8995ee8f`（ブロックした投稿を一覧の覚えから除く）、Web `21c0daf`（モデレーションの案内と公開データの再確認）、Backend（自分の作品・自分の通報を断る）。見本のデータでの文（DISC540）、送信の成功・失敗・重複・取り消し、ブロックの解除、7言語を実操作する。実APIは未デプロイ。関係：A091、DISC409〜411・540。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。App `0b8dfdd5`・`8995ee8f`（ブロックした投稿を一覧の覚えから除く）、Web `21c0daf`（モデレーションの案内と公開データの再確認）、Backend（自分の作品・自分の通報を断る）。見本のデータでの文（DISC540）、送信の成功・失敗・重複・取り消し、ブロックの解除、7言語を実操作する。実APIは未デプロイ。関係：A091、DISC409〜411・540。
 
 ## D001.70 — 地域別の広告収益の集計と報酬の段（Backend、2026-11-17追加）
 
-status: todo。Backend `b5f25351`・`0404c394`・`bc1d406e`・`01e17740`・`73e70a19`・`eceedc0a`・`6f4e3899`・`c2557d6b`（国のデータの検証・日次のAdMobの報告・地域ごとの報酬の段・続けて見る報酬広告・遅れた報酬の回収）。単体test・DynamoDB Local・国のデータのダイジェストの照合・失敗/再試行・監視を確認する。実AdMobの報告は人の作業。関係：D001.35・D001.49・D001.60、A088〜A089・A099。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。Backend `b5f25351`・`0404c394`・`bc1d406e`・`01e17740`・`73e70a19`・`eceedc0a`・`6f4e3899`・`c2557d6b`（国のデータの検証・日次のAdMobの報告・地域ごとの報酬の段・続けて見る報酬広告・遅れた報酬の回収）。単体test・DynamoDB Local・国のデータのダイジェストの照合・失敗/再試行・監視を確認する。実AdMobの報告は人の作業。関係：D001.35・D001.49・D001.60、A088〜A089・A099。
 
 ## D001.71 — 名前付きの描画フィルターのプリセットと全画面再生の操作（2026-11-20追加）
 
-status: todo。App `0ff63b77`（描画フィルターの設定に名前を付けて保存・呼び出し、全画面再生の操作を重ねる）・`daee586c`（フィルターの見本の絵）。作成・名前の空白/重複/Enter・削除・引き継ぎ（.niatra）・7言語・取り消しを実操作する。関係：D002・D007・A045。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。App `0ff63b77`（描画フィルターの設定に名前を付けて保存・呼び出し、全画面再生の操作を重ねる）・`daee586c`（フィルターの見本の絵）。作成・名前の空白/重複/Enter・削除・引き継ぎ（.niatra）・7言語・取り消しを実操作する。関係：D002・D007・A045。
 
 ## D001.72 — 中国語・韓国語の見出しの書体と画面全体の余白・文字の大きさ（2026-11-19〜20追加）
 
-status: todo。App `7f65d544`・`2df20473`（zh・koの見出しを本文の明朝に統一、`headingFontFamilyFor`）・`e4d3c5b7`・`191ae39b`（画面の余白・見出しの間隔・セーブスロットの行・狭い作業画面の操作）、Web `73e6b37`。7言語×PC/SP×文字1.0〜2.0で見出しの書体・字の欠け・折れ・押せる大きさを確かめ、CLAUDE.mdの書体の段落との食い違い（DISCの節の気づいた点）と`home_title_fit_test`・`requested_ui_all_captures_test`の失敗（DISC548）を照合する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。App `7f65d544`・`2df20473`（zh・koの見出しを本文の明朝に統一、`headingFontFamilyFor`）・`e4d3c5b7`・`191ae39b`（画面の余白・見出しの間隔・セーブスロットの行・狭い作業画面の操作）、Web `73e6b37`。7言語×PC/SP×文字1.0〜2.0で見出しの書体・字の欠け・折れ・押せる大きさを確かめ、CLAUDE.mdの書体の段落との食い違い（DISCの節の気づいた点）と`home_title_fit_test`・`requested_ui_all_captures_test`の失敗（DISC548）を照合する。
 
 ## D001.73 — Tipsの図（注釈つきのアプリの画面）とTipsの読みやすさ（2026-11-20追加）
 
-status: todo。App `2a2f2470`（全ページに共通の配置の図）・`a4b3b66f`（大きな文字での読みやすさ）・`4f92188f`（注釈つきのアプリの画面の図）。図が今の画面と合うか、図の送りのキーボード（DISC536）、7言語×文字2倍×PC/SP、図の字の欠けを確かめる。関係：A087、D028。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。App `2a2f2470`（全ページに共通の配置の図）・`a4b3b66f`（大きな文字での読みやすさ）・`4f92188f`（注釈つきのアプリの画面の図）。図が今の画面と合うか、図の送りのキーボード（DISC536）、7言語×文字2倍×PC/SP、図の字の欠けを確かめる。関係：A087、D028。
 
 ## D001.74 — 外観の設定を基本の6色へ簡略化（2026-11-16追加）
 
-status: todo。App `bc79bf03`（外観の色を6つの基本の色に）・`c81945be`（組み込みテーマの名前の翻訳）。旧形式の保存したテーマの読み込み・引き継ぎ・救済ボタン（読めない組み合わせ）・案Aの文字色・7言語を実操作する。関係：A081〜A082、DISC377〜383。CLAUDE.mdの「文字色・背景色・ボタン文字色・メニュー文字色・選択色等を自由に選べ」の記述と今の作りを照合する。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。App `bc79bf03`（外観の色を6つの基本の色に）・`c81945be`（組み込みテーマの名前の翻訳）。旧形式の保存したテーマの読み込み・引き継ぎ・救済ボタン（読めない組み合わせ）・案Aの文字色・7言語を実操作する。関係：A081〜A082、DISC377〜383。CLAUDE.mdの「文字色・背景色・ボタン文字色・メニュー文字色・選択色等を自由に選べ」の記述と今の作りを照合する。
 
 ## D001.75 — Webの問い合わせの送信・添付・回数の制限（2026-11-18〜19追加）
 
-status: todo。Web `cb43385`（送信の内容と添付の形式の検証）・`e1b247f`（回数の制限を送る前に確保）・`c147d55`（送信の結果の知らせ・言語ごとのHTML）・`ebb96d1`（問い合わせ・サポートのメールの設定）・`aa393ad`（日本語の確認・隠れた欄の自動入力の防止）。実メールは送らず、ローカルのWorkerで成功・失敗・制限・添付・7言語を確かめる。関係：W013・W035〜W039。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。Web `cb43385`（送信の内容と添付の形式の検証）・`e1b247f`（回数の制限を送る前に確保）・`c147d55`（送信の結果の知らせ・言語ごとのHTML）・`ebb96d1`（問い合わせ・サポートのメールの設定）・`aa393ad`（日本語の確認・隠れた欄の自動入力の防止）。実メールは送らず、ローカルのWorkerで成功・失敗・制限・添付・7言語を確かめる。関係：W013・W035〜W039。
 
 ## D001.76 — 初回の図つき6ページの使い方・知らせに触れている間は消さない・ホームのCtrl+Zでゴミ箱から戻す・ホームの矢印の並び（2026-11-22の所有者の指定）
 
-status: todo。App `623bc7c7`（初回起動で図つきの6ページの使い方）・`9215e424`（知らせは触れている間は消さない、ホームのCtrl+Zで最後にゴミ箱へ移したものを戻す）・`5013a234`（起動画面へ戻る矢印は上のバーの左上、左下は一覧の一番上へ）・`25abae0e`（空の一覧のつまみ）。使い方のスキップ・はじめる・保存の失敗・戻る・Esc・窓の大きさの切り替え、知らせのマウス・指・Tabでの保持と離した後、Ctrl+Zの対象と二度戻さないこと、7言語×PC/SP×文字2倍を実操作する。関係：A003（三巡目で実画面を確認）、DISC071・124・125、DISC571（使い方の図と文の食い違い）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。App `623bc7c7`（初回起動で図つきの6ページの使い方）・`9215e424`（知らせは触れている間は消さない、ホームのCtrl+Zで最後にゴミ箱へ移したものを戻す）・`5013a234`（起動画面へ戻る矢印は上のバーの左上、左下は一覧の一番上へ）・`25abae0e`（空の一覧のつまみ）。使い方のスキップ・はじめる・保存の失敗・戻る・Esc・窓の大きさの切り替え、知らせのマウス・指・Tabでの保持と離した後、Ctrl+Zの対象と二度戻さないこと、7言語×PC/SP×文字2倍を実操作する。関係：A003（三巡目で実画面を確認）、DISC071・124・125、DISC571（使い方の図と文の食い違い）。
 
 ## D002 — 全フィルター inventory → 個別監査
 
@@ -462,211 +462,211 @@ status: todo。App `623bc7c7`（初回起動で図つきの6ページの使い�
 
 ## D002.1 — 描画フィルター「ガウスぼかし」（`FilterKind.gaussianBlur`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006。
 
 ## D002.2 — 描画フィルター「レンズぼかし」（`FilterKind.lensBlur`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006。
 
 ## D002.3 — 描画フィルター「アニメ風加工」（`FilterKind.animeStyle`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
 
 ## D002.4 — 描画フィルター「縁取り」（`FilterKind.outline`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D010。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D010。
 
 ## D002.5 — 描画フィルター「トーンカーブ」（`FilterKind.toneCurve`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D008。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D008。
 
 ## D002.6 — 描画フィルター「レベル補正」（`FilterKind.levels`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D009。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D009。
 
 ## D002.7 — 描画フィルター「シャープ」（`FilterKind.sharpen`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
 
 ## D002.8 — 描画フィルター「アンシャープマスク」（`FilterKind.unsharpMask`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
 
 ## D002.9 — 描画フィルター「周辺減光」（`FilterKind.vignette`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
 
 ## D002.10 — 描画フィルター「フィルムグレイン（ノイズ・VHSノイズの設定を含む）」（`FilterKind.noise`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
 
 ## D002.11 — 描画フィルター「レトロアニメ」（`FilterKind.retroAnime`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
 
 ## D002.12 — 描画フィルター「ブラウン管」（`FilterKind.crt`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D011。
 
 ## D002.13 — 描画フィルター「色調調整（色反転を含む）」（`FilterKind.colorAdjust`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
 
 ## D002.14 — 描画フィルター「二値化」（`FilterKind.threshold`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
 
 ## D002.15 — 描画フィルター「魚眼レンズ」（`FilterKind.fisheye`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D013。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D013。
 
 ## D002.16 — 描画フィルター「色収差」（`FilterKind.chromaticAberration`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D013。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D013。
 
 ## D002.17 — 描画フィルター「眼鏡断層」（`FilterKind.lensDistortion`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D014。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D014。
 
 ## D002.18 — 描画フィルター「ドット絵」（`FilterKind.pixelate`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D015。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D015。
 
 ## D002.19 — 描画フィルター「モザイク」（`FilterKind.mosaic`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D015。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D015。
 
 ## D002.20 — 描画フィルター「質感変更（質感偏光・6つの土台）」（`FilterKind.auroraHologram`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
 
 ## D002.21 — 描画フィルター「背景馴染ませ」（`FilterKind.backgroundBlend`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D016。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D016。
 
 ## D002.22 — 描画フィルター「墨溜まり」（`FilterKind.inkPool`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D016。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D016。
 
 ## D002.23 — 描画フィルター「自動線画」（`FilterKind.autoLineart`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D017。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D017。
 
 ## D002.24 — 描画フィルター「プリズム」（`FilterKind.prism`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006・D018。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D006・D018。
 
 ## D002.25 — 描画フィルター「球体陰影」（`FilterKind.sphereShading`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D005。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。関係：D005。
 
 ## D002.26 — 描画フィルター「水彩境界」（`FilterKind.watercolorBorder`）
 
-status: todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`FilterKind`（26種）から登録。到達（キャンバスのフィルターの窓・PCのドック・スマホの調整モード）・全設定と境界値・名前付きのプリセット（D001.71）・プレビュー・適用/キャンセル・取り消し/やり直し・選択範囲の内側だけ・不透明度ロック・実処理が設定値を使うこと・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence（BEFORE/SETTINGS/AFTER）。
 
 ## D002.27 — 演出フィルター「フェード」（`EffectFilterType.fade`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.28 — 演出フィルター「ガウスぼかし」（`EffectFilterType.gaussianBlur`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.29 — 演出フィルター「レンズぼかし」（`EffectFilterType.lensBlur`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.30 — 演出フィルター「モザイク」（`EffectFilterType.mosaic`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.31 — 演出フィルター「色収差」（`EffectFilterType.chromaticAberration`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.32 — 演出フィルター「ノイズ」（`EffectFilterType.noise`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.33 — 演出フィルター「セピア」（`EffectFilterType.sepia`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.34 — 演出フィルター「アニメ調」（`EffectFilterType.animeStyle`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.35 — 演出フィルター「レトロアニメ」（`EffectFilterType.retroAnime`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.36 — 演出フィルター「ブラウン管」（`EffectFilterType.crt`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.37 — 演出フィルター「動くノイズ」（`EffectFilterType.animatedNoise`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.38 — 演出フィルター「雨」（`EffectFilterType.rain`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.39 — 演出フィルター「単色化フィルター」（`EffectFilterType.monochrome`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.40 — 演出フィルター「色調調整」（`EffectFilterType.colorAdjust`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.41 — 演出フィルター「二値化」（`EffectFilterType.threshold`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.42 — 演出フィルター「魚眼レンズ」（`EffectFilterType.fisheye`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.43 — 演出フィルター「ドット絵」（`EffectFilterType.pixelate`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.44 — 演出フィルター「質感変更」（`EffectFilterType.auroraHologram`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.45 — 演出フィルター「墨溜まり」（`EffectFilterType.inkPool`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.46 — 演出フィルター「VHSノイズ」（`EffectFilterType.vhsNoise`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.47 — 演出フィルター「トーンカーブ」（`EffectFilterType.toneCurve`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.48 — 演出フィルター「レベル補正」（`EffectFilterType.levels`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.49 — 演出フィルター「シャープ」（`EffectFilterType.sharpen`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.50 — 演出フィルター「アンシャープマスク」（`EffectFilterType.unsharpMask`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.51 — 演出フィルター「周辺減光」（`EffectFilterType.vignette`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D002.52 — 演出フィルター「水彩境界」（`EffectFilterType.watercolorBorder`）
 
-status: todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo。2026-11-20、App `643cc267`の`EffectFilterType`（26種）から登録。タイムラインの演出フィルターの行からの追加・範囲（コマ・シーン）・全設定と境界値・スライダーの1回のドラッグが1手の取り消し・複製・削除の確認と取り消し・プレビューと書き出しの一致・保存/復元・7言語・PC/SP・Free/Premium・実描画・Visual evidence。関係：A054・D007。
 
 ## D003 — 範囲選択の対象レイヤー
 
@@ -976,43 +976,43 @@ Do not hide non-reproducible behavior behind preset-only special logic; record a
 
 ## D026.1 — ウェーブヘア（俯瞰）Brush0023（waveTopView）
 
-status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。塗りの外に黒い縁取り、波の山で内側の縁取りが延びた折り返し線（`shots-r1/h-08c`）。ジグザグ（鋭い折れ）では1つ目の谷と3つ目の山に折り返し線が出て、2つ目の谷・2つ目の山には出ない（`zz-6c`）。書き終わりは細く抜ける。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。塗りの外に黒い縁取り、波の山で内側の縁取りが延びた折り返し線（`shots-r1/h-08c`）。ジグザグ（鋭い折れ）では1つ目の谷と3つ目の山に折り返し線が出て、2つ目の谷・2つ目の山には出ない（`zz-6c`）。書き終わりは細く抜ける。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
 
 ## D026.2 — 右巻きヘアBrush0031（curlRight）
 
-status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。右へ曲がる所で折り返し線（`hair-cr-combo`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。右へ曲がる所で折り返し線（`hair-cr-combo`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
 
 ## D026.3 — 左巻きヘアBrush0032（curlLeft）
 
-status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。左へ曲がる所で折り返し線、右巻きと逆の側（`hair-cl-combo`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。左へ曲がる所で折り返し線、右巻きと逆の側（`hair-cl-combo`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
 
 ## D026.4 — ウェーブヘア（煽り）Brush0034（waveLowAngle）
 
-status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。俯瞰と逆の側の曲がりで折り返し線（`hair-lowanglec`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。俯瞰と逆の側の曲がりで折り返し線（`hair-lowanglec`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
 
 ## D026.5 — 三日月カールヘアBrush0035（crescent）
 
-status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。半波ごとに三日月の形、書き始めは丸い普通の線、書き終わりは普通の線に戻って細く抜ける。閉じる直線は無く、太さが急に変わる所は見えない（`hair-crescentc`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。半波ごとに三日月の形、書き始めは丸い普通の線、書き終わりは普通の線に戻って細く抜ける。閉じる直線は無く、太さが急に変わる所は見えない（`hair-crescentc`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
 
 ## D026.6 — リボン（ウェーブ俯瞰）Brush0036
 
-status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。赤い平たいリボン（太さ26・入り抜きなし）、端は四角、波の山で裏返る線（`rib-combo1`）。縦の区間ではリボンが細くなり、縁が4px前後の段々に見える。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。赤い平たいリボン（太さ26・入り抜きなし）、端は四角、波の山で裏返る線（`rib-combo1`）。縦の区間ではリボンが細くなり、縁が4px前後の段々に見える。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
 
 ## D026.7 — リボン（ウェーブ煽り）Brush0037
 
-status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。同上、俯瞰と逆の側で裏返る（`rib-combo1`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。同上、俯瞰と逆の側で裏返る（`rib-combo1`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
 
 ## D026.8 — リボン（右巻き）Brush0038
 
-status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。右の曲がりで裏返る（`rib-combo2`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。右の曲がりで裏返る（`rib-combo2`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
 
 ## D026.9 — リボン（左巻き）Brush0039
 
-status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。左の曲がりで裏返る（`rib-combo2`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。左の曲がりで裏返る（`rib-combo2`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
 
 ## D026.10 — リボン（三日月カール）Brush0040
 
-status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。半波ごとに三日月、端は四角（`hair-rib-cresc`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。半波ごとに三日月、端は四角（`hair-rib-cresc`）。 未確認：設定の画面での各値（出発の角度・カーブ開始・長さ・角度・抜き・きっかけの深さ）の変更、筆圧、保存/復元、後ろ髪の使い方、Visual（BEFORE/SETTINGS/AFTER）。
 
 ## D027 — Preset 前髪ブラシ
 
@@ -1027,7 +1027,7 @@ Same as D026 for every current bangs preset:
 
 ## D027.1 — 前髪 Brush0024
 
-status: todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。前髪の先端の画像（`bangs_cut_01`〜`05`）で縁がぎざぎざの帯になり、端も切った形（`shots-r1/hair-bangsc`）。折り畳みの処理は無い。未確認：短い前髪の束を何本も描く使い方、筆圧での太さ（25〜100%）、保存/復元、Visual。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（実操作の描画まで、二巡目2026-11-20）。実画面（Linux debug、App `4f92188f`、ja、1280×800、マウス〔筆圧は1.0〕、作品2の1コマ目、薄い桃色）：横の正弦波（振幅50px・1.5波）と縦の正弦波（振幅40px・2.5波）を描いて撮り、取り消し2回で戻した。前髪の先端の画像（`bangs_cut_01`〜`05`）で縁がぎざぎざの帯になり、端も切った形（`shots-r1/hair-bangsc`）。折り畳みの処理は無い。未確認：短い前髪の束を何本も描く使い方、筆圧での太さ（25〜100%）、保存/復元、Visual。
 
 ## D028 — Help / Tips / 7-language consistency
 
@@ -1184,671 +1184,671 @@ Required:
 
 ## D033.1 — ブラシ「ペン」（`Brush0001`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の1番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の1番目。
 
 ## D033.2 — ブラシ「Gペン」（`Brush0002`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の2番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の2番目。
 
 ## D033.3 — ブラシ「丸ペン」（`Brush0008`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の3番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の3番目。
 
 ## D033.4 — ブラシ「面相筆」（`Brush0015`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の4番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の4番目。
 
 ## D033.5 — ブラシ「カリグラフィー」（`Brush0006`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の5番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の5番目。
 
 ## D033.6 — ブラシ「平筆」（`Brush0009`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の6番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の6番目。
 
 ## D033.7 — ブラシ「マーカーペン」（`Brush0005`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の7番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の7番目。
 
 ## D033.8 — ブラシ「鉛筆」（`Brush0007`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の8番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の8番目。
 
 ## D033.9 — ブラシ「鉛筆（4B）」（`Brush0028`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の9番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の9番目。
 
 ## D033.10 — ブラシ「チョーク」（`Brush0012`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の10番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の10番目。
 
 ## D033.11 — ブラシ「木炭（粗目）」（`Brush0026`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の11番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の11番目。
 
 ## D033.12 — ブラシ「パステル（粉）」（`Brush0029`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の12番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の12番目。
 
 ## D033.13 — ブラシ「水彩」（`Brush0010`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の13番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の13番目。
 
 ## D033.14 — ブラシ「ガッシュ（不透明水彩）」（`Brush0027`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の14番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の14番目。
 
 ## D033.15 — ブラシ「混色ブラシ」（`Brush0004`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の15番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の15番目。
 
 ## D033.16 — ブラシ「エアブラシ」（`Brush0003`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の16番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の16番目。
 
 ## D033.17 — ブラシ「スプレー」（`Brush0013`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の17番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の17番目。
 
 ## D033.18 — ブラシ「ぼかし」（`Brush0011`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の18番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の18番目。
 
 ## D033.19 — ブラシ「ピクセルペン」（`Brush0014`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の19番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の19番目。
 
 ## D033.20 — ブラシ「グリッターペン」（`Brush0016`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の20番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の20番目。
 
 ## D033.21 — ブラシ「ラメペン」（`Brush0017`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の21番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の21番目。
 
 ## D033.22 — ブラシ「チェーン（太）」（`Brush0018`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の22番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の22番目。
 
 ## D033.23 — ブラシ「チェーン（中）」（`Brush0019`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の23番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の23番目。
 
 ## D033.24 — ブラシ「チェーン（細）」（`Brush0020`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の24番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の24番目。
 
 ## D033.25 — ブラシ「ボールチェーン」（`Brush0021`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の25番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の25番目。
 
 ## D033.26 — ブラシ「ネット」（`Brush0022`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の26番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の26番目。
 
 ## D033.27 — ブラシ「四コマ漫画」（`Brush0025`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の27番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の27番目。
 
 ## D033.28 — ブラシ「ウェーブヘア（俯瞰）」（`Brush0023`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の28番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の28番目。
 
 ## D033.29 — ブラシ「右巻きヘア」（`Brush0031`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の29番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の29番目。
 
 ## D033.30 — ブラシ「左巻きヘア」（`Brush0032`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の30番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の30番目。
 
 ## D033.31 — ブラシ「ウェーブヘア（煽り）」（`Brush0034`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の31番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の31番目。
 
 ## D033.32 — ブラシ「三日月カールヘア」（`Brush0035`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の32番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の32番目。
 
 ## D033.33 — ブラシ「前髪」（`Brush0024`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の33番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の33番目。
 
 ## D033.34 — ブラシ「リボン（ウェーブ俯瞰）」（`Brush0036`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の34番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の34番目。
 
 ## D033.35 — ブラシ「リボン（ウェーブ煽り）」（`Brush0037`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の35番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の35番目。
 
 ## D033.36 — ブラシ「リボン（右巻き）」（`Brush0038`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の36番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の36番目。
 
 ## D033.37 — ブラシ「リボン（左巻き）」（`Brush0039`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の37番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の37番目。
 
 ## D033.38 — ブラシ「リボン（三日月カール）」（`Brush0040`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の38番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の38番目。
 
 ## D033.39 — ブラシ「雲」（`Brush0030`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の39番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の39番目。
 
 ## D033.40 — ブラシ「雲（ベタ塗り）」（`Brush0041`）
 
-status: todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の40番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。線を描く（S字の線）・保存の形（JSON）で変わらない・6言語の表示名に日本語が残らない。画像：`build/preset-inventory/brushes.png`の40番目。
 
 ## D033.41 — トーン「網点 10%」（`Tone0001`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の1番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の1番目。
 
 ## D033.42 — トーン「網点 20%」（`Tone0026`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の2番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の2番目。
 
 ## D033.43 — トーン「網点 30%」（`Tone0002`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の3番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の3番目。
 
 ## D033.44 — トーン「網点 40%」（`Tone0027`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の4番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の4番目。
 
 ## D033.45 — トーン「網点 50%」（`Tone0003`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の5番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の5番目。
 
 ## D033.46 — トーン「網点 60%」（`Tone0028`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の6番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の6番目。
 
 ## D033.47 — トーン「網点 70%」（`Tone0004`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の7番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の7番目。
 
 ## D033.48 — トーン「網点 80%」（`Tone0029`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の8番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の8番目。
 
 ## D033.49 — トーン「網点 90%」（`Tone0030`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の9番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の9番目。
 
 ## D033.50 — トーン「ライン 細」（`Tone0005`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の10番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の10番目。
 
 ## D033.51 — トーン「ライン 太」（`Tone0006`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の11番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の11番目。
 
 ## D033.52 — トーン「ライン 縦細」（`Tone0031`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の12番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の12番目。
 
 ## D033.53 — トーン「ライン 縦太」（`Tone0032`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の13番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の13番目。
 
 ## D033.54 — トーン「ライン 斜め細」（`Tone0033`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の14番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の14番目。
 
 ## D033.55 — トーン「ライン 斜め太」（`Tone0034`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の15番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の15番目。
 
 ## D033.56 — トーン「クロスハッチ 細」（`Tone0035`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の16番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の16番目。
 
 ## D033.57 — トーン「クロスハッチ 中」（`Tone0036`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の17番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の17番目。
 
 ## D033.58 — トーン「クロスハッチ 太」（`Tone0037`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の18番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の18番目。
 
 ## D033.59 — トーン「クロスハッチ 斜め細」（`Tone0038`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の19番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の19番目。
 
 ## D033.60 — トーン「クロスハッチ 斜め太」（`Tone0039`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の20番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の20番目。
 
 ## D033.61 — トーン「方眼 細」（`Tone0046`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の21番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の21番目。
 
 ## D033.62 — トーン「方眼 太」（`Tone0047`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の22番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の22番目。
 
 ## D033.63 — トーン「砂目 細」（`Tone0040`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の23番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の23番目。
 
 ## D033.64 — トーン「砂目 中」（`Tone0041`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の24番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の24番目。
 
 ## D033.65 — トーン「砂目 粗」（`Tone0042`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の25番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の25番目。
 
 ## D033.66 — トーン「同心円」（`Tone0043`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の26番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の26番目。
 
 ## D033.67 — トーン「波線」（`Tone0044`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の27番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の27番目。
 
 ## D033.68 — トーン「レンガ」（`Tone0045`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の28番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の28番目。
 
 ## D033.69 — トーン「ストッキング 10デニール」（`Tone0010`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の29番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の29番目。
 
 ## D033.70 — トーン「ストッキング 20デニール」（`Tone0011`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の30番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の30番目。
 
 ## D033.71 — トーン「ストッキング 30デニール」（`Tone0012`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の31番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の31番目。
 
 ## D033.72 — トーン「タイツ 40デニール」（`Tone0013`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の32番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の32番目。
 
 ## D033.73 — トーン「タイツ 60デニール」（`Tone0014`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の33番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の33番目。
 
 ## D033.74 — トーン「タイツ 80デニール」（`Tone0015`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の34番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の34番目。
 
 ## D033.75 — トーン「ピクセル市松（1px）」（`Tone0007`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の35番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の35番目。
 
 ## D033.76 — トーン「ピクセル格子（1px）」（`Tone0008`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の36番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の36番目。
 
 ## D033.77 — トーン「ピクセル斜め格子（1px）」（`Tone0065`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の37番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の37番目。
 
 ## D033.78 — トーン「ピクセル散らし（1px）」（`Tone0009`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の38番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の38番目。
 
 ## D033.79 — トーン「ピクセルボーダー（横1px）」（`Tone0048`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の39番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の39番目。
 
 ## D033.80 — トーン「ピクセルストライプ（縦1px）」（`Tone0049`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の40番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の40番目。
 
 ## D033.81 — トーン「ピクセル斜め縞（1px）」（`Tone0050`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の41番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の41番目。
 
 ## D033.82 — トーン「ピクセルレンガ」（`Tone0054`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の42番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の42番目。
 
 ## D033.83 — トーン「ピクセル砂目 25%」（`Tone0051`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の43番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の43番目。
 
 ## D033.84 — トーン「ピクセル砂目 50%」（`Tone0052`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の44番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の44番目。
 
 ## D033.85 — トーン「ピクセル砂目 75%」（`Tone0053`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の45番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の45番目。
 
 ## D033.86 — トーン「ピクセルディザ（粗目・2×2・25%）」（`Tone0023`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の46番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の46番目。
 
 ## D033.87 — トーン「ピクセルディザ（粗目・2×2・50%）」（`Tone0024`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の47番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の47番目。
 
 ## D033.88 — トーン「ピクセルディザ（粗目・2×2・75%）」（`Tone0025`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の48番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の48番目。
 
 ## D033.89 — トーン「ピクセルディザ（標準・4×4・12%）」（`Tone0016`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の49番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の49番目。
 
 ## D033.90 — トーン「ピクセルディザ（標準・4×4・25%）」（`Tone0017`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の50番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の50番目。
 
 ## D033.91 — トーン「ピクセルディザ（標準・4×4・37%）」（`Tone0018`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の51番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の51番目。
 
 ## D033.92 — トーン「ピクセルディザ（標準・4×4・50%）」（`Tone0019`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の52番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の52番目。
 
 ## D033.93 — トーン「ピクセルディザ（標準・4×4・62%）」（`Tone0020`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の53番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の53番目。
 
 ## D033.94 — トーン「ピクセルディザ（標準・4×4・75%）」（`Tone0021`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の54番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の54番目。
 
 ## D033.95 — トーン「ピクセルディザ（標準・4×4・87%）」（`Tone0022`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の55番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の55番目。
 
 ## D033.96 — トーン「ピクセルディザ（細目・8×8・6%）」（`Tone0055`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の56番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の56番目。
 
 ## D033.97 — トーン「ピクセルディザ（細目・8×8・19%）」（`Tone0056`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の57番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の57番目。
 
 ## D033.98 — トーン「ピクセルディザ（細目・8×8・31%）」（`Tone0057`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の58番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の58番目。
 
 ## D033.99 — トーン「ピクセルディザ（細目・8×8・44%）」（`Tone0058`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の59番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の59番目。
 
 ## D033.100 — トーン「ピクセルディザ（細目・8×8・56%）」（`Tone0059`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の60番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の60番目。
 
 ## D033.101 — トーン「ピクセルディザ（細目・8×8・69%）」（`Tone0060`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の61番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の61番目。
 
 ## D033.102 — トーン「ピクセルディザ（細目・8×8・81%）」（`Tone0061`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の62番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の62番目。
 
 ## D033.103 — トーン「ピクセルディザ（細目・8×8・94%）」（`Tone0062`）
 
-status: todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の63番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。模様を描く（白紙・全面ベタでない）・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/tones.png`の63番目。
 
 ## D033.104 — スタンプ「三角形」（`Stamp0001`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の1番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の1番目。
 
 ## D033.105 — スタンプ「四角形」（`Stamp0009`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の2番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の2番目。
 
 ## D033.106 — スタンプ「丸角四角」（`Stamp0010`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の3番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の3番目。
 
 ## D033.107 — スタンプ「菱形」（`Stamp0011`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の4番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の4番目。
 
 ## D033.108 — スタンプ「五角形」（`Stamp0002`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の5番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の5番目。
 
 ## D033.109 — スタンプ「六角形」（`Stamp0003`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の6番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の6番目。
 
 ## D033.110 — スタンプ「八角形」（`Stamp0012`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の7番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の7番目。
 
 ## D033.111 — スタンプ「円」（`Stamp0008`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の8番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の8番目。
 
 ## D033.112 — スタンプ「ドーナツ」（`Stamp0013`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の9番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の9番目。
 
 ## D033.113 — スタンプ「吹き出し」（`Stamp0006`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の10番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の10番目。
 
 ## D033.114 — スタンプ「矢印」（`Stamp0007`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の11番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の11番目。
 
 ## D033.115 — スタンプ「両矢印」（`Stamp0024`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の12番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の12番目。
 
 ## D033.116 — スタンプ「チェックマーク」（`Stamp0023`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の13番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の13番目。
 
 ## D033.117 — スタンプ「星」（`Stamp0004`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の14番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の14番目。
 
 ## D033.118 — スタンプ「四芒星」（`Stamp0015`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の15番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の15番目。
 
 ## D033.119 — スタンプ「キラキラ」（`Stamp0018`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の16番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の16番目。
 
 ## D033.120 — スタンプ「ハート」（`Stamp0005`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の17番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の17番目。
 
 ## D033.121 — スタンプ「花」（`Stamp0022`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の18番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の18番目。
 
 ## D033.122 — スタンプ「稲妻」（`Stamp0021`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の19番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の19番目。
 
 ## D033.123 — スタンプ「雲」（`Stamp0020`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の20番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の20番目。
 
 ## D033.124 — スタンプ「葉っぱ」（`Stamp0025`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の21番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の21番目。
 
 ## D033.125 — スタンプ「葉っぱ（ベタ塗り）」（`Stamp0027`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の22番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の22番目。
 
 ## D033.126 — スタンプ「草」（`Stamp0026`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の23番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の23番目。
 
 ## D033.127 — スタンプ「草（ベタ塗り）」（`Stamp0028`）
 
-status: todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の24番目。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。形を描く・保存の形で変わらない・6言語の表示名。画像：`build/preset-inventory/stamps.png`の24番目。
 
 ## D033.128 — テーマ「レッド（ライト）」（`default_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.129 — テーマ「レッド（ダーク）」（`default_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.130 — テーマ「オレンジ（ライト）」（`orange_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.131 — テーマ「オレンジ（ダーク）」（`orange_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.132 — テーマ「イエロー（ライト）」（`yellow_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.133 — テーマ「イエロー（ダーク）」（`yellow_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.134 — テーマ「グリーン（ライト）」（`green_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.135 — テーマ「グリーン（ダーク）」（`green_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.136 — テーマ「ブルー（ライト）」（`blue_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.137 — テーマ「ブルー（ダーク）」（`blue_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.138 — テーマ「藍色（ライト）」（`indigo_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.139 — テーマ「藍色（ダーク）」（`indigo_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.140 — テーマ「パープル（ライト）」（`purple_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.141 — テーマ「パープル（ダーク）」（`purple_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.142 — テーマ「ピンク（ライト）」（`pink_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.143 — テーマ「ピンク（ダーク）」（`pink_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.144 — テーマ「ライトパープル（ライト）」（`light_purple_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.145 — テーマ「ライトパープル（ダーク）」（`light_purple_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.146 — テーマ「ライトブルー（ライト）」（`light_blue_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.147 — テーマ「ライトブルー（ダーク）」（`light_blue_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.148 — テーマ「エメラルドグリーン（ライト）」（`emerald_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.149 — テーマ「エメラルドグリーン（ダーク）」（`emerald_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.150 — テーマ「くすみピンク（ライト）」（`dusty_pink_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.151 — テーマ「くすみピンク（ダーク）」（`dusty_pink_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.152 — テーマ「くすみブルー（ライト）」（`dusty_blue_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.153 — テーマ「くすみブルー（ダーク）」（`dusty_blue_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.154 — テーマ「くすみグリーン（ライト）」（`dusty_green_light`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.155 — テーマ「くすみグリーン（ダーク）」（`dusty_green_dark`）
 
-status: todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。差し色が画面の色に出る・保存の形で変わらない（元の配色は`built_in_theme_original_palette_test`、読める組み合わせは`theme_contrast_rescue_test`）。
 
 ## D033.156 — 公式の自動操作「線画作成（デジタル）」（`builtin_draft_to_lineart`）
 
-status: todo（四巡目の確認まで）。手順が読める・保存の形で変わらない・6言語の名前と手順名に日本語が残らない（DISC606を直した）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。手順が読める・保存の形で変わらない・6言語の名前と手順名に日本語が残らない（DISC606を直した）。
 
 ## D033.157 — 公式の自動操作「線画抽出（アナログ）」（`builtin_analog_lineart_extract`）
 
-status: todo（四巡目の確認まで）。手順が読める・保存の形で変わらない・6言語の名前と手順名に日本語が残らない（DISC606を直した）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。手順が読める・保存の形で変わらない・6言語の名前と手順名に日本語が残らない（DISC606を直した）。
 
 ## D033.158 — 公式の自動操作「線画色トレス」（`builtin_lineart_color_trace`）
 
-status: todo（四巡目の確認まで）。手順が読める・保存の形で変わらない・6言語の名前と手順名に日本語が残らない（DISC606を直した）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。手順が読める・保存の形で変わらない・6言語の名前と手順名に日本語が残らない（DISC606を直した）。
 
 ## D033.159 — 自動塗り「グレー単色の下塗り」（`builtin_gray_underpaint`）
 
-status: todo（四巡目の確認まで）。パーツがある・保存の形で変わらない・6言語のプリセットとパーツの名前。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。パーツがある・保存の形で変わらない・6言語のプリセットとパーツの名前。
 
 ## D033.160 — 自動塗り「主人公」（`p1`）
 
-status: todo（四巡目の確認まで）。パーツがある・保存の形で変わらない・6言語のプリセットとパーツの名前。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。パーツがある・保存の形で変わらない・6言語のプリセットとパーツの名前。
 
 ## D033.161 — 自動塗り「ヒロイン」（`p2`）
 
-status: todo（四巡目の確認まで）。パーツがある・保存の形で変わらない・6言語のプリセットとパーツの名前。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。パーツがある・保存の形で変わらない・6言語のプリセットとパーツの名前。
 
 ## D033.162 — キャンバスの大きさ「fullHd」（1920×1080）
 
-status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
 
 ## D033.163 — キャンバスの大きさ「hd」（1280×720）
 
-status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
 
 ## D033.164 — キャンバスの大きさ「square」（1080×1080）
 
-status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
 
 ## D033.165 — キャンバスの大きさ「vertical」（1080×1920）
 
-status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
 
 ## D033.166 — キャンバスの大きさ「portrait」（1080×1350）
 
-status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
 
 ## D033.167 — キャンバスの大きさ「analog」（1440×1080）
 
-status: todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
+status: done（締め、2026-11-24：親の行と一緒に、最新のCIの全件・この計算機の全件のtest・全部の画面のマトリクスで確かめた。実機・外部のサービス・法務の分は全面監査の範囲外で、closing/human_tasks.mdの人の作業へ）。それまでの記録：todo（四巡目の確認まで）。新規作成の画面で選ぶと書き出しの大きさに反映される（`new_project_inputs_test`の「each size preset sets its export size」）。
 
 - 利用者が作るプリセット（自作のブラシ・トーン・スタンプ・テーマ・自動操作・ワークスペース・サイズ・フィルターの設定）は組み込みが無く、作る・保存・引き継ぎ（.niatra）の流れを各Aと`niatra_transfer_*`のtestで確かめる。
 

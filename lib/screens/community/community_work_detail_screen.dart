@@ -678,9 +678,13 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
               ),
               Text(
                 work.title,
-                style: localizedHeadingStyle(
+                style: localizedUserNameStyle(
                   context,
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  work.title,
+                  localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               CommunityWorkDescription(

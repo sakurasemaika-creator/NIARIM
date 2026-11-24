@@ -2230,6 +2230,7 @@
   "timelineFrameTrackLabel": "프레임",
   "timelineTrackRowRenameTitle": "행 이름 변경",
   "timelineCameraTrackLabel": "카메라",
+  "timelineTrackRowName": "{kind} {number}",
   "timelineEndCardDefaultLogoLabel": "NIARIM 로고",
   "timelineEndCardHiddenLabel": "숨김",
   "timelineEndCardTrackLabel": "엔드마크 트랙",

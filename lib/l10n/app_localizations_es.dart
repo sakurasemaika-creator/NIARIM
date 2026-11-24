@@ -5682,6 +5682,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineCameraTrackLabel => 'Cámara';
 
   @override
+  String timelineTrackRowName(String kind, int number) {
+    return '$kind $number';
+  }
+
+  @override
   String get timelineEndCardDefaultLogoLabel => 'Logo de NIARIM';
 
   @override

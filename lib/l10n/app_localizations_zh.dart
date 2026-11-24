@@ -5297,6 +5297,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineCameraTrackLabel => '相机';
 
   @override
+  String timelineTrackRowName(String kind, int number) {
+    return '$kind$number';
+  }
+
+  @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIM标志';
 
   @override
@@ -16025,6 +16030,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineCameraTrackLabel => '相機';
+
+  @override
+  String timelineTrackRowName(String kind, int number) {
+    return '$kind$number';
+  }
 
   @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIM標誌';

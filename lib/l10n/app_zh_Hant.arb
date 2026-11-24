@@ -2230,6 +2230,7 @@
   "timelineFrameTrackLabel": "影格",
   "timelineTrackRowRenameTitle": "重新命名行",
   "timelineCameraTrackLabel": "相機",
+  "timelineTrackRowName": "{kind}{number}",
   "timelineEndCardDefaultLogoLabel": "NIARIM標誌",
   "timelineEndCardHiddenLabel": "隱藏",
   "timelineEndCardTrackLabel": "片尾標記軌道",

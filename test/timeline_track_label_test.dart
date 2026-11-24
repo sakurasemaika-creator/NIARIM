@@ -120,7 +120,14 @@ void main() {
               '${logicalWidth.toInt()}dp',
         );
 
-        final finder = find.text(l10n.timelineFrameTrackLabel);
+        // 韓国語は語の途中で折らないよう字の間に語結合子（U+2060）を挟んで
+        // 描くので、描いた段落（RichText）を語結合子を除いた文で探す。
+        final finder = find.byWidgetPredicate(
+          (w) =>
+              w is RichText &&
+              w.text.toPlainText().replaceAll('\u2060', '') ==
+                  l10n.timelineFrameTrackLabel,
+        );
         expect(
           finder,
           findsOneWidget,
@@ -130,7 +137,7 @@ void main() {
         );
         final paragraph = tester.renderObject<RenderParagraph>(finder);
         expect(
-          tester.widget<Text>(finder).style?.fontSize,
+          tester.widget<RichText>(finder).text.style?.fontSize,
           11,
           reason: 'Track labels must remain comfortably readable on phones',
         );

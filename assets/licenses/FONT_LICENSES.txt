@@ -17,6 +17,10 @@ License     : This Font Software is licensed under the SIL Open Font License,
               Version 1.1. This license is available with a FAQ at:
               https://openfontlicense.org
 License URL : https://openfontlicense.org
+Modified    : 改変版。元のフォントでは「之」「林」「活」の3字に、字の枠から
+              約4em右へ離れた小さな星の輪郭がもう1つ入っていて、文の中で
+              後ろの字に重なって描かれていた。この3字からその輪郭だけを外した
+              （ほかの字・字の幅・名前は元のまま）。
 
 
 --- assets/fonts/Kuramubon.otf（くらむぼん / 見出し・タイトル・ボタン）---

@@ -144,3 +144,39 @@ TextStyle headingStyleFor(Locale? locale, TextStyle style) => style.copyWith(
 
 TextStyle localizedHeadingStyle(BuildContext context, TextStyle style) =>
     headingStyleFor(Localizations.maybeLocaleOf(context), style);
+
+/// ひらがな・カタカナ（小さいかなの拡張・半角カナも）を含むか。
+bool _hasKana(String text) {
+  for (final unit in text.codeUnits) {
+    if ((unit >= 0x3040 && unit <= 0x30FF) ||
+        (unit >= 0x31F0 && unit <= 0x31FF) ||
+        (unit >= 0xFF66 && unit <= 0xFF9F)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// 利用者が付けた名前（作品名・作者名）[text]を描く書式。
+///
+/// 中国語・韓国語の画面の主フォントは、UIの字だけを抜いた部分フォント。
+/// ほかの人が日本語で付けた作品名は、部分フォントにある字（冒・雨…）と
+/// 無い字（険・街…）で書体と太さが変わり、1つの題の中で字が混ざった
+/// （「夜明けの冒険」の「険」だけが細かった）。かなを含む名前は日本語と
+/// 見なし、全部の字がある白光明朝で描く。ほかの言語の画面と、かなの無い
+/// 名前はそのまま。
+TextStyle userNameStyleFor(Locale? locale, String text, TextStyle style) {
+  if (!_usesUnifiedHeadingFont(locale) || !_hasKana(text)) {
+    return style;
+  }
+  return style.copyWith(
+    fontFamily: 'HakkouMincho',
+    fontFamilyFallback: kBodyFontFallback,
+  );
+}
+
+TextStyle localizedUserNameStyle(
+  BuildContext context,
+  String text,
+  TextStyle style,
+) => userNameStyleFor(Localizations.maybeLocaleOf(context), text, style);

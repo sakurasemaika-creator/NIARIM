@@ -4963,3 +4963,3613 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
 ### D030 四巡目の締めの続き（2026-11-24 08:10、Claude・S56、App `19136ef4`）— 最新で流し直した
 
 - 他のセッションの画面の変更（`0f926685`〜`19136ef4`の間の作品名の2行の上部バー・ツールバー・PCのドック・テーマ一覧・規約同意等）の後で、`test/visual/all_routes_cell_matrix_test.dart`を7言語で流し直した：39画面×24幅×スマホ/PC×7言語＝13,104セルで問題0。`docs/work-audit/evidence/route-matrix-2026-11-24.csv`をこの結果に置き換えた（前の`a80d1f96`の結果も問題0）。
+
+
+## 全面監査の締め（2026-11-24、Claude・S56）— 判定：complete（AIだけでできる範囲）
+
+所有者の依頼「completeになるまで作業してください」。全面監査はAIだけでできる範囲で行う（所有者の指定2026-11-23「全面監査はあくまでもAIだけで可能な範囲を書くものなので、実機確認や法務確認は除いてください」）。範囲外の作業は下の「人の作業の一覧」に分けた。
+
+- **締めの条件（FULL_AUDIT_ENTRYPOINTの完了条件）**：Baseline（A001〜A104・W001〜W042の628行）・Discovery（DISC001〜DISC613）・Delta（D001〜D037）はすべてdone。未登録のDiscovery・advisor-pendingは0。重大な機能・安定性・データ損失・セキュリティの未処理は無い（四巡目と締めで見つけたDISC591〜613はすべて直した）。外部連携のimplementation-pendingは0で、残るのは外部のサービス側でしかできない作業だけ（人の作業の一覧）。
+- **最後の確かめ**：GitHubの8分割の全件のCI（#372、App `012bd085`：analyzeと8シャードすべて成功）、この計算機の全件のtest（`d9d389de`〔1〜8束目〕・`2fa8e63d`〔9〜17束目〕、964ファイル、成功6020・スキップ30。失敗4件はrootで権限が効かない既知の3件〔CIは一般ユーザーで流すので成功〕と、`012bd085`で直した撮影のtest）、`flutter analyze` 0件、バックエンドのtest 418件、Webの監査一式（visual-audit #1039〔Web `0905bf41`〕。17ジョブすべて成功。1つのジョブは252通りのうち1通りで言語の切り替えが測る前に終わらず落ちたので、失敗したジョブだけを1回流し直して成功。ほかにWebの各CI〔価格・書体・幅・整形〕）、全部の画面×24の幅×スマホ/PC×7言語の13,104セルで問題0（`docs/work-audit/evidence/route-matrix-2026-11-24.csv`）、見た目の締めのPDF（256件）、保存形式と書き出しの全形式の実出力（D034）、主な操作の時間（D035、この計算機）。
+- **締めの確かめの間に直した所**：別のセッションが同じ日に足した新しいコードとデザインの作り直しで全件のtest・監査が落ちた所を、締めの前に直した。App：メイキング・タイムラインの読み上げ（`f11c9626`・`58f888b3`・`d9e7facb`・`2fa8e63d`）、メニューの背景だけ暗いテーマのホームの読めない色（`ac0775cb`）、行へ飛んだ直後に押すtest（`b65a6aab`・`d9d389de`）、撮影のtest（`012bd085`、デザイン担当のセッション）。Web：公開サイトの価格のtest（`42d53e12`）、狭い画面のページ見出しのはみ出し・地域別SEO・フッターの色の監査（`0905bf41`）。
+- **締めの後のコミット**：この判定はApp `012bd085`・Web `0905bf41`の時点。これより後にデザイン担当のセッションが足すコミットは、それぞれのCI（Appの8分割の全件のCI・Webの各CI）で確かめる。
+- **行ごとの正式doneの節**は下（`docs/work-audit/state/closing/build_sections.py`で、各行の実装を読み込むtest・表示の組み合わせの結果・範囲外の項目を書いた）。
+
+
+## 人の作業の一覧（全面監査の範囲外、2026-11-24、Claude・S56）
+
+全面監査はAIだけでできる範囲で行った（所有者の指定2026-11-23「全面監査はあくまでもAIだけで可能な範囲を書くものなので、実機確認や法務確認は除いてください」）。範囲外の作業を、どこで・何を・どう確かめるかまでここにまとめる。手順の詳しい文はCLAUDE.mdの「人間の実操作が必要な項目」と`docs/AI設計書/28_継続タスク（未着手一覧）.md`にある。
+
+### 実機（Android端末）で確かめること
+
+| 作業 | 場所 | 確かめ方 | 関係するID |
+| --- | --- | --- | --- |
+| タッチ・マルチタッチ・筆圧・ペンのボタン・手のひらの判定で描く | 実機のキャンバス | 線の太さ・入り抜き・二本指の操作・取り消しが画面のとおりに動く | A012・A014・A072・A074 |
+| 共有（.niashare・書き出した動画・設定の引き継ぎ・ブラシ等の共有カード）と受け取り | 実機の共有シート・ほかのアプリ | 送った先でファイル名・拡張子が正しく、受け取って開ける | A065・A083・DISC061・DISC064・DISC073・DISC076 |
+| 書き出した動画の再生と音（MP4の映像と音〔端末のH.264・AAC〕、WebM・AVI） | 実機のギャラリー・動画アプリ | 映像と音がずれずに鳴る、AVIが再生できる | A063・DISC611 |
+| ホーム画面のウィジェット（作品・作品をつくる・作品広場）と大きさの変更 | ランチャー | 押すと正しい画面が開く、横長・縦長で絵が切り替わる | A079・A080 |
+| リリースビルド（R8）の起動・書き出し | 実機 | 起動直後に落ちない、書き出しができる | A100 |
+| PC/DeXの作業画面（外部ディスプレイ・マウス・キーボード） | Samsung DeX等 | ドック・ホイール・ショートカットが画面のとおり | A011・A075・A076 |
+| ゴミ箱の保持期間の自動削除（日付をまたぐ） | 実機 | 期限を過ぎた作品だけが消え、読めない作品があるときは止まる | DISC085 |
+| 読み上げ（TalkBack）でWebの料金表・アプリの主な画面を操作 | 実機・ブラウザ | 価格・節約の単位・ボタンの名前が伝わる | DISC236・A101 |
+
+### 外部のサービスで行うこと
+
+| 作業 | 場所 | 必要なもの | 確かめ方 |
+| --- | --- | --- | --- |
+| 署名鍵（keystore）を作りリリースビルドに設定 | 手元のPC・`android/key.properties` | keytool・パスワードの保管 | 署名したAPKが入る |
+| AdMobの本番の広告ユニット（App ID・バナー・正方形）を発行して差し替え | admob.google.com・`AndroidManifest.xml`・`admob_provider.dart` | Googleアカウント | 実機で本番の広告が出る・SSVでコインが付く |
+| Play Consoleのサブスクリプション商品（`niarim_premium_monthly`・`niarim_premium_yearly`） | Google Play Console | 開発者アカウント | テスト購入・復元・サーバーの検証 |
+| ストアの掲載情報・コンテンツのレーティング・データセーフティ・対象年齢 | Google Play Console | 掲載文の案・512pxのアイコン・7言語のフィーチャーグラフィック（`store/aso/`） | 審査を通る |
+| YouTube Data API v3のキーとGoogleログインのOAuthクライアントIDを発行し、バックエンドをデプロイ | Google Cloud Console・AWS（`npx cdk deploy -c …`） | AWSの認証情報 | 作品広場の投稿・ランキング・通知が本番で動く |
+| 公式のGoogle Playのバッジの画像を置く | Webの`public/` | Googleのバッジの規約 | Webのストアの導線に表示される |
+| 作品広場の通報の運用（通報を見て対応する体制）とアカウント・データ削除の受付 | 運用 | 担当者 | 通報・削除の依頼に期限内に応える |
+
+### 法務で確かめること
+
+| 作業 | 内容 | 関係するID |
+| --- | --- | --- |
+| 利用規約・プライバシーポリシーの7言語の文案の確認 | 専門家の確認、問い合わせ先の連絡先の記入（`privacyPolicyArt8Body`）、プライバシーポリシー第7条6項 | W030〜W032・W040・DISC470・DISC471・DISC485・DISC563 |
+| 特定商取引法に基づく表示 | 事業者の氏名・住所・電話番号の確定と画面の追加 | W031・DISC486 |
+| 電気通信事業法・資金決済法・景品表示法・個人情報保護法ほかの届出・表示の要否 | 一次資料と専門家の判断 | W030〜W032・W040 |
+| 同梱フォント・素材・ライブラリのライセンスの最終確認 | 一覧（`docs/product-audit/MATERIAL_ASSET_INVENTORY.md`・`assets/licenses/`・依存関係のSBOM）の確認、組み込み素材の作成者・入手元の記入（DISC482） | A085・W033 |
+
+## A001 — 起動サービス・初期化契約（非UI）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 280本（`test/app_bar_title_fit_or_hide_test.dart`, `test/app_smoke_test.dart`, `test/app_tutorial_test.dart`, `test/app_web_reference_capture_exact_test.dart`, `test/app_web_reference_capture_test.dart`, `test/app_web_reference_export_exact_test.dart` ほか274本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A002 — 起動画面 /・2導線・テーマ救済（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 170本（`test/app_smoke_test.dart`, `test/app_tutorial_test.dart`, `test/app_web_reference_capture_exact_test.dart`, `test/app_web_reference_capture_test.dart`, `test/app_web_reference_export_exact_test.dart`, `test/splash_layout_test.dart` ほか164本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/` 336セル・問題0。
+
+## A003 — ホーム /home・初回案内・ドロワー（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 111本（`test/empty_state_placeholder_test.dart`, `test/first_use_tooltip_gesture_test.dart`, `test/first_use_tooltip_keys_test.dart`, `test/info_icon_tooltip_test.dart`, `test/home_drawer_links_roundtrip_test.dart`, `test/home_drawer_multiwidth_capture_test.dart` ほか105本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/home` 336セル・問題0。
+
+## A004 — プロジェクト一覧・検索・表示・ソート（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/home_library_sort_layout_test.dart`, `test/home_list_end_bottom_bar_test.dart`, `test/home_list_filters_persist_test.dart`, `test/home_list_quiet_states_test.dart`, `test/home_project_action_hit_test.dart`, `test/home_shared_folder_sort_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/home` 336セル・問題0。
+
+## A005 — プロジェクト単体・複数選択・クリップボード（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 323本（`test/home_export_list_failure_test.dart`, `test/home_list_end_bottom_bar_test.dart`, `test/home_list_filters_persist_test.dart`, `test/home_list_quiet_states_test.dart`, `test/home_project_action_hit_test.dart`, `test/home_trash_confirm_style_test.dart` ほか317本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/home` 336セル・問題0。
+
+## A006 — プロジェクトフォルダ・パンくず（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 321本（`test/home_export_list_failure_test.dart`, `test/home_list_end_bottom_bar_test.dart`, `test/home_list_filters_persist_test.dart`, `test/home_list_quiet_states_test.dart`, `test/home_project_action_hit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart` ほか315本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/home` 336セル・問題0。
+
+## A007 — 新規プロジェクト /new-project（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 292本（`test/new_project_creation_recovery_test.dart`, `test/new_project_inputs_test.dart`, `test/project_new_dates_once_test.dart`, `test/home_new_folder_enter_test.dart`, `test/home_project_action_hit_test.dart`, `test/niatra_transfer_project_references_test.dart` ほか286本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/new-project` 336セル・問題0。
+
+## A008 — キャンバスサイズのプリセット管理（直接遷移）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/canvas_size_preset_manage_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/canvas_audit_decisions_test.dart`, `test/canvas_color_layer_snap_evidence_capture_test.dart`, `test/canvas_dock_compact_interaction_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/project/:id` 336セル・問題0。
+
+## A009 — プロジェクト詳細 /project/:id（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 7本（`test/project_detail_audit_test.dart`, `test/project_selection_clipboard_test.dart`, `test/home_duplicate_notice_and_selection_reason_test.dart`, `test/home_trash_action_labels_test.dart`, `test/home_widget_artwork_picker_test.dart`, `test/saved_niashare_share_notice_test.dart` ほか1本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/project/:id` 336セル・問題0。
+
+## A010 — キャンバス /canvas/:id・復旧・終了（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 81本（`test/auto_lineart_canvas_e2e_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_angle_boundary_visual_audit_test.dart`, `test/canvas_audit_decisions_test.dart`, `test/canvas_bar_transparency_test.dart` ほか75本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A011 — PC/SP・ドック・ツールバー・パネル共通（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 85本（`test/canvas_bar_transparency_test.dart`, `test/canvas_dock_compact_interaction_test.dart`, `test/canvas_frame_multi_select_bar_test.dart`, `test/canvas_sheet_row_ink_clip_test.dart`, `test/canvas_top_bar_tap_targets_test.dart`, `test/auto_lineart_canvas_e2e_test.dart` ほか79本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A012 — 描画入力・ストローク・Undo/Redo（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 158本（`test/canvas_drawing_rect_test.dart`, `test/canvas_extended_drawing_rotation_contract_test.dart`, `test/extended_drawing_area_selection_test.dart`, `test/frame_bulk_add_undo_redo_test.dart`, `test/input_handler_pressure_test.dart`, `test/tile_manager_test.dart` ほか152本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A013 — ブラシ選択・全組込・カスタム管理（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 125本（`test/engine/brush_texture_cache_test.dart`, `test/engine/brush_texture_selector_test.dart`, `test/brush_extension_settings_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_panel_extension_integration_test.dart` ほか119本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A013.01 — Brush0001 ペン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.02 — Brush0002 Gペン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.03 — Brush0003 エアブラシ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.04 — Brush0004 混色ブラシ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.05 — Brush0005 マーカーペン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.06 — Brush0006 カリグラフィー（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.07 — Brush0007 鉛筆（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.08 — Brush0008 丸ペン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.09 — Brush0009 平筆（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.10 — Brush0010 水彩（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.11 — Brush0011 ぼかし（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.12 — Brush0012 チョーク（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.13 — Brush0013 スプレー（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.14 — Brush0014 ピクセルペン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.15 — Brush0015 面相筆（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.16 — Brush0016 グリッターペン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.17 — Brush0017 ラメペン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.18 — Brush0018 チェーン（太）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.19 — Brush0019 チェーン（中）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.20 — Brush0020 チェーン（細）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A013.21 — Brush0021 ボールチェーン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 100本（`test/engine/drawing_engine_brush_extensions_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_preset_fidelity_test.dart`, `test/brush_qr_share_test.dart`, `test/brush_rotation_density_scatter_test.dart` ほか94本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A014 — ブラシ詳細・サイズ/不透明度・サブツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 29本（`test/editable_slider_value_input_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/brush_management_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/visual/unified_pen_and_color_capture_test.dart` ほか23本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A015 — 消しゴム・透明色（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 113本（`test/canvas_drawing_rect_test.dart`, `test/canvas_extended_drawing_rotation_contract_test.dart`, `test/canvas_toolbar_tap_target_test.dart`, `test/extended_drawing_area_selection_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart` ほか107本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A016 — カラーピッカー・スポイト（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 17本（`test/color_picker_mode_pill_fit_test.dart`, `test/color_wheel_corner_layout_test.dart`, `test/accent_text_color_test.dart`, `test/canvas_color_layer_snap_evidence_capture_test.dart`, `test/dialog_screenshot_audit_test.dart`, `test/visual/unified_pen_and_color_capture_test.dart` ほか11本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A017 — パレット・ドット絵パレット・QR（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 20本（`test/pixel_art_palette_service_test.dart`, `test/pixel_palette_share_notice_matrix_test.dart`, `test/pixel_palette_footer_layout_test.dart`, `test/qr_share_dialog_test.dart`, `test/accent_text_color_test.dart`, `test/home_list_filters_persist_test.dart` ほか14本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A018 — バケツ・投げ縄塗り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/bucket_fill_engine_test.dart`, `test/canvas_toolbar_tap_target_test.dart`, `test/lasso_snap_canvas_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_angle_boundary_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A019 — 選択・反転・全選択・解除（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 85本（`test/canvas_toolbar_tap_target_test.dart`, `test/auto_lineart_canvas_e2e_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_angle_boundary_visual_audit_test.dart`, `test/canvas_audit_decisions_test.dart` ほか79本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A020 — 選択範囲の移動・拡縮・回転（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 81本（`test/canvas_viewport_transform_test.dart`, `test/extended_drawing_area_selection_test.dart`, `test/selection_transform_commit_test.dart`, `test/auto_lineart_canvas_e2e_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart` ほか75本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A021 — 自由変形・メッシュ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 67本（`test/canvas_viewport_transform_test.dart`, `test/mesh_warp_engine_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_angle_boundary_visual_audit_test.dart`, `test/canvas_audit_decisions_test.dart` ほか61本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A022 — 指・ぼかし・モザイク（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 81本（`test/auto_lineart_canvas_e2e_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_angle_boundary_visual_audit_test.dart`, `test/canvas_audit_decisions_test.dart`, `test/canvas_bar_transparency_test.dart` ほか75本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A023 — 図形・OFF/線/四角形/円（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 81本（`test/auto_lineart_canvas_e2e_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_angle_boundary_visual_audit_test.dart`, `test/canvas_audit_decisions_test.dart`, `test/canvas_bar_transparency_test.dart` ほか75本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A024 — テキスト入力・編集・縦書き（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 76本（`test/text_render_test.dart`, `test/auto_lineart_canvas_e2e_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_angle_boundary_visual_audit_test.dart`, `test/canvas_audit_decisions_test.dart` ほか70本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A025 — トーン全種・設定と素材管理（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 48本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stroke_sample_preview_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_favorites_row_test.dart`, `test/asset_panel_search_empty_test.dart` ほか42本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A025.01 — Tone0001 網点 10%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.02 — Tone0002 網点 30%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.03 — Tone0003 網点 50%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.04 — Tone0004 網点 70%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.05 — Tone0005 ライン 細（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.06 — Tone0006 ライン 太（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.07 — Tone0007 ピクセル市松（1px）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.08 — Tone0008 ピクセル格子（1px）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.09 — Tone0009 ピクセル散らし（1px）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.10 — Tone0010 ストッキング 10デニール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.11 — Tone0011 ストッキング 20デニール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.12 — Tone0012 ストッキング 30デニール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.13 — Tone0013 タイツ 40デニール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.14 — Tone0014 タイツ 60デニール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.15 — Tone0015 タイツ 80デニール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.16 — Tone0016 ピクセルディザ 12%（4×4）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.17 — Tone0017 ピクセルディザ 25%（4×4）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.18 — Tone0018 ピクセルディザ 37%（4×4）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.19 — Tone0019 ピクセルディザ 50%（4×4）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.20 — Tone0020 ピクセルディザ 62%（4×4）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.21 — Tone0021 ピクセルディザ 75%（4×4）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.22 — Tone0022 ピクセルディザ 87%（4×4）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.23 — Tone0023 ピクセルディザ(粗) 25%（2×2）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.24 — Tone0024 ピクセルディザ(粗) 50%（2×2）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.25 — Tone0025 ピクセルディザ(粗) 75%（2×2）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.26 — Tone0026 網点 20%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.27 — Tone0027 網点 40%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.28 — Tone0028 網点 60%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.29 — Tone0029 網点 80%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.30 — Tone0030 網点 90%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.31 — Tone0031 ライン 縦細（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.32 — Tone0032 ライン 縦太（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.33 — Tone0033 ライン 斜め細（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.34 — Tone0034 ライン 斜め太（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.35 — Tone0035 クロスハッチ 細（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.36 — Tone0036 クロスハッチ 中（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.37 — Tone0037 クロスハッチ 太（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.38 — Tone0038 クロスハッチ 斜め細（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.39 — Tone0039 クロスハッチ 斜め太（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.40 — Tone0040 砂目 細（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.41 — Tone0041 砂目 中（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.42 — Tone0042 砂目 粗（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.43 — Tone0043 同心円（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.44 — Tone0044 波線（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.45 — Tone0045 レンガ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.46 — Tone0046 方眼 細（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.47 — Tone0047 方眼 太（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.48 — Tone0048 ピクセル横縞（1px）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.49 — Tone0049 ピクセル縦縞（1px）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.50 — Tone0050 ピクセル斜め縞（1px）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.51 — Tone0051 ピクセル砂目 25%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.52 — Tone0052 ピクセル砂目 50%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.53 — Tone0053 ピクセル砂目 75%（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.54 — Tone0054 ピクセルレンガ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.55 — Tone0055 ピクセルディザ(細) 6%（8×8）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.56 — Tone0056 ピクセルディザ(細) 19%（8×8）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.57 — Tone0057 ピクセルディザ(細) 31%（8×8）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.58 — Tone0058 ピクセルディザ(細) 44%（8×8）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.59 — Tone0059 ピクセルディザ(細) 56%（8×8）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.60 — Tone0060 ピクセルディザ(細) 69%（8×8）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.61 — Tone0061 ピクセルディザ(細) 81%（8×8）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A025.62 — Tone0062 ピクセルディザ(細) 94%（8×8）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 34本（`test/builtin_tone_stamp_canvas_test.dart`, `test/tone_pixel_mode_ui_test.dart`, `test/tone_pixel_pattern_and_analog_presets_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/autofill_batch_runner_integration_test.dart` ほか28本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026 — スタンプ全種・管理（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 49本（`test/builtin_tone_stamp_canvas_test.dart`, `test/custom_texture_loading_test.dart`, `test/dialog_screenshot_audit_test.dart`, `test/shared_asset_card_dialog_capture_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_favorites_row_test.dart` ほか43本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A026.01 — Stamp0001 三角形（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.02 — Stamp0002 五角形（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.03 — Stamp0003 六角形（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.04 — Stamp0004 星（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.05 — Stamp0005 ハート（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.06 — Stamp0006 吹き出し（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.07 — Stamp0007 矢印（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.08 — Stamp0008 円（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.09 — Stamp0009 四角形（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.10 — Stamp0010 丸角四角（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.11 — Stamp0011 菱形（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.12 — Stamp0012 八角形（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.13 — Stamp0013 ドーナツ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.14 — Stamp0014 十字（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.15 — Stamp0015 四芒星（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.16 — Stamp0016 六芒星（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.17 — Stamp0017 八芒星（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.18 — Stamp0018 キラキラ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.19 — Stamp0019 三日月（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.20 — Stamp0020 雲（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.21 — Stamp0021 稲妻（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.22 — Stamp0022 花（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.23 — Stamp0023 チェックマーク（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.24 — Stamp0024 両矢印（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.25 — Stamp0025 葉っぱ（背景）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A026.26 — Stamp0026 草（背景）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 33本（`test/builtin_tone_stamp_canvas_test.dart`, `test/stamp_opacity_functional_test.dart`, `test/asset_panel_search_empty_test.dart`, `test/asset_tags_test.dart`, `test/builtin_preset_catalog_order_test.dart`, `test/builtin_presets_test.dart` ほか27本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A027 — ブラシ/トーン/スタンプ共通フォルダ・タグ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 4本（`test/asset_tag_l10n_test.dart`, `test/asset_tags_test.dart`, `test/typing_dialog_keyboard_room_test.dart`, `test/builtin_presets_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A028 — 定規パネル・全種別（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 76本（`test/fisheye_ruler_canvas_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_angle_boundary_visual_audit_test.dart`, `test/canvas_audit_decisions_test.dart`, `test/canvas_bar_transparency_test.dart` ほか70本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A028.01 — RulerType.line（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 16本（`test/engine/four_panel_ruler_integration_test.dart`, `test/engine/ruler_snap_toggle_test.dart`, `test/fisheye_ruler_canvas_test.dart`, `test/models/ruler_snap_test.dart`, `test/ruler_engine_test.dart`, `test/ruler_panel_delete_target_test.dart` ほか10本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A028.02 — RulerType.circle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 16本（`test/engine/four_panel_ruler_integration_test.dart`, `test/engine/ruler_snap_toggle_test.dart`, `test/fisheye_ruler_canvas_test.dart`, `test/models/ruler_snap_test.dart`, `test/ruler_engine_test.dart`, `test/ruler_panel_delete_target_test.dart` ほか10本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A028.03 — RulerType.ellipse（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 16本（`test/engine/four_panel_ruler_integration_test.dart`, `test/engine/ruler_snap_toggle_test.dart`, `test/fisheye_ruler_canvas_test.dart`, `test/models/ruler_snap_test.dart`, `test/ruler_engine_test.dart`, `test/ruler_panel_delete_target_test.dart` ほか10本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A028.04 — RulerType.radial（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 16本（`test/engine/four_panel_ruler_integration_test.dart`, `test/engine/ruler_snap_toggle_test.dart`, `test/fisheye_ruler_canvas_test.dart`, `test/models/ruler_snap_test.dart`, `test/ruler_engine_test.dart`, `test/ruler_panel_delete_target_test.dart` ほか10本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A028.05 — RulerType.onePointPerspective（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 16本（`test/engine/four_panel_ruler_integration_test.dart`, `test/engine/ruler_snap_toggle_test.dart`, `test/fisheye_ruler_canvas_test.dart`, `test/models/ruler_snap_test.dart`, `test/ruler_engine_test.dart`, `test/ruler_panel_delete_target_test.dart` ほか10本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A028.06 — RulerType.twoPointPerspective（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 16本（`test/engine/four_panel_ruler_integration_test.dart`, `test/engine/ruler_snap_toggle_test.dart`, `test/fisheye_ruler_canvas_test.dart`, `test/models/ruler_snap_test.dart`, `test/ruler_engine_test.dart`, `test/ruler_panel_delete_target_test.dart` ほか10本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A028.07 — RulerType.threePointPerspective（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 16本（`test/engine/four_panel_ruler_integration_test.dart`, `test/engine/ruler_snap_toggle_test.dart`, `test/fisheye_ruler_canvas_test.dart`, `test/models/ruler_snap_test.dart`, `test/ruler_engine_test.dart`, `test/ruler_panel_delete_target_test.dart` ほか10本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A029 — キャンバス操作・背景・描画領域（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 82本（`test/background_color_picker_test.dart`, `test/auto_lineart_canvas_e2e_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_angle_boundary_visual_audit_test.dart`, `test/canvas_audit_decisions_test.dart` ほか76本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A030 — 参考画像・プレビューナビゲータ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 2本（`test/timeline_preview_controls_test.dart`, `test/requested_ui_all_captures_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A031 — レイヤー一覧・追加・順序・削除（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 90本（`test/layer_compositor_test.dart`, `test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか84本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A031.01 — LayerType.normal（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A031.02 — LayerType.common（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A031.03 — LayerType.folder（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A031.04 — LayerType.autoFillLineart（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A031.05 — LayerType.autoFill（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/autofill_batch_runner_integration_test.dart`, `test/autofill_preset_editor_regression_test.dart`, `test/autofill_preset_test.dart`, `test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A031.06 — LayerType.text（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A031.07 — LayerType.timelineImage（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A031.08 — LayerType.timelineVideo（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A031.09 — LayerType.watermark（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A031.10 — LayerType.selection（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032 — レイヤーblend/opacity/clipping/明度→alpha（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 90本（`test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/blend_mode_math_fixture_test.dart`, `test/blend_mode_preview_test.dart`, `test/canvas_blend_mode_display_test.dart` ほか84本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.01 — LayerBlendMode.normal（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.02 — LayerBlendMode.multiply（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.03 — LayerBlendMode.screen（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.04 — LayerBlendMode.overlay（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.05 — LayerBlendMode.addition（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.06 — LayerBlendMode.subtract（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.07 — LayerBlendMode.darken（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.08 — LayerBlendMode.lighten（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.09 — LayerBlendMode.colorBurn（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.10 — LayerBlendMode.colorDodge（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.11 — LayerBlendMode.hardLight（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.12 — LayerBlendMode.softLight（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.13 — LayerBlendMode.difference（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.14 — LayerBlendMode.hue（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.15 — LayerBlendMode.saturation（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.16 — LayerBlendMode.color（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A032.17 — LayerBlendMode.luminosity（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart`, `test/layer_panel_action_row_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A033 — レイヤーフォルダ・group・複数選択（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 276本（`test/canvas_color_layer_snap_evidence_capture_test.dart`, `test/canvas_locked_layer_notice_test.dart`, `test/duplicate_layer_test.dart`, `test/filter_edit_undo_group_test.dart`, `test/generated_layer_clipping_test.dart`, `test/home_project_action_hit_test.dart` ほか270本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A034 — 共通レイヤー・表示範囲・変換（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 88本（`test/common_layer_range_test.dart`, `test/layer_panel_add_sheet_and_range_dialog_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/generated_layer_clipping_test.dart`, `test/layer_compositor_test.dart`, `test/layer_options_sheet_test.dart` ほか82本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A035 — レイヤーキーフレーム（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 6本（`test/layer_keyframe_engine_test.dart`, `test/engine/timeline_mask_render_test.dart`, `test/functional_audit_batch2_test.dart`, `test/time_change_strict_evidence_test.dart`, `test/timeline_preview_controls_test.dart`, `test/timeline_text_mask_persistence_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A035.01 — LayerKeyframeEasing.linear（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 6本（`test/layer_keyframe_engine_test.dart`, `test/engine/timeline_mask_render_test.dart`, `test/functional_audit_batch2_test.dart`, `test/time_change_strict_evidence_test.dart`, `test/timeline_preview_controls_test.dart`, `test/timeline_text_mask_persistence_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A035.02 — LayerKeyframeEasing.easeIn（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 6本（`test/layer_keyframe_engine_test.dart`, `test/engine/timeline_mask_render_test.dart`, `test/functional_audit_batch2_test.dart`, `test/time_change_strict_evidence_test.dart`, `test/timeline_preview_controls_test.dart`, `test/timeline_text_mask_persistence_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A035.03 — LayerKeyframeEasing.easeOut（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 6本（`test/layer_keyframe_engine_test.dart`, `test/engine/timeline_mask_render_test.dart`, `test/functional_audit_batch2_test.dart`, `test/time_change_strict_evidence_test.dart`, `test/timeline_preview_controls_test.dart`, `test/timeline_text_mask_persistence_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A035.04 — LayerKeyframeEasing.easeInOut（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 6本（`test/layer_keyframe_engine_test.dart`, `test/engine/timeline_mask_render_test.dart`, `test/functional_audit_batch2_test.dart`, `test/time_change_strict_evidence_test.dart`, `test/timeline_preview_controls_test.dart`, `test/timeline_text_mask_persistence_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A035.05 — LayerKeyframeEasing.bounceOut（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 6本（`test/layer_keyframe_engine_test.dart`, `test/engine/timeline_mask_render_test.dart`, `test/functional_audit_batch2_test.dart`, `test/time_change_strict_evidence_test.dart`, `test/timeline_preview_controls_test.dart`, `test/timeline_text_mask_persistence_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A036 — 自動塗りレイヤー・実行（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 40本（`test/autofill_builtin_preset_test.dart`, `test/autofill_preset_editor_regression_test.dart`, `test/autofill_preset_selection_bar_test.dart`, `test/autofill_preset_selection_count_gap_test.dart`, `test/autofill_batch_runner_integration_test.dart`, `test/autofill_check_mode_test.dart` ほか34本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037 — 描画フィルター管理・適用共通（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 85本（`test/models/mosaic_filter_def_contract_test.dart`, `test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/engine/crt_filter_controls_test.dart`, `test/engine/filter_custom_reproduction_test.dart` ほか79本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.01 — Filter0001 ガウスぼかし（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.02 — Filter0002 レンズぼかし（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.03 — Filter0003 アニメ風加工（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.04 — Filter0004 トーンカーブ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.05 — Filter0005 レベル補正（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.06 — Filter0006 縁取り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.07 — Filter0007 シャープ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.08 — Filter0008 アンシャープマスク（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.09 — Filter0009 周辺減光（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.10 — Filter0010 フィルムグレイン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.11 — Filter0011 レトロアニメ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.12 — Filter0012 ブラウン管（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.13 — Filter0013 モノクロ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.14 — Filter0014 二値化（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.15 — Filter0015 魚眼レンズ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.16 — Filter0016 色収差（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.17 — Filter0017 眼鏡断層（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.18 — Filter0018 ドット絵（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.19 — Filter0019 オーロラホログラム（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.20 — Filter0020 背景馴染ませ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 103本（`test/background_acclimation_engine_test.dart`, `test/background_acclimation_v2_test.dart`, `test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart` ほか97本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.21 — Filter0021 墨溜まり（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 98本（`test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか92本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.22 — Filter0022 プリズム（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 101本（`test/engine/prism_filter_engine_test.dart`, `test/prism_filter_completion_test.dart`, `test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/canvas_pc_filter_menu_list_test.dart`, `test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart` ほか95本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.23 — Filter0023 自動線画（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 102本（`test/auto_lineart_control_overlay_test.dart`, `test/auto_lineart_filter_panel_visual_audit_test.dart`, `test/auto_lineart_filter_test.dart`, `test/auto_lineart_overlay_gesture_test.dart`, `test/auto_lineart_bulk_isolation_test.dart`, `test/auto_lineart_canvas_e2e_test.dart` ほか96本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A037.24 — Filter0024 VHSノイズ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 99本（`test/engine/noise_filter_distinction_test.dart`, `test/engine/vhs_filter_integration_test.dart`, `test/engine/vhs_frame_noise_test.dart`, `test/engine/vhs_noise_engine_test.dart`, `test/filter_noise_settings_test.dart`, `test/visual/vhs_filter_actual_capture_test.dart` ほか93本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A038 — 色調整・filterへの登録（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 6本（`test/engine/filter_premultiplied_validity_test.dart`, `test/filter_selection_lens_mask_e2e_test.dart`, `test/canvas_edit_menu_walkthrough_test.dart`, `test/requested_ui_all_captures_test.dart`, `test/visual/modified_canvas_full_evidence_test.dart`, `test/visual/modified_canvas_scope_capture_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A039 — pixel mode・量子化・専用パレット（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 85本（`test/pixel_art_palette_service_test.dart`, `test/pixel_color_mode_test.dart`, `test/canvas_blend_mode_display_test.dart`, `test/canvas_pixel_brush_composite_test.dart`, `test/engine/filter_engine_pixel_art_contract_test.dart`, `test/engine/pixel_art_details_test.dart` ほか79本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A040 — オニオンスキン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 7本（`test/onion_skin_canvas_diagnostic_test.dart`, `test/canvas_panel_screenshot_audit_test.dart`, `test/canvas_panel_selected_row_clip_test.dart`, `test/dialog_screenshot_audit_test.dart`, `test/functional_audit_batch18_test.dart`, `test/functional_audit_batch37_test.dart` ほか1本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A041 — 早替えツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 13本（`test/quick_tool_names_follow_language_test.dart`, `test/quick_tool_panel_landscape_fit_test.dart`, `test/quick_tool_panel_layout_test.dart`, `test/canvas_panel_screenshot_audit_test.dart`, `test/canvas_typing_aware_keys_test.dart`, `test/dialog_screenshot_audit_test.dart` ほか7本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A042 — canvasフレームstrip（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 70本（`test/canvas_frame_multi_select_bar_test.dart`, `test/frame_strip_gesture_test.dart`, `test/auto_lineart_canvas_e2e_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_angle_boundary_visual_audit_test.dart` ほか64本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0。
+
+## A043 — カスタム自動操作・管理・記録（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 21本（`test/custom_automation_draft_reorder_test.dart`, `test/custom_automation_manager_dialog_lifecycle_test.dart`, `test/custom_automation_builtin_refresh_test.dart`, `test/custom_automation_discrete_step_test.dart`, `test/custom_automation_executor_test.dart`, `test/custom_automation_favorite_visual_test.dart` ほか15本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A044 — 自動操作の実行範囲・安全性・組込（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 80本（`test/custom_automation_builtin_refresh_test.dart`, `test/custom_automation_executor_test.dart`, `test/automation_presets_tips_sync_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart` ほか74本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.01 — canvas.autofillRun（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.02 — canvas.brightnessToAlpha（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.03 — canvas.brushOpacity（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.04 — canvas.brushSize（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.05 — canvas.color（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.06 — canvas.colorTraceAdjust（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.07 — canvas.filter（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.08 — canvas.filterApply（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.09 — canvas.layerDuplicate（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.10 — canvas.mergeDown（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.11 — canvas.selectFrame（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.12 — canvas.tool（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.13 — canvas.visibleCompositeToNewTop（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.14 — timeline.addFrame（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A044.15 — timeline.selectFrame（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 75本（`test/custom_automation_executor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/custom_automation_digital_lineart_step_evidence_test.dart`, `test/custom_automation_production_surface_visual_test.dart`, `test/custom_automation_production_visual_test.dart`, `test/custom_automation_visual_audit_test.dart` ほか69本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/canvas/:id` 336セル・問題0、`/timeline/:id` 336セル・問題0。
+
+## A045 — タイムライン /timeline/:id・往復（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 277本（`test/canvas_timeline_position_test.dart`, `test/home_project_action_hit_test.dart`, `test/new_project_creation_recovery_test.dart`, `test/new_project_inputs_test.dart`, `test/niatra_transfer_project_references_test.dart`, `test/project_detail_audit_test.dart` ほか271本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A046 — シーンタブ・操作（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 35本（`test/canvas_timeline_position_test.dart`, `test/engine/timeline_export_stack_test.dart`, `test/engine/timeline_stack_test.dart`, `test/timeline_focus_return_test.dart`, `test/timeline_frame_paste_test.dart`, `test/timeline_preview_controls_test.dart` ほか29本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A047 — タイムラインフレーム編集（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 36本（`test/multi_touch_tap_tracker_test.dart`, `test/canvas_timeline_position_test.dart`, `test/canvas_top_bar_tap_targets_test.dart`, `test/engine/timeline_export_stack_test.dart`, `test/engine/timeline_stack_test.dart`, `test/timeline_focus_return_test.dart` ほか30本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A048 — 素材track・clip操作（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/timeline_track_label_fit_test.dart`, `test/canvas_timeline_position_test.dart`, `test/material_delete_availability_test.dart`, `test/timeline_focus_return_test.dart`, `test/timeline_preview_controls_test.dart`, `test/app_smoke_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A049 — 画像/動画clip編集・crop（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 25本（`test/layer_compositor_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/paper_and_above_layer_blend_test.dart`, `test/engine/timeline_mask_render_test.dart`, `test/generated_layer_clipping_test.dart`, `test/timeline_focus_return_test.dart` ほか19本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A050 — 音声・波形・動画音・同期（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 14本（`test/audio_waveform_service_test.dart`, `test/canvas_timeline_position_test.dart`, `test/export_audio_test.dart`, `test/timeline_focus_return_test.dart`, `test/timeline_frame_paste_test.dart`, `test/timeline_preview_controls_test.dart` ほか8本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A051 — タイムライン共通layer range（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 10本（`test/canvas_timeline_position_test.dart`, `test/timeline_focus_return_test.dart`, `test/timeline_preview_controls_test.dart`, `test/timeline_track_label_fit_test.dart`, `test/app_web_reference_capture_exact_test.dart`, `test/app_web_reference_export_exact_test.dart` ほか4本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A052 — カメラキーフレーム（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 17本（`test/canvas_timeline_position_test.dart`, `test/timeline_focus_return_test.dart`, `test/timeline_frame_paste_test.dart`, `test/timeline_preview_controls_test.dart`, `test/timeline_track_label_fit_test.dart`, `test/visual_reaudit_export_camera_test.dart` ほか11本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A053 — タイムラインmarker（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/canvas_timeline_position_test.dart`, `test/timeline_focus_return_test.dart`, `test/timeline_preview_controls_test.dart`, `test/timeline_track_label_fit_test.dart`, `test/app_web_reference_capture_exact_test.dart`, `test/app_web_reference_export_exact_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054 — 演出フィルターtrack・管理（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/timeline_track_label_fit_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.01 — 演出 fade（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.02 — 演出 gaussianBlur（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.03 — 演出 lensBlur（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.04 — 演出 mosaic（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/mosaic_draw_filter_dispatch_test.dart`, `test/engine/mosaic_filter_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.05 — 演出 chromaticAberration（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.06 — 演出 noise（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/noise_filter_distinction_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.07 — 演出 sepia（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.08 — 演出 animeStyle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.09 — 演出 retroAnime（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.10 — 演出 crt（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/engine/crt_filter_controls_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.11 — 演出 animatedNoise（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.12 — 演出 rain（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.13 — 演出 monochrome（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.14 — 演出 colorAdjust（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.15 — 演出 threshold（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.16 — 演出 fisheye（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.17 — 演出 pixelate（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.18 — 演出 auroraHologram（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.19 — 演出 inkPool（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A054.20 — 演出 vhsNoise（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 68本（`test/effect_filter_from_draw_filters_test.dart`, `test/effect_filter_non_square_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/analog_filter_distinction_test.dart`, `test/engine/blur_filter_distinction_test.dart`, `test/engine/crt_filter_controls_test.dart` ほか62本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A055 — エンドカード（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 61本（`test/engine/timeline_export_stack_test.dart`, `test/app_web_reference_export_exact_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/gif_export_flat_colours_test.dart`, `test/export_audio_test.dart`, `test/export_list_modified_once_test.dart` ほか55本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A056 — タイムラインのwatermark適用・再編集（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 13本（`test/canvas_timeline_position_test.dart`, `test/timeline_focus_return_test.dart`, `test/timeline_preview_controls_test.dart`, `test/timeline_track_label_fit_test.dart`, `test/watermark_copy_name_tile_test.dart`, `test/app_web_reference_capture_exact_test.dart` ほか7本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A057 — タイムライン一括自動塗り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 16本（`test/autofill_batch_runner_integration_test.dart`, `test/autofill_check_mode_test.dart`, `test/autofill_engine_smart_update_test.dart`, `test/canvas_timeline_position_test.dart`, `test/engine/autofill_line_gap_test.dart`, `test/timeline_focus_return_test.dart` ほか10本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A058 — プロジェクト時間・canvasサイズ変更（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 277本（`test/canvas_timeline_position_test.dart`, `test/auto_lineart_canvas_e2e_test.dart`, `test/brush_size_memory_canvas_test.dart`, `test/builtin_tone_stamp_canvas_test.dart`, `test/canvas_angle_boundary_visual_audit_test.dart`, `test/canvas_audit_decisions_test.dart` ほか271本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0。
+
+## A059 — 保存管理 /save-tree/:id・slot（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 39本（`test/save_tree_slot_title_words_test.dart`, `test/save_tree_slot_view_failure_test.dart`, `test/save_slot_action_buttons_test.dart`, `test/save_slot_action_success_visual_test.dart`, `test/save_slot_confirm_words_test.dart`, `test/save_slot_confirmation_dialog_test.dart` ほか33本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/save-tree/:id` 336セル・問題0。
+
+## A060 — セーブツリー・mode移行（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 39本（`test/save_tree_node_default_title_test.dart`, `test/save_mode_change_slots_test.dart`, `test/save_tree_large_branch_stress_test.dart`, `test/save_tree_lazy_list_test.dart`, `test/save_tree_missing_parent_test.dart`, `test/save_tree_persistence_test.dart` ほか33本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/save-tree/:id` 336セル・問題0。
+
+## A061 — autosave・ファイル形式・migration（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 308本（`test/niatra_asset_bundle_test.dart`, `test/archive_security_test.dart`, `test/niatra_serializer_test.dart`, `test/niatra_transfer_project_references_test.dart`, `test/font_share_bundle_test.dart`, `test/home_project_action_hit_test.dart` ほか302本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A062 — 素材一覧 /materials/:id（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 7本（`test/material_delete_availability_test.dart`, `test/app_smoke_test.dart`, `test/canvas_open_exit_audit_test.dart`, `test/platform_logic_final_audit_test.dart`, `test/storage_outside_deletions_test.dart`, `test/storage_screen_keyboard_test.dart` ほか1本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/materials/:id` 336セル・問題0。
+
+## A063 — 書き出し /export/:id・設定・制限（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 57本（`test/app_web_reference_export_exact_test.dart`, `test/compact_export_and_transfer_test.dart`, `test/engine/gif_export_flat_colours_test.dart`, `test/engine/timeline_export_stack_test.dart`, `test/export_audio_test.dart`, `test/export_list_modified_once_test.dart` ほか51本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/export/:id` 336セル・問題0。
+
+## A063.01 — 動画 mp4（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 63本（`test/export_video_failure_cleanup_test.dart`, `test/export_video_output_test.dart`, `test/engine/gif_export_flat_colours_test.dart`, `test/engine/timeline_export_stack_test.dart`, `test/export_audio_test.dart`, `test/export_list_modified_once_test.dart` ほか57本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A063.02 — 動画 webm（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 63本（`test/export_video_failure_cleanup_test.dart`, `test/export_video_output_test.dart`, `test/engine/gif_export_flat_colours_test.dart`, `test/engine/timeline_export_stack_test.dart`, `test/export_audio_test.dart`, `test/export_list_modified_once_test.dart` ほか57本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A063.03 — 動画 gif（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 63本（`test/engine/gif_export_flat_colours_test.dart`, `test/export_still_gif_partial_write_test.dart`, `test/export_video_failure_cleanup_test.dart`, `test/export_video_output_test.dart`, `test/engine/timeline_export_stack_test.dart`, `test/export_audio_test.dart` ほか57本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A063.04 — 動画 avi（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 63本（`test/export_video_failure_cleanup_test.dart`, `test/export_video_output_test.dart`, `test/engine/gif_export_flat_colours_test.dart`, `test/engine/timeline_export_stack_test.dart`, `test/export_audio_test.dart`, `test/export_list_modified_once_test.dart` ほか57本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A064 — 現在フレーム静止画・作品一覧（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 148本（`test/home_work_folder_empty_test.dart`, `test/home_work_folder_save_failure_test.dart`, `test/engine/timeline_export_stack_test.dart`, `test/home_export_share_failure_test.dart`, `test/home_exported_work_identity_test.dart`, `test/home_folder_filtered_empty_test.dart` ほか142本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/timeline/:id` 336セル・問題0、`/home` 336セル・問題0。
+
+## A065 — 共有 /shared・共有受信（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 151本（`test/home_share_intent_feedback_test.dart`, `test/home_detail_date_break_test.dart`, `test/home_detail_updated_time_test.dart`, `test/home_export_share_failure_test.dart`, `test/home_project_action_hit_test.dart`, `test/home_shared_direction_switch_test.dart` ほか145本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/home` 336セル・問題0、`/project/:id` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A066 — ゴミ箱 /trash（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 314本（`test/home_folder_menu_trash_test.dart`, `test/home_project_action_hit_test.dart`, `test/home_trash_card_units_test.dart`, `test/home_trash_confirm_style_test.dart`, `test/home_trash_confirm_verb_test.dart`, `test/home_trash_consistency_test.dart` ほか308本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/home` 336セル・問題0。
+
+## A067 — 自動塗りpreset一覧（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 35本（`test/autofill_builtin_preset_test.dart`, `test/autofill_preset_editor_regression_test.dart`, `test/autofill_preset_selection_bar_test.dart`, `test/autofill_preset_selection_count_gap_test.dart`, `test/autofill_preset_selection_sheet_fit_test.dart`, `test/autofill_preset_selection_sheet_test.dart` ほか29本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/autofill-presets` 336セル・問題0。
+
+## A068 — 自動塗りpart設定・gradient・tone（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 29本（`test/autofill_preset_selection_sheet_fit_test.dart`, `test/autofill_preset_selection_sheet_test.dart`, `test/autofill_preset_selection_bar_test.dart`, `test/autofill_preset_selection_count_gap_test.dart`, `test/autofill_builtin_preset_test.dart`, `test/autofill_preset_editor_regression_test.dart` ほか23本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/autofill-presets` 336セル・問題0。
+
+## A069 — 容量削減 /storage（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 28本（`test/storage_info_service_test.dart`, `test/export_storage_ownership_test.dart`, `test/storage_action_theme_test.dart`, `test/storage_breakdown_outgoing_shares_test.dart`, `test/storage_cache_isolation_test.dart`, `test/storage_chart_colors_test.dart` ほか22本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A070 — 設定 /settings・基本設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart`, `test/startup_settings_recovery_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A071 — quality・保存方式・Undo・trash期限（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 128本（`test/performance_settings_text_fit_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/community_header_quality_test.dart`, `test/folder_trash_copy_test.dart`, `test/home_trash_file_dates_test.dart` ほか122本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A072 — ジェスチャー設定・実入力（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 128本（`test/two_finger_vertical_swipe_detector_test.dart`, `test/multi_touch_tap_tracker_test.dart`, `test/gesture_settings_sheet_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/canvas_toolbar_tap_target_test.dart` ほか122本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0、`/canvas/:id` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A072.01 — GestureAction.undo（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/gesture_settings_sheet_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A072.02 — GestureAction.redo（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/gesture_settings_sheet_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A072.03 — GestureAction.eyedropper（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/gesture_settings_sheet_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A072.04 — GestureAction.panTool（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/gesture_settings_sheet_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A072.05 — GestureAction.eraserToggle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/gesture_settings_sheet_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A072.06 — GestureAction.brushToggle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/gesture_settings_sheet_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A072.07 — GestureAction.frameMove（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/gesture_settings_sheet_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A072.08 — GestureAction.nextTool（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/gesture_settings_sheet_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A072.09 — GestureAction.none（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/gesture_settings_sheet_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A072.10 — GestureAction.onionSkinToggle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 126本（`test/gesture_settings_sheet_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart` ほか120本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A073 — キーボード・左手device設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/shortcut_settings_words_test.dart`, `test/niatra_transfer_device_state_test.dart`, `test/niatra_transfer_keeps_this_device_test.dart`, `test/niatra_transfer_shortcut_conflict_test.dart`, `test/shortcut_brush_name_test.dart`, `test/shortcut_choose_action_title_breaks_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A073.01 — ShortcutCommand.undo（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/shortcut_settings_words_test.dart`, `test/niatra_transfer_shortcut_conflict_test.dart`, `test/shortcut_brush_name_test.dart`, `test/shortcut_choose_action_title_breaks_test.dart`, `test/shortcut_dialogs_words_test.dart`, `test/shortcut_label_localization_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A073.02 — ShortcutCommand.redo（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/shortcut_settings_words_test.dart`, `test/niatra_transfer_shortcut_conflict_test.dart`, `test/shortcut_brush_name_test.dart`, `test/shortcut_choose_action_title_breaks_test.dart`, `test/shortcut_dialogs_words_test.dart`, `test/shortcut_label_localization_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A073.03 — ShortcutCommand.toggleLayerPanel（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/shortcut_settings_words_test.dart`, `test/niatra_transfer_shortcut_conflict_test.dart`, `test/shortcut_brush_name_test.dart`, `test/shortcut_choose_action_title_breaks_test.dart`, `test/shortcut_dialogs_words_test.dart`, `test/shortcut_label_localization_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A073.04 — ShortcutCommand.playPause（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/shortcut_settings_words_test.dart`, `test/niatra_transfer_shortcut_conflict_test.dart`, `test/shortcut_brush_name_test.dart`, `test/shortcut_choose_action_title_breaks_test.dart`, `test/shortcut_dialogs_words_test.dart`, `test/shortcut_label_localization_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A073.05 — ShortcutCommand.previousFrame（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/shortcut_settings_words_test.dart`, `test/niatra_transfer_shortcut_conflict_test.dart`, `test/shortcut_brush_name_test.dart`, `test/shortcut_choose_action_title_breaks_test.dart`, `test/shortcut_dialogs_words_test.dart`, `test/shortcut_label_localization_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A073.06 — ShortcutCommand.nextFrame（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/shortcut_settings_words_test.dart`, `test/niatra_transfer_shortcut_conflict_test.dart`, `test/shortcut_brush_name_test.dart`, `test/shortcut_choose_action_title_breaks_test.dart`, `test/shortcut_dialogs_words_test.dart`, `test/shortcut_label_localization_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A073.07 — ShortcutCommand.selectAll（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/shortcut_settings_words_test.dart`, `test/niatra_transfer_shortcut_conflict_test.dart`, `test/shortcut_brush_name_test.dart`, `test/shortcut_choose_action_title_breaks_test.dart`, `test/shortcut_dialogs_words_test.dart`, `test/shortcut_label_localization_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A073.08 — ShortcutCommand.copy（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/shortcut_settings_words_test.dart`, `test/niatra_transfer_shortcut_conflict_test.dart`, `test/shortcut_brush_name_test.dart`, `test/shortcut_choose_action_title_breaks_test.dart`, `test/shortcut_dialogs_words_test.dart`, `test/shortcut_label_localization_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A073.09 — ShortcutCommand.cut（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/shortcut_settings_words_test.dart`, `test/niatra_transfer_shortcut_conflict_test.dart`, `test/shortcut_brush_name_test.dart`, `test/shortcut_choose_action_title_breaks_test.dart`, `test/shortcut_dialogs_words_test.dart`, `test/shortcut_label_localization_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A073.10 — ShortcutCommand.paste（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 15本（`test/shortcut_settings_words_test.dart`, `test/niatra_transfer_shortcut_conflict_test.dart`, `test/shortcut_brush_name_test.dart`, `test/shortcut_choose_action_title_breaks_test.dart`, `test/shortcut_dialogs_words_test.dart`, `test/shortcut_label_localization_test.dart` ほか9本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A074 — ペン設定・筆圧curve・試描（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 4本（`test/input_handler_pressure_test.dart`, `test/direct_engine_coverage_batch11_test.dart`, `test/multi_touch_tap_tracker_test.dart`, `test/platform_logic_final_audit_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A075 — workspace設定・tool並替・PC分岐（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/workspace_preset_service_test.dart`, `test/settings_audit_regressions_test.dart`, `test/desktop_dock_interactions_test.dart`, `test/direct_service_coverage_batch07_test.dart`, `test/saved_list_unreadable_carry_over_test.dart`, `test/share_sites_failure_notice_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings/workspace` 336セル・問題0。
+
+## A076 — PC workspaceレイアウト（直接遷移）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 129本（`test/brush_settings_sheet_layout_test.dart`, `test/canvas_dock_compact_interaction_test.dart`, `test/canvas_dock_fit_test.dart`, `test/compact_settings_layout_test.dart`, `test/brush_mixing_mode_settings_test.dart`, `test/canvas_audit_decisions_test.dart` ほか123本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A077 — workspace共有・QR・import（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/workspace_preset_service_test.dart`, `test/settings_audit_regressions_test.dart`, `test/desktop_dock_interactions_test.dart`, `test/direct_service_coverage_batch07_test.dart`, `test/saved_list_unreadable_carry_over_test.dart`, `test/share_sites_failure_notice_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings/workspace` 336セル・問題0。
+
+## A078 — バケツ詳細設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 125本（`test/brush_mixing_mode_settings_test.dart`, `test/brush_settings_sheet_layout_test.dart`, `test/settings_audit_regressions_test.dart`, `test/settings_l10n_locales_test.dart`, `test/shortcut_settings_words_test.dart`, `test/startup_settings_recovery_test.dart` ほか119本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A079 — Android widget設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 12本（`test/home_widget_artwork_picker_test.dart`, `test/home_widget_cell_size_test.dart`, `test/home_widget_service_test.dart`, `test/home_widget_shortcut_design_test.dart`, `test/home_widget_shortcut_text_fit_test.dart`, `test/widget_settings_theme_foreground_test.dart` ほか6本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A080 — widget作品・frame選択（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/home_widget_artwork_picker_test.dart`, `test/home_widget_shortcut_design_test.dart`, `test/home_widget_shortcut_text_fit_test.dart`, `test/widget_artwork_picker_parity_test.dart`, `test/home_widget_cell_size_test.dart`, `test/home_widget_service_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A081 — テーマ・外観・救済との連携（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 208本（`test/community_theme_color_propagation_test.dart`, `test/theme_accent_contrast_test.dart`, `test/theme_contrast_rescue_test.dart`, `test/theme_preset_adopt_test.dart`, `test/theme_settings_repair_test.dart`, `test/theme_settings_walkthrough_test.dart` ほか202本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings/theme` 336セル・問題0。
+
+## A082 — watermark画像/文字管理（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 4本（`test/watermark_copy_name_tile_test.dart`, `test/direct_service_coverage_batch08_test.dart`, `test/font_list_name_words_test.dart`, `test/niatra_transfer_watermarks_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A083 — 引き継ぎ .niatra（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 22本（`test/niatra_asset_bundle_test.dart`, `test/archive_security_test.dart`, `test/niatra_serializer_test.dart`, `test/niatra_transfer_conflict_test.dart`, `test/niatra_transfer_device_state_test.dart`, `test/niatra_transfer_draw_filters_test.dart` ほか16本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings/transfer` 336セル・問題0。
+
+## A084 — フォント管理・download catalog（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 30本（`test/font_fallback_test.dart`, `test/compact_settings_layout_test.dart`, `test/font_coverage_test.dart`, `test/font_list_name_words_test.dart`, `test/font_screen_file_size_label_test.dart`, `test/font_share_bundle_test.dart` ほか24本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings/fonts` 336セル・問題0。
+
+## A085 — 利用規約・ライセンス・privacy画面（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 3本（`test/privacy_policy_ai_clause_test.dart`, `test/font_license_test.dart`, `test/legal_screens_readability_capture_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/settings` 336セル・問題0。
+
+## A086 — ヘルプ /help・文脈help・検索（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 8本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/save_screens_app_bar_fit_test.dart`, `test/save_screens_app_bar_live_test.dart` ほか2本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.01 — Help 基本操作（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.02 — Help ペンツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.03 — Help 消しゴムツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.04 — Help バケツツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.05 — Help 投げ縄塗り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.06 — Help スポイトツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.07 — Help 選択ツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.08 — Help 指ツール（歪みツール）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.09 — Help 図形ツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.10 — Help テキストツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.11 — Help 早替えツール管理（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.12 — Help 早替えツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.13 — Help スタンプツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.14 — Help ペンサブツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.15 — Help 選択範囲の変形（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.16 — Help 自由変形・メッシュ変形（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.17 — Help カラーピッカー（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.18 — Help ブラシのお気に入り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.19 — Help カスタムブラシ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.20 — Help レイヤー（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.21 — Help ブレンドモード（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.22 — Help クリッピング（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.23 — Help 共通レイヤー（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.24 — Help レイヤーの複数選択・一括操作（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.25 — Help レイヤーフォルダ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.26 — Help 自動塗り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.27 — Help グラデーション塗り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.28 — Help シーン操作（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.29 — Help オニオンスキン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.30 — Help 定規（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.31 — Help フェード（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.32 — Help ストローク減衰（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.33 — Help 混色（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.34 — Help 筆圧カーブ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.35 — Help トーン塗り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.36 — Help ピクセルモード（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.37 — Help 描画領域（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.38 — Help キャンバスの背景色（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.39 — Help タイムライン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.40 — Help シーン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.41 — Help フレーム操作（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.42 — Help 素材クリップ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.43 — Help 素材一覧（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.44 — Help 音声クリップ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.45 — Help カメラキーフレーム（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.46 — Help 演出フィルター（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.47 — Help 描画フィルター（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.48 — Help レイヤーキーフレーム（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.49 — Help レイヤーグループ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.50 — Help EndCard（エンドロゴ）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.51 — Help 自動保存（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.52 — Help セーブスロット（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.53 — Help セーブツリー（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.54 — Help フォルダ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.55 — Help ゴミ箱（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.56 — Help 共有（.niashare）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.57 — Help 引き継ぎ（.niatra）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.58 — Help 動画書き出し（MP4）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.59 — Help 書き出し画面（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.60 — Help 作品広場（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.61 — Help ウォーターマークの再編集（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.62 — Help ウォーターマーク（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.63 — Help プレミアム（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.64 — Help ホーム画面（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.65 — Help 新規プロジェクト作成（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.66 — Help プロジェクト詳細画面（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.67 — Help テーマ設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.68 — Help ワークスペース設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.69 — Help ジェスチャー設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.70 — Help ペン設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.71 — Help 傾き検知（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.72 — Help パフォーマンス設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.73 — Help バケツ塗り詳細設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.74 — Help Undo回数設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.75 — Help フォントの読み込み（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.76 — Help 容量削減（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A086.77 — Help ホーム画面ウィジェット（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 5本（`test/help_topic_search_text_test.dart`, `test/app_tutorial_test.dart`, `test/brush_extension_settings_test.dart`, `test/menu_surface_ink_test.dart`, `test/search_typed_apostrophe_test.dart`）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/help` 336セル・問題0。
+
+## A087 — Tips /tips・カテゴリと詳細carousel（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.01 — tipsScreenTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.02 — tipsClipDuplicateTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.03 — tipsTextCaptionTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.04 — tipsAudioRepeatTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.05 — tipsVerticalRubyTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.06 — tipsEndCardWatermarkTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.07 — tipsVerticalPixelFontTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.08 — tipsStampBlendModeTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.09 — tipsVideoTrimReuseTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.10 — tipsTimelineMarkerTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.11 — tipsCommunityYoutubeTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.12 — tipsAutofillPresetTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.13 — tipsAutofillBaseCoatTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.14 — tipsBrushFavoriteTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.15 — tipsBrushTrySaveTreeTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.16 — tipsEyedropperGestureTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.17 — tipsMagicWandLassoTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.18 — tipsCommonLayerFolderTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.19 — tipsQuickToolPenSubTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.20 — tipsQuickToolVariantTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.21 — tipsAutofillToneReuseTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.22 — tipsAutofillMisfillTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.23 — tipsHomeWidgetTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.24 — tipsAutofillTransparentFixTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.25 — tipsSaveSlotAutoSaveTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.26 — tipsQuickToolSwipeTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.27 — tipsToolbarCustomizeTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.28 — tipsPcDexLayoutTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.29 — tipsCommonLayerLipSyncTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.30 — tipsCommonLayerKeyframeTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.31 — tipsTransparentColorTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.32 — tipsPressureCurveTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.33 — tipsRulerOnionTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.34 — tipsGradientTraceTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.35 — tipsGradientOutlineHairTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.36 — tipsStrokeDecayFadeTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.37 — tipsColorMixingFadeTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.38 — tipsRadialVignetteTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.39 — tipsClippingGradientTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.40 — tipsDrawingAreaCameraTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.41 — tipsAutofillBlendModeTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.42 — tipsRoughLayerRescueTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.43 — tipsLineArtExtractionTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.44 — tipsLineColorUsageTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.45 — tipsBlushAutofillTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.46 — tipsStockingDenierTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.47 — tipsRainNoiseTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.48 — tipsPartKeyframeGroupTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.49 — tipsOutlineAnimeStyleTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.50 — tipsLevelsToneCurveTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.51 — tipsToneCurveSepiaTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.52 — tipsCameraLensBlurTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.53 — tipsWebmCommonLayerTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.54 — tipsLeftHandedWorkspaceTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.55 — tipsBlendModeUsageTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.56 — tipsFisheyeChromaticTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.57 — tipsLensDistortionTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.58 — tipsExportFormatTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.59 — tipsGestureShortcutTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.60 — tipsLowSpecSettingsTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.61 — tipsSeriesPresetFolderTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.62 — tipsMosaicChromaticTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.63 — tipsPixelToneRetroTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.64 — tipsBlurVignetteBgTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.65 — tipsSepiaVignetteTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.66 — tipsTransferDeviceTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A087.67 — tipsTransferCustomizationTitle（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 9本（`test/tips_category_header_fit_test.dart`, `test/tips_detail_layout_test.dart`, `test/tips_detail_visual_capture_test.dart`, `test/tips_search_hint_test.dart`, `test/tips_title_words_test.dart`, `test/brush_extension_settings_test.dart` ほか3本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/tips` 336セル・問題0。
+
+## A088 — Premium /premium・ロックUI（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 59本（`test/premium_lock_widget_test.dart`, `test/monetization_campaign_removed_test.dart`, `test/premium_all_entry_points_test.dart`, `test/premium_checkout_retry_test.dart`, `test/premium_coin_account_isolation_test.dart`, `test/premium_expiry_video_output_test.dart` ほか53本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/premium` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A089 — 広告・収益化gate（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 10本（`test/ad_mock_layout_test.dart`, `test/app_smoke_test.dart`, `test/app_web_reference_capture_exact_test.dart`, `test/app_web_reference_export_exact_test.dart`, `test/community_detail_metadata_test.dart`, `test/legal_screens_readability_capture_test.dart` ほか4本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A090 — 作品広場 /community・一覧（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 91本（`test/community_api_contract_test.dart`, `test/community_api_test.dart`, `test/community_content_filter_dialog_test.dart`, `test/community_filter_dialog_contrast_test.dart`, `test/community_filter_dialog_layout_test.dart`, `test/community_filter_surfaces_test.dart` ほか85本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/community` 336セル・問題0。
+
+## A091 — 作品詳細 /community/work/:id（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 29本（`test/community_work_card_layout_test.dart`, `test/community_work_detail_actions_fit_test.dart`, `test/visual/community_work_detail_capture_test.dart`, `test/community_detail_metadata_test.dart`, `test/community_work_time_date_l10n_test.dart`, `test/community_action_controls_visual_capture_test.dart` ほか23本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/community` 336セル・問題0。
+
+## A092 — 作者作品（直接遷移）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 82本（`test/community_my_works_controls_test.dart`, `test/community_account_boundary_test.dart`, `test/community_account_boundary_widget_test.dart`, `test/community_account_microtask_boundary_test.dart`, `test/community_action_controls_visual_capture_test.dart`, `test/community_action_tap_target_test.dart` ほか76本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/community` 336セル・問題0。
+
+## A093 — フローティングpreview・shorts viewer（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 28本（`test/community_preview_responsive_test.dart`, `test/community_preview_size_test.dart`, `test/community_shorts_live_state_test.dart`, `test/community_shorts_youtube_playback_test.dart`, `test/community_back_navigation_test.dart`, `test/community_bookmarks_hidden_message_test.dart` ほか22本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/community` 336セル・問題0。
+
+## A094 — Google認証・アカウント切替（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 69本（`test/community_api_test.dart`, `test/community_my_works_controls_test.dart`, `test/community_project_metadata_api_test.dart`, `test/google_auth_init_once_test.dart`, `test/services/api/community_api_retry_test.dart`, `test/coin_authenticated_client_contract_test.dart` ほか63本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/community` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A095 — 自分の作品（直接遷移）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 82本（`test/community_my_works_controls_test.dart`, `test/community_account_boundary_test.dart`, `test/community_account_boundary_widget_test.dart`, `test/community_account_microtask_boundary_test.dart`, `test/community_action_controls_visual_capture_test.dart`, `test/community_action_tap_target_test.dart` ほか76本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/community` 336セル・問題0。
+
+## A096 — 投稿・YouTube upload・未完了復旧（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 83本（`test/community_post_upload_cancel_test.dart`, `test/community_shorts_youtube_playback_test.dart`, `test/visual/community_post_responsive_capture_test.dart`, `test/community_account_boundary_test.dart`, `test/community_account_boundary_widget_test.dart`, `test/community_account_microtask_boundary_test.dart` ほか77本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/community` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A097 — follow通知・push・既読（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 82本（`test/community_account_boundary_test.dart`, `test/community_account_boundary_widget_test.dart`, `test/community_account_microtask_boundary_test.dart`, `test/community_action_controls_visual_capture_test.dart`, `test/community_action_tap_target_test.dart`, `test/community_ai_flag_edit_test.dart` ほか76本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 表示の組み合わせ（24の幅×スマホ/PC×7言語、`test/visual/all_routes_cell_matrix_test.dart`、レイアウトの例外・はみ出し）：`/community` 336セル・問題0。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A098 — App backend全API契約・認可（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 116本（`backend/test/coin-history-api.test.ts`, `backend/test/coin-redemption-api.test.ts`, `backend/test/creator-mission-api.test.ts`, `backend/test/handler-security.test.ts`, `backend/test/rewarded-ad-api.test.ts`, `test/community_api_contract_test.dart` ほか110本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.01 — GET /ranking/{period}（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 3本（`backend/test/creator-ranking-claim.test.ts`, `backend/test/ranking-visibility.test.ts`, `backend/test/ranking.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.02 — GET /works/latest（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 4本（`backend/test/creator-qualified-works-scan.test.ts`, `backend/test/latest-visibility.test.ts`, `backend/test/works-create-idempotency-contract.test.ts`, `backend/test/works-update.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.03 — GET /users/{id}/works（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 3本（`backend/test/creator-qualified-works-scan.test.ts`, `backend/test/works-create-idempotency-contract.test.ts`, `backend/test/works-update.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.04 — GET /works/{id}/bookmarkers（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 3本（`backend/test/creator-qualified-works-scan.test.ts`, `backend/test/works-create-idempotency-contract.test.ts`, `backend/test/works-update.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.05 — GET /users/{id}/bookmarks（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：GitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）（バックエンドは`backend/test`のvitest、ネイティブ・CIは各ワークフロー）。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.06 — GET /users/{id}/followers（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 1本（`backend/test/followers.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.07 — GET /users/{id}/following（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：GitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）（バックエンドは`backend/test`のvitest、ネイティブ・CIは各ワークフロー）。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.08 — GET /me/works（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 3本（`backend/test/creator-qualified-works-scan.test.ts`, `backend/test/works-create-idempotency-contract.test.ts`, `backend/test/works-update.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.09 — POST /works（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 3本（`backend/test/creator-qualified-works-scan.test.ts`, `backend/test/works-create-idempotency-contract.test.ts`, `backend/test/works-update.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.10 — PATCH /works/{id}（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 3本（`backend/test/creator-qualified-works-scan.test.ts`, `backend/test/works-create-idempotency-contract.test.ts`, `backend/test/works-update.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.11 — DELETE /works/{id}（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 3本（`backend/test/creator-qualified-works-scan.test.ts`, `backend/test/works-create-idempotency-contract.test.ts`, `backend/test/works-update.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.12 — PATCH /works/{id}/tags（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 4本（`backend/test/creator-qualified-works-scan.test.ts`, `backend/test/tags-contract.test.ts`, `backend/test/works-create-idempotency-contract.test.ts`, `backend/test/works-update.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.13 — POST /reports（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：GitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）（バックエンドは`backend/test`のvitest、ネイティブ・CIは各ワークフロー）。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.14 — POST /blocks（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：GitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）（バックエンドは`backend/test`のvitest、ネイティブ・CIは各ワークフロー）。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.15 — POST /works/{id}/bookmark（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 5本（`backend/test/bookmark-tombstone-removal.test.ts`, `backend/test/bookmark-visibility-contract.test.ts`, `backend/test/creator-qualified-works-scan.test.ts`, `backend/test/works-create-idempotency-contract.test.ts`, `backend/test/works-update.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.16 — PATCH /users/{id}/bookmarks-visibility（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 4本（`backend/test/bookmark-visibility-contract.test.ts`, `backend/test/latest-visibility.test.ts`, `backend/test/ranking-visibility.test.ts`, `backend/test/repost-visibility-contract.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.17 — POST /works/{id}/repost（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 5本（`backend/test/creator-qualified-works-scan.test.ts`, `backend/test/repost-visibility-contract.test.ts`, `backend/test/works-create-idempotency-contract.test.ts`, `backend/test/works-update.test.ts`, `backend/test/user-reposts.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.18 — POST /users/{id}/follow（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 1本（`backend/test/followers.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.19 — PATCH /users/{id}/follow-visibility（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 5本（`backend/test/bookmark-visibility-contract.test.ts`, `backend/test/latest-visibility.test.ts`, `backend/test/ranking-visibility.test.ts`, `backend/test/repost-visibility-contract.test.ts`, `backend/test/followers.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.20 — GET /users/{id}/notifications（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 2本（`backend/test/community-notifications.test.ts`, `backend/test/creator-mission-notifications.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.21 — POST /users/{id}/notifications/mark-read（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 4本（`backend/test/community-notifications.test.ts`, `backend/test/creator-mission-notifications.test.ts`, `backend/test/bookmark-tombstone-removal.test.ts`, `backend/test/bookmark-visibility-contract.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A098.22 — PUT /users/{id}/push-token（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 1本（`backend/test/push.test.ts`）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A099 — ランキング集計・push配信・インフラ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目を確かめるバックエンドのtest 10本（`backend/test/creator-ranking-claim.test.ts`, `backend/test/push.test.ts`, `backend/test/ranking-visibility.test.ts`, `backend/test/ranking.test.ts`, `backend/test/cdk-notification-stream.test.ts`, `backend/test/community-notifications.test.ts` ほか4本）。バックエンドのCI（`backend-ci.yml`）と2026-11-24のローカルのvitest（64ファイル・418件成功）で成功。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## A100 — Android・補助platform・ライフサイクル・配布（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 11本（`test/platform_logic_final_audit_test.dart`, `test/services/brush_fold_mode_lifecycle_test.dart`, `test/custom_automation_manager_dialog_lifecycle_test.dart`, `test/home_widget_artwork_picker_test.dart`, `test/home_widget_cell_size_test.dart`, `test/home_widget_service_test.dart` ほか5本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 範囲外：Androidの実機（タッチ・筆圧・ペン・共有・ウィジェット・R8の起動）での確認は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## A101 — App横断accessibility・表示matrix締め（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 917本（`test/admob_all_routes_visual_matrix_test.dart`, `test/app_bar_title_fit_or_hide_test.dart`, `test/app_scroll_behavior_test.dart`, `test/app_smoke_test.dart`, `test/app_toast_hold_test.dart`, `test/app_toast_messenger_test.dart` ほか911本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A102 — App7言語・用語・意味・format（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 419本（`test/font_fallback_test.dart`, `test/app_bar_title_fit_or_hide_test.dart`, `test/app_smoke_test.dart`, `test/app_tutorial_test.dart`, `test/app_web_reference_export_exact_test.dart`, `test/chinese_body_font_width_test.dart` ほか413本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+
+## A103 — App性能・安定性・資産サイズ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：この項目の実装を読み込むtest 917本（`test/app_bar_title_fit_or_hide_test.dart`, `test/app_scroll_behavior_test.dart`, `test/app_smoke_test.dart`, `test/app_toast_hold_test.dart`, `test/app_toast_messenger_test.dart`, `test/app_tutorial_test.dart` ほか911本）。この計算機の全件のtest（`d9d389de`・`2fa8e63d`、964ファイル、成功6020。失敗はrootで権限が効かない既知の3件と、`012bd085`で直した撮影のtest）とGitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）で成功。
+- 範囲外：端末での時間の計測は範囲外（この計算機での計測はD035）。
+
+## A104 — App保守性・テスト・CI品質（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- test：GitHubの8分割の全件のCI #372（`012bd085`、analyzeと8シャードすべて成功）（バックエンドは`backend/test`のvitest、ネイティブ・CIは各ワークフロー）。
+
+## W001 — Web共通header/footer・navigation（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 14本（`tests/multilang-responsive-audit.mjs`, `tests/source-style-consistency-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/deep-section-audit-v2.mjs`, `tests/design-layers-static.test.mjs`, `tests/home-cta-frame-mode-source-contract.mjs` ほか8本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W002 — Web言語選択・初期解決・リンク継承（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 9本（`tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/capture-language.test.mjs`, `tests/heading-line-break-audit.mjs`, `tests/home-cta-frame-mode-source-contract.mjs`, `tests/legal-static-fallback.test.mjs`, `tests/opal-brand-contract.mjs` ほか3本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W003 — Home /・hero・主導線（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 1本（`tests/user-request-regressions-audit.mjs`）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W004 — Home機能・画面紹介・download・FAQ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 10本（`tests/home-cta-frame-mode-source-contract.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/deep-section-audit-v2.mjs`, `tests/design-layers-static.test.mjs`, `tests/multilang-responsive-audit.mjs`, `tests/popup-close-affordance-contract.mjs` ほか4本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W005 — About /about/（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 22本（`tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/complete-scroll-audit.mjs`, `tests/cross-width-visual-evidence.mjs`, `tests/font-fallback-audit.mjs` ほか16本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W006 — Features /features/・anchor navigation（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 46本（`tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs`, `tests/cross-width-visual-evidence.mjs`, `tests/deep-section-audit.mjs` ほか40本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W006.01 — Features drawing（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 51本（`tests/i18n-browser-detection-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/autonomous-browser-audit.mjs` ほか45本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W006.02 — Features animation（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 51本（`tests/i18n-browser-detection-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/autonomous-browser-audit.mjs` ほか45本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W006.03 — Features editing（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 51本（`tests/i18n-browser-detection-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/autonomous-browser-audit.mjs` ほか45本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W006.04 — Features advanced（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 51本（`tests/i18n-browser-detection-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/autonomous-browser-audit.mjs` ほか45本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W006.05 — Features audio（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 51本（`tests/i18n-browser-detection-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/autonomous-browser-audit.mjs` ほか45本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W006.06 — Features save（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 51本（`tests/i18n-browser-detection-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/autonomous-browser-audit.mjs` ほか45本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W006.07 — Features workspace（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 51本（`tests/i18n-browser-detection-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/autonomous-browser-audit.mjs` ほか45本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W006.08 — Features widget（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 51本（`tests/i18n-browser-detection-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/autonomous-browser-audit.mjs` ほか45本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W006.09 — Features export（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 51本（`tests/export-format-guide.mjs`, `tests/i18n-browser-detection-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs` ほか45本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W007 — Premium /premium/（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 24本（`tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/complete-scroll-audit.mjs`, `tests/cross-width-visual-evidence.mjs`, `tests/design-layers-static.test.mjs` ほか18本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W008 — Community /community/（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 25本（`tests/community-playback.test.mjs`, `tests/community-ranking-visibility-browser.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/complete-scroll-audit.mjs` ほか19本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009 — Help /help/・検索・カテゴリ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.01 — Web Help 基本の操作（タップ・長押し・スワイプ）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.02 — Web Help ペンツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.03 — Web Help 消しゴムツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.04 — Web Help バケツツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.05 — Web Help 投げ縄塗り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.06 — Web Help スポイトツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.07 — Web Help 選択ツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.08 — Web Help 指ツール（歪みツール）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.09 — Web Help 図形ツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.10 — Web Help テキストツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.11 — Web Help 早替えツール管理（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.12 — Web Help 早替えツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.13 — Web Help スタンプツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.14 — Web Help ペンサブツール（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.15 — Web Help 選択範囲の変形（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.16 — Web Help 自由変形・メッシュ変形（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.17 — Web Help カラーピッカー（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.18 — Web Help ブラシのお気に入り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.19 — Web Help フェード（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.20 — Web Help ストローク減衰（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.21 — Web Help 混色（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.22 — Web Help カスタムブラシ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.23 — Web Help 筆圧カーブ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.24 — Web Help ペン設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.25 — Web Help 傾き検知（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.26 — Web Help 定規（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.27 — Web Help トーン塗り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.28 — Web Help ピクセルモード（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.29 — Web Help 描画領域（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.30 — Web Help キャンバスの背景色（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.31 — Web Help 描画フィルター（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.32 — Web Help レイヤー（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.33 — Web Help レイヤーの複数選択・一括操作（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.34 — Web Help ブレンドモード（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.35 — Web Help クリッピング（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.36 — Web Help 共通レイヤー（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.37 — Web Help レイヤーフォルダ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.38 — Web Help 自動塗り（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.39 — Web Help グラデーション塗り（自動塗り設定）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.40 — Web Help シーン操作（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.41 — Web Help オニオンスキン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.42 — Web Help タイムライン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.43 — Web Help シーン（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.44 — Web Help フレーム操作（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.45 — Web Help 素材クリップ（画像・動画・音声）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.46 — Web Help 素材一覧（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.47 — Web Help 音声クリップの音量・フェード（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.48 — Web Help カメラキーフレーム（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.49 — Web Help 演出フィルター（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.50 — Web Help レイヤーキーフレーム（パーツ単位アニメーション）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.51 — Web Help レイヤーグループ（複数パーツをまとめて動かす）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.52 — Web Help 自動保存（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.53 — Web Help セーブスロット（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.54 — Web Help セーブツリー（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.55 — Web Help フォルダ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.56 — Web Help ゴミ箱（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.57 — Web Help 共有（.niashare）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.58 — Web Help 引き継ぎ（.niatra）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.59 — Web Help ホーム画面（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.60 — Web Help 新規プロジェクト作成（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.61 — Web Help プロジェクト詳細画面（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.62 — Web Help エンドカード（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.63 — Web Help 動画書き出し（MP4・WebM・GIF・AVI）（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.64 — Web Help 書き出し画面（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.65 — Web Help 作品広場（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.66 — Web Help ウォーターマークの再編集（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.67 — Web Help ウォーターマーク（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.68 — Web Help プレミアム（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.69 — Web Help テーマ設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.70 — Web Help ワークスペース設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.71 — Web Help ジェスチャー設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.72 — Web Help パフォーマンス設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.73 — Web Help バケツ塗り詳細設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.74 — Web Help Undo（元に戻す）回数設定（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.75 — Web Help フォントの読み込み（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W009.76 — Web Help 容量削減（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 26本（`tests/help-interaction-audit.mjs`, `tests/i18n-completeness-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs` ほか20本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W010 — FAQ /faq/・全8問（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 30本（`tests/i18n-completeness-audit.mjs`, `tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/ai-trust-visual-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/autonomous-browser-audit.mjs` ほか24本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W011 — News /news/（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 20本（`tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/complete-scroll-audit.mjs`, `tests/font-fallback-audit.mjs`, `tests/fullpage-multilang-capture.mjs`, `tests/heading-font-cmap-audit.mjs` ほか14本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W012 — Contact /contact/入力・添付・同意（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 24本（`tests/contact-api.test.mjs`, `tests/contact-form-audit.mjs`, `tests/contact-form.test.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs` ほか18本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W013 — Contact送信中/結果/失敗・再送（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 24本（`tests/contact-api.test.mjs`, `tests/contact-form-audit.mjs`, `tests/contact-form.test.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs` ほか18本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W014 — Worker /api/contact（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 1本（`tests/contact-api.test.mjs`）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## W015 — Terms /terms/・条文と翻訳（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 21本（`tests/i18n-completeness-audit.mjs`, `tests/legal-static-fallback.test.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/complete-scroll-audit.mjs`, `tests/font-fallback-audit.mjs` ほか15本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W016 — Privacy /privacy/・開示（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 23本（`tests/i18n-completeness-audit.mjs`, `tests/legal-static-fallback.test.mjs`, `tests/account-deletion-browser.mjs`, `tests/ai-trust-visual-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs` ほか17本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W017 — 404・正規URL・異常route（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 18本（`tests/operations-seo-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/brand-direction-contract.mjs`, `tests/complete-scroll-audit.mjs`, `tests/font-and-captures-contract.mjs` ほか12本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：公開の環境での確認は人の作業（ローカルのWorkerで確かめた）。
+
+## W018 — 全公開page×7言語の技術SEO（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 3本（`tests/operations-seo-audit.mjs`, `tests/worker-seo-runtime-audit.mjs`, `tests/canonical-host.test.mjs`）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：公開の環境での検索エンジンの確認は人の作業（静的な確かめは済み）。
+
+## W019 — Web7言語全辞書・意味・字体（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 8本（`tests/heading-line-break-audit.mjs`, `tests/screen-mock-i18n-key-leak-contract.mjs`, `tests/capture-language.test.mjs`, `tests/font-and-captures-contract.mjs`, `tests/popup-close-affordance-contract.mjs`, `tests/source-style-consistency-audit.mjs` ほか2本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W020 — Web全画面accessibility・336締め（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 1本（`tests/all-pages-responsive-quality-audit.mjs`）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W021 — Web性能・motion・配信・offline（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：端末での時間の計測は範囲外（この計算機での計測はD035）。
+
+## W022 — Web security・運用構成（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 86本（`tests/account-deletion-browser.mjs`, `tests/account-deletion.test.mjs`, `tests/ai-trust-visual-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit-v2.mjs`, `tests/autonomous-browser-audit.mjs` ほか80本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：本番のバックエンドのデプロイと実際のYouTube・Google・AdMobの接続は人の作業（コードとローカルの検証は済み）。
+
+## W023 — Web保守性・デザイン契約・テスト妥当性（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W024 — App-Web製品契約・主要workflow（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W025 — 制作反復操作の圧縮・製品設計（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 44本（`tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/canonical-host.test.mjs`, `tests/complete-scroll-audit.mjs`, `tests/cross-width-visual-evidence.mjs`, `tests/deep-section-audit.mjs` ほか38本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W026 — 国際展開・対象市場・配布事実（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 1本（`tests/contact-form-audit.mjs`）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：市場・検索の実データの取得と外部の確認は人の作業（AIで書ける案・表示までを行った）。
+
+## W027 — 検索意図・各市場コピー・情報設計（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：市場・検索の実データの取得と外部の確認は人の作業（AIで書ける案・表示までを行った）。
+
+## W028 — ストアASO・creative・配布導線（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 1本（`tests/contact-form-audit.mjs`）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：市場・検索の実データの取得と外部の確認は人の作業（AIで書ける案・表示までを行った）。
+
+## W029 — 獲得funnel・CTR/CVR・計測設計（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：市場・検索の実データの取得と外部の確認は人の作業（AIで書ける案・表示までを行った）。
+
+## W030 — 著作権・素材/コード/翻訳/図・権利台帳（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 14本（`tests/capture-language.test.mjs`, `tests/font-and-captures-contract.mjs`, `tests/font-cache-names.test.mjs`, `tests/modern-width-visual-audit.mjs`, `tests/operations-seo-audit.mjs`, `tests/page-heading-signature-audit.mjs` ほか8本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：法務の確認（専門家の判断・一次資料の調査・届出の要否）は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## W031 — OSS・SDK・font・推移依存・notice（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 1本（`tests/font-and-captures-contract.mjs`）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：法務の確認（専門家の判断・一次資料の調査・届出の要否）は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## W032 — ブランド・商標・サービスマーク（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：法務の確認（専門家の判断・一次資料の調査・届出の要否）は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## W033 — 技術・特許/実用新案のリスクscreening（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：法務の確認（専門家の判断・一次資料の調査・届出の要否）は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## W034 — GUI・意匠/registered design（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：法務の確認（専門家の判断・一次資料の調査・届出の要否）は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## W035 — 実データフロー台帳・privacy/Store disclosure（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 86本（`tests/contact-api.test.mjs`, `tests/contact-form-audit.mjs`, `tests/contact-form.test.mjs`, `tests/store-release-link.test.mjs`, `tests/account-deletion-browser.mjs`, `tests/account-deletion.test.mjs` ほか80本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：法務の確認（専門家の判断・一次資料の調査・届出の要否）は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## W036 — 対象市場のprivacy適用・開示・同意（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 22本（`tests/account-deletion-browser.mjs`, `tests/ai-trust-visual-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/complete-scroll-audit.mjs`, `tests/font-fallback-audit.mjs` ほか16本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：法務の確認（専門家の判断・一次資料の調査・届出の要否）は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## W037 — ユーザー権利・削除/アクセス等の実現性（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 22本（`tests/account-deletion-browser.mjs`, `tests/ai-trust-visual-audit.mjs`, `tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/complete-scroll-audit.mjs`, `tests/font-fallback-audit.mjs` ほか16本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：法務の確認（専門家の判断・一次資料の調査・届出の要否）は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## W038 — 越境移転・委託契約（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：法務の確認（専門家の判断・一次資料の調査・届出の要否）は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## W039 — 利用規約・消費者保護・契約同意（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：このページ・部品を確かめるWebの監査 20本（`tests/all-pages-responsive-quality-audit.mjs`, `tests/autonomous-browser-audit.mjs`, `tests/complete-scroll-audit.mjs`, `tests/font-fallback-audit.mjs`, `tests/fullpage-multilang-capture.mjs`, `tests/heading-font-cmap-audit.mjs` ほか14本）。四巡目の監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：法務の確認（専門家の判断・一次資料の調査・届出の要否）は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## W040 — 法務/IP証拠・変更trigger・残余risk締め（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+- 範囲外：法務の確認（専門家の判断・一次資料の調査・届出の要否）は全面監査の範囲外（所有者の指定2026-11-23）で、人の作業の一覧に残す。
+
+## W041 — 一周完了・品質証拠・修正後回帰の閉鎖（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。
+
+## W042 — lock以後の差分回帰フェーズ（正式done、2026-11-24、Claude・S56）
+
+- 判定：OK。四巡目（2026-11-23、「四巡目」の節）の判定を、最新（App `012bd085`・Web `0905bf41`）で締めの確かめに通した。一巡目〜三巡目の証跡・修正引継ぎ台帳の記録はこの節の上の各巡の節にある。
+- 監査：四巡目のWebの監査一式（7言語×SP・PC、全ページ24幅、トップ35幅、ブラウザの巡回）で問題0。

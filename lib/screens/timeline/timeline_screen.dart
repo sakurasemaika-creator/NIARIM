@@ -77,6 +77,7 @@ import '../../services/autofill_preset_service.dart';
 import '../../services/material_service.dart';
 import '../../services/android_tts_service.dart';
 import '../../utils/making_strings.dart';
+import '../../utils/color_contrast.dart';
 import '../../services/premium_service.dart';
 import '../../services/custom_automation_service.dart';
 import '../../services/project_service.dart';
@@ -114,6 +115,7 @@ import 'widgets/material_edit_panel.dart';
 import 'widgets/video_filmstrip.dart';
 import 'widgets/material_gizmo.dart';
 import 'widgets/stack_order_panel.dart';
+import 'widgets/track_label.dart';
 import '../../widgets/icon_notice.dart';
 import '../../widgets/menu_surface.dart';
 
@@ -277,6 +279,25 @@ class _AudioWaveformThumbState extends State<_AudioWaveformThumb> {
     );
   }
 }
+
+/// タイムラインの行の名前のうち、言語で決まっているもの（行の名前の欄の幅を
+/// 決めるのに使う。利用者が付けた名前は入らなければ「…」）。
+@visibleForTesting
+List<String> timelineFixedTrackLabels(AppLocalizations l10n) => [
+  l10n.timelineFrameTrackLabel,
+  l10n.timelineCameraTrackLabel,
+  l10n.timelineEndCardTrackLabel,
+  l10n.makingReadAloud,
+  for (final kind in [
+    l10n.timelineMaterialText,
+    l10n.projectListMaterialImage,
+    l10n.projectListMaterialVideo,
+    l10n.projectListMaterialAudio,
+  ])
+    l10n.timelineTrackRowName(kind, 1),
+  for (final type in EffectFilterType.values)
+    _EffectFilterSheet._typeLabel(l10n, type),
+];
 
 class TimelineScreen extends StatefulWidget {
   final String projectId;
@@ -5852,11 +5873,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _centerFrameInList();
   }
 
-  static const double _trackLabelWidth = 94;
-
-  /// The switch between frames and waveform at the start of a video row
-  /// (in place of the row's icon; the name keeps the rest of the label).
-  static const double _videoRowToggleWidth = 40;
+  /// 行の名前の欄の幅。この言語の決まった行の名前がどれも語の途中で折れず、
+  /// 2行までに入る幅（いつもは94dp）。
+  double get _trackLabelWidth => TrackLabelMetrics.columnWidth(
+    locale: Localizations.maybeLocaleOf(context),
+    textScaler: MediaQuery.textScalerOf(context),
+    fixedLabels: timelineFixedTrackLabels(AppLocalizations.of(context)!),
+  );
 
   BoxDecoration get _trackRowDivider => BoxDecoration(
     border: Border(
@@ -5868,44 +5891,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
   );
 
   Widget _buildTrackLabel(
-    IconData? icon,
+    IconData icon,
     String label, {
-    double width = _trackLabelWidth,
-  }) {
-    return Container(
-      // 文字が切れないだけでなく、スマートフォンでも読みやすいサイズを確保する。
-      // 94dpの欄にアイコン14dp・間隔4dp・左右余白6dpを取り、11dpのラベルを
-      // 置く（残り70dp。7言語でいちばん広いスペイン語の「Fotograma」が
-      // くらむぼんで約68dp。84dpの欄では60dpしかなく末尾が切れた）。
-      width: width,
-      padding: const EdgeInsets.symmetric(horizontal: 3),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            Icon(
-              icon,
-              size: 14,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 4),
-          ],
-          Flexible(
-            child: Text(
-              label,
-              style: localizedHeadingStyle(
-                context,
-                TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+    VoidCallback? onIconTap,
+    String? iconTooltip,
+    Key? iconKey,
+  }) => TrackLabel(
+    icon: icon,
+    label: label,
+    width: _trackLabelWidth,
+    onIconTap: onIconTap,
+    iconTooltip: iconTooltip,
+    iconKey: iconKey,
+  );
 
   /// 素材種別（画像・動画・音源）ごとのタイムライン行グループ。
   /// 行数・行名はシーンごとにProjectServiceで管理する。1行目の右端＋は
@@ -5944,7 +5942,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
           _buildClipTrackRow(
             type: type,
             rowIndex: row,
-            rowLabel: rowNames[row] ?? '$defaultLabel${row + 1}',
+            rowLabel:
+                rowNames[row] ??
+                AppLocalizations.of(
+                  context,
+                )!.timelineTrackRowName(defaultLabel, row + 1),
             icon: icon,
             clips: allClips.where((c) => c.trackRow == row).toList(),
             scrollCtrl: _rowScrollCtrl(type, row),
@@ -6027,18 +6029,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
           // 行名タップで名称変更（「タイムライン左側の素材種別名は
           // タップでユーザーがテキスト変更できる」）。種別を示すアイコン自体は
           // 変更不可のまま常時表示する。
-          // A video row's icon is its switch between frames and waveform.
-          if (videoRow) _buildVideoRowDisplayToggle(rowIndex),
+          // A video row's icon is its switch between the video's frames and
+          // its sound's waveform (the rest of the label renames the row).
           canRename
               ? GestureDetector(
                   onTap: () =>
                       _showRenameTrackRowDialog(type, rowIndex, rowLabel),
                   child: videoRow
-                      ? _buildTrackLabel(
-                          null,
-                          rowLabel,
-                          width: _trackLabelWidth - _videoRowToggleWidth,
-                        )
+                      ? _buildVideoRowLabel(rowIndex, rowLabel)
                       : _buildTrackLabel(icon, rowLabel),
                 )
               : _buildTrackLabel(icon, rowLabel),
@@ -6266,25 +6264,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 ).toDouble(),
                               ),
                             ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                clip.label,
-                                style: localizedHeadingStyle(
-                                  context,
-                                  TextStyle(
-                                    fontSize: 9,
-                                    color: ThemeService
-                                        .activeColorScheme
-                                        .onSurface,
-                                  ),
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
+                          _buildClipName(clip),
                         ],
                       ),
                     ),
@@ -6342,6 +6322,39 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  /// A video row's label: its icon shows, and switches, what the row's
+  /// clips show (the video's frames or its sound's waveform).
+  Widget _buildVideoRowLabel(int row, String label) {
+    final l10n = AppLocalizations.of(context)!;
+    final sceneId = _selectedSceneId;
+    final display = sceneId == null
+        ? VideoTrackDisplay.frames
+        : context.watch<ProjectService>().videoRowDisplayOf(
+            widget.projectId,
+            sceneId,
+            row,
+          );
+    final showsFrames = display == VideoTrackDisplay.frames;
+    return _buildTrackLabel(
+      showsFrames ? Icons.movie_outlined : Icons.graphic_eq,
+      label,
+      iconKey: ValueKey('videoRowDisplay-$row'),
+      iconTooltip: showsFrames
+          ? l10n.timelineVideoTrackShowingFrames
+          : l10n.timelineVideoTrackShowingWaveform,
+      onIconTap: sceneId == null
+          ? null
+          : () => context.read<ProjectService>().setVideoRowDisplay(
+              widget.projectId,
+              sceneId,
+              row,
+              showsFrames
+                  ? VideoTrackDisplay.waveform
+                  : VideoTrackDisplay.frames,
+            ),
+    );
+  }
+
   /// What video row [row] of the scene shows in its clips.
   VideoTrackDisplay _videoRowDisplay(int row) {
     final sceneId = _selectedSceneId;
@@ -6353,43 +6366,60 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// The switch at the start of a video row between the video's frames and
-  /// its sound's waveform.
-  Widget _buildVideoRowDisplayToggle(int row) {
-    final l10n = AppLocalizations.of(context)!;
-    final sceneId = _selectedSceneId;
-    final display = sceneId == null
-        ? VideoTrackDisplay.frames
-        : context.watch<ProjectService>().videoRowDisplayOf(
-            widget.projectId,
-            sceneId,
-            row,
-          );
-    final showsFrames = display == VideoTrackDisplay.frames;
-    return Tooltip(
-      message: showsFrames
-          ? l10n.timelineVideoTrackShowingFrames
-          : l10n.timelineVideoTrackShowingWaveform,
-      child: InkWell(
-        key: ValueKey('videoRowDisplay-$row'),
-        onTap: sceneId == null
-            ? null
-            : () => context.read<ProjectService>().setVideoRowDisplay(
-                widget.projectId,
-                sceneId,
-                row,
-                showsFrames
-                    ? VideoTrackDisplay.waveform
-                    : VideoTrackDisplay.frames,
-              ),
-        child: SizedBox(
-          width: _videoRowToggleWidth,
-          height: _materialTrackHeight,
-          child: Icon(
-            showsFrames ? Icons.movie_outlined : Icons.graphic_eq,
-            size: 18,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+  /// クリップの名前の左の空き。左端の長さを変えるつまみ（幅8dp、真ん中に
+  /// 縦の線）に字が重ならないように、つまみの幅だけ空ける。
+  static const double _clipNameInset = 8;
+
+  /// クリップの名前。音声のクリップは波形の上に重ねず、左上の帯（クリップと
+  /// 同じ色の不透明な台）に載せる（以前は波形の真ん中に9pxの字で重なり、
+  /// 韓国語・中国語の細い明朝ではほとんど読めなかった）。字の色はテーマの
+  /// 文字色とパネルの背景色のうち、クリップの色の上で読みやすい方。
+  Widget _buildClipName(_TrackClip clip) {
+    final scheme = ThemeService.activeColorScheme;
+    // クリップの帯と同じ色（帯は不透明度85%で行の面の上に重なる）。
+    final fill = opaqueOver(
+      clip.color.withValues(alpha: 0.85),
+      scheme.surfaceContainerLow,
+    );
+    final ink =
+        contrastRatio(scheme.onSurface, fill) >=
+            contrastRatio(scheme.surface, fill)
+        ? scheme.onSurface
+        : scheme.surface;
+    final text = Text(
+      clip.label,
+      key: ValueKey('timelineClipName-${clip.id}'),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: localizedHeadingStyle(
+        context,
+        TextStyle(fontSize: 10, height: 1.2, color: ink),
+      ),
+    );
+    // On a picture (a sound's waveform, or a video row's frames or
+    // waveform) the name sits on the band.
+    final onWaveform =
+        (clip.trackType == _ClipTrackType.audio && clip.filePath != null) ||
+        (clip.trackType == _ClipTrackType.video &&
+            (clip.materialId != null || clip.filePath != null));
+    if (!onWaveform) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: _clipNameInset),
+        child: Align(alignment: Alignment.centerLeft, child: text),
+      );
+    }
+    return Align(
+      alignment: Alignment.topLeft,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: fill,
+          borderRadius: const BorderRadius.only(
+            bottomRight: Radius.circular(4),
           ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(_clipNameInset, 1, 5, 1),
+          child: text,
         ),
       ),
     );

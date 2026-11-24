@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../config/font_fallback.dart';
+import '../utils/line_break.dart';
+import '../widgets/action_beside_or_below.dart';
 import 'home_widget_service.dart';
 
 /// 「作品をつくる」「作品広場」のショートカットウィジェットの見た目を、
@@ -36,7 +38,8 @@ import 'home_widget_service.dart';
 /// - タイル幅150・最低高さ150、角丸24、内側余白 横14／縦16
 /// - 背景はcolors[0]→colors[1]の左上→右下グラデーション
 /// - 影はelevation 4相当（影色はcolors[0]の50%）
-/// - アイコン60px、ラベル18px太字、サブラベル12px（どちらもKuramubon）
+/// - アイコン60px、ラベル18px太字、サブラベル12px（どちらもKuramubon）。
+///   文言が入らない言語では[ShortcutWidgetFit]がアイコン・文字を小さくする
 ///
 /// ## 縦横比
 ///
@@ -61,12 +64,171 @@ class ShortcutWidgetDesign {
 
   const ShortcutWidgetDesign._();
 
+  /// 上下の内側余白（起動画面のボタンの`_padding`の縦）。
+  static const double verticalPadding = 16;
+
+  /// 文言が入らないときに、アイコンをここまで小さくしてよい。
+  static const double minIconSize = 40;
+
+  /// アイコンを小さくしても入らないときに、文字をここまで小さくしてよい
+  /// （元の大きさに対する割合）。
+  static const double minTextScale = 0.6;
+
   /// [shape]のタイルの論理サイズ。
   static Size tileSizeOf(ShortcutWidgetShape shape) => switch (shape) {
     ShortcutWidgetShape.square => const Size(tileSize, tileSize),
     ShortcutWidgetShape.wide => const Size(longSide, tileSize),
     ShortcutWidgetShape.tall => const Size(tileSize, longSide),
   };
+}
+
+/// ショートカットウィジェットの文言の書式（見出しの書体、[size]の大きさ）。
+TextStyle shortcutWidgetTextStyle({
+  required Locale? locale,
+  required Color color,
+  required double size,
+  required bool bold,
+}) => TextStyle(
+  color: color,
+  fontSize: size,
+  fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+  fontFamily: headingFontFamilyFor(locale),
+  fontFamilyFallback: headingFontFallbackFor(locale),
+);
+
+/// ショートカットウィジェットの1枚に、アイコン・文言をどの大きさで並べるか。
+///
+/// ウィジェットの画像は大きさが決まっていて（ランチャーがマスの大きさを
+/// 決める）、起動画面のボタンのように縦に伸ばせない。文言は省略記号で
+/// 切らず、語の途中でも折らない（「Plaza de O…」「Browse posted …」、
+/// 韓国語の「만들｜기」になっていた）。入らないときは、まずアイコンを
+/// [ShortcutWidgetDesign.minIconSize]まで小さくし、それでも入らなければ
+/// 文字を[ShortcutWidgetDesign.minTextScale]まで小さくする。
+class ShortcutWidgetFit {
+  /// 描く文言（韓国語は語の中を語結合子でつないだもの）。
+  final String label;
+  final String? subLabel;
+  final double iconSize;
+  final double labelSize;
+  final double subLabelSize;
+
+  const ShortcutWidgetFit._({
+    required this.label,
+    required this.subLabel,
+    required this.iconSize,
+    required this.labelSize,
+    required this.subLabelSize,
+  });
+
+  /// アイコンの右に文言を置く形か（横長）。
+  static bool sideBySide(ShortcutWidgetShape shape) =>
+      shape == ShortcutWidgetShape.wide;
+
+  /// アイコンが[iconSize]のとき、文言に使える幅。
+  static double textWidthFor(ShortcutWidgetShape shape, double iconSize) {
+    final size = ShortcutWidgetDesign.tileSizeOf(shape);
+    final inner = size.width - ShortcutWidgetDesign.horizontalPadding * 2;
+    return sideBySide(shape)
+        ? inner - iconSize - ShortcutWidgetDesign.gapAfterIcon
+        : inner;
+  }
+
+  factory ShortcutWidgetFit.of({
+    required String label,
+    String? subLabel,
+    Locale? locale,
+    ShortcutWidgetShape shape = ShortcutWidgetShape.square,
+  }) {
+    final korean = locale?.languageCode == 'ko';
+    final shownLabel = korean ? keepKoreanWordsTogether(label) : label;
+    final shownSub = subLabel == null || !korean
+        ? subLabel
+        : keepKoreanWordsTogether(subLabel);
+    final size = ShortcutWidgetDesign.tileSizeOf(shape);
+    final height = size.height - ShortcutWidgetDesign.verticalPadding * 2;
+
+    // 文言の高さ。語がその幅に入らないときはnull。
+    double? textHeight(String text, double fontSize, bool bold, double width) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: shortcutWidgetTextStyle(
+            locale: locale,
+            color: const Color(0xFF000000),
+            size: fontSize,
+            bold: bold,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
+      )..layout(maxWidth: width);
+      final widest = widestUnbreakableWidth(
+        painter,
+        reported: painter.minIntrinsicWidth,
+      );
+      painter.layout(maxWidth: width);
+      final result = widest <= width + 0.01 ? painter.height : null;
+      painter.dispose();
+      return result;
+    }
+
+    bool fits(double icon, double scale) {
+      final width = textWidthFor(shape, icon);
+      final labelHeight = textHeight(
+        shownLabel,
+        ShortcutWidgetDesign.labelSize * scale,
+        true,
+        width,
+      );
+      if (labelHeight == null) return false;
+      var text = labelHeight;
+      if (shownSub != null) {
+        final subHeight = textHeight(
+          shownSub,
+          ShortcutWidgetDesign.subLabelSize * scale,
+          false,
+          width,
+        );
+        if (subHeight == null) return false;
+        text += subHeight;
+      }
+      final needed = sideBySide(shape)
+          ? math.max(icon, text)
+          : icon + ShortcutWidgetDesign.gapAfterIcon + text;
+      return needed <= height + 0.01;
+    }
+
+    ShortcutWidgetFit result(double icon, double scale) => ShortcutWidgetFit._(
+      label: shownLabel,
+      subLabel: shownSub,
+      iconSize: icon,
+      labelSize: ShortcutWidgetDesign.labelSize * scale,
+      subLabelSize: ShortcutWidgetDesign.subLabelSize * scale,
+    );
+
+    const icons = [
+      ShortcutWidgetDesign.iconSize,
+      52.0,
+      46.0,
+      ShortcutWidgetDesign.minIconSize,
+    ];
+    for (final icon in icons) {
+      if (fits(icon, 1)) return result(icon, 1);
+    }
+    for (
+      var scale = 0.95;
+      scale > ShortcutWidgetDesign.minTextScale - 0.001;
+      scale -= 0.05
+    ) {
+      if (fits(ShortcutWidgetDesign.minIconSize, scale)) {
+        return result(ShortcutWidgetDesign.minIconSize, scale);
+      }
+    }
+    return result(
+      ShortcutWidgetDesign.minIconSize,
+      ShortcutWidgetDesign.minTextScale,
+    );
+  }
 }
 
 /// [kind]のショートカットウィジェット画像を描いてPNGのパスを返す。
@@ -158,10 +320,16 @@ Future<ui.Image> renderShortcutWidgetImage({
       ]),
   );
 
+  final fit = ShortcutWidgetFit.of(
+    label: label,
+    subLabel: subLabel,
+    locale: locale,
+    shape: shape,
+  );
   final iconPainter = _painter(
     String.fromCharCode(icon.codePoint),
     TextStyle(
-      fontSize: ShortcutWidgetDesign.iconSize,
+      fontSize: fit.iconSize,
       fontFamily: icon.fontFamily,
       package: icon.fontPackage,
       color: foreground,
@@ -170,37 +338,29 @@ Future<ui.Image> renderShortcutWidgetImage({
   );
 
   // 横並びのときは、アイコンと余白を引いた残りが文字の使える幅になる。
-  final textWidth = horizontal
-      ? size.width -
-            ShortcutWidgetDesign.horizontalPadding * 2 -
-            iconPainter.width -
-            ShortcutWidgetDesign.gapAfterIcon
-      : size.width - ShortcutWidgetDesign.horizontalPadding * 2;
+  final textWidth = ShortcutWidgetFit.textWidthFor(shape, fit.iconSize);
 
   final labelPainter = _painter(
-    label,
-    TextStyle(
+    fit.label,
+    shortcutWidgetTextStyle(
+      locale: locale,
       color: foreground,
-      fontSize: ShortcutWidgetDesign.labelSize,
-      fontWeight: FontWeight.bold,
-      fontFamily: headingFontFamilyFor(locale),
-      fontFamilyFallback: headingFontFallbackFor(locale),
+      size: fit.labelSize,
+      bold: true,
     ),
     maxWidth: textWidth,
-    maxLines: subLabel == null ? 2 : 1,
   );
-  final subPainter = subLabel == null
+  final subPainter = fit.subLabel == null
       ? null
       : _painter(
-          subLabel,
-          TextStyle(
+          fit.subLabel!,
+          shortcutWidgetTextStyle(
+            locale: locale,
             color: foreground,
-            fontSize: ShortcutWidgetDesign.subLabelSize,
-            fontFamily: headingFontFamilyFor(locale),
-            fontFamilyFallback: headingFontFallbackFor(locale),
+            size: fit.subLabelSize,
+            bold: false,
           ),
           maxWidth: textWidth,
-          maxLines: 1,
         );
 
   final textPainters = [labelPainter, ?subPainter];
@@ -272,14 +432,11 @@ TextPainter _painter(
   String text,
   TextStyle style, {
   double maxWidth = double.infinity,
-  int? maxLines,
 }) {
   final painter = TextPainter(
     text: TextSpan(text: text, style: style),
     textDirection: TextDirection.ltr,
     textAlign: TextAlign.center,
-    maxLines: maxLines,
-    ellipsis: maxLines == null ? null : '…',
   )..layout(maxWidth: maxWidth);
   return painter;
 }

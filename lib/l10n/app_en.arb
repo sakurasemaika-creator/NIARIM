@@ -2253,6 +2253,7 @@
   "timelineFrameTrackLabel": "Frame",
   "timelineTrackRowRenameTitle": "Rename row",
   "timelineCameraTrackLabel": "Camera",
+  "timelineTrackRowName": "{kind} {number}",
   "timelineEndCardDefaultLogoLabel": "NIARIM logo",
   "timelineEndCardHiddenLabel": "Hidden",
   "timelineEndCardTrackLabel": "End Mark Track",
