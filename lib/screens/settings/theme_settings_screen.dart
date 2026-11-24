@@ -564,9 +564,23 @@ class ThemeSettingsScreen extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: () {
+              // 1回押すだけで今の配色（自分で作った配色を含む）が置き換わる
+              // ので、知らせから押す前の配色へ戻せるようにする。
+              final previous = themeService.current;
               themeService.adoptPresetColors(preset.id);
+              final changed = !_samePalette(previous, themeService.current);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.themeAdoptColorsSnackbar(label))),
+                SnackBar(
+                  content: Text(l10n.themeAdoptColorsSnackbar(label)),
+                  persist: false,
+                  action: changed
+                      ? SnackBarAction(
+                          label: l10n.homeUndoAction,
+                          onPressed: () =>
+                              themeService.restoreCurrent(previous),
+                        )
+                      : null,
+                ),
               );
             },
             child: Padding(
