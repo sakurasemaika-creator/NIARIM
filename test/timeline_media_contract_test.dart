@@ -60,4 +60,15 @@ void main() {
     expect(s, contains('fadeOut: 0'));
   });
 
+
+  test('video preview seek uses the shared source-time mapper', () {
+    final s = File(
+      'lib/screens/timeline/timeline_screen.dart',
+    ).readAsStringSync();
+    expect(s, contains("import '../../engine/timeline_video_time.dart';"));
+    expect(s, contains('TimelineVideoTimeMapper.sourcePositionAt('));
+    expect(s, contains('sourceTrimStartFrame: clip.useStart'));
+    expect(s, contains('sourceTrimEndFrame: clip.useEnd'));
+  });
+
 }
