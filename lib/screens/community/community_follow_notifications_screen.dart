@@ -10,6 +10,8 @@ import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/community_notice.dart';
 import '../../services/google_auth_service.dart';
+import '../../widgets/empty_state_placeholder.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
 
@@ -237,12 +239,22 @@ class _CommunityFollowNotificationsScreenState
     final l10n = AppLocalizations.of(context)!;
     final local = context.watch<CommunityService>().milestoneNotifications;
     final notice = Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(message, textAlign: TextAlign.center),
-          if (action != null) ...[const SizedBox(height: 8), action],
+          // 通知がまだ1つも無いときは、ほかの空の表示と同じ「中身の
+          // まだ無いコマ」の印を出す（文とボタンだけが浮いていた）。
+          if (local.isEmpty) ...[
+            const EmptyFrameMark(icon: Icons.notifications_none_outlined),
+            const SizedBox(height: 16),
+          ],
+          messageText(
+            message,
+            textAlign: TextAlign.center,
+            keepLastPhrase: true,
+          ),
+          if (action != null) ...[const SizedBox(height: 16), action],
         ],
       ),
     );
@@ -267,7 +279,7 @@ class _CommunityFollowNotificationsScreenState
             notification.isFollower
                 ? Icons.people_outline
                 : Icons.bookmarks_outlined,
-            color: AccentTextTheme.of(context),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           title: Text(message),
           subtitle: Text(_dateText(time)),
