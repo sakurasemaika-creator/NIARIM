@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../models/material_asset.dart';
+import '../engine/video_material_snapshot.dart';
 import '../utils/app_error_reporter.dart';
 import 'storage_info_service.dart';
 
@@ -261,6 +262,23 @@ class MaterialService extends ChangeNotifier {
       if (a[i] != b[i]) return false;
     }
     return true;
+  }
+
+  /// Creates a stable snapshot of every registered video asset in this
+  /// project. Missing files are retained with a null path so preview/export
+  /// can report them explicitly instead of silently rendering a placeholder.
+  Future<VideoMaterialSnapshot> videoSnapshotOf(String projectId) async {
+    await ensureLoaded(projectId);
+    final assets = (_materials[projectId] ?? const <MaterialAsset>[])
+        .where((asset) => asset.type == MaterialType.video)
+        .toList(growable: false);
+    final dir = await _materialsDir(projectId);
+    final paths = <String, String?>{};
+    for (final asset in assets) {
+      final file = File('${dir.path}/${asset.storageName}');
+      paths[asset.id] = await file.exists() ? file.path : null;
+    }
+    return VideoMaterialSnapshot.fromAssets(assets, paths);
   }
 
   /// 素材IDの実ファイルパスを解決する。ファイルが見つからない場合はnull
