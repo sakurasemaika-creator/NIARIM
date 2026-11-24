@@ -187,15 +187,25 @@ class AudioClipEnvelope {
     double fadeInSeconds = 0,
     double fadeOutSeconds = 0,
   }) {
-    final filters = <String>['volume=${volume.clamp(0.0, 1.0).toStringAsFixed(3)}'];
+    // When a fade is longer than the clip, the preview envelope is
+    // (clipDuration - elapsed) / fadeDuration from the very first sample.
+    // Scale the base gain and use a clip-length fade to reproduce that slope.
+    final fadeOutScale = fadeOutSeconds > clipSeconds && clipSeconds > 0
+        ? clipSeconds / fadeOutSeconds
+        : 1.0;
+    final baseVolume = (volume.clamp(0.0, 1.0) * fadeOutScale)
+        .clamp(0.0, 1.0)
+        .toDouble();
+    final filters = <String>['volume=${baseVolume.toStringAsFixed(3)}'];
     if (fadeInSeconds > 0) {
       filters.add('afade=t=in:st=0:d=${_seconds(fadeInSeconds)}');
     }
     final fadeStart = math.max(0.0, clipSeconds - fadeOutSeconds);
     if (fadeOutSeconds > 0 && fadeStart < durationSeconds) {
+      final effectiveFadeDuration = math.min(fadeOutSeconds, clipSeconds);
       filters.add(
         'afade=t=out:st=${_seconds(fadeStart)}'
-        ':d=${_seconds(fadeOutSeconds)}',
+        ':d=${_seconds(effectiveFadeDuration)}',
       );
     }
     return filters;
