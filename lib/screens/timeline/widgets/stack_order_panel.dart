@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 
 import '../../../config/font_fallback.dart';
 import '../../../engine/timeline_stack.dart';
+import '../../../widgets/responsive.dart';
+import '../../../widgets/menu_surface.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/scene.dart';
 import '../../../models/scene_stack.dart';
@@ -521,6 +523,10 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
         children: [
           for (var i = 0; i < ranges.length; i++)
             ChoiceChip(
+              // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
               avatar: Icon(
                 Icons.date_range,
                 size: 16,
@@ -635,6 +641,10 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
         children: [
           for (final s in all)
             FilterChip(
+              // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
               label: Text(s.displayName),
               selected: chosen.contains(s.id),
               // At least one scene stays chosen.
@@ -664,8 +674,14 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
     final scene = ps.sceneOf(widget.projectId, widget.sceneId);
     if (scene == null) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.surfaceContainerLow,
+    // スマホではタイムラインの場所に出す操作の面（メニューの背景色）、PCでは
+    // 「詳細」の窓の面のまま（以前はどちらもsurfaceContainerLowの3つ目の
+    // 灰色だった）。
+    final pc = isWideScreen(context);
+    final panel = Material(
+      color: pc
+          ? Colors.transparent
+          : Theme.of(context).cardTheme.color ?? scheme.surface,
       child: ValueListenableBuilder<int>(
         valueListenable: widget.currentFrame,
         builder: (context, frame, _) {
@@ -769,7 +785,12 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
                                 visualDensity: VisualDensity.compact,
                                 title: Row(
                                   children: [
-                                    Icon(icon, size: 18),
+                                    // 印は中立の色（差し色は選んだ丸の印だけ）。
+                                    Icon(
+                                      icon,
+                                      size: 18,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
                                     const SizedBox(width: 6),
                                     Flexible(child: Text(text)),
                                   ],
@@ -804,6 +825,7 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
         },
       ),
     );
+    return pc ? panel : MenuSurface(child: panel);
   }
 }
 

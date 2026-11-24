@@ -23,6 +23,7 @@ import '../../canvas/widgets/color_picker_panel.dart';
 import '../../../config/accent_text_theme.dart';
 import '../../../widgets/typing_dialog_inset.dart';
 import '../../../widgets/menu_surface.dart';
+import '../../../widgets/responsive.dart';
 
 enum _Section { text, transform, mask, video }
 
@@ -445,16 +446,28 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
           runSpacing: 4,
           children: [
             FilterChip(
+              // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
               label: Text(l10n.canvasTextBold),
               selected: text.isBold,
               onSelected: (v) => _editText((t) => t.copyWith(isBold: v)),
             ),
             FilterChip(
+              // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
               label: Text(l10n.canvasTextItalic),
               selected: text.isItalic,
               onSelected: (v) => _editText((t) => t.copyWith(isItalic: v)),
             ),
             FilterChip(
+              // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
               avatar: const Icon(Icons.text_rotate_vertical, size: 16),
               label: Text(l10n.canvasTextVertical),
               selected: text.direction == TextWritingDirection.vertical,
@@ -913,8 +926,14 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
       _Section.mask => Icons.vignette_outlined,
       _Section.video => Icons.videocam,
     };
-    return Material(
-      color: scheme.surfaceContainerLow,
+    // スマホではタイムラインの場所に出す操作の面（メニューの背景色）、PCでは
+    // 「詳細」の窓の面のまま（以前はどちらもsurfaceContainerLowの3つ目の
+    // 灰色だった）。
+    final pc = isWideScreen(context);
+    final panel = Material(
+      color: pc
+          ? Colors.transparent
+          : Theme.of(context).cardTheme.color ?? scheme.surface,
       child: Column(
         children: [
           Padding(
@@ -984,6 +1003,10 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     child: ChoiceChip(
+                      // 面と同じ下地なので、選んでいないチップは縁で押せる物と分かるようにする。
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
                       avatar: Icon(sectionIcon(s), size: 16),
                       label: Text(sectionLabel(s)),
                       selected: s == section,
@@ -1018,5 +1041,6 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
         ],
       ),
     );
+    return pc ? panel : MenuSurface(child: panel);
   }
 }

@@ -3424,32 +3424,37 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (project == null) return;
     showModalBottomSheet(
       context: context,
+      // シートを画面の幅いっぱいに出す（中身の幅に縮んで、画面の下の真ん中に
+      // 小さなカードのように浮いていた。他のシートと同じ形）。
       builder: (ctx) => ScrollableSheetBody(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.of(context)!.newProjectBackgroundColorLabel,
-                style: localizedHeadingStyle(
-                  context,
-                  const TextStyle(fontWeight: FontWeight.bold),
+        child: SizedBox(
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.newProjectBackgroundColorLabel,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              BackgroundColorSwatchPicker(
-                selectedColor: Color(project.backgroundColor),
-                onChanged: (color) {
-                  ps.updateProjectBackgroundColor(
-                    widget.projectId,
-                    color.toARGB32(),
-                  );
-                  Navigator.pop(ctx);
-                },
-              ),
-            ],
+                const SizedBox(height: 12),
+                BackgroundColorSwatchPicker(
+                  selectedColor: Color(project.backgroundColor),
+                  onChanged: (color) {
+                    ps.updateProjectBackgroundColor(
+                      widget.projectId,
+                      color.toARGB32(),
+                    );
+                    Navigator.pop(ctx);
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
