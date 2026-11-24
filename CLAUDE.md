@@ -1556,7 +1556,9 @@ onTap: ...)`だったために
   下げる。知らせに印のキーを付けて`test`で見分ける。`runProjectAction`の前の失敗の
   知らせが実例：以前は`hideCurrentSnackBar()`で、ゴミ箱へ移した直後に別の作品の星を
   押すと「元に戻す」が消えた。知らせを一覧で覚えると、`clearSnackBars`で下げられた
-  知らせは`closed`が終わらず一覧に残り続ける）。`SnackBarAction`は押された後に自分で`hideCurrentSnackBar`するので、
+  知らせは`closed`が終わらず一覧に残り続ける）。同じ自分の知らせを出し直すだけなら
+  `showOwnSnackBar(context, SnackBar(key: ValueKey('…'), …))`（設定・エラーの記録・
+  起動失敗の画面）。`SnackBarAction`は押された後に自分で`hideCurrentSnackBar`するので、
   `onPressed`の中で同じ知らせを閉じないこと（読み上げ使用中は閉じた知らせがすぐ取り除かれ、
   後ろで待っている別の知らせまで閉じた）。
 - **名前を1つ入力するダイアログは`lib/widgets/name_entry_dialog.dart`の

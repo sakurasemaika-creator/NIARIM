@@ -54,6 +54,9 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    // scrollUntilVisible jumps the list to the button without laying it out
+    // again: let the new position settle before tapping it.
+    await tester.pumpAndSettle();
     await tester.tap(save);
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.workspaceOverwriteButton));
@@ -65,6 +68,7 @@ void main() {
       200,
       scrollable: find.descendant(of: sheet, matching: find.byType(Scrollable)),
     );
+    await tester.pumpAndSettle();
     await tester.tap(last);
     await tester.pumpAndSettle();
     expect(

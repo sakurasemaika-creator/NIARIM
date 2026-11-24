@@ -14,6 +14,7 @@ import '../../services/first_use_tooltip_service.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/premium_lock_widget.dart';
+import '../../widgets/app_toast_messenger.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/help_button.dart';
@@ -58,9 +59,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context)!;
     await context.read<FirstUseTooltipService>().resetAll();
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.settingsTipsResetDone)));
+    showOwnSnackBar(
+      context,
+      SnackBar(
+        key: const ValueKey('settingsTipsResetNotice'),
+        content: Text(l10n.settingsTipsResetDone),
+      ),
+    );
   }
 
   Future<void> _showSupport() async {
@@ -126,11 +131,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Keep the settings screen available for retry.
     }
     if (!opened && mounted) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.settingsAccountDeletionLinkFailed)),
-        );
+      showOwnSnackBar(
+        context,
+        SnackBar(
+          key: const ValueKey('settingsAccountDeletionLinkNotice'),
+          content: Text(l10n.settingsAccountDeletionLinkFailed),
+        ),
+      );
     }
   }
 

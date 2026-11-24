@@ -105,11 +105,13 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
   Future<void> _copyDetails(AppLocalizations l10n, String details) async {
     await Clipboard.setData(ClipboardData(text: details));
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: _KeptKoreanText(l10n.startupFailedDetailsCopied)),
-      );
+    showOwnSnackBar(
+      context,
+      SnackBar(
+        key: const ValueKey('startupFailureCopiedNotice'),
+        content: _KeptKoreanText(l10n.startupFailedDetailsCopied),
+      ),
+    );
   }
 
   @override

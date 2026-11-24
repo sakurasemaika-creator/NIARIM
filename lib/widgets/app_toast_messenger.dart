@@ -16,6 +16,24 @@ void showIconActionDescription(BuildContext context, String label) {
   );
 }
 
+/// 自分が出した知らせ（[SnackBar.key]で見分ける）だけを置き換えて出す。
+///
+/// `hideCurrentSnackBar`で前の知らせを閉じてから出すと、そのとき出ている
+/// 他の機能の知らせ（ゴミ箱へ移した「元に戻す」等）まで閉じる。知らせは
+/// アプリ全体のメッセンジャーが画面をまたいで出すので、ホームでゴミ箱へ
+/// 移した直後に設定でボタンを押しただけで「元に戻す」が消えた。同じキーの
+/// 前の知らせだけを取り下げ（出ているものは薄くして閉じ、待っているものは
+/// 出さない）、他の知らせの後ろに並べる。
+void showOwnSnackBar(BuildContext context, SnackBar snackBar) {
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  if (messenger == null) return;
+  final key = snackBar.key;
+  if (messenger is AppToastMessengerState && key != null) {
+    messenger.withdrawSnackBars((shown) => shown.key == key);
+  }
+  messenger.showSnackBar(snackBar);
+}
+
 /// 画面下の知らせ（トースト＝SnackBar）が、初めて描かれてから消え切るまでの
 /// 上限（出てくる途中で描画が止まっていた間は数えない）。
 const Duration kToastMaxLifetime = Duration(seconds: 5);

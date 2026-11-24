@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/empty_state_placeholder.dart';
+import '../../widgets/app_toast_messenger.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/grouped_sheet.dart';
@@ -28,9 +29,13 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
       ClipboardData(text: AppErrorReporter.recentErrors.join('\n\n')),
     );
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.errorLogCopied)));
+    showOwnSnackBar(
+      context,
+      SnackBar(
+        key: const ValueKey('errorLogCopiedNotice'),
+        content: Text(l10n.errorLogCopied),
+      ),
+    );
   }
 
   /// 記録を消す。消した記録は知らせの「元に戻す」で戻せる（押し間違いで
