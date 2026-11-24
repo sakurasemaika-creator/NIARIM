@@ -4650,10 +4650,15 @@ WidgetStateBorderSide _quietChipSide(
   required bool selected,
 }) {
   final scheme = Theme.of(context).colorScheme;
+  // 縁の外側に描く（テーマのチップ・外側に描くフォーカスの輪と同じ。内側に
+  // 描くと、フォーカスが来たときにチップが線の太さだけ小さくなった）。
   return WidgetStateBorderSide.resolveWith(
     (states) =>
         focusSide.resolve(states) ??
-        BorderSide(color: selected ? scheme.outline : scheme.outlineVariant),
+        BorderSide(
+          color: selected ? scheme.outline : scheme.outlineVariant,
+          strokeAlign: BorderSide.strokeAlignOutside,
+        ),
   );
 }
 
