@@ -35,6 +35,7 @@ import '../../services/storage_info_service.dart';
 import '../../services/work_folder_service.dart';
 import '../../models/shortcut_binding.dart';
 import '../../widgets/app_tutorial.dart';
+import '../../widgets/menu_surface.dart';
 import '../../widgets/export_share_feedback.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
@@ -4554,8 +4555,10 @@ class _TrashScreenState extends State<TrashScreen>
                       label: Text(
                         _trashKindLabel(context, kind),
                         style: TextStyle(
+                          // 選んだチップはメニューの背景色の面なので、
+                          // その面の文字色で描く（外したチップは用紙の上）。
                           color: _selectedKinds.contains(kind)
-                              ? Theme.of(context).colorScheme.onSurface
+                              ? menuSurfaceScheme(context).onSurface
                               : Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -7030,8 +7033,10 @@ class _TrashTabState extends State<_TrashTab> {
         dimension: 48,
         child: Center(
           child: IconTheme.merge(
+            // 行はメニューの背景色の面（SheetListSegment）に載るので、
+            // その面の補助の文字色にする。
             data: IconThemeData(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: menuSurfaceScheme(context).onSurfaceVariant,
             ),
             child: leading,
           ),

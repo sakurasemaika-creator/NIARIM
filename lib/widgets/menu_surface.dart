@@ -35,6 +35,16 @@ class MenuSurfaceTheme extends ThemeExtension<MenuSurfaceTheme> {
   }
 }
 
+/// メニューの背景色の面（シート・引き出し・選んだチップ）の上で字・印に使う
+/// 配色。本文とメニューの文字色が違うテーマでは[MenuSurfaceTheme]の配色、
+/// 同じテーマ（組み込みのテーマ）では画面の配色。面の外の`context`から
+/// 面の上の色を決めるときに使う（画面の`colorScheme`をそのまま使うと、
+/// 用紙の上の文字色で面の上に描き、メニューの背景だけ暗いテーマで読めない）。
+ColorScheme menuSurfaceScheme(BuildContext context) {
+  final theme = Theme.of(context);
+  return (theme.extension<MenuSurfaceTheme>()?.data ?? theme).colorScheme;
+}
+
 /// [child]をメニューの面のテーマ（[MenuSurfaceTheme]）で描く。テーマに
 /// 無ければ（組み込みのテーマ・テストの素のテーマ）何もしない。
 class MenuSurface extends StatelessWidget {

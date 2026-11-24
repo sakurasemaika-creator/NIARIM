@@ -13,6 +13,7 @@ import '../../../l10n/creator_mission_labels.dart';
 import '../../help/guide_hub_screen.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/line_break.dart';
+import '../../../widgets/menu_surface.dart';
 import '../../canvas/widgets/canvas_icon_button.dart';
 
 /// Server status alone controls the mission drawer exclamation mark.
@@ -155,8 +156,10 @@ class _HomeDrawerState extends State<HomeDrawer> {
                             ),
                             semanticsLabel: l10n.homeDrawerAppTagline,
                           ),
+                          // 引き出しはメニューの背景色の面なので、その面の
+                          // 補助の文字色で描く。
                           style: TextStyle(
-                            color: scheme.onSurfaceVariant,
+                            color: menuSurfaceScheme(context).onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),
