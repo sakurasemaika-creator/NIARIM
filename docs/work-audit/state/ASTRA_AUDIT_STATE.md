@@ -4927,3 +4927,11 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
 - ベースライン（2026-09-09）の後に足された製品のファイル569件（lib・android・backend・assets・tool）を`assign_delta_files.py`で監査のIDへ割り当てた（`D031_DELTA_FILE_ASSIGNMENT.md`）：機能の語で532件、同じフォルダのベースラインのIDで37件（共通の部品：文字の折り方・ボタンの並べ方・知らせ等はA101・A103）、未割当0。語の取り違え（「marker」の名のブラシの先端・「filter」の名のホームの絞り込み・「clip」の名のクリップボード・「reference」を含むpreferences）は直してから数えた。
 - 役目を終えた一度きりの修正スクリプト5本（`tool/one_shot_fix_pinch_and_automation_proof.py`・`patch_custom_automation_*.py`2本・`rewrite_custom_automation_visual_proof.py`・`normal_task_final_residual_fix.sh`。どこからも呼ばれず、最後のものは自分を消す行を持つ）は、消そうとしたが自動の権限の判定で止められたので残した（所有者に伝える）。
 - 判定：未割当の機能・ファイル・画面は0。D031の残りの条件（未完了のDelta・未登録のDiscoveryが0、最後の全件のtest・analyze・見た目の締めが最新で済む）は、全件のtestとAPKのビルドの結果を待って書く。
+
+### D031・D037 四巡目（2026-11-24、Claude・S56、App `351ef581`〔製品は`82808d33`と同じ〕）— 最後の全件のtest・analyze・APK
+
+- **全件のtest（この計算機、`351ef581`）**：955ファイルを60ファイルずつの束に分けて流した（コンテナが2回作り直されたので、終わった束を飛ばして続けた）。成功5978・スキップ23・失敗3。失敗の3件はrootで権限（chmod）が効かない既知のtest（`project_favorite_delete_guard_test`2件・`storage_cache_isolation_test`1件。CIは一般ユーザーで流すので通る）。スキップのうち3件は`--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`のときだけ動く`google_auth_init_once_test`。CLAUDE.mdのベースラインを更新した（`6e5d926e`）。
+- **`flutter analyze`**：0件（`351ef581`、CIの`analyze`の段も`82808d33`で成功）。
+- **APK**：`build-apk.yml`のdebugビルド（#86）が成功。
+- **GitHubの8分割の全件のCI**：#295（`82808d33`、`351ef581`との差は文書だけ）は、使える実行機が1台ずつしか回らず分割を順に流している（2026-11-24 03:20時点で分割0・1が成功、2が実行中、3〜7が待ち）。手で起動した#296（`351ef581`）は、別のセッションのpush（`6c55124c`、#297）で打ち切られ、1つも動かなかった。#295の結果は届いたら追記する。
+- **判定**：D031の照合（未割当0・検証スクリプトok）と、最新の全件のtest・analyze・APKのビルドは済んだ。CIの残りの分割の結果待ち。D032（全操作の実操作）は実機・実課金・実広告・バックエンドのデプロイが要る所を除いて四巡目で確かめた範囲のまま。全面監査completeは宣言しない（実機・法務は範囲外で、利用者の作業として残る）。
