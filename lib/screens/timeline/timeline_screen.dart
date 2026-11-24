@@ -6838,6 +6838,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(l10n.timelineColorLabel),
+                // 色は1行に並べる（48pxずつ並べていて、4色と2色の2行になった）。
+                // 押せる所は38×48（ダイアログは中身の固有の幅で決まるので、
+                // LayoutBuilderで幅に合わせることはできない）。
                 Wrap(
                   children: [
                     for (final swatch in colors)
@@ -6845,6 +6848,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         selected: swatch == color,
                         child: IconButton(
                           key: ValueKey('timelineTimestampColor-$swatch'),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints.tightFor(
+                            width: 38,
+                            height: kMinInteractiveDimension,
+                          ),
+                          // 押せる所を48へ広げない（広げると1行に入らない）。
+                          style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                           tooltip: swatch == null
                               ? l10n.widgetColorFollowTheme
                               : '#${(swatch & 0xffffff).toRadixString(16).padLeft(6, '0').toUpperCase()}',
