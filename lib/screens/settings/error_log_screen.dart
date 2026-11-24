@@ -6,7 +6,9 @@ import '../../utils/app_error_reporter.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
+import '../../widgets/icon_notice.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../utils/saved_list_reader.dart';
 
 /// 設定の「エラーの記録」。アプリを閉じるまでに起きたエラー
@@ -31,6 +33,33 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
       ..showSnackBar(SnackBar(content: Text(l10n.errorLogCopied)));
   }
 
+  /// 記録を消す。消した記録は知らせの「元に戻す」で戻せる（押し間違いで
+  /// 不具合の手がかりを失わない）。
+  void _clear(AppLocalizations l10n) {
+    final cleared = List<String>.of(AppErrorReporter.recentErrors);
+    setState(AppErrorReporter.recentErrors.clear);
+    if (cleared.isEmpty) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.errorLogCleared),
+        persist: false,
+        action: SnackBarAction(
+          label: l10n.homeUndoAction,
+          onPressed: () {
+            if (!mounted) return;
+            setState(() {
+              // 消した後に記録されたエラーは新しい順の先頭に残す。
+              final log = AppErrorReporter.recentErrors..addAll(cleared);
+              if (log.length > AppErrorReporter.maxRecent) {
+                log.removeRange(AppErrorReporter.maxRecent, log.length);
+              }
+            });
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -40,21 +69,17 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
     final unreadable = SavedListCarryOver.total;
     final unreadableNotice = unreadable == 0
         ? null
-        : MenuCard(
+        : GroupedSheet(
             key: const Key('errorLogUnreadableSavedItems'),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.inventory_2_outlined),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(l10n.savedListUnreadableNotice(unreadable)),
-                  ),
-                ],
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: IconNotice(
+                  l10n.savedListUnreadableNotice(unreadable),
+                  icon: Icons.inventory_2_outlined,
+                ),
               ),
-            ),
+            ],
           );
     return Scaffold(
       appBar: AppBar(title: FitOrHideTitle(l10n.settingsErrorLogTitle)),
@@ -74,15 +99,8 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
                     unreadableNotice,
                     const SizedBox(height: 12),
                   ],
-                  Text(
-                    l10n.errorLogHint,
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.5,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                  // 操作（コピー・消す）を先に置き、大きな文字でもスクロール
+                  // せずに押せるようにする。
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
@@ -95,24 +113,41 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
                       ),
                       OutlinedButton.icon(
                         key: const Key('errorLogClear'),
-                        onPressed: () =>
-                            setState(AppErrorReporter.recentErrors.clear),
+                        onPressed: () => _clear(l10n),
                         icon: const Icon(Icons.delete_sweep_outlined),
                         label: Text(l10n.errorLogClear),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  for (final error in errors)
-                    MenuCard(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: SelectableText(
-                          error,
-                          style: const TextStyle(fontSize: 14, height: 1.5),
+                  const SizedBox(height: 16),
+                  // 記録は1枚の面に新しい順に並べ、細い線で分ける。
+                  if (errors.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: messageText(
+                        l10n.errorLogHint,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.5,
+                          color: scheme.onSurfaceVariant,
                         ),
                       ),
+                    ),
+                  // 説明（新しい順に20件まで・伏せてある情報）は記録の面の下。
+                  // 記録の前に置くと、大きな文字では説明だけで画面が埋まった。
+                  if (errors.isNotEmpty)
+                    GroupedSheet(
+                      footer: l10n.errorLogHint,
+                      children: [
+                        for (final error in errors)
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: SelectableText(
+                              error,
+                              style: const TextStyle(fontSize: 14, height: 1.5),
+                            ),
+                          ),
+                      ],
                     ),
                 ],
               ),

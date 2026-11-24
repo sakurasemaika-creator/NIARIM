@@ -31,6 +31,7 @@ import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../widgets/menu_surface.dart';
 import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
 
 /// ウォーターマーク登録・管理画面（プレミアム限定）。
 /// 「設定項目：画像選択 / 文字入力 / …」のうち、画像・文字それぞれの
@@ -669,11 +670,20 @@ class _WatermarkTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<WatermarkService>();
+    // ほかの設定の面と同じ：メニューの背景色・細い縁・影なし。
+    final theme = Theme.of(context);
     return MenuCard(
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(GroupedSheet.radius),
+        side: BorderSide(
+          color:
+              theme.dividerTheme.color ??
+              theme.colorScheme.outlineVariant.withValues(alpha: .6),
+        ),
+      ),
       child: Column(
         children: [
           Expanded(
@@ -688,7 +698,8 @@ class _WatermarkTile extends StatelessWidget {
               children: [
                 Expanded(child: _WatermarkName(asset.name)),
                 IconButton(
-                  icon: const Icon(Icons.delete, size: 16),
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  color: theme.colorScheme.onSurfaceVariant,
                   onPressed: onDelete,
                   tooltip: l10n.commonDelete,
                 ),

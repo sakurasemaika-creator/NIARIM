@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/premium_service.dart';
+import '../config/accent_text_theme.dart';
 import '../config/font_fallback.dart';
 import 'keep_together_text.dart';
 
@@ -170,44 +171,19 @@ class PremiumFeatureIntro extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // 機能でできあがるものを見せる（差し色の丸に印を載せない）。
+          // 透かしは描いたコマの隅に名前が重なった見本。
           Center(
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: colors.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, size: 34, color: colors.onPrimaryContainer),
-                ),
-                PositionedDirectional(
-                  end: -4,
-                  bottom: -2,
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: colors.primary,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: colors.surface, width: 2),
-                    ),
-                    child: Icon(
-                      Icons.workspace_premium_rounded,
-                      size: 14,
-                      color: colors.onPrimary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: feature == PremiumFeature.watermark
+                ? const _WatermarkFrameSample()
+                : Icon(icon, size: 40, color: colors.onSurfaceVariant),
           ),
           const SizedBox(height: 20),
           Semantics(
             header: true,
-            child: Text(
+            child: messageText(
               title,
+              keepLineStarts: true,
               textAlign: TextAlign.center,
               style: localizedHeadingStyle(
                 context,
@@ -221,8 +197,10 @@ class PremiumFeatureIntro extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Text(
+          // 長音符・小さいかなで行を始めない（「ウォータ / ーマーク」と折れた）。
+          messageText(
             body,
+            keepLineStarts: true,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -241,7 +219,8 @@ class PremiumFeatureIntro extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
+          // 主な操作（塗り）は1つだけにし、もう1つの道は文字のボタン。
+          TextButton.icon(
             key: const Key('premiumFeatureIntroRewards'),
             icon: const Icon(Icons.diamond_outlined),
             onPressed: () => context.push('/rewards'),
@@ -254,6 +233,140 @@ class PremiumFeatureIntro extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 透かしの見本：描いたコマ（用紙の色に墨の線）の右下に、作者の名前の
+/// 透かしが重なっている。左上はコマの番号（差し色の小さな印）。
+class _WatermarkFrameSample extends StatelessWidget {
+  const _WatermarkFrameSample();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: 240,
+        height: 150,
+        child: CustomPaint(
+          painter: _WatermarkFramePainter(
+            paper: theme.cardTheme.color ?? scheme.surface,
+            rule:
+                theme.dividerTheme.color ??
+                scheme.outlineVariant.withValues(alpha: .6),
+            ink: scheme.onSurface,
+            mark: AccentTextTheme.of(context),
+            textDirection: Directionality.of(context),
+            fontFamily: localizedHeadingStyle(
+              context,
+              const TextStyle(),
+            ).fontFamily,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WatermarkFramePainter extends CustomPainter {
+  const _WatermarkFramePainter({
+    required this.paper,
+    required this.rule,
+    required this.ink,
+    required this.mark,
+    required this.textDirection,
+    required this.fontFamily,
+  });
+
+  final Color paper;
+  final Color rule;
+  final Color ink;
+  final Color mark;
+  final TextDirection textDirection;
+  final String? fontFamily;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final frame = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(12),
+    );
+    canvas.drawRRect(frame, Paint()..color = paper);
+    canvas.drawRRect(
+      frame.deflate(0.5),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..color = rule,
+    );
+    // 手で描いたような線：丘と、跳ねる小さな玉（アニメの1コマ）。
+    final pen = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..color = ink;
+    final w = size.width;
+    final h = size.height;
+    canvas.drawPath(
+      Path()
+        ..moveTo(w * 0.08, h * 0.78)
+        ..cubicTo(w * 0.3, h * 0.6, w * 0.5, h * 0.86, w * 0.92, h * 0.7),
+      pen,
+    );
+    canvas.drawCircle(Offset(w * 0.42, h * 0.38), h * 0.11, pen);
+    // 跳ねた跡（薄い点線のような短い線）。
+    final trail = Paint()
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round
+      ..color = ink.withValues(alpha: 0.35);
+    for (var i = 0; i < 3; i++) {
+      final x = w * (0.24 + i * 0.05);
+      final y = h * (0.62 - i * 0.07);
+      canvas.drawLine(Offset(x, y), Offset(x + w * 0.02, y - h * 0.03), trail);
+    }
+    // コマの番号。
+    final number = TextPainter(
+      text: TextSpan(
+        text: '12',
+        style: TextStyle(
+          fontFamily: fontFamily,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: mark,
+        ),
+      ),
+      textDirection: textDirection,
+    )..layout();
+    number.paint(canvas, const Offset(10, 8));
+    number.dispose();
+    // 透かし：右下に作者の名前を、絵の邪魔をしない薄さで重ねる。
+    final watermark = TextPainter(
+      text: TextSpan(
+        text: '@artist',
+        style: TextStyle(
+          fontFamily: fontFamily,
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          color: ink.withValues(alpha: 0.42),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    watermark.paint(
+      canvas,
+      Offset(w - watermark.width - 12, h - watermark.height - 10),
+    );
+    watermark.dispose();
+  }
+
+  @override
+  bool shouldRepaint(_WatermarkFramePainter old) =>
+      old.paper != paper ||
+      old.rule != rule ||
+      old.ink != ink ||
+      old.mark != mark ||
+      old.textDirection != textDirection ||
+      old.fontFamily != fontFamily;
 }
 
 class _PremiumBannerDialog extends StatelessWidget {

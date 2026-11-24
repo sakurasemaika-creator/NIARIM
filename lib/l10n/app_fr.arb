@@ -3392,6 +3392,7 @@
   "errorLogCopyAll": "Tout copier",
   "errorLogCopied": "Journal des erreurs copié",
   "errorLogClear": "Effacer le journal",
+  "errorLogCleared": "Journal des erreurs effacé",
   "tutorialSkip": "Passer",
   "tutorialNext": "Suivant",
   "tutorialPageIndicator": "Page {current} sur {total}",

@@ -20,7 +20,7 @@ import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../config/font_fallback.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
 
 /// 容量削減画面（ホーム画面ハンバーガーメニューから遷移）。
 /// 端末容量に対するNIARIMの使用量・NIARIM内部のデータ内訳を2つの棒
@@ -518,11 +518,16 @@ class _StorageScreenState extends State<StorageScreen> {
     String? busyLabel,
     required FocusNode focusNode,
   }) {
+    // まとまりの名前はほかの設定の画面の面の上の名前と同じ書式・位置。
     final title = messageText(
       text,
       style: localizedHeadingStyle(
         context,
-        const TextStyle(fontWeight: FontWeight.bold),
+        TextStyle(
+          fontSize: 13,
+          height: 1.35,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
     );
     // 印が無い間も印の幅を取っておく（印が出ると見出しの幅が狭まって2行に
@@ -532,21 +537,26 @@ class _StorageScreenState extends State<StorageScreen> {
       focusNode: focusNode,
       skipTraversal: true,
       includeSemantics: false,
-      child: Row(
-        children: [
-          Flexible(child: title),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 14,
-            height: 14,
-            child: busyLabel == null
-                ? null
-                : CircularProgressIndicator(
-                    strokeWidth: 2,
-                    semanticsLabel: busyLabel,
-                  ),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: GroupedSheet.rowInset,
+        ),
+        child: Row(
+          children: [
+            Flexible(child: title),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 14,
+              height: 14,
+              child: busyLabel == null
+                  ? null
+                  : CircularProgressIndicator(
+                      strokeWidth: 2,
+                      semanticsLabel: busyLabel,
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1046,37 +1056,48 @@ class _StorageScreenState extends State<StorageScreen> {
   }) {
     // 行を押せなくするのは、大きさで決まる分だけ。操作が進んでいる間の
     // 二度押しは[_runAction]が止める（[_actionBusy]の注意を参照）。
+    // 整理する操作は1枚の面の行に並べ、消すとすべてが失われる「全データを
+    // 削除」だけは別の面に離して置く（押し間違えにくく、重さの違いが見える）。
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _actionTile(
-          icon: Icons.cleaning_services_outlined,
-          title: l10n.storageClearCacheButton,
-          subtitle: cache.subtitle,
-          focusNode: _cacheRowFocus,
-          onTap: cache.enabled ? _confirmClearCache : null,
+        GroupedSheet(
+          children: [
+            _actionTile(
+              icon: Icons.cleaning_services_outlined,
+              title: l10n.storageClearCacheButton,
+              subtitle: cache.subtitle,
+              focusNode: _cacheRowFocus,
+              onTap: cache.enabled ? _confirmClearCache : null,
+            ),
+            _actionTile(
+              icon: Icons.image_not_supported_outlined,
+              title: l10n.storageRemoveUnusedMaterialsButton,
+              onTap: _confirmRemoveUnusedMaterials,
+            ),
+            _actionTile(
+              icon: Icons.delete_sweep_outlined,
+              title: l10n.storageEmptyTrashButton,
+              subtitle: trash.subtitle,
+              focusNode: _trashRowFocus,
+              onTap: trash.enabled ? _confirmEmptyTrash : null,
+            ),
+            _actionTile(
+              icon: Icons.folder_open_outlined,
+              title: l10n.storageOrganizeProjectsButton,
+              onTap: _openProjects,
+            ),
+          ],
         ),
-        _actionTile(
-          icon: Icons.image_not_supported_outlined,
-          title: l10n.storageRemoveUnusedMaterialsButton,
-          onTap: _confirmRemoveUnusedMaterials,
-        ),
-        _actionTile(
-          icon: Icons.delete_sweep_outlined,
-          title: l10n.storageEmptyTrashButton,
-          subtitle: trash.subtitle,
-          focusNode: _trashRowFocus,
-          onTap: trash.enabled ? _confirmEmptyTrash : null,
-        ),
-        _actionTile(
-          icon: Icons.folder_open_outlined,
-          title: l10n.storageOrganizeProjectsButton,
-          onTap: _openProjects,
-        ),
-        Divider(height: 24),
-        _actionTile(
-          icon: Icons.warning_amber_outlined,
-          title: l10n.storageEraseAllButton,
-          onTap: _confirmEraseAll,
+        const SizedBox(height: 24),
+        GroupedSheet(
+          children: [
+            _actionTile(
+              icon: Icons.warning_amber_outlined,
+              title: l10n.storageEraseAllButton,
+              onTap: _confirmEraseAll,
+            ),
+          ],
         ),
       ],
     );
@@ -1107,42 +1128,41 @@ class _StorageScreenState extends State<StorageScreen> {
     final subtitleStyle =
         ListTileTheme.of(context).subtitleTextStyle ??
         theme.textTheme.bodyMedium;
-    return MenuCard(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        focusNode: focusNode,
-        leading: Icon(icon),
-        iconColor: foreground,
-        textColor: foreground,
-        // 括弧の中（「（初期化）」等）は行の途中で切らない。
-        // Keep only explicit bracketed phrases. messageText also keeps every
-        // Korean word, which can add an unnecessary line in compact layouts.
-        // KeepTogetherText still keeps a closing bracket with the preceding
-        // character when the full bracketed phrase does not fit.
-        title: KeepTogetherText(title, keep: _bracketedWords(title)),
-        subtitle: subtitle == null
-            ? null
-            : Text(
-                subtitle,
-                strutStyle: subtitleStyle == null
-                    ? null
-                    : StrutStyle.fromTextStyle(
-                        subtitleStyle,
-                        forceStrutHeight: true,
-                      ),
-              ),
-        // 押せない間も矢印の幅は取っておく（押せるようになって矢印が出ると、
-        // 名前の幅が狭まって2行に折れ、下の行が動く。文字が大きいときに起きた）。
-        trailing: Visibility(
-          visible: onTap != null,
-          maintainSize: true,
-          maintainAnimation: true,
-          maintainState: true,
-          child: const Icon(Icons.chevron_right),
-        ),
-        onTap: onTap,
-        enabled: onTap != null,
+    // 面（GroupedSheet）の中の1行。印は補助の文字色の役目のまま、押せない間は
+    // メニューの押せない色。
+    return ListTile(
+      focusNode: focusNode,
+      leading: Icon(icon),
+      iconColor: foreground,
+      textColor: foreground,
+      // 括弧の中（「（初期化）」等）は行の途中で切らない。
+      // Keep only explicit bracketed phrases. messageText also keeps every
+      // Korean word, which can add an unnecessary line in compact layouts.
+      // KeepTogetherText still keeps a closing bracket with the preceding
+      // character when the full bracketed phrase does not fit.
+      title: KeepTogetherText(title, keep: _bracketedWords(title)),
+      subtitle: subtitle == null
+          ? null
+          : Text(
+              subtitle,
+              strutStyle: subtitleStyle == null
+                  ? null
+                  : StrutStyle.fromTextStyle(
+                      subtitleStyle,
+                      forceStrutHeight: true,
+                    ),
+            ),
+      // 押せない間も矢印の幅は取っておく（押せるようになって矢印が出ると、
+      // 名前の幅が狭まって2行に折れ、下の行が動く。文字が大きいときに起きた）。
+      trailing: Visibility(
+        visible: onTap != null,
+        maintainSize: true,
+        maintainAnimation: true,
+        maintainState: true,
+        child: const Icon(Icons.chevron_right),
       ),
+      onTap: onTap,
+      enabled: onTap != null,
     );
   }
 

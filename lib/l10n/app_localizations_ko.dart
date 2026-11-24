@@ -8438,6 +8438,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get errorLogClear => '기록 지우기';
 
   @override
+  String get errorLogCleared => '오류 기록을 지웠습니다';
+
+  @override
   String get tutorialSkip => '건너뛰기';
 
   @override

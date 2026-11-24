@@ -8396,6 +8396,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get errorLogClear => '記録を消す';
 
   @override
+  String get errorLogCleared => 'エラーの記録を消しました';
+
+  @override
   String get tutorialSkip => 'スキップ';
 
   @override

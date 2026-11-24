@@ -12,6 +12,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/l10n/theme_preset_labels.dart';
 import 'package:niarim/screens/settings/theme_settings_screen.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
@@ -83,10 +84,13 @@ void main() {
     final stride = (position.viewportDimension - 72).clamp(100.0, 2000.0);
     final allPageDir = Directory('build/theme-inline-preview')
       ..createSync(recursive: true);
-    final l10nAtTop = AppLocalizations.of(
-      tester.element(find.byType(ThemeSettingsScreen)),
-    )!;
-    final lastButton = find.text(l10nAtTop.themeImportButton);
+    // 画面のいちばん下はテーマ一覧の最後の行（保存・読み込みの行は色の
+    // 設定のすぐ下へ移した）。そこまで撮れたら全部を撮ったことになる。
+    final screenContext = tester.element(find.byType(ThemeSettingsScreen));
+    final lastPreset = screenContext.read<ThemeService>().presets.last;
+    final lastButton = find.text(
+      themePresetLabel(lastPreset, Localizations.localeOf(screenContext)),
+    );
     // The nested shrink-wrapped preset list can grow its scroll extent when
     // new rows are laid out. Recompute maxScrollExtent AFTER every viewport;
     // computing it once before scrolling silently truncates the gallery.
@@ -124,7 +128,7 @@ void main() {
     expect(
       reachedBottom,
       isTrue,
-      reason: 'The complete theme screen must include the import button',
+      reason: 'The complete theme screen must reach the last theme in the list',
     );
     // Continue the pre-existing editing/adoption test from its usual start.
     position.jumpTo(0);

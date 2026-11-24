@@ -3392,6 +3392,7 @@
   "errorLogCopyAll": "Copiar todo",
   "errorLogCopied": "Registro de errores copiado",
   "errorLogClear": "Borrar registro",
+  "errorLogCleared": "Se borró el registro de errores",
   "tutorialSkip": "Omitir",
   "tutorialNext": "Siguiente",
   "tutorialPageIndicator": "Página {current} de {total}",

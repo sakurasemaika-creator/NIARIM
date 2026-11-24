@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +19,7 @@ import '../../widgets/first_that_fits.dart';
 import '../../widgets/fit_or_icon_tab_bar.dart';
 import '../../widgets/help_button.dart';
 import 'font_catalog_tab.dart';
+import 'widgets/sheet_list_segment.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 
@@ -153,14 +153,11 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                           context,
                         ).colorScheme.onSurfaceVariant,
                         filled: true,
-                        fillColor: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerLow,
+                        // 検索欄も面と同じ色・細い縁（面の色は2種類だけ）。
+                        fillColor: _sheetColor(context),
                         isDense: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
-                        ),
+                        border: _sheetFieldBorder(context),
+                        enabledBorder: _sheetFieldBorder(context),
                       ),
                       onChanged: (v) => setState(() => _query = v),
                     ),
@@ -224,7 +221,12 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    8,
+                    16,
+                    16 + MediaQuery.paddingOf(context).bottom,
+                  ),
                   sliver: SliverList.builder(
                     itemCount: sorted.length,
                     itemBuilder: (context, index) {
@@ -232,25 +234,24 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                       final subtitleStyle =
                           ListTileTheme.of(context).subtitleTextStyle ??
                           Theme.of(context).textTheme.bodyMedium!;
-                      return Card(
-                        elevation: 1,
-                        shadowColor: ThemeService.activeColorScheme.shadow
-                            .withValues(alpha: 0.15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerLow,
+                      // 一覧は1枚の面の行（行ごとのカードにしない）。
+                      return SheetListSegment(
+                        first: index == 0,
+                        last: index == sorted.length - 1,
                         child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: scheme.primaryContainer,
-                            child: Text(
-                              f.extension.substring(0, 1),
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AccentTextTheme.of(context),
-                                fontWeight: FontWeight.bold,
+                          // 先頭はその書体そのもので書いた「Aa」（形式の頭文字を
+                          // 差し色の丸に載せる代わりに、書体の見本を見せる）。
+                          leading: SizedBox(
+                            width: 40,
+                            child: Center(
+                              child: Text(
+                                'Aa',
+                                style: TextStyle(
+                                  fontFamily: service.familyNameOf(f),
+                                  fontSize: 20,
+                                  height: 1.2,
+                                  color: scheme.onSurface,
+                                ),
                               ),
                             ),
                           ),
@@ -295,7 +296,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                                     size: 18,
                                     color: f.pixelMode
                                         ? AccentTextTheme.of(context)
-                                        : null,
+                                        : scheme.onSurfaceVariant,
                                   ),
                                   tooltip: l10n.fontPixelModeTooltip,
                                   onPressed: () =>
@@ -307,16 +308,17 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                                         ? Icons.star
                                         : Icons.star_border,
                                     size: 18,
+                                    // お気に入りの星は案Aの差し色（ほかの
+                                    // 画面の星と同じ）。
                                     color: f.isFavorite
-                                        ? ThemeService
-                                              .activeColorScheme
-                                              .tertiary
-                                        : null,
+                                        ? AccentTextTheme.of(context)
+                                        : scheme.onSurfaceVariant,
                                   ),
                                   tooltip: l10n.commonFavoriteToggle,
                                   onPressed: () => service.toggleFavorite(f.id),
                                 ),
                                 IconButton(
+                                  color: scheme.onSurfaceVariant,
                                   icon: const Icon(
                                     Icons.edit_outlined,
                                     size: 18,
@@ -326,6 +328,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                                       _showRenameDialog(context, f),
                                 ),
                                 IconButton(
+                                  color: scheme.onSurfaceVariant,
                                   icon: const Icon(
                                     Icons.delete_outline,
                                     size: 18,
@@ -474,4 +477,21 @@ class _ImportFontTab extends StatelessWidget {
       ).showSnackBar(SnackBar(content: Text(l10n.fontCorruptedSnackbar)));
     }
   }
+}
+
+/// 面の色（メニューの背景色）。検索欄を面と同じ色にする。
+Color _sheetColor(BuildContext context) =>
+    Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface;
+
+/// 面と同じ細い縁の入力欄の枠。
+InputBorder _sheetFieldBorder(BuildContext context) {
+  final theme = Theme.of(context);
+  return OutlineInputBorder(
+    borderRadius: BorderRadius.circular(14),
+    borderSide: BorderSide(
+      color:
+          theme.dividerTheme.color ??
+          theme.colorScheme.outlineVariant.withValues(alpha: .6),
+    ),
+  );
 }

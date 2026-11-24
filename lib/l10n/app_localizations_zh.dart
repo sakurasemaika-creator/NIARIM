@@ -8293,6 +8293,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorLogClear => '清除记录';
 
   @override
+  String get errorLogCleared => '已清除错误记录';
+
+  @override
   String get tutorialSkip => '跳过';
 
   @override
@@ -18822,6 +18825,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get errorLogClear => '清除記錄';
+
+  @override
+  String get errorLogCleared => '已清除錯誤記錄';
 
   @override
   String get tutorialSkip => '略過';

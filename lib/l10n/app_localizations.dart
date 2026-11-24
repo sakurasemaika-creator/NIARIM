@@ -15099,6 +15099,12 @@ abstract class AppLocalizations {
   /// **'記録を消す'**
   String get errorLogClear;
 
+  /// No description provided for @errorLogCleared.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラーの記録を消しました'**
+  String get errorLogCleared;
+
   /// No description provided for @tutorialSkip.
   ///
   /// In ja, this message translates to:

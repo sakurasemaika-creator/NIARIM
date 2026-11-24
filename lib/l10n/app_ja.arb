@@ -4298,6 +4298,7 @@
   "errorLogCopyAll": "すべてコピー",
   "errorLogCopied": "エラーの記録をコピーしました",
   "errorLogClear": "記録を消す",
+  "errorLogCleared": "エラーの記録を消しました",
   "tutorialSkip": "スキップ",
   "tutorialNext": "次へ",
   "tutorialPageIndicator": "{total}ページ中{current}ページ目",

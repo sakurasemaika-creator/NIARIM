@@ -1,4 +1,4 @@
-import 'package:niarim/services/theme_service.dart';
+import 'widgets/sheet_list_segment.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -78,9 +78,10 @@ class _FontCatalogTabState extends State<FontCatalogTab>
                       context,
                     ).colorScheme.onSurfaceVariant,
                     filled: true,
-                    fillColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerLow,
+                    // 検索欄も面と同じ色・細い縁（面の色は2種類だけ）。
+                    fillColor:
+                        Theme.of(context).cardTheme.color ??
+                        Theme.of(context).colorScheme.surface,
                     isDense: true,
                     contentPadding: compact
                         ? const EdgeInsets.symmetric(
@@ -102,7 +103,19 @@ class _FontCatalogTabState extends State<FontCatalogTab>
                         : null,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
+                      borderSide: BorderSide(
+                        color:
+                            Theme.of(context).dividerTheme.color ??
+                            scheme.outlineVariant.withValues(alpha: .6),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color:
+                            Theme.of(context).dividerTheme.color ??
+                            scheme.outlineVariant.withValues(alpha: .6),
+                      ),
                     ),
                   ),
                   onChanged: (v) => setState(() => _query = v),
@@ -155,21 +168,25 @@ class _FontCatalogTabState extends State<FontCatalogTab>
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    8,
+                    16,
+                    16 + MediaQuery.paddingOf(context).bottom,
+                  ),
                   sliver: SliverList.builder(
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final entry = filtered[index];
-                      return Card(
-                        elevation: 1,
-                        shadowColor: ThemeService.activeColorScheme.shadow
-                            .withValues(alpha: 0.15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        color: scheme.surfaceContainerLow,
+                      // 一覧は1枚の面の行（行ごとのカードにしない）。
+                      return SheetListSegment(
+                        first: index == 0,
+                        last: index == filtered.length - 1,
                         child: ListTile(
-                          leading: const Icon(Icons.font_download_outlined),
+                          leading: Icon(
+                            Icons.font_download_outlined,
+                            color: scheme.onSurfaceVariant,
+                          ),
                           title: Text(entry.displayName),
                           subtitle: Text(
                             l10n.fontCatalogEntrySubtitle(
@@ -177,7 +194,7 @@ class _FontCatalogTabState extends State<FontCatalogTab>
                               entry.license,
                             ),
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 12,
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
@@ -239,10 +256,8 @@ class _FontCatalogTabState extends State<FontCatalogTab>
     DownloadableFontEntry entry,
   ) {
     if (service.isCatalogFontDownloaded(entry)) {
-      return Icon(
-        Icons.check_circle,
-        color: ThemeService.activeColorScheme.secondary,
-      );
+      // 取り込み済みは状態の印（差し色の文字・アイコン色）。
+      return Icon(Icons.check_circle, color: AccentTextTheme.of(context));
     }
     if (_downloadingIds.contains(entry.id)) {
       return const SizedBox(
@@ -251,8 +266,11 @@ class _FontCatalogTabState extends State<FontCatalogTab>
         child: CircularProgressIndicator(strokeWidth: 2),
       );
     }
+    // 行ごとの取り込みの印は補助の文字色（2000件の行の全部が差し色だと、
+    // 取り込み済みの印が目に入らなかった）。
     return IconButton(
       icon: const Icon(Icons.download_outlined),
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
       tooltip: AppLocalizations.of(context)!.fontCatalogDownloadTooltip,
       onPressed: () => _downloadCatalogFont(entry),
     );

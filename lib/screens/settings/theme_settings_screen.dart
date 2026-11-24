@@ -28,6 +28,8 @@ import '../../widgets/theme_rescue_button.dart';
 import 'theme_preview_gallery_screen.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/grouped_sheet.dart';
+import 'widgets/sheet_list_segment.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../utils/file_failure_reason.dart';
@@ -66,280 +68,320 @@ class ThemeSettingsScreen extends StatelessWidget {
             // 画面ギャラリーと共通で、固定画像・固定配色ではない。
             // タップで全画面に移動する。カラーピッカーの変更結果は
             // ThemeServiceの再描画によって即座にこの見本にも反映される。
+            // 見本は設定の面と同じ1枚の面（メニューの背景色・細い縁）に置く。
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-              child: Material(
-                color: Theme.of(context).colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  key: const Key('themePreviewOpen'),
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const ThemePreviewGalleryScreen(),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: GroupedSheet(
+                children: [
+                  InkWell(
+                    key: const Key('themePreviewOpen'),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ThemePreviewGalleryScreen(),
+                      ),
                     ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        const ThemePreviewThumbnail(
-                          key: Key('themeInlinePreview'),
-                          height: 184,
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                AppLocalizations.of(
-                                  context,
-                                )!.themePreviewCardTitle,
-                                style: localizedHeadingStyle(
-                                  context,
-                                  const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                AppLocalizations.of(
-                                  context,
-                                )!.themePreviewCardSubtitle,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Theme.of(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          const ThemePreviewThumbnail(
+                            key: Key('themeInlinePreview'),
+                            height: 184,
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(
                                     context,
-                                  ).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.themePreviewCardViewAll(
-                                        themePreviewEntries.length,
-                                      ),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: AccentTextTheme.of(context),
-                                      ),
+                                  )!.themePreviewCardTitle,
+                                  style: localizedHeadingStyle(
+                                    context,
+                                    const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    Icons.open_in_full,
-                                    size: 17,
-                                    color: AccentTextTheme.of(context),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.themePreviewCardSubtitle,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                   ),
-                                ],
-                              ),
-                            ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.themePreviewCardViewAll(
+                                          themePreviewEntries.length,
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: AccentTextTheme.of(context),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.open_in_full,
+                                      size: 17,
+                                      color: AccentTextTheme.of(context),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
             // カラーカスタマイズ：すべてカラーピッカー（HSV/RGB/HEX）で
             // 自由に設定できる。変更は即座にアプリ全体（現在のプリセット）へ
             // 反映される。
+            // 色の役目ごとの行は1枚の面にまとめ、細かい役目は同じ面の最後の
+            // 行で開く（以前は色ごとに影のついたカードが並んでいた）。
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: Text(
-                l10n.themeColorCustomizeSection,
-                style: localizedHeadingStyle(
-                  context,
-                  const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            _ColorCustomizeTile(
-              label: l10n.themeColorAccent,
-              color: current.accentColor,
-              onTap: () => _showColorPickerDialog(
-                context,
-                themeService,
-                (p, c) => p.copyWith(
-                  accentColor: c,
-                  accentTextColor:
-                      current.accentTextColor != null &&
-                          _sameColor(
-                            current.effectiveAccentTextColor,
-                            current.accentColor,
-                          )
-                      ? c
-                      : current.accentTextColor,
-                  selectionColor:
-                      _sameColor(current.selectionColor, current.accentColor)
-                      ? c
-                      : null,
-                ),
-                current.accentColor,
-                role: _ThemeColorRole.accent,
-                roleLabel: l10n.themeColorAccent,
-              ),
-            ),
-            _ColorCustomizeTile(
-              label: l10n.themeColorText,
-              color: current.textColor,
-              onTap: () => _showColorPickerDialog(
-                context,
-                themeService,
-                (p, c) => p.copyWith(
-                  textColor: c,
-                  menuTextColor:
-                      _sameColor(current.menuTextColor, current.textColor)
-                      ? c
-                      : null,
-                ),
-                current.textColor,
-                role: _ThemeColorRole.text,
-                roleLabel: l10n.themeColorText,
-              ),
-            ),
-            _ColorCustomizeTile(
-              key: const Key('themeButtonTextColorTile'),
-              label: l10n.themeColorButtonText,
-              color: current.buttonTextColor,
-              onTap: () => _showColorPickerDialog(
-                context,
-                themeService,
-                (p, c) => p.copyWith(
-                  buttonTextColor: c,
-                  selectionTextColor:
-                      _sameColor(
-                        current.selectionTextColor,
-                        current.buttonTextColor,
-                      )
-                      ? c
-                      : null,
-                ),
-                current.buttonTextColor,
-                role: _ThemeColorRole.buttonText,
-                roleLabel: l10n.themeColorButtonText,
-              ),
-            ),
-            _ColorCustomizeTile(
-              label: l10n.themeColorPanelBg,
-              color: current.panelBgColor,
-              onTap: () => _showColorPickerDialog(
-                context,
-                themeService,
-                (p, c) => p.copyWith(panelBgColor: c),
-                current.panelBgColor,
-                role: _ThemeColorRole.panelBg,
-                roleLabel: l10n.themeColorPanelBg,
-              ),
-            ),
-            _ColorCustomizeTile(
-              label: l10n.themeColorMenuBg,
-              color: current.menuBgColor,
-              onTap: () => _showColorPickerDialog(
-                context,
-                themeService,
-                (p, c) => p.copyWith(menuBgColor: c),
-                current.menuBgColor,
-                role: _ThemeColorRole.menuBg,
-                roleLabel: l10n.themeColorMenuBg,
-              ),
-            ),
-            _ColorCustomizeTile(
-              label: l10n.themeColorUpdateMark,
-              color: current.updateMarkColor,
-              onTap: () => _showColorPickerDialog(
-                context,
-                themeService,
-                (p, c) => p.copyWith(updateMarkColor: c),
-                current.updateMarkColor,
-                role: _ThemeColorRole.updateMark,
-                roleLabel: l10n.themeColorUpdateMark,
-              ),
-            ),
-            ExpansionTile(
-              key: const PageStorageKey('themeAdvancedColors'),
-              title: Text(l10n.themeAdvancedColors),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                  child: Text(
-                    l10n.themeAdvancedColorsHint,
-                    style: Theme.of(context).textTheme.bodySmall,
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+              child: GroupedSheet(
+                title: l10n.themeColorCustomizeSection,
+                children: [
+                  _ColorCustomizeTile(
+                    label: l10n.themeColorAccent,
+                    color: current.accentColor,
+                    onTap: () => _showColorPickerDialog(
+                      context,
+                      themeService,
+                      (p, c) => p.copyWith(
+                        accentColor: c,
+                        accentTextColor:
+                            current.accentTextColor != null &&
+                                _sameColor(
+                                  current.effectiveAccentTextColor,
+                                  current.accentColor,
+                                )
+                            ? c
+                            : current.accentTextColor,
+                        selectionColor:
+                            _sameColor(
+                              current.selectionColor,
+                              current.accentColor,
+                            )
+                            ? c
+                            : null,
+                      ),
+                      current.accentColor,
+                      role: _ThemeColorRole.accent,
+                      roleLabel: l10n.themeColorAccent,
+                    ),
                   ),
-                ),
-                _ColorCustomizeTile(
-                  key: const Key('themeAccentTextColorTile'),
-                  label: l10n.themeColorAccentText,
-                  color: current.effectiveAccentTextColor,
-                  onTap: () => _showColorPickerDialog(
-                    context,
-                    themeService,
-                    (p, c) => p.copyWith(accentTextColor: c),
-                    current.effectiveAccentTextColor,
-                    role: _ThemeColorRole.accentText,
-                    roleLabel: l10n.themeColorAccentText,
+                  _ColorCustomizeTile(
+                    label: l10n.themeColorText,
+                    color: current.textColor,
+                    onTap: () => _showColorPickerDialog(
+                      context,
+                      themeService,
+                      (p, c) => p.copyWith(
+                        textColor: c,
+                        menuTextColor:
+                            _sameColor(current.menuTextColor, current.textColor)
+                            ? c
+                            : null,
+                      ),
+                      current.textColor,
+                      role: _ThemeColorRole.text,
+                      roleLabel: l10n.themeColorText,
+                    ),
                   ),
-                ),
-                _ColorCustomizeTile(
-                  key: const Key('themeMenuTextColorTile'),
-                  label: l10n.themeColorMenuText,
-                  color: current.menuTextColor,
-                  onTap: () => _showColorPickerDialog(
-                    context,
-                    themeService,
-                    (p, c) => p.copyWith(menuTextColor: c),
-                    current.menuTextColor,
-                    role: _ThemeColorRole.menuText,
-                    roleLabel: l10n.themeColorMenuText,
+                  _ColorCustomizeTile(
+                    key: const Key('themeButtonTextColorTile'),
+                    label: l10n.themeColorButtonText,
+                    color: current.buttonTextColor,
+                    onTap: () => _showColorPickerDialog(
+                      context,
+                      themeService,
+                      (p, c) => p.copyWith(
+                        buttonTextColor: c,
+                        selectionTextColor:
+                            _sameColor(
+                              current.selectionTextColor,
+                              current.buttonTextColor,
+                            )
+                            ? c
+                            : null,
+                      ),
+                      current.buttonTextColor,
+                      role: _ThemeColorRole.buttonText,
+                      roleLabel: l10n.themeColorButtonText,
+                    ),
                   ),
-                ),
-                _ColorCustomizeTile(
-                  label: l10n.themeColorSelection,
-                  color: current.selectionColor,
-                  onTap: () => _showColorPickerDialog(
-                    context,
-                    themeService,
-                    (p, c) => p.copyWith(selectionColor: c),
-                    current.selectionColor,
-                    role: _ThemeColorRole.selection,
-                    roleLabel: l10n.themeColorSelection,
+                  _ColorCustomizeTile(
+                    label: l10n.themeColorPanelBg,
+                    color: current.panelBgColor,
+                    onTap: () => _showColorPickerDialog(
+                      context,
+                      themeService,
+                      (p, c) => p.copyWith(panelBgColor: c),
+                      current.panelBgColor,
+                      role: _ThemeColorRole.panelBg,
+                      roleLabel: l10n.themeColorPanelBg,
+                    ),
                   ),
-                ),
-                _ColorCustomizeTile(
-                  key: const Key('themeSelectionTextColorTile'),
-                  label: l10n.themeColorSelectionText,
-                  color: current.selectionTextColor,
-                  onTap: () => _showColorPickerDialog(
-                    context,
-                    themeService,
-                    (p, c) => p.copyWith(selectionTextColor: c),
-                    current.selectionTextColor,
-                    role: _ThemeColorRole.selectionText,
-                    roleLabel: l10n.themeColorSelectionText,
+                  _ColorCustomizeTile(
+                    label: l10n.themeColorMenuBg,
+                    color: current.menuBgColor,
+                    onTap: () => _showColorPickerDialog(
+                      context,
+                      themeService,
+                      (p, c) => p.copyWith(menuBgColor: c),
+                      current.menuBgColor,
+                      role: _ThemeColorRole.menuBg,
+                      roleLabel: l10n.themeColorMenuBg,
+                    ),
                   ),
-                ),
-              ],
+                  _ColorCustomizeTile(
+                    label: l10n.themeColorUpdateMark,
+                    color: current.updateMarkColor,
+                    onTap: () => _showColorPickerDialog(
+                      context,
+                      themeService,
+                      (p, c) => p.copyWith(updateMarkColor: c),
+                      current.updateMarkColor,
+                      role: _ThemeColorRole.updateMark,
+                      roleLabel: l10n.themeColorUpdateMark,
+                    ),
+                  ),
+                  ExpansionTile(
+                    key: const PageStorageKey('themeAdvancedColors'),
+                    // 面の中の行なので、開いたときの上下の線は引かない（行の間の線は
+                    // 面が引く）。
+                    shape: const Border(),
+                    collapsedShape: const Border(),
+                    title: Text(l10n.themeAdvancedColors),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                        child: messageText(
+                          l10n.themeAdvancedColorsHint,
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 1.45,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      _ColorCustomizeTile(
+                        key: const Key('themeAccentTextColorTile'),
+                        label: l10n.themeColorAccentText,
+                        color: current.effectiveAccentTextColor,
+                        onTap: () => _showColorPickerDialog(
+                          context,
+                          themeService,
+                          (p, c) => p.copyWith(accentTextColor: c),
+                          current.effectiveAccentTextColor,
+                          role: _ThemeColorRole.accentText,
+                          roleLabel: l10n.themeColorAccentText,
+                        ),
+                      ),
+                      _ColorCustomizeTile(
+                        key: const Key('themeMenuTextColorTile'),
+                        label: l10n.themeColorMenuText,
+                        color: current.menuTextColor,
+                        onTap: () => _showColorPickerDialog(
+                          context,
+                          themeService,
+                          (p, c) => p.copyWith(menuTextColor: c),
+                          current.menuTextColor,
+                          role: _ThemeColorRole.menuText,
+                          roleLabel: l10n.themeColorMenuText,
+                        ),
+                      ),
+                      _ColorCustomizeTile(
+                        label: l10n.themeColorSelection,
+                        color: current.selectionColor,
+                        onTap: () => _showColorPickerDialog(
+                          context,
+                          themeService,
+                          (p, c) => p.copyWith(selectionColor: c),
+                          current.selectionColor,
+                          role: _ThemeColorRole.selection,
+                          roleLabel: l10n.themeColorSelection,
+                        ),
+                      ),
+                      _ColorCustomizeTile(
+                        key: const Key('themeSelectionTextColorTile'),
+                        label: l10n.themeColorSelectionText,
+                        color: current.selectionTextColor,
+                        onTap: () => _showColorPickerDialog(
+                          context,
+                          themeService,
+                          (p, c) => p.copyWith(selectionTextColor: c),
+                          current.selectionTextColor,
+                          role: _ThemeColorRole.selectionText,
+                          roleLabel: l10n.themeColorSelectionText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const Divider(),
-            // テーマ一覧（ドラッグで並び替え可能）
+            // 今の色をテーマとして残す・ファイルから足すは、長い一覧の後ろでは
+            // なく色の設定のすぐ下に面の行として置く（以前は28件のテーマの
+            // さらに下の枠のボタンだった）。
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: Text(
-                l10n.themePresetSection,
-                style: localizedHeadingStyle(
-                  context,
-                  const TextStyle(fontWeight: FontWeight.bold),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: GroupedSheet(
+                children: [
+                  SheetRow(
+                    icon: Icons.add,
+                    title: l10n.themeSaveAsNewButton,
+                    onTap: () => _saveCurrentAsNew(context, themeService),
+                  ),
+                  SheetRow(
+                    icon: Icons.file_upload_outlined,
+                    title: l10n.themeImportButton,
+                    onTap: () => _importTheme(context, themeService),
+                  ),
+                ],
+              ),
+            ),
+            // テーマ一覧（ドラッグで並び替え可能）。行は並べると1枚の面に
+            // 見える（SheetListSegment）。
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(32, 24, 32, 8),
+              child: Semantics(
+                header: true,
+                child: Text(
+                  l10n.themePresetSection,
+                  style: localizedHeadingStyle(
+                    context,
+                    TextStyle(
+                      fontSize: 13,
+                      height: 1.35,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -376,25 +418,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: OutlinedButton.icon(
-                icon: const Icon(Icons.add),
-                label: Text(l10n.themeSaveAsNewButton),
-                onPressed: () => _saveCurrentAsNew(context, themeService),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: OutlinedButton.icon(
-                icon: const Icon(Icons.file_upload),
-                label: Text(l10n.themeImportButton),
-                onPressed: () => _importTheme(context, themeService),
-              ),
-            ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32 + MediaQuery.paddingOf(context).bottom),
           ],
         ),
       ),
@@ -435,7 +459,6 @@ class ThemeSettingsScreen extends StatelessWidget {
   }) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context);
-    final scheme = Theme.of(context).colorScheme;
     final accentText = AccentTextTheme.of(context);
     final editing = current.id == preset.id;
     final inUse = editing || _samePalette(current, preset);
@@ -542,26 +565,16 @@ class ThemeSettingsScreen extends StatelessWidget {
       ),
     ];
 
+    // 使っているテーマは行の色や枠では示さず、「使用中」の印と読み上げの
+    // 選択の状態で示す（差し色の塗りは状態の印だけに使う）。
     return Padding(
       key: ValueKey(preset.id),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Semantics(
         selected: inUse,
-        child: Material(
-          color: inUse
-              ? scheme.primaryContainer.withValues(alpha: 0.4)
-              : scheme.surfaceContainerLow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: inUse
-                ? BorderSide(color: scheme.primary, width: 1.5)
-                : BorderSide.none,
-          ),
-          elevation: inUse ? 0 : 1,
-          shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-            alpha: 0.15,
-          ),
-          clipBehavior: Clip.antiAlias,
+        child: SheetListSegment(
+          first: index == 0,
+          last: index == themeService.presets.length - 1,
           child: InkWell(
             onTap: () {
               // 1回押すだけで今の配色（自分で作った配色を含む）が置き換わる
@@ -904,55 +917,45 @@ class _ColorCustomizeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 他の画面（設定トップ・セーブツリー・テーマプリセット一覧）と統一した
-    // 影付きカードデザイン（作り込みの一環）。
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: Material(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(14),
-        elevation: 1,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-          alpha: 0.15,
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
+    // 面（GroupedSheet）の中の1行。行の大きさ・余白は面の行（SheetRow）と
+    // 同じで、先頭は色の見本（色そのものが中身なので、狭い幅・大きな文字
+    // でも隠さない）。
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: scheme.outlineVariant),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: messageText(
+                  label,
+                  keepLineStarts: true,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontSize: 15, height: 1.3),
                   ),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: localizedHeadingStyle(
-                      context,
-                      const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
           ),
         ),
       ),

@@ -3422,6 +3422,7 @@
   "errorLogCopyAll": "Copy all",
   "errorLogCopied": "Error log copied",
   "errorLogClear": "Clear log",
+  "errorLogCleared": "Error log cleared",
   "tutorialSkip": "Skip",
   "tutorialNext": "Next",
   "tutorialPageIndicator": "Page {current} of {total}",

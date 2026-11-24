@@ -4,7 +4,7 @@ import '../../l10n/app_localizations.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/responsive.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
 
 /// 利用規約・ライセンス画面。
 ///
@@ -119,86 +119,92 @@ class LicenseScreen extends StatelessWidget {
             const _TermsBody(),
             const SizedBox(height: 24),
             _SectionTitle(l10n.licenseSectionFonts),
-            _FontCredit(
-              usage: l10n.licenseCreditBody,
-              name: 'Hakkou Mincho',
-              author: 'lavsic',
-              license: 'SIL Open Font License 1.1',
-            ),
-            _FontCredit(
-              usage: l10n.licenseCreditHeading,
-              name: 'Kuramubon',
-              author:
-                  'Yoshikawa Kinomi (FLOP DESIGN) / The Dela Gothic Project Authors',
-              license: 'SIL Open Font License 1.1',
-            ),
-            _FontCredit(
-              usage: l10n.licenseCreditNumbers,
-              name: 'Roboto / Noto Sans',
-              author: 'Google',
-              license: 'Apache License 2.0 / SIL Open Font License',
-            ),
-            _FontCredit(
-              usage: l10n.licenseCreditCjkBody,
-              name: 'Noto Serif KR / Noto Serif SC',
-              author: 'Adobe',
-              license: 'SIL Open Font License 1.1',
-            ),
-            _FontCredit(
-              usage: l10n.licenseCreditCjkHeading,
-              name: 'Noto Sans KR / Noto Sans SC Black',
-              author: 'Adobe',
-              license: 'SIL Open Font License 1.1',
-            ),
-            _FontCredit(
-              usage: l10n.licenseCreditFallback,
-              name: 'Dela Gothic One',
-              author: 'The Dela Gothic Project Authors',
-              license: 'SIL Open Font License 1.1',
-            ),
-            _FontCredit(
-              usage: l10n.licenseCreditTextTool,
-              name: 'Noto Serif JP',
-              author: 'Adobe',
-              license: 'SIL Open Font License 1.1',
-            ),
-            _FontCredit(
-              usage: l10n.licenseCreditCatalog(fontCatalogPath),
-              name: 'Google Fonts',
-              author: l10n.licenseCreditCatalogAuthor,
-              license:
-                  '${l10n.licenseCreditCatalogLicense}\n'
-                  'SIL Open Font License 1.1 / Apache License 2.0 / Ubuntu Font License 1.0',
+            // 書体・印の出どころは1枚の面に並べ、細い線で分ける（1件ずつの
+            // カードにしない）。
+            GroupedSheet(
+              children: [
+                _FontCredit(
+                  usage: l10n.licenseCreditBody,
+                  name: 'Hakkou Mincho',
+                  author: 'lavsic',
+                  license: 'SIL Open Font License 1.1',
+                ),
+                _FontCredit(
+                  usage: l10n.licenseCreditHeading,
+                  name: 'Kuramubon',
+                  author:
+                      'Yoshikawa Kinomi (FLOP DESIGN) / The Dela Gothic Project Authors',
+                  license: 'SIL Open Font License 1.1',
+                ),
+                _FontCredit(
+                  usage: l10n.licenseCreditNumbers,
+                  name: 'Roboto / Noto Sans',
+                  author: 'Google',
+                  license: 'Apache License 2.0 / SIL Open Font License',
+                ),
+                _FontCredit(
+                  usage: l10n.licenseCreditCjkBody,
+                  name: 'Noto Serif KR / Noto Serif SC',
+                  author: 'Adobe',
+                  license: 'SIL Open Font License 1.1',
+                ),
+                _FontCredit(
+                  usage: l10n.licenseCreditCjkHeading,
+                  name: 'Noto Sans KR / Noto Sans SC Black',
+                  author: 'Adobe',
+                  license: 'SIL Open Font License 1.1',
+                ),
+                _FontCredit(
+                  usage: l10n.licenseCreditFallback,
+                  name: 'Dela Gothic One',
+                  author: 'The Dela Gothic Project Authors',
+                  license: 'SIL Open Font License 1.1',
+                ),
+                _FontCredit(
+                  usage: l10n.licenseCreditTextTool,
+                  name: 'Noto Serif JP',
+                  author: 'Adobe',
+                  license: 'SIL Open Font License 1.1',
+                ),
+                _FontCredit(
+                  usage: l10n.licenseCreditCatalog(fontCatalogPath),
+                  name: 'Google Fonts',
+                  author: l10n.licenseCreditCatalogAuthor,
+                  license:
+                      '${l10n.licenseCreditCatalogLicense}\n'
+                      'SIL Open Font License 1.1 / Apache License 2.0 / Ubuntu Font License 1.0',
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             _SectionTitle(l10n.licenseSectionIcons),
-            _FontCredit(
-              usage: l10n.licenseCreditIcons,
-              name: 'Font Awesome Free',
-              author: 'Fonticons, Inc.',
-              license:
-                  '${l10n.licenseCreditIconLicense}\n'
-                  'https://fontawesome.com/license/free',
+            GroupedSheet(
+              children: [
+                _FontCredit(
+                  usage: l10n.licenseCreditIcons,
+                  name: 'Font Awesome Free',
+                  author: 'Fonticons, Inc.',
+                  license:
+                      '${l10n.licenseCreditIconLicense}\n'
+                      'https://fontawesome.com/license/free',
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             _SectionTitle(l10n.licenseSectionOss),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.code),
-              title: Text(l10n.licenseOssListTitle),
-              subtitle: Text(l10n.licenseOssListSubtitle),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () =>
-                  showLicensePage(context: context, applicationName: 'NIARIM'),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.licenseFfmpegNote,
-              style: TextStyle(
-                fontSize: 12,
-                height: 1.5,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            GroupedSheet(
+              footer: l10n.licenseFfmpegNote,
+              children: [
+                SheetRow(
+                  icon: Icons.code,
+                  title: l10n.licenseOssListTitle,
+                  subtitle: l10n.licenseOssListSubtitle,
+                  onTap: () => showLicensePage(
+                    context: context,
+                    applicationName: 'NIARIM',
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -306,38 +312,35 @@ class _FontCredit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return MenuCard(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              usage,
-              style: TextStyle(
-                fontSize: 12,
-                height: 1.4,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            usage,
+            style: TextStyle(
+              fontSize: 12,
+              height: 1.4,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          Text(
+            name,
+            style: localizedHeadingStyle(
+              context,
+              const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                height: 1.3,
               ),
             ),
-            Text(
-              name,
-              style: localizedHeadingStyle(
-                context,
-                const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                  height: 1.3,
-                ),
-              ),
-            ),
-            Text(
-              l10n.licenseFontCreditMeta(author, license),
-              style: const TextStyle(fontSize: 13, height: 1.45),
-            ),
-          ],
-        ),
+          ),
+          Text(
+            l10n.licenseFontCreditMeta(author, license),
+            style: const TextStyle(fontSize: 13, height: 1.45),
+          ),
+        ],
       ),
     );
   }

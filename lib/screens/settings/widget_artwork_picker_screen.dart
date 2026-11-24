@@ -13,6 +13,7 @@ import '../../services/home_widget_service.dart';
 import '../../services/project_service.dart';
 import '../../services/theme_service.dart';
 import '../../widgets/projects_load_failure_notice.dart';
+import '../../widgets/grouped_sheet.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/stepped_slider.dart';
@@ -234,17 +235,20 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
                 children: [
                   // 「選ばない」状態へ戻すための選択肢。並び替え・検索・
                   // フォルダ移動の影響を受けないよう、一覧の外に固定表示する。
-                  Card(
-                    margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                    color: scheme.surfaceContainerHigh,
-                    child: ListTile(
-                      leading: Icon(
-                        Icons.block_outlined,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                      title: Text(l10n.widgetArtworkNone),
-                      selected: widgets.projectId == null,
-                      onTap: () => _clearSelection(context),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: GroupedSheet(
+                      children: [
+                        ListTile(
+                          leading: Icon(
+                            Icons.block_outlined,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                          title: Text(l10n.widgetArtworkNone),
+                          selected: widgets.projectId == null,
+                          onTap: () => _clearSelection(context),
+                        ),
+                      ],
                     ),
                   ),
                   Padding(

@@ -12,6 +12,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/screens/settings/widgets/sheet_list_segment.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/font_settings_screen.dart';
@@ -100,9 +101,10 @@ void main() {
           final error = tester.takeException();
           if (error != null) problems.add('$at: $error');
           for (final name in _names) {
+            // 行は1枚の面の一部（行ごとのカードから面の行へ変えた）。
             final row = find.ancestor(
               of: find.text(name),
-              matching: find.byType(Card),
+              matching: find.byType(SheetListSegment),
             );
             if (row.evaluate().length != 1) {
               problems.add('$at: no row for $name');
@@ -115,9 +117,8 @@ void main() {
             );
             final room = tile.width - 16 - 40 - 16 - 24;
             for (final paragraph in textParagraphsIn(row)) {
-              if (paragraph.text.style?.fontSize == 11 &&
-                  paragraph.text.toPlainText().length == 1) {
-                continue; // 先頭の印（拡張子の1字）。
+              if (paragraph.text.toPlainText() == 'Aa') {
+                continue; // 先頭の書体の見本。
               }
               for (final broken in wordsBrokenThatFit(
                 paragraph,

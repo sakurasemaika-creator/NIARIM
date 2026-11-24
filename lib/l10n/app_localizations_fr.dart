@@ -8948,6 +8948,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get errorLogClear => 'Effacer le journal';
 
   @override
+  String get errorLogCleared => 'Journal des erreurs effacé';
+
+  @override
   String get tutorialSkip => 'Passer';
 
   @override

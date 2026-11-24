@@ -3392,6 +3392,7 @@
   "errorLogCopyAll": "全部复制",
   "errorLogCopied": "已复制错误记录",
   "errorLogClear": "清除记录",
+  "errorLogCleared": "已清除错误记录",
   "tutorialSkip": "跳过",
   "tutorialNext": "下一步",
   "tutorialPageIndicator": "第{current}页，共{total}页",

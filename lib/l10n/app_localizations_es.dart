@@ -8933,6 +8933,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get errorLogClear => 'Borrar registro';
 
   @override
+  String get errorLogCleared => 'Se borró el registro de errores';
+
+  @override
   String get tutorialSkip => 'Omitir';
 
   @override

@@ -8792,6 +8792,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorLogClear => 'Clear log';
 
   @override
+  String get errorLogCleared => 'Error log cleared';
+
+  @override
   String get tutorialSkip => 'Skip';
 
   @override

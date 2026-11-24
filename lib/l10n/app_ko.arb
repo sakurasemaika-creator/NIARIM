@@ -3392,6 +3392,7 @@
   "errorLogCopyAll": "모두 복사",
   "errorLogCopied": "오류 기록을 복사했습니다",
   "errorLogClear": "기록 지우기",
+  "errorLogCleared": "오류 기록을 지웠습니다",
   "tutorialSkip": "건너뛰기",
   "tutorialNext": "다음",
   "tutorialPageIndicator": "{total}쪽 중 {current}쪽",
