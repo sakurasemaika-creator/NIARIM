@@ -347,6 +347,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   _ClipDragMode? _clipDragMode;
   int _clipDragStartFrame = 0;
   int _clipDragStartLength = 0;
+  int _clipDragStartUseStart = 0;
 
   // 素材クリップ（動画・音声）の複数選択モード。クリップの長押しは
   // 既に移動ドラッグに使っているため、専用の「選択」ボタンで切り替える。
@@ -5805,6 +5806,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _clipDragMode = mode;
       _clipDragStartFrame = clip.startFrame;
       _clipDragStartLength = clip.lengthFrames;
+      _clipDragStartUseStart = clip.useStart;
     });
   }
 
@@ -5834,15 +5836,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
       case _ClipDragMode.resizeLeft:
         // 右端（startFrame + lengthFrames）を固定し、左端だけ伸縮する。
         final fixedEnd = _clipDragStartFrame + _clipDragStartLength;
+        // Audio clips must keep their source interval aligned with the
+        // visible trim: moving the left edge right trims the same number of
+        // source frames; extending left is limited by the source's frame 0.
+        final minStart = clip.trackType == _ClipTrackType.audio
+            ? math.max(0, _clipDragStartFrame - _clipDragStartUseStart)
+            : 0;
         final newStart = (_clipDragStartFrame + deltaFrames).clamp(
-          0,
+          minStart,
           fixedEnd - 1,
         );
         final newLength = fixedEnd - newStart;
-        if (newStart != clip.startFrame || newLength != clip.lengthFrames) {
+        final newUseStart = clip.trackType == _ClipTrackType.audio
+            ? _clipDragStartUseStart + newStart - _clipDragStartFrame
+            : clip.useStart;
+        if (newStart != clip.startFrame ||
+            newLength != clip.lengthFrames ||
+            newUseStart != clip.useStart) {
           setState(() {
             clip.startFrame = newStart;
             clip.lengthFrames = newLength;
+            clip.useStart = newUseStart;
           });
         }
       case _ClipDragMode.resizeRight:
@@ -5865,6 +5879,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       if (!commit) {
         clip.startFrame = _clipDragStartFrame;
         clip.lengthFrames = _clipDragStartLength;
+        clip.useStart = _clipDragStartUseStart;
       }
       _draggingClipId = null;
       _clipDragMode = null;
