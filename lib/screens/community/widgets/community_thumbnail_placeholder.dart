@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 /// 作品広場の作品の絵がまだ無い（読み込み中・YouTubeの絵を取れない・見本の
@@ -23,12 +21,19 @@ class CommunityThumbnailPlaceholder extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) => Center(
-              child: Icon(
-                Icons.play_circle_outline,
-                size: math.min(32, constraints.biggest.shortestSide * .3),
-                color: scheme.onSurfaceVariant,
+          // 小さな表紙（ランキングの行）では印も縮める。行の高さを中身から
+          // 決める一覧（IntrinsicHeight）の中でも使うので、LayoutBuilderで
+          // 大きさを測らない。
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Icon(
+                  Icons.play_circle_outline,
+                  size: 32,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),
