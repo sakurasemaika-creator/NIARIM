@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart' show HardwareKeyboard;
+import 'package:image/image.dart' as img;
 import 'package:provider/provider.dart';
 
 import '../../../engine/autofill_engine.dart'
@@ -43,6 +44,7 @@ import '../../../models/pixel_color_mode.dart';
 import '../../../models/project.dart';
 import '../../../models/ruler.dart';
 import '../../../services/brush_service.dart';
+import '../../../services/making_service.dart';
 import '../../../services/performance_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/settings_service.dart';
@@ -2341,6 +2343,7 @@ class CanvasAreaState extends State<CanvasArea> {
 
   String? _undoRecordingLayerKey;
   app_undo.HistoryFrame? _undoRecordingFrame;
+  DateTime? _lastMakingCaptureAt;
 
   /// 描画操作（ストローク・バケツ・投げ縄塗り・トーン・スタンプ・移動・
   /// 変形・図形）の直前に呼び、現在のレイヤーへのタイル変更差分の記録を開始する。
@@ -2435,7 +2438,96 @@ class CanvasAreaState extends State<CanvasArea> {
     if (snapshot.before.isNotEmpty) {
       _markLineartDirtyIfNeeded();
       _tileManager.notifyStrokeCommitted(layerKey);
-      if (project != null) _projects.recordConfirmedEdit(project.id);
+      if (project != null) {
+        _projects.recordConfirmedEdit(project.id);
+        if (project.makingEnabled) _queueMakingSnapshot(project);
+      }
+    }
+  }
+
+  /// Queue a lightweight making snapshot after a real canvas edit.
+  /// Captures are throttled to at most one per second and stored outside the
+  /// editable project archive.
+  void _queueMakingSnapshot(Project project) {
+    final now = DateTime.now();
+    final last = _lastMakingCaptureAt;
+    if (!project.makingEnabled ||
+        (last != null && now.difference(last) < const Duration(seconds: 1))) {
+      return;
+    }
+    _lastMakingCaptureAt = now;
+    unawaited(_captureMakingSnapshot(project).catchError((Object error, StackTrace stack) {
+      AppErrorReporter.record(error, stack);
+    }));
+  }
+
+  Future<void> _captureMakingSnapshot(Project project) async {
+    if (!mounted ||
+        widget.project?.id != project.id ||
+        widget.project?.makingEnabled != true) {
+      return;
+    }
+    final scene = _projects.sceneOf(project.id, widget.sceneId);
+    if (scene == null ||
+        widget.currentFrame < 0 ||
+        widget.currentFrame >= scene.frames.length) {
+      return;
+    }
+    final stacked = _projects.stackedLayersOf(
+      project.id,
+      scene.id,
+      widget.currentFrame,
+    );
+    final composite = await LayerCompositor.composite(
+      _tileManager,
+      stacked.layers,
+      (layer) => _projects.tileKeyFor(
+        project.id,
+        scene.id,
+        widget.currentFrame,
+        layer.id,
+      ),
+      _tileManager.canvasWidth,
+      _tileManager.canvasHeight,
+      paperColor: LayerCompositor.paperForBlendModes(
+        stacked.layers,
+        project.backgroundColor,
+      ),
+      maskGroups: stacked.maskGroups,
+    );
+    try {
+      final data = await composite.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
+      if (data == null) return;
+      final source = img.Image.fromBytes(
+        width: composite.width,
+        height: composite.height,
+        bytes: data.buffer,
+        bytesOffset: data.offsetInBytes,
+        numChannels: 4,
+      );
+      const maxEdge = 720;
+      final scale = math.min(
+        1.0,
+        maxEdge / math.max(source.width, source.height),
+      );
+      final resized = scale < 1.0
+          ? img.copyResize(
+              source,
+              width: math.max(1, (source.width * scale).round()),
+              height: math.max(1, (source.height * scale).round()),
+            )
+          : source;
+      final jpeg = img.encodeJpg(resized, quality: 60);
+      await MakingService.recordSnapshot(
+        projectId: project.id,
+        sceneId: scene.id,
+        frameIndex: widget.currentFrame,
+        bytes: jpeg,
+      );
+    } finally {
+      composite.dispose();
     }
   }
 
