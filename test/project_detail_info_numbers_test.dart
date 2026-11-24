@@ -21,6 +21,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/widgets/grouped_sheet.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -160,9 +161,10 @@ void main() {
               );
               await tester.pump(const Duration(milliseconds: 100));
             }
+            // 作品の情報は1枚の面（GroupedSheet）に並ぶ。
             final card = find.ancestor(
               of: find.text(l.projectDetailInfoExportSize),
-              matching: find.byType(Card),
+              matching: find.byType(GroupedSheet),
             );
             final list = find
                 .ancestor(of: card, matching: find.byType(Scrollable))

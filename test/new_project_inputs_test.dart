@@ -174,9 +174,9 @@ void main() {
     });
 
     // FPSの後（2つ目）は、チップの押せる所の下の空きと「サイズ設定」の
-    // ボタンの高さで見出しの上にできる空きのぶん、描画領域の前（5つ目）は
-    // 切り替えの行が自分で取る上の余白のぶん詰めて、見えている間をそろえる。
-    List<double> expected(double s) => [s, s - 16, s, s, s - 8, s];
+    // ボタンの高さで見出しの上にできる空きのぶん詰めて、見えている間を
+    // そろえる。
+    List<double> expected(double s) => [s, s - 16, s, s, s, s];
 
     tester.view.physicalSize = const Size(320, 640);
     await tester.pumpAndSettle();

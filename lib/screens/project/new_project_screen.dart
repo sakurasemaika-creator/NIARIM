@@ -29,7 +29,7 @@ import '../canvas/widgets/canvas_icon_button.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/fit_or_hide_title.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
 import '../../widgets/icon_notice.dart';
 import 'widgets/canvas_size_choice_label.dart';
 import '../../widgets/keep_together_text.dart';
@@ -893,132 +893,142 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 selectedColor: _backgroundColor,
                 onChanged: (color) => setState(() => _backgroundColor = color),
               ),
-              // 下の切り替えの行（SwitchListTile）は自分で上に8px空けるので、
-              // そのぶん詰めてほかの区切りと同じ間にする。
               SizedBox(
                 key: const ValueKey('new-project-section-gap-5'),
-                height: sectionSpacing - 8,
+                height: sectionSpacing,
               ),
-              // 描画領域設定
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  l10n.newProjectDrawingAreaTitle,
-                  style: localizedHeadingStyle(
-                    context,
-                    const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                subtitle: Text(l10n.newProjectDrawingAreaSubtitle),
-                value: _drawingAreaEnabled,
-                onChanged: (v) => setState(() => _drawingAreaEnabled = v),
-              ),
-              if (_drawingAreaEnabled) ...[
-                const SizedBox(height: 8),
-                LabeledSlider(
-                  label: l10n.newProjectScaleLabel,
-                  labelStyle: localizedHeadingStyle(
-                    context,
-                    const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  min: 1.0,
-                  max: 10.0,
-                  value: _drawingAreaScale,
-                  divisions: 18, // 0.5刻み
-                  step: 0.5,
-                  isInt: false,
-                  sliderLabel: l10n.newProjectScaleValue(
-                    _drawingAreaScale.toStringAsFixed(1),
-                  ),
-                  valueText: l10n.newProjectScaleValue(
-                    _drawingAreaScale.toStringAsFixed(1),
-                  ),
-                  onChanged: (v) => setState(() => _drawingAreaScale = v),
-                ),
-                Text(
-                  l10n.newProjectDrawableAreaInfo(
-                    '$_exportWidth',
-                    l10n.newProjectScaleValue(
-                      _drawingAreaScale.toStringAsFixed(1),
+              // 描画領域と自動塗りは、作る前に決められる追加の設定として
+              // 1枚の面にまとめる（以前は切り替えが用紙の上に、自動塗りが
+              // 全幅の枠のボタンとして別々に置かれ、「作成」と同じ重さの
+              // ボタンが続いていた）。
+              GroupedSheet(
+                children: [
+                  // 描画領域設定
+                  SwitchListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: GroupedSheet.rowInset,
+                      vertical: 4,
                     ),
-                    '${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}',
-                  ),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              // このプロジェクトで使う自動塗りプリセットの選択。
-              // 新規作成時にも選べるようにする。
-              OutlinedButton.icon(
-                onPressed: () async {
-                  final allPresets = context
-                      .read<AutofillPresetService>()
-                      .presets;
-                  final result = await showAutofillPresetSelectionSheet(
-                    context,
-                    allPresets: allPresets,
-                    initiallyEnabledIds: _enabledPresetIds?.toSet(),
-                  );
-                  if (!result.cancelled) {
-                    setState(() => _enabledPresetIds = result.ids);
-                  }
-                },
-                icon: Icon(
-                  Icons.auto_fix_high_outlined,
-                  shadows: CanvasIconButton.actionShadows(
-                    AccentTextTheme.of(context),
-                    Theme.of(context).scaffoldBackgroundColor,
-                    Theme.of(context).colorScheme,
-                  ),
-                ),
-                label: Text(
-                  _enabledPresetIds == null
-                      ? l10n.autofillPresetSelectionButton
-                      : l10n.autofillPresetSelectionCountLabel(
-                          _enabledPresetIds!.length,
-                        ),
-                  style: TextStyle(
-                    shadows: CanvasIconButton.actionShadows(
-                      AccentTextTheme.of(context),
-                      Theme.of(context).scaffoldBackgroundColor,
-                      Theme.of(context).colorScheme,
+                    title: Text(
+                      l10n.newProjectDrawingAreaTitle,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
+                    subtitle: Text(l10n.newProjectDrawingAreaSubtitle),
+                    value: _drawingAreaEnabled,
+                    onChanged: (v) => setState(() => _drawingAreaEnabled = v),
                   ),
-                ),
+                  if (_drawingAreaEnabled)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        GroupedSheet.rowInset,
+                        8,
+                        GroupedSheet.rowInset,
+                        12,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          LabeledSlider(
+                            label: l10n.newProjectScaleLabel,
+                            labelStyle: localizedHeadingStyle(
+                              context,
+                              const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            min: 1.0,
+                            max: 10.0,
+                            value: _drawingAreaScale,
+                            divisions: 18, // 0.5刻み
+                            step: 0.5,
+                            isInt: false,
+                            sliderLabel: l10n.newProjectScaleValue(
+                              _drawingAreaScale.toStringAsFixed(1),
+                            ),
+                            valueText: l10n.newProjectScaleValue(
+                              _drawingAreaScale.toStringAsFixed(1),
+                            ),
+                            onChanged: (v) =>
+                                setState(() => _drawingAreaScale = v),
+                          ),
+                          Text(
+                            l10n.newProjectDrawableAreaInfo(
+                              '$_exportWidth',
+                              l10n.newProjectScaleValue(
+                                _drawingAreaScale.toStringAsFixed(1),
+                              ),
+                              '${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}',
+                            ),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  // このプロジェクトで使う自動塗りプリセットの選択。
+                  // 新規作成時にも選べるようにする。
+                  SheetRow(
+                    key: const Key('newProjectAutofillRow'),
+                    icon: Icons.auto_fix_high_outlined,
+                    title: _enabledPresetIds == null
+                        ? l10n.autofillPresetSelectionButton
+                        : l10n.autofillPresetSelectionCountLabel(
+                            _enabledPresetIds!.length,
+                          ),
+                    onTap: () async {
+                      final allPresets = context
+                          .read<AutofillPresetService>()
+                          .presets;
+                      final result = await showAutofillPresetSelectionSheet(
+                        context,
+                        allPresets: allPresets,
+                        initiallyEnabledIds: _enabledPresetIds?.toSet(),
+                      );
+                      if (!result.cancelled) {
+                        setState(() => _enabledPresetIds = result.ids);
+                      }
+                    },
+                  ),
+                ],
               ),
               SizedBox(
                 key: const ValueKey('new-project-section-gap-6'),
                 height: sectionSpacing,
               ),
-              // 上下のボタンと同じ幅（カードの既定の外側の余白を取らない）。
-              MenuCard(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(l10n.newProjectTotalFrames(_fps * _durationSeconds)),
-                      Text(
-                        l10n.newProjectExportSizeInfo(
-                          '$_exportWidth×$_exportHeight',
-                        ),
-                      ),
-                      if (_drawingAreaEnabled)
+              // 作る作品のまとめ。上の設定と同じ面（上下のボタンと同じ幅）。
+              GroupedSheet(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          l10n.newProjectDrawingAreaInfo(
-                            '${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}',
+                          l10n.newProjectTotalFrames(_fps * _durationSeconds),
+                        ),
+                        Text(
+                          l10n.newProjectExportSizeInfo(
+                            '$_exportWidth×$_exportHeight',
                           ),
                         ),
-                    ],
+                        if (_drawingAreaEnabled)
+                          Text(
+                            l10n.newProjectDrawingAreaInfo(
+                              '${(_exportWidth * _drawingAreaScale).round()}×${(_exportHeight * _drawingAreaScale).round()}',
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
               const SizedBox(height: 32),
               if (_creationFailed)

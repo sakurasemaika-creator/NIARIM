@@ -42,7 +42,7 @@ import '../../utils/work_time_label.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../home/widgets/project_list_widget.dart' show niashareKey;
 import '../../widgets/typing_dialog_inset.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
   final String projectId;
@@ -385,13 +385,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 child: _buildPreviewImage(project, totalFrames: flat.length),
               ),
               SizedBox(height: 48, child: _buildSeekBar(flat)),
-              // メディアプレイヤー風：中央の再生ボタンをテーマカラーの円で強調する
-              Container(
+              // 再生の操作は絵のすぐ下の用紙の上に並べる（灰色の帯を敷くと、
+              // 絵・情報の面とは別の3つ目の面ができ、どれがまとまりなのか
+              // 読みにくかった）。中央の再生ボタンだけ差し色の円で強調する。
+              Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(28),
-                ),
                 child: _buildPlaybackBar(projectService, flat, project),
               ),
               const SizedBox(height: 16),
@@ -496,103 +494,90 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 ),
               ],
               const SizedBox(height: 24),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 9),
-                child: Text(
-                  l10n.projectDetailInfoSectionTitle,
-                  style: localizedHeadingStyle(
-                    context,
-                    TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ),
-              MenuCard(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _infoRow('FPS', '${project.fps}'),
-                      _infoRow(
-                        l10n.projectDetailInfoExportSize,
-                        '${project.exportWidth}×${project.exportHeight}',
-                      ),
-                      if (project.hasExtendedDrawingArea)
-                        _infoRow(
-                          l10n.projectDetailInfoDrawingArea,
-                          l10n.projectDetailInfoDrawingAreaValue(
-                            '${project.drawingWidth}×${project.drawingHeight}',
-                            l10n.newProjectScaleValue(
-                              project.drawingAreaScale.toStringAsFixed(1),
-                            ),
-                          ),
-                        ),
-                      _infoRow(
-                        l10n.projectDetailInfoTotalFrames,
-                        '${project.totalFrames}',
-                      ),
-                      _infoRow(
-                        l10n.projectDetailInfoWorkTime,
-                        workTimeLabel(l10n, project.totalWorkSeconds),
-                      ),
-                      _infoRow(
-                        l10n.projectDetailInfoLastSaved,
-                        _formatDateTime(l10n, project.updatedAt),
-                        when: project.updatedAt,
-                      ),
-                      _infoRow(
-                        l10n.projectDetailInfoSize,
-                        _formatSize(project.sizeBytes),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // ボタンの文言は、パフォーマンス設定で選んでいるセーブ方式
-              // （セーブツリー／セーブスロット）に合わせて切り替える。押した先の
-              // 画面（SaveTreeScreen）のタイトルと表示内容が一致しない
-              // （「セーブツリー」ボタンなのにスロット画面が開く）不具合の対策。
+              // 保存と自動塗りは、この作品の設定へ進む行として1枚の面に
+              // まとめる（以前は全幅の枠のボタンが2つ縦に並び、主な操作の
+              // 「編集開始」と同じ重さに見えた）。ボタンの文言は、パフォー
+              // マンス設定で選んでいるセーブ方式（セーブツリー／セーブスロット）
+              // に合わせて切り替える（押した先の画面の題と食い違わないように）。
               Builder(
                 builder: (context) {
                   final isTreeMode = context
                       .watch<SaveTreeService>()
                       .isTreeMode;
-                  return OutlinedButton.icon(
-                    onPressed: () => context.push(
-                      '/save-tree/${widget.projectId}?entry=projectDetail',
-                    ),
-                    icon: Icon(
-                      isTreeMode ? Icons.account_tree : Icons.save_outlined,
-                    ),
-                    label: Text(
-                      isTreeMode
-                          ? l10n.saveTreeScreenTitleTree
-                          : l10n.saveTreeScreenTitleSlot,
-                    ),
+                  return GroupedSheet(
+                    children: [
+                      SheetRow(
+                        key: const Key('projectDetailSaveRow'),
+                        icon: isTreeMode
+                            ? Icons.account_tree_outlined
+                            : Icons.save_outlined,
+                        title: isTreeMode
+                            ? l10n.saveTreeScreenTitleTree
+                            : l10n.saveTreeScreenTitleSlot,
+                        onTap: () => context.push(
+                          '/save-tree/${widget.projectId}?entry=projectDetail',
+                        ),
+                      ),
+                      // このプロジェクトで使う自動塗りプリセットの選択。
+                      // プリセットは増えていくため、プロジェクト設定内でも
+                      // 選び直せるようにする。
+                      SheetRow(
+                        key: const Key('projectDetailAutofillRow'),
+                        icon: Icons.auto_fix_high_outlined,
+                        title: project.enabledAutofillPresetIds == null
+                            ? l10n.autofillPresetSelectionButton
+                            : l10n.autofillPresetSelectionCountLabel(
+                                project.enabledAutofillPresetIds!.length,
+                              ),
+                        onTap: () => _showPresetSelection(
+                          context,
+                          projectService,
+                          project,
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
-              const SizedBox(height: 8),
-              // このプロジェクトで使う自動塗りプリセットの選択。
-              // プリセットは増えていくため、プロジェクト設定内でも選び直せる
-              // ようにする。
-              OutlinedButton.icon(
-                onPressed: () =>
-                    _showPresetSelection(context, projectService, project),
-                icon: const Icon(Icons.auto_fix_high_outlined),
-                label: Text(
-                  project.enabledAutofillPresetIds == null
-                      ? l10n.autofillPresetSelectionButton
-                      : l10n.autofillPresetSelectionCountLabel(
-                          project.enabledAutofillPresetIds!.length,
+              const SizedBox(height: 24),
+              // 作品の情報は項目ごとに細い線で区切った1枚の面に並べる。
+              GroupedSheet(
+                key: const Key('projectDetailInfoSheet'),
+                title: l10n.projectDetailInfoSectionTitle,
+                children: [
+                  _infoRow('FPS', '${project.fps}'),
+                  _infoRow(
+                    l10n.projectDetailInfoExportSize,
+                    '${project.exportWidth}×${project.exportHeight}',
+                  ),
+                  if (project.hasExtendedDrawingArea)
+                    _infoRow(
+                      l10n.projectDetailInfoDrawingArea,
+                      l10n.projectDetailInfoDrawingAreaValue(
+                        '${project.drawingWidth}×${project.drawingHeight}',
+                        l10n.newProjectScaleValue(
+                          project.drawingAreaScale.toStringAsFixed(1),
                         ),
-                ),
+                      ),
+                    ),
+                  _infoRow(
+                    l10n.projectDetailInfoTotalFrames,
+                    '${project.totalFrames}',
+                  ),
+                  _infoRow(
+                    l10n.projectDetailInfoWorkTime,
+                    workTimeLabel(l10n, project.totalWorkSeconds),
+                  ),
+                  _infoRow(
+                    l10n.projectDetailInfoLastSaved,
+                    _formatDateTime(l10n, project.updatedAt),
+                    when: project.updatedAt,
+                  ),
+                  _infoRow(
+                    l10n.projectDetailInfoSize,
+                    _formatSize(project.sizeBytes),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1161,7 +1146,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   Widget _infoRow(String label, String value, {DateTime? when}) {
     final localeName = AppLocalizations.of(context)!.localeName;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: GroupedSheet.rowInset,
+        vertical: 12,
+      ),
       // 項目名を1行で置いた残りに値の数が入らなければ、値を項目名の下の行へ
       // 回す（半分ずつの列だと、字の広い書体・大きな文字で数の途中で切れた）。
       child: LabelValueRow(
