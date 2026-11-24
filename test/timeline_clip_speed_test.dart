@@ -222,6 +222,17 @@ void main() {
     expect(video().playbackRate, 1.0);
     expect(video().rangeEnd, 10);
     expect(video().keyframes.map((k) => k.frameIndex), [0, 8]);
+
+    // The sound can stay at normal speed (one Undo step too).
+    final soundSwitch = find.byKey(const ValueKey('videoSoundFollowsSpeed'));
+    await tester.ensureVisible(soundSwitch);
+    await tester.pump();
+    await tester.tap(soundSwitch);
+    await pumpRealAsync(tester, const Duration(milliseconds: 200));
+    expect(video().videoSoundFollowsSpeed, isFalse);
+    await tester.tap(undo);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(video().videoSoundFollowsSpeed, isTrue);
   });
 
   testWidgets('a range of camera keys and of a material\'s keys plays at a '
@@ -390,5 +401,92 @@ void main() {
     await tester.tap(find.byIcon(Icons.undo).first);
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(imageKeys(), [0, 6, 12]);
+  });
+
+  testWidgets('cutting and pasting a clip keeps its speed and the fraction '
+      'of a frame it starts at', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ja',
+      'force_pc_mode': 0,
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final directory = Directory.systemTemp.createTempSync('timeline-paste-');
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (_) async => directory.path);
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(channel, null);
+      if (directory.existsSync()) directory.deleteSync(recursive: true);
+    });
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    appRouter.go('/');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    final ps = tester
+        .element(find.byType(MaterialApp).first)
+        .read<ProjectService>();
+    late String sceneId;
+    final created = await tester.runAsync(() async {
+      final project = await ps.createProject(
+        name: 'paste',
+        fps: 10,
+        durationSeconds: 3,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 160,
+        exportHeight: 90,
+      );
+      sceneId = ps.scenesOf(project.id).first.id;
+      ps.addAudioClip(
+        project.id,
+        sceneId,
+        const AudioClip(
+          id: 'a',
+          label: 'A',
+          startFrame: 0,
+          lengthFrames: 5,
+          sourceStartFrame: 3,
+          sourceStartFraction: 0.5,
+          playbackRate: 2,
+        ),
+      );
+      return project.id;
+    });
+    final projectId = created!;
+    appRouter.go('/timeline/$projectId');
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(TimelineScreen)),
+    )!;
+
+    await tester.tap(find.byKey(const Key('timelineSelectionMenu')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    await tester.tap(find.text(l10n.timelineSelectionClips).last);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    final clip = find.byKey(const ValueKey('timelineClip-a'));
+    await tester.ensureVisible(clip);
+    await tester.pump();
+    await tester.tapAt(tester.getTopLeft(clip) + const Offset(30, 20));
+    await pumpRealAsync(tester, const Duration(milliseconds: 200));
+    await tester.tap(find.byTooltip(l10n.commonCut).last);
+    await pumpRealAsync(tester, const Duration(milliseconds: 200));
+    await tester.tap(find.byKey(const Key('timelinePasteButton')).first);
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+
+    final clips = ps.audioClipsOf(projectId, sceneId);
+    expect(clips, hasLength(1));
+    final pasted = clips.single;
+    expect(pasted.id, isNot('a'));
+    expect(pasted.startFrame, 0);
+    expect(pasted.lengthFrames, 5);
+    expect(pasted.sourceStartFrame, 3);
+    expect(pasted.sourceStartFraction, 0.5);
+    expect(pasted.playbackRate, 2);
   });
 }

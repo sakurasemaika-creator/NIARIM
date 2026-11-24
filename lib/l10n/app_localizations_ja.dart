@@ -10642,6 +10642,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineVideoTrackShowingWaveform => '音声の波形を表示中（タップで映像のコマに切り替え）';
 
   @override
+  String get timelineVideoSoundFollowsSpeed => '音も同じ速度にする';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      'オフにすると、音はクリップの始めから通常の速さで鳴り、映像の速度だけが変わります。';
+
+  @override
   String get keyframeRetimeTitle => 'キーフレームの速度';
 
   @override

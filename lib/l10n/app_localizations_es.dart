@@ -11613,6 +11613,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Mostrando la forma de onda del sonido (toca para ver los fotogramas del vídeo)';
 
   @override
+  String get timelineVideoSoundFollowsSpeed =>
+      'Reproducir el sonido a la misma velocidad';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      'Si se desactiva, el sonido se reproduce a velocidad normal desde el inicio del clip y solo cambia la velocidad de la imagen.';
+
+  @override
   String get keyframeRetimeTitle => 'Velocidad de los fotogramas clave';
 
   @override

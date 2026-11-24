@@ -3997,6 +3997,8 @@
   "timelineAddTrackRowTooltip": "Ajouter une ligne à la piste",
   "timelineVideoTrackShowingFrames": "Images de la vidéo affichées (touchez pour afficher la forme d’onde du son)",
   "timelineVideoTrackShowingWaveform": "Forme d’onde du son affichée (touchez pour afficher les images de la vidéo)",
+  "timelineVideoSoundFollowsSpeed": "Lire le son à la même vitesse",
+  "timelineVideoSoundFollowsSpeedHint": "Si cette option est désactivée, le son est lu à vitesse normale depuis le début du clip et seule l’image change de vitesse.",
   "keyframeRetimeTitle": "Vitesse des images clés",
   "keyframeRetimeHint": "Modifie l’espacement des clés de la plage choisie selon la vitesse. Leurs valeurs et leur lissage ne changent pas, et les clés hors de la plage ne bougent pas.",
   "keyframeRetimeFrom": "Première clé de la plage",

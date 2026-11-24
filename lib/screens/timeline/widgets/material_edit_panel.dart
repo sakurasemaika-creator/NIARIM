@@ -889,6 +889,15 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
             endFrameAt: endFrameAt,
             onApply: changeSpeed,
           ),
+          SwitchListTile(
+            key: const ValueKey('videoSoundFollowsSpeed'),
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.timelineVideoSoundFollowsSpeed),
+            subtitle: Text(l10n.timelineVideoSoundFollowsSpeedHint),
+            value: layer.videoSoundFollowsSpeed,
+            onChanged: (on) =>
+                _update((l) => l.copyWith(videoSoundFollowsSpeed: on)),
+          ),
           const SizedBox(height: 8),
         ],
         LabeledSlider(

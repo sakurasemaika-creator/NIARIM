@@ -4034,6 +4034,8 @@
   "timelineAddTrackRowTooltip": "Add a track row",
   "timelineVideoTrackShowingFrames": "Showing video frames (tap to show the sound waveform)",
   "timelineVideoTrackShowingWaveform": "Showing the sound waveform (tap to show video frames)",
+  "timelineVideoSoundFollowsSpeed": "Play the sound at the same speed",
+  "timelineVideoSoundFollowsSpeedHint": "When off, the sound plays at normal speed from the start of the clip and only the picture changes speed.",
   "keyframeRetimeTitle": "Keyframe speed",
   "keyframeRetimeHint": "Changes the spacing of the keys in the chosen range to match the speed. Their values and easing stay the same, and keys outside the range do not move.",
   "keyframeRetimeFrom": "First key of the range",

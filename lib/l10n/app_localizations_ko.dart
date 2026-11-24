@@ -10700,6 +10700,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineVideoTrackShowingWaveform => '소리 파형 표시 중(탭하면 영상 프레임으로 전환)';
 
   @override
+  String get timelineVideoSoundFollowsSpeed => '소리도 같은 속도로 재생';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      '끄면 소리는 클립의 처음부터 보통 속도로 재생되고, 영상의 속도만 바뀝니다.';
+
+  @override
   String get keyframeRetimeTitle => '키프레임 속도';
 
   @override

@@ -36,8 +36,12 @@ class Layer {
   final double sourceTrimStartFraction;
 
   /// The video's playback speed (1.0 = normal, 2.0 = twice as fast). Its
-  /// sound plays at the same speed.
+  /// sound plays at the same speed unless [videoSoundFollowsSpeed] is off.
   final double playbackRate;
+
+  /// Whether the video's sound plays at [playbackRate] too (on), or at the
+  /// normal speed from the clip's start while only the picture changes speed.
+  final bool videoSoundFollowsSpeed;
   final double videoVolume;
   final String? watermarkAssetId;
   final double watermarkAngle;
@@ -74,6 +78,7 @@ class Layer {
     this.sourceTrimEnd,
     this.sourceTrimStartFraction = 0,
     this.playbackRate = 1.0,
+    this.videoSoundFollowsSpeed = true,
     this.videoVolume = 1.0,
     this.watermarkAssetId,
     this.watermarkAngle = 0,
@@ -108,6 +113,7 @@ class Layer {
     Object? sourceTrimEnd = _sentinel,
     double? sourceTrimStartFraction,
     double? playbackRate,
+    bool? videoSoundFollowsSpeed,
     double? videoVolume,
     Object? watermarkAssetId = _sentinel,
     double? watermarkAngle,
@@ -155,6 +161,8 @@ class Layer {
       sourceTrimStartFraction:
           sourceTrimStartFraction ?? this.sourceTrimStartFraction,
       playbackRate: playbackRate ?? this.playbackRate,
+      videoSoundFollowsSpeed:
+          videoSoundFollowsSpeed ?? this.videoSoundFollowsSpeed,
       videoVolume: videoVolume ?? this.videoVolume,
       watermarkAssetId: watermarkAssetId == _sentinel
           ? this.watermarkAssetId

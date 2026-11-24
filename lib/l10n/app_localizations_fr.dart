@@ -11627,6 +11627,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Forme d’onde du son affichée (touchez pour afficher les images de la vidéo)';
 
   @override
+  String get timelineVideoSoundFollowsSpeed => 'Lire le son à la même vitesse';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      'Si cette option est désactivée, le son est lu à vitesse normale depuis le début du clip et seule l’image change de vitesse.';
+
+  @override
   String get keyframeRetimeTitle => 'Vitesse des images clés';
 
   @override

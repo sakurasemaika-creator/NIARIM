@@ -376,6 +376,51 @@ void main() {
       expect(video.sourceSeconds, closeTo(0.75, 1e-9));
       expect(video.playbackRate, 3);
 
+      // With the video's sound at normal speed, only the picture is faster.
+      final soundAtNormalSpeed = await buildExportAudioPlan(
+        scenes: [
+          Scene(
+            id: 'S',
+            index: 0,
+            frames: [
+              for (var i = 0; i < 40; i++)
+                Frame(
+                  index: i,
+                  layers: i == 0
+                      ? const [
+                          Layer(
+                            id: 'v',
+                            name: 'v',
+                            type: LayerType.timelineVideo,
+                            materialId: 'a',
+                            rangeMode: LayerRangeMode.frameRange,
+                            rangeStart: 21,
+                            rangeEnd: 30,
+                            sourceTrimStart: 7,
+                            sourceTrimStartFraction: 0.5,
+                            playbackRate: 3,
+                            videoSoundFollowsSpeed: false,
+                          ),
+                        ]
+                      : const [],
+                ),
+            ],
+          ),
+        ],
+        sourceFps: 10,
+        pathOf: (_) async => file.path,
+      );
+      final plainSound = soundAtNormalSpeed.sources.single;
+      expect(plainSound.sourceSeconds, closeTo(0.75, 1e-9));
+      expect(plainSound.durationSeconds, 1.0);
+      expect(plainSound.playbackRate, 1);
+      final plainArgs = exportAudioSourceArguments(plainSound, '/out.wav');
+      expect(plainArgs[plainArgs.indexOf('-t') + 1], '1.000');
+      expect(
+        plainArgs[plainArgs.indexOf('-af') + 1],
+        isNot(contains('atempo')),
+      );
+
       final args = exportAudioSourceArguments(video, '/out.wav');
       expect(args[args.indexOf('-t') + 1], '3.000');
       expect(args[args.indexOf('-af') + 1], startsWith('atempo=3.0,volume='));
@@ -481,6 +526,13 @@ void main() {
               playbackRate: 2.5,
             ),
             Layer(id: 'plain', name: 'plain', type: LayerType.timelineVideo),
+            Layer(
+              id: 'quiet',
+              name: 'quiet',
+              type: LayerType.timelineVideo,
+              playbackRate: 4,
+              videoSoundFollowsSpeed: false,
+            ),
           ],
         ),
       ],
@@ -509,6 +561,10 @@ void main() {
     expect(layers['fast']!.sourceTrimStartFraction, 0.375);
     expect(layers['plain']!.playbackRate, 1.0);
     expect(layers['plain']!.sourceTrimStartFraction, 0.0);
+    expect(layers['plain']!.videoSoundFollowsSpeed, isTrue);
+    expect(layers['fast']!.videoSoundFollowsSpeed, isTrue);
+    expect(layers['quiet']!.videoSoundFollowsSpeed, isFalse);
+    expect(layers['quiet']!.playbackRate, 4);
     final clips = {for (final c in loaded.audioClips) c.id: c};
     expect(clips['slow']!.playbackRate, 0.25);
     expect(clips['slow']!.sourceStartFraction, 0.5);

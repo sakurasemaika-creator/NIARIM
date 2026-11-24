@@ -18729,6 +18729,18 @@ abstract class AppLocalizations {
   /// **'音声の波形を表示中（タップで映像のコマに切り替え）'**
   String get timelineVideoTrackShowingWaveform;
 
+  /// No description provided for @timelineVideoSoundFollowsSpeed.
+  ///
+  /// In ja, this message translates to:
+  /// **'音も同じ速度にする'**
+  String get timelineVideoSoundFollowsSpeed;
+
+  /// No description provided for @timelineVideoSoundFollowsSpeedHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'オフにすると、音はクリップの始めから通常の速さで鳴り、映像の速度だけが変わります。'**
+  String get timelineVideoSoundFollowsSpeedHint;
+
   /// No description provided for @keyframeRetimeTitle.
   ///
   /// In ja, this message translates to:

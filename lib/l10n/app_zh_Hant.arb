@@ -3997,6 +3997,8 @@
   "timelineAddTrackRowTooltip": "新增軌道列",
   "timelineVideoTrackShowingFrames": "正在顯示影片畫面（點按切換為聲音波形）",
   "timelineVideoTrackShowingWaveform": "正在顯示聲音波形（點按切換為影片畫面）",
+  "timelineVideoSoundFollowsSpeed": "聲音也以相同速度播放",
+  "timelineVideoSoundFollowsSpeedHint": "關閉時，聲音從片段開頭以正常速度播放，只改變畫面的速度。",
   "keyframeRetimeTitle": "關鍵影格速度",
   "keyframeRetimeHint": "依速度改變所選範圍內關鍵影格的間隔。值和緩動保持不變，範圍外的關鍵影格不會移動。",
   "keyframeRetimeFrom": "範圍的第一個關鍵影格",

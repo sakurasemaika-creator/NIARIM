@@ -3997,6 +3997,8 @@
   "timelineAddTrackRowTooltip": "添加轨道行",
   "timelineVideoTrackShowingFrames": "正在显示视频画面（点按切换为声音波形）",
   "timelineVideoTrackShowingWaveform": "正在显示声音波形（点按切换为视频画面）",
+  "timelineVideoSoundFollowsSpeed": "声音也以相同速度播放",
+  "timelineVideoSoundFollowsSpeedHint": "关闭时，声音从片段开头以正常速度播放，只改变画面的速度。",
   "keyframeRetimeTitle": "关键帧速度",
   "keyframeRetimeHint": "按速度改变所选范围内关键帧的间隔。值和缓动保持不变，范围外的关键帧不会移动。",
   "keyframeRetimeFrom": "范围的第一个关键帧",

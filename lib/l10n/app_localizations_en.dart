@@ -11453,6 +11453,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Showing the sound waveform (tap to show video frames)';
 
   @override
+  String get timelineVideoSoundFollowsSpeed =>
+      'Play the sound at the same speed';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      'When off, the sound plays at normal speed from the start of the clip and only the picture changes speed.';
+
+  @override
   String get keyframeRetimeTitle => 'Keyframe speed';
 
   @override

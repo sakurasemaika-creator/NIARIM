@@ -159,7 +159,7 @@ Future<ExportAudioPlan> buildExportAudioPlan({
           sceneFrames: sceneFrames,
           volume: layer.videoVolume,
           sourceFraction: layer.sourceTrimStartFraction,
-          rate: layer.playbackRate,
+          rate: layer.videoSoundFollowsSpeed ? layer.playbackRate : 1,
         );
       }
     }

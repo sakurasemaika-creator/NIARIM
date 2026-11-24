@@ -10512,6 +10512,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineVideoTrackShowingWaveform => '正在显示声音波形（点按切换为视频画面）';
 
   @override
+  String get timelineVideoSoundFollowsSpeed => '声音也以相同速度播放';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      '关闭时，声音从片段开头以正常速度播放，只改变画面的速度。';
+
+  @override
   String get keyframeRetimeTitle => '关键帧速度';
 
   @override
@@ -21131,6 +21138,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineVideoTrackShowingWaveform => '正在顯示聲音波形（點按切換為影片畫面）';
+
+  @override
+  String get timelineVideoSoundFollowsSpeed => '聲音也以相同速度播放';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      '關閉時，聲音從片段開頭以正常速度播放，只改變畫面的速度。';
 
   @override
   String get keyframeRetimeTitle => '關鍵影格速度';

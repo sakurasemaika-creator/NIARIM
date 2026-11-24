@@ -162,6 +162,10 @@ class _TrackClip {
   // playback speed (both for audio, read-aloud and video).
   double sourceFraction;
   double playbackRate;
+
+  /// Whether a video's sound plays at [playbackRate] too (otherwise at the
+  /// normal speed while only the picture changes speed).
+  bool soundFollowsSpeed;
   double videoOpacity; // 0.0〜1.0
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
   // このクリップが属する行番号（0始まり）。編集パネルから別の行へ移せる。
@@ -184,10 +188,14 @@ class _TrackClip {
     this.useEnd = 0,
     this.sourceFraction = 0,
     this.playbackRate = 1.0,
+    this.soundFollowsSpeed = true,
     this.videoOpacity = 1.0,
     this.trackRow = 0,
     this.isReadAloud = false,
   });
+
+  /// The speed the clip's sound plays at.
+  double get soundRate => soundFollowsSpeed ? playbackRate : 1.0;
 
   /// The source position (in project frames) [elapsedFrames] into the clip.
   SourcePosition sourceAfter(int elapsedFrames) => sourcePositionAfter(
@@ -1205,11 +1213,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
       sourceTrimStartFrame: clip.useStart + clip.sourceFraction,
       sourceTrimEndFrame: clip.useEnd,
       framesPerSecond: fps,
-      playbackRate: clip.playbackRate,
+      playbackRate: clip.soundRate,
     );
-    if (controller.value.playbackSpeed != clip.playbackRate) {
+    if (controller.value.playbackSpeed != clip.soundRate) {
       try {
-        await controller.setPlaybackSpeed(clip.playbackRate);
+        await controller.setPlaybackSpeed(clip.soundRate);
       } catch (error, stackTrace) {
         // A speed the device's player cannot play: the frames still follow
         // the speed; only this preview's sound does not.
@@ -2428,6 +2436,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         clip.useEnd = layer.sourceTrimEnd ?? clip.useEnd;
         clip.sourceFraction = layer.sourceTrimStartFraction;
         clip.playbackRate = layer.playbackRate;
+        clip.soundFollowsSpeed = layer.videoSoundFollowsSpeed;
       }
     });
     if (clip.trackType == _ClipTrackType.video) _syncMediaPlayback();
@@ -6159,7 +6168,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
     final fps = _projectFps(context.read<ProjectService>());
     final sourceStart = clip.useStart + clip.sourceFraction;
-    final sourceFrames = clip.lengthFrames * clip.playbackRate;
+    final sourceFrames = clip.lengthFrames * clip.soundRate;
     return _AudioWaveformThumb(
       key: ValueKey('wf_${clip.id}'),
       filePath: path,
@@ -8763,6 +8772,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               useEnd: clip.sourceAfter(clip.lengthFrames - 1).frame,
               sourceFraction: clip.sourceFraction,
               playbackRate: clip.playbackRate,
+              soundFollowsSpeed: clip.soundFollowsSpeed,
               trackRow: targetRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -8838,6 +8848,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       materialId: clip.materialId,
       useStart: clip.useStart,
       useEnd: clip.useEnd,
+      sourceFraction: clip.sourceFraction,
+      playbackRate: clip.playbackRate,
+      soundFollowsSpeed: clip.soundFollowsSpeed,
       volume: clip.volume,
       videoOpacity: clip.videoOpacity,
       trackRow: targetRow,
@@ -8897,6 +8910,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     fadeOut: c.fadeOut,
     useStart: c.useStart,
     useEnd: c.useEnd,
+    sourceFraction: c.sourceFraction,
+    playbackRate: c.playbackRate,
+    soundFollowsSpeed: c.soundFollowsSpeed,
     videoOpacity: c.videoOpacity,
     trackRow: c.trackRow,
     isReadAloud: c.isReadAloud,
@@ -9207,6 +9223,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               useEnd: clip.useEnd,
               sourceFraction: rightSource.fraction,
               playbackRate: clip.playbackRate,
+              soundFollowsSpeed: clip.soundFollowsSpeed,
               trackRow: clip.trackRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -9288,6 +9305,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             useEnd: clip.useEnd,
             sourceFraction: isVideo ? rightSource.fraction : 0,
             playbackRate: clip.playbackRate,
+            soundFollowsSpeed: clip.soundFollowsSpeed,
             volume: clip.volume,
             videoOpacity: clip.videoOpacity,
             trackRow: clip.trackRow,
@@ -9511,6 +9529,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           playbackRate: layer.type == LayerType.timelineVideo
               ? layer.playbackRate
               : 1.0,
+          soundFollowsSpeed: layer.videoSoundFollowsSpeed,
           volume: layer.type == LayerType.timelineVideo
               ? layer.videoVolume.clamp(0.0, 1.0)
               : 1.0,
