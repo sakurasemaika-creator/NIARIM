@@ -26,6 +26,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/trash_row.dart';
 import 'helpers/load_app_fonts.dart';
 import 'helpers/paragraph_lines.dart';
 
@@ -2999,9 +3000,7 @@ void main() {
       );
       await _settleWithFiles(tester, rounds: 1);
       expect(tester.widget<TextButton>(delete).onPressed, isNull);
-      final card = tester.getRect(
-        find.ancestor(of: delete, matching: find.byType(Card)).first,
-      );
+      final card = trashRowRect(tester, delete);
       final title = tester.getRect(find.text('Trip'));
       // 名前の右に並べたときに名前の欄に残る幅（下に回したときは、名前の欄
       // からボタンの行と右の余白8pxを引いた幅）。フォルダのカードは先頭の

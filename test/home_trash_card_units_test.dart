@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/sheet_list_segment.dart';
 
 import 'helpers/home_clipboard_harness.dart';
 import 'helpers/paragraph_lines.dart';
@@ -133,7 +134,7 @@ void main() {
       await home.settleIo(2);
       await home.showTab(3);
       final tiles = find.descendant(
-        of: find.byType(Card),
+        of: find.byType(SheetListSegment),
         matching: find.byType(ListTile),
       );
       await home.waitFor(

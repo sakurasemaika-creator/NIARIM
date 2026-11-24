@@ -17,6 +17,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/trash_row.dart';
 import 'helpers/load_app_fonts.dart';
 import 'helpers/paragraph_lines.dart';
 
@@ -196,10 +197,8 @@ void main() {
       final delete = find.byKey(keys.last, skipOffstage: false);
       await scrollTo(tester, delete);
       await settle(tester, rounds: 1);
-      final cardFinder = find
-          .ancestor(of: delete, matching: find.byType(Card))
-          .first;
-      final card = tester.getRect(cardFinder);
+      final cardFinder = trashRowOf(delete);
+      final card = trashRowRect(tester, delete);
       final title = find.descendant(
         of: cardFinder,
         matching: find.text(titles[kind]!),
@@ -375,9 +374,7 @@ void main() {
             final delete = find.byKey(keys.last, skipOffstage: false);
             await scrollTo(tester, delete);
             await settle(tester, rounds: 1);
-            final card = find
-                .ancestor(of: delete, matching: find.byType(Card))
-                .first;
+            final card = trashRowOf(delete);
             final titleBottom = tester
                 .getRect(
                   find.descendant(of: card, matching: find.text(titles[kind]!)),

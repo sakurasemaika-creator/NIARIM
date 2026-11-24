@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/trash_row.dart';
 
 /// DISC098の4：ゴミ箱のカードにマウスを載せた色（とカードを押せる所）は、
 /// カード全体に届く。以前は名前の行（ListTile）だけで、ボタンの行の空いた
@@ -95,13 +96,9 @@ void main() {
       tester.view.physicalSize = size;
       await settle(tester, rounds: 2);
       final delete = find.byKey(ValueKey('trash-delete-$workId'));
-      final cardFinder = find
-          .ancestor(of: delete, matching: find.byType(Card))
-          .first;
-      // カードの面（Cardの外側の余白を除いた所）。
-      final card = tester.getRect(
-        find.descendant(of: cardFinder, matching: find.byType(Material)).first,
-      );
+      final cardFinder = trashRowOf(delete);
+      // 行の面（行の間の線を除いた所）。
+      final card = trashRowRect(tester, delete);
       // カードを押す・長押しする所（ボタン自身のものを除く）。
       final surface = find.descendant(
         of: cardFinder,

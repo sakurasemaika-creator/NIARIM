@@ -19,6 +19,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/trash_row.dart';
 
 /// フォルダをゴミ箱へ移すと中身（下の階層のフォルダ・作品）も一緒に移り、
 /// ゴミ箱でフォルダを戻すと中身もすべて元の場所へ戻る。フォルダは中身ごと
@@ -562,9 +563,7 @@ void main() {
           scrollable: find.byType(Scrollable).last,
         );
         await settle(tester);
-        final card = tester.getRect(
-          find.ancestor(of: button, matching: find.byType(Card)).first,
-        );
+        final card = trashRowRect(tester, button);
         return card.bottomRight - tester.getRect(button).bottomRight;
       }
 
@@ -592,9 +591,7 @@ void main() {
               ),
             ]) {
               final a = await fromCorner(work);
-              final card = tester.getRect(
-                find.ancestor(of: work, matching: find.byType(Card)).first,
-              );
+              final card = trashRowRect(tester, work);
               final workCentre =
                   tester.getRect(work).center.dy - card.center.dy;
               final workBeside =
@@ -607,9 +604,7 @@ void main() {
               );
               await settle(tester);
               final b = await fromCorner(folder);
-              final folderCard = tester.getRect(
-                find.ancestor(of: folder, matching: find.byType(Card)).first,
-              );
+              final folderCard = trashRowRect(tester, folder);
               final folderCentre =
                   tester.getRect(folder).center.dy - folderCard.center.dy;
               final folderBeside =

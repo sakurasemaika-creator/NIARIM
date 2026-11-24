@@ -28,6 +28,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/trash_row.dart';
 import 'helpers/load_app_fonts.dart';
 
 /// 言語ごとに、画面に出るはずの文。
@@ -475,9 +476,7 @@ void main() {
       check(
         find
                 .descendant(
-                  of: find
-                      .ancestor(of: restore, matching: find.byType(Card))
-                      .first,
+                  of: trashRowOf(restore),
                   matching: find.textContaining(deletedOn),
                 )
                 .evaluate()

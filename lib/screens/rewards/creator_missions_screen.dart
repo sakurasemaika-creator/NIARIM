@@ -8,8 +8,7 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/project_service.dart';
 import '../../utils/app_locale.dart';
-import '../../widgets/menu_surface.dart';
-import '../../widgets/sheet_segment_border.dart';
+import '../../widgets/sheet_list_segment.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
@@ -531,116 +530,108 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     // ミッションの一覧は1枚の面に行を細い線で区切って並べる（1件ずつ
     // 浮かせたカードにしない）。区切りの線は文の始まり（左の余白8＋印の
     // ボタン48）から引く。
-    return Card(
+    return SheetListSegment(
       key: ValueKey('mission_$id:${workId ?? "template"}'),
-      margin: EdgeInsets.zero,
-      shape: SheetSegmentBorder(
-        first: first,
-        last: last,
-        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: .6)),
-        dividerIndent: 8 + 48,
-      ),
-      clipBehavior: Clip.antiAlias,
-      // 中の文字はメニューの面の色（MenuCardと同じ）。
-      child: MenuSurface(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              IconButton(
-                key: ValueKey('missionDetails_$id:${workId ?? "template"}'),
-                tooltip: t.get('detailsTooltip'),
-                onPressed: () => _showDetails(t, row),
-                icon: Icon(
-                  eligible || claimed
-                      ? Icons.priority_high_rounded
-                      : Icons.help_outline,
-                ),
-                color: eligible && !claimed
-                    ? AccentTextTheme.of(context)
-                    : scheme.onSurfaceVariant,
+      first: first,
+      last: last,
+      dividerIndent: 8 + 48,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            IconButton(
+              key: ValueKey('missionDetails_$id:${workId ?? "template"}'),
+              tooltip: t.get('detailsTooltip'),
+              onPressed: () => _showDetails(t, row),
+              icon: Icon(
+                eligible || claimed
+                    ? Icons.priority_high_rounded
+                    : Icons.help_outline,
               ),
-              // コインと受け取るボタンは文の横か下に置く（右端に固定すると、
-              // 大きな文字や長い言語で文が単語の途中で折り返した）。
-              Expanded(
-                child: ActionBesideOrBelow(
-                  text: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      keepTogetherWords(
-                        _goal(t, row),
-                        keep: _goalKeep(row),
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                      messageText(status, style: theme.textTheme.bodySmall),
-                    ],
-                  ),
-                  action: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.toll_outlined,
-                            size: 16,
-                            color: AccentTextTheme.of(context),
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            appLocalizationsOf(context).coinAmount(coins),
-                            style: theme.textTheme.labelSmall,
-                          ),
-                        ],
-                      ),
-                      if (claimed)
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Text(
-                            t.get('claimed'),
-                            style: theme.textTheme.labelSmall,
-                          ),
-                        )
-                      else if (eligible && ready)
-                        FilledButton(
-                          key: ValueKey('claim_${id}_${workId ?? "account"}'),
-                          onPressed: canClaim
-                              ? () => _claim(api, id, workId)
-                              : null,
-                          style: FilledButton.styleFrom(
-                            minimumSize: const Size(0, 48),
-                          ),
-                          child: _claimBusy.contains(actionKey)
-                              ? const SizedBox(
-                                  width: 14,
-                                  height: 14,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(t.get('claim')),
-                        )
-                      else
-                        OutlinedButton(
-                          onPressed: null,
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size(0, 48),
-                          ),
-                          child: Text(
-                            !available
-                                ? t.get('upcoming')
-                                : pending
-                                ? t.get('reviewing')
-                                : t.get('notAchieved'),
-                          ),
+              color: eligible && !claimed
+                  ? AccentTextTheme.of(context)
+                  : scheme.onSurfaceVariant,
+            ),
+            // コインと受け取るボタンは文の横か下に置く（右端に固定すると、
+            // 大きな文字や長い言語で文が単語の途中で折り返した）。
+            Expanded(
+              child: ActionBesideOrBelow(
+                text: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    keepTogetherWords(
+                      _goal(t, row),
+                      keep: _goalKeep(row),
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                    messageText(status, style: theme.textTheme.bodySmall),
+                  ],
+                ),
+                action: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.toll_outlined,
+                          size: 16,
+                          color: AccentTextTheme.of(context),
                         ),
-                    ],
-                  ),
+                        const SizedBox(width: 3),
+                        Text(
+                          appLocalizationsOf(context).coinAmount(coins),
+                          style: theme.textTheme.labelSmall,
+                        ),
+                      ],
+                    ),
+                    if (claimed)
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          t.get('claimed'),
+                          style: theme.textTheme.labelSmall,
+                        ),
+                      )
+                    else if (eligible && ready)
+                      FilledButton(
+                        key: ValueKey('claim_${id}_${workId ?? "account"}'),
+                        onPressed: canClaim
+                            ? () => _claim(api, id, workId)
+                            : null,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(0, 48),
+                        ),
+                        child: _claimBusy.contains(actionKey)
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(t.get('claim')),
+                      )
+                    else
+                      OutlinedButton(
+                        onPressed: null,
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(0, 48),
+                        ),
+                        child: Text(
+                          !available
+                              ? t.get('upcoming')
+                              : pending
+                              ? t.get('reviewing')
+                              : t.get('notAchieved'),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -79,7 +79,7 @@ import '../../utils/name_collation.dart';
 import '../../utils/saved_list_reader.dart';
 import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/scrollable_sheet_body.dart';
-import '../../widgets/sheet_segment_border.dart';
+import '../../widgets/sheet_list_segment.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/duplicate_name.dart';
 import '../../utils/file_size_label.dart';
@@ -7129,24 +7129,14 @@ class _TrashTabState extends State<_TrashTab> {
           // 行ごとに浮かせたカードにせず、ゴミ箱の一覧を1枚の面にして
           // 行を細い線で区切る（各行が自分の分の面を描く。先頭は上の角、
           // 最後は下の角）。区切りの線は名前の始まり（左の余白16＋絵48＋
-          // 間12）から引く。
-          final theme = Theme.of(context);
-          // 面の上下の空きは面の外に取る（カードの大きさ＝見えている面にして、
-          // 名前の右のボタンを面の上下の真ん中に置く）。
+          // 間12）から引く。面の上下の空きは面の外に取る（面の大きさ＝
+          // 見えている面にして、名前の右のボタンを面の上下の真ん中に置く）。
           return Padding(
-            padding: EdgeInsets.only(top: first ? 4 : 0, bottom: last ? 4 : 0),
-            child: Card(
-              margin: const EdgeInsets.symmetric(horizontal: 8),
-              color: theme.cardTheme.color ?? theme.colorScheme.surface,
-              shape: SheetSegmentBorder(
-                first: first,
-                last: last,
-                side: BorderSide(
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: .6),
-                ),
-                dividerIndent: 16 + 48 + 12,
-              ),
-              clipBehavior: Clip.antiAlias,
+            padding: EdgeInsets.fromLTRB(8, first ? 4 : 0, 8, last ? 4 : 0),
+            child: SheetListSegment(
+              first: first,
+              last: last,
+              dividerIndent: 16 + 48 + 12,
               child: surface(
                 // 広いカードは名前の右・上下の真ん中に、狭いカードは名前の下の
                 // 右端に並べる（所有者の判断1。作品・フォルダ・ファイルの

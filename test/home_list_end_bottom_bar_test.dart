@@ -10,6 +10,7 @@ import 'package:niarim/screens/home/widgets/folder_thumbnail.dart';
 import 'package:niarim/services/export_storage.dart';
 import 'package:niarim/widgets/collection_action_controls.dart';
 import 'package:niarim/widgets/frame_preview_background.dart';
+import 'package:niarim/widgets/sheet_list_segment.dart';
 
 import 'helpers/home_matrix_harness.dart';
 
@@ -147,6 +148,7 @@ void main() {
                 (w) =>
                     w is RichText ||
                     w is Card ||
+                    w is SheetListSegment ||
                     w is CollectionActionFrame ||
                     w is FramePreviewBackground,
               ),
