@@ -14,6 +14,8 @@ class AudioClip {
   // 音声タイムラインの表示行番号（0始まり）。素材種別ごとに複数行の
   // タイムライン行を追加/削除できる。
   final int trackRow;
+  /// True when this audio clip belongs to the dedicated speech track.
+  final bool isReadAloud;
 
   const AudioClip({
     required this.id,
@@ -26,6 +28,7 @@ class AudioClip {
     this.fadeOut = 0.0,
     this.sourceStartFrame = 0,
     this.trackRow = 0,
+    this.isReadAloud = false,
   });
 
   AudioClip copyWith({
@@ -38,6 +41,7 @@ class AudioClip {
     double? fadeOut,
     int? sourceStartFrame,
     int? trackRow,
+    bool? isReadAloud,
   }) {
     return AudioClip(
       id: id,
@@ -52,6 +56,7 @@ class AudioClip {
       fadeOut: fadeOut ?? this.fadeOut,
       sourceStartFrame: sourceStartFrame ?? this.sourceStartFrame,
       trackRow: trackRow ?? this.trackRow,
+      isReadAloud: isReadAloud ?? this.isReadAloud,
     );
   }
 }

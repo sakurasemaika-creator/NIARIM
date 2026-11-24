@@ -1226,6 +1226,7 @@ class NiaproSerializer {
             'fadeOut': a.fadeOut,
             'sourceStartFrame': a.sourceStartFrame,
             'trackRow': a.trackRow,
+            if (a.isReadAloud) 'isReadAloud': true,
           },
         )
         .toList(),
@@ -1437,6 +1438,7 @@ class NiaproSerializer {
           fadeOut: (m['fadeOut'] as num?)?.toDouble() ?? 0.0,
           sourceStartFrame: m['sourceStartFrame'] as int? ?? 0,
           trackRow: m['trackRow'] as int? ?? 0,
+          isReadAloud: m['isReadAloud'] as bool? ?? false,
         );
       }).toList();
       final imageRowNames =

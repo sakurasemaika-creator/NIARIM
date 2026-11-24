@@ -150,6 +150,7 @@ class _TrackClip {
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
   // このクリップが属する行番号（0始まり）。編集パネルから別の行へ移せる。
   int trackRow;
+  final bool isReadAloud;
 
   _TrackClip({
     required this.id,
@@ -167,6 +168,7 @@ class _TrackClip {
     this.useEnd = 0,
     this.videoOpacity = 1.0,
     this.trackRow = 0,
+    this.isReadAloud = false,
   });
 }
 
@@ -300,6 +302,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   // トラッククリップ
   final List<_TrackClip> _audioClips = [];
+  ScrollController? _readAloudScrollController;
+  ScrollController get _readAloudScrollCtrl =>
+      _readAloudScrollController ??= ScrollController()
+        ..addListener(() => _syncFrom(_readAloudScrollController!));
   final List<_TrackClip> _videoClips = [];
   final List<_TrackClip> _imageClips = [];
   final List<_TrackClip> _textClips = [];
@@ -1352,9 +1358,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   type: TimelineRowKind.audio,
                   icon: Icons.audiotrack,
                   defaultLabel: l10n.projectListMaterialAudio,
-                  allClips: _audioClips,
+                  allClips: _audioClips.where((c) => !c.isReadAloud).toList(),
                   addColor: ThemeService.activeColorScheme.tertiary,
                 ),
+                _buildReadAloudTrack(),
                 _buildCameraTrack(),
                 _buildEffectFilterTrack(),
                 _buildEndCardTrack(),
@@ -3514,6 +3521,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           lengthFrames: lengthFrames,
                           color: ThemeService.activeColorScheme.tertiary,
                           trackType: _ClipTrackType.audio,
+                          isReadAloud: true,
                           filePath: savedPath,
                           asset: asset,
                         );
@@ -5391,6 +5399,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  Widget _buildReadAloudTrack() {
+    final clips = _audioClips.where((c) => c.isReadAloud).toList();
+    if (clips.isEmpty) return const SizedBox.shrink();
+    return _buildClipTrackRow(
+      type: TimelineRowKind.audio,
+      rowIndex: 0,
+      rowLabel: MakingStrings.readAloud(context),
+      icon: Icons.record_voice_over_outlined,
+      clips: clips,
+      scrollCtrl: _readAloudScrollCtrl,
+      addColor: ThemeService.activeColorScheme.tertiary,
+      showAddButton: false,
+      canRename: false,
+    );
+  }
+
   Widget _buildTrackGrid(
     ScrollController controller,
     int total,
@@ -5434,6 +5458,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     required ScrollController scrollCtrl,
     required Color addColor,
     required bool showAddButton,
+    bool canRename = true,
   }) {
     final total = _totalFrames;
     return Container(
@@ -5445,10 +5470,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
           // 行名タップで名称変更（「タイムライン左側の素材種別名は
           // タップでユーザーがテキスト変更できる」）。種別を示すアイコン自体は
           // 変更不可のまま常時表示する。
-          GestureDetector(
-            onTap: () => _showRenameTrackRowDialog(type, rowIndex, rowLabel),
-            child: _buildTrackLabel(icon, rowLabel),
-          ),
+          canRename
+              ? GestureDetector(
+                  onTap: () => _showRenameTrackRowDialog(type, rowIndex, rowLabel),
+                  child: _buildTrackLabel(icon, rowLabel),
+                )
+              : _buildTrackLabel(icon, rowLabel),
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -7509,7 +7536,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final ps = context.read<ProjectService>();
     final kind = _rowKindOf(type);
     final clips = switch (type) {
-      _ClipTrackType.audio => _audioClips,
+      _ClipTrackType.audio => _audioClips.where((c) => !c.isReadAloud).toList(),
       _ClipTrackType.video => _videoClips,
       _ClipTrackType.image => _imageClips,
       _ClipTrackType.text => _textClips,
@@ -7871,6 +7898,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     required _ClipTrackType trackType,
     required String? filePath,
     required MaterialAsset asset,
+    bool isReadAloud = false,
   }) async {
     final projectService = context.read<ProjectService>();
     final home = _currentFrame;
@@ -7880,7 +7908,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         widget.projectId,
         'Add audio clip',
         () {
-          final row = _freeRowFor(trackType, startFrame, lengthFrames);
+          final row = isReadAloud
+              ? 0
+              : _freeRowFor(trackType, startFrame, lengthFrames);
           final id = 'audio_${DateTime.now().microsecondsSinceEpoch}';
           projectService.addAudioClip(
             widget.projectId,
@@ -7892,6 +7922,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               startFrame: startFrame,
               lengthFrames: lengthFrames,
               trackRow: row,
+              isReadAloud: isReadAloud,
             ),
           );
           return _TrackClip(
@@ -7905,6 +7936,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             materialId: asset.id,
             useEnd: lengthFrames - 1,
             trackRow: row,
+            isReadAloud: isReadAloud,
           );
         },
         changesTiles: false,
@@ -8059,7 +8091,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       // 使用中の列だけを表示する方針：追加専用の行（2行目以降）が
       // 空になったら自動で畳む（構造ごと削除して行番号を詰め直す）。1行目は
       // 常に存在する既定行なので畳まず、中身がなければ表示だけを省く。
-      if (clip.trackRow > 0) {
+      if (clip.trackRow > 0 && !clip.isReadAloud) {
         final remaining = switch (clip.trackType) {
           _ClipTrackType.audio => _audioClips,
           _ClipTrackType.video => _videoClips,
@@ -8123,6 +8155,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           fadeOut: clip.fadeOut,
           sourceStartFrame: clip.useStart,
           trackRow: targetRow,
+          isReadAloud: clip.isReadAloud,
         ),
       );
       if (mounted) {
@@ -8143,6 +8176,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               useStart: clip.useStart,
               useEnd: clip.useStart + clip.lengthFrames - 1,
               trackRow: targetRow,
+              isReadAloud: clip.isReadAloud,
             ),
           ),
         );
@@ -8277,6 +8311,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     useEnd: c.useEnd,
     videoOpacity: c.videoOpacity,
     trackRow: c.trackRow,
+    isReadAloud: c.isReadAloud,
   );
 
   void _copySelectedClips() {
@@ -8367,7 +8402,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
       final end = start + c.lengthFrames;
       for (final other in existingOfType) {
         if (excludeIds.contains(other.id)) continue;
-        if (other.trackRow != c.trackRow) continue;
+        if (other.trackRow != c.trackRow ||
+            other.isReadAloud != c.isReadAloud) continue;
         final oStart = other.startFrame;
         final oEnd = other.startFrame + other.lengthFrames;
         if (start < oEnd && oStart < end) {
@@ -8529,6 +8565,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           fadeOut: clip.fadeOut,
           sourceStartFrame: clip.useStart,
           trackRow: clip.trackRow,
+          isReadAloud: clip.isReadAloud,
         ),
       );
     } else {
@@ -8609,6 +8646,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           useStart: a.sourceStartFrame,
           useEnd: a.sourceStartFrame + a.lengthFrames - 1,
           trackRow: a.trackRow,
+          isReadAloud: a.isReadAloud,
         ),
       );
     }
