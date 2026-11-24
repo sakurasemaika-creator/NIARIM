@@ -7462,7 +7462,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get customAutomationUnfavoriteAction => 'Retirer des favoris';
 
   @override
-  String get brushSettingsCommonSection => 'Commun';
+  String get brushSettingsStrokeSection => 'Sensation du trait';
+
+  @override
+  String get brushSettingsEffectsSection => 'Contour, pliage et répétition';
 
   @override
   String get brushSettingsPressureOnSection => 'Pression activée';

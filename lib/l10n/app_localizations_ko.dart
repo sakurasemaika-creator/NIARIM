@@ -7069,7 +7069,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get customAutomationUnfavoriteAction => '즐겨찾기에서 제거';
 
   @override
-  String get brushSettingsCommonSection => '공통';
+  String get brushSettingsStrokeSection => '필감';
+
+  @override
+  String get brushSettingsEffectsSection => '외곽선·접힘·반복';
 
   @override
   String get brushSettingsPressureOnSection => '필압 ON';

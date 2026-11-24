@@ -114,7 +114,7 @@ void main() {
     }
 
     Future<void> choose(String label) async {
-      final radio = find.widgetWithText(RadioListTile<BrushMixingMode>, label);
+      final radio = find.widgetWithText(ChoiceChip, label);
       await tester.ensureVisible(radio.last);
       await tester.pumpAndSettle();
       await tester.tap(radio.last);
@@ -136,25 +136,20 @@ void main() {
       scrollable: sheetScroll,
     );
     await tester.pumpAndSettle();
-    // 筆圧OFFのセクションが開いていて、混色の選択肢がある（筆圧ONは閉じている）。
+    // 筆圧OFFのセクションが開いていて、混色の選択肢（チップ）がある（筆圧ONは
+    // 閉じている）。
     for (final label in ['デジタル', '油彩風混色', '水彩風混色']) {
       await tester.scrollUntilVisible(
-        find.widgetWithText(RadioListTile<BrushMixingMode>, label),
+        find.widgetWithText(ChoiceChip, label),
         200,
         scrollable: sheetScroll,
       );
     }
     for (final label in ['デジタル', '油彩風混色', '水彩風混色']) {
-      expect(
-        find.widgetWithText(RadioListTile<BrushMixingMode>, label),
-        findsOneWidget,
-      );
+      expect(find.widgetWithText(ChoiceChip, label), findsOneWidget);
     }
     // 旧「にじみ」モードは無い（にじみは水彩風混色のスライダー）。
-    expect(
-      find.widgetWithText(RadioListTile<BrushMixingMode>, 'にじみ'),
-      findsNothing,
-    );
+    expect(find.widgetWithText(ChoiceChip, 'にじみ'), findsNothing);
 
     await choose('油彩風混色');
     expect(find.text('混色度合い'), findsWidgets);
@@ -205,10 +200,10 @@ void main() {
     await tester.pumpAndSettle();
     await shoot('settings_blur.png');
 
-    // 保存すると水彩風混色として残る。
-    final save = find.byType(FilledButton);
-    await tester.scrollUntilVisible(save, 300, scrollable: sheetScroll);
-    await tester.tap(save.last);
+    // 保存すると水彩風混色として残る（保存はシートの上に固定してある）。
+    final save = find.byKey(const Key('brush-settings-save'));
+    expect(save.hitTestable(), findsOneWidget);
+    await tester.tap(save);
     await tester.pumpAndSettle();
     final saved = brushes.brushes.firstWhere((b) => b.id == copy.id);
     expect(saved.pressureOff.mixing.enabled, isTrue);

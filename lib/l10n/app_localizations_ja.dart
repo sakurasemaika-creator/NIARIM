@@ -7034,7 +7034,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get customAutomationUnfavoriteAction => 'お気に入りを解除';
 
   @override
-  String get brushSettingsCommonSection => '共通';
+  String get brushSettingsStrokeSection => '描き味';
+
+  @override
+  String get brushSettingsEffectsSection => '縁取り・折り畳み・反復';
 
   @override
   String get brushSettingsPressureOnSection => '筆圧ON';

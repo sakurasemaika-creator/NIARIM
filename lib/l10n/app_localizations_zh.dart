@@ -6963,7 +6963,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get customAutomationUnfavoriteAction => '从收藏中移除';
 
   @override
-  String get brushSettingsCommonSection => '通用';
+  String get brushSettingsStrokeSection => '笔触';
+
+  @override
+  String get brushSettingsEffectsSection => '描边、折叠与重复';
 
   @override
   String get brushSettingsPressureOnSection => '笔压开启';
@@ -17514,7 +17517,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get customAutomationUnfavoriteAction => '從收藏中移除';
 
   @override
-  String get brushSettingsCommonSection => '共用';
+  String get brushSettingsStrokeSection => '筆觸';
+
+  @override
+  String get brushSettingsEffectsSection => '描邊、折疊與重複';
 
   @override
   String get brushSettingsPressureOnSection => '筆壓開啟';

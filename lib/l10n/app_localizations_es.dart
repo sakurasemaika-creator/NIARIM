@@ -7453,7 +7453,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get customAutomationUnfavoriteAction => 'Quitar de favoritos';
 
   @override
-  String get brushSettingsCommonSection => 'Común';
+  String get brushSettingsStrokeSection => 'Sensación del trazo';
+
+  @override
+  String get brushSettingsEffectsSection => 'Contorno, pliegue y repetición';
 
   @override
   String get brushSettingsPressureOnSection => 'Presión activada';

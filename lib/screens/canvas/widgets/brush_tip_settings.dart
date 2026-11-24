@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
-import '../../../widgets/editable_slider_value.dart';
-import '../../../widgets/stepped_slider.dart';
+import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/menu_surface.dart';
 
 /// Every tip option is shared by built-in and user-created brush definitions.
@@ -20,6 +19,9 @@ class BrushTipSettings extends StatelessWidget {
     required this.onAddImages,
   });
 
+  /// 行の左右の余白（ブラシの設定のシートのほかの行と同じ16px）。
+  static const _inset = EdgeInsets.symmetric(horizontal: 16);
+
   Widget _number(
     String title,
     double value,
@@ -27,33 +29,14 @@ class BrushTipSettings extends StatelessWidget {
     double max,
     ValueChanged<double> change, {
     String suffix = '%',
-  }) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Row(
-        children: [
-          Expanded(child: Text(title)),
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: EditableSliderValue(
-              text: '${value.round()}$suffix',
-              value: value,
-              min: min,
-              max: max,
-              title: title,
-              onChanged: (v) => change(v.toDouble()),
-            ),
-          ),
-        ],
-      ),
-      SteppedSlider(
-        value: value,
-        min: min,
-        max: max,
-        step: 1,
-        onChanged: change,
-      ),
-    ],
+  }) => LabeledSlider(
+    label: title,
+    value: value,
+    min: min,
+    max: max,
+    valueText: '${value.round()}$suffix',
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+    onChanged: change,
   );
 
   void _setImages(List<String> paths) => onChanged(
@@ -94,29 +77,32 @@ class BrushTipSettings extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        MenuSurface(
-          child: DropdownButtonFormField<BrushTipShape>(
-            key: ValueKey('tip-shape-${brush.tipShape.name}'),
-            decoration: InputDecoration(labelText: l.brushTipShapeLabel),
-            initialValue: brush.tipShape,
-            items: [
-              for (final entry in shapes.entries)
-                DropdownMenuItem(value: entry.key, child: Text(entry.value)),
-            ],
-            onChanged: (value) {
-              if (value == null) return;
-              onChanged(
-                brush.copyWith(
-                  tipShape: value,
-                  clearCustomImages:
-                      value != brush.tipShape && paths.every(_isStandardShape),
-                ),
-              );
-            },
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: MenuSurface(
+            child: DropdownButtonFormField<BrushTipShape>(
+              key: ValueKey('tip-shape-${brush.tipShape.name}'),
+              decoration: InputDecoration(labelText: l.brushTipShapeLabel),
+              initialValue: brush.tipShape,
+              items: [
+                for (final entry in shapes.entries)
+                  DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+              ],
+              onChanged: (value) {
+                if (value == null) return;
+                onChanged(
+                  brush.copyWith(
+                    tipShape: value,
+                    clearCustomImages:
+                        value != brush.tipShape &&
+                        paths.every(_isStandardShape),
+                  ),
+                );
+              },
+            ),
           ),
         ),
         SwitchListTile(
-          contentPadding: EdgeInsets.zero,
           title: Text(l.brushTipRelativeSpacing),
           value: brush.tipSpacingFactor > 0,
           onChanged: (enabled) =>
@@ -151,7 +137,6 @@ class BrushTipSettings extends StatelessWidget {
           ),
         ],
         SwitchListTile(
-          contentPadding: EdgeInsets.zero,
           title: Text(l.brushNibFlat),
           value: brush.calligraphyAngle != null,
           onChanged: (enabled) => onChanged(
@@ -178,15 +163,17 @@ class BrushTipSettings extends StatelessWidget {
             suffix: '°',
           ),
         ],
-        const Divider(),
-        OutlinedButton.icon(
-          onPressed: onAddImages,
-          icon: const Icon(Icons.add_photo_alternate_outlined),
-          label: Text(l.brushImagesAdd),
+        const Divider(height: 16, indent: 16, endIndent: 16),
+        Padding(
+          padding: _inset,
+          child: OutlinedButton.icon(
+            onPressed: onAddImages,
+            icon: const Icon(Icons.add_photo_alternate_outlined),
+            label: Text(l.brushImagesAdd),
+          ),
         ),
         for (var i = 0; i < paths.length; i++)
           ListTile(
-            contentPadding: EdgeInsets.zero,
             leading: Container(
               width: 40,
               height: 40,
@@ -240,54 +227,68 @@ class BrushTipSettings extends StatelessWidget {
             ),
           ),
         if (paths.isNotEmpty) ...[
-          MenuSurface(
-            child: DropdownButtonFormField<BrushImageInkMode>(
-              key: ValueKey('image-ink-${brush.imageInkMode.name}'),
-              decoration: InputDecoration(labelText: l.brushImageInkLabel),
-              initialValue: brush.imageInkMode,
-              items: [
-                for (final entry in inks.entries)
-                  DropdownMenuItem(value: entry.key, child: Text(entry.value)),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  onChanged(brush.copyWith(imageInkMode: value));
-                }
-              },
+          Padding(
+            padding: _inset,
+            child: MenuSurface(
+              child: DropdownButtonFormField<BrushImageInkMode>(
+                key: ValueKey('image-ink-${brush.imageInkMode.name}'),
+                decoration: InputDecoration(labelText: l.brushImageInkLabel),
+                initialValue: brush.imageInkMode,
+                items: [
+                  for (final entry in inks.entries)
+                    DropdownMenuItem(
+                      value: entry.key,
+                      child: Text(entry.value),
+                    ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    onChanged(brush.copyWith(imageInkMode: value));
+                  }
+                },
+              ),
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            l.brushImageInkHelp,
-            style: Theme.of(context).textTheme.bodySmall,
+          Padding(
+            padding: _inset,
+            child: Text(
+              l.brushImageInkHelp,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
-          MenuSurface(
-            child: DropdownButtonFormField<BrushImageSelectionMode>(
-              key: ValueKey(
-                'image-order-${brush.customImageSelectionMode.name}',
+          Padding(
+            padding: _inset,
+            child: MenuSurface(
+              child: DropdownButtonFormField<BrushImageSelectionMode>(
+                key: ValueKey(
+                  'image-order-${brush.customImageSelectionMode.name}',
+                ),
+                decoration: InputDecoration(labelText: l.brushImageOrderLabel),
+                initialValue: brush.customImageSelectionMode,
+                items: [
+                  DropdownMenuItem(
+                    value: BrushImageSelectionMode.random,
+                    child: Text(l.brushImageOrderRandom),
+                  ),
+                  DropdownMenuItem(
+                    value: BrushImageSelectionMode.sequential,
+                    child: Text(l.brushImageOrderSequential),
+                  ),
+                  DropdownMenuItem(
+                    value: BrushImageSelectionMode.randomPerStamp,
+                    child: Text(l.brushImageOrderRandomPerStamp),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    onChanged(brush.copyWith(customImageSelectionMode: value));
+                  }
+                },
               ),
-              decoration: InputDecoration(labelText: l.brushImageOrderLabel),
-              initialValue: brush.customImageSelectionMode,
-              items: [
-                DropdownMenuItem(
-                  value: BrushImageSelectionMode.random,
-                  child: Text(l.brushImageOrderRandom),
-                ),
-                DropdownMenuItem(
-                  value: BrushImageSelectionMode.sequential,
-                  child: Text(l.brushImageOrderSequential),
-                ),
-                DropdownMenuItem(
-                  value: BrushImageSelectionMode.randomPerStamp,
-                  child: Text(l.brushImageOrderRandomPerStamp),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  onChanged(brush.copyWith(customImageSelectionMode: value));
-                }
-              },
             ),
           ),
         ],

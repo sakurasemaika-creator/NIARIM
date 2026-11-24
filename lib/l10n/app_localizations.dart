@@ -12765,11 +12765,17 @@ abstract class AppLocalizations {
   /// **'お気に入りを解除'**
   String get customAutomationUnfavoriteAction;
 
-  /// No description provided for @brushSettingsCommonSection.
+  /// No description provided for @brushSettingsStrokeSection.
   ///
   /// In ja, this message translates to:
-  /// **'共通'**
-  String get brushSettingsCommonSection;
+  /// **'描き味'**
+  String get brushSettingsStrokeSection;
+
+  /// No description provided for @brushSettingsEffectsSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り・折り畳み・反復'**
+  String get brushSettingsEffectsSection;
 
   /// No description provided for @brushSettingsPressureOnSection.
   ///

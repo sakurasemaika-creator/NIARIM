@@ -31,7 +31,10 @@ import 'asset_panel_actions.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
+import '../../../widgets/action_beside_or_below.dart';
+import '../../../widgets/grouped_sheet.dart';
 import '../../../widgets/list_ink_clip.dart';
+import '../../../widgets/stroke_sample_preview.dart';
 import '../../../widgets/typing_dialog_inset.dart';
 import '../../../utils/file_failure_reason.dart';
 
@@ -712,258 +715,213 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     _brush = widget.brush;
   }
 
+  /// 今の設定で描いた線の見本の色（キャンバスで選んでいる色）。
+  Color get _sampleColor => context.read<BrushService>().currentColor;
+
+  Future<void> _save() async {
+    final service = context.read<BrushService>();
+    final brush = await service.prepareBrushTip(_brush);
+    if (!mounted) return;
+    service.updateBrush(brush);
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final penPressureEnabled = context
         .read<SettingsService>()
         .penPressureEnabled;
-    return DraggableScrollableSheet(
-      initialChildSize: 0.7,
-      minChildSize: 0.4,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (_, controller) => ListView(
-        controller: controller,
-        padding: const EdgeInsets.all(16),
+    final theme = Theme.of(context);
+    final rule =
+        theme.dividerTheme.color ??
+        theme.colorScheme.outlineVariant.withValues(alpha: .6);
+    // 筆圧ON・OFFの設定は、いま使っている方を先に開いて出し、もう片方は
+    // たたんで後ろに置く。
+    final pressureOn = _settingsSection(
+      key: const Key('brush-settings-pressure-on'),
+      title: l10n.brushSettingsPressureOnSection,
+      initiallyExpanded: penPressureEnabled,
+      children: [
+        _pressureRangeTile(
+          label: l10n.brushSettingsSizeLabel,
+          setting: _brush.pressureOn.size,
+          onChanged: (v) => _brush = _brush.copyWith(
+            pressureOn: _brush.pressureOn.copyWith(size: v),
+          ),
+          l10n: l10n,
+        ),
+        _pressureRangeTile(
+          label: l10n.brushSettingsOpacityLabel,
+          setting: _brush.pressureOn.opacity,
+          onChanged: (v) => _brush = _brush.copyWith(
+            pressureOn: _brush.pressureOn.copyWith(opacity: v),
+          ),
+          l10n: l10n,
+        ),
+        _amountRangeTile(
+          label: l10n.brushSettingsBlurRadiusLabel,
+          setting: _brush.pressureOn.blur,
+          onChanged: (v) => _brush = _brush.copyWith(
+            pressureOn: _brush.pressureOn.copyWith(blur: v),
+          ),
+          l10n: l10n,
+        ),
+        _amountRangeTile(
+          label: l10n.brushSettingsEdgeJitterTitle,
+          setting: _brush.pressureOn.edgeJitter,
+          onChanged: (v) => _brush = _brush.copyWith(
+            pressureOn: _brush.pressureOn.copyWith(edgeJitter: v),
+          ),
+          l10n: l10n,
+        ),
+        _pressureMixingOnTile(l10n),
+      ],
+    );
+    final pressureOff = _settingsSection(
+      key: const Key('brush-settings-pressure-off'),
+      title: l10n.brushSettingsPressureOffSection,
+      initiallyExpanded: !penPressureEnabled,
+      children: [
+        _fixedAmountTile(
+          label: l10n.brushSettingsBlurRadiusLabel,
+          setting: _brush.pressureOff.blur,
+          onChanged: (v) => _brush = _brush.copyWith(
+            pressureOff: _brush.pressureOff.copyWith(blur: v),
+          ),
+        ),
+        _fixedAmountTile(
+          label: l10n.brushSettingsEdgeJitterTitle,
+          setting: _brush.pressureOff.edgeJitter,
+          onChanged: (v) => _brush = _brush.copyWith(
+            pressureOff: _brush.pressureOff.copyWith(edgeJitter: v),
+          ),
+        ),
+        _pressureMixingOffTile(l10n),
+      ],
+    );
+    final sections = <Widget>[
+      _settingsSection(
+        key: const Key('brush-settings-stroke'),
+        title: l10n.brushSettingsStrokeSection,
+        initiallyExpanded: true,
         children: [
-          Text(
-            // 組み込みのブラシは一覧と同じく今の言語の名前。
-            creativePresetLabel(
-              AppLocalizations.of(context)!,
-              _brush.name,
-              builtIn: context.read<BrushService>().isBuiltIn(_brush.id),
+          _fieldLabel(l10n.brushSettingsFadeModeTitle),
+          _choices<FadeMode>(
+            values: FadeMode.values,
+            selected: _brush.fadeMode,
+            label: (mode) => _fadeModeLabel(l10n, mode),
+            keyOf: (mode) => Key('brush-fade-${mode.name}'),
+            onSelected: (v) =>
+                setState(() => _brush = _brush.copyWith(fadeMode: v)),
+          ),
+          if (_brush.fadeMode == FadeMode.custom) ...[
+            _sliderRow(
+              l10n.brushSettingsFadeStartValueLabel,
+              _brush.fadeIn.value,
+              0,
+              100,
+              (v) => setState(
+                () => _brush = _brush.copyWith(
+                  fadeIn: _brush.fadeIn.copyWith(value: v),
+                ),
+              ),
             ),
-            style: localizedHeadingStyle(
-              context,
-              const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            _sliderRow(
+              '${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeStartValueLabel})',
+              _brush.fadeIn.rangePx,
+              10,
+              2000,
+              (v) => setState(
+                () => _brush = _brush.copyWith(
+                  fadeIn: _brush.fadeIn.copyWith(rangePx: v),
+                ),
+              ),
+            ),
+            _sliderRow(
+              l10n.brushSettingsFadeEndValueLabel,
+              _brush.fadeOut.value,
+              0,
+              100,
+              (v) => setState(
+                () => _brush = _brush.copyWith(
+                  fadeOut: _brush.fadeOut.copyWith(value: v),
+                ),
+              ),
+            ),
+            _sliderRow(
+              '${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeEndValueLabel})',
+              _brush.fadeOut.rangePx,
+              10,
+              2000,
+              (v) => setState(
+                () => _brush = _brush.copyWith(
+                  fadeOut: _brush.fadeOut.copyWith(rangePx: v),
+                ),
+              ),
+            ),
+          ],
+          _sliderRow(
+            l10n.brushSettingsSpacingLabel,
+            _brush.spacing.toDouble(),
+            1,
+            kBrushSpacingMax.toDouble(),
+            (v) => setState(() => _brush = _brush.copyWith(spacing: v.round())),
+          ),
+          LabeledSlider(
+            label: l10n.brushSettingsPaperGrain,
+            value: _brush.grainStrength.toDouble(),
+            min: 0,
+            max: 100,
+            divisions: 100,
+            padding: _sliderPadding,
+            valueText: '${_brush.grainStrength}%',
+            onChanged: (value) => setState(
+              () => _brush = _brush.copyWith(grainStrength: value.round()),
             ),
           ),
-          const SizedBox(height: 16),
-          _settingsSection(
-            title: l10n.brushSettingsCommonSection,
-            initiallyExpanded: true,
-            children: [
-              _sliderRow(
-                l10n.brushSettingsSpacingLabel,
-                _brush.spacing.toDouble(),
-                1,
-                kBrushSpacingMax.toDouble(),
-                (v) => setState(
-                  () => _brush = _brush.copyWith(spacing: v.round()),
-                ),
-              ),
-              SwitchListTile(
-                title: Text(l10n.stampRotationLabel),
-                value: _brush.rotation,
-                onChanged: (v) =>
-                    setState(() => _brush = _brush.copyWith(rotation: v)),
-              ),
-              _decimalSliderRow(
-                l10n.stampDensityLabel,
-                _brush.density,
-                0.1,
-                5.0,
-                0.1,
-                (v) => setState(() => _brush = _brush.copyWith(density: v)),
-              ),
-              _decimalSliderRow(
-                l10n.stampScatterLabel,
-                _brush.scatter,
-                0.0,
-                1.0,
-                0.01,
-                (v) => setState(() => _brush = _brush.copyWith(scatter: v)),
-              ),
-              SwitchListTile(
-                title: Text(l10n.brushSettingsPixelModeTitle),
-                value: _brush.pixelMode,
-                onChanged: (v) =>
-                    setState(() => _brush = _brush.copyWith(pixelMode: v)),
-              ),
-              if (_brush.pixelMode)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  child: PixelColorModeSelector(
-                    mode: _brush.pixelColorMode,
-                    colorLevels: _brush.pixelColorLevels,
-                    explicitColors: _brush.pixelExplicitColors,
-                    onModeChanged: (m) => setState(
-                      () => _brush = _brush.copyWith(pixelColorMode: m),
-                    ),
-                    onColorLevelsChanged: (v) => setState(
-                      () => _brush = _brush.copyWith(pixelColorLevels: v),
-                    ),
-                    onExplicitColorsChanged: (c) => setState(
-                      () => _brush = _brush.copyWith(pixelExplicitColors: c),
-                    ),
-                  ),
-                ),
-              Text(
-                l10n.brushSettingsFadeModeTitle,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              RadioGroup<FadeMode>(
-                groupValue: _brush.fadeMode,
-                onChanged: (v) =>
-                    setState(() => _brush = _brush.copyWith(fadeMode: v)),
-                child: Column(
-                  children: FadeMode.values
-                      .map(
-                        (mode) => RadioListTile<FadeMode>(
-                          title: Text(_fadeModeLabel(l10n, mode)),
-                          value: mode,
-                          dense: true,
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-              if (_brush.fadeMode == FadeMode.custom) ...[
-                _sliderRow(
-                  l10n.brushSettingsFadeStartValueLabel,
-                  _brush.fadeIn.value,
-                  0,
-                  100,
-                  (v) => setState(
-                    () => _brush = _brush.copyWith(
-                      fadeIn: _brush.fadeIn.copyWith(value: v),
-                    ),
-                  ),
-                ),
-                _sliderRow(
-                  '${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeStartValueLabel})',
-                  _brush.fadeIn.rangePx,
-                  10,
-                  2000,
-                  (v) => setState(
-                    () => _brush = _brush.copyWith(
-                      fadeIn: _brush.fadeIn.copyWith(rangePx: v),
-                    ),
-                  ),
-                ),
-                _sliderRow(
-                  l10n.brushSettingsFadeEndValueLabel,
-                  _brush.fadeOut.value,
-                  0,
-                  100,
-                  (v) => setState(
-                    () => _brush = _brush.copyWith(
-                      fadeOut: _brush.fadeOut.copyWith(value: v),
-                    ),
-                  ),
-                ),
-                _sliderRow(
-                  '${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeEndValueLabel})',
-                  _brush.fadeOut.rangePx,
-                  10,
-                  2000,
-                  (v) => setState(
-                    () => _brush = _brush.copyWith(
-                      fadeOut: _brush.fadeOut.copyWith(rangePx: v),
-                    ),
-                  ),
-                ),
-              ],
-              SwitchListTile(
-                title: Text(l10n.brushSettingsStrokeDecayTitle),
-                subtitle: Text(
-                  l10n.brushSettingsStrokeDecaySubtitle,
-                  style: const TextStyle(fontSize: 11),
-                ),
-                value: _brush.strokeDecay,
-                onChanged: (v) =>
-                    setState(() => _brush = _brush.copyWith(strokeDecay: v)),
-              ),
-            ],
+          SwitchListTile(
+            title: Text(l10n.brushSettingsStrokeDecayTitle),
+            subtitle: Text(
+              l10n.brushSettingsStrokeDecaySubtitle,
+              style: const TextStyle(fontSize: 12),
+            ),
+            value: _brush.strokeDecay,
+            onChanged: (v) =>
+                setState(() => _brush = _brush.copyWith(strokeDecay: v)),
           ),
-          _settingsSection(
-            title: l10n.brushTipSettingsTitle,
-            initiallyExpanded: true,
-            children: [
-              BrushTipSettings(
-                brush: _brush,
-                onChanged: (value) => setState(() => _brush = value),
-                onAddImages: _addImages,
-              ),
-              LabeledSlider(
-                label: AppLocalizations.of(context)!.brushSettingsPaperGrain,
-                value: _brush.grainStrength.toDouble(),
-                min: 0,
-                max: 100,
-                divisions: 100,
-                valueText: '${_brush.grainStrength}%',
-                onChanged: (value) => setState(
-                  () => _brush = _brush.copyWith(grainStrength: value.round()),
-                ),
-              ),
-            ],
+          SwitchListTile(
+            title: Text(l10n.brushSettingsPixelModeTitle),
+            value: _brush.pixelMode,
+            onChanged: (v) =>
+                setState(() => _brush = _brush.copyWith(pixelMode: v)),
           ),
-          _settingsSection(
-            title: l10n.brushSettingsPressureOnSection,
-            initiallyExpanded: penPressureEnabled,
-            children: [
-              _pressureRangeTile(
-                label: l10n.brushSettingsSizeLabel,
-                setting: _brush.pressureOn.size,
-                onChanged: (v) => _brush = _brush.copyWith(
-                  pressureOn: _brush.pressureOn.copyWith(size: v),
+          if (_brush.pixelMode)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: PixelColorModeSelector(
+                mode: _brush.pixelColorMode,
+                colorLevels: _brush.pixelColorLevels,
+                explicitColors: _brush.pixelExplicitColors,
+                onModeChanged: (m) =>
+                    setState(() => _brush = _brush.copyWith(pixelColorMode: m)),
+                onColorLevelsChanged: (v) => setState(
+                  () => _brush = _brush.copyWith(pixelColorLevels: v),
                 ),
-                l10n: l10n,
-              ),
-              _pressureRangeTile(
-                label: l10n.brushSettingsOpacityLabel,
-                setting: _brush.pressureOn.opacity,
-                onChanged: (v) => _brush = _brush.copyWith(
-                  pressureOn: _brush.pressureOn.copyWith(opacity: v),
-                ),
-                l10n: l10n,
-              ),
-              _amountRangeTile(
-                label: l10n.brushSettingsBlurRadiusLabel,
-                setting: _brush.pressureOn.blur,
-                onChanged: (v) => _brush = _brush.copyWith(
-                  pressureOn: _brush.pressureOn.copyWith(blur: v),
-                ),
-                l10n: l10n,
-              ),
-              _amountRangeTile(
-                label: l10n.brushSettingsEdgeJitterTitle,
-                setting: _brush.pressureOn.edgeJitter,
-                onChanged: (v) => _brush = _brush.copyWith(
-                  pressureOn: _brush.pressureOn.copyWith(edgeJitter: v),
-                ),
-                l10n: l10n,
-              ),
-              _pressureMixingOnTile(l10n),
-            ],
-          ),
-          _settingsSection(
-            title: l10n.brushSettingsPressureOffSection,
-            initiallyExpanded: !penPressureEnabled,
-            children: [
-              _fixedAmountTile(
-                label: l10n.brushSettingsBlurRadiusLabel,
-                setting: _brush.pressureOff.blur,
-                onChanged: (v) => _brush = _brush.copyWith(
-                  pressureOff: _brush.pressureOff.copyWith(blur: v),
+                onExplicitColorsChanged: (c) => setState(
+                  () => _brush = _brush.copyWith(pixelExplicitColors: c),
                 ),
               ),
-              _fixedAmountTile(
-                label: l10n.brushSettingsEdgeJitterTitle,
-                setting: _brush.pressureOff.edgeJitter,
-                onChanged: (v) => _brush = _brush.copyWith(
-                  pressureOff: _brush.pressureOff.copyWith(edgeJitter: v),
-                ),
-              ),
-              _pressureMixingOffTile(l10n),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Divider(),
+            ),
+        ],
+      ),
+      penPressureEnabled ? pressureOn : pressureOff,
+      // 縁取り・折り畳み・横方向反復（髪・リボンのブラシの決め手）。
+      _settingsSection(
+        key: const Key('brush-settings-effects'),
+        title: l10n.brushSettingsEffectsSection,
+        initiallyExpanded: true,
+        children: [
           BrushExtensionSettings(
             brush: _brush,
             labels: BrushExtensionLabels.fromLocalizations(l10n),
@@ -973,40 +931,204 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 ? null
                 : _eyedropOutlineColor,
           ),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: () async {
-              final service = context.read<BrushService>();
-              final brush = await service.prepareBrushTip(_brush);
-              if (!context.mounted) return;
-              service.updateBrush(brush);
-              Navigator.pop(context);
-            },
-            child: Text(l10n.commonSave),
+        ],
+      ),
+      penPressureEnabled ? pressureOff : pressureOn,
+      _settingsSection(
+        key: const Key('brush-settings-tip'),
+        title: l10n.brushTipSettingsTitle,
+        initiallyExpanded: false,
+        children: [
+          BrushTipSettings(
+            brush: _brush,
+            onChanged: (value) => setState(() => _brush = value),
+            onAddImages: _addImages,
+          ),
+          const SizedBox(height: 8),
+          SwitchListTile(
+            title: Text(l10n.stampRotationLabel),
+            value: _brush.rotation,
+            onChanged: (v) =>
+                setState(() => _brush = _brush.copyWith(rotation: v)),
+          ),
+          _decimalSliderRow(
+            l10n.stampDensityLabel,
+            _brush.density,
+            0.1,
+            5.0,
+            0.1,
+            (v) => setState(() => _brush = _brush.copyWith(density: v)),
+          ),
+          _decimalSliderRow(
+            l10n.stampScatterLabel,
+            _brush.scatter,
+            0.0,
+            1.0,
+            0.01,
+            (v) => setState(() => _brush = _brush.copyWith(scatter: v)),
+          ),
+        ],
+      ),
+    ];
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (_, controller) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 題と保存はスクロールの外に置き、いつも押せるようにする（以前は
+          // 一番下まで送らないと保存できなかった）。その下に、今の設定で
+          // 描いた線の見本を出す（値を動かすとその場で描き直す）。
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 12),
+            // 狭い幅・大きな文字で名前が字ごとに折れるときは、保存を名前の
+            // 下（行の終わりの側）へ回す。
+            child: ActionBesideOrBelow(
+              text: Text(
+                // 組み込みのブラシは一覧と同じく今の言語の名前。
+                creativePresetLabel(
+                  l10n,
+                  _brush.name,
+                  builtIn: context.read<BrushService>().isBuiltIn(_brush.id),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              action: FilledButton(
+                key: const Key('brush-settings-save'),
+                onPressed: _save,
+                child: Text(l10n.commonSave),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: StrokeSamplePreview(
+              key: const Key('brush-settings-sample'),
+              brush: _brush,
+              color: _sampleColor,
+              height: 64,
+            ),
+          ),
+          Divider(height: 1, thickness: 1, color: rule),
+          Expanded(
+            child: ListView(
+              controller: controller,
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                24 + MediaQuery.paddingOf(context).bottom,
+              ),
+              children: [
+                for (var i = 0; i < sections.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 12),
+                  sections[i],
+                ],
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
+  /// スライダーの行の余白：項目名の始まりを行の文字（16px）にそろえる。
+  static const _sliderPadding = EdgeInsets.symmetric(
+    horizontal: 12,
+    vertical: 4,
+  );
+
+  /// 1つのまとまり：メニューの背景色の面1枚を細い線で縁取り、見出しを押すと
+  /// たたむ（影は付けない）。中の行は左右16pxから書き始める。
   Widget _settingsSection({
+    required Key key,
     required String title,
     required bool initiallyExpanded,
     required List<Widget> children,
   }) {
-    return ExpansionTile(
-      title: Text(
-        title,
-        style: localizedHeadingStyle(
-          context,
-          const TextStyle(fontWeight: FontWeight.bold),
-        ),
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final rule =
+        theme.dividerTheme.color ?? scheme.outlineVariant.withValues(alpha: .6);
+    return Material(
+      key: key,
+      color: theme.cardTheme.color ?? scheme.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(GroupedSheet.radius),
+        side: BorderSide(color: rule),
       ),
-      initiallyExpanded: initiallyExpanded,
-      childrenPadding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-      children: children,
+      child: ExpansionTile(
+        title: Text(
+          title,
+          style: localizedHeadingStyle(
+            context,
+            const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+        ),
+        initiallyExpanded: initiallyExpanded,
+        // 開いている印も差し色にしない（差し色は選んでいる物のため）。
+        iconColor: scheme.onSurfaceVariant,
+        collapsedIconColor: scheme.onSurfaceVariant,
+        shape: const Border(),
+        collapsedShape: const Border(),
+        tilePadding: const EdgeInsetsDirectional.only(start: 16, end: 12),
+        childrenPadding: const EdgeInsets.only(bottom: 8),
+        expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Divider(height: 1, thickness: 1, color: rule),
+          const SizedBox(height: 4),
+          ...children,
+        ],
+      ),
     );
   }
+
+  /// まとまりの中の小さな見出し（選ぶ物の名前）。
+  Widget _fieldLabel(String text) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontSize: 13,
+        height: 1.35,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    ),
+  );
+
+  /// いくつかから1つを選ぶ（入り抜き・混色）：ラジオの行を縦に並べず、
+  /// 選べる物を折り返すチップにする。選んだチップだけが選択の色。
+  Widget _choices<T>({
+    required List<T> values,
+    required T selected,
+    required String Function(T) label,
+    required ValueChanged<T> onSelected,
+    Key Function(T)? keyOf,
+  }) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    child: Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final value in values)
+          ChoiceChip(
+            key: keyOf?.call(value),
+            label: Text(label(value)),
+            selected: value == selected,
+            showCheckmark: false,
+            onSelected: (_) => onSelected(value),
+          ),
+      ],
+    ),
+  );
 
   Widget _pressureRangeTile({
     required String label,
@@ -1017,7 +1139,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     return Column(
       children: [
         SwitchListTile(
-          dense: true,
           title: Text(label),
           value: setting.enabled,
           onChanged: (v) =>
@@ -1337,18 +1458,10 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     );
   }
 
-  Widget _mixingSubheading(String text) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-    child: Text(text, style: const TextStyle(fontSize: 12)),
-  );
+  Widget _mixingSubheading(String text) => _fieldLabel(text);
 
-  Widget _mixingModeHeading(AppLocalizations l10n) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-    child: Text(
-      l10n.brushSettingsMixingTitle,
-      style: Theme.of(context).textTheme.titleSmall,
-    ),
-  );
+  Widget _mixingModeHeading(AppLocalizations l10n) =>
+      _fieldLabel(l10n.brushSettingsMixingTitle);
 
   BrushMixingMode _selectedMixingMode(
     bool enabled,
@@ -1359,26 +1472,13 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     required AppLocalizations l10n,
     required BrushMixingMode mode,
     required ValueChanged<BrushMixingMode> onChanged,
-  }) {
-    const modes = BrushMixingMode.values;
-    return RadioGroup<BrushMixingMode>(
-      groupValue: mode,
-      onChanged: (v) {
-        if (v != null) onChanged(v);
-      },
-      child: Column(
-        children: modes
-            .map(
-              (value) => RadioListTile<BrushMixingMode>(
-                dense: true,
-                title: Text(_mixingModeLabel(l10n, value)),
-                value: value,
-              ),
-            )
-            .toList(),
-      ),
-    );
-  }
+  }) => _choices<BrushMixingMode>(
+    values: BrushMixingMode.values,
+    selected: mode,
+    label: (value) => _mixingModeLabel(l10n, value),
+    keyOf: (value) => Key('brush-mixing-${value.name}'),
+    onSelected: onChanged,
+  );
 
   Widget _sliderRow(
     String label,
@@ -1392,6 +1492,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
       min: min,
       max: max,
       value: value,
+      padding: _sliderPadding,
       valueText: value.round().toString(),
       onChanged: onChanged,
     );
@@ -1412,6 +1513,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
       value: value,
       step: step,
       isInt: false,
+      padding: _sliderPadding,
       valueText: value.toStringAsFixed(step < 0.1 ? 2 : 1),
       onChanged: onChanged,
     );

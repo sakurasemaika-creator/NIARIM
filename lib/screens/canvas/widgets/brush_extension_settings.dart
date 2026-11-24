@@ -5,6 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
 import '../../../models/brush_extension_defaults.dart';
 import '../../../widgets/help_button.dart';
+import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/menu_surface.dart';
 
 class BrushExtensionLabels {
@@ -198,31 +199,6 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SwitchListTile(
-          dense: true,
-          title: Text(l.lateralRepeat),
-          value: _brush.lateralRepeatEnabled,
-          onChanged: (v) => _set(_brush.copyWith(lateralRepeatEnabled: v)),
-        ),
-        if (_brush.lateralRepeatEnabled) ...[
-          _integerSlider(
-            l.lateralRepeatCount,
-            _brush.lateralRepeatCount,
-            1,
-            10,
-            (v) => _set(_brush.copyWith(lateralRepeatCount: v)),
-          ),
-          _slider(
-            l.lateralRepeatSpacing,
-            _brush.lateralRepeatSpacing,
-            0,
-            4,
-            (v) => _set(_brush.copyWith(lateralRepeatSpacing: v)),
-            suffix: '×',
-          ),
-        ],
-        const Divider(),
-        SwitchListTile(
-          dense: true,
           title: Text(l.outline),
           value: _brush.outlineEnabled,
           onChanged: (v) => _set(_brush.copyWith(outlineEnabled: v)),
@@ -234,40 +210,47 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
             0.25,
             8,
             (v) => _set(_brush.copyWith(outlineWidth: v)),
+            step: 0.25,
           ),
+          // 色の見本そのものを押して色を選ぶ（パレットの印を別に並べると、
+          // 狭い幅・大きな文字で「縁取り色」が字ごとに折れた）。行のどこを
+          // 押しても選べ、スポイトだけを末尾に置く。
           ListTile(
-            dense: true,
             title: Text(l.outlineColor),
-            leading: Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: Color(_brush.outlineColor),
-                border: Border.all(color: Theme.of(context).dividerColor),
-                borderRadius: BorderRadius.circular(6),
+            onTap: widget.onPickOutlineColor,
+            leading: Tooltip(
+              message: l.colorPicker,
+              child: InkResponse(
+                key: const Key('brush-outline-color-picker'),
+                onTap: widget.onPickOutlineColor,
+                radius: 24,
+                child: SizedBox.square(
+                  dimension: 40,
+                  child: Center(
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: Color(_brush.outlineColor),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
-            trailing: Wrap(
-              spacing: 4,
-              children: [
-                IconButton(
-                  key: const Key('brush-outline-color-picker'),
-                  tooltip: l.colorPicker,
-                  onPressed: widget.onPickOutlineColor,
-                  icon: const Icon(Icons.palette_outlined),
-                ),
-                IconButton(
-                  key: const Key('brush-outline-eyedropper'),
-                  tooltip: l.eyedropper,
-                  onPressed: widget.onEyedropOutlineColor,
-                  icon: const Icon(Icons.colorize),
-                ),
-              ],
+            trailing: IconButton(
+              key: const Key('brush-outline-eyedropper'),
+              tooltip: l.eyedropper,
+              onPressed: widget.onEyedropOutlineColor,
+              icon: const Icon(Icons.colorize),
             ),
           ),
           CheckboxListTile(
             key: const Key('brush-outline-keep-overlap'),
-            dense: true,
             title: Text(l.outlineKeepOverlap),
             subtitle: l.outlineKeepOverlapHelp.isEmpty
                 ? null
@@ -278,7 +261,6 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
           ),
           CheckboxListTile(
             key: const Key('brush-outline-accent'),
-            dense: true,
             title: Text(l.outlineAccent),
             subtitle: l.outlineAccentHelp.isEmpty
                 ? null
@@ -301,11 +283,13 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
               ),
             ),
           SwitchListTile(
-            dense: true,
-            title: Text(l.fold),
-            secondary: const HelpButton(
-              key: Key('brush-fold-help'),
-              topic: '折り返し',
+            // 説明のボタンは名前のすぐ後ろ（行の先頭に置くと、名前がほかの
+            // 行の名前の始まりからずれた）。
+            title: Row(
+              children: [
+                Flexible(child: Text(l.fold)),
+                const HelpButton(key: Key('brush-fold-help'), topic: '折り返し'),
+              ],
             ),
             value: _brush.foldEnabled,
             onChanged: (v) => _set(_brush.copyWith(foldEnabled: v)),
@@ -407,6 +391,30 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
             ],
           ],
         ],
+        const Divider(height: 16, indent: 16, endIndent: 16),
+        SwitchListTile(
+          title: Text(l.lateralRepeat),
+          value: _brush.lateralRepeatEnabled,
+          onChanged: (v) => _set(_brush.copyWith(lateralRepeatEnabled: v)),
+        ),
+        if (_brush.lateralRepeatEnabled) ...[
+          _integerSlider(
+            l.lateralRepeatCount,
+            _brush.lateralRepeatCount,
+            1,
+            10,
+            (v) => _set(_brush.copyWith(lateralRepeatCount: v)),
+          ),
+          _slider(
+            l.lateralRepeatSpacing,
+            _brush.lateralRepeatSpacing,
+            0,
+            4,
+            (v) => _set(_brush.copyWith(lateralRepeatSpacing: v)),
+            step: 0.1,
+            suffix: '×',
+          ),
+        ],
       ],
     );
   }
@@ -433,6 +441,7 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
     (v) => changed(v.round()),
     divisions: max - min,
     suffix: '',
+    isInt: true,
   );
 
   Widget _ratioSlider(
@@ -452,6 +461,9 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
     help: help,
   );
 
+  /// 値のスライダー：シートのほかの行と同じ[LabeledSlider]（項目名と値・
+  /// －・＋）。割合（%）で見せる値は打って直さない（打つ欄は元の0〜1の値に
+  /// なり、見えている%と食い違う）。
   Widget _slider(
     String label,
     double value,
@@ -459,36 +471,45 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
     double max,
     ValueChanged<double> changed, {
     int? divisions,
+    double? step,
     String? suffix,
     String? displayValue,
     String help = '',
+    bool isInt = false,
   }) {
     final safe = value.clamp(min, max).toDouble();
     final shown =
         displayValue ??
         '${safe.toStringAsFixed(safe == safe.roundToDouble() ? 0 : 2)}${suffix ?? ''}';
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text(label)),
-              Text(shown),
-            ],
+    final slider = LabeledSlider(
+      label: label,
+      value: safe,
+      min: min,
+      max: max,
+      divisions: divisions,
+      step: step ?? (max - min) / (divisions ?? 100),
+      isInt: isInt,
+      editable: displayValue == null,
+      valueText: shown,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      onChanged: changed,
+    );
+    if (help.isEmpty) return slider;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        slider,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Text(
+            help,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
-          Slider(
-            value: safe,
-            min: min,
-            max: max,
-            divisions: divisions,
-            onChanged: changed,
-          ),
-          if (help.isNotEmpty)
-            Text(help, style: Theme.of(context).textTheme.bodySmall),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

@@ -302,15 +302,18 @@ void main() {
       routes: [
         GoRoute(
           path: '/',
+          // ブラシの設定のシートと同じく、送れる一覧の中に置く。
           builder: (context, state) => Scaffold(
-            body: BrushExtensionSettings(
-              brush: base.copyWith(outlineEnabled: true),
-              onChanged: (_) {},
-              labels: BrushExtensionLabels.fromLocalizations(
-                AppLocalizations.of(context)!,
+            body: SingleChildScrollView(
+              child: BrushExtensionSettings(
+                brush: base.copyWith(outlineEnabled: true),
+                onChanged: (_) {},
+                labels: BrushExtensionLabels.fromLocalizations(
+                  AppLocalizations.of(context)!,
+                ),
+                onPickOutlineColor: null,
+                onEyedropOutlineColor: null,
               ),
-              onPickOutlineColor: null,
-              onEyedropOutlineColor: null,
             ),
           ),
         ),
@@ -505,7 +508,9 @@ void main() {
     expect(find.text('4px'), findsOneWidget);
     await tester.ensureVisible(slider);
     final bar = find.descendant(of: slider, matching: find.byType(Slider));
-    await tester.tapAt(tester.getTopRight(bar) + const Offset(-30, 24));
+    // つまみの通り道の右端近くを押す（－・＋の間の、行の高さの真ん中）。
+    final track = tester.getRect(bar);
+    await tester.tapAt(Offset(track.right - 30, track.center.dy));
     await tester.pumpAndSettle();
     expect(changes.last.outlineAccentWidth, greaterThan(20));
     expect(changes.last.toJson()['outlineAccentEnabled'], isTrue);
