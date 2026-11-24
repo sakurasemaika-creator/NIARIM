@@ -273,7 +273,8 @@ void main() {
         await tester.tap(
           find.descendant(
             of: find.byType(BottomSheet),
-            matching: find.text(brush.name),
+            // 組み込みのブラシはシートでも表示の言語の名前。
+            matching: find.text(shortcutBrushName(l10n, brush)),
           ),
         );
         await tester.pumpAndSettle();

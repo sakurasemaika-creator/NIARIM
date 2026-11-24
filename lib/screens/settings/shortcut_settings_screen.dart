@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../l10n/creative_preset_labels.dart';
 import '../../models/brush.dart';
 import '../../models/shortcut_binding.dart';
 import '../../services/brush_service.dart';
@@ -88,11 +89,22 @@ String shortcutDisplayLabel(
     case 'pen':
       final brush = brushes.where((b) => b.id == binding.brushId).firstOrNull;
       if (brush == null) return binding.label;
+      final name = shortcutBrushName(l10n, brush);
       final size = binding.sizeOverride;
-      return size == null ? brush.name : '${brush.name} ${size.round()}px';
+      return size == null ? name : '$name ${size.round()}px';
   }
   return binding.label;
 }
+
+/// The name a brush goes by in the shortcut list: a built-in brush by its
+/// name in the app's language (as in the brush panel and quick tools), the
+/// user's own by the name they gave it.
+String shortcutBrushName(AppLocalizations l10n, Brush brush) =>
+    creativePresetLabel(
+      l10n,
+      brush.name,
+      builtIn: BrushService.isBuiltInId(brush.id),
+    );
 
 class ShortcutSettingsScreen extends StatelessWidget {
   const ShortcutSettingsScreen({super.key});
@@ -465,7 +477,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
                   leading: const Icon(Icons.brush),
                   // 韓国語の語・数と単位は、1行に入れば途中で折らない（以下の
                   // 行・ダイアログも同じ）。
-                  title: messageText(brush.name),
+                  title: messageText(shortcutBrushName(l10n, brush)),
                   onTap: () {
                     Navigator.pop(ctx);
                     _showSizeDialog(
@@ -473,7 +485,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
                       service,
                       captured,
                       brush.id,
-                      brush.name,
+                      shortcutBrushName(l10n, brush),
                       brush.size,
                     );
                   },

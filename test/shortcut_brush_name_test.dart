@@ -4,11 +4,13 @@
 // ブラシの割り当ての名前は、足したときのブラシの名前と太さ（「My liner 12px」）
 // を保存したまま出していたので、ブラシの名前を変えても一覧・削除の確認は古い
 // 名前のままだった。ブラシが無くなっていれば保存した名前を出す。組み込みの
-// ブラシの名前が日本語なのはDISC107（所有者の判断待ち）で、ここでは変えない。
+// ブラシは、ブラシのパネル・早替えツールと同じく表示の言語の名前
+// （creativePresetLabel）で出す。
 //
 // 本物のショートカットの画面で、利用者のブラシ・組み込みのブラシ・消した
 // ブラシの割り当てを並べ、ブラシの名前を変えると一覧と削除の確認の名前が
-// 変わること、7言語で同じであること、保存が変わらないことを見る。
+// 変わること、組み込みのブラシは7言語それぞれの名前で出ること、保存が
+// 変わらないことを見る。
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -18,6 +20,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/l10n/creative_preset_labels.dart';
 import 'package:niarim/models/shortcut_binding.dart';
 import 'package:niarim/screens/settings/shortcut_settings_screen.dart';
 import 'package:niarim/services/brush_service.dart';
@@ -169,8 +172,8 @@ void main() {
       for (final expected in [
         // 名前を変えた利用者のブラシは、今の名前と決めた太さ。
         'Inking pen 12px',
-        // 組み込みのブラシは、組み込みの名前（日本語、DISC107）と太さ。
-        '${gPen.name} 6px',
+        // 組み込みのブラシは、表示の言語での組み込みの名前と太さ。
+        '${creativePresetLabel(lookupAppLocalizations(locale), gPen.name, builtIn: true)} 6px',
         // 消したブラシは、保存した名前。
         'Old brush 5px',
       ]) {
@@ -180,6 +183,10 @@ void main() {
       }
       if (names.contains('My liner 12px')) {
         problems.add('$tag: the old brush name「My liner 12px」is still shown');
+      }
+      // 日本語以外では、組み込みのブラシを日本語の名前のまま出さない。
+      if (locale.languageCode != 'ja' && names.contains('${gPen.name} 6px')) {
+        problems.add('$tag: the built-in brush is still named「${gPen.name}」');
       }
     }
     // 削除の確認も今の名前で呼ぶ。

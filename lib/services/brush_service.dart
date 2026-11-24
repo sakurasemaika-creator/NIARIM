@@ -1402,7 +1402,11 @@ class BrushService extends ChangeNotifier {
     for (final brush in _defaultBrushes()) brush.id: brush,
   };
 
-  bool isBuiltIn(String id) => _builtInDefinitions.containsKey(id);
+  bool isBuiltIn(String id) => isBuiltInId(id);
+
+  /// [isBuiltIn] without the service (for names shown where only the
+  /// brushes are at hand, such as the shortcut list).
+  static bool isBuiltInId(String id) => _builtInDefinitions.containsKey(id);
 
   void addBrush(Brush brush) {
     final saved = _withDefaultTip(brush);
