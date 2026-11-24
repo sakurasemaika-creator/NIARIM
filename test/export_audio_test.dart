@@ -263,6 +263,59 @@ void main() {
     });
   });
 
+  group('shared preview/export envelope', () {
+    test('preview gain uses the same clip-relative linear fade boundaries', () {
+      double gain(double elapsed) => AudioClipEnvelope.gainAt(
+        elapsedSeconds: elapsed,
+        clipSeconds: 5,
+        volume: 0.8,
+        fadeInSeconds: 0.5,
+        fadeOutSeconds: 1,
+      );
+
+      expect(gain(0), 0);
+      expect(gain(0.25), closeTo(0.4, 1e-9));
+      expect(gain(1), closeTo(0.8, 1e-9));
+      expect(gain(4.5), closeTo(0.4, 1e-9));
+      expect(gain(5), 0);
+      expect(gain(-0.1), 0);
+    });
+
+    test('overlapping fades multiply and export uses matching fade bounds', () {
+      final overlap = AudioClipEnvelope.gainAt(
+        elapsedSeconds: 0.5,
+        clipSeconds: 1,
+        volume: 0.8,
+        fadeInSeconds: 1,
+        fadeOutSeconds: 1,
+      );
+      expect(overlap, closeTo(0.2, 1e-9));
+
+      final filters = AudioClipEnvelope.ffmpegFilters(
+        clipSeconds: 5,
+        durationSeconds: 5,
+        volume: 0.8,
+        fadeInSeconds: 0.5,
+        fadeOutSeconds: 1,
+      );
+      expect(filters, [
+        'volume=0.800',
+        'afade=t=in:st=0:d=0.500',
+        'afade=t=out:st=4.000:d=1.000',
+      ]);
+    });
+
+    test('export does not fade a clip cut off before its own fade-out', () {
+      final filters = AudioClipEnvelope.ffmpegFilters(
+        clipSeconds: 5,
+        durationSeconds: 2,
+        volume: 0.6,
+        fadeOutSeconds: 1,
+      );
+      expect(filters, ['volume=0.600']);
+    });
+  });
+
   group('real files', () {
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
