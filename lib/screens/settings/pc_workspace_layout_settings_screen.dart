@@ -233,7 +233,15 @@ class _PcWorkspaceLayoutSettingsScreenState
       // いた頃は付いてきた知らせに隠れた。浮かぶボタンの場所に置くと、
       // Scaffoldは知らせをボタンの上へ浮かべる（置く場所は見本の右下の
       // ままで、見本の上に重なる）。
-      floatingActionButton: IconButton.filledTonal(
+      // 見本の上に浮かぶ操作：面の色・細い縁（差し色の淡い丸にしない）。
+      floatingActionButton: IconButton.outlined(
+        style: IconButton.styleFrom(
+          backgroundColor:
+              Theme.of(context).cardTheme.color ??
+              Theme.of(context).colorScheme.surface,
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+        ),
         key: const Key('pcWorkspaceFitPreview'),
         tooltip: l.pcViewFit,
         onPressed: _fitRequests.request,

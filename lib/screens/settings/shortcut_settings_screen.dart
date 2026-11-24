@@ -19,6 +19,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
+import 'widgets/settings_choice_sheet.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/grouped_sheet.dart';
 
@@ -318,10 +319,9 @@ class ShortcutSettingsScreen extends StatelessWidget {
   ) => _sentenceWithCombo(
     l10n.shortcutChooseActionTitle,
     combo,
-    style: localizedHeadingStyle(
-      context,
-      const TextStyle(fontWeight: FontWeight.bold),
-    ),
+    // 題はキーの組を含む問いの文なので、ほかのシートの題（18px）より一回り
+    // 小さく（文字2倍・320pxでも韓国語の長い語が1行に入る大きさ）。
+    style: settingsSheetTitleStyle(context).copyWith(fontSize: 16),
   );
 
   /// キーの組[combo]を埋めた文（[sentence]で作る。足すシートの題・すでに
@@ -399,39 +399,46 @@ class ShortcutSettingsScreen extends StatelessWidget {
     await showModalBottomSheet(
       context: context,
       builder: (ctx) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              // 題の中のキーの組は修飾キーの「+」の後だけで折り返し、韓国語の
-              // 語は途中で折らない（[_chooseActionTitle]）。
-              child: _chooseActionTitle(context, l10n, captured.comboLabel),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              title: Text(
-                l10n.shortcutActionTypeTool,
-                style: localizedHeadingStyle(context, const TextStyle()),
+        // 行の印・矢印は補助の文字色（差し色は選んだ状態と主な操作のため）。
+        child: ListTileTheme.merge(
+          iconColor: Theme.of(ctx).colorScheme.onSurfaceVariant,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 題はほかの設定のシートと同じ位置・大きさ（左寄せ・18px）。
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  // 題の中のキーの組は修飾キーの「+」の後だけで折り返し、韓国語の
+                  // 語は途中で折らない（[_chooseActionTitle]）。
+                  child: _chooseActionTitle(context, l10n, captured.comboLabel),
+                ),
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showToolPicker(context, service, captured, brushService);
-              },
-            ),
-            ListTile(
-              title: Text(
-                l10n.shortcutActionTypeCommand,
-                style: localizedHeadingStyle(context, const TextStyle()),
+              ListTile(
+                title: Text(
+                  l10n.shortcutActionTypeTool,
+                  style: localizedHeadingStyle(context, const TextStyle()),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showToolPicker(context, service, captured, brushService);
+                },
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showCommandPicker(context, service, captured);
-              },
-            ),
-          ],
+              ListTile(
+                title: Text(
+                  l10n.shortcutActionTypeCommand,
+                  style: localizedHeadingStyle(context, const TextStyle()),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showCommandPicker(context, service, captured);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -447,61 +454,65 @@ class ShortcutSettingsScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final brush in brushService.brushes)
+        // 行の印・矢印は補助の文字色（差し色は選んだ状態と主な操作のため）。
+        child: ListTileTheme.merge(
+          iconColor: Theme.of(ctx).colorScheme.onSurfaceVariant,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final brush in brushService.brushes)
+                ListTile(
+                  leading: const Icon(Icons.brush),
+                  // 韓国語の語・数と単位は、1行に入れば途中で折らない（以下の
+                  // 行・ダイアログも同じ）。
+                  title: messageText(brush.name),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showSizeDialog(
+                      context,
+                      service,
+                      captured,
+                      brush.id,
+                      brush.name,
+                      brush.size,
+                    );
+                  },
+                ),
               ListTile(
-                leading: const Icon(Icons.brush),
-                // 韓国語の語・数と単位は、1行に入れば途中で折らない（以下の
-                // 行・ダイアログも同じ）。
-                title: messageText(brush.name),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _showSizeDialog(
-                    context,
-                    service,
-                    captured,
-                    brush.id,
-                    brush.name,
-                    brush.size,
-                  );
-                },
+                leading: const Icon(Icons.auto_fix_high),
+                title: messageText(l10n.quickToolEraser),
+                onTap: () => _saveToolBinding(
+                  context,
+                  service,
+                  captured,
+                  toolKey: 'eraser',
+                  label: l10n.quickToolEraser,
+                ),
               ),
-            ListTile(
-              leading: const Icon(Icons.auto_fix_high),
-              title: messageText(l10n.quickToolEraser),
-              onTap: () => _saveToolBinding(
-                context,
-                service,
-                captured,
-                toolKey: 'eraser',
-                label: l10n.quickToolEraser,
+              ListTile(
+                leading: const Icon(Icons.colorize),
+                title: messageText(l10n.quickToolEyedropper),
+                onTap: () => _saveToolBinding(
+                  context,
+                  service,
+                  captured,
+                  toolKey: 'eyedropper',
+                  label: l10n.quickToolEyedropper,
+                ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.colorize),
-              title: messageText(l10n.quickToolEyedropper),
-              onTap: () => _saveToolBinding(
-                context,
-                service,
-                captured,
-                toolKey: 'eyedropper',
-                label: l10n.quickToolEyedropper,
+              ListTile(
+                leading: const Icon(Icons.format_color_fill),
+                title: messageText(l10n.quickToolBucket),
+                onTap: () => _saveToolBinding(
+                  context,
+                  service,
+                  captured,
+                  toolKey: 'bucket',
+                  label: l10n.quickToolBucket,
+                ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.format_color_fill),
-              title: messageText(l10n.quickToolBucket),
-              onTap: () => _saveToolBinding(
-                context,
-                service,
-                captured,
-                toolKey: 'bucket',
-                label: l10n.quickToolBucket,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -589,24 +600,28 @@ class ShortcutSettingsScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final entry in commands.entries)
-              ListTile(
-                title: messageText(entry.value),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _saveCommandBinding(
-                    context,
-                    service,
-                    captured,
-                    entry.key,
-                    entry.value,
-                  );
-                },
-              ),
-          ],
+        // 行の印・矢印は補助の文字色（差し色は選んだ状態と主な操作のため）。
+        child: ListTileTheme.merge(
+          iconColor: Theme.of(ctx).colorScheme.onSurfaceVariant,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final entry in commands.entries)
+                ListTile(
+                  title: messageText(entry.value),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _saveCommandBinding(
+                      context,
+                      service,
+                      captured,
+                      entry.key,
+                      entry.value,
+                    );
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );

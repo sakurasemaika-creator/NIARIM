@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../config/accent_text_theme.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/canvas_dock_panel.dart';
 import '../../../services/settings_service.dart';
@@ -247,7 +246,18 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
               Positioned(
                 right: 8,
                 bottom: 8,
-                child: IconButton.filledTonal(
+                // 見本の上に浮かぶ操作：面の色・細い縁（差し色の淡い丸に
+                // しない）。
+                child: IconButton.outlined(
+                  style: IconButton.styleFrom(
+                    backgroundColor:
+                        Theme.of(context).cardTheme.color ??
+                        Theme.of(context).colorScheme.surface,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
                   key: const Key('pcWorkspaceFitPreview'),
                   tooltip: l.pcViewFit,
                   onPressed: () => _fit(viewport),
@@ -730,7 +740,13 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
         child: Center(
           child: AspectRatio(
             aspectRatio: 16 / 9,
-            child: ColoredBox(color: scheme.primaryContainer),
+            // キャンバスの見本は作品の用紙（新しい作品の既定の白）。
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: _paper,
+                border: Border.all(color: scheme.outlineVariant),
+              ),
+            ),
           ),
         ),
       );
@@ -770,8 +786,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
           CanvasDockPanel.reference => Icons.dashboard_customize_outlined,
           _ => Icons.tune_outlined,
         },
-        size: 48,
-        color: AccentTextTheme.of(context),
+        size: 40,
+        color: scheme.onSurfaceVariant,
       ),
     );
   }
@@ -780,14 +796,16 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     return Column(
       children: [
         Expanded(
+          // キャンバスの外はキャンバス画面と同じ色、用紙は作品の既定の白
+          // （差し色の淡い色で塗った用紙は、本物の画面と見え方が違った）。
           child: ColoredBox(
-            color: scheme.surfaceContainerLow,
+            color: scheme.surfaceContainerHighest,
             child: Center(
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: scheme.primaryContainer,
+                    color: _paper,
                     border: Border.all(color: scheme.outlineVariant),
                   ),
                 ),
@@ -811,7 +829,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                     height: 42,
                     margin: const EdgeInsets.only(right: 4),
                     decoration: BoxDecoration(
-                      color: scheme.primaryContainer,
+                      color: _paper,
                       border: Border.all(
                         color: i == 0 ? scheme.primary : scheme.outlineVariant,
                         width: i == 0 ? 2 : 1,
@@ -827,3 +845,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     );
   }
 }
+
+/// 見本の用紙の色（新しい作品の既定の背景色）。作品の中身の色なので
+/// テーマの色にしない。
+const Color _paper = Color(0xFFFFFFFF);
