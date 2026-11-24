@@ -136,7 +136,7 @@ void main() {
       // 色なので一緒に変わる（選んでいれば変わらない）。
       final expected = {
         ...accentRoles,
-        if (base.accentTextColor == null) ...{'accentText', 'listTileIcon'},
+        if (base.accentTextColor == null) 'accentText',
       };
       expect(roles.difference(expected), isEmpty);
       expect(roles, contains('primary'));
@@ -155,11 +155,22 @@ void main() {
   test('an accent text colour left unset still follows the accent', () {
     final base = AppThemePreset.defaultLight.copyWith(accentTextColor: null);
     final roles = changed(base, base.copyWith(accentColor: blue));
+    expect(roles.difference({...accentRoles, 'accentText'}), isEmpty);
+    expect(roles, contains('accentText'));
+  });
+
+  // 一覧の行の先頭アイコンは補助の文字色：差し色を変えても変わらず、文字色を
+  // 変えると一緒に変わる（全部の行の印を差し色にしない）。
+  test('list row icons follow the text colour, not the accent', () {
+    final base = AppThemePreset.defaultLight;
     expect(
-      roles.difference({...accentRoles, 'accentText', 'listTileIcon'}),
-      isEmpty,
+      changed(base, base.copyWith(accentColor: blue)),
+      isNot(contains('listTileIcon')),
     );
-    expect(roles, containsAll(['accentText', 'listTileIcon']));
+    expect(
+      changed(base, base.copyWith(textColor: const Color(0xFF203040))),
+      contains('listTileIcon'),
+    );
   });
 
   test('the background colour moves the surfaces and lines with it', () {

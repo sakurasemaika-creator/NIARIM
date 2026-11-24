@@ -1182,8 +1182,11 @@ class ThemeService extends ChangeNotifier {
       // 優先されるため既存の明示指定箇所への影響はない。
       listTileTheme: ListTileThemeData(
         minVerticalPadding: 12,
-        // 一覧の行の先頭アイコンは背景の上の差し色＝アクセントの文字・アイコン色。
-        iconColor: accentText,
+        // 一覧の行の先頭アイコンは補助の文字色（差し色にしない。差し色は押す
+        // 主な操作・選んでいる状態・リンクのため。全部の行の印が差し色だと、
+        // どれも同じ強さに見えて意味が無くなった）。選んだ行は selectedColor。
+        // ホームの引き出しは所有者の判断で案Aの色を自分で渡している。
+        iconColor: scheme.onSurfaceVariant,
         selectedColor: preset.selectionTextColor,
         selectedTileColor: selectionColor,
         shape: RoundedRectangleBorder(
@@ -1327,7 +1330,20 @@ class ThemeService extends ChangeNotifier {
         // 完全な丸み（ピル型）：日本のアプリでよく使われる柔らかいタグ・
         // フィルターチップの形状。
         shape: const StadiumBorder(),
-        side: BorderSide.none,
+        // 選んでいないチップは下地がメニューの背景色なので、同じ色の面
+        // （シート・ダイアログ）の上では形が消えた。細い線で縁取る。
+        // 選んだチップも同じ太さの線（選択色＝塗りと同じ色で見えない）にして、
+        // 選ぶ・外すでチップの大きさを変えない（変えると押すたびに並びが動く）。
+        // 線は縁の外側に描く（内側に描くとチップが線の太さだけ広がり、外側に
+        // 描くフォーカスの輪〔ChipFocusRing〕と大きさが食い違った）。
+        side: WidgetStateBorderSide.resolveWith(
+          (states) => BorderSide(
+            color: states.contains(WidgetState.selected)
+                ? selectionColor
+                : scheme.outlineVariant,
+            strokeAlign: BorderSide.strokeAlignOutside,
+          ),
+        ),
       ),
       // All selected check marks share the explicit selection background and
       // selected foreground from Theme & Appearance. Unselected states keep

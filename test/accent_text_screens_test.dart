@@ -237,52 +237,53 @@ void main() {
     expect(loopColor(), accentText);
   });
 
-  testWidgets(
-    'the save slot delete icon uses the configured accent text color',
-    (tester) async {
-      final service = await open(tester);
-      late final String id;
-      await tester.runAsync(() async {
-        final project = await service.createProject(
-          name: 'スロット',
-          backgroundColor: 0xFFFFFFFF,
-          fps: 2,
-          durationSeconds: 1,
-          exportWidth: 64,
-          exportHeight: 36,
-        );
-        id = project.id;
-        final saves = tester
-            .element(find.byType(HomeScreen))
-            .read<SaveTreeService>();
-        await saves.saveToSlot(
-          projectId: id,
-          slotIndex: 0,
-          project: project,
-          scenes: service.scenesOf(id),
-          tileManager: service.tileManagerOf(id),
-        );
-      });
-      appRouter.go('/save-tree/$id?entry=projectDetail');
-      for (var i = 0; i < 6; i++) {
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 50)),
-        );
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-      final context = tester.element(find.byType(Scaffold).last);
-      final l10n = AppLocalizations.of(context)!;
-      final delete = find.byWidgetPredicate(
-        (w) =>
-            w is IconButton &&
-            w.tooltip == l10n.saveTreeSlotDeleteTooltip &&
-            w.onPressed != null,
+  // 削除の印には色を渡さない（その場の知らせ・危ない操作の決まり、
+  // DISC577）。差し色・案Aの色でなく補助の文字色で、差し色の生の色
+  // （primary）も使わない。
+  testWidgets('the save slot delete icon is neutral, not the accent', (
+    tester,
+  ) async {
+    final service = await open(tester);
+    late final String id;
+    await tester.runAsync(() async {
+      final project = await service.createProject(
+        name: 'スロット',
+        backgroundColor: 0xFFFFFFFF,
+        fps: 2,
+        durationSeconds: 1,
+        exportWidth: 64,
+        exportHeight: 36,
       );
-      expect(delete, findsOneWidget);
-      expect(
-        (tester.widget<IconButton>(delete).icon as Icon).color,
-        accentText,
+      id = project.id;
+      final saves = tester
+          .element(find.byType(HomeScreen))
+          .read<SaveTreeService>();
+      await saves.saveToSlot(
+        projectId: id,
+        slotIndex: 0,
+        project: project,
+        scenes: service.scenesOf(id),
+        tileManager: service.tileManagerOf(id),
       );
-    },
-  );
+    });
+    appRouter.go('/save-tree/$id?entry=projectDetail');
+    for (var i = 0; i < 6; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    final context = tester.element(find.byType(Scaffold).last);
+    final l10n = AppLocalizations.of(context)!;
+    final delete = find.byWidgetPredicate(
+      (w) =>
+          w is IconButton &&
+          w.tooltip == l10n.saveTreeSlotDeleteTooltip &&
+          w.onPressed != null,
+    );
+    expect(delete, findsOneWidget);
+    final colour = (tester.widget<IconButton>(delete).icon as Icon).color;
+    expect(colour, isNot(accentText));
+    expect(colour, Theme.of(context).colorScheme.onSurfaceVariant);
+  });
 }

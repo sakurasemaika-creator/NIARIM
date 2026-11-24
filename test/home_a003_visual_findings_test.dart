@@ -1438,7 +1438,9 @@ void main() {
       matching: find.byIcon(Icons.delete_outline),
     );
     expect(rowIcon, findsOneWidget);
-    if (painted(rowIcon) != _customTheme.effectiveAccentTextColor) {
+    // 一覧の行の印はメニューの文字色から作る補助の色（危ない操作の印も
+    // 差し色にしない）。透明度だけ違ってよい。
+    if (painted(rowIcon)?.withValues(alpha: 1) != ink) {
       wrong.add('shared folder sheet: icon ${painted(rowIcon)}');
     }
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
