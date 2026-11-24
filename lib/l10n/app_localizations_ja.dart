@@ -4627,9 +4627,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasTextVertical => '縦書き';
 
   @override
-  String get canvasTextHorizontal => '横書き';
-
-  @override
   String get canvasTypesettingHelpTooltip => '組版・ルビについて';
 
   @override

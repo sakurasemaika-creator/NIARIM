@@ -4586,9 +4586,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasTextVertical => '竖排';
 
   @override
-  String get canvasTextHorizontal => '横排';
-
-  @override
   String get canvasTypesettingHelpTooltip => '关于排版与注音';
 
   @override
@@ -15085,9 +15082,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasTextVertical => '直排';
-
-  @override
-  String get canvasTextHorizontal => '橫排';
 
   @override
   String get canvasTypesettingHelpTooltip => '關於排版與注音';

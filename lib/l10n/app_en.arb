@@ -1861,7 +1861,6 @@
   "canvasTextBold": "Bold",
   "canvasTextItalic": "Italic",
   "canvasTextVertical": "Vertical",
-  "canvasTextHorizontal": "Horizontal",
   "canvasTypesettingHelpTooltip": "About typesetting & ruby text",
   "canvasTextLineHeight": "Line height",
   "canvasTextLetterSpacing": "Letter spacing",

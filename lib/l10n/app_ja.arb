@@ -2300,7 +2300,6 @@
   "canvasTextBold": "太字",
   "canvasTextItalic": "斜体",
   "canvasTextVertical": "縦書き",
-  "canvasTextHorizontal": "横書き",
   "canvasTypesettingHelpTooltip": "組版・ルビについて",
   "canvasTextLineHeight": "行間",
   "canvasTextLetterSpacing": "文字間隔",

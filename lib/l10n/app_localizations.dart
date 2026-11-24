@@ -8427,12 +8427,6 @@ abstract class AppLocalizations {
   /// **'縦書き'**
   String get canvasTextVertical;
 
-  /// No description provided for @canvasTextHorizontal.
-  ///
-  /// In ja, this message translates to:
-  /// **'横書き'**
-  String get canvasTextHorizontal;
-
   /// No description provided for @canvasTypesettingHelpTooltip.
   ///
   /// In ja, this message translates to:

@@ -4840,9 +4840,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get canvasTextVertical => 'Vertical';
 
   @override
-  String get canvasTextHorizontal => 'Horizontal';
-
-  @override
   String get canvasTypesettingHelpTooltip => 'About typesetting & ruby text';
 
   @override

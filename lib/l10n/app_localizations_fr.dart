@@ -4919,9 +4919,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get canvasTextVertical => 'Vertical';
 
   @override
-  String get canvasTextHorizontal => 'Horizontal';
-
-  @override
   String get canvasTypesettingHelpTooltip =>
       'À propos de la composition et du furigana';
 

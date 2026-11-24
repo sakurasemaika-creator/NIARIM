@@ -4653,9 +4653,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasTextVertical => '세로쓰기';
 
   @override
-  String get canvasTextHorizontal => '가로쓰기';
-
-  @override
   String get canvasTypesettingHelpTooltip => '조판·루비에 대하여';
 
   @override
