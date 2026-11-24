@@ -694,9 +694,16 @@ class HomeMatrix {
       HomeView.works => any(find.byType(ExportedWorkCard)),
       HomeView.sharedReceived => keys('receivedShareMenu_') > 0,
       HomeView.sharedOutgoing => keys('outgoingShareMenu_') > 0,
-      // ファイルのゴミ箱（書き出した作品・共有ファイル）を読み終えた。
-      // いちばん新しい書き出した作品が先頭に来る。
-      HomeView.trash => keys('trash-restore-local-') > 0,
+      // ファイルのゴミ箱（書き出した作品・共有ファイル）を読み終え、
+      // ゴミ箱の作品の表紙（作品のサムネイルのファイル）も描けた。
+      // いちばん新しい書き出した作品が先頭に来る。表紙は実際のファイルを
+      // 読むので、待たないと撮る間に表紙が出て画素が変わる。
+      HomeView.trash =>
+        keys('trash-restore-local-') > 0 &&
+            find
+                .byType(RawImage)
+                .evaluate()
+                .every((e) => (e.widget as RawImage).image != null),
     };
   }
 

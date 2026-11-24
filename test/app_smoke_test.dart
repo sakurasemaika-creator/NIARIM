@@ -43,6 +43,7 @@ import 'package:niarim/widgets/ad_banner_mock_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/screens/project/widgets/canvas_size_choice_label.dart';
 
 /// file_pickerは実機のプラットフォーム実装（PlatformInterfaceの
 /// singletonインスタンス）を必要とするプラグインで、flutter test環境には
@@ -855,7 +856,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
 
-    final customSize = find.widgetWithText(ChoiceChip, 'カスタム');
+    // 大きさは1枚の面の選ぶ行（丸い印）。「カスタム」の行を選ぶと幅・高さの
+    // 欄が開く。
+    final customSize = find.widgetWithText(CanvasSizeOptionRow, 'カスタム');
     await tester.ensureVisible(customSize);
     await tester.tap(customSize);
     await tester.pumpAndSettle();

@@ -735,7 +735,15 @@ void main() {
           // 初回の案内（図つきの使い方）の1ページ目：案内の一文と、
           // 「スキップ」「次へ」のボタンの名前が切れずに画面の中にある。
           for (final (name, finder) in [
-            ('lead', find.text(l10n.homeFirstLaunchMessage)),
+            // 案内の一文は最後の語を折らない文（KeepTogetherText）なので、
+            // 中で描く段落（RichText）を見る。
+            (
+              'lead',
+              find.descendant(
+                of: find.text(l10n.homeFirstLaunchMessage),
+                matching: find.byType(RichText),
+              ),
+            ),
             (
               'skip',
               find.descendant(
