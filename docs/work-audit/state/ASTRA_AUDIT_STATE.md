@@ -4946,3 +4946,10 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
 ### D031 四巡目の続き（2026-11-24、Claude・S56）— 一度きりのスクリプトの片付け
 
 - 所有者の許可（「使われていない一度きりのスクリプト5本は消してよいです」）で、どこからも呼ばれない一度きりの修正スクリプト5本（`tool/one_shot_fix_pinch_and_automation_proof.py`・`patch_custom_automation_keep_surfaces.py`・`patch_custom_automation_rewrite_anchor.py`・`rewrite_custom_automation_visual_proof.py`・`normal_task_final_residual_fix.sh`）を消した。`assign_delta_files.py`を流し直し、ベースラインの後に足された製品のファイル565件を全部割り当てた（機能の語で529件・フォルダで36件・未割当0）。
+
+### D030 四巡目の締め（2026-11-24、Claude・S56、App `a80d1f96`）— 全部の画面×24の幅×スマホ/PC×7言語
+
+- `test/visual/all_routes_cell_matrix_test.dart`（新規、`--dart-define=NIARIM_ROUTE_MATRIX=true`のときだけ動く）：Routerの全部のルート39（起動・ホーム・共有・ゴミ箱・作品広場・作品・新規作成・プロジェクト詳細・キャンバス・タイムライン・書き出し・設定の全画面・ヘルプ・Tips・プレミアム・報酬・会員・ミッション・自動塗り・セーブツリー・素材・容量削減）を、7言語×スマホ/PC（PCはPCモードに固定、窓の高さ900・スマホは844）で開き、24の幅（320〜1920）へ窓を変えて描き直し、レイアウトの例外とはみ出している行・列（`RenderFlex`のOVERFLOWING。はみ出しの知らせは1回しか出ないので毎セル探す）を数えた。
+- 結果：13,104セル（39×24×2×7）で問題0。セルごとの結果は`docs/work-audit/evidence/route-matrix-2026-11-24.csv`。
+- 見つけて直した：DISC613（PCモードの幅600px未満の窓でキャンバスのドックがはみ出す。PCの作業画面は幅600px以上だけにした、App `a80d1f96`）。
+- 範囲：主な表示の状態（各画面を開いた状態）。ダイアログ・シート・メニューの開いた状態と文字の倍率は、既存の`dialog_text_scale_audit_test`・`dialog_screenshot_audit_test`・`text_scale_layout_test`（1.3・2.0倍）・`home_matrix2_*`（ホームの全状態）・`splash_layout_test`（336セル）が見張る。
