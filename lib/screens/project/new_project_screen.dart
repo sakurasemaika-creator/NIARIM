@@ -32,6 +32,7 @@ import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/menu_card.dart';
 import '../../widgets/icon_notice.dart';
 import 'widgets/canvas_size_choice_label.dart';
+import '../../widgets/keep_together_text.dart';
 
 class NewProjectScreen extends StatefulWidget {
   const NewProjectScreen({super.key});
@@ -168,6 +169,35 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     _heightFocus.dispose();
     _durationFocus.dispose();
     super.dispose();
+  }
+
+  /// 「項目名（説明）」の文を、見出しの項目名と、下に小さく出す説明に分けて
+  /// 描く（括弧の無い文はそのまま見出し）。
+  Widget _headingWithNote(BuildContext context, String text) {
+    final parts = RegExp(r'^(.*?)\s*[（(](.*)[）)]$').firstMatch(text);
+    final heading = localizedHeadingStyle(
+      context,
+      const TextStyle(fontWeight: FontWeight.bold),
+    );
+    if (parts == null) return Text(text, style: heading);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(parts.group(1)!, style: heading),
+        const SizedBox(height: 2),
+        messageText(
+          parts.group(2)!,
+          keepLineStarts: true,
+          keepLastPhrase: true,
+          style: TextStyle(
+            fontSize: 12,
+            height: 1.4,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
   }
 
   // サイズプリセットの表示文言をロケールに応じて取得する。
@@ -748,8 +778,12 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       // 横幅いっぱいを使う。
                       Row(
                         children: [
+                          // 項目名は見出し、括弧の中の上限の説明は下に小さく
+                          // （1つの見出しのまま太字で2行に折れ、項目名と説明の
+                          // 区別が付かなかった）。
                           Expanded(
-                            child: Text(
+                            child: _headingWithNote(
+                              context,
                               hasLongDuration
                                   ? l10n.newProjectDurationLabel(
                                       maxDurationText,
@@ -757,10 +791,6 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                                   : l10n.newProjectDurationLabelWithPremiumHint(
                                       maxDurationText,
                                     ),
-                              style: localizedHeadingStyle(
-                                context,
-                                const TextStyle(fontWeight: FontWeight.bold),
-                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
