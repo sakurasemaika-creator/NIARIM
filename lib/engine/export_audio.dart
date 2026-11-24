@@ -148,6 +148,60 @@ Future<ExportAudioPlan> buildExportAudioPlan({
   return ExportAudioPlan(sources, missing: missing);
 }
 
+/// The shared linear gain envelope for timeline audio clips. Preview uses
+/// [gainAt] at the current timeline clock; offline export uses [ffmpegFilters]
+/// with the same clip-relative fade boundaries.
+class AudioClipEnvelope {
+  const AudioClipEnvelope._();
+
+  static double gainAt({
+    required double elapsedSeconds,
+    required double clipSeconds,
+    required double volume,
+    double fadeInSeconds = 0,
+    double fadeOutSeconds = 0,
+  }) {
+    if (!elapsedSeconds.isFinite ||
+        !clipSeconds.isFinite ||
+        !volume.isFinite ||
+        clipSeconds <= 0 ||
+        elapsedSeconds < 0 ||
+        elapsedSeconds >= clipSeconds) {
+      return 0;
+    }
+    var gain = volume.clamp(0.0, 1.0).toDouble();
+    if (fadeInSeconds > 0 && elapsedSeconds < fadeInSeconds) {
+      gain *= (elapsedSeconds / fadeInSeconds).clamp(0.0, 1.0);
+    }
+    final remainingSeconds = clipSeconds - elapsedSeconds;
+    if (fadeOutSeconds > 0 && remainingSeconds < fadeOutSeconds) {
+      gain *= (remainingSeconds / fadeOutSeconds).clamp(0.0, 1.0);
+    }
+    return gain.clamp(0.0, 1.0).toDouble();
+  }
+
+  static List<String> ffmpegFilters({
+    required double clipSeconds,
+    required double durationSeconds,
+    required double volume,
+    double fadeInSeconds = 0,
+    double fadeOutSeconds = 0,
+  }) {
+    final filters = <String>['volume=${volume.clamp(0.0, 1.0).toStringAsFixed(3)}'];
+    if (fadeInSeconds > 0) {
+      filters.add('afade=t=in:st=0:d=${_seconds(fadeInSeconds)}');
+    }
+    final fadeStart = math.max(0.0, clipSeconds - fadeOutSeconds);
+    if (fadeOutSeconds > 0 && fadeStart < durationSeconds) {
+      filters.add(
+        'afade=t=out:st=${_seconds(fadeStart)}'
+        ':d=${_seconds(fadeOutSeconds)}',
+      );
+    }
+    return filters;
+  }
+}
+
 String _seconds(double s) => s.toStringAsFixed(3);
 
 /// The sample rate and channels of the mix (Opus needs 48 kHz).
@@ -161,19 +215,13 @@ List<String> exportAudioSourceArguments(
   ExportAudioSource source,
   String output,
 ) {
-  final filters = <String>['volume=${source.volume.toStringAsFixed(3)}'];
-  if (source.fadeInSeconds > 0) {
-    filters.add('afade=t=in:st=0:d=${_seconds(source.fadeInSeconds)}');
-  }
-  if (source.fadeOutSeconds > 0) {
-    final fadeStart = math.max(0.0, source.clipSeconds - source.fadeOutSeconds);
-    if (fadeStart < source.durationSeconds) {
-      filters.add(
-        'afade=t=out:st=${_seconds(fadeStart)}'
-        ':d=${_seconds(source.fadeOutSeconds)}',
-      );
-    }
-  }
+  final filters = AudioClipEnvelope.ffmpegFilters(
+    clipSeconds: source.clipSeconds,
+    durationSeconds: source.durationSeconds,
+    volume: source.volume,
+    fadeInSeconds: source.fadeInSeconds,
+    fadeOutSeconds: source.fadeOutSeconds,
+  );
   return [
     '-y',
     '-ss',
