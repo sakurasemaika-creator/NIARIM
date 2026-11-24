@@ -3,8 +3,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/camera_engine.dart';
-import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/engine/timeline_output_viewport.dart';
+import 'package:niarim/models/camera_keyframe.dart';
 
 void main() {
   group('TimelineOutputViewport', () {
@@ -60,7 +60,7 @@ void main() {
       expect(viewport.imageOffsetY, 240);
     });
 
-    test('preview and export painter produce identical cropped pixels', () async {
+    test('preview and export renderer produce identical cropped pixels', () async {
       final sourceRecorder = ui.PictureRecorder();
       final sourceCanvas = ui.Canvas(sourceRecorder);
       for (var y = 0; y < 4; y++) {
@@ -117,6 +117,42 @@ void main() {
           expect(previewPixels[offset + 3], 255);
         }
       }
+      source.dispose();
+    });
+
+    test('paints the output background behind transparent drawing pixels', () async {
+      final sourceRecorder = ui.PictureRecorder();
+      final sourceCanvas = ui.Canvas(sourceRecorder);
+      sourceCanvas.drawRect(
+        const ui.Rect.fromLTWH(0, 0, 1, 1),
+        ui.Paint()..color = const ui.Color(0xFFFF0000),
+      );
+      final sourcePicture = sourceRecorder.endRecording();
+      final source = await sourcePicture.toImage(2, 2);
+      sourcePicture.dispose();
+
+      final image = await renderOutputViewportImage(
+        drawingImage: source,
+        viewport: const TimelineOutputViewport(
+          drawingWidth: 2,
+          drawingHeight: 2,
+          outputWidth: 2,
+          outputHeight: 2,
+        ),
+        backgroundColor: 0xFF0000FF,
+        cameraEngine: CameraEngine(),
+        cameraKeyframe: const CameraKeyframe(frameIndex: 0),
+      );
+      final data = await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
+      final pixels = data!.buffer.asUint8List();
+
+      expect(pixels.sublist(0, 4), [255, 0, 0, 255]);
+      expect(pixels.sublist(4, 8), [0, 0, 255, 255]);
+      expect(pixels.sublist(8, 12), [0, 0, 255, 255]);
+      expect(pixels.sublist(12, 16), [0, 0, 255, 255]);
+      image.dispose();
       source.dispose();
     });
   });
