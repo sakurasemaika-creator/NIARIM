@@ -17,6 +17,7 @@ import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart' show DrawingTool;
 import '../../../widgets/docked_panel_scope.dart';
 import 'docked_panel_close_scope.dart';
+import 'neutral_list_icons.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
@@ -257,75 +258,77 @@ class QuickToolPanel extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 「現在のブラシを追加」：使用中のブラシ設定をそのまま登録
-            if (currentTool == DrawingTool.pen && currentBrushId != null)
-              ListTile(
-                leading: Icon(
-                  Icons.bolt,
-                  color: ThemeService.activeColorScheme.tertiary,
+        child: NeutralListIcons(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 「現在のブラシを追加」：使用中のブラシ設定をそのまま登録
+              if (currentTool == DrawingTool.pen && currentBrushId != null)
+                ListTile(
+                  leading: Icon(
+                    Icons.bolt,
+                    color: ThemeService.activeColorScheme.tertiary,
+                  ),
+                  title: Text(l10n.quickToolAddCurrentBrush),
+                  subtitle: Text('$currentName ${currentSize.round()}px'),
+                  onTap: () {
+                    service.addEntry(
+                      QuickToolEntry(
+                        id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
+                        label: '$currentName ${currentSize.round()}px',
+                        toolKey: 'pen',
+                        brushId: currentBrushId,
+                        sizeOverride: currentSize,
+                      ),
+                    );
+                    Navigator.pop(ctx);
+                  },
                 ),
-                title: Text(l10n.quickToolAddCurrentBrush),
-                subtitle: Text('$currentName ${currentSize.round()}px'),
-                onTap: () {
-                  service.addEntry(
-                    QuickToolEntry(
-                      id: 'qt_${DateTime.now().microsecondsSinceEpoch}',
-                      label: '$currentName ${currentSize.round()}px',
-                      toolKey: 'pen',
-                      brushId: currentBrushId,
-                      sizeOverride: currentSize,
-                    ),
-                  );
-                  Navigator.pop(ctx);
-                },
-              ),
-            if (currentTool == DrawingTool.pen && currentBrushId != null)
-              const Divider(height: 1),
-            for (final brush in brushService.brushes)
+              if (currentTool == DrawingTool.pen && currentBrushId != null)
+                const Divider(height: 1),
+              for (final brush in brushService.brushes)
+                ListTile(
+                  leading: const Icon(Icons.brush),
+                  title: Text(nameOf(brush)),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showSizeDialog(
+                      context,
+                      service,
+                      brush.id,
+                      nameOf(brush),
+                      brush.size,
+                    );
+                  },
+                ),
               ListTile(
-                leading: const Icon(Icons.brush),
-                title: Text(nameOf(brush)),
+                // ツールバーの消しゴムと同じ印（魔法の杖の印は自動選択と
+                // 見分けられなかった）。
+                leading: const FaIcon(FontAwesomeIcons.eraser, size: 20),
+                title: Text(l10n.quickToolEraser),
                 onTap: () {
+                  _addSimple(service, 'eraser', l10n.quickToolEraser);
                   Navigator.pop(ctx);
-                  _showSizeDialog(
-                    context,
-                    service,
-                    brush.id,
-                    nameOf(brush),
-                    brush.size,
-                  );
                 },
               ),
-            ListTile(
-              // ツールバーの消しゴムと同じ印（魔法の杖の印は自動選択と
-              // 見分けられなかった）。
-              leading: const FaIcon(FontAwesomeIcons.eraser, size: 20),
-              title: Text(l10n.quickToolEraser),
-              onTap: () {
-                _addSimple(service, 'eraser', l10n.quickToolEraser);
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.colorize),
-              title: Text(l10n.quickToolEyedropper),
-              onTap: () {
-                _addSimple(service, 'eyedropper', l10n.quickToolEyedropper);
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.format_color_fill),
-              title: Text(l10n.quickToolBucket),
-              onTap: () {
-                _addSimple(service, 'bucket', l10n.quickToolBucket);
-                Navigator.pop(ctx);
-              },
-            ),
-          ],
+              ListTile(
+                leading: const Icon(Icons.colorize),
+                title: Text(l10n.quickToolEyedropper),
+                onTap: () {
+                  _addSimple(service, 'eyedropper', l10n.quickToolEyedropper);
+                  Navigator.pop(ctx);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.format_color_fill),
+                title: Text(l10n.quickToolBucket),
+                onTap: () {
+                  _addSimple(service, 'bucket', l10n.quickToolBucket);
+                  Navigator.pop(ctx);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -6226,6 +6226,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get canvasEditMenuReferenceWindow => 'Reference Window';
 
   @override
+  String get canvasEditMenuGroupView => 'View';
+
+  @override
+  String get canvasEditMenuGroupEdit => 'Edit';
+
+  @override
+  String get canvasEditMenuGroupAutomation => 'Automation and input';
+
+  @override
   String get canvasEditMenuReferenceWindowSubtitle =>
       'Keep a reference image floating on top';
 

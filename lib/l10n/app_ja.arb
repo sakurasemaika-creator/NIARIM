@@ -3008,6 +3008,18 @@
   },
   "canvasColorAdjustMenuTitle": "色調調整",
   "canvasEditMenuReferenceWindow": "資料ウィンドウ",
+  "canvasEditMenuGroupView": "表示",
+  "canvasEditMenuGroupEdit": "編集",
+  "canvasEditMenuGroupAutomation": "自動化と入力",
+  "@canvasEditMenuGroupView": {
+    "description": "キャンバスの設定/編集メニューの、見え方の項目（オニオンスキン・資料ウィンドウ・背景・自動塗り確認表示）の見出し"
+  },
+  "@canvasEditMenuGroupEdit": {
+    "description": "キャンバスの設定/編集メニューの、絵を加工する項目（フィルター・色調調整・変形・フレーム複数選択）の見出し"
+  },
+  "@canvasEditMenuGroupAutomation": {
+    "description": "キャンバスの設定/編集メニューの、自動塗り設定・自動操作・筆圧カーブの見出し"
+  },
   "canvasEditMenuReferenceWindowSubtitle": "三面図・資料画像をフローティング表示",
   "referenceWindowTitle": "資料ウィンドウ",
   "referenceWindowSelectImageButton": "画像を選択",

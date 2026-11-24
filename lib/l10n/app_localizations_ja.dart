@@ -5965,6 +5965,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasEditMenuReferenceWindow => '資料ウィンドウ';
 
   @override
+  String get canvasEditMenuGroupView => '表示';
+
+  @override
+  String get canvasEditMenuGroupEdit => '編集';
+
+  @override
+  String get canvasEditMenuGroupAutomation => '自動化と入力';
+
+  @override
   String get canvasEditMenuReferenceWindowSubtitle => '三面図・資料画像をフローティング表示';
 
   @override

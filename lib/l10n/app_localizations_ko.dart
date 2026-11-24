@@ -5998,6 +5998,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasEditMenuReferenceWindow => '참고 창';
 
   @override
+  String get canvasEditMenuGroupView => '보기';
+
+  @override
+  String get canvasEditMenuGroupEdit => '편집';
+
+  @override
+  String get canvasEditMenuGroupAutomation => '자동화와 입력';
+
+  @override
   String get canvasEditMenuReferenceWindowSubtitle => '참고 이미지를 항상 띄워서 표시';
 
   @override

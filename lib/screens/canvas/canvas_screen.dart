@@ -74,6 +74,7 @@ import 'widgets/ruler_panel.dart';
 import 'widgets/filter_panel.dart';
 import 'widgets/quick_tool_panel.dart';
 import 'widgets/mesh_transform_panel.dart';
+import 'widgets/neutral_list_icons.dart';
 import 'widgets/reference_window.dart';
 import 'widgets/canvas_preview_navigator.dart';
 import 'widgets/desktop_dock_content_viewport.dart';
@@ -986,327 +987,385 @@ class _CanvasScreenState extends State<CanvasScreen> {
       isScrollControlled: true,
       builder: (ctx) => SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 選んだ表示がその場で見えるよう、この行だけ作り直す（メニューは
-              // キャンバスの画面とは別のルートなので、画面のsetStateでは
-              // 作り直されず、選ぶ前の表示のままだった）。
-              StatefulBuilder(
-                builder: (ctx, setMenuState) {
-                  final labels = {
-                    AutofillCheckMode.normal: l10n.canvasAutofillCheckNormal,
-                    AutofillCheckMode.partSeparation:
-                        l10n.canvasAutofillCheckParts,
-                    AutofillCheckMode.silhouette:
-                        l10n.canvasAutofillCheckSilhouette,
-                  };
-                  void choose(AutofillCheckMode? mode) {
-                    if (mode == null) return;
-                    setState(() => _autofillCheckMode = mode);
-                    setMenuState(() {});
-                  }
-
-                  final icon = Icon(
-                    _autofillCheckMode == AutofillCheckMode.normal
-                        ? Icons.visibility_outlined
-                        : _autofillCheckMode == AutofillCheckMode.partSeparation
-                        ? Icons.palette_outlined
-                        : Icons.contrast,
-                  );
-                  final title = messageText(l10n.canvasAutofillCheckView);
-                  return LayoutBuilder(
-                    builder: (ctx, constraints) {
-                      // 選択肢は、項目名の右に入るときだけ右のドロップダウンに
-                      // する（長い言語・大きな文字で右に置くと、行の幅をすべて
-                      // 使って行が描けなかった）。
-                      final style = Theme.of(ctx).textTheme.titleMedium;
-                      final scaler = MediaQuery.textScalerOf(ctx);
-                      var widest = 0.0;
-                      for (final label in labels.values) {
-                        final painter = TextPainter(
-                          text: TextSpan(text: label, style: style),
-                          textDirection: Directionality.of(ctx),
-                          textScaler: scaler,
-                        )..layout();
-                        if (painter.width > widest) widest = painter.width;
-                        painter.dispose();
-                      }
-                      // 項目名の、折り返せないいちばん広い語（右に置くと項目名の
-                      // 欄が狭くなり、西語で「Vista de com / probación」と語の
-                      // 途中で折れた）。韓国語の語は、描く文と同じくつないで測る。
-                      final titlePainter = TextPainter(
-                        text: KeepTogetherText(
-                          l10n.canvasAutofillCheckView,
-                          keep: koreanWordParts(l10n.canvasAutofillCheckView),
-                        ).joinedSpan(style ?? const TextStyle()),
-                        textDirection: Directionality.of(ctx),
-                        textScaler: scaler,
-                      )..layout();
-                      final titleWord = widestUnbreakableWidth(
-                        titlePainter,
-                        reported: titlePainter.minIntrinsicWidth,
-                      );
-                      titlePainter.dispose();
-                      // 選択肢の幅（▼を含む）＋先頭のアイコン・余白・項目名に
-                      // 残したい最小の幅（語が途中で折れない幅）。
-                      final fitsBeside =
-                          widest +
-                              32 +
-                              56 +
-                              32 +
-                              math.max(scaler.scale(96), titleWord) <=
-                          constraints.maxWidth;
-                      if (fitsBeside) {
-                        return ListTile(
-                          leading: icon,
-                          title: title,
-                          trailing: DropdownButton<AutofillCheckMode>(
-                            value: _autofillCheckMode,
-                            underline: const SizedBox.shrink(),
-                            items: [
-                              for (final entry in labels.entries)
-                                DropdownMenuItem(
-                                  value: entry.key,
-                                  child: messageText(entry.value),
-                                ),
-                            ],
-                            onChanged: choose,
-                          ),
-                        );
-                      }
-                      // 入らないときは、選択肢を項目名の下に1つずつ並べる
-                      // （ドロップダウンを下の行に置くと、選択肢も選んだ値も
-                      // 1行の高さに収められ、折り返した文字の2行目が切れた）。
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ListTile(leading: icon, title: title),
-                          RadioGroup<AutofillCheckMode>(
-                            groupValue: _autofillCheckMode,
-                            onChanged: choose,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                for (final entry in labels.entries)
-                                  RadioListTile<AutofillCheckMode>(
-                                    value: entry.key,
-                                    title: messageText(entry.value),
-                                    contentPadding:
-                                        const EdgeInsetsDirectional.only(
-                                          start: 56,
-                                          end: 16,
-                                        ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.auto_fix_high_outlined),
-                title: messageText(l10n.canvasEditMenuAutofillPresets),
-                subtitle: messageText(
-                  l10n.canvasEditMenuAutofillPresetsSubtitle,
+          child: NeutralListIcons(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 項目は「表示」「編集」「自動化と入力」の3つにまとめ、見出しを
+                // 付ける（以前は12項目を1列に並べていて、探す所が分からなかった）。
+                // 表示の中はよく使う順（オニオンスキン・資料ウィンドウが先）。
+                _editMenuGroupLabel(
+                  ctx,
+                  l10n.canvasEditMenuGroupView,
+                  first: true,
                 ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _runAutomationBlockedAction(
-                    () => context.push('/autofill-presets'),
-                  );
-                },
-              ),
-              ListTile(
-                leading: Icon(
-                  _canvasBackground == CanvasBackground.white
-                      ? Icons.check_box_outline_blank
-                      : Icons.grid_4x4,
+                ListTile(
+                  leading: const Icon(Icons.layers_outlined),
+                  title: messageText(l10n.onionSkinTitle),
+                  subtitle: messageText(l10n.canvasEditMenuOnionSkinSubtitle),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _toggleOnionSkinPanel();
+                  },
                 ),
-                title: messageText(l10n.canvasEditMenuBackgroundToggle),
-                subtitle: messageText(
-                  _canvasBackground == CanvasBackground.white
-                      ? l10n.canvasEditMenuBackgroundCurrentColor
-                      : l10n.canvasEditMenuBackgroundCurrentTransparent,
-                ),
-                onTap: () {
-                  _toggleBackground();
-                  Navigator.pop(ctx);
-                },
-              ),
-              // 背景色変更（プロジェクト作成時と同じ選択肢）
-              ListTile(
-                leading: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: Color(
-                      context
-                              .read<ProjectService>()
-                              .projects
-                              .where((p) => p.id == widget.projectId)
-                              .firstOrNull
-                              ?.backgroundColor ??
-                          0xFFFFFFFF,
-                    ),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                  ),
-                ),
-                title: messageText(l10n.newProjectBackgroundColorLabel),
-                subtitle: messageText(l10n.canvasBackgroundColorChoices),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _showBackgroundColorPicker(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.layers_outlined),
-                title: messageText(l10n.onionSkinTitle),
-                subtitle: messageText(l10n.canvasEditMenuOnionSkinSubtitle),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _toggleOnionSkinPanel();
-                },
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.playlist_play,
-                  color:
-                      context.read<PremiumService>().isFeatureAvailable(
-                        PremiumFeature.customAutomation,
-                      )
-                      ? null
-                      : Theme.of(context).colorScheme.outline,
-                ),
-                // 鍵の印は、項目名の横に置くと語の途中で折れる幅では項目名の
-                // 下へ回す（行の右に置いたままだと、仏語・360px・文字2倍で
-                // 「Automatisation / s」と折れた）。
-                title:
-                    context.read<PremiumService>().isFeatureAvailable(
-                      PremiumFeature.customAutomation,
-                    )
-                    ? messageText(l10n.customAutomationTitle)
-                    : ActionBesideOrBelow(
-                        gap: 16,
-                        text: messageText(l10n.customAutomationTitle),
-                        action: Icon(
-                          Icons.lock_outline,
-                          size: 18,
-                          color: ListTileTheme.of(ctx).iconColor,
-                        ),
-                      ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _showCustomAutomationManager();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.blur_on),
-                title: messageText(l10n.filterPanelTitle),
-                subtitle: messageText(l10n.canvasEditMenuFilterSubtitle),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _toggleFilterPanel();
-                },
-              ),
-              ListTile(
-                leading: Icon(
-                  _frameMultiSelectMode ? Icons.checklist_rtl : Icons.checklist,
-                ),
-                title: messageText(l10n.canvasEditMenuFrameMultiSelect),
-                subtitle: messageText(
-                  l10n.canvasEditMenuFrameMultiSelectSubtitle,
-                ),
-                onTap: () {
-                  _toggleFrameMultiSelect();
-                  Navigator.pop(ctx);
-                },
-              ),
-              // 筆圧カーブ設定画面（/settings/pen）を、設定画面だけでなくここ
-              // からも開けるようにする（設定値自体はアプリ内共通の1箇所の
-              // ため、どちらから開いても同じ値を編集することになる）。
-              ListTile(
-                leading: const Icon(Icons.gesture),
-                title: messageText(l10n.canvasEditMenuPressureCurve),
-                subtitle: messageText(l10n.canvasEditMenuPressureCurveSubtitle),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _runAutomationBlockedAction(
-                    () => context.push('/settings/pen'),
-                  );
-                },
-              ),
-              // レイヤー全体の自由変形・メッシュ変形。
-              // 範囲選択の変形と異なり、選択範囲なしで現在レイヤー全体を
-              // 自由に動かせる。
-              ListTile(
-                leading: const Icon(Icons.crop_free),
-                title: messageText(l10n.canvasEditMenuMeshTransform),
-                subtitle: messageText(l10n.canvasEditMenuMeshTransformSubtitle),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _openMeshTransformPanel();
-                },
-              ),
-              // 色調調整。彩度・明度・コントラストを
-              // ライブプレビューで調整し、そのまま適用するか、描画/演出
-              // フィルターへ新規フィルターとして追加できる。
-              ListTile(
-                leading: const Icon(Icons.tune),
-                title: messageText(l10n.canvasColorAdjustMenuTitle),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _toggleDesktopOrMobileDockPanel(CanvasDockPanel.colorAdjust);
-                },
-              ),
-              ListTile(
-                leading: Icon(
-                  _showReferenceWindow
-                      ? Icons.dashboard_customize
-                      : Icons.dashboard_customize_outlined,
-                ),
-                title: messageText(l10n.canvasEditMenuReferenceWindow),
-                subtitle: isWideScreen(context)
-                    ? null
-                    : messageText(l10n.canvasEditMenuReferenceWindowSubtitle),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _setDesktopPanelVisible(
-                    CanvasDockPanel.reference,
-                    !_showReferenceWindow,
-                  );
-                },
-              ),
-              // キャンバスプレビュー（ナビゲーター）：PC/DeXモード専用。
-              // ドッキング表示のためスマホ版では意味を持たない。
-              if (isWideScreen(context))
                 ListTile(
                   leading: Icon(
-                    _showCanvasPreviewPanel ? Icons.map : Icons.map_outlined,
+                    _showReferenceWindow
+                        ? Icons.dashboard_customize
+                        : Icons.dashboard_customize_outlined,
                   ),
-                  title: messageText(l10n.canvasEditMenuPreviewNavigator),
-                  subtitle: messageText(
-                    l10n.canvasEditMenuPreviewNavigatorSubtitle,
-                  ),
+                  title: messageText(l10n.canvasEditMenuReferenceWindow),
+                  subtitle: isWideScreen(context)
+                      ? null
+                      : messageText(l10n.canvasEditMenuReferenceWindowSubtitle),
                   onTap: () {
                     Navigator.pop(ctx);
                     _setDesktopPanelVisible(
-                      CanvasDockPanel.canvasPreview,
-                      !_showCanvasPreviewPanel,
+                      CanvasDockPanel.reference,
+                      !_showReferenceWindow,
                     );
                   },
                 ),
-            ],
+                // キャンバスプレビュー（ナビゲーター）：PC/DeXモード専用。
+                // ドッキング表示のためスマホ版では意味を持たない。
+                if (isWideScreen(context))
+                  ListTile(
+                    leading: Icon(
+                      _showCanvasPreviewPanel ? Icons.map : Icons.map_outlined,
+                    ),
+                    title: messageText(l10n.canvasEditMenuPreviewNavigator),
+                    subtitle: messageText(
+                      l10n.canvasEditMenuPreviewNavigatorSubtitle,
+                    ),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _setDesktopPanelVisible(
+                        CanvasDockPanel.canvasPreview,
+                        !_showCanvasPreviewPanel,
+                      );
+                    },
+                  ),
+                ListTile(
+                  leading: Icon(
+                    _canvasBackground == CanvasBackground.white
+                        ? Icons.check_box_outline_blank
+                        : Icons.grid_4x4,
+                  ),
+                  title: messageText(l10n.canvasEditMenuBackgroundToggle),
+                  subtitle: messageText(
+                    _canvasBackground == CanvasBackground.white
+                        ? l10n.canvasEditMenuBackgroundCurrentColor
+                        : l10n.canvasEditMenuBackgroundCurrentTransparent,
+                  ),
+                  onTap: () {
+                    _toggleBackground();
+                    Navigator.pop(ctx);
+                  },
+                ),
+                // 背景色変更（プロジェクト作成時と同じ選択肢）
+                ListTile(
+                  leading: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Color(
+                        context
+                                .read<ProjectService>()
+                                .projects
+                                .where((p) => p.id == widget.projectId)
+                                .firstOrNull
+                                ?.backgroundColor ??
+                            0xFFFFFFFF,
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                  ),
+                  title: messageText(l10n.newProjectBackgroundColorLabel),
+                  subtitle: messageText(l10n.canvasBackgroundColorChoices),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showBackgroundColorPicker(context);
+                  },
+                ),
+                // 選んだ表示がその場で見えるよう、この行だけ作り直す（メニューは
+                // キャンバスの画面とは別のルートなので、画面のsetStateでは
+                // 作り直されず、選ぶ前の表示のままだった）。
+                StatefulBuilder(
+                  builder: (ctx, setMenuState) {
+                    final labels = {
+                      AutofillCheckMode.normal: l10n.canvasAutofillCheckNormal,
+                      AutofillCheckMode.partSeparation:
+                          l10n.canvasAutofillCheckParts,
+                      AutofillCheckMode.silhouette:
+                          l10n.canvasAutofillCheckSilhouette,
+                    };
+                    void choose(AutofillCheckMode? mode) {
+                      if (mode == null) return;
+                      setState(() => _autofillCheckMode = mode);
+                      setMenuState(() {});
+                    }
+
+                    final icon = Icon(
+                      _autofillCheckMode == AutofillCheckMode.normal
+                          ? Icons.visibility_outlined
+                          : _autofillCheckMode ==
+                                AutofillCheckMode.partSeparation
+                          ? Icons.palette_outlined
+                          : Icons.contrast,
+                    );
+                    final title = messageText(l10n.canvasAutofillCheckView);
+                    return LayoutBuilder(
+                      builder: (ctx, constraints) {
+                        // 選択肢は、項目名の右に入るときだけ右のドロップダウンに
+                        // する（長い言語・大きな文字で右に置くと、行の幅をすべて
+                        // 使って行が描けなかった）。
+                        final style = Theme.of(ctx).textTheme.titleMedium;
+                        final scaler = MediaQuery.textScalerOf(ctx);
+                        var widest = 0.0;
+                        for (final label in labels.values) {
+                          final painter = TextPainter(
+                            text: TextSpan(text: label, style: style),
+                            textDirection: Directionality.of(ctx),
+                            textScaler: scaler,
+                          )..layout();
+                          if (painter.width > widest) widest = painter.width;
+                          painter.dispose();
+                        }
+                        // 項目名の、折り返せないいちばん広い語（右に置くと項目名の
+                        // 欄が狭くなり、西語で「Vista de com / probación」と語の
+                        // 途中で折れた）。韓国語の語は、描く文と同じくつないで測る。
+                        final titlePainter = TextPainter(
+                          text: KeepTogetherText(
+                            l10n.canvasAutofillCheckView,
+                            keep: koreanWordParts(l10n.canvasAutofillCheckView),
+                          ).joinedSpan(style ?? const TextStyle()),
+                          textDirection: Directionality.of(ctx),
+                          textScaler: scaler,
+                        )..layout();
+                        final titleWord = widestUnbreakableWidth(
+                          titlePainter,
+                          reported: titlePainter.minIntrinsicWidth,
+                        );
+                        titlePainter.dispose();
+                        // 選択肢の幅（▼を含む）＋先頭のアイコン・余白・項目名に
+                        // 残したい最小の幅（語が途中で折れない幅）。
+                        final fitsBeside =
+                            widest +
+                                32 +
+                                56 +
+                                32 +
+                                math.max(scaler.scale(96), titleWord) <=
+                            constraints.maxWidth;
+                        if (fitsBeside) {
+                          return ListTile(
+                            leading: icon,
+                            title: title,
+                            trailing: DropdownButton<AutofillCheckMode>(
+                              value: _autofillCheckMode,
+                              underline: const SizedBox.shrink(),
+                              items: [
+                                for (final entry in labels.entries)
+                                  DropdownMenuItem(
+                                    value: entry.key,
+                                    child: messageText(entry.value),
+                                  ),
+                              ],
+                              onChanged: choose,
+                            ),
+                          );
+                        }
+                        // 入らないときは、選択肢を項目名の下に1つずつ並べる
+                        // （ドロップダウンを下の行に置くと、選択肢も選んだ値も
+                        // 1行の高さに収められ、折り返した文字の2行目が切れた）。
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(leading: icon, title: title),
+                            RadioGroup<AutofillCheckMode>(
+                              groupValue: _autofillCheckMode,
+                              onChanged: choose,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  for (final entry in labels.entries)
+                                    RadioListTile<AutofillCheckMode>(
+                                      value: entry.key,
+                                      title: messageText(entry.value),
+                                      contentPadding:
+                                          const EdgeInsetsDirectional.only(
+                                            start: 56,
+                                            end: 16,
+                                          ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+                _editMenuGroupLabel(
+                  ctx,
+                  l10n.canvasEditMenuGroupEdit,
+                  first: false,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.blur_on),
+                  title: messageText(l10n.filterPanelTitle),
+                  subtitle: messageText(l10n.canvasEditMenuFilterSubtitle),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _toggleFilterPanel();
+                  },
+                ),
+                // 色調調整。彩度・明度・コントラストを
+                // ライブプレビューで調整し、そのまま適用するか、描画/演出
+                // フィルターへ新規フィルターとして追加できる。
+                ListTile(
+                  leading: const Icon(Icons.tune),
+                  title: messageText(l10n.canvasColorAdjustMenuTitle),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _toggleDesktopOrMobileDockPanel(
+                      CanvasDockPanel.colorAdjust,
+                    );
+                  },
+                ),
+                // レイヤー全体の自由変形・メッシュ変形。
+                // 範囲選択の変形と異なり、選択範囲なしで現在レイヤー全体を
+                // 自由に動かせる。
+                ListTile(
+                  leading: const Icon(Icons.crop_free),
+                  title: messageText(l10n.canvasEditMenuMeshTransform),
+                  subtitle: messageText(
+                    l10n.canvasEditMenuMeshTransformSubtitle,
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _openMeshTransformPanel();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    _frameMultiSelectMode
+                        ? Icons.checklist_rtl
+                        : Icons.checklist,
+                  ),
+                  title: messageText(l10n.canvasEditMenuFrameMultiSelect),
+                  subtitle: messageText(
+                    l10n.canvasEditMenuFrameMultiSelectSubtitle,
+                  ),
+                  onTap: () {
+                    _toggleFrameMultiSelect();
+                    Navigator.pop(ctx);
+                  },
+                ),
+                _editMenuGroupLabel(
+                  ctx,
+                  l10n.canvasEditMenuGroupAutomation,
+                  first: false,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.auto_fix_high_outlined),
+                  title: messageText(l10n.canvasEditMenuAutofillPresets),
+                  subtitle: messageText(
+                    l10n.canvasEditMenuAutofillPresetsSubtitle,
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _runAutomationBlockedAction(
+                      () => context.push('/autofill-presets'),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.playlist_play,
+                    color:
+                        context.read<PremiumService>().isFeatureAvailable(
+                          PremiumFeature.customAutomation,
+                        )
+                        ? null
+                        : Theme.of(context).colorScheme.outline,
+                  ),
+                  // 鍵の印は、項目名の横に置くと語の途中で折れる幅では項目名の
+                  // 下へ回す（行の右に置いたままだと、仏語・360px・文字2倍で
+                  // 「Automatisation / s」と折れた）。
+                  title:
+                      context.read<PremiumService>().isFeatureAvailable(
+                        PremiumFeature.customAutomation,
+                      )
+                      ? messageText(l10n.customAutomationTitle)
+                      : ActionBesideOrBelow(
+                          gap: 16,
+                          text: messageText(l10n.customAutomationTitle),
+                          action: Icon(
+                            Icons.lock_outline,
+                            size: 18,
+                            color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showCustomAutomationManager();
+                  },
+                ),
+                // 筆圧カーブ設定画面（/settings/pen）を、設定画面だけでなくここ
+                // からも開けるようにする（設定値自体はアプリ内共通の1箇所の
+                // ため、どちらから開いても同じ値を編集することになる）。
+                ListTile(
+                  leading: const Icon(Icons.gesture),
+                  title: messageText(l10n.canvasEditMenuPressureCurve),
+                  subtitle: messageText(
+                    l10n.canvasEditMenuPressureCurveSubtitle,
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _runAutomationBlockedAction(
+                      () => context.push('/settings/pen'),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
           // 行を押したときの色をスクロールの中に限る（シートの面へ描くと、
           // 半分隠れた行の色が下の余白〔ナビゲーションバーの下〕へはみ出す）。
         ).clipListInk(),
+      ),
+    );
+  }
+
+  /// 設定/編集メニューのまとまりの見出し。項目名の始まり（先頭の印の右）に
+  /// そろえた小さい見出しで、2つ目からは上に区切りの線を引く。
+  Widget _editMenuGroupLabel(
+    BuildContext context,
+    String label, {
+    required bool first,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      header: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (!first) const Divider(height: 17, indent: 16, endIndent: 16),
+          Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(56, first ? 16 : 8, 16, 4),
+            child: Text(
+              label,
+              style: localizedHeadingStyle(
+                context,
+                TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2228,7 +2287,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     right: leftHanded ? null : 0,
                     top: 0,
                     bottom: 0,
-                    width: 250,
+                    // 280（ペン・トーン・スタンプのパネルと同じ幅）。250では
+                    // 見出しの題・操作・×を1行に置くと題が「レイ…」と切れ、
+                    // レイヤー名の欄も狭かった。
+                    width: 280,
                     child: LayerPanel(
                       onClose: () => setState(() => _showLayerPanel = false),
                       projectId: widget.projectId,
@@ -4429,37 +4491,39 @@ class _CanvasScreenState extends State<CanvasScreen> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.pan_tool_alt),
-              title: Text(l10n.toolbarFingerSubtoolWarp),
-              selected: _currentTool == DrawingTool.finger,
-              onTap: () {
-                setState(() => _currentTool = DrawingTool.finger);
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.blur_on),
-              title: Text(l10n.toolbarItemBlur),
-              selected: _currentTool == DrawingTool.blur,
-              onTap: () {
-                setState(() => _currentTool = DrawingTool.blur);
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.grid_4x4),
-              title: Text(l10n.toolbarItemMosaic),
-              selected: _currentTool == DrawingTool.mosaic,
-              onTap: () {
-                setState(() => _currentTool = DrawingTool.mosaic);
-                Navigator.pop(ctx);
-              },
-            ),
-          ],
+        child: NeutralListIcons(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.pan_tool_alt),
+                title: Text(l10n.toolbarFingerSubtoolWarp),
+                selected: _currentTool == DrawingTool.finger,
+                onTap: () {
+                  setState(() => _currentTool = DrawingTool.finger);
+                  Navigator.pop(ctx);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.blur_on),
+                title: Text(l10n.toolbarItemBlur),
+                selected: _currentTool == DrawingTool.blur,
+                onTap: () {
+                  setState(() => _currentTool = DrawingTool.blur);
+                  Navigator.pop(ctx);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.grid_4x4),
+                title: Text(l10n.toolbarItemMosaic),
+                selected: _currentTool == DrawingTool.mosaic,
+                onTap: () {
+                  setState(() => _currentTool = DrawingTool.mosaic);
+                  Navigator.pop(ctx);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -4471,58 +4535,60 @@ class _CanvasScreenState extends State<CanvasScreen> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.not_interested),
-              title: Text(l10n.canvasShapeOff),
-              selected: _shapeKind == ShapeKind.off,
-              onTap: () {
-                setState(() {
-                  _shapeKind = ShapeKind.off;
-                  _currentTool = DrawingTool.pen;
-                });
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.show_chart),
-              title: Text(l10n.canvasShapeLine),
-              selected: _shapeKind == ShapeKind.line,
-              onTap: () {
-                setState(() {
-                  _shapeKind = ShapeKind.line;
-                  _currentTool = DrawingTool.shape;
-                });
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.crop_square),
-              title: Text(l10n.canvasShapeRect),
-              selected: _shapeKind == ShapeKind.rect,
-              onTap: () {
-                setState(() {
-                  _shapeKind = ShapeKind.rect;
-                  _currentTool = DrawingTool.shape;
-                });
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.circle_outlined),
-              title: Text(l10n.canvasShapeCircle),
-              selected: _shapeKind == ShapeKind.circle,
-              onTap: () {
-                setState(() {
-                  _shapeKind = ShapeKind.circle;
-                  _currentTool = DrawingTool.shape;
-                });
-                Navigator.pop(ctx);
-              },
-            ),
-          ],
+        child: NeutralListIcons(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.not_interested),
+                title: Text(l10n.canvasShapeOff),
+                selected: _shapeKind == ShapeKind.off,
+                onTap: () {
+                  setState(() {
+                    _shapeKind = ShapeKind.off;
+                    _currentTool = DrawingTool.pen;
+                  });
+                  Navigator.pop(ctx);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.show_chart),
+                title: Text(l10n.canvasShapeLine),
+                selected: _shapeKind == ShapeKind.line,
+                onTap: () {
+                  setState(() {
+                    _shapeKind = ShapeKind.line;
+                    _currentTool = DrawingTool.shape;
+                  });
+                  Navigator.pop(ctx);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.crop_square),
+                title: Text(l10n.canvasShapeRect),
+                selected: _shapeKind == ShapeKind.rect,
+                onTap: () {
+                  setState(() {
+                    _shapeKind = ShapeKind.rect;
+                    _currentTool = DrawingTool.shape;
+                  });
+                  Navigator.pop(ctx);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.circle_outlined),
+                title: Text(l10n.canvasShapeCircle),
+                selected: _shapeKind == ShapeKind.circle,
+                onTap: () {
+                  setState(() {
+                    _shapeKind = ShapeKind.circle;
+                    _currentTool = DrawingTool.shape;
+                  });
+                  Navigator.pop(ctx);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

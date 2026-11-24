@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/ruler.dart';
 import '../../../widgets/docked_panel_scope.dart';
 import '../../../widgets/list_ink_clip.dart';
+import 'neutral_list_icons.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../config/accent_text_theme.dart';
@@ -106,57 +107,59 @@ class RulerPanel extends StatelessWidget {
           // （末尾のclipListInk）。
           Flexible(
             child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _rulerTile(
-                    context,
-                    RulerType.line,
-                    Icons.straighten,
-                    l10n.rulerTypeLine,
-                  ),
-                  _rulerTile(
-                    context,
-                    RulerType.ellipse,
-                    Icons.circle_outlined,
-                    l10n.rulerTypeEllipse,
-                  ),
-                  _rulerTile(
-                    context,
-                    RulerType.radial,
-                    Icons.hub_outlined,
-                    l10n.rulerTypeRadial,
-                  ),
-                  const Divider(height: 1),
-                  _rulerTile(
-                    context,
-                    RulerType.onePointPerspective,
-                    Icons.filter_center_focus,
-                    l10n.rulerTypeOnePoint,
-                  ),
-                  _rulerTile(
-                    context,
-                    RulerType.twoPointPerspective,
-                    Icons.compare_arrows,
-                    l10n.rulerTypeTwoPoint,
-                  ),
-                  _rulerTile(
-                    context,
-                    RulerType.threePointPerspective,
-                    Icons.grid_3x3,
-                    l10n.rulerTypeThreePoint,
-                  ),
-                  _rulerTile(
-                    context,
-                    RulerType.fisheyePerspective,
-                    Icons.language,
-                    l10n.rulerTypeFisheye,
-                  ),
-                  if (activeRuler?.type == RulerType.radial) ...[
+              child: NeutralListIcons(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _rulerTile(
+                      context,
+                      RulerType.line,
+                      Icons.straighten,
+                      l10n.rulerTypeLine,
+                    ),
+                    _rulerTile(
+                      context,
+                      RulerType.ellipse,
+                      Icons.circle_outlined,
+                      l10n.rulerTypeEllipse,
+                    ),
+                    _rulerTile(
+                      context,
+                      RulerType.radial,
+                      Icons.hub_outlined,
+                      l10n.rulerTypeRadial,
+                    ),
                     const Divider(height: 1),
-                    _divisionsRow(context),
+                    _rulerTile(
+                      context,
+                      RulerType.onePointPerspective,
+                      Icons.filter_center_focus,
+                      l10n.rulerTypeOnePoint,
+                    ),
+                    _rulerTile(
+                      context,
+                      RulerType.twoPointPerspective,
+                      Icons.compare_arrows,
+                      l10n.rulerTypeTwoPoint,
+                    ),
+                    _rulerTile(
+                      context,
+                      RulerType.threePointPerspective,
+                      Icons.grid_3x3,
+                      l10n.rulerTypeThreePoint,
+                    ),
+                    _rulerTile(
+                      context,
+                      RulerType.fisheyePerspective,
+                      Icons.language,
+                      l10n.rulerTypeFisheye,
+                    ),
+                    if (activeRuler?.type == RulerType.radial) ...[
+                      const Divider(height: 1),
+                      _divisionsRow(context),
+                    ],
                   ],
-                ],
+                ),
               ),
             ).clipListInk(),
           ),

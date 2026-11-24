@@ -10791,6 +10791,24 @@ abstract class AppLocalizations {
   /// **'資料ウィンドウ'**
   String get canvasEditMenuReferenceWindow;
 
+  /// キャンバスの設定/編集メニューの、見え方の項目（オニオンスキン・資料ウィンドウ・背景・自動塗り確認表示）の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'表示'**
+  String get canvasEditMenuGroupView;
+
+  /// キャンバスの設定/編集メニューの、絵を加工する項目（フィルター・色調調整・変形・フレーム複数選択）の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'編集'**
+  String get canvasEditMenuGroupEdit;
+
+  /// キャンバスの設定/編集メニューの、自動塗り設定・自動操作・筆圧カーブの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'自動化と入力'**
+  String get canvasEditMenuGroupAutomation;
+
   /// No description provided for @canvasEditMenuReferenceWindowSubtitle.
   ///
   /// In ja, this message translates to:

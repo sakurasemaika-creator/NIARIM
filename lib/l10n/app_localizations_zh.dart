@@ -5900,6 +5900,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasEditMenuReferenceWindow => '参考窗口';
 
   @override
+  String get canvasEditMenuGroupView => '显示';
+
+  @override
+  String get canvasEditMenuGroupEdit => '编辑';
+
+  @override
+  String get canvasEditMenuGroupAutomation => '自动化与输入';
+
+  @override
   String get canvasEditMenuReferenceWindowSubtitle => '悬浮显示参考图片';
 
   @override
@@ -16418,6 +16427,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasEditMenuReferenceWindow => '參考視窗';
+
+  @override
+  String get canvasEditMenuGroupView => '顯示';
+
+  @override
+  String get canvasEditMenuGroupEdit => '編輯';
+
+  @override
+  String get canvasEditMenuGroupAutomation => '自動化與輸入';
 
   @override
   String get canvasEditMenuReferenceWindowSubtitle => '浮窗顯示參考圖片';
