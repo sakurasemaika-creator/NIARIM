@@ -28,6 +28,16 @@ class Layer {
   final String? materialId;
   final int? sourceTrimStart;
   final int? sourceTrimEnd;
+
+  /// The fraction of a source frame the video starts after
+  /// [sourceTrimStart] (0 ≤ f < 1). A clip split at a fractional source
+  /// position (a speed other than 1×) keeps playing exactly where the
+  /// unsplit clip would.
+  final double sourceTrimStartFraction;
+
+  /// The video's playback speed (1.0 = normal, 2.0 = twice as fast). Its
+  /// sound plays at the same speed.
+  final double playbackRate;
   final double videoVolume;
   final String? watermarkAssetId;
   final double watermarkAngle;
@@ -62,6 +72,8 @@ class Layer {
     this.materialId,
     this.sourceTrimStart,
     this.sourceTrimEnd,
+    this.sourceTrimStartFraction = 0,
+    this.playbackRate = 1.0,
     this.videoVolume = 1.0,
     this.watermarkAssetId,
     this.watermarkAngle = 0,
@@ -94,6 +106,8 @@ class Layer {
     Object? materialId = _sentinel,
     Object? sourceTrimStart = _sentinel,
     Object? sourceTrimEnd = _sentinel,
+    double? sourceTrimStartFraction,
+    double? playbackRate,
     double? videoVolume,
     Object? watermarkAssetId = _sentinel,
     double? watermarkAngle,
@@ -138,6 +152,9 @@ class Layer {
       sourceTrimEnd: sourceTrimEnd == _sentinel
           ? this.sourceTrimEnd
           : sourceTrimEnd as int?,
+      sourceTrimStartFraction:
+          sourceTrimStartFraction ?? this.sourceTrimStartFraction,
+      playbackRate: playbackRate ?? this.playbackRate,
       videoVolume: videoVolume ?? this.videoVolume,
       watermarkAssetId: watermarkAssetId == _sentinel
           ? this.watermarkAssetId

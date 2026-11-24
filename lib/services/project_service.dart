@@ -30,6 +30,7 @@ import '../models/scene.dart';
 import '../models/scene_stack.dart';
 import '../models/text_object.dart';
 import '../models/timeline_row_kind.dart';
+import '../models/video_track_display.dart';
 import '../engine/undo_manager.dart';
 import '../utils/app_error_reporter.dart';
 import '../utils/duplicate_name.dart';
@@ -3899,6 +3900,49 @@ class ProjectService extends ChangeNotifier {
     return result;
   }
 
+  /// What video row [row] of the scene shows in its clips.
+  VideoTrackDisplay videoRowDisplayOf(
+    String projectId,
+    String sceneId,
+    int row,
+  ) =>
+      sceneOf(projectId, sceneId)?.videoRowDisplayOf(row) ??
+      VideoTrackDisplay.frames;
+
+  /// Makes video row [row] show [display] in its clips (one Undo step; the
+  /// choice is saved with the project).
+  void setVideoRowDisplay(
+    String projectId,
+    String sceneId,
+    int row,
+    VideoTrackDisplay display,
+  ) {
+    if (row < 0 || videoRowDisplayOf(projectId, sceneId, row) == display) {
+      return;
+    }
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
+      editTimeline(
+        projectId,
+        'setVideoRowDisplay',
+        () => setVideoRowDisplay(projectId, sceneId, row, display),
+        changesTiles: false,
+      );
+      return;
+    }
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    final displays = [
+      for (var r = 0; r <= row; r++) scenes[idx].videoRowDisplayOf(r),
+      ...scenes[idx].videoRowDisplays.skip(row + 1),
+    ];
+    displays[row] = display;
+    scenes[idx] = scenes[idx].copyWith(videoRowDisplays: displays);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
   void addTrackRow(String projectId, String sceneId, TimelineRowKind type) {
     if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
@@ -3981,6 +4025,13 @@ class ProjectService extends ChangeNotifier {
     scene = scene.copyWith(
       stack: _stackWithoutRow(scene.stack, type, rowIndex),
     );
+    // The rows after it keep their display.
+    if (type == TimelineRowKind.video &&
+        rowIndex < scene.videoRowDisplays.length) {
+      scene = scene.copyWith(
+        videoRowDisplays: List.of(scene.videoRowDisplays)..removeAt(rowIndex),
+      );
+    }
 
     scenes[idx] = scene;
     _saveAsync(projectId);

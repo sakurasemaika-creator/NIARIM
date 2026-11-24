@@ -6,6 +6,7 @@ import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
 
 import '../models/layer.dart';
 import '../models/scene.dart';
+import 'clip_speed.dart';
 
 /// One sound in an exported video: a stretch of an audio file (a clip on an
 /// audio track) or the sound of a video material.
@@ -25,16 +26,23 @@ class ExportAudioSource {
     this.volume = 1,
     this.fadeInSeconds = 0,
     this.fadeOutSeconds = 0,
+    this.playbackRate = 1,
   });
 
   final String path;
   final double startSeconds;
   final double sourceSeconds;
+
+  /// Seconds the sound lasts in the exported video. At [playbackRate] it
+  /// reads `durationSeconds * playbackRate` seconds of the file.
   final double durationSeconds;
   final double clipSeconds;
   final double volume;
   final double fadeInSeconds;
   final double fadeOutSeconds;
+
+  /// The clip's speed; the pitch is kept (as in the timeline's playback).
+  final double playbackRate;
 }
 
 /// The sounds of an export and how many could not be included (a material
@@ -80,6 +88,8 @@ Future<ExportAudioPlan> buildExportAudioPlan({
     required double volume,
     double fadeIn = 0,
     double fadeOut = 0,
+    double sourceFraction = 0,
+    double rate = 1,
   }) async {
     if (materialId == null || volume <= 0 || lengthFrames <= 0) return;
     final start = math.max(0, startFrame);
@@ -99,12 +109,18 @@ Future<ExportAudioPlan> buildExportAudioPlan({
       ExportAudioSource(
         path: path,
         startSeconds: from / fps,
-        sourceSeconds: math.max(0, sourceFrame + (start - startFrame)) / fps,
+        sourceSeconds:
+            math.max(
+              0,
+              sourceFrame + sourceFraction + (start - startFrame) * rate,
+            ) /
+            fps,
         durationSeconds: (end - from) / fps,
         clipSeconds: lengthFrames / fps,
         volume: volume.clamp(0.0, 1.0),
         fadeInSeconds: math.max(0, fadeIn),
         fadeOutSeconds: math.max(0, fadeOut),
+        playbackRate: isValidPlaybackRate(rate) ? rate : 1,
       ),
     );
   }
@@ -122,6 +138,8 @@ Future<ExportAudioPlan> buildExportAudioPlan({
         volume: clip.volume,
         fadeIn: clip.fadeIn,
         fadeOut: clip.fadeOut,
+        sourceFraction: clip.sourceStartFraction,
+        rate: clip.playbackRate,
       );
     }
     // A video material is a layer; its sound plays over the frames it shows.
@@ -140,6 +158,8 @@ Future<ExportAudioPlan> buildExportAudioPlan({
           sourceFrame: layer.sourceTrimStart ?? 0,
           sceneFrames: sceneFrames,
           volume: layer.videoVolume,
+          sourceFraction: layer.sourceTrimStartFraction,
+          rate: layer.playbackRate,
         );
       }
     }
@@ -232,17 +252,22 @@ List<String> exportAudioSourceArguments(
     fadeInSeconds: source.fadeInSeconds,
     fadeOutSeconds: source.fadeOutSeconds,
   );
+  final rate = source.playbackRate;
+  final tempo = rate == 1
+      ? const <String>[]
+      : [for (final factor in atempoChain(rate)) 'atempo=$factor'];
   return [
     '-y',
     '-ss',
     _seconds(source.sourceSeconds),
     '-t',
-    _seconds(source.durationSeconds),
+    _seconds(source.durationSeconds * rate),
     '-i',
     source.path,
     '-vn',
     '-af',
-    filters.join(','),
+    // The speed first, so the fades and volume act on exported time.
+    [...tempo, ...filters].join(','),
     '-ac',
     '$exportAudioChannels',
     '-ar',

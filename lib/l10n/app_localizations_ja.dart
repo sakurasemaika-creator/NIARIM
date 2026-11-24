@@ -5508,6 +5508,38 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineClipUseEndLabel => '使用終了F';
 
   @override
+  String get timelineClipSpeedLabel => '速度';
+
+  @override
+  String get timelineClipSpeedInputLabel => '倍率を入力';
+
+  @override
+  String get timelineClipSpeedInputHint => '0.01〜100';
+
+  @override
+  String get timelineClipSpeedInvalid => '0.01〜100の数を入力してください';
+
+  @override
+  String get timelineClipSpeedOverlap => 'この速度にすると同じ列の別のクリップと重なるため、変更しませんでした。';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd =>
+      'この速度にするとシーンの終わりを超えるため、変更しませんでした。先にシーンを長くしてください。';
+
+  @override
+  String get timelineClipSpeedKeyframeClash =>
+      'キーフレームが同じフレームに重なるため、この速度にはできません。';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return '終了フレーム：F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote =>
+      '速度を上げると音声は聞き取りにくくなります。音声が不要なら音量を0にしてください。';
+
+  @override
   String get timelineCameraFrameAlreadyHasKeyframe =>
       'このフレームにはカメラのキーフレームがあります。';
 
@@ -10602,6 +10634,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => 'トラックに行を追加';
+
+  @override
+  String get timelineVideoTrackShowingFrames => '映像のコマを表示中（タップで音声の波形に切り替え）';
+
+  @override
+  String get timelineVideoTrackShowingWaveform => '音声の波形を表示中（タップで映像のコマに切り替え）';
 
   @override
   String get keyframePreviewGestureHint => 'プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。';

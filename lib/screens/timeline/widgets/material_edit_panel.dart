@@ -18,6 +18,7 @@ import '../../../services/font_service.dart';
 import '../../../services/project_service.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/labeled_slider.dart';
+import 'clip_speed_control.dart';
 import '../../../widgets/layer_mask_editor.dart';
 import '../../canvas/widgets/color_picker_panel.dart';
 import '../../../config/accent_text_theme.dart';
@@ -95,6 +96,8 @@ class TimelineMaterialEditPanel extends StatefulWidget {
     required this.onShowStackOrder,
     required this.onMoveToRow,
     this.onLayerChanged,
+    this.videoSpeedEndFrameAt,
+    this.onVideoSpeedChange,
   });
 
   final String projectId;
@@ -115,6 +118,12 @@ class TimelineMaterialEditPanel extends StatefulWidget {
   /// Called with the material after each change (the timeline mirrors its
   /// name, opacity and a video's sound in the track).
   final ValueChanged<Layer>? onLayerChanged;
+
+  /// A video's last timeline frame at a speed, and the change of its speed
+  /// (null when the timeline does not offer it). The change returns why it
+  /// was refused, or null.
+  final int Function(double rate)? videoSpeedEndFrameAt;
+  final String? Function(double rate)? onVideoSpeedChange;
 
   @override
   State<TimelineMaterialEditPanel> createState() =>
@@ -826,9 +835,20 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     final last = (end - start).clamp(0, 1 << 30);
     final useStart = (layer.sourceTrimStart ?? 0).clamp(0, last);
     final useEnd = (layer.sourceTrimEnd ?? last).clamp(useStart, last);
+    final endFrameAt = widget.videoSpeedEndFrameAt;
+    final changeSpeed = widget.onVideoSpeedChange;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (endFrameAt != null && changeSpeed != null) ...[
+          ClipSpeedControl(
+            rate: layer.playbackRate,
+            hasSound: layer.videoVolume > 0,
+            endFrameAt: endFrameAt,
+            onApply: changeSpeed,
+          ),
+          const SizedBox(height: 8),
+        ],
         LabeledSlider(
           label: l10n.timelineClipVolumeLabel,
           value: (layer.videoVolume * 100).clamp(0, 100),

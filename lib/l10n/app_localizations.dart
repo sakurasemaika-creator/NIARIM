@@ -9975,6 +9975,60 @@ abstract class AppLocalizations {
   /// **'使用終了F'**
   String get timelineClipUseEndLabel;
 
+  /// No description provided for @timelineClipSpeedLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'速度'**
+  String get timelineClipSpeedLabel;
+
+  /// No description provided for @timelineClipSpeedInputLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'倍率を入力'**
+  String get timelineClipSpeedInputLabel;
+
+  /// No description provided for @timelineClipSpeedInputHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'0.01〜100'**
+  String get timelineClipSpeedInputHint;
+
+  /// No description provided for @timelineClipSpeedInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'0.01〜100の数を入力してください'**
+  String get timelineClipSpeedInvalid;
+
+  /// No description provided for @timelineClipSpeedOverlap.
+  ///
+  /// In ja, this message translates to:
+  /// **'この速度にすると同じ列の別のクリップと重なるため、変更しませんでした。'**
+  String get timelineClipSpeedOverlap;
+
+  /// No description provided for @timelineClipSpeedPastSceneEnd.
+  ///
+  /// In ja, this message translates to:
+  /// **'この速度にするとシーンの終わりを超えるため、変更しませんでした。先にシーンを長くしてください。'**
+  String get timelineClipSpeedPastSceneEnd;
+
+  /// No description provided for @timelineClipSpeedKeyframeClash.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーフレームが同じフレームに重なるため、この速度にはできません。'**
+  String get timelineClipSpeedKeyframeClash;
+
+  /// No description provided for @timelineClipSpeedEndPreview.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了フレーム：F{before} → F{after}'**
+  String timelineClipSpeedEndPreview(int before, int after);
+
+  /// No description provided for @timelineClipSpeedSoundNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'速度を上げると音声は聞き取りにくくなります。音声が不要なら音量を0にしてください。'**
+  String get timelineClipSpeedSoundNote;
+
   /// No description provided for @timelineCameraFrameAlreadyHasKeyframe.
   ///
   /// In ja, this message translates to:
@@ -18662,6 +18716,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'トラックに行を追加'**
   String get timelineAddTrackRowTooltip;
+
+  /// No description provided for @timelineVideoTrackShowingFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'映像のコマを表示中（タップで音声の波形に切り替え）'**
+  String get timelineVideoTrackShowingFrames;
+
+  /// No description provided for @timelineVideoTrackShowingWaveform.
+  ///
+  /// In ja, this message translates to:
+  /// **'音声の波形を表示中（タップで映像のコマに切り替え）'**
+  String get timelineVideoTrackShowingWaveform;
 
   /// No description provided for @keyframePreviewGestureHint.
   ///

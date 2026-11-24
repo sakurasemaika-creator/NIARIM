@@ -5,6 +5,7 @@ import 'layer.dart';
 import 'layer_group.dart';
 import 'scene_stack.dart';
 import 'timeline_marker.dart';
+import 'video_track_display.dart';
 
 class Scene {
   final String id;
@@ -28,6 +29,10 @@ class Scene {
   final List<String?> audioRowNames;
   final List<String?> textRowNames;
 
+  /// What each video row shows in its clips (index = row). Rows past the
+  /// end of the list show [VideoTrackDisplay.frames].
+  final List<VideoTrackDisplay> videoRowDisplays;
+
   /// 重なり順（フレーム（イラスト）と素材の列の前後）とフレームのマスク。
   final SceneStack stack;
   // 複数レイヤーをまとめて1つのキーフレームで動かすグループ
@@ -50,12 +55,19 @@ class Scene {
     this.videoRowNames = const [],
     this.audioRowNames = const [],
     this.textRowNames = const [],
+    this.videoRowDisplays = const [],
     this.stack = const SceneStack(),
     this.groups = const [],
     this.markers = const [],
   });
 
   String get displayName => name ?? 'Scene${index + 1}';
+
+  /// What video row [row] shows in its clips.
+  VideoTrackDisplay videoRowDisplayOf(int row) =>
+      row >= 0 && row < videoRowDisplays.length
+      ? videoRowDisplays[row]
+      : VideoTrackDisplay.frames;
 
   Scene copyWith({
     String? id,
@@ -69,6 +81,7 @@ class Scene {
     List<String?>? videoRowNames,
     List<String?>? audioRowNames,
     List<String?>? textRowNames,
+    List<VideoTrackDisplay>? videoRowDisplays,
     SceneStack? stack,
     List<LayerGroup>? groups,
     List<TimelineMarker>? markers,
@@ -85,6 +98,7 @@ class Scene {
       videoRowNames: videoRowNames ?? this.videoRowNames,
       audioRowNames: audioRowNames ?? this.audioRowNames,
       textRowNames: textRowNames ?? this.textRowNames,
+      videoRowDisplays: videoRowDisplays ?? this.videoRowDisplays,
       stack: stack ?? this.stack,
       groups: groups ?? this.groups,
       markers: markers ?? this.markers,

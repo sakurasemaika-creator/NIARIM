@@ -5748,6 +5748,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineClipUseEndLabel => 'Trim end F';
 
   @override
+  String get timelineClipSpeedLabel => 'Speed';
+
+  @override
+  String get timelineClipSpeedInputLabel => 'Enter speed';
+
+  @override
+  String get timelineClipSpeedInputHint => '0.01–100';
+
+  @override
+  String get timelineClipSpeedInvalid => 'Enter a number from 0.01 to 100';
+
+  @override
+  String get timelineClipSpeedOverlap =>
+      'Not changed: at this speed the clip would overlap another clip in the same row.';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd =>
+      'Not changed: at this speed the clip would run past the end of the scene. Lengthen the scene first.';
+
+  @override
+  String get timelineClipSpeedKeyframeClash =>
+      'This speed is not possible: two keyframes would land on the same frame.';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return 'End frame: F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote =>
+      'Sound gets hard to follow at high speeds. Set the volume to 0 if you do not need it.';
+
+  @override
   String get timelineCameraFrameAlreadyHasKeyframe =>
       'This frame already has a camera keyframe.';
 
@@ -11410,6 +11443,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => 'Add a track row';
+
+  @override
+  String get timelineVideoTrackShowingFrames =>
+      'Showing video frames (tap to show the sound waveform)';
+
+  @override
+  String get timelineVideoTrackShowingWaveform =>
+      'Showing the sound waveform (tap to show video frames)';
 
   @override
   String get keyframePreviewGestureHint =>

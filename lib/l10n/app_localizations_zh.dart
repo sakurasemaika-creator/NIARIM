@@ -5446,6 +5446,35 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineClipUseEndLabel => '使用结束帧';
 
   @override
+  String get timelineClipSpeedLabel => '速度';
+
+  @override
+  String get timelineClipSpeedInputLabel => '输入倍速';
+
+  @override
+  String get timelineClipSpeedInputHint => '0.01~100';
+
+  @override
+  String get timelineClipSpeedInvalid => '请输入 0.01 到 100 之间的数';
+
+  @override
+  String get timelineClipSpeedOverlap => '未更改：使用此速度会与同一行的其他片段重叠。';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd => '未更改：使用此速度会超出场景的结尾。请先延长场景。';
+
+  @override
+  String get timelineClipSpeedKeyframeClash => '无法使用此速度：两个关键帧会落在同一帧上。';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return '结束帧：F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote => '速度越快，声音越不清楚。如果不需要声音，请将音量设为 0。';
+
+  @override
   String get timelineCameraFrameAlreadyHasKeyframe => '此帧已有相机关键帧。';
 
   @override
@@ -10475,6 +10504,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => '添加轨道行';
+
+  @override
+  String get timelineVideoTrackShowingFrames => '正在显示视频画面（点按切换为声音波形）';
+
+  @override
+  String get timelineVideoTrackShowingWaveform => '正在显示声音波形（点按切换为视频画面）';
 
   @override
   String get keyframePreviewGestureHint => '拖动预览可移动。双指捏合或旋转可缩放或转动。';
@@ -16010,6 +16045,35 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineClipUseEndLabel => '使用結束影格';
 
   @override
+  String get timelineClipSpeedLabel => '速度';
+
+  @override
+  String get timelineClipSpeedInputLabel => '輸入倍速';
+
+  @override
+  String get timelineClipSpeedInputHint => '0.01~100';
+
+  @override
+  String get timelineClipSpeedInvalid => '請輸入 0.01 到 100 之間的數';
+
+  @override
+  String get timelineClipSpeedOverlap => '未變更：使用此速度會與同一列的其他片段重疊。';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd => '未變更：使用此速度會超出場景的結尾。請先延長場景。';
+
+  @override
+  String get timelineClipSpeedKeyframeClash => '無法使用此速度：兩個關鍵影格會落在同一影格上。';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return '結束影格：F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote => '速度越快，聲音越不清楚。如果不需要聲音，請將音量設為 0。';
+
+  @override
   String get timelineCameraFrameAlreadyHasKeyframe => '此影格已有相機關鍵影格。';
 
   @override
@@ -21041,6 +21105,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineAddTrackRowTooltip => '新增軌道列';
+
+  @override
+  String get timelineVideoTrackShowingFrames => '正在顯示影片畫面（點按切換為聲音波形）';
+
+  @override
+  String get timelineVideoTrackShowingWaveform => '正在顯示聲音波形（點按切換為影片畫面）';
 
   @override
   String get keyframePreviewGestureHint => '拖曳預覽可移動。用雙指捏合或旋轉就能縮放或轉動。';

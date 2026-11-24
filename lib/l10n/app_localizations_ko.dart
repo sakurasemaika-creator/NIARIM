@@ -5539,6 +5539,39 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineClipUseEndLabel => '사용 종료F';
 
   @override
+  String get timelineClipSpeedLabel => '속도';
+
+  @override
+  String get timelineClipSpeedInputLabel => '배속 입력';
+
+  @override
+  String get timelineClipSpeedInputHint => '0.01~100';
+
+  @override
+  String get timelineClipSpeedInvalid => '0.01~100 사이의 수를 입력하세요';
+
+  @override
+  String get timelineClipSpeedOverlap =>
+      '이 속도로 하면 같은 줄의 다른 클립과 겹치므로 변경하지 않았습니다.';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd =>
+      '이 속도로 하면 장면의 끝을 넘으므로 변경하지 않았습니다. 먼저 장면을 길게 하세요.';
+
+  @override
+  String get timelineClipSpeedKeyframeClash =>
+      '키프레임이 같은 프레임에 겹치므로 이 속도로 할 수 없습니다.';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return '종료 프레임: F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote =>
+      '속도를 높이면 소리를 이해하기 어려워집니다. 소리가 필요 없으면 음량을 0으로 하세요.';
+
+  @override
   String get timelineCameraFrameAlreadyHasKeyframe =>
       '이 프레임에는 이미 카메라 키프레임이 있습니다.';
 
@@ -10659,6 +10692,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => '트랙 행 추가';
+
+  @override
+  String get timelineVideoTrackShowingFrames => '영상 프레임 표시 중(탭하면 소리 파형으로 전환)';
+
+  @override
+  String get timelineVideoTrackShowingWaveform => '소리 파형 표시 중(탭하면 영상 프레임으로 전환)';
 
   @override
   String get keyframePreviewGestureHint =>

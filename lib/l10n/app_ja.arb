@@ -2814,6 +2814,25 @@
   "timelineClipFadeOutLabel": "フェードアウト",
   "timelineClipUseStartLabel": "使用開始F",
   "timelineClipUseEndLabel": "使用終了F",
+  "timelineClipSpeedLabel": "速度",
+  "timelineClipSpeedInputLabel": "倍率を入力",
+  "timelineClipSpeedInputHint": "0.01〜100",
+  "timelineClipSpeedInvalid": "0.01〜100の数を入力してください",
+  "timelineClipSpeedOverlap": "この速度にすると同じ列の別のクリップと重なるため、変更しませんでした。",
+  "timelineClipSpeedPastSceneEnd": "この速度にするとシーンの終わりを超えるため、変更しませんでした。先にシーンを長くしてください。",
+  "timelineClipSpeedKeyframeClash": "キーフレームが同じフレームに重なるため、この速度にはできません。",
+  "timelineClipSpeedEndPreview": "終了フレーム：F{before} → F{after}",
+  "@timelineClipSpeedEndPreview": {
+    "placeholders": {
+      "before": {
+        "type": "int"
+      },
+      "after": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineClipSpeedSoundNote": "速度を上げると音声は聞き取りにくくなります。音声が不要なら音量を0にしてください。",
   "timelineCameraFrameAlreadyHasKeyframe": "このフレームにはカメラのキーフレームがあります。",
   "timelineCameraKfTitle": "カメラ KF: F{n}",
   "@timelineCameraKfTitle": {
@@ -6464,6 +6483,8 @@
   "layerPanelHideLayerTooltip": "レイヤーを非表示",
   "layerPanelMergeDownTooltip": "下のレイヤーと結合",
   "timelineAddTrackRowTooltip": "トラックに行を追加",
+  "timelineVideoTrackShowingFrames": "映像のコマを表示中（タップで音声の波形に切り替え）",
+  "timelineVideoTrackShowingWaveform": "音声の波形を表示中（タップで映像のコマに切り替え）",
   "keyframePreviewGestureHint": "プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。",
   "settingsAccountDeletionTitle": "NIARIMアカウントを削除",
   "settingsAccountDeletionSubtitle": "公式サイトで手続きする",

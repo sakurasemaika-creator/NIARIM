@@ -9,7 +9,7 @@ import '../models/layer.dart';
 typedef TimelineVideoClipTiming = ({
   int startFrame,
   int lengthFrames,
-  int trimStartFrame,
+  double trimStartFrame,
   int trimEndFrame,
   double playbackRate,
 });
@@ -22,9 +22,9 @@ TimelineVideoClipTiming timelineVideoClipTiming(Layer layer) {
   return (
     startFrame: start,
     lengthFrames: length,
-    trimStartFrame: trimStart,
+    trimStartFrame: trimStart + layer.sourceTrimStartFraction,
     trimEndFrame: layer.sourceTrimEnd ?? (trimStart + length - 1),
-    playbackRate: 1.0,
+    playbackRate: layer.playbackRate,
   );
 }
 
@@ -40,13 +40,13 @@ class TimelineVideoTimeMapper {
     required int timelineFrame,
     required int clipStartFrame,
     required int clipLengthFrames,
-    required int sourceTrimStartFrame,
+    required num sourceTrimStartFrame,
     required int sourceTrimEndFrame,
     required double playbackRate,
   }) {
     if (clipLengthFrames <= 0 ||
         sourceTrimStartFrame < 0 ||
-        sourceTrimEndFrame < sourceTrimStartFrame ||
+        sourceTrimEndFrame < sourceTrimStartFrame.floor() ||
         !playbackRate.isFinite ||
         playbackRate <= 0) {
       return null;
@@ -55,7 +55,10 @@ class TimelineVideoTimeMapper {
     if (elapsed < 0 || elapsed >= clipLengthFrames) return null;
     final source = sourceTrimStartFrame + elapsed * playbackRate;
     return source
-        .clamp(sourceTrimStartFrame.toDouble(), sourceTrimEndFrame.toDouble())
+        .clamp(
+          sourceTrimStartFrame.toDouble(),
+          math.max(sourceTrimStartFrame.toDouble(), sourceTrimEndFrame + 0.0),
+        )
         .toDouble();
   }
 
@@ -66,7 +69,7 @@ class TimelineVideoTimeMapper {
     required int timelineFrame,
     required int clipStartFrame,
     required int clipLengthFrames,
-    required int sourceTrimStartFrame,
+    required num sourceTrimStartFrame,
     required int sourceTrimEndFrame,
     required double framesPerSecond,
     double playbackRate = 1,
@@ -95,7 +98,7 @@ class TimelineVideoTimeMapper {
     required int timelineFrame,
     required int clipStartFrame,
     required int clipLengthFrames,
-    required int sourceTrimStartFrame,
+    required num sourceTrimStartFrame,
     required int sourceTrimEndFrame,
     required double framesPerSecond,
     double playbackRate = 1,

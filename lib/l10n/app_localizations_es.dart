@@ -5833,6 +5833,39 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineClipUseEndLabel => 'Fin de uso F';
 
   @override
+  String get timelineClipSpeedLabel => 'Velocidad';
+
+  @override
+  String get timelineClipSpeedInputLabel => 'Introducir velocidad';
+
+  @override
+  String get timelineClipSpeedInputHint => '0,01–100';
+
+  @override
+  String get timelineClipSpeedInvalid => 'Introduce un número entre 0,01 y 100';
+
+  @override
+  String get timelineClipSpeedOverlap =>
+      'No se cambió: a esta velocidad el clip se superpondría a otro clip de la misma fila.';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd =>
+      'No se cambió: a esta velocidad el clip pasaría del final de la escena. Alarga primero la escena.';
+
+  @override
+  String get timelineClipSpeedKeyframeClash =>
+      'Esta velocidad no es posible: dos fotogramas clave caerían en el mismo fotograma.';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return 'Fotograma final: F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote =>
+      'A velocidades altas el sonido se entiende mal. Pon el volumen a 0 si no lo necesitas.';
+
+  @override
   String get timelineCameraFrameAlreadyHasKeyframe =>
       'Este fotograma ya tiene un fotograma clave de cámara.';
 
@@ -11570,6 +11603,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => 'Añadir una fila a la pista';
+
+  @override
+  String get timelineVideoTrackShowingFrames =>
+      'Mostrando fotogramas del vídeo (toca para ver la forma de onda del sonido)';
+
+  @override
+  String get timelineVideoTrackShowingWaveform =>
+      'Mostrando la forma de onda del sonido (toca para ver los fotogramas del vídeo)';
 
   @override
   String get keyframePreviewGestureHint =>

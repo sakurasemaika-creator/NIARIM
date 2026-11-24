@@ -14,14 +14,27 @@ void main() {
   test('存在しないファイルパスはnullを返す', () async {
     final result = await AudioWaveformService.getWaveform(
       filePath: '/no/such/file/for/niarim/waveform/test.mp3',
+      cacheKey: 'k0',
+      sourceStartSeconds: 0,
+      durationSeconds: 1,
     );
     expect(result, isNull);
   });
 
   test('同一キーへの同時呼び出しはin-flightのFutureを共有する', () async {
     const path = '/no/such/file/for/niarim/waveform/test2.mp3';
-    final f1 = AudioWaveformService.getWaveform(filePath: path, cacheKey: 'k1');
-    final f2 = AudioWaveformService.getWaveform(filePath: path, cacheKey: 'k1');
+    final f1 = AudioWaveformService.getWaveform(
+      filePath: path,
+      cacheKey: 'k1',
+      sourceStartSeconds: 0,
+      durationSeconds: 1,
+    );
+    final f2 = AudioWaveformService.getWaveform(
+      filePath: path,
+      cacheKey: 'k1',
+      sourceStartSeconds: 0,
+      durationSeconds: 1,
+    );
     final results = await Future.wait([f1, f2]);
     expect(results[0], isNull);
     expect(results[1], isNull);
@@ -32,6 +45,8 @@ void main() {
     final first = await AudioWaveformService.getWaveform(
       filePath: path,
       cacheKey: 'k2',
+      sourceStartSeconds: 0,
+      durationSeconds: 1,
     );
     expect(first, isNull);
 
@@ -39,6 +54,8 @@ void main() {
     final second = await AudioWaveformService.getWaveform(
       filePath: path,
       cacheKey: 'k2',
+      sourceStartSeconds: 0,
+      durationSeconds: 1,
     );
     sw.stop();
     expect(second, isNull);
@@ -46,10 +63,22 @@ void main() {
     expect(sw.elapsedMilliseconds, lessThan(50));
   });
 
-  test('cacheKey省略時はfilePath自体がキーとして使われる', () async {
+  test('同じファイルの別の区間は、呼び出し側が渡す別のキーで覚える', () async {
+    // 区間ごとに波形を作るので、キーはファイルの場所ではなく呼び出し側が
+    // 区間を含めて決める（同じファイルを2つのクリップで使っても混ざらない）。
     const path = '/no/such/file/for/niarim/waveform/test4.mp3';
-    final a = await AudioWaveformService.getWaveform(filePath: path);
-    final b = await AudioWaveformService.getWaveform(filePath: path);
+    final a = await AudioWaveformService.getWaveform(
+      filePath: path,
+      cacheKey: '$path#0-1',
+      sourceStartSeconds: 0,
+      durationSeconds: 1,
+    );
+    final b = await AudioWaveformService.getWaveform(
+      filePath: path,
+      cacheKey: '$path#1-2',
+      sourceStartSeconds: 1,
+      durationSeconds: 1,
+    );
     expect(a, isNull);
     expect(b, isNull);
   });

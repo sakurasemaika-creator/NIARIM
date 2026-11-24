@@ -10,6 +10,8 @@ import 'package:image/image.dart' as thumbnail_image;
 import 'package:path_provider/path_provider.dart';
 
 import '../models/audio_clip.dart';
+import '../models/video_track_display.dart';
+import 'clip_speed.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
@@ -950,6 +952,10 @@ class NiaproSerializer {
               (sceneJson['textRowNames'] as List<dynamic>? ?? const [])
                   .map((e) => e as String?)
                   .toList(),
+          videoRowDisplays: [
+            if (sceneJson['videoRowDisplays'] case final List<dynamic> list)
+              for (final name in list) VideoTrackDisplay.fromName(name),
+          ],
           stack: SceneStack.fromJson(sceneJson['stack']),
         ),
       );
@@ -1225,6 +1231,9 @@ class NiaproSerializer {
             'fadeIn': a.fadeIn,
             'fadeOut': a.fadeOut,
             'sourceStartFrame': a.sourceStartFrame,
+            if (a.sourceStartFraction != 0)
+              'sourceStartFraction': a.sourceStartFraction,
+            if (a.playbackRate != 1.0) 'playbackRate': a.playbackRate,
             'trackRow': a.trackRow,
             if (a.isReadAloud) 'isReadAloud': true,
           },
@@ -1234,6 +1243,8 @@ class NiaproSerializer {
     'videoRowNames': scene.videoRowNames,
     'audioRowNames': scene.audioRowNames,
     if (scene.textRowNames.isNotEmpty) 'textRowNames': scene.textRowNames,
+    if (scene.videoRowDisplays.contains(VideoTrackDisplay.waveform))
+      'videoRowDisplays': [for (final d in scene.videoRowDisplays) d.name],
     if (!scene.stack.isEmpty) 'stack': scene.stack.toJson(),
     // The scene's place in the project (moving a scene changes it; the id
     // keeps the number it was made with).
@@ -1274,6 +1285,9 @@ class NiaproSerializer {
     'materialId': l.materialId,
     'sourceTrimStart': l.sourceTrimStart,
     'sourceTrimEnd': l.sourceTrimEnd,
+    if (l.sourceTrimStartFraction != 0)
+      'sourceTrimStartFraction': l.sourceTrimStartFraction,
+    if (l.playbackRate != 1.0) 'playbackRate': l.playbackRate,
     'videoVolume': l.videoVolume,
     'watermarkAssetId': l.watermarkAssetId,
     'watermarkAngle': l.watermarkAngle,
@@ -1437,6 +1451,8 @@ class NiaproSerializer {
           fadeIn: (m['fadeIn'] as num?)?.toDouble() ?? 0.0,
           fadeOut: (m['fadeOut'] as num?)?.toDouble() ?? 0.0,
           sourceStartFrame: m['sourceStartFrame'] as int? ?? 0,
+          sourceStartFraction: _sourceFraction(m['sourceStartFraction']),
+          playbackRate: _playbackRate(m['playbackRate']),
           trackRow: m['trackRow'] as int? ?? 0,
           isReadAloud: m['isReadAloud'] as bool? ?? false,
         );
@@ -1533,6 +1549,8 @@ class NiaproSerializer {
     materialId: j['materialId'] as String?,
     sourceTrimStart: j['sourceTrimStart'] as int?,
     sourceTrimEnd: j['sourceTrimEnd'] as int?,
+    sourceTrimStartFraction: _sourceFraction(j['sourceTrimStartFraction']),
+    playbackRate: _playbackRate(j['playbackRate']),
     videoVolume: (j['videoVolume'] as num?)?.toDouble() ?? 1.0,
     watermarkAssetId: j['watermarkAssetId'] as String?,
     watermarkAngle: (j['watermarkAngle'] as num?)?.toDouble() ?? 0,
@@ -1641,4 +1659,17 @@ class NiaproData {
     fontsManifest: fontsManifest,
     tilesLeftIn: filePath,
   );
+}
+
+/// A saved playback speed; a missing, non-numeric or out-of-range value
+/// (an older project, a damaged file) plays at normal speed.
+double _playbackRate(Object? value) {
+  final rate = value is num ? value.toDouble() : 1.0;
+  return isValidPlaybackRate(rate) ? rate : 1.0;
+}
+
+/// A saved fraction of a source frame, 0 when missing or outside [0, 1).
+double _sourceFraction(Object? value) {
+  final fraction = value is num ? value.toDouble() : 0.0;
+  return fraction.isFinite && fraction >= 0 && fraction < 1 ? fraction : 0.0;
 }

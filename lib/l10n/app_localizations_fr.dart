@@ -5841,6 +5841,40 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineClipUseEndLabel => 'Fin utilisée F';
 
   @override
+  String get timelineClipSpeedLabel => 'Vitesse';
+
+  @override
+  String get timelineClipSpeedInputLabel => 'Saisir la vitesse';
+
+  @override
+  String get timelineClipSpeedInputHint => '0,01–100';
+
+  @override
+  String get timelineClipSpeedInvalid =>
+      'Saisissez un nombre entre 0,01 et 100';
+
+  @override
+  String get timelineClipSpeedOverlap =>
+      'Non modifié : à cette vitesse, le clip chevaucherait un autre clip de la même piste.';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd =>
+      'Non modifié : à cette vitesse, le clip dépasserait la fin de la scène. Allongez d’abord la scène.';
+
+  @override
+  String get timelineClipSpeedKeyframeClash =>
+      'Cette vitesse est impossible : deux images clés tomberaient sur la même image.';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return 'Image de fin : F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote =>
+      'À vitesse élevée, le son devient difficile à suivre. Réglez le volume sur 0 si vous n’en avez pas besoin.';
+
+  @override
   String get timelineCameraFrameAlreadyHasKeyframe =>
       'Cette image contient déjà une image clé de caméra.';
 
@@ -11583,6 +11617,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => 'Ajouter une ligne à la piste';
+
+  @override
+  String get timelineVideoTrackShowingFrames =>
+      'Images de la vidéo affichées (touchez pour afficher la forme d’onde du son)';
+
+  @override
+  String get timelineVideoTrackShowingWaveform =>
+      'Forme d’onde du son affichée (touchez pour afficher les images de la vidéo)';
 
   @override
   String get keyframePreviewGestureHint =>

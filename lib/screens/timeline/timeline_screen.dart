@@ -38,6 +38,7 @@ import '../../engine/audio_waveform_service.dart';
 import '../../engine/autofill_batch_runner.dart';
 import '../../engine/autofill_engine.dart' show AutofillMode;
 import '../../engine/camera_engine.dart';
+import '../../engine/clip_speed.dart';
 import '../../engine/export_engine.dart';
 import '../../engine/export_audio.dart';
 import '../../engine/filter_engine.dart';
@@ -62,6 +63,7 @@ import '../../models/effect_filter_instance.dart';
 import '../../models/filter_def.dart'
     show AuroraHologramPreset, ToneCurvePreset, kPixelArtMaxBlockSize;
 import '../../models/layer.dart';
+import '../../models/video_track_display.dart';
 import '../../models/layer_group.dart';
 import '../../models/timeline_marker.dart';
 import '../../models/material_asset.dart';
@@ -105,7 +107,9 @@ import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import 'widgets/clip_speed_control.dart';
 import 'widgets/material_edit_panel.dart';
+import 'widgets/video_filmstrip.dart';
 import 'widgets/material_gizmo.dart';
 import 'widgets/stack_order_panel.dart';
 import '../../widgets/icon_notice.dart';
@@ -153,6 +157,10 @@ class _TrackClip {
   // 動画
   int useStart; // 使用開始フレーム（素材内）
   int useEnd; // 使用終了フレーム（素材内）
+  // The fraction of a source frame after useStart where it starts, and the
+  // playback speed (both for audio, read-aloud and video).
+  double sourceFraction;
+  double playbackRate;
   double videoOpacity; // 0.0〜1.0
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
   // このクリップが属する行番号（0始まり）。編集パネルから別の行へ移せる。
@@ -173,10 +181,20 @@ class _TrackClip {
     this.fadeOut = 0.0,
     this.useStart = 0,
     this.useEnd = 0,
+    this.sourceFraction = 0,
+    this.playbackRate = 1.0,
     this.videoOpacity = 1.0,
     this.trackRow = 0,
     this.isReadAloud = false,
   });
+
+  /// The source position (in project frames) [elapsedFrames] into the clip.
+  SourcePosition sourceAfter(int elapsedFrames) => sourcePositionAfter(
+    startFrame: useStart,
+    startFraction: sourceFraction,
+    elapsedFrames: elapsedFrames,
+    rate: playbackRate,
+  );
 }
 
 /// 音声クリップの帯に薄く重ねる波形サムネイル。[AudioWaveformService]で
@@ -185,8 +203,11 @@ class _TrackClip {
 class _AudioWaveformThumb extends StatefulWidget {
   final String filePath;
   final String cacheKey;
-  final int sourceStartFrame;
-  final int lengthFrames;
+
+  /// The source frames the clip plays (its length × its speed, from its
+  /// fractional start), so the waveform lines up with what is heard.
+  final double sourceStartFrame;
+  final double sourceFrames;
   final int fps;
 
   const _AudioWaveformThumb({
@@ -194,7 +215,7 @@ class _AudioWaveformThumb extends StatefulWidget {
     required this.filePath,
     required this.cacheKey,
     required this.sourceStartFrame,
-    required this.lengthFrames,
+    required this.sourceFrames,
     required this.fps,
   });
 
@@ -209,7 +230,7 @@ class _AudioWaveformThumbState extends State<_AudioWaveformThumb> {
     filePath: widget.filePath,
     cacheKey: widget.cacheKey,
     sourceStartSeconds: widget.sourceStartFrame / widget.fps,
-    durationSeconds: widget.lengthFrames / widget.fps,
+    durationSeconds: widget.sourceFrames / widget.fps,
   );
 
   @override
@@ -224,7 +245,7 @@ class _AudioWaveformThumbState extends State<_AudioWaveformThumb> {
     if (oldWidget.filePath != widget.filePath ||
         oldWidget.cacheKey != widget.cacheKey ||
         oldWidget.sourceStartFrame != widget.sourceStartFrame ||
-        oldWidget.lengthFrames != widget.lengthFrames ||
+        oldWidget.sourceFrames != widget.sourceFrames ||
         oldWidget.fps != widget.fps) {
       _future = _load();
     }
@@ -365,6 +386,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   int _clipDragStartFrame = 0;
   int _clipDragStartLength = 0;
   int _clipDragStartUseStart = 0;
+  double _clipDragStartFraction = 0;
 
   // 素材クリップ（動画・音声）の複数選択モード。クリップの長押しは
   // 既に移動ドラッグに使っているため、専用の「選択」ボタンで切り替える。
@@ -1137,7 +1159,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
     await player.setVolume(vol);
     if (player.state != ap.PlayerState.playing) {
-      final targetFrame = clip.useStart + elapsedFrames;
+      // The same source position and speed the export reads (the pitch is
+      // kept in both).
+      final source = clip.sourceAfter(elapsedFrames);
+      final targetFrame = source.frame + source.fraction;
+      await player.setPlaybackRate(clip.playbackRate);
       await player.play(
         ap.DeviceFileSource(path),
         position: Duration(milliseconds: (targetFrame / fps * 1000).round()),
@@ -1175,10 +1201,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
       timelineFrame: _currentFrame,
       clipStartFrame: clip.startFrame,
       clipLengthFrames: clip.lengthFrames,
-      sourceTrimStartFrame: clip.useStart,
+      sourceTrimStartFrame: clip.useStart + clip.sourceFraction,
       sourceTrimEndFrame: clip.useEnd,
       framesPerSecond: fps,
+      playbackRate: clip.playbackRate,
     );
+    if (controller.value.playbackSpeed != clip.playbackRate) {
+      try {
+        await controller.setPlaybackSpeed(clip.playbackRate);
+      } catch (error, stackTrace) {
+        // A speed the device's player cannot play: the frames still follow
+        // the speed; only this preview's sound does not.
+        AppErrorReporter.record(error, stackTrace);
+      }
+    }
     if (targetPos == null) return;
     if (!_isPlaying) {
       if (controller.value.isPlaying) await controller.pause();
@@ -1199,6 +1235,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   MaterialService? _previewVideoMaterialService;
   VideoMaterialSnapshot? _previewVideoMaterials;
   VideoFrameProvider? _previewVideoFrames;
+
+  /// The frames the video rows' filmstrips show: a source of their own, so
+  /// their small pictures neither push the preview's frames out of the cache
+  /// nor wait in line before them.
+  VideoFrameProvider? _stripVideoFrames;
   Directory? _previewVideoWorkDir;
   int _previewVideoGeneration = 0;
   TimelineVideoLayerPixels? _previewVideoPixels;
@@ -1231,14 +1272,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
         snapshot: snapshot,
         decoder: TimelineScreen.videoDecoderFor(workDir),
       );
+      final strip = VideoFrameProvider(
+        snapshot: snapshot,
+        decoder: TimelineScreen.videoDecoderFor(workDir),
+        cacheBudgetBytes: 16 * 1024 * 1024,
+        maxConcurrentDecodes: 1,
+      );
       final previous = _previewVideoFrames;
+      final previousStrip = _stripVideoFrames;
       setState(() {
         _previewVideoMaterials = snapshot;
         _previewVideoFrames = frames;
+        _stripVideoFrames = strip;
         _previewVideoPixels = null;
       });
       // Pictures still being built with the old frames are not shown.
       previous?.dispose();
+      previousStrip?.dispose();
     } catch (error, stackTrace) {
       // Without a frame source the previews draw no video frames.
       AppErrorReporter.record(error, stackTrace);
@@ -1278,6 +1328,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _previewVideoMaterialService = null;
     _previewVideoFrames?.dispose();
     _previewVideoFrames = null;
+    _stripVideoFrames?.dispose();
+    _stripVideoFrames = null;
     _previewVideoPixels = null;
     final workDir = _previewVideoWorkDir;
     _previewVideoWorkDir = null;
@@ -2373,9 +2425,110 @@ class _TimelineScreenState extends State<TimelineScreen> {
         clip.volume = layer.videoVolume.clamp(0.0, 1.0);
         clip.useStart = layer.sourceTrimStart ?? clip.useStart;
         clip.useEnd = layer.sourceTrimEnd ?? clip.useEnd;
+        clip.sourceFraction = layer.sourceTrimStartFraction;
+        clip.playbackRate = layer.playbackRate;
       }
     });
     if (clip.trackType == _ClipTrackType.video) _syncMediaPlayback();
+  }
+
+  // ─── Speed (長さ調整) ─────────────────────────────────────────
+
+  /// The timeline length [clip] gets at [rate]: the source time it plays
+  /// divided by the speed. A video plays its trimmed part; an audio clip
+  /// keeps the part of its file it plays now.
+  int _speedLength(_TrackClip clip, double rate) {
+    final sourceFrames = clip.trackType == _ClipTrackType.video
+        ? clip.useEnd + 1 - (clip.useStart + clip.sourceFraction)
+        : clip.lengthFrames * clip.playbackRate;
+    return timelineLengthForSource(sourceFrames, rate);
+  }
+
+  int _speedEndFrame(_TrackClip clip, double rate) =>
+      clip.startFrame + _speedLength(clip, rate) - 1;
+
+  /// Why [clip] cannot become [length] frames long, or null when it can:
+  /// it must stay within the scene and not overlap a clip on its row.
+  String? _speedRefusal(_TrackClip clip, int length) {
+    final l10n = AppLocalizations.of(context)!;
+    final end = clip.startFrame + length;
+    if (end > _totalFrames) return l10n.timelineClipSpeedPastSceneEnd;
+    final overlaps = _clipsOfType(clip.trackType).any(
+      (other) =>
+          !identical(other, clip) &&
+          other.trackRow == clip.trackRow &&
+          other.isReadAloud == clip.isReadAloud &&
+          other.startFrame < end &&
+          other.startFrame + other.lengthFrames > clip.startFrame,
+    );
+    return overlaps ? l10n.timelineClipSpeedOverlap : null;
+  }
+
+  /// Changes an audio or read-aloud clip's speed (saved with the clip's
+  /// other settings when its sheet closes).
+  String? _applyAudioSpeed(_TrackClip clip, double rate) {
+    if (!isValidPlaybackRate(rate)) {
+      return AppLocalizations.of(context)!.timelineClipSpeedInvalid;
+    }
+    final length = _speedLength(clip, rate);
+    final refusal = _speedRefusal(clip, length);
+    if (refusal != null) return refusal;
+    setState(() {
+      clip.playbackRate = rate;
+      clip.lengthFrames = length;
+      clip.useEnd = clip.sourceAfter(length - 1).frame;
+    });
+    _syncMediaPlayback();
+    return null;
+  }
+
+  /// Changes a video's speed: its length, and its keyframes retimed from
+  /// the clip's start so the animation stays on the same source moments.
+  String? _applyVideoSpeed(_TrackClip clip, double rate) {
+    final l10n = AppLocalizations.of(context)!;
+    if (!isValidPlaybackRate(rate)) return l10n.timelineClipSpeedInvalid;
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return null;
+    final length = _speedLength(clip, rate);
+    final refusal = _speedRefusal(clip, length);
+    if (refusal != null) return refusal;
+    final ps = context.read<ProjectService>();
+    final home =
+        ps.homeOf(widget.projectId, clip.id) ??
+        (sceneId: sceneId, frameIndex: _currentFrame);
+    final layer = ps
+        .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
+        .where((l) => l.id == clip.id)
+        .firstOrNull;
+    if (layer == null) return null;
+    final keyframes = layer.keyframes.isEmpty
+        ? layer.keyframes
+        : retimeKeyframes(
+            layer.keyframes,
+            anchorFrame: clip.startFrame,
+            factor: rate / layer.playbackRate,
+          );
+    if (keyframes == null) return l10n.timelineClipSpeedKeyframeClash;
+    ps.editTimeline(widget.projectId, 'Change clip speed', () {
+      ps.updateLayer(
+        projectId: widget.projectId,
+        sceneId: home.sceneId,
+        frameIndex: home.frameIndex,
+        layer: layer.copyWith(
+          playbackRate: rate,
+          rangeMode: LayerRangeMode.frameRange,
+          rangeStart: clip.startFrame + 1,
+          rangeEnd: clip.startFrame + length,
+          keyframes: keyframes,
+        ),
+      );
+    }, changesTiles: false);
+    setState(() {
+      clip.playbackRate = rate;
+      clip.lengthFrames = length;
+    });
+    _syncMediaPlayback();
+    return null;
   }
 
   Widget _buildEditPanel() {
@@ -2416,6 +2569,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
       layerId: found.layer.id,
       currentFrame: _currentFrameNotifier,
       onLayerChanged: _onMaterialLayerChanged,
+      videoSpeedEndFrameAt:
+          clip == null || clip.trackType != _ClipTrackType.video
+          ? null
+          : (rate) => _speedEndFrame(clip, rate),
+      onVideoSpeedChange: clip == null || clip.trackType != _ClipTrackType.video
+          ? null
+          : (rate) => _applyVideoSpeed(clip, rate),
       onSeek: (f) => setState(() {
         _isPlaying = false;
         _currentFrame = f;
@@ -5523,6 +5683,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   static const double _trackLabelWidth = 94;
 
+  /// The switch between frames and waveform at the start of a video row
+  /// (in place of the row's icon; the name keeps the rest of the label).
+  static const double _videoRowToggleWidth = 40;
+
   BoxDecoration get _trackRowDivider => BoxDecoration(
     border: Border(
       bottom: BorderSide(
@@ -5532,22 +5696,28 @@ class _TimelineScreenState extends State<TimelineScreen> {
     ),
   );
 
-  Widget _buildTrackLabel(IconData icon, String label) {
+  Widget _buildTrackLabel(
+    IconData? icon,
+    String label, {
+    double width = _trackLabelWidth,
+  }) {
     return Container(
       // 文字が切れないだけでなく、スマートフォンでも読みやすいサイズを確保する。
       // 94dpの欄にアイコン14dp・間隔4dp・左右余白6dpを取り、11dpのラベルを
       // 置く（残り70dp。7言語でいちばん広いスペイン語の「Fotograma」が
       // くらむぼんで約68dp。84dpの欄では60dpしかなく末尾が切れた）。
-      width: _trackLabelWidth,
+      width: width,
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 14,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: 4),
+          if (icon != null) ...[
+            Icon(
+              icon,
+              size: 14,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 4),
+          ],
           Flexible(
             child: Text(
               label,
@@ -5676,6 +5846,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     bool canRename = true,
   }) {
     final total = _totalFrames;
+    final videoRow = type == TimelineRowKind.video && canRename;
     return Container(
       height: _materialTrackHeight,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -5685,10 +5856,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
           // 行名タップで名称変更（「タイムライン左側の素材種別名は
           // タップでユーザーがテキスト変更できる」）。種別を示すアイコン自体は
           // 変更不可のまま常時表示する。
+          // A video row's icon is its switch between frames and waveform.
+          if (videoRow) _buildVideoRowDisplayToggle(rowIndex),
           canRename
               ? GestureDetector(
                   onTap: () => _showRenameTrackRowDialog(type, rowIndex, rowLabel),
-                  child: _buildTrackLabel(icon, rowLabel),
+                  child: videoRow
+                      ? _buildTrackLabel(
+                          null,
+                          rowLabel,
+                          width: _trackLabelWidth - _videoRowToggleWidth,
+                        )
+                      : _buildTrackLabel(icon, rowLabel),
                 )
               : _buildTrackLabel(icon, rowLabel),
           Expanded(
@@ -5890,17 +6069,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          if (clip.trackType == _ClipTrackType.audio &&
-                              clip.filePath != null)
-                            _AudioWaveformThumb(
-                              key: ValueKey('wf_${clip.id}'),
-                              filePath: clip.filePath!,
-                              // Each clip gets its own cache for its exact source interval.
-                              cacheKey: 'wave_v2_${clip.id}_${clip.filePath}_'
-                                  '${clip.useStart}_${clip.lengthFrames}_${_projectFps(context.read<ProjectService>())}',
-                              sourceStartFrame: clip.useStart,
-                              lengthFrames: clip.lengthFrames,
-                              fps: _projectFps(context.read<ProjectService>()),
+                          if (clip.trackType == _ClipTrackType.audio ||
+                              _videoRowDisplay(clip.trackRow) ==
+                                  VideoTrackDisplay.waveform)
+                            ?_clipWaveform(clip)
+                          else if (clip.trackType == _ClipTrackType.video &&
+                              clip.materialId != null)
+                            Opacity(
+                              opacity: 0.75,
+                              child: VideoFilmstrip(
+                                key: ValueKey('filmstrip_${clip.id}'),
+                                frames: _stripVideoFrames,
+                                materialId: clip.materialId!,
+                                timing: (
+                                  startFrame: clip.startFrame,
+                                  lengthFrames: clip.lengthFrames,
+                                  trimStartFrame:
+                                      clip.useStart + clip.sourceFraction,
+                                  trimEndFrame: clip.useEnd,
+                                  playbackRate: clip.playbackRate,
+                                ),
+                                framesPerSecond: _projectFps(
+                                  context.read<ProjectService>(),
+                                ).toDouble(),
+                              ),
                             ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -5951,6 +6143,83 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ),
         );
       },
+    );
+  }
+
+  /// The waveform of the sound [clip] plays (an audio clip, or a video clip
+  /// on a row showing its sound), or null when it has no file.
+  Widget? _clipWaveform(_TrackClip clip) {
+    final path = clip.filePath;
+    if (path == null) return null;
+    if (clip.trackType != _ClipTrackType.audio &&
+        clip.trackType != _ClipTrackType.video) {
+      return null;
+    }
+    final fps = _projectFps(context.read<ProjectService>());
+    final sourceStart = clip.useStart + clip.sourceFraction;
+    final sourceFrames = clip.lengthFrames * clip.playbackRate;
+    return _AudioWaveformThumb(
+      key: ValueKey('wf_${clip.id}'),
+      filePath: path,
+      // Each clip gets its own cache for its exact source interval.
+      cacheKey:
+          'wave_v3_${clip.id}_${path}_${sourceStart}_${sourceFrames}_$fps',
+      sourceStartFrame: sourceStart,
+      sourceFrames: sourceFrames,
+      fps: fps,
+    );
+  }
+
+  /// What video row [row] of the scene shows in its clips.
+  VideoTrackDisplay _videoRowDisplay(int row) {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return VideoTrackDisplay.frames;
+    return context.read<ProjectService>().videoRowDisplayOf(
+      widget.projectId,
+      sceneId,
+      row,
+    );
+  }
+
+  /// The switch at the start of a video row between the video's frames and
+  /// its sound's waveform.
+  Widget _buildVideoRowDisplayToggle(int row) {
+    final l10n = AppLocalizations.of(context)!;
+    final sceneId = _selectedSceneId;
+    final display = sceneId == null
+        ? VideoTrackDisplay.frames
+        : context.watch<ProjectService>().videoRowDisplayOf(
+            widget.projectId,
+            sceneId,
+            row,
+          );
+    final showsFrames = display == VideoTrackDisplay.frames;
+    return Tooltip(
+      message: showsFrames
+          ? l10n.timelineVideoTrackShowingFrames
+          : l10n.timelineVideoTrackShowingWaveform,
+      child: InkWell(
+        key: ValueKey('videoRowDisplay-$row'),
+        onTap: sceneId == null
+            ? null
+            : () => context.read<ProjectService>().setVideoRowDisplay(
+                widget.projectId,
+                sceneId,
+                row,
+                showsFrames
+                    ? VideoTrackDisplay.waveform
+                    : VideoTrackDisplay.frames,
+              ),
+        child: SizedBox(
+          width: _videoRowToggleWidth,
+          height: _materialTrackHeight,
+          child: Icon(
+            showsFrames ? Icons.movie_outlined : Icons.graphic_eq,
+            size: 18,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
     );
   }
 
@@ -6006,6 +6275,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _clipDragStartFrame = clip.startFrame;
       _clipDragStartLength = clip.lengthFrames;
       _clipDragStartUseStart = clip.useStart;
+      _clipDragStartFraction = clip.sourceFraction;
     });
   }
 
@@ -6039,23 +6309,38 @@ class _TimelineScreenState extends State<TimelineScreen> {
         // visible trim: moving the left edge right trims the same number of
         // source frames; extending left is limited by the source's frame 0.
         final minStart = clip.trackType == _ClipTrackType.audio
-            ? math.max(0, _clipDragStartFrame - _clipDragStartUseStart)
+            ? math.max(
+                0,
+                _clipDragStartFrame -
+                    ((_clipDragStartUseStart + _clipDragStartFraction) /
+                            clip.playbackRate)
+                        .floor(),
+              )
             : 0;
         final newStart = (_clipDragStartFrame + deltaFrames).clamp(
           minStart,
           fixedEnd - 1,
         );
         final newLength = fixedEnd - newStart;
-        final newUseStart = clip.trackType == _ClipTrackType.audio
-            ? _clipDragStartUseStart + newStart - _clipDragStartFrame
-            : clip.useStart;
+        // At the clip's speed, each timeline frame is playbackRate source
+        // frames.
+        final newSource = clip.trackType == _ClipTrackType.audio
+            ? sourcePositionAfter(
+                startFrame: _clipDragStartUseStart,
+                startFraction: _clipDragStartFraction,
+                elapsedFrames: newStart - _clipDragStartFrame,
+                rate: clip.playbackRate,
+              )
+            : (frame: clip.useStart, fraction: clip.sourceFraction);
         if (newStart != clip.startFrame ||
             newLength != clip.lengthFrames ||
-            newUseStart != clip.useStart) {
+            newSource.frame != clip.useStart ||
+            newSource.fraction != clip.sourceFraction) {
           setState(() {
             clip.startFrame = newStart;
             clip.lengthFrames = newLength;
-            clip.useStart = newUseStart;
+            clip.useStart = newSource.frame;
+            clip.sourceFraction = newSource.fraction;
           });
         }
       case _ClipDragMode.resizeRight:
@@ -6079,6 +6364,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         clip.startFrame = _clipDragStartFrame;
         clip.lengthFrames = _clipDragStartLength;
         clip.useStart = _clipDragStartUseStart;
+        clip.sourceFraction = _clipDragStartFraction;
       }
       _draggingClipId = null;
       _clipDragMode = null;
@@ -8388,6 +8674,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           fadeIn: clip.fadeIn,
           fadeOut: clip.fadeOut,
           sourceStartFrame: clip.useStart,
+          sourceStartFraction: clip.sourceFraction,
+          playbackRate: clip.playbackRate,
           trackRow: targetRow,
           isReadAloud: clip.isReadAloud,
         ),
@@ -8408,7 +8696,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
               fadeIn: clip.fadeIn,
               fadeOut: clip.fadeOut,
               useStart: clip.useStart,
-              useEnd: clip.useStart + clip.lengthFrames - 1,
+              useEnd: clip.sourceAfter(clip.lengthFrames - 1).frame,
+              sourceFraction: clip.sourceFraction,
+              playbackRate: clip.playbackRate,
               trackRow: targetRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -8787,7 +9077,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
         final clip = targets[index];
         final leftLength = splitFrame - clip.startFrame;
         final rightLength = clip.lengthFrames - leftLength;
-        final rightSourceStart = clip.useStart + leftLength;
+        // Where the right half starts in the source, at the clip's speed
+        // (a fraction of a frame is kept so it plays exactly as before).
+        final rightSource = clip.sourceAfter(leftLength);
+        final rightSourceStart = rightSource.frame;
+        final leftSourceEnd = clip.sourceAfter(leftLength - 1).frame;
         final rightId = clip.trackType == _ClipTrackType.audio
             ? 'audio_split_${DateTime.now().microsecondsSinceEpoch}_$index'
             : 'layer_split_${DateTime.now().microsecondsSinceEpoch}_$index';
@@ -8806,6 +9100,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
               fadeIn: clip.fadeIn,
               fadeOut: 0,
               sourceStartFrame: clip.useStart,
+              sourceStartFraction: clip.sourceFraction,
+              playbackRate: clip.playbackRate,
               trackRow: clip.trackRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -8823,6 +9119,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
               fadeIn: 0,
               fadeOut: clip.fadeOut,
               sourceStartFrame: rightSourceStart,
+              sourceStartFraction: rightSource.fraction,
+              playbackRate: clip.playbackRate,
               trackRow: clip.trackRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -8843,6 +9141,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
               fadeOut: clip.fadeOut,
               useStart: rightSourceStart,
               useEnd: clip.useEnd,
+              sourceFraction: rightSource.fraction,
+              playbackRate: clip.playbackRate,
               trackRow: clip.trackRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -8890,7 +9190,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             rangeMode: LayerRangeMode.frameRange,
             rangeStart: clip.startFrame + 1,
             rangeEnd: splitFrame,
-            sourceTrimEnd: isVideo ? clip.useStart + leftLength - 1 : null,
+            sourceTrimEnd: isVideo ? leftSourceEnd : null,
           ),
         );
         projectService.updateLayer(
@@ -8904,6 +9204,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             rangeStart: splitFrame + 1,
             rangeEnd: clip.startFrame + clip.lengthFrames,
             sourceTrimStart: isVideo ? rightSourceStart : null,
+            sourceTrimStartFraction: isVideo ? rightSource.fraction : null,
             sourceTrimEnd: isVideo ? clip.useEnd : null,
             textObject: sourceLayer.textObject?.copyWith(id: newLayer.id),
           ),
@@ -8921,6 +9222,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
             materialId: clip.materialId,
             useStart: isVideo ? rightSourceStart : clip.useStart,
             useEnd: clip.useEnd,
+            sourceFraction: isVideo ? rightSource.fraction : 0,
+            playbackRate: clip.playbackRate,
             volume: clip.volume,
             videoOpacity: clip.videoOpacity,
             trackRow: clip.trackRow,
@@ -8935,10 +9238,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
         final leftLength = splitFrame - clip.startFrame;
         clip.lengthFrames = leftLength;
         if (clip.trackType == _ClipTrackType.video) {
-          clip.useEnd = clip.useStart + leftLength - 1;
+          clip.useEnd = clip.sourceAfter(leftLength - 1).frame;
         } else if (clip.trackType == _ClipTrackType.audio) {
           clip.fadeOut = 0;
-          clip.useEnd = clip.useStart + leftLength - 1;
+          clip.useEnd = clip.sourceAfter(leftLength - 1).frame;
         }
       }
       for (final clip in rightClips) {
@@ -8977,6 +9280,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
               saved.fadeIn == clip.fadeIn &&
               saved.fadeOut == clip.fadeOut &&
               saved.sourceStartFrame == clip.useStart &&
+              saved.sourceStartFraction == clip.sourceFraction &&
+              saved.playbackRate == clip.playbackRate &&
               saved.trackRow == clip.trackRow) {
         return;
       }
@@ -8993,6 +9298,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           fadeIn: clip.fadeIn,
           fadeOut: clip.fadeOut,
           sourceStartFrame: clip.useStart,
+          sourceStartFraction: clip.sourceFraction,
+          playbackRate: clip.playbackRate,
           trackRow: clip.trackRow,
           isReadAloud: clip.isReadAloud,
         ),
@@ -9073,7 +9380,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
           fadeIn: a.fadeIn,
           fadeOut: a.fadeOut,
           useStart: a.sourceStartFrame,
-          useEnd: a.sourceStartFrame + a.lengthFrames - 1,
+          useEnd: sourcePositionAfter(
+            startFrame: a.sourceStartFrame,
+            startFraction: a.sourceStartFraction,
+            elapsedFrames: a.lengthFrames - 1,
+            rate: a.playbackRate,
+          ).frame,
+          sourceFraction: a.sourceStartFraction,
+          playbackRate: a.playbackRate,
           trackRow: a.trackRow,
           isReadAloud: a.isReadAloud,
         ),
@@ -9126,7 +9440,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
           filePath: path,
           materialId: layer.materialId,
           useStart: layer.sourceTrimStart ?? 0,
-          useEnd: layer.sourceTrimEnd ?? (length - 1),
+          useEnd:
+              layer.sourceTrimEnd ??
+              ((layer.sourceTrimStart ?? 0) + length - 1),
+          sourceFraction: layer.sourceTrimStartFraction,
+          playbackRate: layer.type == LayerType.timelineVideo
+              ? layer.playbackRate
+              : 1.0,
           volume: layer.type == LayerType.timelineVideo
               ? layer.videoVolume.clamp(0.0, 1.0)
               : 1.0,
@@ -9179,6 +9499,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
       builder: (ctx) => _ClipDetailSheet(
         clip: clip,
         totalFrames: _totalFrames,
+        speedEndFrameAt: (rate) => _speedEndFrame(clip, rate),
+        onSpeedChange: (rate) => _applyAudioSpeed(clip, rate),
         onDelete: () {
           setState(() {
             _audioClips.remove(clip);
@@ -11763,9 +12085,13 @@ class _ClipDetailSheet extends StatefulWidget {
   final VoidCallback onChanged;
   final ValueGetter<bool> isPlaying;
   final VoidCallback onTogglePlay;
+  final int Function(double rate) speedEndFrameAt;
+  final String? Function(double rate) onSpeedChange;
   const _ClipDetailSheet({
     required this.clip,
     required this.totalFrames,
+    required this.speedEndFrameAt,
+    required this.onSpeedChange,
     required this.onDelete,
     required this.onDuplicate,
     required this.onChanged,
@@ -11781,6 +12107,9 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
   late double _initialVolume;
   late double _initialFadeIn;
   late double _initialFadeOut;
+  late double _initialRate;
+  late int _initialLength;
+  late int _initialUseEnd;
 
   @override
   void initState() {
@@ -11790,6 +12119,9 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
     _initialVolume = _c.volume;
     _initialFadeIn = _c.fadeIn;
     _initialFadeOut = _c.fadeOut;
+    _initialRate = _c.playbackRate;
+    _initialLength = _c.lengthFrames;
+    _initialUseEnd = _c.useEnd;
   }
 
   void _notify() {
@@ -11860,6 +12192,9 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     _c.volume = _initialVolume;
                     _c.fadeIn = _initialFadeIn;
                     _c.fadeOut = _initialFadeOut;
+                    _c.playbackRate = _initialRate;
+                    _c.lengthFrames = _initialLength;
+                    _c.useEnd = _initialUseEnd;
                     widget.onChanged();
                     Navigator.pop(context);
                   },
@@ -11907,6 +12242,17 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
                 if (_c.trackType == _ClipTrackType.audio) ...[
+                  ClipSpeedControl(
+                    rate: _c.playbackRate,
+                    hasSound: true,
+                    endFrameAt: widget.speedEndFrameAt,
+                    onApply: (rate) {
+                      final problem = widget.onSpeedChange(rate);
+                      setState(() {});
+                      return problem;
+                    },
+                  ),
+                  const SizedBox(height: 8),
                   _row(
                     l10n.timelineClipVolumeLabel,
                     _c.volume,

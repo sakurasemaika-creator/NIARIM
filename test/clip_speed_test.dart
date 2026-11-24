@@ -1,0 +1,426 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/clip_speed.dart';
+import 'package:niarim/engine/export_audio.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/engine/tile_manager.dart';
+import 'package:niarim/engine/timeline_video_time.dart';
+import 'package:niarim/models/audio_clip.dart';
+import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/layer_keyframe.dart';
+import 'package:niarim/models/project.dart';
+import 'package:niarim/models/scene.dart';
+
+final _ffmpegTests =
+    Platform.environment['NIARIM_VIDEO_FRAME_FFMPEG_TESTS'] == '1';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  group('speed values', () {
+    test('only finite speeds from 0.01 to 100 are valid', () {
+      for (final rate in [0.01, 0.1, 0.5, 1, 2, 16, 100, 1.37]) {
+        expect(isValidPlaybackRate(rate.toDouble()), isTrue, reason: '$rate');
+      }
+      for (final rate in [
+        0.0,
+        -1.0,
+        0.009,
+        100.01,
+        double.nan,
+        double.infinity,
+      ]) {
+        expect(isValidPlaybackRate(rate), isFalse, reason: '$rate');
+      }
+    });
+
+    test('the slider is logarithmic from 0.1x to 16x', () {
+      expect(playbackRateToSlider(0.1), 0);
+      expect(playbackRateToSlider(16), closeTo(1, 1e-12));
+      expect(playbackRateToSlider(1), closeTo(0.454, 0.001));
+      // Low speeds get as much travel as high ones: 0.1→1 and 1→10 match.
+      expect(
+        playbackRateToSlider(1) - playbackRateToSlider(0.1),
+        closeTo(playbackRateToSlider(10) - playbackRateToSlider(1), 1e-9),
+      );
+      for (final rate in [0.1, 0.25, 0.5, 1, 2, 4, 8, 16]) {
+        expect(
+          sliderToPlaybackRate(playbackRateToSlider(rate.toDouble())),
+          closeTo(rate, 0.006),
+        );
+      }
+      // Typed speeds outside the slider sit at its ends.
+      expect(playbackRateToSlider(0.01), 0);
+      expect(playbackRateToSlider(100), 1);
+    });
+
+    test('typed speeds accept decimals, commas and an x', () {
+      expect(parsePlaybackRate('1.5'), 1.5);
+      expect(parsePlaybackRate(' 0,25 '), 0.25);
+      expect(parsePlaybackRate('2x'), 2);
+      expect(parsePlaybackRate('100×'), 100);
+      expect(parsePlaybackRate('0.01'), 0.01);
+      for (final text in ['', '0', '-2', '101', 'abc', '1.', 'nan']) {
+        expect(
+          parsePlaybackRate(text),
+          text == '1.' ? 1 : isNull,
+          reason: text,
+        );
+      }
+    });
+
+    test('speeds read without trailing zeros', () {
+      expect(formatPlaybackRate(1), '1x');
+      expect(formatPlaybackRate(1.5), '1.5x');
+      expect(formatPlaybackRate(0.25), '0.25x');
+      expect(formatPlaybackRate(100), '100x');
+      expect(formatPlaybackRate(0.01), '0.01x');
+    });
+  });
+
+  group('lengths and positions', () {
+    test('the timeline length is the source time divided by the speed', () {
+      expect(timelineLengthForSource(48, 1), 48);
+      expect(timelineLengthForSource(48, 2), 24);
+      expect(timelineLengthForSource(48, 0.5), 96);
+      expect(timelineLengthForSource(48, 0.1), 480);
+      expect(timelineLengthForSource(48, 16), 3);
+      expect(timelineLengthForSource(48, 1.5), 32);
+      // At least one frame, even at 100x.
+      expect(timelineLengthForSource(48, 100), 1);
+      expect(timelineLengthForSource(10, 3), 3);
+    });
+
+    test('a split keeps the exact source position, fraction included', () {
+      expect(
+        sourcePositionAfter(
+          startFrame: 4,
+          startFraction: 0,
+          elapsedFrames: 3,
+          rate: 1.5,
+        ),
+        (frame: 8, fraction: 0.5),
+      );
+      expect(
+        sourcePositionAfter(
+          startFrame: 8,
+          startFraction: 0.5,
+          elapsedFrames: 1,
+          rate: 1.5,
+        ),
+        (frame: 10, fraction: 0.0),
+      );
+      // 0.1 × 10 is 0.9999999… in binary: still frame 1.
+      expect(
+        sourcePositionAfter(
+          startFrame: 0,
+          startFraction: 0,
+          elapsedFrames: 10,
+          rate: 0.1,
+        ),
+        (frame: 1, fraction: 0.0),
+      );
+    });
+
+    test('a split video plays the same source time as before', () {
+      // A clip from timeline frame 3, 20 frames, trim 5–40, at 1.5x.
+      const whole = Layer(
+        id: 'v',
+        name: 'v',
+        type: LayerType.timelineVideo,
+        rangeMode: LayerRangeMode.frameRange,
+        rangeStart: 4,
+        rangeEnd: 23,
+        sourceTrimStart: 5,
+        sourceTrimEnd: 40,
+        playbackRate: 1.5,
+      );
+      for (final split in [4, 7, 10, 15]) {
+        final elapsed = split - 3;
+        final right = sourcePositionAfter(
+          startFrame: 5,
+          startFraction: 0,
+          elapsedFrames: elapsed,
+          rate: 1.5,
+        );
+        final rightLayer = whole.copyWith(
+          rangeStart: split + 1,
+          sourceTrimStart: right.frame,
+          sourceTrimStartFraction: right.fraction,
+        );
+        for (var frame = split; frame <= 22; frame++) {
+          expect(
+            TimelineVideoTimeMapper.layerSourceTimeAt(rightLayer, frame, 24),
+            TimelineVideoTimeMapper.layerSourceTimeAt(whole, frame, 24),
+            reason: 'split at $split, frame $frame',
+          );
+        }
+      }
+    });
+
+    test('the video time follows the speed', () {
+      const clip = Layer(
+        id: 'v',
+        name: 'v',
+        type: LayerType.timelineVideo,
+        rangeMode: LayerRangeMode.frameRange,
+        rangeStart: 1,
+        rangeEnd: 10,
+        sourceTrimStart: 0,
+        sourceTrimEnd: 100,
+        playbackRate: 4,
+      );
+      expect(
+        TimelineVideoTimeMapper.layerSourceTimeAt(clip, 3, 10),
+        const Duration(milliseconds: 1200),
+      );
+      // Past the trim the last frame is held.
+      expect(
+        TimelineVideoTimeMapper.layerSourceTimeAt(
+          clip.copyWith(sourceTrimEnd: 8),
+          3,
+          10,
+        ),
+        const Duration(milliseconds: 800),
+      );
+    });
+  });
+
+  group('keyframe retiming', () {
+    const keys = [
+      LayerKeyframe(frameIndex: 2, x: 1),
+      LayerKeyframe(frameIndex: 10, x: 2, easing: LayerKeyframeEasing.easeIn),
+      LayerKeyframe(frameIndex: 14, x: 3),
+      LayerKeyframe(frameIndex: 30, x: 4),
+    ];
+
+    test('scales the time from the anchor and keeps values and easing', () {
+      final faster = retimeKeyframes(keys, anchorFrame: 10, factor: 2)!;
+      expect(faster.map((k) => k.frameIndex), [2, 10, 12, 20]);
+      expect(faster.map((k) => k.x), [1, 2, 3, 4]);
+      expect(faster[1].easing, LayerKeyframeEasing.easeIn);
+      final slower = retimeKeyframes(keys, anchorFrame: 10, factor: 0.5)!;
+      expect(slower.map((k) => k.frameIndex), [2, 10, 18, 50]);
+    });
+
+    test('refuses a speed that would put two keyframes on one frame', () {
+      expect(retimeKeyframes(keys, anchorFrame: 10, factor: 16), isNull);
+      expect(retimeKeyframes(keys, anchorFrame: 10, factor: 0), isNull);
+    });
+  });
+
+  group('export sound', () {
+    test('atempo chains halvings for slow speeds', () {
+      double product(List<double> chain) => chain.fold(1.0, (a, b) => a * b);
+      for (final rate in [0.01, 0.1, 0.25, 0.5, 1, 2, 16, 100]) {
+        final chain = atempoChain(rate.toDouble());
+        expect(product(chain), closeTo(rate, 1e-12), reason: '$rate');
+        expect(
+          chain.every((f) => f >= 0.5 && f <= 100),
+          isTrue,
+          reason: '$chain',
+        );
+      }
+      expect(atempoChain(2), [2]);
+      expect(atempoChain(0.1), [0.5, 0.5, 0.5, 0.8]);
+    });
+
+    test('the plan reads the source at the clip speed', () async {
+      final dir = Directory.systemTemp.createTempSync('niarim-speed-plan-');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final file = File('${dir.path}/a.wav')..writeAsBytesSync([0]);
+      final plan = await buildExportAudioPlan(
+        scenes: [
+          Scene(
+            id: 'S',
+            index: 0,
+            frames: [
+              for (var i = 0; i < 40; i++)
+                Frame(
+                  index: i,
+                  layers: i == 0
+                      ? const [
+                          Layer(
+                            id: 'v',
+                            name: 'v',
+                            type: LayerType.timelineVideo,
+                            materialId: 'a',
+                            rangeMode: LayerRangeMode.frameRange,
+                            rangeStart: 21,
+                            rangeEnd: 30,
+                            sourceTrimStart: 7,
+                            sourceTrimStartFraction: 0.5,
+                            playbackRate: 3,
+                          ),
+                        ]
+                      : const [],
+                ),
+            ],
+            audioClips: const [
+              AudioClip(
+                id: 'c',
+                label: 'c',
+                materialId: 'a',
+                startFrame: 4,
+                lengthFrames: 10,
+                sourceStartFrame: 6,
+                sourceStartFraction: 0.25,
+                playbackRate: 0.5,
+              ),
+            ],
+          ),
+        ],
+        sourceFps: 10,
+        pathOf: (_) async => file.path,
+      );
+      final clip = plan.sources.first;
+      expect(clip.startSeconds, 0.4);
+      expect(clip.sourceSeconds, closeTo(0.625, 1e-9));
+      expect(clip.durationSeconds, 1.0);
+      expect(clip.playbackRate, 0.5);
+      final video = plan.sources.last;
+      expect(video.startSeconds, 2.0);
+      expect(video.sourceSeconds, closeTo(0.75, 1e-9));
+      expect(video.playbackRate, 3);
+
+      final args = exportAudioSourceArguments(video, '/out.wav');
+      expect(args[args.indexOf('-t') + 1], '3.000');
+      expect(args[args.indexOf('-af') + 1], startsWith('atempo=3.0,volume='));
+    });
+
+    test(
+      'a speed-changed clip keeps its pitch and reads the right part',
+      () async {
+        final dir = Directory.systemTemp.createTempSync('niarim-speed-sound-');
+        addTearDown(() => dir.deleteSync(recursive: true));
+        // 0–1 s: 440 Hz, 1–2 s: 880 Hz.
+        final source = '${dir.path}/two_tones.wav';
+        final made = Process.runSync('ffmpeg', [
+          '-hide_banner', '-loglevel', 'error', '-y', //
+          '-f', 'lavfi', '-i', 'sine=frequency=440:duration=1',
+          '-f', 'lavfi', '-i', 'sine=frequency=880:duration=1',
+          '-filter_complex', '[0][1]concat=n=2:v=0:a=1',
+          '-ar', '48000', source,
+        ]);
+        expect(made.exitCode, 0, reason: '${made.stderr}');
+
+        Future<(double seconds, double hertz)> render(
+          double sourceSeconds,
+          double outputSeconds,
+          double rate,
+        ) async {
+          final out = '${dir.path}/out_${rate}_$sourceSeconds.wav';
+          final args = exportAudioSourceArguments(
+            ExportAudioSource(
+              path: source,
+              startSeconds: 0,
+              sourceSeconds: sourceSeconds,
+              durationSeconds: outputSeconds,
+              clipSeconds: outputSeconds,
+              playbackRate: rate,
+            ),
+            out,
+          );
+          final run = await Process.run('ffmpeg', [
+            '-hide_banner',
+            '-loglevel',
+            'error',
+            ...args,
+          ]);
+          expect(run.exitCode, 0, reason: '${run.stderr}');
+          final wav = File(out).readAsBytesSync();
+          // 16-bit PCM after a 44-byte header; the left channel.
+          final samples = Int16List.view(
+            wav.buffer,
+            wav.offsetInBytes + 44,
+            (wav.length - 44) ~/ 2,
+          );
+          final left = [for (var i = 0; i < samples.length; i += 2) samples[i]];
+          var crossings = 0;
+          for (var i = 1; i < left.length; i++) {
+            if ((left[i - 1] < 0) != (left[i] < 0)) crossings++;
+          }
+          final seconds = left.length / exportAudioSampleRate;
+          return (seconds, crossings / 2 / seconds);
+        }
+
+        // 2x for 0.45 s reads source 0–0.9 s: 440 Hz, not 880 Hz.
+        final fast = await render(0, 0.45, 2);
+        expect(fast.$1, closeTo(0.45, 0.03));
+        expect(fast.$2, closeTo(440, 15));
+        // 0.5x for 1 s reads source 1.1–1.6 s: 880 Hz kept.
+        final slow = await render(1.1, 1.0, 0.5);
+        expect(slow.$1, closeTo(1.0, 0.03));
+        expect(slow.$2, closeTo(880, 25));
+      },
+      skip: _ffmpegTests ? false : 'Needs NIARIM_VIDEO_FRAME_FFMPEG_TESTS=1',
+    );
+  });
+
+  test('speeds and source fractions survive saving; old projects play at '
+      '1x', () async {
+    final dir = await Directory.systemTemp.createTemp('niarim-speed-save-');
+    addTearDown(() => dir.delete(recursive: true));
+    final now = DateTime.utc(2026);
+    final project = Project(
+      id: 'p',
+      name: 'p',
+      fps: 24,
+      durationSeconds: 1,
+      backgroundColor: 0xFFFFFFFF,
+      createdAt: now,
+      updatedAt: now,
+      totalWorkSeconds: 0,
+    );
+    final scene = Scene(
+      id: 'S',
+      index: 0,
+      frames: const [
+        Frame(
+          index: 0,
+          layers: [
+            Layer(
+              id: 'fast',
+              name: 'fast',
+              type: LayerType.timelineVideo,
+              sourceTrimStart: 3,
+              sourceTrimStartFraction: 0.375,
+              playbackRate: 2.5,
+            ),
+            Layer(id: 'plain', name: 'plain', type: LayerType.timelineVideo),
+          ],
+        ),
+      ],
+      audioClips: const [
+        AudioClip(
+          id: 'slow',
+          label: 'slow',
+          startFrame: 0,
+          lengthFrames: 4,
+          sourceStartFraction: 0.5,
+          playbackRate: 0.25,
+        ),
+        AudioClip(id: 'normal', label: 'n', startFrame: 0, lengthFrames: 4),
+      ],
+    );
+    final path = '${dir.path}/p.niapro';
+    await NiaproSerializer.saveToPath(
+      filePath: path,
+      project: project,
+      scenes: [scene],
+      tileManager: TileManager(canvasWidth: 8, canvasHeight: 8),
+    );
+    final loaded = (await NiaproSerializer.load(path)).scenes.single;
+    final layers = {for (final l in loaded.frames.single.layers) l.id: l};
+    expect(layers['fast']!.playbackRate, 2.5);
+    expect(layers['fast']!.sourceTrimStartFraction, 0.375);
+    expect(layers['plain']!.playbackRate, 1.0);
+    expect(layers['plain']!.sourceTrimStartFraction, 0.0);
+    final clips = {for (final c in loaded.audioClips) c.id: c};
+    expect(clips['slow']!.playbackRate, 0.25);
+    expect(clips['slow']!.sourceStartFraction, 0.5);
+    expect(clips['normal']!.playbackRate, 1.0);
+  });
+}
