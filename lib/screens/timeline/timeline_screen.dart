@@ -2550,9 +2550,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
           // 出ない幅（360pxで「散…」の1字だった）では2行にし、1行目に
           // 戻る・作品名・ホーム、2行目の左に取り消し・やり直し（キャンバスの
           // 上部バーと同じ側）、右に三点・ヘルプを置く。
+          // 素材の編集・重なり順のパネルを開いている間は1行のまま（パネルは
+          // タイムラインの場所に出るので、上部バーを2行にするとパネルが
+          // 48px低くなる。パネルの見出しが編集している物の名前を出す）。
           const buttons = 58.0 + 5 * kMinInteractiveDimension;
           final titleRoom = constraints.maxWidth - buttons;
-          if (titleRoom < MediaQuery.textScalerOf(context).scale(112)) {
+          final panelOpen = _editingMaterialId != null || _showStackOrder;
+          if (titleRoom < 8 ||
+              (!panelOpen &&
+                  titleRoom < MediaQuery.textScalerOf(context).scale(112))) {
             return Column(
               children: [
                 Row(
