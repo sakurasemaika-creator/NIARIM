@@ -12,7 +12,7 @@ import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import 'widgets/community_work_counts.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/grouped_sheet.dart';
 
 /// Per-work owner settings. The YouTube editor is an external destination;
 /// NIARIM visibility and AI disclosure use the authenticated NIARIM API.
@@ -448,153 +448,167 @@ class _CommunityWorkSettingsScreenState
                     CommunityWorkCounts(work: work),
                   ],
                   const SizedBox(height: 18),
-                  MenuCard(
-                    child: ListTile(
-                      key: const Key('communityWorkSettingsEditMetadata'),
-                      leading: const Icon(Icons.edit_note_outlined),
-                      title: Text(CommunityWorkMetadataLabels.of(context).edit),
-                      subtitle: Text(
-                        CommunityWorkMetadataLabels.of(context).info,
+                  // 設定はほかの画面と同じ細い縁の面（GroupedSheet）に並べる。
+                  GroupedSheet(
+                    children: [
+                      ListTile(
+                        key: const Key('communityWorkSettingsEditMetadata'),
+                        leading: const Icon(Icons.edit_note_outlined),
+                        title: Text(
+                          CommunityWorkMetadataLabels.of(context).edit,
+                        ),
+                        subtitle: Text(
+                          CommunityWorkMetadataLabels.of(context).info,
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: ownWork && !_busy
+                            ? () => _editMetadata(work)
+                            : null,
                       ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: ownWork && !_busy
-                          ? () => _editMetadata(work)
-                          : null,
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  MenuCard(
-                    child: Column(
-                      children: [
-                        SwitchListTile(
-                          key: const Key('communityWorkSettingsVisibility'),
-                          title: Text(l10n.communityMyWorksPublishInNiarim),
-                          subtitle: Text(l10n.communityVisibilityCardTitle),
-                          value: work.isNiarimPublished,
-                          onChanged:
-                              !ownWork ||
-                                  _busy ||
-                                  (cannotPublish && !work.isNiarimPublished)
-                              ? null
-                              : (value) => _changeVisibility(work, value),
+                  const SizedBox(height: 16),
+                  GroupedSheet(
+                    children: [
+                      SwitchListTile(
+                        key: const Key('communityWorkSettingsVisibility'),
+                        title: Text(l10n.communityMyWorksPublishInNiarim),
+                        subtitle: Text(l10n.communityVisibilityCardTitle),
+                        value: work.isNiarimPublished,
+                        onChanged:
+                            !ownWork ||
+                                _busy ||
+                                (cannotPublish && !work.isNiarimPublished)
+                            ? null
+                            : (value) => _changeVisibility(work, value),
+                      ),
+                      CheckboxListTile(
+                        key: const Key('communityWorkSettingsAiFlag'),
+                        title: Text(
+                          l10n.communityContainsGenerativeAiImageVideo,
                         ),
-                        const Divider(height: 1),
-                        CheckboxListTile(
-                          key: const Key('communityWorkSettingsAiFlag'),
-                          title: Text(
-                            l10n.communityContainsGenerativeAiImageVideo,
-                          ),
-                          subtitle: Text(
-                            l10n.communityContainsGenerativeAiImageVideoHelp,
-                          ),
-                          value: work.containsGenerativeAiImageOrVideo,
-                          onChanged: !ownWork || _busy
-                              ? null
-                              : (value) => _changeAiFlag(work, value ?? false),
-                          controlAffinity: ListTileControlAffinity.leading,
+                        subtitle: Text(
+                          l10n.communityContainsGenerativeAiImageVideoHelp,
                         ),
-                      ],
-                    ),
+                        value: work.containsGenerativeAiImageOrVideo,
+                        onChanged: !ownWork || _busy
+                            ? null
+                            : (value) => _changeAiFlag(work, value ?? false),
+                        controlAffinity: ListTileControlAffinity.leading,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 14),
-                  MenuCard(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.communityWorkTagsTitle,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.communityWorkTagsHint,
-                            style: TextStyle(
-                              color: scheme.onSurfaceVariant,
-                              fontSize: 12,
+                  const SizedBox(height: 16),
+                  GroupedSheet(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.communityWorkTagsTitle,
+                              style: Theme.of(context).textTheme.titleMedium,
                             ),
-                          ),
-                          for (final tag in work.tags)
-                            Row(
-                              key: ValueKey('communityWorkTag-$tag'),
-                              children: [
-                                Expanded(
-                                  child: InkWell(
-                                    key: ValueKey('communityWorkTagText-$tag'),
-                                    onTap:
+                            const SizedBox(height: 4),
+                            Text(
+                              l10n.communityWorkTagsHint,
+                              style: TextStyle(
+                                color: scheme.onSurfaceVariant,
+                                fontSize: 12,
+                              ),
+                            ),
+                            for (final tag in work.tags)
+                              Row(
+                                key: ValueKey('communityWorkTag-$tag'),
+                                children: [
+                                  Expanded(
+                                    child: InkWell(
+                                      key: ValueKey(
+                                        'communityWorkTagText-$tag',
+                                      ),
+                                      onTap:
+                                          ownWork &&
+                                              !_busy &&
+                                              !work.lockedTags.contains(tag)
+                                          ? () => _editTag(work, original: tag)
+                                          : null,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        child: Text(
+                                          tag,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    key: ValueKey('communityWorkTagEdit-$tag'),
+                                    tooltip: l10n.commonEdit,
+                                    onPressed:
                                         ownWork &&
                                             !_busy &&
                                             !work.lockedTags.contains(tag)
                                         ? () => _editTag(work, original: tag)
                                         : null,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      child: Text(
-                                        tag,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                    icon: const Icon(Icons.edit_outlined),
+                                  ),
+                                  IconButton(
+                                    key: ValueKey('communityWorkTagLock-$tag'),
+                                    tooltip: work.lockedTags.contains(tag)
+                                        ? l10n.communityTagUnlockTooltip
+                                        : l10n.communityTagLockTooltip,
+                                    onPressed: ownWork && !_busy
+                                        ? () => _changeTag(
+                                            work,
+                                            tag,
+                                            remove: false,
+                                          )
+                                        : null,
+                                    icon: Icon(
+                                      work.lockedTags.contains(tag)
+                                          ? Icons.lock
+                                          : Icons.lock_open_outlined,
                                     ),
                                   ),
-                                ),
-                                IconButton(
-                                  key: ValueKey('communityWorkTagEdit-$tag'),
-                                  tooltip: l10n.commonEdit,
-                                  onPressed:
-                                      ownWork &&
-                                          !_busy &&
-                                          !work.lockedTags.contains(tag)
-                                      ? () => _editTag(work, original: tag)
-                                      : null,
-                                  icon: const Icon(Icons.edit_outlined),
-                                ),
-                                IconButton(
-                                  key: ValueKey('communityWorkTagLock-$tag'),
-                                  tooltip: work.lockedTags.contains(tag)
-                                      ? l10n.communityTagUnlockTooltip
-                                      : l10n.communityTagLockTooltip,
-                                  onPressed: ownWork && !_busy
-                                      ? () =>
-                                            _changeTag(work, tag, remove: false)
-                                      : null,
-                                  icon: Icon(
-                                    work.lockedTags.contains(tag)
-                                        ? Icons.lock
-                                        : Icons.lock_open_outlined,
+                                  IconButton(
+                                    key: ValueKey(
+                                      'communityWorkTagDelete-$tag',
+                                    ),
+                                    tooltip: l10n.communityRemoveTagTooltip,
+                                    onPressed:
+                                        ownWork &&
+                                            !_busy &&
+                                            !work.lockedTags.contains(tag)
+                                        ? () => _changeTag(
+                                            work,
+                                            tag,
+                                            remove: true,
+                                          )
+                                        : null,
+                                    icon: const Icon(Icons.delete_outline),
                                   ),
-                                ),
-                                IconButton(
-                                  key: ValueKey('communityWorkTagDelete-$tag'),
-                                  tooltip: l10n.communityRemoveTagTooltip,
-                                  onPressed:
-                                      ownWork &&
-                                          !_busy &&
-                                          !work.lockedTags.contains(tag)
-                                      ? () =>
-                                            _changeTag(work, tag, remove: true)
-                                      : null,
-                                  icon: const Icon(Icons.delete_outline),
-                                ),
-                              ],
+                                ],
+                              ),
+                            TextButton.icon(
+                              key: const Key('communityWorkTagAdd'),
+                              onPressed:
+                                  ownWork &&
+                                      !_busy &&
+                                      work.tags.length <
+                                          CommunityService.maxTagsPerWork
+                                  ? () => _editTag(work)
+                                  : null,
+                              icon: const Icon(Icons.add),
+                              label: Text(l10n.communityAddTagButton),
                             ),
-                          TextButton.icon(
-                            key: const Key('communityWorkTagAdd'),
-                            onPressed:
-                                ownWork &&
-                                    !_busy &&
-                                    work.tags.length <
-                                        CommunityService.maxTagsPerWork
-                                ? () => _editTag(work)
-                                : null,
-                            icon: const Icon(Icons.add),
-                            label: Text(l10n.communityAddTagButton),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   OutlinedButton.icon(

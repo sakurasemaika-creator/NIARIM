@@ -494,14 +494,15 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
+                  // 作者の頭文字の丸は中立の面の色（差し色の淡い丸にしない）。
                   CircleAvatar(
                     radius: 24,
-                    backgroundColor: scheme.primaryContainer,
+                    backgroundColor: scheme.surfaceContainerHighest,
                     child: Text(
                       widget.authorName.substring(0, 1),
                       style: TextStyle(
                         fontSize: 18,
-                        color: scheme.onPrimaryContainer,
+                        color: scheme.onSurfaceVariant,
                       ),
                     ),
                   ),
