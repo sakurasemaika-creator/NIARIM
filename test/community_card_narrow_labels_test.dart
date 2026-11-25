@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/load_app_fonts.dart';
+import 'helpers/paragraph_lines.dart';
 
 /// 作品広場のカードの小さな字と、ほかの人が付けた名前の書体を見張る。
 ///
@@ -172,5 +173,102 @@ void main() {
     // 両方の形が実際に出ていること（片方しか出ないなら確かめられていない）。
     expect(icons, greaterThan(0));
     expect(labels, greaterThan(0));
+  });
+
+  testWidgets('韓国語の題は、行に入る語を語の途中で折らない', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final theme = ThemeService();
+    await theme.init();
+    addTearDown(theme.dispose);
+    final community = CommunityService();
+    await community.contentFiltersReady;
+    addTearDown(community.dispose);
+    await loadAppFonts(tester);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    const titles = ['바람에 날리는 머리카락', '비디오테이프의 여름', '안경을 맞춘 날'];
+    const locale = Locale('ko');
+    for (final width in [320, 360, 390, 412]) {
+      for (final size in [
+        CollectionViewSize.small,
+        CollectionViewSize.medium,
+      ]) {
+        tester.view.physicalSize = Size(width.toDouble(), 1400);
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: theme.themeDataFor(locale),
+            locale: locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: ChangeNotifierProvider<CommunityService>.value(
+              value: community,
+              child: Scaffold(
+                body: SingleChildScrollView(
+                  child: CommunityWorkGrid(
+                    works: [
+                      for (var i = 0; i < titles.length; i++)
+                        CommunityWork(
+                          id: 'ko$i',
+                          title: titles[i],
+                          authorId: 'creator',
+                          authorName: 'creator',
+                          viewCount: 10,
+                          likeCount: 0,
+                          bookmarkCount: 1,
+                          postedAt: DateTime.utc(2026, 11, 1),
+                          durationSeconds: 30,
+                          thumbnailColorIndex: 0,
+                        ),
+                    ],
+                    bookmarkedIds: const {},
+                    viewSize: size,
+                    onTapWork: (_) {},
+                    onToggleBookmark: (_) {},
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+        for (final title in titles) {
+          final text = find.byWidgetPredicate(
+            (w) => w is Text && w.semanticsLabel == title,
+          );
+          expect(text, findsOneWidget, reason: '$width $title');
+          final paragraph = tester.renderObject<RenderParagraph>(
+            find.descendant(of: text, matching: find.byType(RichText)),
+          );
+          final lines = ParagraphLines(paragraph);
+          for (final at in lines.breaksWithin(0, lines.visible.length)) {
+            if (lines.visible[at - 1] == ' ' || lines.visible[at] == ' ') {
+              continue;
+            }
+            // 語の途中で行が変わってよいのは、その語が1行に入らないときだけ。
+            final start = lines.visible.lastIndexOf(' ', at) + 1;
+            final end = lines.visible.indexOf(' ', at);
+            final word = lines.visible.substring(
+              start,
+              end < 0 ? lines.visible.length : end,
+            );
+            final painter = TextPainter(
+              text: TextSpan(text: word, style: paragraph.text.style),
+              textDirection: TextDirection.ltr,
+              textScaler: paragraph.textScaler,
+            )..layout();
+            final wide = painter.width;
+            painter.dispose();
+            expect(
+              wide,
+              greaterThan(paragraph.size.width),
+              reason:
+                  '$width ${size.name}: 「${lines.lines.join(' / ')}」の'
+                  '「$word」は1行に入るのに途中で折れた',
+            );
+          }
+        }
+      }
+    }
   });
 }

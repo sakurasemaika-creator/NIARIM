@@ -175,6 +175,40 @@ class KoreanWordsText extends StatelessWidget {
   }
 }
 
+/// 利用者が付けた名前[text]を、幅[maxWidth]の行に[style]で並べるときの
+/// 文。韓国語の語は行に入るものだけ語の途中で折らず
+/// （[keepKoreanWordsTogetherWhere]）、長音・小書きの仮名は行の頭に
+/// 来ない（[keepJapaneseLineStartsAttached]）。[KoreanWordsText]と同じ
+/// 決まりを、行数の上限（maxLines）を付けた[Text]に使うためのもの。
+/// 読み上げには元の名前を渡すこと。
+String userNameLineText(
+  BuildContext context,
+  String text, {
+  required TextStyle? style,
+  required double maxWidth,
+}) {
+  if (!containsHangul(text) || !maxWidth.isFinite) {
+    return keepJapaneseLineStartsAttached(text);
+  }
+  var drawn = DefaultTextStyle.of(context).style.merge(style);
+  if (MediaQuery.boldTextOf(context)) {
+    drawn = drawn.merge(const TextStyle(fontWeight: FontWeight.bold));
+  }
+  final painter = TextPainter(
+    textScaler: MediaQuery.textScalerOf(context),
+    textDirection: Directionality.of(context),
+    locale: Localizations.maybeLocaleOf(context),
+  );
+  final kept = keepKoreanWordsTogetherWhere(text, (word) {
+    painter
+      ..text = TextSpan(text: word, style: drawn)
+      ..layout();
+    return painter.width <= maxWidth;
+  });
+  painter.dispose();
+  return keepJapaneseLineStartsAttached(kept);
+}
+
 String _breakOversizedLatinTokens(
   String text, {
   required TextPainter painter,

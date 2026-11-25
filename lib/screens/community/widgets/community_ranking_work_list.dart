@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/font_fallback.dart';
+import '../../../widgets/korean_words_text.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/community_plaza_labels.dart';
 import '../../../l10n/community_ranking_layout_labels.dart';
@@ -287,29 +288,45 @@ class CommunityRankingWorkCard extends StatelessWidget {
     );
   }
 
-  Widget _title(BuildContext context, {bool large = false}) {
+  /// 題。[maxWidth]は題の行の幅（横長のカードは中身の高さを測る
+  /// IntrinsicHeight の中にあるので、幅を測る部品を使わずにカードの幅から
+  /// 求めて渡す。少なめに見積もっても語を余計に途中で折らないだけ）。
+  Widget _title(
+    BuildContext context, {
+    bool large = false,
+    required double maxWidth,
+  }) {
     final t = CommunityPlazaLabels.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final style = localizedUserNameStyle(
+      context,
+      work.title,
+      localizedHeadingStyle(
+        context,
+        TextStyle(
+          color: scheme.onSurface,
+          fontSize: large ? 19 : 17,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+    // 韓国語の語を途中で折らず、長音・小書きの仮名を行の頭にしない
+    // （作品広場のカードと同じ）。読み上げは元の題。
     return Text(
       isUnavailable
           ? t.unavailablePlaceholder
           : isMuted
           ? t.mutedPlaceholder
-          : work.title,
-      maxLines: large ? 2 : 2,
+          : userNameLineText(
+              context,
+              work.title,
+              style: style,
+              maxWidth: maxWidth,
+            ),
+      semanticsLabel: isUnavailable || isMuted ? null : work.title,
+      maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: localizedUserNameStyle(
-        context,
-        work.title,
-        localizedHeadingStyle(
-          context,
-          TextStyle(
-            color: scheme.onSurface,
-            fontSize: large ? 19 : 17,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      style: style,
     );
   }
 
@@ -380,7 +397,17 @@ class CommunityRankingWorkCard extends StatelessWidget {
                         CommunityRankBadge(rank: place, small: width < 400),
                         const SizedBox(width: 4),
                       ],
-                      Expanded(child: _title(context)),
+                      Expanded(
+                        child: _title(
+                          context,
+                          // カードの幅 − 絵 − 隙間 − 右の余白 − 順位の印。
+                          maxWidth:
+                              width -
+                              thumbnailWidth -
+                              14 -
+                              (rank == null ? 0 : 44),
+                        ),
+                      ),
                     ],
                   ),
                   if (!_obscured) ...[
@@ -421,7 +448,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
     );
   }
 
-  Widget _largeThumbnail(BuildContext context) {
+  Widget _largeThumbnail(BuildContext context, double width) {
     return Column(
       key: const Key('communityRankingLargeThumbnailCard'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -441,7 +468,14 @@ class CommunityRankingWorkCard extends StatelessWidget {
                     CommunityRankBadge(rank: place),
                     const SizedBox(width: 9),
                   ],
-                  Expanded(child: _title(context, large: true)),
+                  Expanded(
+                    child: _title(
+                      context,
+                      large: true,
+                      // カードの幅 − 左右の余白 − 順位の印。
+                      maxWidth: width - 20 - (rank == null ? 0 : 52),
+                    ),
+                  ),
                 ],
               ),
               if (!_obscured) ...[
@@ -486,7 +520,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
           onTap: _obscured ? null : onTap,
           child: layout == CommunityRankingLayout.horizontal
               ? _horizontal(context, box.maxWidth)
-              : _largeThumbnail(context),
+              : _largeThumbnail(context, box.maxWidth),
         ).withCollectionActionReach(),
       ),
     );
