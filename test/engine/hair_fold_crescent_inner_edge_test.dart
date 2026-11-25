@@ -278,13 +278,18 @@ List<bool> _linesInside(Uint8List rgba, _Curl curl) => [
 ///
 /// A parabola fitted to the distance over at least 13 degrees and 24px of
 /// the line gives its curvature, so pixel steps do not read as bends.
-(double, double) _leastCurvature(List<double?> radii, _Curl curl) {
+(double, double) _leastCurvature(
+  List<double?> radii,
+  _Curl curl, [
+  bool Function(double degrees)? within,
+]) {
   final angles = _angles(curl);
   final count = angles.length - 1;
   var least = (double.infinity, 0.0);
   for (var i = 0; i <= count; i++) {
     final middle = radii[i];
     if (middle == null) continue;
+    if (within != null && !within(angles[i])) continue;
     // At least 6 degrees and 12px of the line either side.
     final half = math.max(6, (12 / middle * 180 / math.pi).ceil());
     if (i < half || i > count - half) continue;
@@ -322,6 +327,69 @@ List<bool> _linesInside(Uint8List rgba, _Curl curl) => [
   return least;
 }
 
+/// The sharpest turn of the strand's inner edge between one 3px stretch of
+/// it and the next but one (6px on), in degrees, away from the angles
+/// [skip] says to leave out (the crescent's closing point, the tip), with
+/// the angle where it turns most.
+(double, double) _sharpestTurn(
+  Uint8List rgba,
+  _Curl curl,
+  bool Function(double degrees) skip,
+) {
+  // The inner edge, a quarter degree apart.
+  final step = curl.to > curl.from ? .25 : -.25;
+  final count = ((curl.to - curl.from) / step).round();
+  final edge = <(ui.Offset, double)>[];
+  for (var i = 0; i <= count; i++) {
+    final degrees = curl.from + i * step;
+    final direction = ui.Offset.fromDirection(degrees * math.pi / 180);
+    var previous = _coverageAt(rgba, curl, curl.centre.dx, curl.centre.dy);
+    for (var d = .05; d < curl.radius * 2; d += .05) {
+      final q = curl.centre + direction * d;
+      final value = _coverageAt(rgba, curl, q.dx, q.dy);
+      if (previous < .5 && value >= .5) {
+        final r = d - .05 + .05 * (.5 - previous) / (value - previous);
+        edge.add((curl.centre + direction * r, degrees));
+        break;
+      }
+      previous = value;
+    }
+  }
+  // Evenly along it, 3px apart.
+  final even = <(ui.Offset, double)>[if (edge.isNotEmpty) edge.first];
+  var carried = 0.0;
+  for (var i = 1; i < edge.length; i++) {
+    final a = edge[i - 1].$1, b = edge[i].$1;
+    final length = (b - a).distance;
+    if (length > 6) {
+      // The ray left the strand (past its tip): start over.
+      even.add((ui.Offset.infinite, edge[i].$2));
+      even.add(edge[i]);
+      carried = 0;
+      continue;
+    }
+    carried += length;
+    if (carried >= 3) {
+      even.add(edge[i]);
+      carried = 0;
+    }
+  }
+  var sharpest = (0.0, 0.0);
+  for (var i = 2; i + 1 < even.length; i++) {
+    final p0 = even[i - 2].$1, p1 = even[i - 1].$1;
+    final p2 = even[i].$1, p3 = even[i + 1].$1;
+    if ([p0, p1, p2, p3].any((p) => p.isInfinite)) continue;
+    if (skip(even[i - 1].$2) || skip(even[i].$2)) continue;
+    final a = p1 - p0, b = p3 - p2;
+    final turn =
+        math.atan2(a.dx * b.dy - a.dy * b.dx, a.dx * b.dx + a.dy * b.dy).abs() *
+        180 /
+        math.pi;
+    if (turn > sharpest.$1) sharpest = (turn, even[i].$2);
+  }
+  return sharpest;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final crescent = brushExtensionPresets().singleWhere(
@@ -333,16 +401,17 @@ void main() {
   );
 
   // The し curls end past the crescent's waist, so they keep the folded
-  // crescent; the others are curled too little for one.
-  for (final (scale, curl, pressure, folds) in [
-    (2.0, _shi(_flat), null, true),
-    (2.0, _shi(_rising), 'pressing harder towards the tip', true),
-    (2.0, _shi(_late), 'pressing hard just before the tip', true),
-    (4.0, _shi(_flat), null, true),
-    (4.0, _shi(_rising), 'pressing harder towards the tip', true),
-    (4.0, _shi(_flat, reversed: true), null, false),
-    (2.0, _c(_flat), null, false),
-    (4.0, _c(_late), 'pressing hard just before the tip', false),
+  // crescent, closed at its waist, with the 4x brush too (on a curl not
+  // much wider than the strand). The others are curled too little for one.
+  for (final (scale, curl, pressure, folds, closes) in [
+    (2.0, _shi(_flat), null, true, true),
+    (2.0, _shi(_rising), 'pressing harder towards the tip', true, true),
+    (2.0, _shi(_late), 'pressing hard just before the tip', true, true),
+    (4.0, _shi(_flat), null, true, true),
+    (4.0, _shi(_rising), 'pressing harder towards the tip', true, true),
+    (4.0, _shi(_flat, reversed: true), null, false, false),
+    (2.0, _c(_flat), null, false, false),
+    (4.0, _c(_late), 'pressing hard just before the tip', false, false),
   ]) {
     final label =
         '${curl.name} at ${scale}x the brush size, '
@@ -398,18 +467,70 @@ void main() {
       for (var i = waist; i < across.length; i++) {
         if (across[i] > across[lobe]) lobe = i;
       }
-      if (folds) {
-        expect(
-          across[waist],
-          lessThan(full * .4),
-          reason: 'the strand narrows to a crescent at the bottom of the curl',
-        );
-        expect(
-          across[lobe],
-          greaterThan(across[waist] * 1.5),
-          reason: 'the crescent widens again before the tip',
-        );
+      final outline = sized(scale).outlineWidth;
+      if (!folds) return;
+      expect(
+        across[waist],
+        lessThan(full * .5),
+        reason: 'the strand narrows to a crescent at the bottom of the curl',
+      );
+      // No corners along the inner edge, apart from where the crescent's
+      // horns meet (its waist) and the tip.
+      final (sharpest, sharpAt) = _sharpestTurn(
+        rgba,
+        curl,
+        (degrees) =>
+            (degrees - angles[waist]).abs() < 6 ||
+            (degrees - curl.to).abs() < 12,
+      );
+      expect(
+        sharpest,
+        lessThan(12),
+        reason: 'the inner edge turns $sharpest degrees at once at $sharpAt',
+      );
+      if (!closes) return;
+      // The crescent closes: at its waist only the two outlines are left.
+      // They meet at a horn's angle and part again at once, rather than
+      // run together as one thick line (each side within half a pixel of
+      // fill for no more than a couple of outlines' width).
+      expect(
+        across[waist],
+        lessThan(2 * outline + 1),
+        reason: 'the crescent closes at its waist',
+      );
+      var dark = 0.0;
+      for (var i = 0; i < across.length - 30; i++) {
+        if (across[i] > 0 && across[i] < 2 * outline + .5) {
+          dark += math.pi / 180 * runs[i].single.$2;
+        }
       }
+      expect(
+        dark,
+        lessThan(4 * outline + 2.5),
+        reason: 'the closed outlines run together for ${dark}px',
+      );
+      expect(
+        across[lobe],
+        greaterThan(across[waist] * 1.5),
+        reason: 'the crescent widens again before the tip',
+      );
+      // From where it leaves the strand's inner edge to the waist, and on
+      // round the lobe, it bends with the curl all the way, not running
+      // straight between bends.
+      final (flattest, flatAt) = _leastCurvature(
+        _innerRadii(rgba, curl),
+        curl,
+        (degrees) =>
+            (degrees - angles[waist]).abs() > 8 &&
+            (degrees - curl.to).abs() > 20,
+      );
+      expect(
+        flattest,
+        greaterThan(.3),
+        reason:
+            'the inner edge runs nearly straight at $flatAt degrees '
+            '(relative curvature $flattest)',
+      );
     });
   }
 }

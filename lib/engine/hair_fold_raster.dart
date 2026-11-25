@@ -906,11 +906,14 @@ class HairFoldRaster {
               );
             }
           }
-          // The folded crescent lies along the strand's outer side and its
-          // inner edge is the strand's inner edge: inside it the strand is
-          // empty. By sample, the share of the strand's width it keeps, from
-          // the outer edge: from the crescent's apex it narrows to its waist,
-          // then widens into a lobe that is thin at both ends.
+          // The folded crescent lies along the strand's outer side, and its
+          // inner edge is the strand's inner edge: inside it nothing is
+          // drawn. By sample, the share of the strand's width it keeps from
+          // the outer edge (the whole strand elsewhere). In the curl its
+          // inner edge leaves the strand's, curving with the curl, and
+          // closes onto the outer edge at the waist; from there it opens
+          // again into a lobe that narrows to the tip (or widens back into
+          // the strand where the strand runs on).
           final strandWidths = <int, double>{
             for (final run in runs)
               for (var index = run.start; index <= run.end; index++)
@@ -923,10 +926,58 @@ class HairFoldRaster {
                   ).abs();
                 }(),
           };
-          final shares = <int, double>{
-            for (var index = 0; index < points.length; index++) index: 1.0,
-          };
-          var reach = 0.0;
+          final bandEdges =
+              <
+                int,
+                ({
+                  HairRibbonPoint point,
+                  Offset outer,
+                  Offset inner,
+                  double angle,
+                })
+              >{};
+          final bandSides = <int, double>{};
+          for (final run in runs) {
+            for (var index = run.start; index <= run.end; index++) {
+              bandEdges[index] = crescentEdges[run.start]![index - run.start];
+              bandSides[index] = crescentSides[run.start]!;
+            }
+          }
+          final shares = <int, double>{};
+          // The strand's edge's heading at a sample, in drawing order.
+          Offset headingAt(Offset Function(int) at, int index) => _unit(
+            at(math.min(points.length - 1, index + 1)) -
+                at(math.max(0, index - 1)),
+          );
+          Offset outerAt(int index) => bandEdges[index]!.outer;
+          Offset innerAt(int index) => bandEdges[index]!.inner;
+          // Where the section at a sample crosses a path, as the share of
+          // the strand kept from its outer edge, looking along the path from
+          // [cursor.first] on (the sections cross it in turn).
+          double? crossing(List<Offset> path, int index, List<int> cursor) {
+            final outer = outerAt(index);
+            final across = innerAt(index) - outer;
+            final width = across.distance;
+            if (width < 1e-6) return null;
+            final unit = across / width;
+            for (var j = cursor.first; j < path.length - 1; j++) {
+              final a = _cross(unit, path[j] - outer);
+              final b = _cross(unit, path[j + 1] - outer);
+              if ((a > 0 && b > 0) || (a < 0 && b < 0) || a == b) continue;
+              final at = path[j] + (path[j + 1] - path[j]) * (a / (a - b));
+              cursor.first = j;
+              return _dot(at - outer, unit) / width;
+            }
+            return null;
+          }
+
+          // The folded crescent's inner edge is drawn as curves of its own,
+          // each turning with the curl all the way, rather than as a share
+          // of the strand's width changing along it: a share that changes
+          // smoothly still bends the edge unevenly (the strand's own width
+          // and edges change along the curl), and an edge kept from turning
+          // against the curl afterwards was left with straight runs and
+          // corners between them.
           void lobe((int, int) range, int end, int towards) {
             var waist = range.$1;
             for (var index = range.$1; index <= range.$2; index++) {
@@ -940,7 +991,16 @@ class HairFoldRaster {
                     math.pi / 180) {
               far += towards;
             }
-            final span = (lengths[far] - lengths[waist]).abs();
+            final crescentApex = towards > 0 ? range.$1 : range.$2;
+            var curlStart = crescentApex;
+            while (curlStart - towards >= 0 &&
+                curlStart - towards < points.length &&
+                (crescentTurns[curlStart] - crescentTurns[curlStart - towards])
+                        .abs() >
+                    1e-3) {
+              curlStart -= towards;
+            }
+            if (waist == curlStart || far == waist) return;
             final width = strandWidths[waist]!;
             final narrowest = width <= 1e-9
                 ? 1.0
@@ -949,90 +1009,332 @@ class HairFoldRaster {
             // the strand, fading out by half) folds: a shallow dip keeps the
             // strand whole.
             final g = ((.5 - narrowest) / .25).clamp(0.0, 1.0);
-            final folds = g * g * (3 - 2 * g);
-            if (span <= 1e-6 || folds == 0) return;
-            // At its waist the crescent keeps at least an outline's width of
-            // fill as drawn (pressure and taper inset it), so its two
-            // outlines never close into one thick line.
-            final scale = math.max(points[waist].scale, .05);
-            final outline = points[waist].outlineOr(brush.outlineWidth);
-            final start = math.max(
-              narrowest,
-              math.min(1.0, outline * (3 - 2 * scale) / scale / width),
+            // And only a curl that turns half a circle or more from where it
+            // starts to the lobe's end, fading out by a third of a circle: a
+            // wobble along a straight run narrows the strand much the same.
+            final curled =
+                (crescentAngles[far]! - crescentAngles[curlStart]!) *
+                bandSides[waist]! *
+                towards;
+            final c = ((curled - math.pi * 2 / 3) / (math.pi / 3)).clamp(
+              0.0,
+              1.0,
             );
-            double folded(double share) => 1 - folds * (1 - share);
-            // From the crescent's apex its inner edge leaves the strand's
-            // inner edge and sweeps across to the waist in one smooth turn.
-            final apex = towards > 0 ? range.$1 : range.$2;
-            final sweep = (lengths[waist] - lengths[apex]).abs();
-            for (var index = apex; index != waist; index += towards) {
-              final u = sweep <= 1e-6
-                  ? 1.0
-                  : ((lengths[index] - lengths[apex]).abs() / sweep).clamp(
-                      0.0,
-                      1.0,
-                    );
-              shares[index] = folded(1 - (1 - start) * u * u * (3 - 2 * u));
+            final folds = g * g * (3 - 2 * g) * c * c * (3 - 2 * c);
+            if (folds == 0) return;
+            // On the way from where the fold leaves the strand's inner edge
+            // to the lobe's end, the curl turns towards [sigma] (see
+            // [_cross]).
+            final sigma = bandSides[waist]! * towards;
+            Offset heading(Offset Function(int) at, int index) =>
+                headingAt(at, index) * towards.toDouble();
+            Offset turned(Offset direction, double angle) =>
+                direction * math.cos(angle) +
+                Offset(-direction.dy, direction.dx) * (sigma * math.sin(angle));
+            final waistHeading = heading(outerAt, waist);
+            // The sweep: an arc of a circle, from the strand's inner edge
+            // (along it) to the outer edge at the waist, so that with the
+            // outer edge it bounds a crescent. The earlier in the curl it
+            // leaves the strand's inner edge, the more gradually the strand
+            // narrows, and the more nearly along the outer edge it reaches
+            // the waist. It leaves where the stroke still turns a quarter
+            // circle before the waist, or earlier so that it reaches the
+            // outer edge at no more than [steepest] (on a thick strand), or
+            // later so that it reaches it at no less than [shallowest] (on
+            // a thin one): the two outlines meet at a horn's angle and part
+            // at once, rather than run along together into one thick line.
+            const steepest = 25 * math.pi / 180,
+                shallowest = 10 * math.pi / 180;
+            // The arc from a sample: half its turn, and the angle at which
+            // it meets the outer edge (null when it cannot reach it from
+            // inside, turning with the curl).
+            (double, double)? arcFrom(int index) {
+              final startHeading = heading(innerAt, index);
+              final chord = outerAt(waist) - innerAt(index);
+              final half =
+                  math.atan2(
+                    _cross(startHeading, chord),
+                    _dot(startHeading, chord),
+                  ) *
+                  sigma;
+              if (half <= 0 || half >= math.pi / 2) return null;
+              final arriving = turned(startHeading, 2 * half);
+              final meets =
+                  math.atan2(
+                    _cross(arriving, waistHeading),
+                    _dot(arriving, waistHeading),
+                  ) *
+                  sigma;
+              return meets > 0 ? (half, meets) : null;
             }
-            // A lobe ending where the strand runs on (a straight run after
-            // the curl) widens back into the whole strand by its end.
-            final runsOn = strandWidths[far]! > 4 * brush.outlineWidth;
-            for (
-              var index = waist;
-              towards > 0 ? index <= far : index >= far;
-              index += towards
-            ) {
-              final t = ((lengths[index] - lengths[waist]).abs() / span).clamp(
-                0.0,
-                1.0,
-              );
-              // From the waist the crescent widens gently to three fifths of
-              // the strand and stays so. Where the lobe's far end is the tip,
-              // the strand narrows to it, so the crescent is thin at both
-              // ends.
-              final share = start + (1 - start) * 3 / 5;
-              final rise = (t / .6).clamp(0.0, 1.0);
-              var kept = start + (share - start) * rise * rise * (3 - 2 * rise);
-              if (runsOn) {
-                final e = ((1 - t) / .25).clamp(0.0, 1.0);
-                kept = 1 - e * e * (3 - 2 * e) * (1 - kept);
+
+            // The arc's points from a sample.
+            List<Offset> arcPath(int index, double half) {
+              final start = innerAt(index);
+              final startHeading = heading(innerAt, index);
+              final radius =
+                  (outerAt(waist) - start).distance / (2 * math.sin(half));
+              final inwards = Offset(-startHeading.dy, startHeading.dx) * sigma;
+              final steps = (2 * half * radius / 2).ceil().clamp(16, 512);
+              return [
+                for (var k = 0; k <= steps; k++)
+                  () {
+                    final turn = 2 * half * k / steps;
+                    return start +
+                        startHeading * (radius * math.sin(turn)) +
+                        inwards * (radius * (1 - math.cos(turn)));
+                  }(),
+              ];
+            }
+
+            // Whether the arc stays within the strand up to the waist: where
+            // the outer edge curves more than the arc, it can leave the
+            // strand before the waist, and the strand would be no more than
+            // its outline there.
+            bool within(int index, List<Offset> path) {
+              final cursor = [0];
+              for (var i = index + towards; i != waist; i += towards) {
+                final share = crossing(path, i, cursor);
+                if (share != null && (share < -.02 || share > 1.02)) {
+                  return false;
+                }
               }
-              shares[index] = folded(kept);
+              return true;
             }
-            reach = math.max(reach, strandWidths[waist]!);
+
+            List<Offset>? sweep;
+            var leave = -1;
+            final feasible = <int>[];
+            for (
+              var index = waist - towards;
+              index != curlStart - towards;
+              index -= towards
+            ) {
+              final arc = arcFrom(index);
+              if (arc == null) continue;
+              feasible.add(index);
+              final curl =
+                  (crescentAngles[waist]! - crescentAngles[index]!) *
+                  bandSides[waist]! *
+                  towards;
+              if (arc.$2 <= steepest &&
+                  (curl >= math.pi / 2 || arc.$2 <= shallowest)) {
+                final path = arcPath(index, arc.$1);
+                if (within(index, path)) {
+                  sweep = path;
+                  leave = index;
+                  break;
+                }
+              }
+            }
+            // Otherwise from as early in the curl as it can.
+            for (final index in feasible.reversed) {
+              if (sweep != null) break;
+              final path = arcPath(index, arcFrom(index)!.$1);
+              if (within(index, path)) {
+                sweep = path;
+                leave = index;
+              }
+            }
+            if (sweep == null) return;
+            // The lobe, from the waist. Where the strand runs on after the
+            // curl: a curve back onto its inner edge (along it), leaving the
+            // outer edge at a horn's angle. Where it ends at the tip: the
+            // outer edge pressed towards its chord from the waist to the
+            // tip, so that it bends with the outer edge, a little less, and
+            // narrows to both ends.
+            final runsOn = strandWidths[far]! > 4 * brush.outlineWidth;
+            List<Offset>? onward;
+            if (runsOn) {
+              for (final angle in const [20.0, 12.0, 6.0]) {
+                onward = _convexCubic(
+                  outerAt(waist),
+                  turned(waistHeading, angle * math.pi / 180),
+                  innerAt(far),
+                  heading(innerAt, far),
+                  sigma,
+                );
+                if (onward != null) break;
+              }
+              if (onward == null) return;
+            }
+            final lobeEnd = runsOn ? far : end;
+            final kept = <int, double>{};
+            void place(List<Offset> path, int from, int to) {
+              final cursor = [0];
+              for (var index = from; index != to + towards; index += towards) {
+                final share = crossing(path, index, cursor);
+                if (share != null) kept[index] = share.clamp(0.0, 1.0);
+              }
+            }
+
+            place(sweep, leave, waist);
+            kept[waist] = 0;
+            if (onward != null) {
+              place(onward, waist, far);
+            } else {
+              final from = outerAt(waist);
+              final axis = _unit((outerAt(end) + innerAt(end)) / 2 - from);
+              var widest = 0.0;
+              for (
+                var index = waist;
+                index != end + towards;
+                index += towards
+              ) {
+                widest = math.max(
+                  widest,
+                  _cross(axis, outerAt(index) - from).abs(),
+                );
+              }
+              // At its widest the lobe is half the pen's width at the waist,
+              // or narrower so that its inner edge bends at least about
+              // half as much as the outer edge. Within the strand: pressed
+              // further where it would leave it.
+              var keep = widest <= 1e-9
+                  ? 1.0
+                  : (1 - .5 * points[waist].width / widest).clamp(.55, 1.0);
+              final lobe = <int, double>{};
+              for (var attempt = 0; attempt < 6; attempt++) {
+                final pressed = [
+                  for (
+                    var index = waist;
+                    index != end + towards;
+                    index += towards
+                  )
+                    () {
+                      final outer = outerAt(index);
+                      final foot = from + axis * _dot(outer - from, axis);
+                      return foot + (outer - foot) * keep;
+                    }(),
+                ];
+                lobe.clear();
+                final cursor = [0];
+                var fullest = 0.0;
+                for (
+                  var index = waist + towards;
+                  index != end + towards;
+                  index += towards
+                ) {
+                  final share = crossing(pressed, index, cursor);
+                  if (share == null) continue;
+                  lobe[index] = share;
+                  fullest = math.max(fullest, share);
+                }
+                if (fullest <= .95) break;
+                keep = 1 - (1 - keep) * .95 / fullest;
+              }
+              for (final entry in lobe.entries) {
+                kept[entry.key] = entry.value.clamp(0.0, 1.0);
+              }
+            }
+            if (folds < 1) {
+              // A shallower fold lies between the strand and the folded
+              // crescent, and does not close: its inner edge passes the
+              // waist inside the strand, without the horns' corner. Where it
+              // would turn there, it turns along a parabola tangent to the
+              // edge either side instead, over a stretch the longer the
+              // shallower the fold.
+              final order = [
+                for (
+                  var index = leave;
+                  index != lobeEnd + towards;
+                  index += towards
+                )
+                  if (kept.containsKey(index)) index,
+              ];
+              final shallower = {
+                for (final index in order)
+                  index: 1 - folds * (1 - kept[index]!),
+              };
+              kept.addAll(shallower);
+              final at = [
+                for (final index in order)
+                  outerAt(index) +
+                      (innerAt(index) - outerAt(index)) * shallower[index]!,
+              ];
+              final corner = order.indexOf(waist);
+              final along = <double>[0];
+              for (var k = 1; k < at.length; k++) {
+                along.add(along.last + (at[k] - at[k - 1]).distance);
+              }
+              if (corner > 0 && corner < at.length - 1) {
+                final reach =
+                    math.min(math.sqrt(1 - folds), .9) *
+                    math.min(along[corner], along.last - along[corner]);
+                // A point on the edge at a distance along it, with the
+                // heading of the stretch it lies on and the next sample.
+                (Offset, Offset, int) pointAt(double distance) {
+                  var k = 1;
+                  while (k < at.length - 1 && along[k] < distance) {
+                    k++;
+                  }
+                  final span = along[k] - along[k - 1];
+                  final t = span <= 1e-9
+                      ? 0.0
+                      : ((distance - along[k - 1]) / span).clamp(0.0, 1.0);
+                  return (
+                    at[k - 1] + (at[k] - at[k - 1]) * t,
+                    _unit(at[k] - at[k - 1]),
+                    k,
+                  );
+                }
+
+                // Shorter where the parabola would leave the strand (its
+                // tangents meet beyond the outer edge).
+                for (var stretch = reach; stretch > 1; stretch /= 2) {
+                  final (a, aHeading, aNext) = pointAt(along[corner] - stretch);
+                  final (b, bHeading, bNext) = pointAt(along[corner] + stretch);
+                  // Where the two headings meet.
+                  var control = at[corner];
+                  final denominator = _cross(aHeading, bHeading);
+                  if (denominator.abs() > 1e-6) {
+                    final t = _cross(b - a, bHeading) / denominator;
+                    final meet = a + aHeading * t;
+                    if (t > 0 && _dot(b - meet, bHeading) > 0) control = meet;
+                  }
+                  final count = math.max(8, stretch.ceil());
+                  final rounded = [
+                    ...at.sublist(0, aNext),
+                    for (var k = 0; k <= count; k++)
+                      () {
+                        final t = k / count, u = 1 - t;
+                        return a * (u * u) +
+                            control * (2 * u * t) +
+                            b * (t * t);
+                      }(),
+                    ...at.sublist(bNext),
+                  ];
+                  final cursor = [0];
+                  final placed = <int, double>{};
+                  var inside = true;
+                  for (final index in order) {
+                    final share = crossing(rounded, index, cursor);
+                    if (share == null) continue;
+                    if (share < -.02 || share > 1.02) {
+                      inside = false;
+                      break;
+                    }
+                    placed[index] = share.clamp(0.0, 1.0);
+                  }
+                  if (!inside) continue;
+                  kept.addAll(placed);
+                  break;
+                }
+              }
+            }
+            for (final entry in kept.entries) {
+              shares[entry.key] = math.min(shares[entry.key] ?? 1, entry.value);
+            }
           }
 
           if (foldHead != null) lobe(foldHead, 0, -1);
           if (foldTail != null) lobe(foldTail, points.length - 1, 1);
-          if (reach > 0) {
-            // The crescent's inner edge turns without corners: the share is
-            // smoothed over the strand's width at its waist, along the whole
-            // stroke (a smoothing cut off at a window's edge would leave a
-            // corner there).
-            final smoothed = <int, double>{};
-            for (var index = 0; index < points.length; index++) {
-              var sum = 0.0, weights = 0.0;
-              for (var j = index; j >= 0; j--) {
-                final d = lengths[index] - lengths[j];
-                if (d >= reach) break;
-                sum += shares[j]! * (reach - d);
-                weights += reach - d;
-              }
-              for (var j = index + 1; j < points.length; j++) {
-                final d = lengths[j] - lengths[index];
-                if (d >= reach) break;
-                sum += shares[j]! * (reach - d);
-                weights += reach - d;
-              }
-              smoothed[index] = sum / weights;
-            }
-            shares.addAll(smoothed);
-            final margins = <int, double>{};
+          if (shares.isNotEmpty) {
             for (final run in runs) {
               final edges = crescentEdges[run.start]!;
               for (var index = run.start; index <= run.end; index++) {
-                final share = shares[index]!;
-                if (share >= 1) continue;
+                final share = shares[index];
+                if (share == null || share >= 1) continue;
                 final edge = edges[index - run.start];
                 edges[index - run.start] = sectionEdge(
                   run,
@@ -1043,14 +1345,9 @@ class HairFoldRaster {
                 innerPulls[index] =
                     (innerPulls[index] ?? 0) +
                     (1 - share) * strandWidths[index]!;
-                // Where it leaves the strand's inner edge, the crescent's
-                // inner edge keeps bending with the curl, by at least a third
-                // of a circle round the curl's centre: an edge running
-                // straight, beside an outer edge that curves, reads as
-                // bending against it.
-                margins[index] = math.min(1.0, (1 - share) / .1) / 3;
               }
             }
+            // The folded edge, too, never turns against the curve.
             final pulls = _keepInnerEdgeWithCurve(
               runs,
               points,
@@ -1059,7 +1356,6 @@ class HairFoldRaster {
               crescentSides,
               crescentEdges,
               brush.outlineWidth,
-              margins: margins,
             );
             for (final run in runs) {
               final edges = crescentEdges[run.start]!;
@@ -1251,12 +1547,14 @@ class HairFoldRaster {
                   current.outlineOr(brush.outlineWidth),
                 );
                 if (from.fill > 0 || to.fill > 0) {
-                  _ribbonSegment(envelope, previous, current, [
-                    from.outer,
-                    to.outer,
-                    to.inner,
-                    from.inner,
-                  ], math.max(from.band, to.band));
+                  _ribbonSegment(
+                    envelope,
+                    previous,
+                    current,
+                    [from.outer, to.outer, to.inner, from.inner],
+                    from.band,
+                    to.band,
+                  );
                 } else {
                   // No fill left: a solid outline tip.
                   _segment(
@@ -1830,15 +2128,20 @@ class HairFoldRaster {
   }
 
   // Rasterize the two authored outline edges directly. Cross-section edges
-  // are internal to the ribbon and must not introduce antialias seams.
+  // are internal to the ribbon and must not introduce antialias seams. The
+  // outline reaches [outlineA] past the fill at [a]'s end and [outlineB] at
+  // [b]'s, and between them in proportion: where the fill runs out at one
+  // end (a solid outline tip begins), that end's outline is the whole
+  // section, and reaching as far at the other end would swell the edge.
   void _ribbonSegment(
     Map<int, _MaskTile> masks,
     HairRibbonPoint a,
     HairRibbonPoint b,
     List<Offset> corners,
-    double outline,
+    double outlineA,
+    double outlineB,
   ) {
-    final margin = outline + 1;
+    final margin = math.max(outlineA, outlineB) + 1;
     final c0 = corners[0], c1 = corners[1], c2 = corners[2], c3 = corners[3];
     final x0 = c0.dx, y0 = c0.dy, x1 = c1.dx, y1 = c1.dy;
     final x2 = c2.dx, y2 = c2.dy, x3 = c3.dx, y3 = c3.dy;
@@ -1863,7 +2166,7 @@ class HairFoldRaster {
     final ex2 = x3 - x2, ey2 = y3 - y2, ex3 = x0 - x3, ey3 = y0 - y3;
     final es0 = ex0 * ex0 + ey0 * ey0, es1 = ex1 * ex1 + ey1 * ey1;
     final es2 = ex2 * ex2 + ey2 * ey2, es3 = ex3 * ex3 + ey3 * ey3;
-    final reach = outline + .5;
+    final reachA = outlineA + .5, reachRise = outlineB - outlineA;
     final tilesX = tiles.tilesX;
     var lastKey = -1;
     _MaskTile? lastTile;
@@ -1961,11 +2264,19 @@ class HairFoldRaster {
           if (d < distance) distance = d;
           if (cross3 && cx < at3) inside = !inside;
         }
+        var t = squared < 1e-12
+            ? 0.0
+            : ((cx - ax) * deltaX + (cy - ay) * deltaY) / squared;
+        if (t < 0) {
+          t = 0.0;
+        } else if (t > 1) {
+          t = 1.0;
+        }
         double outer;
         if (inside) {
           outer = 1.0;
         } else {
-          outer = reach - math.sqrt(distance);
+          outer = reachA + reachRise * t - math.sqrt(distance);
           if (outer <= 0) continue;
           if (outer > 1) outer = 1.0;
         }
@@ -1976,14 +2287,6 @@ class HairFoldRaster {
           fill = 0.0;
         } else if (fill > 1) {
           fill = 1.0;
-        }
-        var t = squared < 1e-12
-            ? 0.0
-            : ((cx - ax) * deltaX + (cy - ay) * deltaY) / squared;
-        if (t < 0) {
-          t = 0.0;
-        } else if (t > 1) {
-          t = 1.0;
         }
         final opacity = opacityA + opacityRise * t;
         final key = tileRow + x ~/ _size;
@@ -2629,6 +2932,56 @@ double _dot(Offset a, Offset b) => a.dx * b.dx + a.dy * b.dy;
 double _cross(Offset a, Offset b) => a.dx * b.dy - a.dy * b.dx;
 Offset _unit(Offset a) => a.distance < 1e-9 ? Offset.zero : a / a.distance;
 
+/// How far a cubic from [p0] heading [t0] to [p3] heading [t3] turns
+/// towards [sigma] (see [_cross]) from [t0] to its chord, and from its chord
+/// to [t3]. It turns only that way, without an inflection, when both are
+/// positive.
+(double, double) _chordTurns(
+  Offset p0,
+  Offset t0,
+  Offset p3,
+  Offset t3,
+  double sigma,
+) {
+  final chord = p3 - p0;
+  return (
+    math.atan2(_cross(t0, chord), _dot(t0, chord)) * sigma,
+    math.atan2(_cross(chord, t3), _dot(chord, t3)) * sigma,
+  );
+}
+
+/// A cubic from [p0] heading [t0] to [p3] heading [t3] (unit headings) that
+/// turns only towards [sigma] (see [_cross]), as points about 2px apart, or
+/// null when the headings leave no such cubic. Its handles reach two thirds
+/// of the way to where the two headings meet: turning as much either side
+/// of its chord, it is close to an arc of a circle.
+List<Offset>? _convexCubic(
+  Offset p0,
+  Offset t0,
+  Offset p3,
+  Offset t3,
+  double sigma,
+) {
+  final (a0, a1) = _chordTurns(p0, t0, p3, t3, sigma);
+  if (a0 <= 0 || a1 <= 0 || a0 + a1 >= .95 * math.pi) return null;
+  final chord = (p3 - p0).distance;
+  if (chord < 1e-6) return null;
+  final sine = math.sin(a0 + a1);
+  final p1 = p0 + t0 * (2 / 3 * chord * math.sin(a1) / sine);
+  final p2 = p3 - t3 * (2 / 3 * chord * math.sin(a0) / sine);
+  final count = (chord / 2).ceil().clamp(16, 512);
+  return [
+    for (var k = 0; k <= count; k++)
+      () {
+        final t = k / count, u = 1 - t;
+        return p0 * (u * u * u) +
+            p1 * (3 * u * u * t) +
+            p2 * (3 * u * t * t) +
+            p3 * (t * t * t);
+      }(),
+  ];
+}
+
 // Interpolate only the outline, retaining each authored sample and apex.
 Offset _smoothEdge(Offset before, Offset a, Offset b, Offset after, double t) {
   final t2 = t * t, t3 = t2 * t;
@@ -3090,11 +3443,7 @@ _foldSides(
 /// is only ever pulled back towards the centre line. The edge's outline is
 /// part of the measured edge. A strand that only narrows (a taper) is left
 /// as drawn, and so is any edge that already bends with the curve.
-///
-/// With a [margins] share m at a sample, the edge there must turn at least
-/// m times as much as a circle round the curve's centre through it
-/// (h'' >= -(1 - m)k(1 - hk)), so it visibly bends with the curve rather
-/// than run straight.
+
 Map<int, double> _keepInnerEdgeWithCurve(
   List<_RibbonRun> runs,
   List<HairRibbonPoint> points,
@@ -3106,9 +3455,8 @@ Map<int, double> _keepInnerEdgeWithCurve(
     List<({HairRibbonPoint point, Offset outer, Offset inner, double angle})>
   >
   edges,
-  double outlineWidth, {
-  Map<int, double> margins = const {},
-}) {
+  double outlineWidth,
+) {
   final ordered = [...runs]..sort((a, b) => a.start.compareTo(b.start));
   final pulls = <int, double>{};
   // Sections turning the same way share one inner side.
@@ -3201,16 +3549,7 @@ Map<int, double> _keepInnerEdgeWithCurve(
         return false;
       }
       final a = ink[k] - ink[k - 1], b = ink[k + 1] - ink[k];
-      final margin = margins[indices[k]] ?? 0;
-      // The least turn: none, or a share of the circle's through the edge.
-      final least = margin == 0
-          ? 0.0
-          : margin *
-                curvature[k] /
-                (1 - depth[k] * curvature[k]) *
-                (a.distance + b.distance) /
-                2;
-      return _cross(a, b) * side < (least - 1e-9) * a.distance * b.distance;
+      return _cross(a, b) * side < -1e-9 * a.distance * b.distance;
     }
 
     // Each stretch curving to this side is lowered as a whole, once: the
@@ -3242,9 +3581,7 @@ Map<int, double> _keepInnerEdgeWithCurve(
           lift[j] = lift[j - 1] + slope * (along[b] - along[a]);
           if (b < end) {
             final bend =
-                (1 - (margins[indices[b]] ?? 0)) *
-                curvature[b] *
-                math.max(0.0, 1 - depth[b] * curvature[b]);
+                curvature[b] * math.max(0.0, 1 - depth[b] * curvature[b]);
             slope += bend * (along[b + 1] - along[a]) / 2;
           }
         }
@@ -3274,17 +3611,55 @@ Map<int, double> _keepInnerEdgeWithCurve(
           }
           lowered[h] = true;
         }
+        // The kept profile, lifted: the hull over lowered spans, the drawn
+        // edge elsewhere.
+        double y(int j) => depth[first + j] + lift[j];
+        double x(int j) => along[first + j];
+        final kept = [for (var j = 0; j < n; j++) y(j)];
+        final changed = List<bool>.filled(n, false);
         for (var e = 0; e < hull.length - 1; e++) {
           if (!lowered[e]) continue;
           final p = hull[e], q = hull[e + 1];
-          final px = along[first + p], py = depth[first + p] + lift[p];
-          final qx = along[first + q], qy = depth[first + q] + lift[q];
           for (var j = p + 1; j < q; j++) {
-            final x = along[first + j];
-            final kept = py + (qy - py) * (x - px) / (qx - px) - lift[j];
-            final pull = math.min(depth[first + j] - kept, room[first + j]);
-            if (pull > 1e-6) pulls[indices[first + j]] = pull;
+            kept[j] = y(p) + (y(q) - y(p)) * (x(j) - x(p)) / (x(q) - x(p));
+            changed[j] = true;
           }
+        }
+        // Where one lowered span meets the next, the edge turns at once: it
+        // would show a corner. The turn is spread over a short fillet
+        // instead, a parabola tangent to both spans (it still only turns
+        // with the curve, and reaches at most a quarter of the turn times
+        // its half width past the corner). Where a span leaves the drawn
+        // edge, it already leaves along it.
+        for (var v = 1; v < hull.length - 1; v++) {
+          if (!lowered[v - 1] || !lowered[v]) continue;
+          final at = hull[v], leftEnd = hull[v - 1], rightEnd = hull[v + 1];
+          final leftSlope = (y(at) - y(leftEnd)) / (x(at) - x(leftEnd));
+          final rightSlope = (y(rightEnd) - y(at)) / (x(rightEnd) - x(at));
+          final turn = rightSlope - leftSlope;
+          if (!(turn > 1e-9)) continue;
+          final half = math.min(
+            math.max(6.0, 3 * outlineWidth),
+            .45 * math.min(x(at) - x(leftEnd), x(rightEnd) - x(at)),
+          );
+          if (!(half > 1e-6)) continue;
+          for (var j = 0; j < n; j++) {
+            final t = x(j) - x(at);
+            if (t.abs() >= half) continue;
+            kept[j] =
+                y(at) +
+                leftSlope * t +
+                turn * (t + half) * (t + half) / (4 * half);
+            changed[j] = true;
+          }
+        }
+        for (var j = 0; j < n; j++) {
+          if (!changed[j]) continue;
+          final pull = math.min(
+            depth[first + j] - (kept[j] - lift[j]),
+            room[first + j],
+          );
+          if (pull.abs() > 1e-6) pulls[indices[first + j]] = pull;
         }
       }
       k = reach + 1;
