@@ -16,8 +16,10 @@ import {
   isUserId,
   isWorkId,
   liftPostingSuspension,
+  AI_MODES,
+  effectiveModerationConfig,
   markReviewing,
-  moderationConfig,
+  setStoredAiMode,
   reportsForTarget,
   reportStatsForTarget,
   suspendPosting,
@@ -201,18 +203,36 @@ async function singleReportView(key: { pk: string; sk: string }) {
 /** GET /admin/me */
 export async function getAdminMe(event: APIGatewayProxyEventV2) {
   const admin = await authenticateAdmin(event);
-  const config = moderationConfig();
-  return ok({
-    email: admin.email,
-    settings: {
-      reportHideThreshold: config.reportHideThreshold,
-      strikeSuspendThreshold: config.strikeSuspendThreshold,
-      aiMode: config.aiMode,
-      aiBacklogThreshold: config.aiBacklogThreshold,
-      aiDailyCap: config.aiDailyCap,
-      mailDailyCap: config.mailDailyCap,
-    },
-  });
+  return ok({ email: admin.email, settings: await adminSettings() });
+}
+
+async function adminSettings() {
+  const config = await effectiveModerationConfig();
+  return {
+    reportHideThreshold: config.reportHideThreshold,
+    strikeSuspendThreshold: config.strikeSuspendThreshold,
+    aiMode: config.aiMode,
+    aiModeSource: config.aiModeSource,
+    aiBacklogThreshold: config.aiBacklogThreshold,
+    aiDailyCap: config.aiDailyCap,
+    mailDailyCap: config.mailDailyCap,
+  };
+}
+
+/**
+ * POST /admin/settings {aiMode: "off" | "always" | "backlog"}
+ * Switches the AI triage from the admin page; it overrides the deploy
+ * default until changed again. Without the API key the AI still never runs.
+ */
+export async function updateAdminSettings(event: APIGatewayProxyEventV2) {
+  const admin = await authenticateAdmin(event);
+  const body = parseJsonObject(event.body);
+  const mode = body.aiMode;
+  if (typeof mode !== "string" || !AI_MODES.includes(mode as never)) {
+    badRequest("aiModeはoff・always・backlogのいずれかです", "INVALID_AI_MODE");
+  }
+  await setStoredAiMode(mode as (typeof AI_MODES)[number], admin.email);
+  return ok({ ok: true, settings: await adminSettings() });
 }
 
 /** GET /admin/reports?status=pending|reviewing|resolved&order=oldest|newest&limit=&cursor= */

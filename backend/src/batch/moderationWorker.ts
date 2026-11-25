@@ -5,8 +5,8 @@ import { ddb, Keys, tableName } from "../lib/dynamo";
 import {
   applyReporterThreshold,
   autoHideWork,
+  effectiveModerationConfig,
   getReport,
-  moderationConfig,
   reportStatsForTarget,
   type ModerationConfig,
 } from "../lib/moderation";
@@ -129,7 +129,7 @@ export async function processNewReport(
   key: { pk: string; sk: string },
   deps: WorkerDeps = {},
 ): Promise<void> {
-  const config = moderationConfig();
+  const config = await effectiveModerationConfig();
   const report = await getReport(key);
   if (!report || report.status === "resolved") return;
 

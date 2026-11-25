@@ -147,6 +147,8 @@ export const Keys = {
   moderationDaily: (yyyymmdd: string) => ({
     pk: `MODERATION_DAILY#${yyyymmdd}`, sk: "META",
   }),
+  /** Moderation settings changed from the admin page (the AI triage mode). */
+  moderationSettings: () => ({ pk: "MODERATION_SETTINGS", sk: "META" }),
   /** Last report mail for one target (`WORK#id` / `USER#id`), expires by TTL. */
   moderationNotice: (targetPk: string) => ({
     pk: `MODERATION_NOTICE#${targetPk}`, sk: "META",

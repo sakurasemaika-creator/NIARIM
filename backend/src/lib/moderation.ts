@@ -1,6 +1,7 @@
 import { ConditionalCheckFailedException, TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import {
   GetCommand,
+  PutCommand,
   QueryCommand,
   TransactWriteCommand,
   UpdateCommand,
@@ -69,6 +70,65 @@ export function moderationConfig(): ModerationConfig {
     resendApiKeyParameter: process.env.MODERATION_RESEND_API_KEY_PARAMETER || undefined,
     anthropicApiKeyParameter: process.env.MODERATION_ANTHROPIC_API_KEY_PARAMETER || undefined,
   };
+}
+
+/**
+ * The AI triage mode chosen on the admin page overrides the deploy default
+ * (MODERATION_AI_MODE). Stored in one small item; read at most once a minute
+ * per container so a report burst costs no extra reads.
+ */
+export const AI_MODES: readonly AiMode[] = ["off", "always", "backlog"];
+let storedAiModeCache: { at: number; mode?: AiMode } | undefined;
+const STORED_AI_MODE_TTL_MS = 60_000;
+
+export function resetStoredAiModeCacheForTest(): void {
+  storedAiModeCache = undefined;
+}
+
+async function readStoredAiMode(): Promise<AiMode | undefined> {
+  const now = Date.now();
+  if (storedAiModeCache && now - storedAiModeCache.at < STORED_AI_MODE_TTL_MS) {
+    return storedAiModeCache.mode;
+  }
+  let mode: AiMode | undefined;
+  try {
+    const result = await ddb.send(new GetCommand({
+      TableName: tableName(), Key: Keys.moderationSettings(),
+    }));
+    const raw = result.Item?.aiMode;
+    mode = AI_MODES.includes(raw as AiMode) ? raw as AiMode : undefined;
+  } catch {
+    // A failed read keeps the deploy default; it is retried next time.
+    return undefined;
+  }
+  storedAiModeCache = { at: now, mode };
+  return mode;
+}
+
+/** The config with the admin page's AI mode, and where the mode came from. */
+export async function effectiveModerationConfig(): Promise<
+  ModerationConfig & { aiModeSource: "admin" | "default" }
+> {
+  const config = moderationConfig();
+  const stored = await readStoredAiMode();
+  return stored
+    ? { ...config, aiMode: stored, aiModeSource: "admin" }
+    : { ...config, aiModeSource: "default" };
+}
+
+/** Saves the AI triage mode chosen on the admin page. */
+export async function setStoredAiMode(mode: AiMode, by: string): Promise<void> {
+  await ddb.send(new PutCommand({
+    TableName: tableName(),
+    Item: {
+      ...Keys.moderationSettings(),
+      itemType: "MODERATION_SETTINGS",
+      aiMode: mode,
+      updatedAt: new Date().toISOString(),
+      updatedBy: by,
+    },
+  }));
+  storedAiModeCache = { at: Date.now(), mode };
 }
 
 const WORK_ID = /^[A-Za-z0-9_-]{11}$/;

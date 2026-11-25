@@ -37,7 +37,12 @@ import { handler } from "../src/api/handler";
 import { createReport } from "../src/api/routes/reports";
 import { createWork } from "../src/api/routes/worksCreate";
 import { updateWork } from "../src/api/routes/worksUpdate";
-import { decodeReportId, encodeReportId, moderationConfig } from "../src/lib/moderation";
+import {
+  decodeReportId,
+  encodeReportId,
+  moderationConfig,
+  resetStoredAiModeCacheForTest,
+} from "../src/lib/moderation";
 import {
   buildTriageRequest,
   parseTriageResponse,
@@ -114,6 +119,7 @@ function admin(email = "owner@example.com", verified = true) {
 }
 
 beforeEach(() => {
+  resetStoredAiModeCacheForTest();
   fake.items.clear();
   fake.calls.length = 0;
   vi.clearAllMocks();
@@ -438,6 +444,59 @@ describe("AI triage", () => {
     const failing = vi.fn().mockRejectedValue(new Error("network"));
     expect((await triageReport(input, { beta: { messages: { create: failing } } } as TriageClient)).status)
       .toBe("failed");
+  });
+});
+
+describe("AI mode from the admin page", () => {
+  it("is switched on the admin page and overrides the deploy default", async () => {
+    let me = await call("GET", "/admin/me");
+    expect(me.body.settings).toMatchObject({ aiMode: "backlog", aiModeSource: "default" });
+
+    const bad = await call("POST", "/admin/settings", { body: { aiMode: "sometimes" } });
+    expect(bad.status).toBe(400);
+    expect(bad.body.code).toBe("INVALID_AI_MODE");
+
+    const set = await call("POST", "/admin/settings", { body: { aiMode: "off" } });
+    expect(set.status).toBe(200);
+    expect(set.body.settings).toMatchObject({ aiMode: "off", aiModeSource: "admin" });
+    expect(fake.get("MODERATION_SETTINGS", "META")).toMatchObject({
+      aiMode: "off", updatedBy: "owner@example.com",
+    });
+
+    resetStoredAiModeCacheForTest();
+    me = await call("GET", "/admin/me");
+    expect(me.body.settings).toMatchObject({ aiMode: "off", aiModeSource: "admin" });
+  });
+
+  it("needs an admin to change it", async () => {
+    admin("someone@example.com");
+    const denied = await call("POST", "/admin/settings", { body: { aiMode: "always" } });
+    expect(denied.status).toBe(403);
+    expect(fake.get("MODERATION_SETTINGS", "META")).toBeUndefined();
+  });
+
+  it("turned off on the admin page, the worker skips the AI even when the deploy says always", async () => {
+    vi.stubEnv("MODERATION_AI_MODE", "always");
+    params[AI_PARAM] = "sk-test";
+    await call("POST", "/admin/settings", { body: { aiMode: "off" } });
+    seedWork(workIds[0]);
+    const report = seedReport(workIds[0], reporters[0], "2026-11-25T01:00:00.000Z");
+    const create = vi.fn();
+    await processNewReport(report, {
+      createTriageClient: () => ({ beta: { messages: { create } } }) as unknown as TriageClient,
+    });
+    expect(create).not.toHaveBeenCalled();
+
+    await call("POST", "/admin/settings", { body: { aiMode: "always" } });
+    create.mockResolvedValue({
+      content: [{ type: "text", text: JSON.stringify({
+        severity: "low", category: "none", recommendedAction: "keep", rationale: "軽微",
+      }) }], stop_reason: "end_turn", stop_details: null, model: "claude-opus-5-5",
+    });
+    await processNewReport(report, {
+      createTriageClient: () => ({ beta: { messages: { create } } }) as unknown as TriageClient,
+    });
+    expect(create).toHaveBeenCalledTimes(1);
   });
 });
 

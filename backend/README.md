@@ -96,26 +96,26 @@ backend/
 
 ## 実装したAPIエンドポイント
 
-| メソッド | パス                                  | 対応する仕様書の節                                                                       | 認証                                             |
-| -------- | ------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| GET      | `/ranking/{period}`                   | 8.2節（`period=all`／`yearly`／`monthly`／`weekly`／`daily`）／`period=bookmarks`は8.5節 | 不要                                             |
-| GET      | `/works/latest`                       | 8.3節・8.6節（`q`で検索）                                                                | 不要                                             |
-| GET      | `/users/{id}/works`                   | 8.4節                                                                                    | 任意（本人なら非公開作品も含む）                 |
-| POST     | `/works`                              | 6章・12章・17章                                                                          | 必須                                             |
-| PATCH    | `/works/{id}`                         | 13章                                                                                     | 必須（投稿者本人）                               |
-| DELETE   | `/works/{id}`                         | 13章                                                                                     | 必須（投稿者本人）                               |
-| PATCH    | `/works/{id}/tags`                    | 8.7節                                                                                    | 必須（追加/削除は誰でも、ロックは投稿者本人）    |
-| POST     | `/reports`                            | 9章                                                                                      | 必須                                             |
-| POST     | `/blocks`                             | 9章                                                                                      | 必須                                             |
-| POST     | `/works/{id}/bookmark`                | 8.5節                                                                                    | 必須                                             |
-| GET      | `/users/{id}/bookmarks`               | 8.5節・21.2節                                                                            | 必須（本人のみ）                       |
-| POST     | `/works/{id}/repost`                  | 8.5bis節                                                                                 | 必須                                             |
-| POST     | `/users/{id}/follow`                  | 22.5節                                                                                   | 必須                                             |
-| GET      | `/users/{id}/following`               | 22.5節                                                                                   | 必須（本人のみ）                       |
-| GET      | `/users/{id}/followers`               | フォロワー一覧を25件ずつ取得（次のページは `cursor`）                                      | 必須（本人のみ）                       |
-| GET      | `/users/{id}/reposts`                 | 8.5bis節（リポスト一覧。フォロー中タブで使う）                                           | 不要（リポストは公開。非公開化された作品は除外） |
-| PUT      | `/users/{id}/push-token`              | 22.7節（FCM端末トークン登録／解除）                                                      | 必須（本人のみ）                                 |
-| GET/POST | `/admin/...`                          | 通報の管理API（下の「作品広場の通報対応」）                                              | 必須（GoogleのIDトークン＋SSMの管理者リスト）    |
+| メソッド | パス                     | 対応する仕様書の節                                                                       | 認証                                             |
+| -------- | ------------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| GET      | `/ranking/{period}`      | 8.2節（`period=all`／`yearly`／`monthly`／`weekly`／`daily`）／`period=bookmarks`は8.5節 | 不要                                             |
+| GET      | `/works/latest`          | 8.3節・8.6節（`q`で検索）                                                                | 不要                                             |
+| GET      | `/users/{id}/works`      | 8.4節                                                                                    | 任意（本人なら非公開作品も含む）                 |
+| POST     | `/works`                 | 6章・12章・17章                                                                          | 必須                                             |
+| PATCH    | `/works/{id}`            | 13章                                                                                     | 必須（投稿者本人）                               |
+| DELETE   | `/works/{id}`            | 13章                                                                                     | 必須（投稿者本人）                               |
+| PATCH    | `/works/{id}/tags`       | 8.7節                                                                                    | 必須（追加/削除は誰でも、ロックは投稿者本人）    |
+| POST     | `/reports`               | 9章                                                                                      | 必須                                             |
+| POST     | `/blocks`                | 9章                                                                                      | 必須                                             |
+| POST     | `/works/{id}/bookmark`   | 8.5節                                                                                    | 必須                                             |
+| GET      | `/users/{id}/bookmarks`  | 8.5節・21.2節                                                                            | 必須（本人のみ）                                 |
+| POST     | `/works/{id}/repost`     | 8.5bis節                                                                                 | 必須                                             |
+| POST     | `/users/{id}/follow`     | 22.5節                                                                                   | 必須                                             |
+| GET      | `/users/{id}/following`  | 22.5節                                                                                   | 必須（本人のみ）                                 |
+| GET      | `/users/{id}/followers`  | フォロワー一覧を25件ずつ取得（次のページは `cursor`）                                    | 必須（本人のみ）                                 |
+| GET      | `/users/{id}/reposts`    | 8.5bis節（リポスト一覧。フォロー中タブで使う）                                           | 不要（リポストは公開。非公開化された作品は除外） |
+| PUT      | `/users/{id}/push-token` | 22.7節（FCM端末トークン登録／解除）                                                      | 必須（本人のみ）                                 |
+| GET/POST | `/admin/...`             | 通報の管理API（下の「作品広場の通報対応」）                                              | 必須（GoogleのIDトークン＋SSMの管理者リスト）    |
 
 ## 未実装・既知の制約（デプロイ前に把握しておくべきこと）
 
@@ -168,16 +168,15 @@ backend/
 
 ## $0運用の内訳（実測ではなく設計上の見積もり）
 
-| リソース              | Always Free枠               | このスタックでの使用量                                                           |
-| --------------------- | --------------------------- | -------------------------------------------------------------------------------- |
+| リソース              | Always Free枠               | このスタックでの使用量                                                          |
+| --------------------- | --------------------------- | ------------------------------------------------------------------------------- |
 | DynamoDB              | 25 GB・25 RCU・25 WCU       | テーブル15+GSI6本合計8 = 23 RCU/WCU、ストレージは5章の見積もりで50万作品時約1GB |
-| Lambda                | 月100万リクエスト＋40万GB秒 | APIリクエスト数・バッチ実行頻度に依存。想定ユーザー数の初期段階では十分収まる    |
-| EventBridge Scheduler | 低頻度実行はごく低コスト    | 1日1回の定期実行のみ                                                             |
-| Lambda Function URL   | 追加費用なし                | -                                                                                |
+| Lambda                | 月100万リクエスト＋40万GB秒 | APIリクエスト数・バッチ実行頻度に依存。想定ユーザー数の初期段階では十分収まる   |
+| EventBridge Scheduler | 低頻度実行はごく低コスト    | 1日1回の定期実行のみ                                                            |
+| Lambda Function URL   | 追加費用なし                | -                                                                               |
 
 将来的にAlways Free枠を超えた場合の対応は`29_動画投稿・ランキング機能
 仕様.md` 11.2節の段階的引き上げ方針を参照してください。
-
 
 ## クリエイターミッションとコイン（追加API・安全な初期設定）
 
@@ -190,7 +189,6 @@ backend/
 - アカウント共通39段階の上限は **1,178,030コイン**、作品別14段階は各作品で達成可能なためアカウント全体では上限なし。制作50時間の報酬は**55,000コイン**（サブスク月額550円の参考単位に相当）。報酬用制作時間検証APIは未実装。1万作品達成ミッションの全件検証は未実装（現状500作品までの有界Query）。詳しくは `docs/AI設計書/13B_クリエイターミッション・コイン報酬仕様.md`。
 
 このコードは開発用AWSへデプロイ済みですが、コイン払い出しの機能フラグは初期状態で無効です。一般公開向けの報酬運用やアプリからの認証済みE2Eが完了した状態ではありません。
-
 
 ## Firebase Cloud Messaging（AWSからの鍵なし送信）
 
@@ -253,14 +251,14 @@ GSI・テーブルは増やしていない（`CAPACITY_PLAN` は変わらない�
 
 数値は `cdk.json` の `context`（または `cdk deploy -c 名前=値`）で変え、デプロイし直すと反映される。0にするとその仕組みを止める。
 
-| context名                         | 既定      | 意味                                                         |
-| --------------------------------- | --------- | ------------------------------------------------------------ |
-| `moderationReportHideThreshold`   | `3`       | 一時非掲載にする、未対応の通報をした別々のアカウントの数     |
-| `moderationStrikeSuspendThreshold`| `3`       | 投稿を自動で停止する違反の回数                               |
-| `moderationAiMode`                | `backlog` | AIの判定：`off`／`always`（毎回）／`backlog`（溜まったときだけ） |
-| `moderationAiBacklogThreshold`    | `20`      | `backlog` で、未対応（pending）の通報がこの件数以上の間だけAIで判定 |
-| `moderationAiDailyCap`            | `50`      | AIの判定の1日（日本時間）の上限                              |
-| `moderationMailDailyCap`          | `30`      | 通報のお知らせメールの1日（日本時間）の上限                  |
+| context名                          | 既定      | 意味                                                                |
+| ---------------------------------- | --------- | ------------------------------------------------------------------- |
+| `moderationReportHideThreshold`    | `3`       | 一時非掲載にする、未対応の通報をした別々のアカウントの数            |
+| `moderationStrikeSuspendThreshold` | `3`       | 投稿を自動で停止する違反の回数                                      |
+| `moderationAiMode`                 | `backlog` | AIの判定：`off`／`always`（毎回）／`backlog`（溜まったときだけ）    |
+| `moderationAiBacklogThreshold`     | `20`      | `backlog` で、未対応（pending）の通報がこの件数以上の間だけAIで判定 |
+| `moderationAiDailyCap`             | `50`      | AIの判定の1日（日本時間）の上限                                     |
+| `moderationMailDailyCap`           | `30`      | 通報のお知らせメールの1日（日本時間）の上限                         |
 
 #### お知らせメールとAIの判定（通報の後で動く）
 
@@ -293,11 +291,11 @@ AWSコンソール → **Systems Manager** → **パラメータストア** → 
 KMSのキーは既定の **`alias/aws/ssm`**（自分のKMSキーにする場合はLambdaのロールに `kms:Decrypt` を足す）。
 作った・変えた値は、Lambdaが最長5分覚えているので、遅くとも5分ほどで効く。デプロイし直す必要はない。
 
-| 名前                                   | 入れる値                                                         | 無いとき                    |
-| -------------------------------------- | ---------------------------------------------------------------- | --------------------------- |
-| `/niarim/moderation/admin-emails`      | 管理ページを使うGoogleアカウントのメールアドレス（複数はカンマ区切り） | 管理APIはすべて403          |
-| `/niarim/moderation/resend-api-key`    | ResendのAPIキー（`re_`で始まる。送信だけの権限のキーを作る）       | メールを送らない（ログだけ） |
-| `/niarim/moderation/anthropic-api-key` | Claude APIのキー（Claude Consoleで作る。使用量の上限も設定しておく） | AIの判定をしない            |
+| 名前                                   | 入れる値                                                               | 無いとき                     |
+| -------------------------------------- | ---------------------------------------------------------------------- | ---------------------------- |
+| `/niarim/moderation/admin-emails`      | 管理ページを使うGoogleアカウントのメールアドレス（複数はカンマ区切り） | 管理APIはすべて403           |
+| `/niarim/moderation/resend-api-key`    | ResendのAPIキー（`re_`で始まる。送信だけの権限のキーを作る）           | メールを送らない（ログだけ） |
+| `/niarim/moderation/anthropic-api-key` | Claude APIのキー（Claude Consoleで作る。使用量の上限も設定しておく）   | AIの判定をしない             |
 
 あわせて、Google Cloud ConsoleでアプリのOAuthクライアント（`GOOGLE_CLIENT_ID`と同じWebクライアント）の
 「承認済みのJavaScript生成元」に `https://niarim.miranima-studio.com` を足す（管理ページのGoogleログインのため）。
@@ -314,18 +312,19 @@ KMSのキーは既定の **`alias/aws/ssm`**（自分のKMSキーにする場合
   `access-control-allow-origin` を返す（`OPTIONS` の事前確認は204）。ほかのAPIはこれまでどおりCORSなし。
 - エラーはどれも `{"error": "日本語の文", "code": "機械向けの識別子"}`。
 
-| メソッド | パス                                   | 本文（JSON）                          | 返すもの                                                                 |
-| -------- | -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
-| GET      | `/admin/me`                            | -                                     | `{email, settings:{reportHideThreshold, strikeSuspendThreshold, aiMode, aiBacklogThreshold, aiDailyCap, mailDailyCap}}` |
-| GET      | `/admin/reports?status=&order=&limit=&cursor=` | -                             | `{status, order, reports:[Report], nextCursor}`。`status`は`pending`（既定）・`reviewing`・`resolved`、`order`は`oldest`（既定、resolvedは`newest`）、`limit`は1〜50（既定20） |
-| GET      | `/admin/reports/{reportId}`            | -                                     | `{report: Report, relatedReports: [ReportSummary]}`（同じ作品・アカウントへの通報すべて、新しい順） |
-| POST     | `/admin/reports/{reportId}/review`     | -                                     | `{ok, report}`（確認中にする）                                           |
-| POST     | `/admin/reports/{reportId}/dismiss`    | `{note?}`                             | `{ok, resolved, unhidden, report}`                                       |
-| POST     | `/admin/reports/{reportId}/hide`       | `{workId?（アカウントへの通報では必須）, note?}` | `{ok, workId, resolved, strikeAdded, strikeCount, postingSuspended, suspendedNow, report}` |
-| POST     | `/admin/works/{workId}/unhide`         | `{keepStrike?: boolean, note?}`       | `{ok, unhidden, strikeRemoved, strikeCount?, suspensionLifted, resolved, work: Work}` |
-| GET      | `/admin/users/{userId}`                | -                                     | `{user: User}`                                                           |
-| POST     | `/admin/users/{userId}/suspend`        | `{reason}`（1〜500文字）               | `{ok, user}`                                                             |
-| POST     | `/admin/users/{userId}/unsuspend`      | `{resetStrikes?: boolean}`            | `{ok, user}`                                                             |
+| メソッド | パス                                           | 本文（JSON）                                     | 返すもの                                                                                                                                                                         |
+| -------- | ---------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET      | `/admin/me`                                    | -                                                | `{email, settings:{reportHideThreshold, strikeSuspendThreshold, aiMode, aiModeSource, aiBacklogThreshold, aiDailyCap, mailDailyCap}}`                                            |
+| POST     | `/admin/settings`                              | `{aiMode: "off" \| "always" \| "backlog"}`       | `{ok, settings}`（管理画面からAIの判定を切り替える。デプロイの既定の`MODERATION_AI_MODE`より優先し、`aiModeSource`は`admin`になる。APIキーが無ければどのモードでもAIは動かない） |
+| GET      | `/admin/reports?status=&order=&limit=&cursor=` | -                                                | `{status, order, reports:[Report], nextCursor}`。`status`は`pending`（既定）・`reviewing`・`resolved`、`order`は`oldest`（既定、resolvedは`newest`）、`limit`は1〜50（既定20）   |
+| GET      | `/admin/reports/{reportId}`                    | -                                                | `{report: Report, relatedReports: [ReportSummary]}`（同じ作品・アカウントへの通報すべて、新しい順）                                                                              |
+| POST     | `/admin/reports/{reportId}/review`             | -                                                | `{ok, report}`（確認中にする）                                                                                                                                                   |
+| POST     | `/admin/reports/{reportId}/dismiss`            | `{note?}`                                        | `{ok, resolved, unhidden, report}`                                                                                                                                               |
+| POST     | `/admin/reports/{reportId}/hide`               | `{workId?（アカウントへの通報では必須）, note?}` | `{ok, workId, resolved, strikeAdded, strikeCount, postingSuspended, suspendedNow, report}`                                                                                       |
+| POST     | `/admin/works/{workId}/unhide`                 | `{keepStrike?: boolean, note?}`                  | `{ok, unhidden, strikeRemoved, strikeCount?, suspensionLifted, resolved, work: Work}`                                                                                            |
+| GET      | `/admin/users/{userId}`                        | -                                                | `{user: User}`                                                                                                                                                                   |
+| POST     | `/admin/users/{userId}/suspend`                | `{reason}`（1〜500文字）                         | `{ok, user}`                                                                                                                                                                     |
+| POST     | `/admin/users/{userId}/unsuspend`              | `{resetStrikes?: boolean}`                       | `{ok, user}`                                                                                                                                                                     |
 
 - `ReportSummary`：`reportId`（URLにそのまま使える不透明なID）・`status`・`createdAt`・`reason`・`reporterId`・
   `decision`（`dismiss`/`hide`/`unhide`/null）・`reviewedAt`・`reviewedBy`・`reviewNote`・`aiTriage`
