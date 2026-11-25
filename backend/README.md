@@ -116,6 +116,7 @@ backend/
 | GET      | `/users/{id}/reposts`    | 8.5bis節（リポスト一覧。フォロー中タブで使う）                                           | 不要（リポストは公開。非公開化された作品は除外） |
 | PUT      | `/users/{id}/push-token` | 22.7節（FCM端末トークン登録／解除）                                                      | 必須（本人のみ）                                 |
 | GET/POST | `/admin/...`             | 通報の管理API（下の「作品広場の通報対応」）                                              | 必須（GoogleのIDトークン＋SSMの管理者リスト）    |
+| GET/POST | `/triage-bot/...`        | 通報の判定ボット（下の「Claudeのサブスクリプションでの判定」）                           | 必須（管理ページで作る判定用のトークン）         |
 
 ## 未実装・既知の制約（デプロイ前に把握しておくべきこと）
 
@@ -307,6 +308,49 @@ GSI・テーブルは増やしていない（`CAPACITY_PLAN` は変わらない�
   Claude Opus 5.5（入力$4・出力$20／100万トークン）では1件$0.01〜0.02（約2〜3円）。上限の50件／日に達しても
   1日$1前後（約150円）まで。既定の `backlog` では通報が20件以上たまらない限り呼ばないので、通常は0円。
   Claude Consoleでワークスペースの使用量の上限も設定しておくと安全。Resendは既存のWebサイトのアカウントを使う。
+  APIキーを置かず、所有者のClaudeのサブスクリプションで判定することもできる（次の節）。
+
+#### Claudeのサブスクリプションでの判定（APIキーなし）
+
+Claude APIのキーが無くても、所有者のClaudeのサブスクリプションで通報を判定できる。どちらも
+APIの判定と同じ決まり（`src/lib/moderationAi.ts` の `TRIAGE_GUIDELINES`）・同じ形の `aiTriage` を通報に保存し、
+`source` で出どころを見分ける（`api`＝APIキーの判定、`subscription`＝判定ボット、`chat`＝チャットから貼り付け。
+この項目の無い古い判定はAPIのもの）。
+
+- **自動の下見（判定ボット）**：決まった時刻に動くClaude Codeのセッション（クラウド）が、判定用のトークンで
+  `GET /triage-bot/reports` から未判定の通報を読み、1件ずつ `POST /triage-bot/reports/{reportId}/triage` で
+  判定を書く。トークンは管理ページで作る（`nrtb_` で始まる。**作ったときに1度だけ表示**され、保存されるのは
+  SHA-256のハッシュだけ）。作り直すと前のトークンは使えなくなり、取り消しもできる（ほかのLambdaの
+  コンテナは最長30秒前の設定を覚えている）。最後に使った時刻（10分ごと）は管理ページに出る。
+- **チャットで判定（ボタン）**：管理ページの `GET /admin/triage/prompt` が、決まり・通報・答えの形を1つにまとめた
+  文を作る。Claudeのチャットに貼り、返ってきた ` ```json ` のコードブロックを `POST /admin/triage/results` で
+  貼り戻す（1件ずつ反映し、失敗した通報だけ理由のコードを返す）。
+
+判定ボットができるのは、**未対応（pending・reviewing）で、まだ判定の無い（または判定に失敗・拒否された）通報を
+読むことと、参考の判定を書くことだけ**。通報者・投稿者のNIARIMのIDは渡さない（渡すのは理由・作品の公開情報・
+チャンネル名・通報した人数）。判定は参考で、決めるのは運営。ただし作品への判定が **重大（critical）** のときは、
+APIの判定と同じく確認が終わるまで一時非掲載にする（`moderationAutoHiddenReason: "ai"`。すでに非掲載の作品は
+そのまま）。対応済みの通報・判定済みの通報には書けない（`REPORT_RESOLVED`・`ALREADY_TRIAGED`。同時に2つ書いても
+1つ目だけが残る）。お知らせメールは送らない（判定は管理ページの通報に出る）。
+
+| メソッド | パス                                    | 認証                                       | 本文（JSON）                                                                           | 返すもの                                                                                                                                                                                                                         |
+| -------- | --------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET      | `/triage-bot/reports?limit=`            | `Authorization: Bearer <判定用のトークン>` | -                                                                                      | `{guidelines, outputFormat, reports: [TriageReport]}`。未判定の通報を古い順に、`limit`は1〜50（既定20）。`guidelines`は判定の決まり、`outputFormat`は1件の判定のJSON Schema                                                      |
+| POST     | `/triage-bot/reports/{reportId}/triage` | `Authorization: Bearer <判定用のトークン>` | `{severity, category, recommendedAction, rationale}`                                   | `{ok: true, autoHidden}`（`autoHidden`＝この判定で一時非掲載にしたか）。保存する判定の`model`は`claude-subscription`、`source`は`subscription`                                                                                   |
+| POST     | `/admin/triage/token`                   | 管理API                                    | -                                                                                      | `{token, createdAt, settings}`（トークンを作る・作り直す。トークンが返るのはここだけ）                                                                                                                                           |
+| POST     | `/admin/triage/token/revoke`            | 管理API                                    | -                                                                                      | `{ok: true, settings}`                                                                                                                                                                                                           |
+| GET      | `/admin/triage/prompt?limit=`           | 管理API                                    | -                                                                                      | `{prompt, reportCount, reportIds}`（チャットに貼る文。通報が無ければ`prompt`は空の文字列）                                                                                                                                       |
+| POST     | `/admin/triage/results`                 | 管理API                                    | `{results: [{reportId, severity, category, recommendedAction, rationale}]}`（1〜50件） | `{results: [{reportId, ok: true, autoHidden} \| {reportId, ok: false, code}]}`（いつも200。`code`は`INVALID_TRIAGE`・`NOT_FOUND`・`REPORT_RESOLVED`・`ALREADY_TRIAGED`）。保存する判定の`model`は`claude-chat`、`source`は`chat` |
+
+- `TriageReport`：`reportId`・`targetType`（`work`/`account`）・`reason`・`createdAt`・`reporterCount`（未対応の通報を
+  した別々のアカウントの数）・`work`（`{available, title, description, tags, thumbnailUrl, youtubeUrl}`、
+  アカウントへの通報はnull）・`authorName`（チャンネル名かnull）。
+- 判定の値：`severity`は`critical`・`high`・`medium`・`low`・`none`、`category`は`child_safety`・`sexual`・
+  `violence`・`hate_harassment`・`self_harm`・`illegal`・`privacy`・`copyright`・`spam_scam`・`other`・`none`、
+  `recommendedAction`は`hide`・`keep`・`review`、`rationale`は日本語で1〜300文字（前後の空白は除く）。
+  違えば400 `INVALID_TRIAGE`。
+- 判定ボットの認証：トークンを作っていない → 403 `TRIAGE_BOT_DISABLED`、トークンが無い・違う → 401 `UNAUTHORIZED`。
+  CORSは付けない（サーバーからの呼び出し）。GoogleのIDトークンでは呼べない。
 
 #### 所有者が作るSSMのパラメーター（値はリポジトリ・CloudFormationに置かない）
 
@@ -336,23 +380,23 @@ KMSのキーは既定の **`alias/aws/ssm`**（自分のKMSキーにする場合
   `access-control-allow-origin` を返す（`OPTIONS` の事前確認は204）。ほかのAPIはこれまでどおりCORSなし。
 - エラーはどれも `{"error": "日本語の文", "code": "機械向けの識別子"}`。
 
-| メソッド | パス                                           | 本文（JSON）                                     | 返すもの                                                                                                                                                                         |
-| -------- | ---------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET      | `/admin/me`                                    | -                                                | `{email, settings:{reportHideThreshold, strikeSuspendThreshold, aiMode, aiModeSource, aiBacklogThreshold, aiDailyCap, mailDailyCap}}`                                            |
-| POST     | `/admin/settings`                              | `{aiMode: "off" \| "always" \| "backlog"}`       | `{ok, settings}`（管理画面からAIの判定を切り替える。デプロイの既定の`MODERATION_AI_MODE`より優先し、`aiModeSource`は`admin`になる。APIキーが無ければどのモードでもAIは動かない） |
-| GET      | `/admin/reports?status=&order=&limit=&cursor=` | -                                                | `{status, order, reports:[Report], nextCursor}`。`status`は`pending`（既定）・`reviewing`・`resolved`、`order`は`oldest`（既定、resolvedは`newest`）、`limit`は1〜50（既定20）   |
-| GET      | `/admin/reports/{reportId}`                    | -                                                | `{report: Report, relatedReports: [ReportSummary]}`（同じ作品・アカウントへの通報すべて、新しい順）                                                                              |
-| POST     | `/admin/reports/{reportId}/review`             | -                                                | `{ok, report}`（確認中にする）                                                                                                                                                   |
-| POST     | `/admin/reports/{reportId}/dismiss`            | `{note?}`                                        | `{ok, resolved, unhidden, report}`                                                                                                                                               |
-| POST     | `/admin/reports/{reportId}/hide`               | `{workId?（アカウントへの通報では必須）, note?}` | `{ok, workId, resolved, strikeAdded, strikeCount, postingSuspended, suspendedNow, report}`                                                                                       |
-| POST     | `/admin/works/{workId}/unhide`                 | `{keepStrike?: boolean, note?}`                  | `{ok, unhidden, strikeRemoved, strikeCount?, suspensionLifted, resolved, work: Work}`                                                                                            |
-| GET      | `/admin/users/{userId}`                        | -                                                | `{user: User}`                                                                                                                                                                   |
-| POST     | `/admin/users/{userId}/suspend`                | `{reason}`（1〜500文字）                         | `{ok, user}`                                                                                                                                                                     |
-| POST     | `/admin/users/{userId}/unsuspend`              | `{resetStrikes?: boolean}`                       | `{ok, user}`                                                                                                                                                                     |
+| メソッド | パス                                           | 本文（JSON）                                     | 返すもの                                                                                                                                                                                                                               |
+| -------- | ---------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET      | `/admin/me`                                    | -                                                | `{email, settings:{reportHideThreshold, strikeSuspendThreshold, aiMode, aiModeSource, aiBacklogThreshold, aiDailyCap, mailDailyCap, triageBot:{configured, createdAt, createdBy, lastUsedAt}}}`（`triageBot`は判定用のトークンの状態） |
+| POST     | `/admin/settings`                              | `{aiMode: "off" \| "always" \| "backlog"}`       | `{ok, settings}`（管理画面からAIの判定を切り替える。デプロイの既定の`MODERATION_AI_MODE`より優先し、`aiModeSource`は`admin`になる。APIキーが無ければどのモードでもAIは動かない）                                                       |
+| GET      | `/admin/reports?status=&order=&limit=&cursor=` | -                                                | `{status, order, reports:[Report], nextCursor}`。`status`は`pending`（既定）・`reviewing`・`resolved`、`order`は`oldest`（既定、resolvedは`newest`）、`limit`は1〜50（既定20）                                                         |
+| GET      | `/admin/reports/{reportId}`                    | -                                                | `{report: Report, relatedReports: [ReportSummary]}`（同じ作品・アカウントへの通報すべて、新しい順）                                                                                                                                    |
+| POST     | `/admin/reports/{reportId}/review`             | -                                                | `{ok, report}`（確認中にする）                                                                                                                                                                                                         |
+| POST     | `/admin/reports/{reportId}/dismiss`            | `{note?}`                                        | `{ok, resolved, unhidden, report}`                                                                                                                                                                                                     |
+| POST     | `/admin/reports/{reportId}/hide`               | `{workId?（アカウントへの通報では必須）, note?}` | `{ok, workId, resolved, strikeAdded, strikeCount, postingSuspended, suspendedNow, report}`                                                                                                                                             |
+| POST     | `/admin/works/{workId}/unhide`                 | `{keepStrike?: boolean, note?}`                  | `{ok, unhidden, strikeRemoved, strikeCount?, suspensionLifted, resolved, work: Work}`                                                                                                                                                  |
+| GET      | `/admin/users/{userId}`                        | -                                                | `{user: User}`                                                                                                                                                                                                                         |
+| POST     | `/admin/users/{userId}/suspend`                | `{reason}`（1〜500文字）                         | `{ok, user}`                                                                                                                                                                                                                           |
+| POST     | `/admin/users/{userId}/unsuspend`              | `{resetStrikes?: boolean}`                       | `{ok, user}`                                                                                                                                                                                                                           |
 
 - `ReportSummary`：`reportId`（URLにそのまま使える不透明なID）・`status`・`createdAt`・`reason`・`reporterId`・
   `decision`（`dismiss`/`hide`/`unhide`/null）・`reviewedAt`・`reviewedBy`・`reviewNote`・`aiTriage`
-  （`{status: "ok"|"refused"|"failed", severity?, category?, recommendedAction?, rationale?, model?, refusalCategory?, triagedAt}` か null）。
+  （`{status: "ok"|"refused"|"failed", severity?, category?, recommendedAction?, rationale?, model?, refusalCategory?, source?: "api"|"subscription"|"chat", triagedAt}` か null）。
 - `Report`：`ReportSummary` に加えて `targetType`（`work`/`account`）・`workId`・`targetUserId`・
   `reporterCount`（未対応の通報をした別々のアカウントの数）・`openReportCount`・`totalReportCount`・`work`・`author`。
 - `Work`：`workId`・`available`（false＝消えた作品、`deleted`も）・`title`・`description`・`tags`・`youtubeVideoId`・
@@ -363,7 +407,8 @@ KMSのキーは既定の **`alias/aws/ssm`**（自分のKMSキーにする場合
   `postingSuspendedBy`（`auto` か管理者のメール）。
 - 主なエラーの `code`：`REPORT_RESOLVED`（対応済み）・`REPORT_CHANGED`・`WORK_ID_REQUIRED`・
   `WORK_AUTHOR_MISMATCH`・`MODERATION_CHANGED`（同時に変わった。読み直してやり直す）・`INVALID_STATUS`・
-  `INVALID_PAGE_SIZE`・`INVALID_PAGE_CURSOR`・`INVALID_NOTE`・`INVALID_REASON`・`NOT_FOUND`。
+  `INVALID_PAGE_SIZE`・`INVALID_PAGE_CURSOR`・`INVALID_NOTE`・`INVALID_REASON`・`NOT_FOUND`、
+  判定の貼り戻しでは `INVALID_RESULTS`・`INVALID_TRIAGE`・`ALREADY_TRIAGED`。
 - 「対応不要」「非掲載」「戻す」は、その作品（アカウントへの通報はそのアカウント）の未対応の通報をまとめて完了にする。
 
 #### コマンドラインからの対応（管理ページが無いとき）
@@ -386,3 +431,4 @@ AWS_PROFILE=<運営用プロファイル> TABLE_NAME=<対象テーブル> npx ts
 ここに書いた変更は、GitHub Actions の **Backend CI** を `dev_branch` で手動実行し「AWSへデプロイする」を
 選んだときだけ本番に入る（pushでは入らない）。デプロイしてもSSMのパラメーターを作るまでは、管理APIは403、
 メールとAIは動かない（通報の保存・自動の一時非掲載・違反の回数と投稿の停止は動く）。
+判定ボットは、管理ページで判定用のトークンを作るまで403（`TRIAGE_BOT_DISABLED`）。

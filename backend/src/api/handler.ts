@@ -68,6 +68,14 @@ import {
   unhideAdminWork,
   unsuspendAdminUser,
 } from "./routes/admin";
+import {
+  createAdminTriageToken,
+  getAdminTriagePrompt,
+  listTriageBotReports,
+  revokeAdminTriageToken,
+  submitAdminTriageResults,
+  submitTriageBotJudgment,
+} from "./routes/triage";
 
 type Handler = (
   event: APIGatewayProxyEventV2,
@@ -184,6 +192,15 @@ const routes: Route[] = [
   route("GET", "/admin/users/{id}", (e, p) => getAdminUser(e, p.id)),
   route("POST", "/admin/users/{id}/suspend", (e, p) => suspendAdminUser(e, p.id)),
   route("POST", "/admin/users/{id}/unsuspend", (e, p) => unsuspendAdminUser(e, p.id)),
+  route("POST", "/admin/triage/token", (e) => createAdminTriageToken(e)),
+  route("POST", "/admin/triage/token/revoke", (e) => revokeAdminTriageToken(e)),
+  route("GET", "/admin/triage/prompt", (e) => getAdminTriagePrompt(e)),
+  route("POST", "/admin/triage/results", (e) => submitAdminTriageResults(e)),
+
+  // Report triage bot: a scheduled Claude session on the owner's subscription,
+  // with the bearer token created on the admin page. Server to server, no CORS.
+  route("GET", "/triage-bot/reports", (e) => listTriageBotReports(e)),
+  route("POST", "/triage-bot/reports/{id}/triage", (e, p) => submitTriageBotJudgment(e, p.id)),
 ];
 
 /**

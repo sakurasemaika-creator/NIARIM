@@ -420,11 +420,13 @@ describe("AI triage", () => {
   it("parses results, refusals and broken replies", () => {
     expect(parseTriageResponse(reply(JSON.stringify({
       severity: "high", category: "sexual", recommendedAction: "review", rationale: "露出",
-    })))).toMatchObject({ status: "ok", severity: "high", category: "sexual", recommendedAction: "review" });
+    })))).toMatchObject({
+      status: "ok", severity: "high", category: "sexual", recommendedAction: "review", source: "api",
+    });
     expect(parseTriageResponse({ content: [], stop_reason: "refusal",
       stop_details: { type: "refusal", category: "bio", explanation: null }, model: "m" } as never))
-      .toMatchObject({ status: "refused", recommendedAction: "review", refusalCategory: "bio" });
-    expect(parseTriageResponse(reply("not json"))).toMatchObject({ status: "failed" });
+      .toMatchObject({ status: "refused", recommendedAction: "review", refusalCategory: "bio", source: "api" });
+    expect(parseTriageResponse(reply("not json"))).toMatchObject({ status: "failed", source: "api" });
     expect(parseTriageResponse(reply('{"severity":"high"', "max_tokens"))).toMatchObject({ status: "failed" });
     expect(parseTriageResponse(reply(JSON.stringify({
       severity: "severe", category: "x", recommendedAction: "hide", rationale: "",
@@ -522,7 +524,9 @@ describe("moderation worker", () => {
     await processNewReport(report, deps);
     await processNewReport(report, deps);
     expect(create).toHaveBeenCalledTimes(1);
-    expect(fake.get(report.pk, report.sk)!.aiTriage).toMatchObject({ status: "ok", severity: "critical" });
+    expect(fake.get(report.pk, report.sk)!.aiTriage).toMatchObject({
+      status: "ok", severity: "critical", model: "claude-opus-5-5", source: "api",
+    });
     expect(fake.get(`WORK#${workIds[0]}`, "META")).toMatchObject({
       moderationHidden: true, moderationAutoHidden: true, moderationAutoHiddenReason: "ai",
     });
@@ -560,7 +564,7 @@ describe("moderation worker", () => {
       createTriageClient: () => ({ beta: { messages: { create: async () => { throw new Error("down"); } } } }),
       createSender: () => async () => { throw new Error("mail down"); },
     })).resolves.toBeUndefined();
-    expect(fake.get(report.pk, report.sk)!.aiTriage).toMatchObject({ status: "failed" });
+    expect(fake.get(report.pk, report.sk)!.aiTriage).toMatchObject({ status: "failed", source: "api" });
     expect(fake.get(`WORK#${workIds[0]}`, "META")!.moderationHidden).toBeUndefined();
   });
 

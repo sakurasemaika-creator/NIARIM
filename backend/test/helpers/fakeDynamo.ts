@@ -16,7 +16,8 @@ import {
  * moderation code paths: Get, Put, Update (SET / REMOVE / ADD), Query (base
  * table and GSIs by partition attribute), BatchGet and TransactWrite, with
  * the condition expressions those paths use (=, <>, <, <=, >, >=, IN, AND,
- * OR, NOT, parentheses, attribute_exists, attribute_not_exists, begins_with).
+ * OR, NOT, parentheses, attribute_exists, attribute_not_exists, begins_with,
+ * and dotted map paths such as `aiTriage.#status` in conditions).
  * Not a general DynamoDB emulator.
  */
 type Item = Record<string, unknown>;
@@ -31,7 +32,9 @@ const GSI_KEYS: Record<string, [string, string]> = {
 };
 
 function tokenize(expression: string): string[] {
-  return expression.match(/<>|<=|>=|[()=<>,]|[#:]?[A-Za-z_][A-Za-z0-9_]*/g) ?? [];
+  return expression.match(
+    /<>|<=|>=|[()=<>,]|[#:]?[A-Za-z_][A-Za-z0-9_]*(?:\.#?[A-Za-z_][A-Za-z0-9_]*)*/g,
+  ) ?? [];
 }
 
 class Evaluator {
@@ -67,12 +70,22 @@ class Evaluator {
     return token;
   }
 
+  /** Value at an attribute path (`a`, `#a`, `a.#b.c`), undefined when absent. */
+  private lookup(token: string): unknown {
+    let value: unknown = this.item;
+    for (const part of token.split(".")) {
+      if (value === null || typeof value !== "object") return undefined;
+      value = (value as Item)[this.name(part)];
+    }
+    return value;
+  }
+
   private operand(token: string): unknown {
     if (token.startsWith(":")) {
       if (!this.values || !(token in this.values)) throw new Error(`Missing value ${token}`);
       return this.values[token];
     }
-    return this.item?.[this.name(token)];
+    return this.lookup(token);
   }
 
   or(): boolean {
@@ -97,9 +110,8 @@ class Evaluator {
     if (token === "(") { const value = this.or(); this.expect(")"); return value; }
     if (token === "attribute_exists" || token === "attribute_not_exists") {
       this.expect("(");
-      const attribute = this.name(this.next());
+      const exists = this.lookup(this.next()) !== undefined;
       this.expect(")");
-      const exists = this.item !== undefined && this.item[attribute] !== undefined;
       return token === "attribute_exists" ? exists : !exists;
     }
     if (token === "begins_with") {

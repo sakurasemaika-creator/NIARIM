@@ -1,11 +1,7 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import {
-  BatchGetCommand,
-  type BatchGetCommandOutput,
-  GetCommand,
-  QueryCommand,
-} from "@aws-sdk/lib-dynamodb";
+import { GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { authenticateAdmin } from "../../lib/adminAuth";
+import { batchGetItems, itemKey, type TableRow } from "../../lib/batchGetItems";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
 import {
   decodeReportId,
@@ -29,6 +25,7 @@ import {
 import { decodePageCursor, encodePageCursor } from "../../lib/pagination";
 import { parseJsonObject } from "../../lib/request";
 import { badRequest, notFound, ok } from "../../lib/response";
+import { triageBotStatus } from "../../lib/triageBot";
 import type { ReportItem, ReportStatus, UserItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 
@@ -39,35 +36,9 @@ import { TABLE_ITEM_TYPE } from "../../lib/types";
  * website origin is added by the router for `/admin/` paths.
  */
 
-type Row = Record<string, unknown>;
 const STATUSES: ReportStatus[] = ["pending", "reviewing", "resolved"];
 
-function keyOf(item: { pk: unknown; sk: unknown }): string {
-  return `${String(item.pk)}\n${String(item.sk)}`;
-}
-
-async function batchGet(keys: { pk: string; sk: string }[]): Promise<Map<string, Row>> {
-  const found = new Map<string, Row>();
-  const unique = [...new Map(keys.map((k) => [keyOf(k), k])).values()];
-  const TableName = tableName();
-  for (let start = 0; start < unique.length; start += 100) {
-    let request: Record<string, { Keys: Row[] }> | undefined = {
-      [TableName]: { Keys: unique.slice(start, start + 100) },
-    };
-    for (let attempt = 0; request && attempt < 4; attempt++) {
-      const result: BatchGetCommandOutput = await ddb.send(
-        new BatchGetCommand({ RequestItems: request }));
-      for (const item of result?.Responses?.[TableName] ?? []) {
-        found.set(keyOf(item as { pk: unknown; sk: unknown }), item);
-      }
-      const rest: Row[] | undefined = result?.UnprocessedKeys?.[TableName]?.Keys;
-      request = rest?.length ? { [TableName]: { Keys: rest } } : undefined;
-    }
-  }
-  return found;
-}
-
-function workView(workId: string, work: Row | undefined, detail: Row | undefined) {
+function workView(workId: string, work: TableRow | undefined, detail: TableRow | undefined) {
   if (!work || work.itemType !== TABLE_ITEM_TYPE.Work) {
     return { workId, available: false, deleted: work?.itemType === "WORK_TOMBSTONE" };
   }
@@ -96,7 +67,7 @@ function workView(workId: string, work: Row | undefined, detail: Row | undefined
   };
 }
 
-function userView(userId: string, user: Row | undefined, fallbackName?: string) {
+function userView(userId: string, user: TableRow | undefined, fallbackName?: string) {
   if (!user || user.itemType !== TABLE_ITEM_TYPE.User || user.erasureReceipt) {
     return { userId, available: false };
   }
@@ -143,14 +114,14 @@ async function reportViews(reports: ReportItem[]) {
     if (report.targetId) keys.push(Keys.user(report.targetId));
   }
   const [items, statsList] = await Promise.all([
-    batchGet(keys),
+    batchGetItems(keys),
     Promise.all([...new Set(reports.map(targetPkOf))].map(async (pk) =>
       [pk, await reportStatsForTarget(pk)] as const)),
   ]);
   const stats = new Map<string, ReportStats>(statsList);
   return reports.map((report) => {
-    const work = report.workId ? items.get(keyOf(Keys.work(report.workId))) : undefined;
-    const detail = report.workId ? items.get(keyOf(Keys.workDetail(report.workId))) : undefined;
+    const work = report.workId ? items.get(itemKey(Keys.work(report.workId))) : undefined;
+    const detail = report.workId ? items.get(itemKey(Keys.workDetail(report.workId))) : undefined;
     const authorId = (work?.itemType === TABLE_ITEM_TYPE.Work ? work.authorId as string : undefined) ??
       report.targetId;
     const s = stats.get(targetPkOf(report)) ?? { reporters: 0, open: 0, total: 0 };
@@ -164,14 +135,15 @@ async function reportViews(reports: ReportItem[]) {
       totalReportCount: s.total,
       work: report.workId ? workView(report.workId, work, detail) : null,
       author: authorId
-        ? userView(authorId, items.get(keyOf(Keys.user(authorId))),
+        ? userView(authorId, items.get(itemKey(Keys.user(authorId))),
           typeof work?.channelName === "string" ? work.channelName : undefined)
         : null,
     };
   });
 }
 
-function pageLimit(raw: string | undefined): number {
+/** `limit` query parameter: 1〜50, 20 when absent. */
+export function pageLimit(raw: string | undefined): number {
   if (raw === undefined) return 20;
   const value = Number(raw);
   if (!Number.isInteger(value) || value < 1 || value > 50) {
@@ -186,7 +158,7 @@ function reportKeyParam(raw: string): { pk: string; sk: string } {
   return key;
 }
 
-function optionalNote(body: Row): string | undefined {
+function optionalNote(body: TableRow): string | undefined {
   if (body.note === undefined || body.note === null) return undefined;
   if (typeof body.note !== "string" || body.note.length > 1000) {
     badRequest("noteは1000文字以内の文字列で指定してください", "INVALID_NOTE");
@@ -206,8 +178,9 @@ export async function getAdminMe(event: APIGatewayProxyEventV2) {
   return ok({ email: admin.email, settings: await adminSettings() });
 }
 
-async function adminSettings() {
-  const config = await effectiveModerationConfig();
+/** The `settings` object of GET /admin/me (also returned after changes). */
+export async function adminSettings() {
+  const [config, triageBot] = await Promise.all([effectiveModerationConfig(), triageBotStatus()]);
   return {
     reportHideThreshold: config.reportHideThreshold,
     strikeSuspendThreshold: config.strikeSuspendThreshold,
@@ -216,6 +189,7 @@ async function adminSettings() {
     aiBacklogThreshold: config.aiBacklogThreshold,
     aiDailyCap: config.aiDailyCap,
     mailDailyCap: config.mailDailyCap,
+    triageBot,
   };
 }
 

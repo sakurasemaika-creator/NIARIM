@@ -308,6 +308,13 @@ export interface AiTriageRecord {
   rationale?: string;
   model?: string;
   refusalCategory?: string | null;
+  /**
+   * Where the judgment came from: the Claude API worker (`api`), the
+   * scheduled triage bot on the owner's Claude subscription (`subscription`),
+   * or a result pasted back from Claude chat on the admin page (`chat`).
+   * Records stored before this field existed are from the API.
+   */
+  source?: "api" | "subscription" | "chat";
   triagedAt: string;
 }
 

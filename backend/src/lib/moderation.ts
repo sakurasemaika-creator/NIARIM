@@ -1,7 +1,6 @@
 import { ConditionalCheckFailedException, TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import {
   GetCommand,
-  PutCommand,
   QueryCommand,
   TransactWriteCommand,
   UpdateCommand,
@@ -78,6 +77,8 @@ export function moderationConfig(): ModerationConfig {
  * per container so a report burst costs no extra reads.
  */
 export const AI_MODES: readonly AiMode[] = ["off", "always", "backlog"];
+/** itemType of the moderation settings item (Keys.moderationSettings). */
+export const MODERATION_SETTINGS_ITEM_TYPE = "MODERATION_SETTINGS";
 let storedAiModeCache: { at: number; mode?: AiMode } | undefined;
 const STORED_AI_MODE_TTL_MS = 60_000;
 
@@ -116,16 +117,20 @@ export async function effectiveModerationConfig(): Promise<
     : { ...config, aiModeSource: "default" };
 }
 
-/** Saves the AI triage mode chosen on the admin page. */
+/**
+ * Saves the AI triage mode chosen on the admin page. An update, not a put:
+ * the same item also holds the triage bot's token (triageBot.ts).
+ */
 export async function setStoredAiMode(mode: AiMode, by: string): Promise<void> {
-  await ddb.send(new PutCommand({
+  await ddb.send(new UpdateCommand({
     TableName: tableName(),
-    Item: {
-      ...Keys.moderationSettings(),
-      itemType: "MODERATION_SETTINGS",
-      aiMode: mode,
-      updatedAt: new Date().toISOString(),
-      updatedBy: by,
+    Key: Keys.moderationSettings(),
+    UpdateExpression: "SET itemType = :type, aiMode = :mode, updatedAt = :now, updatedBy = :by",
+    ExpressionAttributeValues: {
+      ":type": MODERATION_SETTINGS_ITEM_TYPE,
+      ":mode": mode,
+      ":now": new Date().toISOString(),
+      ":by": by,
     },
   }));
   storedAiModeCache = { at: Date.now(), mode };
