@@ -111,7 +111,9 @@ void main() {
           ),
         ),
       );
-      final text = tester.widget<Text>(find.byType(Text));
+      final text = tester.widget<Text>(
+        find.byWidgetPredicate((widget) => widget is Text),
+      );
       return text.maxLines!;
     }
 

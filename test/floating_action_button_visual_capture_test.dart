@@ -159,7 +159,9 @@ void main() {
     await capture('02_home_exported_works_fab');
     for (final item in <(String, String, int)>[
       ('/shared', '03_shared_received_folder_fab', 1),
-      ('/community', '04_community_two_fabs', 2),
+      // The plaza's 「↑」 shows only when its list can scroll up (as on
+      // Home); at the top only the post button floats.
+      ('/community', '04_community_fab', 1),
       ('/autofill-presets', '05_autofill_presets_fab', 1),
       ('/settings/watermark', '06_watermark_premium_lock', 0),
       ('/settings/shortcuts', '07_shortcuts_extended_fab', 1),
