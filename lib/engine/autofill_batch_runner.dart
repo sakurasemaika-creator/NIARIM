@@ -20,8 +20,6 @@ import 'tile_manager.dart';
 /// を返す（一括実行時に個別ダイアログを出さずスキップして続行するため）。
 enum AutofillBatchResult { applied, skipped }
 
-const _toneSize = 64;
-
 Future<AutofillBatchResult> runAutofillForLayer({
   required ProjectService projectService,
   required AutofillPresetService presetService,
@@ -72,13 +70,15 @@ Future<AutofillBatchResult> runAutofillForLayer({
   }
 
   Uint8List? toneTexture;
+  var toneSize = defaultToneTileSize;
   if (part.useTone && part.toneId != null) {
     final tone = toneService.tones
         .where((t) => t.id == part.toneId)
         .firstOrNull;
     if (tone != null) {
-      await ensureToneTextureLoaded(tone, size: _toneSize);
-      toneTexture = generateBuiltInToneTexture(tone, size: _toneSize);
+      toneSize = toneTileSize(tone);
+      await ensureToneTextureLoaded(tone, size: toneSize);
+      toneTexture = generateBuiltInToneTexture(tone, size: toneSize);
     }
   }
 
@@ -94,8 +94,8 @@ Future<AutofillBatchResult> runAutofillForLayer({
     height: h,
     part: part,
     toneTexture: toneTexture,
-    toneWidth: _toneSize,
-    toneHeight: _toneSize,
+    toneWidth: toneSize,
+    toneHeight: toneSize,
   ));
   if (result == null) return AutofillBatchResult.skipped;
 
@@ -220,8 +220,8 @@ Future<AutofillBatchResult> runAutofillForOrphanedLayer({
     height: h,
     part: part,
     toneTexture: null,
-    toneWidth: _toneSize,
-    toneHeight: _toneSize,
+    toneWidth: defaultToneTileSize,
+    toneHeight: defaultToneTileSize,
   ));
 
   projectService.replaceLayerPixels(

@@ -31,7 +31,6 @@ class TonePreviewThumb extends StatefulWidget {
 }
 
 class _TonePreviewThumbState extends State<TonePreviewThumb> {
-  static const int _textureSize = 64;
   ui.Image? _image;
   int _loadVersion = 0;
 
@@ -68,9 +67,10 @@ class _TonePreviewThumbState extends State<TonePreviewThumb> {
       _image = null;
       return;
     }
-    await ensureToneTextureLoaded(tone, size: _textureSize);
+    final textureSize = toneTileSize(tone);
+    await ensureToneTextureLoaded(tone, size: textureSize);
     if (!mounted || version != _loadVersion) return;
-    final mask = generateBuiltInToneTexture(tone, size: _textureSize);
+    final mask = generateBuiltInToneTexture(tone, size: textureSize);
     final rgba = Uint8List(mask.length);
     final r = (widget.color.r * 255).round();
     final g = (widget.color.g * 255).round();
@@ -83,8 +83,8 @@ class _TonePreviewThumbState extends State<TonePreviewThumb> {
     }
     ui.decodeImageFromPixels(
       rgba,
-      _textureSize,
-      _textureSize,
+      textureSize,
+      textureSize,
       ui.PixelFormat.rgba8888,
       (img) {
         if (!mounted || version != _loadVersion) {

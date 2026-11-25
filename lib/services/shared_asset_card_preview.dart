@@ -164,7 +164,7 @@ class SharedAssetCardPreview {
     }
 
     if (tone != null) {
-      const textureSize = 64;
+      final textureSize = toneTileSize(tone);
       await ensureToneTextureLoaded(tone, size: textureSize);
       final texture = generateBuiltInToneTexture(tone, size: textureSize);
       final result = ToneEngine().drawToneStroke(

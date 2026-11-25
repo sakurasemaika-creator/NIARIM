@@ -1043,6 +1043,16 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   移す前）は`save(keepStoredTiles: true)`でファイルの絵をそのまま残す。開いたときに絵を
   読めなかった作品（`tilesUnreadable`）は保存・自動保存をしない（空の絵でファイルや
   良い自動保存を上書きしない）。`test/project_tiles_on_open_test.dart`が見張る。
+- **トーンのタイルは模様の間隔で割り切れる大きさ（所有者の依頼、2026-11-25「ストッキング以外もテクスチャ系やトーンは
+  つなぎ目がきれいにループするように」）**：トーンは1枚のタイルを縦横に繰り返して貼る。64pxのタイルに間隔6pxの
+  ライン・7pxのクロスハッチ・3〜10pxの網目を並べると、継ぎ目だけ間隔が狭くなって64pxごとに筋が出た（タイツは
+  さらに網目の片方の斜線を`abs`で対角線に折り返していた）。タイルの大きさは`toneTileSize(tone)`
+  （`procedural_texture.dart`：組み込みの画像は`builtInToneTileSizes`〔66・65・70px〕、名前から作る模様は
+  `toneTileSizeForPattern`＝64以上で間隔の倍数、利用者の画像は64）。トーンを貼る所は`const toneSize = 64`と
+  書かず、この値を`ensureToneTextureLoaded`・`generateBuiltInToneTexture`・描く処理の幅に渡すこと（`size`を
+  省けばこの値）。模様を足す・間隔を変えるときは`_tonePatternFor`の`period`も変え、`assets/tones`の画像を
+  同じ大きさで作り直す（`test/tone_seamless_tiling_test.dart`が全組み込みのトーンの継ぎ目と、画像と名前から
+  作る模様が同じことを見張る。20デニールの画像だけはわざとぼかしてある）。
 - **`TileManager`のタイル画像のキャッシュは複製（clone）を返す**：本体を
   返すと、受け取ってから描くまで（awaitの続き）の間に同時に走る別の合成が
   追い出して破棄し、破棄済みの画像を描いた（小さいキャンバスで油彩風の
@@ -1558,7 +1568,9 @@ onTap: ...)`だったために
   `colorScheme.error`・`Colors.red`等・`updateMarkColor`・`warningColor`を直接使わない
   （`test/no_error_colour_notices_test.dart`が使う所と数を一覧で見張る。新しく使うときは警告・
   注意に当たるかを確かめて一覧に足す。`colorScheme.error`は警告色で、残るのは入力欄の誤りの状態・
-  タイムラインの今のコマの赤枠〔所有者の判断待ち〕・フェードの色の見本）。
+  タイムラインの今のコマの赤枠〔目立たせたいので警告色のまま。所有者の判断、2026-11-25〕・フェードの色の見本）。
+  薄いテーマで注意色の印が見えにくいこと・ダークのテーマの警告色がサーモン色寄りなこと・ゴミ箱のカードの
+  「完全削除」がいつもの色（確かめのダイアログだけ警告色）なことも、所有者が今の作りで確定した（2026-11-25）。
   スライダーを置く`AlertDialog`は`SizedBox(width: 480)`（`slider_dialog_width_test`が
   lib配下の全ダイアログを走査する）。
 - **知らせ（SnackBar）は5秒以内に、少しずつ薄くなって消える（所有者の判断7、

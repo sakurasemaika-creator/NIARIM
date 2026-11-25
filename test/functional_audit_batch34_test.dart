@@ -31,7 +31,9 @@ void main() {
 
     final signatures = <String>{};
     for (final tone in tones) {
-      const w = 128, h = 128, texSize = 64;
+      const w = 128, h = 128;
+      // Each tone tiles at its own size (a multiple of its pattern spacing).
+      final texSize = toneTileSize(tone);
       await ensureToneTextureLoaded(tone, size: texSize);
       final texture = generateBuiltInToneTexture(tone, size: texSize);
       expect(texture.length, texSize * texSize * 4);

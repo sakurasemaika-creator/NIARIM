@@ -53,18 +53,70 @@ final Map<String, Uint8List> _toneImageCache = {};
 String _toneCacheKey(String path, int size, bool pixelMode) =>
     '$path#$size#$pixelMode';
 
+/// トーンの1タイルの既定の大きさ（px）。
+const int defaultToneTileSize = 64;
+
+/// 組み込みのトーンの画像（`assets/tones/<id>.png`）のうち、模様の繰り返しの
+/// 間隔が64pxで割り切れないため、間隔の倍数の大きさで作ってあるもの。
+/// 64pxのタイルに間隔6pxの線を並べると、タイルの継ぎ目だけ間隔が4pxになり、
+/// 並べたトーンに64pxごとの筋が出る。値は[toneTileSizeForPattern]と同じ。
+const Map<String, int> builtInToneTileSizes = {
+  'Tone0005': 66,
+  'Tone0006': 66,
+  'Tone0010': 66,
+  'Tone0012': 65,
+  'Tone0013': 66,
+  'Tone0015': 70,
+  'Tone0031': 66,
+  'Tone0032': 66,
+  'Tone0033': 66,
+  'Tone0034': 66,
+  'Tone0035': 70,
+  'Tone0036': 70,
+  'Tone0037': 70,
+  'Tone0038': 70,
+  'Tone0039': 70,
+  'Tone0042': 66,
+  'Tone0050': 66,
+};
+
+final RegExp _builtInTonePath = RegExp(r'^assets/tones/(Tone\d+)\.png$');
+
+/// [tone]を貼るときの1タイルの大きさ（px）。トーンの模様はこの大きさで
+/// 繰り返すので、継ぎ目で模様が途切れない。組み込みの画像と名前から作る模様は
+/// 模様の間隔の倍数、利用者の画像は[defaultToneTileSize]。
+int toneTileSize(Tone tone) {
+  final path = tone.texturePath;
+  if (path == null) {
+    return toneTileSizeForPattern(tone.patternName ?? tone.name);
+  }
+  final builtIn = _builtInTonePath.firstMatch(path);
+  if (builtIn != null) {
+    return builtInToneTileSizes[builtIn.group(1)] ?? defaultToneTileSize;
+  }
+  return defaultToneTileSize;
+}
+
+/// 名前から作る模様の1タイルの大きさ：[defaultToneTileSize]以上で、模様の
+/// 繰り返しの間隔で割り切れる最小の大きさ。
+int toneTileSizeForPattern(String name) {
+  final period = _tonePatternFor(name).period;
+  return (defaultToneTileSize / period).ceil() * period;
+}
+
 /// [tone.texturePath] が指す画像を事前読み込みし、キャッシュへ格納する。
 /// トーンを使った描画（投げ縄塗り・トーン自由描画・バケツ塗り等）の
 /// 開始前に呼び出しておくことで、[generateBuiltInToneTexture] の同期呼び出し
-/// でも自作画像を反映できるようにする。
-Future<void> ensureToneTextureLoaded(Tone tone, {int size = 64}) async {
+/// でも自作画像を反映できるようにする。[size]を省くと[toneTileSize]。
+Future<void> ensureToneTextureLoaded(Tone tone, {int? size}) async {
   final path = tone.texturePath;
   if (path == null) return;
-  final key = _toneCacheKey(path, size, tone.pixelMode);
+  final tile = size ?? toneTileSize(tone);
+  final key = _toneCacheKey(path, tile, tone.pixelMode);
   if (_toneImageCache.containsKey(key)) return;
   final rgba = await _loadImageRgba(
     path,
-    size,
+    tile,
     format: ui.ImageByteFormat.rawStraightRgba,
   );
   if (rgba != null) {
@@ -73,15 +125,24 @@ Future<void> ensureToneTextureLoaded(Tone tone, {int size = 64}) async {
 }
 
 /// 事前読み込みした画像のパターンを返す。旧データに画像がない場合や
-/// 画像が読めない場合は名前から代替パターンを生成する。
-Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
+/// 画像が読めない場合は名前から代替パターンを生成する。[size]を省くと
+/// [toneTileSize]（模様が継ぎ目でつながる大きさ）。
+Uint8List generateBuiltInToneTexture(Tone tone, {int? size}) {
+  final tile = size ?? toneTileSize(tone);
   final path = tone.texturePath;
   if (path != null) {
-    final cached = _toneImageCache[_toneCacheKey(path, size, tone.pixelMode)];
+    final cached = _toneImageCache[_toneCacheKey(path, tile, tone.pixelMode)];
     if (cached != null) return cached;
   }
-  final data = Uint8List(size * size * 4);
-  final name = tone.patternName ?? tone.name;
+  final data = Uint8List(tile * tile * 4);
+  _tonePatternFor(tone.patternName ?? tone.name).fill(data, tile);
+  return data;
+}
+
+/// 名前から作る模様：繰り返しの間隔（px、縦横とも）と塗り方。
+typedef _TonePattern = ({int period, void Function(Uint8List, int) fill});
+
+_TonePattern _tonePatternFor(String name) {
   // 名前で分岐する都合上、**判定の順序が仕様**になっている点に注意。
   // 「ピクセルディザ」は「ピクセル」を含み、「ピクセル格子」は「格子」を
   // 含む、といった包含関係があるため、より限定的な名前から先に判定する。
@@ -92,55 +153,85 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
     final percent =
         int.tryParse(RegExp(r'(\d+)%').firstMatch(name)?.group(1) ?? '50') ??
         50;
-    _fillPixelDitherPattern(
-      data,
-      size,
-      percent / 100.0,
-      coarse: name.contains('粗'),
-      fine: name.contains('細'),
+    final coarse = name.contains('粗');
+    final fine = name.contains('細');
+    return (
+      period: coarse ? 4 : (fine ? 8 : 4),
+      fill: (data, size) => _fillPixelDitherPattern(
+        data,
+        size,
+        percent / 100.0,
+        coarse: coarse,
+        fine: fine,
+      ),
     );
   } else if (name.contains('ピクセル砂目')) {
     final percent =
         int.tryParse(RegExp(r'(\d+)%').firstMatch(name)?.group(1) ?? '50') ??
         50;
-    _fillNoisePattern(data, size, percent / 100.0, cell: 1);
+    return (
+      period: 1,
+      fill: (data, size) =>
+          _fillNoisePattern(data, size, percent / 100.0, cell: 1),
+    );
   } else if (name.contains('ピクセルレンガ')) {
-    _fillBrickPattern(data, size, unit: 4, thickness: 1);
+    return (
+      period: 8,
+      fill: (data, size) =>
+          _fillBrickPattern(data, size, unit: 4, thickness: 1),
+    );
   } else if (name.contains('ピクセル') &&
       (name.contains('縞') || name.contains('ストライプ') || name.contains('ボーダー'))) {
     final diagonal = name.contains('斜め');
-    _fillStripePattern(
-      data,
-      size,
-      // 斜めだけ間隔3にする。間隔2の斜め1px線は「(x+y)が偶数」という
-      // 条件そのもので、市松模様と1画素も違わなくなってしまうため。
-      spacing: diagonal ? 3 : 2,
-      thickness: 1,
-      direction: diagonal
-          ? _StripeDirection.diagonal
-          : name.contains('縦')
-          ? _StripeDirection.vertical
-          : _StripeDirection.horizontal,
+    // 斜めだけ間隔3にする。間隔2の斜め1px線は「(x+y)が偶数」という
+    // 条件そのもので、市松模様と1画素も違わなくなってしまうため。
+    final spacing = diagonal ? 3 : 2;
+    return (
+      period: spacing,
+      fill: (data, size) => _fillStripePattern(
+        data,
+        size,
+        spacing: spacing,
+        thickness: 1,
+        direction: diagonal
+            ? _StripeDirection.diagonal
+            : name.contains('縦')
+            ? _StripeDirection.vertical
+            : _StripeDirection.horizontal,
+      ),
     );
   } else if (name.contains('ピクセル斜め格子')) {
     // Genuine 1px diagonal crosshatch with diamond-shaped transparent holes.
     // A period of two degenerates into checkerboard, hence period four.
-    _fillPixelDiagonalMeshPattern(data, size);
+    return (period: 4, fill: _fillPixelDiagonalMeshPattern);
   } else if (name.contains('市松')) {
     // Reverse is the exact inverse mask, not a second generic 30% halftone.
-    _fillPixelCheckerPattern(data, size, inverted: name.contains('反転'));
+    final inverted = name.contains('反転');
+    return (
+      period: 2,
+      fill: (data, size) =>
+          _fillPixelCheckerPattern(data, size, inverted: inverted),
+    );
   } else if (name.contains('格子')) {
-    _fillPixelGridPattern(data, size, inverted: name.contains('反転'));
+    final inverted = name.contains('反転');
+    return (
+      period: 2,
+      fill: (data, size) =>
+          _fillPixelGridPattern(data, size, inverted: inverted),
+    );
   } else if (name.contains('散らし')) {
     // ピクセルモード用：1ピクセルの点を上下左右1pxずつ空けて独立配置。
     // 市松（斜めに隣接）・格子（縦横の線がつながる）とは異なり、
     // どの点も上下左右の隣接ピクセルとは接しない。
-    _fillPixelScatteredDotPattern(data, size);
+    return (period: 2, fill: _fillPixelScatteredDotPattern);
   } else if (name.contains('ストッキング') || name.contains('タイツ')) {
     final denier =
         int.tryParse(RegExp(r'(\d+)デニール').firstMatch(name)?.group(1) ?? '20') ??
         20;
-    _fillStockingMeshPattern(data, size, denier);
+    return (
+      period: _stockingMeshSpacing(denier),
+      fill: (data, size) => _fillStockingMeshPattern(data, size, denier),
+    );
   } else if (name.contains('砂目')) {
     // アナログの砂目トーン相当。粒を数px単位のまとまりにすることで、
     // 1px単位の「ピクセル砂目」より粗くざらついた質感になる。
@@ -149,19 +240,26 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
         : name.contains('細')
         ? 1
         : 2;
-    _fillNoisePattern(data, size, 0.42, cell: cell);
+    return (
+      period: cell,
+      fill: (data, size) => _fillNoisePattern(data, size, 0.42, cell: cell),
+    );
   } else if (name.contains('同心円')) {
-    _fillConcentricCirclePattern(data, size);
+    return (period: 2, fill: _fillConcentricCirclePattern);
   } else if (name.contains('波線')) {
-    _fillWavePattern(data, size);
+    return (period: _wavePeriod, fill: _fillWavePattern);
   } else if (name.contains('レンガ')) {
-    _fillBrickPattern(data, size, unit: 16, thickness: 2);
+    return (
+      period: 32,
+      fill: (data, size) =>
+          _fillBrickPattern(data, size, unit: 16, thickness: 2),
+    );
   } else if (name.contains('方眼')) {
-    _fillGridPattern(
-      data,
-      size,
-      spacing: 8,
-      thickness: name.contains('太') ? 2 : 1,
+    final thickness = name.contains('太') ? 2 : 1;
+    return (
+      period: 8,
+      fill: (data, size) =>
+          _fillGridPattern(data, size, spacing: 8, thickness: thickness),
     );
   } else if (name.contains('クロスハッチ')) {
     final thickness = name.contains('太')
@@ -169,33 +267,46 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
         : name.contains('細')
         ? 1
         : 2;
-    _fillCrossHatchPattern(
-      data,
-      size,
-      thickness: thickness,
-      diagonal: name.contains('斜め'),
+    final diagonal = name.contains('斜め');
+    return (
+      period: _crossHatchSpacing,
+      fill: (data, size) => _fillCrossHatchPattern(
+        data,
+        size,
+        thickness: thickness,
+        diagonal: diagonal,
+      ),
     );
   } else if (name.contains('ライン')) {
-    _fillStripePattern(
-      data,
-      size,
-      spacing: 6,
-      thickness: name.contains('太') ? 3 : 1,
-      direction: name.contains('縦')
-          ? _StripeDirection.vertical
-          : name.contains('斜め')
-          ? _StripeDirection.diagonal
-          : _StripeDirection.horizontal,
+    final thickness = name.contains('太') ? 3 : 1;
+    final direction = name.contains('縦')
+        ? _StripeDirection.vertical
+        : name.contains('斜め')
+        ? _StripeDirection.diagonal
+        : _StripeDirection.horizontal;
+    return (
+      period: 6,
+      fill: (data, size) => _fillStripePattern(
+        data,
+        size,
+        spacing: 6,
+        thickness: thickness,
+        direction: direction,
+      ),
     );
   } else if (name.contains('網点')) {
     final percent =
         int.tryParse(RegExp(r'(\d+)%').firstMatch(name)?.group(1) ?? '30') ??
         30;
-    _fillDotPattern(data, size, percent / 100.0);
-  } else {
-    _fillDotPattern(data, size, 0.3);
+    return (
+      period: _dotCell,
+      fill: (data, size) => _fillDotPattern(data, size, percent / 100.0),
+    );
   }
-  return data;
+  return (
+    period: _dotCell,
+    fill: (data, size) => _fillDotPattern(data, size, 0.3),
+  );
 }
 
 /// 1ピクセルごとの市松模様（チェッカー柄）：(x+y)が偶数の画素のみインクあり。
@@ -316,30 +427,38 @@ void _fillPixelDitherPattern(
 /// [denier]が低いほど（生地が薄いほど）格子間隔を詰めて密度を上げ、
 /// 意図的に細かすぎるパターンにする（画面表示・書き出し解像度によっては
 /// モアレが生じる密度になる）。[denier]が高いほど格子間隔・線の太さを
-/// 増やし、厚手の生地らしい粗く不透明な見た目にする。
+/// 増やし、厚手の生地らしい粗く不透明な見た目にする。タイルの大きさが
+/// 間隔で割り切れれば（[toneTileSizeForPattern]）、継ぎ目でも網目がつながる。
 void _fillStockingMeshPattern(Uint8List data, int size, int denier) {
-  final clampedDenier = denier.clamp(10, 100);
-  // 【不具合修正】以前は `2 + (denier - 10) / 90 * 6` で間隔を決めており、
-  // 6種類のデニールが4種類の見た目にしかならなかった：
-  //   - 20と30デニールがどちらも間隔3・太さ1で完全に同一
-  //   - 10デニールは間隔2・太さ1になるが、(x+y)と(x-y)は必ず同じ偶奇に
-  //     なるため2つの斜線条件が一致してしまい、網目ではなく単なる市松模様
-  //     （「ピクセル市松（1px）」と1画素も違わないもの）になっていた
-  // デニール10ごとに間隔を1ずつ増やす形へ変え、6種類とも別の網目になる
-  // ようにした（test/builtin_presets_test.dartが全トーンの模様の重複を
-  // 検出する）。
-  final spacing = (3 + (clampedDenier - 10) / 10).round().clamp(3, 12);
-  final thickness = (1 + (clampedDenier / 40).floor()).clamp(1, 3);
+  final spacing = _stockingMeshSpacing(denier);
+  final thickness = (1 + (denier.clamp(10, 100) / 40).floor()).clamp(1, 3);
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
+      // Dartの`%`は割る数が正なら負の数でも0以上を返すので、x == yの
+      // 両側で2つ目の斜線の位置がそろう（絶対値を取ると対角線で線が
+      // 折り返され、太い線が1画素ずれた）。
       final diagA = (x + y) % spacing;
-      final diagB = (x - y).abs() % spacing;
+      final diagB = (x - y) % spacing;
       if (diagA < thickness || diagB < thickness) {
         data[(y * size + x) * 4 + 3] = 255;
       }
     }
   }
 }
+
+/// ストッキング・タイツの網目の間隔（px）。
+///
+/// 【不具合修正】以前は `2 + (denier - 10) / 90 * 6` で間隔を決めており、
+/// 6種類のデニールが4種類の見た目にしかならなかった：
+///   - 20と30デニールがどちらも間隔3・太さ1で完全に同一
+///   - 10デニールは間隔2・太さ1になるが、(x+y)と(x-y)は必ず同じ偶奇に
+///     なるため2つの斜線条件が一致してしまい、網目ではなく単なる市松模様
+///     （「ピクセル市松（1px）」と1画素も違わないもの）になっていた
+/// デニール10ごとに間隔を1ずつ増やす形へ変え、6種類とも別の網目になる
+/// ようにした（test/builtin_presets_test.dartが全トーンの模様の重複を
+/// 検出する）。
+int _stockingMeshSpacing(int denier) =>
+    (3 + (denier.clamp(10, 100) - 10) / 10).round().clamp(3, 12);
 
 /// 縞模様の向き。
 enum _StripeDirection { horizontal, vertical, diagonal }
@@ -384,6 +503,8 @@ void _fillGridPattern(
   }
 }
 
+const int _crossHatchSpacing = 7;
+
 /// クロスハッチ（交差する斜線、または縦横線）による陰影表現。
 /// [diagonal]がtrueなら45度と135度の2方向、falseなら縦横2方向で交差させる。
 void _fillCrossHatchPattern(
@@ -392,12 +513,13 @@ void _fillCrossHatchPattern(
   required int thickness,
   required bool diagonal,
 }) {
-  const spacing = 7;
+  const spacing = _crossHatchSpacing;
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
       final a = diagonal ? (x + y) % spacing : x % spacing;
-      // 斜め135度側は (x - y) が一定の直線。負値を避けるためsizeを足してから剰余を取る。
-      final b = diagonal ? (x - y + size) % spacing : y % spacing;
+      // 斜め135度側は (x - y) が一定の直線。Dartの`%`は割る数が正なら
+      // 負の数でも0以上を返す。
+      final b = diagonal ? (x - y) % spacing : y % spacing;
       if (a < thickness || b < thickness) data[(y * size + x) * 4 + 3] = 255;
     }
   }
@@ -426,31 +548,36 @@ void _fillBrickPattern(
 
 /// 同心円（等間隔のリング）。中心はタイルの中央。
 ///
-/// タイルは繰り返し並べられるため縁で模様が途切れるが、リング状の背景・
-/// 集中演出の下地として使うぶんには問題にならない。
+/// 画素の中心（x + 0.5）で中心からの距離を測るので、タイルの縁の左右・上下の
+/// 画素は中心から同じ距離になる。並べると隣のタイルのリングと縁を挟んで
+/// 鏡に映したように出会い、継ぎ目で1画素ずれない。
 void _fillConcentricCirclePattern(Uint8List data, int size) {
   final cx = size / 2, cy = size / 2;
   const spacing = 6, thickness = 2;
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
-      final dx = x - cx, dy = y - cy;
+      final dx = x + 0.5 - cx, dy = y + 0.5 - cy;
       final r = math.sqrt(dx * dx + dy * dy);
       if (r % spacing < thickness) data[(y * size + x) * 4 + 3] = 255;
     }
   }
 }
 
-/// 波線（横方向へ進むサインカーブを等間隔で重ねたもの）。
+const int _wavePeriod = 16;
+
+/// 波線（横方向へ進むサインカーブを等間隔で重ねたもの）。タイルの上下の
+/// 縁をまたぐ線は反対側の縁へ回して描くので、並べても線が途切れない
+/// （[size]は[_wavePeriod]の倍数）。
 void _fillWavePattern(Uint8List data, int size) {
-  const spacing = 8, amplitude = 3.0, period = 16.0;
+  const spacing = 8, amplitude = 3.0;
   for (int x = 0; x < size; x++) {
-    final shift = amplitude * math.sin(2 * math.pi * x / period);
-    for (int baseY = 0; baseY < size + spacing; baseY += spacing) {
+    final shift = amplitude * math.sin(2 * math.pi * x / _wavePeriod);
+    for (int baseY = 0; baseY < size; baseY += spacing) {
       final y = (baseY + shift).round();
-      if (y < 0 || y >= size) continue;
-      data[(y * size + x) * 4 + 3] = 255;
       // 1pxだと拡大時に途切れて見えるため2px幅にする。
-      if (y + 1 < size) data[((y + 1) * size + x) * 4 + 3] = 255;
+      for (final row in [y, y + 1]) {
+        data[((row % size) * size + x) * 4 + 3] = 255;
+      }
     }
   }
 }
@@ -494,8 +621,10 @@ void _fillNoisePattern(
 /// 粗すぎて、10%と20%、40%と50%がそれぞれ同じ見た目（点1個ぶんの差も
 /// 出ない）になっていた。16pxなら1セル256画素あり、10%刻みの9段階すべてが
 /// 異なる濃さになる（test/builtin_presets_test.dartが単調増加を検証）。
+const int _dotCell = 16;
+
 void _fillDotPattern(Uint8List data, int size, double density) {
-  const cell = 16;
+  const cell = _dotCell;
   final maxR = cell / 2.2;
   final radius = maxR * math.sqrt(density.clamp(0.0, 1.0));
   for (int y = 0; y < size; y++) {

@@ -2610,11 +2610,12 @@ class CanvasAreaState extends State<CanvasArea> {
     final color = _drawingEngine.currentColor;
 
     Uint8List? toneTexture;
-    const toneSize = 64;
+    var toneSize = defaultToneTileSize;
     final toneService = context.read<ToneService>();
     if (toneService.lassoUseTone) {
       final tone = toneService.lastLassoTone ?? toneService.currentTone;
       if (tone != null) {
+        toneSize = toneTileSize(tone);
         await ensureToneTextureLoaded(tone, size: toneSize);
         if (!mounted) return;
         toneTexture = generateBuiltInToneTexture(tone, size: toneSize);
@@ -2665,7 +2666,7 @@ class CanvasAreaState extends State<CanvasArea> {
     img.dispose();
     if (byteData == null || !mounted) return;
     final canvasData = byteData.buffer.asUint8List();
-    const toneSize = 64;
+    final toneSize = toneTileSize(tone);
     await ensureToneTextureLoaded(tone, size: toneSize);
     if (!mounted) return;
     final texture = generateBuiltInToneTexture(tone, size: toneSize);
@@ -2973,7 +2974,7 @@ class CanvasAreaState extends State<CanvasArea> {
       return;
     }
     final canvasData = byteData.buffer.asUint8List();
-    const toneSize = 64;
+    final toneSize = toneTileSize(tone);
     await ensureToneTextureLoaded(tone, size: toneSize);
     if (!mounted) {
       _finishTileUndo();
@@ -3775,7 +3776,7 @@ class CanvasAreaState extends State<CanvasArea> {
       final tone = toneService.bucketUseTone
           ? (toneService.lastBucketTone ?? toneService.currentTone)
           : null;
-      if (tone != null) await ensureToneTextureLoaded(tone, size: 64);
+      if (tone != null) await ensureToneTextureLoaded(tone);
       if (!mounted || _bucketGesture != gesture) return;
 
       _bucketRefBuffer = buffer;
@@ -3853,7 +3854,7 @@ class CanvasAreaState extends State<CanvasArea> {
     final bucketSettings = context.read<SettingsService>();
     final Uint8List result;
     if (tone != null) {
-      const toneSize = 64;
+      final toneSize = toneTileSize(tone);
       final texture = generateBuiltInToneTexture(tone, size: toneSize);
       result = _bucketEngine.fillWithTone(
         canvasData: reference,
