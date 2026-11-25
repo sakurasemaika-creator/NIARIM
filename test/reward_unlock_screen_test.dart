@@ -482,15 +482,17 @@ void main() {
       );
       expect(find.textContaining('940 opals'), findsNothing);
 
-      // No wallet/SSV/price quote is connected: neither action can spend opals.
-      final goalButton = find.byKey(const Key('rewardSetGoalButton'));
+      // No wallet/SSV/price quote is connected: redeeming cannot spend opals,
+      // and there is no inert "set as goal" button next to it.
+      final redeemButton = find.byKey(const Key('rewardRedeemButton'));
       await tester.scrollUntilVisible(
-        goalButton,
+        redeemButton,
         260,
         scrollable: find.byType(Scrollable).first,
       );
       await tester.pumpAndSettle();
-      expect(tester.widget<FilledButton>(goalButton).onPressed, isNull);
+      expect(tester.widget<OutlinedButton>(redeemButton).onPressed, isNull);
+      expect(find.byKey(const Key('rewardSetGoalButton')), findsNothing);
       await tester.pumpWidget(const SizedBox.shrink());
       premium.dispose();
       settings.dispose();

@@ -3105,7 +3105,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumPackPriceBasis =>
-      'Compared with the listed individual prices for the same period. Individual redemption is coming later.';
+      'Compared with redeeming each benefit separately for the same period.';
 
   @override
   String get exportKeepsPlaybackTime =>
@@ -7825,7 +7825,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communitySignInUnavailable =>
-      'Google sign-in is not configured in this development build.';
+      'Google sign-in isn’t available, so linking can’t start.';
 
   @override
   String get communitySaveSearch => 'Save current search';
@@ -9523,7 +9523,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsOffline =>
-      'This reward is not live yet; claiming is disabled.';
+      'Claiming this reward is paused for now.';
 
   @override
   String get creatorMissionDrawerAttention => 'Unclaimed mission achievements';
@@ -9575,7 +9575,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creatorMissionNotClaimed => 'Not claimed';
 
   @override
-  String get creatorMissionUpcoming => 'Rewards are being prepared';
+  String get creatorMissionUpcoming => 'Paused';
+
+  @override
+  String get creatorMissionTemplateClaim => 'Claim when a work qualifies';
 
   @override
   String get creatorMissionLogin =>
@@ -9595,7 +9598,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionTimeWarning =>
-      'Local editing time is for display only. Opal rewards require server verification.';
+      'Editing time is for display only and doesn’t earn opals.';
 
   @override
   String get creatorMissionRankingWarning =>
@@ -9627,7 +9630,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginBonusUnknown => 'Unavailable';
 
   @override
-  String get loginBonusUnavailable => 'Claims are not available yet';
+  String get loginBonusUnavailable => 'Reward claims are paused for now';
 
   @override
   String get loginBonusUtc =>
@@ -9733,7 +9736,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardNavigationEarnUnavailable =>
-      'Rewarded ads are not available yet';
+      'Rewarded ads aren’t available right now';
 
   @override
   String get rewardUnlockTitle => 'Rewards';
@@ -9766,10 +9769,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'All benefits active through Premium membership';
 
   @override
-  String get rewardUnlockActiveUnavailable =>
-      'Opal benefits will appear once the server is connected';
-
-  @override
   String get rewardUnlockDuration => 'Usage period';
 
   @override
@@ -9779,24 +9778,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockChooseBenefits => 'Choose benefits';
 
   @override
-  String get rewardUnlockPricePending => 'Opals required: not set';
-
-  @override
-  String get rewardUnlockNotReady => 'Coming soon';
+  String get rewardUnlockNotReady => 'Not available for redemption';
 
   @override
   String get rewardUnlockTotal => 'Total opals required';
 
   @override
   String get rewardUnlockUnavailable =>
-      'Official exchange rates are not yet available';
+      'Choose benefits to see the total opals required';
 
   @override
-  String get rewardUnlockBalancePending =>
-      'Opal balance: server connection pending';
+  String get rewardUnlockBalanceSignIn =>
+      'Sign in with Google to see your opal balance';
 
   @override
-  String get rewardUnlockGoal => 'Set this opal amount as my goal';
+  String get rewardUnlockBalanceLoadFailed =>
+      'Couldn’t load your opal balance. Please reopen this screen.';
 
   @override
   String get rewardUnlockRedeem => 'Redeem opals';
@@ -9858,8 +9855,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not confirm redemption. Retrying checks the same transaction.';
 
   @override
-  String get rewardUnlockFreeOnly =>
-      'Earn opals by watching optional ads (coming soon)';
+  String get rewardUnlockFreeOnly => 'Earn opals by watching optional ads';
 
   @override
   String get rewardUnlockSubscribe => 'View Premium monthly / yearly';
@@ -9872,8 +9868,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use the same eligible features as Premium membership in one discounted bundle';
 
   @override
-  String get rewardUnlockEarning =>
-      'Premium members will also be able to save up opals';
+  String get rewardUnlockEarning => 'Premium members can also earn opals';
 
   @override
   String get rewardUnlockHour => 'hours';
@@ -10222,7 +10217,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      'EDITING TIME: Client-reported time and device-stored project duration cannot earn opals. A trustworthy proof of real editing activity is not yet available, so editing-time rewards cannot currently be claimed. Displayed time is informational.';
+      'EDITING TIME: Editing time is measured on your device, so it doesn’t earn opals. The editing time shown is a guide.';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -10285,7 +10280,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionRankPoolUnknown =>
-      'The server has not finished counting published works';
+      'Published works are being counted. Please check back shortly.';
 
   @override
   String get creatorMissionRankCurrentUnknown =>
@@ -10293,7 +10288,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      'Local editing activity can be spoofed, so editing-time opal rewards are unavailable. Time shown is informational.';
+      'Editing time is measured on your device, so it doesn’t earn opals. The time shown is a guide.';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -10304,10 +10299,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String creatorMissionRankCurrentPlace(int rank) {
     return 'Current rank for this work: $rank';
   }
-
-  @override
-  String get creatorMissionRankNotLive =>
-      'Opal payouts are being prepared; ranking rewards cannot be claimed yet.';
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
@@ -10386,8 +10377,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get rewardUnlockFixedPrice =>
-      'Fixed price (redemption not yet available)';
+  String get rewardUnlockFixedPrice => 'Fixed price (connect to redeem)';
 
   @override
   String get missionCoinsReceived => 'Opals received';
@@ -10402,7 +10392,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get missionClaimed => 'Claimed';
 
   @override
-  String get missionComingSoon => 'Coming soon';
+  String get missionComingSoon => 'Paused';
 
   @override
   String get missionClaim => 'Claim';
@@ -10423,11 +10413,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get missionRefresh => 'Refresh';
 
   @override
-  String get missionPayoutPending => 'Opal payouts are not yet enabled';
+  String get missionPayoutPending => 'Opal claims are paused for now.';
 
   @override
   String get recurringMissionsPayoutPending =>
-      'Opal payouts are not yet enabled';
+      'Opal claims are paused for now.';
 
   @override
   String missionDurationHours(int count) {
@@ -10506,7 +10496,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get missionDetailsPayoutUnavailable =>
-      'Opal payouts are currently unavailable.';
+      'Opal claims are paused for now.';
 
   @override
   String plazaMissionDetailsConditions(String period, String duration) {
@@ -10791,7 +10781,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return 'Total at fixed unit prices: $coins. The server does not yet support spending opals on individual benefits or overlapping exchanges. The price is final, but you can exchange only when the server returns an official quote. The official expiry is set by the server check right before exchanging.';
+    return 'Total at the fixed prices: $coins. The server confirms the official quote and expiry just before you redeem.';
   }
 
   @override

@@ -2945,7 +2945,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumPackHalfPrice => '全功能组合包是单项合计的一半';
 
   @override
-  String get premiumPackPriceBasis => '与相同期限的单项标价相比。单项兑换暂未开放。';
+  String get premiumPackPriceBasis => '与相同期限内逐项兑换各项权益的合计相比。';
 
   @override
   String get exportKeepsPlaybackTime => '更改导出帧率会保留原播放时长。';
@@ -7423,7 +7423,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communitySignInPromptConnect => '关联 Google 账号';
 
   @override
-  String get communitySignInUnavailable => '此开发版本尚未配置 Google 登录。';
+  String get communitySignInUnavailable => '无法使用 Google 登录，因此无法开始关联。';
 
   @override
   String get communitySaveSearch => '保存当前搜索';
@@ -8879,7 +8879,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get communityYoutubeCommentAttribution => '评论来自 YouTube。暂不支持发布和回复。';
+  String get communityYoutubeCommentAttribution => '评论来自 YouTube。不支持发布和回复。';
 
   @override
   String get creatorMissionTitle => '创作者任务';
@@ -8946,7 +8946,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creatorMissionDetailsPending => '正在确认领取。';
 
   @override
-  String get creatorMissionDetailsOffline => '奖励尚未开放，暂时无法领取。';
+  String get creatorMissionDetailsOffline => '此奖励的领取已暂时停止。';
 
   @override
   String get creatorMissionDrawerAttention => '有尚未领取的已达成任务';
@@ -8994,7 +8994,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creatorMissionNotClaimed => '未领取';
 
   @override
-  String get creatorMissionUpcoming => '奖励筹备中';
+  String get creatorMissionUpcoming => '暂停中';
+
+  @override
+  String get creatorMissionTemplateClaim => '作品达成后即可领取';
 
   @override
   String get creatorMissionLogin => '使用 Google 登录以查看任务。';
@@ -9012,7 +9015,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creatorMissionLoadError => '无法加载任务。';
 
   @override
-  String get creatorMissionTimeWarning => '本地创作时间仅供参考，欧泊需要服务器验证。';
+  String get creatorMissionTimeWarning => '创作时间仅供显示，不计入欧泊奖励。';
 
   @override
   String get creatorMissionRankingWarning =>
@@ -9043,7 +9046,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginBonusUnknown => '无法确认';
 
   @override
-  String get loginBonusUnavailable => '奖励领取尚未开放';
+  String get loginBonusUnavailable => '奖励领取已暂时停止';
 
   @override
   String get loginBonusUtc => '按日本时间(JST)午夜换日，中断不会重置累计。';
@@ -9144,7 +9147,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardNavigationEarnDescription => '观看广告赚取欧泊';
 
   @override
-  String get rewardNavigationEarnUnavailable => '激励广告尚未开放';
+  String get rewardNavigationEarnUnavailable => '激励广告目前无法使用';
 
   @override
   String get rewardUnlockTitle => '奖励';
@@ -9175,9 +9178,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockActivePremium => '已通过 Premium 会员使用全部权益';
 
   @override
-  String get rewardUnlockActiveUnavailable => '连接服务器后显示欧泊权益';
-
-  @override
   String get rewardUnlockDuration => '使用期限';
 
   @override
@@ -9187,22 +9187,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockChooseBenefits => '选择权益';
 
   @override
-  String get rewardUnlockPricePending => '所需欧泊：未设置';
-
-  @override
-  String get rewardUnlockNotReady => '即将推出';
+  String get rewardUnlockNotReady => '无法兑换';
 
   @override
   String get rewardUnlockTotal => '所需欧泊总数';
 
   @override
-  String get rewardUnlockUnavailable => '正式兑换价格尚未设置';
+  String get rewardUnlockUnavailable => '选择权益后，将显示所需欧泊的合计';
 
   @override
-  String get rewardUnlockBalancePending => '欧泊余额：服务器尚未连接';
+  String get rewardUnlockBalanceSignIn => '使用 Google 登录后即可查看欧泊余额';
 
   @override
-  String get rewardUnlockGoal => '将此欧泊数设为目标';
+  String get rewardUnlockBalanceLoadFailed => '无法加载欧泊余额。请重新打开此页面。';
 
   @override
   String get rewardUnlockRedeem => '用欧泊兑换';
@@ -9259,7 +9256,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockRedemptionUncertain => '无法确认兑换结果。重试将检查同一笔交易。';
 
   @override
-  String get rewardUnlockFreeOnly => '自愿观看广告赚取免费欧泊（即将推出）';
+  String get rewardUnlockFreeOnly => '自愿观看广告赚取免费欧泊';
 
   @override
   String get rewardUnlockSubscribe => '查看 Premium 月付 / 年付';
@@ -9271,7 +9268,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockBestExplain => '以组合优惠价使用与 Premium 会员相同的功能';
 
   @override
-  String get rewardUnlockEarning => 'Premium 会员今后也能积攒欧泊';
+  String get rewardUnlockEarning => 'Premium 会员也能积攒欧泊';
 
   @override
   String get rewardUnlockHour => '小时';
@@ -9496,7 +9493,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      '【创作时间】设备自行上报的时间不能兑换欧泊。目前尚无法确切证明真实的创作行为，创作时间奖励暂不可领取。显示的创作时间仅供参考。';
+      '【创作时间】创作时间是在设备上计量的记录，因此不计入欧泊奖励。显示的创作时间仅供参考。';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -9547,14 +9544,14 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get creatorMissionRankPoolUnknown => '服务器尚未完成公开作品数的统计';
+  String get creatorMissionRankPoolUnknown => '正在统计公开作品数。请稍后再查看。';
 
   @override
   String get creatorMissionRankCurrentUnknown => '该作品目前不在前50名内';
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      '创作时间可能在设备端被伪造，因此目前不计入欧泊奖励。显示的时间仅供参考。';
+      '创作时间是在设备上计量的记录，因此不计入欧泊奖励。显示的时间仅供参考。';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -9565,9 +9562,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String creatorMissionRankCurrentPlace(int rank) {
     return '该作品的当前排名：第$rank名';
   }
-
-  @override
-  String get creatorMissionRankNotLive => '欧泊发放目前正在准备中。即使满足条件，现在也无法领取。';
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
@@ -9610,7 +9604,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get rewardUnlockFixedPrice => '最终价格（兑换准备中）';
+  String get rewardUnlockFixedPrice => '最终价格（连接服务器后即可兑换）';
 
   @override
   String get missionCoinsReceived => '已领取欧泊';
@@ -9625,7 +9619,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get missionClaimed => '已领取';
 
   @override
-  String get missionComingSoon => '即将开放';
+  String get missionComingSoon => '暂停中';
 
   @override
   String get missionClaim => '领取';
@@ -9646,10 +9640,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get missionRefresh => '刷新';
 
   @override
-  String get missionPayoutPending => '欧泊领取尚未开放';
+  String get missionPayoutPending => '欧泊领取已暂时停止。';
 
   @override
-  String get recurringMissionsPayoutPending => '欧泊发放尚未开放';
+  String get recurringMissionsPayoutPending => '欧泊领取已暂时停止。';
 
   @override
   String missionDurationHours(int count) {
@@ -9705,7 +9699,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get missionDetailsGoalNotCompleted => '尚未满足达成条件。';
 
   @override
-  String get missionDetailsPayoutUnavailable => '欧泊领取功能目前正在准备中。';
+  String get missionDetailsPayoutUnavailable => '欧泊领取已暂时停止。';
 
   @override
   String plazaMissionDetailsConditions(String period, String duration) {
@@ -9926,7 +9920,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return '按最终单价计算的合计：$coins。服务器尚不支持用欧泊兑换单项权益或重复兑换。金额已确定，但只有服务器返回正式报价时才能兑换。正式的有效期在兑换前由服务器确认后决定。';
+    return '按最终单价计算的合计：$coins。兑换前，服务器会确认正式报价和有效期。';
   }
 
   @override
@@ -13843,7 +13837,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumPackHalfPrice => '全功能組合包是單項合計的一半';
 
   @override
-  String get premiumPackPriceBasis => '與相同期限的單項標價相比。單項兌換暫未開放。';
+  String get premiumPackPriceBasis => '與相同期限內逐項兌換各項權益的合計相比。';
 
   @override
   String get exportKeepsPlaybackTime => '變更匯出影格率會保留原播放時間。';
@@ -18322,7 +18316,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communitySignInPromptConnect => '連結 Google 帳號';
 
   @override
-  String get communitySignInUnavailable => '此開發版本尚未設定 Google 登入。';
+  String get communitySignInUnavailable => '無法使用 Google 登入，因此無法開始連結。';
 
   @override
   String get communitySaveSearch => '儲存目前搜尋';
@@ -19779,7 +19773,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get communityYoutubeCommentAttribution => '留言來自 YouTube。暫不支援發佈與回覆。';
+  String get communityYoutubeCommentAttribution => '留言來自 YouTube。不支援發佈與回覆。';
 
   @override
   String get creatorMissionTitle => '創作者任務';
@@ -19846,7 +19840,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get creatorMissionDetailsPending => '正在確認領取。';
 
   @override
-  String get creatorMissionDetailsOffline => '獎勵尚未開放，暫時無法領取。';
+  String get creatorMissionDetailsOffline => '此獎勵的領取已暫時停止。';
 
   @override
   String get creatorMissionDrawerAttention => '有尚未領取的已達成任務';
@@ -19894,7 +19888,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get creatorMissionNotClaimed => '未領取';
 
   @override
-  String get creatorMissionUpcoming => '獎勵籌備中';
+  String get creatorMissionUpcoming => '暫停中';
+
+  @override
+  String get creatorMissionTemplateClaim => '作品達成後即可領取';
 
   @override
   String get creatorMissionLogin => '使用 Google 登入以查看任務。';
@@ -19912,7 +19909,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get creatorMissionLoadError => '無法載入任務。';
 
   @override
-  String get creatorMissionTimeWarning => '本機創作時間僅供參考，歐泊需要伺服器驗證。';
+  String get creatorMissionTimeWarning => '創作時間僅供顯示，不計入歐泊獎勵。';
 
   @override
   String get creatorMissionRankingWarning =>
@@ -19943,7 +19940,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get loginBonusUnknown => '無法確認';
 
   @override
-  String get loginBonusUnavailable => '獎勵領取尚未開放';
+  String get loginBonusUnavailable => '獎勵領取已暫時停止';
 
   @override
   String get loginBonusUtc => '按日本時間(JST)午夜換日，中斷不會重設累計。';
@@ -20044,7 +20041,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardNavigationEarnDescription => '觀看廣告賺取歐泊';
 
   @override
-  String get rewardNavigationEarnUnavailable => '獎勵廣告尚未開放';
+  String get rewardNavigationEarnUnavailable => '獎勵廣告目前無法使用';
 
   @override
   String get rewardUnlockTitle => '獎勵';
@@ -20075,9 +20072,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockActivePremium => '已透過 Premium 會員使用全部權益';
 
   @override
-  String get rewardUnlockActiveUnavailable => '連線伺服器後顯示歐泊權益';
-
-  @override
   String get rewardUnlockDuration => '使用期限';
 
   @override
@@ -20087,22 +20081,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockChooseBenefits => '選擇權益';
 
   @override
-  String get rewardUnlockPricePending => '所需歐泊：尚未設定';
-
-  @override
-  String get rewardUnlockNotReady => '即將推出';
+  String get rewardUnlockNotReady => '無法兌換';
 
   @override
   String get rewardUnlockTotal => '所需歐泊總數';
 
   @override
-  String get rewardUnlockUnavailable => '正式兌換價格尚未設定';
+  String get rewardUnlockUnavailable => '選擇權益後，將顯示所需歐泊的合計';
 
   @override
-  String get rewardUnlockBalancePending => '歐泊餘額：伺服器尚未連線';
+  String get rewardUnlockBalanceSignIn => '使用 Google 登入後即可查看歐泊餘額';
 
   @override
-  String get rewardUnlockGoal => '將此歐泊數設為目標';
+  String get rewardUnlockBalanceLoadFailed => '無法載入歐泊餘額。請重新開啟此畫面。';
 
   @override
   String get rewardUnlockRedeem => '用歐泊兌換';
@@ -20159,7 +20150,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockRedemptionUncertain => '無法確認兌換結果。重試將檢查同一筆交易。';
 
   @override
-  String get rewardUnlockFreeOnly => '自願觀看廣告賺取免費歐泊（即將推出）';
+  String get rewardUnlockFreeOnly => '自願觀看廣告賺取免費歐泊';
 
   @override
   String get rewardUnlockSubscribe => '查看 Premium 月付 / 年付';
@@ -20171,7 +20162,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockBestExplain => '以組合優惠價使用與 Premium 會員相同的功能';
 
   @override
-  String get rewardUnlockEarning => 'Premium 會員之後也能累積歐泊';
+  String get rewardUnlockEarning => 'Premium 會員也能累積歐泊';
 
   @override
   String get rewardUnlockHour => '小時';
@@ -20396,7 +20387,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      '【創作時間】裝置自行回報的時間無法兌換歐泊。目前尚無法確切證明真實的創作行為，因此創作時間獎勵暫不可領取。顯示的創作時間僅供參考。';
+      '【創作時間】創作時間是在裝置上計量的紀錄，因此不計入歐泊獎勵。顯示的創作時間僅供參考。';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -20447,14 +20438,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get creatorMissionRankPoolUnknown => '伺服器尚未完成公開作品數的統計';
+  String get creatorMissionRankPoolUnknown => '正在統計公開作品數。請稍後再查看。';
 
   @override
   String get creatorMissionRankCurrentUnknown => '該作品目前不在前50名內';
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      '創作時間可能在裝置端被偽造，因此目前不計入歐泊獎勵。顯示的時間僅供參考。';
+      '創作時間是在裝置上計量的紀錄，因此不計入歐泊獎勵。顯示的時間僅供參考。';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -20465,9 +20456,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String creatorMissionRankCurrentPlace(int rank) {
     return '該作品的目前排名：第$rank名';
   }
-
-  @override
-  String get creatorMissionRankNotLive => '歐泊發放目前正在準備中。即使滿足條件，現在也無法領取。';
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
@@ -20510,7 +20498,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get rewardUnlockFixedPrice => '最終價格（兌換準備中）';
+  String get rewardUnlockFixedPrice => '最終價格（連線伺服器後即可兌換）';
 
   @override
   String get missionCoinsReceived => '已領取歐泊';
@@ -20525,7 +20513,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get missionClaimed => '已領取';
 
   @override
-  String get missionComingSoon => '即將開放';
+  String get missionComingSoon => '暫停中';
 
   @override
   String get missionClaim => '領取';
@@ -20546,10 +20534,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get missionRefresh => '重新整理';
 
   @override
-  String get missionPayoutPending => '歐泊領取尚未開放';
+  String get missionPayoutPending => '歐泊領取已暫時停止。';
 
   @override
-  String get recurringMissionsPayoutPending => '歐泊發放尚未開放';
+  String get recurringMissionsPayoutPending => '歐泊領取已暫時停止。';
 
   @override
   String missionDurationHours(int count) {
@@ -20605,7 +20593,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get missionDetailsGoalNotCompleted => '尚未滿足達成條件。';
 
   @override
-  String get missionDetailsPayoutUnavailable => '歐泊領取功能目前正在準備中。';
+  String get missionDetailsPayoutUnavailable => '歐泊領取已暫時停止。';
 
   @override
   String plazaMissionDetailsConditions(String period, String duration) {
@@ -20826,7 +20814,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return '按最終單價計算的合計：$coins。伺服器尚不支援以歐泊兌換單項權益或重複兌換。金額已確定，但只有伺服器回傳正式報價時才能兌換。正式的有效期限在兌換前由伺服器確認後決定。';
+    return '按最終單價計算的合計：$coins。兌換前，伺服器會確認正式報價與有效期限。';
   }
 
   @override

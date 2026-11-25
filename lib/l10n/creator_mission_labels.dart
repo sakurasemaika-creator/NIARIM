@@ -54,6 +54,7 @@ class CreatorMissionLabels {
     'pending' => _l10n.creatorMissionPending,
     'notClaimed' => _l10n.creatorMissionNotClaimed,
     'upcoming' => _l10n.creatorMissionUpcoming,
+    'templateClaim' => _l10n.creatorMissionTemplateClaim,
     'login' => _l10n.creatorMissionLogin,
     'offline' => _l10n.creatorMissionOffline,
     'retry' => _l10n.creatorMissionRetry,
@@ -77,7 +78,6 @@ class CreatorMissionLabels {
     'rankPoolUnknown' => _l10n.creatorMissionRankPoolUnknown,
     'rankCurrentUnknown' => _l10n.creatorMissionRankCurrentUnknown,
     'editTimeUnverified' => _l10n.creatorMissionEditTimeUnverified,
-    'rankNotLive' => _l10n.creatorMissionRankNotLive,
     _ => key,
   };
 

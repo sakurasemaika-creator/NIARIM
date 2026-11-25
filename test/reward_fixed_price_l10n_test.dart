@@ -2,9 +2,9 @@
 // 言語でもその言語の文が出て、数とオパールの単位がその言語の形（単数・複数と
 // 空白）で出ることを、本物の画面で確かめる。
 //
-// 価格を確定価格にしたとき、価格の行の「確定価格（交換準備中）」は日本語と
+// 価格を確定価格にしたとき、価格の行の「確定価格（…）」は日本語と
 // 英語しか持たず（スペイン語・フランス語・韓国語でも英語が出る）、合計の
-// 注記「（確定価格・交換準備中）」と「重複・有効期限を確認」の
+// 注記「（確定価格・…）」と「重複・有効期限を確認」の
 // 「確定単価による合計：… コイン。…」はどの言語でも日本語のまま、数と
 // 「 コイン」をコードでつないでいた。
 //
@@ -100,19 +100,19 @@ CommunityService _server({required int balance, DateTime? activeUntil}) =>
       ),
     );
 
-/// 価格の行の、交換の準備ができていない確定価格の前に付く言葉。
+/// 価格の行の、サーバーの見積もりが無くまだ交換できない確定価格の前に付く言葉。
 const _fixedPrice = {
-  'en': 'Fixed price (redemption not yet available)',
-  'es': 'Precio definitivo (canje aún no disponible)',
-  'fr': 'Prix définitif (échange pas encore disponible)',
-  'ko': '확정 가격(교환 준비 중)',
-  'zh': '最终价格（兑换准备中）',
-  'zh_Hant': '最終價格（兌換準備中）',
+  'en': 'Fixed price (connect to redeem)',
+  'es': 'Precio definitivo (conéctate para canjear)',
+  'fr': 'Prix définitif (connectez-vous pour échanger)',
+  'ko': '확정 가격(서버에 연결하면 교환 가능)',
+  'zh': '最终价格（连接服务器后即可兑换）',
+  'zh_Hant': '最終價格（連線伺服器後即可兌換）',
 };
 
 /// 「重複・有効期限を確認」の最後の文の、合計のコインの前まで。
 const _fixedTotalLead = {
-  'en': 'Total at fixed unit prices: ',
+  'en': 'Total at the fixed prices: ',
   'es': 'Total según los precios unitarios definitivos: ',
   'fr': 'Total selon les prix unitaires définitifs\u00a0: ',
   'ko': '확정 단가 기준 합계: ',

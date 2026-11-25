@@ -95,6 +95,7 @@ CommunityService _server(int n) => CommunityService(
           'claimed': false,
           'eligible': false,
           'readyForClaim': false,
+          // ランキングの行はサーバーが報酬を有効にしたときだけ一覧に出る。
           'rewardEnabled': true,
           'perWork': false,
           ...extra,
@@ -144,6 +145,7 @@ CommunityService _server(int n) => CommunityService(
               mission('bookmarks_n', 'workBookmarks', n),
               mission('works_n', 'qualifiedWorks', n, each: n),
               mission('followers_n', 'followers', n),
+              // 制作時間はオパールを受け取れないので、一覧には出ない。
               mission('time_n', 'verifiedEditSeconds', n * 3600),
             ],
           },
@@ -260,24 +262,31 @@ Future<String> _details(WidgetTester tester, Key key) async {
   return text;
 }
 
+/// 達成条件のダイアログを開くボタン（画面に出るクリエイターミッションの行と、
+/// ウィークリー／マンスリー・作品広場の欄）。
+const _detailButtons = <Key>[
+  ValueKey('missionDetails_rank_n:template'),
+  ValueKey('missionDetails_rank_other_n:template'),
+  ValueKey('missionDetails_bookmarks_n:template'),
+  ValueKey('missionDetails_works_n:template'),
+  ValueKey('missionDetails_followers_n:template'),
+  Key('recurringMissionDetails_visit_week_n'),
+  Key('recurringMissionDetails_visit_month_n'),
+  ValueKey('plazaMissionDetails_plaza_day_n'),
+];
+
+/// 制作時間のミッションの行（オパールを受け取れないので出ない）。
+const _hiddenTimeRow = ValueKey('mission_time_n:template');
+
 /// 画面の文・押して出るダイアログの文・ボタンの説明（tooltip）をすべて集める。
 Future<List<String>> _everything(WidgetTester tester) async {
+  expect(find.byKey(_hiddenTimeRow), findsNothing);
   final shown = <String>[
     ..._texts(tester),
     for (final button in tester.widgetList<IconButton>(find.byType(IconButton)))
       ?button.tooltip,
   ];
-  for (final key in <Key>[
-    const ValueKey('missionDetails_rank_n:template'),
-    const ValueKey('missionDetails_rank_other_n:template'),
-    const ValueKey('missionDetails_bookmarks_n:template'),
-    const ValueKey('missionDetails_works_n:template'),
-    const ValueKey('missionDetails_followers_n:template'),
-    const ValueKey('missionDetails_time_n:template'),
-    const Key('recurringMissionDetails_visit_week_n'),
-    const Key('recurringMissionDetails_visit_month_n'),
-    const ValueKey('plazaMissionDetails_plaza_day_n'),
-  ]) {
+  for (final key in _detailButtons) {
     shown.addAll((await _details(tester, key)).split('\n\n'));
   }
   return shown;
@@ -482,7 +491,7 @@ void main() {
       );
       from = 0;
       for (final line in [
-        '公開作品数のサーバー集計がまだ完了していません',
+        '公開作品数を集計しています。しばらくしてからもう一度ご覧ください。',
         '作品を選択すると現在の達成状況を確認できます',
         'この作品は現在公開されていません',
         '全体の公開作品数を集計中です。集計が終わるまで受取できません',
@@ -496,12 +505,13 @@ void main() {
       expect(other, isNot(contains('対象作品の現在順位')));
       expect(other, isNot(contains('受取条件:')));
 
-      final time = await _details(
-        tester,
-        const ValueKey('missionDetails_time_n:template'),
+      // 制作時間はオパールを受け取れないので、行も達成条件も出ない
+      // （制作時間は画面の上の行に目安として出る）。
+      expect(find.byKey(_hiddenTimeRow), findsNothing);
+      expect(
+        find.byKey(const ValueKey('missionDetails_time_n:template')),
+        findsNothing,
       );
-      expect(time, contains('【制作時間の条件】'));
-      expect(time, isNot(contains('【受取方法】')));
       final followers = await _details(
         tester,
         const ValueKey('missionDetails_followers_n:template'),
@@ -511,23 +521,22 @@ void main() {
 
       final texts = _texts(tester);
       expect(texts, contains('サーバー時刻で検証した制作時間: $n分'));
-      expect(texts, contains('制作時間は端末側で偽装可能なため、現在オパール報酬の対象外です。計測した時間は参考値です。'));
+      expect(texts, contains('制作時間は端末で計った記録のため、オパールの報酬の対象ではありません。計った時間は目安です。'));
       expect(texts, contains('週に$n日ログイン'));
       expect(texts, contains('月に$n日ログイン'));
-      // オパールの受取の準備中の知らせは、欄ごとに元の文のまま（ウィークリー・
-      // マンスリーは「配布」、作品広場は「受取」）。
+      // サーバーがオパールの受け取りを止めているときは、どちらの欄にも
+      // 一時的に止めていることの知らせが出る。
+      const paused = 'オパールの受け取りを一時的に停止しています。';
       final recurringTexts = _texts(
         tester,
         find.byKey(const Key('recurringMissionsPanel')),
       );
-      expect(recurringTexts, contains('オパール配布は準備中です'));
-      expect(recurringTexts, isNot(contains('オパールの受取は準備中です')));
+      expect(recurringTexts, contains(paused));
       final plazaTexts = _texts(
         tester,
         find.byKey(const Key('plazaMissionsPanel')),
       );
-      expect(plazaTexts, contains('オパールの受取は準備中です'));
-      expect(plazaTexts, isNot(contains('オパール配布は準備中です')));
+      expect(plazaTexts, contains(paused));
       final week = await _details(
         tester,
         const Key('recurringMissionDetails_visit_week_n'),
@@ -535,7 +544,7 @@ void main() {
       expect(week, contains('同じ週（月曜日から日曜日）内に、異なる日付で$n日以上ログイン'));
       expect(week, contains('現在の達成日数：$n / $n'));
       expect(week, contains('【受取】条件を満たすと$nオパールを受け取れます。'));
-      expect(week, contains('オパールの受取機能は現在準備中です。'));
+      expect(week, contains('オパールの受け取りを一時的に停止しています。'));
       final plaza = await _details(
         tester,
         const ValueKey('plazaMissionDetails_plaza_day_n'),
@@ -628,17 +637,8 @@ void main() {
       }
 
       scan('画面', find.byType(Scaffold));
-      for (final key in <Key>[
-        const ValueKey('missionDetails_rank_n:template'),
-        const ValueKey('missionDetails_rank_other_n:template'),
-        const ValueKey('missionDetails_bookmarks_n:template'),
-        const ValueKey('missionDetails_works_n:template'),
-        const ValueKey('missionDetails_followers_n:template'),
-        const ValueKey('missionDetails_time_n:template'),
-        const Key('recurringMissionDetails_visit_week_n'),
-        const Key('recurringMissionDetails_visit_month_n'),
-        const ValueKey('plazaMissionDetails_plaza_day_n'),
-      ]) {
+      expect(find.byKey(_hiddenTimeRow), findsNothing);
+      for (final key in _detailButtons) {
         final button = find.byKey(key);
         await tester.ensureVisible(button);
         await tester.pumpAndSettle();

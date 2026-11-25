@@ -25,6 +25,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/rewards/creator_missions_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
@@ -91,11 +92,36 @@ const _recurring = [
 /// 累計ログインの節目（日数・コイン）。
 const _milestones = [(7, 5), (30, 20), (100, 50)];
 
-/// クリエイターミッションのコインと、検証済みの制作時間（時間）。
+/// クリエイターミッションのコインと、この端末の制作時間（時間。画面の上の
+/// 「この端末の制作時間（参考）」の行に出る）。制作時間のミッションは
+/// オパールを受け取れないので一覧に出ず、時間の数と単位はこの行で確かめる。
 const _creatorCoins = [30, 10, 5];
-const _creatorHours = 10;
+const _localHours = 10;
 const _candidateSeconds = 5400;
 const _verifiedSeconds = 0;
+
+/// この端末の作品の制作時間の合計が[_localHours]時間になる作品一覧。
+class _WorkedProjects extends ProjectService {
+  @override
+  List<Project> get projects => [
+    Project(
+      id: 'worked',
+      name: 'Worked',
+      fps: 12,
+      durationSeconds: 1,
+      backgroundColor: 0xFFFFFFFF,
+      createdAt: DateTime.utc(2026),
+      updatedAt: DateTime.utc(2026),
+      totalWorkSeconds: _localHours * 3600,
+    ),
+  ];
+}
+
+/// 語結合子・幅の無い空白を除き、改行しない空白を普通の空白にした文。
+String _plain(String text) => text
+    .replaceAll('\u2060', '')
+    .replaceAll('\u200b', '')
+    .replaceAll('\u00a0', ' ');
 
 CommunityService _service() => CommunityService(
   api: CommunityApi(
@@ -124,11 +150,24 @@ CommunityService _service() => CommunityService(
                 'rewardEnabled': true,
                 'perWork': false,
               },
+              // 受け取れる行（受け取るボタンが文の横か下に並ぶ）。
+              {
+                'id': 'works_10',
+                'kind': 'qualifiedWorks',
+                'required': 10,
+                'coins': _creatorCoins[1],
+                'claimed': false,
+                'eligible': true,
+                'readyForClaim': true,
+                'rewardEnabled': true,
+                'perWork': false,
+              },
+              // 制作時間はオパールを受け取れないので、一覧に出ない。
               {
                 'id': 'time_10',
                 'kind': 'verifiedEditSeconds',
-                'required': _creatorHours * 3600,
-                'coins': _creatorCoins[1],
+                'required': 10 * 3600,
+                'coins': 10,
                 'claimed': false,
                 'eligible': true,
                 'readyForClaim': true,
@@ -291,7 +330,7 @@ void main() {
               ),
               ChangeNotifierProvider<CommunityService>.value(value: _service()),
               ChangeNotifierProvider<ProjectService>.value(
-                value: ProjectService(),
+                value: _WorkedProjects(),
               ),
               ChangeNotifierProvider<SettingsService>.value(
                 value: SettingsService(),
@@ -319,7 +358,11 @@ void main() {
         expect(find.byKey(const Key('recurringMissionsPanel')), findsOneWidget);
         expect(find.byKey(const Key('loginMilestone100')), findsOneWidget);
         expect(
-          find.byKey(const ValueKey('mission_time_10:template')),
+          find.byKey(const ValueKey('mission_works_10:template')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('claim_works_10_account')),
           findsOneWidget,
         );
 
@@ -333,20 +376,29 @@ void main() {
           for (final (_, _, seconds, _) in _plaza)
             missionDurationLabel(l10n, seconds),
           missionDurationLabel(l10n, _plazaProgress),
-          l10n.missionDurationHours(_creatorHours),
-          l10n.missionDurationHours(0),
+          l10n.missionDurationHours(_localHours),
           l10n.missionDurationMinutes(_candidateSeconds ~/ 60),
           l10n.missionDurationMinutes(_verifiedSeconds ~/ 60),
         };
         final problems = <String>[];
         var numbersSeen = 0;
+        var localTimeSeen = false;
+        final localTime = _plain(l10n.creatorMissionLocalTime(_localHours));
         for (final paragraph in _paragraphs(find.byType(Scaffold))) {
           final lines = ParagraphLines(paragraph);
           if (RegExp(r'\d').hasMatch(lines.visible)) numbersSeen++;
+          if (_plain(lines.visible).contains(localTime)) localTimeSeen = true;
           problems.addAll(_numberUnitBreaks(lines, phrases));
           problems.addAll(lines.lineEdgeViolations());
         }
         expect(numbersSeen, greaterThan(20), reason: '$name: 数の出る文');
+        // 時間の数と単位（「10時間」「10 hours」）は画面の上の制作時間の行で
+        // 確かめる（制作時間のミッションの行は出ない）。
+        expect(localTimeSeen, isTrue, reason: '$name: この端末の制作時間の行');
+        expect(
+          find.byKey(const ValueKey('mission_time_10:template')),
+          findsNothing,
+        );
         expect(
           problems,
           isEmpty,

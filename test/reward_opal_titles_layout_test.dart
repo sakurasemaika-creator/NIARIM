@@ -272,18 +272,18 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     });
 
-    testWidgets('特典交換の「目標にする」「交換する」が語の途中で折り返さない'
+    testWidgets('特典交換の「交換する」が語の途中で折り返さない'
         '（$name, 320dp, 文字2倍）', (tester) async {
       final themes = await prepare(tester, const Size(320, 6000));
       await tester.pumpWidget(app(themes, locale, const RewardUnlockScreen()));
       await settle(tester);
-      // 特典を選ぶと合計・目標・交換のボタンが出る。
+      // 特典を選ぶと合計・交換のボタンが出る。
       for (final target in ['allAds', 'canvasAds']) {
         await tester.tap(find.byKey(ValueKey('rewardFeature_$target')));
       }
       await tester.pumpAndSettle();
       final problems = <String>[];
-      for (final text in [l10n.rewardUnlockGoal, l10n.rewardUnlockRedeem]) {
+      for (final text in [l10n.rewardUnlockRedeem]) {
         final paragraph = _paragraphOf(tester, find.byType(Scaffold), text);
         problems.addAll(_breaksInsideWords(ParagraphLines(paragraph)));
       }

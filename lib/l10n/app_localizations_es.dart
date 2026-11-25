@@ -3155,7 +3155,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get premiumPackPriceBasis =>
-      'Comparación con los precios individuales del mismo periodo. El canje individual estará disponible más adelante.';
+      'Comparado con canjear cada ventaja por separado durante el mismo periodo.';
 
   @override
   String get exportKeepsPlaybackTime =>
@@ -7950,7 +7950,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communitySignInUnavailable =>
-      'El inicio de sesión con Google no está configurado en esta versión de desarrollo.';
+      'El inicio de sesión con Google no está disponible, por lo que no se puede vincular la cuenta.';
 
   @override
   String get communitySaveSearch => 'Guardar la búsqueda actual';
@@ -9671,7 +9671,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsOffline =>
-      'La recompensa todavía no está disponible.';
+      'El cobro de esta recompensa está en pausa por ahora.';
 
   @override
   String get creatorMissionDrawerAttention => 'Misiones logradas sin reclamar';
@@ -9722,7 +9722,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get creatorMissionNotClaimed => 'Sin reclamar';
 
   @override
-  String get creatorMissionUpcoming => 'Recompensas en preparación';
+  String get creatorMissionUpcoming => 'En pausa';
+
+  @override
+  String get creatorMissionTemplateClaim =>
+      'Se reclama cuando una obra cumple el objetivo';
 
   @override
   String get creatorMissionLogin =>
@@ -9742,7 +9746,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionTimeWarning =>
-      'El tiempo local es orientativo. Las recompensas requieren verificación.';
+      'El tiempo de edición es solo orientativo y no da ópalos.';
 
   @override
   String get creatorMissionRankingWarning =>
@@ -9773,7 +9777,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loginBonusUnknown => 'No disponible';
 
   @override
-  String get loginBonusUnavailable => 'Recompensas en preparación';
+  String get loginBonusUnavailable =>
+      'El cobro de recompensas está en pausa por ahora';
 
   @override
   String get loginBonusUtc =>
@@ -9878,7 +9883,8 @@ class AppLocalizationsEs extends AppLocalizations {
       'Mira anuncios opcionales para ganar ópalos';
 
   @override
-  String get rewardNavigationEarnUnavailable => 'Anuncios aún no disponibles';
+  String get rewardNavigationEarnUnavailable =>
+      'Los anuncios con recompensa no están disponibles en este momento';
 
   @override
   String get rewardUnlockTitle => 'Recompensas';
@@ -9911,10 +9917,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Todas las ventajas activas con Premium';
 
   @override
-  String get rewardUnlockActiveUnavailable =>
-      'Los beneficios aparecerán al conectar el servidor';
-
-  @override
   String get rewardUnlockDuration => 'Período de uso';
 
   @override
@@ -9924,24 +9926,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockChooseBenefits => 'Selecciona ventajas';
 
   @override
-  String get rewardUnlockPricePending => 'Ópalos necesarios: por definir';
-
-  @override
-  String get rewardUnlockNotReady => 'Próximamente';
+  String get rewardUnlockNotReady => 'No disponible para canje';
 
   @override
   String get rewardUnlockTotal => 'Total de ópalos';
 
   @override
   String get rewardUnlockUnavailable =>
-      'Precios de canje todavía no disponibles';
+      'Elige ventajas para ver el total de ópalos necesarios';
 
   @override
-  String get rewardUnlockBalancePending =>
-      'Saldo: conexión al servidor pendiente';
+  String get rewardUnlockBalanceSignIn =>
+      'Inicia sesión con Google para ver tu saldo de ópalos';
 
   @override
-  String get rewardUnlockGoal => 'Establecer como objetivo';
+  String get rewardUnlockBalanceLoadFailed =>
+      'No se pudo cargar tu saldo de ópalos. Vuelve a abrir esta pantalla.';
 
   @override
   String get rewardUnlockRedeem => 'Canjear ópalos';
@@ -10003,8 +10003,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo confirmar el canje. El reintento comprobará la misma transacción.';
 
   @override
-  String get rewardUnlockFreeOnly =>
-      'Gana ópalos con anuncios voluntarios (próximamente)';
+  String get rewardUnlockFreeOnly => 'Gana ópalos con anuncios voluntarios';
 
   @override
   String get rewardUnlockSubscribe => 'Ver Premium mensual o anual';
@@ -10018,7 +10017,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardUnlockEarning =>
-      'Los miembros Premium también podrán acumular ópalos';
+      'Los miembros Premium también pueden acumular ópalos';
 
   @override
   String get rewardUnlockHour => 'horas';
@@ -10350,7 +10349,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      'TIEMPO: El tiempo declarado por el dispositivo no genera ópalos. Aún no hay una prueba fiable de la edición real y estas recompensas no se pueden reclamar. El tiempo mostrado es orientativo.';
+      'TIEMPO DE EDICIÓN: El tiempo de edición se mide en tu dispositivo, por lo que no da ópalos. El tiempo mostrado es orientativo.';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -10419,7 +10418,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionRankPoolUnknown =>
-      'El servidor aún no ha terminado de contar las obras publicadas';
+      'Se están contando las obras publicadas. Vuelve a consultarlo en un momento.';
 
   @override
   String get creatorMissionRankCurrentUnknown =>
@@ -10427,7 +10426,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      'El tiempo de edición del dispositivo se puede falsificar, por lo que ahora no da ópalos. El tiempo mostrado es orientativo.';
+      'El tiempo de edición se mide en tu dispositivo, por lo que no da ópalos. El tiempo mostrado es orientativo.';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -10438,10 +10437,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String creatorMissionRankCurrentPlace(int rank) {
     return 'Puesto actual de esta obra: $rank';
   }
-
-  @override
-  String get creatorMissionRankNotLive =>
-      'El pago de ópalos está en preparación; todavía no se pueden reclamar las recompensas de clasificación.';
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
@@ -10527,7 +10522,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardUnlockFixedPrice =>
-      'Precio definitivo (canje aún no disponible)';
+      'Precio definitivo (conéctate para canjear)';
 
   @override
   String get missionCoinsReceived => 'Ópalos recibidos';
@@ -10542,7 +10537,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get missionClaimed => 'Reclamado';
 
   @override
-  String get missionComingSoon => 'Próximamente';
+  String get missionComingSoon => 'En pausa';
 
   @override
   String get missionClaim => 'Reclamar';
@@ -10563,11 +10558,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get missionRefresh => 'Actualizar';
 
   @override
-  String get missionPayoutPending => 'El pago de ópalos aún no está disponible';
+  String get missionPayoutPending =>
+      'El cobro de ópalos está en pausa por ahora.';
 
   @override
   String get recurringMissionsPayoutPending =>
-      'El pago de ópalos aún no está disponible';
+      'El cobro de ópalos está en pausa por ahora.';
 
   @override
   String missionDurationHours(int count) {
@@ -10648,7 +10644,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get missionDetailsPayoutUnavailable =>
-      'El cobro de ópalos aún está en preparación.';
+      'El cobro de ópalos está en pausa por ahora.';
 
   @override
   String plazaMissionDetailsConditions(String period, String duration) {
@@ -10935,7 +10931,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return 'Total según los precios unitarios definitivos: $coins. El servidor aún no admite gastar ópalos en ventajas sueltas ni en canjes que se solapan. El importe ya es definitivo, pero solo se puede canjear cuando el servidor devuelve una cotización oficial. La vigencia oficial la determina el servidor justo antes del canje.';
+    return 'Total según los precios unitarios definitivos: $coins. El servidor confirma la cotización oficial y la vigencia justo antes del canje.';
   }
 
   @override

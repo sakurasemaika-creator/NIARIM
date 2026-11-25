@@ -3152,7 +3152,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumPackPriceBasis =>
-      'Comparaison avec les prix à l’unité pour la même durée. L’échange à l’unité sera disponible ultérieurement.';
+      'Comparaison avec l’échange de chaque avantage séparément pour la même durée.';
 
   @override
   String get exportKeepsPlaybackTime =>
@@ -7961,7 +7961,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communitySignInUnavailable =>
-      'La connexion Google n’est pas configurée pour cette version de développement.';
+      'La connexion Google n’est pas disponible : impossible de lier le compte.';
 
   @override
   String get communitySaveSearch => 'Enregistrer la recherche';
@@ -9690,7 +9690,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsOffline =>
-      'Cette récompense n’est pas encore disponible.';
+      'Le versement de cette récompense est suspendu pour le moment.';
 
   @override
   String get creatorMissionDrawerAttention =>
@@ -9744,7 +9744,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get creatorMissionNotClaimed => 'Non réclamé';
 
   @override
-  String get creatorMissionUpcoming => 'Récompenses en préparation';
+  String get creatorMissionUpcoming => 'En pause';
+
+  @override
+  String get creatorMissionTemplateClaim =>
+      'À réclamer quand une œuvre est éligible';
 
   @override
   String get creatorMissionLogin =>
@@ -9764,7 +9768,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionTimeWarning =>
-      'Le temps local est indicatif. Les opales exigent une validation serveur.';
+      'Le temps de création est seulement indicatif et ne rapporte pas d’opales.';
 
   @override
   String get creatorMissionRankingWarning =>
@@ -9796,7 +9800,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get loginBonusUnknown => 'Indisponible';
 
   @override
-  String get loginBonusUnavailable => 'Récompenses bientôt disponibles';
+  String get loginBonusUnavailable =>
+      'Le versement des récompenses est suspendu pour le moment';
 
   @override
   String get loginBonusUtc =>
@@ -9901,7 +9906,8 @@ class AppLocalizationsFr extends AppLocalizations {
       'Regardez des publicités facultatives pour gagner des opales';
 
   @override
-  String get rewardNavigationEarnUnavailable => 'Publicités non disponibles';
+  String get rewardNavigationEarnUnavailable =>
+      'Les publicités récompensées ne sont pas disponibles pour le moment';
 
   @override
   String get rewardUnlockTitle => 'Récompenses';
@@ -9934,10 +9940,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Tous les avantages sont actifs via Premium';
 
   @override
-  String get rewardUnlockActiveUnavailable =>
-      'Les avantages s’afficheront après connexion au serveur';
-
-  @override
   String get rewardUnlockDuration => 'Durée d’utilisation';
 
   @override
@@ -9947,24 +9949,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockChooseBenefits => 'Choisir des avantages';
 
   @override
-  String get rewardUnlockPricePending => 'Opales nécessaires : à définir';
-
-  @override
-  String get rewardUnlockNotReady => 'Bientôt disponible';
+  String get rewardUnlockNotReady => 'Non disponible à l’échange';
 
   @override
   String get rewardUnlockTotal => 'Total des opales';
 
   @override
   String get rewardUnlockUnavailable =>
-      'Les tarifs de conversion ne sont pas disponibles';
+      'Choisissez des avantages pour voir le total d’opales nécessaires';
 
   @override
-  String get rewardUnlockBalancePending =>
-      'Solde : connexion au serveur en attente';
+  String get rewardUnlockBalanceSignIn =>
+      'Connectez-vous avec Google pour voir votre solde d’opales';
 
   @override
-  String get rewardUnlockGoal => 'Définir comme objectif';
+  String get rewardUnlockBalanceLoadFailed =>
+      'Impossible de charger votre solde d’opales. Rouvrez cet écran.';
 
   @override
   String get rewardUnlockRedeem => 'Échanger les opales';
@@ -10030,7 +10030,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockFreeOnly =>
-      'Gagnez des opales avec des publicités facultatives (bientôt)';
+      'Gagnez des opales avec des publicités facultatives';
 
   @override
   String get rewardUnlockSubscribe => 'Voir Premium mensuel / annuel';
@@ -10044,7 +10044,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockEarning =>
-      'Les abonnés Premium pourront aussi cumuler des opales';
+      'Les abonnés Premium peuvent aussi cumuler des opales';
 
   @override
   String get rewardUnlockHour => 'heures';
@@ -10378,7 +10378,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      'TEMPS DE CRÉATION : Une durée déclarée localement ne rapporte pas d’opales. Une preuve fiable de la création réelle n’est pas encore disponible. Cette récompense est donc inaccessible pour l’instant. Le temps affiché est indicatif.';
+      'TEMPS DE CRÉATION : Le temps de création est mesuré sur votre appareil et ne rapporte donc pas d’opales. Le temps affiché est indicatif.';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -10435,7 +10435,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionRankPoolUnknown =>
-      'Le serveur n’a pas encore fini de compter les œuvres publiées';
+      'Le nombre d’œuvres publiées est en cours de calcul. Revenez dans un instant.';
 
   @override
   String get creatorMissionRankCurrentUnknown =>
@@ -10443,7 +10443,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      'Le temps de création mesuré sur l’appareil peut être falsifié : il ne rapporte donc pas d’opales pour l’instant. Le temps affiché est indicatif.';
+      'Le temps de création est mesuré sur votre appareil et ne rapporte donc pas d’opales. Le temps affiché est indicatif.';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -10454,10 +10454,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String creatorMissionRankCurrentPlace(int rank) {
     return 'Rang actuel de cette œuvre : $rank';
   }
-
-  @override
-  String get creatorMissionRankNotLive =>
-      'Le versement des opales est en préparation ; les récompenses de classement ne peuvent pas encore être réclamées.';
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
@@ -10537,7 +10533,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockFixedPrice =>
-      'Prix définitif (échange pas encore disponible)';
+      'Prix définitif (connectez-vous pour échanger)';
 
   @override
   String get missionCoinsReceived => 'Opales reçues';
@@ -10552,7 +10548,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get missionClaimed => 'Réclamé';
 
   @override
-  String get missionComingSoon => 'Bientôt';
+  String get missionComingSoon => 'En pause';
 
   @override
   String get missionClaim => 'Réclamer';
@@ -10574,11 +10570,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get missionPayoutPending =>
-      'Le versement des opales n’est pas encore disponible';
+      'Le versement des opales est suspendu pour le moment.';
 
   @override
   String get recurringMissionsPayoutPending =>
-      'Le versement des opales n’est pas encore disponible';
+      'Le versement des opales est suspendu pour le moment.';
 
   @override
   String missionDurationHours(int count) {
@@ -10658,7 +10654,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get missionDetailsPayoutUnavailable =>
-      'Le versement des opales est en préparation.';
+      'Le versement des opales est suspendu pour le moment.';
 
   @override
   String plazaMissionDetailsConditions(String period, String duration) {
@@ -10944,7 +10940,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return 'Total selon les prix unitaires définitifs : $coins. Le serveur ne permet pas encore de dépenser des opales pour des avantages individuels ou des échanges en double. Le montant est définitif, mais l’échange n’est possible que si le serveur renvoie un devis officiel. L’expiration officielle est fixée par la vérification du serveur juste avant l’échange.';
+    return 'Total selon les prix unitaires définitifs : $coins. Le serveur confirme le devis officiel et l’expiration juste avant l’échange.';
   }
 
   @override

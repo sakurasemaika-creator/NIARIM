@@ -6,10 +6,13 @@ import 'advertising_service.dart';
 
 /// AdMob広告プロバイダー。
 ///
-/// AdUnitIDはGoogle公式のテスト用ID（常にテスト広告を返し、収益は発生しない）。
-/// ストア公開前に必ずAdMobコンソールで発行した本番用AdUnitIDへ差し替えること。
-/// 併せてandroid/app/src/main/AndroidManifest.xmlの
-/// com.google.android.gms.ads.APPLICATION_IDも本番用App IDへ差し替える必要がある。
+/// リリースのビルドは、NIARIMの広告ユニットIDをビルドの`--dart-define`
+/// （`NIARIM_ADMOB_ANDROID_BANNER_AD_UNIT_ID`・
+/// `NIARIM_ADMOB_ANDROID_RECTANGLE_AD_UNIT_ID`）から受け取る。渡されていない
+/// ときは広告を出さない（Googleのテスト用IDへは倒さない）。デバッグのビルドと
+/// テストは、Google公式のテスト用ID（常にテスト広告を返し、収益は発生しない）を
+/// 使う。App IDはandroid/app/src/main/AndroidManifest.xmlの
+/// com.google.android.gms.ads.APPLICATION_ID（NIARIMのApp ID）。
 class AdMobProvider implements AdProvider {
   AdMobProvider({this.onAdEvent});
 
@@ -42,7 +45,7 @@ class AdMobProvider implements AdProvider {
             : '')
       : _bannerAdUnitId;
 
-  /// Google-issued test IDs until production ad review is complete.
+  /// NIARIM's ad units in release builds, Google's demo IDs otherwise.
   static String get bannerAdUnitId => _bannerAdUnitId;
   static String get mediumRectangleAdUnitId => _squareAdUnitId;
 

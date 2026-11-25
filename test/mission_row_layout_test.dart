@@ -94,10 +94,12 @@ CommunityService _service() => CommunityService(
                 'rewardEnabled': true,
                 'perWork': false,
               },
+              // 受け取れる行（受け取るボタンが文の横か下に並ぶ）。制作時間の
+              // ミッションはオパールを受け取れず一覧に出ないので、公開作品数。
               {
-                'id': 'time_10',
-                'kind': 'verifiedEditSeconds',
-                'required': 36000,
+                'id': 'works_10',
+                'kind': 'qualifiedWorks',
+                'required': 10,
                 'coins': 10,
                 'claimed': false,
                 'eligible': true,
@@ -312,6 +314,10 @@ void main() {
         );
         expect(
           find.byKey(const ValueKey('mission_followers_100:template')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('claim_works_10_account')),
           findsOneWidget,
         );
 

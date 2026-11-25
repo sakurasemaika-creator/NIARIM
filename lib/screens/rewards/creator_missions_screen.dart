@@ -469,7 +469,10 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         t.get('detailsAccountRule'),
       if (row['pendingSince'] is num && !claimed && earned)
         t.get('detailsPending'),
-      if (row['rewardEnabled'] != true) t.get('detailsOffline'),
+      if (row['rewardEnabled'] != true &&
+          kind != 'verifiedEditSeconds' &&
+          !(template && row['_serverRewardEnabled'] == true))
+        t.get('detailsOffline'),
       l10n.coinAmount(coins),
       t.get('detailsHint'),
     ];
@@ -489,6 +492,17 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       ),
     );
   }
+
+  /// The disabled button of a mission whose reward cannot be claimed here.
+  /// A per-work template is claimed from the row of the work that qualifies
+  /// (it appears above). Editing time never earns opals (the details say
+  /// why), so it is simply not achieved. Otherwise the server has paused it.
+  String _unavailableLabel(CreatorMissionLabels t, Map<String, dynamic> row) =>
+      row['kind'] == 'verifiedEditSeconds'
+      ? t.get('notAchieved')
+      : row['_genericTemplate'] == true && row['_serverRewardEnabled'] == true
+      ? t.get('templateClaim')
+      : t.get('upcoming');
 
   Widget _tile(
     CreatorMissionLabels t,
@@ -620,7 +634,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                         ),
                         child: Text(
                           !available
-                              ? t.get('upcoming')
+                              ? _unavailableLabel(t, row)
                               : pending
                               ? t.get('reviewing')
                               : t.get('notAchieved'),
@@ -648,6 +662,14 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     for (final raw in (account['missions'] as List? ?? const [])) {
       if (raw is! Map) continue;
       final row = Map<String, dynamic>.from(raw);
+      // Only missions that can earn opals are listed: editing time is
+      // measured on the device and never earns opals, and ranking rewards
+      // appear once the server enables them.
+      if (row['kind'] == 'verifiedEditSeconds') continue;
+      if (row['kind'] == 'niarimBookmarkRanking' &&
+          row['rewardEnabled'] != true) {
+        continue;
+      }
       if (row['kind'] == 'niarimBookmarkRanking') {
         row['publishedWorkCount'] = account['publishedWorkCount'] ?? 0;
       }
@@ -658,9 +680,11 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       } else if (row['perWork'] == true) {
         // Per-work templates (including ranking) are not claimable until a
         // specific work is selected; never suggest that rank alone qualifies.
+        // The server's own switch is kept to tell a paused reward apart.
         all.add({
           ...row,
           '_genericTemplate': true,
+          '_serverRewardEnabled': row['rewardEnabled'] == true,
           'eligible': false,
           'claimed': false,
           'readyForClaim': false,
@@ -797,7 +821,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                 ),
                 if (account['enabled'] != true &&
                     grid?['rewardEnabled'] != true)
-                  messageText(t.get('upcoming')),
+                  messageText(l10n.missionPayoutPending),
                 const SizedBox(height: 16),
               ],
             );

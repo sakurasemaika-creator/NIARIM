@@ -435,8 +435,9 @@ class CommunityService extends ChangeNotifier {
   }
 
   // With a backend the store starts empty rather than showing dummy works
-  // until the first fetch.
-  late final List<CommunityWork> _works = api == null
+  // until the first fetch. A release build never shows the sample works:
+  // without a backend it shows the normal empty state.
+  late final List<CommunityWork> _works = api == null && !kReleaseMode
       ? buildDummyCommunityWorks()
       : <CommunityWork>[];
   final Set<String> _bookmarkedIds = {};

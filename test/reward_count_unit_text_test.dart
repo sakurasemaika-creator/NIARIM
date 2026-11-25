@@ -21,6 +21,7 @@ import 'package:http/testing.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/coin_benefit_price_proposal.dart';
 import 'package:niarim/models/coin_unlock_quote.dart';
+import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/community/community_follow_notifications_screen.dart';
 import 'package:niarim/screens/rewards/creator_missions_screen.dart';
 import 'package:niarim/screens/rewards/reward_unlock_screen.dart';
@@ -57,6 +58,27 @@ class _SignedIn extends GoogleAuthService {
   bool get isConfigured => true;
 }
 
+/// この端末の作品の制作時間の合計が[workSeconds]秒になる作品一覧
+/// （ミッションの画面の上の「この端末の制作時間（参考）」に出る）。
+class _WorkedProjects extends ProjectService {
+  _WorkedProjects(this.workSeconds);
+  final int workSeconds;
+
+  @override
+  List<Project> get projects => [
+    Project(
+      id: 'worked',
+      name: 'Worked',
+      fps: 12,
+      durationSeconds: 1,
+      backgroundColor: 0xFFFFFFFF,
+      createdAt: DateTime.utc(2026),
+      updatedAt: DateTime.utc(2026),
+      totalWorkSeconds: workSeconds,
+    ),
+  ];
+}
+
 http.Response _json(Object data) => http.Response(
   jsonEncode(data),
   200,
@@ -64,8 +86,10 @@ http.Response _json(Object data) => http.Response(
 );
 
 /// [n]を数に使った応答を返すサーバーの代わり。クリエイターミッションは
-/// 画面が出し分ける種類（フォロワー・制作時間・ブックマーク〔作品名あり・
-/// なし〕・ランキング・投稿数・各作品のブックマーク）をすべて返す。
+/// 画面が出し分ける種類（フォロワー・ブックマーク〔作品名あり・なし〕・
+/// ランキング・投稿数・各作品のブックマーク）をすべて返す。制作時間の
+/// ミッションも返すが、オパールを受け取れないので画面には出ない（時間の
+/// 数と単位は画面の上の「この端末の制作時間」の行で確かめる）。
 CommunityService _serviceWithCounts(int n) => CommunityService(
   api: CommunityApi(
     NiarimApiClient(
@@ -265,7 +289,7 @@ List<String> _missionScreenTexts(String locale, int n) {
       'Daily',
       'Weekly',
       c('follower', 'followers'),
-      '${c('hour', 'hours')} of verified creation time',
+      'Editing time on this device (reference): ${c('hour', 'hours')}',
       n == 0
           ? 'Publish a work'
           : 'A published work reaches ${c('bookmark', 'bookmarks')}',
@@ -291,9 +315,7 @@ List<String> _missionScreenTexts(String locale, int n) {
       'Diarias',
       'Semanales',
       c('seguidor', 'seguidores'),
-      one
-          ? '$n hora de creación verificada'
-          : '$n horas de creación verificadas',
+      'Tiempo de edición local: ${c('hora', 'horas')}',
       n == 0
           ? 'Publicar una obra'
           : 'Una obra alcanza ${c('marcador', 'marcadores')}',
@@ -321,7 +343,7 @@ List<String> _missionScreenTexts(String locale, int n) {
       'Quotidiennes',
       'Hebdomadaires',
       c('abonné', 'abonnés'),
-      one ? '$n heure de création vérifiée' : '$n heures de création vérifiées',
+      'Temps de création local\u00a0: ${c('heure', 'heures')}',
       n == 0
           ? 'Publier une œuvre'
           : 'Une œuvre atteint ${c('favori', 'favoris')}',
@@ -442,8 +464,9 @@ Future<void> _settle(WidgetTester tester) async {
 Future<void> _pumpMissions(
   WidgetTester tester,
   String locale,
-  CommunityService community,
-) async {
+  CommunityService community, {
+  int localWorkSeconds = 0,
+}) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = const Size(1200, 8000);
   addTearDown(tester.view.resetPhysicalSize);
@@ -453,7 +476,9 @@ Future<void> _pumpMissions(
       providers: [
         ChangeNotifierProvider<GoogleAuthService>.value(value: _SignedIn()),
         ChangeNotifierProvider<CommunityService>.value(value: community),
-        ChangeNotifierProvider<ProjectService>.value(value: ProjectService()),
+        ChangeNotifierProvider<ProjectService>.value(
+          value: _WorkedProjects(localWorkSeconds),
+        ),
         ChangeNotifierProvider<SettingsService>.value(value: SettingsService()),
       ],
       child: _app(locale, const CreatorMissionsScreen()),
@@ -612,7 +637,17 @@ void main() {
 
   for (final (locale, n) in cases) {
     testWidgets('ミッション画面の数と単位（$locale, $n）', (tester) async {
-      await _pumpMissions(tester, locale, _serviceWithCounts(n));
+      await _pumpMissions(
+        tester,
+        locale,
+        _serviceWithCounts(n),
+        localWorkSeconds: n * 3600,
+      );
+      // 制作時間のミッションはオパールを受け取れないので一覧に出ない。
+      expect(
+        find.byKey(const ValueKey('mission_time_n:template')),
+        findsNothing,
+      );
       final texts = _shownTexts(tester);
       for (final expected in _missionScreenTexts(locale, n)) {
         expect(texts, contains(expected), reason: '$locale: $texts');
@@ -772,9 +807,9 @@ void main() {
           findsOneWidget,
         );
         final fixedPrice = {
-          'en': 'Fixed price (redemption not yet available)',
-          'es': 'Precio definitivo (canje aún no disponible)',
-          'fr': 'Prix définitif (échange pas encore disponible)',
+          'en': 'Fixed price (connect to redeem)',
+          'es': 'Precio definitivo (conéctate para canjear)',
+          'fr': 'Prix définitif (connectez-vous pour échanger)',
         }[locale]!;
         expect(find.textContaining(fixedPrice), findsWidgets);
 
@@ -787,7 +822,7 @@ void main() {
         expect(find.byKey(const Key('rewardTotalReferenceNote')), findsNothing);
 
         // 交換の準備ができていない特典も選ぶと、確定価格の合計になる。
-        // 「交換準備中」の注記は合計の見出しにつながず、下の別の行に出る。
+        // 確定価格の注記は合計の見出しにつながず、下の別の行に出る。
         await tester.tap(find.byKey(const ValueKey('rewardFeature_watermark')));
         await tester.pumpAndSettle();
         final referenceTotal =

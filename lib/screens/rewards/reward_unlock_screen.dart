@@ -655,6 +655,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     super.dispose();
   }
 
+  // The community post quota is not redeemable with opals
+  // (CoinUnlockTarget.isRedeemableNow), so it is not listed.
   static const _standardTargets = <CoinUnlockTarget>[
     CoinUnlockTarget.endCardEdit,
     CoinUnlockTarget.watermark,
@@ -662,7 +664,6 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     CoinUnlockTarget.levelAdjustment,
     CoinUnlockTarget.unlimitedDuration,
     CoinUnlockTarget.customAutomation,
-    CoinUnlockTarget.communityPostQuota,
   ];
   static const _placementTargets = <CoinUnlockTarget>[
     CoinUnlockTarget.projectListAds,
@@ -941,7 +942,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       if (enabled && rate != null) {
         final quoted = rate.cost(_duration);
         // A stale server price must not silently replace the owner-final
-        // tariff. A mismatch is presented as "redemption not yet available".
+        // tariff. A mismatch shows the fixed catalog price instead.
         if (quoted == CoinBenefitPriceCatalog.cost(target, _duration)) {
           officialPrice = quoted;
         }
@@ -1048,8 +1049,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   }
 
   bool _fullBundleBadge() {
-    final targets = [..._standardTargets, ..._placementTargets]
-      ..remove(CoinUnlockTarget.communityPostQuota);
+    final targets = [..._standardTargets, ..._placementTargets];
     try {
       return const CoinUnlockQuoteCalculator().isFullPremiumBestValue(
         duration: _duration,
@@ -1062,7 +1062,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     }
   }
 
-  /// オパールの残高の欄。残高（無ければ確認中・準備中の文）を印と並べ、
+  /// オパールの残高の欄。残高（無ければ読み込み中・ログインの案内・
+  /// 読み込めなかった知らせの文）を印と並べ、
   /// その下に取引履歴・残高の更新（ログインしていなければ連携のボタン）を
   /// 置く。以前は残高が本文の1行で、更新・履歴のボタンが画面の別の所に
   /// 散っていた。ボタンの印は残高の印と同じ左の端にそろえる（文字の
@@ -1102,7 +1103,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         ),
                       )
                     : messageText(
-                        _walletLoading ? t['loading'] : t['balancePending'],
+                        _walletLoading
+                            ? t['loading']
+                            : _lastAccountId == null
+                            ? t['balanceSignIn']
+                            : t['balanceLoadFailed'],
                         style: theme.textTheme.bodyMedium,
                       ),
               ),
@@ -1385,11 +1390,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         ),
                         const SizedBox(height: 8),
                         if (_selected.isEmpty)
-                          // 準備中であることの説明なので、合計の数の見出しの
-                          // 大きな字ではなく本文の書体・大きさで出す（見出しの
-                          // 字では、長い言語・大きな文字で1つの語が欄より広く
-                          // なり、「conver / sion」「disponibl / es」と語の途中で
-                          // 折れた）。韓国語の語も途中で折らない。
+                          // 特典を選ぶと合計が出ることの説明なので、合計の数の
+                          // 見出しの大きな字ではなく本文の書体・大きさで出す
+                          // （見出しの字では、長い言語・大きな文字で1つの語が
+                          // 欄より広くなり、「conver / sion」「disponibl / es」と
+                          // 語の途中で折れた）。韓国語の語も途中で折らない。
                           messageText(
                             t['unavailable'],
                             key: const Key('rewardTotalCoins'),
@@ -1416,9 +1421,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                               ),
                             ),
                           ),
-                        // 確定価格（交換準備中）の注記は注釈なので、見出しの
-                        // 大きな字に混ぜず本文の書体の別の行に出す（見出しに
-                        // つなぐと、長い言語・大きな文字で単語の途中で切れた）。
+                        // 確定価格（サーバーの見積もりが無く、まだ交換できない
+                        // とき）の注記は注釈なので、見出しの大きな字に混ぜず
+                        // 本文の書体の別の行に出す（見出しにつなぐと、長い
+                        // 言語・大きな文字で単語の途中で切れた）。
                         if (serverPrice == null &&
                             quote == null &&
                             !individualOffer &&
@@ -1439,15 +1445,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                           label: messageText(l10n.rewardUnlockReviewButton),
                         ),
                         const SizedBox(height: 8),
-                        // Once the authenticated quote/goal API is connected,
-                        // these buttons become available. Never claim a saved
-                        // goal or a completed redemption without a server ack.
-                        FilledButton(
-                          key: const Key('rewardSetGoalButton'),
-                          onPressed: null,
-                          child: messageText(t['goal']),
-                        ),
-                        const SizedBox(height: 8),
+                        // Redeeming needs a server quote. Never claim a
+                        // completed redemption without a server ack.
                         OutlinedButton(
                           key: const Key('rewardRedeemButton'),
                           onPressed: canRedeem && fullPremiumOffer

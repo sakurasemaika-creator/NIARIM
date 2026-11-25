@@ -16,9 +16,9 @@
 // ボタンの上の白い地に出て見えず（「Echanger」と読める）、pの下が枠の下に
 // はみ出していた。取引履歴・更新のボタンのラベルも枠の下へ5px出ていた。
 //
-// ミッションの画面のボタン（作品を選んでいないときの「Rewards are being
-// prepared」「Récompenses en préparation」、受け取る・未達成・まとめて
-// 受け取る等）も同じで、文字2倍の英語・フランス語でラベルが2〜3行になり、
+// ミッションの画面のボタン（作品を選んでいないときの見本の行のボタン、
+// 受け取る・未達成・まとめて受け取る等。以前の見本の行のラベルは長い
+// 「Rewards are being prepared」だった）も同じで、文字2倍の英語・フランス語でラベルが2〜3行になり、
 // pの下が枠の下へ5px、Éのアクセントが枠の上へ2px出ていた（特典交換の
 // 画面のボタンだけ直してあった）。
 import 'dart:convert';
@@ -128,9 +128,11 @@ CommunityService _redeemableServer() => CommunityService(
   ),
 );
 
-/// ミッションの画面：作品ごとのひな形（受け取れない「準備中」）・受け取れる
-/// ミッション・未達成のミッションと、累計ログイン・ウィークリー／
-/// マンスリー・作品広場の欄（受け取る・未達成・受取済み）を返すサーバー。
+/// ミッションの画面：作品ごとのひな形（作品が達成したら受け取る）・受け取れる
+/// ミッション・未達成のミッション・サーバーが受け取りを止めているミッション
+/// （一時停止中）と、累計ログイン・ウィークリー／マンスリー・作品広場の欄
+/// （受け取る・未達成・受取済み）を返すサーバー。制作時間のミッションは
+/// オパールを受け取れないので画面に出ない（受け取れる行の見本は公開作品数）。
 CommunityService _missionsServer() => CommunityService(
   api: CommunityApi(
     NiarimApiClient(
@@ -145,6 +147,7 @@ CommunityService _missionsServer() => CommunityService(
           int required, {
           bool perWork = false,
           bool eligible = false,
+          bool rewardEnabled = true,
         }) => {
           'id': id,
           'kind': kind,
@@ -154,7 +157,7 @@ CommunityService _missionsServer() => CommunityService(
           'claimed': false,
           'eligible': eligible,
           'readyForClaim': eligible,
-          'rewardEnabled': true,
+          'rewardEnabled': rewardEnabled,
           'perWork': perWork,
         };
         return _json(switch (request.url.path) {
@@ -162,8 +165,14 @@ CommunityService _missionsServer() => CommunityService(
             'enabled': true,
             'publishedWorkCount': 120,
             'missions': [
-              mission('time_10', 'verifiedEditSeconds', 36000, eligible: true),
+              mission('works_10', 'qualifiedWorks', 10, eligible: true),
               mission('followers_100', 'followers', 100),
+              mission(
+                'followers_1000',
+                'followers',
+                1000,
+                rewardEnabled: false,
+              ),
               mission('rank_10', 'niarimBookmarkRanking', 10, perWork: true),
               mission('bookmarks_10', 'workBookmarks', 10, perWork: true),
             ],
@@ -345,7 +354,6 @@ void main() {
   };
   const buttons = [
     Key('rewardOverlapPreviewButton'),
-    Key('rewardSetGoalButton'),
     Key('rewardRedeemButton'),
   ];
 
@@ -601,14 +609,19 @@ void main() {
         await tester.pumpAndSettle();
         final tag = '$name ×$scale ${width.toInt()}';
         // ひな形の行（作品を選んでいないので受け取れない）・受け取れる行・
-        // 3つの欄が出ていること。
+        // 一時停止中の行・3つの欄が出ていること。
         expect(
           find.byKey(const ValueKey('mission_rank_10:template')),
           findsOneWidget,
           reason: tag,
         );
         expect(
-          find.byKey(const ValueKey('claim_time_10_account')),
+          find.byKey(const ValueKey('claim_works_10_account')),
+          findsOneWidget,
+          reason: tag,
+        );
+        expect(
+          find.byKey(const ValueKey('mission_followers_1000:template')),
           findsOneWidget,
           reason: tag,
         );
@@ -626,7 +639,8 @@ void main() {
           final button = find.byElementPredicate((e) => e == element);
           problems.addAll(await _inkOutside(tester, button, tag));
         }
-        // 準備中・受け取る・未達成・まとめて受け取る・続きを読み込む等。
+        // 作品が達成したら受け取る・一時停止中・受け取る・未達成・まとめて
+        // 受け取る・続きを読み込む等。
         expect(checked, greaterThan(10), reason: tag);
         expect(problems, isEmpty, reason: '$tag:\n${problems.join('\n')}');
         expect(tester.takeException(), isNull);

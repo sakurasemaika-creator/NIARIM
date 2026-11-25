@@ -823,7 +823,7 @@ void main() {
   }, timeout: const Timeout(Duration(minutes: 10)));
 
   testWidgets('本物の画面の折り返したボタン（品質の設定の「既定に戻す」「今の'
-      'プリセットをコピー」・特典交換の「重複と期限を確認」「目標にする」・会員の'
+      'プリセットをコピー」・特典交換の「重複と期限を確認」・会員の'
       '「プレミアムを見る」）の字と枠の間が8px以上（7言語×360/1280px×'
       '文字1.0/2.0、字を描いた画素で測る）', (tester) async {
     await loadAppFonts(tester);
@@ -876,10 +876,7 @@ void main() {
             ),
             (
               '/rewards',
-              {
-                'review': find.byKey(const Key('rewardOverlapPreviewButton')),
-                'goal': find.byKey(const Key('rewardSetGoalButton')),
-              },
+              {'review': find.byKey(const Key('rewardOverlapPreviewButton'))},
             ),
             (
               '/membership',
@@ -970,8 +967,10 @@ void main() {
     );
     tester.view.resetPhysicalSize();
     tester.view.resetDevicePixelRatio();
-    // 実操作で8px未満だった5つのボタンは、仏語の360px×文字2倍で折り返す。
-    expect(wrappedAtFr360x2, hasLength(5), reason: '$wrappedAtFr360x2');
+    // 実操作で8px未満だった5つのボタン（特典交換の「目標にする」は押せない
+    // まま残っていたので画面から外した）の残りの4つは、仏語の360px×文字2倍で
+    // 折り返す。
+    expect(wrappedAtFr360x2, hasLength(4), reason: '$wrappedAtFr360x2');
     expect(measured, greaterThan(5));
     expect(
       problems,
