@@ -26,11 +26,13 @@ void main() {
     final source = File(
       'lib/screens/timeline/timeline_screen.dart',
     ).readAsStringSync();
-    expect(
-      source,
-      contains('controller.setVolume(clip.volume.clamp(0.0, 1.0))'),
-    );
+    // The player's volume is the clip's volume, kept within 0..1 by the
+    // same sound plan the export uses.
+    expect(source, contains('volume: clip.volume,'));
+    expect(source, contains('controller.setVolume(sound.gain)'));
     expect(source, isNot(contains('controller.setVolume(clip.videoOpacity')));
+    final sound = File('lib/engine/preview_sound.dart').readAsStringSync();
+    expect(sound, contains('gain: volume.clamp(0.0, 1.0)'));
     // A video is edited in the material edit panel (with the preview in
     // view): its volume slider writes the layer's videoVolume, and the
     // track's clip mirrors it for playback.
