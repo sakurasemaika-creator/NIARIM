@@ -207,11 +207,22 @@ void main() {
       }
     });
   }
-  test('short continuation after a fold tapers without a swollen cap', () {
+  // A curl turning on past half a turn keeps one crescent: the continuation
+  // after it is the ordinary strand, at the pen's own width, with no cap
+  // swollen past it.
+  test('short continuation after a fold has no swollen cap', () {
     final tiles = crescent(continuous: true, steps: 95);
     addTearDown(tiles.dispose);
-    expect(channelAt(tiles, 65, 170, 3), 0);
+    // 34px from the centre line: past the strand's half width and outline.
+    expect(channelAt(tiles, 61, 170, 3), 0);
     expect(channelAt(tiles, 95, 170, 3), 255);
+    final ink = [
+      for (var x = 40; x < 140; x++)
+        if (channelAt(tiles, x, 170, 3) > 0) x,
+    ];
+    // Across the strand near its end: no more than the pen's width and
+    // its outline either side.
+    expect(ink.last - ink.first + 1, lessThanOrEqualTo(60 + 2 * 2 + 2));
   });
   test('a one-segment continuous neck keeps its negative turn direction', () {
     final clockwise = crescent(continuous: true, steps: 91);
