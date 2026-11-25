@@ -976,11 +976,12 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   メニューの項目は「ゴミ箱へ移動」で、選んで移すときと同じ確認・「元に戻す」）、
   並び順の保存・`name_collation`・表示サイズの列数・検索・空の表示（A004、
   2026-11-13）。
-  **まだ戻っていないので、このファイルの次の記述は今の実装と食い違う**：
-  `_fabClearance`、ドックの下限（A011、所有者の
-  判断待ち）、PC専用の作業画面（DISC066、所有者の判断待ち）。案Aの文字色は
-  所有者の判断（2026-11-23「全部に案Aの色を効かせる」）で全画面に戻した。
-  この中の機能に触る前に、棚卸しの該当の行と今のコードを確かめること。
+  残りも決着した（全面監査の締め、2026-11-24）：ホームの一覧の末尾の余白は
+  `_fabClearance`ではなく浮かぶボタンの並び（`_floatingActionsKey`）から測る
+  `_floatingActionsClearance`、PCのドックの幅は`DesktopDockColumnFit`（下限200px）、
+  PCの作業画面は所有者の判断（2026-11-20、`a9a9450a`、DISC066：メニューバーは
+  出さず、表示の操作は上部バーとショートカット〔全体表示はCtrl+0〕）、案Aの文字色は
+  所有者の判断（2026-11-23「全部に案Aの色を効かせる」）で全画面。
 - **この実行環境の癖（2026-11-10）**：CIが固定しているFlutterは3.47.2
   （`.github/workflows`）。整形は`/opt/flutter-3.47.2/bin/dart format`のように
   その版のdartで行う（ビルド・テストは3.47.7でも結果は同じだった）。実画面の
@@ -1297,19 +1298,16 @@ onTap: ...)`だったために
   色選びは`_ThemeColorRoleSample`：選んでいる色の役目を画面の見本で囲む。色は
   `ThemeService.current`から直接読む〔ダイアログは開いた時点の`Theme`を写すので、
   `Theme.of`ではドラッグ中の色が見本に届かない〕）。
-- **PC/DeXモードのドックの幅は窓の幅から決める（`_fitDockWidths`）**：保存した
+- **PC/DeXモードのドックの幅は`DesktopDockColumnFit`で窓の幅から決める**：保存した
   幅のまま並べると、窓を狭めたときキャンバスが細い帯になり、さらに狭めると
-  行がはみ出してキャンバスが消えた。キャンバスに240pxを残し、足りなければ
-  2つのドックを下限（左260px・右240px、`SettingsService.minDesktop*Width`）
-  まで狭める。ドックの下限を下げるとブラシの名前が縦に並ぶ・見出しが
-  はみ出すので下げないこと。左利きモードでは色・レイヤーのドックも左端へ
-  鏡映しにする（つまみの向きはこの配置を前提にしている）。向きが変わって
-  スマホ表示へ移るときはドックのパネルを閉じ、戻ったら開き直す
+  行がはみ出してキャンバスが消えた。キャンバスに幅800px以上の窓では240px、
+  それより狭い窓では160pxを残し（`minimumCanvasWidth`）、足りなければ窓を
+  最小の高さまで縮めてから一時的にたたむ。ドックの幅は200〜480px
+  （`SettingsService.setDesktopPanelWidth`・`setDesktopToolPanelWidth`）で、
+  PCの作業画面そのものが幅600px以上の窓だけ（下の段落）。左利きモードでは色・
+  レイヤーのドックも左端へ鏡映しにする（つまみの向きはこの配置を前提にしている）。
+  向きが変わってスマホ表示へ移るときはドックのパネルを閉じ、戻ったら開き直す
   （`_panelsBeforePhoneLayout`）。`test/canvas_dock_fit_test.dart`が見張る。
-  **注意（2026-11-10）**：この段落の幅の決め方・下限260/240pxは、2026-11-06の
-  統合mergeでdev_branchの`DesktopDockColumnFit`（下限200px）に置き換わって
-  いて、どちらにするかは所有者の判断待ち（DISC074の棚卸しのA011）。スマホ
-  表示へ移るときにパネルを閉じる・開き直すのは2026-11-10に戻した。
 - **PC/DeXモードのキャンバス・タイムラインはPC専用の作業画面（ユーザー指定、
   2026-10-30）。ただしボタンはNIARIMのスマホ版と同じ（ユーザー指定、
   2026-11-04「スマホ版UIでボタンごとに機能を分けているのにファイル・編集・
@@ -1482,8 +1480,8 @@ onTap: ...)`だったために
   テーマの見本一覧（DISC106、模型の文は本物の画面と同じキー）・共有カードの
   画像（DISC108、作ったときの言語で焼く）・複製の名前（DISC105）も7言語に
   なった（2026-11-13〜14。`l10n_hardcoded_text_guard_test`が見本一覧の手書きの
-  表を見張る）。組み込みのブラシ・トーン・自動塗りの名前はまだ日本語（DISC107、
-  所有者の判断待ち）。**仏語の記号**：アポストロフィは’、「:」の前と« »の内側は
+  表を見張る）。組み込みのブラシ・トーン・自動塗りの名前も表示の言語へ訳す
+  （`creativePresetLabel`、DISC107。利用者が付けた名前はそのまま）。**仏語の記号**：アポストロフィは’、「:」の前と« »の内側は
   改行しない空白（U+00A0）、「? ! ;」の前は細い改行しない空白（U+202F）
   （`l10n_french_typography_test`が仏語の全値と、同梱の書体で記号だけが行頭へ
   落ちないことを見張る。仏語を足すときもこの形で書く）。入らない幅で形を
@@ -2463,205 +2461,59 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
 
 ## 人間の実操作が必要な項目（ストア公開前に必ず確認・最重要）
 
-以下はAIによるコード修正だけでは完結しない、ユーザー本人（事業者）が
-実際に操作・判断しないと進まない項目。**使うサービス名・具体的な手順・
-値を貼り戻す先（ファイル・行）まで書いてある**ので、上から順に進めれば
-そのまま実行できるはず。より詳細な一覧・重複しない補足は
-`docs/AI設計書/28_継続タスク（未着手一覧）.md`の同名セクションにもある。
+AIによるコード修正だけでは完結せず、所有者（事業者）のアカウントでの操作が要る
+項目。2026-11-25時点で、CIの記録で確かめた状態を書く。一覧の正は
+`docs/work-audit/state/ASTRA_AUDIT_STATE.md`の「人の作業の一覧」。
 
-1. **配布前に本番の収益化フローを実機で確認する**：Google Playの購入・復元と
-   サーバー検証、AdMobの広告配信・SSV・コイン付与を確認する。各サービスの
-   設定手順は下のAdMob・Google Play Consoleの項目を参照する。
+**済んでいるもの（コードとCIで確かめた）**：
 
-2. **Android署名鍵（keystore）を発行し、リリースビルドに設定する**：
-   - 手順（ローカル端末のターミナルで実行。JDKに同梱の`keytool`コマンドを
-     使う。Android Studioの「Build > Generate Signed Bundle / APK」の
-     ウィザードでも同じことができる）：
-     ```bash
-     keytool -genkeypair -v -keystore niarim-release.keystore \
-       -alias niarim -keyalg RSA -keysize 2048 -validity 10000
-     ```
-     対話式でパスワード（keystore用・key用）と証明書情報（氏名・組織等、
-     適当でよい）を入力する。**生成された`.keystore`ファイルと2つの
-     パスワードは絶対にこのリポジトリにコミットしない**（`.gitignore`で
-     除外されるパスに置くか、リポジトリ外で保管する）。紛失すると同じ
-     `applicationId`（`com.niarim.niarim`）でのアプリ更新が二度とできなく
-     なるため、パスワードマネージャー等での安全な保管が必須。
-   - リポジトリ側の反映：`android/`直下に`key.properties`を作る
-     （`android/.gitignore`に`key.properties`・`**/*.keystore`・
-     `**/*.jks`が既に入っているため、追加の除外設定は不要）。内容は
-     `properties
-     storeFile=/absolute/path/to/niarim-release.keystore
-     storePassword=<keystore用パスワード>
-     keyAlias=niarim
-     keyPassword=<key用パスワード>
-     `
-     を書く。`android/app/build.gradle.kts`（現状`signingConfigs`ブロックが
-     無く、33行目付近の`release { signingConfig =
-signingConfigs.getByName("debug") }`がTODOのまま）に、
-     `key.properties`を読み込む`signingConfigs.create("release")`を追加し、
-     `release`ブロックの`signingConfig`をそれに差し替える（標準的な
-     FlutterプロジェクトのGradle Kotlin DSLでのkeystore設定パターンに
-     従えばよい）。
+- **リリースの署名**：`android/app/build.gradle.kts`は`NIARIM_UPLOAD_KEYSTORE_PATH`・
+  `NIARIM_UPLOAD_STORE_PASSWORD`（別名`niarim_upload`）でupload鍵を読み、無ければ
+  リリースのビルドを止める（デバッグ鍵へ逃げない）。CI（`build-apk.yml`）は
+  Repository Secretsの`NIARIM_UPLOAD_KEYSTORE_BASE64`・`NIARIM_UPLOAD_STORE_PASSWORD`
+  （CIのデバッグ鍵は`NIARIM_DEBUG_KEYSTORE_BASE64`・`NIARIM_DEBUG_STORE_PASSWORD`）から
+  鍵を戻し、2026-11-24のrelease APK（run 87）は署名して成功している。鍵とパスワードは
+  リポジトリに置かない（`android/.gitignore`が`key.properties`・`*.keystore`・`*.jks`を
+  除く）。鍵をなくすと同じ`applicationId`で更新できないので、所有者が安全に保管する。
+- **AdMob**：App IDは`AndroidManifest.xml`のNIARIMの物（`ca-app-pub-4380578821900659~…`）、
+  バナー・正方形の広告ユニットは`build-apk.yml`がリリースのビルドへ`--dart-define`で渡す
+  （`NIARIM_ADMOB_ANDROID_*_AD_UNIT_ID`、Repository Variablesで差し替えられる）。
+  デバッグとtestはGoogleのテスト用IDで、リリースでテストIDは使わない
+  （`admob_provider.dart`）。Webの`app-ads.txt`も置いてある。
+- **バックエンド**：`backend-ci.yml`がAWSのOIDCのロール（`AWS_DEPLOY_ROLE_ARN`）で
+  `cdk deploy`し、`GOOGLE_CLIENT_ID`・`YOUTUBE_API_KEY`はSecretsから渡す。APIは東京の
+  Lambda Function URL（`build-apk.yml`の`NIARIM_API_BASE_URL`）。購入はGoogle Playの
+  購入トークンをサーバーで確かめ（`backend/src/lib/playVerification.ts`）、報酬広告は
+  AdMobのSSV（`admobSsv.ts`）で確かめる。
+- **プライバシーポリシーの問い合わせ先**：`privacyPolicyArt9Body`（7言語）に
+  サポートの窓口を書いてある。
 
-3. **AdMob（Google公式の広告配信サービス、admob.google.com）で本番広告
-   ユニットを発行する**：
-   - AdMobコンソール（<https://admob.google.com>）にPlay Consoleと同じ
-     Googleアカウントでログイン → 左メニュー「アプリ」→「アプリを追加」で
-     Android／NIARIMを登録（Play Storeにまだ未公開の場合は「いいえ、
-     追加しますか」の手動登録フローで進める）。
-   - 登録後に発行される**App ID**（`ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY`
-     形式）を`android/app/src/main/AndroidManifest.xml`の
-     `com.google.android.gms.ads.APPLICATION_ID`（現状Google公式テストID
-     `ca-app-pub-3940256099942544~3347511713`）に上書きする。
-   - 同アプリ配下で「広告ユニット」→「広告ユニットを追加」→
-     「バナー」を選び、`lib/services/admob_provider.dart`の
-     `_bannerAdUnitId`（Android向け、現状テストID
-     `ca-app-pub-3940256099942544/6300978111`）に対応する**AndroidバナーID**
-     を発行・差し替え。iOS向けにも別途アプリ登録・バナー広告ユニットを
-     作成し、同ファイルの`_bannerAdUnitId`のiOS分岐（現状テストID
-     `ca-app-pub-3940256099942544/2934735716`）を差し替える（iOS版を出す
-     予定が無ければ後回しでよい）。
-   - 正方形（`_squareAdUnitId`）用の広告ユニットも本番では専用に発行する
-     ことが望ましい（同ファイルのコメント参照。現状はテスト用として
-     バナーIDを流用している）。「メディエーション」「レクタングル」等の
-     サイズ指定で追加できる。
+**所有者のアカウントでしかできないもの**：
 
-4. **Google Play Console（play.google.com/console）でアプリ内課金の
-   サブスクリプション商品を作成する**：
-   - Play Consoleでアプリを開く → 左メニュー「収益化」→
-     「アプリ内アイテム」→「サブスクリプション」→「サブスクリプションを
-     作成」。
-   - **商品IDは`lib/services/premium_service.dart`の
-     `monthlyProductId`（`niarim_premium_monthly`）・`yearlyProductId`
-     （`niarim_premium_yearly`）と文字列レベルで完全一致させる**
-     （Play Console側は登録名を自由に付けられるが、商品ID欄はコード側の
-     この2つの値をそのまま入力すること。一致しないと購入フローが商品を
-     見つけられずテストもできない）。
-   - 価格・課金周期（月次/年次）・利用規約リンク等を設定して「有効化」。
-     Play Consoleの審査・公開ステータスによっては実機でのテスト購入に
-     テイスター（ライセンステスター）登録が必要な場合がある
-     （「設定」→「ライセンステスト」）。
-   - 注意：サーバー側のレシート検証（Google Play Developer APIでの
-     購入確認）は未実装で、クライアント側の購入イベントを直接信頼する
-     設計（`PremiumService`のコメント参照）。不正購入対策を強化したい
-     場合はサーバー検証の追加実装が別途必要（現状は未着手）。
-
-5. **プライバシーポリシーの問い合わせ先を実際の連絡先に差し替える**：
-   本アプリ専用の連絡先（無料Gmailアドレス等でよい）を用意し、
-   `lib/l10n/app_ja.arb`をはじめとする7言語すべての`privacyPolicyArt8Body`
-   キー（`lib/l10n/app_*.arb`、対象言語はja/en/es/fr/ko/zh/zh_Hant）を
-   実際の連絡先を含む文言に更新した上で、`flutter gen-l10n`を実行して
-   生成コードへ反映する（各言語の訳文はCLAUDE.mdの開発ワークフロー節の
-   注意どおり機械的な一括置換を避け、言語ごとに文として自然になるよう
-   手直しすること）。
-
-6. **特定商取引法に基づく表示（日本向け有料課金を提供する場合に必須）**：
-   事業者名・所在地・電話番号・問い合わせ先等の実データがユーザー側で
-   確定してから、専用画面（例：設定画面から遷移する静的ページ）を追加する
-   方針。実データが無いままプレースホルダーで実装すると、かえって不正確な
-   法的表示を公開することになるため、**現時点ではコード側の対応を意図的に
-   保留している**。実データが揃ったら、既存の利用規約・プライバシー
-   ポリシー画面（`lib/screens/`配下の該当画面を参照）と同じ構成で新規画面を
-   追加し、設定画面からの導線を張ること。
-
-7. **Google Play Consoleのストア掲載情報を仕上げる**：
-   Play Console「ストアの掲載情報」から、アプリ説明文・スクリーンショット
-   （最新の画面デザインのもの）・フィーチャーグラフィック・
-   最新アイコン素材（`assets/icon/app_icon.png`を元にした
-   512×512のハイレゾアイコン）を登録する。このリポジトリの外側（Play
-   Console画面上）の作業であり、現状未着手・未確認。「コンテンツの
-   レーティング」「対象年齢」「データセーフティ」の各アンケートも
-   公開前に必須。
-
-8. **YouTube Data API v3のAPIキー、およびGoogleログイン用OAuthクライアント
-   IDをGoogle Cloud Consoleで発行し、バックエンドのデプロイ時に渡す**：
-   バックエンド（`backend/`）の統計更新バッチ（`videos.batchGetStats`）と
-   ログイン認証（Google OAuthのIDトークン検証）が、それぞれ
-   `YOUTUBE_API_KEY`・`GOOGLE_CLIENT_ID`という2つの値を必要とする
-   （`backend/lib/niarim-backend-stack.ts`の129行目・165行目、
-   CDKの`this.node.tryGetContext(...)`で読み込む設計。未設定だと
-   `'REPLACE_ME'`のまま動いてしまう）。
-   - Google Cloud Console（<https://console.cloud.google.com>）で
-     プロジェクトを作成（または既存のものを流用）→「APIとサービス」→
-     「ライブラリ」で「YouTube Data API v3」を有効化。
-   - 「認証情報」→「認証情報を作成」→「APIキー」で**YouTube Data
-     APIキー**を発行し、キーの設定で「YouTube Data API v3」のみに制限
-     しておく（推奨）。
-   - 同じく「認証情報を作成」→「OAuthクライアントID」で**Googleログイン用
-     OAuthクライアントID**を発行（先に「OAuth同意画面」の設定が必要）。
-   - デプロイ時にこの2値を`backend/`ディレクトリで
-     ```bash
-     npx cdk deploy \
-       -c googleClientId=<発行したOAuthクライアントID> \
-       -c youtubeApiKey=<発行したYouTube APIキー>
-     ```
-     のように`-c`オプションで渡す（`backend/README.md`の「デプロイ手順」
-     に同じ内容がある。バックエンドのデプロイ手順全体・前提条件・
-     `youtube.upload`スコープのGoogle審査についてはそちらを参照）。
-
-9. **作品広場のAPIクライアント層・書き込みの配線は実装済み。残るのは
-   デプロイと通報・ブロックの画面**：`lib/services/api/`にバックエンドの
-   **22エンドポイント全て**を
-   型付きで呼ぶ層がある（`community_api.dart`＋HTTP下請けの
-   `niarim_api_client.dart`＋DTOの`niarim_api_models.dart`）。接続先は
-   ビルド時の`--dart-define=NIARIM_API_BASE_URL=https://...`で渡し、
-   未指定なら`CommunityService`は従来どおりダミーデータで動く
-   （デプロイ前でも画面確認・スクリーンショット・テストが一通りできる
-   状態を保つため）。読み取り系（新着一覧・ランキング）は
-   `CommunityService.refreshFromBackend()`・`fetchRanking()`で配線済み。
-   状況は次のとおり：
-   - 書き込み系（投稿・タグ・公開設定・「AI画像・AI動画使用」・
-     ブックマーク・リポスト・フォロー）は`GoogleAuthService.backendIdToken`
-     のIDトークンで送る形まで配線済み（手元へ即反映→送信→サーバーの返事で
-     置き換え、断られたら巻き戻して`lastError`）。起動時はGoogleアカウント
-     ごとに覚えた投稿者IDを`restoreOwner`で先に戻し、`/me/works`→
-     `loadSocial`（ブックマーク・フォロー中・リポスト→フォロー中フィード）の
-     順に取り込む。作者ページは開いたときに`refreshAuthorWorks`で取得する。
-     ストアの作品は「サーバーが確認したもの」だけに絞る
-     （`_pruneUnconfirmed`）ので、新しい取得経路を足すときは確認済みIDの
-     集合にも足すこと（足さないと次の新着取得で消える）。
-     通報・ブロックはまだ画面から呼んでいない。
-   - 上記8のAPIキー発行と、`backend/`の実デプロイ（Task#175）。
-10. **規約・法令コンプライアンス監査（2026年9月実施）で見つかった、
-    人間の判断・ストア管理画面操作が必要な項目**（コード側で対応できる
-    部分は既に対応済み。詳細は`12_実装チェックリスト.md`の「アプリ全体の
-    規約・法令コンプライアンス監査」節参照）：
-    - **Google Playコンソールの「対象年齢」宣言**を、今回追加した利用規約
-      第2条3項（未成年者は保護者等の同意を得て利用）・実際の想定
-      ユーザー層と矛盾しない内容にしておくこと。あわせて
-      `advertising_service.dart`の`tagForUnderAgeOfConsent: false`
-      （AdMob UMP同意フローでの年齢申告、一般向けアプリとしては妥当な
-      既定値）とも整合させること。
-    - **YouTube API利用時の必須ブランディング要件**（YouTubeロゴの
-      表示・YouTube利用規約へのリンク等）を、上記9の作品広場バックエンド
-      接続作業に着手する際に満たすこと。
-    - **UGCモデレーションの実運用**（通報を受けて実際にレビュー・
-      対応する体制）と**アカウント/データ削除手段**（Google Playポリシーが
-      要求する、アプリ内アカウント削除とWeb上のデータ削除申請窓口）も、
-      同じく作品広場のバックエンド接続後に必要になる。
+1. **Google Play Console**：アプリの登録、サブスクリプション商品
+   （`lib/services/premium_service.dart`の`niarim_premium_monthly`・
+   `niarim_premium_yearly`と商品IDを完全に一致させる）、ストアの掲載情報
+   （掲載文の案・512pxのアイコン・7言語のフィーチャーグラフィックは`store/aso/`）、
+   コンテンツのレーティング・対象年齢・データセーフティのアンケート、
+   Play App Signingの鍵の登録（Googleが配る鍵のSHA-1をGoogleログインのOAuth
+   クライアントにも登録する）、ライセンステスターでのテスト購入。
+2. **AdMob**：ストアに公開した後、AdMobのアプリをストアのアプリとつなぎ、
+   審査（app-ads.txtの確認を含む）を通す。
+3. **作品広場の通報の運用**：通報を見て対応する担当と期限、アカウント・データ削除の
+   依頼（Webの`/account-deletion/`）に応える体制。
+4. **実機での確認**：`ASTRA_AUDIT_STATE.md`の「人の作業の一覧」の実機の表
+   （タッチ・筆圧、共有、書き出した動画の再生と音、ウィジェット、R8のリリースビルドの
+   起動、PC/DeX、課金・広告・コインの本番の流れ）。
 
 ## 現在の未完了事項（その他・概要）
 
-詳細・経緯は`docs/AI設計書/28_継続タスク（未着手一覧）.md`とタスクボード
-（Task#128・#134・#175）を参照。要点のみ：
-
-- **バックエンド（`backend/`、AWS CDK+Lambda+DynamoDB）はコード実装が
-  完了しており、未デプロイのまま残っている**。この開発環境にAWSデプロイ
-  用の認証情報が無いため、実際のデプロイ・動作確認だけが未実施（唯一
-  残っているバックエンド側タスク）。期間別ランキング・被ブックマーク
-  一覧API・真のプッシュ通知(FCM)・通報レート制限の本格実装・User ID
-  二重発行対策・CI/CD設定は**いずれもコード実装済み**（かつてはここに
-  「未着手」と書かれていたが、実際にはすべて完了している。詳細・経緯は
-  `12_実装チェックリスト.md`、`28_継続タスク（未着手一覧）.md`の
-  「未着手：バックエンド関連」節を参照）。デプロイ後も上記9の通り
-  Flutter側のAPI連携実装が別途必要。
-- **PR #16（`feature/timeline-universal-split`：タイムラインの速度・分割・画面トリミング・範囲選択（移動・変形・複製・削除）・動画の実フレームのプレビューと書き出し・動画の行のコマ／波形・音の高さ（半音）・切り取りはその場で取り除く・書き出しのコマのまとめ取り出し・書き出しのfpsでのプレビュー）**は未マージ（ユーザーの明示の指示までマージしない）。対応済み・未対応・実機未確認・再開の手順は`docs/AI設計書/33_PR16引き継ぎ（タイムライン編集・動画フレーム）.md`。
-- **キャンバス・タイムラインの独自ジェスチャーの自律テスト化**が進行中
-  （Task#128）。
-- **利用規約・プライバシーポリシーの7言語見直しプロジェクト**が進行中
-  （Task#134）。
-- **実機でしか真偽を確認できない既知の懸念**：フレーム一覧のタップ・
-  スワイプ吸着挙動、AVI書き出しの実機再生確認、PC/DeXレイアウトの
-  実機での見え方、新しいマーカーペン（カリグラフィー特性）の描き味、
-  R8有効ビルドでの実機起動確認（上記「繰り返し踏んだ地雷」参照）など。
+- **全面監査は完了**（2026-11-24、`ASTRA_AUDIT_STATE.md`の「全面監査の締め」）。
+  PR #16（タイムラインの編集・動画の実フレーム・音の高さ）は2026-11-25に
+  dev_branchへマージした（`48f71f57`）。経緯と仕様は
+  `docs/AI設計書/33_PR16引き継ぎ（タイムライン編集・動画フレーム）.md`。
+- **利用規約・プライバシーポリシー**は7言語の文案を所有者が確認済みとして扱う
+  （所有者の指定、2026-11-25「法務確認はOKとして作業進めてください」）。文を変えて
+  同意を取り直すときは`kLegalDocumentsVersion`を上げる。
+- **実機でしか真偽を確認できない懸念**：フレーム一覧のタップ・スワイプの吸着、
+  AVI・MP4の音の実機での再生、PC/DeXの見え方、マーカーペンの描き味、
+  R8有効ビルドの実機での起動（上記「繰り返し踏んだ地雷」参照）など。
