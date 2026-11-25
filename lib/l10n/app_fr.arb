@@ -916,6 +916,8 @@
   "exportPresetCustom": "Personnalisé",
   "exportAdvancedSettings": "Réglages avancés",
   "exportFpsLabel": "i/s",
+  "exportFpsDiffersNote": "L’œuvre est à {source} i/s. L’export à {output} i/s garde sa durée en répétant ou en sautant des images (l’aperçu est lu à {source} i/s).",
+  "exportUseWorkFps": "Utiliser les {fps} i/s de l’œuvre",
   "exportFormatSection": "Format",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "Publier ou partager une vidéo terminée.",

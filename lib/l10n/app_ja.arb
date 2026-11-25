@@ -1231,6 +1231,25 @@
   "exportPresetCustom": "カスタム",
   "exportAdvancedSettings": "詳細設定",
   "exportFpsLabel": "FPS",
+  "exportFpsDiffersNote": "作品は{source} fpsです。{output} fpsで書き出すと、長さはそのままで、コマを繰り返したり間引いたりして合わせます（プレビューは{source} fpsで再生します）。",
+  "@exportFpsDiffersNote": {
+    "placeholders": {
+      "source": {
+        "type": "int"
+      },
+      "output": {
+        "type": "int"
+      }
+    }
+  },
+  "exportUseWorkFps": "作品と同じ{fps} fpsにする",
+  "@exportUseWorkFps": {
+    "placeholders": {
+      "fps": {
+        "type": "int"
+      }
+    }
+  },
   "exportFormatSection": "形式",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "完成した動画を投稿・共有する",

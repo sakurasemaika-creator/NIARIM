@@ -2855,6 +2855,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportFpsLabel => 'FPS';
 
   @override
+  String exportFpsDiffersNote(int source, int output) {
+    return '作品为 $source fps。以 $output fps 导出时，会重复或跳过帧来保持时长（预览以 $source fps 播放）。';
+  }
+
+  @override
+  String exportUseWorkFps(int fps) {
+    return '使用作品的 $fps fps';
+  }
+
+  @override
   String get exportFormatSection => '格式';
 
   @override
@@ -13700,6 +13710,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get exportFpsLabel => 'FPS';
+
+  @override
+  String exportFpsDiffersNote(int source, int output) {
+    return '作品為 $source fps。以 $output fps 匯出時，會重複或略過影格來保持時長（預覽以 $source fps 播放）。';
+  }
+
+  @override
+  String exportUseWorkFps(int fps) {
+    return '使用作品的 $fps fps';
+  }
 
   @override
   String get exportFormatSection => '格式';

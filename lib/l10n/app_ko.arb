@@ -916,6 +916,8 @@
   "exportPresetCustom": "커스텀",
   "exportAdvancedSettings": "상세 설정",
   "exportFpsLabel": "FPS",
+  "exportFpsDiffersNote": "작품은 {source} fps입니다. {output} fps로 내보내면 길이는 그대로 두고 프레임을 반복하거나 건너뛰어 맞춥니다(미리보기는 {source} fps로 재생합니다).",
+  "exportUseWorkFps": "작품과 같은 {fps} fps로 하기",
   "exportFormatSection": "형식",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "완성한 영상을 게시하거나 공유할 때",

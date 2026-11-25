@@ -55,6 +55,8 @@ class _ExportScreenState extends State<ExportScreen> {
   // 「カスタム」選択時のみ編集可能なFPS（「カスタム」タップで
   // アコーディオン展開して詳細設定を表示する）
   int _customFps = 30;
+  static const int _minCustomFps = 12;
+  static const int _maxCustomFps = 60;
 
   int get _fps => switch (_preset) {
     ExportPreset.standard => 30,
@@ -232,9 +234,9 @@ class _ExportScreenState extends State<ExportScreen> {
                           LabeledSlider(
                             label: l10n.exportFpsLabel,
                             value: _customFps.toDouble(),
-                            min: 12,
-                            max: 60,
-                            divisions: 48,
+                            min: _minCustomFps.toDouble(),
+                            max: _maxCustomFps.toDouble(),
+                            divisions: _maxCustomFps - _minCustomFps,
                             sliderLabel: '$_customFps',
                             valueText: '$_customFps',
                             onChanged: (v) =>
@@ -319,6 +321,28 @@ class _ExportScreenState extends State<ExportScreen> {
                   : l10n.exportOutputWithoutEndCard(duration),
             ),
             Text(l10n.exportKeepsPlaybackTime),
+            // The output frame rate is not applied silently: the preview
+            // plays at the work's own rate.
+            if (project != null && project.fps != _fps) ...[
+              Text(
+                l10n.exportFpsDiffersNote(project.fps, _fps),
+                key: const ValueKey('exportFpsDiffersNote'),
+              ),
+              if (project.fps >= _minCustomFps && project.fps <= _maxCustomFps)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton(
+                    key: const ValueKey('exportUseWorkFps'),
+                    onPressed: _isExporting
+                        ? null
+                        : () => setState(() {
+                            _preset = ExportPreset.custom;
+                            _customFps = project.fps;
+                          }),
+                    child: Text(l10n.exportUseWorkFps(project.fps)),
+                  ),
+                ),
+            ],
           ],
         ),
       ),

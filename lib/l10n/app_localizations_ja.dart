@@ -2883,6 +2883,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get exportFpsLabel => 'FPS';
 
   @override
+  String exportFpsDiffersNote(int source, int output) {
+    return '作品は$source fpsです。$output fpsで書き出すと、長さはそのままで、コマを繰り返したり間引いたりして合わせます（プレビューは$source fpsで再生します）。';
+  }
+
+  @override
+  String exportUseWorkFps(int fps) {
+    return '作品と同じ$fps fpsにする';
+  }
+
+  @override
   String get exportFormatSection => '形式';
 
   @override

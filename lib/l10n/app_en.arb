@@ -918,6 +918,8 @@
   "exportPresetCustom": "Custom",
   "exportAdvancedSettings": "Advanced Settings",
   "exportFpsLabel": "FPS",
+  "exportFpsDiffersNote": "The work runs at {source} fps. Exporting at {output} fps keeps its length by repeating or skipping frames (the preview plays at {source} fps).",
+  "exportUseWorkFps": "Use the work’s {fps} fps",
   "exportFormatSection": "Format",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "Share or post a finished video.",

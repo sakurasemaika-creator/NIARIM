@@ -2894,6 +2894,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportFpsLabel => 'FPS';
 
   @override
+  String exportFpsDiffersNote(int source, int output) {
+    return '작품은 $source fps입니다. $output fps로 내보내면 길이는 그대로 두고 프레임을 반복하거나 건너뛰어 맞춥니다(미리보기는 $source fps로 재생합니다).';
+  }
+
+  @override
+  String exportUseWorkFps(int fps) {
+    return '작품과 같은 $fps fps로 하기';
+  }
+
+  @override
   String get exportFormatSection => '형식';
 
   @override

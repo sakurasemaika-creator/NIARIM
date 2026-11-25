@@ -3005,6 +3005,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportFpsLabel => 'FPS';
 
   @override
+  String exportFpsDiffersNote(int source, int output) {
+    return 'The work runs at $source fps. Exporting at $output fps keeps its length by repeating or skipping frames (the preview plays at $source fps).';
+  }
+
+  @override
+  String exportUseWorkFps(int fps) {
+    return 'Use the work’s $fps fps';
+  }
+
+  @override
   String get exportFormatSection => 'Format';
 
   @override

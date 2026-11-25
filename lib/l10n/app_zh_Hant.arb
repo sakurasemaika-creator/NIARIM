@@ -916,6 +916,8 @@
   "exportPresetCustom": "自訂",
   "exportAdvancedSettings": "詳細設定",
   "exportFpsLabel": "FPS",
+  "exportFpsDiffersNote": "作品為 {source} fps。以 {output} fps 匯出時，會重複或略過影格來保持時長（預覽以 {source} fps 播放）。",
+  "exportUseWorkFps": "使用作品的 {fps} fps",
   "exportFormatSection": "格式",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "發布或分享完成的影片。",

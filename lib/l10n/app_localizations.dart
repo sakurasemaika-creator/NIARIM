@@ -5295,6 +5295,18 @@ abstract class AppLocalizations {
   /// **'FPS'**
   String get exportFpsLabel;
 
+  /// No description provided for @exportFpsDiffersNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品は{source} fpsです。{output} fpsで書き出すと、長さはそのままで、コマを繰り返したり間引いたりして合わせます（プレビューは{source} fpsで再生します）。'**
+  String exportFpsDiffersNote(int source, int output);
+
+  /// No description provided for @exportUseWorkFps.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品と同じ{fps} fpsにする'**
+  String exportUseWorkFps(int fps);
+
   /// No description provided for @exportFormatSection.
   ///
   /// In ja, this message translates to:
