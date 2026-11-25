@@ -918,6 +918,7 @@
   "exportFpsLabel": "FPS",
   "exportFpsDiffersNote": "作品为 {source} fps。以 {output} fps 导出时，会重复或跳过帧来保持时长（预览以 {source} fps 播放）。",
   "exportUseWorkFps": "使用作品的 {fps} fps",
+  "exportPreviewAtFps": "在时间轴上以 {fps} fps 预览",
   "exportFormatSection": "格式",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "发布或分享完成的视频。",
@@ -2360,6 +2361,8 @@
   "timelineClipSpeedSoundNote": "速度越快，声音越不清楚（预览和导出的声音相同）。如果不需要声音，可以静音。",
   "timelineClipSpeedMute": "静音",
   "timelinePlaybackSkipNotice": "播放跟不上，正在跳过部分帧（导出时包含所有帧）。",
+  "timelinePreviewOutputFps": "正在以导出的 {output} fps 播放（作品为 {work} fps）",
+  "timelinePreviewWorkFps": "恢复为作品的 {fps} fps",
   "timelineCameraFrameAlreadyHasKeyframe": "此帧已有相机关键帧。",
   "timelineCameraKfTitle": "相机关键帧：F{n}",
   "@timelineCameraKfTitle": {

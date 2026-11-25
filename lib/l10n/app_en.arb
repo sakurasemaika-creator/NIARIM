@@ -920,6 +920,7 @@
   "exportFpsLabel": "FPS",
   "exportFpsDiffersNote": "The work runs at {source} fps. Exporting at {output} fps keeps its length by repeating or skipping frames (the preview plays at {source} fps).",
   "exportUseWorkFps": "Use the work’s {fps} fps",
+  "exportPreviewAtFps": "Preview at {fps} fps on the timeline",
   "exportFormatSection": "Format",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "Share or post a finished video.",
@@ -2383,6 +2384,8 @@
   "timelineClipSpeedSoundNote": "Sound gets hard to follow at high speeds (the preview and the export sound the same). You can mute it if you do not need it.",
   "timelineClipSpeedMute": "Mute the sound",
   "timelinePlaybackSkipNotice": "Playback can’t keep up, so some frames are skipped (the export has every frame).",
+  "timelinePreviewOutputFps": "Playing at the export’s {output} fps (the work is {work} fps)",
+  "timelinePreviewWorkFps": "Back to the work’s {fps} fps",
   "timelineCameraFrameAlreadyHasKeyframe": "This frame already has a camera keyframe.",
   "timelineCameraKfTitle": "Camera KF: F{n}",
   "@timelineCameraKfTitle": {

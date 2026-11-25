@@ -918,6 +918,7 @@
   "exportFpsLabel": "i/s",
   "exportFpsDiffersNote": "L’œuvre est à {source} i/s. L’export à {output} i/s garde sa durée en répétant ou en sautant des images (l’aperçu est lu à {source} i/s).",
   "exportUseWorkFps": "Utiliser les {fps} i/s de l’œuvre",
+  "exportPreviewAtFps": "Voir l’aperçu à {fps} fps dans la chronologie",
   "exportFormatSection": "Format",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "Publier ou partager une vidéo terminée.",
@@ -2360,6 +2361,8 @@
   "timelineClipSpeedSoundNote": "À vitesse élevée, le son devient difficile à suivre (l’aperçu et l’export sonnent pareil). Vous pouvez le couper si vous n’en avez pas besoin.",
   "timelineClipSpeedMute": "Couper le son",
   "timelinePlaybackSkipNotice": "La lecture n’arrive pas à suivre, des images sont sautées (l’export les contient toutes).",
+  "timelinePreviewOutputFps": "Lecture à {output} fps, comme l’export (l’œuvre est à {work} fps)",
+  "timelinePreviewWorkFps": "Revenir aux {fps} fps de l’œuvre",
   "timelineCameraFrameAlreadyHasKeyframe": "Cette image contient déjà une image clé de caméra.",
   "timelineCameraKfTitle": "Image clé caméra : F{n}",
   "@timelineCameraKfTitle": {

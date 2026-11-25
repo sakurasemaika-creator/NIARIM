@@ -1250,6 +1250,14 @@
       }
     }
   },
+  "exportPreviewAtFps": "タイムラインで{fps} fpsのプレビューを見る",
+  "@exportPreviewAtFps": {
+    "placeholders": {
+      "fps": {
+        "type": "int"
+      }
+    }
+  },
   "exportFormatSection": "形式",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "完成した動画を投稿・共有する",
@@ -2942,6 +2950,25 @@
   "timelineClipSpeedSoundNote": "速度を上げると音は聞き取りにくくなります（プレビューも書き出しも同じ音です）。音が要らなければ消せます。",
   "timelineClipSpeedMute": "音を消す",
   "timelinePlaybackSkipNotice": "再生が追いつかないため、コマを飛ばして表示しています（書き出しにはすべてのコマが入ります）。",
+  "timelinePreviewOutputFps": "書き出しの{output} fpsで再生しています（作品は{work} fps）",
+  "@timelinePreviewOutputFps": {
+    "placeholders": {
+      "output": {
+        "type": "int"
+      },
+      "work": {
+        "type": "int"
+      }
+    }
+  },
+  "timelinePreviewWorkFps": "作品の{fps} fpsに戻す",
+  "@timelinePreviewWorkFps": {
+    "placeholders": {
+      "fps": {
+        "type": "int"
+      }
+    }
+  },
   "timelineCameraFrameAlreadyHasKeyframe": "このフレームにはカメラのキーフレームがあります。",
   "timelineCameraKfTitle": "カメラ KF: F{n}",
   "@timelineCameraKfTitle": {

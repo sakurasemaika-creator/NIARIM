@@ -918,6 +918,7 @@
   "exportFpsLabel": "FPS",
   "exportFpsDiffersNote": "작품은 {source} fps입니다. {output} fps로 내보내면 길이는 그대로 두고 프레임을 반복하거나 건너뛰어 맞춥니다(미리보기는 {source} fps로 재생합니다).",
   "exportUseWorkFps": "작품과 같은 {fps} fps로 하기",
+  "exportPreviewAtFps": "타임라인에서 {fps} fps로 미리보기",
   "exportFormatSection": "형식",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "완성한 영상을 게시하거나 공유할 때",
@@ -2360,6 +2361,8 @@
   "timelineClipSpeedSoundNote": "속도를 높이면 소리를 이해하기 어려워집니다(미리보기와 내보내기의 소리는 같습니다). 소리가 필요 없으면 끌 수 있습니다.",
   "timelineClipSpeedMute": "소리 끄기",
   "timelinePlaybackSkipNotice": "재생이 따라가지 못해 일부 프레임을 건너뛰고 있습니다(내보내기에는 모든 프레임이 들어갑니다).",
+  "timelinePreviewOutputFps": "내보내기의 {output} fps로 재생 중(작품은 {work} fps)",
+  "timelinePreviewWorkFps": "작품의 {fps} fps로 돌아가기",
   "timelineCameraFrameAlreadyHasKeyframe": "이 프레임에는 이미 카메라 키프레임이 있습니다.",
   "timelineCameraKfTitle": "카메라 KF: F{n}",
   "@timelineCameraKfTitle": {

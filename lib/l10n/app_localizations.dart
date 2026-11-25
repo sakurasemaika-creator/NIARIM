@@ -5307,6 +5307,12 @@ abstract class AppLocalizations {
   /// **'作品と同じ{fps} fpsにする'**
   String exportUseWorkFps(int fps);
 
+  /// No description provided for @exportPreviewAtFps.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインで{fps} fpsのプレビューを見る'**
+  String exportPreviewAtFps(int fps);
+
   /// No description provided for @exportFormatSection.
   ///
   /// In ja, this message translates to:
@@ -10268,6 +10274,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'再生が追いつかないため、コマを飛ばして表示しています（書き出しにはすべてのコマが入ります）。'**
   String get timelinePlaybackSkipNotice;
+
+  /// No description provided for @timelinePreviewOutputFps.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出しの{output} fpsで再生しています（作品は{work} fps）'**
+  String timelinePreviewOutputFps(int output, int work);
+
+  /// No description provided for @timelinePreviewWorkFps.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の{fps} fpsに戻す'**
+  String timelinePreviewWorkFps(int fps);
 
   /// No description provided for @timelineCameraFrameAlreadyHasKeyframe.
   ///

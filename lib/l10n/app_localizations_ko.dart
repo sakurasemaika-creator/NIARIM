@@ -2904,6 +2904,11 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String exportPreviewAtFps(int fps) {
+    return '타임라인에서 $fps fps로 미리보기';
+  }
+
+  @override
   String get exportFormatSection => '형식';
 
   @override
@@ -5713,6 +5718,16 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get timelinePlaybackSkipNotice =>
       '재생이 따라가지 못해 일부 프레임을 건너뛰고 있습니다(내보내기에는 모든 프레임이 들어갑니다).';
+
+  @override
+  String timelinePreviewOutputFps(int output, int work) {
+    return '내보내기의 $output fps로 재생 중(작품은 $work fps)';
+  }
+
+  @override
+  String timelinePreviewWorkFps(int fps) {
+    return '작품의 $fps fps로 돌아가기';
+  }
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>

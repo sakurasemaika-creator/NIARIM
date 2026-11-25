@@ -5,9 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/scene.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/export/export_screen.dart';
+import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,8 +24,10 @@ import 'helpers/pump_real_async.dart';
 void main() {
   Future<({ProjectService ps, String id})> open(
     WidgetTester tester,
-    int fps,
-  ) async {
+    int fps, {
+    int seconds = 1,
+    bool fromTimeline = false,
+  }) async {
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
       'language': 'ja',
@@ -53,14 +58,21 @@ void main() {
       () => ps.createProject(
         name: 'fps',
         fps: fps,
-        durationSeconds: 1,
+        durationSeconds: seconds,
         backgroundColor: 0xFFFFFFFF,
         exportWidth: 160,
         exportHeight: 90,
       ),
     );
-    appRouter.go('/export/${project!.id}');
-    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    if (fromTimeline) {
+      appRouter.go('/timeline/${project!.id}');
+      await pumpRealAsync(tester, const Duration(milliseconds: 600));
+      await tester.tap(find.byKey(const Key('timelineExportButton')));
+      await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    } else {
+      appRouter.go('/export/${project!.id}');
+      await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    }
     return (ps: ps, id: project.id);
   }
 
@@ -86,5 +98,83 @@ void main() {
   ) async {
     await open(tester, 30);
     expect(find.byKey(const ValueKey('exportFpsDiffersNote')), findsNothing);
+  });
+
+  test('an output frame shows the frame the export samples for it', () {
+    for (final (source, output) in [(12, 30), (24, 30), (30, 24), (60, 12)]) {
+      final timing = ExportTiming(sourceFps: source, outputFps: output);
+      final scenes = [
+        Scene(
+          id: 'a',
+          index: 0,
+          frames: [for (var i = 0; i < 17; i++) Frame(index: i)],
+        ),
+        Scene(
+          id: 'b',
+          index: 1,
+          frames: [for (var i = 0; i < 9; i++) Frame(index: i)],
+        ),
+      ];
+      final sampled = [
+        for (final s in timing.samples(scenes))
+          (s.scene.id == 'a' ? 0 : 17) + s.frame.index,
+      ];
+      expect(
+        [for (var k = 0; k < sampled.length; k++) timing.sourceFrameOf(k)],
+        sampled,
+        reason: '$source → $output',
+      );
+      for (var f = 0; f < 26; f++) {
+        final k = timing.firstOutputFrom(f);
+        expect(timing.sourceFrameOf(k), greaterThanOrEqualTo(f));
+        if (k > 0) expect(timing.sourceFrameOf(k - 1), lessThan(f));
+      }
+    }
+  });
+
+  testWidgets('from the export screen, the timeline previews at the export '
+      'rate, and goes back to the work\'s', (tester) async {
+    await open(tester, 12, seconds: 3, fromTimeline: true);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(ExportScreen)),
+    )!;
+    // Standard: 30 fps.
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('exportPreviewAtFps')),
+    );
+    expect(find.text(l10n.exportPreviewAtFps(30)), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('exportPreviewAtFps')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    expect(find.byType(TimelineScreen), findsOneWidget);
+    expect(find.byType(ExportScreen), findsNothing);
+    final chip = find.byKey(const Key('timelinePreviewOutputFps'));
+    expect(chip, findsOneWidget);
+    expect(find.text(l10n.timelinePreviewOutputFps(30, 12)), findsOneWidget);
+
+    String frame() => tester
+        .widget<Text>(find.byKey(const Key('timelinePreviewFrameCount')))
+        .data!;
+    // One second at 30 fps: 30 output frames, the export's frame 12 shown.
+    await tester.tap(find.byTooltip(l10n.commonPlay).first);
+    await tester.pump(const Duration(seconds: 1));
+    expect(frame(), '13/36');
+    await tester.tap(find.byTooltip(l10n.commonPause).first);
+    await tester.pump();
+
+    // Back to the work's 12 fps: one second is 12 frames again.
+    await tester.tap(find.byKey(const Key('timelinePreviewOutputFpsBack')));
+    await tester.pump();
+    expect(chip, findsNothing);
+    await tester.tap(find.byTooltip(l10n.commonPlay).first);
+    await tester.pump(const Duration(seconds: 1));
+    expect(frame(), '25/36');
+    await tester.tap(find.byTooltip(l10n.commonPause).first);
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+  });
+
+  testWidgets('opened on its own, the export screen has no timeline to '
+      'preview on', (tester) async {
+    await open(tester, 12);
+    expect(find.byKey(const ValueKey('exportPreviewAtFps')), findsNothing);
   });
 }

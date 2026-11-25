@@ -2865,6 +2865,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String exportPreviewAtFps(int fps) {
+    return '在时间轴上以 $fps fps 预览';
+  }
+
+  @override
   String get exportFormatSection => '格式';
 
   @override
@@ -5613,6 +5618,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelinePlaybackSkipNotice => '播放跟不上，正在跳过部分帧（导出时包含所有帧）。';
+
+  @override
+  String timelinePreviewOutputFps(int output, int work) {
+    return '正在以导出的 $output fps 播放（作品为 $work fps）';
+  }
+
+  @override
+  String timelinePreviewWorkFps(int fps) {
+    return '恢复为作品的 $fps fps';
+  }
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe => '此帧已有相机关键帧。';
@@ -13748,6 +13763,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
+  String exportPreviewAtFps(int fps) {
+    return '在時間軸上以 $fps fps 預覽';
+  }
+
+  @override
   String get exportFormatSection => '格式';
 
   @override
@@ -16496,6 +16516,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelinePlaybackSkipNotice => '播放跟不上，正在跳過部分影格（匯出時包含所有影格）。';
+
+  @override
+  String timelinePreviewOutputFps(int output, int work) {
+    return '正在以匯出的 $output fps 播放（作品為 $work fps）';
+  }
+
+  @override
+  String timelinePreviewWorkFps(int fps) {
+    return '恢復為作品的 $fps fps';
+  }
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe => '此影格已有相機關鍵影格。';

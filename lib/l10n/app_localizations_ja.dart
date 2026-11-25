@@ -2893,6 +2893,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String exportPreviewAtFps(int fps) {
+    return 'タイムラインで$fps fpsのプレビューを見る';
+  }
+
+  @override
   String get exportFormatSection => '形式';
 
   @override
@@ -5679,6 +5684,16 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get timelinePlaybackSkipNotice =>
       '再生が追いつかないため、コマを飛ばして表示しています（書き出しにはすべてのコマが入ります）。';
+
+  @override
+  String timelinePreviewOutputFps(int output, int work) {
+    return '書き出しの$output fpsで再生しています（作品は$work fps）';
+  }
+
+  @override
+  String timelinePreviewWorkFps(int fps) {
+    return '作品の$fps fpsに戻す';
+  }
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>

@@ -322,7 +322,7 @@ class _ExportScreenState extends State<ExportScreen> {
             ),
             Text(l10n.exportKeepsPlaybackTime),
             // The output frame rate is not applied silently: the preview
-            // plays at the work's own rate.
+            // plays at the work's own rate, or at this one when asked.
             if (project != null && project.fps != _fps) ...[
               Text(
                 l10n.exportFpsDiffersNote(project.fps, _fps),
@@ -340,6 +340,19 @@ class _ExportScreenState extends State<ExportScreen> {
                             _customFps = project.fps;
                           }),
                     child: Text(l10n.exportUseWorkFps(project.fps)),
+                  ),
+                ),
+              // Or see the export's frames at its rate: back on the
+              // timeline, whose preview then plays at this rate.
+              if (GoRouter.of(context).canPop())
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton(
+                    key: const ValueKey('exportPreviewAtFps'),
+                    onPressed: _isExporting
+                        ? null
+                        : () => context.pop<int>(_fps),
+                    child: Text(l10n.exportPreviewAtFps(_fps)),
                   ),
                 ),
             ],

@@ -1003,6 +1003,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return count > 0 ? count : 1;
   }
 
+  /// The export's frame rate the preview plays at, when the export screen
+  /// asked for it (spec: a setting that differs from the preview is not
+  /// applied silently; the preview can switch to it). Null: the work's own.
+  int? _previewOutputFps;
+
+  /// Opens the export screen; it can come back with a frame rate to preview
+  /// the export at.
+  Future<void> _openExport() async {
+    final fps = await context.push<int>('/export/${widget.projectId}');
+    if (!mounted || fps == null) return;
+    if (_isPlaying) _togglePlay();
+    final work = _projectFps(context.read<ProjectService>());
+    setState(() => _previewOutputFps = fps == work ? null : fps);
+  }
+
+  /// The frames of the scenes before the selected one (the export counts
+  /// its frames over all scenes).
+  int _sceneStartFrame(ProjectService ps) {
+    var start = 0;
+    for (final scene in ps.scenesOf(widget.projectId)) {
+      if (scene.id == _selectedSceneId) return start;
+      start += scene.frames.length;
+    }
+    return start;
+  }
+
   void _togglePlay() {
     if (_isPlaying) {
       _playTimer?.cancel();
@@ -1014,6 +1040,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
           .where((p) => p.id == widget.projectId)
           .firstOrNull;
       final fps = project?.fps ?? 24;
+      // At the export's frame rate when asked: each tick is an output frame
+      // and shows the frame the export shows for it (ExportTiming), counted
+      // over all scenes as the export counts them.
+      final output = _previewOutputFps;
+      final timing = output != null && output != fps
+          ? ExportTiming(sourceFps: fps, outputFps: output)
+          : null;
+      final sceneStart = timing == null ? 0 : _sceneStartFrame(ps);
+      var outputFrame = timing?.firstOutputFrom(sceneStart + _currentFrame);
       // The frames follow the clock, as the sound does: when the device
       // falls behind (the timer's ticks come late), frames are skipped
       // rather than the picture slowing down and drifting from the sound.
@@ -1021,7 +1056,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       var played = 0;
       _playbackSkips.value = 0;
       _playTimer = Timer.periodic(
-        Duration(microseconds: (1000000 / fps).round()),
+        Duration(microseconds: (1000000 / (output ?? fps)).round()),
         (timer) {
           final total = _totalFrames;
           final step = timer.tick - played;
@@ -1040,7 +1075,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
           // _currentFrameNotifierをValueListenableBuilderで購読している。
           // setStateにすると、フレーム一覧・各トラック・シーンタブまで
           // 含めた画面全体を毎秒24〜60回作り直すことになる。
-          _currentFrame = (_currentFrame + step) % total;
+          if (timing != null && outputFrame != null) {
+            outputFrame = outputFrame! + step;
+            var frame = timing.sourceFrameOf(outputFrame!) - sceneStart;
+            if (frame >= total) {
+              // Round to the scene's start again, as the work's rate does.
+              outputFrame = timing.firstOutputFrom(sceneStart);
+              frame = timing.sourceFrameOf(outputFrame!) - sceneStart;
+            }
+            _currentFrame = frame.clamp(0, total - 1);
+          } else {
+            _currentFrame = (_currentFrame + step) % total;
+          }
           _syncMediaPlayback();
         },
       );
@@ -2490,9 +2536,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         const SizedBox(width: 4),
         FilledButton.icon(
           key: const ValueKey('pcCommandExport'),
-          onPressed: () => _runAutomationBlockedAction(
-            () => context.push('/export/${widget.projectId}'),
-          ),
+          onPressed: () => _runAutomationBlockedAction(_openExport),
           icon: const Icon(Icons.upload_file, size: 16),
           label: Text(l10n.transferExport),
           style: FilledButton.styleFrom(
@@ -3235,9 +3279,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             );
           }
           if (action == 'export') {
-            _runAutomationBlockedAction(
-              () => context.push('/export/${widget.projectId}'),
-            );
+            _runAutomationBlockedAction(_openExport);
           }
           if (action == 'export_frame') _exportCurrentFrameImage();
           if (action == 'duration') _showDurationChangeDialog();
@@ -3545,26 +3587,47 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
               ),
             ),
-            // Playback that cannot keep up skips frames (the export has
-            // them all): said at the band's top, beside the full-screen
-            // button, while it plays.
-            if (_isPlaying)
-              Positioned(
-                left: edge,
-                top: edge,
-                right: edge + _previewControlSize + edge,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: _playbackSkips,
-                  builder: (context, skips, _) => skips == 0
-                      ? const SizedBox.shrink()
-                      : Align(
-                          alignment: AlignmentDirectional.topStart,
-                          child: _PlaybackSkipNotice(
-                            text: l10n.timelinePlaybackSkipNotice,
-                          ),
-                        ),
-                ),
+            // At the band's top, beside the full-screen button: the export's
+            // frame rate when the preview plays at it, and, while playing,
+            // that frames are skipped because playback cannot keep up (the
+            // export has them all).
+            Positioned(
+              left: edge,
+              top: edge,
+              right: edge + _previewControlSize + edge,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_previewOutputFps case final output?)
+                    _PreviewOutputFpsChip(
+                      text: l10n.timelinePreviewOutputFps(
+                        output,
+                        _projectFps(context.read<ProjectService>()),
+                      ),
+                      backTooltip: l10n.timelinePreviewWorkFps(
+                        _projectFps(context.read<ProjectService>()),
+                      ),
+                      onBack: () {
+                        if (_isPlaying) _togglePlay();
+                        setState(() => _previewOutputFps = null);
+                      },
+                    ),
+                  if (_isPlaying)
+                    ValueListenableBuilder<int>(
+                      valueListenable: _playbackSkips,
+                      builder: (context, skips, _) => skips == 0
+                          ? const SizedBox.shrink()
+                          : Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: _PlaybackSkipNotice(
+                                text: l10n.timelinePlaybackSkipNotice,
+                              ),
+                            ),
+                    ),
+                ],
               ),
+            ),
             if (!inFullscreen)
               Positioned(
                 right: edge,
@@ -4087,7 +4150,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: IconButton(
               key: const Key('timelineExportButton'),
               icon: const Icon(Icons.upload_file, size: 20),
-              onPressed: () => context.push('/export/${widget.projectId}'),
+              onPressed: _openExport,
               tooltip: l10n.transferExport,
             ),
           ),
@@ -11340,6 +11403,54 @@ class _TimelinePreviewVideoFrames extends InheritedWidget {
   @override
   bool updateShouldNotify(_TimelinePreviewVideoFrames oldWidget) =>
       !identical(videoPixels, oldWidget.videoPixels);
+}
+
+/// The preview's note that it plays at the export's frame rate, with a
+/// button back to the work's own.
+class _PreviewOutputFpsChip extends StatelessWidget {
+  const _PreviewOutputFpsChip({
+    required this.text,
+    required this.backTooltip,
+    required this.onBack,
+  });
+
+  final String text;
+  final String backTooltip;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colour =
+        theme.popupMenuTheme.textStyle?.color ?? theme.colorScheme.onSurface;
+    return Material(
+      key: const Key('timelinePreviewOutputFps'),
+      color: theme.cardTheme.color ?? theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.only(start: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.movie_outlined, size: 16, color: colour),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                text,
+                style: theme.textTheme.bodySmall?.copyWith(color: colour),
+              ),
+            ),
+            IconButton(
+              key: const Key('timelinePreviewOutputFpsBack'),
+              icon: Icon(Icons.close, size: 18, color: colour),
+              tooltip: backTooltip,
+              onPressed: onBack,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// The preview's note that playback is skipping frames: a small card over

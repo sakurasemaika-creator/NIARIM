@@ -86,6 +86,16 @@ class ExportTiming {
         : math.max(1, (capped * outputFps / sourceFps).round());
   }
 
+  /// The source frame (counted over all scenes) output frame [outputIndex]
+  /// shows: the rule [samples] follows, which the timeline's preview at the
+  /// output frame rate uses too.
+  int sourceFrameOf(int outputIndex) => outputIndex * sourceFps ~/ outputFps;
+
+  /// The first output frame showing source frame [sourceFrame] or a later
+  /// one.
+  int firstOutputFrom(int sourceFrame) =>
+      (sourceFrame * outputFps + sourceFps - 1) ~/ sourceFps;
+
   Iterable<({Scene scene, Frame frame})> samples(List<Scene> scenes) sync* {
     final count = outputFrames(scenes);
     var outputIndex = 0;

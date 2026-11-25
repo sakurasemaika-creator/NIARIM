@@ -918,6 +918,7 @@
   "exportFpsLabel": "FPS",
   "exportFpsDiffersNote": "La obra va a {source} fps. Al exportar a {output} fps se mantiene la duración repitiendo u omitiendo fotogramas (la vista previa se reproduce a {source} fps).",
   "exportUseWorkFps": "Usar los {fps} fps de la obra",
+  "exportPreviewAtFps": "Ver la vista previa a {fps} fps en la línea de tiempo",
   "exportFormatSection": "Formato",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "Publica o comparte un vídeo terminado.",
@@ -2360,6 +2361,8 @@
   "timelineClipSpeedSoundNote": "A velocidades altas el sonido se entiende mal (la vista previa y la exportación suenan igual). Puedes silenciarlo si no lo necesitas.",
   "timelineClipSpeedMute": "Silenciar el sonido",
   "timelinePlaybackSkipNotice": "La reproducción no da abasto y se saltan algunos fotogramas (la exportación los tiene todos).",
+  "timelinePreviewOutputFps": "Reproduciendo a {output} fps, como la exportación (la obra es de {work} fps)",
+  "timelinePreviewWorkFps": "Volver a los {fps} fps de la obra",
   "timelineCameraFrameAlreadyHasKeyframe": "Este fotograma ya tiene un fotograma clave de cámara.",
   "timelineCameraKfTitle": "Fotograma clave de cámara: F{n}",
   "@timelineCameraKfTitle": {

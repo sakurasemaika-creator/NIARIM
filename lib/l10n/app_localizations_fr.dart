@@ -3059,6 +3059,11 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String exportPreviewAtFps(int fps) {
+    return 'Voir l’aperçu à $fps fps dans la chronologie';
+  }
+
+  @override
   String get exportFormatSection => 'Format';
 
   @override
@@ -6030,6 +6035,16 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get timelinePlaybackSkipNotice =>
       'La lecture n’arrive pas à suivre, des images sont sautées (l’export les contient toutes).';
+
+  @override
+  String timelinePreviewOutputFps(int output, int work) {
+    return 'Lecture à $output fps, comme l’export (l’œuvre est à $work fps)';
+  }
+
+  @override
+  String timelinePreviewWorkFps(int fps) {
+    return 'Revenir aux $fps fps de l’œuvre';
+  }
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>
