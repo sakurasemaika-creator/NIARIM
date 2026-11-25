@@ -2598,8 +2598,8 @@ AIによるコード修正だけでは完結せず、所有者（事業者）の
    見立てを書く（できるのはこの2つだけ。重大は一時非表示）。管理画面の
    「AIに頼む文をコピー」→チャット→答えを貼り戻す道もある。鍵はチャットに貼らせず、
    環境のネットワークの秘密で渡す（2026-11-25に設定済み：クラウドの「NIARIM」環境のネットワークの秘密〔許可ウェブサイトはLambdaのホスト、パスは`/triage-bot/`、`Authorization: Bearer`〕。ホスト名が65文字で`request_credential`の欄の上限64文字を超えるため、所有者が環境の設定画面から入れた。同じ環境に`i.ytimg.com`も許可。毎日20:43〔日本時間〕に新しいセッションで動く予定「NIARIM 通報の自動の下見」が、この2つの窓口だけを使う。**所有者の指定〔2026-11-25「下見はアプリのリリースと同時に開始」「とりあえず2027年1月1日開始」〕で、それまで予定は止めてある〔無効〕。2027-01-01 10:07〔日本時間〕に1回だけ動く予定「NIARIM 通報の下見を開始（2027-01-01）」が有効にする**〔リリースの日が変わったら、この予定の日付を変えるか、claude.aiの定期実行の画面で有効・無効を切り替える〕）。所有者の作業：SSMの
-   SecureString（`/niarim/moderation/admin-emails`は作成済み、`resend-api-key`は通報の
-   メールに要る）、Backend CIの手動のデプロイ（デプロイ用のロールに
+   SecureString（`/niarim/moderation/admin-emails`・`resend-api-key`とも作成済み、
+   2026-11-25）、Backend CIの手動のデプロイ（デプロイ用のロールに
    `lambda:GetFunctionConfiguration`が要る。`backend/README.md`のCI/CD）、GoogleのOAuth
    クライアント（Web）の承認済みのJavaScript生成元に公式サイト（済み）。アカウント・
    データ削除の依頼はWebの`/account-deletion/`（同じクライアントIDをWebの設定に入れる）。
