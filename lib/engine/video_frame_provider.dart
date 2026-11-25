@@ -7,6 +7,14 @@ import 'video_frame_decoder.dart';
 import 'video_frame_timeline.dart';
 import 'video_material_snapshot.dart';
 
+/// How many video frames one decoder pass gives during an export
+/// ([VideoFrameProvider.readAhead]) for frames of [frameBytes]: about 48 MB
+/// of them, at least 1 and at most 24.
+int exportVideoReadAhead(int frameBytes) {
+  if (frameBytes <= 0) return 1;
+  return (48 * 1024 * 1024 ~/ frameBytes).clamp(1, 24);
+}
+
 /// The outcome of asking a [VideoFrameProvider] for a frame.
 sealed class VideoFrameResult {
   const VideoFrameResult(this.materialId);
@@ -103,13 +111,21 @@ final class VideoTimelineUnavailable extends VideoTimelineResult {
 ///   decoding yet it never decodes.
 /// - [dispose] releases every cached image; decodes that finish afterwards
 ///   release their images instead of caching them.
+/// - With [readAhead] above 1 and a [VideoFrameRunDecoder], a frame that has
+///   to be decoded is decoded together with the next frames the requests are
+///   heading for (every frame, or every n-th when the requests skip n frames
+///   at a time) in one pass, and those are cached: an export walking forward
+///   through a video then runs the decoder once per run instead of once per
+///   frame. Their pixels are those of single decodes.
 class VideoFrameProvider {
   VideoFrameProvider({
     required this.snapshot,
     required this.decoder,
     this.cacheBudgetBytes = defaultCacheBudgetBytes,
     int maxConcurrentDecodes = 2,
+    this.readAhead = 1,
   }) : assert(cacheBudgetBytes >= 0),
+       assert(readAhead >= 1),
        _slots = _DecodeSlots(maxConcurrentDecodes);
 
   /// About eleven 1920×1080 frames.
@@ -118,7 +134,15 @@ class VideoFrameProvider {
   final VideoMaterialSnapshot snapshot;
   final VideoFrameDecoder decoder;
   final int cacheBudgetBytes;
+
+  /// How many frames one decoder pass may give (see the class notes).
+  final int readAhead;
+
+  /// The largest skip between requested frames that is read ahead with a
+  /// stride (beyond it each frame is decoded on its own).
+  static const maxReadAheadStride = 16;
   final _DecodeSlots _slots;
+  final Map<_StreamKey, int> _lastIndex = {};
 
   final Map<String, Future<VideoTimelineResult>> _timelines = {};
   final LinkedHashMap<_FrameKey, ui.Image> _cache = LinkedHashMap();
@@ -130,7 +154,8 @@ class VideoFrameProvider {
 
   bool get isDisposed => _disposed;
 
-  /// Decodes actually run (not served from the cache or skipped).
+  /// Decoder passes actually run (not served from the cache or skipped); a
+  /// pass that gives several frames counts once.
   int get decodeCount => _decodeCount;
 
   int get cachedFrameCount => _cache.length;
@@ -221,6 +246,9 @@ class VideoFrameProvider {
       );
     }
     final key = _FrameKey(materialId, index, width, height);
+    final stream = _StreamKey(materialId, width, height);
+    final previous = _lastIndex[stream];
+    _lastIndex[stream] = index;
     final cached = _cache.remove(key);
     if (cached != null) {
       _cache[key] = cached; // Most recently used.
@@ -239,9 +267,13 @@ class VideoFrameProvider {
     } else {
       final started = _PendingDecode()..waiters.add(waiter);
       _inFlight[key] = started;
-      unawaited(
-        _runDecode(key, started, snapshot[materialId]!.path!, timeline),
-      );
+      final path = snapshot[materialId]!.path!;
+      final run = _readAheadOf(key, previous, timeline);
+      if (run == null) {
+        unawaited(_runDecode(key, started, path, timeline));
+      } else {
+        unawaited(_runDecodeRun(run, path, timeline));
+      }
     }
 
     final ui.Image? image;
@@ -269,6 +301,138 @@ class VideoFrameProvider {
       frameIndex: index,
       presentationTime: timeline.presentationTimeOf(index),
     );
+  }
+
+  /// The frames to decode in one pass with [key] (it first), or null to
+  /// decode it on its own. The requests' last step before it ([previous])
+  /// gives the stride; the run stops at the file's end and before a frame
+  /// already cached or being decoded.
+  _Run? _readAheadOf(
+    _FrameKey key,
+    int? previous,
+    VideoFrameTimeline timeline,
+  ) {
+    if (readAhead <= 1 || decoder is! VideoFrameRunDecoder) return null;
+    final step = previous == null ? 1 : key.frameIndex - previous;
+    final stride = step >= 1 && step <= maxReadAheadStride ? step : 1;
+    // As many as the cache can keep at once.
+    final fitting = cacheBudgetBytes ~/ key.byteSize;
+    final most = fitting < readAhead ? fitting : readAhead;
+    final keys = <_FrameKey>[key];
+    final pendings = <_PendingDecode>[_inFlight[key]!];
+    for (var i = 1; i < most; i++) {
+      final index = key.frameIndex + i * stride;
+      if (index >= timeline.frameCount) break;
+      final next = _FrameKey(key.materialId, index, key.width, key.height);
+      if (_cache.containsKey(next) || _inFlight.containsKey(next)) break;
+      final pending = _PendingDecode();
+      _inFlight[next] = pending;
+      keys.add(next);
+      pendings.add(pending);
+    }
+    if (keys.length == 1) return null;
+    return _Run(keys, pendings, stride);
+  }
+
+  /// Decodes [run] in one pass. Frames the pass did not give (or all of
+  /// them, when it failed) that someone is waiting for are decoded on their
+  /// own, as without reading ahead.
+  Future<void> _runDecodeRun(
+    _Run run,
+    String path,
+    VideoFrameTimeline timeline,
+  ) async {
+    final first = run.keys.first;
+    final firstPending = run.pendings.first;
+    await _slots.acquire();
+    var released = false;
+    void release() {
+      if (!released) {
+        released = true;
+        _slots.release();
+      }
+    }
+
+    void decodeAlone(int from) {
+      for (var i = from; i < run.keys.length; i++) {
+        final key = run.keys[i];
+        final pending = run.pendings[i];
+        if (pending.waiters.isEmpty) {
+          _inFlight.remove(key);
+        } else {
+          unawaited(_runDecode(key, pending, path, timeline));
+        }
+      }
+    }
+
+    try {
+      if (_disposed || !firstPending.waiters.any((w) => w.stillWanted())) {
+        // Nobody wants the first frame any more (scrubbed past, cancelled,
+        // disposed): no pass. A request that came for a later frame of the
+        // run meanwhile gets it decoded on its own.
+        _inFlight.remove(first);
+        for (final waiter in firstPending.waiters) {
+          waiter.completer.complete(null);
+        }
+        release();
+        if (_disposed) {
+          for (var i = 1; i < run.keys.length; i++) {
+            _inFlight.remove(run.keys[i]);
+            for (final waiter in run.pendings[i].waiters) {
+              waiter.completer.complete(null);
+            }
+          }
+        } else {
+          decodeAlone(1);
+        }
+        return;
+      }
+      _decodeCount++;
+      final List<DecodedVideoFrame> frames;
+      try {
+        frames = await (decoder as VideoFrameRunDecoder).decodeRun(
+          path: path,
+          timeline: timeline,
+          firstFrameIndex: first.frameIndex,
+          count: run.keys.length,
+          stride: run.stride,
+          width: first.width,
+          height: first.height,
+        );
+      } catch (_) {
+        release();
+        decodeAlone(0);
+        return;
+      }
+      release();
+      var done = 0;
+      for (final frame in frames) {
+        if (done >= run.keys.length) break;
+        final key = run.keys[done];
+        if (frame.frameIndex != key.frameIndex) break;
+        final pending = run.pendings[done];
+        done++;
+        final ui.Image image;
+        try {
+          image = await _imageFromRgba(frame.rgba, frame.width, frame.height);
+        } catch (error, stackTrace) {
+          _inFlight.remove(key);
+          for (final waiter in pending.waiters) {
+            waiter.completer.completeError(error, stackTrace);
+          }
+          continue;
+        }
+        _inFlight.remove(key);
+        for (final waiter in pending.waiters) {
+          waiter.completer.complete(_disposed ? null : image.clone());
+        }
+        if (!_disposed) _store(key, image.clone());
+        image.dispose();
+      }
+      if (done < run.keys.length) decodeAlone(done);
+    } finally {
+      release();
+    }
   }
 
   int _nextGeneration(String latestKey) =>
@@ -406,6 +570,35 @@ class _FrameKey {
 
   @override
   int get hashCode => Object.hash(materialId, frameIndex, width, height);
+}
+
+/// One material's frames at one size, as requested one after another.
+class _StreamKey {
+  const _StreamKey(this.materialId, this.width, this.height);
+
+  final String materialId;
+  final int width;
+  final int height;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _StreamKey &&
+      other.materialId == materialId &&
+      other.width == width &&
+      other.height == height;
+
+  @override
+  int get hashCode => Object.hash(materialId, width, height);
+}
+
+/// Frames decoded in one pass: [keys] every [stride] frames, each with the
+/// requests waiting for it.
+class _Run {
+  const _Run(this.keys, this.pendings, this.stride);
+
+  final List<_FrameKey> keys;
+  final List<_PendingDecode> pendings;
+  final int stride;
 }
 
 class _Waiter {

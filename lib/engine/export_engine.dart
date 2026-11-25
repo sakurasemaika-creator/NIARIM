@@ -637,12 +637,16 @@ class ExportEngine {
       'export_video_frames',
     );
     final problemLayers = <String>{};
+    // Export walks forward through time: each decoder pass gives the next
+    // frames too (up to about 48 MB of them), and a few more frames are kept
+    // to share a decode between scenes' identical frames and layers.
+    final frameBytes = drawingWidth * drawingHeight * 4;
+    final readAhead = exportVideoReadAhead(frameBytes);
     final frames = VideoFrameProvider(
       snapshot: materials,
       decoder: videoDecoderFor(workDir),
-      // Export walks forward through time, so a few frames are enough to
-      // share a decode between scenes' identical frames and layers.
-      cacheBudgetBytes: drawingWidth * drawingHeight * 4 * 3,
+      cacheBudgetBytes: frameBytes * (readAhead + 3),
+      readAhead: readAhead,
     );
     try {
       return await body(

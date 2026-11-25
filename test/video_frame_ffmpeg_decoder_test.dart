@@ -460,6 +460,134 @@ void main() {
         }
       }, timeout: const Timeout(Duration(minutes: 3)));
 
+      test(
+        'a run of frames in one pass is byte-identical to single decodes',
+        () async {
+          final files = {
+            'cfr': cfr,
+            'cfr30': cfr30,
+            'vfr': vfr,
+            'editList': editList,
+            'rotated': rotated,
+            'natural': natural,
+          };
+          for (final MapEntry(key: name, value: path) in files.entries) {
+            final timeline = await decoder.probe(path);
+            final n = timeline.frameCount;
+            for (final stride in [1, 2, 3]) {
+              for (final first in {0, n ~/ 2, n - 2}) {
+                if (first < 0) continue;
+                // Asks for more than the file has from there: the run ends
+                // with the file.
+                final run = await decoder.decodeRun(
+                  path: path,
+                  timeline: timeline,
+                  firstFrameIndex: first,
+                  count: 6,
+                  stride: stride,
+                  width: 40,
+                  height: 20,
+                );
+                final expected = [
+                  for (
+                    var i = first;
+                    i < n && i < first + 6 * stride;
+                    i += stride
+                  )
+                    i,
+                ];
+                expect(
+                  [for (final f in run) f.frameIndex],
+                  expected,
+                  reason: '$name from $first every $stride',
+                );
+                for (final frame in run) {
+                  final single = await decoder.decode(
+                    path: path,
+                    timeline: timeline,
+                    frameIndex: frame.frameIndex,
+                    width: 40,
+                    height: 20,
+                  );
+                  expect(
+                    frame.rgba,
+                    single.rgba,
+                    reason:
+                        '$name frame ${frame.frameIndex} '
+                        '(from $first every $stride)',
+                  );
+                }
+              }
+            }
+          }
+          expect(scratch.listSync(), isEmpty);
+        },
+        timeout: const Timeout(Duration(minutes: 5)),
+      );
+
+      test('an export provider reading ahead decodes far fewer times and '
+          'gives the same pixels, walking forward at 1x and at 3x', () async {
+        final timeline = await decoder.probe(natural);
+        for (final step in [1, 3]) {
+          final ahead = VideoFrameProvider(
+            snapshot: VideoMaterialSnapshot.fromAssets(
+              [
+                MaterialAsset(
+                  id: 'clip',
+                  originalFileName: 'clip.mp4',
+                  type: MaterialType.video,
+                  sizeBytes: 1,
+                  addedAt: DateTime(2026),
+                ),
+              ],
+              {'clip': natural},
+            ),
+            decoder: decoder,
+            readAhead: 8,
+            cacheBudgetBytes: 96 * 54 * 4 * 11,
+          );
+          addTearDown(ahead.dispose);
+          final alone = providerFor({'clip': natural});
+          var requests = 0;
+          for (var i = 0; i < timeline.frameCount; i += step) {
+            requests++;
+            final time = timeline.presentationTimeOf(i);
+            final read =
+                await ahead.frameAt(
+                      materialId: 'clip',
+                      sourceTime: time,
+                      width: 96,
+                      height: 54,
+                    )
+                    as VideoFrameReady;
+            final single =
+                await alone.frameAt(
+                      materialId: 'clip',
+                      sourceTime: time,
+                      width: 96,
+                      height: 54,
+                    )
+                    as VideoFrameReady;
+            expect(read.frameIndex, i);
+            expect(
+              await rgbaOf(read.image),
+              await rgbaOf(single.image),
+              reason: 'frame $i (every $step)',
+            );
+            read.image.dispose();
+            single.image.dispose();
+          }
+          expect(alone.decodeCount, requests);
+          // One pass per 8 frames, and the first one or two on their own
+          // while the step is learnt.
+          expect(
+            ahead.decodeCount,
+            lessThanOrEqualTo((requests / 8).ceil() + 2),
+            reason: 'every $step',
+          );
+        }
+      }, timeout: const Timeout(Duration(minutes: 3)));
+
       test('removes every scratch file it wrote', () async {
         final timeline = await decoder.probe(natural);
         await decoder.decode(

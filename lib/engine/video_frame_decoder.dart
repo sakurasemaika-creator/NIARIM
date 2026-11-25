@@ -62,6 +62,26 @@ abstract interface class VideoFrameDecoder {
   });
 }
 
+/// A [VideoFrameDecoder] that can also decode several frames of a file in
+/// one pass, which is much faster than one pass per frame (each pass starts
+/// the tool, seeks and decodes from the previous key frame).
+abstract interface class VideoFrameRunDecoder implements VideoFrameDecoder {
+  /// Decodes frames [firstFrameIndex], [firstFrameIndex] + [stride], … (at
+  /// most [count]) of [path] at [width]×[height] in one pass. Each frame's
+  /// bytes are exactly what [decode] gives for its index. Fewer frames come
+  /// back when the file ends first. Throws [VideoFrameDecodeException] when
+  /// the pass fails or does not give whole frames.
+  Future<List<DecodedVideoFrame>> decodeRun({
+    required String path,
+    required VideoFrameTimeline timeline,
+    required int firstFrameIndex,
+    required int count,
+    required int stride,
+    required int width,
+    required int height,
+  });
+}
+
 /// swscale flags fixed for every decode so that preview and export scale
 /// identically; `accurate_rnd` and `bitexact` avoid platform-specific
 /// rounding shortcuts.
@@ -126,6 +146,54 @@ List<String> videoFrameDecodeArguments({
   outputPath,
 ];
 
+/// FFmpeg arguments that write [count] frames as raw RGBA, back to back,
+/// to [outputPath]: the frame [videoFrameDecodeArguments] gives for
+/// [seekTime], then every [stride]th frame after it, placed the same way.
+/// Every decoded frame passes through with its own timestamp (none is
+/// repeated or dropped to fit a frame rate), so the n-th one written is the
+/// n-th frame after the seek.
+List<String> videoFrameRunDecodeArguments({
+  required String path,
+  required Duration seekTime,
+  required int count,
+  required int stride,
+  required int width,
+  required int height,
+  required String outputPath,
+}) => [
+  '-hide_banner',
+  '-nostdin',
+  '-loglevel',
+  'error',
+  '-ss',
+  formatSeekSeconds(seekTime),
+  '-i',
+  path,
+  '-map',
+  '0:v:0',
+  '-an',
+  '-sn',
+  '-dn',
+  '-vf',
+  [
+    if (stride > 1) 'select=not(mod(n\\,$stride))',
+    'scale=$width:$height:force_original_aspect_ratio=decrease'
+        ':flags=$videoFrameScaleFlags',
+    'format=rgba',
+    'pad=$width:$height:(ow-iw)/2:(oh-ih)/2:color=black@0',
+  ].join(','),
+  '-fps_mode',
+  'passthrough',
+  '-frames:v',
+  '$count',
+  '-f',
+  'rawvideo',
+  '-pix_fmt',
+  'rgba',
+  '-y',
+  outputPath,
+];
+
 /// Seconds with exactly six decimals, built from integers so no binary
 /// floating-point rounding enters the seek time.
 String formatSeekSeconds(Duration time) {
@@ -136,7 +204,7 @@ String formatSeekSeconds(Duration time) {
   return '$seconds.${fraction.toString().padLeft(6, '0')}';
 }
 
-class FfmpegVideoFrameDecoder implements VideoFrameDecoder {
+class FfmpegVideoFrameDecoder implements VideoFrameRunDecoder {
   FfmpegVideoFrameDecoder({
     required this.workDirectory,
     required this.runFfmpeg,
@@ -245,6 +313,74 @@ class FfmpegVideoFrameDecoder implements VideoFrameDecoder {
         height: height,
         frameIndex: frameIndex,
       );
+    } finally {
+      await _deleteQuietly(output);
+    }
+  }
+
+  @override
+  Future<List<DecodedVideoFrame>> decodeRun({
+    required String path,
+    required VideoFrameTimeline timeline,
+    required int firstFrameIndex,
+    required int count,
+    required int stride,
+    required int width,
+    required int height,
+  }) async {
+    if (width <= 0 || height <= 0) {
+      throw ArgumentError('Frame size must be positive: ${width}x$height');
+    }
+    if (count <= 0 || stride <= 0) {
+      throw ArgumentError('A run needs frames: $count every $stride');
+    }
+    final seekTime = timeline.seekTimeFor(firstFrameIndex);
+    // The frames the file still has from there.
+    final left = timeline.frameCount - firstFrameIndex;
+    final expected = left <= 0 ? 0 : ((left + stride - 1) ~/ stride);
+    final wanted = count < expected ? count : expected;
+    if (wanted <= 0) return const [];
+    if (!await File(path).exists()) {
+      throw VideoFrameDecodeException('Video material file is missing: $path');
+    }
+    final output = await _scratchFile('rgba');
+    try {
+      final ok = await runFfmpeg(
+        videoFrameRunDecodeArguments(
+          path: path,
+          seekTime: seekTime,
+          count: wanted,
+          stride: stride,
+          width: width,
+          height: height,
+          outputPath: output.path,
+        ),
+      );
+      final frameBytes = width * height * 4;
+      final bytes = ok && await output.exists()
+          ? await output.readAsBytes()
+          : null;
+      // Exactly the frames the timeline says are there: anything else means
+      // the pass did not follow the timeline, and its frames are not used.
+      if (bytes == null || bytes.length != wanted * frameBytes) {
+        throw VideoFrameDecodeException(
+          'Could not decode frames $firstFrameIndex+$stride×$wanted of $path '
+          '(${bytes?.length ?? 0} of ${wanted * frameBytes} bytes)',
+        );
+      }
+      return [
+        for (var i = 0; i < wanted; i++)
+          DecodedVideoFrame(
+            rgba: Uint8List.sublistView(
+              bytes,
+              i * frameBytes,
+              (i + 1) * frameBytes,
+            ),
+            width: width,
+            height: height,
+            frameIndex: firstFrameIndex + i * stride,
+          ),
+      ];
     } finally {
       await _deleteQuietly(output);
     }
