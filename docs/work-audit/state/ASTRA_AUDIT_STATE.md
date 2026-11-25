@@ -4985,7 +4985,7 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
 - **Google Play用のAABとリリースのビルド**：Build APKのreleaseのビルドでAAB（`app-release.aab`）も作り、upload鍵の証明書の指紋で署名を確かめるようにした（`2cfd02ce`）。その検証のビルド#88で、11月24日の読み上げの声の設定（`5d18f3bf`・`67666453`）が使っていた`Settings.ACTION_TEXT_TO_SPEECH_SETTINGS`（Androidの公開APIに無い定数）でKotlinがコンパイルできず、**この日の分からreleaseのAPKが作れなくなっていた**と分かった（`flutter test`・`flutter analyze`はKotlinをコンパイルしない）。設定アプリの登録する動作`com.android.settings.TTS_SETTINGS`→音声データの入れ方→設定アプリの順に開くようにし（`9c6afcf9`）、手動のreleaseのビルド#89（run 45575634145）で全段が成功、`build-release-latest`にAPK（237MB）とAAB（184MB）を置いた。
 - **通報の判定でAnthropicのAPIキーを使わない**：App `ac5cb6d8`・Web `29111f2b`（上の「作品広場の通報の管理」の項）。本番のバックエンドへの反映はBackend CIのデプロイ（キーが無いので反映前もAPIの判定は動かない）。
 - **testの見張りの追従**：`bda62353`（PR #16で動画の音量の渡し方が変わったのに、ソースの文字列を探す`post_baseline_remaining_contract_test`が古いままで、全件のCI #390のシャード0で落ちた）。
-- **全件のCI**：8分割の全件のCIは、組を1つずつ順に流すため1回に約4時間半かかり、待っている実行は新しいpushで置き換わる（`concurrency`は走っている実行を残し、待ちは最新の1つだけ）。上の変更を含む#380〜#388は、待っている間に置き換わって流れなかった。走っている#379（App `14444df8`、上の変更より前）は06:10Z時点で0・2・3・5番が成功、1番（`text_finder_subtype_scan_test`）と4番（`floating_action_button_visual_capture_test`）が失敗し、どちらもデザイン担当のセッションが`89991596`で直した。6番は実行中、7番は待ち。上の変更をすべて含む#389（`22ca4a2a`）は#379の後に流れる。`22ca4a2a`で`flutter analyze` 0件。
+- **全件のCI**：8分割の全件のCIは、組を1つずつ順に流すため1回に約4時間半かかる。走っている実行は最後まで流れ、待っている実行だけが新しいpushで置き換わる。上の変更を含む#390（App `d5f4d21d`）は8組すべてを流し、1〜7番が成功、0番だけが`post_baseline_remaining_contract_test`の1件で失敗した（PR #16で動画の音量の渡し方が変わったのに、ソースの文字列を探すtestが古いままだった。製品の不具合ではない。`bda62353`で直した）。その前の#379で落ちていた2件（1番`text_finder_subtype_scan_test`・4番`floating_action_button_visual_capture_test`）はデザイン担当のセッションが`89991596`で直し、#390で成功した。直した後を含む#396（`d0bafc65`）は、12:52Z時点で0・1番が成功、2番が実行中、3〜7番が待ち。`flutter analyze`は0件。
 
 
 ## 人の作業の一覧（全面監査の範囲外、2026-11-24、Claude・S56）
