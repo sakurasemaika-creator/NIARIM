@@ -36,6 +36,13 @@ class LayerKeyframe {
   final double rotationY;
   final LayerKeyframeEasing easing;
 
+  /// The key's time before it was rounded to [frameIndex], kept when a
+  /// clip's speed moves the key between frames. The next change of speed
+  /// starts from it, so speeds changed back and forth bring the key back to
+  /// its frame instead of letting it drift a frame at a time. Null when the
+  /// key lies exactly on its frame.
+  final double? exactFrame;
+
   const LayerKeyframe({
     required this.frameIndex,
     this.x = 0,
@@ -45,7 +52,17 @@ class LayerKeyframe {
     this.rotationX = 0,
     this.rotationY = 0,
     this.easing = LayerKeyframeEasing.linear,
+    this.exactFrame,
   });
+
+  /// The key's time: [exactFrame] while it still rounds to [frameIndex]
+  /// (a key moved without it falls back to its frame).
+  double get exactTime {
+    final exact = exactFrame;
+    return exact != null && exact.isFinite && exact.round() == frameIndex
+        ? exact
+        : frameIndex.toDouble();
+  }
 
   LayerKeyframe copyWith({
     int? frameIndex,
@@ -56,9 +73,18 @@ class LayerKeyframe {
     double? rotationX,
     double? rotationY,
     LayerKeyframeEasing? easing,
+    Object? exactFrame = _keepExact,
   }) {
+    final next = frameIndex ?? this.frameIndex;
+    final exact = this.exactFrame;
     return LayerKeyframe(
-      frameIndex: frameIndex ?? this.frameIndex,
+      // A key moved by whole frames keeps its fraction with it.
+      exactFrame: exactFrame != _keepExact
+          ? exactFrame as double?
+          : exact == null
+          ? null
+          : exact + (next - this.frameIndex),
+      frameIndex: next,
       x: x ?? this.x,
       y: y ?? this.y,
       scale: scale ?? this.scale,
@@ -93,6 +119,8 @@ class LayerKeyframe {
     if (rotationX != 0) 'rotationX': rotationX,
     if (rotationY != 0) 'rotationY': rotationY,
     'easing': easing.name,
+    if (exactFrame case final exact? when exact.isFinite && exact != frameIndex)
+      'exactFrame': exact,
   };
 
   factory LayerKeyframe.fromJson(Map<String, dynamic> j) => LayerKeyframe(
@@ -108,5 +136,11 @@ class LayerKeyframe {
       (e) => e.name == j['easing'],
       orElse: () => LayerKeyframeEasing.linear,
     ),
+    exactFrame: switch (j['exactFrame']) {
+      final num exact when exact.isFinite => exact.toDouble(),
+      _ => null,
+    },
   );
 }
+
+const Object _keepExact = Object();

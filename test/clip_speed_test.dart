@@ -209,6 +209,57 @@ void main() {
       expect(retimeKeyframes(keys, anchorFrame: 10, factor: 16), isNull);
       expect(retimeKeyframes(keys, anchorFrame: 10, factor: 0), isNull);
     });
+
+    test('speeds changed back and forth bring every key back to its frame', () {
+      // A clip at 1x with keys 7 and 11 frames after its start.
+      const start = [
+        LayerKeyframe(frameIndex: 10),
+        LayerKeyframe(frameIndex: 17, x: 5),
+        LayerKeyframe(frameIndex: 21, x: 9),
+      ];
+      // 1x → 3x → 1x: 17 lands on 10 + 7 / 3 ≈ 12.33 (frame 12), then
+      // back on 17, not 10 + 2 × 3 = 16.
+      final fast = retimeKeyframes(start, anchorFrame: 10, factor: 3)!;
+      expect(fast.map((k) => k.frameIndex), [10, 12, 14]);
+      expect(fast[1].exactFrame, closeTo(10 + 7 / 3, 1e-9));
+      final back = retimeKeyframes(fast, anchorFrame: 10, factor: 1 / 3)!;
+      expect(back.map((k) => k.frameIndex), [10, 17, 21]);
+      // On its frame again, the key has no fraction left to keep.
+      expect(back.map((k) => k.exactFrame), [null, null, null]);
+
+      // Many speeds in turn, back to 1x: still the frames it started on.
+      var keys = start;
+      var rate = 1.0;
+      for (final next in [0.7, 1.3, 2.5, 0.45, 1.9, 1.0]) {
+        keys = retimeKeyframes(keys, anchorFrame: 10, factor: next / rate)!;
+        rate = next;
+      }
+      expect(keys.map((k) => k.frameIndex), [10, 17, 21]);
+      expect(keys.map((k) => k.x), [0, 5, 9]);
+    });
+
+    test('a key moved by whole frames keeps its fraction; one moved '
+        'without it falls back to its frame; the fraction is saved', () {
+      const key = LayerKeyframe(frameIndex: 12, exactFrame: 12.25);
+      expect(key.exactTime, 12.25);
+      final moved = key.copyWith(frameIndex: 20);
+      expect(moved.exactFrame, 20.25);
+      expect(moved.exactTime, 20.25);
+      // A key whose fraction no longer rounds to its frame is on its frame.
+      const stale = LayerKeyframe(frameIndex: 30, exactFrame: 12.25);
+      expect(stale.exactTime, 30);
+      expect(key.copyWith(exactFrame: null).exactFrame, isNull);
+      final read = LayerKeyframe.fromJson(key.toJson());
+      expect(read.exactFrame, 12.25);
+      expect(
+        const LayerKeyframe(frameIndex: 3).toJson().containsKey('exactFrame'),
+        isFalse,
+      );
+      expect(
+        LayerKeyframe.fromJson({...key.toJson(), 'exactFrame': 'x'}).exactFrame,
+        isNull,
+      );
+    });
   });
 
   group('key range retiming', () {

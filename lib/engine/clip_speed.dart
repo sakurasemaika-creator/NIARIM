@@ -95,7 +95,10 @@ SourcePosition sourcePositionAfter({
 
 /// [keyframes] with the time between them scaled for playing [factor]
 /// times as fast, measured from [anchorFrame] (the start of the animation
-/// that changes speed); values and easing are kept. Keyframes before
+/// that changes speed); values and easing are kept. Each key keeps its time
+/// before rounding to a frame ([LayerKeyframe.exactFrame]) and the next
+/// change starts from it, so a speed changed back returns every key to its
+/// frame. Keyframes before
 /// [anchorFrame] are not moved. Returns null when two keyframes would land
 /// on the same frame, so a retime that cannot keep every key is refused.
 List<LayerKeyframe>? retimeKeyframes(
@@ -108,11 +111,22 @@ List<LayerKeyframe>? retimeKeyframes(
   final result = <LayerKeyframe>[];
   final used = <int>{};
   for (final keyframe in keyframes) {
-    final frame = keyframe.frameIndex < anchorFrame
-        ? keyframe.frameIndex
-        : anchorFrame + ((keyframe.frameIndex - anchorFrame) / factor).round();
+    if (keyframe.frameIndex < anchorFrame) {
+      if (!used.add(keyframe.frameIndex)) return null;
+      result.add(keyframe);
+      continue;
+    }
+    // From the key's unrounded time, so changing the speed back and forth
+    // does not move it a frame at a time.
+    final exact = anchorFrame + (keyframe.exactTime - anchorFrame) / factor;
+    final frame = exact.round();
     if (!used.add(frame)) return null;
-    result.add(keyframe.copyWith(frameIndex: frame));
+    result.add(
+      keyframe.copyWith(
+        frameIndex: frame,
+        exactFrame: (exact - frame).abs() < 1e-9 ? null : exact,
+      ),
+    );
   }
   result.sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
   return result;
