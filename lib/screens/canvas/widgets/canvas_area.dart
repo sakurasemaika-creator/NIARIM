@@ -2941,6 +2941,10 @@ class CanvasAreaState extends State<CanvasArea> {
         closeLoop: closeLoop,
         // ピクセルモードでも四角形は角の画素まで描く。
         removePixelCorners: widget.shapeKind != ShapeKind.rect,
+        // ピクセルモードの楕円は、多角形ではなく画素の楕円で描く。
+        ellipse: widget.shapeKind == ShapeKind.circle
+            ? Rect.fromPoints(start, end)
+            : null,
       );
       _quantizeStrokeIfNeeded();
       _scheduleComposite();

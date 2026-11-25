@@ -8,6 +8,7 @@ import 'brush_texture_cache.dart';
 import 'texture_silhouette.dart';
 import 'brush_texture_selector.dart';
 import 'brush_render_plan.dart';
+import 'brush_stroke_geometry.dart';
 import 'hair_fold_raster.dart';
 import 'outline_accent.dart';
 import 'perceptual_color_mixer.dart';
@@ -59,12 +60,12 @@ class DrawingEngine {
   ui.Offset? _lastOilStamp;
   // 水彩風：このストロークの水彩の状態（ペンを離すと乾かす）。
   WatercolorStroke? _watercolor;
-  // ピクセルモードの線：ペン先が通る画素と、ドット絵の線として確定を
-  // 待つ画素（_beginPixelLine）。ドットを間隔を空けて置くブラシでは使わない。
-  PixelLineWalker? _pixelWalker;
-  PixelPerfectPath<_PixelDab>? _pixelPath;
-  // ピクセルモードの線がたどった点（線の終わりで進んでいた向きを求める）。
-  final List<ui.Offset> _pixelTrail = [];
+  // ピクセルモードの格子に置く線（_beginPixelStroke）。散布するブラシでは
+  // 使わず、ドットを1つずつ格子へ寄せる。
+  _PixelStroke? _pixelStroke;
+  // ペン先の近くの、まだ変わりうる画素を描いている間、描く前の画素を覚える
+  // （次に描き直す前に戻す）。
+  _PixelLog? _pixelRecording;
 
   String? get debugActiveBrushTexturePath => _brushTextureSelector.activePath;
 
@@ -125,7 +126,7 @@ class DrawingEngine {
     _strokeScreenPositions.add(
       screenPosition ?? ui.Offset(effective.x, effective.y),
     );
-    if (_beginPixelLine(effective, layerId)) return;
+    if (_beginPixelStroke(effective, layerId)) return;
     final needsDirection =
         brush != null && (brush.rotation || brush.scatter > 0.0);
     if (!needsDirection) {
@@ -221,6 +222,9 @@ class DrawingEngine {
     }
     add(effective, screenTo);
     _rebuildHairFold();
+    if (_pixelStroke != null && !_replayingFinalStroke) {
+      _updatePixelStroke(layerId);
+    }
   }
 
   /// Whether the stroke is drawn again once it is complete: a custom fade
@@ -280,16 +284,11 @@ class DrawingEngine {
 
   void endStroke({bool cancel = false}) {
     if (!cancel) _rebuildHairFold(finalize: true);
-    if (!cancel && _activeLayerId != null) {
-      final layerId = _activeLayerId!;
-      _pixelPath?.flush(
-        (x, y, dab) => _stampPixelDab(x, y, dab, layerId),
-        heading: _pixelEndHeading(),
-      );
+    if (!cancel && _activeLayerId != null && _pixelStroke != null) {
+      _updatePixelStroke(_activeLayerId!, finish: true);
     }
-    _pixelWalker = null;
-    _pixelPath = null;
-    _pixelTrail.clear();
+    _pixelStroke = null;
+    _pixelRecording = null;
     // 回転/散布ONでPointerDown→Upだけのタップだった場合は進行方向が存在しない。
     // その場合だけ中心位置へ1回描画し、散布は行わない。
     if (!cancel &&
@@ -462,11 +461,15 @@ class DrawingEngine {
   /// ブラシでなぞって描画する。トーンでの図形描画は本メソッドではなく
   /// 呼び出し側（canvas_area.dartの_commitShapeWithTone）がToneEngineへ
   /// 直接分岐する（ブラシ・トーンどちらでも描画可能）。
+  ///
+  /// [ellipse]を渡すと、ピクセルモードでは多角形の点ではなく、その四角に
+  /// 内接する画素の楕円を描く。
   void commitShapePath(
     List<StrokePoint> pathPoints,
     String layerId, {
     bool closeLoop = false,
     bool removePixelCorners = true,
+    ui.Rect? ellipse,
   }) {
     if (currentBrush == null || pathPoints.isEmpty) return;
     _currentStroke.clear();
@@ -486,16 +489,39 @@ class DrawingEngine {
 
     final first = pathPoints.first;
     _currentStroke.add(first);
-    // 図形は手の震えが無いので、画素の境目でそのまま次の画素へ移る。
-    // 四角形の角は角の画素も描く。
-    final pixelLine = _beginPixelLine(
+    // 図形は手の震えが無いので、画素の境目でそのまま次の画素へ移り、ランも
+    // 整えない。四角形の角は角の画素も描く。
+    if (_beginPixelStroke(
       first,
       layerId,
       hysteresis: 0,
+      reverseHysteresis: 0,
       removeCorners: removePixelCorners,
-    );
+      window: 0,
+      shape: true,
+    )) {
+      final stroke = _pixelStroke!;
+      if (ellipse != null && stroke.traces.length == 1) {
+        stroke.fixedChain = _pixelEllipseChain(ellipse, stroke.corners);
+        stroke.closed = true;
+      } else {
+        for (int i = 1; i < pathPoints.length; i++) {
+          final to = pathPoints[i];
+          final previous = _currentStroke.last;
+          _renderStrokeSegment(previous, to, layerId);
+          _strokeDistance += _distance(previous, to);
+          _currentStroke.add(to);
+        }
+        if (closeLoop && pathPoints.length > 1) {
+          _renderStrokeSegment(_currentStroke.last, first, layerId);
+          stroke.closed = true;
+        }
+      }
+      endStroke();
+      return;
+    }
     final needsDirection = brush.rotation || brush.scatter > 0.0;
-    if (!pixelLine && !needsDirection) {
+    if (!needsDirection) {
       _stampBrush(
         first.x,
         first.y,
@@ -525,22 +551,8 @@ class DrawingEngine {
     final brush = currentBrush!;
     final distance = _distance(from, to);
     if (distance <= 1e-9) return;
-    final walker = _pixelWalker;
-    final path = _pixelPath;
-    if (walker != null && path != null) {
-      final baseStrokeLength = _strokeDistance;
-      walker.walk(ui.Offset(from.x, from.y), ui.Offset(to.x, to.y), (x, y, t) {
-        path.add(
-          x,
-          y,
-          _PixelDab(
-            pressure: from.pressure + (to.pressure - from.pressure) * t,
-            strokeLength: baseStrokeLength + distance * t,
-          ),
-          (x, y, dab) => _stampPixelDab(x, y, dab, layerId),
-        );
-      });
-      _pixelTrail.add(ui.Offset(to.x, to.y));
+    if (_pixelStroke != null) {
+      _feedPixelStroke(from, to, distance);
       return;
     }
 
@@ -628,77 +640,486 @@ class DrawingEngine {
 
   double _stableDouble(double value) => (value * 1000000).round() / 1000000;
 
-  /// ピクセルモードの丸いペン先は、どのドットも画素の格子に固定した同じ形
-  /// （[pixelDotCovers]）で置く。ペン先の画像・縁取り・横方向の反復・
-  /// 散布・カリグラフィーの角度を使うブラシは、その形のまま描く。
-  bool _snapsToPixelGrid(Brush brush) =>
+  /// ピクセルモードで、どのドットも画素の格子に置くブラシか（丸いペン先。
+  /// 折り畳みの髪のブラシは、折り畳みの描画が線を描く）。
+  bool _onPixelGrid(Brush brush) =>
       brush.pixelMode &&
       brush.tipShape == BrushTipShape.round &&
-      brush.resolvedCustomImagePaths.isEmpty &&
-      !brush.outlineEnabled &&
-      !brush.lateralRepeatEnabled &&
-      brush.calligraphyAngle == null &&
-      brush.scatter == 0;
+      !(brush.outlineEnabled && brush.foldEnabled);
 
-  /// ドットがつながって線になるピクセルモードのブラシなら、ペン先の通る
-  /// 画素をたどって1画素ずつ置く線を始め、最初のドットを置く。
-  bool _beginPixelLine(
+  /// 格子に置くブラシの線の描き方。散布するブラシはnull（ドットを1つずつ
+  /// 格子へ寄せる、[_stampBrush]）。
+  _PixelKind? _pixelKindOf(Brush brush) {
+    if (!_onPixelGrid(brush) || brush.scatter > 0) return null;
+    if (brush.resolvedCustomImagePaths.isNotEmpty ||
+        _brushStampSpacing(brush, brush.density.clamp(0.1, 5.0).toDouble()) >
+            1) {
+      return _PixelKind.stamps;
+    }
+    return brush.calligraphyAngle != null ? _PixelKind.nib : _PixelKind.line;
+  }
+
+  /// 太さを画素の数に丸めたもの。
+  static int _pixelDiameter(double size) => math.max(1, size.round());
+
+  /// 格子点：偶数の太さの線は画素の角（その角を中心にドットを置く）、
+  /// 奇数は画素。
+  static PixelPoint _pixelPointAt(double x, double y, bool corners) => corners
+      ? (x: (x + 0.5).floor(), y: (y + 0.5).floor())
+      : (x: x.floor(), y: y.floor());
+
+  /// ピクセルモードの格子に置くブラシなら、ペン先の通る格子点をたどって
+  /// 1点ずつ置く線を始める（最初の点もすぐ描く）。
+  bool _beginPixelStroke(
     StrokePoint point,
     String layerId, {
     double hysteresis = kPixelLineHysteresis,
+    double reverseHysteresis = kPixelLineReverseHysteresis,
     bool removeCorners = true,
+    int window = kPixelRunWindow,
+    bool shape = false,
   }) {
-    _pixelWalker = null;
-    _pixelPath = null;
-    _pixelTrail.clear();
+    _pixelStroke = null;
+    _pixelRecording = null;
     final brush = currentBrush;
-    if (brush == null ||
-        !_snapsToPixelGrid(brush) ||
-        _brushStampSpacing(brush, brush.density.clamp(0.1, 5.0).toDouble()) >
-            1) {
-      return false;
-    }
-    final walker = PixelLineWalker(
-      ui.Offset(point.x, point.y),
-      hysteresis: hysteresis,
+    final kind = brush == null ? null : _pixelKindOf(brush);
+    if (brush == null || kind == null) return false;
+    final corners = _pixelDiameter(brush.size).isEven;
+    final start = ui.Offset(point.x, point.y);
+    final stroke = _PixelStroke(
+      kind: kind,
+      corners: corners,
+      squareCorners: shape && !removeCorners,
+      spacing: _brushStampSpacing(
+        brush,
+        brush.density.clamp(0.1, 5.0).toDouble(),
+      ),
+      repeat: brush.lateralRepeatEnabled
+          ? Brush.clampLateralRepeatCount(brush.lateralRepeatCount)
+          : 1,
+      start: start,
+      startDab: _PixelDab(pressure: point.pressure, strokeLength: 0),
+      newTracer: (at, dab) => PixelLineTracer<_PixelDab>(
+        at,
+        dab,
+        corners: corners,
+        hysteresis: hysteresis,
+        reverseHysteresis: reverseHysteresis,
+        removeCorners: removeCorners,
+        window: window,
+        trimLoop: !shape,
+      ),
     );
-    _pixelTrail.add(ui.Offset(point.x, point.y));
-    final path = PixelPerfectPath<_PixelDab>(removeCorners: removeCorners);
-    _pixelWalker = walker;
-    _pixelPath = path;
-    path.add(
-      walker.x,
-      walker.y,
-      _PixelDab(pressure: point.pressure, strokeLength: 0),
-      (x, y, dab) => _stampPixelDab(x, y, dab, layerId),
-    );
+    // 横方向の反復は、線の向きが分かってから（最初に動いたとき）始める。
+    if (stroke.repeat == 1) stroke.addTrace(start, stroke.startDab);
+    _pixelStroke = stroke;
     _hasStampedCurrentStroke = true;
+    if (!_replayingFinalStroke && !shape) _updatePixelStroke(layerId);
     return true;
   }
 
-  /// ピクセルモードの線の終わりでペンが進んでいた向き（最後の3pxほど）。
-  ui.Offset _pixelEndHeading() {
-    if (_pixelTrail.length < 2) return ui.Offset.zero;
-    final end = _pixelTrail.last;
-    for (var i = _pixelTrail.length - 2; i >= 0; i--) {
-      final heading = end - _pixelTrail[i];
-      if (heading.distance >= 3) return heading;
+  /// ペンが[from]から[to]（[distance]px）へ動いた：それぞれの線でたどる。
+  void _feedPixelStroke(StrokePoint from, StrokePoint to, double distance) {
+    final stroke = _pixelStroke!;
+    final base = _strokeDistance;
+    _PixelDab dabAt(double t) => _PixelDab(
+      pressure: from.pressure + (to.pressure - from.pressure) * t,
+      strokeLength: base + distance * t,
+    );
+    final end = ui.Offset(to.x, to.y);
+    if (stroke.repeat == 1) {
+      stroke.traces.first.walkTo(end, dabAt);
+      return;
     }
-    return end - _pixelTrail.first;
+    // 横方向の反復：それぞれの線は、ペンの道を直角にずらした道をたどる。
+    stroke.path.add((end, base + distance));
+    final normal = stroke.normal();
+    if (normal == null) return;
+    if (stroke.traces.isEmpty) _startRepeats(stroke, normal);
+    final offsets = _repeatOffsets(dabAt(1));
+    for (var i = 0; i < stroke.traces.length; i++) {
+      stroke.traces[i].walkTo(end + normal * offsets[i], dabAt);
+    }
   }
 
-  // ドットは格子に固定した形なので、ペンの傾きでは伸ばさない。
-  void _stampPixelDab(int x, int y, _PixelDab dab, String layerId) =>
+  void _startRepeats(_PixelStroke stroke, ui.Offset normal) {
+    final offsets = _repeatOffsets(stroke.startDab);
+    for (final offset in offsets) {
+      stroke.addTrace(stroke.start + normal * offset, stroke.startDab);
+    }
+  }
+
+  /// 横方向の反復のそれぞれの線の、ペンの道からのずれ（太さに比例）。
+  List<double> _repeatOffsets(_PixelDab dab) {
+    final brush = currentBrush!;
+    return lateralOffsets(
+      count: Brush.clampLateralRepeatCount(brush.lateralRepeatCount),
+      spacing:
+          _pixelDabSize(brush, dab) *
+          brush.lateralRepeatSpacing.clamp(0.0, 4.0).toDouble(),
+    );
+  }
+
+  /// [_stampBrush]が置くドットの太さ（筆圧・入り抜き込み）。
+  double _pixelDabSize(Brush brush, _PixelDab dab) {
+    final pressure = resolveBrushPressure(
+      brush: brush,
+      pressureEnabled: pressureEnabled,
+      curvedPressure: dab.pressure,
+    );
+    var size = brush.size * pressure.sizeScale;
+    if (brush.fadeMode != FadeMode.off) {
+      size *= _calculateFade(
+        brush,
+        dab.strokeLength,
+        totalLength: _finalizedStrokeLengthOverride,
+      );
+    }
+    return size.clamp(0.5, 2000.0).toDouble();
+  }
+
+  // 確定した点のうち、描き方がまだ後の点で変わりうる点の数（中心線の
+  // ならし・向き・角は前後4点まで見る）。
+  static const int _pixelSettle = 5;
+
+  /// ピクセルモードの線を描き直す：確定した点を描き、まだ変わりうる点
+  /// （ペンの下の画素までの続き）を、前に描いたのと変わった点から描き直す
+  /// （前に描いた画素は戻してから）。[finish]なら線を終える。
+  void _updatePixelStroke(String layerId, {bool finish = false}) {
+    final stroke = _pixelStroke!;
+    if (finish && stroke.traces.isEmpty) {
+      _startRepeats(stroke, const ui.Offset(0, 1));
+    }
+    if (!finish && stroke.traces.length == 1 && stroke.fixedChain == null) {
+      _updatePixelTrace(stroke, stroke.traces.first, layerId);
+      return;
+    }
+    // 線を終えるとき・横方向の反復：前に描いた画素をすべて戻して描き直す。
+    _rollBackPixels(stroke, layerId, 0);
+    final chains = <PixelChain<_PixelDab>>[];
+    for (final trace in stroke.traces) {
+      var chain =
+          stroke.fixedChain ??
+          (finish ? trace.tracer.finish() : trace.tracer.resolve());
+      if (finish && stroke.closed && stroke.fixedChain == null) {
+        // 閉じた図形は最初の点へ戻って終わる（同じ点を2度数えない）。
+        if (chain.length > 2 && chain[chain.length - 1] == chain[0]) {
+          chain = chain.prefix(chain.length - 1);
+        } else {
+          stroke.closed = false;
+        }
+      }
+      chains.add(chain);
+      final settled = finish
+          ? chain.length
+          : math.max(trace.rendered, trace.tracer.frozen - _pixelSettle);
+      trace.state = _drawPixelRange(
+        stroke,
+        chain,
+        trace.rendered,
+        settled,
+        trace.state,
+        layerId,
+      );
+      trace.rendered = settled;
+    }
+    if (finish) return;
+    final log = stroke.log;
+    for (var i = 0; i < stroke.traces.length; i++) {
+      final trace = stroke.traces[i];
+      _drawPixelRange(
+        stroke,
+        chains[i],
+        trace.rendered,
+        chains[i].length,
+        trace.state,
+        layerId,
+        log: log,
+      );
+    }
+  }
+
+  /// 1本の線の描き直し：前に描いた続きの点のうち、形が変わらない点は
+  /// そのまま残し、変わった点から先だけを戻して描き直す。
+  void _updatePixelTrace(
+    _PixelStroke stroke,
+    _PixelTrace trace,
+    String layerId,
+  ) {
+    final chain = trace.tracer.resolve();
+    final log = stroke.log;
+    final from = trace.rendered;
+    final keys = [
+      for (var k = from; k < chain.length; k++) _pixelPointKey(chain, k),
+    ];
+    var same = 0;
+    while (same < log.points &&
+        same < keys.length &&
+        _sameKey(log.keyAt(same), keys[same])) {
+      same++;
+    }
+    _rollBackPixels(stroke, layerId, same);
+    final settled = math.max(from, trace.tracer.frozen - _pixelSettle);
+    // 描いてあり、もう変わらない点は、描き直さずに確定する。
+    final kept = math.min(same, settled - from);
+    trace.state = _drawPixelRange(
+      stroke,
+      chain,
+      from,
+      from + kept,
+      trace.state,
+      layerId,
+      draw: false,
+    );
+    log.dropFront(kept);
+    trace.rendered = from + kept;
+    if (settled > from + same) {
+      trace.state = _drawPixelRange(
+        stroke,
+        chain,
+        trace.rendered,
+        settled,
+        trace.state,
+        layerId,
+      );
+      trace.rendered = settled;
+    }
+    // 残った（描いてある）続きの点のあとから、続きを描く。
+    final drawnUpTo = math.max(trace.rendered, from + same);
+    final state = _drawPixelRange(
+      stroke,
+      chain,
+      trace.rendered,
+      drawnUpTo,
+      trace.state,
+      layerId,
+      draw: false,
+    );
+    _drawPixelRange(
+      stroke,
+      chain,
+      drawnUpTo,
+      chain.length,
+      state,
+      layerId,
+      log: log,
+      keys: keys,
+      keyOffset: from,
+    );
+  }
+
+  /// 続きの点の描き方を決めるもの（その点の前後の点・線の端か・筆圧・
+  /// 線の長さ）。同じなら同じ画素を描く。
+  static List<double> _pixelPointKey(PixelChain<_PixelDab> chain, int k) {
+    final n = chain.length;
+    final dab = chain.dataAt(k);
+    return [
+      k == n - 1 ? 1 : 0,
+      for (var i = k - 4; i <= k + 5; i++)
+        if (i < 0 || i >= n) ...[
+          -1e9,
+          -1e9,
+        ] else ...[
+          chain[i].x.toDouble(),
+          chain[i].y.toDouble(),
+        ],
+      dab.pressure,
+      dab.strokeLength,
+    ];
+  }
+
+  static bool _sameKey(List<double> a, List<double> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  /// まだ変わりうる点として描いた画素を、[keep]番目の点の分から先だけ
+  /// 描く前に戻す。
+  void _rollBackPixels(_PixelStroke stroke, String layerId, int keep) {
+    final log = stroke.log;
+    if (keep >= log.points) return;
+    final oil = log.rollBack(keep, tileManager);
+    for (final (tx, ty) in log.takeTouched()) {
+      tileManager.invalidateTile(layerId, tx, ty);
+    }
+    _oilPaint = oil.paint;
+    _lastOilStamp = oil.stamp;
+  }
+
+  /// [chain]の[from]から[to]の手前までの点を描く（[draw]が偽なら描かずに
+  /// 線の長さ・ドットの番号だけ進める）。[state]は[from]番目の点での線の
+  /// 長さと次に置くドットの番号で、[to]番目の点での値を返す。[log]を
+  /// 渡すと、まだ変わりうる点として描く前の画素を覚える。
+  ({double length, int next}) _drawPixelRange(
+    _PixelStroke stroke,
+    PixelChain<_PixelDab> chain,
+    int from,
+    int to,
+    ({double length, int next}) state,
+    String layerId, {
+    bool draw = true,
+    _PixelLog? log,
+    List<List<double>>? keys,
+    int keyOffset = 0,
+  }) {
+    var length = state.length;
+    var next = state.next;
+    final brush = currentBrush!;
+    final centre = stroke.corners ? 0.0 : 0.5;
+    for (var k = from; k < to; k++) {
+      if (k > from) length += _chainStep(chain, k);
+      final p = chain[k];
+      ({PixelMask? fill, PixelMask? outline}) Function(double, double)? shape;
+      switch (stroke.kind) {
+        case _PixelKind.line:
+          shape = (fill, outer) => _pixelOutlined(
+            fill,
+            outer,
+            (d) => pixelLineMask(
+              chain,
+              k,
+              d,
+              corners: stroke.corners,
+              closed: stroke.closed,
+              squareCorners: stroke.squareCorners,
+            ),
+          );
+        case _PixelKind.nib:
+          final angle = _pixelTipAngle(brush, chain, k, stroke.closed);
+          shape = (fill, outer) => _pixelOutlined(
+            fill,
+            outer,
+            (d) => _pixelTip(p, d, stroke.corners, angle, null),
+          );
+        case _PixelKind.stamps:
+          if (length + 1e-9 < next * stroke.spacing) {
+            shape = null;
+          } else {
+            final texture = stroke.textureAt(next, _brushTextureSelector);
+            next = (length / stroke.spacing + 1e-9).floor() + 1;
+            final angle = _pixelTipAngle(brush, chain, k, stroke.closed);
+            shape = (fill, outer) => _pixelOutlined(
+              fill,
+              outer,
+              (d) => _pixelTip(p, d, stroke.corners, angle, texture),
+            );
+          }
+      }
+      if (!draw) continue;
+      log?.beginPoint(
+        keys?[k - keyOffset] ?? const [],
+        _oilPaint,
+        _lastOilStamp,
+      );
+      if (shape == null) continue;
+      final dab = chain.dataAt(k);
+      _pixelRecording = log;
       _stampBrush(
-        x + 0.5,
-        y + 0.5,
+        p.x + centre,
+        p.y + centre,
         dab.pressure,
         0,
         0,
         layerId,
         strokeLengthOverride: dab.strokeLength,
-        pixelCell: (x: x, y: y),
+        pixelShape: shape,
       );
+      _pixelRecording = null;
+    }
+    if (to > from && to < chain.length) length += _chainStep(chain, to);
+    return (length: length, next: next);
+  }
+
+  static double _chainStep(PixelChain<Object?> chain, int k) {
+    final a = chain[k - 1], b = chain[k];
+    return a.x != b.x && a.y != b.y ? math.sqrt2 : 1.0;
+  }
+
+  /// 太さ[fill]（縁取りの外径[outer]、縁取りが無ければ0）の形：[shapeOf]が
+  /// 太さごとの形を返す。縁取りは塗りの形を縁取りの幅だけ広げたもの。
+  ({PixelMask? fill, PixelMask? outline}) _pixelOutlined(
+    double fill,
+    double outer,
+    PixelMask Function(int diameter) shapeOf,
+  ) {
+    final fillMask = fill >= 0.5 ? shapeOf(_pixelDiameter(fill)) : null;
+    if (outer <= 0) return (fill: fillMask, outline: null);
+    final width = ((outer - fill) / 2).round();
+    final outline = fillMask == null
+        ? shapeOf(_pixelDiameter(outer))
+        : width > 0
+        ? fillMask.dilate(width)
+        : null;
+    return (fill: fillMask, outline: outline);
+  }
+
+  /// ペン先の向き：カリグラフィーの角度に、回転するブラシは線の向きを足す
+  /// （64段に丸める）。
+  double _pixelTipAngle(
+    Brush brush,
+    PixelChain<Object?> chain,
+    int k,
+    bool closed,
+  ) {
+    var angle = (brush.calligraphyAngle ?? 0) * math.pi / 180;
+    if (brush.rotation && chain.length > 1) {
+      final n = chain.length;
+      PixelPoint at(int i) =>
+          closed ? chain[((i % n) + n) % n] : chain[i.clamp(0, n - 1)];
+      final a = at(k - 2), b = at(k + 2);
+      if (a != b) {
+        angle += math.atan2((b.y - a.y).toDouble(), (b.x - a.x).toDouble());
+      }
+    }
+    const steps = 64;
+    return (angle / (2 * math.pi) * steps).round() * 2 * math.pi / steps;
+  }
+
+  /// 格子点[p]に置く太さ[d]のペン先：ペン先の画像[texture]・カリグラフィーの
+  /// 平たいペン先・丸いドットのどれか。
+  PixelMask _pixelTip(
+    PixelPoint p,
+    int d,
+    bool corners,
+    double angle,
+    String? texture,
+  ) {
+    final brush = currentBrush!;
+    final alpha = texture == null
+        ? null
+        : getCachedBrushTexture(texture, mode: brush.imageInkMode);
+    final nib = brush.calligraphyAngle;
+    if (alpha == null && nib == null) return PixelMask.dot(p, d);
+    return pixelTipMask(
+      p,
+      d,
+      corners: corners,
+      ratio: nib == null ? 1 : Brush.clampNibWidthRatio(brush.nibWidthRatio),
+      angle: angle,
+      alpha: alpha,
+      alphaSize: brushTextureSize,
+    );
+  }
+
+  /// 図形の楕円の画素の並び（[bounds]に内接）。
+  PixelChain<_PixelDab> _pixelEllipseChain(ui.Rect bounds, bool corners) {
+    final a = _pixelPointAt(bounds.left, bounds.top, corners);
+    final b = _pixelPointAt(bounds.right, bounds.bottom, corners);
+    final points = pixelEllipse(a.x, a.y, b.x, b.y);
+    final dabs = <_PixelDab>[];
+    var length = 0.0;
+    for (var i = 0; i < points.length; i++) {
+      if (i > 0) {
+        final p = points[i - 1], q = points[i];
+        length += p.x != q.x && p.y != q.y ? math.sqrt2 : 1.0;
+      }
+      dabs.add(_PixelDab(pressure: 1, strokeLength: length));
+    }
+    return PixelChain.of(points, dabs);
+  }
 
   void _stampBrush(
     double x,
@@ -711,13 +1132,12 @@ class DrawingEngine {
     double pathAngle = 0.0,
     bool hasPathDirection = false,
     bool applyScatter = true,
-    ({int x, int y})? pixelCell,
+    // ピクセルモードの格子に置く形（塗りの太さと縁取りの外径から）。
+    ({PixelMask? fill, PixelMask? outline}) Function(double, double)?
+    pixelShape,
   }) {
     if (currentBrush == null) return;
     final brush = currentBrush!;
-    if (pixelCell == null && _snapsToPixelGrid(brush)) {
-      pixelCell = (x: x.floor(), y: y.floor());
-    }
 
     final resolvedPressure = resolveBrushPressure(
       brush: brush,
@@ -803,6 +1223,103 @@ class DrawingEngine {
       );
     }
 
+    // ピクセルモードの散布するドットも、1つずつ格子に寄せた同じ形で置く。
+    if (pixelShape == null && _onPixelGrid(brush)) {
+      final texture = _brushTextureSelector.nextDabPath();
+      final corners = _pixelDiameter(brush.size).isEven;
+      final angle =
+          (brush.calligraphyAngle ?? 0) * math.pi / 180 +
+          (brush.rotation ? pathAngle : 0);
+      final centers = brush.lateralRepeatEnabled
+          ? lateralCenters(
+              center: ui.Offset(stampX, stampY),
+              tangent: ui.Offset(math.cos(pathAngle), math.sin(pathAngle)),
+              count: Brush.clampLateralRepeatCount(brush.lateralRepeatCount),
+              spacing:
+                  size * brush.lateralRepeatSpacing.clamp(0.0, 4.0).toDouble(),
+            )
+          : [ui.Offset(stampX, stampY)];
+      pixelShape = (fill, outer) {
+        final shapes = [
+          for (final c in centers)
+            _pixelOutlined(
+              fill,
+              outer,
+              (d) => _pixelTip(
+                _pixelPointAt(c.dx, c.dy, corners),
+                d,
+                corners,
+                angle,
+                texture,
+              ),
+            ),
+        ];
+        PixelMask? merge(Iterable<PixelMask?> masks) {
+          final list = masks.whereType<PixelMask>().toList();
+          return list.isEmpty ? null : PixelMask.union(list);
+        }
+
+        return (
+          fill: merge(shapes.map((s) => s.fill)),
+          outline: merge(shapes.map((s) => s.outline)),
+        );
+      };
+    }
+    if (pixelShape != null) {
+      // 格子に置く形：縁取り（外径）を先に、塗りを上に。
+      final fill = outlinedRadii == null ? size : outlinedRadii.fill * 2;
+      final outer = outlinedRadii == null || brush.outlineWidth <= 0
+          ? 0.0
+          : outlinedRadii.outer * 2;
+      final masks = pixelShape(fill, outer);
+      final outline = masks.outline;
+      if (outline != null) {
+        _renderCircleStamp(
+          stampX,
+          stampY,
+          outer / 2,
+          alphaInt,
+          (scaleX: 1.0, scaleY: 1.0, angle: 0.0),
+          layerId,
+          true,
+          0,
+          null,
+          grainStrength: brush.grainStrength,
+          mixingMode: resolvedPressure.mixingMode,
+          mixingRate: resolvedPressure.mixingRate,
+          mixingBrightnessCorrection:
+              resolvedPressure.mixingBrightnessCorrection,
+          colorOverride: ui.Color(brush.outlineColor),
+          coverageNamespace: 'outline',
+          behindExisting: !brush.outlineKeepOverlap,
+          pixelMask: outline,
+        );
+      }
+      final fillMask = masks.fill;
+      if (fillMask != null) {
+        _renderCircleStamp(
+          stampX,
+          stampY,
+          fill / 2,
+          alphaInt,
+          (scaleX: 1.0, scaleY: 1.0, angle: 0.0),
+          layerId,
+          true,
+          0,
+          null,
+          grainStrength: brush.grainStrength,
+          mixingMode: resolvedPressure.mixingMode,
+          mixingRate: resolvedPressure.mixingRate,
+          mixingBrightnessCorrection:
+              resolvedPressure.mixingBrightnessCorrection,
+          oilPaint: oilPaint,
+          coverageNamespace: outline != null ? 'fill' : 'legacy',
+          pixelMask: fillMask,
+        );
+      }
+      return;
+    }
+
     // グリッターペンは大きな六角形フレークとして描画する。粒ごとに向きを
     // ランダム化し、同じ向きの六角形が機械的に並ぶ見た目を避ける。
     // ラメペンを含む他ブラシは従来どおり円形スタンプのまま。
@@ -842,8 +1359,7 @@ class DrawingEngine {
         angle: pathAngle + angleOffset,
       );
     }
-    final stylusTiltMagnitude =
-        nibAngle == null && !brush.rotation && pixelCell == null
+    final stylusTiltMagnitude = nibAngle == null && !brush.rotation
         ? math.sqrt(tiltX * tiltX + tiltY * tiltY).clamp(0.0, 1.0)
         : 0.0;
 
@@ -943,7 +1459,6 @@ class DrawingEngine {
           hollowSquare: usesExtensionRaster && extensionPlan.hollowSquare,
           hollowSquareInnerRatio: extensionPlan.hollowSquareInnerRatio,
           coverageNamespace: usesExtensionRaster ? 'fill' : 'legacy',
-          pixelCell: usesExtensionRaster ? null : pixelCell,
         );
       }
     }
@@ -1014,7 +1529,7 @@ class DrawingEngine {
     bool behindExisting = false,
     Uint8List? silhouetteDistanceMap,
     double silhouetteOutlineWidth = 0,
-    ({int x, int y})? pixelCell,
+    PixelMask? pixelMask,
   }) {
     final paintColor = colorOverride ?? currentColor;
     final r = paintColor.r;
@@ -1045,30 +1560,20 @@ class DrawingEngine {
         ? (blur / (blur + radius)).clamp(0.0, 1.0)
         : 0.0;
 
-    // ピクセルモードの格子のドット：画素[pixelCell]を中心にした、太さ
-    // （直径を画素数に丸めたもの）ごとに決まった形。
-    final dotDiameter = pixelCell == null
-        ? 0
-        : math.max(1, (radius * 2).round());
-    final dotLeft = pixelCell == null
-        ? 0
-        : pixelDotOrigin(pixelCell.x, dotDiameter);
-    final dotTop = pixelCell == null
-        ? 0
-        : pixelDotOrigin(pixelCell.y, dotDiameter);
-
-    final minTx = pixelCell != null
-        ? (dotLeft / TileManager.tileSize).floor()
+    // ピクセルモードの格子に置く形（[pixelMask]の画素だけを塗る）。
+    final minTx = pixelMask != null
+        ? (pixelMask.left / TileManager.tileSize).floor()
         : ((cx - totalRadius) / TileManager.tileSize).floor();
-    final maxTx = pixelCell != null
-        ? ((dotLeft + dotDiameter - 1) / TileManager.tileSize).floor()
+    final maxTx = pixelMask != null
+        ? ((pixelMask.right - 1) / TileManager.tileSize).floor()
         : ((cx + totalRadius) / TileManager.tileSize).floor();
-    final minTy = pixelCell != null
-        ? (dotTop / TileManager.tileSize).floor()
+    final minTy = pixelMask != null
+        ? (pixelMask.top / TileManager.tileSize).floor()
         : ((cy - totalRadius) / TileManager.tileSize).floor();
-    final maxTy = pixelCell != null
-        ? ((dotTop + dotDiameter - 1) / TileManager.tileSize).floor()
+    final maxTy = pixelMask != null
+        ? ((pixelMask.bottom - 1) / TileManager.tileSize).floor()
         : ((cy + totalRadius) / TileManager.tileSize).floor();
+    final recording = _pixelRecording;
 
     for (int ty = minTy; ty <= maxTy; ty++) {
       for (int tx = minTx; tx <= maxTx; tx++) {
@@ -1108,25 +1613,25 @@ class DrawingEngine {
             : _strokeCoverageByTile['fill:$layerId:$tx:$ty'];
 
         // タイル内の影響ピクセル範囲
-        final localMinX = pixelCell != null
-            ? math.max(0, dotLeft - tileOriginX)
+        final localMinX = pixelMask != null
+            ? math.max(0, pixelMask.left - tileOriginX)
             : math.max(0, (cx - totalRadius - tileOriginX).floor());
-        final localMaxX = pixelCell != null
+        final localMaxX = pixelMask != null
             ? math.min(
                 TileManager.tileSize - 1,
-                dotLeft + dotDiameter - 1 - tileOriginX,
+                pixelMask.right - 1 - tileOriginX,
               )
             : math.min(
                 TileManager.tileSize - 1,
                 (cx + totalRadius - tileOriginX).ceil(),
               );
-        final localMinY = pixelCell != null
-            ? math.max(0, dotTop - tileOriginY)
+        final localMinY = pixelMask != null
+            ? math.max(0, pixelMask.top - tileOriginY)
             : math.max(0, (cy - totalRadius - tileOriginY).floor());
-        final localMaxY = pixelCell != null
+        final localMaxY = pixelMask != null
             ? math.min(
                 TileManager.tileSize - 1,
-                dotTop + dotDiameter - 1 - tileOriginY,
+                pixelMask.bottom - 1 - tileOriginY,
               )
             : math.min(
                 TileManager.tileSize - 1,
@@ -1148,13 +1653,9 @@ class DrawingEngine {
             final dist = math.sqrt(ux * ux + uy * uy);
 
             double pixelAlpha;
-            if (pixelCell != null) {
+            if (pixelMask != null) {
               pixelAlpha =
-                  pixelDotCovers(
-                    dotDiameter,
-                    tileOriginX + px - dotLeft,
-                    tileOriginY + py - dotTop,
-                  )
+                  pixelMask.contains(tileOriginX + px, tileOriginY + py)
                   ? 1.0
                   : 0.0;
             } else if (silhouetteDistanceMap != null) {
@@ -1329,6 +1830,15 @@ class DrawingEngine {
             final coveragePos = py * TileManager.tileSize + px;
             final oldCoverage = coverage[coveragePos];
             if (desiredAlpha <= oldCoverage) continue;
+            recording?.remember(
+              tileManager,
+              tile,
+              tx,
+              ty,
+              coveragePos,
+              coverage,
+              watercolor,
+            );
             var incrementalAlpha = oldCoverage >= 255
                 ? 0
                 : (((desiredAlpha - oldCoverage) * 255) / (255 - oldCoverage))
@@ -1594,10 +2104,239 @@ class StrokePoint {
 
 enum InputType { touch, stylus, mouse }
 
-/// ピクセルモードの線で、確定を待つ1画素のドットを置くときの値。
+/// ピクセルモードの線の点の、ドットを置くときの値。
 class _PixelDab {
   final double pressure;
   final double strokeLength;
 
   const _PixelDab({required this.pressure, required this.strokeLength});
+}
+
+/// ピクセルモードの格子に置くブラシの描き方：丸いペン先の線（太さが一定の
+/// 帯）・カリグラフィーの平たいペン先を点ごとに置く線・間隔を空けて置く
+/// ドット／ペン先の画像。
+enum _PixelKind { line, nib, stamps }
+
+/// ピクセルモードの格子に置く1本のストローク（横方向の反復なら線ごとの
+/// [_PixelTrace]）。
+class _PixelStroke {
+  _PixelStroke({
+    required this.kind,
+    required this.corners,
+    required this.squareCorners,
+    required this.spacing,
+    required this.repeat,
+    required this.start,
+    required this.startDab,
+    required this.newTracer,
+  });
+
+  final _PixelKind kind;
+
+  /// 画素の角を格子点にするか（偶数の太さ）。
+  final bool corners;
+  final bool squareCorners;
+
+  /// 間隔を空けて置くドットの間隔（px）。
+  final double spacing;
+  final int repeat;
+  final ui.Offset start;
+  final _PixelDab startDab;
+  final PixelLineTracer<_PixelDab> Function(ui.Offset, _PixelDab) newTracer;
+  final List<_PixelTrace> traces = [];
+
+  /// 閉じた図形（最後の点の次が最初の点）。
+  bool closed = false;
+
+  /// 楕円のように、たどらずに決まった点の並び。
+  PixelChain<_PixelDab>? fixedChain;
+
+  /// まだ変わりうる点として描いた画素（描き直す前に戻す）。
+  final _PixelLog log = _PixelLog();
+
+  /// 間隔を空けて置くペン先の画像（何番目のドットか、の順に選ぶ）。
+  final List<String?> _textures = [];
+
+  /// 横方向の反復の向きを測る、ペンの道（位置と、そこまでの長さ）。
+  final List<(ui.Offset, double)> path = [];
+
+  void addTrace(ui.Offset at, _PixelDab dab) =>
+      traces.add(_PixelTrace(newTracer(at, dab), at));
+
+  String? textureAt(int index, BrushTextureSelector selector) {
+    while (_textures.length <= index) {
+      _textures.add(selector.nextDabPath());
+    }
+    return _textures[index];
+  }
+
+  /// 今のペンの道の向きに直角な向き（1px動くまではnull）。向きは最後の
+  /// 2pxほどで測る。
+  ui.Offset? normal() {
+    if (path.isEmpty) return null;
+    final (end, length) = path.last;
+    if (length < 1) return null;
+    var from = start;
+    for (var i = path.length - 2; i >= 0; i--) {
+      if (length - path[i].$2 >= 2) {
+        from = path[i].$1;
+        break;
+      }
+    }
+    final d = end - from;
+    if (d.distance < 1e-6) return null;
+    final unit = d / d.distance;
+    return ui.Offset(-unit.dy, unit.dx);
+  }
+}
+
+/// [_PixelStroke]の中の1本の線。
+class _PixelTrace {
+  _PixelTrace(this.tracer, this.last);
+
+  final PixelLineTracer<_PixelDab> tracer;
+
+  /// 最後にたどったペンの位置（反復ではずらした位置）。
+  ui.Offset last;
+
+  /// 描いた（確定した）点の数。
+  int rendered = 0;
+
+  /// [rendered]番目の点までの線の長さと、次に置くドットの番号（間隔を空けて
+  /// 置くドット）。
+  ({double length, int next}) state = (length: 0, next: 0);
+
+  void walkTo(ui.Offset to, _PixelDab Function(double t) dabAt) {
+    tracer.walk(last, to, dabAt);
+    last = to;
+  }
+}
+
+/// まだ変わりうる点として描いた画素の、描く前の状態（点ごと）。
+class _PixelLog {
+  // 画素ごと：タイル・その線の覆いの記録・[_stride]個の数（位置・RGBA・
+  // 覆い・塗った印・水彩の状態・タイルの位置）。
+  static const int _stride = 7;
+  final List<Uint8List> _tiles = [];
+  final List<Uint8List> _coverages = [];
+  final List<WatercolorStroke?> _washes = [];
+  final List<int> _values = [];
+  // 点ごと：その点の最初の画素の番号・描き方・描く前の油彩の絵の具。
+  final List<int> _starts = [];
+  final List<List<double>> _keys = [];
+  final List<int?> _oilPaints = [];
+  final List<ui.Offset?> _oilStamps = [];
+  int _first = 0;
+  final Set<(int, int)> _touched = {};
+
+  /// 覚えている点の数。
+  int get points => _starts.length - _first;
+
+  List<double> keyAt(int i) => _keys[_first + i];
+
+  void beginPoint(List<double> key, int? oilPaint, ui.Offset? oilStamp) {
+    _starts.add(_tiles.length);
+    _keys.add(key);
+    _oilPaints.add(oilPaint);
+    _oilStamps.add(oilStamp);
+  }
+
+  void remember(
+    TileManager tileManager,
+    Uint8List tile,
+    int tx,
+    int ty,
+    int pos,
+    Uint8List coverage,
+    WatercolorStroke? wash,
+  ) {
+    final i = pos * 4;
+    _tiles.add(tile);
+    _coverages.add(coverage);
+    _washes.add(wash);
+    _values
+      ..add(pos)
+      ..add(tile[i] | tile[i + 1] << 8 | tile[i + 2] << 16 | tile[i + 3] << 24)
+      ..add(coverage[pos])
+      ..add(tileManager.isPaintedPixel(tile, pos) ? 1 : 0)
+      ..add(wash?.pixelState(tx, ty, pos) ?? -1)
+      ..add(tx)
+      ..add(ty);
+  }
+
+  /// [keep]番目の点から先の画素を、覚えたのと逆の順に戻して忘れる。戻した
+  /// 時点の油彩の絵の具を返す。
+  ({int? paint, ui.Offset? stamp}) rollBack(int keep, TileManager tileManager) {
+    final point = _first + keep;
+    final start = _starts[point];
+    for (var p = _tiles.length - 1; p >= start; p--) {
+      final tile = _tiles[p];
+      final v = p * _stride;
+      final pos = _values[v];
+      final rgba = _values[v + 1];
+      final i = pos * 4;
+      tile[i] = rgba & 0xFF;
+      tile[i + 1] = rgba >> 8 & 0xFF;
+      tile[i + 2] = rgba >> 16 & 0xFF;
+      tile[i + 3] = rgba >> 24 & 0xFF;
+      _coverages[p][pos] = _values[v + 2];
+      tileManager.setPaintedPixel(tile, pos, _values[v + 3] == 1);
+      final wash = _values[v + 4];
+      if (wash >= 0) {
+        _washes[p]?.restorePixel(_values[v + 5], _values[v + 6], pos, wash);
+      }
+      _touched.add((_values[v + 5], _values[v + 6]));
+    }
+    final oil = (paint: _oilPaints[point], stamp: _oilStamps[point]);
+    _tiles.length = start;
+    _coverages.length = start;
+    _washes.length = start;
+    _values.length = start * _stride;
+    _starts.length = point;
+    _keys.length = point;
+    _oilPaints.length = point;
+    _oilStamps.length = point;
+    return oil;
+  }
+
+  /// 戻した画素のタイル（描き直して見せる）。
+  Iterable<(int, int)> takeTouched() {
+    final touched = _touched.toList();
+    _touched.clear();
+    return touched;
+  }
+
+  /// 最初の[count]点を、もう戻さない点として忘れる。
+  void dropFront(int count) {
+    if (count <= 0) return;
+    _first += count;
+    if (_first < _starts.length && _first > 64 && _first * 2 > _starts.length) {
+      // 忘れた点の分を詰める（長い線で覚えが増え続けないように）。
+      final offset = _starts[_first];
+      _tiles.removeRange(0, offset);
+      _coverages.removeRange(0, offset);
+      _washes.removeRange(0, offset);
+      _values.removeRange(0, offset * _stride);
+      _starts.removeRange(0, _first);
+      _keys.removeRange(0, _first);
+      _oilPaints.removeRange(0, _first);
+      _oilStamps.removeRange(0, _first);
+      for (var i = 0; i < _starts.length; i++) {
+        _starts[i] -= offset;
+      }
+      _first = 0;
+      return;
+    }
+    if (_first >= _starts.length) {
+      _tiles.clear();
+      _coverages.clear();
+      _washes.clear();
+      _values.clear();
+      _starts.clear();
+      _keys.clear();
+      _oilPaints.clear();
+      _oilStamps.clear();
+      _first = 0;
+    }
+  }
 }

@@ -169,6 +169,26 @@ class WatercolorStroke {
     );
   }
 
+  /// What [cover] last recorded at pixel [pos] of tile ([tx], [ty]):
+  /// coverage, mixing rate and opacity in one int (null before the tile is
+  /// touched). [restorePixel] puts it back, for a pixel painted for a
+  /// moment and then taken back.
+  int? pixelState(int tx, int ty, int pos) {
+    final key = '$tx:$ty';
+    final coverage = _coverage[key];
+    if (coverage == null) return null;
+    return coverage[pos] | _rate[key]![pos] << 8 | _opacity[key]![pos] << 16;
+  }
+
+  void restorePixel(int tx, int ty, int pos, int state) {
+    final key = '$tx:$ty';
+    final coverage = _coverage[key];
+    if (coverage == null) return;
+    coverage[pos] = state & 0xFF;
+    _rate[key]![pos] = state >> 8 & 0xFF;
+    _opacity[key]![pos] = state >> 16 & 0xFF;
+  }
+
   /// Dries the stroke: spreads it past the brush with a ragged edge.
   /// Returns the tiles it changed (as "tx:ty") so they can be redrawn.
   Set<String> finish(TileManager tiles) {

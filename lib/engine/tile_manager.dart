@@ -928,6 +928,21 @@ class TileManager {
     coverage[pixelIndex] = 1;
   }
 
+  /// Whether [markPaintedPixel] has recorded pixel [pixelIndex] of [tile].
+  bool isPaintedPixel(Uint8List tile, int pixelIndex) =>
+      _paintedPixels[tile]?[pixelIndex] == 1;
+
+  /// Puts back what [isPaintedPixel] returned (a pixel painted for a moment
+  /// and then taken back).
+  void setPaintedPixel(Uint8List tile, int pixelIndex, bool painted) {
+    if (!_recordingUndo) return;
+    if (painted) {
+      markPaintedPixel(tile, pixelIndex);
+    } else {
+      _paintedPixels[tile]?[pixelIndex] = 0;
+    }
+  }
+
   /// Includes only the stroke's pixels in a color post-process.
   void transformRecordingPixels(Uint8List Function(Uint8List) transform) {
     final layerId = _recordingLayerId;
