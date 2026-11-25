@@ -179,6 +179,14 @@ backend/
 
    読めなければデプロイの前に止まり、ログに足りない権限を出す。
 
+   CloudFormationが実際にAWSを操作するCDKの実行ロール
+   （`cdk-hnb659fds-cfn-exec-role-368601349794-ap-northeast-1`）は、NIARIMのLambda
+   ごとに許す絞った権限で動いている。**新しい名前のLambda（`functionName`）を足したら、
+   その関数のARNを実行ロールのLambdaの許可（イベントソースマッピングの
+   `lambda:FunctionArn`の条件があればそこも）に足してからデプロイすること**。足さないと
+   `cfn-exec-role … is not authorized to perform: lambda:GetFunction`で作成に失敗し、
+   スタックは元に戻る（2026-11-25の`niarim-moderation-worker`で実際に起きた）。
+
 ## Google/YouTube側で別途必要な準備
 
 15章（YouTube OAuth審査）に記載のとおり、次はこのリポジトリの外側の
