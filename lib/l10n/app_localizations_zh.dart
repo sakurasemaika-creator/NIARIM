@@ -5172,7 +5172,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String timelineDurationInvalid(int max) {
-    return '请输入1到$max之间的整数。起始不能晚于结束。';
+    return '请输入1到$max之间的整数。起始不能在结束之后。';
   }
 
   @override
@@ -16019,7 +16019,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String timelineDurationInvalid(int max) {
-    return '請輸入1到$max之間的整數。起始不能晚於結束。';
+    return '請輸入1到$max之間的整數。起始不能在結束之後。';
   }
 
   @override

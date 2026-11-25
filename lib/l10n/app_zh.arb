@@ -2129,7 +2129,7 @@
   "timelineDurationStartLabel": "起始帧",
   "timelineDurationEndLabel": "结束帧",
   "timelineDurationLength": "长度：{frames}帧（{seconds}秒）",
-  "timelineDurationInvalid": "请输入1到{max}之间的整数。起始不能晚于结束。",
+  "timelineDurationInvalid": "请输入1到{max}之间的整数。起始不能在结束之后。",
   "timelineDurationOverlap": "未更改：使用此范围会与同一行的其他片段重叠。",
   "timelineDurationBeforeSource": "未更改：片段不能早于其音频的开头。",
   "timelineTransformRotationX": "X轴旋转",

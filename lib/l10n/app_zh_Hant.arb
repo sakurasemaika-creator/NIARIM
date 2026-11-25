@@ -2129,7 +2129,7 @@
   "timelineDurationStartLabel": "起始影格",
   "timelineDurationEndLabel": "結束影格",
   "timelineDurationLength": "長度：{frames}個影格（{seconds}秒）",
-  "timelineDurationInvalid": "請輸入1到{max}之間的整數。起始不能晚於結束。",
+  "timelineDurationInvalid": "請輸入1到{max}之間的整數。起始不能在結束之後。",
   "timelineDurationOverlap": "未變更：使用此範圍會與同一列的其他片段重疊。",
   "timelineDurationBeforeSource": "未變更：片段不能早於其音訊的開頭。",
   "timelineTransformRotationX": "X軸旋轉",
