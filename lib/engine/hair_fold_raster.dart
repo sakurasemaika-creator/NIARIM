@@ -601,15 +601,17 @@ class HairFoldRaster {
         // the crescent at full width on both sides of their shared point.
         final headStart = deepRuns.isEmpty ? indices.first : deepRuns.first;
         final firstApex = crescentApices[headStart]!;
+        // The change is spread over the whole turn to the apex, however
+        // long. Within it the bow runs out towards the chord's end while the
+        // ordinary strand keeps the pen's width, so a crescent left at full
+        // strength over part of that turn thinned to a waist and the strand
+        // then swelled back: its inner edge bent against the curve.
         final transitionTurn = math.max(
           .15,
-          math.min(
-            math.pi / 3,
-            // From a sliver the crescent starts at full width, not at its
-            // tip: spread the change over the whole turn to its apex.
-            (turns[firstApex] - turns[headStart]) *
-                (headStart == indices.first ? .75 : 1),
-          ),
+          // From a sliver the crescent starts at full width, not at its
+          // tip: spread the change over the whole turn to its apex.
+          (turns[firstApex] - turns[headStart]) *
+              (headStart == indices.first ? .75 : 1),
         );
         // The finished stroke's end mirrors its start.
         final tailStart = deepRuns.isEmpty
@@ -620,11 +622,8 @@ class HairFoldRaster {
         final endTransition = taperEnd
             ? math.max(
                 .15,
-                math.min(
-                  math.pi / 3,
-                  (turns[tailEnd] - turns[lastApex]) *
-                      (tailEnd == indices.last ? .75 : 1),
-                ),
+                (turns[tailEnd] - turns[lastApex]) *
+                    (tailEnd == indices.last ? .75 : 1),
               )
             : null;
         for (var index = 0; index < points.length; index++) {
@@ -659,48 +658,233 @@ class HairFoldRaster {
               Map<int, _Area>?,
             )
           >[];
-      for (final run in runs) {
-        // A crescent is a pair of bows across the same authored chord.
-        // Parallel normal offsets make the inside sharper than the input.
-        // Scale the actual chord deviation instead, preserving the source path.
-        final chordStart = points[run.start].position;
-        final chord = points[run.end].position - chordStart;
-        final apexIndex = crescentApices[run.start];
-        final chordNormal = _unit(Offset(-chord.dy, chord.dx));
-        final apexBow = apexIndex == null
-            ? 0.0
-            : _dot(points[apexIndex].position - chordStart, chordNormal);
-        final outward = chordNormal * apexBow.sign;
-        final bowDepth = apexBow.abs();
-        // The crescent has no crease. Use its own contour, independent of
-        // the controls that shape a crease in the other four modes.
-        const crescentShapeStrength = .5;
-        const innerPower = 1 + crescentShapeStrength * .35;
-        // The apex keeps the pen's own pressure-resolved width; curve depth
-        // only shapes the bows and never thickens or thins the crescent.
-        final widestHalf = [
-          for (var i = run.start; i <= run.end; i++) points[i].width / 2,
-        ].reduce(math.max);
-        // One bound per run prevents hooks with unusually large pressure
-        // widths. The remaining diameter is distributed outside.
-        final insideScale = widestHalf <= 0
-            ? 1.0
-            : math.min(1.0, .98 * bowDepth / (widestHalf * innerPower));
-        final chordAxis = _unit(chord);
-        final leadIndex = math.min(crescentCurveStart, apexIndex ?? run.start);
-        final leadNormal = brush.foldMode == HairFoldMode.crescent
-            ? Offset(
-                    -crescentTangents[leadIndex]!.dy,
-                    crescentTangents[leadIndex]!.dx,
-                  ) *
-                  -crescentSides[run.start]!
-            : Offset.zero;
-        final leadSpan = apexIndex == null
-            ? 0.0
-            : _dot(
-                points[apexIndex].position - points[leadIndex].position,
-                chordAxis,
+      // Every crescent section's edges, by section: they are found before
+      // any is drawn, so the inner edge can be kept to the curve across the
+      // joins between sections (see _keepInnerEdgeWithCurve).
+      final crescentEdges =
+          <
+            int,
+            List<
+              ({
+                HairRibbonPoint point,
+                Offset outer,
+                Offset inner,
+                double angle,
+              })
+            >
+          >{};
+      final innerPulls = <int, double>{};
+      if (brush.foldMode == HairFoldMode.crescent) {
+        ({HairRibbonPoint point, Offset outer, Offset inner, double angle})
+        sectionEdge(
+          _RibbonRun run,
+          int index,
+          Offset outerEdge,
+          Offset innerEdge,
+        ) {
+          final point = points[index];
+          final across = (outerEdge - innerEdge) * crescentSides[run.start]!;
+          final sourceAngle = crescentAngles[index]!;
+          final edgeAngle = across.distanceSquared < 1e-10
+              ? sourceAngle
+              : math.atan2(across.dy, across.dx);
+          return (
+            point: HairRibbonPoint(
+              (outerEdge + innerEdge) / 2,
+              (outerEdge - innerEdge).distance,
+              point.opacity,
+              point.scale,
+              point.outline,
+            ),
+            outer: outerEdge,
+            inner: innerEdge,
+            angle:
+                sourceAngle +
+                math.atan2(
+                  math.sin(edgeAngle - sourceAngle),
+                  math.cos(edgeAngle - sourceAngle),
+                ),
+          );
+        }
+
+        for (final run in runs) {
+          // A crescent is a pair of bows across the same authored chord.
+          // Parallel normal offsets make the inside sharper than the input.
+          // Scale the actual chord deviation instead, preserving the source
+          // path.
+          final chordStart = points[run.start].position;
+          final chord = points[run.end].position - chordStart;
+          final apexIndex = crescentApices[run.start];
+          final chordNormal = _unit(Offset(-chord.dy, chord.dx));
+          final apexBow = apexIndex == null
+              ? 0.0
+              : _dot(points[apexIndex].position - chordStart, chordNormal);
+          final outward = chordNormal * apexBow.sign;
+          final bowDepth = apexBow.abs();
+          // The crescent has no crease. Use its own contour, independent of
+          // the controls that shape a crease in the other four modes.
+          const crescentShapeStrength = .5;
+          const innerPower = 1 + crescentShapeStrength * .35;
+          // The apex keeps the pen's own pressure-resolved width; curve depth
+          // only shapes the bows and never thickens or thins the crescent.
+          final widestHalf = [
+            for (var i = run.start; i <= run.end; i++) points[i].width / 2,
+          ].reduce(math.max);
+          // One bound per run prevents hooks with unusually large pressure
+          // widths. The remaining diameter is distributed outside.
+          final insideScale = widestHalf <= 0
+              ? 1.0
+              : math.min(1.0, .98 * bowDepth / (widestHalf * innerPower));
+          final chordAxis = _unit(chord);
+          final leadIndex = math.min(
+            crescentCurveStart,
+            apexIndex ?? run.start,
+          );
+          final leadNormal =
+              Offset(
+                -crescentTangents[leadIndex]!.dy,
+                crescentTangents[leadIndex]!.dx,
+              ) *
+              -crescentSides[run.start]!;
+          final leadSpan = apexIndex == null
+              ? 0.0
+              : _dot(
+                  points[apexIndex].position - points[leadIndex].position,
+                  chordAxis,
+                );
+          ({HairRibbonPoint point, Offset outer, Offset inner, double angle})
+          edgeAt(int index) {
+            final point = points[index];
+            final crescent = crescentBlend[index]!;
+            final tangent = crescentTangents[index]!;
+            final normal =
+                Offset(-tangent.dy, tangent.dx) * -crescentSides[run.start]!;
+            final bow = bowDepth < 1e-6
+                ? 0.0
+                : (_dot(point.position - chordStart, outward) / bowDepth).clamp(
+                    0.0,
+                    1.0,
+                  );
+            final outerProfile = math
+                .pow(bow, 1 - crescentShapeStrength * .2)
+                .toDouble();
+            final innerProfile = math.pow(bow, innerPower).toDouble();
+            // Return to a symmetric, pressure-resolved cross-section at a
+            // tapered endpoint. Otherwise the displaced crescent sides can
+            // continue bulging while the ordinary taper is narrowing.
+            var endpointBlend = 1.0;
+            if (brush.fadeMode == FadeMode.custom) {
+              final fromStart = lengths[index];
+              final fromEnd = lengths.last - fromStart;
+              double transition(FadeEndpointSettings fade, double distance) {
+                if (fade.value == 100 || fade.rangePx <= 0) return 1;
+                final t = (distance / fade.rangePx).clamp(0.0, 1.0);
+                return t * t * (3 - 2 * t);
+              }
+
+              endpointBlend = transition(brush.fadeIn, fromStart);
+              if (taperEnd) {
+                endpointBlend *= transition(brush.fadeOut, fromEnd);
+              }
+            }
+            if (taperEnd && flatEnds) {
+              final remaining = lengths.last - lengths[index];
+              final t = (remaining / (brush.size * 2)).clamp(0.0, 1.0);
+              endpointBlend *= t * t * (3 - 2 * t);
+            }
+            final blend = crescent * endpointBlend;
+            var ordinary = normal * point.width / 2 * (1 - blend);
+            // Only the head, up to the apex: past it the ordinary strand
+            // comes back at the end, and its edge along the chord (across
+            // the bottom of a C) must keep its width.
+            if (run.start == 0 &&
+                leadSpan > 1e-6 &&
+                index > leadIndex &&
+                index <= apexIndex!) {
+              final q =
+                  (_dot(
+                            point.position - points[leadIndex].position,
+                            chordAxis,
+                          ) /
+                          leadSpan)
+                      .clamp(0.0, 1.0);
+              // A cap wider than the whole bend must not push the join
+              // backwards. The original ordinary head/lead remains covered.
+              final along = (_dot(leadNormal, chordAxis) * point.width / 2)
+                  .clamp(-leadSpan * .98, leadSpan * .98);
+              ordinary =
+                  ordinary -
+                  chordAxis * _dot(ordinary, chordAxis) +
+                  chordAxis *
+                      along *
+                      _ordinaryLeadFade(q, along.abs() / leadSpan);
+            }
+            final curveWidth = point.width;
+            final outerEdge =
+                point.position +
+                ordinary +
+                outward *
+                    curveWidth *
+                    (1 - insideScale / 2) *
+                    outerProfile *
+                    blend;
+            final innerEdge =
+                point.position -
+                ordinary -
+                outward * curveWidth / 2 * insideScale * innerProfile * blend;
+            return sectionEdge(run, index, outerEdge, innerEdge);
+          }
+
+          crescentEdges[run.start] = [
+            for (var index = run.start; index <= run.end; index++)
+              edgeAt(index),
+          ];
+        }
+        if (_crescentActive) {
+          innerPulls.addAll(
+            _keepInnerEdgeWithCurve(
+              runs,
+              points,
+              lengths,
+              crescentTangents,
+              crescentSides,
+              crescentEdges,
+              brush.outlineWidth,
+            ),
+          );
+          for (final run in runs) {
+            final edges = crescentEdges[run.start]!;
+            for (var index = run.start; index <= run.end; index++) {
+              final pull = innerPulls[index];
+              if (pull == null) continue;
+              final edge = edges[index - run.start];
+              final tangent = crescentTangents[index]!;
+              final inward =
+                  Offset(-tangent.dy, tangent.dx) * crescentSides[run.start]!;
+              edges[index - run.start] = sectionEdge(
+                run,
+                index,
+                edge.outer,
+                edge.inner - inward * pull,
               );
+            }
+          }
+        }
+      }
+      // Up to the first sample the crescent shapes, the strand is drawn as
+      // ordinary stamps. From there on every segment is drawn from its
+      // edges: along a fast taper, stamps reach wider than the edges, so
+      // where a crescent gave way to stamps the outline stepped out.
+      var firstShaped = points.length;
+      if (brush.foldMode == HairFoldMode.crescent) {
+        for (var index = 0; index < points.length; index++) {
+          if (crescentBlend[index]! > 0) {
+            firstShaped = index;
+            break;
+          }
+        }
+      }
+      for (final run in runs) {
         final geometry = brush.foldMode == HairFoldMode.crescent
             ? <Object>[
                 crescentApices[run.start]!,
@@ -716,6 +900,7 @@ class HairFoldRaster {
                     crescentBlend[index],
                     crescentAngles[index],
                     lengths[index] - lengths[run.start],
+                    innerPulls[index] ?? 0.0,
                   ),
               ]
             : null;
@@ -778,115 +963,19 @@ class HairFoldRaster {
             }
           }
           if (brush.foldMode == HairFoldMode.crescent) {
+            final edges = crescentEdges[run.start]!;
             ({HairRibbonPoint point, Offset outer, Offset inner, double angle})
-            edgeAt(int index) {
-              final point = points[index];
-              final crescent = crescentBlend[index]!;
-              final tangent = crescentTangents[index]!;
-              final normal =
-                  Offset(-tangent.dy, tangent.dx) * -crescentSides[run.start]!;
-              final bow = bowDepth < 1e-6
-                  ? 0.0
-                  : (_dot(point.position - chordStart, outward) / bowDepth)
-                        .clamp(0.0, 1.0);
-              final outerProfile = math
-                  .pow(bow, 1 - crescentShapeStrength * .2)
-                  .toDouble();
-              final innerProfile = math.pow(bow, innerPower).toDouble();
-              // Return to a symmetric, pressure-resolved cross-section at a
-              // tapered endpoint. Otherwise the displaced crescent sides can
-              // continue bulging while the ordinary taper is narrowing.
-              var endpointBlend = 1.0;
-              if (brush.fadeMode == FadeMode.custom) {
-                final fromStart = lengths[index];
-                final fromEnd = lengths.last - fromStart;
-                double transition(FadeEndpointSettings fade, double distance) {
-                  if (fade.value == 100 || fade.rangePx <= 0) return 1;
-                  final t = (distance / fade.rangePx).clamp(0.0, 1.0);
-                  return t * t * (3 - 2 * t);
-                }
-
-                endpointBlend = transition(brush.fadeIn, fromStart);
-                if (taperEnd) {
-                  endpointBlend *= transition(brush.fadeOut, fromEnd);
-                }
-              }
-              if (taperEnd && flatEnds) {
-                final remaining = lengths.last - lengths[index];
-                final t = (remaining / (brush.size * 2)).clamp(0.0, 1.0);
-                endpointBlend *= t * t * (3 - 2 * t);
-              }
-              final blend = crescent * endpointBlend;
-              var ordinary = normal * point.width / 2 * (1 - blend);
-              // Only the head, up to the apex: past it the ordinary strand
-              // comes back at the end, and its edge along the chord (across
-              // the bottom of a C) must keep its width.
-              if (run.start == 0 &&
-                  leadSpan > 1e-6 &&
-                  index > leadIndex &&
-                  index <= apexIndex!) {
-                final q =
-                    (_dot(
-                              point.position - points[leadIndex].position,
-                              chordAxis,
-                            ) /
-                            leadSpan)
-                        .clamp(0.0, 1.0);
-                // A cap wider than the whole bend must not push the join
-                // backwards. The original ordinary head/lead remains covered.
-                final along = (_dot(leadNormal, chordAxis) * point.width / 2)
-                    .clamp(-leadSpan * .98, leadSpan * .98);
-                ordinary =
-                    ordinary -
-                    chordAxis * _dot(ordinary, chordAxis) +
-                    chordAxis *
-                        along *
-                        _ordinaryLeadFade(q, along.abs() / leadSpan);
-              }
-              final curveWidth = point.width;
-              final outerEdge =
-                  point.position +
-                  ordinary +
-                  outward *
-                      curveWidth *
-                      (1 - insideScale / 2) *
-                      outerProfile *
-                      blend;
-              final innerEdge =
-                  point.position -
-                  ordinary -
-                  outward * curveWidth / 2 * insideScale * innerProfile * blend;
-              final across =
-                  (outerEdge - innerEdge) * crescentSides[run.start]!;
-              final sourceAngle = crescentAngles[index]!;
-              final edgeAngle = across.distanceSquared < 1e-10
-                  ? sourceAngle
-                  : math.atan2(across.dy, across.dx);
-              return (
-                point: HairRibbonPoint(
-                  (outerEdge + innerEdge) / 2,
-                  (outerEdge - innerEdge).distance,
-                  point.opacity,
-                  point.scale,
-                  point.outline,
-                ),
-                outer: outerEdge,
-                inner: innerEdge,
-                angle:
-                    sourceAngle +
-                    math.atan2(
-                      math.sin(edgeAngle - sourceAngle),
-                      math.cos(edgeAngle - sourceAngle),
-                    ),
-              );
-            }
+            edgeAt(int index) => edges[index - run.start];
 
             final first = edgeAt(i - 1), last = edgeAt(i);
             a = first.point;
             b = last.point;
             textureAngleA = first.angle;
             textureAngleB = last.angle;
-            if (crescentBlend[i]! == 0) {
+            if (crescentBlend[i]! == 0 &&
+                i <= firstShaped &&
+                !innerPulls.containsKey(i - 1) &&
+                !innerPulls.containsKey(i)) {
               _segment(envelope, a, b, brush.outlineWidth);
             } else {
               final before = edgeAt(math.max(run.start, i - 2));
@@ -981,6 +1070,21 @@ class HairFoldRaster {
                 previous = current;
                 previousOuter = currentOuter;
                 previousInner = currentInner;
+              }
+              if (i == points.length - 1 && crescentBlend[i]! == 0) {
+                // The ordinary strand's own round end, as its stamps drew it.
+                _segment(
+                  envelope,
+                  HairRibbonPoint(
+                    b.position - crescentTangents[i]! * .001,
+                    b.width,
+                    b.opacity,
+                    b.scale,
+                    b.outline,
+                  ),
+                  b,
+                  brush.outlineWidth,
+                );
               }
             }
           }
@@ -2756,6 +2860,209 @@ _foldSides(
     direction: away < 0 ? tangent : -tangent,
     lead: lead,
   );
+}
+
+/// How far to pull each crescent sample's inner edge towards its centre
+/// line, by sample, so that where the stroke curves the inner edge never
+/// bends against the curve.
+///
+/// Along a curve of curvature k, an edge h in from the centre line bends the
+/// same way as the curve while h'' >= -k(1 - hk) (while it stays short of
+/// the curve's centre). A swell of the inner edge, the strand widening and
+/// narrowing again (from pressure, a taper, or the crescent giving way to
+/// the ordinary strand), that turns faster than that bends the edge against
+/// the curve: a lump on the inside of a curl. Where the drawn edge does turn
+/// against the curve inside such a swell, the swell is lowered to the
+/// largest profile under it that keeps the bound: the convex envelope once
+/// the bound is lifted out (by Q with Q'' = k(1 - hk)), from where it leaves
+/// the drawn edge to where it meets it again, so the edge stays smooth and
+/// is only ever pulled back towards the centre line. The edge's outline is
+/// part of the measured edge. A strand that only narrows (a taper) is left
+/// as drawn, and so is any edge that already bends with the curve.
+Map<int, double> _keepInnerEdgeWithCurve(
+  List<_RibbonRun> runs,
+  List<HairRibbonPoint> points,
+  List<double> lengths,
+  Map<int, Offset> tangents,
+  Map<int, double> sides,
+  Map<
+    int,
+    List<({HairRibbonPoint point, Offset outer, Offset inner, double angle})>
+  >
+  edges,
+  double outlineWidth,
+) {
+  final ordered = [...runs]..sort((a, b) => a.start.compareTo(b.start));
+  final pulls = <int, double>{};
+  // Sections turning the same way share one inner side.
+  final spans = <(double, List<int>, List<int>)>[];
+  for (final run in ordered) {
+    final side = sides[run.start]!;
+    if (spans.isEmpty ||
+        spans.last.$1 != side ||
+        spans.last.$2.last != run.start) {
+      spans.add((side, [run.start], [run.start]));
+    }
+    final span = spans.last;
+    for (var index = run.start + 1; index <= run.end; index++) {
+      span.$2.add(index);
+      span.$3.add(run.start);
+    }
+  }
+  for (final (side, indices, owners) in spans) {
+    final count = indices.length;
+    if (count < 3) continue;
+    final ink = List<Offset>.filled(count, Offset.zero);
+    final depth = List<double>.filled(count, 0);
+    final along = List<double>.filled(count, 0);
+    final curvature = List<double>.filled(count, 0);
+    final room = List<double>.filled(count, 0);
+    for (var k = 0; k < count; k++) {
+      final index = indices[k];
+      final edge = edges[owners[k]]![index - owners[k]];
+      final point = points[index];
+      final tangent = tangents[index]!;
+      final inward = Offset(-tangent.dy, tangent.dx) * side;
+      final across = edge.inner - edge.outer;
+      final width = across.distance;
+      final outline = width < 1e-9
+          ? 0.0
+          : outlinedOuterRadius(
+                  width,
+                  point.scale,
+                  point.outlineOr(outlineWidth),
+                ) -
+                width / 2;
+      ink[k] =
+          edge.inner + (width < 1e-9 ? Offset.zero : across / width * outline);
+      depth[k] = _dot(ink[k] - point.position, inward);
+      room[k] = _dot(across, inward);
+      if (k > 0 && k < count - 1) {
+        final before = tangents[indices[k - 1]]!;
+        final after = tangents[indices[k + 1]]!;
+        final distance = lengths[indices[k + 1]] - lengths[indices[k - 1]];
+        if (distance > 1e-9) {
+          curvature[k] =
+              math.atan2(_cross(before, after), _dot(before, after)) *
+              side /
+              distance;
+        }
+      }
+      // Where the edge leans along the strand, the curve through it is
+      // reached at the foot of its offset rather than at its own sample.
+      along[k] =
+          lengths[index] +
+          _dot(ink[k] - point.position, tangent) /
+              math.max(.25, 1 - depth[k] * curvature[k]);
+    }
+    // A swell: deeper than the shallowest edge both before and after.
+    final lowestBefore = List<double>.filled(count, 0);
+    final lowestAfter = List<double>.filled(count, 0);
+    for (var k = 0; k < count; k++) {
+      lowestBefore[k] = k == 0
+          ? depth[k]
+          : math.min(lowestBefore[k - 1], depth[k]);
+    }
+    for (var k = count - 1; k >= 0; k--) {
+      lowestAfter[k] = k == count - 1
+          ? depth[k]
+          : math.min(lowestAfter[k + 1], depth[k]);
+    }
+    // Where the bound applies: the stroke curves to this side, the edge is
+    // short of the curve's centre, and samples follow one another.
+    bool bends(int k) =>
+        k > 0 &&
+        k < count - 1 &&
+        curvature[k] > 0 &&
+        depth[k] * curvature[k] < 1 &&
+        along[k - 1] < along[k] &&
+        along[k] < along[k + 1];
+    // Where the drawn edge turns against the curve, inside a swell.
+    bool against(int k) {
+      if (!bends(k) ||
+          depth[k] <= math.max(lowestBefore[k], lowestAfter[k]) + 1e-9) {
+        return false;
+      }
+      final a = ink[k] - ink[k - 1], b = ink[k + 1] - ink[k];
+      return _cross(a, b) * side < -1e-9 * a.distance * b.distance;
+    }
+
+    // Each stretch curving to this side is lowered as a whole, once: the
+    // lowered edge leaves and meets the drawn one where it already keeps
+    // the bound, somewhere either side of where it turns against the curve.
+    var k = 1;
+    while (k < count - 1) {
+      if (!bends(k)) {
+        k++;
+        continue;
+      }
+      var reach = k;
+      while (reach + 1 < count - 1 && bends(reach + 1)) {
+        reach++;
+      }
+      final turns = [
+        for (var j = k; j <= reach; j++)
+          if (against(j)) j,
+      ];
+      if (turns.isNotEmpty) {
+        // With a free sample on either side, which stay.
+        final first = k - 1, end = reach + 1;
+        final n = end - first + 1;
+        // Lifting by Q with Q'' = k(1 - hk) turns the bound into convexity.
+        final lift = List<double>.filled(n, 0);
+        var slope = 0.0;
+        for (var j = 1; j < n; j++) {
+          final a = first + j - 1, b = first + j;
+          lift[j] = lift[j - 1] + slope * (along[b] - along[a]);
+          if (b < end) {
+            final bend =
+                curvature[b] * math.max(0.0, 1 - depth[b] * curvature[b]);
+            slope += bend * (along[b + 1] - along[a]) / 2;
+          }
+        }
+        // The lower convex hull of the lifted depths.
+        final hull = <int>[];
+        for (var j = 0; j < n; j++) {
+          final x = along[first + j], y = depth[first + j] + lift[j];
+          while (hull.length >= 2) {
+            final p = hull[hull.length - 2], q = hull[hull.length - 1];
+            final px = along[first + p], py = depth[first + p] + lift[p];
+            final qx = along[first + q], qy = depth[first + q] + lift[q];
+            if ((qx - px) * (y - py) - (qy - py) * (x - px) <= 0) {
+              hull.removeLast();
+            } else {
+              break;
+            }
+          }
+          hull.add(j);
+        }
+        // Lowered only over the hull's spans across a turn against the
+        // curve: elsewhere the drawn edge already keeps the bound.
+        final lowered = List<bool>.filled(hull.length - 1, false);
+        var h = 0;
+        for (final j in turns) {
+          while (hull[h + 1] <= j - first) {
+            h++;
+          }
+          lowered[h] = true;
+        }
+        for (var e = 0; e < hull.length - 1; e++) {
+          if (!lowered[e]) continue;
+          final p = hull[e], q = hull[e + 1];
+          final px = along[first + p], py = depth[first + p] + lift[p];
+          final qx = along[first + q], qy = depth[first + q] + lift[q];
+          for (var j = p + 1; j < q; j++) {
+            final x = along[first + j];
+            final kept = py + (qy - py) * (x - px) / (qx - px) - lift[j];
+            final pull = math.min(depth[first + j] - kept, room[first + j]);
+            if (pull > 1e-6) pulls[indices[first + j]] = pull;
+          }
+        }
+      }
+      k = reach + 1;
+    }
+  }
+  return pulls;
 }
 
 /// A bowed crescent cross-section between [outer] and [inner] edges, its fill
