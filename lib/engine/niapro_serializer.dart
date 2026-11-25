@@ -1236,6 +1236,7 @@ class NiaproSerializer {
             if (a.sourceStartFraction != 0)
               'sourceStartFraction': a.sourceStartFraction,
             if (a.playbackRate != 1.0) 'playbackRate': a.playbackRate,
+            if (!a.preservePitch) 'preservePitch': false,
             'trackRow': a.trackRow,
             if (a.isReadAloud) 'isReadAloud': true,
           },
@@ -1291,6 +1292,7 @@ class NiaproSerializer {
       'sourceTrimStartFraction': l.sourceTrimStartFraction,
     if (l.playbackRate != 1.0) 'playbackRate': l.playbackRate,
     if (!l.videoSoundFollowsSpeed) 'videoSoundFollowsSpeed': false,
+    if (!l.videoPreservePitch) 'videoPreservePitch': false,
     'videoVolume': l.videoVolume,
     'watermarkAssetId': l.watermarkAssetId,
     'watermarkAngle': l.watermarkAngle,
@@ -1459,6 +1461,7 @@ class NiaproSerializer {
           sourceStartFrame: m['sourceStartFrame'] as int? ?? 0,
           sourceStartFraction: _sourceFraction(m['sourceStartFraction']),
           playbackRate: _playbackRate(m['playbackRate']),
+          preservePitch: m['preservePitch'] != false,
           trackRow: m['trackRow'] as int? ?? 0,
           isReadAloud: m['isReadAloud'] as bool? ?? false,
         );
@@ -1558,6 +1561,7 @@ class NiaproSerializer {
     sourceTrimStartFraction: _sourceFraction(j['sourceTrimStartFraction']),
     playbackRate: _playbackRate(j['playbackRate']),
     videoSoundFollowsSpeed: j['videoSoundFollowsSpeed'] != false,
+    videoPreservePitch: j['videoPreservePitch'] != false,
     videoVolume: (j['videoVolume'] as num?)?.toDouble() ?? 1.0,
     watermarkAssetId: j['watermarkAssetId'] as String?,
     watermarkAngle: (j['watermarkAngle'] as num?)?.toDouble() ?? 0,

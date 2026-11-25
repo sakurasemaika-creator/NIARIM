@@ -11802,6 +11802,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Si cette option est désactivée, le son est lu à vitesse normale depuis le début du clip et seule l’image change de vitesse.';
 
   @override
+  String get timelinePreservePitch => 'Conserver la hauteur du son';
+
+  @override
+  String get timelinePreservePitchHint =>
+      'Si l’option est désactivée, le son devient plus aigu en accéléré et plus grave au ralenti.';
+
+  @override
   String get keyframeRetimeTitle => 'Vitesse des images clés';
 
   @override

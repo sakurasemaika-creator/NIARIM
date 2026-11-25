@@ -11788,6 +11788,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Si se desactiva, el sonido se reproduce a velocidad normal desde el inicio del clip y solo cambia la velocidad de la imagen.';
 
   @override
+  String get timelinePreservePitch => 'Mantener el tono';
+
+  @override
+  String get timelinePreservePitchHint =>
+      'Si está desactivado, el sonido se vuelve más agudo al acelerarlo y más grave al ralentizarlo.';
+
+  @override
   String get keyframeRetimeTitle => 'Velocidad de los fotogramas clave';
 
   @override

@@ -10667,6 +10667,12 @@ class AppLocalizationsZh extends AppLocalizations {
       '关闭时，声音从片段开头以正常速度播放，只改变画面的速度。';
 
   @override
+  String get timelinePreservePitch => '保持音调';
+
+  @override
+  String get timelinePreservePitchHint => '关闭后，加速时声音变高，减速时声音变低。';
+
+  @override
   String get keyframeRetimeTitle => '关键帧速度';
 
   @override
@@ -21524,6 +21530,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get timelineVideoSoundFollowsSpeedHint =>
       '關閉時，聲音從片段開頭以正常速度播放，只改變畫面的速度。';
+
+  @override
+  String get timelinePreservePitch => '保持音調';
+
+  @override
+  String get timelinePreservePitchHint => '關閉後，加速時聲音變高，減速時聲音變低。';
 
   @override
   String get keyframeRetimeTitle => '關鍵影格速度';

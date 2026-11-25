@@ -17,8 +17,12 @@ class AudioClip {
   /// other than 1× is split.
   final double sourceStartFraction;
 
-  /// The playback speed (1.0 = normal). The pitch is kept.
+  /// The playback speed (1.0 = normal).
   final double playbackRate;
+
+  /// Whether the sound keeps its pitch at a speed other than 1× (on), or
+  /// rises and falls with the speed like a tape (off).
+  final bool preservePitch;
   // 音声タイムラインの表示行番号（0始まり）。素材種別ごとに複数行の
   // タイムライン行を追加/削除できる。
   final int trackRow;
@@ -38,6 +42,7 @@ class AudioClip {
     this.sourceStartFrame = 0,
     this.sourceStartFraction = 0,
     this.playbackRate = 1.0,
+    this.preservePitch = true,
     this.trackRow = 0,
     this.isReadAloud = false,
   });
@@ -54,6 +59,7 @@ class AudioClip {
     int? sourceStartFrame,
     double? sourceStartFraction,
     double? playbackRate,
+    bool? preservePitch,
     int? trackRow,
     bool? isReadAloud,
   }) {
@@ -71,6 +77,7 @@ class AudioClip {
       sourceStartFrame: sourceStartFrame ?? this.sourceStartFrame,
       sourceStartFraction: sourceStartFraction ?? this.sourceStartFraction,
       playbackRate: playbackRate ?? this.playbackRate,
+      preservePitch: preservePitch ?? this.preservePitch,
       trackRow: trackRow ?? this.trackRow,
       isReadAloud: isReadAloud ?? this.isReadAloud,
     );

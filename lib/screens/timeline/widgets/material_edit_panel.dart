@@ -1450,6 +1450,17 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
             onChanged: (on) =>
                 _update((l) => l.copyWith(videoSoundFollowsSpeed: on)),
           ),
+          // The pitch only changes with the speed the sound plays at.
+          if (layer.videoSoundFollowsSpeed)
+            SwitchListTile(
+              key: const ValueKey('videoPreservePitch'),
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.timelinePreservePitch),
+              subtitle: Text(l10n.timelinePreservePitchHint),
+              value: layer.videoPreservePitch,
+              onChanged: (on) =>
+                  _update((l) => l.copyWith(videoPreservePitch: on)),
+            ),
         ],
       ],
     );

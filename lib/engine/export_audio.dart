@@ -28,6 +28,7 @@ class ExportAudioSource {
     this.fadeInSeconds = 0,
     this.fadeOutSeconds = 0,
     this.playbackRate = 1,
+    this.preservePitch = true,
   });
 
   final String path;
@@ -42,8 +43,12 @@ class ExportAudioSource {
   final double fadeInSeconds;
   final double fadeOutSeconds;
 
-  /// The clip's speed; the pitch is kept (as in the timeline's playback).
+  /// The clip's speed.
   final double playbackRate;
+
+  /// Whether the pitch is kept at [playbackRate] (on), or rises and falls
+  /// with the speed (off).
+  final bool preservePitch;
 }
 
 /// The sounds of an export and how many could not be included (a material
@@ -91,6 +96,7 @@ Future<ExportAudioPlan> buildExportAudioPlan({
     double fadeOut = 0,
     double sourceFraction = 0,
     double rate = 1,
+    bool preservePitch = true,
     double? soundingFrames,
   }) async {
     if (materialId == null || volume <= 0 || lengthFrames <= 0) return;
@@ -130,6 +136,7 @@ Future<ExportAudioPlan> buildExportAudioPlan({
         fadeInSeconds: math.max(0, fadeIn),
         fadeOutSeconds: math.max(0, fadeOut),
         playbackRate: isValidPlaybackRate(rate) ? rate : 1,
+        preservePitch: preservePitch,
       ),
     );
   }
@@ -149,6 +156,7 @@ Future<ExportAudioPlan> buildExportAudioPlan({
         fadeOut: clip.fadeOut,
         sourceFraction: clip.sourceStartFraction,
         rate: clip.playbackRate,
+        preservePitch: clip.preservePitch,
       );
     }
     // A video material is a layer; its sound plays over the frames it shows.
@@ -169,6 +177,7 @@ Future<ExportAudioPlan> buildExportAudioPlan({
           volume: layer.videoVolume,
           sourceFraction: layer.sourceTrimStartFraction,
           rate: layer.videoSoundFollowsSpeed ? layer.playbackRate : 1,
+          preservePitch: layer.videoPreservePitch,
           soundingFrames: TimelineVideoTimeMapper.layerSoundingFrames(layer),
         );
       }
@@ -248,6 +257,24 @@ String _seconds(double s) => s.toStringAsFixed(3);
 const int exportAudioSampleRate = 48000;
 const int exportAudioChannels = 2;
 
+/// The FFmpeg filters that play a sound at [rate]: with [preservePitch] the
+/// tempo changes and the pitch stays (`atempo`); without it the sound is
+/// played faster or slower like a tape, so its pitch rises and falls with
+/// the speed (the samples are read at [rate] times their rate). The export
+/// and the preview of a sound whose pitch follows its speed use these same
+/// filters.
+List<String> speedSoundFilters(double rate, {required bool preservePitch}) {
+  if (rate == 1) return const [];
+  if (preservePitch) {
+    return [for (final factor in atempoChain(rate)) 'atempo=$factor'];
+  }
+  return [
+    'aresample=$exportAudioSampleRate',
+    'asetrate=${(exportAudioSampleRate * rate).round()}',
+    'aresample=$exportAudioSampleRate',
+  ];
+}
+
 /// FFmpeg arguments that cut [source] out of its file, apply its volume and
 /// fades, and write it as 48 kHz stereo 16-bit WAV to [output]. A file without
 /// sound (a silent video) makes FFmpeg fail; that source is then left out.
@@ -263,9 +290,7 @@ List<String> exportAudioSourceArguments(
     fadeOutSeconds: source.fadeOutSeconds,
   );
   final rate = source.playbackRate;
-  final tempo = rate == 1
-      ? const <String>[]
-      : [for (final factor in atempoChain(rate)) 'atempo=$factor'];
+  final tempo = speedSoundFilters(rate, preservePitch: source.preservePitch);
   return [
     '-y',
     '-ss',

@@ -18999,6 +18999,18 @@ abstract class AppLocalizations {
   /// **'オフにすると、音はクリップの始めから通常の速さで鳴り、映像の速度だけが変わります。'**
   String get timelineVideoSoundFollowsSpeedHint;
 
+  /// No description provided for @timelinePreservePitch.
+  ///
+  /// In ja, this message translates to:
+  /// **'音の高さを保つ'**
+  String get timelinePreservePitch;
+
+  /// No description provided for @timelinePreservePitchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'オフにすると、速くしたときは音が高く、遅くしたときは低くなります。'**
+  String get timelinePreservePitchHint;
+
   /// No description provided for @keyframeRetimeTitle.
   ///
   /// In ja, this message translates to:

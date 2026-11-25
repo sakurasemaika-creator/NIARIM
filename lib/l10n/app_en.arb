@@ -4079,6 +4079,8 @@
   "timelineVideoTrackShowingWaveform": "Showing the sound waveform (tap to show video frames)",
   "timelineVideoSoundFollowsSpeed": "Play the sound at the same speed",
   "timelineVideoSoundFollowsSpeedHint": "When off, the sound plays at normal speed from the start of the clip and only the picture changes speed.",
+  "timelinePreservePitch": "Keep the pitch",
+  "timelinePreservePitchHint": "When off, the sound gets higher when sped up and lower when slowed down.",
   "keyframeRetimeTitle": "Keyframe speed",
   "keyframeRetimeHint": "Changes the spacing of the keys in the chosen range to match the speed. Their values and easing stay the same, and keys outside the range do not move.",
   "keyframeRetimeFrom": "First key of the range",

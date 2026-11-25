@@ -11626,6 +11626,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'When off, the sound plays at normal speed from the start of the clip and only the picture changes speed.';
 
   @override
+  String get timelinePreservePitch => 'Keep the pitch';
+
+  @override
+  String get timelinePreservePitchHint =>
+      'When off, the sound gets higher when sped up and lower when slowed down.';
+
+  @override
   String get keyframeRetimeTitle => 'Keyframe speed';
 
   @override

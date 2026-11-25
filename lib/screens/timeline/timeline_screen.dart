@@ -56,6 +56,7 @@ import '../../engine/video_frame_decoder.dart';
 import '../../engine/video_frame_provider.dart';
 import '../../engine/video_material_snapshot.dart';
 import '../../engine/timeline_stack.dart';
+import '../../engine/speed_sound_preview.dart';
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/audio_clip.dart';
@@ -173,6 +174,10 @@ class _TrackClip {
   /// Whether a video's sound plays at [playbackRate] too (otherwise at the
   /// normal speed while only the picture changes speed).
   bool soundFollowsSpeed;
+
+  /// Whether the sound keeps its pitch at a speed other than 1× (otherwise
+  /// it rises and falls with the speed, in the preview as in the export).
+  bool preservePitch;
   double videoOpacity; // 0.0〜1.0
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
   // このクリップが属する行番号（0始まり）。編集パネルから別の行へ移せる。
@@ -196,6 +201,7 @@ class _TrackClip {
     this.sourceFraction = 0,
     this.playbackRate = 1.0,
     this.soundFollowsSpeed = true,
+    this.preservePitch = true,
     this.videoOpacity = 1.0,
     this.trackRow = 0,
     this.isReadAloud = false,
@@ -930,6 +936,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _currentFrameNotifier.dispose();
     _projectService.endWorkTracking(lease: _workTrackingLease);
     _projectService.holdClipboardMaterials(widget.projectId, const []);
+    _speedSounds?.dispose();
     super.dispose();
   }
 
@@ -1236,6 +1243,43 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _currentFrame >= clip.startFrame &&
       _currentFrame < clip.startFrame + clip.lengthFrames;
 
+  // Sounds whose pitch follows their speed, made with the export's filters
+  // and played at 1x; and what each player is playing (file and speed), so
+  // a changed clip starts its player again.
+  SpeedSoundPreview? _speedSounds;
+  final Map<String, String> _playerSources = {};
+
+  SpeedSoundPreview get _speedSoundPreview =>
+      _speedSounds ??= SpeedSoundPreview(
+        workDir: () async => (await getTemporaryDirectory()).createTempSync(
+          'timeline_speed_sounds_',
+        ),
+      );
+
+  void _resyncMediaIfPlaying() {
+    if (mounted && _isPlaying) _syncMediaPlayback();
+  }
+
+  /// Plays [file] on [player] from [position] at [rate], starting it again
+  /// when it was playing something else.
+  Future<void> _playOn(
+    String playerKey,
+    ap.AudioPlayer player,
+    String file,
+    double rate,
+    Duration position,
+  ) async {
+    final source = '$file|$rate';
+    if (player.state == ap.PlayerState.playing &&
+        _playerSources[playerKey] != source) {
+      await player.stop();
+    }
+    if (player.state == ap.PlayerState.playing) return;
+    _playerSources[playerKey] = source;
+    await player.setPlaybackRate(rate);
+    await player.play(ap.DeviceFileSource(file), position: position);
+  }
+
   Future<void> _syncAudioClip(_TrackClip clip, double fps) async {
     final path = clip.filePath;
     if (path == null) return;
@@ -1254,24 +1298,108 @@ class _TimelineScreenState extends State<TimelineScreen> {
       fadeInSeconds: clip.fadeIn,
       fadeOutSeconds: clip.fadeOut,
     );
-    await player.setVolume(vol);
-    if (player.state != ap.PlayerState.playing) {
-      // The same source position and speed the export reads (the pitch is
-      // kept in both).
-      final source = clip.sourceAfter(elapsedFrames);
-      final targetFrame = source.frame + source.fraction;
-      await player.setPlaybackRate(clip.playbackRate);
-      await player.play(
-        ap.DeviceFileSource(path),
-        position: Duration(milliseconds: (targetFrame / fps * 1000).round()),
+    if (SpeedSoundPreview.needed(
+      rate: clip.playbackRate,
+      preservePitch: clip.preservePitch,
+    )) {
+      // Its pitch follows its speed: the sound the export writes, made from
+      // the same part of the file, played at 1x. Nothing plays until it is
+      // ready.
+      final made = _speedSoundPreview.soundFor(
+        path: path,
+        sourceSeconds: (clip.useStart + clip.sourceFraction) / fps,
+        durationSeconds: clip.lengthFrames / fps,
+        rate: clip.playbackRate,
+        onReady: _resyncMediaIfPlaying,
       );
+      if (made == null) {
+        if (player.state == ap.PlayerState.playing) await player.pause();
+        return;
+      }
+      await player.setVolume(vol);
+      await _playOn(
+        clip.id,
+        player,
+        made,
+        1,
+        Duration(milliseconds: (elapsedFrames / fps * 1000).round()),
+      );
+      return;
     }
+    await player.setVolume(vol);
+    // The same source position and speed the export reads (the pitch is
+    // kept in both).
+    final source = clip.sourceAfter(elapsedFrames);
+    final targetFrame = source.frame + source.fraction;
+    await _playOn(
+      clip.id,
+      player,
+      path,
+      clip.playbackRate,
+      Duration(milliseconds: (targetFrame / fps * 1000).round()),
+    );
+  }
+
+  /// A video's sound when its pitch follows its speed: made like the
+  /// export's and played on an audio player instead of the video's own
+  /// player (which only gives the preview its sound). [active] is false when
+  /// the video's own player plays its sound.
+  Future<void> _syncVideoSpeedSound(
+    _TrackClip clip,
+    double fps, {
+    required bool active,
+  }) async {
+    final key = '${clip.id}#speed';
+    final player = _audioPlayers[key];
+    final elapsedFrames = _currentFrame - clip.startFrame;
+    final path = clip.filePath;
+    if (!active ||
+        path == null ||
+        !_isPlaying ||
+        !_clipInRange(clip) ||
+        elapsedFrames >= clip.videoSoundingFrames) {
+      if (player?.state == ap.PlayerState.playing) await player!.pause();
+      return;
+    }
+    final made = _speedSoundPreview.soundFor(
+      path: path,
+      sourceSeconds: (clip.useStart + clip.sourceFraction) / fps,
+      durationSeconds: clip.videoSoundingFrames / fps,
+      rate: clip.soundRate,
+      onReady: _resyncMediaIfPlaying,
+    );
+    if (made == null) {
+      if (player?.state == ap.PlayerState.playing) await player!.pause();
+      return;
+    }
+    final speedPlayer = player ?? (_audioPlayers[key] = ap.AudioPlayer());
+    await speedPlayer.setVolume(clip.volume.clamp(0.0, 1.0));
+    await _playOn(
+      key,
+      speedPlayer,
+      made,
+      1,
+      Duration(milliseconds: (elapsedFrames / fps * 1000).round()),
+    );
   }
 
   Future<void> _syncVideoClip(_TrackClip clip, double fps) async {
     final path = clip.filePath;
     if (path == null) return;
+    final speedSound = SpeedSoundPreview.needed(
+      rate: clip.soundRate,
+      preservePitch: clip.preservePitch,
+    );
+    await _syncVideoSpeedSound(clip, fps, active: speedSound);
     var controller = _videoControllers[clip.id];
+    if (speedSound) {
+      if (controller != null &&
+          controller.value.isInitialized &&
+          controller.value.isPlaying) {
+        await controller.pause();
+      }
+      return;
+    }
     if (!_clipInRange(clip)) {
       if (controller != null &&
           controller.value.isInitialized &&
@@ -2535,6 +2663,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         clip.sourceFraction = layer.sourceTrimStartFraction;
         clip.playbackRate = layer.playbackRate;
         clip.soundFollowsSpeed = layer.videoSoundFollowsSpeed;
+        clip.preservePitch = layer.videoPreservePitch;
       }
     });
     if (clip.trackType == _ClipTrackType.video) _syncMediaPlayback();
@@ -9224,6 +9353,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               sourceFraction: clip.sourceFraction,
               playbackRate: clip.playbackRate,
               soundFollowsSpeed: clip.soundFollowsSpeed,
+              preservePitch: clip.preservePitch,
               trackRow: targetRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -9299,6 +9429,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       sourceFraction: clip.sourceFraction,
       playbackRate: clip.playbackRate,
       soundFollowsSpeed: clip.soundFollowsSpeed,
+      preservePitch: clip.preservePitch,
       volume: clip.volume,
       videoOpacity: clip.videoOpacity,
       trackRow: targetRow,
@@ -9361,6 +9492,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     sourceFraction: c.sourceFraction,
     playbackRate: c.playbackRate,
     soundFollowsSpeed: c.soundFollowsSpeed,
+    preservePitch: c.preservePitch,
     videoOpacity: c.videoOpacity,
     trackRow: c.trackRow,
     isReadAloud: c.isReadAloud,
@@ -9660,6 +9792,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               sourceStartFrame: clip.useStart,
               sourceStartFraction: clip.sourceFraction,
               playbackRate: clip.playbackRate,
+              preservePitch: clip.preservePitch,
               trackRow: clip.trackRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -9679,6 +9812,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               sourceStartFrame: rightSourceStart,
               sourceStartFraction: rightSource.fraction,
               playbackRate: clip.playbackRate,
+              preservePitch: clip.preservePitch,
               trackRow: clip.trackRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -9702,6 +9836,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               sourceFraction: rightSource.fraction,
               playbackRate: clip.playbackRate,
               soundFollowsSpeed: clip.soundFollowsSpeed,
+              preservePitch: clip.preservePitch,
               trackRow: clip.trackRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -9802,6 +9937,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             sourceFraction: isVideo ? videoRightFraction : 0,
             playbackRate: clip.playbackRate,
             soundFollowsSpeed: clip.soundFollowsSpeed,
+            preservePitch: clip.preservePitch,
             volume: clip.volume,
             videoOpacity: clip.videoOpacity,
             trackRow: clip.trackRow,
@@ -9860,6 +9996,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               saved.sourceStartFrame == clip.useStart &&
               saved.sourceStartFraction == clip.sourceFraction &&
               saved.playbackRate == clip.playbackRate &&
+              saved.preservePitch == clip.preservePitch &&
               saved.trackRow == clip.trackRow) {
         return;
       }
@@ -9878,6 +10015,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           sourceStartFrame: clip.useStart,
           sourceStartFraction: clip.sourceFraction,
           playbackRate: clip.playbackRate,
+          preservePitch: clip.preservePitch,
           trackRow: clip.trackRow,
           isReadAloud: clip.isReadAloud,
         ),
@@ -9966,6 +10104,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ).frame,
           sourceFraction: a.sourceStartFraction,
           playbackRate: a.playbackRate,
+          preservePitch: a.preservePitch,
           trackRow: a.trackRow,
           isReadAloud: a.isReadAloud,
         ),
@@ -10026,6 +10165,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ? layer.playbackRate
               : 1.0,
           soundFollowsSpeed: layer.videoSoundFollowsSpeed,
+          preservePitch: layer.videoPreservePitch,
           volume: layer.type == LayerType.timelineVideo
               ? layer.videoVolume.clamp(0.0, 1.0)
               : 1.0,
@@ -12699,6 +12839,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
   late int _initialStart;
   late int _initialUseStart;
   late double _initialFraction;
+  late bool _initialPreservePitch;
 
   @override
   void initState() {
@@ -12714,6 +12855,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
     _initialStart = _c.startFrame;
     _initialUseStart = _c.useStart;
     _initialFraction = _c.sourceFraction;
+    _initialPreservePitch = _c.preservePitch;
   }
 
   void _notify() {
@@ -12790,6 +12932,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     _c.startFrame = _initialStart;
                     _c.useStart = _initialUseStart;
                     _c.sourceFraction = _initialFraction;
+                    _c.preservePitch = _initialPreservePitch;
                     widget.onChanged();
                     Navigator.pop(context);
                   },
@@ -12873,6 +13016,17 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                       final problem = widget.onSpeedChange(rate);
                       setState(() {});
                       return problem;
+                    },
+                  ),
+                  SwitchListTile(
+                    key: const ValueKey('audioPreservePitch'),
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.timelinePreservePitch),
+                    subtitle: Text(l10n.timelinePreservePitchHint),
+                    value: _c.preservePitch,
+                    onChanged: (on) {
+                      _c.preservePitch = on;
+                      _notify();
                     },
                   ),
                   const Divider(height: 24),

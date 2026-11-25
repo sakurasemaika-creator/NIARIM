@@ -4042,6 +4042,8 @@
   "timelineVideoTrackShowingWaveform": "소리 파형 표시 중(탭하면 영상 프레임으로 전환)",
   "timelineVideoSoundFollowsSpeed": "소리도 같은 속도로 재생",
   "timelineVideoSoundFollowsSpeedHint": "끄면 소리는 클립의 처음부터 보통 속도로 재생되고, 영상의 속도만 바뀝니다.",
+  "timelinePreservePitch": "음높이 유지",
+  "timelinePreservePitchHint": "끄면 빠르게 할 때 소리가 높아지고 느리게 할 때 낮아집니다.",
   "keyframeRetimeTitle": "키프레임 속도",
   "keyframeRetimeHint": "선택한 범위의 키 간격을 속도에 맞춰 바꿉니다. 값과 보간은 그대로이며, 범위 밖의 키는 움직이지 않습니다.",
   "keyframeRetimeFrom": "범위의 첫 키",

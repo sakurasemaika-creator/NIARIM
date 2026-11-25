@@ -10858,6 +10858,12 @@ class AppLocalizationsKo extends AppLocalizations {
       '끄면 소리는 클립의 처음부터 보통 속도로 재생되고, 영상의 속도만 바뀝니다.';
 
   @override
+  String get timelinePreservePitch => '음높이 유지';
+
+  @override
+  String get timelinePreservePitchHint => '끄면 빠르게 할 때 소리가 높아지고 느리게 할 때 낮아집니다.';
+
+  @override
   String get keyframeRetimeTitle => '키프레임 속도';
 
   @override

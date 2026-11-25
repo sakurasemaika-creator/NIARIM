@@ -4042,6 +4042,8 @@
   "timelineVideoTrackShowingWaveform": "Mostrando la forma de onda del sonido (toca para ver los fotogramas del vídeo)",
   "timelineVideoSoundFollowsSpeed": "Reproducir el sonido a la misma velocidad",
   "timelineVideoSoundFollowsSpeedHint": "Si se desactiva, el sonido se reproduce a velocidad normal desde el inicio del clip y solo cambia la velocidad de la imagen.",
+  "timelinePreservePitch": "Mantener el tono",
+  "timelinePreservePitchHint": "Si está desactivado, el sonido se vuelve más agudo al acelerarlo y más grave al ralentizarlo.",
   "keyframeRetimeTitle": "Velocidad de los fotogramas clave",
   "keyframeRetimeHint": "Cambia la separación de las claves del rango elegido según la velocidad. Sus valores y su suavizado no cambian, y las claves fuera del rango no se mueven.",
   "keyframeRetimeFrom": "Primera clave del rango",

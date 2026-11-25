@@ -483,6 +483,90 @@ void main() {
       expect(args[args.indexOf('-af') + 1], startsWith('atempo=3.0,volume='));
     });
 
+    test('the pitch kept or following the speed: the filters, and the plan '
+        'carries the setting of an audio clip and a video', () async {
+      expect(speedSoundFilters(1, preservePitch: false), isEmpty);
+      expect(speedSoundFilters(1, preservePitch: true), isEmpty);
+      expect(speedSoundFilters(2, preservePitch: true), ['atempo=2.0']);
+      expect(speedSoundFilters(2, preservePitch: false), [
+        'aresample=48000',
+        'asetrate=96000',
+        'aresample=48000',
+      ]);
+      expect(speedSoundFilters(0.1, preservePitch: false)[1], 'asetrate=4800');
+      expect(
+        speedSoundFilters(100, preservePitch: false)[1],
+        'asetrate=4800000',
+      );
+
+      final dir = Directory.systemTemp.createTempSync('niarim-pitch-plan-');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final file = File('${dir.path}/a.wav')..writeAsBytesSync([0]);
+      final plan = await buildExportAudioPlan(
+        scenes: [
+          Scene(
+            id: 'S',
+            index: 0,
+            frames: [
+              for (var i = 0; i < 20; i++)
+                Frame(
+                  index: i,
+                  layers: i == 0
+                      ? const [
+                          Layer(
+                            id: 'v',
+                            name: 'v',
+                            type: LayerType.timelineVideo,
+                            materialId: 'v',
+                            rangeMode: LayerRangeMode.frameRange,
+                            rangeStart: 1,
+                            rangeEnd: 10,
+                            sourceTrimStart: 0,
+                            sourceTrimEnd: 40,
+                            playbackRate: 2,
+                            videoPreservePitch: false,
+                          ),
+                        ]
+                      : const [],
+                ),
+            ],
+            audioClips: const [
+              AudioClip(
+                id: 'a',
+                label: 'a',
+                materialId: 'a',
+                startFrame: 0,
+                lengthFrames: 10,
+                playbackRate: 0.5,
+                preservePitch: false,
+              ),
+              AudioClip(
+                id: 'k',
+                label: 'k',
+                materialId: 'a',
+                startFrame: 0,
+                lengthFrames: 10,
+                playbackRate: 0.5,
+              ),
+            ],
+          ),
+        ],
+        sourceFps: 10,
+        pathOf: (_) async => file.path,
+      );
+      expect(
+        [for (final s in plan.sources) s.preservePitch],
+        [false, true, false],
+      );
+      final args = exportAudioSourceArguments(plan.sources.first, '/o.wav');
+      expect(
+        args[args.indexOf('-af') + 1],
+        startsWith('aresample=48000,asetrate=24000,aresample=48000,volume='),
+      );
+      // The same part of the file is read either way.
+      expect(args[args.indexOf('-t') + 1], '0.500');
+    });
+
     test('a video sounds only over its used range: silent where its last '
         'frame is held', () async {
       final dir = Directory.systemTemp.createTempSync('niarim-held-plan-');
@@ -567,9 +651,11 @@ void main() {
         Future<(double seconds, double hertz)> render(
           double sourceSeconds,
           double outputSeconds,
-          double rate,
-        ) async {
-          final out = '${dir.path}/out_${rate}_$sourceSeconds.wav';
+          double rate, {
+          bool preservePitch = true,
+        }) async {
+          final out =
+              '${dir.path}/out_${rate}_${sourceSeconds}_$preservePitch.wav';
           final args = exportAudioSourceArguments(
             ExportAudioSource(
               path: source,
@@ -578,6 +664,7 @@ void main() {
               durationSeconds: outputSeconds,
               clipSeconds: outputSeconds,
               playbackRate: rate,
+              preservePitch: preservePitch,
             ),
             out,
           );
@@ -612,13 +699,26 @@ void main() {
         final slow = await render(1.1, 1.0, 0.5);
         expect(slow.$1, closeTo(1.0, 0.03));
         expect(slow.$2, closeTo(880, 25));
+
+        // With the pitch not kept, the same parts and lengths, an octave up
+        // at 2x and an octave down at 0.5x.
+        final high = await render(0, 0.45, 2, preservePitch: false);
+        expect(high.$1, closeTo(0.45, 0.01));
+        expect(high.$2, closeTo(880, 15));
+        final low = await render(1.1, 1.0, 0.5, preservePitch: false);
+        expect(low.$1, closeTo(1.0, 0.01));
+        expect(low.$2, closeTo(440, 15));
+        // At 16x the 440 Hz part is read in 0.05 s and heard at 7040 Hz.
+        final faster = await render(0, 0.05, 16, preservePitch: false);
+        expect(faster.$1, closeTo(0.05, 0.005));
+        expect(faster.$2, closeTo(7040, 200));
       },
       skip: _ffmpegTests ? false : 'Needs NIARIM_VIDEO_FRAME_FFMPEG_TESTS=1',
     );
   });
 
-  test('speeds and source fractions survive saving; old projects play at '
-      '1x', () async {
+  test('speeds, source fractions and the pitch setting survive saving; old '
+      'projects play at 1x with the pitch kept', () async {
     final dir = await Directory.systemTemp.createTemp('niarim-speed-save-');
     addTearDown(() => dir.delete(recursive: true));
     final now = DateTime.utc(2026);
@@ -646,6 +746,7 @@ void main() {
               sourceTrimStart: 3,
               sourceTrimStartFraction: 0.375,
               playbackRate: 2.5,
+              videoPreservePitch: false,
             ),
             Layer(id: 'plain', name: 'plain', type: LayerType.timelineVideo),
             Layer(
@@ -666,6 +767,7 @@ void main() {
           lengthFrames: 4,
           sourceStartFraction: 0.5,
           playbackRate: 0.25,
+          preservePitch: false,
         ),
         AudioClip(id: 'normal', label: 'n', startFrame: 0, lengthFrames: 4),
       ],
@@ -691,5 +793,10 @@ void main() {
     expect(clips['slow']!.playbackRate, 0.25);
     expect(clips['slow']!.sourceStartFraction, 0.5);
     expect(clips['normal']!.playbackRate, 1.0);
+    // The pitch setting: off is kept, and an old project keeps the pitch.
+    expect(layers['fast']!.videoPreservePitch, isFalse);
+    expect(layers['plain']!.videoPreservePitch, isTrue);
+    expect(clips['slow']!.preservePitch, isFalse);
+    expect(clips['normal']!.preservePitch, isTrue);
   });
 }

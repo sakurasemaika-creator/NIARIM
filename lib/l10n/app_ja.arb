@@ -6614,6 +6614,8 @@
   "timelineVideoTrackShowingWaveform": "音声の波形を表示中（タップで映像のコマに切り替え）",
   "timelineVideoSoundFollowsSpeed": "音も同じ速度にする",
   "timelineVideoSoundFollowsSpeedHint": "オフにすると、音はクリップの始めから通常の速さで鳴り、映像の速度だけが変わります。",
+  "timelinePreservePitch": "音の高さを保つ",
+  "timelinePreservePitchHint": "オフにすると、速くしたときは音が高く、遅くしたときは低くなります。",
   "keyframeRetimeTitle": "キーフレームの速度",
   "keyframeRetimeHint": "選んだ範囲のキーの間隔を、速度に合わせて変えます。値と補間はそのままで、範囲の外のキーは動きません。",
   "keyframeRetimeFrom": "範囲の始めのキー",

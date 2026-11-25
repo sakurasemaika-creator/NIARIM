@@ -10798,6 +10798,12 @@ class AppLocalizationsJa extends AppLocalizations {
       'オフにすると、音はクリップの始めから通常の速さで鳴り、映像の速度だけが変わります。';
 
   @override
+  String get timelinePreservePitch => '音の高さを保つ';
+
+  @override
+  String get timelinePreservePitchHint => 'オフにすると、速くしたときは音が高く、遅くしたときは低くなります。';
+
+  @override
   String get keyframeRetimeTitle => 'キーフレームの速度';
 
   @override
