@@ -19,9 +19,8 @@ vi.mock("../src/lib/ssmParameters", () => ({ readSecureParameter: mocks.readSecu
 
 import { ddb } from "../src/lib/dynamo";
 import { handler } from "../src/api/handler";
-import { encodeReportId, resetStoredAiModeCacheForTest } from "../src/lib/moderation";
+import { encodeReportId } from "../src/lib/moderation";
 import {
-  buildTriageRequest,
   TRIAGE_ACTIONS,
   TRIAGE_CATEGORIES,
   TRIAGE_GUIDELINES,
@@ -129,7 +128,6 @@ const judgment = (extra: Record<string, unknown> = {}) => ({
 });
 
 beforeEach(() => {
-  resetStoredAiModeCacheForTest();
   resetTriageBotCacheForTest();
   fake.items.clear();
   fake.calls.length = 0;
@@ -155,7 +153,8 @@ describe("triage bot token on the admin page", () => {
     expect(me.body.settings.triageBot).toEqual({
       configured: false, createdAt: null, createdBy: null, lastUsedAt: null,
     });
-    expect(me.body.settings).toMatchObject({ aiMode: "backlog", reportHideThreshold: 3 });
+    expect(me.body.settings).toMatchObject({ reportHideThreshold: 3 });
+    expect(me.body.settings).not.toHaveProperty("aiMode");
 
     const created = await call("POST", "/admin/triage/token");
     expect(created.status).toBe(200);
@@ -190,19 +189,15 @@ describe("triage bot token on the admin page", () => {
     expect(disabled.body.code).toBe("TRIAGE_BOT_DISABLED");
   });
 
-  it("keeps the AI mode and the token on the same settings item", async () => {
-    await call("POST", "/admin/settings", { body: { aiMode: "off" } });
+  it("keeps the token on the settings item that /admin/me reads", async () => {
     const token = await createToken();
-    expect(fake.get("MODERATION_SETTINGS", "META")).toMatchObject({ aiMode: "off", updatedBy: "owner@example.com" });
-    await call("POST", "/admin/settings", { body: { aiMode: "always" } });
     expect(fake.get("MODERATION_SETTINGS", "META")!.triageBotTokenHash).toEqual(expect.any(String));
-    resetStoredAiModeCacheForTest();
     resetTriageBotCacheForTest();
     const me = await call("GET", "/admin/me");
-    expect(me.body.settings).toMatchObject({ aiMode: "always", aiModeSource: "admin", triageBot: { configured: true } });
+    expect(me.body.settings).toMatchObject({ triageBot: { configured: true } });
     expect((await bot("GET", "/triage-bot/reports", token)).status).toBe(200);
     await call("POST", "/admin/triage/token/revoke");
-    expect(fake.get("MODERATION_SETTINGS", "META")).toMatchObject({ aiMode: "always" });
+    expect((await call("GET", "/admin/me")).body.settings.triageBot.configured).toBe(false);
   });
 
   it("needs an admin, and answers CORS only on the admin paths", async () => {
@@ -389,10 +384,10 @@ describe("triage bot judgments", () => {
     expect(refused.body.code).toBe("REPORT_RESOLVED");
   });
 
-  it("replaces a failed API judgment, and validates the body", async () => {
+  it("replaces an earlier judgment that was not ok, and validates the body", async () => {
     seedWork(workIds[0]);
     const report = seedReport(workIds[0], reporters[0], "2026-11-25T01:00:00.000Z", {
-      aiTriage: { status: "refused", recommendedAction: "review", source: "api", triagedAt: "x" },
+      aiTriage: { status: "failed", recommendedAction: "review", triagedAt: "x" },
     });
     const id = encodeReportId(report);
     const token = await createToken();
@@ -412,7 +407,7 @@ describe("triage bot judgments", () => {
       expect(response.body.code).toBe("INVALID_TRIAGE");
     }
     expect((await bot("POST", `/triage-bot/reports/${id}/triage`, token, { rawBody: "[1]" })).status).toBe(400);
-    expect(storedTriage(report).status).toBe("refused");
+    expect(storedTriage(report).status).toBe("failed");
 
     const missing = encodeReportId({ pk: `WORK#${workIds[3]}`, sk: `REPORT#${reporters[0]}#2026-11-25T01:00:00.000Z` });
     expect((await bot("POST", `/triage-bot/reports/${missing}/triage`, token, { body: judgment() })).status)
@@ -451,7 +446,7 @@ describe("triage bot judgments", () => {
     expect(fake.get(`WORK#${workIds[0]}`, "META")!.moderationHidden).toBeUndefined();
   });
 
-  it("hides a work pending review only on a critical judgment, like the API path", async () => {
+  it("hides a work pending review only on a critical judgment", async () => {
     for (const workId of workIds) seedWork(workId);
     seedWork(workIds[3], { moderationHidden: true, moderationHiddenBy: "owner@example.com" });
     const critical = seedReport(workIds[0], reporters[0], "2026-11-25T01:00:00.000Z");
@@ -582,9 +577,10 @@ describe("Claude chat copy and paste on the admin page", () => {
 });
 
 describe("shared guidelines", () => {
-  it("are the API path's system prompt", () => {
-    const request = buildTriageRequest({ target: "account", reportReason: "r" });
-    expect(request.system).toBe(TRIAGE_GUIDELINES);
+  it("are what the triage bot is given", async () => {
+    const token = await createToken();
+    const response = await bot("GET", "/triage-bot/reports", token);
+    expect(response.body.guidelines).toBe(TRIAGE_GUIDELINES);
     expect(TRIAGE_GUIDELINES).toMatch(/^You assist the moderator of the Work Plaza/);
   });
 

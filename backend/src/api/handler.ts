@@ -58,7 +58,6 @@ import { putPushToken } from "./routes/notifications";
 import {
   dismissAdminReport,
   getAdminMe,
-  updateAdminSettings,
   getAdminReport,
   getAdminUser,
   hideAdminReport,
@@ -182,7 +181,6 @@ const routes: Route[] = [
   // Moderation admin API (browser admin page). Google ID token + allowlisted
   // email from SSM; CORS for the website origin is added below.
   route("GET", "/admin/me", (e) => getAdminMe(e)),
-  route("POST", "/admin/settings", (e) => updateAdminSettings(e)),
   route("GET", "/admin/reports", (e) => listAdminReports(e)),
   route("GET", "/admin/reports/{id}", (e, p) => getAdminReport(e, p.id)),
   route("POST", "/admin/reports/{id}/review", (e, p) => reviewAdminReport(e, p.id)),

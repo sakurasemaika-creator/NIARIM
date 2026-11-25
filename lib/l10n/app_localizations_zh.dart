@@ -5920,7 +5920,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get privacyPolicyArt6Body =>
-      '本应用所使用的以下服务的提供者为日本境外的企业，信息可能会在日本境外的服务器上处理。\n• Google LLC（美国）：Google AdMob、Google Play Billing、使用Google账号登录、YouTube、Firebase Cloud Messaging\n• Amazon Web Services, Inc.（美国）：运营开发者的服务器（服务器位于日本东京区域）\n• GitHub, Inc.（美国）：下载附加字体\n• Anthropic, PBC（美国）：举报较多时，可能会将举报内容和被举报作品的公开信息（标题、说明、标签、缩略图）发送给其以协助审核（不会发送可识别举报者的信息）\n• Resend, Inc.（美国）：发送举报通知邮件（举报内容和作品的公开信息）以及发送咨询\n美国的个人信息保护制度，可在日本个人信息保护委员会公布的“外国个人信息保护制度等调查”中查阅。各提供者按照其各自的隐私政策处理信息。';
+      '本应用所使用的以下服务的提供者为日本境外的企业，信息可能会在日本境外的服务器上处理。\n• Google LLC（美国）：Google AdMob、Google Play Billing、使用Google账号登录、YouTube、Firebase Cloud Messaging\n• Amazon Web Services, Inc.（美国）：运营开发者的服务器（服务器位于日本东京区域）\n• GitHub, Inc.（美国）：下载附加字体\n• Anthropic, PBC（美国）：可能会将举报内容和被举报作品的公开信息（标题、说明、标签、缩略图、发布者名称）发送给其以协助审核（不会发送可识别举报者的信息）\n• Resend, Inc.（美国）：发送举报通知邮件（举报内容和作品的公开信息）以及发送咨询\n美国的个人信息保护制度，可在日本个人信息保护委员会公布的“外国个人信息保护制度等调查”中查阅。各提供者按照其各自的隐私政策处理信息。';
 
   @override
   String get privacyPolicyArt7Title => '第7条（作品广场、欧泊及高级购买确认中的信息处理）';
@@ -16831,7 +16831,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get privacyPolicyArt6Body =>
-      '本應用程式所使用之下列服務之提供者為日本境外之企業，資訊可能於日本境外之伺服器上處理。\n• Google LLC（美國）：Google AdMob、Google Play Billing、使用Google帳戶登入、YouTube、Firebase Cloud Messaging\n• Amazon Web Services, Inc.（美國）：營運開發者之伺服器（伺服器位於日本東京區域）\n• GitHub, Inc.（美國）：下載附加字型\n• Anthropic, PBC（美國）：檢舉較多時，可能會將檢舉內容與被檢舉作品之公開資訊（標題、說明、標籤、縮圖）傳送予其以協助審核（不會傳送可識別檢舉者之資訊）\n• Resend, Inc.（美國）：傳送檢舉通知郵件（檢舉內容與作品之公開資訊）以及傳送諮詢\n美國之個人資料保護制度，可於日本個人情報保護委員會所公布之「外國個人資料保護制度等調查」中查閱。各提供者依其各自之隱私權政策處理資訊。';
+      '本應用程式所使用之下列服務之提供者為日本境外之企業，資訊可能於日本境外之伺服器上處理。\n• Google LLC（美國）：Google AdMob、Google Play Billing、使用Google帳戶登入、YouTube、Firebase Cloud Messaging\n• Amazon Web Services, Inc.（美國）：營運開發者之伺服器（伺服器位於日本東京區域）\n• GitHub, Inc.（美國）：下載附加字型\n• Anthropic, PBC（美國）：可能會將檢舉內容與被檢舉作品之公開資訊（標題、說明、標籤、縮圖、發布者名稱）傳送予其以協助審核（不會傳送可識別檢舉者之資訊）\n• Resend, Inc.（美國）：傳送檢舉通知郵件（檢舉內容與作品之公開資訊）以及傳送諮詢\n美國之個人資料保護制度，可於日本個人情報保護委員會所公布之「外國個人資料保護制度等調查」中查閱。各提供者依其各自之隱私權政策處理資訊。';
 
   @override
   String get privacyPolicyArt7Title => '第7條（作品廣場、歐泊及進階購買確認中之資訊處理）';

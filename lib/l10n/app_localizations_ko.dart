@@ -6022,7 +6022,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get privacyPolicyArt6Body =>
-      '본 앱이 이용하는 다음 서비스의 제공자는 일본 밖의 사업자이며, 정보가 일본 밖의 서버에서 처리될 수 있습니다.\n·Google LLC（미국）：Google AdMob, Google Play Billing, Google 계정 로그인, YouTube, Firebase Cloud Messaging\n·Amazon Web Services, Inc.（미국）：개발자의 서버 운용（서버는 일본 도쿄 리전에 있습니다）\n·GitHub, Inc.（미국）：추가 글꼴 다운로드\n·Anthropic, PBC（미국）：신고가 많을 때 신고 내용과 신고된 작품의 공개 정보（제목·설명·태그·썸네일）를 확인에 참고하기 위해 보낼 수 있습니다（신고자를 특정하는 정보는 보내지 않습니다）\n·Resend, Inc.（미국）：신고 알림 메일 전송（신고 내용과 작품의 공개 정보） 및 문의 전송\n미국의 개인정보 보호 제도는 일본 개인정보보호위원회가 공표하는「외국의 개인정보 보호 제도 등에 관한 조사」에서 확인할 수 있습니다. 각 사업자는 각자의 개인정보처리방침에 따라 정보를 취급합니다.';
+      '본 앱이 이용하는 다음 서비스의 제공자는 일본 밖의 사업자이며, 정보가 일본 밖의 서버에서 처리될 수 있습니다.\n·Google LLC（미국）：Google AdMob, Google Play Billing, Google 계정 로그인, YouTube, Firebase Cloud Messaging\n·Amazon Web Services, Inc.（미국）：개발자의 서버 운용（서버는 일본 도쿄 리전에 있습니다）\n·GitHub, Inc.（미국）：추가 글꼴 다운로드\n·Anthropic, PBC（미국）：신고 내용과 신고된 작품의 공개 정보（제목·설명·태그·썸네일·게시자명）를 확인에 참고하기 위해 보낼 수 있습니다（신고자를 특정하는 정보는 보내지 않습니다）\n·Resend, Inc.（미국）：신고 알림 메일 전송（신고 내용과 작품의 공개 정보） 및 문의 전송\n미국의 개인정보 보호 제도는 일본 개인정보보호위원회가 공표하는「외국의 개인정보 보호 제도 등에 관한 조사」에서 확인할 수 있습니다. 각 사업자는 각자의 개인정보처리방침에 따라 정보를 취급합니다.';
 
   @override
   String get privacyPolicyArt7Title => '제7조（작품 광장·오팔·프리미엄 구매 확인에서의 정보 취급）';

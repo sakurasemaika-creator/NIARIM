@@ -65,12 +65,12 @@ const FUNCTION_LOG_RETENTION = logs.RetentionDays.ONE_MONTH;
  * SSM Parameter Store SecureString names for Work Plaza moderation. Only the
  * NAMES are in the repository; the owner creates the values in the AWS
  * console (backend/README.md「作品広場の通報対応」). A missing parameter
- * turns the matching feature off (admin API → 403, mail / AI skipped).
+ * turns the matching feature off (admin API → 403, mail skipped). There is
+ * no Anthropic API key: Claude judges reports on the owner's subscription.
  */
 export const MODERATION_PARAMETERS = {
   adminEmails: "/niarim/moderation/admin-emails",
   resendApiKey: "/niarim/moderation/resend-api-key",
-  anthropicApiKey: "/niarim/moderation/anthropic-api-key",
 } as const;
 
 /**
@@ -187,18 +187,12 @@ export class NiarimBackendStack extends Stack {
         "niarim-fcm-sender@niarim-513201.iam.gserviceaccount.com",
     };
 
-    // Moderation thresholds and AI mode (cdk.json context or `-c`).
+    // Moderation thresholds (cdk.json context or `-c`).
     const moderationContext = (name: string, fallback: string) =>
       String(this.node.tryGetContext(name) ?? fallback).trim();
-    const moderationAiMode = moderationContext("moderationAiMode", "backlog");
-    if (!["off", "always", "backlog"].includes(moderationAiMode)) {
-      throw new Error("moderationAiMode must be off, always or backlog");
-    }
     const moderationNumbers = {
       MODERATION_REPORT_HIDE_THRESHOLD: moderationContext("moderationReportHideThreshold", "3"),
       MODERATION_STRIKE_SUSPEND_THRESHOLD: moderationContext("moderationStrikeSuspendThreshold", "3"),
-      MODERATION_AI_BACKLOG_THRESHOLD: moderationContext("moderationAiBacklogThreshold", "20"),
-      MODERATION_AI_DAILY_CAP: moderationContext("moderationAiDailyCap", "50"),
       MODERATION_MAIL_DAILY_CAP: moderationContext("moderationMailDailyCap", "30"),
     };
     for (const [name, value] of Object.entries(moderationNumbers)) {
@@ -206,7 +200,6 @@ export class NiarimBackendStack extends Stack {
     }
     const moderationEnvironment = {
       ...moderationNumbers,
-      MODERATION_AI_MODE: moderationAiMode,
       MODERATION_ADMIN_PAGE_URL: "https://niarim.miranima-studio.com/admin/",
       MODERATION_NOTIFY_TO: "support@miranima-studio.com",
       MODERATION_NOTIFY_FROM: "NIARIM <support@miranima-studio.com>",
@@ -464,8 +457,8 @@ export class NiarimBackendStack extends Stack {
     }));
 
     // Moderation worker: a second, separate consumer of the table stream that
-    // sees only newly inserted reports. It checks the reporter threshold,
-    // runs the optional AI triage and mails the support address. One batch
+    // sees only newly inserted reports. It checks the reporter threshold and
+    // mails the support address (it calls no AI). One batch
     // at a time per shard, so a report flood cannot use up the account's
     // Lambda concurrency; POST /reports never waits for it.
     const moderationFunction = new NodejsFunction(this, "ModerationWorkerFunction", {
@@ -480,17 +473,13 @@ export class NiarimBackendStack extends Stack {
         TABLE_NAME: table.tableName,
         ...moderationEnvironment,
         MODERATION_RESEND_API_KEY_PARAMETER: MODERATION_PARAMETERS.resendApiKey,
-        MODERATION_ANTHROPIC_API_KEY_PARAMETER: MODERATION_PARAMETERS.anthropicApiKey,
       },
       bundling: { minify: true, sourceMap: false },
     });
     table.grantReadWriteData(moderationFunction);
     moderationFunction.addToRolePolicy(new iam.PolicyStatement({
       actions: ["ssm:GetParameter"],
-      resources: [
-        parameterArn(MODERATION_PARAMETERS.resendApiKey),
-        parameterArn(MODERATION_PARAMETERS.anthropicApiKey),
-      ],
+      resources: [parameterArn(MODERATION_PARAMETERS.resendApiKey)],
     }));
     moderationFunction.addEventSource(new DynamoEventSource(table, {
       startingPosition: lambda.StartingPosition.TRIM_HORIZON,

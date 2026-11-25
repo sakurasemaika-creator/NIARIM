@@ -1,6 +1,5 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from "aws-lambda";
 import { QueryCommand } from "@aws-sdk/lib-dynamodb";
-import Anthropic from "@anthropic-ai/sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeDynamo } from "./helpers/fakeDynamo";
 
@@ -41,14 +40,7 @@ import {
   decodeReportId,
   encodeReportId,
   moderationConfig,
-  resetStoredAiModeCacheForTest,
 } from "../src/lib/moderation";
-import {
-  buildTriageRequest,
-  parseTriageResponse,
-  triageReport,
-  type TriageClient,
-} from "../src/lib/moderationAi";
 import { notifyNewReport, reportMail, SUBJECT_PREFIX } from "../src/lib/moderationNotify";
 import { processNewReport, handler as workerHandler } from "../src/batch/moderationWorker";
 
@@ -57,7 +49,6 @@ vi.spyOn(ddb, "send").mockImplementation(fake.send as never);
 
 const ADMIN_PARAM = "/niarim/moderation/admin-emails";
 const RESEND_PARAM = "/niarim/moderation/resend-api-key";
-const AI_PARAM = "/niarim/moderation/anthropic-api-key";
 const ORIGIN = "https://niarim.miranima-studio.com";
 const author = "N" + "a".repeat(32);
 const reporters = ["b", "c", "d", "e"].map((c) => "N" + c.repeat(32));
@@ -119,7 +110,6 @@ function admin(email = "owner@example.com", verified = true) {
 }
 
 beforeEach(() => {
-  resetStoredAiModeCacheForTest();
   fake.items.clear();
   fake.calls.length = 0;
   vi.clearAllMocks();
@@ -127,7 +117,6 @@ beforeEach(() => {
   vi.stubEnv("TABLE_NAME", "moderation-test");
   vi.stubEnv("MODERATION_ADMIN_EMAILS_PARAMETER", ADMIN_PARAM);
   vi.stubEnv("MODERATION_RESEND_API_KEY_PARAMETER", RESEND_PARAM);
-  vi.stubEnv("MODERATION_ANTHROPIC_API_KEY_PARAMETER", AI_PARAM);
   params = { [ADMIN_PARAM]: " Owner@Example.com , helper@example.com " };
   mocks.readSecureParameter.mockImplementation(async (name: string) => params[name]);
   mocks.getUser.mockImplementation(async (id: string) => fake.get(`USER#${id}`, "META"));
@@ -156,8 +145,10 @@ describe("admin authentication", () => {
     const ok = await call("GET", "/admin/me");
     expect(ok.status).toBe(200);
     expect(ok.body).toMatchObject({ email: "helper@example.com", settings: {
-      reportHideThreshold: 3, strikeSuspendThreshold: 3, aiMode: "backlog", aiBacklogThreshold: 20,
+      reportHideThreshold: 3, strikeSuspendThreshold: 3, mailDailyCap: 30,
     } });
+    // No Anthropic API key, so there is no AI mode to show or switch.
+    expect(Object.keys(ok.body.settings).filter((key) => key.startsWith("ai"))).toEqual([]);
   });
 
   it("answers CORS preflight and responses only for the website origin on admin paths", async () => {
@@ -381,190 +372,82 @@ describe("report mail", () => {
     expect(await notifyNewReport("WORK#e", facts, config(), undefined, now)).toBe("disabled");
   });
 
-  it("writes a Japanese body with the link, count, state and AI result", () => {
-    const mail = reportMail({ ...facts, reporterCount: 3, autoHidden: "reporters", aiTriage: {
-      status: "ok", severity: "critical", category: "violence", recommendedAction: "hide",
-      rationale: "流血の描写", triagedAt: "x",
-    } }, moderationConfig());
-    expect(mail.subject).toBe(`${SUBJECT_PREFIX}【重大】作品「T」への通報（3人）`);
+  it("writes a Japanese body with the link, count and state, and no AI line", () => {
+    const mail = reportMail({ ...facts, reporterCount: 3, autoHidden: "reporters" }, moderationConfig());
+    expect(mail.subject).toBe(`${SUBJECT_PREFIX}作品「T」への通報（3人）`);
     expect(mail.text).toContain("https://www.youtube.com/watch?v=x");
     expect(mail.text).toContain("https://niarim.miranima-studio.com/admin/");
-    expect(mail.text).toContain("自動で非掲載");
-    expect(mail.text).toContain("流血の描写");
+    expect(mail.text).toContain("通報が3人に達したため、確認まで自動で非掲載");
+    expect(mail.text).not.toContain("AIの判定");
     expect(mail.text).not.toContain(reporters[0]);
+    expect(reportMail({ ...facts, autoHidden: "ai" }, moderationConfig()).text)
+      .toContain("AIが重大と判定したため、確認まで自動で非掲載");
   });
 });
 
-describe("AI triage", () => {
-  const input = { target: "work" as const, reportReason: "暴力的", work: {
-    title: "T", description: "D", tags: ["a"], thumbnailUrl: "https://i.ytimg.com/vi/x/hqdefault.jpg",
-  } };
-  const reply = (text: string, stop: string = "end_turn") => ({
-    content: [{ type: "text", text }], stop_reason: stop, stop_details: null, model: "claude-opus-5-5",
-  }) as never;
-
-  it("asks Claude Opus 5.5 for structured JSON with the server-side refusal fallback", () => {
-    const request = buildTriageRequest(input);
-    expect(request).toMatchObject({
-      model: "claude-opus-5-5", betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
-      thinking: { type: "adaptive" },
-      output_config: { effort: "low", format: { type: "json_schema" } },
-    });
-    const content = request.messages[0].content as { type: string; source?: { type: string; url: string } }[];
-    expect(content[0]).toEqual({ type: "image", source: { type: "url", url: input.work.thumbnailUrl } });
-    expect(JSON.stringify(request)).not.toMatch(/N[0-9a-f]{32}/);
-    const otherHost = buildTriageRequest({ ...input, work: { ...input.work, thumbnailUrl: "http://example.com/a.jpg" } });
-    expect((otherHost.messages[0].content as { type: string }[]).map((b) => b.type)).toEqual(["text"]);
-  });
-
-  it("parses results, refusals and broken replies", () => {
-    expect(parseTriageResponse(reply(JSON.stringify({
-      severity: "high", category: "sexual", recommendedAction: "review", rationale: "露出",
-    })))).toMatchObject({
-      status: "ok", severity: "high", category: "sexual", recommendedAction: "review", source: "api",
-    });
-    expect(parseTriageResponse({ content: [], stop_reason: "refusal",
-      stop_details: { type: "refusal", category: "bio", explanation: null }, model: "m" } as never))
-      .toMatchObject({ status: "refused", recommendedAction: "review", refusalCategory: "bio", source: "api" });
-    expect(parseTriageResponse(reply("not json"))).toMatchObject({ status: "failed", source: "api" });
-    expect(parseTriageResponse(reply('{"severity":"high"', "max_tokens"))).toMatchObject({ status: "failed" });
-    expect(parseTriageResponse(reply(JSON.stringify({
-      severity: "severe", category: "x", recommendedAction: "hide", rationale: "",
-    })))).toMatchObject({ status: "failed" });
-  });
-
-  it("retries once without the thumbnail when the image cannot be fetched", async () => {
-    const create = vi.fn()
-      .mockRejectedValueOnce(new Anthropic.BadRequestError(400, {}, "image", new Headers()))
-      .mockResolvedValueOnce(reply(JSON.stringify({
-        severity: "none", category: "none", recommendedAction: "keep", rationale: "問題なし",
-      })));
-    const result = await triageReport(input, { beta: { messages: { create } } } as TriageClient);
-    expect(result.status).toBe("ok");
-    expect((create.mock.calls[1][0].messages[0].content as { type: string }[]).map((b) => b.type))
-      .toEqual(["text"]);
-    const failing = vi.fn().mockRejectedValue(new Error("network"));
-    expect((await triageReport(input, { beta: { messages: { create: failing } } } as TriageClient)).status)
-      .toBe("failed");
-  });
-});
-
-describe("AI mode from the admin page", () => {
-  it("is switched on the admin page and overrides the deploy default", async () => {
-    let me = await call("GET", "/admin/me");
-    expect(me.body.settings).toMatchObject({ aiMode: "backlog", aiModeSource: "default" });
-
-    const bad = await call("POST", "/admin/settings", { body: { aiMode: "sometimes" } });
-    expect(bad.status).toBe(400);
-    expect(bad.body.code).toBe("INVALID_AI_MODE");
-
-    const set = await call("POST", "/admin/settings", { body: { aiMode: "off" } });
-    expect(set.status).toBe(200);
-    expect(set.body.settings).toMatchObject({ aiMode: "off", aiModeSource: "admin" });
-    expect(fake.get("MODERATION_SETTINGS", "META")).toMatchObject({
-      aiMode: "off", updatedBy: "owner@example.com",
-    });
-
-    resetStoredAiModeCacheForTest();
-    me = await call("GET", "/admin/me");
-    expect(me.body.settings).toMatchObject({ aiMode: "off", aiModeSource: "admin" });
-  });
-
-  it("needs an admin to change it", async () => {
-    admin("someone@example.com");
-    const denied = await call("POST", "/admin/settings", { body: { aiMode: "always" } });
-    expect(denied.status).toBe(403);
+describe("no Anthropic API key", () => {
+  it("has no admin setting for an API-key AI mode", async () => {
+    const response = await call("POST", "/admin/settings", { body: { aiMode: "always" } });
+    expect(response.status).toBe(404);
     expect(fake.get("MODERATION_SETTINGS", "META")).toBeUndefined();
   });
 
-  it("turned off on the admin page, the worker skips the AI even when the deploy says always", async () => {
-    vi.stubEnv("MODERATION_AI_MODE", "always");
-    params[AI_PARAM] = "sk-test";
-    await call("POST", "/admin/settings", { body: { aiMode: "off" } });
+  it("never reads an Anthropic key and writes no AI judgment from the worker", async () => {
+    params[RESEND_PARAM] = "re-test";
     seedWork(workIds[0]);
     const report = seedReport(workIds[0], reporters[0], "2026-11-25T01:00:00.000Z");
-    const create = vi.fn();
+    const mails: { subject: string; text: string }[] = [];
     await processNewReport(report, {
-      createTriageClient: () => ({ beta: { messages: { create } } }) as unknown as TriageClient,
+      createSender: () => async (mail: { subject: string; text: string }) => { mails.push(mail); return true; },
     });
-    expect(create).not.toHaveBeenCalled();
-
-    await call("POST", "/admin/settings", { body: { aiMode: "always" } });
-    create.mockResolvedValue({
-      content: [{ type: "text", text: JSON.stringify({
-        severity: "low", category: "none", recommendedAction: "keep", rationale: "軽微",
-      }) }], stop_reason: "end_turn", stop_details: null, model: "claude-opus-5-5",
-    });
-    await processNewReport(report, {
-      createTriageClient: () => ({ beta: { messages: { create } } }) as unknown as TriageClient,
-    });
-    expect(create).toHaveBeenCalledTimes(1);
+    const read = mocks.readSecureParameter.mock.calls.map(([name]) => name);
+    expect(read.every((name) => name === RESEND_PARAM || name === ADMIN_PARAM)).toBe(true);
+    const stored = fake.get(report.pk, report.sk)!;
+    expect(stored.aiTriage).toBeUndefined();
+    expect(stored.aiTriageClaimedAt).toBeUndefined();
+    expect(fake.get(`WORK#${workIds[0]}`, "META")!.moderationHidden).toBeUndefined();
+    expect(mails).toHaveLength(1);
+    expect(mails[0].text).not.toContain("AIの判定");
   });
 });
 
 describe("moderation worker", () => {
-  const criticalClient = (create = vi.fn(async () => ({
-    content: [{ type: "text", text: JSON.stringify({
-      severity: "critical", category: "violence", recommendedAction: "hide", rationale: "重大",
-    }) }], stop_reason: "end_turn", stop_details: null, model: "claude-opus-5-5",
-  }))) => ({ create, client: { beta: { messages: { create } } } as unknown as TriageClient });
-
-  it("triages once, hides a critical work and mails with the AI result", async () => {
-    vi.stubEnv("MODERATION_AI_MODE", "always");
-    params[AI_PARAM] = "sk-test";
+  it("mails a new report once, even when it is processed twice", async () => {
     params[RESEND_PARAM] = "re-test";
     seedWork(workIds[0]);
     const report = seedReport(workIds[0], reporters[0], "2026-11-25T01:00:00.000Z");
-    const { create, client } = criticalClient();
     const mails: { subject: string; text: string }[] = [];
     const deps = {
-      createTriageClient: () => client,
       createSender: () => async (mail: { subject: string; text: string }) => { mails.push(mail); return true; },
     };
     await processNewReport(report, deps);
     await processNewReport(report, deps);
-    expect(create).toHaveBeenCalledTimes(1);
-    expect(fake.get(report.pk, report.sk)!.aiTriage).toMatchObject({
-      status: "ok", severity: "critical", model: "claude-opus-5-5", source: "api",
-    });
-    expect(fake.get(`WORK#${workIds[0]}`, "META")).toMatchObject({
+    expect(mails).toHaveLength(1);
+    expect(mails[0].subject).toBe(`${SUBJECT_PREFIX}作品「Title ${workIds[0]}」への通報（1人）`);
+    expect(mails[0].text).toContain("状態：掲載中（確認待ち）");
+    expect(mails[0].text).not.toContain(reporters[0]);
+  });
+
+  it("says in the mail when Claude's judgment already hid the work", async () => {
+    params[RESEND_PARAM] = "re-test";
+    seedWork(workIds[0], {
       moderationHidden: true, moderationAutoHidden: true, moderationAutoHiddenReason: "ai",
     });
-    expect(mails).toHaveLength(1);
-    expect(mails[0].subject).toContain("【重大】");
-    expect(mails[0].text).toContain("AIが重大と判定");
-    const sentText = JSON.stringify(create.mock.calls[0]);
-    expect(sentText).not.toContain(reporters[0]);
-    expect(sentText).not.toContain(author);
-  });
-
-  it("in backlog mode skips the AI while few reports are pending, and without a key", async () => {
-    params[AI_PARAM] = "sk-test";
-    seedWork(workIds[0]);
     const report = seedReport(workIds[0], reporters[0], "2026-11-25T01:00:00.000Z");
-    const { create, client } = criticalClient();
-    await processNewReport(report, { createTriageClient: () => client });
-    expect(create).not.toHaveBeenCalled();
-    vi.stubEnv("MODERATION_AI_BACKLOG_THRESHOLD", "1");
-    delete params[AI_PARAM];
-    await processNewReport(report, { createTriageClient: () => client });
-    expect(create).not.toHaveBeenCalled();
-    params[AI_PARAM] = "sk-test";
-    await processNewReport(report, { createTriageClient: () => client });
-    expect(create).toHaveBeenCalledTimes(1);
+    const mails: { subject: string; text: string }[] = [];
+    await processNewReport(report, {
+      createSender: () => async (mail: { subject: string; text: string }) => { mails.push(mail); return true; },
+    });
+    expect(mails[0].text).toContain("AIが重大と判定したため");
   });
 
-  it("never throws when the AI and the mail fail", async () => {
-    vi.stubEnv("MODERATION_AI_MODE", "always");
-    params[AI_PARAM] = "sk-test";
+  it("never throws when the mail fails", async () => {
     params[RESEND_PARAM] = "re-test";
     seedWork(workIds[0]);
     const report = seedReport(workIds[0], reporters[0], "2026-11-25T01:00:00.000Z");
     await expect(processNewReport(report, {
-      createTriageClient: () => ({ beta: { messages: { create: async () => { throw new Error("down"); } } } }),
       createSender: () => async () => { throw new Error("mail down"); },
     })).resolves.toBeUndefined();
-    expect(fake.get(report.pk, report.sk)!.aiTriage).toMatchObject({ status: "failed", source: "api" });
     expect(fake.get(`WORK#${workIds[0]}`, "META")!.moderationHidden).toBeUndefined();
   });
 

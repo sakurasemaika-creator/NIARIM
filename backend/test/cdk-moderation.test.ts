@@ -36,13 +36,14 @@ describe("moderation infrastructure", () => {
     });
   });
 
-  it("grants SSM reads only for the three named parameters, and keeps values out of the template", () => {
+  it("grants SSM reads only for the two named parameters, and keeps values out of the template", () => {
     const ssm = policyStatements().filter((s) => JSON.stringify(s.Action).includes("ssm"));
     const resources = JSON.stringify(ssm.map((s) => s.Resource));
     expect(ssm.every((s) => s.Action === "ssm:GetParameter")).toBe(true);
     expect(resources).toContain(":parameter/niarim/moderation/admin-emails");
     expect(resources).toContain(":parameter/niarim/moderation/resend-api-key");
-    expect(resources).toContain(":parameter/niarim/moderation/anthropic-api-key");
+    // No Anthropic API key: Claude judges reports on the owner's subscription.
+    expect(resources).not.toContain("anthropic");
     expect(resources).not.toContain("*");
     template.hasResourceProperties("AWS::Lambda::Function", {
       FunctionName: "niarim-api",
@@ -51,13 +52,10 @@ describe("moderation infrastructure", () => {
         ADMIN_ALLOWED_ORIGINS: "https://niarim.miranima-studio.com",
         MODERATION_REPORT_HIDE_THRESHOLD: "3",
         MODERATION_STRIKE_SUSPEND_THRESHOLD: "3",
-        MODERATION_AI_MODE: "backlog",
       } },
     });
+    const environments = JSON.stringify(Object.values(template.findResources("AWS::Lambda::Function"))
+      .map((fn) => (fn as { Properties: { Environment?: unknown } }).Properties.Environment));
+    expect(environments).not.toMatch(/MODERATION_AI_|ANTHROPIC/);
   });
-});
-
-it("rejects an unknown AI mode at synth time", () => {
-  const app = new App({ context: { moderationAiMode: "sometimes" } });
-  expect(() => new NiarimBackendStack(app, "BadMode")).toThrow(/moderationAiMode/);
 });

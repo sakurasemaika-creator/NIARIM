@@ -24,10 +24,10 @@ import { TABLE_ITEM_TYPE } from "./types";
  * - the admin page copies a prompt for Claude chat and pastes Claude's JSON
  *   answer back (`/admin/triage/...`, source `chat`).
  *
- * Both only read open reports and write the same advisory `aiTriage` record
- * the API worker writes. A `critical` judgment on a work hides it pending
- * review exactly like the API path (`autoHideWork(..., "ai")`); every other
- * judgment is advice for the moderator. Neither path ever sees who reported
+ * Both only read open reports and write the same advisory `aiTriage` record.
+ * A `critical` judgment on a work hides it pending review
+ * (`autoHideWork(..., "ai")`); every other judgment is advice for the
+ * moderator. Neither path ever sees who reported
  * or any internal user id.
  */
 
@@ -235,7 +235,7 @@ function assertTriageable(report: ReportItem | undefined): asserts report is Rep
  * Stores one judgment on an open, not yet triaged report. The write is
  * conditional, so of two writers only the first wins (the other gets
  * ALREADY_TRIAGED). A critical judgment on a work then hides it pending
- * review, like the API worker; a work that is already hidden is left as is.
+ * review; a work that is already hidden is left as is.
  */
 export async function applyTriageJudgment(
   key: { pk: string; sk: string },

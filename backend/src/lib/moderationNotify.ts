@@ -2,7 +2,6 @@ import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, Keys, tableName } from "./dynamo";
 import { epochSeconds, jstDay, type ModerationConfig } from "./moderation";
-import type { AiTriageRecord } from "./types";
 
 /**
  * Mail to the support mailbox about new Work Plaza reports, sent with the
@@ -18,13 +17,6 @@ export const SUBJECT_PREFIX = "[NIARIM通報]";
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 const DAY_TTL_SECONDS = 3 * 24 * 3600;
 
-const SEVERITY_LABEL: Record<string, string> = {
-  critical: "重大", high: "高", medium: "中", low: "低", none: "問題なし",
-};
-const ACTION_LABEL: Record<string, string> = {
-  hide: "非掲載を推奨", keep: "掲載のままを推奨", review: "人の確認が必要",
-};
-
 export interface ReportMailFacts {
   target: "work" | "account";
   reason: string;
@@ -34,22 +26,12 @@ export interface ReportMailFacts {
   /** Distinct reporters with open reports on the same target. */
   reporterCount: number;
   autoHidden?: "reporters" | "ai";
-  aiTriage?: AiTriageRecord;
 }
 
 function jstTime(iso: string): string {
   const time = Date.parse(iso);
   if (!Number.isFinite(time)) return iso;
   return new Date(time + 9 * 3_600_000).toISOString().slice(0, 16).replace("T", " ");
-}
-
-function triageLine(triage: AiTriageRecord | undefined): string {
-  if (!triage) return "AIの判定：なし（判定の対象外）";
-  if (triage.status === "refused") return "AIの判定：AIが判定を断りました（人の確認が必要）";
-  if (triage.status === "failed") return "AIの判定：判定できませんでした（人の確認が必要）";
-  return `AIの判定：重大度 ${SEVERITY_LABEL[triage.severity ?? ""] ?? triage.severity}` +
-    `／${ACTION_LABEL[triage.recommendedAction ?? ""] ?? triage.recommendedAction}` +
-    `／分類 ${triage.category}\n理由：${triage.rationale ?? ""}`;
 }
 
 /** One line, no control characters (the title and reason are user text). */
@@ -59,8 +41,7 @@ function oneLine(text: string, max: number): string {
 }
 
 export function reportMail(facts: ReportMailFacts, config: ModerationConfig) {
-  const severe = facts.aiTriage?.status === "ok" && facts.aiTriage.severity === "critical";
-  const subject = `${SUBJECT_PREFIX}${severe ? "【重大】" : ""}` + (facts.target === "work"
+  const subject = SUBJECT_PREFIX + (facts.target === "work"
     ? `作品「${oneLine(facts.workTitle ?? "", 40)}」への通報（${facts.reporterCount}人）`
     : `アカウントへの通報（${facts.reporterCount}人）`);
   const status = facts.autoHidden === "reporters"
@@ -79,8 +60,6 @@ export function reportMail(facts: ReportMailFacts, config: ModerationConfig) {
     `通報の理由：${facts.reason}`,
     `未対応の通報をした人数：${facts.reporterCount}人`,
     ...(facts.target === "work" ? [status] : []),
-    triageLine(facts.aiTriage),
-    "（AIの判定は参考です。最終的な判断は運営が行ってください。）",
     "",
     `受付日時：${jstTime(facts.createdAt)}（日本時間）`,
     `管理ページ：${config.adminPageUrl}`,
@@ -153,7 +132,7 @@ async function claimTargetSlot(targetPk: string, config: ModerationConfig, now: 
 
 /** Takes one unit of a daily counter on the JST-day item. False at the cap. */
 export async function takeDailyUnit(
-  counter: "mailCount" | "aiCount",
+  counter: "mailCount",
   cap: number,
   now = Date.now(),
 ): Promise<boolean> {

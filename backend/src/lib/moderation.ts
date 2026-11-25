@@ -23,17 +23,11 @@ import { TABLE_ITEM_TYPE } from "./types";
  * public listing and lookup already filters out.
  */
 
-export type AiMode = "off" | "always" | "backlog";
-
 export interface ModerationConfig {
   /** Distinct reporters with open reports that hide a work pending review (0 = never). */
   reportHideThreshold: number;
   /** Strikes (works hidden by a moderator) that suspend posting (0 = never). */
   strikeSuspendThreshold: number;
-  aiMode: AiMode;
-  /** In `backlog` mode, triage only while at least this many reports are pending. */
-  aiBacklogThreshold: number;
-  aiDailyCap: number;
   mailDailyCap: number;
   /** One report mail per target within this window. */
   mailPerTargetIntervalMs: number;
@@ -42,7 +36,6 @@ export interface ModerationConfig {
   adminPageUrl: string;
   adminEmailsParameter?: string;
   resendApiKeyParameter?: string;
-  anthropicApiKeyParameter?: string;
 }
 
 function nonNegativeInt(raw: string | undefined, fallback: number, max: number): number {
@@ -52,13 +45,9 @@ function nonNegativeInt(raw: string | undefined, fallback: number, max: number):
 }
 
 export function moderationConfig(): ModerationConfig {
-  const mode = (process.env.MODERATION_AI_MODE ?? "").trim();
   return {
     reportHideThreshold: nonNegativeInt(process.env.MODERATION_REPORT_HIDE_THRESHOLD, 3, 1000),
     strikeSuspendThreshold: nonNegativeInt(process.env.MODERATION_STRIKE_SUSPEND_THRESHOLD, 3, 1000),
-    aiMode: mode === "off" || mode === "always" || mode === "backlog" ? mode : "backlog",
-    aiBacklogThreshold: nonNegativeInt(process.env.MODERATION_AI_BACKLOG_THRESHOLD, 20, 1000),
-    aiDailyCap: nonNegativeInt(process.env.MODERATION_AI_DAILY_CAP, 50, 10_000),
     mailDailyCap: nonNegativeInt(process.env.MODERATION_MAIL_DAILY_CAP, 30, 10_000),
     mailPerTargetIntervalMs: 60 * 60_000,
     notifyTo: process.env.MODERATION_NOTIFY_TO?.trim() || "support@miranima-studio.com",
@@ -67,74 +56,14 @@ export function moderationConfig(): ModerationConfig {
       "https://niarim.miranima-studio.com/admin/",
     adminEmailsParameter: process.env.MODERATION_ADMIN_EMAILS_PARAMETER || undefined,
     resendApiKeyParameter: process.env.MODERATION_RESEND_API_KEY_PARAMETER || undefined,
-    anthropicApiKeyParameter: process.env.MODERATION_ANTHROPIC_API_KEY_PARAMETER || undefined,
   };
 }
 
 /**
- * The AI triage mode chosen on the admin page overrides the deploy default
- * (MODERATION_AI_MODE). Stored in one small item; read at most once a minute
- * per container so a report burst costs no extra reads.
+ * itemType of the moderation settings item (Keys.moderationSettings), which
+ * holds the triage bot's token (triageBot.ts).
  */
-export const AI_MODES: readonly AiMode[] = ["off", "always", "backlog"];
-/** itemType of the moderation settings item (Keys.moderationSettings). */
 export const MODERATION_SETTINGS_ITEM_TYPE = "MODERATION_SETTINGS";
-let storedAiModeCache: { at: number; mode?: AiMode } | undefined;
-const STORED_AI_MODE_TTL_MS = 60_000;
-
-export function resetStoredAiModeCacheForTest(): void {
-  storedAiModeCache = undefined;
-}
-
-async function readStoredAiMode(): Promise<AiMode | undefined> {
-  const now = Date.now();
-  if (storedAiModeCache && now - storedAiModeCache.at < STORED_AI_MODE_TTL_MS) {
-    return storedAiModeCache.mode;
-  }
-  let mode: AiMode | undefined;
-  try {
-    const result = await ddb.send(new GetCommand({
-      TableName: tableName(), Key: Keys.moderationSettings(),
-    }));
-    const raw = result.Item?.aiMode;
-    mode = AI_MODES.includes(raw as AiMode) ? raw as AiMode : undefined;
-  } catch {
-    // A failed read keeps the deploy default; it is retried next time.
-    return undefined;
-  }
-  storedAiModeCache = { at: now, mode };
-  return mode;
-}
-
-/** The config with the admin page's AI mode, and where the mode came from. */
-export async function effectiveModerationConfig(): Promise<
-  ModerationConfig & { aiModeSource: "admin" | "default" }
-> {
-  const config = moderationConfig();
-  const stored = await readStoredAiMode();
-  return stored
-    ? { ...config, aiMode: stored, aiModeSource: "admin" }
-    : { ...config, aiModeSource: "default" };
-}
-
-/**
- * Saves the AI triage mode chosen on the admin page. An update, not a put:
- * the same item also holds the triage bot's token (triageBot.ts).
- */
-export async function setStoredAiMode(mode: AiMode, by: string): Promise<void> {
-  await ddb.send(new UpdateCommand({
-    TableName: tableName(),
-    Key: Keys.moderationSettings(),
-    UpdateExpression: "SET itemType = :type, aiMode = :mode, updatedAt = :now, updatedBy = :by",
-    ExpressionAttributeValues: {
-      ":type": MODERATION_SETTINGS_ITEM_TYPE,
-      ":mode": mode,
-      ":now": new Date().toISOString(),
-      ":by": by,
-    },
-  }));
-  storedAiModeCache = { at: Date.now(), mode };
-}
 
 const WORK_ID = /^[A-Za-z0-9_-]{11}$/;
 const USER_ID = /^N[0-9a-f]{32}$/;

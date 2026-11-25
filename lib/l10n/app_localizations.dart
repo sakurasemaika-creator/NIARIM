@@ -10800,7 +10800,7 @@ abstract class AppLocalizations {
   /// No description provided for @privacyPolicyArt6Body.
   ///
   /// In ja, this message translates to:
-  /// **'本アプリが利用する次のサービスの提供者は日本国外の事業者であり、情報が日本国外のサーバーで処理される場合があります。\n・Google LLC（米国）：Google AdMob、Google Play Billing、Googleアカウントでのログイン、YouTube、Firebase Cloud Messaging\n・Amazon Web Services, Inc.（米国）：開発者のサーバーの運用（サーバーは日本の東京リージョンに置いています）\n・GitHub, Inc.（米国）：追加フォントのダウンロード\n・Anthropic, PBC（米国）：通報が多いときに、通報の内容と通報された作品の公開情報（タイトル・説明・タグ・サムネイル）を確認の補助のために送ることがあります（通報した人を特定する情報は送りません）\n・Resend, Inc.（米国）：通報の知らせのメールの送信（通報の内容と作品の公開情報）、およびお問い合わせの送信\n米国の個人情報の保護に関する制度は、個人情報保護委員会が公表している「外国における個人情報の保護に関する制度等の調査」で確認できます。各事業者は、それぞれのプライバシーポリシーに従って情報を取り扱います。'**
+  /// **'本アプリが利用する次のサービスの提供者は日本国外の事業者であり、情報が日本国外のサーバーで処理される場合があります。\n・Google LLC（米国）：Google AdMob、Google Play Billing、Googleアカウントでのログイン、YouTube、Firebase Cloud Messaging\n・Amazon Web Services, Inc.（米国）：開発者のサーバーの運用（サーバーは日本の東京リージョンに置いています）\n・GitHub, Inc.（米国）：追加フォントのダウンロード\n・Anthropic, PBC（米国）：通報の内容と通報された作品の公開情報（タイトル・説明・タグ・サムネイル・投稿者名）を確認の補助のために送ることがあります（通報した人を特定する情報は送りません）\n・Resend, Inc.（米国）：通報の知らせのメールの送信（通報の内容と作品の公開情報）、およびお問い合わせの送信\n米国の個人情報の保護に関する制度は、個人情報保護委員会が公表している「外国における個人情報の保護に関する制度等の調査」で確認できます。各事業者は、それぞれのプライバシーポリシーに従って情報を取り扱います。'**
   String get privacyPolicyArt6Body;
 
   /// No description provided for @privacyPolicyArt7Title.

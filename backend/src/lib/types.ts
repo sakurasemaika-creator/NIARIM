@@ -294,8 +294,7 @@ export interface ReportItem {
   reviewedAt?: string;
   reviewedBy?: string;
   reviewNote?: string;
-  // AI triage (moderationAi.ts). The claim marker keeps it to one call per report.
-  aiTriageClaimedAt?: string;
+  // Claude's advisory judgment on the owner's subscription (moderationTriage.ts).
   aiTriage?: AiTriageRecord;
 }
 
@@ -309,12 +308,11 @@ export interface AiTriageRecord {
   model?: string;
   refusalCategory?: string | null;
   /**
-   * Where the judgment came from: the Claude API worker (`api`), the
-   * scheduled triage bot on the owner's Claude subscription (`subscription`),
-   * or a result pasted back from Claude chat on the admin page (`chat`).
-   * Records stored before this field existed are from the API.
+   * Where the judgment came from: the scheduled triage bot on the owner's
+   * Claude subscription (`subscription`) or a result pasted back from Claude
+   * chat on the admin page (`chat`). No Anthropic API key is used.
    */
-  source?: "api" | "subscription" | "chat";
+  source?: "subscription" | "chat";
   triagedAt: string;
 }
 
