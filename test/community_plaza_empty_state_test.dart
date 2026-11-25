@@ -163,4 +163,57 @@ void main() {
       service.dispose();
     }
   });
+
+  testWidgets('「↑」は一覧を上へ戻せるときだけ出る', (tester) async {
+    Map<String, dynamic> work(int i) => {
+      'workId': 'w$i',
+      'authorId': 'a$i',
+      'channelName': 'author$i',
+      'channelAvatarUrl': '',
+      'title': 'Work $i',
+      'postedAt': DateTime.utc(
+        2026,
+        11,
+        1,
+      ).subtract(Duration(hours: i)).toIso8601String(),
+      'youtubeUrl': 'https://www.youtube.com/watch?v=w$i',
+      'thumbnailUrl': '',
+      'viewCount': 10,
+      'likeCount': 1,
+      'commentCount': 0,
+      'bookmarkCount': 1,
+      'repostCount': 0,
+      'isShort': false,
+      'tags': <String>[],
+      'lockedTags': <String>[],
+      'isNiarimPublished': true,
+    };
+    final works = [for (var i = 0; i < 24; i++) work(i)];
+    final service = serviceWith(
+      (request) async => http.Response(
+        jsonEncode(
+          request.url.path.startsWith('/ranking')
+              ? {'items': works, 'nextCursor': null}
+              : {'works': works, 'nextCursor': null},
+        ),
+        200,
+        headers: jsonHeaders,
+      ),
+    );
+    addTearDown(service.dispose);
+    await tester.pumpWidget(host(service));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pump();
+    final up = find.byKey(const Key('communityScrollToTopButton'));
+    expect(up, findsNothing, reason: 'at the top there is nothing to go up to');
+    await tester.dragFrom(
+      tester.getCenter(find.byType(CommunityScreen)),
+      const Offset(0, -500),
+    );
+    await tester.pumpAndSettle();
+    expect(up, findsOneWidget, reason: 'after scrolling down');
+    await tester.tap(up);
+    await tester.pumpAndSettle();
+    expect(up, findsNothing, reason: 'back at the top');
+  });
 }

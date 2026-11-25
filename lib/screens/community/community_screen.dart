@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -216,6 +217,28 @@ class _CommunityScreenState extends State<CommunityScreen>
   int _minimumViews = 0;
   int _minimumBookmarks = 0;
   final _tabScrollControllers = List.generate(5, (_) => ScrollController());
+
+  // 左下の「↑」は、いま見ているタブの一覧を上へ戻せるときだけ出す（ホームと
+  // 同じ）。以前は一番上でも、空の一覧でも出ていて、押しても何も起きず、
+  // 空の広場の案内や左下のカードに重なった。
+  bool _canGoUp = false;
+
+  void _syncCanGoUp() {
+    if (!mounted) return;
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _syncCanGoUp());
+      return;
+    }
+    final canGoUp = _tabScrollControllers[_tabController.index].positions.any(
+      (p) =>
+          p.hasPixels &&
+          p.hasContentDimensions &&
+          p.pixels > p.minScrollExtent + 0.5,
+    );
+    if (canGoUp != _canGoUp) setState(() => _canGoUp = canGoUp);
+  }
+
   final _visiblePageCounts = List<int>.filled(5, CommunityService.pageSize);
   final _pagingTabs = List<bool>.filled(5, false);
   final _refreshingTabs = List<bool>.filled(5, false);
@@ -384,7 +407,10 @@ class _CommunityScreenState extends State<CommunityScreen>
       ..addListener(_onTabChanged);
     for (var i = 0; i < _tabScrollControllers.length; i++) {
       final tab = i;
-      _tabScrollControllers[i].addListener(() => _onPageScroll(tab));
+      _tabScrollControllers[i].addListener(() {
+        _onPageScroll(tab);
+        if (tab == _tabController.index) _syncCanGoUp();
+      });
     }
     final initialTag = widget.initialTagFilter;
     if (initialTag != null && initialTag.isNotEmpty) {
@@ -759,6 +785,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   /// the server has them now.
   void _onTabChanged() {
     if (_tabController.indexIsChanging) return;
+    _syncCanGoUp();
     final service = context.read<CommunityService>();
     service.clearTemporaryUnmutes();
     if (_tabController.index == 1 && service.isBackendConnected) {
@@ -1851,20 +1878,23 @@ class _CommunityScreenState extends State<CommunityScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            FloatingActionButton(
-              key: const Key('communityScrollToTopButton'),
-              heroTag: 'community-scroll-to-top',
-              backgroundColor: scheme.primary,
-              foregroundColor: scheme.onPrimary,
-              shape: const CircleBorder(side: BorderSide.none),
-              elevation: 0,
-              focusElevation: 0,
-              hoverElevation: 0,
-              highlightElevation: 0,
-              tooltip: l10n.communityScrollToTop,
-              onPressed: _scrollCurrentTabToTop,
-              child: const Icon(Icons.arrow_upward),
-            ),
+            if (!_canGoUp)
+              const SizedBox.shrink()
+            else
+              FloatingActionButton(
+                key: const Key('communityScrollToTopButton'),
+                heroTag: 'community-scroll-to-top',
+                backgroundColor: scheme.primary,
+                foregroundColor: scheme.onPrimary,
+                shape: const CircleBorder(side: BorderSide.none),
+                elevation: 0,
+                focusElevation: 0,
+                hoverElevation: 0,
+                highlightElevation: 0,
+                tooltip: l10n.communityScrollToTop,
+                onPressed: _scrollCurrentTabToTop,
+                child: const Icon(Icons.arrow_upward),
+              ),
             FloatingActionButton(
               key: const Key('communityMyWorksButton'),
               heroTag: 'community-my-works',
