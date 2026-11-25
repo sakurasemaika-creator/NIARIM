@@ -18999,17 +18999,41 @@ abstract class AppLocalizations {
   /// **'オフにすると、音はクリップの始めから通常の速さで鳴り、映像の速度だけが変わります。'**
   String get timelineVideoSoundFollowsSpeedHint;
 
-  /// No description provided for @timelinePreservePitch.
+  /// No description provided for @timelinePitchLabel.
   ///
   /// In ja, this message translates to:
-  /// **'音の高さを保つ'**
-  String get timelinePreservePitch;
+  /// **'音の高さ（半音）'**
+  String get timelinePitchLabel;
 
-  /// No description provided for @timelinePreservePitchHint.
+  /// No description provided for @timelinePitchHint.
   ///
   /// In ja, this message translates to:
-  /// **'オフにすると、速くしたときは音が高く、遅くしたときは低くなります。'**
-  String get timelinePreservePitchHint;
+  /// **'速度を変えても音の高さは変わりません。ここで高さだけを上げ下げできます。「速度に合わせる」を押すと、テープを速く回したときのように速度に合った高さになります。'**
+  String get timelinePitchHint;
+
+  /// No description provided for @timelinePitchMatchSpeed.
+  ///
+  /// In ja, this message translates to:
+  /// **'速度に合わせる'**
+  String get timelinePitchMatchSpeed;
+
+  /// No description provided for @timelinePitchReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'元の高さ'**
+  String get timelinePitchReset;
+
+  /// No description provided for @timelinePitchInputLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'半音で入力'**
+  String get timelinePitchInputLabel;
+
+  /// No description provided for @timelinePitchInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'-24〜+24の数を入力してください（小数も使えます）。'**
+  String get timelinePitchInvalid;
 
   /// No description provided for @keyframeRetimeTitle.
   ///

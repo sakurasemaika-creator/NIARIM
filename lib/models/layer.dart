@@ -45,9 +45,10 @@ class Layer {
   /// normal speed from the clip's start while only the picture changes speed.
   final bool videoSoundFollowsSpeed;
 
-  /// Whether the video's sound keeps its pitch at a speed other than 1×
-  /// (on), or rises and falls with the speed like a tape (off).
-  final bool videoPreservePitch;
+  /// The pitch change of the video's sound in semitones (0 = its own
+  /// pitch). The speed never changes the pitch; this raises or lowers it on
+  /// its own.
+  final double videoPitchSemitones;
   final double videoVolume;
   final String? watermarkAssetId;
   final double watermarkAngle;
@@ -95,7 +96,7 @@ class Layer {
     this.sourceTrimStartFraction = 0,
     this.playbackRate = 1.0,
     this.videoSoundFollowsSpeed = true,
-    this.videoPreservePitch = true,
+    this.videoPitchSemitones = 0,
     this.videoVolume = 1.0,
     this.watermarkAssetId,
     this.watermarkAngle = 0,
@@ -133,7 +134,7 @@ class Layer {
     double? sourceTrimStartFraction,
     double? playbackRate,
     bool? videoSoundFollowsSpeed,
-    bool? videoPreservePitch,
+    double? videoPitchSemitones,
     double? videoVolume,
     Object? watermarkAssetId = _sentinel,
     double? watermarkAngle,
@@ -185,7 +186,7 @@ class Layer {
       playbackRate: playbackRate ?? this.playbackRate,
       videoSoundFollowsSpeed:
           videoSoundFollowsSpeed ?? this.videoSoundFollowsSpeed,
-      videoPreservePitch: videoPreservePitch ?? this.videoPreservePitch,
+      videoPitchSemitones: videoPitchSemitones ?? this.videoPitchSemitones,
       videoVolume: videoVolume ?? this.videoVolume,
       watermarkAssetId: watermarkAssetId == _sentinel
           ? this.watermarkAssetId

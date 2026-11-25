@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/engine/clip_speed.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/router.dart';
@@ -22,7 +23,7 @@ import 'helpers/pump_real_async.dart';
 
 final _captureKey = GlobalKey();
 
-/// Writes the screen to build/timeline-preserve-pitch/[name].png for a look.
+/// Writes the screen to build/timeline-pitch/[name].png for a look.
 Future<void> _capture(WidgetTester tester, String name) async {
   final boundary = tester.renderObject<RenderRepaintBoundary>(
     find.byKey(_captureKey),
@@ -36,16 +37,18 @@ Future<void> _capture(WidgetTester tester, String name) async {
       image.dispose();
     }
   });
-  final directory = Directory('build/timeline-preserve-pitch')
+  final directory = Directory('build/timeline-pitch')
     ..createSync(recursive: true);
   File('${directory.path}/$name.png').writeAsBytesSync(bytes!);
 }
 
-/// 音の高さを保つ in the real screen: the switch of a sped-up video (shown
-/// only while its sound follows the speed; one Undo) and of an audio clip
-/// (kept with OK, put back with Cancel).
+/// 音の高さ in the real screen: the pitch of a sped-up video's sound (in the
+/// video section: 速度に合わせる, the + button, 元の高さ, a typed value, one
+/// Undo each; a value out of the range refused) and of
+/// an audio clip (in its sheet: kept with OK, put back with Cancel). The
+/// speed keeps the pitch; the pitch is changed only here.
 void main() {
-  testWidgets('the pitch switch of a video and of an audio clip', (
+  testWidgets('the pitch of a video\'s sound and of an audio clip', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({
@@ -141,49 +144,102 @@ void main() {
       tester.element(find.byType(TimelineScreen)),
     )!;
 
-    Future<void> tapSwitch(String key) async {
+    Future<void> tapIn(String key, Finder target) async {
       await tester.ensureVisible(
         find.byKey(ValueKey(key), skipOffstage: false),
       );
       await tester.pump();
-      final found = find.byKey(ValueKey(key));
-      await tester.pump();
-      await tester.tap(found);
+      await tester.tap(target);
       await settle();
     }
 
-    // The panel scrolls: a switch may be built but outside its view.
-    bool switchOn(String key) => tester
-        .widget<SwitchListTile>(find.byKey(ValueKey(key), skipOffstage: false))
-        .value;
+    Future<void> tapKey(String key) => tapIn(key, find.byKey(ValueKey(key)));
 
-    // ── The video: 2x, its sound following the speed, the pitch kept.
+    Future<void> plusOne() => tapIn(
+      'pitchSlider',
+      find.descendant(
+        of: find.byKey(const ValueKey('pitchSlider')),
+        matching: find.byIcon(Icons.add_circle_outline),
+      ),
+    );
+
+    bool enabled(String key) =>
+        tester
+            .widget<ButtonStyleButton>(
+              find.byKey(ValueKey(key), skipOffstage: false),
+            )
+            .onPressed !=
+        null;
+
+    Future<void> undo() async {
+      await tester.tap(find.byIcon(Icons.undo).first);
+      await settle();
+    }
+
+    // ── The video: 2x, its sound following the speed, its own pitch.
     final clip = find.byKey(ValueKey('timelineClip-$videoId'));
     await tester.ensureVisible(clip);
     await tester.pump();
     await tester.tapAt(tester.getTopLeft(clip) + const Offset(30, 20));
     await pumpRealAsync(tester, const Duration(milliseconds: 400));
-    final chip = find.widgetWithIcon(ChoiceChip, Icons.timelapse);
+    final chip = find.widgetWithIcon(ChoiceChip, Icons.videocam);
     await tester.ensureVisible(chip);
     await tester.tap(chip);
     await settle();
-    expect(find.text(l10n.timelinePreservePitch), findsOneWidget);
-    expect(switchOn('videoPreservePitch'), isTrue);
-    await tapSwitch('videoPreservePitch');
-    expect(video().videoPreservePitch, isFalse);
-    await _capture(tester, '1_video_pitch_off');
-    // One Undo.
-    await tester.tap(find.byIcon(Icons.undo).first);
-    await settle();
-    expect(video().videoPreservePitch, isTrue);
-    expect(switchOn('videoPreservePitch'), isTrue);
-    // A sound at the normal speed has no pitch to change: no switch.
-    await tapSwitch('videoSoundFollowsSpeed');
-    expect(video().videoSoundFollowsSpeed, isFalse);
-    expect(
-      find.byKey(const ValueKey('videoPreservePitch'), skipOffstage: false),
-      findsNothing,
+    expect(find.text(l10n.timelinePitchLabel), findsOneWidget);
+    expect(enabled('pitchReset'), isFalse);
+    // Matching its 2x speed: an octave up, like a tape.
+    await tapKey('pitchMatchSpeed');
+    expect(video().videoPitchSemitones, closeTo(12, 1e-9));
+    expect(video().playbackRate, 2);
+    expect(enabled('pitchMatchSpeed'), isFalse);
+    await _capture(tester, '1_video_pitch_matched');
+    await undo();
+    expect(video().videoPitchSemitones, 0);
+    // A semitone up with +, then back with 元の高さ: one Undo each.
+    await plusOne();
+    expect(video().videoPitchSemitones, 1);
+    await tapKey('pitchReset');
+    expect(video().videoPitchSemitones, 0);
+    await undo();
+    expect(video().videoPitchSemitones, 1);
+    await undo();
+    expect(video().videoPitchSemitones, 0);
+    // Any value typed: -3.5 (one Undo); out of the range, refused.
+    Future<void> type(String value) async {
+      final field = find.byKey(const ValueKey('pitchField'));
+      await tester.ensureVisible(field);
+      await tester.pump();
+      await tester.enterText(field, value);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await settle();
+    }
+
+    await type('-3.5');
+    expect(video().videoPitchSemitones, -3.5);
+    expect(find.text('−3.5'), findsOneWidget);
+    await _capture(tester, '3_video_pitch_typed');
+    await type('30');
+    expect(find.text(l10n.timelinePitchInvalid), findsOneWidget);
+    expect(video().videoPitchSemitones, -3.5);
+    await undo();
+    expect(video().videoPitchSemitones, 0);
+    // The field shows the value after Undo.
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('pitchField'), skipOffstage: false),
     );
+    expect(field.controller!.text, '0');
+    // Its sound at the normal speed: nothing to match.
+    final durationChip = find.widgetWithIcon(ChoiceChip, Icons.timelapse);
+    await tester.ensureVisible(durationChip);
+    await tester.tap(durationChip);
+    await settle();
+    await tapKey('videoSoundFollowsSpeed');
+    expect(video().videoSoundFollowsSpeed, isFalse);
+    await tester.ensureVisible(chip);
+    await tester.tap(chip);
+    await settle();
+    expect(enabled('pitchMatchSpeed'), isFalse);
     await tester.tap(find.byIcon(Icons.check).first);
     await settle();
 
@@ -197,20 +253,19 @@ void main() {
     }
 
     await openAudio();
-    expect(switchOn('audioPreservePitch'), isTrue);
-    await tapSwitch('audioPreservePitch');
-    expect(switchOn('audioPreservePitch'), isFalse);
-    await _capture(tester, '2_audio_pitch_off');
+    await tapKey('pitchMatchSpeed');
+    await _capture(tester, '2_audio_pitch_matched');
     // Cancel puts it back.
     await tester.tap(find.byTooltip(l10n.commonCancel));
     await settle();
-    expect(audio().preservePitch, isTrue);
-    // OK keeps it.
+    expect(audio().pitchSemitones, 0);
+    // OK keeps it: about a fifth up for 1.5x, and the speed stays.
     await openAudio();
-    await tapSwitch('audioPreservePitch');
+    await tapKey('pitchMatchSpeed');
+    await plusOne();
     await tester.tap(find.byTooltip(l10n.commonOk));
     await settle();
-    expect(audio().preservePitch, isFalse);
+    expect(audio().pitchSemitones, closeTo(pitchMatchingSpeed(1.5) + 1, 1e-9));
     expect(audio().playbackRate, 1.5);
   });
 }

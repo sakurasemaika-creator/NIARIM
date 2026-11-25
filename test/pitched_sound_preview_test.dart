@@ -4,7 +4,8 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/export_audio.dart';
-import 'package:niarim/engine/speed_sound_preview.dart';
+import 'package:niarim/engine/clip_speed.dart';
+import 'package:niarim/engine/pitched_sound_preview.dart';
 
 final _ffmpegTests =
     Platform.environment['NIARIM_VIDEO_FRAME_FFMPEG_TESTS'] == '1';
@@ -39,15 +40,13 @@ double _hertz(List<int> left) {
   return crossings / 2 / (left.length / exportAudioSampleRate);
 }
 
-/// The preview of a sound whose pitch follows its speed plays a sound made
-/// with the export's own FFmpeg arguments, so it sounds as the export does.
+/// The preview of a sound with a pitch change plays a sound made with the
+/// export's own FFmpeg arguments, so it sounds as the export does.
 void main() {
-  test('only a sound whose pitch is not kept and whose speed is not 1x is '
-      'made', () {
-    expect(SpeedSoundPreview.needed(rate: 2, preservePitch: false), isTrue);
-    expect(SpeedSoundPreview.needed(rate: 0.5, preservePitch: false), isTrue);
-    expect(SpeedSoundPreview.needed(rate: 2, preservePitch: true), isFalse);
-    expect(SpeedSoundPreview.needed(rate: 1, preservePitch: false), isFalse);
+  test('only a sound with a pitch change is made', () {
+    expect(PitchedSoundPreview.needed(12), isTrue);
+    expect(PitchedSoundPreview.needed(-0.5), isTrue);
+    expect(PitchedSoundPreview.needed(0), isFalse);
   });
 
   test('the preview asks FFmpeg for the export\'s arguments, once per '
@@ -58,7 +57,7 @@ void main() {
     });
     final calls = <List<String>>[];
     final finish = Completer<void>();
-    final preview = SpeedSoundPreview(
+    final preview = PitchedSoundPreview(
       workDir: () async => dir,
       runFfmpeg: (arguments) async {
         calls.add(arguments);
@@ -73,6 +72,7 @@ void main() {
       sourceSeconds: 1.5,
       durationSeconds: 2,
       rate: 0.5,
+      pitchSemitones: 12,
       onReady: () => ready++,
     );
     expect(ask(), isNull);
@@ -88,27 +88,30 @@ void main() {
         durationSeconds: 2,
         clipSeconds: 2,
         playbackRate: 0.5,
-        preservePitch: false,
+        pitchSemitones: 12,
       ),
       calls.single.last,
     );
     expect(calls.single, exported);
     expect(
       calls.single[calls.single.indexOf('-af') + 1],
-      startsWith('aresample=48000,asetrate=24000,aresample=48000'),
+      startsWith(
+        'aresample=48000,asetrate=96000,aresample=48000,atempo=0.5,atempo=0.5',
+      ),
     );
     finish.complete();
     await pumpEventQueue();
     expect(ready, 1);
     expect(ask(), calls.single.last);
 
-    // Another speed is another sound.
+    // Another pitch is another sound.
     expect(
       preview.soundFor(
         path: '/song.wav',
         sourceSeconds: 1.5,
         durationSeconds: 2,
-        rate: 2,
+        rate: 0.5,
+        pitchSemitones: -3,
       ),
       isNull,
     );
@@ -120,14 +123,14 @@ void main() {
     expect(ask(), isNull);
   });
 
-  test('a sound FFmpeg cannot make stays silent (not played with its pitch '
-      'kept)', () async {
+  test('a sound FFmpeg cannot make stays silent (not played at its own '
+      'pitch)', () async {
     final dir = Directory.systemTemp.createTempSync('speed-sound-fail-');
     addTearDown(() {
       if (dir.existsSync()) dir.deleteSync(recursive: true);
     });
     var ready = 0;
-    final preview = SpeedSoundPreview(
+    final preview = PitchedSoundPreview(
       workDir: () async => dir,
       runFfmpeg: (_) async => false,
     );
@@ -136,6 +139,7 @@ void main() {
       sourceSeconds: 0,
       durationSeconds: 1,
       rate: 2,
+      pitchSemitones: 5,
       onReady: () => ready++,
     );
     expect(ask(), isNull);
@@ -145,9 +149,9 @@ void main() {
     preview.dispose();
   });
 
-  test('the made sound is the export\'s sound: the same samples, an octave up '
-      'at 2x and down at 0.5x, as long as the clip', () async {
-    final dir = Directory.systemTemp.createTempSync('speed-sound-real-');
+  test('the made sound is the export\'s sound: the same samples, its pitch '
+      'changed and its speed kept, as long as the clip', () async {
+    final dir = Directory.systemTemp.createTempSync('pitched-sound-real-');
     addTearDown(() {
       if (dir.existsSync()) dir.deleteSync(recursive: true);
     });
@@ -163,13 +167,18 @@ void main() {
       isTrue,
     );
     final work = Directory('${dir.path}/preview')..createSync();
-    final preview = SpeedSoundPreview(
+    final preview = PitchedSoundPreview(
       workDir: () async => work,
       runFfmpeg: _ffmpeg,
     );
     addTearDown(preview.dispose);
 
-    Future<String> made(double from, double seconds, double rate) async {
+    Future<String> made(
+      double from,
+      double seconds,
+      double rate,
+      double semitones,
+    ) async {
       final ready = Completer<void>();
       expect(
         preview.soundFor(
@@ -177,6 +186,7 @@ void main() {
           sourceSeconds: from,
           durationSeconds: seconds,
           rate: rate,
+          pitchSemitones: semitones,
           onReady: ready.complete,
         ),
         isNull,
@@ -187,17 +197,23 @@ void main() {
         sourceSeconds: from,
         durationSeconds: seconds,
         rate: rate,
+        pitchSemitones: semitones,
       )!;
     }
 
-    // 2x for 0.4 s reads 0–0.8 s (440 Hz) and is heard at 880 Hz.
-    final fast = _left(await made(0, 0.4, 2));
-    expect(fast.length / exportAudioSampleRate, closeTo(0.4, 0.01));
-    expect(_hertz(fast), closeTo(880, 15));
-    // 0.5x for 1 s reads 1.2–1.7 s (660 Hz) and is heard at 330 Hz.
-    final slowPath = await made(1.2, 1, 0.5);
+    // 2x matching the speed (a tape) for 0.4 s reads 0–0.8 s (440 Hz) and
+    // is heard at 880 Hz.
+    final tape = _left(await made(0, 0.4, 2, pitchMatchingSpeed(2)));
+    expect(tape.length / exportAudioSampleRate, closeTo(0.4, 0.01));
+    expect(_hertz(tape), closeTo(880, 20));
+    // An octave up at 1x for 0.8 s: the same 0–0.8 s at 880 Hz.
+    final up = _left(await made(0, 0.8, 1, 12));
+    expect(up.length / exportAudioSampleRate, closeTo(0.8, 0.03));
+    expect(_hertz(up), closeTo(880, 20));
+    // 0.5x an octave down for 1 s reads 1.2–1.7 s (660 Hz): 330 Hz.
+    final slowPath = await made(1.2, 1, 0.5, -12);
     final slow = _left(slowPath);
-    expect(slow.length / exportAudioSampleRate, closeTo(1, 0.01));
+    expect(slow.length / exportAudioSampleRate, closeTo(1, 0.03));
     expect(_hertz(slow), closeTo(330, 10));
 
     // The export's sound of the same clip at full volume: the same samples.
@@ -212,7 +228,7 @@ void main() {
             durationSeconds: 1,
             clipSeconds: 1,
             playbackRate: 0.5,
-            preservePitch: false,
+            pitchSemitones: -12,
           ),
           exported,
         ),

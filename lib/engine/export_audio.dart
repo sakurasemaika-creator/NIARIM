@@ -28,7 +28,7 @@ class ExportAudioSource {
     this.fadeInSeconds = 0,
     this.fadeOutSeconds = 0,
     this.playbackRate = 1,
-    this.preservePitch = true,
+    this.pitchSemitones = 0,
   });
 
   final String path;
@@ -46,9 +46,8 @@ class ExportAudioSource {
   /// The clip's speed.
   final double playbackRate;
 
-  /// Whether the pitch is kept at [playbackRate] (on), or rises and falls
-  /// with the speed (off).
-  final bool preservePitch;
+  /// The pitch change in semitones; the speed itself keeps the pitch.
+  final double pitchSemitones;
 }
 
 /// The sounds of an export and how many could not be included (a material
@@ -96,7 +95,7 @@ Future<ExportAudioPlan> buildExportAudioPlan({
     double fadeOut = 0,
     double sourceFraction = 0,
     double rate = 1,
-    bool preservePitch = true,
+    double pitchSemitones = 0,
     double? soundingFrames,
   }) async {
     if (materialId == null || volume <= 0 || lengthFrames <= 0) return;
@@ -136,7 +135,9 @@ Future<ExportAudioPlan> buildExportAudioPlan({
         fadeInSeconds: math.max(0, fadeIn),
         fadeOutSeconds: math.max(0, fadeOut),
         playbackRate: isValidPlaybackRate(rate) ? rate : 1,
-        preservePitch: preservePitch,
+        pitchSemitones: isValidPitchSemitones(pitchSemitones)
+            ? pitchSemitones
+            : 0,
       ),
     );
   }
@@ -156,7 +157,7 @@ Future<ExportAudioPlan> buildExportAudioPlan({
         fadeOut: clip.fadeOut,
         sourceFraction: clip.sourceStartFraction,
         rate: clip.playbackRate,
-        preservePitch: clip.preservePitch,
+        pitchSemitones: clip.pitchSemitones,
       );
     }
     // A video material is a layer; its sound plays over the frames it shows.
@@ -177,7 +178,7 @@ Future<ExportAudioPlan> buildExportAudioPlan({
           volume: layer.videoVolume,
           sourceFraction: layer.sourceTrimStartFraction,
           rate: layer.videoSoundFollowsSpeed ? layer.playbackRate : 1,
-          preservePitch: layer.videoPreservePitch,
+          pitchSemitones: layer.videoPitchSemitones,
           soundingFrames: TimelineVideoTimeMapper.layerSoundingFrames(layer),
         );
       }
@@ -257,21 +258,43 @@ String _seconds(double s) => s.toStringAsFixed(3);
 const int exportAudioSampleRate = 48000;
 const int exportAudioChannels = 2;
 
-/// The FFmpeg filters that play a sound at [rate]: with [preservePitch] the
-/// tempo changes and the pitch stays (`atempo`); without it the sound is
-/// played faster or slower like a tape, so its pitch rises and falls with
-/// the speed (the samples are read at [rate] times their rate). The export
-/// and the preview of a sound whose pitch follows its speed use these same
-/// filters.
-List<String> speedSoundFilters(double rate, {required bool preservePitch}) {
-  if (rate == 1) return const [];
-  if (preservePitch) {
-    return [for (final factor in atempoChain(rate)) 'atempo=$factor'];
+/// The FFmpeg filters that play a sound at [rate] with its pitch changed
+/// by [pitchSemitones]. The speed keeps the pitch (`atempo`). A pitch change
+/// reads the samples [pitchFactorOf] times faster (`asetrate`, which raises
+/// the pitch and the speed together) and then sets the tempo back to [rate]
+/// with `atempo`, so the length is the same with or without it. The export
+/// and the preview of a sound with a pitch change use these same filters.
+List<String> speedSoundFilters(double rate, {double pitchSemitones = 0}) {
+  final tempo = <String>[];
+  void tempoOf(double factor) {
+    if ((factor - 1).abs() < 1e-9) return;
+    // One atempo takes 0.5–100 (as [atempoChain]); a pitch change can push
+    // the factor past either end, so the steps go on as far as needed.
+    var left = factor;
+    while (left < 0.5) {
+      tempo.add('atempo=0.5');
+      left /= 0.5;
+    }
+    while (left > 100) {
+      tempo.add('atempo=100.0');
+      left /= 100;
+    }
+    tempo.add('atempo=$left');
   }
+
+  if (pitchSemitones == 0) {
+    tempoOf(rate);
+    return tempo;
+  }
+  // The sample rate is a whole number: the tempo makes up for its rounding.
+  final rateHz = (exportAudioSampleRate * pitchFactorOf(pitchSemitones))
+      .round();
+  tempoOf(rate * exportAudioSampleRate / rateHz);
   return [
     'aresample=$exportAudioSampleRate',
-    'asetrate=${(exportAudioSampleRate * rate).round()}',
+    'asetrate=$rateHz',
     'aresample=$exportAudioSampleRate',
+    ...tempo,
   ];
 }
 
@@ -290,7 +313,7 @@ List<String> exportAudioSourceArguments(
     fadeOutSeconds: source.fadeOutSeconds,
   );
   final rate = source.playbackRate;
-  final tempo = speedSoundFilters(rate, preservePitch: source.preservePitch);
+  final tempo = speedSoundFilters(rate, pitchSemitones: source.pitchSemitones);
   return [
     '-y',
     '-ss',

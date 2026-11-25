@@ -6,7 +6,7 @@ on:
     paths:
       - '.github/workflows/timeline-preview-export-parity.yml'
       - 'lib/engine/export_audio.dart'
-      - 'lib/engine/speed_sound_preview.dart'
+      - 'lib/engine/pitched_sound_preview.dart'
       - 'lib/engine/export_engine.dart'
       - 'lib/engine/layer_compositor.dart'
       - 'lib/engine/timeline_stack.dart'
@@ -25,6 +25,7 @@ on:
       - 'lib/models/audio_clip.dart'
       - 'lib/screens/timeline/widgets/clip_speed_control.dart'
       - 'lib/screens/timeline/widgets/clip_time_range_control.dart'
+      - 'lib/screens/timeline/widgets/pitch_control.dart'
       - 'lib/screens/timeline/widgets/material_edit_panel.dart'
       - 'lib/screens/timeline/widgets/video_filmstrip.dart'
       - 'lib/screens/timeline/widgets/keyframe_retime_dialog.dart'
@@ -54,8 +55,8 @@ on:
       - 'test/timeline_video_export_test.dart'
       - 'test/timeline_preview_video_frames_test.dart'
       - 'test/clip_speed_test.dart'
-      - 'test/speed_sound_preview_test.dart'
-      - 'test/timeline_preserve_pitch_test.dart'
+      - 'test/pitched_sound_preview_test.dart'
+      - 'test/timeline_pitch_test.dart'
       - 'test/timeline_clip_speed_test.dart'
       - 'test/timeline_time_range_test.dart'
       - 'test/timeline_clip_edits_kept_test.dart'
@@ -131,9 +132,9 @@ jobs:
       - name: Test clip speed (lengths, exact splits, keyframe retiming, saving, export sound)
         env:
           NIARIM_VIDEO_FRAME_FFMPEG_TESTS: '1'
-        run: flutter test test/clip_speed_test.dart test/speed_sound_preview_test.dart --reporter expanded
+        run: flutter test test/clip_speed_test.dart test/pitched_sound_preview_test.dart --reporter expanded
       - name: Test changing clip speed in the timeline screen (refusal, cancel, Undo)
-        run: flutter test test/timeline_clip_speed_test.dart test/timeline_preserve_pitch_test.dart --reporter expanded
+        run: flutter test test/timeline_clip_speed_test.dart test/timeline_pitch_test.dart --reporter expanded
       - name: Test the 長さ調整 time range (typed start/end for materials and audio, refusals, Undo, Cancel)
         run: flutter test test/timeline_time_range_test.dart --reporter expanded
       - name: Test edit settings kept by cut, copy, paste, duplicate, autosave and project duplicate (one Undo each)
@@ -152,7 +153,7 @@ jobs:
         run: >-
           flutter analyze
           lib/engine/export_audio.dart
-          lib/engine/speed_sound_preview.dart
+          lib/engine/pitched_sound_preview.dart
           lib/engine/export_engine.dart
           lib/engine/timeline_output_viewport.dart
           lib/engine/timeline_video_time.dart
@@ -170,6 +171,7 @@ jobs:
           lib/models/audio_clip.dart
           lib/screens/timeline/widgets/clip_speed_control.dart
           lib/screens/timeline/widgets/clip_time_range_control.dart
+          lib/screens/timeline/widgets/pitch_control.dart
           lib/screens/timeline/widgets/material_edit_panel.dart
           lib/screens/timeline/widgets/video_filmstrip.dart
           lib/screens/timeline/widgets/keyframe_retime_dialog.dart
@@ -198,8 +200,8 @@ jobs:
           test/timeline_video_export_test.dart
           test/timeline_preview_video_frames_test.dart
           test/clip_speed_test.dart
-          test/speed_sound_preview_test.dart
-          test/timeline_preserve_pitch_test.dart
+          test/pitched_sound_preview_test.dart
+          test/timeline_pitch_test.dart
           test/timeline_clip_speed_test.dart
           test/timeline_time_range_test.dart
           test/timeline_clip_edits_kept_test.dart

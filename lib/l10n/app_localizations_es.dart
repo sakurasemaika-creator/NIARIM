@@ -11788,11 +11788,24 @@ class AppLocalizationsEs extends AppLocalizations {
       'Si se desactiva, el sonido se reproduce a velocidad normal desde el inicio del clip y solo cambia la velocidad de la imagen.';
 
   @override
-  String get timelinePreservePitch => 'Mantener el tono';
+  String get timelinePitchLabel => 'Tono (semitonos)';
 
   @override
-  String get timelinePreservePitchHint =>
-      'Si está desactivado, el sonido se vuelve más agudo al acelerarlo y más grave al ralentizarlo.';
+  String get timelinePitchHint =>
+      'Al cambiar la velocidad, el tono no cambia. Aquí puedes subir o bajar solo el tono. Ajustar a la velocidad da el tono que tendría una cinta a esa velocidad.';
+
+  @override
+  String get timelinePitchMatchSpeed => 'Ajustar a la velocidad';
+
+  @override
+  String get timelinePitchReset => 'Tono original';
+
+  @override
+  String get timelinePitchInputLabel => 'Escribir semitonos';
+
+  @override
+  String get timelinePitchInvalid =>
+      'Introduce un número de -24 a +24 (se admiten decimales).';
 
   @override
   String get keyframeRetimeTitle => 'Velocidad de los fotogramas clave';

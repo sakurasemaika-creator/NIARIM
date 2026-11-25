@@ -1236,7 +1236,7 @@ class NiaproSerializer {
             if (a.sourceStartFraction != 0)
               'sourceStartFraction': a.sourceStartFraction,
             if (a.playbackRate != 1.0) 'playbackRate': a.playbackRate,
-            if (!a.preservePitch) 'preservePitch': false,
+            if (a.pitchSemitones != 0) 'pitchSemitones': a.pitchSemitones,
             'trackRow': a.trackRow,
             if (a.isReadAloud) 'isReadAloud': true,
           },
@@ -1292,7 +1292,8 @@ class NiaproSerializer {
       'sourceTrimStartFraction': l.sourceTrimStartFraction,
     if (l.playbackRate != 1.0) 'playbackRate': l.playbackRate,
     if (!l.videoSoundFollowsSpeed) 'videoSoundFollowsSpeed': false,
-    if (!l.videoPreservePitch) 'videoPreservePitch': false,
+    if (l.videoPitchSemitones != 0)
+      'videoPitchSemitones': l.videoPitchSemitones,
     'videoVolume': l.videoVolume,
     'watermarkAssetId': l.watermarkAssetId,
     'watermarkAngle': l.watermarkAngle,
@@ -1461,7 +1462,7 @@ class NiaproSerializer {
           sourceStartFrame: m['sourceStartFrame'] as int? ?? 0,
           sourceStartFraction: _sourceFraction(m['sourceStartFraction']),
           playbackRate: _playbackRate(m['playbackRate']),
-          preservePitch: m['preservePitch'] != false,
+          pitchSemitones: _pitchSemitones(m['pitchSemitones']),
           trackRow: m['trackRow'] as int? ?? 0,
           isReadAloud: m['isReadAloud'] as bool? ?? false,
         );
@@ -1561,7 +1562,7 @@ class NiaproSerializer {
     sourceTrimStartFraction: _sourceFraction(j['sourceTrimStartFraction']),
     playbackRate: _playbackRate(j['playbackRate']),
     videoSoundFollowsSpeed: j['videoSoundFollowsSpeed'] != false,
-    videoPreservePitch: j['videoPreservePitch'] != false,
+    videoPitchSemitones: _pitchSemitones(j['videoPitchSemitones']),
     videoVolume: (j['videoVolume'] as num?)?.toDouble() ?? 1.0,
     watermarkAssetId: j['watermarkAssetId'] as String?,
     watermarkAngle: (j['watermarkAngle'] as num?)?.toDouble() ?? 0,
@@ -1679,6 +1680,13 @@ class NiaproData {
 double _playbackRate(Object? value) {
   final rate = value is num ? value.toDouble() : 1.0;
   return isValidPlaybackRate(rate) ? rate : 1.0;
+}
+
+/// A saved pitch change; a missing, non-numeric or out-of-range value (an
+/// older project, a damaged file) keeps the sound's own pitch.
+double _pitchSemitones(Object? value) {
+  final semitones = value is num ? value.toDouble() : 0.0;
+  return isValidPitchSemitones(semitones) ? semitones : 0.0;
 }
 
 /// A saved fraction of a source frame, 0 when missing or outside [0, 1).

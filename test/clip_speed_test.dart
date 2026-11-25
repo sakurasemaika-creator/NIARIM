@@ -483,21 +483,68 @@ void main() {
       expect(args[args.indexOf('-af') + 1], startsWith('atempo=3.0,volume='));
     });
 
-    test('the pitch kept or following the speed: the filters, and the plan '
-        'carries the setting of an audio clip and a video', () async {
-      expect(speedSoundFilters(1, preservePitch: false), isEmpty);
-      expect(speedSoundFilters(1, preservePitch: true), isEmpty);
-      expect(speedSoundFilters(2, preservePitch: true), ['atempo=2.0']);
-      expect(speedSoundFilters(2, preservePitch: false), [
+    test('the pitch change on its own: the filters, matching the speed, and '
+        'the plan carries it for an audio clip and a video', () async {
+      expect(speedSoundFilters(1), isEmpty);
+      expect(speedSoundFilters(2), ['atempo=2.0']);
+      // An octave up at 1x: read twice as fast, then back to 1x.
+      expect(speedSoundFilters(1, pitchSemitones: 12), [
+        'aresample=48000',
+        'asetrate=96000',
+        'aresample=48000',
+        'atempo=0.5',
+      ]);
+      // Matching the speed (a tape): no tempo left to change.
+      expect(speedSoundFilters(2, pitchSemitones: pitchMatchingSpeed(2)), [
         'aresample=48000',
         'asetrate=96000',
         'aresample=48000',
       ]);
-      expect(speedSoundFilters(0.1, preservePitch: false)[1], 'asetrate=4800');
+      // An octave down at 2x: half as fast, then 4x the tempo.
+      expect(speedSoundFilters(2, pitchSemitones: -12), [
+        'aresample=48000',
+        'asetrate=24000',
+        'aresample=48000',
+        'atempo=4.0',
+      ]);
+      // Tempo steps past either end of one atempo.
       expect(
-        speedSoundFilters(100, preservePitch: false)[1],
-        'asetrate=4800000',
+        speedSoundFilters(
+          0.01,
+          pitchSemitones: 24,
+        ).where((f) => f == 'atempo=0.5'),
+        hasLength(8),
       );
+      expect(speedSoundFilters(100, pitchSemitones: -24), [
+        'aresample=48000',
+        'asetrate=12000',
+        'aresample=48000',
+        'atempo=100.0',
+        'atempo=4.0',
+      ]);
+      // A typed pitch: signed decimals, a comma, a typographic minus, "st".
+      expect(parsePitchSemitones('7'), 7);
+      expect(parsePitchSemitones('+3.5'), 3.5);
+      expect(parsePitchSemitones('-12'), -12);
+      expect(parsePitchSemitones('\u22122,5'), -2.5);
+      expect(parsePitchSemitones(' 4 st '), 4);
+      expect(parsePitchSemitones('24'), 24);
+      expect(parsePitchSemitones('24.5'), isNull);
+      expect(parsePitchSemitones('-25'), isNull);
+      expect(parsePitchSemitones('x'), isNull);
+      expect(parsePitchSemitones(''), isNull);
+      expect(formatPitchSemitones(0), '0');
+      expect(formatPitchSemitones(7), '7');
+      expect(formatPitchSemitones(-3.5), '-3.5');
+      expect(formatPitchSemitones(pitchMatchingSpeed(1.5)), '7.02');
+      expect(formatPitchSemitones(-0.001), '0');
+      expect(pitchMatchingSpeed(1), 0);
+      expect(pitchMatchingSpeed(2), closeTo(12, 1e-9));
+      expect(pitchMatchingSpeed(0.5), closeTo(-12, 1e-9));
+      expect(pitchMatchingSpeed(1.5), closeTo(7.02, 0.01));
+      // Beyond two octaves the nearest end.
+      expect(pitchMatchingSpeed(16), maxPitchSemitones);
+      expect(pitchMatchingSpeed(0.01), minPitchSemitones);
 
       final dir = Directory.systemTemp.createTempSync('niarim-pitch-plan-');
       addTearDown(() => dir.deleteSync(recursive: true));
@@ -524,7 +571,7 @@ void main() {
                             sourceTrimStart: 0,
                             sourceTrimEnd: 40,
                             playbackRate: 2,
-                            videoPreservePitch: false,
+                            videoPitchSemitones: -12,
                           ),
                         ]
                       : const [],
@@ -538,7 +585,7 @@ void main() {
                 startFrame: 0,
                 lengthFrames: 10,
                 playbackRate: 0.5,
-                preservePitch: false,
+                pitchSemitones: 12,
               ),
               AudioClip(
                 id: 'k',
@@ -554,14 +601,14 @@ void main() {
         sourceFps: 10,
         pathOf: (_) async => file.path,
       );
-      expect(
-        [for (final s in plan.sources) s.preservePitch],
-        [false, true, false],
-      );
+      expect([for (final s in plan.sources) s.pitchSemitones], [12, 0, -12]);
       final args = exportAudioSourceArguments(plan.sources.first, '/o.wav');
       expect(
         args[args.indexOf('-af') + 1],
-        startsWith('aresample=48000,asetrate=24000,aresample=48000,volume='),
+        startsWith(
+          'aresample=48000,asetrate=96000,aresample=48000,'
+          'atempo=0.5,atempo=0.5,volume=',
+        ),
       );
       // The same part of the file is read either way.
       expect(args[args.indexOf('-t') + 1], '0.500');
@@ -652,10 +699,10 @@ void main() {
           double sourceSeconds,
           double outputSeconds,
           double rate, {
-          bool preservePitch = true,
+          double pitchSemitones = 0,
         }) async {
           final out =
-              '${dir.path}/out_${rate}_${sourceSeconds}_$preservePitch.wav';
+              '${dir.path}/out_${rate}_${sourceSeconds}_$pitchSemitones.wav';
           final args = exportAudioSourceArguments(
             ExportAudioSource(
               path: source,
@@ -664,7 +711,7 @@ void main() {
               durationSeconds: outputSeconds,
               clipSeconds: outputSeconds,
               playbackRate: rate,
-              preservePitch: preservePitch,
+              pitchSemitones: pitchSemitones,
             ),
             out,
           );
@@ -700,25 +747,29 @@ void main() {
         expect(slow.$1, closeTo(1.0, 0.03));
         expect(slow.$2, closeTo(880, 25));
 
-        // With the pitch not kept, the same parts and lengths, an octave up
-        // at 2x and an octave down at 0.5x.
-        final high = await render(0, 0.45, 2, preservePitch: false);
-        expect(high.$1, closeTo(0.45, 0.01));
-        expect(high.$2, closeTo(880, 15));
-        final low = await render(1.1, 1.0, 0.5, preservePitch: false);
-        expect(low.$1, closeTo(1.0, 0.01));
-        expect(low.$2, closeTo(440, 15));
-        // At 16x the 440 Hz part is read in 0.05 s and heard at 7040 Hz.
-        final faster = await render(0, 0.05, 16, preservePitch: false);
-        expect(faster.$1, closeTo(0.05, 0.005));
-        expect(faster.$2, closeTo(7040, 200));
+        // A pitch change keeps the same part and length: an octave up at 1x
+        // (880 Hz), matching 2x like a tape (880 Hz in half the time), an
+        // octave down at 2x (220 Hz in half the time).
+        final up = await render(0, 0.9, 1, pitchSemitones: 12);
+        expect(up.$1, closeTo(0.9, 0.03));
+        expect(up.$2, closeTo(880, 20));
+        final tape = await render(0, 0.45, 2, pitchSemitones: 12);
+        expect(tape.$1, closeTo(0.45, 0.03));
+        expect(tape.$2, closeTo(880, 20));
+        final down = await render(0, 0.45, 2, pitchSemitones: -12);
+        expect(down.$1, closeTo(0.45, 0.03));
+        expect(down.$2, closeTo(220, 10));
+        // A fifth up (+7) on the 880 Hz part at 0.5x: about 1319 Hz.
+        final fifth = await render(1.1, 1.0, 0.5, pitchSemitones: 7);
+        expect(fifth.$1, closeTo(1.0, 0.03));
+        expect(fifth.$2, closeTo(880 * pitchFactorOf(7), 30));
       },
       skip: _ffmpegTests ? false : 'Needs NIARIM_VIDEO_FRAME_FFMPEG_TESTS=1',
     );
   });
 
-  test('speeds, source fractions and the pitch setting survive saving; old '
-      'projects play at 1x with the pitch kept', () async {
+  test('speeds, source fractions and pitch changes survive saving; old '
+      'projects play at 1x at their own pitch', () async {
     final dir = await Directory.systemTemp.createTemp('niarim-speed-save-');
     addTearDown(() => dir.delete(recursive: true));
     final now = DateTime.utc(2026);
@@ -746,7 +797,7 @@ void main() {
               sourceTrimStart: 3,
               sourceTrimStartFraction: 0.375,
               playbackRate: 2.5,
-              videoPreservePitch: false,
+              videoPitchSemitones: 3.5,
             ),
             Layer(id: 'plain', name: 'plain', type: LayerType.timelineVideo),
             Layer(
@@ -767,7 +818,7 @@ void main() {
           lengthFrames: 4,
           sourceStartFraction: 0.5,
           playbackRate: 0.25,
-          preservePitch: false,
+          pitchSemitones: -24,
         ),
         AudioClip(id: 'normal', label: 'n', startFrame: 0, lengthFrames: 4),
       ],
@@ -793,10 +844,10 @@ void main() {
     expect(clips['slow']!.playbackRate, 0.25);
     expect(clips['slow']!.sourceStartFraction, 0.5);
     expect(clips['normal']!.playbackRate, 1.0);
-    // The pitch setting: off is kept, and an old project keeps the pitch.
-    expect(layers['fast']!.videoPreservePitch, isFalse);
-    expect(layers['plain']!.videoPreservePitch, isTrue);
-    expect(clips['slow']!.preservePitch, isFalse);
-    expect(clips['normal']!.preservePitch, isTrue);
+    // The pitch changes are kept, and an old project has none.
+    expect(layers['fast']!.videoPitchSemitones, 3.5);
+    expect(layers['plain']!.videoPitchSemitones, 0);
+    expect(clips['slow']!.pitchSemitones, -24);
+    expect(clips['normal']!.pitchSemitones, 0);
   });
 }

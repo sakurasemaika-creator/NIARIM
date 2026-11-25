@@ -21,6 +21,56 @@ const List<double> quickPlaybackRates = [0.25, 0.5, 1, 2, 4, 8, 16, 100];
 bool isValidPlaybackRate(double rate) =>
     rate.isFinite && rate >= minPlaybackRate && rate <= maxPlaybackRate;
 
+/// The range of a sound's pitch change, in semitones (two octaves each way).
+const double minPitchSemitones = -24;
+const double maxPitchSemitones = 24;
+
+/// Whether [semitones] is a pitch change a sound can have.
+bool isValidPitchSemitones(double semitones) =>
+    semitones.isFinite &&
+    semitones >= minPitchSemitones &&
+    semitones <= maxPitchSemitones;
+
+/// The factor the sound's frequencies are multiplied by for [semitones].
+double pitchFactorOf(double semitones) => math.pow(2, semitones / 12) as double;
+
+/// The pitch change that makes a sound played at [rate] rise and fall with
+/// it, as a tape played faster or slower does (within the pitch range; the
+/// nearest end beyond it). 0 at 1×.
+double pitchMatchingSpeed(double rate) {
+  if (!rate.isFinite || rate <= 0) return 0;
+  final semitones = 12 * math.log(rate) / math.ln2;
+  return semitones.clamp(minPitchSemitones, maxPitchSemitones).toDouble();
+}
+
+/// A typed pitch change: a signed number of semitones (a comma may be the
+/// decimal mark, and a typographic minus or "st" after it is accepted), or
+/// null when it is not one or outside the range.
+double? parsePitchSemitones(String text) {
+  var normalized = text
+      .trim()
+      .toLowerCase()
+      .replaceAll(',', '.')
+      .replaceAll('\u2212', '-')
+      .replaceAll(' ', '');
+  if (normalized.endsWith('st')) {
+    normalized = normalized.substring(0, normalized.length - 2);
+  }
+  final semitones = double.tryParse(normalized);
+  if (semitones == null || !isValidPitchSemitones(semitones)) return null;
+  return semitones;
+}
+
+/// How a pitch change reads in its field: "0", "7", "-3.5", "7.02".
+String formatPitchSemitones(double semitones) {
+  var text = semitones.toStringAsFixed(2);
+  if (text.contains('.')) {
+    text = text.replaceFirst(RegExp(r'0+$'), '');
+    if (text.endsWith('.')) text = text.substring(0, text.length - 1);
+  }
+  return text == '-0' ? '0' : text;
+}
+
 /// The slider position (0–1) of [rate]. The slider is logarithmic so the
 /// low speeds get as much travel as the high ones.
 double playbackRateToSlider(double rate) {

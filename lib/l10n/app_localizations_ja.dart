@@ -10798,10 +10798,23 @@ class AppLocalizationsJa extends AppLocalizations {
       'オフにすると、音はクリップの始めから通常の速さで鳴り、映像の速度だけが変わります。';
 
   @override
-  String get timelinePreservePitch => '音の高さを保つ';
+  String get timelinePitchLabel => '音の高さ（半音）';
 
   @override
-  String get timelinePreservePitchHint => 'オフにすると、速くしたときは音が高く、遅くしたときは低くなります。';
+  String get timelinePitchHint =>
+      '速度を変えても音の高さは変わりません。ここで高さだけを上げ下げできます。「速度に合わせる」を押すと、テープを速く回したときのように速度に合った高さになります。';
+
+  @override
+  String get timelinePitchMatchSpeed => '速度に合わせる';
+
+  @override
+  String get timelinePitchReset => '元の高さ';
+
+  @override
+  String get timelinePitchInputLabel => '半音で入力';
+
+  @override
+  String get timelinePitchInvalid => '-24〜+24の数を入力してください（小数も使えます）。';
 
   @override
   String get keyframeRetimeTitle => 'キーフレームの速度';

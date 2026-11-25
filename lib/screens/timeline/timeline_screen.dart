@@ -56,7 +56,7 @@ import '../../engine/video_frame_decoder.dart';
 import '../../engine/video_frame_provider.dart';
 import '../../engine/video_material_snapshot.dart';
 import '../../engine/timeline_stack.dart';
-import '../../engine/speed_sound_preview.dart';
+import '../../engine/pitched_sound_preview.dart';
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/audio_clip.dart';
@@ -113,6 +113,7 @@ import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import 'widgets/clip_speed_control.dart';
 import 'widgets/clip_time_range_control.dart';
+import 'widgets/pitch_control.dart';
 import 'widgets/keyframe_retime_dialog.dart';
 import 'widgets/material_edit_panel.dart';
 import 'widgets/video_filmstrip.dart';
@@ -175,9 +176,8 @@ class _TrackClip {
   /// normal speed while only the picture changes speed).
   bool soundFollowsSpeed;
 
-  /// Whether the sound keeps its pitch at a speed other than 1× (otherwise
-  /// it rises and falls with the speed, in the preview as in the export).
-  bool preservePitch;
+  /// The pitch change in semitones (the speed keeps the pitch).
+  double pitchSemitones;
   double videoOpacity; // 0.0〜1.0
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
   // このクリップが属する行番号（0始まり）。編集パネルから別の行へ移せる。
@@ -201,7 +201,7 @@ class _TrackClip {
     this.sourceFraction = 0,
     this.playbackRate = 1.0,
     this.soundFollowsSpeed = true,
-    this.preservePitch = true,
+    this.pitchSemitones = 0,
     this.videoOpacity = 1.0,
     this.trackRow = 0,
     this.isReadAloud = false,
@@ -936,7 +936,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _currentFrameNotifier.dispose();
     _projectService.endWorkTracking(lease: _workTrackingLease);
     _projectService.holdClipboardMaterials(widget.projectId, const []);
-    _speedSounds?.dispose();
+    _pitchedSounds?.dispose();
     super.dispose();
   }
 
@@ -1243,16 +1243,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _currentFrame >= clip.startFrame &&
       _currentFrame < clip.startFrame + clip.lengthFrames;
 
-  // Sounds whose pitch follows their speed, made with the export's filters
-  // and played at 1x; and what each player is playing (file and speed), so
-  // a changed clip starts its player again.
-  SpeedSoundPreview? _speedSounds;
+  // Sounds with a pitch change, made with the export's filters and played
+  // at 1x; and what each player is playing (file and speed), so a changed
+  // clip starts its player again.
+  PitchedSoundPreview? _pitchedSounds;
   final Map<String, String> _playerSources = {};
 
-  SpeedSoundPreview get _speedSoundPreview =>
-      _speedSounds ??= SpeedSoundPreview(
+  PitchedSoundPreview get _pitchedSoundPreview =>
+      _pitchedSounds ??= PitchedSoundPreview(
         workDir: () async => (await getTemporaryDirectory()).createTempSync(
-          'timeline_speed_sounds_',
+          'timeline_pitched_sounds_',
         ),
       );
 
@@ -1298,18 +1298,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
       fadeInSeconds: clip.fadeIn,
       fadeOutSeconds: clip.fadeOut,
     );
-    if (SpeedSoundPreview.needed(
-      rate: clip.playbackRate,
-      preservePitch: clip.preservePitch,
-    )) {
-      // Its pitch follows its speed: the sound the export writes, made from
-      // the same part of the file, played at 1x. Nothing plays until it is
-      // ready.
-      final made = _speedSoundPreview.soundFor(
+    if (PitchedSoundPreview.needed(clip.pitchSemitones)) {
+      // Its pitch is changed: the sound the export writes, made from the
+      // same part of the file at its speed, played at 1x. Nothing plays
+      // until it is ready.
+      final made = _pitchedSoundPreview.soundFor(
         path: path,
         sourceSeconds: (clip.useStart + clip.sourceFraction) / fps,
         durationSeconds: clip.lengthFrames / fps,
         rate: clip.playbackRate,
+        pitchSemitones: clip.pitchSemitones,
         onReady: _resyncMediaIfPlaying,
       );
       if (made == null) {
@@ -1340,16 +1338,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// A video's sound when its pitch follows its speed: made like the
-  /// export's and played on an audio player instead of the video's own
-  /// player (which only gives the preview its sound). [active] is false when
-  /// the video's own player plays its sound.
-  Future<void> _syncVideoSpeedSound(
+  /// A video's sound when its pitch is changed: made like the export's and
+  /// played on an audio player instead of the video's own player (which
+  /// only gives the preview its sound). [active] is false when the video's
+  /// own player plays its sound.
+  Future<void> _syncVideoPitchedSound(
     _TrackClip clip,
     double fps, {
     required bool active,
   }) async {
-    final key = '${clip.id}#speed';
+    final key = '${clip.id}#pitched';
     final player = _audioPlayers[key];
     final elapsedFrames = _currentFrame - clip.startFrame;
     final path = clip.filePath;
@@ -1361,22 +1359,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
       if (player?.state == ap.PlayerState.playing) await player!.pause();
       return;
     }
-    final made = _speedSoundPreview.soundFor(
+    final made = _pitchedSoundPreview.soundFor(
       path: path,
       sourceSeconds: (clip.useStart + clip.sourceFraction) / fps,
       durationSeconds: clip.videoSoundingFrames / fps,
       rate: clip.soundRate,
+      pitchSemitones: clip.pitchSemitones,
       onReady: _resyncMediaIfPlaying,
     );
     if (made == null) {
       if (player?.state == ap.PlayerState.playing) await player!.pause();
       return;
     }
-    final speedPlayer = player ?? (_audioPlayers[key] = ap.AudioPlayer());
-    await speedPlayer.setVolume(clip.volume.clamp(0.0, 1.0));
+    final pitchedPlayer = player ?? (_audioPlayers[key] = ap.AudioPlayer());
+    await pitchedPlayer.setVolume(clip.volume.clamp(0.0, 1.0));
     await _playOn(
       key,
-      speedPlayer,
+      pitchedPlayer,
       made,
       1,
       Duration(milliseconds: (elapsedFrames / fps * 1000).round()),
@@ -1386,13 +1385,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Future<void> _syncVideoClip(_TrackClip clip, double fps) async {
     final path = clip.filePath;
     if (path == null) return;
-    final speedSound = SpeedSoundPreview.needed(
-      rate: clip.soundRate,
-      preservePitch: clip.preservePitch,
-    );
-    await _syncVideoSpeedSound(clip, fps, active: speedSound);
+    final pitched = PitchedSoundPreview.needed(clip.pitchSemitones);
+    await _syncVideoPitchedSound(clip, fps, active: pitched);
     var controller = _videoControllers[clip.id];
-    if (speedSound) {
+    if (pitched) {
       if (controller != null &&
           controller.value.isInitialized &&
           controller.value.isPlaying) {
@@ -2663,7 +2659,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         clip.sourceFraction = layer.sourceTrimStartFraction;
         clip.playbackRate = layer.playbackRate;
         clip.soundFollowsSpeed = layer.videoSoundFollowsSpeed;
-        clip.preservePitch = layer.videoPreservePitch;
+        clip.pitchSemitones = layer.videoPitchSemitones;
       }
     });
     if (clip.trackType == _ClipTrackType.video) _syncMediaPlayback();
@@ -9353,7 +9349,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               sourceFraction: clip.sourceFraction,
               playbackRate: clip.playbackRate,
               soundFollowsSpeed: clip.soundFollowsSpeed,
-              preservePitch: clip.preservePitch,
+              pitchSemitones: clip.pitchSemitones,
               trackRow: targetRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -9429,7 +9425,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       sourceFraction: clip.sourceFraction,
       playbackRate: clip.playbackRate,
       soundFollowsSpeed: clip.soundFollowsSpeed,
-      preservePitch: clip.preservePitch,
+      pitchSemitones: clip.pitchSemitones,
       volume: clip.volume,
       videoOpacity: clip.videoOpacity,
       trackRow: targetRow,
@@ -9492,7 +9488,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     sourceFraction: c.sourceFraction,
     playbackRate: c.playbackRate,
     soundFollowsSpeed: c.soundFollowsSpeed,
-    preservePitch: c.preservePitch,
+    pitchSemitones: c.pitchSemitones,
     videoOpacity: c.videoOpacity,
     trackRow: c.trackRow,
     isReadAloud: c.isReadAloud,
@@ -9792,7 +9788,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               sourceStartFrame: clip.useStart,
               sourceStartFraction: clip.sourceFraction,
               playbackRate: clip.playbackRate,
-              preservePitch: clip.preservePitch,
+              pitchSemitones: clip.pitchSemitones,
               trackRow: clip.trackRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -9812,7 +9808,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               sourceStartFrame: rightSourceStart,
               sourceStartFraction: rightSource.fraction,
               playbackRate: clip.playbackRate,
-              preservePitch: clip.preservePitch,
+              pitchSemitones: clip.pitchSemitones,
               trackRow: clip.trackRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -9836,7 +9832,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               sourceFraction: rightSource.fraction,
               playbackRate: clip.playbackRate,
               soundFollowsSpeed: clip.soundFollowsSpeed,
-              preservePitch: clip.preservePitch,
+              pitchSemitones: clip.pitchSemitones,
               trackRow: clip.trackRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -9937,7 +9933,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             sourceFraction: isVideo ? videoRightFraction : 0,
             playbackRate: clip.playbackRate,
             soundFollowsSpeed: clip.soundFollowsSpeed,
-            preservePitch: clip.preservePitch,
+            pitchSemitones: clip.pitchSemitones,
             volume: clip.volume,
             videoOpacity: clip.videoOpacity,
             trackRow: clip.trackRow,
@@ -9996,7 +9992,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               saved.sourceStartFrame == clip.useStart &&
               saved.sourceStartFraction == clip.sourceFraction &&
               saved.playbackRate == clip.playbackRate &&
-              saved.preservePitch == clip.preservePitch &&
+              saved.pitchSemitones == clip.pitchSemitones &&
               saved.trackRow == clip.trackRow) {
         return;
       }
@@ -10015,7 +10011,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           sourceStartFrame: clip.useStart,
           sourceStartFraction: clip.sourceFraction,
           playbackRate: clip.playbackRate,
-          preservePitch: clip.preservePitch,
+          pitchSemitones: clip.pitchSemitones,
           trackRow: clip.trackRow,
           isReadAloud: clip.isReadAloud,
         ),
@@ -10104,7 +10100,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ).frame,
           sourceFraction: a.sourceStartFraction,
           playbackRate: a.playbackRate,
-          preservePitch: a.preservePitch,
+          pitchSemitones: a.pitchSemitones,
           trackRow: a.trackRow,
           isReadAloud: a.isReadAloud,
         ),
@@ -10165,7 +10161,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ? layer.playbackRate
               : 1.0,
           soundFollowsSpeed: layer.videoSoundFollowsSpeed,
-          preservePitch: layer.videoPreservePitch,
+          pitchSemitones: layer.videoPitchSemitones,
           volume: layer.type == LayerType.timelineVideo
               ? layer.videoVolume.clamp(0.0, 1.0)
               : 1.0,
@@ -12839,7 +12835,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
   late int _initialStart;
   late int _initialUseStart;
   late double _initialFraction;
-  late bool _initialPreservePitch;
+  late double _initialPitch;
 
   @override
   void initState() {
@@ -12855,7 +12851,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
     _initialStart = _c.startFrame;
     _initialUseStart = _c.useStart;
     _initialFraction = _c.sourceFraction;
-    _initialPreservePitch = _c.preservePitch;
+    _initialPitch = _c.pitchSemitones;
   }
 
   void _notify() {
@@ -12932,7 +12928,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     _c.startFrame = _initialStart;
                     _c.useStart = _initialUseStart;
                     _c.sourceFraction = _initialFraction;
-                    _c.preservePitch = _initialPreservePitch;
+                    _c.pitchSemitones = _initialPitch;
                     widget.onChanged();
                     Navigator.pop(context);
                   },
@@ -13018,17 +13014,6 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                       return problem;
                     },
                   ),
-                  SwitchListTile(
-                    key: const ValueKey('audioPreservePitch'),
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l10n.timelinePreservePitch),
-                    subtitle: Text(l10n.timelinePreservePitchHint),
-                    value: _c.preservePitch,
-                    onChanged: (on) {
-                      _c.preservePitch = on;
-                      _notify();
-                    },
-                  ),
                   const Divider(height: 24),
                   _row(
                     l10n.timelineClipVolumeLabel,
@@ -13042,6 +13027,19 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     },
                     '${(_c.volume * 100).round()}%',
                     step: 0.01,
+                  ),
+                  // The sound's pitch, on its own: the speed keeps it.
+                  PitchControl(
+                    semitones: _c.pitchSemitones,
+                    soundRate: _c.playbackRate,
+                    onChanged: (v) {
+                      _c.pitchSemitones = v;
+                      _notify();
+                    },
+                    onCommit: (v) {
+                      _c.pitchSemitones = v;
+                      _notify();
+                    },
                   ),
                   _row(
                     l10n.timelineClipFadeInLabel,

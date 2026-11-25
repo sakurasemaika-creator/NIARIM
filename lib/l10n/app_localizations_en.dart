@@ -11626,11 +11626,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'When off, the sound plays at normal speed from the start of the clip and only the picture changes speed.';
 
   @override
-  String get timelinePreservePitch => 'Keep the pitch';
+  String get timelinePitchLabel => 'Pitch (semitones)';
 
   @override
-  String get timelinePreservePitchHint =>
-      'When off, the sound gets higher when sped up and lower when slowed down.';
+  String get timelinePitchHint =>
+      'Changing the speed keeps the pitch. Raise or lower just the pitch here. Match the speed gives the pitch a tape would have at this speed.';
+
+  @override
+  String get timelinePitchMatchSpeed => 'Match the speed';
+
+  @override
+  String get timelinePitchReset => 'Original pitch';
+
+  @override
+  String get timelinePitchInputLabel => 'Type semitones';
+
+  @override
+  String get timelinePitchInvalid =>
+      'Enter a number from -24 to +24 (decimals are fine).';
 
   @override
   String get keyframeRetimeTitle => 'Keyframe speed';

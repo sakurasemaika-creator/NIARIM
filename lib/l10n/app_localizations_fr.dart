@@ -11802,11 +11802,24 @@ class AppLocalizationsFr extends AppLocalizations {
       'Si cette option est désactivée, le son est lu à vitesse normale depuis le début du clip et seule l’image change de vitesse.';
 
   @override
-  String get timelinePreservePitch => 'Conserver la hauteur du son';
+  String get timelinePitchLabel => 'Hauteur (demi-tons)';
 
   @override
-  String get timelinePreservePitchHint =>
-      'Si l’option est désactivée, le son devient plus aigu en accéléré et plus grave au ralenti.';
+  String get timelinePitchHint =>
+      'Changer la vitesse ne change pas la hauteur. Ici, vous pouvez monter ou baisser seulement la hauteur. Suivre la vitesse donne la hauteur qu’aurait une bande à cette vitesse.';
+
+  @override
+  String get timelinePitchMatchSpeed => 'Suivre la vitesse';
+
+  @override
+  String get timelinePitchReset => 'Hauteur d’origine';
+
+  @override
+  String get timelinePitchInputLabel => 'Saisir en demi-tons';
+
+  @override
+  String get timelinePitchInvalid =>
+      'Saisissez un nombre de -24 à +24 (décimales possibles).';
 
   @override
   String get keyframeRetimeTitle => 'Vitesse des images clés';

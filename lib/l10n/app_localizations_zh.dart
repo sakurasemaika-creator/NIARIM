@@ -10667,10 +10667,23 @@ class AppLocalizationsZh extends AppLocalizations {
       '关闭时，声音从片段开头以正常速度播放，只改变画面的速度。';
 
   @override
-  String get timelinePreservePitch => '保持音调';
+  String get timelinePitchLabel => '音高（半音）';
 
   @override
-  String get timelinePreservePitchHint => '关闭后，加速时声音变高，减速时声音变低。';
+  String get timelinePitchHint =>
+      '改变速度不会改变音高。可以在这里单独升高或降低音高。点“跟随速度”，音高会像磁带变速一样随速度变化。';
+
+  @override
+  String get timelinePitchMatchSpeed => '跟随速度';
+
+  @override
+  String get timelinePitchReset => '原始音高';
+
+  @override
+  String get timelinePitchInputLabel => '输入半音';
+
+  @override
+  String get timelinePitchInvalid => '请输入 -24 到 +24 之间的数（可以有小数）。';
 
   @override
   String get keyframeRetimeTitle => '关键帧速度';
@@ -21532,10 +21545,23 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '關閉時，聲音從片段開頭以正常速度播放，只改變畫面的速度。';
 
   @override
-  String get timelinePreservePitch => '保持音調';
+  String get timelinePitchLabel => '音高（半音）';
 
   @override
-  String get timelinePreservePitchHint => '關閉後，加速時聲音變高，減速時聲音變低。';
+  String get timelinePitchHint =>
+      '改變速度不會改變音高。可以在這裡單獨升高或降低音高。點「跟隨速度」，音高會像磁帶變速一樣隨速度變化。';
+
+  @override
+  String get timelinePitchMatchSpeed => '跟隨速度';
+
+  @override
+  String get timelinePitchReset => '原始音高';
+
+  @override
+  String get timelinePitchInputLabel => '輸入半音';
+
+  @override
+  String get timelinePitchInvalid => '請輸入 -24 到 +24 之間的數（可以有小數）。';
 
   @override
   String get keyframeRetimeTitle => '關鍵影格速度';

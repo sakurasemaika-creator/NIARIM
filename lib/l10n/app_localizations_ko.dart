@@ -10858,10 +10858,23 @@ class AppLocalizationsKo extends AppLocalizations {
       '끄면 소리는 클립의 처음부터 보통 속도로 재생되고, 영상의 속도만 바뀝니다.';
 
   @override
-  String get timelinePreservePitch => '음높이 유지';
+  String get timelinePitchLabel => '음높이(반음)';
 
   @override
-  String get timelinePreservePitchHint => '끄면 빠르게 할 때 소리가 높아지고 느리게 할 때 낮아집니다.';
+  String get timelinePitchHint =>
+      '속도를 바꿔도 음높이는 바뀌지 않습니다. 여기서 음높이만 올리거나 내릴 수 있습니다. 속도에 맞추기를 누르면 테이프를 빠르게 돌린 것처럼 속도에 맞는 음높이가 됩니다.';
+
+  @override
+  String get timelinePitchMatchSpeed => '속도에 맞추기';
+
+  @override
+  String get timelinePitchReset => '원래 음높이';
+
+  @override
+  String get timelinePitchInputLabel => '반음으로 입력';
+
+  @override
+  String get timelinePitchInvalid => '-24~+24 사이의 숫자를 입력하세요(소수도 가능합니다).';
 
   @override
   String get keyframeRetimeTitle => '키프레임 속도';
