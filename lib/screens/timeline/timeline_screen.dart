@@ -133,9 +133,21 @@ enum _TimelineToolbarAction { watermark, readAloud }
 
 enum _TimelineSelection { scenes, frames, clips }
 
-/// The colour of text clips on the timeline (amber, apart from the theme's
-/// colours that video, image and audio clips use).
-const Color _textClipColor = Color(0xFFE09A2C);
+/// The colour of text clips on the timeline. Video, image and audio clips use
+/// the theme's colours, so text clips do too: the accent turned a little
+/// along the colour wheel (with the default pink, the amber they always had).
+/// A grey accent has no hue to turn, so it is moved towards the text colour.
+/// It used to be a fixed amber that ignored the theme.
+Color get _textClipColor => textClipColorFor(ThemeService.activeColorScheme);
+
+@visibleForTesting
+Color textClipColorFor(ColorScheme scheme) {
+  final accent = HSLColor.fromColor(scheme.primary);
+  if (accent.saturation < .15) {
+    return Color.lerp(scheme.primary, scheme.onSurface, .4)!;
+  }
+  return accent.withHue((accent.hue + 35) % 360).toColor();
+}
 
 /// The kind of timeline row a clip of [type] sits on.
 TimelineRowKind _rowKindOf(_ClipTrackType type) => switch (type) {

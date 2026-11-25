@@ -129,11 +129,17 @@ void main() {
             findsOneWidget,
             reason: 'delay=$delay',
           );
+          // Nothing to scroll back to on an empty list: the plaza's 「↑」
+          // shows only when the list can go up, the same as on Home.
           expect(
             find.byKey(const Key('communityScrollToTopButton')),
+            findsNothing,
+            reason: 'delay=$delay',
+          );
+          expect(
+            find.byKey(const Key('communityMyWorksButton')),
             findsOneWidget,
-            reason:
-                'The plaza scroll control remains available on bookmarks; delay=$delay',
+            reason: 'The post button stays on bookmarks; delay=$delay',
           );
           expect(
             find.byKey(const Key('communityBackToSplashButton')),

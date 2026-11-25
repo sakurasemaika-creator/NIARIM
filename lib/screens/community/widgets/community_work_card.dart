@@ -7,11 +7,11 @@ import '../../../services/community_service.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
 import '../../../widgets/first_that_fits.dart';
+import '../../../widgets/korean_words_text.dart';
 
 import 'package:provider/provider.dart';
 
 import '../../../models/community_work.dart';
-import '../../../utils/line_break.dart';
 import 'community_thumbnail_placeholder.dart';
 import 'community_work_counts.dart';
 import 'community_ranking_work_list.dart'
@@ -227,28 +227,42 @@ class CommunityWorkCard extends StatelessWidget {
                     child: Align(
                       alignment: AlignmentDirectional.centerStart,
                       // A title does not start a line with a long-vowel
-                      // mark or a small kana (「最後のメロデ／ィ」), the same
-                      // rule as the cards on Home. Read aloud as written.
-                      child: Text(
-                        isUnavailable
-                            ? CommunityPlazaLabels.of(
-                                context,
-                              ).unavailablePlaceholder
-                            : isMuted
-                            ? CommunityPlazaLabels.of(context).mutedPlaceholder
-                            : keepJapaneseLineStartsAttached(work.title),
-                        semanticsLabel: isUnavailable || isMuted
-                            ? null
-                            : work.title,
-                        maxLines: kCollectionTileNameLines,
-                        overflow: TextOverflow.ellipsis,
-                        style: localizedUserNameStyle(
-                          context,
-                          work.title,
-                          collectionTileCaptionStyle(
+                      // mark or a small kana (「最後のメロデ／ィ」), and a
+                      // Korean word that fits the line is not split
+                      // (「머 / 리카락」), the same rules as the cards on
+                      // Home. Read aloud as written.
+                      child: LayoutBuilder(
+                        builder: (context, box) {
+                          final titleStyle = localizedUserNameStyle(
                             context,
-                          ).copyWith(color: textColor),
-                        ),
+                            work.title,
+                            collectionTileCaptionStyle(
+                              context,
+                            ).copyWith(color: textColor),
+                          );
+                          return Text(
+                            isUnavailable
+                                ? CommunityPlazaLabels.of(
+                                    context,
+                                  ).unavailablePlaceholder
+                                : isMuted
+                                ? CommunityPlazaLabels.of(
+                                    context,
+                                  ).mutedPlaceholder
+                                : userNameLineText(
+                                    context,
+                                    work.title,
+                                    style: titleStyle,
+                                    maxWidth: box.maxWidth,
+                                  ),
+                            semanticsLabel: isUnavailable || isMuted
+                                ? null
+                                : work.title,
+                            maxLines: kCollectionTileNameLines,
+                            overflow: TextOverflow.ellipsis,
+                            style: titleStyle,
+                          );
+                        },
                       ),
                     ),
                   ),
