@@ -7,6 +7,7 @@ import android.media.MediaMetadataRetriever
 import android.os.Build
 import java.io.File
 import java.io.FileOutputStream
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -153,9 +154,27 @@ class MainActivity : FlutterActivity() {
                             textToSpeech?.shutdown()
                             textToSpeech = null
                             textToSpeechReady = false
-                            startActivity(
-                                Intent(android.provider.Settings.ACTION_TEXT_TO_SPEECH_SETTINGS)
+                            // Android has no public constant for the
+                            // text-to-speech settings screen; this is the action
+                            // the system Settings app registers for it. Devices
+                            // without it fall back to the engine's voice-data
+                            // installer, then to the Settings app itself.
+                            val screens = listOf(
+                                Intent("com.android.settings.TTS_SETTINGS"),
+                                Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA),
+                                Intent(android.provider.Settings.ACTION_SETTINGS),
                             )
+                            val opened = screens.any { intent ->
+                                try {
+                                    startActivity(intent)
+                                    true
+                                } catch (missing: ActivityNotFoundException) {
+                                    false
+                                }
+                            }
+                            if (!opened) {
+                                throw ActivityNotFoundException("No settings screen for text-to-speech")
+                            }
                             result.success(true)
                         } catch (error: Exception) {
                             result.error(
