@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/models/layer.dart';
@@ -60,12 +61,13 @@ void _expectSettingsKept(Layer layer, {required String reason}) {
 }
 
 /// A clip's edit settings go with it when it is cut and pasted, copied and
-/// pasted, duplicated, auto-saved and its project duplicated; cut-and-paste,
-/// copy-and-paste and duplicate are one Undo each.
+/// pasted, duplicated, auto-saved and its project duplicated. Cutting takes
+/// the clip away at once and pasting brings it back from the clipboard, one
+/// Undo each; copy-and-paste and duplicate are one Undo each.
 void main() {
-  testWidgets('cut, copy, paste and duplicate keep a clip\'s speed, crop and '
-      'region edits, one Undo each; autosave and a duplicated project keep '
-      'them too', (tester) async {
+  testWidgets('cut, copy, paste and duplicate keep a clip\'s speed, crop, '
+      'region edits and pixels, one Undo each; autosave and a duplicated '
+      'project keep them too', (tester) async {
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
       'language': 'ja',
@@ -155,6 +157,16 @@ void main() {
       return project.id;
     });
     final projectId = created!;
+    // The video's pixels, which pasting carries to the new layer.
+    final pixels = Uint8List(TileManager.tileSize * TileManager.tileSize * 4)
+      ..fillRange(0, 4096, 200);
+    ps.tileManagerOf(projectId).putLayerTiles(
+      ps.tileKeyFor(projectId, sceneId, 0, videoId),
+      {'0,0': pixels},
+    );
+    Map<String, Uint8List>? tilesOf(String layerId) => ps
+        .tileManagerOf(projectId)
+        .shareLayerTiles(ps.tileKeyFor(projectId, sceneId, 0, layerId));
     List<Layer> videos() => [
       for (final l in ps.storedLayersOf(projectId, sceneId, 0))
         if (l.type == LayerType.timelineVideo) l,
@@ -210,12 +222,20 @@ void main() {
       await settle();
     }
 
-    // ── Cut and paste: the video moves to frame 16 with all its settings.
+    // ── Cut: the video goes at once (spec 26 §5), one Undo of its own.
     await selectClip(videoId);
     await tester.tap(find.byTooltip(l10n.commonCut).last);
     await settle();
-    // Cutting only marks the clip: nothing changes until it is pasted.
+    expect(videos(), isEmpty);
+    await undo();
     expect(videos().single.id, videoId);
+    expect(videos().single.rangeStart, 1);
+    _expectSettingsKept(videos().single, reason: 'cut undone');
+    await redo();
+    expect(videos(), isEmpty);
+
+    // ── Paste: the cut video, gone from the scene, comes back at frame 16
+    // with all its settings and its pixels.
     await paste();
     final moved = videos().single;
     expect(moved.id, isNot(videoId));
@@ -223,14 +243,17 @@ void main() {
     _expectSettingsKept(moved, reason: 'cut and pasted');
     // Its keyframes move with it.
     expect(moved.keyframes.map((k) => k.frameIndex), [15, 22]);
-    // One Undo puts it back where it was; Redo moves it again.
+    expect(tilesOf(moved.id), tilesOf(videoId), reason: 'its pixels');
+    // Pasting is its own Undo: the first takes the pasted video away, the
+    // next undoes the cut.
     await undo();
-    expect(videos().single.id, videoId);
-    expect(videos().single.rangeStart, 1);
+    expect(videos(), isEmpty);
     await redo();
     expect(videos().single.rangeStart, 16);
     await undo();
+    await undo();
     expect(videos().single.id, videoId);
+    expect(videos().single.rangeStart, 1);
 
     // ── Copy and paste: a second video at frame 16, the first stays.
     await selectClip(videoId);

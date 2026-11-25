@@ -18,6 +18,7 @@ on:
       - 'lib/engine/timeline_video_layer_pixels.dart'
       - 'lib/engine/timeline_frame_renderer.dart'
       - 'lib/engine/clip_speed.dart'
+      - 'lib/engine/tile_manager.dart'
       - 'lib/engine/niapro_serializer.dart'
       - 'lib/models/layer.dart'
       - 'lib/models/audio_clip.dart'
@@ -55,6 +56,7 @@ on:
       - 'test/timeline_clip_speed_test.dart'
       - 'test/timeline_time_range_test.dart'
       - 'test/timeline_clip_edits_kept_test.dart'
+      - 'test/timeline_clipboard_hold_test.dart'
       - 'test/export_fps_differs_note_test.dart'
       - 'test/timeline_split_test.dart'
       - 'test/layer_crop_test.dart'
@@ -132,7 +134,7 @@ jobs:
       - name: Test the 長さ調整 time range (typed start/end for materials and audio, refusals, Undo, Cancel)
         run: flutter test test/timeline_time_range_test.dart --reporter expanded
       - name: Test edit settings kept by cut, copy, paste, duplicate, autosave and project duplicate (one Undo each)
-        run: flutter test test/timeline_clip_edits_kept_test.dart --reporter expanded
+        run: flutter test test/timeline_clip_edits_kept_test.dart test/timeline_clipboard_hold_test.dart --reporter expanded
       - name: Test the export frame rate is not applied silently (note and the work's own rate)
         run: flutter test test/export_fps_differs_note_test.dart --reporter expanded
       - name: Test cropping (drawn like cut pixels on every path, panel and preview handles, Undo)
@@ -158,6 +160,7 @@ jobs:
           lib/engine/layer_compositor.dart
           lib/engine/timeline_frame_renderer.dart
           lib/engine/clip_speed.dart
+          lib/engine/tile_manager.dart
           lib/engine/niapro_serializer.dart
           lib/models/layer.dart
           lib/models/audio_clip.dart
@@ -194,6 +197,7 @@ jobs:
           test/timeline_clip_speed_test.dart
           test/timeline_time_range_test.dart
           test/timeline_clip_edits_kept_test.dart
+          test/timeline_clipboard_hold_test.dart
           test/export_fps_differs_note_test.dart
           test/timeline_split_test.dart
           test/layer_crop_test.dart

@@ -43,6 +43,7 @@ class AudioClip {
   });
 
   AudioClip copyWith({
+    String? id,
     String? label,
     Object? materialId = _sentinel,
     int? startFrame,
@@ -57,7 +58,7 @@ class AudioClip {
     bool? isReadAloud,
   }) {
     return AudioClip(
-      id: id,
+      id: id ?? this.id,
       label: label ?? this.label,
       materialId: materialId == _sentinel
           ? this.materialId

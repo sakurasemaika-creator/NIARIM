@@ -223,6 +223,27 @@ class _TrackClip {
   );
 }
 
+/// A clip copied or cut to the clipboard, as it was then: its material
+/// layer with the layer's pixels (text, image, video) or its sound, so it
+/// can be pasted again after the clip itself has been cut away or changed.
+class _CopiedClip {
+  const _CopiedClip({
+    required this.clip,
+    this.layer,
+    this.home,
+    this.tiles,
+    this.audio,
+  });
+
+  final _TrackClip clip;
+  final Layer? layer;
+  final LayerHome? home;
+  final Map<String, Uint8List>? tiles;
+  final AudioClip? audio;
+
+  String? get materialId => audio?.materialId ?? layer?.materialId;
+}
+
 /// 音声クリップの帯に薄く重ねる波形サムネイル。[AudioWaveformService]で
 /// 生成・キャッシュされたPNGを非同期に読み込んで表示する。生成が未完了の
 /// 間・失敗した場合は何も表示しない（プレーンな色帯のままフォールバック）。
@@ -453,8 +474,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // クリップのクリップボード。貼り付け先は常に選択中シーンの現在地
   // （赤枠がついている_currentFrameの位置）で、コピー元シーンが選択中の
   // シーンと異なる場合は貼り付けを行わない（クリップ一覧はシーンごとに
-  // 読み込まれるため）。
-  ({String sourceSceneId, List<_TrackClip> clips, bool isCut})? _clipClipboard;
+  // 読み込まれるため）。コピー・切り取りした時点の素材のレイヤー・絵・音を
+  // 控えるので、切り取りで消えたクリップも何度でも貼り付けられる。
+  ({String sourceSceneId, List<_CopiedClip> clips})? _clipClipboardValue;
+  int _pastedAudioSerial = 0;
+
+  ({String sourceSceneId, List<_CopiedClip> clips})? get _clipClipboard =>
+      _clipClipboardValue;
+
+  set _clipClipboard(({String sourceSceneId, List<_CopiedClip> clips})? value) {
+    _clipClipboardValue = value;
+    // A cut clip's material is no longer in the scene: keep it while it can
+    // still be pasted.
+    _projectService.holdClipboardMaterials(widget.projectId, [
+      for (final copy in value?.clips ?? const <_CopiedClip>[])
+        ?copy.materialId,
+    ]);
+  }
 
   // カメラキーフレームマーカーの長押し不要ドラッグ用の一時状態。持ち方は
   // クリップドラッグと同じアンカー方式だが、ProjectServiceへの反映は
@@ -893,6 +929,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _currentFrameNotifier.removeListener(_onCurrentFrameChanged);
     _currentFrameNotifier.dispose();
     _projectService.endWorkTracking(lease: _workTrackingLease);
+    _projectService.holdClipboardMaterials(widget.projectId, const []);
     super.dispose();
   }
 
@@ -1045,9 +1082,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
-  /// コピーと同様にクリップボードへ記録するが、貼り付け確定時に元の
-  /// シーン・フレーム・クリップを削除する「切り取り」として記録する
-  /// （Ctrl+X）。貼り付け前にキャンセルした場合は何も削除されない。
+  /// 切り取り（Ctrl+X）。シーン・フレームはコピーと同様にクリップボードへ
+  /// 記録し、貼り付け確定時に元を削除する（貼り付け前にキャンセルした場合は
+  /// 何も削除されない）。クリップはその場で取り除いてクリップボードへ控える
+  /// （取り消し1回で元に戻り、貼り付けは別の1手）。
   void _cutSelectionToClipboard() {
     if (_isSceneMultiSelect && _selectedSceneIds.isNotEmpty) {
       setState(() {
@@ -9101,29 +9139,70 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }) {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
+    final copy = _copyOf(clip, sceneId);
+    if (copy == null) return;
+    _pasteCopy(copy, newStart, overrideTrackRow: overrideTrackRow);
+  }
+
+  /// [clip] as it is now, kept for the clipboard or a duplicate: its sound,
+  /// or its material layer and the layer's pixels. Null when the clip is no
+  /// longer in the project.
+  _CopiedClip? _copyOf(_TrackClip clip, String sceneId) {
+    final ps = context.read<ProjectService>();
+    final snapshot = _snapshotClip(clip);
+    if (clip.trackType == _ClipTrackType.audio) {
+      final audio = ps
+          .audioClipsOf(widget.projectId, sceneId)
+          .where((a) => a.id == clip.id)
+          .firstOrNull;
+      return audio == null ? null : _CopiedClip(clip: snapshot, audio: audio);
+    }
+    final home =
+        ps.homeOf(widget.projectId, clip.id) ??
+        (sceneId: sceneId, frameIndex: _currentFrame);
+    final layer = ps
+        .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
+        .where((l) => l.id == clip.id)
+        .firstOrNull;
+    if (layer == null) return null;
+    return _CopiedClip(
+      clip: snapshot,
+      layer: layer,
+      home: home,
+      tiles: ps
+          .tileManagerOf(widget.projectId)
+          .shareLayerTiles(
+            ps.tileKeyFor(
+              widget.projectId,
+              home.sceneId,
+              home.frameIndex,
+              clip.id,
+            ),
+          ),
+    );
+  }
+
+  /// Adds a new clip made from [copy] at [newStart] (on [overrideTrackRow],
+  /// or the row it came from) in the selected scene. A sound is added as an
+  /// audio clip; a material as a new layer with the copied pixels and every
+  /// setting of the copied layer (text, keyframes, mask, opacity, crop,
+  /// region edits, the video's speed, sound and used range), its time range
+  /// and keyframes moved to the new place.
+  void _pasteCopy(_CopiedClip copy, int newStart, {int? overrideTrackRow}) {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
     final projectService = context.read<ProjectService>();
+    final clip = copy.clip;
     final targetRow = overrideTrackRow ?? clip.trackRow;
 
-    if (clip.trackType == _ClipTrackType.audio) {
-      final id = 'audio_${DateTime.now().microsecondsSinceEpoch}';
+    if (copy.audio case final audio?) {
+      final id =
+          'audio_${DateTime.now().microsecondsSinceEpoch}_'
+          '${_pastedAudioSerial++}';
       projectService.addAudioClip(
         widget.projectId,
         sceneId,
-        AudioClip(
-          id: id,
-          label: clip.label,
-          materialId: clip.materialId,
-          startFrame: newStart,
-          lengthFrames: clip.lengthFrames,
-          volume: clip.volume,
-          fadeIn: clip.fadeIn,
-          fadeOut: clip.fadeOut,
-          sourceStartFrame: clip.useStart,
-          sourceStartFraction: clip.sourceFraction,
-          playbackRate: clip.playbackRate,
-          trackRow: targetRow,
-          isReadAloud: clip.isReadAloud,
-        ),
+        audio.copyWith(id: id, startFrame: newStart, trackRow: targetRow),
       );
       if (mounted) {
         setState(
@@ -9154,15 +9233,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
       return;
     }
 
-    final home =
-        projectService.homeOf(widget.projectId, clip.id) ??
-        (sceneId: sceneId, frameIndex: _currentFrame);
-    final sourceLayer = projectService
-        .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
-        .where((l) => l.id == clip.id)
-        .firstOrNull;
+    final sourceLayer = copy.layer;
     if (sourceLayer == null) return;
-
+    // The layer goes back where it lived in the scene (a material is held by
+    // one frame and shown over its time range).
+    final savedHome = copy.home;
+    final frames = projectService.frameCount(widget.projectId, sceneId);
+    final home =
+        savedHome != null &&
+            savedHome.sceneId == sceneId &&
+            savedHome.frameIndex < frames
+        ? savedHome
+        : (sceneId: sceneId, frameIndex: 0);
     final newLayer = projectService.addLayer(
       projectId: widget.projectId,
       sceneId: home.sceneId,
@@ -9170,25 +9252,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
       type: sourceLayer.type,
       name: clip.label,
     );
-    projectService
-        .tileManagerOf(widget.projectId)
-        .copyLayer(
-          projectService.tileKeyFor(
-            widget.projectId,
-            home.sceneId,
-            home.frameIndex,
-            clip.id,
-          ),
-          projectService.tileKeyFor(
-            widget.projectId,
-            home.sceneId,
-            home.frameIndex,
-            newLayer.id,
-          ),
-        );
-    // 元の素材の設定（文字・配置のキーフレーム・マスク・不透明度・
-    // 動画の音量と使用範囲）をそのまま写し、表示範囲と行だけを変える。
-    // キーフレームは表示範囲と一緒にずらす。
+    if (copy.tiles case final tiles?) {
+      projectService
+          .tileManagerOf(widget.projectId)
+          .putLayerTiles(
+            projectService.tileKeyFor(
+              widget.projectId,
+              home.sceneId,
+              home.frameIndex,
+              newLayer.id,
+            ),
+            tiles,
+          );
+    }
     final shift = newStart - clip.startFrame;
     projectService.updateLayer(
       projectId: widget.projectId,
@@ -9290,29 +9366,52 @@ class _TimelineScreenState extends State<TimelineScreen> {
     isReadAloud: c.isReadAloud,
   );
 
+  /// The selected clips kept for the clipboard, as they are now.
+  List<_CopiedClip> _copiesOfSelectedClips(String sceneId) => [
+    for (final clip in _allClips)
+      if (_selectedClipIds.contains(clip.id)) ?_copyOf(clip, sceneId),
+  ];
+
   void _copySelectedClips() {
     final sceneId = _selectedSceneId;
     if (sceneId == null || _selectedClipIds.isEmpty) return;
-    final selected = _allClips
-        .where((c) => _selectedClipIds.contains(c.id))
-        .map(_snapshotClip)
-        .toList();
-    if (selected.isEmpty) return;
+    final copies = _copiesOfSelectedClips(sceneId);
+    if (copies.isEmpty) return;
     setState(() {
-      _clipClipboard = (sourceSceneId: sceneId, clips: selected, isCut: false);
+      _clipClipboard = (sourceSceneId: sceneId, clips: copies);
     });
   }
 
+  /// Cutting clips takes them away at once (one Undo puts them back) and
+  /// keeps them on the clipboard; pasting them is its own Undo.
   void _cutSelectedClips() {
     final sceneId = _selectedSceneId;
     if (sceneId == null || _selectedClipIds.isEmpty) return;
-    final selected = _allClips
+    final copies = _copiesOfSelectedClips(sceneId);
+    if (copies.isEmpty) return;
+    final targets = _allClips
         .where((c) => _selectedClipIds.contains(c.id))
-        .map(_snapshotClip)
         .toList();
-    if (selected.isEmpty) return;
+    context.read<ProjectService>().editTimeline(
+      widget.projectId,
+      'Cut clips',
+      () {
+        for (final clip in targets) {
+          setState(() {
+            _videoClips.remove(clip);
+            _audioClips.remove(clip);
+            _imageClips.remove(clip);
+            _textClips.remove(clip);
+          });
+          _deletePersistedClip(clip, sceneId);
+        }
+      },
+      changesTiles: false,
+    );
     setState(() {
-      _clipClipboard = (sourceSceneId: sceneId, clips: selected, isCut: true);
+      _clipClipboard = (sourceSceneId: sceneId, clips: copies);
+      _selectedClipIds.clear();
+      _isClipMultiSelect = false;
     });
   }
 
@@ -9348,7 +9447,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 貼り付ける。複数クリップをまとめてコピーしていた場合はコピー時の
   /// 相対位置関係を保ったまま貼り付ける。貼り付け先が既存の他のクリップと
   /// 重なる場合は、前に配置・後ろに配置・重ねて配置（行を1つ増やす）の
-  /// 3択をユーザーへ確認する。
+  /// 3択をユーザーへ確認する。クリップボードは貼り付けた後も残すので、
+  /// 同じ内容を何度でも貼り付けられる。
   Future<void> _pasteClipsAtCurrentFrame() async {
     final clipboard = _clipClipboard;
     final sceneId = _selectedSceneId;
@@ -9357,27 +9457,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // シーンを見ている間は貼り付けを行わない（ボタン側でも無効化する）。
     if (clipboard.sourceSceneId != sceneId) return;
 
-    final anchor = clipboard.clips
+    final copied = [for (final copy in clipboard.clips) copy.clip];
+    final anchor = copied
         .map((c) => c.startFrame)
         .reduce((a, b) => a < b ? a : b);
     final targets = <String, int>{
-      for (final c in clipboard.clips)
+      for (final c in copied)
         c.id: (_currentFrame + (c.startFrame - anchor)).clamp(0, 1 << 30),
     };
 
-    // 貼り付け先が既存クリップと重なっていないか判定する。切り取りの
-    // 場合は貼り付け後に削除される元クリップ自身との重なりは無視する。
-    final excludeIds = clipboard.isCut
-        ? clipboard.clips.map((c) => c.id).toSet()
-        : <String>{};
+    // 貼り付け先が既存クリップと重なっていないか判定する（切り取った
+    // クリップはその時点で取り除いてある）。
     final conflicts = <({int start, int end})>[];
     final conflictingClipIds = <String>{};
-    for (final c in clipboard.clips) {
+    for (final c in copied) {
       final existingOfType = _clipsOfType(c.trackType);
       final start = targets[c.id]!;
       final end = start + c.lengthFrames;
       for (final other in existingOfType) {
-        if (excludeIds.contains(other.id)) continue;
         if (other.trackRow != c.trackRow ||
             other.isReadAloud != c.isReadAloud) {
           continue;
@@ -9408,7 +9505,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           final earliestConflictStart = conflicts
               .map((c) => c.start)
               .reduce((a, b) => a < b ? a : b);
-          final batchMaxEnd = clipboard.clips
+          final batchMaxEnd = copied
               .map((c) => targets[c.id]! + c.lengthFrames)
               .reduce((a, b) => a > b ? a : b);
           beforeShift = earliestConflictStart - batchMaxEnd;
@@ -9416,14 +9513,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
           final latestConflictEnd = conflicts
               .map((c) => c.end)
               .reduce((a, b) => a > b ? a : b);
-          final batchMinStart = clipboard.clips
+          final batchMinStart = copied
               .map((c) => targets[c.id]!)
               .reduce((a, b) => a < b ? a : b);
           afterShift = latestConflictEnd - batchMinStart;
         } else if (strategy == 'newRow') {
           final ps = context.read<ProjectService>();
           final newRowsByType = <_ClipTrackType, int>{};
-          for (final clip in clipboard.clips.where(
+          for (final clip in copied.where(
             (c) => conflictingClipIds.contains(c.id),
           )) {
             // Speech already has a dedicated row. Ordinary audio keeps its
@@ -9443,7 +9540,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           }
         }
 
-        for (final c in clipboard.clips) {
+        for (final copy in clipboard.clips) {
+          final c = copy.clip;
           var start = targets[c.id]!;
           int? overrideRow;
           if (strategy == 'before' && beforeShift != null) {
@@ -9454,20 +9552,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               conflictingClipIds.contains(c.id)) {
             overrideRow = newRowForClipId[c.id];
           }
-          _duplicateClipAt(c, start, overrideTrackRow: overrideRow);
-        }
-
-        if (clipboard.isCut) {
-          for (final c in clipboard.clips) {
-            setState(() {
-              _videoClips.removeWhere((x) => x.id == c.id);
-              _audioClips.removeWhere((x) => x.id == c.id);
-              _imageClips.removeWhere((x) => x.id == c.id);
-              _textClips.removeWhere((x) => x.id == c.id);
-            });
-            _deletePersistedClip(c, sceneId);
-          }
-          setState(() => _clipClipboard = null);
+          _pasteCopy(copy, start, overrideTrackRow: overrideRow);
         }
       },
     );

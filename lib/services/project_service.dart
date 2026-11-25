@@ -1348,7 +1348,24 @@ class ProjectService extends ChangeNotifier {
     if (_undoManager?.retainsMaterial(projectId, materialId) ?? false) {
       return true;
     }
+    if (_clipboardMaterials[projectId]?.contains(materialId) ?? false) {
+      return true;
+    }
     return _materialIdsIn(scenesOf(projectId)).contains(materialId);
+  }
+
+  final Map<String, Set<String>> _clipboardMaterials = {};
+
+  /// The materials of clips copied or cut on the timeline: they stay in use
+  /// while they can still be pasted (a cut clip is no longer in the scene).
+  /// An empty [materialIds] lets them go.
+  void holdClipboardMaterials(String projectId, Iterable<String> materialIds) {
+    final ids = materialIds.toSet();
+    if (ids.isEmpty) {
+      _clipboardMaterials.remove(projectId);
+    } else {
+      _clipboardMaterials[projectId] = ids;
+    }
   }
 
   Iterable<String> _materialIdsIn(Iterable<Scene> scenes) sync* {
