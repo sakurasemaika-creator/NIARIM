@@ -10871,6 +10871,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsAccountDeletionLinkFailed => 'アカウント削除ページを開けませんでした。';
 
   @override
+  String get settingsCommerceDisclosure => '特定商取引法に基づく表記';
+
+  @override
+  String get settingsCommerceDisclosureLinkFailed =>
+      '特定商取引法に基づく表記のページを開けませんでした。';
+
+  @override
   String get communitySampleReportUnavailable => '見本の作品や作者は通報できません。';
 
   @override

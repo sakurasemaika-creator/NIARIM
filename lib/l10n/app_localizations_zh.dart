@@ -10738,6 +10738,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAccountDeletionLinkFailed => '无法打开账号删除页面。';
 
   @override
+  String get settingsCommerceDisclosure => '特定商业交易法规定的标示';
+
+  @override
+  String get settingsCommerceDisclosureLinkFailed => '无法打开特定商业交易法规定的标示页面。';
+
+  @override
   String get communitySampleReportUnavailable => '无法举报示例作品或创作者。';
 
   @override
@@ -21634,6 +21640,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get settingsAccountDeletionLinkFailed => '無法開啟帳號刪除頁面。';
+
+  @override
+  String get settingsCommerceDisclosure => '特定商業交易法規定之標示';
+
+  @override
+  String get settingsCommerceDisclosureLinkFailed => '無法開啟特定商業交易法規定之標示頁面。';
 
   @override
   String get communitySampleReportUnavailable => '無法檢舉範例作品或創作者。';

@@ -118,6 +118,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<void> _openCommerceDisclosure() async {
+    final l10n = AppLocalizations.of(context)!;
+    final language = Localizations.localeOf(context).toLanguageTag();
+    final uri = Uri.https('niarim.miranima-studio.com', '/tokushoho/', {
+      'lang': language == 'zh' ? 'zh-Hans' : language,
+    });
+    var opened = false;
+    try {
+      opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // Keep the settings screen available for retry.
+    }
+    if (!opened && mounted) {
+      showOwnSnackBar(
+        context,
+        SnackBar(
+          key: const ValueKey('settingsCommerceDisclosureLinkNotice'),
+          content: Text(l10n.settingsCommerceDisclosureLinkFailed),
+        ),
+      );
+    }
+  }
+
   Future<void> _openAccountDeletion() async {
     final l10n = AppLocalizations.of(context)!;
     final language = Localizations.localeOf(context).toLanguageTag();
@@ -377,6 +400,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         SheetRow(
                           title: l10n.privacyPolicyScreenTitle,
                           onTap: () => context.push('/settings/privacy-policy'),
+                        ),
+                        SheetRow(
+                          key: const ValueKey('settingsCommerceDisclosureRow'),
+                          title: l10n.settingsCommerceDisclosure,
+                          onTap: _openCommerceDisclosure,
                         ),
                       ],
                     ),

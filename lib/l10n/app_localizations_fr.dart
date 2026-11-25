@@ -11881,6 +11881,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible d’ouvrir la page de suppression du compte.';
 
   @override
+  String get settingsCommerceDisclosure =>
+      'Mentions légales (loi sur les transactions commerciales spécifiées)';
+
+  @override
+  String get settingsCommerceDisclosureLinkFailed =>
+      'Impossible d’ouvrir la page des mentions légales.';
+
+  @override
   String get communitySampleReportUnavailable =>
       'Vous ne pouvez pas signaler les œuvres ni les créateurs de démonstration.';
 

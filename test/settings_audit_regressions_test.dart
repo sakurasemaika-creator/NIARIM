@@ -134,6 +134,34 @@ void main() {
     expect(find.text(ja.settingsAccountDeletionLinkFailed), findsOneWidget);
   });
 
+  testWidgets('the commerce disclosure row opens the localized page', (
+    tester,
+  ) async {
+    const channel = MethodChannel('plugins.flutter.io/url_launcher');
+    final urls = <Uri>[];
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      expect(call.method, 'launch');
+      urls.add(Uri.parse(call.arguments['url'] as String));
+      return urls.length == 1;
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+    await pumpScreen(tester, const SettingsScreen());
+    final row = find.byKey(const ValueKey('settingsCommerceDisclosureRow'));
+    await tester.scrollUntilVisible(row, 200);
+    expect(find.text(ja.settingsCommerceDisclosure), findsOneWidget);
+
+    await tap(tester, row);
+    expect(urls.single.host, 'niarim.miranima-studio.com');
+    expect(urls.single.path, '/tokushoho/');
+    expect(urls.single.queryParameters, {'lang': 'ja'});
+
+    await tap(tester, row);
+    expect(urls, hasLength(2));
+    expect(find.text(ja.settingsCommerceDisclosureLinkFailed), findsOneWidget);
+  });
+
   testWidgets('the deletion page distinguishes the two Chinese locales', (
     tester,
   ) async {

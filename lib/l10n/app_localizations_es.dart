@@ -11867,6 +11867,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo abrir la página de eliminación de la cuenta.';
 
   @override
+  String get settingsCommerceDisclosure =>
+      'Aviso legal (Ley de Transacciones Comerciales Específicas)';
+
+  @override
+  String get settingsCommerceDisclosureLinkFailed =>
+      'No se pudo abrir la página del aviso legal.';
+
+  @override
   String get communitySampleReportUnavailable =>
       'No se pueden denunciar las obras ni los autores de muestra.';
 

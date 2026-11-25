@@ -4099,6 +4099,8 @@
   "settingsAccountDeletionTitle": "Delete your NIARIM account",
   "settingsAccountDeletionSubtitle": "Continue on the official website",
   "settingsAccountDeletionLinkFailed": "Could not open the account deletion page.",
+  "settingsCommerceDisclosure": "Legal Notice (Specified Commercial Transactions Act)",
+  "settingsCommerceDisclosureLinkFailed": "Couldn’t open the Legal Notice page.",
   "communitySampleReportUnavailable": "Sample works and creators can’t be reported.",
   "communityReportAuthor": "Report creator",
   "communityReportReason": "Reason for reporting (visible only to moderators)",

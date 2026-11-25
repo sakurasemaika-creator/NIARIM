@@ -19119,6 +19119,18 @@ abstract class AppLocalizations {
   /// **'アカウント削除ページを開けませんでした。'**
   String get settingsAccountDeletionLinkFailed;
 
+  /// 設定：特定商取引法に基づく表記（公式サイトのページ）を開く行
+  ///
+  /// In ja, this message translates to:
+  /// **'特定商取引法に基づく表記'**
+  String get settingsCommerceDisclosure;
+
+  /// 設定：特定商取引法に基づく表記のページを開けなかったときの知らせ
+  ///
+  /// In ja, this message translates to:
+  /// **'特定商取引法に基づく表記のページを開けませんでした。'**
+  String get settingsCommerceDisclosureLinkFailed;
+
   /// No description provided for @communitySampleReportUnavailable.
   ///
   /// In ja, this message translates to:

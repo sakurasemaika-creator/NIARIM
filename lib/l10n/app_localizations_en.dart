@@ -11699,6 +11699,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not open the account deletion page.';
 
   @override
+  String get settingsCommerceDisclosure =>
+      'Legal Notice (Specified Commercial Transactions Act)';
+
+  @override
+  String get settingsCommerceDisclosureLinkFailed =>
+      'Couldn’t open the Legal Notice page.';
+
+  @override
   String get communitySampleReportUnavailable =>
       'Sample works and creators can’t be reported.';
 

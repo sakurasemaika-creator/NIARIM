@@ -4062,6 +4062,8 @@
   "settingsAccountDeletionTitle": "Eliminar tu cuenta de NIARIM",
   "settingsAccountDeletionSubtitle": "Continuar en el sitio web oficial",
   "settingsAccountDeletionLinkFailed": "No se pudo abrir la página de eliminación de la cuenta.",
+  "settingsCommerceDisclosure": "Aviso legal (Ley de Transacciones Comerciales Específicas)",
+  "settingsCommerceDisclosureLinkFailed": "No se pudo abrir la página del aviso legal.",
   "communitySampleReportUnavailable": "No se pueden denunciar las obras ni los autores de muestra.",
   "communityReportAuthor": "Denunciar esta cuenta",
   "communityReportReason": "Motivo de la denuncia (solo visible para moderación)",

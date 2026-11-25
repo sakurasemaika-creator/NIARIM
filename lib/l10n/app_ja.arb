@@ -6674,6 +6674,14 @@
   "settingsAccountDeletionTitle": "NIARIMアカウントを削除",
   "settingsAccountDeletionSubtitle": "公式サイトで手続きする",
   "settingsAccountDeletionLinkFailed": "アカウント削除ページを開けませんでした。",
+  "settingsCommerceDisclosure": "特定商取引法に基づく表記",
+  "@settingsCommerceDisclosure": {
+    "description": "設定：特定商取引法に基づく表記（公式サイトのページ）を開く行"
+  },
+  "settingsCommerceDisclosureLinkFailed": "特定商取引法に基づく表記のページを開けませんでした。",
+  "@settingsCommerceDisclosureLinkFailed": {
+    "description": "設定：特定商取引法に基づく表記のページを開けなかったときの知らせ"
+  },
   "communitySampleReportUnavailable": "見本の作品や作者は通報できません。",
   "communityReportAuthor": "ユーザーを通報",
   "communityReportReason": "通報理由（運営のみ閲覧）",
