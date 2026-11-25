@@ -1,15 +1,14 @@
 // Along a 「三日月カール」 curl, the inner edge bends the same way as the
-// stroke and its outer edge, whatever the brush size, pressure or taper, and
-// the folded crescent stays: a fold line inside the strand, along its outer
-// side, that bends with the curl too.
+// stroke and its outer edge, whatever the brush size, pressure or taper.
 //
 // A curl drawn like 「し」 used to thin to a waist near its tip and swell
 // again: the end of the last crescent changed back to the ordinary strand
 // over at most 60 degrees of turn, while the crescent's bow had run out long
 // before, so the inner edge turned against the curve. A thicker brush or
-// pressure rising towards the tip made the lump larger. The waist and the
-// lobe after it are the folded crescent's own look, which the strand now
-// keeps as its fold line instead of as its silhouette.
+// pressure rising towards the tip made the lump larger. That waist and the
+// lobe after it are the folded crescent's own look: the strand keeps them
+// along its outer side, as a crescent moon round the bottom of the curl and
+// up to its tip, with nothing drawn inside it and one outline on each side.
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -203,33 +202,50 @@ List<double?> _innerRadii(Uint8List rgba, _Curl curl) => [
     }(),
 ];
 
-/// From the curl's centre, where each ray crosses a fold line: a run of the
-/// outline's dark colour inside the strand, with at least a pixel of fill on
-/// both sides of it (past the inner edge's outline, short of the outer
-/// edge's); null where the ray crosses none.
-List<double?> _foldRadii(Uint8List rgba, _Curl curl) => [
+/// From the curl's centre along each ray, the runs of ink it crosses (where
+/// the coverage is at least a half), as (from, to) distances.
+List<List<(double, double)>> _inkRuns(Uint8List rgba, _Curl curl) => [
+  for (final degrees in _angles(curl))
+    () {
+      final direction = ui.Offset.fromDirection(degrees * math.pi / 180);
+      final runs = <(double, double)>[];
+      double? entry;
+      for (var d = .1; d < curl.radius * 2; d += .1) {
+        final q = curl.centre + direction * d;
+        final inside = _coverageAt(rgba, curl, q.dx, q.dy) >= .5;
+        if (inside && entry == null) {
+          entry = d;
+        } else if (!inside && entry != null) {
+          runs.add((entry, d));
+          entry = null;
+        }
+      }
+      return runs;
+    }(),
+];
+
+/// Whether a ray crosses a line of the outline's dark colour inside the
+/// strand, with at least a pixel of fill on both sides of it: a second
+/// outline running inside the strand.
+List<bool> _linesInside(Uint8List rgba, _Curl curl) => [
   for (final degrees in _angles(curl))
     () {
       const step = .25, clear = 4;
       final direction = ui.Offset.fromDirection(degrees * math.pi / 180);
-      // Along the ray through the strand: each sample's brightness.
-      final light = <double>[];
-      double? from;
+      final dark = <bool>[];
+      var started = false;
       for (var d = step; d < curl.radius * 2; d += step) {
         final q = curl.centre + direction * d;
         final inside = _coverageAt(rgba, curl, q.dx, q.dy) >= .9;
         if (!inside) {
-          if (from != null) break;
+          if (started) break;
           continue;
         }
-        from ??= d;
-        light.add(_brightnessAt(rgba, curl, q.dx, q.dy));
+        started = true;
+        dark.add(_brightnessAt(rgba, curl, q.dx, q.dy) < 50);
       }
-      final dark = [for (final value in light) value < 50];
-      if (from == null) return null;
-      // The first and last fill, inside the edges' outlines.
       final first = dark.indexOf(false), last = dark.lastIndexOf(false);
-      if (first < 0) return null;
+      if (first < 0) return false;
       var i = first;
       while (i <= last) {
         if (!dark[i]) {
@@ -249,16 +265,9 @@ List<double?> _foldRadii(Uint8List rgba, _Curl curl) => [
         while (after < clear && i + after <= last && !dark[i + after]) {
           after++;
         }
-        if (before == clear && after == clear) {
-          // Where the brightness crosses into and out of the run, between
-          // samples.
-          double crossing(int a, int b) =>
-              a + (b - a) * (light[a] - 50) / (light[a] - light[b]);
-          return from +
-              step * (crossing(start - 1, start) + crossing(i, i - 1)) / 2;
-        }
+        if (before == clear && after == clear) return true;
       }
-      return null;
+      return false;
     }(),
 ];
 
@@ -313,16 +322,6 @@ List<double?> _foldRadii(Uint8List rgba, _Curl curl) => [
   return least;
 }
 
-/// The most whole degrees in a row a line was found on.
-int _longestRun(List<double?> radii) {
-  var longest = 0, run = 0;
-  for (final rho in radii) {
-    run = rho == null ? 0 : run + 1;
-    longest = math.max(longest, run);
-  }
-  return longest;
-}
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final crescent = brushExtensionPresets().singleWhere(
@@ -333,8 +332,8 @@ void main() {
     outlineWidth: crescent.outlineWidth * scale,
   );
 
-  // The し curls end past the crescent's waist, so they keep a fold; the
-  // others may or may not, but any fold they have bends with the curl.
+  // The し curls end past the crescent's waist, so they keep the folded
+  // crescent; the others are curled too little for one.
   for (final (scale, curl, pressure, folds) in [
     (2.0, _shi(_flat), null, true),
     (2.0, _shi(_rising), 'pressing harder towards the tip', true),
@@ -348,7 +347,7 @@ void main() {
     final label =
         '${curl.name} at ${scale}x the brush size, '
         '${pressure ?? 'without pressure'}';
-    testWidgets('$label: the inner edge and the fold bend with the curl', (
+    testWidgets('$label: one inner outline, bending with the curl', (
       tester,
     ) async {
       final rgba = await _draw(
@@ -358,8 +357,8 @@ void main() {
         pressure: pressure != null,
       );
       final (least, at) = _leastCurvature(_innerRadii(rgba, curl), curl);
-      // An edge parallel to the curl measures 1 or more; pixel steps along
-      // a curving edge stay well within this.
+      // An edge parallel to the curl measures 1; pixel steps along a curving
+      // edge stay well within this.
       expect(
         least,
         greaterThan(-.1),
@@ -367,22 +366,50 @@ void main() {
             'the inner edge bends against the curl at $at degrees '
             '(relative curvature $least)',
       );
-      final fold = _foldRadii(rgba, curl);
-      if (folds) {
+      // Nothing is drawn inside the strand's inner edge, and no second
+      // outline runs inside the strand beside it.
+      final angles = _angles(curl);
+      final runs = _inkRuns(rgba, curl);
+      final lines = _linesInside(rgba, curl);
+      for (var i = 0; i < angles.length; i++) {
         expect(
-          _longestRun(fold),
-          greaterThanOrEqualTo(40),
-          reason: 'the folded crescent shows a fold line inside the strand',
+          runs[i].length,
+          lessThanOrEqualTo(1),
+          reason: 'ink inside the strand at ${angles[i]} degrees',
+        );
+        expect(
+          lines[i],
+          isFalse,
+          reason: 'a second outline inside the strand at ${angles[i]} degrees',
         );
       }
-      final (foldLeast, foldAt) = _leastCurvature(fold, curl);
-      expect(
-        foldLeast,
-        greaterThan(-.1),
-        reason:
-            'the fold line bends against the curl at $foldAt degrees '
-            '(relative curvature $foldLeast)',
-      );
+      final across = [
+        for (final run in runs)
+          if (run.isEmpty) 0.0 else run.single.$2 - run.single.$1,
+      ];
+      final full = across.first;
+      // At its waist the folded crescent is thin, then widens into a lobe
+      // before it narrows to the tip (the last 30 degrees).
+      var waist = 0;
+      for (var i = 0; i < across.length - 30; i++) {
+        if (across[i] < across[waist]) waist = i;
+      }
+      var lobe = waist;
+      for (var i = waist; i < across.length; i++) {
+        if (across[i] > across[lobe]) lobe = i;
+      }
+      if (folds) {
+        expect(
+          across[waist],
+          lessThan(full * .4),
+          reason: 'the strand narrows to a crescent at the bottom of the curl',
+        );
+        expect(
+          across[lobe],
+          greaterThan(across[waist] * 1.5),
+          reason: 'the crescent widens again before the tip',
+        );
+      }
     });
   }
 }
