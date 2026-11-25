@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 
+import '../../../config/signal_colors.dart';
 import '../../../engine/autofill_batch_runner.dart';
 import '../../../engine/autofill_engine.dart' as autofill;
 import '../../../engine/layer_keyframe_engine.dart';
@@ -1397,6 +1398,7 @@ class _LayerPanelState extends State<LayerPanel> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(ctx),
             onPressed: () {
               Navigator.pop(ctx);
               context.read<ProjectService>().removeLayer(

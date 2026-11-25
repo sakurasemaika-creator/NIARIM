@@ -5061,6 +5061,24 @@ abstract class AppLocalizations {
   /// **'更新マーク色'**
   String get themeColorUpdateMark;
 
+  /// テーマ・外観の「更新マーク色」の行の説明。更新マーク色は注意色を兼ねる
+  ///
+  /// In ja, this message translates to:
+  /// **'更新の印と、気をつけてほしい知らせに使います。'**
+  String get themeColorUpdateMarkHint;
+
+  /// テーマ・外観の色の項目「警告色」（取り消せない操作と失敗の知らせの色）
+  ///
+  /// In ja, this message translates to:
+  /// **'警告色'**
+  String get themeColorWarning;
+
+  /// テーマ・外観の「警告色」の行の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'削除など取り消せない操作と、保存できなかったときの知らせに使います。'**
+  String get themeColorWarningHint;
+
   /// テーマのリセット前に表示する確認ダイアログ
   ///
   /// In ja, this message translates to:

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/config/signal_colors.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
@@ -118,17 +119,20 @@ void main() {
       );
       await tester.tap(erase);
       await tester.pumpAndSettle();
-      // 確かめの言葉を打つまで押せない。打つと塗りのボタンになる。
+      // 確かめの言葉を打つまで押せない。打つと取り消せない操作の塗り
+      // （テーマの警告色、上の文字はテーマ自身の色から読める方）になる。
       await tester.enterText(
         find.byKey(EraseAllDataDialog.wordFieldKey),
         l10n.storageEraseAllConfirmWord,
       );
       await tester.pumpAndSettle();
+      final signals = theme.themeData.extension<SignalColors>()!;
       final confirm = find.byType(FilledButton);
       final fill = tester.widget<Material>(
         find.descendant(of: confirm, matching: find.byType(Material)),
       );
-      expect(fill.color, preset.accentColor);
+      expect(fill.color, preset.warningColor);
+      expect(fill.color, isNot(preset.accentColor));
       expect(
         ink(
           tester,
@@ -137,7 +141,7 @@ void main() {
             matching: find.text(l10n.storageEraseAllButton),
           ),
         ),
-        preset.buttonTextColor,
+        signals.onWarning,
       );
       await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
       await tester.pumpAndSettle();
@@ -152,7 +156,8 @@ void main() {
     });
 
     testWidgets(
-      'shared delete confirmation uses button colors and preserves outcomes $i',
+      'shared delete confirmation uses the warning colours and preserves '
+      'outcomes $i',
       (tester) async {
         final theme = ThemeService()..previewCurrent(preset);
         bool? result;
@@ -186,14 +191,15 @@ void main() {
             find.text(l10n.confirmDeleteNamedBody('Owned audit file')),
             findsOneWidget,
           );
+          final signals = theme.themeData.extension<SignalColors>()!;
           final confirm = find.byType(FilledButton);
           final fill = tester.widget<Material>(
             find.descendant(of: confirm, matching: find.byType(Material)),
           );
-          expect(fill.color, preset.accentColor);
+          expect(fill.color, preset.warningColor);
           expect(
             ink(tester, find.text(l10n.commonDelete).last),
-            preset.buttonTextColor,
+            signals.onWarning,
           );
           await tester.tap(
             accept

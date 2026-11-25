@@ -2920,6 +2920,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get themeColorUpdateMark => 'Color de la marca de actualización';
 
   @override
+  String get themeColorUpdateMarkHint =>
+      'Se usa en las marcas de actualización y en los avisos que requieren tu atención.';
+
+  @override
+  String get themeColorWarning => 'Color de advertencia';
+
+  @override
+  String get themeColorWarningHint =>
+      'Se usa en acciones que no se pueden deshacer, como eliminar, y en avisos cuando algo no se pudo guardar.';
+
+  @override
   String get themeResetConfirmTitle => '¿Restablecer los colores del tema?';
 
   @override

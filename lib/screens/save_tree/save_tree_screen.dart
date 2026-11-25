@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../config/signal_colors.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
@@ -283,7 +284,7 @@ void _showTreeSaveDialog(
               if (failure != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
-                  child: IconNotice(
+                  child: IconNotice.warning(
                     failure!,
                     key: const Key('saveTreeDialogFailure'),
                     fontSize: 12,
@@ -470,7 +471,9 @@ Future<void> _handleSaveNodeRestore(
               onPressed: () => Navigator.pop(ctx, false),
               child: Text(l10n.commonCancel),
             ),
+            // 上書きすると前の保存は戻せないので、取り消せない操作の塗り（警告色）。
             FilledButton(
+              style: warningFilledButtonStyle(ctx),
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(l10n.commonOk),
             ),
@@ -862,7 +865,7 @@ class _SlotSaveFailureTextState extends State<_SlotSaveFailureText> {
     if (message == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: IconNotice(
+      child: IconNotice.warning(
         message,
         key: const Key('saveSlotDialogFailure'),
         fontSize: 12,
@@ -1346,6 +1349,7 @@ class _TreeView extends StatelessWidget {
                   child: MenuActionLabel(
                     icon: Icons.delete_outline,
                     label: l10n.commonDelete,
+                    destructive: true,
                   ),
                 ),
               ],

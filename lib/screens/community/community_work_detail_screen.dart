@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../config/signal_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../services/community_service.dart';
@@ -443,6 +444,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 child: Text(l10n.commonCancel),
               ),
               FilledButton(
+                style: warningFilledButtonStyle(ctx),
                 onPressed: () => Navigator.pop(ctx, true),
                 child: Text(l10n.commonDelete),
               ),

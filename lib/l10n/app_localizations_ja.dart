@@ -2756,6 +2756,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeColorUpdateMark => '更新マーク色';
 
   @override
+  String get themeColorUpdateMarkHint => '更新の印と、気をつけてほしい知らせに使います。';
+
+  @override
+  String get themeColorWarning => '警告色';
+
+  @override
+  String get themeColorWarningHint => '削除など取り消せない操作と、保存できなかったときの知らせに使います。';
+
+  @override
   String get themeResetConfirmTitle => 'テーマカラーをリセットしますか？';
 
   @override

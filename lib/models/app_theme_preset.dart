@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import '../utils/warning_color.dart';
+
 /// UIテーマプリセットモデル。
 ///
 /// 明暗（Brightness）はプリセット自身の背景色（panelBgColor）の明るさから
@@ -25,6 +27,10 @@ class AppThemePreset {
   /// 見た目を変えない）。明るい差し色を選んだときに、読める色を自分で
   /// 指定するためのもので、自動では決めない。
   final Color? accentTextColor;
+
+  /// 保存・引き継ぎに警告色が無かったプリセットは[warningColor]が決め方で
+  /// 決める（[defaultWarningColorFor]）。
+  final Color? _warningColor;
   final bool isFavorite;
 
   const AppThemePreset({
@@ -40,11 +46,25 @@ class AppThemePreset {
     required this.selectionColor,
     required this.updateMarkColor,
     this.accentTextColor,
+    this._warningColor,
     this.isFavorite = false,
   });
 
   /// 実際に使う[accentTextColor]（未指定なら差し色）。
   Color get effectiveAccentTextColor => accentTextColor ?? accentColor;
+
+  /// 警告色：取り消せない操作（削除・完全削除・上書き・全データの削除）の
+  /// 確かめのボタン・メニューの項目と、作品が保存できない・失われうる失敗の
+  /// 知らせだけに使う色。ほかの色と同じく利用者が選べ、選んだ色は自動で
+  /// 差し替えない。持たない（警告色より前の版の保存・引き継ぎ・書き出した
+  /// テーマ）ときは、そのテーマの背景・差し色・更新マーク色から決める
+  /// （[defaultWarningColorFor]。組み込みのテーマの値と同じ決め方）。
+  /// [copyWith]・[toJson]はこの値を写すので、一度決めた警告色はほかの色を
+  /// 変えても変わらない。
+  Color get warningColor =>
+      _warningColor ?? (_derivedWarning[this] ??= defaultWarningColorFor(this));
+
+  static final Expando<Color> _derivedWarning = Expando('warningColor');
 
   AppThemePreset copyWith({
     String? id,
@@ -59,6 +79,7 @@ class AppThemePreset {
     Color? selectionColor,
     Color? updateMarkColor,
     Object? accentTextColor = _unset,
+    Color? warningColor,
     bool? isFavorite,
   }) {
     return AppThemePreset(
@@ -76,6 +97,7 @@ class AppThemePreset {
       accentTextColor: identical(accentTextColor, _unset)
           ? this.accentTextColor
           : accentTextColor as Color?,
+      warningColor: warningColor ?? this.warningColor,
       isFavorite: isFavorite ?? this.isFavorite,
     );
   }
@@ -100,6 +122,7 @@ class AppThemePreset {
     menuBgColor: Color(0xFF201F27),
     selectionColor: Color(0xFFFF5C7A),
     updateMarkColor: Color(0xFFFFB020),
+    warningColor: Color(0xFFFF998A),
   );
 
   static const defaultLight = AppThemePreset(
@@ -114,6 +137,7 @@ class AppThemePreset {
     menuBgColor: Color(0xFFFFFFFF),
     selectionColor: Color(0xFFFF5C7A),
     updateMarkColor: Color(0xFFFFB020),
+    warningColor: Color(0xFFDD2119),
   );
 
   Map<String, dynamic> toJson() => {
@@ -129,6 +153,7 @@ class AppThemePreset {
     'selectionColor': selectionColor.toARGB32(),
     'updateMarkColor': updateMarkColor.toARGB32(),
     if (accentTextColor != null) 'accentTextColor': accentTextColor!.toARGB32(),
+    'warningColor': warningColor.toARGB32(),
     'isFavorite': isFavorite,
   };
 
@@ -145,6 +170,12 @@ class AppThemePreset {
     selectionColor: Color(json['selectionColor'] as int),
     updateMarkColor: Color(json['updateMarkColor'] as int),
     accentTextColor: switch (json['accentTextColor']) {
+      final int value => Color(value),
+      _ => null,
+    },
+    // 警告色より前の版の保存・引き継ぎ・書き出したテーマには無い。無ければ
+    // そのテーマの色から決める（[warningColor]）。
+    warningColor: switch (json['warningColor']) {
       final int value => Color(value),
       _ => null,
     },

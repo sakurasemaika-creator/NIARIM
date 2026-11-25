@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../../config/signal_colors.dart';
 import '../../../engine/niapro_serializer.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/app_error_reporter.dart';
@@ -138,7 +139,9 @@ Future<NiaproData?> confirmSavedVersion(
               onPressed: () => Navigator.pop(dialogContext),
               child: Text(l10n.commonCancel),
             ),
+            // 今の作業は上書きされて戻せないので、取り消せない操作の塗り（警告色）。
             FilledButton(
+              style: warningFilledButtonStyle(dialogContext),
               onPressed: save == null
                   ? null
                   : () => Navigator.pop(dialogContext, save.data),

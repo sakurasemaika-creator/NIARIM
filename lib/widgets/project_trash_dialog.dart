@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../config/signal_colors.dart';
 import '../l10n/app_localizations.dart';
 import '../services/project_service.dart'
     show FavoriteProjectDeleteException, TrashedFolderUnreadException;
@@ -158,6 +159,7 @@ class ProjectTrashDialog extends StatefulWidget {
     required this.onApply,
     this.pendingItemNames,
     this.pendingMessage,
+    this.destructive = false,
   });
 
   final String title;
@@ -167,6 +169,10 @@ class ProjectTrashDialog extends StatefulWidget {
   final Future<void> Function() onApply;
   final List<String> Function()? pendingItemNames;
   final String Function()? pendingMessage;
+
+  /// 取り消せない操作（完全削除・ゴミ箱を空にする）の確かめか。確かめの
+  /// ボタンを警告色で塗る。ゴミ箱へ移す（戻せる）確かめは差し色のまま。
+  final bool destructive;
 
   @override
   State<ProjectTrashDialog> createState() => _ProjectTrashDialogState();
@@ -275,12 +281,20 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
           ),
           FilledButton(
             key: const Key('trash-dialog-confirm'),
-            style: FilledButton.styleFrom(
-              minimumSize: const Size(48, 48),
-              visualDensity: VisualDensity.standard,
-              backgroundColor: scheme.primary,
-              foregroundColor: scheme.onPrimary,
-            ),
+            style: widget.destructive
+                ? warningFilledButtonStyle(
+                    context,
+                    FilledButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      visualDensity: VisualDensity.standard,
+                    ),
+                  )
+                : FilledButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                    visualDensity: VisualDensity.standard,
+                    backgroundColor: scheme.primary,
+                    foregroundColor: scheme.onPrimary,
+                  ),
             onPressed: _working ? null : _apply,
             child: Wrap(
               spacing: 8,
@@ -291,7 +305,9 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
                     dimension: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: scheme.onSurface,
+                      color: widget.destructive
+                          ? SignalColors.of(context).onWarning
+                          : scheme.onSurface,
                     ),
                   ),
                 trashConfirmLabelText(

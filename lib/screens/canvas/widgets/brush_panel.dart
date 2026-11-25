@@ -377,6 +377,7 @@ class _BrushPanelState extends State<BrushPanel> {
                                       child: MenuActionLabel(
                                         icon: Icons.delete_outline,
                                         label: l10n.commonDelete,
+                                        destructive: true,
                                       ),
                                     ),
                                 ],

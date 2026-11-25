@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../config/signal_colors.dart';
 import '../l10n/app_localizations.dart';
 import '../services/theme_service.dart';
 import '../utils/app_error_reporter.dart';
@@ -131,10 +132,12 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // 「もう一度試す」でやり直せ、作品は失われないので注意色の印
+                  // （警告色は取り消せない操作・作品が失われうる失敗だけ）。
                   Icon(
                     Icons.error_outline_rounded,
                     size: 48,
-                    color: colors.error,
+                    color: SignalColors.of(context).caution,
                   ),
                   const SizedBox(height: 16),
                   // 韓国語は語の途中で折り返さない（「다시 시도／해 주세요」の

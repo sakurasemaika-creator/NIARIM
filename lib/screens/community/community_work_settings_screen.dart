@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../config/signal_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/community_work_metadata_labels.dart';
 import '../../models/community_work.dart';
@@ -369,6 +370,7 @@ class _CommunityWorkSettingsScreenState
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(dialogContext),
             key: const Key('communityWorkSettingsConfirmDelete'),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(l10n.commonDelete),

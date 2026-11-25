@@ -194,6 +194,7 @@ class _PresetTile extends StatelessWidget {
                         child: MenuActionLabel(
                           icon: Icons.delete_outline,
                           label: l10n.commonDelete,
+                          destructive: true,
                         ),
                       ),
                     ],

@@ -478,6 +478,8 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                             .withValues(alpha: 0.7),
                                         borderRadius: BorderRadius.circular(3),
                                       ),
+                                      // コマの長さの数はふつうの情報なので、
+                                      // 下地（メニューの背景色）の上の文字色。
                                       child: Text(
                                         '$hold',
                                         style: TextStyle(
@@ -485,7 +487,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                           color: context
                                               .watch<ThemeService>()
                                               .current
-                                              .updateMarkColor,
+                                              .menuTextColor,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -569,14 +571,10 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                       key: const Key('canvasCurrentFrameOutline'),
                       width: 50,
                       height: 50,
+                      // 今のコマの縁は選択の縁なので差し色の塗り（更新マーク
+                      // 色は更新・注意の印だけ）。
                       decoration: BoxDecoration(
-                        border: Border.all(
-                          color: context
-                              .watch<ThemeService>()
-                              .current
-                              .updateMarkColor,
-                          width: 3,
-                        ),
+                        border: Border.all(color: scheme.primary, width: 3),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),

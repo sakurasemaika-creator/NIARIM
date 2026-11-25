@@ -100,7 +100,7 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
         Widget? errorNotice() => controller._loadFailed
             ? Padding(
                 padding: const EdgeInsets.all(6),
-                child: IconNotice(
+                child: IconNotice.caution(
                   l10n.thumbnailImageLoadFailed,
                   fontSize: 12,
                   liveRegion: true,

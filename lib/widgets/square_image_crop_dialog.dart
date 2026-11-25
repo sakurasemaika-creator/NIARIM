@@ -163,7 +163,7 @@ class _SquareImageCropDialogState extends State<SquareImageCropDialog> {
                     width: _kCropViewSize,
                     height: _kCropViewSize,
                     child: Center(
-                      child: IconNotice(
+                      child: IconNotice.caution(
                         l10n.autofillThumbnailCropLoadFailed,
                         fontSize: 12,
                         liveRegion: true,

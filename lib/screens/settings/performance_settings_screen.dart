@@ -1,3 +1,4 @@
+import '../../config/signal_colors.dart';
 import '../../widgets/grouped_sheet.dart';
 import 'widgets/settings_value_tile.dart';
 import 'package:flutter/material.dart';
@@ -619,6 +620,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
               child: Text(l10n.commonCancel),
             ),
             FilledButton(
+              style: warningFilledButtonStyle(dialog),
               onPressed: () => Navigator.pop(dialog, true),
               child: Text(l10n.homePermanentDelete),
             ),

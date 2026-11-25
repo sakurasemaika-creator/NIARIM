@@ -689,7 +689,8 @@ Future<void> showFolderThumbnailDialog(
                   _ => const SizedBox.shrink(),
                 },
               ),
-              if (failure != null) IconNotice(failure!, liveRegion: true),
+              if (failure != null)
+                IconNotice.caution(failure!, liveRegion: true),
             ],
           ),
         ),

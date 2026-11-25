@@ -390,7 +390,7 @@ class _ExportScreenState extends State<ExportScreen> {
           liveRegion: true,
           child: Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: IconNotice(_error!),
+            child: IconNotice.caution(_error!),
           ),
         ),
     ];

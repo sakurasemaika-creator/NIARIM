@@ -1,5 +1,6 @@
 import '../config/accent_text_theme.dart';
 import '../config/font_fallback.dart';
+import '../config/signal_colors.dart';
 
 import 'dart:convert';
 
@@ -11,6 +12,7 @@ import '../utils/color_contrast.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/transfer_merge.dart';
+import '../utils/warning_color.dart';
 import '../widgets/button_label_room.dart';
 import '../widgets/menu_surface.dart';
 
@@ -112,6 +114,9 @@ class ThemeService extends ChangeNotifier {
   // 組み込み28種の元の配色を正規値として保持する。
   // 比較用の代替配色を元の配色へ誤適用しないよう、全9色を
   // test/built_in_theme_original_palette_test.dart で固定検証する。
+  // 警告色（warningColor）は後から足した役目で、各テーマの背景・差し色・
+  // 更新マーク色から defaultWarningColorFor の決め方で決めた値
+  // （test/theme_warning_color_test.dart が計算し直して見張る）。
   // 保存済みの編集版は現行の永続化仕様どおり保持する。
   static const List<AppThemePreset> _builtInPresets = [
     AppThemePreset.defaultLight, // 赤（ライト・既定選択）
@@ -128,6 +133,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFFF8A3D),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDD2119),
     ),
     AppThemePreset(
       id: 'orange_dark',
@@ -141,6 +147,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF2A1D12),
       selectionColor: Color(0xFFFF8A3D),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF998A),
     ),
     AppThemePreset(
       id: 'yellow_light',
@@ -154,6 +161,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFF2B90F),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFE1261D),
     ),
     AppThemePreset(
       id: 'yellow_dark',
@@ -167,6 +175,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF292410),
       selectionColor: Color(0xFFF2B90F),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF9C8D),
     ),
     AppThemePreset(
       id: 'green_light',
@@ -180,6 +189,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF3DDC97),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDF241B),
     ),
     AppThemePreset(
       id: 'green_dark',
@@ -193,6 +203,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF17251D),
       selectionColor: Color(0xFF3DDC97),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF9C8D),
     ),
     AppThemePreset(
       id: 'blue_light',
@@ -206,6 +217,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF3AA6FF),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDD2119),
     ),
     AppThemePreset(
       id: 'blue_dark',
@@ -219,6 +231,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF182430),
       selectionColor: Color(0xFF3AA6FF),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF9C8D),
     ),
     AppThemePreset(
       id: 'indigo_light',
@@ -233,6 +246,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF5C6BFF),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDB1E16),
     ),
     AppThemePreset(
       id: 'indigo_dark',
@@ -246,6 +260,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF1C1E2D),
       selectionColor: Color(0xFF5C6BFF),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF998A),
     ),
     AppThemePreset(
       id: 'purple_light',
@@ -259,6 +274,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFB15CFF),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDB1E16),
     ),
     AppThemePreset(
       id: 'purple_dark',
@@ -272,6 +288,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF241C2D),
       selectionColor: Color(0xFFB15CFF),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF998A),
     ),
     // ここから追加のパステル・ニュアンスカラー。
     AppThemePreset(
@@ -286,6 +303,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFFF7EB3),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDB1E16),
     ),
     AppThemePreset(
       id: 'pink_dark',
@@ -299,6 +317,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF2B1B22),
       selectionColor: Color(0xFFFF7EB3),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF998A),
     ),
     AppThemePreset(
       id: 'light_purple_light',
@@ -312,6 +331,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFB39DDB),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDB1E16),
     ),
     AppThemePreset(
       id: 'light_purple_dark',
@@ -325,6 +345,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF211E2C),
       selectionColor: Color(0xFFB39DDB),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF998A),
     ),
     AppThemePreset(
       id: 'light_blue_light',
@@ -338,6 +359,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF90CAF9),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDD2119),
     ),
     AppThemePreset(
       id: 'light_blue_dark',
@@ -351,6 +373,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF1C2530),
       selectionColor: Color(0xFF90CAF9),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF9C8D),
     ),
     AppThemePreset(
       id: 'emerald_light',
@@ -364,6 +387,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF10B981),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDD2119),
     ),
     AppThemePreset(
       id: 'emerald_dark',
@@ -377,6 +401,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF13221D),
       selectionColor: Color(0xFF10B981),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF998A),
     ),
     // くすみカラー（色名は「くすみ（カラー名）」表記）。
     AppThemePreset(
@@ -391,6 +416,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFD8A0A6),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDB1E16),
     ),
     AppThemePreset(
       id: 'dusty_pink_dark',
@@ -404,6 +430,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF261C1E),
       selectionColor: Color(0xFFD8A0A6),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF998A),
     ),
     AppThemePreset(
       id: 'dusty_blue_light',
@@ -417,6 +444,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF8DA9C4),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDB1E16),
     ),
     AppThemePreset(
       id: 'dusty_blue_dark',
@@ -430,6 +458,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF1C232B),
       selectionColor: Color(0xFF8DA9C4),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF9C8D),
     ),
     AppThemePreset(
       id: 'dusty_green_light',
@@ -443,6 +472,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF8FB89D),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFDD2119),
     ),
     AppThemePreset(
       id: 'dusty_green_dark',
@@ -456,6 +486,7 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF1D251F),
       selectionColor: Color(0xFF8FB89D),
       updateMarkColor: Color(0xFFFFB020),
+      warningColor: Color(0xFFFF9C8D),
     ),
   ];
 
@@ -858,7 +889,11 @@ class ThemeService extends ChangeNotifier {
   /// ポップなフラットデザインのThemeDataを構築する。
   /// Material標準の角丸・階調をそのまま使わず、フラット・大きめタップ領域・
   /// 丸みの強い形状で統一し、スマホでの誤タップを減らす。
-  ThemeData _buildTheme(AppThemePreset preset, {Locale? locale}) {
+  ThemeData _buildTheme(
+    AppThemePreset preset, {
+    Locale? locale,
+    SignalColors? signals,
+  }) {
     final bodyFont = bodyFontFamilyFor(locale);
     final headingFont = headingFontFamilyFor(locale);
     final headingFallback = headingFontFallbackFor(locale);
@@ -891,15 +926,21 @@ class ThemeService extends ChangeNotifier {
       seedColor: preset.accentColor,
       brightness: brightness,
     );
-    // Error labels are not a separate user-configurable color. Preserve
-    // Material's semantic error color when readable, but adapt it to the
-    // actual user-selected opaque panel and popup backgrounds otherwise.
-    final readableError = readableThemeError(
-      seedScheme.error,
-      panelColor,
-      popupColor,
-      preset.textColor,
-    );
+    // 警告色（取り消せない操作・作品が失われうる失敗）と注意色（更新マーク
+    // 色）。どちらもテーマ・外観で選ぶ色で、上の文字はテーマ自身の文字色・
+    // 背景色から読める方を選ぶ（黒・白に決め打ちしない）。メニューの面の
+    // テーマ（[_menuSurfacePreset]）は画面と同じ組を受け取る。
+    final inks = themeInksOf(preset);
+    final warning = opaqueOver(preset.warningColor, panelColor);
+    final caution = opaqueOver(preset.updateMarkColor, panelColor);
+    final signalColors =
+        signals ??
+        SignalColors(
+          warning: warning,
+          onWarning: readableInkOn(warning, inks),
+          caution: caution,
+          onCaution: readableInkOn(caution, inks),
+        );
     // 差し色を変えたら差し色だけが変わるよう、fromSeedが差し色から作る
     // ほかの色は、それぞれ対応する設定から作り直す。選択色の淡い色と
     // 3つ目の色は選択色から（組み込みテーマは選択色＝差し色なので同じ値）、
@@ -912,8 +953,14 @@ class ThemeService extends ChangeNotifier {
     Color towardText(double t) => Color.lerp(panelColor, surfaceInk, t)!;
     final light = brightness == Brightness.light;
     final scheme = seedScheme.copyWith(
-      error: readableError,
-      onError: contrastingForeground(readableError, seedScheme.onError),
+      // Materialの誤りの状態（入力欄の枠・文字）も警告色で描く。
+      error: signalColors.warning,
+      onError: signalColors.onWarning,
+      errorContainer: Color.alphaBlend(
+        signalColors.warning.withValues(alpha: 0.16),
+        popupColor,
+      ),
+      onErrorContainer: signalColors.warning,
       primary: accentColor,
       onPrimary: preset.buttonTextColor,
       primaryContainer: Color.alphaBlend(
@@ -1039,6 +1086,7 @@ class ThemeService extends ChangeNotifier {
         : _buildTheme(
             _menuSurfacePreset(preset, panelColor, popupColor),
             locale: locale,
+            signals: signalColors,
           );
 
     return ThemeData(
@@ -1047,7 +1095,11 @@ class ThemeService extends ChangeNotifier {
       colorScheme: scheme,
       fontFamily: bodyFont,
       textTheme: textTheme,
-      extensions: [AccentTextTheme(accentText), MenuSurfaceTheme(menuSurface)],
+      extensions: [
+        AccentTextTheme(accentText),
+        signalColors,
+        MenuSurfaceTheme(menuSurface),
+      ],
       // 画面から開いたダイアログ・ボトムシートの中身を、メニューの面の
       // テーマ（上の menuSurface）で描く。動きは Flutter の既定のまま。
       pageTransitionsTheme: menuSurfacePageTransitionsTheme,
@@ -1459,6 +1511,12 @@ class ThemeService extends ChangeNotifier {
         indicatorColor: scheme.primary,
         labelColor: accentText,
         unselectedLabelColor: menuForeground.withValues(alpha: 0.6),
+      ),
+      // 数の印（作品広場の通知の数）は更新の印なので注意色（Materialの既定は
+      // エラーの色＝警告色）。
+      badgeTheme: BadgeThemeData(
+        backgroundColor: signalColors.caution,
+        textColor: signalColors.onCaution,
       ),
       dividerTheme: DividerThemeData(
         color: preset.textColor.withValues(alpha: 0.08),

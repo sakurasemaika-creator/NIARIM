@@ -741,7 +741,7 @@ class _ExportedWorkThumbnailDialogState
                 : const SizedBox.shrink(),
           ),
           if (!ready) const LinearProgressIndicator(),
-          if (failure != null) IconNotice(failure!, liveRegion: true),
+          if (failure != null) IconNotice.caution(failure!, liveRegion: true),
         ],
       ),
     ),

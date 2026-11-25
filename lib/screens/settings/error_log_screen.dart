@@ -79,7 +79,7 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: IconNotice(
+                child: IconNotice.caution(
                   l10n.savedListUnreadableNotice(unreadable),
                   icon: Icons.inventory_2_outlined,
                 ),

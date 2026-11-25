@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../config/signal_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/export_preset.dart';
 import '../export/widgets/export_complete_dialog.dart';
@@ -1207,6 +1208,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
       );
       final title = keepKoreanWordsTogether(l.communityScreenTitle);
+      final signals = SignalColors.of(context);
       final scaler = MediaQuery.textScalerOf(context);
       final style = DefaultTextStyle.of(context).style.merge(titleStyle);
       double widestWord() {
@@ -1247,8 +1249,9 @@ class _ThemeSampleScreen extends StatelessWidget {
                   child: Container(
                     width: 16,
                     height: 16,
+                    // 通知の数は更新の印なので注意色（本物の画面のバッジと同じ）。
                     decoration: BoxDecoration(
-                      color: c.error,
+                      color: signals.caution,
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -1258,7 +1261,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: c.onError,
+                        color: signals.onCaution,
                       ),
                     ),
                   ),

@@ -818,6 +818,10 @@ class _WorkspaceSaveDialog extends StatefulWidget {
 class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
   final _controller = TextEditingController();
   String? _errorText;
+
+  /// [_errorText]が保存の失敗か（名前が空のときはふつうの知らせ、保存できな
+  /// かったときは気をつけてほしい知らせ。作品は失われない）。
+  bool _saveFailed = false;
   bool _saving = false;
 
   @override
@@ -831,7 +835,10 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
     final l10n = AppLocalizations.of(context)!;
     final name = _controller.text.trim();
     if (name.isEmpty) {
-      setState(() => _errorText = l10n.workspaceNameRequiredError);
+      setState(() {
+        _errorText = l10n.workspaceNameRequiredError;
+        _saveFailed = false;
+      });
       return;
     }
     setState(() => _saving = true);
@@ -866,7 +873,10 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
       if (mounted) {
-        setState(() => _errorText = l10n.timelineSaveFailedDialogBody);
+        setState(() {
+          _errorText = l10n.timelineSaveFailedDialogBody;
+          _saveFailed = true;
+        });
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -979,7 +989,13 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
           if (_errorText != null)
             Padding(
               padding: EdgeInsets.only(top: 4),
-              child: IconNotice(_errorText!, fontSize: 12, liveRegion: true),
+              child: _saveFailed
+                  ? IconNotice.caution(
+                      _errorText!,
+                      fontSize: 12,
+                      liveRegion: true,
+                    )
+                  : IconNotice(_errorText!, fontSize: 12, liveRegion: true),
             ),
         ],
       ),

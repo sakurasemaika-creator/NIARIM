@@ -983,7 +983,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               if (_creationFailed)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: IconNotice(
+                  child: IconNotice.caution(
                     l10n.newProjectCreateFailed,
                     liveRegion: true,
                   ),

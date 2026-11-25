@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 
+import '../../config/signal_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/api/niarim_api_exception.dart';
 import '../../services/community_service.dart';
@@ -350,6 +351,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(context),
             onPressed: () => Navigator.pop(context, true),
             child: Text(l10n.communityPostDiscardPending),
           ),
@@ -1574,7 +1576,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                 ],
                 if (_error != null) ...[
                   const SizedBox(height: 8),
-                  IconNotice(
+                  IconNotice.caution(
                     l10n.communityPostErrorLabel(_errorText(l10n, _error!)),
                     liveRegion: true,
                   ),

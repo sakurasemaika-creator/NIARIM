@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../config/font_fallback.dart';
+import '../../../config/signal_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/name_collation.dart';
 import '../../../widgets/keep_together_text.dart';
@@ -153,15 +154,18 @@ class _EraseAllDataDialogState extends State<EraseAllDataDialog> {
                     style: TextStyle(shadows: cancelLabelShadows(context)),
                   ),
                 ),
-                // 主な操作の塗り（エラーの色にしない）。言葉が合うまでは
-                // 押せない。
+                // 取り消せない操作の塗り（警告色）。言葉が合うまでは押せない
+                // （押せない間はテーマの押せないボタンの色）。
                 FilledButton(
                   key: EraseAllDataDialog.confirmKey,
-                  style: FilledButton.styleFrom(
-                    padding: eraseAllButtonPadding(context),
-                    // 文字が折れたときの上下の空きは上の余白で取る。
-                    foregroundBuilder: (context, states, child) =>
-                        child ?? const SizedBox.shrink(),
+                  style: warningFilledButtonStyle(
+                    context,
+                    FilledButton.styleFrom(
+                      padding: eraseAllButtonPadding(context),
+                      // 文字が折れたときの上下の空きは上の余白で取る。
+                      foregroundBuilder: (context, states, child) =>
+                          child ?? const SizedBox.shrink(),
+                    ),
                   ),
                   onPressed: matches ? _confirm : null,
                   child: KeepTogetherText(

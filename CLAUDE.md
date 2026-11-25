@@ -1529,8 +1529,8 @@ onTap: ...)`だったために
   メニュー・ドロップダウンは包まない。入力欄の打った字は`textTheme.bodyLarge`
   （メニューの文字色）なので、**画面の色で塗った入力欄は本文の文字色を自分で
   渡す**（ヘルプ・活用Tips・フォントの検索欄が実例）。危ない操作のメニューの
-  項目はエラーの色にせず`MenuActionLabel`（`lib/widgets/menu_action_label.dart`、
-  印のアイコン＋メニューの文字色）。メニューの項目を`Text`として読むテストは
+  項目は`MenuActionLabel`（`lib/widgets/menu_action_label.dart`、印のアイコン＋
+  メニューの文字色。取り消せない項目だけ`destructive: true`で警告色）。メニューの項目を`Text`として読むテストは
   `MenuActionLabel`も読むこと。カード・浮いた名前・ドロップダウンの値・
   メニューの中のアイコン・タブ・ほかの画面の危ない操作・救済ボタンの判定は
   まだ（DISC193〜199）。
@@ -1540,13 +1540,25 @@ onTap: ...)`だったために
   ログイン・投稿でもう一度聞く。**規約・ポリシーの文を変えて同意を取り直すときは版を上げる**。
   `signInInteractively()`・`premium.buy(`を新しく呼ぶ所は、同じ関数の中で先に`ensureLegalConsent`を
   呼ぶこと（`test/legal_consent_test.dart`がlib配下のソースを走査して見張る）。
-- **その場の知らせは`IconNotice`、エラーの赤で描かない（DISC577・198、2026-11-23）**：
-  読み込めなかった・足りない・重なっている等の文は`lib/widgets/icon_notice.dart`の
-  `IconNotice`（その面の文字色＋先頭の印、`liveRegion:`で読み上げへも）。メニューの危ない
-  操作は`MenuActionLabel`、削除の確かめのボタンは`confirmDelete`と同じ塗り（色を渡さない
-  `FilledButton`）、削除のアイコンにも色を渡さない。`colorScheme.error`を残してよい所は
-  `test/no_error_colour_notices_test.dart`の一覧だけ（入力欄の誤りの状態・テーマの見本・
-  タイムラインの今のコマの赤枠とフェードの色の見本・起動失敗画面の大きな印）。
+- **警告色・注意色はちゃんと見てほしい所だけ（所有者の判断、2026-11-25「基本となるベースカラー系や
+  文字色系と、注意色・警告色は用途をしっかり使い分けることで普段は世界観を壊さず、ちゃんと見て
+  ほしいところだけ目立たせる」「注意色はベースカラーなど注意や更新と無縁の部分には使わない」）**：
+  **警告色**（テーマ・外観の「警告色」、`AppThemePreset.warningColor`）は取り消せない操作と作品が
+  保存できない失敗だけ：削除・完全削除・ゴミ箱を空にする・上書き・保存からの読み込み・全データの
+  削除・色を戻すの確かめのボタン（`warningFilledButtonStyle`、`confirmDelete`・
+  `ProjectTrashDialog(destructive: true)`・`EraseAllDataDialog`）、メニューの取り消せない項目
+  （`MenuActionLabel(destructive: true)`。ゴミ箱へ移す〔戻せる〕は付けない）、手動の保存の失敗
+  （`IconNotice.warning`、印と文を警告色）。**注意色＝更新マーク色**は更新の印と、何も失われない
+  が気をつけてほしい知らせだけ：読み込めない・つながらない・作れない（やり直せる）・上限・入れられ
+  なかった音等（`IconNotice.caution`、印だけ注意色で文は面の文字色）、書き出されない範囲の枠、
+  通知の数（`badgeTheme`）、起動失敗画面の印。**それ以外はいつもの色**（`IconNotice`の既定＝面の
+  文字色＋印：説明・入力の誤り。選択の縁・コマの長さの数・枠は差し色・文字色）。色だけで伝えず
+  印と文を添える。色は`SignalColors`（`lib/config/signal_colors.dart`の`ThemeExtension`、
+  警告色の上の文字`onWarning`はテーマ自身の文字色・背景色から選ぶ）を上の部品から通し、画面で
+  `colorScheme.error`・`Colors.red`等・`updateMarkColor`・`warningColor`を直接使わない
+  （`test/no_error_colour_notices_test.dart`が使う所と数を一覧で見張る。新しく使うときは警告・
+  注意に当たるかを確かめて一覧に足す。`colorScheme.error`は警告色で、残るのは入力欄の誤りの状態・
+  タイムラインの今のコマの赤枠〔所有者の判断待ち〕・フェードの色の見本）。
   スライダーを置く`AlertDialog`は`SizedBox(width: 480)`（`slider_dialog_width_test`が
   lib配下の全ダイアログを走査する）。
 - **知らせ（SnackBar）は5秒以内に、少しずつ薄くなって消える（所有者の判断7、
@@ -2053,7 +2065,7 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   テーマ・外観設定は文字色・背景色・ボタン文字色・メニュー文字色・選択色等を
   自由に選べ、**ユーザーの色選択は拒否も自動の差し替えもしない**
   （`color_contrast.dart`の方針）。その代わり、読めない組み合わせ
-  （`readabilityCriticalPairs`の各組がAPCAで|Lc|10未満、1・2・3型色覚の
+  （`readabilityCriticalPairs`の各組〔警告色×パネル・メニューの背景、警告色の上の文字×警告色も〕がAPCAで|Lc|10未満、1・2・3型色覚の
   模擬でも判定する`isEssentialTextNearlyInvisible`）になったときだけ、
   起動画面の右上へ**テーマ色を一切使わない固定色**のリセットボタン
   （`lib/widgets/theme_rescue_button.dart`）を出す
@@ -2123,6 +2135,16 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   `primary`・`primaryContainer`・`primaryFixed*`・`inversePrimary`だけ
   （`test/theme_accent_only_test.dart`）。`fromSeed`の別の色を新しく使うときは
   どの設定から作るべきかを決めて、このテストの役目の一覧にも足すこと。
+  誤りの色（`error`・`errorContainer`）は警告色から、数の印（`badgeTheme`）は更新マーク色から作る。
+  **警告色は後から足した10番目の役目**：組み込み28テーマの値は`lib/utils/warning_color.dart`の
+  `defaultWarningColorFor`（OKLCHの色相29°の赤、パネル・メニューの背景から離れる向きに明るさを
+  たどり、両方の背景と上の文字で|Lc|60以上かつWCAGの比4.5以上・差し色と更新マーク色からΔE*ab 20
+  以上になる最初の色）で決めた定数（`test/theme_warning_color_test.dart`が計算し直す）。警告色を
+  持たない古い保存・引き継ぎ・書き出したテーマは読むときに同じ決め方で決め、`copyWith`・`toJson`が
+  写すのでサービスの上ではほかの色を変えても動かない。テーマ・外観の画面だけは、警告色が決め方
+  どおり（`warningFollowsRule`、利用者が選んでいない）ならほかの色を変えたときに決め直す（選択色が
+  差し色に付いていくのと同じ。背景を暗くしても読める赤のまま）。元の9色は変えていない
+  （`built_in_theme_original_palette_test`）。
   起動画面の導線ボタンのグラデーションは`splashGradientColors`
   （`lib/utils/splash_gradient.dart`）で、ボタンの文字が読めなくなる手前
   （Lc 45）で淡い終点を止める（白抜きの文字が右下で溶けた）。ホーム画面の

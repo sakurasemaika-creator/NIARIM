@@ -67,7 +67,7 @@ class _ExportCompleteDialogState extends State<ExportCompleteDialog> {
           Text(l10n.exportCompleteFramesBody(widget.frames)),
           if (widget.soundsLeftOut > 0) ...[
             const SizedBox(height: 8),
-            IconNotice(
+            IconNotice.caution(
               l10n.exportSoundsLeftOut(widget.soundsLeftOut),
               icon: Icons.volume_off_outlined,
               liveRegion: true,

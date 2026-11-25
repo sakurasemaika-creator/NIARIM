@@ -2728,6 +2728,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeColorUpdateMark => '更新标记颜色';
 
   @override
+  String get themeColorUpdateMarkHint => '用于更新标记和需要注意的提示。';
+
+  @override
+  String get themeColorWarning => '警告颜色';
+
+  @override
+  String get themeColorWarningHint => '用于删除等无法撤销的操作，以及无法保存时的提示。';
+
+  @override
   String get themeResetConfirmTitle => '要重置主题颜色吗？';
 
   @override
@@ -13628,6 +13637,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get themeColorUpdateMark => '更新標記顏色';
+
+  @override
+  String get themeColorUpdateMarkHint => '用於更新標記和需要注意的提示。';
+
+  @override
+  String get themeColorWarning => '警告顏色';
+
+  @override
+  String get themeColorWarningHint => '用於刪除等無法復原的操作，以及無法儲存時的提示。';
 
   @override
   String get themeResetConfirmTitle => '要重設主題顏色嗎？';

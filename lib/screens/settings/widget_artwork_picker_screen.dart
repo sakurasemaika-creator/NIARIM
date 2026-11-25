@@ -678,11 +678,12 @@ class _WidgetArtworkFramePickerScreenState
                                     width: _stripItemExtent,
                                     height: 64,
                                     decoration: BoxDecoration(
+                                      // 今のコマの縁は選択の縁なので差し色の
+                                      // 塗り（更新マーク色は更新・注意の印だけ）。
                                       border: Border.all(
-                                        color: context
-                                            .watch<ThemeService>()
-                                            .current
-                                            .updateMarkColor,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
                                         width: 3,
                                       ),
                                       borderRadius: BorderRadius.circular(4),

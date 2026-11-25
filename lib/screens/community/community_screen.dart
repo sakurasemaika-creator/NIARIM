@@ -1,4 +1,5 @@
 import 'community_moderation.dart';
+import '../../config/signal_colors.dart';
 import '../../utils/tolerant_preferences.dart';
 import '../../config/accent_text_theme.dart';
 
@@ -635,6 +636,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(dialogContext),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(l10n.commonDelete),
           ),

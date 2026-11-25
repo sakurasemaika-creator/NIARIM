@@ -24,6 +24,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../config/accent_text_theme.dart';
+import '../../config/signal_colors.dart';
 import '../../utils/immersive_mode.dart';
 import '../../widgets/project_autosave_notice.dart';
 import '../../utils/app_error_reporter.dart';
@@ -4436,7 +4437,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       if (failed)
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
-                          child: IconNotice(
+                          child: IconNotice.caution(
                             MakingStrings.speechFailed(context),
                             liveRegion: true,
                           ),
@@ -5513,6 +5514,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(ctx),
             onPressed: () {
               Navigator.pop(ctx);
               context.read<ProjectService>().removeScene(
@@ -5542,6 +5544,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(ctx),
             onPressed: () {
               Navigator.pop(ctx);
               context.read<ProjectService>().removeScenes(
@@ -10694,6 +10697,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               child: Text(l10n.commonCancel),
                             ),
                             FilledButton(
+                              style: warningFilledButtonStyle(dialogCtx),
                               onPressed: () => Navigator.pop(dialogCtx, true),
                               child: Text(l10n.commonDelete),
                             ),
@@ -11153,8 +11157,10 @@ class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final ps = context.watch<ProjectService>();
-    final markColor = context.watch<ThemeService>().current.updateMarkColor;
     final scheme = Theme.of(context).colorScheme;
+    // 新しい大きさの枠とつまみは操作する範囲（選択の縁）なので差し色の塗り。
+    // 更新マーク色（注意色）は更新・注意の印だけに使う。
+    final markColor = scheme.primary;
 
     final (refW, refH) = _refSize;
     // プレビュー全体は「元のキャンバス（回転適用後の外接矩形）」と
@@ -13531,7 +13537,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                       _update(_kf.copyWith(frameIndex: v.round() - 1)),
                 ),
                 if (occupied)
-                  IconNotice(
+                  IconNotice.caution(
                     l10n.timelineCameraFrameAlreadyHasKeyframe,
                     liveRegion: true,
                   ),

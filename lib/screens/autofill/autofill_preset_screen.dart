@@ -1,3 +1,4 @@
+import '../../config/signal_colors.dart';
 import '../../services/shared_asset_card_service.dart';
 import 'package:niarim/services/theme_service.dart';
 
@@ -757,6 +758,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(ctx),
             onPressed: () {
               // 削除されるパーツを使用中の線画レイヤーへ更新マークを伝播（対応プリセット消失前に通知）
               final ps = context.read<ProjectService>();
@@ -891,6 +893,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(ctx),
             onPressed: () {
               context.read<AutofillPresetService>().clearPresetThumbnail(
                 preset.id,
@@ -1067,6 +1070,7 @@ class _PresetCard extends StatelessWidget {
               child: MenuActionLabel(
                 icon: Icons.delete_outline,
                 label: l10n.commonDelete,
+                destructive: true,
               ),
             ),
           ],
@@ -1286,7 +1290,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                   horizontal: 12,
                   vertical: 8,
                 ),
-                child: IconNotice(
+                child: IconNotice.caution(
                   l10n.autofillPartUnconfiguredBanner(
                     unconfigured.length,
                     unconfigured.map((p) => p.displayName(l10n)).join('・'),

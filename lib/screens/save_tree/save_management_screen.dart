@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../config/signal_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
 import '../../models/save_node.dart';
@@ -221,7 +222,9 @@ class _GameStyleSlotScreenState extends State<_GameStyleSlotScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(l10n.commonCancel),
           ),
+          // 上書きすると前の保存は戻せないので、取り消せない操作の塗り（警告色）。
           FilledButton(
+            style: warningFilledButtonStyle(ctx),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.commonOk),
           ),
@@ -330,7 +333,7 @@ class _GameStyleSlotScreenState extends State<_GameStyleSlotScreen> {
                 if (failure != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
-                    child: IconNotice(
+                    child: IconNotice.warning(
                       failure!,
                       key: const Key('saveSlotDialogFailure'),
                       fontSize: 12,

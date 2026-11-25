@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../app_runner.dart';
+import '../../config/signal_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/local_file_trash_service.dart';
@@ -1299,6 +1300,7 @@ class _StorageScreenState extends State<StorageScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(ctx),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.commonDelete),
           ),
@@ -1402,6 +1404,7 @@ class _StorageScreenState extends State<StorageScreen> {
                   '${l10n.homeProjectsLoadFailed}'
             : l10n.homePermanentDeleteConfirmBody,
         confirmLabel: l10n.commonDelete,
+        destructive: true,
         itemNames: const [],
         pendingItemNames: () => [
           for (final t in ps.trashedFolders)

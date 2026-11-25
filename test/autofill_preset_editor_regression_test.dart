@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/config/signal_colors.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/autofill_preset.dart';
 import 'package:niarim/models/layer.dart';
@@ -215,17 +216,29 @@ void main() {
     },
   );
 
+  // 暗い面でも読める色で描く：取り消せない「削除」はテーマの警告色
+  // （SignalColors、暗いテーマでは明るい赤）、Materialの暗い赤（error）は
+  // 使わない。ほかの項目はメニューの文字色。
   testWidgets('preset and part delete controls use the dark surface colors', (
     tester,
   ) async {
     const menuInk = Color(0xffe8e0ff);
     const error = Color(0xff741620);
+    const warning = Color(0xffff998a);
     final theme = ThemeData(
       colorScheme: const ColorScheme.dark(error: error),
       popupMenuTheme: const PopupMenuThemeData(
         iconColor: menuInk,
         textStyle: TextStyle(color: menuInk),
       ),
+      extensions: const [
+        SignalColors(
+          warning: warning,
+          onWarning: Color(0xff17161c),
+          caution: Color(0xffffb020),
+          onCaution: Color(0xff17161c),
+        ),
+      ],
     );
     final context = await open(tester, theme: theme);
     final row = find.widgetWithText(ListTile, preset.name);
@@ -239,21 +252,26 @@ void main() {
       of: action,
       matching: find.byIcon(Icons.delete_outline),
     );
-    expect(tester.widget<Icon>(menuIcon).color, menuInk);
+    expect(tester.widget<Icon>(menuIcon).color, warning);
     final label = find.descendant(
       of: action,
       matching: find.text(l10n.commonDelete),
     );
     final rename = find.text(l10n.commonRename).hitTestable();
+    // ほかの項目（名前の変更）はいつもの項目の色のまま。
     expect(
-      DefaultTextStyle.of(tester.element(label)).style.color,
       DefaultTextStyle.of(tester.element(rename)).style.color,
+      isNot(warning),
     );
-    expect(tester.widget<Text>(label).style?.color, isNull);
+    expect(tester.widget<Text>(rename).style?.color, isNull);
+    expect(tester.widget<Text>(label).style?.color, warning);
     await tester.tap(label);
     await tester.pumpAndSettle();
     final confirm = find.widgetWithText(FilledButton, l10n.commonDelete);
-    expect(tester.widget<FilledButton>(confirm).style?.backgroundColor, isNull);
+    expect(
+      tester.widget<FilledButton>(confirm).style?.backgroundColor?.resolve({}),
+      warning,
+    );
     await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
     await tester.pumpAndSettle();
 

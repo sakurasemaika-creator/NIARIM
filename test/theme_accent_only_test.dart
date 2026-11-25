@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/config/accent_text_theme.dart';
+import 'package:niarim/config/signal_colors.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/services/theme_service.dart';
 
@@ -59,6 +60,11 @@ void main() {
       'inversePrimary': s.inversePrimary,
       'surfaceTint': s.surfaceTint,
       'accentText': theme.extension<AccentTextTheme>()!.color,
+      'warning': theme.extension<SignalColors>()!.warning,
+      'onWarning': theme.extension<SignalColors>()!.onWarning,
+      'caution': theme.extension<SignalColors>()!.caution,
+      'onCaution': theme.extension<SignalColors>()!.onCaution,
+      'badge': theme.badgeTheme.backgroundColor!,
       'scaffold': theme.scaffoldBackgroundColor,
       'canvas': theme.canvasColor,
       'card': theme.cardTheme.color!,
@@ -115,6 +121,15 @@ void main() {
     'chipSelected',
     'listTileSelected',
   };
+  // 警告色の役目：警告色と、Materialの誤りの状態の色。
+  const warningRoles = {
+    'warning',
+    'error',
+    'errorContainer',
+    'onErrorContainer',
+  };
+  // 注意色（更新マーク色）の役目：注意色・その上の文字・数の印。
+  const cautionRoles = {'caution', 'onCaution', 'badge'};
   const blue = Color(0xFF2E9CF5);
 
   for (final base in [
@@ -143,6 +158,29 @@ void main() {
       if (base.accentTextColor != null) {
         expect(roles, isNot(contains('accentText')));
       }
+    });
+
+    test('${base.id}: the warning colour changes only the warning', () {
+      final roles = changed(
+        base,
+        base.copyWith(warningColor: const Color(0xFF8E24AA)),
+      );
+      // 警告色の上の文字はテーマ自身の文字色・背景色から選ぶので、選び直す
+      // ことがある（それも警告色の役目）。
+      expect(
+        roles.difference({...warningRoles, 'onWarning', 'onError'}),
+        isEmpty,
+      );
+      expect(roles, containsAll(['warning', 'error']));
+    });
+
+    test('${base.id}: the update mark changes only the caution', () {
+      final roles = changed(
+        base,
+        base.copyWith(updateMarkColor: const Color(0xFF00897B)),
+      );
+      expect(roles.difference(cautionRoles), isEmpty);
+      expect(roles, containsAll(['caution', 'badge']));
     });
 
     test('${base.id}: the selection colour changes only the selection', () {

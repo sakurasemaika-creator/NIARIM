@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../config/signal_colors.dart';
 import '../l10n/app_localizations.dart';
 import 'keep_together_text.dart';
 
 /// ゴミ箱アイコンタップ時に一発で削除せず、確認ダイアログを挟む共通ヘルパー
 /// （アプリ全体で誤操作による削除を防止する）。[itemName]を
 /// 指定すると確認文に対象名を含める。trueが返れば削除確定・falseまたは
-/// nullなら取り消し。
+/// nullなら取り消し。削除のボタンは取り消せない操作の塗り（警告色）。
 Future<bool> confirmDelete(
   BuildContext context, {
   String? itemName,
@@ -30,6 +31,7 @@ Future<bool> confirmDelete(
           child: Text(l10n.commonCancel),
         ),
         FilledButton(
+          style: warningFilledButtonStyle(ctx),
           onPressed: () => Navigator.pop(ctx, true),
           child: Text(l10n.commonDelete),
         ),

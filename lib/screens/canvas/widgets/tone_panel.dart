@@ -330,6 +330,7 @@ class _TonePanelState extends State<TonePanel> {
                                       child: MenuActionLabel(
                                         icon: Icons.delete_outline,
                                         label: l10n.commonDelete,
+                                        destructive: true,
                                       ),
                                     ),
                                 ],

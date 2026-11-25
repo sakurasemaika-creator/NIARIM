@@ -1142,6 +1142,18 @@
   "themeColorMenuBg": "メニュー背景色",
   "themeColorSelection": "選択色",
   "themeColorUpdateMark": "更新マーク色",
+  "themeColorUpdateMarkHint": "更新の印と、気をつけてほしい知らせに使います。",
+  "@themeColorUpdateMarkHint": {
+    "description": "テーマ・外観の「更新マーク色」の行の説明。更新マーク色は注意色を兼ねる"
+  },
+  "themeColorWarning": "警告色",
+  "@themeColorWarning": {
+    "description": "テーマ・外観の色の項目「警告色」（取り消せない操作と失敗の知らせの色）"
+  },
+  "themeColorWarningHint": "削除など取り消せない操作と、保存できなかったときの知らせに使います。",
+  "@themeColorWarningHint": {
+    "description": "テーマ・外観の「警告色」の行の説明"
+  },
   "themeResetConfirmTitle": "テーマカラーをリセットしますか？",
   "@themeResetConfirmTitle": {
     "description": "テーマのリセット前に表示する確認ダイアログ"

@@ -70,6 +70,9 @@ void main() {
     }
   });
 
+  // 誤りの色（入力欄の誤りの状態）はテーマの警告色。利用者が選んでいない
+  // 警告色（古い保存・引き継ぎ・書き出したテーマ）は、そのテーマの背景から
+  // 読める赤に決まる。利用者が選んだ警告色・ほかの色は自動で差し替えない。
   test(
     'semantic error foreground stays readable on customized surfaces',
     () async {
@@ -85,8 +88,10 @@ void main() {
           menuBgColor: background,
           textColor: Colors.white,
         );
+        // 警告色より前の版の保存（警告色を持たない）。
+        final saved = preset.toJson()..remove('warningColor');
         SharedPreferences.setMockInitialValues({
-          'theme_current_json': jsonEncode(preset.toJson()),
+          'theme_current_json': jsonEncode(saved),
         });
         final service = ThemeService();
         await service.init();
@@ -102,11 +107,18 @@ void main() {
           reason: 'Do not rewrite the selected accent to fix errors',
         );
         expect(
-          service.current.toJson(),
-          preset.toJson(),
+          service.current.toJson()..remove('warningColor'),
+          saved,
           reason: 'Contrast protection must not change saved user colors',
         );
         service.dispose();
+
+        // 利用者が選んだ警告色は読みにくくてもそのまま（救済ボタンの判定に
+        // 任せる）。
+        final chosen = preset.copyWith(warningColor: const Color(0xFF8E24AA));
+        final own = ThemeService()..previewCurrent(chosen);
+        expect(own.themeData.colorScheme.error, const Color(0xFF8E24AA));
+        own.dispose();
       }
     },
   );

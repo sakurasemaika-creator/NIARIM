@@ -1,3 +1,4 @@
+import '../config/signal_colors.dart';
 import '../services/shared_asset_card_service.dart';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -275,6 +276,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(dialogContext),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(l10n.commonDelete),
           ),

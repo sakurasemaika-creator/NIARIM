@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../models/app_theme_preset.dart';
+import 'warning_color.dart';
 
 /// テーマが操作不能になる場合の復旧導線を判定する。
 ///
@@ -101,34 +102,6 @@ Color contrastingForeground(Color background, Color preferred) {
           contrastRatio(background, Colors.white)
       ? Colors.black
       : Colors.white;
-}
-
-/// Choose a visible semantic error foreground on the actual opaque theme
-/// panel and popup surfaces. Material's seeded error often remains a nearly
-/// fixed red regardless of the user's panel/menu customization. Prefer that
-/// semantic red when legible; otherwise use the user's chosen text token,
-/// and only then a neutral high-contrast fallback. Never rewrite their preset.
-Color readableThemeError(
-  Color materialError,
-  Color panelBackground,
-  Color popupBackground,
-  Color userTextColor,
-) {
-  final surfaces = [panelBackground, popupBackground];
-  double weakestContrast(Color candidate) =>
-      surfaces.map((bg) => contrastRatio(candidate, bg)).reduce(math.min);
-  final candidates = [materialError, userTextColor, Colors.black, Colors.white];
-  if (materialError.a == 1 && weakestContrast(materialError) >= 4.5) {
-    return materialError;
-  }
-  // A custom foreground is preferred to an automatic neutral if it is
-  // readable across both contexts where Material error labels may appear.
-  if (userTextColor.a == 1 && weakestContrast(userTextColor) >= 4.5) {
-    return userTextColor;
-  }
-  return candidates
-      .where((c) => c.a == 1)
-      .reduce((a, b) => weakestContrast(a) >= weakestContrast(b) ? a : b);
 }
 
 /// Machado–Oliveira–Fernandes (2009) による線形sRGB色覚模擬行列。
@@ -268,6 +241,32 @@ double okLabDistance(Color a, Color b) {
   );
 }
 
+/// CIELAB（D65）のΔE*ab（CIE76、2色のLab座標の距離）。警告色を差し色・
+/// 更新マーク色と見分けられる距離に置くための目安（[defaultWarningColorFor]）。
+double cielabDeltaE(Color a, Color b) {
+  final x = _cielab(a);
+  final y = _cielab(b);
+  return math.sqrt(
+    math.pow(x.l - y.l, 2) + math.pow(x.a - y.a, 2) + math.pow(x.b - y.b, 2),
+  );
+}
+
+({double l, double a, double b}) _cielab(Color color) {
+  final r = _toLinear(color.r);
+  final g = _toLinear(color.g);
+  final b = _toLinear(color.b);
+  final x = (0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047;
+  final y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b;
+  final z = (0.0193339 * r + 0.1191920 * g + 0.9503041 * b) / 1.08883;
+  double f(double t) => t > 216 / 24389
+      ? math.pow(t, 1 / 3).toDouble()
+      : (24389 / 27 * t + 16) / 116;
+  final fx = f(x);
+  final fy = f(y);
+  final fz = f(z);
+  return (l: 116 * fy - 16, a: 500 * (fx - fy), b: 200 * (fy - fz));
+}
+
 /// OKLab(0〜1近辺)でほぼ同じ色とみなす、復旧ボタン表示専用の厳しい
 /// 経験的閾値。厳密な識別限界は文字サイズ・周辺色・観察条件等で異なる。
 const double kMaxConfusableOkLabDistance = 0.045;
@@ -308,6 +307,8 @@ bool isColorVisionPairConfusable(Color a, Color b) {
 /// - 選択中文字色 × 選択色（選択背景上のラベル）
 /// - アクセントの文字・アイコン色 × パネル背景色・メニュー背景色（選択中の
 ///   タブ名・枠や文字のボタン・ダイアログの文字ボタン）
+/// - 警告色 × パネル背景色・メニュー背景色（失敗の知らせ・メニューの削除の
+///   項目）と、警告色の上の文字色 × 警告色（削除の確かめのボタン）
 ///
 /// 色面を区別できるかではなく、小さな文字・アイコンを視認できるかの目安。
 /// ユーザーの色選択を拒否したり、自動で別の色に差し替えてはならない。
@@ -320,6 +321,7 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
   final selection = opaqueOver(preset.selectionColor, panel);
   // 起動画面の主要ボタンは独立したbuttonTextColorで描画する。
   final splashForeground = preset.buttonTextColor;
+  final warning = opaqueOver(preset.warningColor, panel);
   final menuForeground = preset.menuTextColor;
   return [
     // 一般的な一覧・設定項目の本文/パネル背景
@@ -337,6 +339,11 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
     // ダイアログの文字ボタン
     (a: opaqueOver(preset.effectiveAccentTextColor, panel), b: panel),
     (a: opaqueOver(preset.effectiveAccentTextColor, menu), b: menu),
+    // 失敗の知らせ・メニューの削除の項目（警告色の文字）と、削除の確かめの
+    // ボタン（警告色の塗りの上の文字）。
+    (a: warning, b: panel),
+    (a: warning, b: menu),
+    (a: readableInkOn(warning, themeInksOf(preset)), b: warning),
   ];
 }
 

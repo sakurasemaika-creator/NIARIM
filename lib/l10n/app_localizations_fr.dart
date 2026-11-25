@@ -2917,6 +2917,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeColorUpdateMark => 'Couleur de la marque de mise à jour';
 
   @override
+  String get themeColorUpdateMarkHint =>
+      'Utilisée pour les marques de mise à jour et pour les avis qui demandent votre attention.';
+
+  @override
+  String get themeColorWarning => 'Couleur d’avertissement';
+
+  @override
+  String get themeColorWarningHint =>
+      'Utilisée pour les actions irréversibles, comme la suppression, et pour les avis lorsqu’un élément n’a pas pu être enregistré.';
+
+  @override
   String get themeResetConfirmTitle => 'Réinitialiser les couleurs du thème ?';
 
   @override

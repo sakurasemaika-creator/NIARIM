@@ -336,6 +336,7 @@ class _StampPanelState extends State<StampPanel> {
                                       child: MenuActionLabel(
                                         icon: Icons.delete_outline,
                                         label: l10n.commonDelete,
+                                        destructive: true,
                                       ),
                                     ),
                                 ],

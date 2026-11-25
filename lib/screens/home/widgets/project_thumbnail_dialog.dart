@@ -408,7 +408,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
             if (error != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: IconNotice(error!, liveRegion: true),
+                child: IconNotice.caution(error!, liveRegion: true),
               ),
           ],
         ),

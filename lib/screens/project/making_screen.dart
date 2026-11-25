@@ -9,6 +9,7 @@ import 'package:image/image.dart' as img;
 import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../config/signal_colors.dart';
 import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/export_storage.dart';
@@ -125,6 +126,7 @@ class _MakingScreenState extends State<MakingScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(dialogContext),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(l10n.commonDelete),
           ),
@@ -352,7 +354,7 @@ class _MakingScreenState extends State<MakingScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconNotice(
+                    IconNotice.caution(
                       MakingStrings.loadFailed(context),
                       liveRegion: true,
                     ),
@@ -464,7 +466,7 @@ class _MakingScreenState extends State<MakingScreen> {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           // その場の知らせはエラーの赤にせず、面の文字色と印で。
-                          child: IconNotice(
+                          child: IconNotice.caution(
                             MakingStrings.storageLimit(context),
                             liveRegion: true,
                           ),

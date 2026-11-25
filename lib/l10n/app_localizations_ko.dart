@@ -2766,6 +2766,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeColorUpdateMark => '업데이트 표시 색상';
 
   @override
+  String get themeColorUpdateMarkHint => '업데이트 표시와 주의가 필요한 알림에 사용합니다.';
+
+  @override
+  String get themeColorWarning => '경고 색상';
+
+  @override
+  String get themeColorWarningHint =>
+      '삭제처럼 되돌릴 수 없는 작업과 저장하지 못했을 때의 알림에 사용합니다.';
+
+  @override
   String get themeResetConfirmTitle => '테마 색상을 초기화하시겠습니까?';
 
   @override

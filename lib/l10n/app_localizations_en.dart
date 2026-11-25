@@ -2874,6 +2874,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeColorUpdateMark => 'Update Mark Color';
 
   @override
+  String get themeColorUpdateMarkHint =>
+      'Used for update marks and for notices that need your attention.';
+
+  @override
+  String get themeColorWarning => 'Warning Color';
+
+  @override
+  String get themeColorWarningHint =>
+      'Used for actions that can’t be undone, such as deleting, and for notices when something couldn’t be saved.';
+
+  @override
   String get themeResetConfirmTitle => 'Reset the theme colors?';
 
   @override

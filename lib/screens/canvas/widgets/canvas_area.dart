@@ -11,6 +11,7 @@ import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:image/image.dart' as img;
 import 'package:provider/provider.dart';
 
+import '../../../config/signal_colors.dart';
 import '../../../engine/autofill_engine.dart'
     show AutofillCheckMode, applyAutofillCheckColor, autofillCheckColor;
 import '../../../engine/filter_lens_mask.dart';
@@ -2481,25 +2482,15 @@ class CanvasAreaState extends State<CanvasArea> {
     final sceneId = widget.sceneId;
     final frameIndex = widget.currentFrame;
     final scene = _projects.sceneOf(project.id, sceneId);
-    if (scene == null ||
-        frameIndex < 0 ||
-        frameIndex >= scene.frames.length) {
+    if (scene == null || frameIndex < 0 || frameIndex >= scene.frames.length) {
       return;
     }
-    final stacked = _projects.stackedLayersOf(
-      project.id,
-      sceneId,
-      frameIndex,
-    );
+    final stacked = _projects.stackedLayersOf(project.id, sceneId, frameIndex);
     final composite = await LayerCompositor.composite(
       _tileManager,
       stacked.layers,
-      (layer) => _projects.tileKeyFor(
-        project.id,
-        sceneId,
-        frameIndex,
-        layer.id,
-      ),
+      (layer) =>
+          _projects.tileKeyFor(project.id, sceneId, frameIndex, layer.id),
       _tileManager.canvasWidth,
       _tileManager.canvasHeight,
       paperColor: LayerCompositor.paperForBlendModes(
@@ -2516,14 +2507,12 @@ class CanvasAreaState extends State<CanvasArea> {
         1.0,
         maxEdge / math.max(composite.width, composite.height),
       );
-      final captureWidth = math.max(
-        1,
-        (composite.width * scale).round(),
-      ).toInt();
-      final captureHeight = math.max(
-        1,
-        (composite.height * scale).round(),
-      ).toInt();
+      final captureWidth = math
+          .max(1, (composite.width * scale).round())
+          .toInt();
+      final captureHeight = math
+          .max(1, (composite.height * scale).round())
+          .toInt();
       final recorder = ui.PictureRecorder();
       final canvas = ui.Canvas(recorder);
       canvas.drawImageRect(
@@ -5343,7 +5332,9 @@ class CanvasAreaState extends State<CanvasArea> {
                         widget.currentTool == DrawingTool.meshTransform,
                     handleColor: theme.selectionColor,
                     handleOutlineColor: theme.menuBgColor,
-                    extendedAreaWarningColor: theme.updateMarkColor,
+                    // 書き出されない所があることを知らせる枠（何も失われない
+                    // 注意）なので注意色。
+                    extendedAreaWarningColor: SignalColors.of(context).caution,
                     viewTransform: _transformController.value,
                     filterGizmo: widget.filterGizmo,
                     filterGizmoReachAngle: _gizmoReachAngle,

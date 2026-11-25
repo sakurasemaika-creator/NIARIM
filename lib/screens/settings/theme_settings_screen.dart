@@ -21,12 +21,15 @@ import '../../utils/app_error_reporter.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/duplicate_name.dart';
 import '../../utils/reorder_index.dart';
+import '../../utils/warning_color.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/menu_action_label.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/theme_rescue_button.dart';
 import 'theme_preview_gallery_screen.dart';
 import '../../config/accent_text_theme.dart';
+import '../../config/signal_colors.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/grouped_sheet.dart';
 import '../../widgets/sheet_list_segment.dart';
@@ -257,8 +260,12 @@ class ThemeSettingsScreen extends StatelessWidget {
                       roleLabel: l10n.themeColorMenuBg,
                     ),
                   ),
+                  // 更新マーク色は注意色を兼ねる（更新の印と、気をつけてほしい
+                  // 知らせ）。警告色は取り消せない操作と失敗の知らせだけ。
                   _ColorCustomizeTile(
+                    key: const Key('themeUpdateMarkColorTile'),
                     label: l10n.themeColorUpdateMark,
+                    description: l10n.themeColorUpdateMarkHint,
                     color: current.updateMarkColor,
                     onTap: () => _showColorPickerDialog(
                       context,
@@ -267,6 +274,20 @@ class ThemeSettingsScreen extends StatelessWidget {
                       current.updateMarkColor,
                       role: _ThemeColorRole.updateMark,
                       roleLabel: l10n.themeColorUpdateMark,
+                    ),
+                  ),
+                  _ColorCustomizeTile(
+                    key: const Key('themeWarningColorTile'),
+                    label: l10n.themeColorWarning,
+                    description: l10n.themeColorWarningHint,
+                    color: current.warningColor,
+                    onTap: () => _showColorPickerDialog(
+                      context,
+                      themeService,
+                      (p, c) => p.copyWith(warningColor: c),
+                      current.warningColor,
+                      role: _ThemeColorRole.warning,
+                      roleLabel: l10n.themeColorWarning,
                     ),
                   ),
                   ExpansionTile(
@@ -442,7 +463,8 @@ class ThemeSettingsScreen extends StatelessWidget {
       _sameColor(a.panelBgColor, b.panelBgColor) &&
       _sameColor(a.menuBgColor, b.menuBgColor) &&
       _sameColor(a.selectionColor, b.selectionColor) &&
-      _sameColor(a.updateMarkColor, b.updateMarkColor);
+      _sameColor(a.updateMarkColor, b.updateMarkColor) &&
+      _sameColor(a.warningColor, b.warningColor);
 
   /// テーマ一覧の1行。カードのタップは配色の取り込みだけで、テーマ自体の
   /// 編集は三点メニューの「編集」から行う（そのときだけ鉛筆の印が付く）。
@@ -551,7 +573,14 @@ class ThemeSettingsScreen extends StatelessWidget {
               child: Text(l10n.themeResetConfirmAction),
             )
           else
-            PopupMenuItem(value: 'delete', child: Text(l10n.commonDelete)),
+            PopupMenuItem(
+              value: 'delete',
+              child: MenuActionLabel(
+                icon: Icons.delete_outline,
+                label: l10n.commonDelete,
+                destructive: true,
+              ),
+            ),
         ],
       ),
       // つかめる所をアイコンの周りまで広げる（18pxの印だけだと指で
@@ -675,6 +704,11 @@ class ThemeSettingsScreen extends StatelessWidget {
     required String roleLabel,
   }) async {
     var changed = false;
+    // 警告色が決め方どおり（利用者が選んでいない）なら、ほかの色を変えると
+    // きは変えた後の色で決め直す（背景を変えても警告色が読めるまま。開いた
+    // 時点の色で決める）。
+    final warningFollows =
+        role != _ThemeColorRole.warning && warningFollowsRule(service.current);
     await showDialog<void>(
       context: context,
       builder: (ctx) => Dialog(
@@ -691,7 +725,12 @@ class ThemeSettingsScreen extends StatelessWidget {
           header: _ThemeColorRoleSample(role: role, label: roleLabel),
           onColorChanged: (color) {
             changed = true;
-            service.previewCurrent(update(service.current, color));
+            final next = update(service.current, color);
+            service.previewCurrent(
+              warningFollows
+                  ? next.copyWith(warningColor: defaultWarningColorFor(next))
+                  : next,
+            );
           },
           onClose: () => Navigator.pop(ctx),
         ),
@@ -750,7 +789,9 @@ class ThemeSettingsScreen extends StatelessWidget {
                 onPressed: () => Navigator.pop(ctx, false),
                 child: Text(l10n.commonCancel),
               ),
+              // 編集した色は戻せないので、取り消せない操作の塗り（警告色）。
               FilledButton(
+                style: warningFilledButtonStyle(ctx),
                 onPressed: () => Navigator.pop(ctx, true),
                 child: Text(l10n.themeResetConfirmAction),
               ),
@@ -905,12 +946,16 @@ class ThemeSettingsScreen extends StatelessWidget {
 /// ピッカーを開く。
 class _ColorCustomizeTile extends StatelessWidget {
   final String label;
+
+  /// 項目名の下に出す、その色を使う所の短い説明（警告色・更新マーク色）。
+  final String? description;
   final Color color;
   final VoidCallback onTap;
 
   const _ColorCustomizeTile({
     super.key,
     required this.label,
+    this.description,
     required this.color,
     required this.onTap,
   });
@@ -940,13 +985,31 @@ class _ColorCustomizeTile extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: messageText(
-                  label,
-                  keepLineStarts: true,
-                  style: localizedHeadingStyle(
-                    context,
-                    const TextStyle(fontSize: 15, height: 1.3),
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    messageText(
+                      label,
+                      keepLineStarts: true,
+                      style: localizedHeadingStyle(
+                        context,
+                        const TextStyle(fontSize: 15, height: 1.3),
+                      ),
+                    ),
+                    if (description != null) ...[
+                      const SizedBox(height: 2),
+                      messageText(
+                        description!,
+                        keepLineStarts: true,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.4,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               const SizedBox(width: 8),
@@ -1059,6 +1122,7 @@ enum _ThemeColorRole {
   panelBg,
   menuBg,
   updateMark,
+  warning,
   accentText,
   menuText,
   selection,
@@ -1214,6 +1278,23 @@ class _ThemeColorRoleSample extends StatelessWidget {
               ),
             ),
           ),
+          // 警告色：メニューの削除の項目・失敗の知らせの印（取り消せない操作）。
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ring(
+                on: role == _ThemeColorRole.warning,
+                color: onPanel,
+                radius: 8,
+                child: Icon(
+                  Icons.delete_forever_outlined,
+                  key: const Key('themeColorRoleSampleWarning'),
+                  size: 24,
+                  color: c.warningColor,
+                ),
+              ),
+            ),
+          ),
           Flexible(
             child: FittedBox(
               fit: BoxFit.scaleDown,
@@ -1290,6 +1371,7 @@ class _ThemeColorRoleSample extends StatelessWidget {
     _ThemeColorRole.panelBg => c.panelBgColor,
     _ThemeColorRole.menuBg => c.menuBgColor,
     _ThemeColorRole.updateMark => c.updateMarkColor,
+    _ThemeColorRole.warning => c.warningColor,
     _ThemeColorRole.accentText => c.effectiveAccentTextColor,
     _ThemeColorRole.menuText => c.menuTextColor,
     _ThemeColorRole.selection => c.selectionColor,

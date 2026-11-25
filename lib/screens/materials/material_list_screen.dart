@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:provider/provider.dart';
 
+import '../../config/signal_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/material_asset.dart';
 import '../../services/material_service.dart';
@@ -277,6 +278,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(ctx),
             onPressed: () async {
               await context.read<MaterialService>().removeMaterial(
                 projectId: widget.projectId,
@@ -307,6 +309,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
+            style: warningFilledButtonStyle(ctx),
             onPressed: () async {
               final removed = await context
                   .read<MaterialService>()

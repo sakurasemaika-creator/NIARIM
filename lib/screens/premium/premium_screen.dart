@@ -227,7 +227,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 if (premium.purchaseError != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: IconNotice(
+                    child: IconNotice.caution(
                       _purchaseErrorText(l10n, premium.purchaseError!),
                       fontSize: 12,
                       liveRegion: true,

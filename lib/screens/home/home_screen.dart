@@ -6672,6 +6672,7 @@ class _TrashTabState extends State<_TrashTab> {
           message: message,
           // ゴミ箱のカードのボタンと同じ言葉（「完全削除」）。
           confirmLabel: l10n.homePermanentDelete,
+          destructive: true,
           itemNames: [record.folder.name],
           onApply: () => service.permanentDeleteTrashedFolder(id),
         ),
@@ -6802,6 +6803,7 @@ class _TrashTabState extends State<_TrashTab> {
           message: l10n.homePermanentDeleteConfirmBody,
           // ゴミ箱のカードのボタンと同じ言葉（「完全削除」）。
           confirmLabel: l10n.homePermanentDelete,
+          destructive: true,
           itemNames: [entry.fileName],
           onApply: () async {
             try {
@@ -6832,6 +6834,7 @@ class _TrashTabState extends State<_TrashTab> {
           message: l10n.homePermanentDeleteConfirmBody,
           // ゴミ箱のカードのボタンと同じ言葉（「完全削除」）。
           confirmLabel: l10n.homePermanentDelete,
+          destructive: true,
           itemNames: [project.name],
           onApply: () => service.permanentDelete(project.id),
         ),
