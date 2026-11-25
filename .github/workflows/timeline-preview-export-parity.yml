@@ -54,6 +54,7 @@ on:
       - 'test/clip_speed_test.dart'
       - 'test/timeline_clip_speed_test.dart'
       - 'test/timeline_time_range_test.dart'
+      - 'test/timeline_clip_edits_kept_test.dart'
       - 'test/timeline_split_test.dart'
       - 'test/layer_crop_test.dart'
       - 'test/timeline_crop_test.dart'
@@ -129,6 +130,8 @@ jobs:
         run: flutter test test/timeline_clip_speed_test.dart --reporter expanded
       - name: Test the 長さ調整 time range (typed start/end for materials and audio, refusals, Undo, Cancel)
         run: flutter test test/timeline_time_range_test.dart --reporter expanded
+      - name: Test edit settings kept by cut, copy, paste, duplicate, autosave and project duplicate (one Undo each)
+        run: flutter test test/timeline_clip_edits_kept_test.dart --reporter expanded
       - name: Test cropping (drawn like cut pixels on every path, panel and preview handles, Undo)
         run: flutter test test/layer_crop_test.dart test/timeline_crop_test.dart --reporter expanded
       - name: Test selected parts moved, copied and erased (drawn like edited pixels on every path, saving, preview handles, panel, Undo)
@@ -187,6 +190,7 @@ jobs:
           test/clip_speed_test.dart
           test/timeline_clip_speed_test.dart
           test/timeline_time_range_test.dart
+          test/timeline_clip_edits_kept_test.dart
           test/timeline_split_test.dart
           test/layer_crop_test.dart
           test/timeline_crop_test.dart
