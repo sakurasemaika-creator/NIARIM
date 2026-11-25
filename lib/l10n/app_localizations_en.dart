@@ -5926,7 +5926,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineClipSpeedSoundNote =>
-      'Sound gets hard to follow at high speeds. Set the volume to 0 if you do not need it.';
+      'Sound gets hard to follow at high speeds (the preview and the export sound the same). You can mute it if you do not need it.';
+
+  @override
+  String get timelineClipSpeedMute => 'Mute the sound';
+
+  @override
+  String get timelinePlaybackSkipNotice =>
+      'Playback can’t keep up, so some frames are skipped (the export has every frame).';
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>

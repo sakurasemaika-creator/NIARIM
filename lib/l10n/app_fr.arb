@@ -2357,7 +2357,9 @@
   "timelineClipSpeedPastSceneEnd": "Non modifié : à cette vitesse, le clip dépasserait la fin de la scène. Allongez d’abord la scène.",
   "timelineClipSpeedKeyframeClash": "Cette vitesse est impossible : deux images clés tomberaient sur la même image.",
   "timelineClipSpeedEndPreview": "Image de fin : F{before} → F{after}",
-  "timelineClipSpeedSoundNote": "À vitesse élevée, le son devient difficile à suivre. Réglez le volume sur 0 si vous n’en avez pas besoin.",
+  "timelineClipSpeedSoundNote": "À vitesse élevée, le son devient difficile à suivre (l’aperçu et l’export sonnent pareil). Vous pouvez le couper si vous n’en avez pas besoin.",
+  "timelineClipSpeedMute": "Couper le son",
+  "timelinePlaybackSkipNotice": "La lecture n’arrive pas à suivre, des images sont sautées (l’export les contient toutes).",
   "timelineCameraFrameAlreadyHasKeyframe": "Cette image contient déjà une image clé de caméra.",
   "timelineCameraKfTitle": "Image clé caméra : F{n}",
   "@timelineCameraKfTitle": {

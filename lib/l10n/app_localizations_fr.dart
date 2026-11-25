@@ -6022,7 +6022,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineClipSpeedSoundNote =>
-      'À vitesse élevée, le son devient difficile à suivre. Réglez le volume sur 0 si vous n’en avez pas besoin.';
+      'À vitesse élevée, le son devient difficile à suivre (l’aperçu et l’export sonnent pareil). Vous pouvez le couper si vous n’en avez pas besoin.';
+
+  @override
+  String get timelineClipSpeedMute => 'Couper le son';
+
+  @override
+  String get timelinePlaybackSkipNotice =>
+      'La lecture n’arrive pas à suivre, des images sont sautées (l’export les contient toutes).';
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>

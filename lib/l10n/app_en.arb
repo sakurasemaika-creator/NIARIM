@@ -2380,7 +2380,9 @@
   "timelineClipSpeedPastSceneEnd": "Not changed: at this speed the clip would run past the end of the scene. Lengthen the scene first.",
   "timelineClipSpeedKeyframeClash": "This speed is not possible: two keyframes would land on the same frame.",
   "timelineClipSpeedEndPreview": "End frame: F{before} → F{after}",
-  "timelineClipSpeedSoundNote": "Sound gets hard to follow at high speeds. Set the volume to 0 if you do not need it.",
+  "timelineClipSpeedSoundNote": "Sound gets hard to follow at high speeds (the preview and the export sound the same). You can mute it if you do not need it.",
+  "timelineClipSpeedMute": "Mute the sound",
+  "timelinePlaybackSkipNotice": "Playback can’t keep up, so some frames are skipped (the export has every frame).",
   "timelineCameraFrameAlreadyHasKeyframe": "This frame already has a camera keyframe.",
   "timelineCameraKfTitle": "Camera KF: F{n}",
   "@timelineCameraKfTitle": {

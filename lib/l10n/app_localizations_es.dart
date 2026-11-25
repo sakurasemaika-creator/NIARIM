@@ -6013,7 +6013,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timelineClipSpeedSoundNote =>
-      'A velocidades altas el sonido se entiende mal. Pon el volumen a 0 si no lo necesitas.';
+      'A velocidades altas el sonido se entiende mal (la vista previa y la exportación suenan igual). Puedes silenciarlo si no lo necesitas.';
+
+  @override
+  String get timelineClipSpeedMute => 'Silenciar el sonido';
+
+  @override
+  String get timelinePlaybackSkipNotice =>
+      'La reproducción no da abasto y se saltan algunos fotogramas (la exportación los tiene todos).';
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>

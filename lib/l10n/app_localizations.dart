@@ -10254,8 +10254,20 @@ abstract class AppLocalizations {
   /// No description provided for @timelineClipSpeedSoundNote.
   ///
   /// In ja, this message translates to:
-  /// **'速度を上げると音声は聞き取りにくくなります。音声が不要なら音量を0にしてください。'**
+  /// **'速度を上げると音は聞き取りにくくなります（プレビューも書き出しも同じ音です）。音が要らなければ消せます。'**
   String get timelineClipSpeedSoundNote;
+
+  /// No description provided for @timelineClipSpeedMute.
+  ///
+  /// In ja, this message translates to:
+  /// **'音を消す'**
+  String get timelineClipSpeedMute;
+
+  /// No description provided for @timelinePlaybackSkipNotice.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生が追いつかないため、コマを飛ばして表示しています（書き出しにはすべてのコマが入ります）。'**
+  String get timelinePlaybackSkipNotice;
 
   /// No description provided for @timelineCameraFrameAlreadyHasKeyframe.
   ///

@@ -5671,7 +5671,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineClipSpeedSoundNote =>
-      '速度を上げると音声は聞き取りにくくなります。音声が不要なら音量を0にしてください。';
+      '速度を上げると音は聞き取りにくくなります（プレビューも書き出しも同じ音です）。音が要らなければ消せます。';
+
+  @override
+  String get timelineClipSpeedMute => '音を消す';
+
+  @override
+  String get timelinePlaybackSkipNotice =>
+      '再生が追いつかないため、コマを飛ばして表示しています（書き出しにはすべてのコマが入ります）。';
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>

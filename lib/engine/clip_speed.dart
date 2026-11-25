@@ -194,42 +194,68 @@ Map<int, int>? retimeKeyRange(
   required int toFrame,
   required double rate,
   int? lastFrame,
+}) => retimeKeyRangeExact(
+  {for (final f in frames) f: f.toDouble()},
+  fromFrame: fromFrame,
+  toFrame: toFrame,
+  rate: rate,
+  lastFrame: lastFrame,
+)?.map((frame, exact) => MapEntry(frame, exact.round()));
+
+/// [retimeKeyRange] for keys that remember their time before rounding
+/// ([exactTimes]: frame → time): each key's new time, not rounded, from
+/// which its new frame is rounded. A range retimed and retimed back returns
+/// to its frames however often it is done (rounding never adds up).
+Map<int, double>? retimeKeyRangeExact(
+  Map<int, double> exactTimes, {
+  required int fromFrame,
+  required int toFrame,
+  required double rate,
+  int? lastFrame,
 }) {
   if (!isValidPlaybackRate(rate) || toFrame <= fromFrame) return null;
-  final keys = frames.toSet().toList()..sort();
+  final keys = exactTimes.keys.toSet().toList()..sort();
   final inRange = [
     for (final f in keys)
       if (f >= fromFrame && f <= toFrame) f,
   ];
   if (inRange.length < 2) return null;
+  final anchor = exactTimes[inRange.first]!;
   final next = keys.where((f) => f > toFrame).firstOrNull;
-  final moved = <int, int>{};
+  final moved = <int, double>{};
   final used = <int>{
     for (final f in keys)
       if (f < fromFrame || f > toFrame) f,
   };
   for (final f in inRange) {
-    final to = fromFrame + ((f - fromFrame) / rate).round();
+    final exact = anchor + (exactTimes[f]! - anchor) / rate;
+    final to = exact.round();
     if ((next != null && to >= next) ||
         (lastFrame != null && to > lastFrame) ||
         !used.add(to)) {
       return null;
     }
-    moved[f] = to;
+    moved[f] = exact;
   }
-  return {for (final f in keys) f: moved[f] ?? f};
+  return {for (final f in keys) f: moved[f] ?? exactTimes[f]!};
 }
 
-/// [keyframes] moved by [frames] (from [retimeKeyRange]); values and easing
-/// are kept.
-List<T> moveKeyframes<T>(
+/// [keyframes] moved to the times [retimeKeyRangeExact] gave ([times]:
+/// frame → time); values and easing are kept, and each moved key keeps its
+/// time before rounding ([withTime] sets the frame it rounds to and that
+/// time).
+List<T> retimedKeyframes<T>(
   List<T> keyframes,
-  Map<int, int> frames, {
+  Map<int, double> times, {
   required int Function(T key) frameOf,
-  required T Function(T key, int frame) withFrame,
+  required double Function(T key) exactOf,
+  required T Function(T key, double time) withTime,
 }) => [
   for (final key in keyframes)
-    withFrame(key, frames[frameOf(key)] ?? frameOf(key)),
+    if (times[frameOf(key)] case final time? when time != exactOf(key))
+      withTime(key, time)
+    else
+      key,
 ]..sort((a, b) => frameOf(a).compareTo(frameOf(b)));
 
 /// The FFmpeg `atempo` factors that change the speed by [rate]. One filter

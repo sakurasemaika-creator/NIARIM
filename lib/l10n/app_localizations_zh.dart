@@ -5605,7 +5605,14 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get timelineClipSpeedSoundNote => '速度越快，声音越不清楚。如果不需要声音，请将音量设为 0。';
+  String get timelineClipSpeedSoundNote =>
+      '速度越快，声音越不清楚（预览和导出的声音相同）。如果不需要声音，可以静音。';
+
+  @override
+  String get timelineClipSpeedMute => '静音';
+
+  @override
+  String get timelinePlaybackSkipNotice => '播放跟不上，正在跳过部分帧（导出时包含所有帧）。';
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe => '此帧已有相机关键帧。';
@@ -16481,7 +16488,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get timelineClipSpeedSoundNote => '速度越快，聲音越不清楚。如果不需要聲音，請將音量設為 0。';
+  String get timelineClipSpeedSoundNote =>
+      '速度越快，聲音越不清楚（預覽和匯出的聲音相同）。如果不需要聲音，可以靜音。';
+
+  @override
+  String get timelineClipSpeedMute => '靜音';
+
+  @override
+  String get timelinePlaybackSkipNotice => '播放跟不上，正在跳過部分影格（匯出時包含所有影格）。';
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe => '此影格已有相機關鍵影格。';

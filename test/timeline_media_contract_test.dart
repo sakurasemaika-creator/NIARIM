@@ -21,10 +21,13 @@ void main() {
       'lib/screens/timeline/timeline_screen.dart',
     ).readAsStringSync();
     expect(s, contains('_ClipTrackType.video => FileType.video'));
-    expect(
-      s,
-      contains('await controller.setVolume(clip.volume.clamp(0.0, 1.0));'),
-    );
+    // The video's volume reaches its player through the sound the preview
+    // plays now (the same gain the export uses).
+    expect(s, contains('await controller.setVolume(sound.gain);'));
+    final previewSound = File(
+      'lib/engine/preview_sound.dart',
+    ).readAsStringSync();
+    expect(previewSound, contains('gain: volume.clamp(0.0, 1.0).toDouble(),'));
     // The video's own sound is set in the material edit panel, straight on
     // its layer, and a duplicate copies the whole layer (its sound with it).
     final panel = File(

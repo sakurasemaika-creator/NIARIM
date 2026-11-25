@@ -8,6 +8,7 @@ import 'package:niarim/engine/niapro_serializer.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/engine/timeline_video_time.dart';
 import 'package:niarim/models/audio_clip.dart';
+import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/layer_keyframe.dart';
 import 'package:niarim/models/project.dart';
@@ -265,6 +266,86 @@ void main() {
   group('key range retiming', () {
     const keys = [0, 4, 8, 12, 20];
 
+    test('keeps the keys\' times before rounding, so retiming back and '
+        'forth returns them to their frames', () {
+      // 3x puts 7 at 2.33 (frame 2); 1/3x from 2.33 gives 7, from 2 it
+      // would give 6. Again and again, nothing adds up.
+      var times = {0: 0.0, 7: 7.0, 10: 10.0};
+      for (var round = 0; round < 6; round++) {
+        final fast = retimeKeyRangeExact(
+          times,
+          fromFrame: 0,
+          toFrame: 7,
+          rate: 3,
+        )!;
+        expect(fast[7], closeTo(7 / 3, 1e-9));
+        times = {for (final e in fast.entries) e.value.round(): e.value};
+        expect(times.keys, [0, 2, 10]);
+        final back = retimeKeyRangeExact(
+          times,
+          fromFrame: 0,
+          toFrame: 2,
+          rate: 1 / 3,
+        )!;
+        times = {for (final e in back.entries) e.value.round(): e.value};
+        expect(times.keys, [0, 7, 10], reason: 'round $round');
+        expect(times[7], closeTo(7, 1e-9));
+      }
+      // The rounded frames are those of [retimeKeyRange].
+      expect(
+        retimeKeyRangeExact(
+          {for (final f in keys) f: f.toDouble()},
+          fromFrame: 4,
+          toFrame: 12,
+          rate: 2,
+        )!.map((k, v) => MapEntry(k, v.round())),
+        retimeKeyRange(keys, fromFrame: 4, toFrame: 12, rate: 2),
+      );
+    });
+
+    test('a camera key keeps its time before rounding: saved, moved by '
+        'whole frames with it, and dropped when moved away from it', () async {
+      const key = CameraKeyframe(frameIndex: 2, x: 5, exactFrame: 7 / 3);
+      expect(key.exactTime, closeTo(7 / 3, 1e-9));
+      expect(key.copyWith(frameIndex: 5).exactTime, closeTo(16 / 3, 1e-9));
+      expect(key.copyWith(exactFrame: null).exactTime, 2);
+      // A stale time that no longer rounds to the key's frame is not used.
+      expect(
+        const CameraKeyframe(frameIndex: 4, exactFrame: 7 / 3).exactTime,
+        4,
+      );
+      final dir = await Directory.systemTemp.createTemp('niarim-cam-exact-');
+      addTearDown(() => dir.delete(recursive: true));
+      final now = DateTime.utc(2026);
+      final path = '${dir.path}/p.niapro';
+      await NiaproSerializer.saveToPath(
+        filePath: path,
+        project: Project(
+          id: 'p',
+          name: 'p',
+          fps: 24,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          createdAt: now,
+          updatedAt: now,
+          totalWorkSeconds: 0,
+        ),
+        scenes: [
+          Scene(
+            id: 'S',
+            index: 0,
+            frames: const [Frame(index: 0, layers: [])],
+            cameraKeyframes: const [CameraKeyframe(frameIndex: 0), key],
+          ),
+        ],
+        tileManager: TileManager(canvasWidth: 8, canvasHeight: 8),
+      );
+      final loaded = (await NiaproSerializer.load(path)).scenes.single;
+      expect(loaded.cameraKeyframes.first.exactFrame, isNull);
+      expect(loaded.cameraKeyframes.last.exactTime, closeTo(7 / 3, 1e-9));
+      expect(loaded.cameraKeyframes.last.x, 5);
+    });
+
     test('spaces the range\'s keys by 1 / speed from its first key; keys '
         'outside it stay put', () {
       expect(retimeKeyRange(keys, fromFrame: 4, toFrame: 12, rate: 2), {
@@ -336,20 +417,25 @@ void main() {
         ),
         LayerKeyframe(frameIndex: 20, x: 3),
       ];
-      final moved = moveKeyframes(
+      final moved = retimedKeyframes(
         animation,
-        retimeKeyRange(
-          [for (final k in animation) k.frameIndex],
+        retimeKeyRangeExact(
+          {for (final k in animation) k.frameIndex: k.exactTime},
           fromFrame: 0,
           toFrame: 20,
-          rate: 2,
+          rate: 3,
         )!,
         frameOf: (k) => k.frameIndex,
-        withFrame: (k, f) => k.copyWith(frameIndex: f),
+        exactOf: (k) => k.exactTime,
+        withTime: (k, t) => k.copyWith(frameIndex: t.round(), exactFrame: t),
       );
-      expect(moved.map((k) => k.frameIndex), [0, 5, 10]);
+      expect(moved.map((k) => k.frameIndex), [0, 3, 7]);
       expect(moved.map((k) => k.x), [1, 2, 3]);
       expect(moved[1].easing, LayerKeyframeEasing.easeOut);
+      // The moved keys keep their times before rounding; the first stays.
+      expect(moved[1].exactTime, closeTo(10 / 3, 1e-9));
+      expect(moved[2].exactTime, closeTo(20 / 3, 1e-9));
+      expect(identical(moved.first, animation.first), isTrue);
     });
   });
 

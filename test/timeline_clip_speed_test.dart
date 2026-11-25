@@ -373,6 +373,24 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(cameraKeys(), [0, 10, 20]);
 
+    // Retimed and retimed back, the keys come back to their frames: 4x puts
+    // F11 at 2.5 (shown on F4), and 0.25x takes it from 2.5, not from its
+    // rounded frame (which would give F13).
+    Future<void> retimeCamera(double rate, String before, String after) async {
+      await tester.ensureVisible(cameraButton);
+      await tester.tap(cameraButton);
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      await tapQuick(rate);
+      expect(previewText(), l10n.keyframeRetimePreview(before, after));
+      await tester.tap(find.byKey(const ValueKey('keyframeRetimeApply')));
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    }
+
+    await retimeCamera(4.0, 'F1 · F11 · F21', 'F1 · F4 · F6');
+    expect(cameraKeys(), [0, 3, 5]);
+    await retimeCamera(0.25, 'F1 · F4 · F6', 'F1 · F11 · F21');
+    expect(cameraKeys(), [0, 10, 20]);
+
     // ── Image: the keys F7–F13 at 0.5x; F1 stays put ──
     final clip = find.byKey(ValueKey('timelineClip-$imageId'));
     await tester.ensureVisible(clip);

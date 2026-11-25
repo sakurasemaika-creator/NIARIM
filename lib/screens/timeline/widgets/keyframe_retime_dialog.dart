@@ -15,14 +15,21 @@ typedef KeyframeRetime = ({int fromFrame, int toFrame, double rate});
 /// keys' values and easing are not changed; keys outside the range stay put.
 /// A speed that would make keys share a frame, pass a key after the range
 /// or leave the scene (past [lastFrame]) cannot be chosen.
+///
+/// [exactTimes] gives the keys' times before rounding (frame → time), so
+/// the positions shown are the ones applying the speed gives.
 Future<KeyframeRetime?> showKeyframeRetimeDialog(
   BuildContext context, {
   required List<int> keyFrames,
   required int lastFrame,
+  Map<int, double>? exactTimes,
 }) => showDialog<KeyframeRetime>(
   context: context,
-  builder: (context) =>
-      KeyframeRetimeDialog(keyFrames: keyFrames, lastFrame: lastFrame),
+  builder: (context) => KeyframeRetimeDialog(
+    keyFrames: keyFrames,
+    lastFrame: lastFrame,
+    exactTimes: exactTimes,
+  ),
 );
 
 class KeyframeRetimeDialog extends StatefulWidget {
@@ -30,10 +37,15 @@ class KeyframeRetimeDialog extends StatefulWidget {
     super.key,
     required this.keyFrames,
     required this.lastFrame,
+    this.exactTimes,
   });
 
   final List<int> keyFrames;
   final int lastFrame;
+
+  /// The keys' times before rounding (frame → time); a key not in it is on
+  /// its frame.
+  final Map<int, double>? exactTimes;
 
   @override
   State<KeyframeRetimeDialog> createState() => _KeyframeRetimeDialogState();
@@ -45,13 +57,13 @@ class _KeyframeRetimeDialogState extends State<KeyframeRetimeDialog> {
   late int _to = _keys.last;
   double _rate = 1;
 
-  Map<int, int>? _movesAt(double rate) => retimeKeyRange(
-    _keys,
+  Map<int, int>? _movesAt(double rate) => retimeKeyRangeExact(
+    {for (final k in _keys) k: widget.exactTimes?[k] ?? k.toDouble()},
     fromFrame: _from,
     toFrame: _to,
     rate: rate,
     lastFrame: widget.lastFrame,
-  );
+  )?.map((frame, exact) => MapEntry(frame, exact.round()));
 
   void _setRange({int? from, int? to}) {
     setState(() {

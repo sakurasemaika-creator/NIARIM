@@ -1208,12 +1208,15 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     final choice = await showKeyframeRetimeDialog(
       context,
       keyFrames: [for (final k in layer.keyframes) k.frameIndex],
+      exactTimes: {for (final k in layer.keyframes) k.frameIndex: k.exactTime},
       lastFrame: lastFrame,
     );
     if (choice == null || !mounted) return;
     _update((l) {
-      final moves = retimeKeyRange(
-        [for (final k in l.keyframes) k.frameIndex],
+      // From the keys' times before rounding, so retiming back and forth
+      // returns them to their frames.
+      final moves = retimeKeyRangeExact(
+        {for (final k in l.keyframes) k.frameIndex: k.exactTime},
         fromFrame: choice.fromFrame,
         toFrame: choice.toFrame,
         rate: choice.rate,
@@ -1221,11 +1224,12 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
       );
       if (moves == null) return l;
       return l.copyWith(
-        keyframes: moveKeyframes(
+        keyframes: retimedKeyframes(
           l.keyframes,
           moves,
           frameOf: (k) => k.frameIndex,
-          withFrame: (k, f) => k.copyWith(frameIndex: f),
+          exactOf: (k) => k.exactTime,
+          withTime: (k, t) => k.copyWith(frameIndex: t.round(), exactFrame: t),
         ),
       );
     });
@@ -1441,6 +1445,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
             hasSound: layer.videoVolume > 0,
             endFrameAt: endFrameAt,
             onApply: changeSpeed,
+            onMute: () => _update((l) => l.copyWith(videoVolume: 0)),
           ),
           SwitchListTile(
             key: const ValueKey('videoSoundFollowsSpeed'),

@@ -5705,7 +5705,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineClipSpeedSoundNote =>
-      '속도를 높이면 소리를 이해하기 어려워집니다. 소리가 필요 없으면 음량을 0으로 하세요.';
+      '속도를 높이면 소리를 이해하기 어려워집니다(미리보기와 내보내기의 소리는 같습니다). 소리가 필요 없으면 끌 수 있습니다.';
+
+  @override
+  String get timelineClipSpeedMute => '소리 끄기';
+
+  @override
+  String get timelinePlaybackSkipNotice =>
+      '재생이 따라가지 못해 일부 프레임을 건너뛰고 있습니다(내보내기에는 모든 프레임이 들어갑니다).';
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>

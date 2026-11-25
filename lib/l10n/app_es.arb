@@ -2357,7 +2357,9 @@
   "timelineClipSpeedPastSceneEnd": "No se cambió: a esta velocidad el clip pasaría del final de la escena. Alarga primero la escena.",
   "timelineClipSpeedKeyframeClash": "Esta velocidad no es posible: dos fotogramas clave caerían en el mismo fotograma.",
   "timelineClipSpeedEndPreview": "Fotograma final: F{before} → F{after}",
-  "timelineClipSpeedSoundNote": "A velocidades altas el sonido se entiende mal. Pon el volumen a 0 si no lo necesitas.",
+  "timelineClipSpeedSoundNote": "A velocidades altas el sonido se entiende mal (la vista previa y la exportación suenan igual). Puedes silenciarlo si no lo necesitas.",
+  "timelineClipSpeedMute": "Silenciar el sonido",
+  "timelinePlaybackSkipNotice": "La reproducción no da abasto y se saltan algunos fotogramas (la exportación los tiene todos).",
   "timelineCameraFrameAlreadyHasKeyframe": "Este fotograma ya tiene un fotograma clave de cámara.",
   "timelineCameraKfTitle": "Fotograma clave de cámara: F{n}",
   "@timelineCameraKfTitle": {

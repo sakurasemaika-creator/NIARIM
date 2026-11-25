@@ -19,6 +19,7 @@ class ClipSpeedControl extends StatefulWidget {
     required this.endFrameAt,
     required this.onApply,
     this.hasSound = false,
+    this.onMute,
   });
 
   /// The clip's current speed.
@@ -30,6 +31,9 @@ class ClipSpeedControl extends StatefulWidget {
 
   /// Whether the clip plays sound (a note about high speeds is shown).
   final bool hasSound;
+
+  /// Mutes the clip's sound (its volume to 0), offered with the note.
+  final VoidCallback? onMute;
 
   @override
   State<ClipSpeedControl> createState() => _ClipSpeedControlState();
@@ -175,6 +179,16 @@ class _ClipSpeedControlState extends State<ClipSpeedControl> {
             l10n.timelineClipSpeedSoundNote,
             icon: Icons.volume_down_outlined,
           ),
+          if (widget.onMute case final mute?)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                key: const ValueKey('clipSpeedMute'),
+                icon: const Icon(Icons.volume_off_outlined, size: 18),
+                label: Text(l10n.timelineClipSpeedMute),
+                onPressed: mute,
+              ),
+            ),
         ],
       ],
     );

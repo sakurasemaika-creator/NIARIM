@@ -1197,6 +1197,9 @@ class NiaproSerializer {
             'y': k.y,
             'zoom': k.zoom,
             'rotation': k.rotation,
+            if (k.exactFrame case final exact?
+                when exact.isFinite && exact != k.frameIndex)
+              'exactFrame': exact,
           },
         )
         .toList(),
@@ -1416,6 +1419,10 @@ class NiaproSerializer {
               y: (j['y'] as num?)?.toDouble() ?? 0,
               zoom: (j['zoom'] as num?)?.toDouble() ?? 1.0,
               rotation: (j['rotation'] as num?)?.toDouble() ?? 0,
+              exactFrame: switch (j['exactFrame']) {
+                final num exact when exact.isFinite => exact.toDouble(),
+                _ => null,
+              },
             ),
           )
           .toList();

@@ -2939,7 +2939,9 @@
       }
     }
   },
-  "timelineClipSpeedSoundNote": "速度を上げると音声は聞き取りにくくなります。音声が不要なら音量を0にしてください。",
+  "timelineClipSpeedSoundNote": "速度を上げると音は聞き取りにくくなります（プレビューも書き出しも同じ音です）。音が要らなければ消せます。",
+  "timelineClipSpeedMute": "音を消す",
+  "timelinePlaybackSkipNotice": "再生が追いつかないため、コマを飛ばして表示しています（書き出しにはすべてのコマが入ります）。",
   "timelineCameraFrameAlreadyHasKeyframe": "このフレームにはカメラのキーフレームがあります。",
   "timelineCameraKfTitle": "カメラ KF: F{n}",
   "@timelineCameraKfTitle": {

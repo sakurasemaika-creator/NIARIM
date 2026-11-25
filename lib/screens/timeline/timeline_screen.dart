@@ -41,7 +41,6 @@ import '../../engine/camera_engine.dart';
 import '../../engine/clip_speed.dart';
 import '../../engine/crop_frame.dart';
 import '../../engine/export_engine.dart';
-import '../../engine/export_audio.dart';
 import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/layer_keyframe_engine.dart';
@@ -57,6 +56,7 @@ import '../../engine/video_frame_provider.dart';
 import '../../engine/video_material_snapshot.dart';
 import '../../engine/timeline_stack.dart';
 import '../../engine/pitched_sound_preview.dart';
+import '../../engine/preview_sound.dart';
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/audio_clip.dart';
@@ -376,6 +376,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 作り直しても、離散的な操作なら毎フレームのコストにはならない。
   // 再生タイマーだけがsetStateを使わず、この値の更新だけで済ませる。
   final ValueNotifier<int> _currentFrameNotifier = ValueNotifier<int>(0);
+
+  /// The frames playback could not show since it started: skipped because
+  /// the device fell behind, or composed too late to be shown. The preview
+  /// says so while it plays (the export has every frame).
+  final ValueNotifier<int> _playbackSkips = ValueNotifier<int>(0);
   int _historyPreviewRevision = 0;
   // 画面全体のショートカット（再生・コマ送り・取り消し等）を受ける
   // フォーカス。入力欄から抜けたら（Enter・欄の外の押下）ここへ戻す。
@@ -934,6 +939,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _moveThumbnail?.dispose();
     _currentFrameNotifier.removeListener(_onCurrentFrameChanged);
     _currentFrameNotifier.dispose();
+    _playbackSkips.dispose();
     _projectService.endWorkTracking(lease: _workTrackingLease);
     _projectService.holdClipboardMaterials(widget.projectId, const []);
     _pitchedSounds?.dispose();
@@ -1008,10 +1014,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
           .where((p) => p.id == widget.projectId)
           .firstOrNull;
       final fps = project?.fps ?? 24;
+      // The frames follow the clock, as the sound does: when the device
+      // falls behind (the timer's ticks come late), frames are skipped
+      // rather than the picture slowing down and drifting from the sound.
+      // The skips are counted and the preview says so.
+      var played = 0;
+      _playbackSkips.value = 0;
       _playTimer = Timer.periodic(
-        Duration(milliseconds: (1000 / fps).round()),
+        Duration(microseconds: (1000000 / fps).round()),
         (timer) {
           final total = _totalFrames;
+          final step = timer.tick - played;
+          if (step <= 0) return;
+          played = timer.tick;
           if (!_loopEnabled && _currentFrame >= total - 1) {
             // ループOFF：最終フレームに到達したらそこで自動停止する。
             timer.cancel();
@@ -1019,12 +1034,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
             _pauseAllMedia();
             return;
           }
+          if (step > 1) _playbackSkips.value += step - 1;
           // ここはsetStateを使わない。再生位置に追従する必要があるのは
           // プレビューとシークバーだけで、その2つは
           // _currentFrameNotifierをValueListenableBuilderで購読している。
           // setStateにすると、フレーム一覧・各トラック・シーンタブまで
           // 含めた画面全体を毎秒24〜60回作り直すことになる。
-          _currentFrame = (_currentFrame + 1) % total;
+          _currentFrame = (_currentFrame + step) % total;
           _syncMediaPlayback();
         },
       );
@@ -1284,59 +1300,83 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final path = clip.filePath;
     if (path == null) return;
     final player = _audioPlayers.putIfAbsent(clip.id, () => ap.AudioPlayer());
-    if (!_clipInRange(clip) || !_isPlaying) {
+    // What plays now: the same part of the file, speed, pitch and gain the
+    // export uses for this moment (previewAudioClipAt).
+    final sound = _isPlaying
+        ? previewAudioClipAt(
+            elapsedFrames: _currentFrame - clip.startFrame,
+            lengthFrames: clip.lengthFrames,
+            sourceStartFrame: clip.useStart,
+            sourceStartFraction: clip.sourceFraction,
+            rate: clip.playbackRate,
+            pitchSemitones: clip.pitchSemitones,
+            volume: clip.volume,
+            fadeIn: clip.fadeIn,
+            fadeOut: clip.fadeOut,
+            framesPerSecond: fps,
+          )
+        : null;
+    if (sound == null) {
       if (player.state == ap.PlayerState.playing) await player.pause();
       return;
     }
-    final elapsedFrames = _currentFrame - clip.startFrame;
-    // Preview and offline export share the same clip-relative linear
-    // fade envelope so the audible gain at a timeline time is consistent.
-    final vol = AudioClipEnvelope.gainAt(
-      elapsedSeconds: elapsedFrames / fps,
-      clipSeconds: clip.lengthFrames / fps,
-      volume: clip.volume,
-      fadeInSeconds: clip.fadeIn,
-      fadeOutSeconds: clip.fadeOut,
-    );
-    if (PitchedSoundPreview.needed(clip.pitchSemitones)) {
-      // Its pitch is changed: the sound the export writes, made from the
-      // same part of the file at its speed, played at 1x. Nothing plays
-      // until it is ready.
+    await _playSound(clip.id, player, path, sound, clip, fps);
+  }
+
+  /// Plays [sound] on [player]: the file at its speed, or, with a pitch
+  /// change, the sound made with the export's filters at 1x (nothing until
+  /// it is ready).
+  Future<void> _playSound(
+    String playerKey,
+    ap.AudioPlayer player,
+    String path,
+    PreviewSoundAt sound,
+    _TrackClip clip,
+    double fps,
+  ) async {
+    var file = path;
+    if (sound.playsMadeSound) {
       final made = _pitchedSoundPreview.soundFor(
         path: path,
-        sourceSeconds: (clip.useStart + clip.sourceFraction) / fps,
-        durationSeconds: clip.lengthFrames / fps,
-        rate: clip.playbackRate,
-        pitchSemitones: clip.pitchSemitones,
+        sourceSeconds: sound.madeFromSeconds,
+        durationSeconds: sound.madeSeconds,
+        rate: sound.rate,
+        pitchSemitones: sound.pitchSemitones,
         onReady: _resyncMediaIfPlaying,
       );
       if (made == null) {
         if (player.state == ap.PlayerState.playing) await player.pause();
         return;
       }
-      await player.setVolume(vol);
-      await _playOn(
-        clip.id,
-        player,
-        made,
-        1,
-        Duration(milliseconds: (elapsedFrames / fps * 1000).round()),
-      );
-      return;
+      file = made;
     }
-    await player.setVolume(vol);
-    // The same source position and speed the export reads (the pitch is
-    // kept in both).
-    final source = clip.sourceAfter(elapsedFrames);
-    final targetFrame = source.frame + source.fraction;
+    await player.setVolume(sound.gain);
+    final elapsedSeconds = (_currentFrame - clip.startFrame) / fps;
     await _playOn(
-      clip.id,
+      playerKey,
       player,
-      path,
-      clip.playbackRate,
-      Duration(milliseconds: (targetFrame / fps * 1000).round()),
+      file,
+      sound.playerRate,
+      Duration(
+        milliseconds: (sound.playerSecondsAt(elapsedSeconds) * 1000).round(),
+      ),
     );
   }
+
+  /// The video's sound now, or null where it is silent (see
+  /// [previewVideoSoundAt]).
+  PreviewSoundAt? _videoSoundNow(_TrackClip clip, double fps) =>
+      previewVideoSoundAt(
+        elapsedFrames: _currentFrame - clip.startFrame,
+        lengthFrames: clip.lengthFrames,
+        trimStartFrame: clip.useStart,
+        trimStartFraction: clip.sourceFraction,
+        trimEndFrame: clip.useEnd,
+        soundRate: clip.soundRate,
+        pitchSemitones: clip.pitchSemitones,
+        volume: clip.volume,
+        framesPerSecond: fps,
+      );
 
   /// A video's sound when its pitch is changed: made like the export's and
   /// played on an audio player instead of the video's own player (which
@@ -1349,37 +1389,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }) async {
     final key = '${clip.id}#pitched';
     final player = _audioPlayers[key];
-    final elapsedFrames = _currentFrame - clip.startFrame;
     final path = clip.filePath;
-    if (!active ||
-        path == null ||
-        !_isPlaying ||
-        !_clipInRange(clip) ||
-        elapsedFrames >= clip.videoSoundingFrames) {
-      if (player?.state == ap.PlayerState.playing) await player!.pause();
-      return;
-    }
-    final made = _pitchedSoundPreview.soundFor(
-      path: path,
-      sourceSeconds: (clip.useStart + clip.sourceFraction) / fps,
-      durationSeconds: clip.videoSoundingFrames / fps,
-      rate: clip.soundRate,
-      pitchSemitones: clip.pitchSemitones,
-      onReady: _resyncMediaIfPlaying,
-    );
-    if (made == null) {
+    final sound = active && path != null && _isPlaying
+        ? _videoSoundNow(clip, fps)
+        : null;
+    if (sound == null || path == null) {
       if (player?.state == ap.PlayerState.playing) await player!.pause();
       return;
     }
     final pitchedPlayer = player ?? (_audioPlayers[key] = ap.AudioPlayer());
-    await pitchedPlayer.setVolume(clip.volume.clamp(0.0, 1.0));
-    await _playOn(
-      key,
-      pitchedPlayer,
-      made,
-      1,
-      Duration(milliseconds: (elapsedFrames / fps * 1000).round()),
-    );
+    await _playSound(key, pitchedPlayer, path, sound, clip, fps);
   }
 
   Future<void> _syncVideoClip(_TrackClip clip, double fps) async {
@@ -1418,11 +1437,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // Where the picture holds the last used frame the video is silent (the
     // export stops its sound there too), so the player does not run on into
     // the rest of the file.
-    if (_currentFrame - clip.startFrame >= clip.videoSoundingFrames) {
+    final sound = _videoSoundNow(clip, fps);
+    if (sound == null) {
       if (controller.value.isPlaying) await controller.pause();
       return;
     }
-    await controller.setVolume(clip.volume.clamp(0.0, 1.0));
+    await controller.setVolume(sound.gain);
     // Keep preview seeking on the same pure timeline-to-source mapping
     // that offline video rendering will consume. Trim end is inclusive.
     final targetPos = TimelineVideoTimeMapper.sourcePositionAt(
@@ -3411,6 +3431,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 );
                 final gizmo = _buildMaterialGizmo(ps, frameIndex);
                 final picture = _TimelinePreview(
+                  // Told while the preview is being built: counted after
+                  // the frame (the notice cannot change during a build).
+                  onFrameSkipped: () {
+                    if (!_isPlaying) return;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted && _isPlaying) _playbackSkips.value++;
+                    });
+                  },
                   historyRevision: _historyPreviewRevision,
                   backgroundColor: _projectBackgroundOf(ps, widget.projectId),
                   tileManager: ps.tileManagerOf(widget.projectId),
@@ -3517,6 +3545,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
               ),
             ),
+            // Playback that cannot keep up skips frames (the export has
+            // them all): said at the band's top, beside the full-screen
+            // button, while it plays.
+            if (_isPlaying)
+              Positioned(
+                left: edge,
+                top: edge,
+                right: edge + _previewControlSize + edge,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: _playbackSkips,
+                  builder: (context, skips, _) => skips == 0
+                      ? const SizedBox.shrink()
+                      : Align(
+                          alignment: AlignmentDirectional.topStart,
+                          child: _PlaybackSkipNotice(
+                            text: l10n.timelinePlaybackSkipNotice,
+                          ),
+                        ),
+                ),
+              ),
             if (!inFullscreen)
               Positioned(
                 right: edge,
@@ -7776,12 +7824,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final choice = await showKeyframeRetimeDialog(
       context,
       keyFrames: [for (final k in keys) k.frameIndex],
+      exactTimes: {for (final k in keys) k.frameIndex: k.exactTime},
       lastFrame: _totalFrames - 1,
     );
     if (choice == null || !mounted || _selectedSceneId != sceneId) return;
     final current = projects.cameraKeyframesOf(widget.projectId, sceneId);
-    final moves = retimeKeyRange(
-      [for (final k in current) k.frameIndex],
+    // From the keys' times before rounding, so retiming back and forth
+    // returns them to their frames.
+    final moves = retimeKeyRangeExact(
+      {for (final k in current) k.frameIndex: k.exactTime},
       fromFrame: choice.fromFrame,
       toFrame: choice.toFrame,
       rate: choice.rate,
@@ -7791,11 +7842,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
     projects.replaceCameraKeyframes(
       widget.projectId,
       sceneId,
-      moveKeyframes(
+      retimedKeyframes(
         current,
         moves,
         frameOf: (k) => k.frameIndex,
-        withFrame: (k, f) => k.copyWith(frameIndex: f),
+        exactOf: (k) => k.exactTime,
+        withTime: (k, t) => k.copyWith(frameIndex: t.round(), exactFrame: t),
       ),
     );
   }
@@ -11290,6 +11342,45 @@ class _TimelinePreviewVideoFrames extends InheritedWidget {
       !identical(videoPixels, oldWidget.videoPixels);
 }
 
+/// The preview's note that playback is skipping frames: a small card over
+/// the band's corner, its text in the card's own colours.
+class _PlaybackSkipNotice extends StatelessWidget {
+  const _PlaybackSkipNotice({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colour =
+        theme.popupMenuTheme.textStyle?.color ?? theme.colorScheme.onSurface;
+    return Semantics(
+      liveRegion: true,
+      child: Material(
+        key: const Key('timelinePlaybackSkipNotice'),
+        color: theme.cardTheme.color ?? theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.speed, size: 16, color: colour),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  text,
+                  style: theme.textTheme.bodySmall?.copyWith(color: colour),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _TimelinePreview extends StatefulWidget {
   final TileManager tileManager;
 
@@ -11310,8 +11401,13 @@ class _TimelinePreview extends StatefulWidget {
   /// The project's background colour, shown behind the picture.
   final int backgroundColor;
 
+  /// Told when a frame asked for is never shown because a later one came
+  /// before it was composed (the device cannot keep up with playback).
+  final VoidCallback? onFrameSkipped;
+
   const _TimelinePreview({
     required this.backgroundColor,
+    this.onFrameSkipped,
     required this.tileManager,
     required this.layers,
     this.maskGroups = const [],
@@ -11337,6 +11433,7 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
   // A change that came while a picture was being built: build again after
   // (else dragging a slider or a material left the preview a step behind).
   bool _rebuildPending = false;
+  int? _pendingFrame;
 
   /// The decoded frames of video materials, shared by the timeline screen.
   TimelineVideoLayerPixels? _videoPixels;
@@ -11380,7 +11477,12 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
 
   Future<void> _rebuild() async {
     if (_building) {
+      // A frame already waiting is replaced by this one: it is never shown.
+      if (_rebuildPending && _pendingFrame != widget.frameIndex) {
+        widget.onFrameSkipped?.call();
+      }
       _rebuildPending = true;
+      _pendingFrame = widget.frameIndex;
       return;
     }
     _building = true;
@@ -13006,7 +13108,11 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                   const SizedBox(height: 6),
                   ClipSpeedControl(
                     rate: _c.playbackRate,
-                    hasSound: true,
+                    hasSound: _c.volume > 0,
+                    onMute: () {
+                      _c.volume = 0;
+                      _notify();
+                    },
                     endFrameAt: widget.speedEndFrameAt,
                     onApply: (rate) {
                       final problem = widget.onSpeedChange(rate);

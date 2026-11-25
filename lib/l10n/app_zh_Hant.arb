@@ -2357,7 +2357,9 @@
   "timelineClipSpeedPastSceneEnd": "未變更：使用此速度會超出場景的結尾。請先延長場景。",
   "timelineClipSpeedKeyframeClash": "無法使用此速度：兩個關鍵影格會落在同一影格上。",
   "timelineClipSpeedEndPreview": "結束影格：F{before} → F{after}",
-  "timelineClipSpeedSoundNote": "速度越快，聲音越不清楚。如果不需要聲音，請將音量設為 0。",
+  "timelineClipSpeedSoundNote": "速度越快，聲音越不清楚（預覽和匯出的聲音相同）。如果不需要聲音，可以靜音。",
+  "timelineClipSpeedMute": "靜音",
+  "timelinePlaybackSkipNotice": "播放跟不上，正在跳過部分影格（匯出時包含所有影格）。",
   "timelineCameraFrameAlreadyHasKeyframe": "此影格已有相機關鍵影格。",
   "timelineCameraKfTitle": "相機關鍵影格：F{n}",
   "@timelineCameraKfTitle": {
