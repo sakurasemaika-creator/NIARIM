@@ -2569,7 +2569,7 @@ AIによるコード修正だけでは完結せず、所有者（事業者）の
    `GET /triage-bot/reports`で未判定の通報を読み、`POST /triage-bot/reports/{id}/triage`で
    見立てを書く（できるのはこの2つだけ。重大はAPIの判定と同じく一時非表示）。管理画面の
    「AIに頼む文をコピー」→チャット→答えを貼り戻す道もある。鍵はチャットに貼らせず、
-   環境のネットワークの秘密（`request_credential`）で渡す。所有者の作業：SSMの
+   環境のネットワークの秘密で渡す（2026-11-25に設定済み：クラウドの「NIARIM」環境のネットワークの秘密〔許可ウェブサイトはLambdaのホスト、パスは`/triage-bot/`、`Authorization: Bearer`〕。ホスト名が65文字で`request_credential`の欄の上限64文字を超えるため、所有者が環境の設定画面から入れた。同じ環境に`i.ytimg.com`も許可。毎日20:43〔日本時間〕に新しいセッションで動く予定「NIARIM 通報の自動の下見」が、この2つの窓口だけを使う）。所有者の作業：SSMの
    SecureString（`/niarim/moderation/admin-emails`は作成済み、`resend-api-key`・
    `anthropic-api-key`は任意）、Backend CIの手動のデプロイ（デプロイ用のロールに
    `lambda:GetFunctionConfiguration`が要る。`backend/README.md`のCI/CD）、GoogleのOAuth
