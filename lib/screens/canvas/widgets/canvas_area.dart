@@ -2939,6 +2939,8 @@ class CanvasAreaState extends State<CanvasArea> {
         points.map((p) => StrokePoint(x: p.dx, y: p.dy)).toList(),
         _tileKeyFor(_layerId),
         closeLoop: closeLoop,
+        // ピクセルモードでも四角形は角の画素まで描く。
+        removePixelCorners: widget.shapeKind != ShapeKind.rect,
       );
       _quantizeStrokeIfNeeded();
       _scheduleComposite();

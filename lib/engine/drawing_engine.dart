@@ -11,6 +11,7 @@ import 'brush_render_plan.dart';
 import 'hair_fold_raster.dart';
 import 'outline_accent.dart';
 import 'perceptual_color_mixer.dart';
+import 'pixel_line_path.dart';
 import 'tile_manager.dart';
 import 'watercolor_wash.dart';
 
@@ -58,6 +59,12 @@ class DrawingEngine {
   ui.Offset? _lastOilStamp;
   // 水彩風：このストロークの水彩の状態（ペンを離すと乾かす）。
   WatercolorStroke? _watercolor;
+  // ピクセルモードの線：ペン先が通る画素と、ドット絵の線として確定を
+  // 待つ画素（_beginPixelLine）。ドットを間隔を空けて置くブラシでは使わない。
+  PixelLineWalker? _pixelWalker;
+  PixelPerfectPath<_PixelDab>? _pixelPath;
+  // ピクセルモードの線がたどった点（線の終わりで進んでいた向きを求める）。
+  final List<ui.Offset> _pixelTrail = [];
 
   String? get debugActiveBrushTexturePath => _brushTextureSelector.activePath;
 
@@ -118,6 +125,7 @@ class DrawingEngine {
     _strokeScreenPositions.add(
       screenPosition ?? ui.Offset(effective.x, effective.y),
     );
+    if (_beginPixelLine(effective, layerId)) return;
     final needsDirection =
         brush != null && (brush.rotation || brush.scatter > 0.0);
     if (!needsDirection) {
@@ -272,6 +280,16 @@ class DrawingEngine {
 
   void endStroke({bool cancel = false}) {
     if (!cancel) _rebuildHairFold(finalize: true);
+    if (!cancel && _activeLayerId != null) {
+      final layerId = _activeLayerId!;
+      _pixelPath?.flush(
+        (x, y, dab) => _stampPixelDab(x, y, dab, layerId),
+        heading: _pixelEndHeading(),
+      );
+    }
+    _pixelWalker = null;
+    _pixelPath = null;
+    _pixelTrail.clear();
     // 回転/散布ONでPointerDown→Upだけのタップだった場合は進行方向が存在しない。
     // その場合だけ中心位置へ1回描画し、散布は行わない。
     if (!cancel &&
@@ -448,6 +466,7 @@ class DrawingEngine {
     List<StrokePoint> pathPoints,
     String layerId, {
     bool closeLoop = false,
+    bool removePixelCorners = true,
   }) {
     if (currentBrush == null || pathPoints.isEmpty) return;
     _currentStroke.clear();
@@ -467,8 +486,16 @@ class DrawingEngine {
 
     final first = pathPoints.first;
     _currentStroke.add(first);
+    // 図形は手の震えが無いので、画素の境目でそのまま次の画素へ移る。
+    // 四角形の角は角の画素も描く。
+    final pixelLine = _beginPixelLine(
+      first,
+      layerId,
+      hysteresis: 0,
+      removeCorners: removePixelCorners,
+    );
     final needsDirection = brush.rotation || brush.scatter > 0.0;
-    if (!needsDirection) {
+    if (!pixelLine && !needsDirection) {
       _stampBrush(
         first.x,
         first.y,
@@ -498,6 +525,24 @@ class DrawingEngine {
     final brush = currentBrush!;
     final distance = _distance(from, to);
     if (distance <= 1e-9) return;
+    final walker = _pixelWalker;
+    final path = _pixelPath;
+    if (walker != null && path != null) {
+      final baseStrokeLength = _strokeDistance;
+      walker.walk(ui.Offset(from.x, from.y), ui.Offset(to.x, to.y), (x, y, t) {
+        path.add(
+          x,
+          y,
+          _PixelDab(
+            pressure: from.pressure + (to.pressure - from.pressure) * t,
+            strokeLength: baseStrokeLength + distance * t,
+          ),
+          (x, y, dab) => _stampPixelDab(x, y, dab, layerId),
+        );
+      });
+      _pixelTrail.add(ui.Offset(to.x, to.y));
+      return;
+    }
 
     final safeDensity = brush.density.clamp(0.1, 5.0).toDouble();
     final spacing = _brushStampSpacing(brush, safeDensity);
@@ -583,6 +628,78 @@ class DrawingEngine {
 
   double _stableDouble(double value) => (value * 1000000).round() / 1000000;
 
+  /// ピクセルモードの丸いペン先は、どのドットも画素の格子に固定した同じ形
+  /// （[pixelDotCovers]）で置く。ペン先の画像・縁取り・横方向の反復・
+  /// 散布・カリグラフィーの角度を使うブラシは、その形のまま描く。
+  bool _snapsToPixelGrid(Brush brush) =>
+      brush.pixelMode &&
+      brush.tipShape == BrushTipShape.round &&
+      brush.resolvedCustomImagePaths.isEmpty &&
+      !brush.outlineEnabled &&
+      !brush.lateralRepeatEnabled &&
+      brush.calligraphyAngle == null &&
+      brush.scatter == 0;
+
+  /// ドットがつながって線になるピクセルモードのブラシなら、ペン先の通る
+  /// 画素をたどって1画素ずつ置く線を始め、最初のドットを置く。
+  bool _beginPixelLine(
+    StrokePoint point,
+    String layerId, {
+    double hysteresis = kPixelLineHysteresis,
+    bool removeCorners = true,
+  }) {
+    _pixelWalker = null;
+    _pixelPath = null;
+    _pixelTrail.clear();
+    final brush = currentBrush;
+    if (brush == null ||
+        !_snapsToPixelGrid(brush) ||
+        _brushStampSpacing(brush, brush.density.clamp(0.1, 5.0).toDouble()) >
+            1) {
+      return false;
+    }
+    final walker = PixelLineWalker(
+      ui.Offset(point.x, point.y),
+      hysteresis: hysteresis,
+    );
+    _pixelTrail.add(ui.Offset(point.x, point.y));
+    final path = PixelPerfectPath<_PixelDab>(removeCorners: removeCorners);
+    _pixelWalker = walker;
+    _pixelPath = path;
+    path.add(
+      walker.x,
+      walker.y,
+      _PixelDab(pressure: point.pressure, strokeLength: 0),
+      (x, y, dab) => _stampPixelDab(x, y, dab, layerId),
+    );
+    _hasStampedCurrentStroke = true;
+    return true;
+  }
+
+  /// ピクセルモードの線の終わりでペンが進んでいた向き（最後の3pxほど）。
+  ui.Offset _pixelEndHeading() {
+    if (_pixelTrail.length < 2) return ui.Offset.zero;
+    final end = _pixelTrail.last;
+    for (var i = _pixelTrail.length - 2; i >= 0; i--) {
+      final heading = end - _pixelTrail[i];
+      if (heading.distance >= 3) return heading;
+    }
+    return end - _pixelTrail.first;
+  }
+
+  // ドットは格子に固定した形なので、ペンの傾きでは伸ばさない。
+  void _stampPixelDab(int x, int y, _PixelDab dab, String layerId) =>
+      _stampBrush(
+        x + 0.5,
+        y + 0.5,
+        dab.pressure,
+        0,
+        0,
+        layerId,
+        strokeLengthOverride: dab.strokeLength,
+        pixelCell: (x: x, y: y),
+      );
+
   void _stampBrush(
     double x,
     double y,
@@ -594,9 +711,13 @@ class DrawingEngine {
     double pathAngle = 0.0,
     bool hasPathDirection = false,
     bool applyScatter = true,
+    ({int x, int y})? pixelCell,
   }) {
     if (currentBrush == null) return;
     final brush = currentBrush!;
+    if (pixelCell == null && _snapsToPixelGrid(brush)) {
+      pixelCell = (x: x.floor(), y: y.floor());
+    }
 
     final resolvedPressure = resolveBrushPressure(
       brush: brush,
@@ -721,7 +842,8 @@ class DrawingEngine {
         angle: pathAngle + angleOffset,
       );
     }
-    final stylusTiltMagnitude = nibAngle == null && !brush.rotation
+    final stylusTiltMagnitude =
+        nibAngle == null && !brush.rotation && pixelCell == null
         ? math.sqrt(tiltX * tiltX + tiltY * tiltY).clamp(0.0, 1.0)
         : 0.0;
 
@@ -821,6 +943,7 @@ class DrawingEngine {
           hollowSquare: usesExtensionRaster && extensionPlan.hollowSquare,
           hollowSquareInnerRatio: extensionPlan.hollowSquareInnerRatio,
           coverageNamespace: usesExtensionRaster ? 'fill' : 'legacy',
+          pixelCell: usesExtensionRaster ? null : pixelCell,
         );
       }
     }
@@ -891,6 +1014,7 @@ class DrawingEngine {
     bool behindExisting = false,
     Uint8List? silhouetteDistanceMap,
     double silhouetteOutlineWidth = 0,
+    ({int x, int y})? pixelCell,
   }) {
     final paintColor = colorOverride ?? currentColor;
     final r = paintColor.r;
@@ -921,10 +1045,30 @@ class DrawingEngine {
         ? (blur / (blur + radius)).clamp(0.0, 1.0)
         : 0.0;
 
-    final minTx = ((cx - totalRadius) / TileManager.tileSize).floor();
-    final maxTx = ((cx + totalRadius) / TileManager.tileSize).floor();
-    final minTy = ((cy - totalRadius) / TileManager.tileSize).floor();
-    final maxTy = ((cy + totalRadius) / TileManager.tileSize).floor();
+    // ピクセルモードの格子のドット：画素[pixelCell]を中心にした、太さ
+    // （直径を画素数に丸めたもの）ごとに決まった形。
+    final dotDiameter = pixelCell == null
+        ? 0
+        : math.max(1, (radius * 2).round());
+    final dotLeft = pixelCell == null
+        ? 0
+        : pixelDotOrigin(pixelCell.x, dotDiameter);
+    final dotTop = pixelCell == null
+        ? 0
+        : pixelDotOrigin(pixelCell.y, dotDiameter);
+
+    final minTx = pixelCell != null
+        ? (dotLeft / TileManager.tileSize).floor()
+        : ((cx - totalRadius) / TileManager.tileSize).floor();
+    final maxTx = pixelCell != null
+        ? ((dotLeft + dotDiameter - 1) / TileManager.tileSize).floor()
+        : ((cx + totalRadius) / TileManager.tileSize).floor();
+    final minTy = pixelCell != null
+        ? (dotTop / TileManager.tileSize).floor()
+        : ((cy - totalRadius) / TileManager.tileSize).floor();
+    final maxTy = pixelCell != null
+        ? ((dotTop + dotDiameter - 1) / TileManager.tileSize).floor()
+        : ((cy + totalRadius) / TileManager.tileSize).floor();
 
     for (int ty = minTy; ty <= maxTy; ty++) {
       for (int tx = minTx; tx <= maxTx; tx++) {
@@ -964,16 +1108,30 @@ class DrawingEngine {
             : _strokeCoverageByTile['fill:$layerId:$tx:$ty'];
 
         // タイル内の影響ピクセル範囲
-        final localMinX = math.max(0, (cx - totalRadius - tileOriginX).floor());
-        final localMaxX = math.min(
-          TileManager.tileSize - 1,
-          (cx + totalRadius - tileOriginX).ceil(),
-        );
-        final localMinY = math.max(0, (cy - totalRadius - tileOriginY).floor());
-        final localMaxY = math.min(
-          TileManager.tileSize - 1,
-          (cy + totalRadius - tileOriginY).ceil(),
-        );
+        final localMinX = pixelCell != null
+            ? math.max(0, dotLeft - tileOriginX)
+            : math.max(0, (cx - totalRadius - tileOriginX).floor());
+        final localMaxX = pixelCell != null
+            ? math.min(
+                TileManager.tileSize - 1,
+                dotLeft + dotDiameter - 1 - tileOriginX,
+              )
+            : math.min(
+                TileManager.tileSize - 1,
+                (cx + totalRadius - tileOriginX).ceil(),
+              );
+        final localMinY = pixelCell != null
+            ? math.max(0, dotTop - tileOriginY)
+            : math.max(0, (cy - totalRadius - tileOriginY).floor());
+        final localMaxY = pixelCell != null
+            ? math.min(
+                TileManager.tileSize - 1,
+                dotTop + dotDiameter - 1 - tileOriginY,
+              )
+            : math.min(
+                TileManager.tileSize - 1,
+                (cy + totalRadius - tileOriginY).ceil(),
+              );
 
         for (int py = localMinY; py <= localMaxY; py++) {
           for (int px = localMinX; px <= localMaxX; px++) {
@@ -990,7 +1148,16 @@ class DrawingEngine {
             final dist = math.sqrt(ux * ux + uy * uy);
 
             double pixelAlpha;
-            if (silhouetteDistanceMap != null) {
+            if (pixelCell != null) {
+              pixelAlpha =
+                  pixelDotCovers(
+                    dotDiameter,
+                    tileOriginX + px - dotLeft,
+                    tileOriginY + py - dotTop,
+                  )
+                  ? 1.0
+                  : 0.0;
+            } else if (silhouetteDistanceMap != null) {
               final imageRadius = radius - silhouetteOutlineWidth;
               final texelScale = brushTextureSize / (2 * imageRadius);
               final texelCenter = (brushTextureSize - 1) / 2;
@@ -1426,3 +1593,11 @@ class StrokePoint {
 }
 
 enum InputType { touch, stylus, mouse }
+
+/// ピクセルモードの線で、確定を待つ1画素のドットを置くときの値。
+class _PixelDab {
+  final double pressure;
+  final double strokeLength;
+
+  const _PixelDab({required this.pressure, required this.strokeLength});
+}
