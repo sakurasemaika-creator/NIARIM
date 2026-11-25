@@ -148,21 +148,40 @@ jobs:
           NIARIM_ACTIVATE_OPAL_REDEMPTION: ${{ inputs.activate_opal_redemption }}
         run: |
           set -euo pipefail
-          # Deploy role itself cannot read Lambda configuration. Temporarily
-          # assume the already-trusted read-only CDK lookup role just for this
-          # step; never print or upload the live environment (contains secrets).
-          creds="$(aws sts assume-role \
-            --role-arn arn:aws:iam::368601349794:role/cdk-hnb659fds-lookup-role-368601349794-ap-northeast-1 \
-            --role-session-name niarim-coin-drift-check \
-            --query Credentials --output json)"
-          AWS_ACCESS_KEY_ID="$(jq -r .AccessKeyId <<<"$creds")" \
-          AWS_SECRET_ACCESS_KEY="$(jq -r .SecretAccessKey <<<"$creds")" \
-          AWS_SESSION_TOKEN="$(jq -r .SessionToken <<<"$creds")" \
-            aws lambda get-function-configuration \
-              --function-name niarim-api \
-              --query '{Variables: Environment.Variables, LayerArns: Layers[].Arn}' --output json \
-              > "$RUNNER_TEMP/niarim-live-config.json"
+          # The live Lambda environment holds production secrets: never print
+          # or upload it. It is read with the deploy role's own
+          # lambda:GetFunctionConfiguration on niarim-api and
+          # niarim-reward-ad-revenue. The CDK lookup role is only a fallback:
+          # its bootstrap policy denies kms:Decrypt, so Lambda returns no
+          # Variables to it and the check below blocks the deploy.
           trap 'rm -f "$RUNNER_TEMP/niarim-live-config.json" "$RUNNER_TEMP/niarim-live-env.json"' EXIT
+          read_live() {
+            aws lambda get-function-configuration "$@" 2>/dev/null
+          }
+          with_lookup_role() {
+            if [[ -z "${lookup_creds:-}" ]]; then
+              lookup_creds="$(aws sts assume-role \
+                --role-arn arn:aws:iam::368601349794:role/cdk-hnb659fds-lookup-role-368601349794-ap-northeast-1 \
+                --role-session-name niarim-coin-drift-check \
+                --query Credentials --output json 2>/dev/null)" || lookup_creds=""
+            fi
+            [[ -n "$lookup_creds" ]] || return 1
+            AWS_ACCESS_KEY_ID="$(jq -r .AccessKeyId <<<"$lookup_creds")" \
+            AWS_SECRET_ACCESS_KEY="$(jq -r .SecretAccessKey <<<"$lookup_creds")" \
+            AWS_SESSION_TOKEN="$(jq -r .SessionToken <<<"$lookup_creds")" \
+              read_live "$@"
+          }
+          live_query=(--function-name niarim-api
+            --query '{Variables: Environment.Variables, LayerArns: Layers[].Arn}' --output json)
+          reader=read_live
+          if ! read_live "${live_query[@]}" > "$RUNNER_TEMP/niarim-live-config.json" ||
+            ! jq -e '.Variables | type == "object"' "$RUNNER_TEMP/niarim-live-config.json" >/dev/null; then
+            reader=with_lookup_role
+            with_lookup_role "${live_query[@]}" > "$RUNNER_TEMP/niarim-live-config.json" || echo 'null' > "$RUNNER_TEMP/niarim-live-config.json"
+          fi
+          if ! jq -e '.Variables | type == "object"' "$RUNNER_TEMP/niarim-live-config.json" >/dev/null; then
+            echo "::error::The deploy role cannot read the live Lambda environment. Allow it lambda:GetFunctionConfiguration on niarim-api and niarim-reward-ad-revenue (backend/README.md, CI/CD), then run the deploy again."
+          fi
           jq '.Variables' "$RUNNER_TEMP/niarim-live-config.json" > "$RUNNER_TEMP/niarim-live-env.json"
           if [[ -z "$NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN" && -z "$NIARIM_REWARDED_AD_COUNTRY_DATA" ]] && \
             jq -e '.REWARDED_AD_COUNTRY_DB == "/opt/country.mmdb"' "$RUNNER_TEMP/niarim-live-env.json" >/dev/null; then
@@ -175,12 +194,8 @@ jobs:
           if [[ -z "$NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN" ]] && \
             jq -e '.REWARDED_AD_REPORTING_ENABLED == "true"' "$RUNNER_TEMP/niarim-live-env.json" >/dev/null; then
             NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN="$(
-              AWS_ACCESS_KEY_ID="$(jq -r .AccessKeyId <<<"$creds")" \
-              AWS_SECRET_ACCESS_KEY="$(jq -r .SecretAccessKey <<<"$creds")" \
-              AWS_SESSION_TOKEN="$(jq -r .SessionToken <<<"$creds")" \
-                aws lambda get-function-configuration \
-                  --function-name niarim-reward-ad-revenue \
-                  --query 'Environment.Variables.ADMOB_REPORT_OAUTH_SECRET_ARN' --output text
+              "$reader" --function-name niarim-reward-ad-revenue \
+                --query 'Environment.Variables.ADMOB_REPORT_OAUTH_SECRET_ARN' --output text || true
             )"
             if [[ "$NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN" =~ ^arn:aws:secretsmanager:ap-northeast-1:368601349794:secret:[A-Za-z0-9/_+=.@-]+$ ]]; then
               export NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN

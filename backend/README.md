@@ -153,6 +153,30 @@ backend/
    `.github/workflows/backend-ci.yml`の`ci`ジョブ（型チェック・テスト・
    `cdk synth`）と手動`deploy`ジョブが成功済み。通常のpushでAWSへの
    デプロイは行わない。再デプロイは`dev_branch`から明示的に手動実行する。
+   `deploy`ジョブは`cdk deploy`の前に本番のLambdaの環境変数を読み、
+   オパール・報酬の設定を`cdk.json`で上書きしないか確かめる
+   （`scripts/assert-live-coin-config.mjs`）。読むのはデプロイ用のロール
+   （`AWS_DEPLOY_ROLE_ARN`）自身なので、そのロールに次の権限が要る
+   （CDKのlookup roleは`kms:Decrypt`を禁じているので環境変数を読めない）：
+
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Sid": "ReadLiveLambdaConfigForDeployGuard",
+         "Effect": "Allow",
+         "Action": "lambda:GetFunctionConfiguration",
+         "Resource": [
+           "arn:aws:lambda:ap-northeast-1:368601349794:function:niarim-api",
+           "arn:aws:lambda:ap-northeast-1:368601349794:function:niarim-reward-ad-revenue"
+         ]
+       }
+     ]
+   }
+   ```
+
+   読めなければデプロイの前に止まり、ログに足りない権限を出す。
 
 ## Google/YouTube側で別途必要な準備
 
