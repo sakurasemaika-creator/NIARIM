@@ -207,6 +207,46 @@ jobs:
           cd build/app/outputs/flutter-apk
           sha256sum app-release.apk | tee app-release.apk.sha256 >> "$GITHUB_STEP_SUMMARY"
 
+      # Google Play accepts only an Android App Bundle (.aab) for a new app.
+      # Built from the same commit, defines and upload key as the APK above.
+      - name: AABビルド（release・Google Playへ出す形式）
+        if: ${{ env.BUILD_TYPE == 'release' }}
+        env:
+          NIARIM_UPLOAD_KEYSTORE_PATH: ${{ runner.temp }}/niarim-upload.jks
+          NIARIM_UPLOAD_STORE_PASSWORD: ${{ secrets.NIARIM_UPLOAD_STORE_PASSWORD }}
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          flutter build appbundle --release \
+            --dart-define="NIARIM_API_BASE_URL=$NIARIM_API_BASE_URL" \
+            --dart-define="NIARIM_GOOGLE_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID" \
+            --dart-define="NIARIM_ADMOB_ANDROID_BANNER_AD_UNIT_ID=$RELEASE_BANNER_ID" \
+            --dart-define="NIARIM_ADMOB_ANDROID_RECTANGLE_AD_UNIT_ID=$RELEASE_RECTANGLE_ID"
+
+      # The bundle must be signed by the upload key (not a debug key): Play
+      # App Signing rejects any other certificate. Only public fingerprints
+      # are compared and printed.
+      - name: AABの署名を検証
+        if: ${{ env.BUILD_TYPE == 'release' }}
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.NIARIM_UPLOAD_STORE_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          aab=build/app/outputs/bundle/release/app-release.aab
+          test -s "$aab"
+          jarsigner -verify "$aab" | grep -q '^jar verified\.$'
+          expected="$(keytool -list -v -keystore "$RUNNER_TEMP/niarim-upload.jks" -storepass "$KEYSTORE_PASSWORD" -alias niarim_upload | awk -F': ' '/SHA256:/{print $2; exit}')"
+          actual="$(keytool -printcert -jarfile "$aab" | awk -F': ' '/SHA256:/{print $2; exit}')"
+          if [[ -z "$expected" || "$expected" != "$actual" ]]; then
+            echo "::error::app-release.aab is not signed with the upload key niarim_upload."
+            exit 1
+          fi
+          echo "AAB upload certificate SHA-256: $actual" >> "$GITHUB_STEP_SUMMARY"
+          cd build/app/outputs/bundle/release
+          sha256sum app-release.aab | tee app-release.aab.sha256 >> "$GITHUB_STEP_SUMMARY"
+
       # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ
       # だけが失敗してもビルド済みAPKは下のGitHub Releaseから取得できる。
       - name: APKをArtifactsへアップロード
@@ -221,8 +261,22 @@ jobs:
           # APK本体は大きいため保持期間を最短にする。
           retention-days: 1
 
+      - name: AABをArtifactsへアップロード
+        if: ${{ env.BUILD_TYPE == 'release' }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' }}
+        with:
+          name: niarim-release-aab
+          path: |
+            build/app/outputs/bundle/release/app-release.aab
+            build/app/outputs/bundle/release/app-release.aab.sha256
+          if-no-files-found: error
+          retention-days: 1
+
       # リリースビルドのR8マッピング/使用状況レポート（難読化後のクラス名
       # から元の名前を復元する際や、将来の同種の不具合調査に備えて保存）。
+      # AABを後に作るので、mapping.txtはAABのもの（Play Consoleの
+      # 「難読化解除ファイル」にそのまま上げられる）。
       - name: R8マッピング/使用状況レポートをArtifactsへアップロード
         if: ${{ env.BUILD_TYPE == 'release' }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
@@ -262,11 +316,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           TAG="build-${{ env.BUILD_TYPE }}-latest"
+          assets=("build/app/outputs/flutter-apk/app-${{ env.BUILD_TYPE }}.apk")
+          notes="コミット ${{ github.sha }} からの最終確認ビルド。Actions Storage逼迫時の代替配布用のため、古いRelease履歴は残さず毎回上書きする。"
+          if [[ "${{ env.BUILD_TYPE }}" == "release" ]]; then
+            assets+=("build/app/outputs/bundle/release/app-release.aab")
+            notes+=" app-release.aab はGoogle Play Consoleへ上げる形式（APKと同じコミット・同じupload鍵）。"
+          fi
           gh release delete "$TAG" --yes --cleanup-tag || true
           gh release create "$TAG" \
-            "build/app/outputs/flutter-apk/app-${{ env.BUILD_TYPE }}.apk" \
+            "${assets[@]}" \
             --target "${{ github.sha }}" \
             --title "NIARIM ${{ env.BUILD_TYPE }} 最新ビルド（実機確認用）" \
-            --notes "コミット ${{ github.sha }} からの最終確認ビルド。Actions Storage逼迫時の代替配布用のため、古いRelease履歴は残さず毎回上書きする。" \
+            --notes "$notes" \
             --prerelease

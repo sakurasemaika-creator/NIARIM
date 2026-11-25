@@ -139,6 +139,13 @@
   自分がどちらのビルド種別を起動したか必ず把握しておくこと。
 - リリースの`body`にビルド元コミットSHAが書かれているので、最新の変更が
   含まれているかはそこで確認できる。
+- **releaseのビルドではAAB（Google Playへ上げる形式）も作る**（2026-11-25）：
+  `build/app/outputs/bundle/release/app-release.aab`。APKと同じコミット・同じ
+  `--dart-define`・同じupload鍵で作り、upload鍵の証明書で署名されていることを
+  指紋で確かめる。ArtifactはAPKと別の`niarim-release-aab`、手動実行では
+  `build-release-latest`のReleaseにも添付する。R8の`mapping.txt`はAABのもの。
+  Play Consoleへ上げるたびに`pubspec.yaml`の`version`の`+`の後ろ（versionCode）を
+  上げること（同じ番号は上げられない）。
 
 ## 繰り返し踏んだ地雷・気をつけるべきクセ（重要）
 
