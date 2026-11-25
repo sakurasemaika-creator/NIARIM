@@ -5012,7 +5012,7 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
 | ストアの掲載情報・コンテンツのレーティング・データセーフティ・対象年齢 | Google Play Console | 掲載文の案・512pxのアイコン・7言語のフィーチャーグラフィック（`store/aso/`） | 審査を通る |
 | Play App Signingの鍵のSHA-1をGoogleログインのOAuthクライアントに登録 | Play Console・Google Cloud Console | 開発者アカウント | ストアから入れたアプリでログインできる |
 | AdMobのアプリをストアのアプリとつなぎ審査を通す | admob.google.com | Googleアカウント | 本番の広告が出る・SSVでコインが付く |
-| 作品広場の通報の運用（所有者が対応、目安は10営業日以内）とアカウント・データ削除の受付 | Webの`/admin/`・`/account-deletion/`、AWSのSSM、GitHub ActionsのBackend CI | SSMの`/niarim/moderation/admin-emails`（作成済み）・`resend-api-key`・`anthropic-api-key`（任意）、Backend CIのデプロイ | 管理画面にログインして通報を見られる・support@に「[NIARIM通報]」のメールが届く |
+| 作品広場の通報の運用（所有者が対応、目安は10営業日以内）とアカウント・データ削除の受付 | Webの`/admin/`・`/account-deletion/`、AWSのSSM、GitHub ActionsのBackend CI | SSMの`/niarim/moderation/admin-emails`（作成済み）・`resend-api-key`・`anthropic-api-key`（任意）、Backend CIのデプロイ | 管理画面にログインして通報を見られる・support@に「[NIARIM通報]」のメールが届く。**アプリのリリースと同時に**、止めてある予定「NIARIM 通報の自動の下見」（毎日20:43、サブスクのClaudeでの下見）を有効にする（所有者の指定、2026-11-25「とりあえず2027年1月1日開始」。1回だけの予定「NIARIM 通報の下見を開始（2027-01-01）」が2027-01-01 10:07に有効にする。リリースの日が変わったらその日付を変える） |
 | Googleの公式のGoogle Playのバッジの画像（7言語）を置く | Webの`public/assets/badges/google-play/{ja,en,fr,es,ko,zh-Hans,zh-Hant}.png`（Googleのバッジのページから、手を加えずに） | ブラウザ | 置くと文字のリンクが公式のバッジに替わる（この環境からはplay.google.comに通信できず取れなかった） |
 
 ### 法務で確かめること
