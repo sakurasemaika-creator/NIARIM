@@ -2550,11 +2550,18 @@ AIによるコード修正だけでは完結せず、所有者（事業者）の
 3. **作品広場の通報の運用**（所有者が対応、目安は10営業日以内、2026-11-25）：
    仕組みは`backend/`にある（管理用API`/admin/…`、新しい通報を support@ へ件名
    「[NIARIM通報]」で知らせる、別々の3人以上の通報やAIが重大と判定した作品の自動の
-   一時非表示、違反の記録3つで投稿停止、AIの判定は待っている通報が20件以上のとき。
-   `backend/README.md`の通報の節）。管理画面はWebの`/admin/`。動かすには所有者が
-   SSMのSecureString（`/niarim/moderation/admin-emails`・`resend-api-key`・
-   `anthropic-api-key`）を作り、Backend CIを手動で実行してデプロイし、GoogleのOAuth
-   クライアント（Web）の承認済みのJavaScript生成元に公式サイトを足す。アカウント・
+   一時非表示、違反の記録3つで投稿停止、APIキーでのAIの判定は待っている通報が20件以上の
+   とき。`backend/README.md`の通報の節）。管理画面はWebの`/admin/`。**AIの判定はClaudeの
+   サブスクでもできる**（所有者の指定、2026-11-25「サブスクでも使えるように」）：管理画面の
+   「下見の鍵」（`nrtb_…`、サーバーにはハッシュだけ）を持つ定期実行のClaude Codeのセッションが
+   `GET /triage-bot/reports`で未判定の通報を読み、`POST /triage-bot/reports/{id}/triage`で
+   見立てを書く（できるのはこの2つだけ。重大はAPIの判定と同じく一時非表示）。管理画面の
+   「AIに頼む文をコピー」→チャット→答えを貼り戻す道もある。鍵はチャットに貼らせず、
+   環境のネットワークの秘密（`request_credential`）で渡す。所有者の作業：SSMの
+   SecureString（`/niarim/moderation/admin-emails`は作成済み、`resend-api-key`・
+   `anthropic-api-key`は任意）、Backend CIの手動のデプロイ（デプロイ用のロールに
+   `lambda:GetFunctionConfiguration`が要る。`backend/README.md`のCI/CD）、GoogleのOAuth
+   クライアント（Web）の承認済みのJavaScript生成元に公式サイト（済み）。アカウント・
    データ削除の依頼はWebの`/account-deletion/`（同じクライアントIDをWebの設定に入れる）。
 4. **実機での確認**：`ASTRA_AUDIT_STATE.md`の「人の作業の一覧」の実機の表
    （タッチ・筆圧、共有、書き出した動画の再生と音、ウィジェット、R8のリリースビルドの
