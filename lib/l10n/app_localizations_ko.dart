@@ -2894,6 +2894,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportFpsLabel => 'FPS';
 
   @override
+  String exportFpsDiffersNote(int source, int output) {
+    return '작품은 $source fps입니다. $output fps로 내보내면 길이는 그대로 두고 프레임을 반복하거나 건너뛰어 맞춥니다(미리보기는 $source fps로 재생합니다).';
+  }
+
+  @override
+  String exportUseWorkFps(int fps) {
+    return '작품과 같은 $fps fps로 하기';
+  }
+
+  @override
+  String exportPreviewAtFps(int fps) {
+    return '타임라인에서 $fps fps로 미리보기';
+  }
+
+  @override
   String get exportFormatSection => '형식';
 
   @override
@@ -3040,6 +3055,17 @@ class AppLocalizationsKo extends AppLocalizations {
       count,
       locale: localeName,
       other: '음성 $count개를 내보내기에 넣지 못했습니다(소재 파일이 없거나 읽을 수 없음). 영상은 그대로 내보냈습니다.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '동영상 소재 $count개의 영상을 내보내기에 넣지 못했습니다(소재 파일이 없거나 읽을 수 없음). 그 부분에는 아무것도 그리지 않고 내보냈습니다.',
     );
     return '$_temp0';
   }
@@ -5139,6 +5165,127 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineEditSectionMask => '마스크';
 
   @override
+  String get timelineEditSectionCrop => '자르기';
+
+  @override
+  String get timelineCropHint =>
+      '소재의 가장자리에서 보이는 범위를 잘라냅니다. 미리보기에서 틀의 모서리나 변을 드래그해도 바꿀 수 있습니다. 원본 이미지와 동영상은 바뀌지 않습니다.';
+
+  @override
+  String get timelineCropLeft => '왼쪽 자르기';
+
+  @override
+  String get timelineCropRight => '오른쪽 자르기';
+
+  @override
+  String get timelineCropTop => '위쪽 자르기';
+
+  @override
+  String get timelineCropBottom => '아래쪽 자르기';
+
+  @override
+  String get timelineCropReset => '자르기 초기화';
+
+  @override
+  String get timelineEditSectionRegion => '범위 선택';
+
+  @override
+  String get timelineRegionHint =>
+      '미리보기에서 드래그해 범위를 둘러싼 뒤 이동·변형, 복제, 삭제 중에서 고르세요. 동영상은 모든 프레임에 같은 편집이 적용됩니다. 원본 이미지와 동영상은 바뀌지 않습니다.';
+
+  @override
+  String get timelineRegionShapeFreehand => '자유 형태';
+
+  @override
+  String get timelineRegionNoSelection => '아직 범위를 선택하지 않았습니다.';
+
+  @override
+  String get timelineRegionMove => '이동·변형';
+
+  @override
+  String get timelineRegionSelectAll => '전체 선택';
+
+  @override
+  String get timelineRegionClearSelection => '선택 해제';
+
+  @override
+  String timelineRegionLimit(int count) {
+    return '범위 편집은 $count개까지 추가할 수 있습니다.';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      '미리보기에서 드래그하면 이동, 모서리 점으로 크기 조절, 변의 점으로 가로나 세로로 늘이기, 위쪽 점으로 회전합니다. 두 손가락으로도 조작할 수 있습니다.';
+
+  @override
+  String get timelineRegionScaleX => '가로 크기';
+
+  @override
+  String get timelineRegionScaleY => '세로 크기';
+
+  @override
+  String get timelineRegionFlipHorizontal => '좌우 반전';
+
+  @override
+  String get timelineRegionFlipVertical => '상하 반전';
+
+  @override
+  String get timelineRegionResetTransform => '원래 위치로';
+
+  @override
+  String get timelineRegionDone => '완료';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return '범위 편집($count)';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => '이 편집 제거';
+
+  @override
+  String get timelineRegionRemoveAll => '범위 편집 모두 제거';
+
+  @override
+  String get timelineEditSectionDuration => '길이 조정';
+
+  @override
+  String get timelineDurationRangeTitle => '시간 범위';
+
+  @override
+  String get timelineDurationRangeHint =>
+      '타임라인에서 클립이 차지하는 첫 프레임과 마지막 프레임입니다. 타임라인에서 클립의 가장자리를 드래그해도 바꿀 수 있습니다.';
+
+  @override
+  String get timelineDurationStartLabel => '시작 프레임';
+
+  @override
+  String get timelineDurationEndLabel => '종료 프레임';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    return '길이: $frames프레임($seconds초)';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return '1~$max 사이의 정수를 입력하세요. 시작이 끝보다 뒤에 올 수 없습니다.';
+  }
+
+  @override
+  String get timelineDurationOverlap =>
+      '이 범위로 하면 같은 줄의 다른 클립과 겹치므로 변경하지 않았습니다.';
+
+  @override
+  String get timelineDurationBeforeSource =>
+      '소리의 처음보다 앞으로는 늘릴 수 없으므로 변경하지 않았습니다.';
+
+  @override
   String get timelineTransformRotationX => 'X축 회전';
 
   @override
@@ -5531,6 +5678,56 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineClipUseEndLabel => '사용 종료F';
+
+  @override
+  String get timelineClipSpeedLabel => '속도';
+
+  @override
+  String get timelineClipSpeedInputLabel => '배속 입력';
+
+  @override
+  String get timelineClipSpeedInputHint => '0.01~100';
+
+  @override
+  String get timelineClipSpeedInvalid => '0.01~100 사이의 수를 입력하세요';
+
+  @override
+  String get timelineClipSpeedOverlap =>
+      '이 속도로 하면 같은 줄의 다른 클립과 겹치므로 변경하지 않았습니다.';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd =>
+      '이 속도로 하면 장면의 끝을 넘으므로 변경하지 않았습니다. 먼저 장면을 길게 하세요.';
+
+  @override
+  String get timelineClipSpeedKeyframeClash =>
+      '키프레임이 같은 프레임에 겹치므로 이 속도로 할 수 없습니다.';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return '종료 프레임: F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote =>
+      '속도를 높이면 소리를 이해하기 어려워집니다(미리보기와 내보내기의 소리는 같습니다). 소리가 필요 없으면 끌 수 있습니다.';
+
+  @override
+  String get timelineClipSpeedMute => '소리 끄기';
+
+  @override
+  String get timelinePlaybackSkipNotice =>
+      '재생이 따라가지 못해 일부 프레임을 건너뛰고 있습니다(내보내기에는 모든 프레임이 들어갑니다).';
+
+  @override
+  String timelinePreviewOutputFps(int output, int work) {
+    return '내보내기의 $output fps로 재생 중(작품은 $work fps)';
+  }
+
+  @override
+  String timelinePreviewWorkFps(int fps) {
+    return '작품의 $fps fps로 돌아가기';
+  }
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>
@@ -10668,6 +10865,60 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => '트랙 행 추가';
+
+  @override
+  String get timelineVideoTrackShowingFrames => '영상 프레임 표시 중(탭하면 소리 파형으로 전환)';
+
+  @override
+  String get timelineVideoTrackShowingWaveform => '소리 파형 표시 중(탭하면 영상 프레임으로 전환)';
+
+  @override
+  String get timelineVideoSoundFollowsSpeed => '소리도 같은 속도로 재생';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      '끄면 소리는 클립의 처음부터 보통 속도로 재생되고, 영상의 속도만 바뀝니다.';
+
+  @override
+  String get timelinePitchLabel => '음높이(반음)';
+
+  @override
+  String get timelinePitchHint =>
+      '속도를 바꿔도 음높이는 바뀌지 않습니다. 여기서 음높이만 올리거나 내릴 수 있습니다. 속도에 맞추기를 누르면 테이프를 빠르게 돌린 것처럼 속도에 맞는 음높이가 됩니다.';
+
+  @override
+  String get timelinePitchMatchSpeed => '속도에 맞추기';
+
+  @override
+  String get timelinePitchReset => '원래 음높이';
+
+  @override
+  String get timelinePitchInputLabel => '반음으로 입력';
+
+  @override
+  String get timelinePitchInvalid => '-24~+24 사이의 숫자를 입력하세요(소수도 가능합니다).';
+
+  @override
+  String get keyframeRetimeTitle => '키프레임 속도';
+
+  @override
+  String get keyframeRetimeHint =>
+      '선택한 범위의 키 간격을 속도에 맞춰 바꿉니다. 값과 보간은 그대로이며, 범위 밖의 키는 움직이지 않습니다.';
+
+  @override
+  String get keyframeRetimeFrom => '범위의 첫 키';
+
+  @override
+  String get keyframeRetimeTo => '범위의 마지막 키';
+
+  @override
+  String get keyframeRetimeClash =>
+      '키가 같은 프레임에 겹치거나, 범위 뒤의 키를 앞지르거나, 신 밖으로 나가므로 이 속도로 할 수 없습니다.';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return '키 위치: $before → $after';
+  }
 
   @override
   String get keyframePreviewGestureHint =>

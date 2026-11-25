@@ -1079,6 +1079,24 @@ class TileManager {
     }
   }
 
+  /// The tiles of [layerId] as they are now, kept apart from the layer:
+  /// later drawing on the layer, or removing it, leaves them unchanged (they
+  /// are shared copy-on-write, so no pixels are copied). Null when the layer
+  /// has no tiles. [putLayerTiles] puts them under a layer again.
+  Map<String, Uint8List>? shareLayerTiles(String layerId) {
+    final tiles = _tiles[layerId];
+    if (tiles == null) return null;
+    for (final tile in tiles.values) {
+      _sharedTiles[tile] = true;
+    }
+    return Map.unmodifiable(tiles);
+  }
+
+  /// Puts tiles taken with [shareLayerTiles] under [layerId], replacing
+  /// what it had.
+  void putLayerTiles(String layerId, Map<String, Uint8List> tiles) =>
+      restoreStructuralLayers({layerId: tiles});
+
   /// Records the layer maps for a structural edit without copying pixel bytes.
   Map<String, Map<String, Uint8List>> structuralSnapshot() => {
     for (final entry in _tiles.entries) entry.key: Map.of(entry.value),

@@ -1231,6 +1231,33 @@
   "exportPresetCustom": "カスタム",
   "exportAdvancedSettings": "詳細設定",
   "exportFpsLabel": "FPS",
+  "exportFpsDiffersNote": "作品は{source} fpsです。{output} fpsで書き出すと、長さはそのままで、コマを繰り返したり間引いたりして合わせます（プレビューは{source} fpsで再生します）。",
+  "@exportFpsDiffersNote": {
+    "placeholders": {
+      "source": {
+        "type": "int"
+      },
+      "output": {
+        "type": "int"
+      }
+    }
+  },
+  "exportUseWorkFps": "作品と同じ{fps} fpsにする",
+  "@exportUseWorkFps": {
+    "placeholders": {
+      "fps": {
+        "type": "int"
+      }
+    }
+  },
+  "exportPreviewAtFps": "タイムラインで{fps} fpsのプレビューを見る",
+  "@exportPreviewAtFps": {
+    "placeholders": {
+      "fps": {
+        "type": "int"
+      }
+    }
+  },
   "exportFormatSection": "形式",
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "完成した動画を投稿・共有する",
@@ -1302,6 +1329,14 @@
   },
   "exportSoundsLeftOut": "{count, plural, other{音声{count}件を書き出しに入れられませんでした（素材のファイルが無い・読めない）。映像はそのまま書き出しました。}}",
   "@exportSoundsLeftOut": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportVideosLeftOut": "{count, plural, other{動画素材{count}件の映像を書き出しに入れられませんでした（素材のファイルが無い・読めない）。その部分には何も描かずに書き出しました。}}",
+  "@exportVideosLeftOut": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -2592,6 +2627,82 @@
   "timelineEditSectionText": "文字",
   "timelineEditSectionTransform": "配置",
   "timelineEditSectionMask": "マスク",
+  "timelineEditSectionCrop": "トリミング",
+  "timelineCropHint": "見える範囲を素材の辺から切り詰めます。プレビューの枠の角や辺をドラッグしても変えられます。元の画像・動画は変わりません。",
+  "timelineCropLeft": "左を切る",
+  "timelineCropRight": "右を切る",
+  "timelineCropTop": "上を切る",
+  "timelineCropBottom": "下を切る",
+  "timelineCropReset": "トリミングを戻す",
+  "timelineEditSectionRegion": "範囲選択",
+  "timelineRegionHint": "プレビューの上をドラッグして範囲を囲み、「移動・変形」「複製」「削除」から選びます。動画はどのコマにも同じ編集がかかります。元の画像・動画は変わりません。",
+  "timelineRegionShapeFreehand": "自由な形",
+  "timelineRegionNoSelection": "まだ範囲を選んでいません。",
+  "timelineRegionMove": "移動・変形",
+  "timelineRegionSelectAll": "全体を選ぶ",
+  "timelineRegionClearSelection": "選択を解除",
+  "timelineRegionLimit": "範囲の編集は{count}個までです。",
+  "@timelineRegionLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineRegionAdjustHint": "プレビューでドラッグすると移動、角の丸で拡大縮小、辺の丸で縦か横に伸縮、上の丸で回転できます。2本指でも操作できます。",
+  "timelineRegionScaleX": "横の大きさ",
+  "timelineRegionScaleY": "縦の大きさ",
+  "timelineRegionFlipHorizontal": "左右反転",
+  "timelineRegionFlipVertical": "上下反転",
+  "timelineRegionResetTransform": "元の位置に戻す",
+  "timelineRegionDone": "完了",
+  "timelineRegionEditsTitle": "範囲の編集（{count}）",
+  "@timelineRegionEditsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineRegionEditNumbered": "{number}. {action}",
+  "@timelineRegionEditNumbered": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineRegionEditRemove": "この編集を外す",
+  "timelineRegionRemoveAll": "範囲の編集をすべて外す",
+  "timelineEditSectionDuration": "長さ調整",
+  "timelineDurationRangeTitle": "時間範囲",
+  "timelineDurationRangeHint": "タイムライン上で表示する最初と最後のフレームです。タイムラインのクリップの端をドラッグしても変えられます。",
+  "timelineDurationStartLabel": "開始フレーム",
+  "timelineDurationEndLabel": "終了フレーム",
+  "timelineDurationLength": "長さ：{frames}フレーム（{seconds}秒）",
+  "@timelineDurationLength": {
+    "placeholders": {
+      "frames": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineDurationInvalid": "1〜{max}の整数を入れてください。開始は終了より後にできません。",
+  "@timelineDurationInvalid": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineDurationOverlap": "この範囲にすると同じ列の別のクリップと重なるため、変更しませんでした。",
+  "timelineDurationBeforeSource": "音声の先頭より前には広げられないため、変更しませんでした。",
   "timelineTransformRotationX": "X軸回転",
   "timelineTransformRotationY": "Y軸回転",
   "timelineTransformRotationZ": "Z軸回転",
@@ -2818,6 +2929,46 @@
   "timelineClipFadeOutLabel": "フェードアウト",
   "timelineClipUseStartLabel": "使用開始F",
   "timelineClipUseEndLabel": "使用終了F",
+  "timelineClipSpeedLabel": "速度",
+  "timelineClipSpeedInputLabel": "倍率を入力",
+  "timelineClipSpeedInputHint": "0.01〜100",
+  "timelineClipSpeedInvalid": "0.01〜100の数を入力してください",
+  "timelineClipSpeedOverlap": "この速度にすると同じ列の別のクリップと重なるため、変更しませんでした。",
+  "timelineClipSpeedPastSceneEnd": "この速度にするとシーンの終わりを超えるため、変更しませんでした。先にシーンを長くしてください。",
+  "timelineClipSpeedKeyframeClash": "キーフレームが同じフレームに重なるため、この速度にはできません。",
+  "timelineClipSpeedEndPreview": "終了フレーム：F{before} → F{after}",
+  "@timelineClipSpeedEndPreview": {
+    "placeholders": {
+      "before": {
+        "type": "int"
+      },
+      "after": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineClipSpeedSoundNote": "速度を上げると音は聞き取りにくくなります（プレビューも書き出しも同じ音です）。音が要らなければ消せます。",
+  "timelineClipSpeedMute": "音を消す",
+  "timelinePlaybackSkipNotice": "再生が追いつかないため、コマを飛ばして表示しています（書き出しにはすべてのコマが入ります）。",
+  "timelinePreviewOutputFps": "書き出しの{output} fpsで再生しています（作品は{work} fps）",
+  "@timelinePreviewOutputFps": {
+    "placeholders": {
+      "output": {
+        "type": "int"
+      },
+      "work": {
+        "type": "int"
+      }
+    }
+  },
+  "timelinePreviewWorkFps": "作品の{fps} fpsに戻す",
+  "@timelinePreviewWorkFps": {
+    "placeholders": {
+      "fps": {
+        "type": "int"
+      }
+    }
+  },
   "timelineCameraFrameAlreadyHasKeyframe": "このフレームにはカメラのキーフレームがあります。",
   "timelineCameraKfTitle": "カメラ KF: F{n}",
   "@timelineCameraKfTitle": {
@@ -6488,6 +6639,32 @@
   "layerPanelHideLayerTooltip": "レイヤーを非表示",
   "layerPanelMergeDownTooltip": "下のレイヤーと結合",
   "timelineAddTrackRowTooltip": "トラックに行を追加",
+  "timelineVideoTrackShowingFrames": "映像のコマを表示中（タップで音声の波形に切り替え）",
+  "timelineVideoTrackShowingWaveform": "音声の波形を表示中（タップで映像のコマに切り替え）",
+  "timelineVideoSoundFollowsSpeed": "音も同じ速度にする",
+  "timelineVideoSoundFollowsSpeedHint": "オフにすると、音はクリップの始めから通常の速さで鳴り、映像の速度だけが変わります。",
+  "timelinePitchLabel": "音の高さ（半音）",
+  "timelinePitchHint": "速度を変えても音の高さは変わりません。ここで高さだけを上げ下げできます。「速度に合わせる」を押すと、テープを速く回したときのように速度に合った高さになります。",
+  "timelinePitchMatchSpeed": "速度に合わせる",
+  "timelinePitchReset": "元の高さ",
+  "timelinePitchInputLabel": "半音で入力",
+  "timelinePitchInvalid": "-24〜+24の数を入力してください（小数も使えます）。",
+  "keyframeRetimeTitle": "キーフレームの速度",
+  "keyframeRetimeHint": "選んだ範囲のキーの間隔を、速度に合わせて変えます。値と補間はそのままで、範囲の外のキーは動きません。",
+  "keyframeRetimeFrom": "範囲の始めのキー",
+  "keyframeRetimeTo": "範囲の終わりのキー",
+  "keyframeRetimeClash": "キーが同じフレームに重なる、範囲の後ろのキーを追い越す、またはシーンの外へ出るため、この速度にはできません。",
+  "keyframeRetimePreview": "キーの位置：{before} → {after}",
+  "@keyframeRetimePreview": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
   "keyframePreviewGestureHint": "プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。",
   "settingsAccountDeletionTitle": "NIARIMアカウントを削除",
   "settingsAccountDeletionSubtitle": "公式サイトで手続きする",

@@ -5295,6 +5295,24 @@ abstract class AppLocalizations {
   /// **'FPS'**
   String get exportFpsLabel;
 
+  /// No description provided for @exportFpsDiffersNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品は{source} fpsです。{output} fpsで書き出すと、長さはそのままで、コマを繰り返したり間引いたりして合わせます（プレビューは{source} fpsで再生します）。'**
+  String exportFpsDiffersNote(int source, int output);
+
+  /// No description provided for @exportUseWorkFps.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品と同じ{fps} fpsにする'**
+  String exportUseWorkFps(int fps);
+
+  /// No description provided for @exportPreviewAtFps.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインで{fps} fpsのプレビューを見る'**
+  String exportPreviewAtFps(int fps);
+
   /// No description provided for @exportFormatSection.
   ///
   /// In ja, this message translates to:
@@ -5546,6 +5564,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{count, plural, other{音声{count}件を書き出しに入れられませんでした（素材のファイルが無い・読めない）。映像はそのまま書き出しました。}}'**
   String exportSoundsLeftOut(int count);
+
+  /// No description provided for @exportVideosLeftOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{動画素材{count}件の映像を書き出しに入れられませんでした（素材のファイルが無い・読めない）。その部分には何も描かずに書き出しました。}}'**
+  String exportVideosLeftOut(int count);
 
   /// No description provided for @exportSaveLocationHint.
   ///
@@ -9267,6 +9291,216 @@ abstract class AppLocalizations {
   /// **'マスク'**
   String get timelineEditSectionMask;
 
+  /// No description provided for @timelineEditSectionCrop.
+  ///
+  /// In ja, this message translates to:
+  /// **'トリミング'**
+  String get timelineEditSectionCrop;
+
+  /// No description provided for @timelineCropHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'見える範囲を素材の辺から切り詰めます。プレビューの枠の角や辺をドラッグしても変えられます。元の画像・動画は変わりません。'**
+  String get timelineCropHint;
+
+  /// No description provided for @timelineCropLeft.
+  ///
+  /// In ja, this message translates to:
+  /// **'左を切る'**
+  String get timelineCropLeft;
+
+  /// No description provided for @timelineCropRight.
+  ///
+  /// In ja, this message translates to:
+  /// **'右を切る'**
+  String get timelineCropRight;
+
+  /// No description provided for @timelineCropTop.
+  ///
+  /// In ja, this message translates to:
+  /// **'上を切る'**
+  String get timelineCropTop;
+
+  /// No description provided for @timelineCropBottom.
+  ///
+  /// In ja, this message translates to:
+  /// **'下を切る'**
+  String get timelineCropBottom;
+
+  /// No description provided for @timelineCropReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'トリミングを戻す'**
+  String get timelineCropReset;
+
+  /// No description provided for @timelineEditSectionRegion.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲選択'**
+  String get timelineEditSectionRegion;
+
+  /// No description provided for @timelineRegionHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューの上をドラッグして範囲を囲み、「移動・変形」「複製」「削除」から選びます。動画はどのコマにも同じ編集がかかります。元の画像・動画は変わりません。'**
+  String get timelineRegionHint;
+
+  /// No description provided for @timelineRegionShapeFreehand.
+  ///
+  /// In ja, this message translates to:
+  /// **'自由な形'**
+  String get timelineRegionShapeFreehand;
+
+  /// No description provided for @timelineRegionNoSelection.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ範囲を選んでいません。'**
+  String get timelineRegionNoSelection;
+
+  /// No description provided for @timelineRegionMove.
+  ///
+  /// In ja, this message translates to:
+  /// **'移動・変形'**
+  String get timelineRegionMove;
+
+  /// No description provided for @timelineRegionSelectAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'全体を選ぶ'**
+  String get timelineRegionSelectAll;
+
+  /// No description provided for @timelineRegionClearSelection.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択を解除'**
+  String get timelineRegionClearSelection;
+
+  /// No description provided for @timelineRegionLimit.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲の編集は{count}個までです。'**
+  String timelineRegionLimit(int count);
+
+  /// No description provided for @timelineRegionAdjustHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューでドラッグすると移動、角の丸で拡大縮小、辺の丸で縦か横に伸縮、上の丸で回転できます。2本指でも操作できます。'**
+  String get timelineRegionAdjustHint;
+
+  /// No description provided for @timelineRegionScaleX.
+  ///
+  /// In ja, this message translates to:
+  /// **'横の大きさ'**
+  String get timelineRegionScaleX;
+
+  /// No description provided for @timelineRegionScaleY.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦の大きさ'**
+  String get timelineRegionScaleY;
+
+  /// No description provided for @timelineRegionFlipHorizontal.
+  ///
+  /// In ja, this message translates to:
+  /// **'左右反転'**
+  String get timelineRegionFlipHorizontal;
+
+  /// No description provided for @timelineRegionFlipVertical.
+  ///
+  /// In ja, this message translates to:
+  /// **'上下反転'**
+  String get timelineRegionFlipVertical;
+
+  /// No description provided for @timelineRegionResetTransform.
+  ///
+  /// In ja, this message translates to:
+  /// **'元の位置に戻す'**
+  String get timelineRegionResetTransform;
+
+  /// No description provided for @timelineRegionDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了'**
+  String get timelineRegionDone;
+
+  /// No description provided for @timelineRegionEditsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲の編集（{count}）'**
+  String timelineRegionEditsTitle(int count);
+
+  /// No description provided for @timelineRegionEditNumbered.
+  ///
+  /// In ja, this message translates to:
+  /// **'{number}. {action}'**
+  String timelineRegionEditNumbered(int number, String action);
+
+  /// No description provided for @timelineRegionEditRemove.
+  ///
+  /// In ja, this message translates to:
+  /// **'この編集を外す'**
+  String get timelineRegionEditRemove;
+
+  /// No description provided for @timelineRegionRemoveAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲の編集をすべて外す'**
+  String get timelineRegionRemoveAll;
+
+  /// No description provided for @timelineEditSectionDuration.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さ調整'**
+  String get timelineEditSectionDuration;
+
+  /// No description provided for @timelineDurationRangeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'時間範囲'**
+  String get timelineDurationRangeTitle;
+
+  /// No description provided for @timelineDurationRangeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムライン上で表示する最初と最後のフレームです。タイムラインのクリップの端をドラッグしても変えられます。'**
+  String get timelineDurationRangeHint;
+
+  /// No description provided for @timelineDurationStartLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始フレーム'**
+  String get timelineDurationStartLabel;
+
+  /// No description provided for @timelineDurationEndLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了フレーム'**
+  String get timelineDurationEndLabel;
+
+  /// No description provided for @timelineDurationLength.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さ：{frames}フレーム（{seconds}秒）'**
+  String timelineDurationLength(int frames, String seconds);
+
+  /// No description provided for @timelineDurationInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'1〜{max}の整数を入れてください。開始は終了より後にできません。'**
+  String timelineDurationInvalid(int max);
+
+  /// No description provided for @timelineDurationOverlap.
+  ///
+  /// In ja, this message translates to:
+  /// **'この範囲にすると同じ列の別のクリップと重なるため、変更しませんでした。'**
+  String get timelineDurationOverlap;
+
+  /// No description provided for @timelineDurationBeforeSource.
+  ///
+  /// In ja, this message translates to:
+  /// **'音声の先頭より前には広げられないため、変更しませんでした。'**
+  String get timelineDurationBeforeSource;
+
   /// No description provided for @timelineTransformRotationX.
   ///
   /// In ja, this message translates to:
@@ -9974,6 +10208,84 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'使用終了F'**
   String get timelineClipUseEndLabel;
+
+  /// No description provided for @timelineClipSpeedLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'速度'**
+  String get timelineClipSpeedLabel;
+
+  /// No description provided for @timelineClipSpeedInputLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'倍率を入力'**
+  String get timelineClipSpeedInputLabel;
+
+  /// No description provided for @timelineClipSpeedInputHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'0.01〜100'**
+  String get timelineClipSpeedInputHint;
+
+  /// No description provided for @timelineClipSpeedInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'0.01〜100の数を入力してください'**
+  String get timelineClipSpeedInvalid;
+
+  /// No description provided for @timelineClipSpeedOverlap.
+  ///
+  /// In ja, this message translates to:
+  /// **'この速度にすると同じ列の別のクリップと重なるため、変更しませんでした。'**
+  String get timelineClipSpeedOverlap;
+
+  /// No description provided for @timelineClipSpeedPastSceneEnd.
+  ///
+  /// In ja, this message translates to:
+  /// **'この速度にするとシーンの終わりを超えるため、変更しませんでした。先にシーンを長くしてください。'**
+  String get timelineClipSpeedPastSceneEnd;
+
+  /// No description provided for @timelineClipSpeedKeyframeClash.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーフレームが同じフレームに重なるため、この速度にはできません。'**
+  String get timelineClipSpeedKeyframeClash;
+
+  /// No description provided for @timelineClipSpeedEndPreview.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了フレーム：F{before} → F{after}'**
+  String timelineClipSpeedEndPreview(int before, int after);
+
+  /// No description provided for @timelineClipSpeedSoundNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'速度を上げると音は聞き取りにくくなります（プレビューも書き出しも同じ音です）。音が要らなければ消せます。'**
+  String get timelineClipSpeedSoundNote;
+
+  /// No description provided for @timelineClipSpeedMute.
+  ///
+  /// In ja, this message translates to:
+  /// **'音を消す'**
+  String get timelineClipSpeedMute;
+
+  /// No description provided for @timelinePlaybackSkipNotice.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生が追いつかないため、コマを飛ばして表示しています（書き出しにはすべてのコマが入ります）。'**
+  String get timelinePlaybackSkipNotice;
+
+  /// No description provided for @timelinePreviewOutputFps.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出しの{output} fpsで再生しています（作品は{work} fps）'**
+  String timelinePreviewOutputFps(int output, int work);
+
+  /// No description provided for @timelinePreviewWorkFps.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の{fps} fpsに戻す'**
+  String timelinePreviewWorkFps(int fps);
 
   /// No description provided for @timelineCameraFrameAlreadyHasKeyframe.
   ///
@@ -18692,6 +19004,102 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'トラックに行を追加'**
   String get timelineAddTrackRowTooltip;
+
+  /// No description provided for @timelineVideoTrackShowingFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'映像のコマを表示中（タップで音声の波形に切り替え）'**
+  String get timelineVideoTrackShowingFrames;
+
+  /// No description provided for @timelineVideoTrackShowingWaveform.
+  ///
+  /// In ja, this message translates to:
+  /// **'音声の波形を表示中（タップで映像のコマに切り替え）'**
+  String get timelineVideoTrackShowingWaveform;
+
+  /// No description provided for @timelineVideoSoundFollowsSpeed.
+  ///
+  /// In ja, this message translates to:
+  /// **'音も同じ速度にする'**
+  String get timelineVideoSoundFollowsSpeed;
+
+  /// No description provided for @timelineVideoSoundFollowsSpeedHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'オフにすると、音はクリップの始めから通常の速さで鳴り、映像の速度だけが変わります。'**
+  String get timelineVideoSoundFollowsSpeedHint;
+
+  /// No description provided for @timelinePitchLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'音の高さ（半音）'**
+  String get timelinePitchLabel;
+
+  /// No description provided for @timelinePitchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'速度を変えても音の高さは変わりません。ここで高さだけを上げ下げできます。「速度に合わせる」を押すと、テープを速く回したときのように速度に合った高さになります。'**
+  String get timelinePitchHint;
+
+  /// No description provided for @timelinePitchMatchSpeed.
+  ///
+  /// In ja, this message translates to:
+  /// **'速度に合わせる'**
+  String get timelinePitchMatchSpeed;
+
+  /// No description provided for @timelinePitchReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'元の高さ'**
+  String get timelinePitchReset;
+
+  /// No description provided for @timelinePitchInputLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'半音で入力'**
+  String get timelinePitchInputLabel;
+
+  /// No description provided for @timelinePitchInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'-24〜+24の数を入力してください（小数も使えます）。'**
+  String get timelinePitchInvalid;
+
+  /// No description provided for @keyframeRetimeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーフレームの速度'**
+  String get keyframeRetimeTitle;
+
+  /// No description provided for @keyframeRetimeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ範囲のキーの間隔を、速度に合わせて変えます。値と補間はそのままで、範囲の外のキーは動きません。'**
+  String get keyframeRetimeHint;
+
+  /// No description provided for @keyframeRetimeFrom.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲の始めのキー'**
+  String get keyframeRetimeFrom;
+
+  /// No description provided for @keyframeRetimeTo.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲の終わりのキー'**
+  String get keyframeRetimeTo;
+
+  /// No description provided for @keyframeRetimeClash.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーが同じフレームに重なる、範囲の後ろのキーを追い越す、またはシーンの外へ出るため、この速度にはできません。'**
+  String get keyframeRetimeClash;
+
+  /// No description provided for @keyframeRetimePreview.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーの位置：{before} → {after}'**
+  String keyframeRetimePreview(String before, String after);
 
   /// No description provided for @keyframePreviewGestureHint.
   ///

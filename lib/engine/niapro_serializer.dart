@@ -10,12 +10,16 @@ import 'package:image/image.dart' as thumbnail_image;
 import 'package:path_provider/path_provider.dart';
 
 import '../models/audio_clip.dart';
+import '../models/video_track_display.dart';
+import 'clip_speed.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
 import '../models/layer_group.dart';
 import '../models/layer_keyframe.dart';
+import '../models/layer_crop.dart';
 import '../models/layer_mask.dart';
+import '../models/layer_region_edit.dart';
 import '../models/pixel_color_mode.dart';
 import '../models/project.dart';
 import '../models/timeline_marker.dart';
@@ -950,6 +954,10 @@ class NiaproSerializer {
               (sceneJson['textRowNames'] as List<dynamic>? ?? const [])
                   .map((e) => e as String?)
                   .toList(),
+          videoRowDisplays: [
+            if (sceneJson['videoRowDisplays'] case final List<dynamic> list)
+              for (final name in list) VideoTrackDisplay.fromName(name),
+          ],
           stack: SceneStack.fromJson(sceneJson['stack']),
         ),
       );
@@ -1189,6 +1197,9 @@ class NiaproSerializer {
             'y': k.y,
             'zoom': k.zoom,
             'rotation': k.rotation,
+            if (k.exactFrame case final exact?
+                when exact.isFinite && exact != k.frameIndex)
+              'exactFrame': exact,
           },
         )
         .toList(),
@@ -1225,6 +1236,10 @@ class NiaproSerializer {
             'fadeIn': a.fadeIn,
             'fadeOut': a.fadeOut,
             'sourceStartFrame': a.sourceStartFrame,
+            if (a.sourceStartFraction != 0)
+              'sourceStartFraction': a.sourceStartFraction,
+            if (a.playbackRate != 1.0) 'playbackRate': a.playbackRate,
+            if (a.pitchSemitones != 0) 'pitchSemitones': a.pitchSemitones,
             'trackRow': a.trackRow,
             if (a.isReadAloud) 'isReadAloud': true,
           },
@@ -1234,6 +1249,8 @@ class NiaproSerializer {
     'videoRowNames': scene.videoRowNames,
     'audioRowNames': scene.audioRowNames,
     if (scene.textRowNames.isNotEmpty) 'textRowNames': scene.textRowNames,
+    if (scene.videoRowDisplays.contains(VideoTrackDisplay.waveform))
+      'videoRowDisplays': [for (final d in scene.videoRowDisplays) d.name],
     if (!scene.stack.isEmpty) 'stack': scene.stack.toJson(),
     // The scene's place in the project (moving a scene changes it; the id
     // keeps the number it was made with).
@@ -1274,6 +1291,12 @@ class NiaproSerializer {
     'materialId': l.materialId,
     'sourceTrimStart': l.sourceTrimStart,
     'sourceTrimEnd': l.sourceTrimEnd,
+    if (l.sourceTrimStartFraction != 0)
+      'sourceTrimStartFraction': l.sourceTrimStartFraction,
+    if (l.playbackRate != 1.0) 'playbackRate': l.playbackRate,
+    if (!l.videoSoundFollowsSpeed) 'videoSoundFollowsSpeed': false,
+    if (l.videoPitchSemitones != 0)
+      'videoPitchSemitones': l.videoPitchSemitones,
     'videoVolume': l.videoVolume,
     'watermarkAssetId': l.watermarkAssetId,
     'watermarkAngle': l.watermarkAngle,
@@ -1285,6 +1308,9 @@ class NiaproSerializer {
       'keyframes': l.keyframes.map((k) => k.toJson()).toList(),
     if (l.textObject != null) 'textObject': _serializeTextObject(l.textObject!),
     if (l.mask != null) 'mask': l.mask!.toJson(),
+    if (l.crop case final crop? when !crop.isFull) 'crop': crop.toJson(),
+    if (l.regionEdits.isNotEmpty)
+      'regionEdits': [for (final e in l.regionEdits) e.toJson()],
   };
 
   static Map<String, dynamic> _serializeTextObject(TextObject t) => {
@@ -1393,6 +1419,10 @@ class NiaproSerializer {
               y: (j['y'] as num?)?.toDouble() ?? 0,
               zoom: (j['zoom'] as num?)?.toDouble() ?? 1.0,
               rotation: (j['rotation'] as num?)?.toDouble() ?? 0,
+              exactFrame: switch (j['exactFrame']) {
+                final num exact when exact.isFinite => exact.toDouble(),
+                _ => null,
+              },
             ),
           )
           .toList();
@@ -1437,6 +1467,9 @@ class NiaproSerializer {
           fadeIn: (m['fadeIn'] as num?)?.toDouble() ?? 0.0,
           fadeOut: (m['fadeOut'] as num?)?.toDouble() ?? 0.0,
           sourceStartFrame: m['sourceStartFrame'] as int? ?? 0,
+          sourceStartFraction: _sourceFraction(m['sourceStartFraction']),
+          playbackRate: _playbackRate(m['playbackRate']),
+          pitchSemitones: _pitchSemitones(m['pitchSemitones']),
           trackRow: m['trackRow'] as int? ?? 0,
           isReadAloud: m['isReadAloud'] as bool? ?? false,
         );
@@ -1533,6 +1566,10 @@ class NiaproSerializer {
     materialId: j['materialId'] as String?,
     sourceTrimStart: j['sourceTrimStart'] as int?,
     sourceTrimEnd: j['sourceTrimEnd'] as int?,
+    sourceTrimStartFraction: _sourceFraction(j['sourceTrimStartFraction']),
+    playbackRate: _playbackRate(j['playbackRate']),
+    videoSoundFollowsSpeed: j['videoSoundFollowsSpeed'] != false,
+    videoPitchSemitones: _pitchSemitones(j['videoPitchSemitones']),
     videoVolume: (j['videoVolume'] as num?)?.toDouble() ?? 1.0,
     watermarkAssetId: j['watermarkAssetId'] as String?,
     watermarkAngle: (j['watermarkAngle'] as num?)?.toDouble() ?? 0,
@@ -1546,6 +1583,8 @@ class NiaproSerializer {
         ? _deserializeTextObject(j['textObject'] as Map<String, dynamic>)
         : null,
     mask: LayerMask.fromJson(j['mask']),
+    crop: LayerCrop.fromJson(j['crop']),
+    regionEdits: LayerRegionEdit.listFromJson(j['regionEdits']),
   );
 
   static TextObject _deserializeTextObject(Map<String, dynamic> j) {
@@ -1641,4 +1680,24 @@ class NiaproData {
     fontsManifest: fontsManifest,
     tilesLeftIn: filePath,
   );
+}
+
+/// A saved playback speed; a missing, non-numeric or out-of-range value
+/// (an older project, a damaged file) plays at normal speed.
+double _playbackRate(Object? value) {
+  final rate = value is num ? value.toDouble() : 1.0;
+  return isValidPlaybackRate(rate) ? rate : 1.0;
+}
+
+/// A saved pitch change; a missing, non-numeric or out-of-range value (an
+/// older project, a damaged file) keeps the sound's own pitch.
+double _pitchSemitones(Object? value) {
+  final semitones = value is num ? value.toDouble() : 0.0;
+  return isValidPitchSemitones(semitones) ? semitones : 0.0;
+}
+
+/// A saved fraction of a source frame, 0 when missing or outside [0, 1).
+double _sourceFraction(Object? value) {
+  final fraction = value is num ? value.toDouble() : 0.0;
+  return fraction.isFinite && fraction >= 0 && fraction < 1 ? fraction : 0.0;
 }

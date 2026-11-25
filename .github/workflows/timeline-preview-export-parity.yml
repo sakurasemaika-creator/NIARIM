@@ -1,0 +1,228 @@
+name: Timeline Preview Export Parity Verification
+
+on:
+  pull_request:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/timeline-preview-export-parity.yml'
+      - 'lib/engine/export_audio.dart'
+      - 'lib/engine/pitched_sound_preview.dart'
+      - 'lib/engine/preview_sound.dart'
+      - 'lib/models/camera_keyframe.dart'
+      - 'lib/engine/export_engine.dart'
+      - 'lib/engine/layer_compositor.dart'
+      - 'lib/engine/timeline_stack.dart'
+      - 'lib/engine/timeline_output_viewport.dart'
+      - 'lib/engine/timeline_video_time.dart'
+      - 'lib/engine/video_material_snapshot.dart'
+      - 'lib/engine/video_frame_timeline.dart'
+      - 'lib/engine/video_frame_decoder.dart'
+      - 'lib/engine/video_frame_provider.dart'
+      - 'lib/engine/timeline_video_layer_pixels.dart'
+      - 'lib/engine/timeline_frame_renderer.dart'
+      - 'lib/engine/clip_speed.dart'
+      - 'lib/engine/tile_manager.dart'
+      - 'lib/engine/niapro_serializer.dart'
+      - 'lib/models/layer.dart'
+      - 'lib/models/audio_clip.dart'
+      - 'lib/screens/timeline/widgets/clip_speed_control.dart'
+      - 'lib/screens/timeline/widgets/clip_time_range_control.dart'
+      - 'lib/screens/timeline/widgets/pitch_control.dart'
+      - 'lib/screens/timeline/widgets/material_edit_panel.dart'
+      - 'lib/screens/timeline/widgets/video_filmstrip.dart'
+      - 'lib/screens/timeline/widgets/keyframe_retime_dialog.dart'
+      - 'lib/screens/timeline/widgets/material_gizmo.dart'
+      - 'lib/models/layer_crop.dart'
+      - 'lib/models/layer_region_edit.dart'
+      - 'lib/screens/timeline/widgets/material_region_controller.dart'
+      - 'lib/engine/crop_frame.dart'
+      - 'lib/models/scene.dart'
+      - 'lib/models/video_track_display.dart'
+      - 'lib/services/project_service.dart'
+      - 'lib/engine/audio_waveform_service.dart'
+      - 'lib/screens/export/export_screen.dart'
+      - 'lib/screens/export/widgets/export_complete_dialog.dart'
+      - 'lib/services/material_service.dart'
+      - 'lib/screens/timeline/timeline_screen.dart'
+      - 'test/export_audio_test.dart'
+      - 'test/timeline_media_contract_test.dart'
+      - 'test/timeline_output_viewport_test.dart'
+      - 'test/timeline_video_time_test.dart'
+      - 'test/video_material_snapshot_test.dart'
+      - 'test/video_frame_timeline_test.dart'
+      - 'test/video_frame_provider_test.dart'
+      - 'test/video_frame_ffmpeg_decoder_test.dart'
+      - 'test/layer_compositor_pixel_source_test.dart'
+      - 'test/layer_compositor_test.dart'
+      - 'test/timeline_video_export_test.dart'
+      - 'test/timeline_preview_video_frames_test.dart'
+      - 'test/clip_speed_test.dart'
+      - 'test/pitched_sound_preview_test.dart'
+      - 'test/timeline_pitch_test.dart'
+      - 'test/preview_export_sound_parity_test.dart'
+      - 'test/timeline_speed_mute_test.dart'
+      - 'test/timeline_playback_skips_test.dart'
+      - 'test/timeline_clip_speed_test.dart'
+      - 'test/timeline_time_range_test.dart'
+      - 'test/timeline_clip_edits_kept_test.dart'
+      - 'test/timeline_clipboard_hold_test.dart'
+      - 'test/export_fps_differs_note_test.dart'
+      - 'test/timeline_split_test.dart'
+      - 'test/layer_crop_test.dart'
+      - 'test/timeline_crop_test.dart'
+      - 'test/layer_region_edit_test.dart'
+      - 'test/material_region_gizmo_test.dart'
+      - 'test/timeline_region_edit_ui_test.dart'
+      - 'test/timeline_video_track_display_test.dart'
+      - 'test/audio_waveform_service_test.dart'
+      - 'docs/AI設計書/26_タイムライン編集操作仕様.md'
+      - 'docs/AI設計書/27_プレビュー書き出し一致性監査.md'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: timeline-preview-export-parity-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  audio-envelope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: false
+      - name: Install FFmpeg for real video frame decoding tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          ffmpeg -version | head -n 1
+          ffprobe -version | head -n 1
+      - name: Resolve dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Test shared preview/export audio envelope
+        run: flutter test test/export_audio_test.dart --reporter expanded
+      - name: Test timeline media contracts
+        run: flutter test test/timeline_media_contract_test.dart --reporter expanded
+      - name: Test shared output viewport geometry
+        run: flutter test test/timeline_output_viewport_test.dart --reporter expanded
+      - name: Test shared video source time mapping
+        run: flutter test test/timeline_video_time_test.dart --reporter expanded
+      - name: Test immutable video material snapshots
+        run: flutter test test/video_material_snapshot_test.dart --reporter expanded
+      - name: Test shared video frame selection rule
+        run: flutter test test/video_frame_timeline_test.dart --reporter expanded
+      - name: Test video frame cache, ownership, seek races and cancellation
+        run: flutter test test/video_frame_provider_test.dart --reporter expanded
+      - name: Test real FFmpeg video frame decoding and preview/export RGBA parity
+        env:
+          NIARIM_VIDEO_FRAME_FFMPEG_TESTS: '1'
+        run: flutter test test/video_frame_ffmpeg_decoder_test.dart --reporter expanded
+      - name: Test decoded video frames through every layer compositing path
+        run: flutter test test/layer_compositor_pixel_source_test.dart test/layer_compositor_test.dart --reporter expanded
+      - name: Test preview/export RGBA parity and export jobs with video frames
+        env:
+          NIARIM_VIDEO_FRAME_FFMPEG_TESTS: '1'
+        run: flutter test test/timeline_video_export_test.dart --reporter expanded
+      - name: Test decoded video frames in the timeline screen preview
+        run: flutter test test/timeline_preview_video_frames_test.dart --reporter expanded
+      - name: Test clip speed (lengths, exact splits, keyframe retiming, saving, export sound)
+        env:
+          NIARIM_VIDEO_FRAME_FFMPEG_TESTS: '1'
+        run: flutter test test/clip_speed_test.dart test/pitched_sound_preview_test.dart test/preview_export_sound_parity_test.dart --reporter expanded
+      - name: Test changing clip speed in the timeline screen (refusal, cancel, Undo)
+        run: flutter test test/timeline_clip_speed_test.dart test/timeline_pitch_test.dart test/timeline_speed_mute_test.dart test/timeline_playback_skips_test.dart --reporter expanded
+      - name: Test the 長さ調整 time range (typed start/end for materials and audio, refusals, Undo, Cancel)
+        run: flutter test test/timeline_time_range_test.dart --reporter expanded
+      - name: Test edit settings kept by cut, copy, paste, duplicate, autosave and project duplicate (one Undo each)
+        run: flutter test test/timeline_clip_edits_kept_test.dart test/timeline_clipboard_hold_test.dart --reporter expanded
+      - name: Test the export frame rate is not applied silently (note and the work's own rate)
+        run: flutter test test/export_fps_differs_note_test.dart --reporter expanded
+      - name: Test cropping (drawn like cut pixels on every path, panel and preview handles, Undo)
+        run: flutter test test/layer_crop_test.dart test/timeline_crop_test.dart --reporter expanded
+      - name: Test selected parts moved, copied and erased (drawn like edited pixels on every path, saving, preview handles, panel, Undo)
+        run: flutter test test/layer_region_edit_test.dart test/material_region_gizmo_test.dart test/timeline_region_edit_ui_test.dart --reporter expanded
+      - name: Test splitting every track type at the playhead (source times, fades, groups, Undo)
+        run: flutter test test/timeline_split_test.dart --reporter expanded
+      - name: Test video track rows (filmstrip frames, sound waveform, saving)
+        run: flutter test test/timeline_video_track_display_test.dart test/audio_waveform_service_test.dart --reporter expanded
+      - name: Analyze touched Dart files
+        run: >-
+          flutter analyze
+          lib/engine/export_audio.dart
+          lib/engine/pitched_sound_preview.dart
+          lib/engine/preview_sound.dart
+          lib/models/camera_keyframe.dart
+          lib/engine/export_engine.dart
+          lib/engine/timeline_output_viewport.dart
+          lib/engine/timeline_video_time.dart
+          lib/engine/video_material_snapshot.dart
+          lib/engine/video_frame_timeline.dart
+          lib/engine/video_frame_decoder.dart
+          lib/engine/video_frame_provider.dart
+          lib/engine/timeline_video_layer_pixels.dart
+          lib/engine/layer_compositor.dart
+          lib/engine/timeline_frame_renderer.dart
+          lib/engine/clip_speed.dart
+          lib/engine/tile_manager.dart
+          lib/engine/niapro_serializer.dart
+          lib/models/layer.dart
+          lib/models/audio_clip.dart
+          lib/screens/timeline/widgets/clip_speed_control.dart
+          lib/screens/timeline/widgets/clip_time_range_control.dart
+          lib/screens/timeline/widgets/pitch_control.dart
+          lib/screens/timeline/widgets/material_edit_panel.dart
+          lib/screens/timeline/widgets/video_filmstrip.dart
+          lib/screens/timeline/widgets/keyframe_retime_dialog.dart
+          lib/screens/timeline/widgets/material_gizmo.dart
+          lib/models/layer_crop.dart
+          lib/models/layer_region_edit.dart
+          lib/screens/timeline/widgets/material_region_controller.dart
+          lib/engine/crop_frame.dart
+          lib/models/scene.dart
+          lib/models/video_track_display.dart
+          lib/services/project_service.dart
+          lib/screens/export/export_screen.dart
+          lib/screens/export/widgets/export_complete_dialog.dart
+          lib/services/material_service.dart
+          lib/screens/timeline/widgets/material_gizmo.dart
+          lib/screens/timeline/timeline_screen.dart
+          test/export_audio_test.dart
+          test/timeline_media_contract_test.dart
+          test/timeline_output_viewport_test.dart
+          test/timeline_video_time_test.dart
+          test/video_material_snapshot_test.dart
+          test/video_frame_timeline_test.dart
+          test/video_frame_provider_test.dart
+          test/video_frame_ffmpeg_decoder_test.dart
+          test/layer_compositor_pixel_source_test.dart
+          test/timeline_video_export_test.dart
+          test/timeline_preview_video_frames_test.dart
+          test/clip_speed_test.dart
+          test/pitched_sound_preview_test.dart
+          test/timeline_pitch_test.dart
+          test/preview_export_sound_parity_test.dart
+          test/timeline_speed_mute_test.dart
+          test/timeline_playback_skips_test.dart
+          test/timeline_clip_speed_test.dart
+          test/timeline_time_range_test.dart
+          test/timeline_clip_edits_kept_test.dart
+          test/timeline_clipboard_hold_test.dart
+          test/export_fps_differs_note_test.dart
+          test/timeline_split_test.dart
+          test/layer_crop_test.dart
+          test/timeline_crop_test.dart
+          test/layer_region_edit_test.dart
+          test/material_region_gizmo_test.dart
+          test/timeline_region_edit_ui_test.dart
+          test/timeline_video_track_display_test.dart
+          test/audio_waveform_service_test.dart
+          --no-fatal-infos

@@ -30,6 +30,7 @@ import '../models/scene.dart';
 import '../models/scene_stack.dart';
 import '../models/text_object.dart';
 import '../models/timeline_row_kind.dart';
+import '../models/video_track_display.dart';
 import '../engine/undo_manager.dart';
 import '../utils/app_error_reporter.dart';
 import '../utils/duplicate_name.dart';
@@ -1347,7 +1348,24 @@ class ProjectService extends ChangeNotifier {
     if (_undoManager?.retainsMaterial(projectId, materialId) ?? false) {
       return true;
     }
+    if (_clipboardMaterials[projectId]?.contains(materialId) ?? false) {
+      return true;
+    }
     return _materialIdsIn(scenesOf(projectId)).contains(materialId);
+  }
+
+  final Map<String, Set<String>> _clipboardMaterials = {};
+
+  /// The materials of clips copied or cut on the timeline: they stay in use
+  /// while they can still be pasted (a cut clip is no longer in the scene).
+  /// An empty [materialIds] lets them go.
+  void holdClipboardMaterials(String projectId, Iterable<String> materialIds) {
+    final ids = materialIds.toSet();
+    if (ids.isEmpty) {
+      _clipboardMaterials.remove(projectId);
+    } else {
+      _clipboardMaterials[projectId] = ids;
+    }
   }
 
   Iterable<String> _materialIdsIn(Iterable<Scene> scenes) sync* {
@@ -3517,6 +3535,14 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Replaces the scene's camera keys with [keyframes] (one Undo step), e.g.
+  /// after retiming a range of them.
+  void replaceCameraKeyframes(
+    String projectId,
+    String sceneId,
+    List<CameraKeyframe> keyframes,
+  ) => _updateSceneCameraKeyframes(projectId, sceneId, keyframes);
+
   /// キーフレームを追加する。同じframeIndexが既にあれば置き換える。
   void addCameraKeyframe(String projectId, String sceneId, CameraKeyframe kf) {
     final current = cameraKeyframesOf(projectId, sceneId);
@@ -3899,6 +3925,49 @@ class ProjectService extends ChangeNotifier {
     return result;
   }
 
+  /// What video row [row] of the scene shows in its clips.
+  VideoTrackDisplay videoRowDisplayOf(
+    String projectId,
+    String sceneId,
+    int row,
+  ) =>
+      sceneOf(projectId, sceneId)?.videoRowDisplayOf(row) ??
+      VideoTrackDisplay.frames;
+
+  /// Makes video row [row] show [display] in its clips (one Undo step; the
+  /// choice is saved with the project).
+  void setVideoRowDisplay(
+    String projectId,
+    String sceneId,
+    int row,
+    VideoTrackDisplay display,
+  ) {
+    if (row < 0 || videoRowDisplayOf(projectId, sceneId, row) == display) {
+      return;
+    }
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
+      editTimeline(
+        projectId,
+        'setVideoRowDisplay',
+        () => setVideoRowDisplay(projectId, sceneId, row, display),
+        changesTiles: false,
+      );
+      return;
+    }
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    final displays = [
+      for (var r = 0; r <= row; r++) scenes[idx].videoRowDisplayOf(r),
+      ...scenes[idx].videoRowDisplays.skip(row + 1),
+    ];
+    displays[row] = display;
+    scenes[idx] = scenes[idx].copyWith(videoRowDisplays: displays);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
   void addTrackRow(String projectId, String sceneId, TimelineRowKind type) {
     if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
@@ -3981,6 +4050,13 @@ class ProjectService extends ChangeNotifier {
     scene = scene.copyWith(
       stack: _stackWithoutRow(scene.stack, type, rowIndex),
     );
+    // The rows after it keep their display.
+    if (type == TimelineRowKind.video &&
+        rowIndex < scene.videoRowDisplays.length) {
+      scene = scene.copyWith(
+        videoRowDisplays: List.of(scene.videoRowDisplays)..removeAt(rowIndex),
+      );
+    }
 
     scenes[idx] = scene;
     _saveAsync(projectId);

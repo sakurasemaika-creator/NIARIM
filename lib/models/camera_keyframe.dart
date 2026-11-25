@@ -5,13 +5,29 @@ class CameraKeyframe {
   final double zoom;
   final double rotation;
 
+  /// The key's time before it was rounded to [frameIndex], kept when its
+  /// range is retimed so retiming again starts from it (a range sped up and
+  /// slowed back returns to its frames). Null when the key lies exactly on
+  /// its frame.
+  final double? exactFrame;
+
   const CameraKeyframe({
     required this.frameIndex,
     this.x = 0,
     this.y = 0,
     this.zoom = 1.0,
     this.rotation = 0,
+    this.exactFrame,
   });
+
+  /// The key's time: [exactFrame] while it still rounds to [frameIndex]
+  /// (a key moved without it falls back to its frame).
+  double get exactTime {
+    final exact = exactFrame;
+    return exact != null && exact.isFinite && exact.round() == frameIndex
+        ? exact
+        : frameIndex.toDouble();
+  }
 
   CameraKeyframe copyWith({
     int? frameIndex,
@@ -19,9 +35,18 @@ class CameraKeyframe {
     double? y,
     double? zoom,
     double? rotation,
+    Object? exactFrame = _keepExact,
   }) {
+    final next = frameIndex ?? this.frameIndex;
+    final exact = this.exactFrame;
     return CameraKeyframe(
-      frameIndex: frameIndex ?? this.frameIndex,
+      // A key moved by whole frames keeps its fraction with it.
+      exactFrame: exactFrame != _keepExact
+          ? exactFrame as double?
+          : exact == null
+          ? null
+          : exact + (next - this.frameIndex),
+      frameIndex: next,
       x: x ?? this.x,
       y: y ?? this.y,
       zoom: zoom ?? this.zoom,
@@ -39,3 +64,5 @@ class CameraKeyframe {
     );
   }
 }
+
+const Object _keepExact = Object();

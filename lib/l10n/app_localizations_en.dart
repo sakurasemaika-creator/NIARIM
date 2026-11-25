@@ -3005,6 +3005,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportFpsLabel => 'FPS';
 
   @override
+  String exportFpsDiffersNote(int source, int output) {
+    return 'The work runs at $source fps. Exporting at $output fps keeps its length by repeating or skipping frames (the preview plays at $source fps).';
+  }
+
+  @override
+  String exportUseWorkFps(int fps) {
+    return 'Use the work’s $fps fps';
+  }
+
+  @override
+  String exportPreviewAtFps(int fps) {
+    return 'Preview at $fps fps on the timeline';
+  }
+
+  @override
   String get exportFormatSection => 'Format';
 
   @override
@@ -3158,6 +3173,19 @@ class AppLocalizationsEn extends AppLocalizations {
           '$count sounds could not be put in the export (their material files are missing or unreadable). The video was exported without them.',
       one:
           '$count sound could not be put in the export (its material file is missing or unreadable). The video was exported without it.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count video materials could not be shown in the export (their material files are missing or unreadable). Nothing was drawn in their place.',
+      one:
+          '$count video material could not be shown in the export (its material file is missing or unreadable). Nothing was drawn in its place.',
     );
     return '$_temp0';
   }
@@ -5342,6 +5370,139 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineEditSectionMask => 'Mask';
 
   @override
+  String get timelineEditSectionCrop => 'Crop';
+
+  @override
+  String get timelineCropHint =>
+      'Trims what shows from the edges of the material. You can also drag the corners and edges of the frame on the preview. The original image or video is not changed.';
+
+  @override
+  String get timelineCropLeft => 'Cut from left';
+
+  @override
+  String get timelineCropRight => 'Cut from right';
+
+  @override
+  String get timelineCropTop => 'Cut from top';
+
+  @override
+  String get timelineCropBottom => 'Cut from bottom';
+
+  @override
+  String get timelineCropReset => 'Reset crop';
+
+  @override
+  String get timelineEditSectionRegion => 'Selection';
+
+  @override
+  String get timelineRegionHint =>
+      'Drag on the preview to outline a part, then choose Move/transform, Duplicate or Delete. A video gets the same edit on every frame. The original image or video is not changed.';
+
+  @override
+  String get timelineRegionShapeFreehand => 'Freehand';
+
+  @override
+  String get timelineRegionNoSelection => 'No part is selected yet.';
+
+  @override
+  String get timelineRegionMove => 'Move/transform';
+
+  @override
+  String get timelineRegionSelectAll => 'Select all';
+
+  @override
+  String get timelineRegionClearSelection => 'Clear selection';
+
+  @override
+  String timelineRegionLimit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Up to $count selection edits can be added.',
+      one: 'Up to $count selection edit can be added.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      'Drag on the preview to move it, a corner dot to resize, a side dot to stretch and the top dot to rotate. Two fingers work too.';
+
+  @override
+  String get timelineRegionScaleX => 'Width scale';
+
+  @override
+  String get timelineRegionScaleY => 'Height scale';
+
+  @override
+  String get timelineRegionFlipHorizontal => 'Flip horizontally';
+
+  @override
+  String get timelineRegionFlipVertical => 'Flip vertically';
+
+  @override
+  String get timelineRegionResetTransform => 'Reset position';
+
+  @override
+  String get timelineRegionDone => 'Done';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return 'Selection edits ($count)';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => 'Remove this edit';
+
+  @override
+  String get timelineRegionRemoveAll => 'Remove all selection edits';
+
+  @override
+  String get timelineEditSectionDuration => 'Duration';
+
+  @override
+  String get timelineDurationRangeTitle => 'Time range';
+
+  @override
+  String get timelineDurationRangeHint =>
+      'The first and last frames the clip covers on the timeline. You can also drag the clip’s edges on the timeline.';
+
+  @override
+  String get timelineDurationStartLabel => 'Start frame';
+
+  @override
+  String get timelineDurationEndLabel => 'End frame';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      frames,
+      locale: localeName,
+      other: 'Length: $frames frames ($seconds s)',
+      one: 'Length: $frames frame ($seconds s)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return 'Enter a whole number from 1 to $max. The start cannot come after the end.';
+  }
+
+  @override
+  String get timelineDurationOverlap =>
+      'Not changed: with this range the clip would overlap another clip in the same row.';
+
+  @override
+  String get timelineDurationBeforeSource =>
+      'Not changed: the clip cannot start before the beginning of its sound.';
+
+  @override
   String get timelineTransformRotationX => 'X-axis rotation';
 
   @override
@@ -5738,6 +5899,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineClipUseEndLabel => 'Trim end F';
+
+  @override
+  String get timelineClipSpeedLabel => 'Speed';
+
+  @override
+  String get timelineClipSpeedInputLabel => 'Enter speed';
+
+  @override
+  String get timelineClipSpeedInputHint => '0.01–100';
+
+  @override
+  String get timelineClipSpeedInvalid => 'Enter a number from 0.01 to 100';
+
+  @override
+  String get timelineClipSpeedOverlap =>
+      'Not changed: at this speed the clip would overlap another clip in the same row.';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd =>
+      'Not changed: at this speed the clip would run past the end of the scene. Lengthen the scene first.';
+
+  @override
+  String get timelineClipSpeedKeyframeClash =>
+      'This speed is not possible: two keyframes would land on the same frame.';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return 'End frame: F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote =>
+      'Sound gets hard to follow at high speeds (the preview and the export sound the same). You can mute it if you do not need it.';
+
+  @override
+  String get timelineClipSpeedMute => 'Mute the sound';
+
+  @override
+  String get timelinePlaybackSkipNotice =>
+      'Playback can’t keep up, so some frames are skipped (the export has every frame).';
+
+  @override
+  String timelinePreviewOutputFps(int output, int work) {
+    return 'Playing at the export’s $output fps (the work is $work fps)';
+  }
+
+  @override
+  String timelinePreviewWorkFps(int fps) {
+    return 'Back to the work’s $fps fps';
+  }
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>
@@ -11419,6 +11630,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => 'Add a track row';
+
+  @override
+  String get timelineVideoTrackShowingFrames =>
+      'Showing video frames (tap to show the sound waveform)';
+
+  @override
+  String get timelineVideoTrackShowingWaveform =>
+      'Showing the sound waveform (tap to show video frames)';
+
+  @override
+  String get timelineVideoSoundFollowsSpeed =>
+      'Play the sound at the same speed';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      'When off, the sound plays at normal speed from the start of the clip and only the picture changes speed.';
+
+  @override
+  String get timelinePitchLabel => 'Pitch (semitones)';
+
+  @override
+  String get timelinePitchHint =>
+      'Changing the speed keeps the pitch. Raise or lower just the pitch here. Match the speed gives the pitch a tape would have at this speed.';
+
+  @override
+  String get timelinePitchMatchSpeed => 'Match the speed';
+
+  @override
+  String get timelinePitchReset => 'Original pitch';
+
+  @override
+  String get timelinePitchInputLabel => 'Type semitones';
+
+  @override
+  String get timelinePitchInvalid =>
+      'Enter a number from -24 to +24 (decimals are fine).';
+
+  @override
+  String get keyframeRetimeTitle => 'Keyframe speed';
+
+  @override
+  String get keyframeRetimeHint =>
+      'Changes the spacing of the keys in the chosen range to match the speed. Their values and easing stay the same, and keys outside the range do not move.';
+
+  @override
+  String get keyframeRetimeFrom => 'First key of the range';
+
+  @override
+  String get keyframeRetimeTo => 'Last key of the range';
+
+  @override
+  String get keyframeRetimeClash =>
+      'This speed would put two keys on one frame, pass a key after the range, or go past the end of the scene.';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return 'Key positions: $before → $after';
+  }
 
   @override
   String get keyframePreviewGestureHint =>

@@ -21,10 +21,13 @@ void main() {
       'lib/screens/timeline/timeline_screen.dart',
     ).readAsStringSync();
     expect(s, contains('_ClipTrackType.video => FileType.video'));
-    expect(
-      s,
-      contains('await controller.setVolume(clip.volume.clamp(0.0, 1.0));'),
-    );
+    // The video's volume reaches its player through the sound the preview
+    // plays now (the same gain the export uses).
+    expect(s, contains('await controller.setVolume(sound.gain);'));
+    final previewSound = File(
+      'lib/engine/preview_sound.dart',
+    ).readAsStringSync();
+    expect(previewSound, contains('gain: volume.clamp(0.0, 1.0).toDouble(),'));
     // The video's own sound is set in the material edit panel, straight on
     // its layer, and a duplicate copies the whole layer (its sound with it).
     final panel = File(
@@ -42,5 +45,36 @@ void main() {
     expect(s, contains('isPlaying: () => _isPlaying'));
     expect(s, contains('onTogglePlay: _togglePlay'));
     expect(s, contains('widget.onTogglePlay();'));
+  });
+
+  test('timeline split mode applies to every material track type', () {
+    final s = File(
+      'lib/screens/timeline/timeline_screen.dart',
+    ).readAsStringSync();
+    expect(s, contains("Key('timelineSplitModeButton')"));
+    expect(s, contains("Key('timelineSplitApplyButton')"));
+    expect(s, contains("Key('timelineSplitCancelButton')"));
+    expect(s, contains('void _applySplitAtCurrentFrame()'));
+    expect(s, contains('final targets = _allClips'));
+    expect(s, contains('_clipsOfType(clip.trackType).add(clip)'));
+    expect(s, contains('sourceStartFrame: rightSourceStart'));
+    // A video's right half starts at the split's source position, also when
+    // that is past the used range (its picture then holds the last used frame
+    // and it is silent); test/timeline_split_test.dart checks every frame and
+    // the exported sound.
+    expect(s, contains('sourceTrimStart: isVideo ? videoRightStart : null'));
+    expect(s, contains('final videoRightStart = rightSourceStart;'));
+    expect(s, contains('fadeIn: 0'));
+    expect(s, contains('fadeOut: 0'));
+  });
+
+  test('video preview seek uses the shared source-time mapper', () {
+    final s = File(
+      'lib/screens/timeline/timeline_screen.dart',
+    ).readAsStringSync();
+    expect(s, contains("import '../../engine/timeline_video_time.dart';"));
+    expect(s, contains('TimelineVideoTimeMapper.sourcePositionAt('));
+    expect(s, contains('sourceTrimStartFrame: clip.useStart'));
+    expect(s, contains('sourceTrimEndFrame: clip.useEnd'));
   });
 }

@@ -55,6 +55,8 @@ class _ExportScreenState extends State<ExportScreen> {
   // 「カスタム」選択時のみ編集可能なFPS（「カスタム」タップで
   // アコーディオン展開して詳細設定を表示する）
   int _customFps = 30;
+  static const int _minCustomFps = 12;
+  static const int _maxCustomFps = 60;
 
   int get _fps => switch (_preset) {
     ExportPreset.standard => 30,
@@ -232,9 +234,9 @@ class _ExportScreenState extends State<ExportScreen> {
                           LabeledSlider(
                             label: l10n.exportFpsLabel,
                             value: _customFps.toDouble(),
-                            min: 12,
-                            max: 60,
-                            divisions: 48,
+                            min: _minCustomFps.toDouble(),
+                            max: _maxCustomFps.toDouble(),
+                            divisions: _maxCustomFps - _minCustomFps,
                             sliderLabel: '$_customFps',
                             valueText: '$_customFps',
                             onChanged: (v) =>
@@ -319,6 +321,41 @@ class _ExportScreenState extends State<ExportScreen> {
                   : l10n.exportOutputWithoutEndCard(duration),
             ),
             Text(l10n.exportKeepsPlaybackTime),
+            // The output frame rate is not applied silently: the preview
+            // plays at the work's own rate, or at this one when asked.
+            if (project != null && project.fps != _fps) ...[
+              Text(
+                l10n.exportFpsDiffersNote(project.fps, _fps),
+                key: const ValueKey('exportFpsDiffersNote'),
+              ),
+              if (project.fps >= _minCustomFps && project.fps <= _maxCustomFps)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton(
+                    key: const ValueKey('exportUseWorkFps'),
+                    onPressed: _isExporting
+                        ? null
+                        : () => setState(() {
+                            _preset = ExportPreset.custom;
+                            _customFps = project.fps;
+                          }),
+                    child: Text(l10n.exportUseWorkFps(project.fps)),
+                  ),
+                ),
+              // Or see the export's frames at its rate: back on the
+              // timeline, whose preview then plays at this rate.
+              if (GoRouter.of(context).canPop())
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton(
+                    key: const ValueKey('exportPreviewAtFps'),
+                    onPressed: _isExporting
+                        ? null
+                        : () => context.pop<int>(_fps),
+                    child: Text(l10n.exportPreviewAtFps(_fps)),
+                  ),
+                ),
+            ],
           ],
         ),
       ),
@@ -517,6 +554,9 @@ class _ExportScreenState extends State<ExportScreen> {
               maxSeconds: maxSeconds,
               pathOf: (id) => materials.pathOf(widget.projectId, id),
             );
+      // The video materials this job reads, fixed before the first frame so
+      // a material changed during the export does not change what it shows.
+      final videoMaterials = await materials.videoSnapshotOf(widget.projectId);
 
       String outputPath;
       switch (format) {
@@ -537,6 +577,7 @@ class _ExportScreenState extends State<ExportScreen> {
             audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
+            videoMaterials: videoMaterials,
           );
         case ExportFormat.gif:
           outputPath = await engine.exportGif(
@@ -553,6 +594,7 @@ class _ExportScreenState extends State<ExportScreen> {
             backgroundColor: project.backgroundColor,
             onProgress: onProgress,
             cancelToken: cancelToken,
+            videoMaterials: videoMaterials,
           );
         case ExportFormat.webm:
           outputPath = await engine.exportWebm(
@@ -571,6 +613,7 @@ class _ExportScreenState extends State<ExportScreen> {
             audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
+            videoMaterials: videoMaterials,
           );
         case ExportFormat.avi:
           outputPath = await engine.exportAvi(
@@ -589,6 +632,7 @@ class _ExportScreenState extends State<ExportScreen> {
             audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
+            videoMaterials: videoMaterials,
           );
       }
 
@@ -616,6 +660,7 @@ class _ExportScreenState extends State<ExportScreen> {
         outputPath,
         totalFrames,
         soundsLeftOut: engine.audioLeftOut,
+        videosLeftOut: engine.videoLeftOut,
       );
     } on ExportCancelledException {
       _closeProgressDialog();
@@ -725,6 +770,7 @@ class _ExportScreenState extends State<ExportScreen> {
     String outputPath,
     int totalFrames, {
     int soundsLeftOut = 0,
+    int videosLeftOut = 0,
   }) async {
     final destination = await showDialog<ExportDestination>(
       context: context,
@@ -732,6 +778,7 @@ class _ExportScreenState extends State<ExportScreen> {
         file: File(outputPath),
         frames: totalFrames,
         soundsLeftOut: soundsLeftOut,
+        videosLeftOut: videosLeftOut,
       ),
     );
     if (!mounted || destination == null) return;

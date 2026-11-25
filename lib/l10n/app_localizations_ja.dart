@@ -2883,6 +2883,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get exportFpsLabel => 'FPS';
 
   @override
+  String exportFpsDiffersNote(int source, int output) {
+    return '作品は$source fpsです。$output fpsで書き出すと、長さはそのままで、コマを繰り返したり間引いたりして合わせます（プレビューは$source fpsで再生します）。';
+  }
+
+  @override
+  String exportUseWorkFps(int fps) {
+    return '作品と同じ$fps fpsにする';
+  }
+
+  @override
+  String exportPreviewAtFps(int fps) {
+    return 'タイムラインで$fps fpsのプレビューを見る';
+  }
+
+  @override
   String get exportFormatSection => '形式';
 
   @override
@@ -3025,6 +3040,17 @@ class AppLocalizationsJa extends AppLocalizations {
       count,
       locale: localeName,
       other: '音声$count件を書き出しに入れられませんでした（素材のファイルが無い・読めない）。映像はそのまま書き出しました。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '動画素材$count件の映像を書き出しに入れられませんでした（素材のファイルが無い・読めない）。その部分には何も描かずに書き出しました。',
     );
     return '$_temp0';
   }
@@ -5110,6 +5136,125 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineEditSectionMask => 'マスク';
 
   @override
+  String get timelineEditSectionCrop => 'トリミング';
+
+  @override
+  String get timelineCropHint =>
+      '見える範囲を素材の辺から切り詰めます。プレビューの枠の角や辺をドラッグしても変えられます。元の画像・動画は変わりません。';
+
+  @override
+  String get timelineCropLeft => '左を切る';
+
+  @override
+  String get timelineCropRight => '右を切る';
+
+  @override
+  String get timelineCropTop => '上を切る';
+
+  @override
+  String get timelineCropBottom => '下を切る';
+
+  @override
+  String get timelineCropReset => 'トリミングを戻す';
+
+  @override
+  String get timelineEditSectionRegion => '範囲選択';
+
+  @override
+  String get timelineRegionHint =>
+      'プレビューの上をドラッグして範囲を囲み、「移動・変形」「複製」「削除」から選びます。動画はどのコマにも同じ編集がかかります。元の画像・動画は変わりません。';
+
+  @override
+  String get timelineRegionShapeFreehand => '自由な形';
+
+  @override
+  String get timelineRegionNoSelection => 'まだ範囲を選んでいません。';
+
+  @override
+  String get timelineRegionMove => '移動・変形';
+
+  @override
+  String get timelineRegionSelectAll => '全体を選ぶ';
+
+  @override
+  String get timelineRegionClearSelection => '選択を解除';
+
+  @override
+  String timelineRegionLimit(int count) {
+    return '範囲の編集は$count個までです。';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      'プレビューでドラッグすると移動、角の丸で拡大縮小、辺の丸で縦か横に伸縮、上の丸で回転できます。2本指でも操作できます。';
+
+  @override
+  String get timelineRegionScaleX => '横の大きさ';
+
+  @override
+  String get timelineRegionScaleY => '縦の大きさ';
+
+  @override
+  String get timelineRegionFlipHorizontal => '左右反転';
+
+  @override
+  String get timelineRegionFlipVertical => '上下反転';
+
+  @override
+  String get timelineRegionResetTransform => '元の位置に戻す';
+
+  @override
+  String get timelineRegionDone => '完了';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return '範囲の編集（$count）';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => 'この編集を外す';
+
+  @override
+  String get timelineRegionRemoveAll => '範囲の編集をすべて外す';
+
+  @override
+  String get timelineEditSectionDuration => '長さ調整';
+
+  @override
+  String get timelineDurationRangeTitle => '時間範囲';
+
+  @override
+  String get timelineDurationRangeHint =>
+      'タイムライン上で表示する最初と最後のフレームです。タイムラインのクリップの端をドラッグしても変えられます。';
+
+  @override
+  String get timelineDurationStartLabel => '開始フレーム';
+
+  @override
+  String get timelineDurationEndLabel => '終了フレーム';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    return '長さ：$framesフレーム（$seconds秒）';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return '1〜$maxの整数を入れてください。開始は終了より後にできません。';
+  }
+
+  @override
+  String get timelineDurationOverlap => 'この範囲にすると同じ列の別のクリップと重なるため、変更しませんでした。';
+
+  @override
+  String get timelineDurationBeforeSource => '音声の先頭より前には広げられないため、変更しませんでした。';
+
+  @override
   String get timelineTransformRotationX => 'X軸回転';
 
   @override
@@ -5500,6 +5645,55 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineClipUseEndLabel => '使用終了F';
+
+  @override
+  String get timelineClipSpeedLabel => '速度';
+
+  @override
+  String get timelineClipSpeedInputLabel => '倍率を入力';
+
+  @override
+  String get timelineClipSpeedInputHint => '0.01〜100';
+
+  @override
+  String get timelineClipSpeedInvalid => '0.01〜100の数を入力してください';
+
+  @override
+  String get timelineClipSpeedOverlap => 'この速度にすると同じ列の別のクリップと重なるため、変更しませんでした。';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd =>
+      'この速度にするとシーンの終わりを超えるため、変更しませんでした。先にシーンを長くしてください。';
+
+  @override
+  String get timelineClipSpeedKeyframeClash =>
+      'キーフレームが同じフレームに重なるため、この速度にはできません。';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return '終了フレーム：F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote =>
+      '速度を上げると音は聞き取りにくくなります（プレビューも書き出しも同じ音です）。音が要らなければ消せます。';
+
+  @override
+  String get timelineClipSpeedMute => '音を消す';
+
+  @override
+  String get timelinePlaybackSkipNotice =>
+      '再生が追いつかないため、コマを飛ばして表示しています（書き出しにはすべてのコマが入ります）。';
+
+  @override
+  String timelinePreviewOutputFps(int output, int work) {
+    return '書き出しの$output fpsで再生しています（作品は$work fps）';
+  }
+
+  @override
+  String timelinePreviewWorkFps(int fps) {
+    return '作品の$fps fpsに戻す';
+  }
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>
@@ -10611,6 +10805,60 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => 'トラックに行を追加';
+
+  @override
+  String get timelineVideoTrackShowingFrames => '映像のコマを表示中（タップで音声の波形に切り替え）';
+
+  @override
+  String get timelineVideoTrackShowingWaveform => '音声の波形を表示中（タップで映像のコマに切り替え）';
+
+  @override
+  String get timelineVideoSoundFollowsSpeed => '音も同じ速度にする';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      'オフにすると、音はクリップの始めから通常の速さで鳴り、映像の速度だけが変わります。';
+
+  @override
+  String get timelinePitchLabel => '音の高さ（半音）';
+
+  @override
+  String get timelinePitchHint =>
+      '速度を変えても音の高さは変わりません。ここで高さだけを上げ下げできます。「速度に合わせる」を押すと、テープを速く回したときのように速度に合った高さになります。';
+
+  @override
+  String get timelinePitchMatchSpeed => '速度に合わせる';
+
+  @override
+  String get timelinePitchReset => '元の高さ';
+
+  @override
+  String get timelinePitchInputLabel => '半音で入力';
+
+  @override
+  String get timelinePitchInvalid => '-24〜+24の数を入力してください（小数も使えます）。';
+
+  @override
+  String get keyframeRetimeTitle => 'キーフレームの速度';
+
+  @override
+  String get keyframeRetimeHint =>
+      '選んだ範囲のキーの間隔を、速度に合わせて変えます。値と補間はそのままで、範囲の外のキーは動きません。';
+
+  @override
+  String get keyframeRetimeFrom => '範囲の始めのキー';
+
+  @override
+  String get keyframeRetimeTo => '範囲の終わりのキー';
+
+  @override
+  String get keyframeRetimeClash =>
+      'キーが同じフレームに重なる、範囲の後ろのキーを追い越す、またはシーンの外へ出るため、この速度にはできません。';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return 'キーの位置：$before → $after';
+  }
 
   @override
   String get keyframePreviewGestureHint => 'プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。';

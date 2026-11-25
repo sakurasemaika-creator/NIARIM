@@ -1,7 +1,9 @@
 import 'dart:ui' show Offset;
 
 import 'layer_keyframe.dart';
+import 'layer_crop.dart';
 import 'layer_mask.dart';
+import 'layer_region_edit.dart';
 import 'text_object.dart';
 
 class Layer {
@@ -28,6 +30,25 @@ class Layer {
   final String? materialId;
   final int? sourceTrimStart;
   final int? sourceTrimEnd;
+
+  /// The fraction of a source frame the video starts after
+  /// [sourceTrimStart] (0 ≤ f < 1). A clip split at a fractional source
+  /// position (a speed other than 1×) keeps playing exactly where the
+  /// unsplit clip would.
+  final double sourceTrimStartFraction;
+
+  /// The video's playback speed (1.0 = normal, 2.0 = twice as fast). Its
+  /// sound plays at the same speed unless [videoSoundFollowsSpeed] is off.
+  final double playbackRate;
+
+  /// Whether the video's sound plays at [playbackRate] too (on), or at the
+  /// normal speed from the clip's start while only the picture changes speed.
+  final bool videoSoundFollowsSpeed;
+
+  /// The pitch change of the video's sound in semitones (0 = its own
+  /// pitch). The speed never changes the pitch; this raises or lowers it on
+  /// its own.
+  final double videoPitchSemitones;
   final double videoVolume;
   final String? watermarkAssetId;
   final double watermarkAngle;
@@ -38,6 +59,16 @@ class Layer {
 
   /// タイムライン素材（テキスト・画像・動画）の見える範囲を限るマスク。
   final LayerMask? mask;
+
+  /// The part of a timeline image or video that shows (null: all of it).
+  /// Applied to the material's own picture before its position, scale,
+  /// turn and mask.
+  final LayerCrop? crop;
+
+  /// Edits of selected parts of a timeline image or video (moved, copied or
+  /// erased), drawn in order onto the material's own picture after [crop]
+  /// and before its position, scale, turn and mask.
+  final List<LayerRegionEdit> regionEdits;
 
   const Layer({
     required this.id,
@@ -62,6 +93,10 @@ class Layer {
     this.materialId,
     this.sourceTrimStart,
     this.sourceTrimEnd,
+    this.sourceTrimStartFraction = 0,
+    this.playbackRate = 1.0,
+    this.videoSoundFollowsSpeed = true,
+    this.videoPitchSemitones = 0,
     this.videoVolume = 1.0,
     this.watermarkAssetId,
     this.watermarkAngle = 0,
@@ -70,6 +105,8 @@ class Layer {
     this.trackRow = 0,
     this.keyframes = const [],
     this.mask,
+    this.crop,
+    this.regionEdits = const [],
   });
 
   Layer copyWith({
@@ -94,6 +131,10 @@ class Layer {
     Object? materialId = _sentinel,
     Object? sourceTrimStart = _sentinel,
     Object? sourceTrimEnd = _sentinel,
+    double? sourceTrimStartFraction,
+    double? playbackRate,
+    bool? videoSoundFollowsSpeed,
+    double? videoPitchSemitones,
     double? videoVolume,
     Object? watermarkAssetId = _sentinel,
     double? watermarkAngle,
@@ -102,6 +143,8 @@ class Layer {
     int? trackRow,
     List<LayerKeyframe>? keyframes,
     Object? mask = _sentinel,
+    Object? crop = _sentinel,
+    List<LayerRegionEdit>? regionEdits,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -138,6 +181,12 @@ class Layer {
       sourceTrimEnd: sourceTrimEnd == _sentinel
           ? this.sourceTrimEnd
           : sourceTrimEnd as int?,
+      sourceTrimStartFraction:
+          sourceTrimStartFraction ?? this.sourceTrimStartFraction,
+      playbackRate: playbackRate ?? this.playbackRate,
+      videoSoundFollowsSpeed:
+          videoSoundFollowsSpeed ?? this.videoSoundFollowsSpeed,
+      videoPitchSemitones: videoPitchSemitones ?? this.videoPitchSemitones,
       videoVolume: videoVolume ?? this.videoVolume,
       watermarkAssetId: watermarkAssetId == _sentinel
           ? this.watermarkAssetId
@@ -150,6 +199,8 @@ class Layer {
       trackRow: trackRow ?? this.trackRow,
       keyframes: keyframes ?? this.keyframes,
       mask: mask == _sentinel ? this.mask : mask as LayerMask?,
+      crop: crop == _sentinel ? this.crop : crop as LayerCrop?,
+      regionEdits: regionEdits ?? this.regionEdits,
     );
   }
 }

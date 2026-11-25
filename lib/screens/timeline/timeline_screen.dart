@@ -19,6 +19,7 @@ import 'package:flutter/material.dart' hide MaterialType;
 import 'package:flutter/scheduler.dart' show SchedulerPhase;
 import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -37,6 +38,8 @@ import '../../engine/audio_waveform_service.dart';
 import '../../engine/autofill_batch_runner.dart';
 import '../../engine/autofill_engine.dart' show AutofillMode;
 import '../../engine/camera_engine.dart';
+import '../../engine/clip_speed.dart';
+import '../../engine/crop_frame.dart';
 import '../../engine/export_engine.dart';
 import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
@@ -45,7 +48,15 @@ import '../../engine/layer_range_resolver.dart';
 import '../../engine/watermark_render.dart';
 import '../../engine/tile_manager.dart';
 import '../../engine/timeline_material.dart';
+import '../../engine/timeline_frame_renderer.dart';
+import '../../engine/timeline_video_layer_pixels.dart';
+import '../../engine/timeline_video_time.dart';
+import '../../engine/video_frame_decoder.dart';
+import '../../engine/video_frame_provider.dart';
+import '../../engine/video_material_snapshot.dart';
 import '../../engine/timeline_stack.dart';
+import '../../engine/pitched_sound_preview.dart';
+import '../../engine/preview_sound.dart';
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/audio_clip.dart';
@@ -54,11 +65,12 @@ import '../../models/effect_filter_instance.dart';
 import '../../models/filter_def.dart'
     show AuroraHologramPreset, ToneCurvePreset, kPixelArtMaxBlockSize;
 import '../../models/layer.dart';
+import '../../models/video_track_display.dart';
 import '../../models/layer_group.dart';
-import '../../models/layer_keyframe.dart';
 import '../../models/timeline_marker.dart';
 import '../../models/material_asset.dart';
 import '../../models/pixel_color_mode.dart';
+import '../../models/project.dart';
 import '../../models/scene.dart';
 import '../../models/timeline_row_kind.dart';
 import '../../models/watermark_asset.dart';
@@ -99,8 +111,14 @@ import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import 'widgets/clip_speed_control.dart';
+import 'widgets/clip_time_range_control.dart';
+import 'widgets/pitch_control.dart';
+import 'widgets/keyframe_retime_dialog.dart';
 import 'widgets/material_edit_panel.dart';
+import 'widgets/video_filmstrip.dart';
 import 'widgets/material_gizmo.dart';
+import 'widgets/material_region_controller.dart';
 import 'widgets/stack_order_panel.dart';
 import 'widgets/track_label.dart';
 import '../../widgets/icon_notice.dart';
@@ -161,6 +179,17 @@ class _TrackClip {
   // 動画
   int useStart; // 使用開始フレーム（素材内）
   int useEnd; // 使用終了フレーム（素材内）
+  // The fraction of a source frame after useStart where it starts, and the
+  // playback speed (both for audio, read-aloud and video).
+  double sourceFraction;
+  double playbackRate;
+
+  /// Whether a video's sound plays at [playbackRate] too (otherwise at the
+  /// normal speed while only the picture changes speed).
+  bool soundFollowsSpeed;
+
+  /// The pitch change in semitones (the speed keeps the pitch).
+  double pitchSemitones;
   double videoOpacity; // 0.0〜1.0
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
   // このクリップが属する行番号（0始まり）。編集パネルから別の行へ移せる。
@@ -181,10 +210,56 @@ class _TrackClip {
     this.fadeOut = 0.0,
     this.useStart = 0,
     this.useEnd = 0,
+    this.sourceFraction = 0,
+    this.playbackRate = 1.0,
+    this.soundFollowsSpeed = true,
+    this.pitchSemitones = 0,
     this.videoOpacity = 1.0,
     this.trackRow = 0,
     this.isReadAloud = false,
   });
+
+  /// The speed the clip's sound plays at.
+  double get soundRate => soundFollowsSpeed ? playbackRate : 1.0;
+
+  /// For a video: how many frames from its start its sound plays (its used
+  /// range at [soundRate]); after that the picture holds the last used frame
+  /// and the clip is silent, as in the export.
+  double get videoSoundingFrames => TimelineVideoTimeMapper.soundingFrames(
+    clipLengthFrames: lengthFrames,
+    sourceTrimStartFrame: useStart + sourceFraction,
+    sourceTrimEndFrame: useEnd,
+    soundRate: soundRate,
+  );
+
+  /// The source position (in project frames) [elapsedFrames] into the clip.
+  SourcePosition sourceAfter(int elapsedFrames) => sourcePositionAfter(
+    startFrame: useStart,
+    startFraction: sourceFraction,
+    elapsedFrames: elapsedFrames,
+    rate: playbackRate,
+  );
+}
+
+/// A clip copied or cut to the clipboard, as it was then: its material
+/// layer with the layer's pixels (text, image, video) or its sound, so it
+/// can be pasted again after the clip itself has been cut away or changed.
+class _CopiedClip {
+  const _CopiedClip({
+    required this.clip,
+    this.layer,
+    this.home,
+    this.tiles,
+    this.audio,
+  });
+
+  final _TrackClip clip;
+  final Layer? layer;
+  final LayerHome? home;
+  final Map<String, Uint8List>? tiles;
+  final AudioClip? audio;
+
+  String? get materialId => audio?.materialId ?? layer?.materialId;
 }
 
 /// 音声クリップの帯に薄く重ねる波形サムネイル。[AudioWaveformService]で
@@ -193,8 +268,11 @@ class _TrackClip {
 class _AudioWaveformThumb extends StatefulWidget {
   final String filePath;
   final String cacheKey;
-  final int sourceStartFrame;
-  final int lengthFrames;
+
+  /// The source frames the clip plays (its length × its speed, from its
+  /// fractional start), so the waveform lines up with what is heard.
+  final double sourceStartFrame;
+  final double sourceFrames;
   final int fps;
 
   const _AudioWaveformThumb({
@@ -202,7 +280,7 @@ class _AudioWaveformThumb extends StatefulWidget {
     required this.filePath,
     required this.cacheKey,
     required this.sourceStartFrame,
-    required this.lengthFrames,
+    required this.sourceFrames,
     required this.fps,
   });
 
@@ -217,7 +295,7 @@ class _AudioWaveformThumbState extends State<_AudioWaveformThumb> {
     filePath: widget.filePath,
     cacheKey: widget.cacheKey,
     sourceStartSeconds: widget.sourceStartFrame / widget.fps,
-    durationSeconds: widget.lengthFrames / widget.fps,
+    durationSeconds: widget.sourceFrames / widget.fps,
   );
 
   @override
@@ -232,7 +310,7 @@ class _AudioWaveformThumbState extends State<_AudioWaveformThumb> {
     if (oldWidget.filePath != widget.filePath ||
         oldWidget.cacheKey != widget.cacheKey ||
         oldWidget.sourceStartFrame != widget.sourceStartFrame ||
-        oldWidget.lengthFrames != widget.lengthFrames ||
+        oldWidget.sourceFrames != widget.sourceFrames ||
         oldWidget.fps != widget.fps) {
       _future = _load();
     }
@@ -285,6 +363,12 @@ class TimelineScreen extends StatefulWidget {
     this.initialFrame = 0,
   });
 
+  /// Makes the decoder the previews use for video materials' frames (the
+  /// export uses its own per job). Tests replace it.
+  @visibleForTesting
+  static VideoFrameDecoder Function(Directory workDirectory) videoDecoderFor =
+      FfmpegVideoFrameDecoder.ffmpegKit;
+
   @override
   State<TimelineScreen> createState() => _TimelineScreenState();
 }
@@ -304,6 +388,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 作り直しても、離散的な操作なら毎フレームのコストにはならない。
   // 再生タイマーだけがsetStateを使わず、この値の更新だけで済ませる。
   final ValueNotifier<int> _currentFrameNotifier = ValueNotifier<int>(0);
+
+  /// The frames playback could not show since it started: skipped because
+  /// the device fell behind, or composed too late to be shown. The preview
+  /// says so while it plays (the export has every frame).
+  final ValueNotifier<int> _playbackSkips = ValueNotifier<int>(0);
   int _historyPreviewRevision = 0;
   // 画面全体のショートカット（再生・コマ送り・取り消し等）を受ける
   // フォーカス。入力欄から抜けたら（Enter・欄の外の押下）ここへ戻す。
@@ -331,6 +420,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // プレビュー欄のドラッグハンドルで一時的に変更中の高さ（ドラッグ中のみ
   // 使用し、指を離した時点でSettingsServiceへ確定保存してnullへ戻す）。
   double? _previewHeightDragOverride;
+
+  // タイムラインクリップの分割モード。再生ヘッド位置を適用した時点で
+  // そのフレームを境に、現在位置を含む全種類のクリップを分割する。
+  bool _isSplitMode = false;
 
   // カーソル固定方式の移動モード
   bool _isMoveMode = false;
@@ -370,6 +463,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Rect? _editingBounds;
   Object? _editingBoundsKey;
 
+  /// Whether the material panel shows its crop: the preview's handles then
+  /// move the crop's edges instead of the material.
+  bool _cropEditing = false;
+
+  /// The selection and the part being changed in the material panel's
+  /// 範囲選択 section, shared with the preview's handles.
+  final MaterialRegionController _regionEdit = MaterialRegionController();
+
+  /// Video materials' picture sizes, read from their frames (the crop is of
+  /// the part a video's frames are fitted into). A key with a null value is
+  /// being read.
+  final Map<String, Size?> _videoDisplaySizes = {};
+
   // クリップの長押しドラッグ（表示開始位置の移動）・端のハンドルドラッグ
   // （使用範囲の変更）用の一時状態。ジェスチャー中は
   // setState()のたびに_buildClipWidget()が再構築されるため、絶対座標の
@@ -382,6 +488,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   int _clipDragStartFrame = 0;
   int _clipDragStartLength = 0;
   int _clipDragStartUseStart = 0;
+  double _clipDragStartFraction = 0;
 
   // 素材クリップ（動画・音声）の複数選択モード。クリップの長押しは
   // 既に移動ドラッグに使っているため、専用の「選択」ボタンで切り替える。
@@ -390,8 +497,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // クリップのクリップボード。貼り付け先は常に選択中シーンの現在地
   // （赤枠がついている_currentFrameの位置）で、コピー元シーンが選択中の
   // シーンと異なる場合は貼り付けを行わない（クリップ一覧はシーンごとに
-  // 読み込まれるため）。
-  ({String sourceSceneId, List<_TrackClip> clips, bool isCut})? _clipClipboard;
+  // 読み込まれるため）。コピー・切り取りした時点の素材のレイヤー・絵・音を
+  // 控えるので、切り取りで消えたクリップも何度でも貼り付けられる。
+  ({String sourceSceneId, List<_CopiedClip> clips})? _clipClipboardValue;
+  int _pastedAudioSerial = 0;
+
+  ({String sourceSceneId, List<_CopiedClip> clips})? get _clipClipboard =>
+      _clipClipboardValue;
+
+  set _clipClipboard(({String sourceSceneId, List<_CopiedClip> clips})? value) {
+    _clipClipboardValue = value;
+    // A cut clip's material is no longer in the scene: keep it while it can
+    // still be pasted.
+    _projectService.holdClipboardMaterials(widget.projectId, [
+      for (final copy in value?.clips ?? const <_CopiedClip>[])
+        ?copy.materialId,
+    ]);
+  }
 
   // カメラキーフレームマーカーの長押し不要ドラッグ用の一時状態。持ち方は
   // クリップドラッグと同じアンカー方式だが、ProjectServiceへの反映は
@@ -767,6 +889,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
     context.read<UndoManager>().selectProject(widget.projectId);
     _workTrackingLease = _projectService.beginWorkTracking(widget.projectId);
+    _watchPreviewVideoMaterials();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) showProjectAutosaveNotice(context, widget.projectId);
     });
@@ -811,6 +934,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   void dispose() {
     _finishMaterialDrag(deferred: true);
     _stopTimelineDrag(snap: false);
+    _regionEdit.dispose();
     _screenFocus.dispose();
     ImmersiveMode.exitWorkspace();
     _playTimer?.cancel();
@@ -823,10 +947,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
     for (final v in _videoControllers.values) {
       v.dispose();
     }
+    _releasePreviewVideoFrames();
     _moveThumbnail?.dispose();
     _currentFrameNotifier.removeListener(_onCurrentFrameChanged);
     _currentFrameNotifier.dispose();
+    _playbackSkips.dispose();
     _projectService.endWorkTracking(lease: _workTrackingLease);
+    _projectService.holdClipboardMaterials(widget.projectId, const []);
+    _pitchedSounds?.dispose();
     super.dispose();
   }
 
@@ -887,6 +1015,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return count > 0 ? count : 1;
   }
 
+  /// The export's frame rate the preview plays at, when the export screen
+  /// asked for it (spec: a setting that differs from the preview is not
+  /// applied silently; the preview can switch to it). Null: the work's own.
+  int? _previewOutputFps;
+
+  /// Opens the export screen; it can come back with a frame rate to preview
+  /// the export at.
+  Future<void> _openExport() async {
+    final fps = await context.push<int>('/export/${widget.projectId}');
+    if (!mounted || fps == null) return;
+    if (_isPlaying) _togglePlay();
+    final work = _projectFps(context.read<ProjectService>());
+    setState(() => _previewOutputFps = fps == work ? null : fps);
+  }
+
+  /// The frames of the scenes before the selected one (the export counts
+  /// its frames over all scenes).
+  int _sceneStartFrame(ProjectService ps) {
+    var start = 0;
+    for (final scene in ps.scenesOf(widget.projectId)) {
+      if (scene.id == _selectedSceneId) return start;
+      start += scene.frames.length;
+    }
+    return start;
+  }
+
   void _togglePlay() {
     if (_isPlaying) {
       _playTimer?.cancel();
@@ -898,10 +1052,28 @@ class _TimelineScreenState extends State<TimelineScreen> {
           .where((p) => p.id == widget.projectId)
           .firstOrNull;
       final fps = project?.fps ?? 24;
+      // At the export's frame rate when asked: each tick is an output frame
+      // and shows the frame the export shows for it (ExportTiming), counted
+      // over all scenes as the export counts them.
+      final output = _previewOutputFps;
+      final timing = output != null && output != fps
+          ? ExportTiming(sourceFps: fps, outputFps: output)
+          : null;
+      final sceneStart = timing == null ? 0 : _sceneStartFrame(ps);
+      var outputFrame = timing?.firstOutputFrom(sceneStart + _currentFrame);
+      // The frames follow the clock, as the sound does: when the device
+      // falls behind (the timer's ticks come late), frames are skipped
+      // rather than the picture slowing down and drifting from the sound.
+      // The skips are counted and the preview says so.
+      var played = 0;
+      _playbackSkips.value = 0;
       _playTimer = Timer.periodic(
-        Duration(milliseconds: (1000 / fps).round()),
+        Duration(microseconds: (1000000 / (output ?? fps)).round()),
         (timer) {
           final total = _totalFrames;
+          final step = timer.tick - played;
+          if (step <= 0) return;
+          played = timer.tick;
           if (!_loopEnabled && _currentFrame >= total - 1) {
             // ループOFF：最終フレームに到達したらそこで自動停止する。
             timer.cancel();
@@ -909,12 +1081,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
             _pauseAllMedia();
             return;
           }
+          if (step > 1) _playbackSkips.value += step - 1;
           // ここはsetStateを使わない。再生位置に追従する必要があるのは
           // プレビューとシークバーだけで、その2つは
           // _currentFrameNotifierをValueListenableBuilderで購読している。
           // setStateにすると、フレーム一覧・各トラック・シーンタブまで
           // 含めた画面全体を毎秒24〜60回作り直すことになる。
-          _currentFrame = (_currentFrame + 1) % total;
+          if (timing != null && outputFrame != null) {
+            outputFrame = outputFrame! + step;
+            var frame = timing.sourceFrameOf(outputFrame!) - sceneStart;
+            if (frame >= total) {
+              // Round to the scene's start again, as the work's rate does.
+              outputFrame = timing.firstOutputFrom(sceneStart);
+              frame = timing.sourceFrameOf(outputFrame!) - sceneStart;
+            }
+            _currentFrame = frame.clamp(0, total - 1);
+          } else {
+            _currentFrame = (_currentFrame + step) % total;
+          }
           _syncMediaPlayback();
         },
       );
@@ -979,9 +1163,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
-  /// コピーと同様にクリップボードへ記録するが、貼り付け確定時に元の
-  /// シーン・フレーム・クリップを削除する「切り取り」として記録する
-  /// （Ctrl+X）。貼り付け前にキャンセルした場合は何も削除されない。
+  /// 切り取り（Ctrl+X）。シーン・フレームはコピーと同様にクリップボードへ
+  /// 記録し、貼り付け確定時に元を削除する（貼り付け前にキャンセルした場合は
+  /// 何も削除されない）。クリップはその場で取り除いてクリップボードへ控える
+  /// （取り消し1回で元に戻り、貼り付けは別の1手）。
   void _cutSelectionToClipboard() {
     if (_isSceneMultiSelect && _selectedSceneIds.isNotEmpty) {
       setState(() {
@@ -1132,39 +1317,162 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _currentFrame >= clip.startFrame &&
       _currentFrame < clip.startFrame + clip.lengthFrames;
 
+  // Sounds with a pitch change, made with the export's filters and played
+  // at 1x; and what each player is playing (file and speed), so a changed
+  // clip starts its player again.
+  PitchedSoundPreview? _pitchedSounds;
+  final Map<String, String> _playerSources = {};
+
+  PitchedSoundPreview get _pitchedSoundPreview =>
+      _pitchedSounds ??= PitchedSoundPreview(
+        workDir: () async => (await getTemporaryDirectory()).createTempSync(
+          'timeline_pitched_sounds_',
+        ),
+      );
+
+  void _resyncMediaIfPlaying() {
+    if (mounted && _isPlaying) _syncMediaPlayback();
+  }
+
+  /// Plays [file] on [player] from [position] at [rate], starting it again
+  /// when it was playing something else.
+  Future<void> _playOn(
+    String playerKey,
+    ap.AudioPlayer player,
+    String file,
+    double rate,
+    Duration position,
+  ) async {
+    final source = '$file|$rate';
+    if (player.state == ap.PlayerState.playing &&
+        _playerSources[playerKey] != source) {
+      await player.stop();
+    }
+    if (player.state == ap.PlayerState.playing) return;
+    _playerSources[playerKey] = source;
+    await player.setPlaybackRate(rate);
+    await player.play(ap.DeviceFileSource(file), position: position);
+  }
+
   Future<void> _syncAudioClip(_TrackClip clip, double fps) async {
     final path = clip.filePath;
     if (path == null) return;
     final player = _audioPlayers.putIfAbsent(clip.id, () => ap.AudioPlayer());
-    if (!_clipInRange(clip) || !_isPlaying) {
+    // What plays now: the same part of the file, speed, pitch and gain the
+    // export uses for this moment (previewAudioClipAt).
+    final sound = _isPlaying
+        ? previewAudioClipAt(
+            elapsedFrames: _currentFrame - clip.startFrame,
+            lengthFrames: clip.lengthFrames,
+            sourceStartFrame: clip.useStart,
+            sourceStartFraction: clip.sourceFraction,
+            rate: clip.playbackRate,
+            pitchSemitones: clip.pitchSemitones,
+            volume: clip.volume,
+            fadeIn: clip.fadeIn,
+            fadeOut: clip.fadeOut,
+            framesPerSecond: fps,
+          )
+        : null;
+    if (sound == null) {
       if (player.state == ap.PlayerState.playing) await player.pause();
       return;
     }
-    final elapsedFrames = _currentFrame - clip.startFrame;
-    // フェードイン・フェードアウトを音量へ反映
-    double vol = clip.volume;
-    final elapsedSec = elapsedFrames / fps;
-    final remainingSec = (clip.lengthFrames - elapsedFrames) / fps;
-    if (clip.fadeIn > 0 && elapsedSec < clip.fadeIn) {
-      vol *= (elapsedSec / clip.fadeIn).clamp(0.0, 1.0);
-    }
-    if (clip.fadeOut > 0 && remainingSec < clip.fadeOut) {
-      vol *= (remainingSec / clip.fadeOut).clamp(0.0, 1.0);
-    }
-    await player.setVolume(vol.clamp(0.0, 1.0));
-    if (player.state != ap.PlayerState.playing) {
-      final targetFrame = clip.useStart + elapsedFrames;
-      await player.play(
-        ap.DeviceFileSource(path),
-        position: Duration(milliseconds: (targetFrame / fps * 1000).round()),
+    await _playSound(clip.id, player, path, sound, clip, fps);
+  }
+
+  /// Plays [sound] on [player]: the file at its speed, or, with a pitch
+  /// change, the sound made with the export's filters at 1x (nothing until
+  /// it is ready).
+  Future<void> _playSound(
+    String playerKey,
+    ap.AudioPlayer player,
+    String path,
+    PreviewSoundAt sound,
+    _TrackClip clip,
+    double fps,
+  ) async {
+    var file = path;
+    if (sound.playsMadeSound) {
+      final made = _pitchedSoundPreview.soundFor(
+        path: path,
+        sourceSeconds: sound.madeFromSeconds,
+        durationSeconds: sound.madeSeconds,
+        rate: sound.rate,
+        pitchSemitones: sound.pitchSemitones,
+        onReady: _resyncMediaIfPlaying,
       );
+      if (made == null) {
+        if (player.state == ap.PlayerState.playing) await player.pause();
+        return;
+      }
+      file = made;
     }
+    await player.setVolume(sound.gain);
+    final elapsedSeconds = (_currentFrame - clip.startFrame) / fps;
+    await _playOn(
+      playerKey,
+      player,
+      file,
+      sound.playerRate,
+      Duration(
+        milliseconds: (sound.playerSecondsAt(elapsedSeconds) * 1000).round(),
+      ),
+    );
+  }
+
+  /// The video's sound now, or null where it is silent (see
+  /// [previewVideoSoundAt]).
+  PreviewSoundAt? _videoSoundNow(_TrackClip clip, double fps) =>
+      previewVideoSoundAt(
+        elapsedFrames: _currentFrame - clip.startFrame,
+        lengthFrames: clip.lengthFrames,
+        trimStartFrame: clip.useStart,
+        trimStartFraction: clip.sourceFraction,
+        trimEndFrame: clip.useEnd,
+        soundRate: clip.soundRate,
+        pitchSemitones: clip.pitchSemitones,
+        volume: clip.volume,
+        framesPerSecond: fps,
+      );
+
+  /// A video's sound when its pitch is changed: made like the export's and
+  /// played on an audio player instead of the video's own player (which
+  /// only gives the preview its sound). [active] is false when the video's
+  /// own player plays its sound.
+  Future<void> _syncVideoPitchedSound(
+    _TrackClip clip,
+    double fps, {
+    required bool active,
+  }) async {
+    final key = '${clip.id}#pitched';
+    final player = _audioPlayers[key];
+    final path = clip.filePath;
+    final sound = active && path != null && _isPlaying
+        ? _videoSoundNow(clip, fps)
+        : null;
+    if (sound == null || path == null) {
+      if (player?.state == ap.PlayerState.playing) await player!.pause();
+      return;
+    }
+    final pitchedPlayer = player ?? (_audioPlayers[key] = ap.AudioPlayer());
+    await _playSound(key, pitchedPlayer, path, sound, clip, fps);
   }
 
   Future<void> _syncVideoClip(_TrackClip clip, double fps) async {
     final path = clip.filePath;
     if (path == null) return;
+    final pitched = PitchedSoundPreview.needed(clip.pitchSemitones);
+    await _syncVideoPitchedSound(clip, fps, active: pitched);
     var controller = _videoControllers[clip.id];
+    if (pitched) {
+      if (controller != null &&
+          controller.value.isInitialized &&
+          controller.value.isPlaying) {
+        await controller.pause();
+      }
+      return;
+    }
     if (!_clipInRange(clip)) {
       if (controller != null &&
           controller.value.isInitialized &&
@@ -1184,12 +1492,36 @@ class _TimelineScreenState extends State<TimelineScreen> {
       if (mounted) setState(() {});
     }
     if (!controller.value.isInitialized) return;
-    await controller.setVolume(clip.volume.clamp(0.0, 1.0));
-    final elapsedFrames = _currentFrame - clip.startFrame;
-    final targetFrame = clip.useStart + elapsedFrames;
-    final targetPos = Duration(
-      milliseconds: (targetFrame / fps * 1000).round(),
+    // Where the picture holds the last used frame the video is silent (the
+    // export stops its sound there too), so the player does not run on into
+    // the rest of the file.
+    final sound = _videoSoundNow(clip, fps);
+    if (sound == null) {
+      if (controller.value.isPlaying) await controller.pause();
+      return;
+    }
+    await controller.setVolume(sound.gain);
+    // Keep preview seeking on the same pure timeline-to-source mapping
+    // that offline video rendering will consume. Trim end is inclusive.
+    final targetPos = TimelineVideoTimeMapper.sourcePositionAt(
+      timelineFrame: _currentFrame,
+      clipStartFrame: clip.startFrame,
+      clipLengthFrames: clip.lengthFrames,
+      sourceTrimStartFrame: clip.useStart + clip.sourceFraction,
+      sourceTrimEndFrame: clip.useEnd,
+      framesPerSecond: fps,
+      playbackRate: clip.soundRate,
     );
+    if (controller.value.playbackSpeed != clip.soundRate) {
+      try {
+        await controller.setPlaybackSpeed(clip.soundRate);
+      } catch (error, stackTrace) {
+        // A speed the device's player cannot play: the frames still follow
+        // the speed; only this preview's sound does not.
+        AppErrorReporter.record(error, stackTrace);
+      }
+    }
+    if (targetPos == null) return;
     if (!_isPlaying) {
       if (controller.value.isPlaying) await controller.pause();
       await controller.seekTo(targetPos);
@@ -1201,8 +1533,126 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
+  // ─── Decoded video frames for the previews ───────────────
+  // The previews composite the frames of video materials through the same
+  // VideoFrameProvider rules as the export. The provider reads only the
+  // files in a snapshot of the project's video materials, made again when
+  // the materials change.
+  MaterialService? _previewVideoMaterialService;
+  VideoMaterialSnapshot? _previewVideoMaterials;
+  VideoFrameProvider? _previewVideoFrames;
+
+  /// The frames the video rows' filmstrips show: a source of their own, so
+  /// their small pictures neither push the preview's frames out of the cache
+  /// nor wait in line before them.
+  VideoFrameProvider? _stripVideoFrames;
+  Directory? _previewVideoWorkDir;
+  int _previewVideoGeneration = 0;
+  TimelineVideoLayerPixels? _previewVideoPixels;
+
+  void _watchPreviewVideoMaterials() {
+    final MaterialService materials;
+    try {
+      materials = context.read<MaterialService>();
+    } on ProviderNotFoundException {
+      return;
+    }
+    _previewVideoMaterialService = materials
+      ..addListener(_refreshPreviewVideoFrames);
+    _refreshPreviewVideoFrames();
+  }
+
+  Future<void> _refreshPreviewVideoFrames() async {
+    final materials = _previewVideoMaterialService;
+    if (materials == null) return;
+    final generation = ++_previewVideoGeneration;
+    try {
+      final snapshot = await materials.videoSnapshotOf(widget.projectId);
+      if (!mounted || generation != _previewVideoGeneration) return;
+      final current = _previewVideoMaterials;
+      if (current != null && current.hasSameSources(snapshot)) return;
+      final workDir = _previewVideoWorkDir ??= (await getTemporaryDirectory())
+          .createTempSync('timeline_preview_video_frames_');
+      if (!mounted || generation != _previewVideoGeneration) return;
+      final frames = VideoFrameProvider(
+        snapshot: snapshot,
+        decoder: TimelineScreen.videoDecoderFor(workDir),
+      );
+      final strip = VideoFrameProvider(
+        snapshot: snapshot,
+        decoder: TimelineScreen.videoDecoderFor(workDir),
+        cacheBudgetBytes: 16 * 1024 * 1024,
+        maxConcurrentDecodes: 1,
+      );
+      final previous = _previewVideoFrames;
+      final previousStrip = _stripVideoFrames;
+      setState(() {
+        _previewVideoMaterials = snapshot;
+        _previewVideoFrames = frames;
+        _stripVideoFrames = strip;
+        _previewVideoPixels = null;
+      });
+      // Pictures still being built with the old frames are not shown.
+      previous?.dispose();
+      previousStrip?.dispose();
+    } catch (error, stackTrace) {
+      // Without a frame source the previews draw no video frames.
+      AppErrorReporter.record(error, stackTrace);
+    }
+  }
+
+  /// The frame source for the previews at the project's current frame rate
+  /// and canvas size (a new one when either changes, so the previews redraw).
+  TimelineVideoLayerPixels? _previewVideoPixelsFor(ProjectService ps) {
+    final frames = _previewVideoFrames;
+    if (frames == null) return null;
+    final fps = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull
+        ?.fps;
+    final tiles = ps.tileManagerOf(widget.projectId);
+    if (fps == null || fps <= 0) return null;
+    final current = _previewVideoPixels;
+    if (current != null &&
+        identical(current.frames, frames) &&
+        current.framesPerSecond == fps &&
+        current.canvasWidth == tiles.canvasWidth &&
+        current.canvasHeight == tiles.canvasHeight) {
+      return current;
+    }
+    return _previewVideoPixels = TimelineVideoLayerPixels(
+      frames: frames,
+      framesPerSecond: fps.toDouble(),
+      canvasWidth: tiles.canvasWidth,
+      canvasHeight: tiles.canvasHeight,
+    );
+  }
+
+  void _releasePreviewVideoFrames() {
+    _previewVideoGeneration++;
+    _previewVideoMaterialService?.removeListener(_refreshPreviewVideoFrames);
+    _previewVideoMaterialService = null;
+    _previewVideoFrames?.dispose();
+    _previewVideoFrames = null;
+    _stripVideoFrames?.dispose();
+    _stripVideoFrames = null;
+    _previewVideoPixels = null;
+    final workDir = _previewVideoWorkDir;
+    _previewVideoWorkDir = null;
+    if (workDir != null) {
+      unawaited(
+        workDir.delete(recursive: true).then<void>((_) {}, onError: (_) {}),
+      );
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => _TimelinePreviewVideoFrames(
+    videoPixels: _previewVideoPixelsFor(context.watch<ProjectService>()),
+    child: _buildScreen(context),
+  );
+
+  Widget _buildScreen(BuildContext context) {
     // シーンは実プロジェクトデータ（ProjectService）から取得する。
     // 選択中シーンが未設定・削除済みの場合は先頭シーンへ同期する。
     final scenes = context.watch<ProjectService>().scenesOf(widget.projectId);
@@ -2098,9 +2548,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         const SizedBox(width: 4),
         FilledButton.icon(
           key: const ValueKey('pcCommandExport'),
-          onPressed: () => _runAutomationBlockedAction(
-            () => context.push('/export/${widget.projectId}'),
-          ),
+          onPressed: () => _runAutomationBlockedAction(_openExport),
           icon: const Icon(Icons.upload_file, size: 16),
           label: Text(l10n.transferExport),
           style: FilledButton.styleFrom(
@@ -2209,6 +2657,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// is on screen so it can be seen (and dragged) in the preview.
   void _openMaterialEditor(String layerId) {
     _finishMaterialDrag();
+    if (_editingMaterialId != layerId) _regionEdit.reset();
     final ps = context.read<ProjectService>();
     final home = ps.homeOf(widget.projectId, layerId);
     final layer = home == null
@@ -2252,7 +2701,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   void _closeEditPanels() {
     _finishMaterialDrag();
+    _regionEdit.reset();
     setState(() {
+      _cropEditing = false;
       _editingMaterialId = null;
       _showStackOrder = false;
       _editingBounds = null;
@@ -2281,9 +2732,167 @@ class _TimelineScreenState extends State<TimelineScreen> {
         clip.volume = layer.videoVolume.clamp(0.0, 1.0);
         clip.useStart = layer.sourceTrimStart ?? clip.useStart;
         clip.useEnd = layer.sourceTrimEnd ?? clip.useEnd;
+        clip.sourceFraction = layer.sourceTrimStartFraction;
+        clip.playbackRate = layer.playbackRate;
+        clip.soundFollowsSpeed = layer.videoSoundFollowsSpeed;
+        clip.pitchSemitones = layer.videoPitchSemitones;
       }
     });
     if (clip.trackType == _ClipTrackType.video) _syncMediaPlayback();
+  }
+
+  // ─── Speed (長さ調整) ─────────────────────────────────────────
+
+  /// The timeline length [clip] gets at [rate]: the source time it plays
+  /// divided by the speed. A video plays its trimmed part; an audio clip
+  /// keeps the part of its file it plays now.
+  int _speedLength(_TrackClip clip, double rate) {
+    final sourceFrames = clip.trackType == _ClipTrackType.video
+        ? clip.useEnd + 1 - (clip.useStart + clip.sourceFraction)
+        : clip.lengthFrames * clip.playbackRate;
+    // A video that starts past its used range only holds its last frame:
+    // there is no source time to speed up, so its length stays.
+    if (sourceFrames <= 0) return clip.lengthFrames;
+    return timelineLengthForSource(sourceFrames, rate);
+  }
+
+  int _speedEndFrame(_TrackClip clip, double rate) =>
+      clip.startFrame + _speedLength(clip, rate) - 1;
+
+  /// Why [clip] cannot become [length] frames long, or null when it can:
+  /// it must stay within the scene and not overlap a clip on its row.
+  String? _speedRefusal(_TrackClip clip, int length) {
+    final l10n = AppLocalizations.of(context)!;
+    final end = clip.startFrame + length;
+    if (end > _totalFrames) return l10n.timelineClipSpeedPastSceneEnd;
+    return _overlapsOnRow(clip, clip.startFrame, end)
+        ? l10n.timelineClipSpeedOverlap
+        : null;
+  }
+
+  /// Whether [clip] placed over frames [start] up to (not including) [end]
+  /// would overlap another clip on its row.
+  bool _overlapsOnRow(_TrackClip clip, int start, int end) =>
+      _clipsOfType(clip.trackType).any(
+        (other) =>
+            !identical(other, clip) &&
+            other.trackRow == clip.trackRow &&
+            other.isReadAloud == clip.isReadAloud &&
+            other.startFrame < end &&
+            other.startFrame + other.lengthFrames > start,
+      );
+
+  /// Places [clip] over timeline frames [start] to [end] (from 0, the last
+  /// one included), as typed in 長さ調整's time range, or returns why not.
+  /// Like dragging its edges: the end stays when the start moves, an audio
+  /// clip's sound keeps its timing (it starts later or earlier in its file
+  /// as its start moves), and a video keeps its used part.
+  String? _applyClipTimeRange(_TrackClip clip, int start, int end) {
+    final l10n = AppLocalizations.of(context)!;
+    if (start < 0 || end < start || end >= _totalFrames) {
+      return l10n.timelineDurationInvalid(_totalFrames);
+    }
+    final length = end - start + 1;
+    if (_overlapsOnRow(clip, start, start + length)) {
+      return l10n.timelineDurationOverlap;
+    }
+    var source = (frame: clip.useStart, fraction: clip.sourceFraction);
+    if (clip.trackType == _ClipTrackType.audio && start != clip.startFrame) {
+      final earliest =
+          clip.startFrame -
+          ((clip.useStart + clip.sourceFraction) / clip.playbackRate).floor();
+      if (start < earliest) return l10n.timelineDurationBeforeSource;
+      source = sourcePositionAfter(
+        startFrame: clip.useStart,
+        startFraction: clip.sourceFraction,
+        elapsedFrames: start - clip.startFrame,
+        rate: clip.playbackRate,
+      );
+    }
+    setState(() {
+      clip.startFrame = start;
+      clip.lengthFrames = length;
+      if (clip.trackType == _ClipTrackType.audio) {
+        clip.useStart = source.frame;
+        clip.sourceFraction = source.fraction;
+        clip.useEnd = clip.sourceAfter(length - 1).frame;
+      }
+    });
+    // An audio clip is saved with its sheet's other settings when the sheet
+    // closes; a material is saved now (one Undo).
+    final sceneId = _selectedSceneId;
+    if (clip.trackType != _ClipTrackType.audio && sceneId != null) {
+      _persistClipUpdate(clip, sceneId);
+    }
+    _syncMediaPlayback();
+    return null;
+  }
+
+  /// Changes an audio or read-aloud clip's speed (saved with the clip's
+  /// other settings when its sheet closes).
+  String? _applyAudioSpeed(_TrackClip clip, double rate) {
+    if (!isValidPlaybackRate(rate)) {
+      return AppLocalizations.of(context)!.timelineClipSpeedInvalid;
+    }
+    final length = _speedLength(clip, rate);
+    final refusal = _speedRefusal(clip, length);
+    if (refusal != null) return refusal;
+    setState(() {
+      clip.playbackRate = rate;
+      clip.lengthFrames = length;
+      clip.useEnd = clip.sourceAfter(length - 1).frame;
+    });
+    _syncMediaPlayback();
+    return null;
+  }
+
+  /// Changes a video's speed: its length, and its keyframes retimed from
+  /// the clip's start so the animation stays on the same source moments.
+  String? _applyVideoSpeed(_TrackClip clip, double rate) {
+    final l10n = AppLocalizations.of(context)!;
+    if (!isValidPlaybackRate(rate)) return l10n.timelineClipSpeedInvalid;
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return null;
+    final length = _speedLength(clip, rate);
+    final refusal = _speedRefusal(clip, length);
+    if (refusal != null) return refusal;
+    final ps = context.read<ProjectService>();
+    final home =
+        ps.homeOf(widget.projectId, clip.id) ??
+        (sceneId: sceneId, frameIndex: _currentFrame);
+    final layer = ps
+        .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
+        .where((l) => l.id == clip.id)
+        .firstOrNull;
+    if (layer == null) return null;
+    final keyframes = layer.keyframes.isEmpty
+        ? layer.keyframes
+        : retimeKeyframes(
+            layer.keyframes,
+            anchorFrame: clip.startFrame,
+            factor: rate / layer.playbackRate,
+          );
+    if (keyframes == null) return l10n.timelineClipSpeedKeyframeClash;
+    ps.editTimeline(widget.projectId, 'Change clip speed', () {
+      ps.updateLayer(
+        projectId: widget.projectId,
+        sceneId: home.sceneId,
+        frameIndex: home.frameIndex,
+        layer: layer.copyWith(
+          playbackRate: rate,
+          rangeMode: LayerRangeMode.frameRange,
+          rangeStart: clip.startFrame + 1,
+          rangeEnd: clip.startFrame + length,
+          keyframes: keyframes,
+        ),
+      );
+    }, changesTiles: false);
+    setState(() {
+      clip.playbackRate = rate;
+      clip.lengthFrames = length;
+    });
+    _syncMediaPlayback();
+    return null;
   }
 
   Widget _buildEditPanel() {
@@ -2324,6 +2933,28 @@ class _TimelineScreenState extends State<TimelineScreen> {
       layerId: found.layer.id,
       currentFrame: _currentFrameNotifier,
       onLayerChanged: _onMaterialLayerChanged,
+      cropFrameOf: (layer) => _materialFrameOf(ps, layer, found.home),
+      regionController: _regionEdit,
+      totalFrames: _totalFrames,
+      framesPerSecond: _projectFps(ps).toDouble(),
+      onTimeRangeChange: clip == null
+          ? null
+          : (start, end) => _applyClipTimeRange(clip, start, end),
+      onCropEditingChanged: (editing) {
+        // Told from the panel's build or disposal: change after this frame.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _cropEditing != editing) {
+            setState(() => _cropEditing = editing);
+          }
+        });
+      },
+      videoSpeedEndFrameAt:
+          clip == null || clip.trackType != _ClipTrackType.video
+          ? null
+          : (rate) => _speedEndFrame(clip, rate),
+      onVideoSpeedChange: clip == null || clip.trackType != _ClipTrackType.video
+          ? null
+          : (rate) => _applyVideoSpeed(clip, rate),
       onSeek: (f) => setState(() {
         _isPlaying = false;
         _currentFrame = f;
@@ -2385,6 +3016,52 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// The drag handles over the preview for the material being edited at
   /// [frameIndex], or a note when it is not on screen at that frame.
+  /// The part of [layer]'s picture the material is drawn in (canvas pixels):
+  /// the crop is of this part. An image's drawn part comes from its pixels;
+  /// a video's frames are fitted, centred, into the canvas by their picture
+  /// size (the whole canvas until that size is read).
+  Rect _materialFrameOf(ProjectService ps, Layer layer, LayerHome home) {
+    final tm = ps.tileManagerOf(widget.projectId);
+    final w = tm.canvasWidth.toDouble();
+    final h = tm.canvasHeight.toDouble();
+    final whole = Rect.fromLTWH(0, 0, w, h);
+    if (layer.type == LayerType.timelineVideo) {
+      final id = layer.materialId;
+      final size = id == null ? null : _videoDisplaySizeOf(id);
+      return size == null ? whole : fittedContentRect(size, w, h);
+    }
+    return tm.contentBounds(
+          ps.tileKeyFor(
+            widget.projectId,
+            home.sceneId,
+            home.frameIndex,
+            layer.id,
+          ),
+        ) ??
+        whole;
+  }
+
+  /// The picture size of video material [materialId], or null while it is
+  /// read (the timeline is rebuilt when it is known).
+  Size? _videoDisplaySizeOf(String materialId) {
+    if (_videoDisplaySizes.containsKey(materialId)) {
+      return _videoDisplaySizes[materialId];
+    }
+    final frames = _previewVideoFrames;
+    if (frames == null) return null;
+    _videoDisplaySizes[materialId] = null;
+    frames.timelineOf(materialId).then((result) {
+      if (!mounted || result is! VideoTimelineReady) return;
+      final w = result.timeline.displayWidth;
+      final h = result.timeline.displayHeight;
+      if (w == null || h == null || w <= 0 || h <= 0) return;
+      setState(
+        () => _videoDisplaySizes[materialId] = Size(w.toDouble(), h.toDouble()),
+      );
+    }, onError: (Object _) {});
+    return null;
+  }
+
   Widget? _buildMaterialGizmo(ProjectService ps, int frameIndex) {
     if (_showStackOrder) return null;
     final found = _editingMaterial(ps);
@@ -2431,16 +3108,140 @@ class _TimelineScreenState extends State<TimelineScreen> {
       widget.projectId,
       found.home.sceneId,
     );
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    final camera = cameraKeyframes.isEmpty
+        ? null
+        : CameraEngine().valueAt(cameraKeyframes, frameIndex);
+    final isPicture =
+        layer.type == LayerType.timelineImage ||
+        layer.type == LayerType.timelineVideo;
+    if (isPicture) {
+      // The panel's 範囲選択 section swaps in its own handles.
+      return ListenableBuilder(
+        listenable: _regionEdit,
+        builder: (context, _) => _regionEdit.editing
+            ? _buildRegionGizmo(ps, layer, frameIndex, project, camera)
+            : _buildPictureGizmo(ps, found, frameIndex, project, camera),
+      );
+    }
+    return _buildTransformGizmo(ps, layer, frameIndex, camera);
+  }
+
+  /// The preview's handles for selecting parts of the image or video being
+  /// edited and changing a moved or copied part.
+  Widget _buildRegionGizmo(
+    ProjectService ps,
+    Layer layer,
+    int frameIndex,
+    Project? project,
+    CameraKeyframe? camera,
+  ) {
+    final tm = ps.tileManagerOf(widget.projectId);
+    return MaterialRegionGizmo(
+      key: ValueKey('material-region-gizmo-${layer.id}'),
+      canvasWidth: tm.canvasWidth,
+      canvasHeight: tm.canvasHeight,
+      outputWidth: project?.exportWidth,
+      outputHeight: project?.exportHeight,
+      value: materialTransformAt(layer, frameIndex),
+      camera: camera,
+      shape: _regionEdit.shape,
+      selection: _regionEdit.selection,
+      onSelectionChanged: (next) => _regionEdit.selection = next,
+      edit: _regionEdit.activeIn(layer.regionEdits),
+      onChangeEnd: _finishMaterialDrag,
+      onEditChanged: (next) {
+        final current = _editingMaterial(ps);
+        if (current == null || current.layer.id != layer.id) return;
+        final edits = current.layer.regionEdits;
+        if (!edits.any((e) => e.id == next.id)) return;
+        final undo = context.read<UndoManager?>();
+        if (undo != null) {
+          _materialDrag ??= (before: current.layer, undo: undo);
+        }
+        ps.updateLayer(
+          projectId: widget.projectId,
+          sceneId: current.home.sceneId,
+          frameIndex: current.home.frameIndex,
+          recordUndo: false,
+          layer: current.layer.copyWith(
+            regionEdits: [for (final e in edits) e.id == next.id ? next : e],
+          ),
+        );
+      },
+    );
+  }
+
+  /// The crop's handles while the panel shows the crop, otherwise the
+  /// material's own.
+  Widget _buildPictureGizmo(
+    ProjectService ps,
+    ({Layer layer, LayerHome home}) found,
+    int frameIndex,
+    Project? project,
+    CameraKeyframe? camera,
+  ) {
+    final layer = found.layer;
+    final tm = ps.tileManagerOf(widget.projectId);
+    if (_cropEditing) {
+      return MaterialCropGizmo(
+        key: ValueKey('material-crop-gizmo-${layer.id}'),
+        canvasWidth: tm.canvasWidth,
+        canvasHeight: tm.canvasHeight,
+        outputWidth: project?.exportWidth,
+        outputHeight: project?.exportHeight,
+        value: materialTransformAt(layer, frameIndex),
+        frame: _materialFrameOf(ps, layer, found.home),
+        crop: layer.crop,
+        camera: camera,
+        onChangeEnd: _finishMaterialDrag,
+        onChanged: (next) {
+          final current = _editingMaterial(ps);
+          if (current == null || current.layer.id != layer.id) return;
+          if (current.layer.crop == next) return;
+          final undo = context.read<UndoManager?>();
+          if (undo != null) {
+            _materialDrag ??= (before: current.layer, undo: undo);
+          }
+          ps.updateLayer(
+            projectId: widget.projectId,
+            sceneId: current.home.sceneId,
+            frameIndex: current.home.frameIndex,
+            recordUndo: false,
+            layer: current.layer.copyWith(crop: next),
+          );
+        },
+      );
+    }
+    return _buildTransformGizmo(ps, layer, frameIndex, camera);
+  }
+
+  /// The material's own handles: move, resize and turn it.
+  Widget _buildTransformGizmo(
+    ProjectService ps,
+    Layer layer,
+    int frameIndex,
+    CameraKeyframe? camera,
+  ) {
+    final tm = ps.tileManagerOf(widget.projectId);
     return MaterialTransformGizmo(
       key: ValueKey('material-gizmo-${layer.id}'),
       onChangeEnd: _finishMaterialDrag,
       canvasWidth: tm.canvasWidth,
       canvasHeight: tm.canvasHeight,
+      outputWidth: ps.projects
+          .where((p) => p.id == widget.projectId)
+          .firstOrNull
+          ?.exportWidth,
+      outputHeight: ps.projects
+          .where((p) => p.id == widget.projectId)
+          .firstOrNull
+          ?.exportHeight,
       contentBounds: _editingBounds,
       value: materialTransformAt(layer, frameIndex),
-      camera: cameraKeyframes.isEmpty
-          ? null
-          : CameraEngine().valueAt(cameraKeyframes, frameIndex),
+      camera: camera,
       onChanged: (next) {
         final current = _editingMaterial(ps);
         if (current == null || current.layer.id != layer.id) return;
@@ -2490,9 +3291,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             );
           }
           if (action == 'export') {
-            _runAutomationBlockedAction(
-              () => context.push('/export/${widget.projectId}'),
-            );
+            _runAutomationBlockedAction(_openExport);
           }
           if (action == 'export_frame') _exportCurrentFrameImage();
           if (action == 'duration') _showDurationChangeDialog();
@@ -2686,6 +3485,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 );
                 final gizmo = _buildMaterialGizmo(ps, frameIndex);
                 final picture = _TimelinePreview(
+                  // Told while the preview is being built: counted after
+                  // the frame (the notice cannot change during a build).
+                  onFrameSkipped: () {
+                    if (!_isPlaying) return;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted && _isPlaying) _playbackSkips.value++;
+                    });
+                  },
                   historyRevision: _historyPreviewRevision,
                   backgroundColor: _projectBackgroundOf(ps, widget.projectId),
                   tileManager: ps.tileManagerOf(widget.projectId),
@@ -2693,6 +3500,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   maskGroups: stacked.maskGroups,
                   sceneId: sceneId,
                   frameIndex: frameIndex,
+                  outputWidth: ps.projects
+                      .where((p) => p.id == widget.projectId)
+                      .firstOrNull
+                      ?.exportWidth,
+                  outputHeight: ps.projects
+                      .where((p) => p.id == widget.projectId)
+                      .firstOrNull
+                      ?.exportHeight,
                   cameraKeyframes: ps.cameraKeyframesOf(
                     widget.projectId,
                     sceneId,
@@ -2782,6 +3597,47 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     ),
                   ),
                 ),
+              ),
+            ),
+            // At the band's top, beside the full-screen button: the export's
+            // frame rate when the preview plays at it, and, while playing,
+            // that frames are skipped because playback cannot keep up (the
+            // export has them all).
+            Positioned(
+              left: edge,
+              top: edge,
+              right: edge + _previewControlSize + edge,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_previewOutputFps case final output?)
+                    _PreviewOutputFpsChip(
+                      text: l10n.timelinePreviewOutputFps(
+                        output,
+                        _projectFps(context.read<ProjectService>()),
+                      ),
+                      backTooltip: l10n.timelinePreviewWorkFps(
+                        _projectFps(context.read<ProjectService>()),
+                      ),
+                      onBack: () {
+                        if (_isPlaying) _togglePlay();
+                        setState(() => _previewOutputFps = null);
+                      },
+                    ),
+                  if (_isPlaying)
+                    ValueListenableBuilder<int>(
+                      valueListenable: _playbackSkips,
+                      builder: (context, skips, _) => skips == 0
+                          ? const SizedBox.shrink()
+                          : Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: _PlaybackSkipNotice(
+                                text: l10n.timelinePlaybackSkipNotice,
+                              ),
+                            ),
+                    ),
+                ],
               ),
             ),
             if (!inFullscreen)
@@ -3227,6 +4083,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   Widget _buildToolbar() {
     final l10n = AppLocalizations.of(context)!;
+    if (_isSplitMode) return _buildSplitToolbar(l10n);
     if (_isSceneCursorActive || _isFrameCursorActive) {
       return _buildTimelinePlacementToolbar(l10n);
     }
@@ -3236,6 +4093,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final showLabels = width >= 600;
     final controls = <Widget>[
       _addMaterialMenu(l10n),
+      IconButton(
+        key: const Key('timelineSplitModeButton'),
+        icon: const Icon(Icons.call_split, size: 20),
+        onPressed: () {
+          if (_isPlaying) _togglePlay();
+          setState(() => _isSplitMode = true);
+        },
+        tooltip: Localizations.localeOf(context).languageCode == 'ja'
+            ? '分割'
+            : 'Split',
+      ),
       IconButton(
         icon: const Icon(Icons.movie_filter, size: 20),
         onPressed: _showEffectFilterDialog,
@@ -3294,9 +4162,56 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: IconButton(
               key: const Key('timelineExportButton'),
               icon: const Icon(Icons.upload_file, size: 20),
-              onPressed: () => context.push('/export/${widget.projectId}'),
+              onPressed: _openExport,
               tooltip: l10n.transferExport,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSplitToolbar(AppLocalizations l10n) {
+    final isJapanese = Localizations.localeOf(context).languageCode == 'ja';
+    final targets = _allClips.where(
+      (clip) =>
+          _currentFrame > clip.startFrame &&
+          _currentFrame < clip.startFrame + clip.lengthFrames,
+    );
+    final canApply = targets.isNotEmpty;
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              isJapanese
+                  ? '分割モード：再生ヘッド位置で分割'
+                  : 'Split mode: split at the playhead',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          IconButton(
+            key: const Key('timelineSplitApplyButton'),
+            tooltip: l10n.commonApply,
+            onPressed: canApply ? _applySplitAtCurrentFrame : null,
+            icon: const Icon(Icons.check),
+          ),
+          IconButton(
+            key: const Key('timelineSplitCancelButton'),
+            tooltip: l10n.commonCancel,
+            onPressed: () => setState(() => _isSplitMode = false),
+            icon: const Icon(Icons.close),
           ),
         ],
       ),
@@ -5428,8 +6343,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
     ),
   );
 
-  Widget _buildTrackLabel(IconData icon, String label) =>
-      TrackLabel(icon: icon, label: label, width: _trackLabelWidth);
+  Widget _buildTrackLabel(
+    IconData icon,
+    String label, {
+    VoidCallback? onIconTap,
+    String? iconTooltip,
+    Key? iconKey,
+  }) => TrackLabel(
+    icon: icon,
+    label: label,
+    width: _trackLabelWidth,
+    onIconTap: onIconTap,
+    iconTooltip: iconTooltip,
+    iconKey: iconKey,
+  );
 
   /// 素材種別（画像・動画・音源）ごとのタイムライン行グループ。
   /// 行数・行名はシーンごとにProjectServiceで管理する。1行目の右端＋は
@@ -5545,6 +6472,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     bool canRename = true,
   }) {
     final total = _totalFrames;
+    final videoRow = type == TimelineRowKind.video && canRename;
     return Container(
       height: _materialTrackHeight,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -5554,11 +6482,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
           // 行名タップで名称変更（「タイムライン左側の素材種別名は
           // タップでユーザーがテキスト変更できる」）。種別を示すアイコン自体は
           // 変更不可のまま常時表示する。
+          // A video row's icon is its switch between the video's frames and
+          // its sound's waveform (the rest of the label renames the row).
           canRename
               ? GestureDetector(
                   onTap: () =>
                       _showRenameTrackRowDialog(type, rowIndex, rowLabel),
-                  child: _buildTrackLabel(icon, rowLabel),
+                  child: videoRow
+                      ? _buildVideoRowLabel(rowIndex, rowLabel)
+                      : _buildTrackLabel(icon, rowLabel),
                 )
               : _buildTrackLabel(icon, rowLabel),
           Expanded(
@@ -5760,18 +6692,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          if (clip.trackType == _ClipTrackType.audio &&
-                              clip.filePath != null)
-                            _AudioWaveformThumb(
-                              key: ValueKey('wf_${clip.id}'),
-                              filePath: clip.filePath!,
-                              // Each clip gets its own cache for its exact source interval.
-                              cacheKey:
-                                  'wave_v2_${clip.id}_${clip.filePath}_'
-                                  '${clip.useStart}_${clip.lengthFrames}_${_projectFps(context.read<ProjectService>())}',
-                              sourceStartFrame: clip.useStart,
-                              lengthFrames: clip.lengthFrames,
-                              fps: _projectFps(context.read<ProjectService>()),
+                          if (clip.trackType == _ClipTrackType.audio ||
+                              _videoRowDisplay(clip.trackRow) ==
+                                  VideoTrackDisplay.waveform)
+                            ?_clipWaveform(clip)
+                          else if (clip.trackType == _ClipTrackType.video &&
+                              clip.materialId != null)
+                            Opacity(
+                              opacity: 0.75,
+                              child: VideoFilmstrip(
+                                key: ValueKey('filmstrip_${clip.id}'),
+                                frames: _stripVideoFrames,
+                                materialId: clip.materialId!,
+                                timing: (
+                                  startFrame: clip.startFrame,
+                                  lengthFrames: clip.lengthFrames,
+                                  trimStartFrame:
+                                      clip.useStart + clip.sourceFraction,
+                                  trimEndFrame: clip.useEnd,
+                                  playbackRate: clip.playbackRate,
+                                ),
+                                framesPerSecond: _projectFps(
+                                  context.read<ProjectService>(),
+                                ).toDouble(),
+                              ),
                             ),
                           _buildClipName(clip),
                         ],
@@ -5807,6 +6751,88 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  /// The waveform of the sound [clip] plays (an audio clip, or a video clip
+  /// on a row showing its sound), or null when it has no file.
+  Widget? _clipWaveform(_TrackClip clip) {
+    final path = clip.filePath;
+    if (path == null) return null;
+    if (clip.trackType != _ClipTrackType.audio &&
+        clip.trackType != _ClipTrackType.video) {
+      return null;
+    }
+    final fps = _projectFps(context.read<ProjectService>());
+    final sourceStart = clip.useStart + clip.sourceFraction;
+    // A video sounds only over its used range: the waveform covers that part
+    // of the clip from its left edge, and nothing where the last frame is
+    // held.
+    final soundingFrames = clip.trackType == _ClipTrackType.video
+        ? clip.videoSoundingFrames
+        : clip.lengthFrames.toDouble();
+    if (soundingFrames <= 0) return null;
+    final sourceFrames = soundingFrames * clip.soundRate;
+    final waveform = _AudioWaveformThumb(
+      key: ValueKey('wf_${clip.id}'),
+      filePath: path,
+      // Each clip gets its own cache for its exact source interval.
+      cacheKey:
+          'wave_v3_${clip.id}_${path}_${sourceStart}_${sourceFrames}_$fps',
+      sourceStartFrame: sourceStart,
+      sourceFrames: sourceFrames,
+      fps: fps,
+    );
+    if (soundingFrames >= clip.lengthFrames) return waveform;
+    return FractionallySizedBox(
+      key: ValueKey('wfPart_${clip.id}'),
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: soundingFrames / clip.lengthFrames,
+      child: waveform,
+    );
+  }
+
+  /// A video row's label: its icon shows, and switches, what the row's
+  /// clips show (the video's frames or its sound's waveform).
+  Widget _buildVideoRowLabel(int row, String label) {
+    final l10n = AppLocalizations.of(context)!;
+    final sceneId = _selectedSceneId;
+    final display = sceneId == null
+        ? VideoTrackDisplay.frames
+        : context.watch<ProjectService>().videoRowDisplayOf(
+            widget.projectId,
+            sceneId,
+            row,
+          );
+    final showsFrames = display == VideoTrackDisplay.frames;
+    return _buildTrackLabel(
+      showsFrames ? Icons.movie_outlined : Icons.graphic_eq,
+      label,
+      iconKey: ValueKey('videoRowDisplay-$row'),
+      iconTooltip: showsFrames
+          ? l10n.timelineVideoTrackShowingFrames
+          : l10n.timelineVideoTrackShowingWaveform,
+      onIconTap: sceneId == null
+          ? null
+          : () => context.read<ProjectService>().setVideoRowDisplay(
+              widget.projectId,
+              sceneId,
+              row,
+              showsFrames
+                  ? VideoTrackDisplay.waveform
+                  : VideoTrackDisplay.frames,
+            ),
+    );
+  }
+
+  /// What video row [row] of the scene shows in its clips.
+  VideoTrackDisplay _videoRowDisplay(int row) {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return VideoTrackDisplay.frames;
+    return context.read<ProjectService>().videoRowDisplayOf(
+      widget.projectId,
+      sceneId,
+      row,
+    );
+  }
+
   /// クリップの名前の左の空き。左端の長さを変えるつまみ（幅8dp、真ん中に
   /// 縦の線）に字が重ならないように、つまみの幅だけ空ける。
   static const double _clipNameInset = 8;
@@ -5837,8 +6863,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
         TextStyle(fontSize: 10, height: 1.2, color: ink),
       ),
     );
+    // On a picture (a sound's waveform, or a video row's frames or
+    // waveform) the name sits on the band.
     final onWaveform =
-        clip.trackType == _ClipTrackType.audio && clip.filePath != null;
+        (clip.trackType == _ClipTrackType.audio && clip.filePath != null) ||
+        (clip.trackType == _ClipTrackType.video &&
+            (clip.materialId != null || clip.filePath != null));
     if (!onWaveform) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: _clipNameInset),
@@ -5914,6 +6944,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _clipDragStartFrame = clip.startFrame;
       _clipDragStartLength = clip.lengthFrames;
       _clipDragStartUseStart = clip.useStart;
+      _clipDragStartFraction = clip.sourceFraction;
     });
   }
 
@@ -5947,23 +6978,38 @@ class _TimelineScreenState extends State<TimelineScreen> {
         // visible trim: moving the left edge right trims the same number of
         // source frames; extending left is limited by the source's frame 0.
         final minStart = clip.trackType == _ClipTrackType.audio
-            ? math.max(0, _clipDragStartFrame - _clipDragStartUseStart)
+            ? math.max(
+                0,
+                _clipDragStartFrame -
+                    ((_clipDragStartUseStart + _clipDragStartFraction) /
+                            clip.playbackRate)
+                        .floor(),
+              )
             : 0;
         final newStart = (_clipDragStartFrame + deltaFrames).clamp(
           minStart,
           fixedEnd - 1,
         );
         final newLength = fixedEnd - newStart;
-        final newUseStart = clip.trackType == _ClipTrackType.audio
-            ? _clipDragStartUseStart + newStart - _clipDragStartFrame
-            : clip.useStart;
+        // At the clip's speed, each timeline frame is playbackRate source
+        // frames.
+        final newSource = clip.trackType == _ClipTrackType.audio
+            ? sourcePositionAfter(
+                startFrame: _clipDragStartUseStart,
+                startFraction: _clipDragStartFraction,
+                elapsedFrames: newStart - _clipDragStartFrame,
+                rate: clip.playbackRate,
+              )
+            : (frame: clip.useStart, fraction: clip.sourceFraction);
         if (newStart != clip.startFrame ||
             newLength != clip.lengthFrames ||
-            newUseStart != clip.useStart) {
+            newSource.frame != clip.useStart ||
+            newSource.fraction != clip.sourceFraction) {
           setState(() {
             clip.startFrame = newStart;
             clip.lengthFrames = newLength;
-            clip.useStart = newUseStart;
+            clip.useStart = newSource.frame;
+            clip.sourceFraction = newSource.fraction;
           });
         }
       case _ClipDragMode.resizeRight:
@@ -5987,6 +7033,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         clip.startFrame = _clipDragStartFrame;
         clip.lengthFrames = _clipDragStartLength;
         clip.useStart = _clipDragStartUseStart;
+        clip.sourceFraction = _clipDragStartFraction;
       }
       _draggingClipId = null;
       _clipDragMode = null;
@@ -6804,12 +7851,78 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         ),
                       ),
                     ),
+                    // The speed of a range of the camera's keys.
+                    if (cameraKfs.length >= 2)
+                      Positioned(
+                        right: 28,
+                        top: 4,
+                        child: Tooltip(
+                          message: l10n.keyframeRetimeTitle,
+                          child: GestureDetector(
+                            key: const ValueKey('cameraKeyframeRetime'),
+                            onTap: _retimeCameraKeyframes,
+                            child: Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: ThemeService.activeColorScheme.secondary
+                                    .withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.speed,
+                                size: 14,
+                                color: ThemeService.activeColorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 );
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Plays a chosen range of the camera's keys faster or slower (one Undo
+  /// step; the keys' values and easing are kept).
+  Future<void> _retimeCameraKeyframes() async {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final projects = context.read<ProjectService>();
+    final keys = projects.cameraKeyframesOf(widget.projectId, sceneId);
+    if (keys.length < 2) return;
+    final choice = await showKeyframeRetimeDialog(
+      context,
+      keyFrames: [for (final k in keys) k.frameIndex],
+      exactTimes: {for (final k in keys) k.frameIndex: k.exactTime},
+      lastFrame: _totalFrames - 1,
+    );
+    if (choice == null || !mounted || _selectedSceneId != sceneId) return;
+    final current = projects.cameraKeyframesOf(widget.projectId, sceneId);
+    // From the keys' times before rounding, so retiming back and forth
+    // returns them to their frames.
+    final moves = retimeKeyRangeExact(
+      {for (final k in current) k.frameIndex: k.exactTime},
+      fromFrame: choice.fromFrame,
+      toFrame: choice.toFrame,
+      rate: choice.rate,
+      lastFrame: _totalFrames - 1,
+    );
+    if (moves == null) return;
+    projects.replaceCameraKeyframes(
+      widget.projectId,
+      sceneId,
+      retimedKeyframes(
+        current,
+        moves,
+        frameOf: (k) => k.frameIndex,
+        exactOf: (k) => k.exactTime,
+        withTime: (k, t) => k.copyWith(frameIndex: t.round(), exactFrame: t),
       ),
     );
   }
@@ -8278,27 +9391,70 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }) {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
+    final copy = _copyOf(clip, sceneId);
+    if (copy == null) return;
+    _pasteCopy(copy, newStart, overrideTrackRow: overrideTrackRow);
+  }
+
+  /// [clip] as it is now, kept for the clipboard or a duplicate: its sound,
+  /// or its material layer and the layer's pixels. Null when the clip is no
+  /// longer in the project.
+  _CopiedClip? _copyOf(_TrackClip clip, String sceneId) {
+    final ps = context.read<ProjectService>();
+    final snapshot = _snapshotClip(clip);
+    if (clip.trackType == _ClipTrackType.audio) {
+      final audio = ps
+          .audioClipsOf(widget.projectId, sceneId)
+          .where((a) => a.id == clip.id)
+          .firstOrNull;
+      return audio == null ? null : _CopiedClip(clip: snapshot, audio: audio);
+    }
+    final home =
+        ps.homeOf(widget.projectId, clip.id) ??
+        (sceneId: sceneId, frameIndex: _currentFrame);
+    final layer = ps
+        .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
+        .where((l) => l.id == clip.id)
+        .firstOrNull;
+    if (layer == null) return null;
+    return _CopiedClip(
+      clip: snapshot,
+      layer: layer,
+      home: home,
+      tiles: ps
+          .tileManagerOf(widget.projectId)
+          .shareLayerTiles(
+            ps.tileKeyFor(
+              widget.projectId,
+              home.sceneId,
+              home.frameIndex,
+              clip.id,
+            ),
+          ),
+    );
+  }
+
+  /// Adds a new clip made from [copy] at [newStart] (on [overrideTrackRow],
+  /// or the row it came from) in the selected scene. A sound is added as an
+  /// audio clip; a material as a new layer with the copied pixels and every
+  /// setting of the copied layer (text, keyframes, mask, opacity, crop,
+  /// region edits, the video's speed, sound and used range), its time range
+  /// and keyframes moved to the new place.
+  void _pasteCopy(_CopiedClip copy, int newStart, {int? overrideTrackRow}) {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
     final projectService = context.read<ProjectService>();
+    final clip = copy.clip;
     final targetRow = overrideTrackRow ?? clip.trackRow;
 
-    if (clip.trackType == _ClipTrackType.audio) {
-      final id = 'audio_${DateTime.now().microsecondsSinceEpoch}';
+    if (copy.audio case final audio?) {
+      final id =
+          'audio_${DateTime.now().microsecondsSinceEpoch}_'
+          '${_pastedAudioSerial++}';
       projectService.addAudioClip(
         widget.projectId,
         sceneId,
-        AudioClip(
-          id: id,
-          label: clip.label,
-          materialId: clip.materialId,
-          startFrame: newStart,
-          lengthFrames: clip.lengthFrames,
-          volume: clip.volume,
-          fadeIn: clip.fadeIn,
-          fadeOut: clip.fadeOut,
-          sourceStartFrame: clip.useStart,
-          trackRow: targetRow,
-          isReadAloud: clip.isReadAloud,
-        ),
+        audio.copyWith(id: id, startFrame: newStart, trackRow: targetRow),
       );
       if (mounted) {
         setState(
@@ -8316,7 +9472,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
               fadeIn: clip.fadeIn,
               fadeOut: clip.fadeOut,
               useStart: clip.useStart,
-              useEnd: clip.useStart + clip.lengthFrames - 1,
+              useEnd: clip.sourceAfter(clip.lengthFrames - 1).frame,
+              sourceFraction: clip.sourceFraction,
+              playbackRate: clip.playbackRate,
+              soundFollowsSpeed: clip.soundFollowsSpeed,
+              pitchSemitones: clip.pitchSemitones,
               trackRow: targetRow,
               isReadAloud: clip.isReadAloud,
             ),
@@ -8326,15 +9486,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
       return;
     }
 
-    final home =
-        projectService.homeOf(widget.projectId, clip.id) ??
-        (sceneId: sceneId, frameIndex: _currentFrame);
-    final sourceLayer = projectService
-        .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
-        .where((l) => l.id == clip.id)
-        .firstOrNull;
+    final sourceLayer = copy.layer;
     if (sourceLayer == null) return;
-
+    // The layer goes back where it lived in the scene (a material is held by
+    // one frame and shown over its time range).
+    final savedHome = copy.home;
+    final frames = projectService.frameCount(widget.projectId, sceneId);
+    final home =
+        savedHome != null &&
+            savedHome.sceneId == sceneId &&
+            savedHome.frameIndex < frames
+        ? savedHome
+        : (sceneId: sceneId, frameIndex: 0);
     final newLayer = projectService.addLayer(
       projectId: widget.projectId,
       sceneId: home.sceneId,
@@ -8342,25 +9505,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
       type: sourceLayer.type,
       name: clip.label,
     );
-    projectService
-        .tileManagerOf(widget.projectId)
-        .copyLayer(
-          projectService.tileKeyFor(
-            widget.projectId,
-            home.sceneId,
-            home.frameIndex,
-            clip.id,
-          ),
-          projectService.tileKeyFor(
-            widget.projectId,
-            home.sceneId,
-            home.frameIndex,
-            newLayer.id,
-          ),
-        );
-    // 元の素材の設定（文字・配置のキーフレーム・マスク・不透明度・
-    // 動画の音量と使用範囲）をそのまま写し、表示範囲と行だけを変える。
-    // キーフレームは表示範囲と一緒にずらす。
+    if (copy.tiles case final tiles?) {
+      projectService
+          .tileManagerOf(widget.projectId)
+          .putLayerTiles(
+            projectService.tileKeyFor(
+              widget.projectId,
+              home.sceneId,
+              home.frameIndex,
+              newLayer.id,
+            ),
+            tiles,
+          );
+    }
     final shift = newStart - clip.startFrame;
     projectService.updateLayer(
       projectId: widget.projectId,
@@ -8392,6 +9549,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
       materialId: clip.materialId,
       useStart: clip.useStart,
       useEnd: clip.useEnd,
+      sourceFraction: clip.sourceFraction,
+      playbackRate: clip.playbackRate,
+      soundFollowsSpeed: clip.soundFollowsSpeed,
+      pitchSemitones: clip.pitchSemitones,
       volume: clip.volume,
       videoOpacity: clip.videoOpacity,
       trackRow: targetRow,
@@ -8451,34 +9612,61 @@ class _TimelineScreenState extends State<TimelineScreen> {
     fadeOut: c.fadeOut,
     useStart: c.useStart,
     useEnd: c.useEnd,
+    sourceFraction: c.sourceFraction,
+    playbackRate: c.playbackRate,
+    soundFollowsSpeed: c.soundFollowsSpeed,
+    pitchSemitones: c.pitchSemitones,
     videoOpacity: c.videoOpacity,
     trackRow: c.trackRow,
     isReadAloud: c.isReadAloud,
   );
 
+  /// The selected clips kept for the clipboard, as they are now.
+  List<_CopiedClip> _copiesOfSelectedClips(String sceneId) => [
+    for (final clip in _allClips)
+      if (_selectedClipIds.contains(clip.id)) ?_copyOf(clip, sceneId),
+  ];
+
   void _copySelectedClips() {
     final sceneId = _selectedSceneId;
     if (sceneId == null || _selectedClipIds.isEmpty) return;
-    final selected = _allClips
-        .where((c) => _selectedClipIds.contains(c.id))
-        .map(_snapshotClip)
-        .toList();
-    if (selected.isEmpty) return;
+    final copies = _copiesOfSelectedClips(sceneId);
+    if (copies.isEmpty) return;
     setState(() {
-      _clipClipboard = (sourceSceneId: sceneId, clips: selected, isCut: false);
+      _clipClipboard = (sourceSceneId: sceneId, clips: copies);
     });
   }
 
+  /// Cutting clips takes them away at once (one Undo puts them back) and
+  /// keeps them on the clipboard; pasting them is its own Undo.
   void _cutSelectedClips() {
     final sceneId = _selectedSceneId;
     if (sceneId == null || _selectedClipIds.isEmpty) return;
-    final selected = _allClips
+    final copies = _copiesOfSelectedClips(sceneId);
+    if (copies.isEmpty) return;
+    final targets = _allClips
         .where((c) => _selectedClipIds.contains(c.id))
-        .map(_snapshotClip)
         .toList();
-    if (selected.isEmpty) return;
+    context.read<ProjectService>().editTimeline(
+      widget.projectId,
+      'Cut clips',
+      () {
+        for (final clip in targets) {
+          setState(() {
+            _videoClips.remove(clip);
+            _audioClips.remove(clip);
+            _imageClips.remove(clip);
+            _textClips.remove(clip);
+          });
+          _deletePersistedClip(clip, sceneId);
+        }
+      },
+      changesTiles: false,
+    );
     setState(() {
-      _clipClipboard = (sourceSceneId: sceneId, clips: selected, isCut: true);
+      _clipClipboard = (sourceSceneId: sceneId, clips: copies);
+      _selectedClipIds.clear();
+      _isClipMultiSelect = false;
     });
   }
 
@@ -8514,7 +9702,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 貼り付ける。複数クリップをまとめてコピーしていた場合はコピー時の
   /// 相対位置関係を保ったまま貼り付ける。貼り付け先が既存の他のクリップと
   /// 重なる場合は、前に配置・後ろに配置・重ねて配置（行を1つ増やす）の
-  /// 3択をユーザーへ確認する。
+  /// 3択をユーザーへ確認する。クリップボードは貼り付けた後も残すので、
+  /// 同じ内容を何度でも貼り付けられる。
   Future<void> _pasteClipsAtCurrentFrame() async {
     final clipboard = _clipClipboard;
     final sceneId = _selectedSceneId;
@@ -8523,27 +9712,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // シーンを見ている間は貼り付けを行わない（ボタン側でも無効化する）。
     if (clipboard.sourceSceneId != sceneId) return;
 
-    final anchor = clipboard.clips
+    final copied = [for (final copy in clipboard.clips) copy.clip];
+    final anchor = copied
         .map((c) => c.startFrame)
         .reduce((a, b) => a < b ? a : b);
     final targets = <String, int>{
-      for (final c in clipboard.clips)
+      for (final c in copied)
         c.id: (_currentFrame + (c.startFrame - anchor)).clamp(0, 1 << 30),
     };
 
-    // 貼り付け先が既存クリップと重なっていないか判定する。切り取りの
-    // 場合は貼り付け後に削除される元クリップ自身との重なりは無視する。
-    final excludeIds = clipboard.isCut
-        ? clipboard.clips.map((c) => c.id).toSet()
-        : <String>{};
+    // 貼り付け先が既存クリップと重なっていないか判定する（切り取った
+    // クリップはその時点で取り除いてある）。
     final conflicts = <({int start, int end})>[];
     final conflictingClipIds = <String>{};
-    for (final c in clipboard.clips) {
+    for (final c in copied) {
       final existingOfType = _clipsOfType(c.trackType);
       final start = targets[c.id]!;
       final end = start + c.lengthFrames;
       for (final other in existingOfType) {
-        if (excludeIds.contains(other.id)) continue;
         if (other.trackRow != c.trackRow ||
             other.isReadAloud != c.isReadAloud) {
           continue;
@@ -8574,7 +9760,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           final earliestConflictStart = conflicts
               .map((c) => c.start)
               .reduce((a, b) => a < b ? a : b);
-          final batchMaxEnd = clipboard.clips
+          final batchMaxEnd = copied
               .map((c) => targets[c.id]! + c.lengthFrames)
               .reduce((a, b) => a > b ? a : b);
           beforeShift = earliestConflictStart - batchMaxEnd;
@@ -8582,14 +9768,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
           final latestConflictEnd = conflicts
               .map((c) => c.end)
               .reduce((a, b) => a > b ? a : b);
-          final batchMinStart = clipboard.clips
+          final batchMinStart = copied
               .map((c) => targets[c.id]!)
               .reduce((a, b) => a < b ? a : b);
           afterShift = latestConflictEnd - batchMinStart;
         } else if (strategy == 'newRow') {
           final ps = context.read<ProjectService>();
           final newRowsByType = <_ClipTrackType, int>{};
-          for (final clip in clipboard.clips.where(
+          for (final clip in copied.where(
             (c) => conflictingClipIds.contains(c.id),
           )) {
             // Speech already has a dedicated row. Ordinary audio keeps its
@@ -8609,7 +9795,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           }
         }
 
-        for (final c in clipboard.clips) {
+        for (final copy in clipboard.clips) {
+          final c = copy.clip;
           var start = targets[c.id]!;
           int? overrideRow;
           if (strategy == 'before' && beforeShift != null) {
@@ -8620,20 +9807,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               conflictingClipIds.contains(c.id)) {
             overrideRow = newRowForClipId[c.id];
           }
-          _duplicateClipAt(c, start, overrideTrackRow: overrideRow);
-        }
-
-        if (clipboard.isCut) {
-          for (final c in clipboard.clips) {
-            setState(() {
-              _videoClips.removeWhere((x) => x.id == c.id);
-              _audioClips.removeWhere((x) => x.id == c.id);
-              _imageClips.removeWhere((x) => x.id == c.id);
-              _textClips.removeWhere((x) => x.id == c.id);
-            });
-            _deletePersistedClip(c, sceneId);
-          }
-          setState(() => _clipClipboard = null);
+          _pasteCopy(copy, start, overrideTrackRow: overrideRow);
         }
       },
     );
@@ -8674,6 +9848,248 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  /// 再生ヘッド位置で、そこをまたいでいる全トラックのクリップを分割する。
+  /// 音声・読み上げ音声・動画・画像・テキストを同じ操作で扱い、
+  /// 素材内の再生位置（sourceTrim/sourceStartFrame）と外側のフェードを保つ。
+  /// The inclusive source end of the left half of [clip] (a video) split
+  /// after [leftLength] frames.
+  static int _videoSplitLeftEnd(_TrackClip clip, int leftLength) {
+    final last = clip.sourceAfter(leftLength - 1);
+    return math.min(
+      last.fraction > 0 ? last.frame + 1 : last.frame,
+      clip.useEnd,
+    );
+  }
+
+  void _applySplitAtCurrentFrame() {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final splitFrame = _currentFrame;
+    final targets = _allClips
+        .where(
+          (clip) =>
+              splitFrame > clip.startFrame &&
+              splitFrame < clip.startFrame + clip.lengthFrames,
+        )
+        .toList();
+    if (targets.isEmpty) return;
+
+    final projectService = context.read<ProjectService>();
+    final rightClips = <_TrackClip>[];
+    final processedClips = <_TrackClip>[];
+    projectService.editTimeline(widget.projectId, 'Split timeline clips', () {
+      for (var index = 0; index < targets.length; index++) {
+        final clip = targets[index];
+        final leftLength = splitFrame - clip.startFrame;
+        final rightLength = clip.lengthFrames - leftLength;
+        // Where the right half starts in the source, at the clip's speed
+        // (a fraction of a frame is kept so it plays exactly as before).
+        final rightSource = clip.sourceAfter(leftLength);
+        final rightSourceStart = rightSource.frame;
+        // A video's picture: the left half's last frame may sit part-way into
+        // a source frame (at a speed other than 1x), so its inclusive end is
+        // the next frame (not past the clip's own end) or that frame would be
+        // held from its start. A right half that starts past the used range
+        // keeps that source start: its picture holds the last used frame and
+        // it is silent, as that part of the clip was.
+        final videoLeftEnd = _videoSplitLeftEnd(clip, leftLength);
+        final videoRightStart = rightSourceStart;
+        final videoRightFraction = rightSource.fraction;
+        final rightId = clip.trackType == _ClipTrackType.audio
+            ? 'audio_split_${DateTime.now().microsecondsSinceEpoch}_$index'
+            : 'layer_split_${DateTime.now().microsecondsSinceEpoch}_$index';
+
+        if (clip.trackType == _ClipTrackType.audio) {
+          projectService.updateAudioClip(
+            widget.projectId,
+            sceneId,
+            AudioClip(
+              id: clip.id,
+              label: clip.label,
+              materialId: clip.materialId,
+              startFrame: clip.startFrame,
+              lengthFrames: leftLength,
+              volume: clip.volume,
+              fadeIn: clip.fadeIn,
+              fadeOut: 0,
+              sourceStartFrame: clip.useStart,
+              sourceStartFraction: clip.sourceFraction,
+              playbackRate: clip.playbackRate,
+              pitchSemitones: clip.pitchSemitones,
+              trackRow: clip.trackRow,
+              isReadAloud: clip.isReadAloud,
+            ),
+          );
+          projectService.addAudioClip(
+            widget.projectId,
+            sceneId,
+            AudioClip(
+              id: rightId,
+              label: clip.label,
+              materialId: clip.materialId,
+              startFrame: splitFrame,
+              lengthFrames: rightLength,
+              volume: clip.volume,
+              fadeIn: 0,
+              fadeOut: clip.fadeOut,
+              sourceStartFrame: rightSourceStart,
+              sourceStartFraction: rightSource.fraction,
+              playbackRate: clip.playbackRate,
+              pitchSemitones: clip.pitchSemitones,
+              trackRow: clip.trackRow,
+              isReadAloud: clip.isReadAloud,
+            ),
+          );
+          processedClips.add(clip);
+          rightClips.add(
+            _TrackClip(
+              id: rightId,
+              label: clip.label,
+              startFrame: splitFrame,
+              lengthFrames: rightLength,
+              color: clip.color,
+              trackType: clip.trackType,
+              filePath: clip.filePath,
+              materialId: clip.materialId,
+              volume: clip.volume,
+              fadeIn: 0,
+              fadeOut: clip.fadeOut,
+              useStart: rightSourceStart,
+              useEnd: clip.useEnd,
+              sourceFraction: rightSource.fraction,
+              playbackRate: clip.playbackRate,
+              soundFollowsSpeed: clip.soundFollowsSpeed,
+              pitchSemitones: clip.pitchSemitones,
+              trackRow: clip.trackRow,
+              isReadAloud: clip.isReadAloud,
+            ),
+          );
+          continue;
+        }
+
+        final home =
+            projectService.homeOf(widget.projectId, clip.id) ??
+            (sceneId: sceneId, frameIndex: splitFrame - 1);
+        final sourceLayer = projectService
+            .storedLayersOf(widget.projectId, home.sceneId, home.frameIndex)
+            .where((layer) => layer.id == clip.id)
+            .firstOrNull;
+        if (sourceLayer == null) continue;
+
+        final newLayer = projectService.addLayer(
+          projectId: widget.projectId,
+          sceneId: home.sceneId,
+          frameIndex: home.frameIndex,
+          type: sourceLayer.type,
+          name: sourceLayer.name,
+          id: rightId,
+        );
+        projectService
+            .tileManagerOf(widget.projectId)
+            .copyLayer(
+              projectService.tileKeyFor(
+                widget.projectId,
+                home.sceneId,
+                home.frameIndex,
+                clip.id,
+              ),
+              projectService.tileKeyFor(
+                widget.projectId,
+                home.sceneId,
+                home.frameIndex,
+                newLayer.id,
+              ),
+            );
+
+        final isVideo = clip.trackType == _ClipTrackType.video;
+        projectService.updateLayer(
+          projectId: widget.projectId,
+          sceneId: home.sceneId,
+          frameIndex: home.frameIndex,
+          layer: sourceLayer.copyWith(
+            rangeMode: LayerRangeMode.frameRange,
+            rangeStart: clip.startFrame + 1,
+            rangeEnd: splitFrame,
+            sourceTrimEnd: isVideo ? videoLeftEnd : null,
+          ),
+        );
+        projectService.updateLayer(
+          projectId: widget.projectId,
+          sceneId: home.sceneId,
+          frameIndex: home.frameIndex,
+          layer: sourceLayer.copyWith(
+            id: newLayer.id,
+            name: sourceLayer.name,
+            rangeMode: LayerRangeMode.frameRange,
+            rangeStart: splitFrame + 1,
+            rangeEnd: clip.startFrame + clip.lengthFrames,
+            sourceTrimStart: isVideo ? videoRightStart : null,
+            sourceTrimStartFraction: isVideo ? videoRightFraction : null,
+            sourceTrimEnd: isVideo ? clip.useEnd : null,
+            textObject: sourceLayer.textObject?.copyWith(id: newLayer.id),
+          ),
+        );
+        // The right half moves with the left half's group, as before.
+        final group = projectService.groupContainingLayer(
+          widget.projectId,
+          home.sceneId,
+          clip.id,
+        );
+        if (group != null) {
+          projectService.updateLayerGroup(
+            widget.projectId,
+            home.sceneId,
+            group.copyWith(
+              memberLayerIds: [...group.memberLayerIds, newLayer.id],
+            ),
+          );
+        }
+        processedClips.add(clip);
+        rightClips.add(
+          _TrackClip(
+            id: newLayer.id,
+            label: clip.label,
+            startFrame: splitFrame,
+            lengthFrames: rightLength,
+            color: clip.color,
+            trackType: clip.trackType,
+            filePath: clip.filePath,
+            materialId: clip.materialId,
+            useStart: isVideo ? videoRightStart : clip.useStart,
+            useEnd: clip.useEnd,
+            sourceFraction: isVideo ? videoRightFraction : 0,
+            playbackRate: clip.playbackRate,
+            soundFollowsSpeed: clip.soundFollowsSpeed,
+            pitchSemitones: clip.pitchSemitones,
+            volume: clip.volume,
+            videoOpacity: clip.videoOpacity,
+            trackRow: clip.trackRow,
+          ),
+        );
+      }
+    });
+
+    if (!mounted) return;
+    setState(() {
+      for (final clip in processedClips) {
+        final leftLength = splitFrame - clip.startFrame;
+        clip.lengthFrames = leftLength;
+        if (clip.trackType == _ClipTrackType.video) {
+          clip.useEnd = _videoSplitLeftEnd(clip, leftLength);
+        } else if (clip.trackType == _ClipTrackType.audio) {
+          clip.fadeOut = 0;
+          clip.useEnd = clip.sourceAfter(leftLength - 1).frame;
+        }
+      }
+      for (final clip in rightClips) {
+        _clipsOfType(clip.trackType).add(clip);
+      }
+      _isSplitMode = false;
+      _selectedClipIds.clear();
+    });
+    _syncMediaPlayback();
+  }
+
   /// クリップ詳細シートを閉じた時点で、編集内容（音量・フェード・不透明度・
   /// 使用範囲）をまとめて永続化する（スライダー操作のたびに保存すると低スペック
   /// 端末で負荷が高いため、シートを閉じた時点でまとめて反映する）。
@@ -8701,6 +10117,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
               saved.fadeIn == clip.fadeIn &&
               saved.fadeOut == clip.fadeOut &&
               saved.sourceStartFrame == clip.useStart &&
+              saved.sourceStartFraction == clip.sourceFraction &&
+              saved.playbackRate == clip.playbackRate &&
+              saved.pitchSemitones == clip.pitchSemitones &&
               saved.trackRow == clip.trackRow) {
         return;
       }
@@ -8717,6 +10136,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
           fadeIn: clip.fadeIn,
           fadeOut: clip.fadeOut,
           sourceStartFrame: clip.useStart,
+          sourceStartFraction: clip.sourceFraction,
+          playbackRate: clip.playbackRate,
+          pitchSemitones: clip.pitchSemitones,
           trackRow: clip.trackRow,
           isReadAloud: clip.isReadAloud,
         ),
@@ -8797,7 +10219,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
           fadeIn: a.fadeIn,
           fadeOut: a.fadeOut,
           useStart: a.sourceStartFrame,
-          useEnd: a.sourceStartFrame + a.lengthFrames - 1,
+          useEnd: sourcePositionAfter(
+            startFrame: a.sourceStartFrame,
+            startFraction: a.sourceStartFraction,
+            elapsedFrames: a.lengthFrames - 1,
+            rate: a.playbackRate,
+          ).frame,
+          sourceFraction: a.sourceStartFraction,
+          playbackRate: a.playbackRate,
+          pitchSemitones: a.pitchSemitones,
           trackRow: a.trackRow,
           isReadAloud: a.isReadAloud,
         ),
@@ -8850,7 +10280,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
           filePath: path,
           materialId: layer.materialId,
           useStart: layer.sourceTrimStart ?? 0,
-          useEnd: layer.sourceTrimEnd ?? (length - 1),
+          useEnd:
+              layer.sourceTrimEnd ??
+              ((layer.sourceTrimStart ?? 0) + length - 1),
+          sourceFraction: layer.sourceTrimStartFraction,
+          playbackRate: layer.type == LayerType.timelineVideo
+              ? layer.playbackRate
+              : 1.0,
+          soundFollowsSpeed: layer.videoSoundFollowsSpeed,
+          pitchSemitones: layer.videoPitchSemitones,
           volume: layer.type == LayerType.timelineVideo
               ? layer.videoVolume.clamp(0.0, 1.0)
               : 1.0,
@@ -8903,6 +10341,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
       builder: (ctx) => _ClipDetailSheet(
         clip: clip,
         totalFrames: _totalFrames,
+        speedEndFrameAt: (rate) => _speedEndFrame(clip, rate),
+        onSpeedChange: (rate) => _applyAudioSpeed(clip, rate),
+        framesPerSecond: _projectFps(context.read<ProjectService>()).toDouble(),
+        onTimeRangeChange: (start, end) =>
+            _applyClipTimeRange(clip, start, end),
         onDelete: () {
           setState(() {
             _audioClips.remove(clip);
@@ -9088,9 +10531,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (project == null) return;
     final scenes = ps.scenesOf(widget.projectId);
     final tileManager = ps.tileManagerOf(widget.projectId);
+    final materials = context.read<MaterialService>();
 
     try {
-      final path = await ExportEngine().exportFrameImage(
+      final videoMaterials = await materials.videoSnapshotOf(widget.projectId);
+      final engine = ExportEngine();
+      final path = await engine.exportFrameImage(
         projectName: project.name,
         scenes: scenes,
         tileManager: tileManager,
@@ -9102,15 +10548,25 @@ class _TimelineScreenState extends State<TimelineScreen> {
         height: project.exportHeight,
         backgroundColor: project.backgroundColor,
         asJpeg: asJpeg,
+        sourceFps: project.fps,
+        videoMaterials: videoMaterials,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(
         SnackBar(
           content: Text(
             l10n.timelineExportFrameSuccessSnackbar(path.split('/').last),
           ),
         ),
       );
+      if (engine.videoLeftOut > 0) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.exportVideosLeftOut(engine.videoLeftOut)),
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -9942,6 +11398,112 @@ int _projectBackgroundOf(ProjectService ps, String projectId) =>
     ps.projects.where((p) => p.id == projectId).firstOrNull?.backgroundColor ??
     0xFFFFFFFF;
 
+/// The timeline screen's source of decoded video frames for its previews
+/// (null while it is not available, e.g. before the materials are read).
+class _TimelinePreviewVideoFrames extends InheritedWidget {
+  const _TimelinePreviewVideoFrames({
+    required this.videoPixels,
+    required super.child,
+  });
+
+  final TimelineVideoLayerPixels? videoPixels;
+
+  static TimelineVideoLayerPixels? of(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<_TimelinePreviewVideoFrames>()
+      ?.videoPixels;
+
+  @override
+  bool updateShouldNotify(_TimelinePreviewVideoFrames oldWidget) =>
+      !identical(videoPixels, oldWidget.videoPixels);
+}
+
+/// The preview's note that it plays at the export's frame rate, with a
+/// button back to the work's own.
+class _PreviewOutputFpsChip extends StatelessWidget {
+  const _PreviewOutputFpsChip({
+    required this.text,
+    required this.backTooltip,
+    required this.onBack,
+  });
+
+  final String text;
+  final String backTooltip;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colour =
+        theme.popupMenuTheme.textStyle?.color ?? theme.colorScheme.onSurface;
+    return Material(
+      key: const Key('timelinePreviewOutputFps'),
+      color: theme.cardTheme.color ?? theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.only(start: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.movie_outlined, size: 16, color: colour),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                text,
+                style: theme.textTheme.bodySmall?.copyWith(color: colour),
+              ),
+            ),
+            IconButton(
+              key: const Key('timelinePreviewOutputFpsBack'),
+              icon: Icon(Icons.close, size: 18, color: colour),
+              tooltip: backTooltip,
+              onPressed: onBack,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The preview's note that playback is skipping frames: a small card over
+/// the band's corner, its text in the card's own colours.
+class _PlaybackSkipNotice extends StatelessWidget {
+  const _PlaybackSkipNotice({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colour =
+        theme.popupMenuTheme.textStyle?.color ?? theme.colorScheme.onSurface;
+    return Semantics(
+      liveRegion: true,
+      child: Material(
+        key: const Key('timelinePlaybackSkipNotice'),
+        color: theme.cardTheme.color ?? theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.speed, size: 16, color: colour),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  text,
+                  style: theme.textTheme.bodySmall?.copyWith(color: colour),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _TimelinePreview extends StatefulWidget {
   final TileManager tileManager;
 
@@ -9951,6 +11513,8 @@ class _TimelinePreview extends StatefulWidget {
   final List<LayerMaskGroup> maskGroups;
   final String sceneId;
   final int frameIndex;
+  final int? outputWidth;
+  final int? outputHeight;
   final int historyRevision;
   final List<CameraKeyframe> cameraKeyframes;
   final List<EffectFilterInstance> effectFilters;
@@ -9960,13 +11524,20 @@ class _TimelinePreview extends StatefulWidget {
   /// The project's background colour, shown behind the picture.
   final int backgroundColor;
 
+  /// Told when a frame asked for is never shown because a later one came
+  /// before it was composed (the device cannot keep up with playback).
+  final VoidCallback? onFrameSkipped;
+
   const _TimelinePreview({
     required this.backgroundColor,
+    this.onFrameSkipped,
     required this.tileManager,
     required this.layers,
     this.maskGroups = const [],
     required this.sceneId,
     required this.frameIndex,
+    this.outputWidth,
+    this.outputHeight,
     this.historyRevision = 0,
     this.cameraKeyframes = const [],
     this.effectFilters = const [],
@@ -9979,18 +11550,25 @@ class _TimelinePreview extends StatefulWidget {
 }
 
 class _TimelinePreviewState extends State<_TimelinePreview> {
-  final CameraEngine _cameraEngine = CameraEngine();
-  final LayerKeyframeEngine _layerKeyframeEngine = LayerKeyframeEngine();
-  final FilterEngine _filterEngine = FilterEngine();
+  final TimelineFrameRenderer _renderer = TimelineFrameRenderer();
   ui.Image? _image;
   bool _building = false;
   // A change that came while a picture was being built: build again after
   // (else dragging a slider or a material left the preview a step behind).
   bool _rebuildPending = false;
+  int? _pendingFrame;
+
+  /// The decoded frames of video materials, shared by the timeline screen.
+  TimelineVideoLayerPixels? _videoPixels;
+  bool _started = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final videoPixels = _TimelinePreviewVideoFrames.of(context);
+    if (_started && identical(videoPixels, _videoPixels)) return;
+    _started = true;
+    _videoPixels = videoPixels;
     _rebuild();
   }
 
@@ -10010,6 +11588,8 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
         old.tileManager != widget.tileManager ||
         old.sceneId != widget.sceneId ||
         old.frameIndex != widget.frameIndex ||
+        old.outputWidth != widget.outputWidth ||
+        old.outputHeight != widget.outputHeight ||
         old.cameraKeyframes != widget.cameraKeyframes ||
         old.effectFilters != widget.effectFilters ||
         old.groups != widget.groups ||
@@ -10018,90 +11598,55 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     }
   }
 
-  LayerKeyframe? _groupKeyframeOf(_TimelinePreview request, Layer layer) {
-    for (final g in request.groups) {
-      if (g.memberLayerIds.contains(layer.id)) {
-        return g.keyframes.isEmpty
-            ? null
-            : _layerKeyframeEngine.valueAt(g.keyframes, request.frameIndex);
-      }
-    }
-    return null;
-  }
-
   Future<void> _rebuild() async {
     if (_building) {
+      // A frame already waiting is replaced by this one: it is never shown.
+      if (_rebuildPending && _pendingFrame != widget.frameIndex) {
+        widget.onFrameSkipped?.call();
+      }
       _rebuildPending = true;
+      _pendingFrame = widget.frameIndex;
       return;
     }
     _building = true;
     final request = widget;
+    final videoPixels = _videoPixels;
     final tm = request.tileManager;
-    final layered = await LayerCompositor.composite(
-      tm,
-      request.layers,
-      (l) => resolveTileKey(
-        request.layerHomes,
-        request.sceneId,
-        request.frameIndex,
-        l.id,
-      ),
-      tm.canvasWidth,
-      tm.canvasHeight,
-      keyframeOf: (l) => l.keyframes.isEmpty
-          ? null
-          : _layerKeyframeEngine.valueAt(l.keyframes, request.frameIndex),
-      groupKeyframeOf: (l) => _groupKeyframeOf(request, l),
-      paperColor: LayerCompositor.paperForBlendModes(
-        request.layers,
-        request.backgroundColor,
-      ),
-      maskGroups: request.maskGroups,
-    );
-
-    // カメラ変換を適用する（カメラは表示のみを変更する）
-    final kf = _cameraEngine.valueAt(
-      request.cameraKeyframes,
-      request.frameIndex,
-    );
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    canvas.save();
-    _cameraEngine.apply(
-      canvas,
-      kf,
-      tm.canvasWidth.toDouble(),
-      tm.canvasHeight.toDouble(),
-    );
-    canvas.drawImage(layered, ui.Offset.zero, ui.Paint());
-    canvas.restore();
-    layered.dispose();
-    final picture = recorder.endRecording();
-    var img = await picture.toImage(tm.canvasWidth, tm.canvasHeight);
-
-    // 演出フィルター：合成・カメラ適用後の映像へ非破壊で適用する
-    if (request.effectFilters.isNotEmpty) {
-      final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
-      if (byteData != null) {
-        final filtered = _filterEngine.applyEffectFilters(
-          byteData.buffer.asUint8List(),
-          tm.canvasWidth,
-          tm.canvasHeight,
-          request.effectFilters,
+    // The export draws the frame with this same pipeline, including the
+    // decoded frames of video materials (TimelineFrameRenderer).
+    final img = await _renderer.renderImage(
+      TimelineFrameRequest(
+        tileManager: tm,
+        layers: request.layers,
+        keyOf: (l) => resolveTileKey(
+          request.layerHomes,
+          request.sceneId,
           request.frameIndex,
-        );
-        final composed = img;
-        img = await _decodeRgba(filtered, tm.canvasWidth, tm.canvasHeight);
-        composed.dispose();
-      }
-    }
+          l.id,
+        ),
+        frameIndex: request.frameIndex,
+        drawingWidth: tm.canvasWidth,
+        drawingHeight: tm.canvasHeight,
+        outputWidth: request.outputWidth ?? tm.canvasWidth,
+        outputHeight: request.outputHeight ?? tm.canvasHeight,
+        backgroundColor: request.backgroundColor,
+        maskGroups: request.maskGroups,
+        groups: request.groups,
+        cameraKeyframes: request.cameraKeyframes,
+        effectFilters: request.effectFilters,
+        pixelsOf: videoPixels?.atFrame(request.frameIndex),
+      ),
+    );
 
     if (!mounted) {
       img.dispose();
       return;
     }
     _building = false;
-    if (request.historyRevision == widget.historyRevision) {
+    // A picture made with video frames from a source that has since been
+    // replaced (materials changed) is not shown; the next one is.
+    if (request.historyRevision == widget.historyRevision &&
+        identical(videoPixels, _videoPixels)) {
       setState(() {
         _image?.dispose();
         _image = img;
@@ -10113,18 +11658,6 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       _rebuildPending = false;
       _rebuild();
     }
-  }
-
-  Future<ui.Image> _decodeRgba(Uint8List bytes, int width, int height) {
-    final completer = Completer<ui.Image>();
-    ui.decodeImageFromPixels(
-      bytes,
-      width,
-      height,
-      ui.PixelFormat.rgba8888,
-      completer.complete,
-    );
-    return completer.future;
   }
 
   @override
@@ -11495,9 +13028,17 @@ class _ClipDetailSheet extends StatefulWidget {
   final VoidCallback onChanged;
   final ValueGetter<bool> isPlaying;
   final VoidCallback onTogglePlay;
+  final int Function(double rate) speedEndFrameAt;
+  final String? Function(double rate) onSpeedChange;
+  final double framesPerSecond;
+  final String? Function(int start, int end) onTimeRangeChange;
   const _ClipDetailSheet({
     required this.clip,
     required this.totalFrames,
+    required this.speedEndFrameAt,
+    required this.onSpeedChange,
+    required this.framesPerSecond,
+    required this.onTimeRangeChange,
     required this.onDelete,
     required this.onDuplicate,
     required this.onChanged,
@@ -11513,6 +13054,13 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
   late double _initialVolume;
   late double _initialFadeIn;
   late double _initialFadeOut;
+  late double _initialRate;
+  late int _initialLength;
+  late int _initialUseEnd;
+  late int _initialStart;
+  late int _initialUseStart;
+  late double _initialFraction;
+  late double _initialPitch;
 
   @override
   void initState() {
@@ -11522,6 +13070,13 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
     _initialVolume = _c.volume;
     _initialFadeIn = _c.fadeIn;
     _initialFadeOut = _c.fadeOut;
+    _initialRate = _c.playbackRate;
+    _initialLength = _c.lengthFrames;
+    _initialUseEnd = _c.useEnd;
+    _initialStart = _c.startFrame;
+    _initialUseStart = _c.useStart;
+    _initialFraction = _c.sourceFraction;
+    _initialPitch = _c.pitchSemitones;
   }
 
   void _notify() {
@@ -11592,6 +13147,13 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     _c.volume = _initialVolume;
                     _c.fadeIn = _initialFadeIn;
                     _c.fadeOut = _initialFadeOut;
+                    _c.playbackRate = _initialRate;
+                    _c.lengthFrames = _initialLength;
+                    _c.useEnd = _initialUseEnd;
+                    _c.startFrame = _initialStart;
+                    _c.useStart = _initialUseStart;
+                    _c.sourceFraction = _initialFraction;
+                    _c.pitchSemitones = _initialPitch;
                     widget.onChanged();
                     Navigator.pop(context);
                   },
@@ -11639,6 +13201,49 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
                 if (_c.trackType == _ClipTrackType.audio) ...[
+                  // 長さ調整: the time range and the speed.
+                  Text(
+                    l10n.timelineEditSectionDuration,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.timelineDurationRangeTitle,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 6),
+                  ClipTimeRangeControl(
+                    start: _c.startFrame,
+                    end: _c.startFrame + _c.lengthFrames - 1,
+                    totalFrames: widget.totalFrames,
+                    framesPerSecond: widget.framesPerSecond,
+                    onApply: (start, end) {
+                      final problem = widget.onTimeRangeChange(start, end);
+                      setState(() {});
+                      return problem;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.timelineClipSpeedLabel,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 6),
+                  ClipSpeedControl(
+                    rate: _c.playbackRate,
+                    hasSound: _c.volume > 0,
+                    onMute: () {
+                      _c.volume = 0;
+                      _notify();
+                    },
+                    endFrameAt: widget.speedEndFrameAt,
+                    onApply: (rate) {
+                      final problem = widget.onSpeedChange(rate);
+                      setState(() {});
+                      return problem;
+                    },
+                  ),
+                  const Divider(height: 24),
                   _row(
                     l10n.timelineClipVolumeLabel,
                     _c.volume,
@@ -11651,6 +13256,19 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     },
                     '${(_c.volume * 100).round()}%',
                     step: 0.01,
+                  ),
+                  // The sound's pitch, on its own: the speed keeps it.
+                  PitchControl(
+                    semitones: _c.pitchSemitones,
+                    soundRate: _c.playbackRate,
+                    onChanged: (v) {
+                      _c.pitchSemitones = v;
+                      _notify();
+                    },
+                    onCommit: (v) {
+                      _c.pitchSemitones = v;
+                      _notify();
+                    },
                   ),
                   _row(
                     l10n.timelineClipFadeInLabel,

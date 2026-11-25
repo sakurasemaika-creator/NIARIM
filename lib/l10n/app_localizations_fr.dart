@@ -3049,6 +3049,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exportFpsLabel => 'i/s';
 
   @override
+  String exportFpsDiffersNote(int source, int output) {
+    return 'L’œuvre est à $source i/s. L’export à $output i/s garde sa durée en répétant ou en sautant des images (l’aperçu est lu à $source i/s).';
+  }
+
+  @override
+  String exportUseWorkFps(int fps) {
+    return 'Utiliser les $fps i/s de l’œuvre';
+  }
+
+  @override
+  String exportPreviewAtFps(int fps) {
+    return 'Voir l’aperçu à $fps fps dans la chronologie';
+  }
+
+  @override
   String get exportFormatSection => 'Format';
 
   @override
@@ -3206,6 +3221,19 @@ class AppLocalizationsFr extends AppLocalizations {
           '$count sons n’ont pas pu être ajoutés à l’export (leurs fichiers de matériel sont absents ou illisibles). La vidéo a été exportée sans eux.',
       one:
           '$count son n’a pas pu être ajouté à l’export (son fichier de matériel est absent ou illisible). La vidéo a été exportée sans lui.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count vidéos n’ont pas pu être affichées dans l’export (leurs fichiers de matériel sont absents ou illisibles). Rien n’a été dessiné à leur place.',
+      one:
+          '$count vidéo n’a pas pu être affichée dans l’export (son fichier de matériel est absent ou illisible). Rien n’a été dessiné à sa place.',
     );
     return '$_temp0';
   }
@@ -5431,6 +5459,141 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineEditSectionMask => 'Masque';
 
   @override
+  String get timelineEditSectionCrop => 'Recadrer';
+
+  @override
+  String get timelineCropHint =>
+      'Rogne la partie visible depuis les bords de l’élément. Vous pouvez aussi faire glisser les coins et les bords du cadre sur l’aperçu. L’image ou la vidéo d’origine n’est pas modifiée.';
+
+  @override
+  String get timelineCropLeft => 'Rogner à gauche';
+
+  @override
+  String get timelineCropRight => 'Rogner à droite';
+
+  @override
+  String get timelineCropTop => 'Rogner en haut';
+
+  @override
+  String get timelineCropBottom => 'Rogner en bas';
+
+  @override
+  String get timelineCropReset => 'Réinitialiser le recadrage';
+
+  @override
+  String get timelineEditSectionRegion => 'Sélection';
+
+  @override
+  String get timelineRegionHint =>
+      'Faites glisser sur l’aperçu pour entourer une partie, puis choisissez Déplacer/transformer, Dupliquer ou Supprimer. Une vidéo reçoit la même modification sur chaque image. L’image ou la vidéo d’origine n’est pas modifiée.';
+
+  @override
+  String get timelineRegionShapeFreehand => 'À main levée';
+
+  @override
+  String get timelineRegionNoSelection =>
+      'Aucune partie n’est encore sélectionnée.';
+
+  @override
+  String get timelineRegionMove => 'Déplacer/transformer';
+
+  @override
+  String get timelineRegionSelectAll => 'Tout sélectionner';
+
+  @override
+  String get timelineRegionClearSelection => 'Désélectionner';
+
+  @override
+  String timelineRegionLimit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Vous pouvez ajouter jusqu’à $count modifications de sélection.',
+      one: 'Vous pouvez ajouter jusqu’à $count modification de sélection.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      'Faites glisser sur l’aperçu pour le déplacer, un point d’angle pour le redimensionner, un point de côté pour l’étirer et le point du haut pour le faire pivoter. Deux doigts fonctionnent aussi.';
+
+  @override
+  String get timelineRegionScaleX => 'Échelle horizontale';
+
+  @override
+  String get timelineRegionScaleY => 'Échelle verticale';
+
+  @override
+  String get timelineRegionFlipHorizontal => 'Retourner horizontalement';
+
+  @override
+  String get timelineRegionFlipVertical => 'Retourner verticalement';
+
+  @override
+  String get timelineRegionResetTransform => 'Réinitialiser la position';
+
+  @override
+  String get timelineRegionDone => 'Terminé';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return 'Modifications de sélection ($count)';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => 'Retirer cette modification';
+
+  @override
+  String get timelineRegionRemoveAll =>
+      'Retirer toutes les modifications de sélection';
+
+  @override
+  String get timelineEditSectionDuration => 'Durée';
+
+  @override
+  String get timelineDurationRangeTitle => 'Plage temporelle';
+
+  @override
+  String get timelineDurationRangeHint =>
+      'La première et la dernière image occupées par le clip dans la chronologie. Vous pouvez aussi faire glisser les bords du clip dans la chronologie.';
+
+  @override
+  String get timelineDurationStartLabel => 'Image de début';
+
+  @override
+  String get timelineDurationEndLabel => 'Image de fin';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      frames,
+      locale: localeName,
+      other: 'Durée : $frames images ($seconds s)',
+      one: 'Durée : $frames image ($seconds s)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return 'Saisissez un nombre entier de 1 à $max. Le début ne peut pas venir après la fin.';
+  }
+
+  @override
+  String get timelineDurationOverlap =>
+      'Non modifié : avec cette plage, le clip chevaucherait un autre clip de la même piste.';
+
+  @override
+  String get timelineDurationBeforeSource =>
+      'Non modifié : le clip ne peut pas commencer avant le début de son audio.';
+
+  @override
   String get timelineTransformRotationX => 'Rotation X';
 
   @override
@@ -5831,6 +5994,57 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineClipUseEndLabel => 'Fin utilisée F';
+
+  @override
+  String get timelineClipSpeedLabel => 'Vitesse';
+
+  @override
+  String get timelineClipSpeedInputLabel => 'Saisir la vitesse';
+
+  @override
+  String get timelineClipSpeedInputHint => '0,01–100';
+
+  @override
+  String get timelineClipSpeedInvalid =>
+      'Saisissez un nombre entre 0,01 et 100';
+
+  @override
+  String get timelineClipSpeedOverlap =>
+      'Non modifié : à cette vitesse, le clip chevaucherait un autre clip de la même piste.';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd =>
+      'Non modifié : à cette vitesse, le clip dépasserait la fin de la scène. Allongez d’abord la scène.';
+
+  @override
+  String get timelineClipSpeedKeyframeClash =>
+      'Cette vitesse est impossible : deux images clés tomberaient sur la même image.';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return 'Image de fin : F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote =>
+      'À vitesse élevée, le son devient difficile à suivre (l’aperçu et l’export sonnent pareil). Vous pouvez le couper si vous n’en avez pas besoin.';
+
+  @override
+  String get timelineClipSpeedMute => 'Couper le son';
+
+  @override
+  String get timelinePlaybackSkipNotice =>
+      'La lecture n’arrive pas à suivre, des images sont sautées (l’export les contient toutes).';
+
+  @override
+  String timelinePreviewOutputFps(int output, int work) {
+    return 'Lecture à $output fps, comme l’export (l’œuvre est à $work fps)';
+  }
+
+  @override
+  String timelinePreviewWorkFps(int fps) {
+    return 'Revenir aux $fps fps de l’œuvre';
+  }
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe =>
@@ -11593,6 +11807,63 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => 'Ajouter une ligne à la piste';
+
+  @override
+  String get timelineVideoTrackShowingFrames =>
+      'Images de la vidéo affichées (touchez pour afficher la forme d’onde du son)';
+
+  @override
+  String get timelineVideoTrackShowingWaveform =>
+      'Forme d’onde du son affichée (touchez pour afficher les images de la vidéo)';
+
+  @override
+  String get timelineVideoSoundFollowsSpeed => 'Lire le son à la même vitesse';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      'Si cette option est désactivée, le son est lu à vitesse normale depuis le début du clip et seule l’image change de vitesse.';
+
+  @override
+  String get timelinePitchLabel => 'Hauteur (demi-tons)';
+
+  @override
+  String get timelinePitchHint =>
+      'Changer la vitesse ne change pas la hauteur. Ici, vous pouvez monter ou baisser seulement la hauteur. Suivre la vitesse donne la hauteur qu’aurait une bande à cette vitesse.';
+
+  @override
+  String get timelinePitchMatchSpeed => 'Suivre la vitesse';
+
+  @override
+  String get timelinePitchReset => 'Hauteur d’origine';
+
+  @override
+  String get timelinePitchInputLabel => 'Saisir en demi-tons';
+
+  @override
+  String get timelinePitchInvalid =>
+      'Saisissez un nombre de -24 à +24 (décimales possibles).';
+
+  @override
+  String get keyframeRetimeTitle => 'Vitesse des images clés';
+
+  @override
+  String get keyframeRetimeHint =>
+      'Modifie l’espacement des clés de la plage choisie selon la vitesse. Leurs valeurs et leur lissage ne changent pas, et les clés hors de la plage ne bougent pas.';
+
+  @override
+  String get keyframeRetimeFrom => 'Première clé de la plage';
+
+  @override
+  String get keyframeRetimeTo => 'Dernière clé de la plage';
+
+  @override
+  String get keyframeRetimeClash =>
+      'Avec cette vitesse, deux clés tomberaient sur la même image, une clé dépasserait une clé située après la plage ou sortirait de la fin de la scène.';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return 'Position des clés : $before → $after';
+  }
 
   @override
   String get keyframePreviewGestureHint =>

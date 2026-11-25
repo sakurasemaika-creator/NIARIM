@@ -11,9 +11,22 @@ class AudioClip {
   final double fadeOut; // フェードアウト秒数
   /// 元素材内で使用を開始するフレーム。分割・範囲カット後も素材位置を保持する。
   final int sourceStartFrame;
+
+  /// The fraction of a source frame the sound starts after
+  /// [sourceStartFrame] (0 ≤ f < 1), kept when a clip played at a speed
+  /// other than 1× is split.
+  final double sourceStartFraction;
+
+  /// The playback speed (1.0 = normal).
+  final double playbackRate;
+
+  /// The pitch change in semitones (0 = the sound's own pitch). The speed
+  /// never changes the pitch; this raises or lowers it on its own.
+  final double pitchSemitones;
   // 音声タイムラインの表示行番号（0始まり）。素材種別ごとに複数行の
   // タイムライン行を追加/削除できる。
   final int trackRow;
+
   /// True when this audio clip belongs to the dedicated speech track.
   final bool isReadAloud;
 
@@ -27,11 +40,15 @@ class AudioClip {
     this.fadeIn = 0.0,
     this.fadeOut = 0.0,
     this.sourceStartFrame = 0,
+    this.sourceStartFraction = 0,
+    this.playbackRate = 1.0,
+    this.pitchSemitones = 0,
     this.trackRow = 0,
     this.isReadAloud = false,
   });
 
   AudioClip copyWith({
+    String? id,
     String? label,
     Object? materialId = _sentinel,
     int? startFrame,
@@ -40,11 +57,14 @@ class AudioClip {
     double? fadeIn,
     double? fadeOut,
     int? sourceStartFrame,
+    double? sourceStartFraction,
+    double? playbackRate,
+    double? pitchSemitones,
     int? trackRow,
     bool? isReadAloud,
   }) {
     return AudioClip(
-      id: id,
+      id: id ?? this.id,
       label: label ?? this.label,
       materialId: materialId == _sentinel
           ? this.materialId
@@ -55,6 +75,9 @@ class AudioClip {
       fadeIn: fadeIn ?? this.fadeIn,
       fadeOut: fadeOut ?? this.fadeOut,
       sourceStartFrame: sourceStartFrame ?? this.sourceStartFrame,
+      sourceStartFraction: sourceStartFraction ?? this.sourceStartFraction,
+      playbackRate: playbackRate ?? this.playbackRate,
+      pitchSemitones: pitchSemitones ?? this.pitchSemitones,
       trackRow: trackRow ?? this.trackRow,
       isReadAloud: isReadAloud ?? this.isReadAloud,
     );

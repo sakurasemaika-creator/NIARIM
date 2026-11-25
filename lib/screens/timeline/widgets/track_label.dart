@@ -90,11 +90,20 @@ class TrackLabel extends StatelessWidget {
   final String label;
   final double width;
 
+  /// When set, the icon is a button (its tap area is the label's start, the
+  /// row's full height); the label's size does not change.
+  final VoidCallback? onIconTap;
+  final String? iconTooltip;
+  final Key? iconKey;
+
   const TrackLabel({
     super.key,
     required this.icon,
     required this.label,
     required this.width,
+    this.onIconTap,
+    this.iconTooltip,
+    this.iconKey,
   });
 
   @override
@@ -109,8 +118,29 @@ class TrackLabel extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, size: TrackLabelMetrics.iconSize, color: color),
-          const SizedBox(width: TrackLabelMetrics.iconGap),
+          if (onIconTap == null) ...[
+            Icon(icon, size: TrackLabelMetrics.iconSize, color: color),
+            const SizedBox(width: TrackLabelMetrics.iconGap),
+          ] else
+            Tooltip(
+              message: iconTooltip ?? '',
+              child: InkWell(
+                key: iconKey,
+                onTap: onIconTap,
+                child: SizedBox(
+                  width: TrackLabelMetrics.iconSize + TrackLabelMetrics.iconGap,
+                  height: double.infinity,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Icon(
+                      icon,
+                      size: TrackLabelMetrics.iconSize,
+                      color: color,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {

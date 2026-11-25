@@ -2855,6 +2855,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportFpsLabel => 'FPS';
 
   @override
+  String exportFpsDiffersNote(int source, int output) {
+    return '作品为 $source fps。以 $output fps 导出时，会重复或跳过帧来保持时长（预览以 $source fps 播放）。';
+  }
+
+  @override
+  String exportUseWorkFps(int fps) {
+    return '使用作品的 $fps fps';
+  }
+
+  @override
+  String exportPreviewAtFps(int fps) {
+    return '在时间轴上以 $fps fps 预览';
+  }
+
+  @override
   String get exportFormatSection => '格式';
 
   @override
@@ -2991,6 +3006,16 @@ class AppLocalizationsZh extends AppLocalizations {
       count,
       locale: localeName,
       other: '有 $count 段声音未能放入导出文件（素材文件缺失或无法读取）。视频已照常导出。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有 $count 段视频素材的画面未能放入导出文件（素材文件缺失或无法读取）。该部分未绘制任何内容。',
     );
     return '$_temp0';
   }
@@ -5054,6 +5079,124 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineEditSectionMask => '蒙版';
 
   @override
+  String get timelineEditSectionCrop => '裁剪';
+
+  @override
+  String get timelineCropHint => '从素材的边缘裁掉可见的部分。也可以在预览上拖动边框的角和边。原图片或视频不会改变。';
+
+  @override
+  String get timelineCropLeft => '裁剪左侧';
+
+  @override
+  String get timelineCropRight => '裁剪右侧';
+
+  @override
+  String get timelineCropTop => '裁剪顶部';
+
+  @override
+  String get timelineCropBottom => '裁剪底部';
+
+  @override
+  String get timelineCropReset => '重置裁剪';
+
+  @override
+  String get timelineEditSectionRegion => '选区';
+
+  @override
+  String get timelineRegionHint =>
+      '在预览上拖动圈出一个范围，然后选择移动/变形、创建副本或删除。视频的每一帧都会应用相同的编辑。原图片或视频不会改变。';
+
+  @override
+  String get timelineRegionShapeFreehand => '自由形状';
+
+  @override
+  String get timelineRegionNoSelection => '尚未选择范围。';
+
+  @override
+  String get timelineRegionMove => '移动/变形';
+
+  @override
+  String get timelineRegionSelectAll => '全选';
+
+  @override
+  String get timelineRegionClearSelection => '取消选择';
+
+  @override
+  String timelineRegionLimit(int count) {
+    return '最多可添加$count个选区编辑。';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      '在预览上拖动可移动，拖动角上的圆点可缩放，拖动边上的圆点可横向或纵向拉伸，拖动上方的圆点可旋转。也可以用两指操作。';
+
+  @override
+  String get timelineRegionScaleX => '横向缩放';
+
+  @override
+  String get timelineRegionScaleY => '纵向缩放';
+
+  @override
+  String get timelineRegionFlipHorizontal => '水平翻转';
+
+  @override
+  String get timelineRegionFlipVertical => '垂直翻转';
+
+  @override
+  String get timelineRegionResetTransform => '恢复原位';
+
+  @override
+  String get timelineRegionDone => '完成';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return '选区编辑（$count）';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => '移除此编辑';
+
+  @override
+  String get timelineRegionRemoveAll => '移除全部选区编辑';
+
+  @override
+  String get timelineEditSectionDuration => '长度调整';
+
+  @override
+  String get timelineDurationRangeTitle => '时间范围';
+
+  @override
+  String get timelineDurationRangeHint =>
+      '片段在时间轴上占用的第一帧和最后一帧。也可以在时间轴上拖动片段的边缘来更改。';
+
+  @override
+  String get timelineDurationStartLabel => '起始帧';
+
+  @override
+  String get timelineDurationEndLabel => '结束帧';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    return '长度：$frames帧（$seconds秒）';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return '请输入1到$max之间的整数。起始不能在结束之后。';
+  }
+
+  @override
+  String get timelineDurationOverlap => '未更改：使用此范围会与同一行的其他片段重叠。';
+
+  @override
+  String get timelineDurationBeforeSource => '未更改：片段不能早于其音频的开头。';
+
+  @override
   String get timelineTransformRotationX => 'X轴旋转';
 
   @override
@@ -5439,6 +5582,52 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineClipUseEndLabel => '使用结束帧';
+
+  @override
+  String get timelineClipSpeedLabel => '速度';
+
+  @override
+  String get timelineClipSpeedInputLabel => '输入倍速';
+
+  @override
+  String get timelineClipSpeedInputHint => '0.01~100';
+
+  @override
+  String get timelineClipSpeedInvalid => '请输入 0.01 到 100 之间的数';
+
+  @override
+  String get timelineClipSpeedOverlap => '未更改：使用此速度会与同一行的其他片段重叠。';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd => '未更改：使用此速度会超出场景的结尾。请先延长场景。';
+
+  @override
+  String get timelineClipSpeedKeyframeClash => '无法使用此速度：两个关键帧会落在同一帧上。';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return '结束帧：F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote =>
+      '速度越快，声音越不清楚（预览和导出的声音相同）。如果不需要声音，可以静音。';
+
+  @override
+  String get timelineClipSpeedMute => '静音';
+
+  @override
+  String get timelinePlaybackSkipNotice => '播放跟不上，正在跳过部分帧（导出时包含所有帧）。';
+
+  @override
+  String timelinePreviewOutputFps(int output, int work) {
+    return '正在以导出的 $output fps 播放（作品为 $work fps）';
+  }
+
+  @override
+  String timelinePreviewWorkFps(int fps) {
+    return '恢复为作品的 $fps fps';
+  }
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe => '此帧已有相机关键帧。';
@@ -10487,6 +10676,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineAddTrackRowTooltip => '添加轨道行';
 
   @override
+  String get timelineVideoTrackShowingFrames => '正在显示视频画面（点按切换为声音波形）';
+
+  @override
+  String get timelineVideoTrackShowingWaveform => '正在显示声音波形（点按切换为视频画面）';
+
+  @override
+  String get timelineVideoSoundFollowsSpeed => '声音也以相同速度播放';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      '关闭时，声音从片段开头以正常速度播放，只改变画面的速度。';
+
+  @override
+  String get timelinePitchLabel => '音高（半音）';
+
+  @override
+  String get timelinePitchHint =>
+      '改变速度不会改变音高。可以在这里单独升高或降低音高。点“跟随速度”，音高会像磁带变速一样随速度变化。';
+
+  @override
+  String get timelinePitchMatchSpeed => '跟随速度';
+
+  @override
+  String get timelinePitchReset => '原始音高';
+
+  @override
+  String get timelinePitchInputLabel => '输入半音';
+
+  @override
+  String get timelinePitchInvalid => '请输入 -24 到 +24 之间的数（可以有小数）。';
+
+  @override
+  String get keyframeRetimeTitle => '关键帧速度';
+
+  @override
+  String get keyframeRetimeHint => '按速度改变所选范围内关键帧的间隔。值和缓动保持不变，范围外的关键帧不会移动。';
+
+  @override
+  String get keyframeRetimeFrom => '范围的第一个关键帧';
+
+  @override
+  String get keyframeRetimeTo => '范围的最后一个关键帧';
+
+  @override
+  String get keyframeRetimeClash => '使用此速度会让两个关键帧落在同一帧、超过范围后面的关键帧，或超出场景的结尾。';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return '关键帧位置：$before → $after';
+  }
+
+  @override
   String get keyframePreviewGestureHint => '拖动预览可移动。双指捏合或旋转可缩放或转动。';
 
   @override
@@ -13512,6 +13753,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get exportFpsLabel => 'FPS';
 
   @override
+  String exportFpsDiffersNote(int source, int output) {
+    return '作品為 $source fps。以 $output fps 匯出時，會重複或略過影格來保持時長（預覽以 $source fps 播放）。';
+  }
+
+  @override
+  String exportUseWorkFps(int fps) {
+    return '使用作品的 $fps fps';
+  }
+
+  @override
+  String exportPreviewAtFps(int fps) {
+    return '在時間軸上以 $fps fps 預覽';
+  }
+
+  @override
   String get exportFormatSection => '格式';
 
   @override
@@ -13648,6 +13904,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       count,
       locale: localeName,
       other: '有 $count 段聲音未能放入匯出檔案（素材檔案遺失或無法讀取）。影片已照常匯出。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportVideosLeftOut(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有 $count 段影片素材的畫面未能放入匯出檔案（素材檔案遺失或無法讀取）。該部分未繪製任何內容。',
     );
     return '$_temp0';
   }
@@ -15711,6 +15977,124 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineEditSectionMask => '遮罩';
 
   @override
+  String get timelineEditSectionCrop => '裁切';
+
+  @override
+  String get timelineCropHint => '從素材的邊緣裁掉可見的部分。也可以在預覽上拖曳邊框的角和邊。原圖片或影片不會改變。';
+
+  @override
+  String get timelineCropLeft => '裁切左側';
+
+  @override
+  String get timelineCropRight => '裁切右側';
+
+  @override
+  String get timelineCropTop => '裁切頂部';
+
+  @override
+  String get timelineCropBottom => '裁切底部';
+
+  @override
+  String get timelineCropReset => '重設裁切';
+
+  @override
+  String get timelineEditSectionRegion => '選取範圍';
+
+  @override
+  String get timelineRegionHint =>
+      '在預覽上拖曳圈出一個範圍，然後選擇移動/變形、建立副本或刪除。影片的每個影格都會套用相同的編輯。原圖片或影片不會改變。';
+
+  @override
+  String get timelineRegionShapeFreehand => '自由形狀';
+
+  @override
+  String get timelineRegionNoSelection => '尚未選取範圍。';
+
+  @override
+  String get timelineRegionMove => '移動/變形';
+
+  @override
+  String get timelineRegionSelectAll => '全選';
+
+  @override
+  String get timelineRegionClearSelection => '取消選取';
+
+  @override
+  String timelineRegionLimit(int count) {
+    return '最多可新增$count個選取範圍編輯。';
+  }
+
+  @override
+  String get timelineRegionAdjustHint =>
+      '在預覽上拖曳可移動，拖曳角落的圓點可縮放，拖曳邊上的圓點可橫向或縱向拉伸，拖曳上方的圓點可旋轉。也可以用兩指操作。';
+
+  @override
+  String get timelineRegionScaleX => '橫向縮放';
+
+  @override
+  String get timelineRegionScaleY => '縱向縮放';
+
+  @override
+  String get timelineRegionFlipHorizontal => '水平翻轉';
+
+  @override
+  String get timelineRegionFlipVertical => '垂直翻轉';
+
+  @override
+  String get timelineRegionResetTransform => '恢復原位';
+
+  @override
+  String get timelineRegionDone => '完成';
+
+  @override
+  String timelineRegionEditsTitle(int count) {
+    return '選取範圍編輯（$count）';
+  }
+
+  @override
+  String timelineRegionEditNumbered(int number, String action) {
+    return '$number. $action';
+  }
+
+  @override
+  String get timelineRegionEditRemove => '移除此編輯';
+
+  @override
+  String get timelineRegionRemoveAll => '移除全部選取範圍編輯';
+
+  @override
+  String get timelineEditSectionDuration => '長度調整';
+
+  @override
+  String get timelineDurationRangeTitle => '時間範圍';
+
+  @override
+  String get timelineDurationRangeHint =>
+      '片段在時間軸上占用的第一個影格和最後一個影格。也可以在時間軸上拖曳片段的邊緣來變更。';
+
+  @override
+  String get timelineDurationStartLabel => '起始影格';
+
+  @override
+  String get timelineDurationEndLabel => '結束影格';
+
+  @override
+  String timelineDurationLength(int frames, String seconds) {
+    return '長度：$frames個影格（$seconds秒）';
+  }
+
+  @override
+  String timelineDurationInvalid(int max) {
+    return '請輸入1到$max之間的整數。起始不能在結束之後。';
+  }
+
+  @override
+  String get timelineDurationOverlap => '未變更：使用此範圍會與同一列的其他片段重疊。';
+
+  @override
+  String get timelineDurationBeforeSource => '未變更：片段不能早於其音訊的開頭。';
+
+  @override
   String get timelineTransformRotationX => 'X軸旋轉';
 
   @override
@@ -16096,6 +16480,52 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineClipUseEndLabel => '使用結束影格';
+
+  @override
+  String get timelineClipSpeedLabel => '速度';
+
+  @override
+  String get timelineClipSpeedInputLabel => '輸入倍速';
+
+  @override
+  String get timelineClipSpeedInputHint => '0.01~100';
+
+  @override
+  String get timelineClipSpeedInvalid => '請輸入 0.01 到 100 之間的數';
+
+  @override
+  String get timelineClipSpeedOverlap => '未變更：使用此速度會與同一列的其他片段重疊。';
+
+  @override
+  String get timelineClipSpeedPastSceneEnd => '未變更：使用此速度會超出場景的結尾。請先延長場景。';
+
+  @override
+  String get timelineClipSpeedKeyframeClash => '無法使用此速度：兩個關鍵影格會落在同一影格上。';
+
+  @override
+  String timelineClipSpeedEndPreview(int before, int after) {
+    return '結束影格：F$before → F$after';
+  }
+
+  @override
+  String get timelineClipSpeedSoundNote =>
+      '速度越快，聲音越不清楚（預覽和匯出的聲音相同）。如果不需要聲音，可以靜音。';
+
+  @override
+  String get timelineClipSpeedMute => '靜音';
+
+  @override
+  String get timelinePlaybackSkipNotice => '播放跟不上，正在跳過部分影格（匯出時包含所有影格）。';
+
+  @override
+  String timelinePreviewOutputFps(int output, int work) {
+    return '正在以匯出的 $output fps 播放（作品為 $work fps）';
+  }
+
+  @override
+  String timelinePreviewWorkFps(int fps) {
+    return '恢復為作品的 $fps fps';
+  }
 
   @override
   String get timelineCameraFrameAlreadyHasKeyframe => '此影格已有相機關鍵影格。';
@@ -21144,6 +21574,58 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineAddTrackRowTooltip => '新增軌道列';
+
+  @override
+  String get timelineVideoTrackShowingFrames => '正在顯示影片畫面（點按切換為聲音波形）';
+
+  @override
+  String get timelineVideoTrackShowingWaveform => '正在顯示聲音波形（點按切換為影片畫面）';
+
+  @override
+  String get timelineVideoSoundFollowsSpeed => '聲音也以相同速度播放';
+
+  @override
+  String get timelineVideoSoundFollowsSpeedHint =>
+      '關閉時，聲音從片段開頭以正常速度播放，只改變畫面的速度。';
+
+  @override
+  String get timelinePitchLabel => '音高（半音）';
+
+  @override
+  String get timelinePitchHint =>
+      '改變速度不會改變音高。可以在這裡單獨升高或降低音高。點「跟隨速度」，音高會像磁帶變速一樣隨速度變化。';
+
+  @override
+  String get timelinePitchMatchSpeed => '跟隨速度';
+
+  @override
+  String get timelinePitchReset => '原始音高';
+
+  @override
+  String get timelinePitchInputLabel => '輸入半音';
+
+  @override
+  String get timelinePitchInvalid => '請輸入 -24 到 +24 之間的數（可以有小數）。';
+
+  @override
+  String get keyframeRetimeTitle => '關鍵影格速度';
+
+  @override
+  String get keyframeRetimeHint => '依速度改變所選範圍內關鍵影格的間隔。值和緩動保持不變，範圍外的關鍵影格不會移動。';
+
+  @override
+  String get keyframeRetimeFrom => '範圍的第一個關鍵影格';
+
+  @override
+  String get keyframeRetimeTo => '範圍的最後一個關鍵影格';
+
+  @override
+  String get keyframeRetimeClash => '使用此速度會讓兩個關鍵影格落在同一影格、超過範圍後面的關鍵影格，或超出場景的結尾。';
+
+  @override
+  String keyframeRetimePreview(String before, String after) {
+    return '關鍵影格位置：$before → $after';
+  }
 
   @override
   String get keyframePreviewGestureHint => '拖曳預覽可移動。用雙指捏合或旋轉就能縮放或轉動。';
