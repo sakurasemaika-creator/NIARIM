@@ -1,10 +1,15 @@
 // Along a 「三日月カール」 curl, the inner edge bends the same way as the
-// stroke and its outer edge, whatever the brush size, pressure or taper. A
-// curl drawn like 「し」 used to thin to a waist near its tip and swell again:
-// the end of the last crescent changed back to the ordinary strand over at
-// most 60 degrees of turn, while the crescent's bow had run out long before,
-// so the inner edge turned against the curve. A thicker brush or pressure
-// rising towards the tip made the lump larger.
+// stroke and its outer edge, whatever the brush size, pressure or taper, and
+// the folded crescent stays: a fold line inside the strand, along its outer
+// side, that bends with the curl too.
+//
+// A curl drawn like 「し」 used to thin to a waist near its tip and swell
+// again: the end of the last crescent changed back to the ordinary strand
+// over at most 60 degrees of turn, while the crescent's bow had run out long
+// before, so the inner edge turned against the curve. A thicker brush or
+// pressure rising towards the tip made the lump larger. The waist and the
+// lobe after it are the folded crescent's own look, which the strand now
+// keeps as its fold line instead of as its silhouette.
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -138,55 +143,140 @@ Future<Uint8List> _draw(
   return pixels;
 }
 
-/// The least curvature of the inner edge along the curl, relative to the
-/// curl's own (1 for an edge parallel to the curl, below 0 where it bends
-/// against it), with the angle where it is least.
-///
-/// From the curl's centre, each ray at a whole degree meets the ink's inner
-/// edge (its coverage crossing a half, between pixels by interpolation).
-/// Where the strand is at least 6px across, a parabola fitted to the edge's
-/// distance over at least 13 degrees and 24px of the edge gives its
-/// curvature, so pixel steps do not read as bends.
-(double, double) _leastInnerCurvature(Uint8List rgba, _Curl curl) {
-  double coverage(double x, double y) {
-    final x0 = x.floor(), y0 = y.floor();
-    final fx = x - x0, fy = y - y0;
-    double at(int px, int py) =>
-        px < 0 || py < 0 || px >= curl.width || py >= curl.height
-        ? 0
-        : rgba[(py * curl.width + px) * 4 + 3] / 255;
-    return at(x0, y0) * (1 - fx) * (1 - fy) +
-        at(x0 + 1, y0) * fx * (1 - fy) +
-        at(x0, y0 + 1) * (1 - fx) * fy +
-        at(x0 + 1, y0 + 1) * fx * fy;
+double _coverageAt(Uint8List rgba, _Curl curl, double x, double y) {
+  final x0 = x.floor(), y0 = y.floor();
+  final fx = x - x0, fy = y - y0;
+  double at(int px, int py) =>
+      px < 0 || py < 0 || px >= curl.width || py >= curl.height
+      ? 0
+      : rgba[(py * curl.width + px) * 4 + 3] / 255;
+  return at(x0, y0) * (1 - fx) * (1 - fy) +
+      at(x0 + 1, y0) * fx * (1 - fy) +
+      at(x0, y0 + 1) * (1 - fx) * fy +
+      at(x0 + 1, y0 + 1) * fx * fy;
+}
+
+/// Brightness (0-255) of the ink at a point, from its premultiplied colour,
+/// between pixels by interpolation like [_coverageAt].
+double _brightnessAt(Uint8List rgba, _Curl curl, double x, double y) {
+  final x0 = x.floor(), y0 = y.floor();
+  final fx = x - x0, fy = y - y0;
+  double at(int px, int py) {
+    if (px < 0 || py < 0 || px >= curl.width || py >= curl.height) return 0;
+    final i = (py * curl.width + px) * 4;
+    return .299 * rgba[i] + .587 * rgba[i + 1] + .114 * rgba[i + 2];
   }
 
-  // The inner edge's distance, or null where the strand is too thin there.
-  double? inner(double degrees) {
-    final direction = ui.Offset.fromDirection(degrees * math.pi / 180);
-    double? entry;
-    var previous = coverage(curl.centre.dx, curl.centre.dy);
-    for (var d = .1; d < curl.radius * 2; d += .1) {
-      final q = curl.centre + direction * d;
-      final value = coverage(q.dx, q.dy);
-      if (entry == null && previous < .5 && value >= .5) {
-        entry = d - .1 + .1 * (.5 - previous) / (value - previous);
-      } else if (entry != null && previous >= .5 && value < .5) {
-        return d - entry >= 6 ? entry : null;
-      }
-      previous = value;
-    }
-    return null;
-  }
+  return at(x0, y0) * (1 - fx) * (1 - fy) +
+      at(x0 + 1, y0) * fx * (1 - fy) +
+      at(x0, y0 + 1) * (1 - fx) * fy +
+      at(x0 + 1, y0 + 1) * fx * fy;
+}
 
+/// The angles along the curl, a whole degree apart, in drawing order.
+List<double> _angles(_Curl curl) {
   final step = curl.to > curl.from ? 1.0 : -1.0;
   final count = ((curl.to - curl.from) / step).round();
-  final radii = [for (var i = 0; i <= count; i++) inner(curl.from + i * step)];
+  return [for (var i = 0; i <= count; i++) curl.from + i * step];
+}
+
+/// From the curl's centre, where each ray meets the ink's inner edge (its
+/// coverage crossing a half, between pixels by interpolation); null where
+/// the strand is less than 6px across.
+List<double?> _innerRadii(Uint8List rgba, _Curl curl) => [
+  for (final degrees in _angles(curl))
+    () {
+      final direction = ui.Offset.fromDirection(degrees * math.pi / 180);
+      double? entry;
+      var previous = _coverageAt(rgba, curl, curl.centre.dx, curl.centre.dy);
+      for (var d = .1; d < curl.radius * 2; d += .1) {
+        final q = curl.centre + direction * d;
+        final value = _coverageAt(rgba, curl, q.dx, q.dy);
+        if (entry == null && previous < .5 && value >= .5) {
+          entry = d - .1 + .1 * (.5 - previous) / (value - previous);
+        } else if (entry != null && previous >= .5 && value < .5) {
+          return d - entry >= 6 ? entry : null;
+        }
+        previous = value;
+      }
+      return null;
+    }(),
+];
+
+/// From the curl's centre, where each ray crosses a fold line: a run of the
+/// outline's dark colour inside the strand, with at least a pixel of fill on
+/// both sides of it (past the inner edge's outline, short of the outer
+/// edge's); null where the ray crosses none.
+List<double?> _foldRadii(Uint8List rgba, _Curl curl) => [
+  for (final degrees in _angles(curl))
+    () {
+      const step = .25, clear = 4;
+      final direction = ui.Offset.fromDirection(degrees * math.pi / 180);
+      // Along the ray through the strand: each sample's brightness.
+      final light = <double>[];
+      double? from;
+      for (var d = step; d < curl.radius * 2; d += step) {
+        final q = curl.centre + direction * d;
+        final inside = _coverageAt(rgba, curl, q.dx, q.dy) >= .9;
+        if (!inside) {
+          if (from != null) break;
+          continue;
+        }
+        from ??= d;
+        light.add(_brightnessAt(rgba, curl, q.dx, q.dy));
+      }
+      final dark = [for (final value in light) value < 50];
+      if (from == null) return null;
+      // The first and last fill, inside the edges' outlines.
+      final first = dark.indexOf(false), last = dark.lastIndexOf(false);
+      if (first < 0) return null;
+      var i = first;
+      while (i <= last) {
+        if (!dark[i]) {
+          i++;
+          continue;
+        }
+        final start = i;
+        while (i <= last && dark[i]) {
+          i++;
+        }
+        var before = 0, after = 0;
+        while (before < clear &&
+            start - 1 - before >= 0 &&
+            !dark[start - 1 - before]) {
+          before++;
+        }
+        while (after < clear && i + after <= last && !dark[i + after]) {
+          after++;
+        }
+        if (before == clear && after == clear) {
+          // Where the brightness crosses into and out of the run, between
+          // samples.
+          double crossing(int a, int b) =>
+              a + (b - a) * (light[a] - 50) / (light[a] - light[b]);
+          return from +
+              step * (crossing(start - 1, start) + crossing(i, i - 1)) / 2;
+        }
+      }
+      return null;
+    }(),
+];
+
+/// The least curvature of a line given by its distance from the curl's
+/// centre along each ray ([radii]), relative to the curl's own (1 for a line
+/// parallel to the curl, below 0 where it bends against it), with the angle
+/// where it is least.
+///
+/// A parabola fitted to the distance over at least 13 degrees and 24px of
+/// the line gives its curvature, so pixel steps do not read as bends.
+(double, double) _leastCurvature(List<double?> radii, _Curl curl) {
+  final angles = _angles(curl);
+  final count = angles.length - 1;
   var least = (double.infinity, 0.0);
   for (var i = 0; i <= count; i++) {
     final middle = radii[i];
     if (middle == null) continue;
-    // At least 6 degrees and 12px of the edge either side.
+    // At least 6 degrees and 12px of the line either side.
     final half = math.max(6, (12 / middle * 180 / math.pi).ceil());
     if (i < half || i > count - half) continue;
     var complete = true;
@@ -218,9 +308,19 @@ Future<Uint8List> _draw(
         math.pow(rho * rho + rho1 * rho1, 1.5);
     // Relative to a circle round the same centre through this point.
     final relative = curvature * rho;
-    if (relative < least.$1) least = (relative, curl.from + i * step);
+    if (relative < least.$1) least = (relative, angles[i]);
   }
   return least;
+}
+
+/// The most whole degrees in a row a line was found on.
+int _longestRun(List<double?> radii) {
+  var longest = 0, run = 0;
+  for (final rho in radii) {
+    run = rho == null ? 0 : run + 1;
+    longest = math.max(longest, run);
+  }
+  return longest;
 }
 
 void main() {
@@ -233,27 +333,31 @@ void main() {
     outlineWidth: crescent.outlineWidth * scale,
   );
 
-  for (final (scale, curl, pressure) in [
-    (2.0, _shi(_flat), null),
-    (2.0, _shi(_rising), 'pressing harder towards the tip'),
-    (2.0, _shi(_late), 'pressing hard just before the tip'),
-    (4.0, _shi(_flat), null),
-    (4.0, _shi(_rising), 'pressing harder towards the tip'),
-    (4.0, _shi(_flat, reversed: true), null),
-    (2.0, _c(_flat), null),
-    (4.0, _c(_late), 'pressing hard just before the tip'),
+  // The し curls end past the crescent's waist, so they keep a fold; the
+  // others may or may not, but any fold they have bends with the curl.
+  for (final (scale, curl, pressure, folds) in [
+    (2.0, _shi(_flat), null, true),
+    (2.0, _shi(_rising), 'pressing harder towards the tip', true),
+    (2.0, _shi(_late), 'pressing hard just before the tip', true),
+    (4.0, _shi(_flat), null, true),
+    (4.0, _shi(_rising), 'pressing harder towards the tip', true),
+    (4.0, _shi(_flat, reversed: true), null, false),
+    (2.0, _c(_flat), null, false),
+    (4.0, _c(_late), 'pressing hard just before the tip', false),
   ]) {
     final label =
         '${curl.name} at ${scale}x the brush size, '
         '${pressure ?? 'without pressure'}';
-    testWidgets('the inner edge of $label bends with the curl', (tester) async {
+    testWidgets('$label: the inner edge and the fold bend with the curl', (
+      tester,
+    ) async {
       final rgba = await _draw(
         tester,
         sized(scale),
         curl,
         pressure: pressure != null,
       );
-      final (least, at) = _leastInnerCurvature(rgba, curl);
+      final (least, at) = _leastCurvature(_innerRadii(rgba, curl), curl);
       // An edge parallel to the curl measures 1 or more; pixel steps along
       // a curving edge stay well within this.
       expect(
@@ -262,6 +366,22 @@ void main() {
         reason:
             'the inner edge bends against the curl at $at degrees '
             '(relative curvature $least)',
+      );
+      final fold = _foldRadii(rgba, curl);
+      if (folds) {
+        expect(
+          _longestRun(fold),
+          greaterThanOrEqualTo(40),
+          reason: 'the folded crescent shows a fold line inside the strand',
+        );
+      }
+      final (foldLeast, foldAt) = _leastCurvature(fold, curl);
+      expect(
+        foldLeast,
+        greaterThan(-.1),
+        reason:
+            'the fold line bends against the curl at $foldAt degrees '
+            '(relative curvature $foldLeast)',
       );
     });
   }
