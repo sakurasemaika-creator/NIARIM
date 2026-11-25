@@ -52,6 +52,7 @@ String? communityApiErrorCodeText(AppLocalizations l10n, String? code) =>
       'VIDEO_REGISTRATION_CONFLICT' =>
         l10n.communityErrorVideoRegistrationConflict,
       'POST_QUOTA_EXCEEDED' => l10n.communityErrorPostQuotaExceeded,
+      'POSTING_SUSPENDED' => l10n.communityErrorPostingSuspended,
       _ => null,
     };
 

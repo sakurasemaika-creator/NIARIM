@@ -15,6 +15,7 @@ import type { WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 import { toPublicWork } from "./_publicWork";
 import { recordMissionAchievement } from "../../lib/missionNotifications";
+import { assertUserMayPost } from "../../lib/moderation";
 
 interface UpdateWorkRequestBody {
   isNiarimPublished?: boolean;
@@ -59,6 +60,11 @@ export async function updateWork(
     const work = raw as WorkItem;
     if (work.authorId !== auth.niarimUserId)
       forbidden("この作品の投稿者本人のみ編集できます");
+    // A suspended account cannot publish (again) to the Work Plaza.
+    // Hiding a work or editing its metadata stays possible.
+    if (body.isNiarimPublished === true && !work.isNiarimPublished) {
+      await assertUserMayPost(auth.niarimUserId);
+    }
 
     const updates: string[] = [];
     const removes: string[] = [];

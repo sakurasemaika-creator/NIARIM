@@ -1,10 +1,23 @@
-import { GetCommand, QueryCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
-import { ddb, Keys, tableName } from "../src/lib/dynamo";
-import { TABLE_ITEM_TYPE, type ReportItem } from "../src/lib/types";
+import { QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { ddb, tableName } from "../src/lib/dynamo";
+import {
+  dismissReport,
+  hideReport,
+  markReviewing,
+  unhideWork,
+} from "../src/lib/moderation";
 
+/**
+ * Command-line fallback for the moderation admin API. It applies the same
+ * decisions (src/lib/moderation.ts): `hide` records a strike for the author
+ * and can suspend posting at the threshold; `dismiss` resolves every open
+ * report on the same target and makes a work the system hid pending review
+ * visible again; `unhide` reverses a hide.
+ */
 async function run(args: string[]) {
   const [command, partition, sortKey, explicitWork] = args;
   const TableName = tableName();
+  const by = `cli:${process.env.AWS_PROFILE ?? "unknown"}`;
   if ((command === "pending" || command === "reviewing") && args.length === 1) {
     let cursor: Record<string, unknown> | undefined;
     do {
@@ -21,44 +34,23 @@ async function run(args: string[]) {
     } while (cursor);
     return;
   }
+  if (command === "unhide" && partition && args.length === 2) {
+    console.log(JSON.stringify(await unhideWork(partition, by)));
+    return;
+  }
   if (!["review", "dismiss", "hide"].includes(command) || !partition || !sortKey ||
       (explicitWork && command !== "hide")) {
-    throw new Error("Use pending, reviewing, or review|dismiss|hide <pk> <sk> [workId]");
+    throw new Error("Use pending, reviewing, review|dismiss|hide <pk> <sk> [workId], or unhide <workId>");
   }
-  const Key = { pk: partition, sk: sortKey };
-  const lookup = await ddb.send(new GetCommand({ TableName, Key, ConsistentRead: true }));
-  const report = lookup.Item as ReportItem | undefined;
-  if (report?.itemType !== TABLE_ITEM_TYPE.Report || report.status === "resolved") {
-    throw new Error("No open report matches those keys");
+  const key = { pk: partition, sk: sortKey };
+  if (command === "review") {
+    await markReviewing(key, by);
+    console.log("reviewing");
+  } else if (command === "dismiss") {
+    console.log(JSON.stringify(await dismissReport(key, by)));
+  } else {
+    console.log(JSON.stringify(await hideReport(key, by, { workId: explicitWork })));
   }
-  const status = command === "review" ? "reviewing" : "resolved";
-  const workId = explicitWork ?? report.workId;
-  if (command === "hide" && (!workId || !/^[A-Za-z0-9_-]{11}$/.test(workId) ||
-      (report.workId ? workId !== report.workId : !report.targetId))) {
-    throw new Error("Specify the reported work or a verified work by the reported creator");
-  }
-  await ddb.send(new TransactWriteCommand({ TransactItems: [
-    { Update: {
-      TableName, Key,
-      ConditionExpression: "itemType = :report AND #status = :old",
-      UpdateExpression: "SET #status = :status, gsi7pk = :index, decision = :decision, reviewedAt = :time",
-      ExpressionAttributeNames: { "#status": "status" },
-      ExpressionAttributeValues: {
-        ":report": TABLE_ITEM_TYPE.Report, ":old": report.status, ":status": status,
-        ":index": `REPORT_STATUS#${status}`, ":decision": command, ":time": new Date().toISOString(),
-      },
-    } },
-    ...(command === "hide" && workId ? [{ Update: {
-      TableName, Key: Keys.work(workId),
-      ConditionExpression: "itemType = :work" + (report.targetId ? " AND authorId = :author" : ""),
-      UpdateExpression: "SET moderationHidden = :hidden",
-      ExpressionAttributeValues: {
-        ":work": TABLE_ITEM_TYPE.Work, ":hidden": true,
-        ...(report.targetId ? { ":author": report.targetId } : {}),
-      },
-    } }] : []),
-  ] }));
-  console.log(status);
 }
 
 run(process.argv.slice(2)).catch(error => {

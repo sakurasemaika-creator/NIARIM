@@ -1,4 +1,5 @@
 import {
+  ArnFormat,
   Duration,
   RemovalPolicy,
   Stack,
@@ -59,6 +60,18 @@ const CAPACITY_PLAN = {
 /** DynamoDB Always Free枠の上限（アカウント単位・永続）。 */
 const FREE_TIER_CAPACITY = 25;
 const FUNCTION_LOG_RETENTION = logs.RetentionDays.ONE_MONTH;
+
+/**
+ * SSM Parameter Store SecureString names for Work Plaza moderation. Only the
+ * NAMES are in the repository; the owner creates the values in the AWS
+ * console (backend/README.md「作品広場の通報対応」). A missing parameter
+ * turns the matching feature off (admin API → 403, mail / AI skipped).
+ */
+export const MODERATION_PARAMETERS = {
+  adminEmails: "/niarim/moderation/admin-emails",
+  resendApiKey: "/niarim/moderation/resend-api-key",
+  anthropicApiKey: "/niarim/moderation/anthropic-api-key",
+} as const;
 
 /**
  * 容量配分がAlways Free枠を超えていないことを合成時に検証する。
@@ -174,6 +187,37 @@ export class NiarimBackendStack extends Stack {
         "niarim-fcm-sender@niarim-513201.iam.gserviceaccount.com",
     };
 
+    // Moderation thresholds and AI mode (cdk.json context or `-c`).
+    const moderationContext = (name: string, fallback: string) =>
+      String(this.node.tryGetContext(name) ?? fallback).trim();
+    const moderationAiMode = moderationContext("moderationAiMode", "backlog");
+    if (!["off", "always", "backlog"].includes(moderationAiMode)) {
+      throw new Error("moderationAiMode must be off, always or backlog");
+    }
+    const moderationNumbers = {
+      MODERATION_REPORT_HIDE_THRESHOLD: moderationContext("moderationReportHideThreshold", "3"),
+      MODERATION_STRIKE_SUSPEND_THRESHOLD: moderationContext("moderationStrikeSuspendThreshold", "3"),
+      MODERATION_AI_BACKLOG_THRESHOLD: moderationContext("moderationAiBacklogThreshold", "20"),
+      MODERATION_AI_DAILY_CAP: moderationContext("moderationAiDailyCap", "50"),
+      MODERATION_MAIL_DAILY_CAP: moderationContext("moderationMailDailyCap", "30"),
+    };
+    for (const [name, value] of Object.entries(moderationNumbers)) {
+      if (!/^[0-9]{1,5}$/.test(value)) throw new Error(`${name} must be a whole number`);
+    }
+    const moderationEnvironment = {
+      ...moderationNumbers,
+      MODERATION_AI_MODE: moderationAiMode,
+      MODERATION_ADMIN_PAGE_URL: "https://niarim.miranima-studio.com/admin/",
+      MODERATION_NOTIFY_TO: "support@miranima-studio.com",
+      MODERATION_NOTIFY_FROM: "NIARIM <support@miranima-studio.com>",
+    };
+    const parameterArn = (name: string) => this.formatArn({
+      service: "ssm",
+      resource: "parameter",
+      resourceName: name.replace(/^\//, ""),
+      arnFormat: ArnFormat.SLASH_RESOURCE_NAME,
+    });
+
     const reportSecretArn = this.node.tryGetContext("admobReportOAuthSecretArn") as string | undefined;
     const countryLayerArn = this.node.tryGetContext("rewardedAdCountryLayerArn") as string | undefined;
     const countryDataDirectory = this.node.tryGetContext("rewardedAdCountryDataDirectory") as string | undefined;
@@ -216,6 +260,9 @@ export class NiarimBackendStack extends Stack {
       // 予約同時実行10を改めて設定・検証すること。
       environment: {
         ...commonEnvironment,
+        ...moderationEnvironment,
+        MODERATION_ADMIN_EMAILS_PARAMETER: MODERATION_PARAMETERS.adminEmails,
+        ADMIN_ALLOWED_ORIGINS: "https://niarim.miranima-studio.com",
         NOTIFICATION_STREAM_ENABLED: "true",
         // Default-off. ADC must be provisioned using a Google-to-AWS
         // workload identity federation or equivalent secure credential source.
@@ -338,6 +385,13 @@ export class NiarimBackendStack extends Stack {
       bundling: { minify: true, sourceMap: false },
     });
     table.grantReadWriteData(apiFunction);
+    // The admin API reads only the moderator allowlist. SecureStrings use the
+    // AWS managed key aws/ssm, whose key policy already allows decryption
+    // through SSM for this account (a customer managed key needs kms:Decrypt).
+    apiFunction.addToRolePolicy(new iam.PolicyStatement({
+      actions: ["ssm:GetParameter"],
+      resources: [parameterArn(MODERATION_PARAMETERS.adminEmails)],
+    }));
 
     const notificationFailures = new s3.Bucket(this, "NotificationStreamFailures", {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
@@ -406,6 +460,49 @@ export class NiarimBackendStack extends Stack {
           itemType: { S: ["MISSION_ACTIVITY_V1", "COMMUNITY_ACTIVITY_V1"] },
           pushPending: { BOOL: [true] },
         } } }),
+      ],
+    }));
+
+    // Moderation worker: a second, separate consumer of the table stream that
+    // sees only newly inserted reports. It checks the reporter threshold,
+    // runs the optional AI triage and mails the support address. One batch
+    // at a time per shard, so a report flood cannot use up the account's
+    // Lambda concurrency; POST /reports never waits for it.
+    const moderationFunction = new NodejsFunction(this, "ModerationWorkerFunction", {
+      functionName: "niarim-moderation-worker",
+      logRetention: FUNCTION_LOG_RETENTION,
+      entry: path.join(__dirname, "../src/batch/moderationWorker.ts"),
+      handler: "handler",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      memorySize: 256,
+      timeout: Duration.seconds(90),
+      environment: {
+        TABLE_NAME: table.tableName,
+        ...moderationEnvironment,
+        MODERATION_RESEND_API_KEY_PARAMETER: MODERATION_PARAMETERS.resendApiKey,
+        MODERATION_ANTHROPIC_API_KEY_PARAMETER: MODERATION_PARAMETERS.anthropicApiKey,
+      },
+      bundling: { minify: true, sourceMap: false },
+    });
+    table.grantReadWriteData(moderationFunction);
+    moderationFunction.addToRolePolicy(new iam.PolicyStatement({
+      actions: ["ssm:GetParameter"],
+      resources: [
+        parameterArn(MODERATION_PARAMETERS.resendApiKey),
+        parameterArn(MODERATION_PARAMETERS.anthropicApiKey),
+      ],
+    }));
+    moderationFunction.addEventSource(new DynamoEventSource(table, {
+      startingPosition: lambda.StartingPosition.TRIM_HORIZON,
+      batchSize: 1,
+      // Older reports are still on the admin page; only fresh ones mail.
+      maxRecordAge: Duration.hours(1),
+      retryAttempts: 2,
+      reportBatchItemFailures: true,
+      filters: [
+        lambda.FilterCriteria.filter({ eventName: ["INSERT"], dynamodb: {
+          NewImage: { itemType: { S: ["REPORT"] } },
+        } }),
       ],
     }));
 

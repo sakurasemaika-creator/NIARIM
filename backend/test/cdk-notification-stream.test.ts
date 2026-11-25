@@ -3,6 +3,9 @@ import { Match, Template } from "aws-cdk-lib/assertions";
 import { expect, it } from "vitest";
 import { NiarimBackendStack } from "../lib/niarim-backend-stack";
 
+// Each synth bundles every Lambda with esbuild; the 5 s default is too tight.
+const SYNTH_TIMEOUT_MS = 60_000;
+
 it("applies 30-day retention to the API and scheduled Lambda log groups", () => {
   const app = new App({
     context: {
@@ -15,6 +18,7 @@ it("applies 30-day retention to the API and scheduled Lambda log groups", () => 
     "niarim-api",
     "niarim-scheduled-release",
     "niarim-reward-ad-revenue",
+    "niarim-moderation-worker",
   ]) {
     const functionId = template.getResourceId("AWS::Lambda::Function", {
       Properties: { FunctionName: functionName },
@@ -24,7 +28,7 @@ it("applies 30-day retention to the API and scheduled Lambda log groups", () => 
       RetentionInDays: 30,
     });
   }
-});
+}, SYNTH_TIMEOUT_MS);
 
 it("retains discarded notification records with scoped access and expiry", () => {
   const app = new App();
@@ -81,4 +85,4 @@ it("retains discarded notification records with scoped access and expiry", () =>
   expect(template.findOutputs("NotificationStreamFailureBucket", {
     Value: { Ref: bucketId },
   })).toHaveProperty("NotificationStreamFailureBucket");
-});
+}, SYNTH_TIMEOUT_MS);

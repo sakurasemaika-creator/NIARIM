@@ -9,7 +9,7 @@ import 'keep_together_text.dart';
 /// The version of the Terms of Service and the Privacy Policy that a user
 /// agrees to. Raise it when either document changes in a way that users must
 /// agree to again; the next purchase, sign-in or post then asks again.
-const String kLegalDocumentsVersion = '2026-11-23';
+const String kLegalDocumentsVersion = '2026-11-25';
 
 /// The version the user last agreed to (saved on this device only).
 const String kLegalConsentVersionKey = 'legal.consent.version';

@@ -143,6 +143,14 @@ export const Keys = {
     sk: "META",
   }),
   batchState: () => ({ pk: "BATCHSTATE#STATS_UPDATE", sk: "META" }),
+  /** Daily moderation mail / AI counters (JST day, expire by TTL). */
+  moderationDaily: (yyyymmdd: string) => ({
+    pk: `MODERATION_DAILY#${yyyymmdd}`, sk: "META",
+  }),
+  /** Last report mail for one target (`WORK#id` / `USER#id`), expires by TTL. */
+  moderationNotice: (targetPk: string) => ({
+    pk: `MODERATION_NOTICE#${targetPk}`, sk: "META",
+  }),
   /**
    * 通報レート制限用の窓カウンター（20章）。窓ごとに別アイテムへ分けて
    * おり、ADDによる原子的インクリメント＋TTLで自動失効させる。

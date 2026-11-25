@@ -16,6 +16,7 @@ import { TABLE_ITEM_TYPE } from "../../lib/types";
 import type { WorkWithProjectMetadata } from "../../lib/workProjectMetadata";
 import { toPublicWork } from "./_publicWork";
 import { recordMissionAchievement } from "../../lib/missionNotifications";
+import { assertPostingAllowed } from "../../lib/moderation";
 
 interface CreateWorkRequestBody {
   youtubeVideoId: string;
@@ -84,6 +85,9 @@ export async function createWork(event: APIGatewayProxyEventV2) {
 
   const user = await getUser(auth.niarimUserId);
   if (!user) forbidden("NIARIMユーザー情報を取得できませんでした");
+  // Repeated violations suspend posting (moderation.ts). Checked before any
+  // YouTube call or quota reservation.
+  assertPostingAllowed(user);
 
   let quotaReserved = false;
   try {

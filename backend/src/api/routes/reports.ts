@@ -5,6 +5,7 @@ import { authenticate, getUser } from "../../lib/auth";
 import { badRequest, created, notFound } from "../../lib/response";
 import { reserveReportQuota } from "../../lib/reportQuota";
 import { parseJsonObject } from "../../lib/request";
+import { applyReporterThreshold } from "../../lib/moderation";
 import type { ReportItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 
@@ -91,6 +92,17 @@ export async function createReport(event: APIGatewayProxyEventV2) {
     })),
     { Put: { TableName, Item: report } },
   ] }));
+  if (body.workId) {
+    // The report is stored. Hiding a work that reached the distinct-reporter
+    // threshold is best effort here: the moderation worker repeats the same
+    // idempotent check, and a failure must never fail the reporter's request.
+    try {
+      await applyReporterThreshold(body.workId);
+    } catch (error) {
+      console.warn("Report threshold check failed",
+        error instanceof Error ? error.name : "UnknownError");
+    }
+  }
   return created({ ok: true });
 }
 

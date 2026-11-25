@@ -55,6 +55,18 @@ import {
   getSocialCounts,
 } from "./routes/follows";
 import { putPushToken } from "./routes/notifications";
+import {
+  dismissAdminReport,
+  getAdminMe,
+  getAdminReport,
+  getAdminUser,
+  hideAdminReport,
+  listAdminReports,
+  reviewAdminReport,
+  suspendAdminUser,
+  unhideAdminWork,
+  unsuspendAdminUser,
+} from "./routes/admin";
 
 type Handler = (
   event: APIGatewayProxyEventV2,
@@ -157,7 +169,57 @@ const routes: Route[] = [
   route("POST", "/works/{id}/repost", (e, p) => toggleRepost(e, p.id)),
   route("POST", "/users/{id}/follow", (e, p) => toggleFollow(e, p.id)),
   route("PUT", "/users/{id}/push-token", (e, p) => putPushToken(e, p.id)),
+
+  // Moderation admin API (browser admin page). Google ID token + allowlisted
+  // email from SSM; CORS for the website origin is added below.
+  route("GET", "/admin/me", (e) => getAdminMe(e)),
+  route("GET", "/admin/reports", (e) => listAdminReports(e)),
+  route("GET", "/admin/reports/{id}", (e, p) => getAdminReport(e, p.id)),
+  route("POST", "/admin/reports/{id}/review", (e, p) => reviewAdminReport(e, p.id)),
+  route("POST", "/admin/reports/{id}/dismiss", (e, p) => dismissAdminReport(e, p.id)),
+  route("POST", "/admin/reports/{id}/hide", (e, p) => hideAdminReport(e, p.id)),
+  route("POST", "/admin/works/{id}/unhide", (e, p) => unhideAdminWork(e, p.id)),
+  route("GET", "/admin/users/{id}", (e, p) => getAdminUser(e, p.id)),
+  route("POST", "/admin/users/{id}/suspend", (e, p) => suspendAdminUser(e, p.id)),
+  route("POST", "/admin/users/{id}/unsuspend", (e, p) => unsuspendAdminUser(e, p.id)),
 ];
+
+/**
+ * CORS only for the moderation admin API, only for the website origin(s) in
+ * ADMIN_ALLOWED_ORIGINS. The Function URL has no CORS configuration of its
+ * own, so Lambda passes preflight OPTIONS requests to this handler. Every
+ * other route keeps sending no CORS headers (app-only, as before).
+ */
+const DEFAULT_ADMIN_ORIGINS = "https://niarim.miranima-studio.com";
+
+function isAdminPath(path: string): boolean {
+  return path === "/admin" || path.startsWith("/admin/");
+}
+
+function adminCorsHeaders(event: APIGatewayProxyEventV2): Record<string, string> | undefined {
+  const origin = event.headers?.["origin"] ?? event.headers?.["Origin"];
+  if (!origin) return undefined;
+  const allowed = (process.env.ADMIN_ALLOWED_ORIGINS ?? DEFAULT_ADMIN_ORIGINS)
+    .split(",").map((value) => value.trim()).filter(Boolean);
+  if (!allowed.includes(origin)) return undefined;
+  return {
+    "access-control-allow-origin": origin,
+    "access-control-allow-methods": "GET, POST, OPTIONS",
+    "access-control-allow-headers": "authorization, content-type",
+    "access-control-max-age": "600",
+  };
+}
+
+function withAdminCors(
+  event: APIGatewayProxyEventV2,
+  response: APIGatewayProxyStructuredResultV2,
+): APIGatewayProxyStructuredResultV2 {
+  const cors = adminCorsHeaders(event);
+  return {
+    ...response,
+    headers: { ...response.headers, vary: "origin", ...(cors ?? {}) },
+  };
+}
 
 export function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2>;
 export function handler(event: DynamoDBStreamEvent): Promise<DynamoDBBatchResponse>;
@@ -167,6 +229,19 @@ export async function handler(
   // Lambda URL wraps an HTTP body as a string; only the AWS stream invocation
   // supplies top-level Records. Never dispatch a parsed client body here.
   if ("Records" in event) return handleNotificationStream(event.Records);
+  const rawPath = event.requestContext?.http?.path ?? "";
+  if (isAdminPath(normalizePath(rawPath))) {
+    if (event.requestContext.http.method.toUpperCase() === "OPTIONS") {
+      return withAdminCors(event, { statusCode: 204, headers: {}, body: "" });
+    }
+    return withAdminCors(event, await dispatch(event));
+  }
+  return dispatch(event);
+}
+
+async function dispatch(
+  event: APIGatewayProxyEventV2,
+): Promise<APIGatewayProxyStructuredResultV2> {
   try {
     const normalizedEvent = normalizeRequestBody(event);
     const method = event.requestContext.http.method.toUpperCase();

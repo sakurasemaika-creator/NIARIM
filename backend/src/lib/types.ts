@@ -106,6 +106,16 @@ export interface WorkItem {
   // 13章：NIARIM側の独立した公開/非公開設定。
   isNiarimPublished: boolean;
   moderationHidden?: boolean;
+  // Moderation state (see moderation.ts). `moderationAutoHidden` marks a work
+  // the system hid pending review (enough distinct reporters, or an AI triage
+  // rated critical); dismissing its reports makes it visible again. A hide
+  // decided by a moderator clears the marker and records one strike.
+  moderationAutoHidden?: boolean;
+  moderationAutoHiddenAt?: string;
+  moderationAutoHiddenReason?: "reporters" | "ai";
+  moderationHiddenAt?: string;
+  moderationHiddenBy?: string;
+  moderationStrikeAt?: string;
   // 13章：YouTube側の状態。強制非表示の判定に使う
   // （'private'または'deleted'のとき強制非表示）。
   youtubePrivacyStatus: YoutubePrivacyStatus;
@@ -178,6 +188,16 @@ export interface UserItem {
 
   followerCount: number; // 常時公開の集計値（22.5節）
   followingCount: number; // 常時公開の集計値（22.5節）
+
+  // Moderation: works hidden by a moderator count as strikes. At the
+  // configured threshold posting is suspended automatically ("auto"); a
+  // moderator can also suspend or lift it (their email in postingSuspendedBy).
+  moderationStrikeCount?: number;
+  moderationLastStrikeAt?: string;
+  postingSuspended?: boolean;
+  postingSuspendedAt?: string;
+  postingSuspendedReason?: string;
+  postingSuspendedBy?: string;
 
   createdAt: string;
 }
@@ -269,6 +289,26 @@ export interface ReportItem {
   createdAt: string;
   gsi7pk: string; // `REPORT_STATUS#{status}`
   gsi7sk: string; // createdAt
+  // Set by a moderator (admin API or scripts/review-reports.ts).
+  decision?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  reviewNote?: string;
+  // AI triage (moderationAi.ts). The claim marker keeps it to one call per report.
+  aiTriageClaimedAt?: string;
+  aiTriage?: AiTriageRecord;
+}
+
+/** Stored AI triage of one report. Advisory only; a moderator decides. */
+export interface AiTriageRecord {
+  status: "ok" | "refused" | "failed";
+  severity?: "critical" | "high" | "medium" | "low" | "none";
+  category?: string;
+  recommendedAction?: "hide" | "keep" | "review";
+  rationale?: string;
+  model?: string;
+  refusalCategory?: string | null;
+  triagedAt: string;
 }
 
 /**

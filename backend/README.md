@@ -115,6 +115,7 @@ backend/
 | GET      | `/users/{id}/followers`               | フォロワー一覧を25件ずつ取得（次のページは `cursor`）                                      | 必須（本人のみ）                       |
 | GET      | `/users/{id}/reposts`                 | 8.5bis節（リポスト一覧。フォロー中タブで使う）                                           | 不要（リポストは公開。非公開化された作品は除外） |
 | PUT      | `/users/{id}/push-token`              | 22.7節（FCM端末トークン登録／解除）                                                      | 必須（本人のみ）                                 |
+| GET/POST | `/admin/...`                          | 通報の管理API（下の「作品広場の通報対応」）                                              | 必須（GoogleのIDトークン＋SSMの管理者リスト）    |
 
 ## 未実装・既知の制約（デプロイ前に把握しておくべきこと）
 
@@ -227,19 +228,138 @@ CloudFormation出力 `NotificationStreamFailureBucket` に示すS3バケット�
 
 ### 作品広場の通報対応
 
-通報は作品または投稿者を対象とし、ログインした利用者から /reports で受け付ける。
-通報内容は DynamoDB の GSI7 で運営担当者が確認する。公開APIには通報内容を取り出す経路を設けていない。
+通報は作品またはアカウントを対象とし、ログインした利用者から `POST /reports` で受け付ける。
+通報の内容は公開APIからは取り出せない。運営はブラウザーの管理ページ（Webサイトのリポジトリで作る
+`https://niarim.miranima-studio.com/admin/`）から、下の管理APIで確認・対応する。
+仕組みはすべて既存のテーブルとキー（通報は `WORK#{id}` / `USER#{id}` の下、状態の一覧はGSI7）の上にあり、
+GSI・テーブルは増やしていない（`CAPACITY_PLAN` は変わらない）。
 
-運営担当者のAWSプロファイルと対象テーブルを明示して、backend ディレクトリで実行する。
+#### 自動の一時非掲載・投稿の停止
+
+- **一時非掲載**：1つの作品に、未対応（pending・reviewing）の通報をした**別々のアカウントが3人**に達すると、
+  確認が終わるまで作品を非掲載にする（`moderationHidden: true` と `moderationAutoHidden: true`）。
+  AIの判定が「重大（critical）」のときも同じく一時非掲載にする（`moderationAutoHiddenReason: "ai"`）。
+  非掲載は既存の `moderationHidden` なので、公開の一覧・検索・ランキング・詳細・通報の対象からは今までどおり外れる。
+- **「対応不要（dismiss）」**にすると、その作品の未対応の通報をすべて完了にし、自動で隠した作品は掲載に戻す
+  （運営が自分で非掲載にした作品は戻さない）。
+- **「非掲載（hide）」**にすると、作品を非掲載のままにし、投稿者に**違反1回（strike）**を数える
+  （同じ作品で2回は数えない）。違反が**3回**になると、その投稿者の作品広場への投稿を自動で停止する
+  （ユーザーの `postingSuspended: true`、`postingSuspendedBy: "auto"`）。
+- 停止中のアカウントは `POST /works`（新しい投稿）と `PATCH /works/{id}` で非公開→公開に戻す操作が
+  **403・`code: "POSTING_SUSPENDED"`** になる（アプリは7言語で、異議はお問い合わせフォームかメールで、と出す）。
+  非公開にする・メタデータを直すことはできる。
+- 異議（お問い合わせフォーム・メール）を認めたときは、管理APIの `unhide`（作品を戻し、その作品の違反を取り消す。
+  自動の停止は違反が3回未満に戻れば一緒に解除）や `unsuspend`（手動で解除、`resetStrikes` で違反の回数も0に）を使う。
+
+数値は `cdk.json` の `context`（または `cdk deploy -c 名前=値`）で変え、デプロイし直すと反映される。0にするとその仕組みを止める。
+
+| context名                         | 既定      | 意味                                                         |
+| --------------------------------- | --------- | ------------------------------------------------------------ |
+| `moderationReportHideThreshold`   | `3`       | 一時非掲載にする、未対応の通報をした別々のアカウントの数     |
+| `moderationStrikeSuspendThreshold`| `3`       | 投稿を自動で停止する違反の回数                               |
+| `moderationAiMode`                | `backlog` | AIの判定：`off`／`always`（毎回）／`backlog`（溜まったときだけ） |
+| `moderationAiBacklogThreshold`    | `20`      | `backlog` で、未対応（pending）の通報がこの件数以上の間だけAIで判定 |
+| `moderationAiDailyCap`            | `50`      | AIの判定の1日（日本時間）の上限                              |
+| `moderationMailDailyCap`          | `30`      | 通報のお知らせメールの1日（日本時間）の上限                  |
+
+#### お知らせメールとAIの判定（通報の後で動く）
+
+通報が保存されると、テーブルのDynamoDB Streamsの2つ目の読み手 `niarim-moderation-worker`
+（`src/batch/moderationWorker.ts`、通報の追加だけを受け取る）が、通報者の数の確認・AIの判定・メールを行う。
+`POST /reports` はこれを待たず、メール・AIが失敗しても通報は失敗しない。Streamsは1つずつ順に処理されるので、
+通報が集中してもアカウントの小さな同時実行枠（10）をAPIから奪わない。
+
+- **メール**：`support@miranima-studio.com` へ、件名の先頭が **`[NIARIM通報]`** のメールを送る
+  （Resendを使い、差出人は `NIARIM <support@miranima-studio.com>`）。メールソフトでこの件名で振り分けられる。
+  本文は日本語で、理由・作品名・YouTubeのリンク・通報した人数・状態・AIの判定・管理ページのURL。
+  通報者のIDは書かない。**同じ作品（アカウント）について1時間に1通**、**1日30通まで**。上限を越えたら
+  その日に1度だけ「`[NIARIM通報]多数の通報があります`」を送り、以降はメールせずに通報だけ保存する。
+- **AIの判定**：Claude（`claude-opus-5-5`、思考は自動・effort `low`、決まった形のJSONで返す）が、
+  通報の理由と作品の公開情報（題・概要・タグ・YouTubeのサムネイル）から
+  重大度（`critical`〜`none`）・分類・推奨（`hide`／`keep`／`review`）・短い理由（日本語）を返し、通報に保存する。
+  通報者・投稿者のIDは送らない。判定はあくまで参考で、決めるのは運営。安全のための判定の拒否
+  （`stop_reason: "refusal"`）は、まずAnthropicのおすすめのモデルで自動でやり直し（`fallbacks: "default"`）、
+  それでも断られたら「人の確認が必要」として残す。1件の通報につき1回、1日50件まで。
+  既定の `backlog` では、未対応の通報が20件以上たまっている間だけ判定する。
+- **費用の目安**：1件あたり入力約1,500トークン（画像を含む）・出力300〜800トークン（思考を含む）で、
+  Claude Opus 5.5（入力$4・出力$20／100万トークン）では1件$0.01〜0.02（約2〜3円）。上限の50件／日に達しても
+  1日$1前後（約150円）まで。既定の `backlog` では通報が20件以上たまらない限り呼ばないので、通常は0円。
+  Claude Consoleでワークスペースの使用量の上限も設定しておくと安全。Resendは既存のWebサイトのアカウントを使う。
+
+#### 所有者が作るSSMのパラメーター（値はリポジトリ・CloudFormationに置かない）
+
+AWSコンソール → **Systems Manager** → **パラメータストア** → **パラメータの作成**で、リージョンは
+**アジアパシフィック（東京）ap-northeast-1**、利用枠は「標準」、タイプは **SecureString**、
+KMSのキーは既定の **`alias/aws/ssm`**（自分のKMSキーにする場合はLambdaのロールに `kms:Decrypt` を足す）。
+作った・変えた値は、Lambdaが最長5分覚えているので、遅くとも5分ほどで効く。デプロイし直す必要はない。
+
+| 名前                                   | 入れる値                                                         | 無いとき                    |
+| -------------------------------------- | ---------------------------------------------------------------- | --------------------------- |
+| `/niarim/moderation/admin-emails`      | 管理ページを使うGoogleアカウントのメールアドレス（複数はカンマ区切り） | 管理APIはすべて403          |
+| `/niarim/moderation/resend-api-key`    | ResendのAPIキー（`re_`で始まる。送信だけの権限のキーを作る）       | メールを送らない（ログだけ） |
+| `/niarim/moderation/anthropic-api-key` | Claude APIのキー（Claude Consoleで作る。使用量の上限も設定しておく） | AIの判定をしない            |
+
+あわせて、Google Cloud ConsoleでアプリのOAuthクライアント（`GOOGLE_CLIENT_ID`と同じWebクライアント）の
+「承認済みのJavaScript生成元」に `https://niarim.miranima-studio.com` を足す（管理ページのGoogleログインのため）。
+
+#### 管理API（`/admin/...`）
+
+- **認証**：`Authorization: Bearer <GoogleのIDトークン>`。IDトークンの対象（aud）はほかのAPIと同じ
+  `GOOGLE_CLIENT_ID`、メールアドレスが確認済み（`email_verified`）で、`/niarim/moderation/admin-emails` に
+  載っていること。管理者のNIARIMアカウントは作らない。
+  - パラメーターが無い・空 → 403 `ADMIN_DISABLED`（トークンも見ない）
+  - トークンが無い・無効 → 401 `UNAUTHORIZED`
+  - 載っていない・確認されていないメール → 403 `ADMIN_FORBIDDEN`
+- **CORS**：`/admin/` のパスだけ、Origin が `https://niarim.miranima-studio.com` のときに
+  `access-control-allow-origin` を返す（`OPTIONS` の事前確認は204）。ほかのAPIはこれまでどおりCORSなし。
+- エラーはどれも `{"error": "日本語の文", "code": "機械向けの識別子"}`。
+
+| メソッド | パス                                   | 本文（JSON）                          | 返すもの                                                                 |
+| -------- | -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
+| GET      | `/admin/me`                            | -                                     | `{email, settings:{reportHideThreshold, strikeSuspendThreshold, aiMode, aiBacklogThreshold, aiDailyCap, mailDailyCap}}` |
+| GET      | `/admin/reports?status=&order=&limit=&cursor=` | -                             | `{status, order, reports:[Report], nextCursor}`。`status`は`pending`（既定）・`reviewing`・`resolved`、`order`は`oldest`（既定、resolvedは`newest`）、`limit`は1〜50（既定20） |
+| GET      | `/admin/reports/{reportId}`            | -                                     | `{report: Report, relatedReports: [ReportSummary]}`（同じ作品・アカウントへの通報すべて、新しい順） |
+| POST     | `/admin/reports/{reportId}/review`     | -                                     | `{ok, report}`（確認中にする）                                           |
+| POST     | `/admin/reports/{reportId}/dismiss`    | `{note?}`                             | `{ok, resolved, unhidden, report}`                                       |
+| POST     | `/admin/reports/{reportId}/hide`       | `{workId?（アカウントへの通報では必須）, note?}` | `{ok, workId, resolved, strikeAdded, strikeCount, postingSuspended, suspendedNow, report}` |
+| POST     | `/admin/works/{workId}/unhide`         | `{keepStrike?: boolean, note?}`       | `{ok, unhidden, strikeRemoved, strikeCount?, suspensionLifted, resolved, work: Work}` |
+| GET      | `/admin/users/{userId}`                | -                                     | `{user: User}`                                                           |
+| POST     | `/admin/users/{userId}/suspend`        | `{reason}`（1〜500文字）               | `{ok, user}`                                                             |
+| POST     | `/admin/users/{userId}/unsuspend`      | `{resetStrikes?: boolean}`            | `{ok, user}`                                                             |
+
+- `ReportSummary`：`reportId`（URLにそのまま使える不透明なID）・`status`・`createdAt`・`reason`・`reporterId`・
+  `decision`（`dismiss`/`hide`/`unhide`/null）・`reviewedAt`・`reviewedBy`・`reviewNote`・`aiTriage`
+  （`{status: "ok"|"refused"|"failed", severity?, category?, recommendedAction?, rationale?, model?, refusalCategory?, triagedAt}` か null）。
+- `Report`：`ReportSummary` に加えて `targetType`（`work`/`account`）・`workId`・`targetUserId`・
+  `reporterCount`（未対応の通報をした別々のアカウントの数）・`openReportCount`・`totalReportCount`・`work`・`author`。
+- `Work`：`workId`・`available`（false＝消えた作品、`deleted`も）・`title`・`description`・`tags`・`youtubeVideoId`・
+  `youtubeUrl`・`thumbnailUrl`・`authorId`・`channelName`・`postedAt`・`isNiarimPublished`・`youtubePrivacyStatus`・
+  `moderationHidden`・`autoHidden`・`autoHiddenReason`・`autoHiddenAt`・`hiddenAt`・`hiddenBy`・`strikeRecorded`。
+- `User`：`userId`・`available`・`displayName`（YouTubeのチャンネル名）・`avatarUrl`・`youtubeChannelId`・
+  `strikeCount`・`lastStrikeAt`・`postingSuspended`・`postingSuspendedAt`・`postingSuspendedReason`・
+  `postingSuspendedBy`（`auto` か管理者のメール）。
+- 主なエラーの `code`：`REPORT_RESOLVED`（対応済み）・`REPORT_CHANGED`・`WORK_ID_REQUIRED`・
+  `WORK_AUTHOR_MISMATCH`・`MODERATION_CHANGED`（同時に変わった。読み直してやり直す）・`INVALID_STATUS`・
+  `INVALID_PAGE_SIZE`・`INVALID_PAGE_CURSOR`・`INVALID_NOTE`・`INVALID_REASON`・`NOT_FOUND`。
+- 「対応不要」「非掲載」「戻す」は、その作品（アカウントへの通報はそのアカウント）の未対応の通報をまとめて完了にする。
+
+#### コマンドラインからの対応（管理ページが無いとき）
+
+運営担当者のAWSプロファイルと対象テーブルを明示して、backend ディレクトリで実行する。管理APIと同じ処理を使う。
 
 ```sh
 AWS_PROFILE=<運営用プロファイル> TABLE_NAME=<対象テーブル> npx ts-node scripts/review-reports.ts pending
 ```
 
 最後の引数を `reviewing` にすると確認中の通報を一覧表示する。通報行に記載された
-`pk` と `sk` を引用符で囲み、`review 'pk' 'sk'` で確認中、`dismiss 'pk' 'sk'` で対応完了にする。
-作品を非掲載にする場合は `hide 'pk' 'sk'` を実行する。投稿者通報では、確認した対象作品の動画IDを最後に指定する。
-非掲載フラグと通報の完了は同じトランザクションで記録する。動画本体はYouTubeに残る。
-復旧を承認した場合は、作品の META 行の `moderationHidden` を運営権限で削除し、投稿者の公開設定に戻す。
+`pk` と `sk` を引用符で囲み、`review 'pk' 'sk'` で確認中、`dismiss 'pk' 'sk'` で対応不要、
+`hide 'pk' 'sk'` で非掲載（違反を1回数える）にする。アカウントへの通報では、確認した対象作品の動画IDを最後に指定する。
+`unhide <動画ID>` で非掲載を取り消す。動画本体はYouTubeに残る。
 運営用プロファイルには対象テーブルの取得・該当インデックスの検索・通報処理の更新に必要な権限を付与する。
 通報の一覧には個人情報が含まれるため、運営担当者の閲覧に限る。
+
+#### デプロイ
+
+ここに書いた変更は、GitHub Actions の **Backend CI** を `dev_branch` で手動実行し「AWSへデプロイする」を
+選んだときだけ本番に入る（pushでは入らない）。デプロイしてもSSMのパラメーターを作るまでは、管理APIは403、
+メールとAIは動かない（通報の保存・自動の一時非掲載・違反の回数と投稿の停止は動く）。
