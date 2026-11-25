@@ -2424,6 +2424,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     body,
                     textAlign: TextAlign.center,
                     keepLastPhrase: true,
+                    keep: _lastChineseClause(body),
                     style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                 ],
@@ -2450,6 +2451,16 @@ class _CommunityScreenState extends State<CommunityScreen>
         ),
       ),
     );
+  }
+
+  /// 中国語の文の最後の句（最後の「，」の後）。短ければ1つのかたまりとして
+  /// 折り、最後の1字と句点だけが次の行に残らないようにする（「…显示在这 /
+  /// 里。」）。日本語は[messageText]の keepLastPhrase がかなの境目で扱う。
+  static List<String> _lastChineseClause(String text) {
+    final comma = text.lastIndexOf('\uFF0C');
+    if (comma < 0) return const [];
+    final tail = text.substring(comma + 1);
+    return tail.characters.length <= 12 ? [tail] : const [];
   }
 
   Widget _buildSearchEmptyState(AppLocalizations l10n) {
