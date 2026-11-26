@@ -1,0 +1,3 @@
+# Vendored third-party Agent Skills: preserve upstream source files byte-for-byte.
+.claude/skills/yomiyasu/
+.agents/skills/yomiyasu/
