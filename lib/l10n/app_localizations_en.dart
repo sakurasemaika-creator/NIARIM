@@ -5155,7 +5155,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canvasLayerLockedNotice =>
-      'This layer is locked, so you can’t draw on it. Turn off “Lock” in the layer settings.';
+      'This layer is locked, so you can’t edit it. Turn off “Lock” in the layer settings.';
 
   @override
   String brushPanelDeleteConfirmTitle(String name) {

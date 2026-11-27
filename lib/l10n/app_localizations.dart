@@ -8946,7 +8946,7 @@ abstract class AppLocalizations {
   /// ロックしたレイヤーへ描こうとしたときのキャンバスの通知
   ///
   /// In ja, this message translates to:
-  /// **'このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。'**
+  /// **'このレイヤーはロック中のため編集できません。レイヤーの設定で「ロック」をオフにしてください。'**
   String get canvasLayerLockedNotice;
 
   /// No description provided for @brushPanelDeleteConfirmTitle.

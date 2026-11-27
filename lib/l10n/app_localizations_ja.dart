@@ -4932,7 +4932,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get canvasLayerLockedNotice =>
-      'このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。';
+      'このレイヤーはロック中のため編集できません。レイヤーの設定で「ロック」をオフにしてください。';
 
   @override
   String brushPanelDeleteConfirmTitle(String name) {

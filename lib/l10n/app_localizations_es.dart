@@ -5233,7 +5233,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get canvasLayerLockedNotice =>
-      'Esta capa está bloqueada y no se puede dibujar en ella. Desactiva «Bloquear» en los ajustes de la capa.';
+      'Esta capa está bloqueada y no se puede editar. Desactiva «Bloquear» en los ajustes de la capa.';
 
   @override
   String brushPanelDeleteConfirmTitle(String name) {

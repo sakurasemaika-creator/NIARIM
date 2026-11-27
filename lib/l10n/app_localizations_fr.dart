@@ -5240,7 +5240,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasLayerLockedNotice =>
-      'Ce calque est verrouillé : impossible d’y dessiner. Désactivez « Verrouiller » dans les réglages du calque.';
+      'Ce calque est verrouillé : impossible de le modifier. Désactivez « Verrouiller » dans les réglages du calque.';
 
   @override
   String brushPanelDeleteConfirmTitle(String name) {

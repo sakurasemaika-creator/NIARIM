@@ -4958,7 +4958,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get canvasLayerLockedNotice =>
-      '이 레이어는 잠겨 있어 그릴 수 없습니다. 레이어 설정에서 “잠금”을 끄세요.';
+      '이 레이어는 잠겨 있어 편집할 수 없습니다. 레이어 설정에서 “잠금”을 끄세요.';
 
   @override
   String brushPanelDeleteConfirmTitle(String name) {
