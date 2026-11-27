@@ -63,29 +63,29 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
         final menuWidth = math.max(0.0, math.min(
           widget.maxWidth,
           viewportWidth - _edgeInset * 2,
-        ));
-        final maxMenuHeight = math.max(0.0, viewportHeight - _edgeInset * 2);
+        )).toDouble();
+        final maxMenuHeight = math.max(0.0, viewportHeight - _edgeInset * 2).toDouble();
         final measured = _measuredSurfaceSize;
         final estimatedSize = Size(
-          widget.fillWidth ? menuWidth : math.min(menuWidth, 320),
+          widget.fillWidth ? menuWidth : math.min(menuWidth, 320).toDouble(),
           _minimized
               ? _headerHeight
-              : math.min(maxMenuHeight, 420),
+              : math.min(maxMenuHeight, 420).toDouble(),
         );
         final currentSize = measured ?? estimatedSize;
 
         final maxLeft = math.max(
           _edgeInset,
           viewportWidth - currentSize.width - _edgeInset,
-        );
+        ).toDouble();
         final maxBottom = math.max(
           _edgeInset,
           viewportHeight - currentSize.height - _edgeInset,
-        );
+        ).toDouble();
         final left = _left.clamp(_edgeInset, maxLeft).toDouble();
         final bottom = _bottom.clamp(_edgeInset, maxBottom).toDouble();
-        final bodyMaxHeight = math.max(0.0, maxMenuHeight - _headerHeight);
-        final headerWidth = widget.fillWidth ? menuWidth : math.min(menuWidth, 104);
+        final bodyMaxHeight = math.max(0.0, maxMenuHeight - _headerHeight).toDouble();
+        final headerWidth = widget.fillWidth ? menuWidth : math.min(menuWidth, 104).toDouble();
 
         return Stack(
           clipBehavior: Clip.none,
@@ -93,8 +93,10 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
             Positioned(
               left: left,
               bottom: bottom,
-              child: Material(
-                key: _surfaceKey,
+              child: KeyedSubtree(
+                key: const ValueKey('focus-mode-menu-surface'),
+                child: Material(
+                  key: _surfaceKey,
                 color: scheme.surface,
                 elevation: 6,
                 surfaceTintColor: Colors.transparent,
@@ -133,13 +135,13 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                       viewportWidth -
                                           size.width -
                                           _edgeInset,
-                                    );
+                                    ).toDouble();
                                     final dragMaxBottom = math.max(
                                       _edgeInset,
                                       viewportHeight -
                                           size.height -
                                           _edgeInset,
-                                    );
+                                    ).toDouble();
                                     setState(() {
                                       _left = (_left + details.delta.dx)
                                           .clamp(_edgeInset, dragMaxLeft)
@@ -212,6 +214,7 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                       ),
                     ],
                   ),
+                ),
                 ),
               ),
             ),
