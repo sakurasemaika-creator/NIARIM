@@ -13,6 +13,7 @@
 //   バー・シークバー）にもはみ出していた。
 // * PCの「詳細」は題が作品名なのに、総フレーム数・秒数は選んでいるシーンの数
 //   だった。
+// * 「長さ変更」のスライダーが1〜43万コマで、少し動かすと数千コマ跳んだ。
 import 'dart:io';
 
 import 'package:flutter/material.dart' hide MaterialType;
@@ -29,6 +30,7 @@ import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/screens/timeline/widgets/material_gizmo.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/editable_slider_value.dart';
+import 'package:niarim/widgets/stepped_slider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -502,6 +504,45 @@ void main() {
       findsOneWidget,
     );
     expect(valueOf(l10n.timelineDurationFramesLabel), '$sceneFrames');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the length slider covers lengths near the scene\'s', (
+    tester,
+  ) async {
+    final (:ps, :projectId, :sceneId, videoId: _, :l10n) = await openTimeline(
+      tester,
+    );
+    final more = find.byWidgetPredicate(
+      (widget) =>
+          widget is PopupMenuButton<String> &&
+          widget.icon is Icon &&
+          (widget.icon! as Icon).icon == Icons.more_vert,
+    );
+    await tester.tap(more.first);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(PopupMenuItem<String>),
+        matching: find.text(l10n.timelineDurationChangeMenuItem),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final slider = find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.byType(SteppedSlider),
+    );
+    // 30 frames at 10 fps: up to a minute (600), not 432,000.
+    expect(ps.frameCount(projectId, sceneId), 30);
+    expect(tester.widget<SteppedSlider>(slider).max, 600);
+    // Typing a longer length still works and widens the slider with it.
+    await tester.enterText(
+      find.widgetWithText(TextField, l10n.timelineDurationFramesLabel),
+      '5000',
+    );
+    await tester.pump();
+    expect(tester.widget<SteppedSlider>(slider).max, 5000);
+    expect(tester.widget<SteppedSlider>(slider).value, 5000);
     expect(tester.takeException(), isNull);
   });
 }

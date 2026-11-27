@@ -10717,6 +10717,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final fps = project?.fps ?? 24;
     int frames = ps.frameCount(widget.projectId, sceneId).clamp(1, 1 << 30);
     const maxFrames = 7200 * 60; // プレミアム上限2時間相当を目安にした上限
+    // スライダーは、いまの長さの2倍か1分の長い方まで（打つ欄は上限まで）。
+    // 上限の43万コマまでにすると、少し動かしただけで数千コマ跳び、数十コマの
+    // 長さに合わせられなかった。
+    final sliderMax = math.min(maxFrames, math.max(frames * 2, fps * 60));
     final framesController = TextEditingController(text: '$frames');
     final secondsController = TextEditingController(
       text: (frames / fps).toStringAsFixed(1),
@@ -10737,7 +10741,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   SteppedSlider(
                     value: frames.toDouble(),
                     min: 1,
-                    max: maxFrames.toDouble(),
+                    max: math.max(sliderMax, frames).toDouble(),
                     compact: true,
                     onChanged: (v) => setS(() {
                       frames = v.round();
