@@ -28,6 +28,7 @@ import '../../widgets/sort_mode_control.dart';
 import '../../widgets/collection_action_controls.dart';
 import '../../widgets/collection_tile_layout.dart';
 import '../../widgets/legal_consent.dart';
+import '../rewards/opal_gifts.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import 'widgets/community_thumbnail_placeholder.dart';
 import 'widgets/community_work_card.dart' show CommunityWorkOrientation;
@@ -385,6 +386,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       // The interactive picker keeps the current session if it is dismissed.
       // didChangeDependencies reloads owner-only data when the account changes.
       await auth.signInInteractively();
+      // A brand-new NIARIM account is offered the coupon entry once.
+      if (mounted) await maybeOfferOpalCouponAfterSignIn(context);
     } catch (error) {
       debugPrint('Google account switch failed: $error');
       if (!mounted) return;

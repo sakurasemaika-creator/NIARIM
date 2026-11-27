@@ -11056,4 +11056,125 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get makingSpeechFailed => '音声を生成できませんでした。選択した音声データを確認してください。';
+
+  @override
+  String get opalGiftPresentBox => 'プレゼントボックス';
+
+  @override
+  String opalGiftUnclaimedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '受け取っていないプレゼントが$count件あります',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get opalGiftPresentEmpty => '受け取れるプレゼントはありません';
+
+  @override
+  String get opalGiftPresentEmptyHint =>
+      '運営からのプレゼントはここに届きます。受け取り期限を過ぎたプレゼントは表示されません。';
+
+  @override
+  String get opalGiftClaim => '受け取る';
+
+  @override
+  String get opalGiftClaimed => '受け取り済み';
+
+  @override
+  String opalGiftClaimUntil(DateTime deadline) {
+    final intl.DateFormat deadlineDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String deadlineString = deadlineDateFormat.format(deadline);
+
+    return '受け取り期限：$deadlineString';
+  }
+
+  @override
+  String opalGiftReceived(String amount) {
+    return '$amountを受け取りました';
+  }
+
+  @override
+  String get opalGiftPresentExpired => 'このプレゼントは受け取り期限を過ぎました。';
+
+  @override
+  String get opalGiftPresentEnded => 'このプレゼントは受け取れなくなりました。';
+
+  @override
+  String get opalGiftLoadFailed => 'プレゼントを読み込めませんでした';
+
+  @override
+  String get opalGiftReload => 'もう一度読み込む';
+
+  @override
+  String get opalGiftClaimFailed => '受け取れませんでした。通信状態を確かめて、もう一度お試しください。';
+
+  @override
+  String get opalGiftSignInRequired => 'Googleアカウントのログインが切れました。ログインし直してください。';
+
+  @override
+  String get opalCouponEnter => 'クーポンコードを入力';
+
+  @override
+  String get opalCouponIntro => 'SNSなどで配られたクーポンコードを入力すると、オパールを受け取れます。';
+
+  @override
+  String get opalCouponOfferTitle => 'クーポンコードをお持ちの方へ';
+
+  @override
+  String get opalCouponOfferBody =>
+      'クーポンコードを入力すると、オパールを受け取れます。あとから「オパール・特典」の画面でも入力できます。';
+
+  @override
+  String get opalCouponField => 'クーポンコード';
+
+  @override
+  String get opalCouponFieldHint => '例：ABCD-2345-EFGH';
+
+  @override
+  String get opalCouponFieldHelper => '大文字と小文字、空白、ハイフンは区別しません';
+
+  @override
+  String get opalCouponLater => 'あとで';
+
+  @override
+  String get opalCouponErrorFormat => 'コードは英数字4〜32文字です。入力を確かめてください。';
+
+  @override
+  String get opalCouponErrorNotFound => 'このクーポンコードは見つかりません。入力を確かめてください。';
+
+  @override
+  String get opalCouponErrorEnded => 'このクーポンの配布は終了しました。';
+
+  @override
+  String get opalCouponErrorExpired => 'このクーポンは有効期限が過ぎています。';
+
+  @override
+  String get opalCouponErrorNotYet => 'このクーポンはまだ使えません。配布が始まってから入力してください。';
+
+  @override
+  String get opalCouponErrorLimit => 'このクーポンは配布数の上限に達しました。';
+
+  @override
+  String get opalCouponErrorUsed => 'このクーポンはこのアカウントで使用済みです。';
+
+  @override
+  String get opalCouponErrorNewOnly => 'このクーポンは登録して間もないアカウントだけが使えます。';
+
+  @override
+  String get opalCouponErrorNotEligible => 'このアカウントではこのクーポンを使えません。';
+
+  @override
+  String get opalCouponErrorRateLimited =>
+      '入力が続いたため、しばらく受け付けていません。1時間ほどおいてから入力してください。';
+
+  @override
+  String get rewardUnlockHistoryPresent => 'プレゼント';
+
+  @override
+  String get rewardUnlockHistoryCoupon => 'クーポン';
 }

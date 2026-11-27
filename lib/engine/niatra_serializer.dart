@@ -144,6 +144,9 @@ class NiatraSerializer {
     // The version of the Terms and the Privacy Policy agreed to on this
     // device, and when. Agreement is asked on each device.
     'legal.consent.',
+    // Whether the one-time coupon offer after the first sign-in was shown
+    // for a NIARIM account on this device.
+    'opal.couponOffer.v1.',
     'community.ownerByAccount.',
     'community.savedSearches.v1',
     'community.searchHistory.v1',

@@ -67,6 +67,15 @@ import {
   unhideAdminWork,
   unsuspendAdminUser,
 } from "./routes/admin";
+import { claimMyPresent, getMyGifts, redeemMyCoupon } from "./routes/opalGifts";
+import {
+  createAdminCoupon,
+  createAdminPresent,
+  deactivateAdminCoupon,
+  deactivateAdminPresent,
+  listAdminCoupons,
+  listAdminPresents,
+} from "./routes/opalGiftsAdmin";
 import {
   createAdminTriageToken,
   getAdminTriagePrompt,
@@ -146,6 +155,9 @@ const routes: Route[] = [
   route("POST", "/me/rewards/redeem", (e) => redeemCoins(e)),
   // Public Google-to-server callback; signature and one-time nonce mandatory.
   route("GET", "/admob/ssv", (e) => receiveRewardedAdSsv(e)),
+  route("GET", "/me/gifts", (e) => getMyGifts(e)),
+  route("POST", "/me/gifts/presents/{id}/claim", (e, p) => claimMyPresent(e, p.id)),
+  route("POST", "/me/gifts/coupons/redeem", (e) => redeemMyCoupon(e)),
   route("POST", "/me/login-bonus/visit", (e) => visitMyLoginBonus(e)),
   route("GET", "/me/login-bonus", (e) => getMyLoginBonus(e)),
   route("POST", "/me/login-bonus/claim", (e) => claimMyLoginBonus(e)),
@@ -190,6 +202,12 @@ const routes: Route[] = [
   route("GET", "/admin/users/{id}", (e, p) => getAdminUser(e, p.id)),
   route("POST", "/admin/users/{id}/suspend", (e, p) => suspendAdminUser(e, p.id)),
   route("POST", "/admin/users/{id}/unsuspend", (e, p) => unsuspendAdminUser(e, p.id)),
+  route("GET", "/admin/gifts/coupons", (e) => listAdminCoupons(e)),
+  route("POST", "/admin/gifts/coupons", (e) => createAdminCoupon(e)),
+  route("POST", "/admin/gifts/coupons/{code}/deactivate", (e, p) => deactivateAdminCoupon(e, p.code)),
+  route("GET", "/admin/gifts/presents", (e) => listAdminPresents(e)),
+  route("POST", "/admin/gifts/presents", (e) => createAdminPresent(e)),
+  route("POST", "/admin/gifts/presents/{id}/deactivate", (e, p) => deactivateAdminPresent(e, p.id)),
   route("POST", "/admin/triage/token", (e) => createAdminTriageToken(e)),
   route("POST", "/admin/triage/token/revoke", (e) => revokeAdminTriageToken(e)),
   route("GET", "/admin/triage/prompt", (e) => getAdminTriagePrompt(e)),

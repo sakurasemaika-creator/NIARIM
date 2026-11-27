@@ -380,6 +380,29 @@ class CommunityApi {
         query: {'cursor': ?cursor},
       );
 
+  /// Presents the signed-in account can see now, and the account's age.
+  Future<Map<String, dynamic>> myGifts() =>
+      _client.getJson('/me/gifts', authenticated: true);
+
+  /// Server-side, once-per-account credit; a repeat answers alreadyClaimed.
+  Future<Map<String, dynamic>> claimPresent(String presentId) =>
+      _client.postJson(
+        '/me/gifts/presents/${Uri.encodeComponent(presentId)}/claim',
+        authenticated: true,
+        body: const {},
+      );
+
+  /// Reuse [requestId] when retrying the same attempt after a lost response:
+  /// the server then answers with the first result instead of refusing.
+  Future<Map<String, dynamic>> redeemCoupon({
+    required String code,
+    required String requestId,
+  }) => _client.postJson(
+    '/me/gifts/coupons/redeem',
+    authenticated: true,
+    body: {'code': code, 'requestId': requestId},
+  );
+
   /// Record an actual authenticated calendar-day visit. No coins granted.
   Future<Map<String, dynamic>> visitLoginBonus() => _client.postJson(
     '/me/login-bonus/visit',

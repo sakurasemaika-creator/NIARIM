@@ -13,6 +13,7 @@ import '../../l10n/reward_unlock_labels.dart';
 import '../../l10n/reward_navigation_labels.dart';
 import '../../models/coin_unlock_quote.dart';
 import '../../models/coin_benefit_price_proposal.dart';
+import '../../models/opal_gifts.dart';
 import '../../services/advertising_service.dart';
 import '../../services/api/community_api.dart';
 import '../../services/coin_redemption_attempt_store.dart';
@@ -28,6 +29,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/grouped_sheet.dart';
 import '../../widgets/icon_notice.dart';
+import 'opal_gifts.dart';
 import 'rewards_sign_in_button.dart';
 
 enum RewardPageMode { exchange, earnCoins }
@@ -107,6 +109,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       if (!mounted) return;
       _authService = context.read<GoogleAuthService>();
       _authService!.addListener(_onAccountChanged);
+      opalWalletRevision.addListener(_onWalletCredited);
       _onAccountChanged();
     });
   }
@@ -652,7 +655,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   @override
   void dispose() {
     _authService?.removeListener(_onAccountChanged);
+    opalWalletRevision.removeListener(_onWalletCredited);
     super.dispose();
+  }
+
+  /// A coupon or a present credited opals from the app bar: show the new
+  /// server balance.
+  void _onWalletCredited() {
+    final id = _authService?.account?.id;
+    if (id != null && mounted) _loadWallet(id);
   }
 
   // The community post quota is not redeemable with opals
@@ -1113,9 +1124,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
               ),
               const SizedBox(height: 8),
               if (_lastAccountId != null)
-                Wrap(
-                  spacing: 4,
-                  children: [
+                // Coupon codes and the operator's presents credit this
+                // wallet, so their entries follow the wallet's own actions.
+                OpalGiftActions(
+                  leading: [
                     if (!earn && _rewardState != null)
                       TextButton.icon(
                         key: const Key('coinHistoryButton'),

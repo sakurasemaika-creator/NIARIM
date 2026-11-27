@@ -27,6 +27,8 @@ export interface AuthenticatedUser {
   niarimUserId: string;
   googleSub: string;
   membershipTier: MembershipTier;
+  /** Server time the NIARIM account was created (first authenticated call). */
+  accountCreatedAt?: string;
 }
 
 export async function authenticate(
@@ -37,6 +39,7 @@ export async function authenticate(
   return {
     niarimUserId: user.niarimUserId,
     googleSub: sub,
+    accountCreatedAt: typeof user.createdAt === "string" ? user.createdAt : undefined,
     membershipTier:
       (typeof user.playPremiumExpiresAtEpochMs === "number" &&
        typeof user.playPremiumVerifiedUntilEpochMs === "number" &&

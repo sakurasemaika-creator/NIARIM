@@ -153,7 +153,10 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
           ? lb['daily']
           : lb['title'];
     }
+    final l10n = appLocalizationsOf(context);
     return switch (source) {
+      'present' => l10n.rewardUnlockHistoryPresent,
+      'coupon' => l10n.rewardUnlockHistoryCoupon,
       'rewarded-ad' => t['historyAd'],
       'creator-mission' || 'creator-grid' => t['historyMission'],
       'coin-redemption' => t['historyRedemption'],

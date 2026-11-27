@@ -10916,6 +10916,124 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get makingSpeechFailed => '无法生成语音。请检查所选语音数据。';
+
+  @override
+  String get opalGiftPresentBox => '礼物箱';
+
+  @override
+  String opalGiftUnclaimedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count份礼物尚未领取',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get opalGiftPresentEmpty => '没有可领取的礼物';
+
+  @override
+  String get opalGiftPresentEmptyHint => '运营团队赠送的礼物会送到这里。超过领取期限的礼物不会显示。';
+
+  @override
+  String get opalGiftClaim => '领取';
+
+  @override
+  String get opalGiftClaimed => '已领取';
+
+  @override
+  String opalGiftClaimUntil(DateTime deadline) {
+    final intl.DateFormat deadlineDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String deadlineString = deadlineDateFormat.format(deadline);
+
+    return '领取期限：$deadlineString';
+  }
+
+  @override
+  String opalGiftReceived(String amount) {
+    return '已领取$amount';
+  }
+
+  @override
+  String get opalGiftPresentExpired => '这份礼物已超过领取期限。';
+
+  @override
+  String get opalGiftPresentEnded => '这份礼物已无法领取。';
+
+  @override
+  String get opalGiftLoadFailed => '无法加载礼物';
+
+  @override
+  String get opalGiftReload => '重新加载';
+
+  @override
+  String get opalGiftClaimFailed => '领取失败。请检查网络连接后重试。';
+
+  @override
+  String get opalGiftSignInRequired => 'Google 账号登录已过期。请重新登录。';
+
+  @override
+  String get opalCouponEnter => '输入优惠码';
+
+  @override
+  String get opalCouponIntro => '输入在社交媒体等处发放的优惠码，即可领取欧泊。';
+
+  @override
+  String get opalCouponOfferTitle => '有优惠码吗？';
+
+  @override
+  String get opalCouponOfferBody => '输入优惠码即可领取欧泊。之后也可以在“欧泊与奖励”页面输入。';
+
+  @override
+  String get opalCouponField => '优惠码';
+
+  @override
+  String get opalCouponFieldHint => '例：ABCD-2345-EFGH';
+
+  @override
+  String get opalCouponFieldHelper => '不区分大小写、空格和连字符';
+
+  @override
+  String get opalCouponLater => '稍后';
+
+  @override
+  String get opalCouponErrorFormat => '优惠码为4～32个英文字母和数字。请检查输入的内容。';
+
+  @override
+  String get opalCouponErrorNotFound => '找不到此优惠码。请检查输入的内容。';
+
+  @override
+  String get opalCouponErrorEnded => '此优惠码已停止发放。';
+
+  @override
+  String get opalCouponErrorExpired => '此优惠码已过期。';
+
+  @override
+  String get opalCouponErrorNotYet => '此优惠码尚不能使用。请在发放开始后输入。';
+
+  @override
+  String get opalCouponErrorLimit => '此优惠码已达到发放数量上限。';
+
+  @override
+  String get opalCouponErrorUsed => '此账号已使用过此优惠码。';
+
+  @override
+  String get opalCouponErrorNewOnly => '此优惠码仅限新注册的账号使用。';
+
+  @override
+  String get opalCouponErrorNotEligible => '此账号无法使用此优惠码。';
+
+  @override
+  String get opalCouponErrorRateLimited => '输入次数过多，已暂停受理。请约1小时后再输入。';
+
+  @override
+  String get rewardUnlockHistoryPresent => '礼物';
+
+  @override
+  String get rewardUnlockHistoryCoupon => '优惠码';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -21833,4 +21951,122 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get makingSpeechFailed => '無法產生語音。請檢查所選語音資料。';
+
+  @override
+  String get opalGiftPresentBox => '禮物箱';
+
+  @override
+  String opalGiftUnclaimedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count份禮物尚未領取',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get opalGiftPresentEmpty => '沒有可領取的禮物';
+
+  @override
+  String get opalGiftPresentEmptyHint => '營運團隊贈送的禮物會送到這裡。超過領取期限的禮物不會顯示。';
+
+  @override
+  String get opalGiftClaim => '領取';
+
+  @override
+  String get opalGiftClaimed => '已領取';
+
+  @override
+  String opalGiftClaimUntil(DateTime deadline) {
+    final intl.DateFormat deadlineDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String deadlineString = deadlineDateFormat.format(deadline);
+
+    return '領取期限：$deadlineString';
+  }
+
+  @override
+  String opalGiftReceived(String amount) {
+    return '已領取$amount';
+  }
+
+  @override
+  String get opalGiftPresentExpired => '這份禮物已超過領取期限。';
+
+  @override
+  String get opalGiftPresentEnded => '這份禮物已無法領取。';
+
+  @override
+  String get opalGiftLoadFailed => '無法載入禮物';
+
+  @override
+  String get opalGiftReload => '重新載入';
+
+  @override
+  String get opalGiftClaimFailed => '領取失敗。請檢查網路連線後重試。';
+
+  @override
+  String get opalGiftSignInRequired => 'Google 帳號登入已過期。請重新登入。';
+
+  @override
+  String get opalCouponEnter => '輸入優惠碼';
+
+  @override
+  String get opalCouponIntro => '輸入在社群媒體等處發放的優惠碼，即可領取歐泊。';
+
+  @override
+  String get opalCouponOfferTitle => '有優惠碼嗎？';
+
+  @override
+  String get opalCouponOfferBody => '輸入優惠碼即可領取歐泊。之後也可以在「歐泊與獎勵」頁面輸入。';
+
+  @override
+  String get opalCouponField => '優惠碼';
+
+  @override
+  String get opalCouponFieldHint => '例：ABCD-2345-EFGH';
+
+  @override
+  String get opalCouponFieldHelper => '不區分大小寫、空格和連字號';
+
+  @override
+  String get opalCouponLater => '稍後';
+
+  @override
+  String get opalCouponErrorFormat => '優惠碼為4～32個英文字母和數字。請檢查輸入的內容。';
+
+  @override
+  String get opalCouponErrorNotFound => '找不到此優惠碼。請檢查輸入的內容。';
+
+  @override
+  String get opalCouponErrorEnded => '此優惠碼已停止發放。';
+
+  @override
+  String get opalCouponErrorExpired => '此優惠碼已過期。';
+
+  @override
+  String get opalCouponErrorNotYet => '此優惠碼尚不能使用。請在發放開始後輸入。';
+
+  @override
+  String get opalCouponErrorLimit => '此優惠碼已達到發放數量上限。';
+
+  @override
+  String get opalCouponErrorUsed => '此帳號已使用過此優惠碼。';
+
+  @override
+  String get opalCouponErrorNewOnly => '此優惠碼僅限新註冊的帳號使用。';
+
+  @override
+  String get opalCouponErrorNotEligible => '此帳號無法使用此優惠碼。';
+
+  @override
+  String get opalCouponErrorRateLimited => '輸入次數過多，已暫停受理。請約1小時後再輸入。';
+
+  @override
+  String get rewardUnlockHistoryPresent => '禮物';
+
+  @override
+  String get rewardUnlockHistoryCoupon => '優惠碼';
 }

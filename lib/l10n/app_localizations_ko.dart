@@ -11116,4 +11116,125 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get makingSpeechFailed => '음성을 생성하지 못했습니다. 음성 데이터를 확인하세요.';
+
+  @override
+  String get opalGiftPresentBox => '선물함';
+
+  @override
+  String opalGiftUnclaimedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '받지 않은 선물이 $count개 있습니다',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get opalGiftPresentEmpty => '받을 수 있는 선물이 없습니다';
+
+  @override
+  String get opalGiftPresentEmptyHint =>
+      '운영팀이 보낸 선물은 여기에 도착합니다. 수령 기한이 지난 선물은 표시되지 않습니다.';
+
+  @override
+  String get opalGiftClaim => '받기';
+
+  @override
+  String get opalGiftClaimed => '수령 완료';
+
+  @override
+  String opalGiftClaimUntil(DateTime deadline) {
+    final intl.DateFormat deadlineDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String deadlineString = deadlineDateFormat.format(deadline);
+
+    return '수령 기한: $deadlineString';
+  }
+
+  @override
+  String opalGiftReceived(String amount) {
+    return '$amount을 받았습니다';
+  }
+
+  @override
+  String get opalGiftPresentExpired => '이 선물의 수령 기한이 지났습니다.';
+
+  @override
+  String get opalGiftPresentEnded => '이 선물은 더 이상 받을 수 없습니다.';
+
+  @override
+  String get opalGiftLoadFailed => '선물을 불러오지 못했습니다';
+
+  @override
+  String get opalGiftReload => '다시 불러오기';
+
+  @override
+  String get opalGiftClaimFailed => '받지 못했습니다. 통신 상태를 확인하고 다시 시도하세요.';
+
+  @override
+  String get opalGiftSignInRequired => 'Google 계정 로그인이 만료되었습니다. 다시 로그인하세요.';
+
+  @override
+  String get opalCouponEnter => '쿠폰 코드 입력';
+
+  @override
+  String get opalCouponIntro => 'SNS 등에서 배포된 쿠폰 코드를 입력하면 오팔을 받을 수 있습니다.';
+
+  @override
+  String get opalCouponOfferTitle => '쿠폰 코드가 있으신가요?';
+
+  @override
+  String get opalCouponOfferBody =>
+      '쿠폰 코드를 입력하면 오팔을 받을 수 있습니다. 나중에 오팔·특전 화면에서도 입력할 수 있습니다.';
+
+  @override
+  String get opalCouponField => '쿠폰 코드';
+
+  @override
+  String get opalCouponFieldHint => '예: ABCD-2345-EFGH';
+
+  @override
+  String get opalCouponFieldHelper => '대문자와 소문자, 공백, 하이픈은 구분하지 않습니다';
+
+  @override
+  String get opalCouponLater => '나중에';
+
+  @override
+  String get opalCouponErrorFormat => '코드는 영문과 숫자 4~32자입니다. 입력한 내용을 확인하세요.';
+
+  @override
+  String get opalCouponErrorNotFound => '이 쿠폰 코드를 찾을 수 없습니다. 입력한 내용을 확인하세요.';
+
+  @override
+  String get opalCouponErrorEnded => '이 쿠폰의 배포가 종료되었습니다.';
+
+  @override
+  String get opalCouponErrorExpired => '이 쿠폰은 유효 기간이 지났습니다.';
+
+  @override
+  String get opalCouponErrorNotYet => '이 쿠폰은 아직 사용할 수 없습니다. 배포가 시작된 후 입력하세요.';
+
+  @override
+  String get opalCouponErrorLimit => '이 쿠폰은 배포 수량의 상한에 도달했습니다.';
+
+  @override
+  String get opalCouponErrorUsed => '이 계정은 이미 이 쿠폰을 사용했습니다.';
+
+  @override
+  String get opalCouponErrorNewOnly => '이 쿠폰은 가입한 지 얼마 되지 않은 계정만 사용할 수 있습니다.';
+
+  @override
+  String get opalCouponErrorNotEligible => '이 계정으로는 이 쿠폰을 사용할 수 없습니다.';
+
+  @override
+  String get opalCouponErrorRateLimited =>
+      '입력이 계속되어 잠시 접수를 중지했습니다. 1시간 정도 지난 후 입력하세요.';
+
+  @override
+  String get rewardUnlockHistoryPresent => '선물';
+
+  @override
+  String get rewardUnlockHistoryCoupon => '쿠폰';
 }

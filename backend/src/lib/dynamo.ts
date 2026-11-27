@@ -53,6 +53,24 @@ export const Keys = {
   loginBonusMilestone: (userId: string, days: number) => ({
     pk: `USER#${userId}`, sk: `LOGIN_BONUS_MILESTONE#${days}`,
   }),
+  /** Operator-issued opal coupon; one partition keeps admin listing a Query. */
+  opalCoupon: (code: string) => ({ pk: "OPAL_COUPON", sk: `CODE#${code}` }),
+  /** Once-per-account coupon redemption marker. */
+  opalCouponRedemption: (userId: string, code: string) => ({
+    pk: `USER#${userId}`, sk: `OPAL_COUPON_REDEEMED#${code}`,
+  }),
+  /** Per-account hourly coupon attempt counter (expires by TTL). */
+  opalCouponAttempts: (userId: string, windowId: string) => ({
+    pk: `USER#${userId}`, sk: `OPAL_COUPON_ATTEMPTS#${windowId}`,
+  }),
+  /** Operator-issued opal present. Ids start with a fixed-width time. */
+  opalPresent: (presentId: string) => ({ pk: "OPAL_PRESENT", sk: `PRESENT#${presentId}` }),
+  /** Small list of presents that are active and not yet expired. */
+  opalPresentIndex: () => ({ pk: "OPAL_PRESENT", sk: "ACTIVE" }),
+  /** Once-per-account present claim marker. */
+  opalPresentClaim: (userId: string, presentId: string) => ({
+    pk: `USER#${userId}`, sk: `OPAL_PRESENT_CLAIM#${presentId}`,
+  }),
   coinWallet: (niarimUserId: string) => ({
     pk: `USER#${niarimUserId}`, sk: "COIN_WALLET",
   }),

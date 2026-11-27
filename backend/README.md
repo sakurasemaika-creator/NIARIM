@@ -96,27 +96,30 @@ backend/
 
 ## 実装したAPIエンドポイント
 
-| メソッド | パス                     | 対応する仕様書の節                                                                       | 認証                                             |
-| -------- | ------------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| GET      | `/ranking/{period}`      | 8.2節（`period=all`／`yearly`／`monthly`／`weekly`／`daily`）／`period=bookmarks`は8.5節 | 不要                                             |
-| GET      | `/works/latest`          | 8.3節・8.6節（`q`で検索）                                                                | 不要                                             |
-| GET      | `/users/{id}/works`      | 8.4節                                                                                    | 任意（本人なら非公開作品も含む）                 |
-| POST     | `/works`                 | 6章・12章・17章                                                                          | 必須                                             |
-| PATCH    | `/works/{id}`            | 13章                                                                                     | 必須（投稿者本人）                               |
-| DELETE   | `/works/{id}`            | 13章                                                                                     | 必須（投稿者本人）                               |
-| PATCH    | `/works/{id}/tags`       | 8.7節                                                                                    | 必須（追加/削除は誰でも、ロックは投稿者本人）    |
-| POST     | `/reports`               | 9章                                                                                      | 必須                                             |
-| POST     | `/blocks`                | 9章                                                                                      | 必須                                             |
-| POST     | `/works/{id}/bookmark`   | 8.5節                                                                                    | 必須                                             |
-| GET      | `/users/{id}/bookmarks`  | 8.5節・21.2節                                                                            | 必須（本人のみ）                                 |
-| POST     | `/works/{id}/repost`     | 8.5bis節                                                                                 | 必須                                             |
-| POST     | `/users/{id}/follow`     | 22.5節                                                                                   | 必須                                             |
-| GET      | `/users/{id}/following`  | 22.5節                                                                                   | 必須（本人のみ）                                 |
-| GET      | `/users/{id}/followers`  | フォロワー一覧を25件ずつ取得（次のページは `cursor`）                                    | 必須（本人のみ）                                 |
-| GET      | `/users/{id}/reposts`    | 8.5bis節（リポスト一覧。フォロー中タブで使う）                                           | 不要（リポストは公開。非公開化された作品は除外） |
-| PUT      | `/users/{id}/push-token` | 22.7節（FCM端末トークン登録／解除）                                                      | 必須（本人のみ）                                 |
-| GET/POST | `/admin/...`             | 通報の管理API（下の「作品広場の通報対応」）                                              | 必須（GoogleのIDトークン＋SSMの管理者リスト）    |
-| GET/POST | `/triage-bot/...`        | 通報の判定ボット（下の「Claudeのサブスクリプションでの判定」）                           | 必須（管理ページで作る判定用のトークン）         |
+| メソッド | パス                            | 対応する仕様書の節                                                                                   | 認証                                             |
+| -------- | ------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| GET      | `/ranking/{period}`             | 8.2節（`period=all`／`yearly`／`monthly`／`weekly`／`daily`）／`period=bookmarks`は8.5節             | 不要                                             |
+| GET      | `/works/latest`                 | 8.3節・8.6節（`q`で検索）                                                                            | 不要                                             |
+| GET      | `/users/{id}/works`             | 8.4節                                                                                                | 任意（本人なら非公開作品も含む）                 |
+| POST     | `/works`                        | 6章・12章・17章                                                                                      | 必須                                             |
+| PATCH    | `/works/{id}`                   | 13章                                                                                                 | 必須（投稿者本人）                               |
+| DELETE   | `/works/{id}`                   | 13章                                                                                                 | 必須（投稿者本人）                               |
+| PATCH    | `/works/{id}/tags`              | 8.7節                                                                                                | 必須（追加/削除は誰でも、ロックは投稿者本人）    |
+| POST     | `/reports`                      | 9章                                                                                                  | 必須                                             |
+| POST     | `/blocks`                       | 9章                                                                                                  | 必須                                             |
+| POST     | `/works/{id}/bookmark`          | 8.5節                                                                                                | 必須                                             |
+| GET      | `/users/{id}/bookmarks`         | 8.5節・21.2節                                                                                        | 必須（本人のみ）                                 |
+| POST     | `/works/{id}/repost`            | 8.5bis節                                                                                             | 必須                                             |
+| POST     | `/users/{id}/follow`            | 22.5節                                                                                               | 必須                                             |
+| GET      | `/users/{id}/following`         | 22.5節                                                                                               | 必須（本人のみ）                                 |
+| GET      | `/users/{id}/followers`         | フォロワー一覧を25件ずつ取得（次のページは `cursor`）                                                | 必須（本人のみ）                                 |
+| GET      | `/users/{id}/reposts`           | 8.5bis節（リポスト一覧。フォロー中タブで使う）                                                       | 不要（リポストは公開。非公開化された作品は除外） |
+| PUT      | `/users/{id}/push-token`        | 22.7節（FCM端末トークン登録／解除）                                                                  | 必須（本人のみ）                                 |
+| GET      | `/me/gifts`                     | 運営からのプレゼントの一覧と、アカウントを作ってからの秒数（下の「オパールのクーポン・プレゼント」） | 必須                                             |
+| POST     | `/me/gifts/presents/{id}/claim` | プレゼントを受け取る（1アカウント1回）                                                               | 必須                                             |
+| POST     | `/me/gifts/coupons/redeem`      | クーポンコードでオパールを受け取る（1アカウント1回）                                                 | 必須                                             |
+| GET/POST | `/admin/...`                    | 通報の管理API（下の「作品広場の通報対応」）                                                          | 必須（GoogleのIDトークン＋SSMの管理者リスト）    |
+| GET/POST | `/triage-bot/...`               | 通報の判定ボット（下の「Claudeのサブスクリプションでの判定」）                                       | 必須（管理ページで作る判定用のトークン）         |
 
 ## 未実装・既知の制約（デプロイ前に把握しておくべきこと）
 
@@ -222,6 +225,78 @@ backend/
 - アカウント共通39段階の上限は **1,178,030コイン**、作品別14段階は各作品で達成可能なためアカウント全体では上限なし。制作50時間の報酬は**55,000コイン**（サブスク月額550円の参考単位に相当）。報酬用制作時間検証APIは未実装。1万作品達成ミッションの全件検証は未実装（現状500作品までの有界Query）。詳しくは `docs/AI設計書/13B_クリエイターミッション・コイン報酬仕様.md`。
 
 このコードは開発用AWSへデプロイ済みですが、コイン払い出しの機能フラグは初期状態で無効です。一般公開向けの報酬運用やアプリからの認証済みE2Eが完了した状態ではありません。
+
+## オパールのクーポン・プレゼント（運営が配る）
+
+運営がオパールを配る仕組み。どちらもサーバーだけが付与し、アプリは金額を送らない。
+付与は1つのDynamoDBトランザクション（定義の条件の確認・アカウントごとの受け取りの印・
+`USER#{id}/COIN_WALLET`の加算・`COIN_HISTORY`）で、印があるので再送・同時の押下でも二重に
+付与しない。GSIと容量は増やしていない（定義は固定のパーティション、印はアカウントの
+パーティションにあり、アカウントの削除で一緒に消える）。
+
+- **クーポン**（`pk=OPAL_COUPON`, `sk=CODE#<コード>`）：SNS等で配るコードをアプリで入力する。
+  コードは全角を半角に・大文字に・空白とハイフンを除いて比べる（`normalizeCouponCode`）。
+  コードを指定しなければ、紛らわしい字（0/O・1/I/L）を除いた12文字を作る（表示は`ABCD-EFGH-JKMN`）。
+  有効期間（`validFrom`〜`validUntil`、366日以内）、配布数の上限（`maxRedemptions`、任意）、
+  1アカウント1回（`USER#{id}/OPAL_COUPON_REDEEMED#<コード>`）、対象（`eligibility`）、止める
+  （`active`）、運営のメモ（`note`）。同じ`requestId`の再送は最初の結果を返し、別の`requestId`は
+  `COUPON_ALREADY_REDEEMED`。入力は1アカウント1時間に10回まで（`COUPON_RATE_LIMITED`、
+  `USER#{id}/OPAL_COUPON_ATTEMPTS#H<時>`、TTLで消える）。
+- **プレゼント**（`pk=OPAL_PRESENT`, `sk=PRESENT#<id>`）：アプリの「プレゼントボックス」に届く。
+  題・本文（運営が書いたまま。`translations`で言語ごとの題・本文も渡せる）、オパール、表示の開始
+  （`visibleFrom`）、受け取りの期限（`claimUntil`、過ぎたら一覧に出ず受け取れない）、対象
+  （`eligibility`。`accountIds`で最大100アカウントを指定できる）、1アカウント1回
+  （`USER#{id}/OPAL_PRESENT_CLAIM#<id>`）。アプリの一覧は`OPAL_PRESENT/ACTIVE`の小さな一覧
+  （期限前で止めていないプレゼントのid・期間・対象だけ、最大20件）を1回読み、対象のプレゼントと
+  受け取りの印をBatchGetで読む（作る・止めるときに一覧を版の条件つきで書き直す）。
+- **新しいアカウントかどうか**は、サーバーがアカウントを作った時刻（`USER#{id}/META`の`createdAt`＝
+  最初に認証つきで呼んだとき）で決める。`eligibility`は次の組み合わせ（すべて任意、ANDで効く）：
+  `newAccountWithinDays`（受け取る時点で作ってからN日以内、1〜365）・`accountCreatedFrom`（この時刻
+  以降に作ったアカウント）・`accountCreatedUntil`（この時刻までに作ったアカウント。お詫び向け）・
+  `accountIds`（プレゼントだけ）。
+- 履歴（`/me/rewards/history`）の`source`は`coupon`・`present`、ウォレットの集計は`giftEarnedCoins`。
+
+### アプリの側
+
+「オパール・特典」の画面の残高の欄（貯める・特典交換のタブ）に、クーポンコードの入力とプレゼントボックス
+（受け取っていない数の印）がある。作品広場の「自分の投稿」からGoogleアカウントでログインした直後、作ってから1時間以内のアカウントには
+1度だけクーポンコードの入力を案内する（端末に`opal.couponOffer.v1.<NIARIM User ID>`を保存）。
+
+### 運営の操作（管理API）
+
+管理ページと同じ認証（GoogleのIDトークン＋`/niarim/moderation/admin-emails`）・CORS。日時はタイムゾーン
+付きのISO 8601（`2026-12-01T00:00:00+09:00`）かエポックミリ秒。
+
+| メソッド | パス                                     | 本文（JSON）                                                                                                                      | 返すもの                                        |
+| -------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| GET      | `/admin/gifts/coupons?limit=&cursor=`    | -                                                                                                                                 | `{coupons: [Coupon], nextCursor}`               |
+| POST     | `/admin/gifts/coupons`                   | `{code?, coins, validFrom?, validUntil, maxRedemptions?, eligibility?, note?}`                                                    | `{ok, coupon: Coupon}`                          |
+| POST     | `/admin/gifts/coupons/{code}/deactivate` | -                                                                                                                                 | `{ok, coupon}`                                  |
+| GET      | `/admin/gifts/presents?limit=&cursor=`   | -                                                                                                                                 | `{presents: [Present], nextCursor}`（新しい順） |
+| POST     | `/admin/gifts/presents`                  | `{coins, title, body?, translations?: {ja/en/es/fr/ko/zh/zh_Hant: {title, body}}, visibleFrom?, claimUntil, eligibility?, note?}` | `{ok, present: Present}`                        |
+| POST     | `/admin/gifts/presents/{id}/deactivate`  | -                                                                                                                                 | `{ok, present}`                                 |
+
+`Coupon`は`{code, displayCode, coins, active, validFrom, validUntil, maxRedemptions, redeemedCount,
+eligibility, note, createdAt, createdBy, deactivatedAt, deactivatedBy}`、`Present`は`{id, coins, title, body,
+translations, active, visibleFrom, claimUntil, eligibility, note, …}`。`coins`は1〜1,000,000。
+誤りは`GIFT_INVALID_COINS`・`GIFT_INVALID_TIME`・`GIFT_INVALID_WINDOW`・`GIFT_INVALID_ELIGIBILITY`・
+`GIFT_INVALID_TEXT`・`GIFT_INVALID_LIMIT`・`COUPON_INVALID_CODE`・`COUPON_CODE_TAKEN`・
+`PRESENT_LIMIT_REACHED`（同時に20件まで）。例：
+
+```sh
+# 登録して7日以内のアカウント向け、先着1000人、500オパール
+curl -X POST "$API/admin/gifts/coupons" -H "Authorization: Bearer $ID_TOKEN" -H 'content-type: application/json' \
+  -d '{"code":"WELCOME2027","coins":500,"validUntil":"2027-01-31T23:59:59+09:00","maxRedemptions":1000,"eligibility":{"newAccountWithinDays":7},"note":"X告知"}'
+# 12月1日までに作ったアカウントへのお詫び、12月15日まで
+curl -X POST "$API/admin/gifts/presents" -H "Authorization: Bearer $ID_TOKEN" -H 'content-type: application/json' \
+  -d '{"coins":300,"title":"メンテナンスのお詫び","body":"ご不便をおかけしました。","claimUntil":"2026-12-15T23:59:59+09:00","eligibility":{"accountCreatedUntil":"2026-12-01T00:00:00+09:00"}}'
+```
+
+利用者からの答えの`code`：`COUPON_NOT_FOUND`(404)・`COUPON_ENDED`・`COUPON_EXPIRED`・`COUPON_NOT_YET_VALID`・
+`COUPON_LIMIT_REACHED`・`COUPON_ALREADY_REDEEMED`（409）・`COUPON_NEW_ACCOUNTS_ONLY`・`COUPON_NOT_ELIGIBLE`（403）・
+`COUPON_RATE_LIMITED`(429)・`COUPON_INVALID_CODE`(400)、`PRESENT_NOT_FOUND`(404)・`PRESENT_EXPIRED`・
+`PRESENT_ENDED`（409）。アカウントを削除して作り直すと別のアカウントになるので、新しいアカウント向けの
+クーポンはもう一度使える（削除で残高も消える）。
 
 ## Firebase Cloud Messaging（AWSからの鍵なし送信）
 

@@ -12078,4 +12078,138 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get makingSpeechFailed =>
       'La synthèse vocale a échoué. Vérifiez les données vocales.';
+
+  @override
+  String get opalGiftPresentBox => 'Boîte à cadeaux';
+
+  @override
+  String opalGiftUnclaimedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cadeaux à recevoir',
+      one: '$count cadeau à recevoir',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get opalGiftPresentEmpty => 'Aucun cadeau à recevoir';
+
+  @override
+  String get opalGiftPresentEmptyHint =>
+      'Les cadeaux de l’équipe NIARIM arrivent ici. Les cadeaux dont la date limite est passée ne sont pas affichés.';
+
+  @override
+  String get opalGiftClaim => 'Recevoir';
+
+  @override
+  String get opalGiftClaimed => 'Reçu';
+
+  @override
+  String opalGiftClaimUntil(DateTime deadline) {
+    final intl.DateFormat deadlineDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String deadlineString = deadlineDateFormat.format(deadline);
+
+    return 'À recevoir jusqu’au $deadlineString';
+  }
+
+  @override
+  String opalGiftReceived(String amount) {
+    return 'Vous avez reçu $amount.';
+  }
+
+  @override
+  String get opalGiftPresentExpired =>
+      'La date limite de ce cadeau est passée.';
+
+  @override
+  String get opalGiftPresentEnded => 'Ce cadeau ne peut plus être reçu.';
+
+  @override
+  String get opalGiftLoadFailed => 'Impossible de charger vos cadeaux.';
+
+  @override
+  String get opalGiftReload => 'Réessayer';
+
+  @override
+  String get opalGiftClaimFailed =>
+      'Réception impossible. Vérifiez votre connexion, puis réessayez.';
+
+  @override
+  String get opalGiftSignInRequired =>
+      'Votre connexion Google a expiré. Reconnectez-vous.';
+
+  @override
+  String get opalCouponEnter => 'Saisir un code promo';
+
+  @override
+  String get opalCouponIntro =>
+      'Saisissez un code promo partagé sur les réseaux sociaux ou ailleurs pour recevoir des opales.';
+
+  @override
+  String get opalCouponOfferTitle => 'Vous avez un code promo ?';
+
+  @override
+  String get opalCouponOfferBody =>
+      'Saisissez votre code promo pour recevoir des opales. Vous pourrez aussi le saisir plus tard dans l’écran « Opales et bonus ».';
+
+  @override
+  String get opalCouponField => 'Code promo';
+
+  @override
+  String get opalCouponFieldHint => 'Exemple : ABCD-2345-EFGH';
+
+  @override
+  String get opalCouponFieldHelper =>
+      'Majuscules, minuscules, espaces et tirets sont ignorés';
+
+  @override
+  String get opalCouponLater => 'Plus tard';
+
+  @override
+  String get opalCouponErrorFormat =>
+      'Un code comporte de 4 à 32 lettres et chiffres. Vérifiez votre saisie.';
+
+  @override
+  String get opalCouponErrorNotFound =>
+      'Ce code promo est introuvable. Vérifiez votre saisie.';
+
+  @override
+  String get opalCouponErrorEnded =>
+      'La distribution de ce code promo est terminée.';
+
+  @override
+  String get opalCouponErrorExpired => 'Ce code promo a expiré.';
+
+  @override
+  String get opalCouponErrorNotYet =>
+      'Ce code promo n’est pas encore utilisable. Saisissez-le une fois la distribution commencée.';
+
+  @override
+  String get opalCouponErrorLimit =>
+      'Ce code promo a atteint son nombre maximal d’utilisations.';
+
+  @override
+  String get opalCouponErrorUsed => 'Ce compte a déjà utilisé ce code promo.';
+
+  @override
+  String get opalCouponErrorNewOnly =>
+      'Ce code promo est réservé aux comptes créés récemment.';
+
+  @override
+  String get opalCouponErrorNotEligible =>
+      'Ce compte ne peut pas utiliser ce code promo.';
+
+  @override
+  String get opalCouponErrorRateLimited =>
+      'Trop de tentatives. Patientez environ une heure, puis réessayez.';
+
+  @override
+  String get rewardUnlockHistoryPresent => 'Cadeau';
+
+  @override
+  String get rewardUnlockHistoryCoupon => 'Code promo';
 }

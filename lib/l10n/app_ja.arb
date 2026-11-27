@@ -6836,5 +6836,157 @@
   "makingSpeechFailed": "音声を生成できませんでした。選択した音声データを確認してください。",
   "@makingSpeechFailed": {
     "description": "メイキング・読み上げ：音声を生成できませんでした。選択した音声データを確認してください。"
+  },
+  "opalGiftPresentBox": "プレゼントボックス",
+  "@opalGiftPresentBox": {
+    "description": "オパール・特典：運営からのプレゼントの一覧（画面名・ボタンの名前）"
+  },
+  "opalGiftUnclaimedCount": "{count, plural, other{受け取っていないプレゼントが{count}件あります}}",
+  "@opalGiftUnclaimedCount": {
+    "description": "プレゼントボックスのボタンの数の印の読み上げ：まだ受け取っていないプレゼントの数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "opalGiftPresentEmpty": "受け取れるプレゼントはありません",
+  "@opalGiftPresentEmpty": {
+    "description": "プレゼントボックス：受け取れるプレゼントが無いときの題"
+  },
+  "opalGiftPresentEmptyHint": "運営からのプレゼントはここに届きます。受け取り期限を過ぎたプレゼントは表示されません。",
+  "@opalGiftPresentEmptyHint": {
+    "description": "プレゼントボックス：空のときの補足"
+  },
+  "opalGiftClaim": "受け取る",
+  "@opalGiftClaim": {
+    "description": "プレゼントボックス：プレゼントを受け取るボタン"
+  },
+  "opalGiftClaimed": "受け取り済み",
+  "@opalGiftClaimed": {
+    "description": "プレゼントボックス：受け取ったプレゼントの印"
+  },
+  "opalGiftClaimUntil": "受け取り期限：{deadline}",
+  "@opalGiftClaimUntil": {
+    "description": "プレゼントボックス：受け取りの期限（日時）",
+    "placeholders": {
+      "deadline": {
+        "type": "DateTime",
+        "format": "yMMMd+jm"
+      }
+    }
+  },
+  "opalGiftReceived": "{amount}を受け取りました",
+  "@opalGiftReceived": {
+    "description": "プレゼント・クーポンでオパールを受け取ったときの知らせ。amountは数と単位（例：500オパール）",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "opalGiftPresentExpired": "このプレゼントは受け取り期限を過ぎました。",
+  "@opalGiftPresentExpired": {
+    "description": "プレゼントを受け取ろうとしたが期限が過ぎていた"
+  },
+  "opalGiftPresentEnded": "このプレゼントは受け取れなくなりました。",
+  "@opalGiftPresentEnded": {
+    "description": "プレゼントを受け取ろうとしたが運営が配布を止めていた"
+  },
+  "opalGiftLoadFailed": "プレゼントを読み込めませんでした",
+  "@opalGiftLoadFailed": {
+    "description": "プレゼントボックス：一覧を読み込めなかった"
+  },
+  "opalGiftReload": "もう一度読み込む",
+  "@opalGiftReload": {
+    "description": "プレゼントボックス：読み込み直すボタン"
+  },
+  "opalGiftClaimFailed": "受け取れませんでした。通信状態を確かめて、もう一度お試しください。",
+  "@opalGiftClaimFailed": {
+    "description": "プレゼント・クーポンの受け取りが通信の失敗等でできなかった"
+  },
+  "opalGiftSignInRequired": "Googleアカウントのログインが切れました。ログインし直してください。",
+  "@opalGiftSignInRequired": {
+    "description": "プレゼント・クーポン：Googleのログインが切れていた"
+  },
+  "opalCouponEnter": "クーポンコードを入力",
+  "@opalCouponEnter": {
+    "description": "クーポンコードを入力するダイアログの題・ボタンの名前"
+  },
+  "opalCouponIntro": "SNSなどで配られたクーポンコードを入力すると、オパールを受け取れます。",
+  "@opalCouponIntro": {
+    "description": "クーポンコードを入力するダイアログの説明"
+  },
+  "opalCouponOfferTitle": "クーポンコードをお持ちの方へ",
+  "@opalCouponOfferTitle": {
+    "description": "初めてログインした直後に一度だけ出す、クーポンコード入力の案内の題"
+  },
+  "opalCouponOfferBody": "クーポンコードを入力すると、オパールを受け取れます。あとから「オパール・特典」の画面でも入力できます。",
+  "@opalCouponOfferBody": {
+    "description": "初めてログインした直後の案内の説明。「オパール・特典」は画面名（rewardNavigationHub）"
+  },
+  "opalCouponField": "クーポンコード",
+  "@opalCouponField": {
+    "description": "クーポンコードの入力欄の名前"
+  },
+  "opalCouponFieldHint": "例：ABCD-2345-EFGH",
+  "@opalCouponFieldHint": {
+    "description": "クーポンコードの入力欄の例"
+  },
+  "opalCouponFieldHelper": "大文字と小文字、空白、ハイフンは区別しません",
+  "@opalCouponFieldHelper": {
+    "description": "クーポンコードの入力欄の補足"
+  },
+  "opalCouponLater": "あとで",
+  "@opalCouponLater": {
+    "description": "初回の案内を閉じるボタン"
+  },
+  "opalCouponErrorFormat": "コードは英数字4〜32文字です。入力を確かめてください。",
+  "@opalCouponErrorFormat": {
+    "description": "クーポンコードの形が正しくない"
+  },
+  "opalCouponErrorNotFound": "このクーポンコードは見つかりません。入力を確かめてください。",
+  "@opalCouponErrorNotFound": {
+    "description": "クーポンコードが見つからない"
+  },
+  "opalCouponErrorEnded": "このクーポンの配布は終了しました。",
+  "@opalCouponErrorEnded": {
+    "description": "運営がクーポンを止めた"
+  },
+  "opalCouponErrorExpired": "このクーポンは有効期限が過ぎています。",
+  "@opalCouponErrorExpired": {
+    "description": "クーポンの有効期限が過ぎた"
+  },
+  "opalCouponErrorNotYet": "このクーポンはまだ使えません。配布が始まってから入力してください。",
+  "@opalCouponErrorNotYet": {
+    "description": "クーポンの有効期間がまだ始まっていない"
+  },
+  "opalCouponErrorLimit": "このクーポンは配布数の上限に達しました。",
+  "@opalCouponErrorLimit": {
+    "description": "クーポンの配布数の上限"
+  },
+  "opalCouponErrorUsed": "このクーポンはこのアカウントで使用済みです。",
+  "@opalCouponErrorUsed": {
+    "description": "このアカウントでクーポンを使用済み"
+  },
+  "opalCouponErrorNewOnly": "このクーポンは登録して間もないアカウントだけが使えます。",
+  "@opalCouponErrorNewOnly": {
+    "description": "アカウントを作ってからの日数で使えないクーポン"
+  },
+  "opalCouponErrorNotEligible": "このアカウントではこのクーポンを使えません。",
+  "@opalCouponErrorNotEligible": {
+    "description": "対象外のアカウント"
+  },
+  "opalCouponErrorRateLimited": "入力が続いたため、しばらく受け付けていません。1時間ほどおいてから入力してください。",
+  "@opalCouponErrorRateLimited": {
+    "description": "クーポンコードの入力回数の上限（1時間に10回）"
+  },
+  "rewardUnlockHistoryPresent": "プレゼント",
+  "@rewardUnlockHistoryPresent": {
+    "description": "オパールの履歴：運営からのプレゼント"
+  },
+  "rewardUnlockHistoryCoupon": "クーポン",
+  "@rewardUnlockHistoryCoupon": {
+    "description": "オパールの履歴：クーポンコード"
   }
 }

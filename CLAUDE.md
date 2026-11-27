@@ -1633,6 +1633,27 @@ onTap: ...)`だったために
   ログイン・投稿でもう一度聞く。**規約・ポリシーの文を変えて同意を取り直すときは版を上げる**。
   `signInInteractively()`・`premium.buy(`を新しく呼ぶ所は、同じ関数の中で先に`ensureLegalConsent`を
   呼ぶこと（`test/legal_consent_test.dart`がlib配下のソースを走査して見張る）。
+- **運営がオパールを配る仕組み（クーポンコード・プレゼント、所有者の依頼、2026-11-27）**：
+  付与はサーバーだけ（`backend/src/api/routes/opalGifts.ts`・`opalGiftsAdmin.ts`、`src/lib/opalGifts.ts`）。
+  1回の受け取りは1つのトランザクション（定義の条件・アカウントごとの印・`COIN_WALLET`・`COIN_HISTORY`）で、
+  再送・二度押しでも二重に付与しない。クーポンは`OPAL_COUPON/CODE#<コード>`（全角・大文字小文字・空白・
+  ハイフンを問わない、作るコードは0/O・1/I/Lを除いた12文字、有効期間・配布数の上限・1アカウント1回・
+  対象・止める・メモ、入力は1時間に10回まで、同じ`requestId`の再送は最初の結果）。プレゼントは
+  `OPAL_PRESENT/PRESENT#<id>`（題・本文は運営が書いたまま〔言語ごとの`translations`も可〕、表示の開始・
+  受け取りの期限、期限を過ぎたら一覧に出ない）。**新しいアカウントかどうかはサーバーがアカウントを作った
+  時刻**（`USER#{id}/META`の`createdAt`、`authenticate`が`accountCreatedAt`で返す）で、`eligibility`の
+  `newAccountWithinDays`・`accountCreatedFrom`・`accountCreatedUntil`（お詫び向け）・`accountIds`
+  （プレゼントだけ）。GSI・容量は増やしていない（アプリの一覧は`OPAL_PRESENT/ACTIVE`の小さな一覧を
+  1回読む。同時に配れるプレゼントは20件まで）。API：`GET /me/gifts`・`POST /me/gifts/presents/{id}/claim`・
+  `POST /me/gifts/coupons/redeem`、運営は`/admin/gifts/coupons`・`/admin/gifts/presents`（作る・一覧・
+  `…/deactivate`、管理ページと同じ認証。使い方と`curl`の例は`backend/README.md`の「オパールのクーポン・
+  プレゼント」）。Webの管理ページ（`niarim-web`の`/admin/`）の画面はまだ無い。アプリは「オパール・特典」の
+  残高の欄（貯める・特典交換のタブ）に、残高の更新・履歴と並べてクーポンコードの入力とプレゼントボックス
+  （受け取っていない数の印）を置き（`OpalGiftActions`、`lib/screens/rewards/opal_gifts.dart`。上部バーに置くと
+  画面名が入らなくなる〔`reward_opal_titles_layout_test`〕）、受け取ったら`opalWalletRevision`で残高を読み直す。作品広場の
+  「自分の投稿」からログインした直後、作って1時間以内のアカウントには1度だけクーポンの入力を案内する
+  （この端末の記録`opal.couponOffer.v1.<NIARIM User ID>`、引き継ぎでは移さない）。`test/opal_gifts_test.dart`・
+  `backend/test/opal-gifts.test.ts`が見張る。
 - **警告色・注意色はちゃんと見てほしい所だけ（所有者の判断、2026-11-25「基本となるベースカラー系や
   文字色系と、注意色・警告色は用途をしっかり使い分けることで普段は世界観を壊さず、ちゃんと見て
   ほしいところだけ目立たせる」「注意色はベースカラーなど注意や更新と無縁の部分には使わない」）**：

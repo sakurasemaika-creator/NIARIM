@@ -19472,6 +19472,210 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'音声を生成できませんでした。選択した音声データを確認してください。'**
   String get makingSpeechFailed;
+
+  /// オパール・特典：運営からのプレゼントの一覧（画面名・ボタンの名前）
+  ///
+  /// In ja, this message translates to:
+  /// **'プレゼントボックス'**
+  String get opalGiftPresentBox;
+
+  /// プレゼントボックスのボタンの数の印の読み上げ：まだ受け取っていないプレゼントの数
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{受け取っていないプレゼントが{count}件あります}}'**
+  String opalGiftUnclaimedCount(int count);
+
+  /// プレゼントボックス：受け取れるプレゼントが無いときの題
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取れるプレゼントはありません'**
+  String get opalGiftPresentEmpty;
+
+  /// プレゼントボックス：空のときの補足
+  ///
+  /// In ja, this message translates to:
+  /// **'運営からのプレゼントはここに届きます。受け取り期限を過ぎたプレゼントは表示されません。'**
+  String get opalGiftPresentEmptyHint;
+
+  /// プレゼントボックス：プレゼントを受け取るボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取る'**
+  String get opalGiftClaim;
+
+  /// プレゼントボックス：受け取ったプレゼントの印
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取り済み'**
+  String get opalGiftClaimed;
+
+  /// プレゼントボックス：受け取りの期限（日時）
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取り期限：{deadline}'**
+  String opalGiftClaimUntil(DateTime deadline);
+
+  /// プレゼント・クーポンでオパールを受け取ったときの知らせ。amountは数と単位（例：500オパール）
+  ///
+  /// In ja, this message translates to:
+  /// **'{amount}を受け取りました'**
+  String opalGiftReceived(String amount);
+
+  /// プレゼントを受け取ろうとしたが期限が過ぎていた
+  ///
+  /// In ja, this message translates to:
+  /// **'このプレゼントは受け取り期限を過ぎました。'**
+  String get opalGiftPresentExpired;
+
+  /// プレゼントを受け取ろうとしたが運営が配布を止めていた
+  ///
+  /// In ja, this message translates to:
+  /// **'このプレゼントは受け取れなくなりました。'**
+  String get opalGiftPresentEnded;
+
+  /// プレゼントボックス：一覧を読み込めなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'プレゼントを読み込めませんでした'**
+  String get opalGiftLoadFailed;
+
+  /// プレゼントボックス：読み込み直すボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'もう一度読み込む'**
+  String get opalGiftReload;
+
+  /// プレゼント・クーポンの受け取りが通信の失敗等でできなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取れませんでした。通信状態を確かめて、もう一度お試しください。'**
+  String get opalGiftClaimFailed;
+
+  /// プレゼント・クーポン：Googleのログインが切れていた
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントのログインが切れました。ログインし直してください。'**
+  String get opalGiftSignInRequired;
+
+  /// クーポンコードを入力するダイアログの題・ボタンの名前
+  ///
+  /// In ja, this message translates to:
+  /// **'クーポンコードを入力'**
+  String get opalCouponEnter;
+
+  /// クーポンコードを入力するダイアログの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'SNSなどで配られたクーポンコードを入力すると、オパールを受け取れます。'**
+  String get opalCouponIntro;
+
+  /// 初めてログインした直後に一度だけ出す、クーポンコード入力の案内の題
+  ///
+  /// In ja, this message translates to:
+  /// **'クーポンコードをお持ちの方へ'**
+  String get opalCouponOfferTitle;
+
+  /// 初めてログインした直後の案内の説明。「オパール・特典」は画面名（rewardNavigationHub）
+  ///
+  /// In ja, this message translates to:
+  /// **'クーポンコードを入力すると、オパールを受け取れます。あとから「オパール・特典」の画面でも入力できます。'**
+  String get opalCouponOfferBody;
+
+  /// クーポンコードの入力欄の名前
+  ///
+  /// In ja, this message translates to:
+  /// **'クーポンコード'**
+  String get opalCouponField;
+
+  /// クーポンコードの入力欄の例
+  ///
+  /// In ja, this message translates to:
+  /// **'例：ABCD-2345-EFGH'**
+  String get opalCouponFieldHint;
+
+  /// クーポンコードの入力欄の補足
+  ///
+  /// In ja, this message translates to:
+  /// **'大文字と小文字、空白、ハイフンは区別しません'**
+  String get opalCouponFieldHelper;
+
+  /// 初回の案内を閉じるボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'あとで'**
+  String get opalCouponLater;
+
+  /// クーポンコードの形が正しくない
+  ///
+  /// In ja, this message translates to:
+  /// **'コードは英数字4〜32文字です。入力を確かめてください。'**
+  String get opalCouponErrorFormat;
+
+  /// クーポンコードが見つからない
+  ///
+  /// In ja, this message translates to:
+  /// **'このクーポンコードは見つかりません。入力を確かめてください。'**
+  String get opalCouponErrorNotFound;
+
+  /// 運営がクーポンを止めた
+  ///
+  /// In ja, this message translates to:
+  /// **'このクーポンの配布は終了しました。'**
+  String get opalCouponErrorEnded;
+
+  /// クーポンの有効期限が過ぎた
+  ///
+  /// In ja, this message translates to:
+  /// **'このクーポンは有効期限が過ぎています。'**
+  String get opalCouponErrorExpired;
+
+  /// クーポンの有効期間がまだ始まっていない
+  ///
+  /// In ja, this message translates to:
+  /// **'このクーポンはまだ使えません。配布が始まってから入力してください。'**
+  String get opalCouponErrorNotYet;
+
+  /// クーポンの配布数の上限
+  ///
+  /// In ja, this message translates to:
+  /// **'このクーポンは配布数の上限に達しました。'**
+  String get opalCouponErrorLimit;
+
+  /// このアカウントでクーポンを使用済み
+  ///
+  /// In ja, this message translates to:
+  /// **'このクーポンはこのアカウントで使用済みです。'**
+  String get opalCouponErrorUsed;
+
+  /// アカウントを作ってからの日数で使えないクーポン
+  ///
+  /// In ja, this message translates to:
+  /// **'このクーポンは登録して間もないアカウントだけが使えます。'**
+  String get opalCouponErrorNewOnly;
+
+  /// 対象外のアカウント
+  ///
+  /// In ja, this message translates to:
+  /// **'このアカウントではこのクーポンを使えません。'**
+  String get opalCouponErrorNotEligible;
+
+  /// クーポンコードの入力回数の上限（1時間に10回）
+  ///
+  /// In ja, this message translates to:
+  /// **'入力が続いたため、しばらく受け付けていません。1時間ほどおいてから入力してください。'**
+  String get opalCouponErrorRateLimited;
+
+  /// オパールの履歴：運営からのプレゼント
+  ///
+  /// In ja, this message translates to:
+  /// **'プレゼント'**
+  String get rewardUnlockHistoryPresent;
+
+  /// オパールの履歴：クーポンコード
+  ///
+  /// In ja, this message translates to:
+  /// **'クーポン'**
+  String get rewardUnlockHistoryCoupon;
 }
 
 class _AppLocalizationsDelegate
