@@ -682,15 +682,19 @@ class FilterEngine {
         continue;
       }
       result = switch (e.type) {
-        EffectFilterType.fade => applyFade(
-          result,
-          width,
-          height,
-          e.fadeColor,
-          e.endFrame > e.startFrame
+        EffectFilterType.fade => () {
+          final along = e.endFrame > e.startFrame
               ? (frameIndex - e.startFrame) / (e.endFrame - e.startFrame)
-              : 1.0,
-        ),
+              : 1.0;
+          // A fade-in starts in the colour and ends on the picture.
+          return applyFade(
+            result,
+            width,
+            height,
+            e.fadeColor,
+            e.fadeIn ? 1 - along : along,
+          );
+        }(),
         EffectFilterType.gaussianBlur => applyGaussianBlur(
           result,
           width,

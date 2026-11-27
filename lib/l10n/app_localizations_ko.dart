@@ -5137,6 +5137,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineVideoFrameUnavailable => '동영상 화면을 표시할 수 없습니다';
 
   @override
+  String get timelineFadeToColor => '그림에서 색으로(페이드 아웃)';
+
+  @override
+  String get timelineFadeFromColor => '색에서 그림으로(페이드 인)';
+
+  @override
   String get timelinePreviewFullscreenTooltip => '미리보기 전체 화면으로 보기';
 
   @override

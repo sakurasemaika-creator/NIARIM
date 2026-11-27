@@ -4727,11 +4727,23 @@ void main() {
             // スクロールの位置を変えるだけなので、並べ直してから押す（並べ
             // 直す前の位置は画面の外のことがある）。一覧は画面の外へ出た
             // 行を捨てるので、数え直さずに同じボタンを押す。
-            final second = find
-                .byTooltip(l10n.saveTreeSlotWriteTooltip)
-                .at(1)
-                .evaluate()
-                .single;
+            // On a small screen with large text the second slot can start
+            // below the screen (the way-of-saving row above the list since
+            // 2026-11-27): bring it into the list first.
+            final writes = find.byTooltip(l10n.saveTreeSlotWriteTooltip);
+            for (var i = 0; i < 12 && writes.evaluate().length < 2; i++) {
+              await tester.drag(
+                find
+                    .ancestor(
+                      of: writes.first,
+                      matching: find.byType(Scrollable),
+                    )
+                    .first,
+                const Offset(0, -60),
+              );
+              await tester.pump();
+            }
+            final second = writes.at(1).evaluate().single;
             final write = find.byElementPredicate(
               (element) => identical(element, second),
             );

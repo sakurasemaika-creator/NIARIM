@@ -2068,6 +2068,8 @@
   "timelineSplitModeHint": "Scinder les clips touchés à la position de lecture (tous si aucun)",
   "timelineClipMoveTip": "Appuyez longuement sur un clip et faites-le glisser sur le côté pour le déplacer. Touchez-le pour ouvrir ses réglages.",
   "timelineVideoFrameUnavailable": "Impossible d’afficher l’image de la vidéo",
+  "timelineFadeToColor": "De l’image à la couleur (fondu sortant)",
+  "timelineFadeFromColor": "De la couleur à l’image (fondu entrant)",
   "timelinePreviewFullscreenTooltip": "Afficher l’aperçu en plein écran",
   "timelineAddVideoTooltip": "+ Vidéo",
   "timelineAddAudioTooltip": "+ Audio",

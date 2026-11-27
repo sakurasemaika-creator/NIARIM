@@ -16,10 +16,14 @@ class SaveSourcePicker extends StatelessWidget {
     super.key,
     required this.showAutosaves,
     required this.onChanged,
+    this.trailing,
   });
 
   final bool showAutosaves;
   final ValueChanged<bool> onChanged;
+
+  /// Beside the chips when it fits (the way of saving): no row of its own.
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +44,7 @@ class SaveSourcePicker extends StatelessWidget {
             selected: showAutosaves,
             onSelected: (_) => onChanged(true),
           ),
+          ?trailing,
         ],
       ),
     );

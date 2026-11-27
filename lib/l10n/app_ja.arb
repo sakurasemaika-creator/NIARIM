@@ -2621,6 +2621,8 @@
   "timelineSplitModeHint": "押して選んだクリップを再生位置で分割します（選ばなければ全部）",
   "timelineClipMoveTip": "長押ししたまま左右へ動かすと、クリップを移動できます。押すと設定が開きます。",
   "timelineVideoFrameUnavailable": "動画の絵を表示できません",
+  "timelineFadeToColor": "絵から色へ（フェードアウト）",
+  "timelineFadeFromColor": "色から絵へ（フェードイン）",
   "@timelineSplitModeHint": {
     "description": "分割モードのバーの説明。再生位置にかかるクリップを全部分割する"
   },

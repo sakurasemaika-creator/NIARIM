@@ -1407,6 +1407,13 @@ void main() {
 
     await tester.tap(find.byTooltip(l10n.timelineEffectFilterLabel));
     await animate();
+    // The sheet opens low so the preview stays in sight (2026-11-27); pull
+    // it up to work in it, as a person would.
+    await tester.drag(
+      find.byType(DraggableScrollableSheet),
+      const Offset(0, -400),
+    );
+    await animate();
     final tile = find.widgetWithText(
       ExpansionTile,
       l10n.timelineEffectTypeGaussianBlur,

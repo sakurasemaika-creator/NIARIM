@@ -9243,6 +9243,18 @@ abstract class AppLocalizations {
   /// **'動画の絵を表示できません'**
   String get timelineVideoFrameUnavailable;
 
+  /// No description provided for @timelineFadeToColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'絵から色へ（フェードアウト）'**
+  String get timelineFadeToColor;
+
+  /// No description provided for @timelineFadeFromColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'色から絵へ（フェードイン）'**
+  String get timelineFadeFromColor;
+
   /// No description provided for @timelinePreviewFullscreenTooltip.
   ///
   /// In ja, this message translates to:

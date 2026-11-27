@@ -388,6 +388,13 @@ void main() {
         added.single,
       ], added.single.startFrame);
       expect(out, isNot(orderedEquals(_frame())), reason: type.name);
+      // The sheet opens low so the preview stays in sight (2026-11-27); pull
+      // it up to work in it, as a person would.
+      await tester.drag(
+        find.byType(ReorderableListView),
+        const Offset(0, -800),
+      );
+      await settle(rounds: 3);
       // Its settings open with the tile.
       final title = find
           .descendant(of: find.byType(ExpansionTile), matching: find.text(name))

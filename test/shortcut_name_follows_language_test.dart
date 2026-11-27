@@ -252,7 +252,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text(zh.shortcutActionTypeCommand));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(zh.shortcutCommandNextFrame));
+    // The choice in the sheet (the list behind it has the default → key for
+    // the same command since 2026-11-27).
+    await tester.tap(find.text(zh.shortcutCommandNextFrame).last);
     await tester.pumpAndSettle();
     final added = service.bindings.singleWhere(
       (b) => b.keyId == LogicalKeyboardKey.keyW.keyId,

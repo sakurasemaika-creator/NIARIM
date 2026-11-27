@@ -12636,6 +12636,28 @@ class _EffectFilterSheet extends StatelessWidget {
           ),
         ],
       ),
+      // Which way it goes: to the colour, or from it (a fade-in).
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (final (fadeIn, label) in [
+            (false, l10n.timelineFadeToColor),
+            (true, l10n.timelineFadeFromColor),
+          ])
+            ChoiceChip(
+              key: ValueKey('fadeDirection-${fadeIn ? 'in' : 'out'}'),
+              label: Text(label),
+              selected: e.fadeIn == fadeIn,
+              onSelected: (_) => _edit(
+                context,
+                e.id,
+                (latest) => latest.copyWith(fadeIn: fadeIn),
+              ),
+            ),
+        ],
+      ),
     ];
   }
 

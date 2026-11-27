@@ -5108,6 +5108,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineVideoFrameUnavailable => '動画の絵を表示できません';
 
   @override
+  String get timelineFadeToColor => '絵から色へ（フェードアウト）';
+
+  @override
+  String get timelineFadeFromColor => '色から絵へ（フェードイン）';
+
+  @override
   String get timelinePreviewFullscreenTooltip => 'プレビューを全画面表示';
 
   @override

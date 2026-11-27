@@ -1521,6 +1521,7 @@ class NiaproSerializer {
             'pixelColorMode': e.pixelColorMode.name,
             'pixelExplicitColors': e.pixelExplicitColors,
             'pixelDither': e.pixelDither,
+            'fadeIn': e.fadeIn,
           },
         )
         .toList(),
@@ -1761,6 +1762,7 @@ class NiaproSerializer {
                   .toList() ??
               const [0xFF000000],
           pixelDither: m['pixelDither'] as bool? ?? true,
+          fadeIn: m['fadeIn'] == true,
         );
       }).toList();
       final audioJson = decoded['audioClips'] as List<dynamic>? ?? const [];

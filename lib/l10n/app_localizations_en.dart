@@ -5346,6 +5346,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'The video’s picture cannot be shown';
 
   @override
+  String get timelineFadeToColor => 'Picture to color (fade out)';
+
+  @override
+  String get timelineFadeFromColor => 'Color to picture (fade in)';
+
+  @override
   String get timelinePreviewFullscreenTooltip => 'Show preview fullscreen';
 
   @override

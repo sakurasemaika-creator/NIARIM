@@ -127,6 +127,7 @@ class NiatraSerializer {
     'tone_grouped_presets_v1',
     'stamp_grouped_presets_v1',
     'shortcut_canvas_view_defaults_added',
+    'shortcut_playback_defaults_added',
   };
 
   /// [deviceRecordKeys]と同じ記録で、キーの頭が決まっているもの（自動保存・

@@ -2091,6 +2091,8 @@
   "timelineSplitModeHint": "Split the clips you tap at the playback position (all if none)",
   "timelineClipMoveTip": "Long-press a clip and drag it sideways to move it. Tap it to open its settings.",
   "timelineVideoFrameUnavailable": "The video’s picture cannot be shown",
+  "timelineFadeToColor": "Picture to color (fade out)",
+  "timelineFadeFromColor": "Color to picture (fade in)",
   "timelinePreviewFullscreenTooltip": "Show preview fullscreen",
   "timelineAddVideoTooltip": "+ Video",
   "timelineAddAudioTooltip": "+ Audio",

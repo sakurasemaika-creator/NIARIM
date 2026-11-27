@@ -2068,6 +2068,8 @@
   "timelineSplitModeHint": "Divide los clips que toques en la posición de reproducción (todos si no eliges ninguno)",
   "timelineClipMoveTip": "Mantén pulsado un clip y arrástralo a los lados para moverlo. Tócalo para abrir sus ajustes.",
   "timelineVideoFrameUnavailable": "No se puede mostrar la imagen del vídeo",
+  "timelineFadeToColor": "De la imagen al color (fundido de salida)",
+  "timelineFadeFromColor": "Del color a la imagen (fundido de entrada)",
   "timelinePreviewFullscreenTooltip": "Ver la vista previa a pantalla completa",
   "timelineAddVideoTooltip": "+ Vídeo",
   "timelineAddAudioTooltip": "+ Audio",

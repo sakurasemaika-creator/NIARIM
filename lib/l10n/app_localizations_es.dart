@@ -5426,6 +5426,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se puede mostrar la imagen del vídeo';
 
   @override
+  String get timelineFadeToColor => 'De la imagen al color (fundido de salida)';
+
+  @override
+  String get timelineFadeFromColor =>
+      'Del color a la imagen (fundido de entrada)';
+
+  @override
   String get timelinePreviewFullscreenTooltip =>
       'Ver la vista previa a pantalla completa';
 

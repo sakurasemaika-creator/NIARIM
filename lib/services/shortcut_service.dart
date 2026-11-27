@@ -18,6 +18,10 @@ class ShortcutService extends ChangeNotifier {
   static const _prefsKey = 'shortcut_bindings';
   static const _canvasDefaultsKey = 'shortcut_canvas_view_defaults_added';
 
+  /// Whether the playback keys were added once on this installation (they
+  /// are not added again after the user takes them out).
+  static const _playbackDefaultsKey = 'shortcut_playback_defaults_added';
+
   final List<ShortcutBinding> _bindings = [];
 
   List<ShortcutBinding> get bindings => List.unmodifiable(_bindings);
@@ -52,11 +56,15 @@ class ShortcutService extends ChangeNotifier {
       if (prefs.readBool(_canvasDefaultsKey) != true) {
         _bindings.add(_defaultCanvasFitBinding);
       }
+      if (prefs.readBool(_playbackDefaultsKey) != true) {
+        _bindings.addAll(_defaultPlaybackBindings);
+      }
       // 保存が無い（初回）・空のときだけ既定を保存する。読めない値・
       // 読めない項目だけの保存は、既定の内容で動かすだけで書き換えない。
       if (raw == null ? !prefs.containsKey(_prefsKey) : raw.isEmpty) {
         await _persist();
         await prefs.setBool(_canvasDefaultsKey, true);
+        await prefs.setBool(_playbackDefaultsKey, true);
       } else if (removed && intact) {
         await _persist();
       }
@@ -84,9 +92,27 @@ class ShortcutService extends ChangeNotifier {
         _bindings.add(_defaultCanvasFitBinding);
         added = true;
       }
+      // The playback keys (2026-11-27) once, where the key is free and no
+      // key does the same.
+      final needsPlaybackDefaults =
+          prefs.readBool(_playbackDefaultsKey) != true;
+      if (needsPlaybackDefaults) {
+        for (final candidate in _defaultPlaybackBindings) {
+          if (findConflict(candidate) == null &&
+              !_bindings.any(
+                (b) => b.id == candidate.id || b.command == candidate.command,
+              )) {
+            _bindings.add(candidate);
+            added = true;
+          }
+        }
+      }
       if (intact) {
         if (added || removed) await _persist();
         if (needsCanvasDefaults) await prefs.setBool(_canvasDefaultsKey, true);
+        if (needsPlaybackDefaults) {
+          await prefs.setBool(_playbackDefaultsKey, true);
+        }
       }
     }
   }
@@ -98,6 +124,30 @@ class ShortcutService extends ChangeNotifier {
     control: true,
     command: ShortcutCommand.canvasFit,
   );
+
+  /// Play/pause and stepping frames (the owner's choice, 2026-11-27: they
+  /// had no keys until one was added in the settings): Space, ← and →, as
+  /// in video editors. They work where those commands do (the timeline).
+  static final List<ShortcutBinding> _defaultPlaybackBindings = [
+    ShortcutBinding(
+      id: 'default_play_pause',
+      label: 'Play / Pause',
+      keyId: LogicalKeyboardKey.space.keyId,
+      command: ShortcutCommand.playPause,
+    ),
+    ShortcutBinding(
+      id: 'default_previous_frame',
+      label: 'Previous frame',
+      keyId: LogicalKeyboardKey.arrowLeft.keyId,
+      command: ShortcutCommand.previousFrame,
+    ),
+    ShortcutBinding(
+      id: 'default_next_frame',
+      label: 'Next frame',
+      keyId: LogicalKeyboardKey.arrowRight.keyId,
+      command: ShortcutCommand.nextFrame,
+    ),
+  ];
 
   static final List<ShortcutBinding> _defaultUndoRedoBindings = [
     ShortcutBinding(
@@ -185,6 +235,7 @@ class ShortcutService extends ChangeNotifier {
         ..._defaultUndoRedoBindings,
         ..._defaultClipboardBindings,
         _defaultCanvasFitBinding,
+        ..._defaultPlaybackBindings,
       ])
         binding.id: jsonEncode(binding.toJson()),
     };

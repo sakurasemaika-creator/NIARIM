@@ -182,8 +182,10 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
           SaveSourcePicker(
             showAutosaves: _showAutosaves,
             onChanged: (show) => setState(() => _showAutosaves = show),
+            trailing: _showAutosaves
+                ? null
+                : SaveModeMenu(isTreeMode: isTreeMode),
           ),
-          if (!_showAutosaves) SaveModeMenu(isTreeMode: isTreeMode),
           // 保存の一覧を読めなかった：空に見えるスロット・ツリーにも保存が
           // あるかもしれない（「保存データなし」とは言わない）。
           if (!_showAutosaves &&
@@ -1549,14 +1551,14 @@ class SaveModeMenu extends StatelessWidget {
     final current = isTreeMode
         ? l10n.perfSettingsSaveModeTree
         : l10n.perfSettingsSaveModeSlot;
-    // Under the manual/auto chips (not in the top bar, whose room the Save
+    // Beside the manual/auto chips (not in the top bar, whose room the Save
     // button needs on a narrow phone).
     return PopupMenuButton<SaveMode>(
       key: const ValueKey('saveModeMenu'),
       tooltip: l10n.perfSettingsSaveModeLabel,
       onSelected: (mode) => _change(context, mode),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

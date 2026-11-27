@@ -5058,6 +5058,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineVideoFrameUnavailable => '无法显示视频画面';
 
   @override
+  String get timelineFadeToColor => '从画面到颜色（淡出）';
+
+  @override
+  String get timelineFadeFromColor => '从颜色到画面（淡入）';
+
+  @override
   String get timelinePreviewFullscreenTooltip => '全屏显示预览';
 
   @override
@@ -16184,6 +16190,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineVideoFrameUnavailable => '無法顯示影片畫面';
+
+  @override
+  String get timelineFadeToColor => '從畫面到顏色（淡出）';
+
+  @override
+  String get timelineFadeFromColor => '從顏色到畫面（淡入）';
 
   @override
   String get timelinePreviewFullscreenTooltip => '全螢幕顯示預覽';

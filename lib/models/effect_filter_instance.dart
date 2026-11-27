@@ -31,6 +31,9 @@ class EffectFilterInstance {
   // ドット絵演出フィルターで色を限るとき、1色では遠い所を数色の規則的な
   // 並び（ディザリング）で近づけるか。オフなら最も近い1色で塗る。
   final bool pixelDither;
+  // フェードの向き：false＝始めの絵から終わりで色へ（フェードアウト）、
+  // true＝始めの色から終わりで絵へ（フェードイン）。
+  final bool fadeIn;
 
   const EffectFilterInstance({
     required this.id,
@@ -48,6 +51,7 @@ class EffectFilterInstance {
     this.pixelColorMode = PixelColorMode.count,
     this.pixelExplicitColors = const [0xFF000000],
     this.pixelDither = true,
+    this.fadeIn = false,
   });
 
   EffectFilterInstance copyWith({
@@ -66,6 +70,7 @@ class EffectFilterInstance {
     PixelColorMode? pixelColorMode,
     List<int>? pixelExplicitColors,
     bool? pixelDither,
+    bool? fadeIn,
   }) {
     return EffectFilterInstance(
       id: id ?? this.id,
@@ -83,6 +88,7 @@ class EffectFilterInstance {
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
       pixelDither: pixelDither ?? this.pixelDither,
+      fadeIn: fadeIn ?? this.fadeIn,
     );
   }
 }

@@ -2068,6 +2068,8 @@
   "timelineSplitModeHint": "누른 클립을 재생 위치에서 분할합니다(선택하지 않으면 전부)",
   "timelineClipMoveTip": "클립을 길게 누른 채 좌우로 끌면 이동합니다. 누르면 설정이 열립니다.",
   "timelineVideoFrameUnavailable": "동영상 화면을 표시할 수 없습니다",
+  "timelineFadeToColor": "그림에서 색으로(페이드 아웃)",
+  "timelineFadeFromColor": "색에서 그림으로(페이드 인)",
   "timelinePreviewFullscreenTooltip": "미리보기 전체 화면으로 보기",
   "timelineAddVideoTooltip": "+ 동영상",
   "timelineAddAudioTooltip": "+ 음원",

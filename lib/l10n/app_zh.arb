@@ -2068,6 +2068,8 @@
   "timelineSplitModeHint": "在播放位置分割点选的片段（未选则全部）",
   "timelineClipMoveTip": "长按片段并左右拖动即可移动。点按可打开设置。",
   "timelineVideoFrameUnavailable": "无法显示视频画面",
+  "timelineFadeToColor": "从画面到颜色（淡出）",
+  "timelineFadeFromColor": "从颜色到画面（淡入）",
   "timelinePreviewFullscreenTooltip": "全屏显示预览",
   "timelineAddVideoTooltip": "+ 视频",
   "timelineAddAudioTooltip": "+ 音源",
