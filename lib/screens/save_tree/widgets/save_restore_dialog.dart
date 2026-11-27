@@ -72,14 +72,17 @@ Future<NiaproData?> confirmSavedVersion(
   String? slotLabel,
 }) {
   final l10n = AppLocalizations.of(context)!;
-  final version = read().then((data) async {
-    if (data == null ||
-        data.project.id != projectId ||
-        !data.hasEditableFrames) {
-      return null;
-    }
-    return (data: data, preview: await savedThumbnail(data));
-  });
+  final version = read().then(
+    (data) =>
+        data == null || data.project.id != projectId || !data.hasEditableFrames
+        ? null
+        : data,
+  );
+  // 絵は読めた後で作る。「読み込む」は絵を待たずに押せる（以前は絵ができる
+  // まで約3秒押せなかった）。
+  final preview = version.then(
+    (data) => data == null ? null : savedThumbnail(data),
+  );
   return showDialog<NiaproData>(
     context: context,
     builder: (dialogContext) => FutureBuilder(
@@ -118,10 +121,13 @@ Future<NiaproData?> confirmSavedVersion(
                       ),
                     if (time != null) messageText(time),
                     const SizedBox(height: 10),
-                    SavedThumbnail(
-                      key: const ValueKey('saveRestorePreview'),
-                      bytes: save?.preview,
-                      height: 124,
+                    FutureBuilder(
+                      future: preview,
+                      builder: (context, shown) => SavedThumbnail(
+                        key: const ValueKey('saveRestorePreview'),
+                        bytes: shown.data,
+                        height: 124,
+                      ),
                     ),
                   ],
                 ),
@@ -144,7 +150,7 @@ Future<NiaproData?> confirmSavedVersion(
               style: warningFilledButtonStyle(dialogContext),
               onPressed: save == null
                   ? null
-                  : () => Navigator.pop(dialogContext, save.data),
+                  : () => Navigator.pop(dialogContext, save),
               child: Text(l10n.saveTreeRestoreAction),
             ),
           ],
