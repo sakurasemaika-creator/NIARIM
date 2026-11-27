@@ -12010,6 +12010,35 @@ class _EffectFilterSheet extends StatelessWidget {
     ps.updateEffectFilter(projectId, sceneId, change(latest));
   }
 
+  /// The premium feature an effect filter of [type] needs: the tone curve
+  /// and levels, like the drawing filters (the owner's choice, 2026-11-27).
+  static PremiumFeature? _effectPremiumFeature(EffectFilterType type) =>
+      switch (type) {
+        EffectFilterType.toneCurve => PremiumFeature.toneCurve,
+        EffectFilterType.levels => PremiumFeature.levelAdjustment,
+        _ => null,
+      };
+
+  /// Whether an effect of [type] needs a premium feature this account does
+  /// not have (its row shows a lock).
+  static bool _effectLocked(BuildContext context, EffectFilterType type) {
+    final feature = _effectPremiumFeature(type);
+    return feature != null &&
+        !context.read<PremiumService>().isFeatureAvailable(feature);
+  }
+
+  /// Whether an effect of [type] can be added; shows the premium banner when
+  /// it cannot.
+  static bool _mayAddEffect(BuildContext context, EffectFilterType type) {
+    final feature = _effectPremiumFeature(type);
+    if (feature == null ||
+        context.read<PremiumService>().isFeatureAvailable(feature)) {
+      return true;
+    }
+    showPremiumBanner(context, feature: feature);
+    return false;
+  }
+
   /// 演出フィルターを複製する（「フィルター操作＞複製」）。
   /// 複製先は元フィルターの直後へ挿入する。
   void _duplicate(
@@ -12017,6 +12046,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterInstance e,
     List<EffectFilterInstance> effects,
   ) {
+    if (!_mayAddEffect(context, e.type)) return;
     final service = context.read<ProjectService>();
     final l10n = AppLocalizations.of(context)!;
     // 名前の無いフィルター（種類の名前で出る）の複製にも印を付ける（以前は
@@ -13108,7 +13138,16 @@ class _EffectFilterSheet extends StatelessWidget {
                   (type) => ListTile(
                     leading: Icon(_typeIcons[type]),
                     title: Text(_typeLabel(l10n, type)),
+                    trailing: _effectLocked(context, type)
+                        ? const Icon(Icons.lock_outline, size: 18)
+                        : null,
                     onTap: () {
+                      if (_effectLocked(context, type)) {
+                        // Close the list first: the banner opens above it.
+                        Navigator.pop(ctx);
+                        _mayAddEffect(context, type);
+                        return;
+                      }
                       ps.addEffectFilter(
                         projectId,
                         sceneId,

@@ -1147,10 +1147,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumFeatureWatermark => '添加和编辑自定义水印';
 
   @override
-  String get premiumFeatureToneCurve => '色调曲线（绘图）';
+  String get premiumFeatureToneCurve => '色调曲线';
 
   @override
-  String get premiumFeatureLevelCorrection => '色阶校正（绘图）';
+  String get premiumFeatureLevelCorrection => '色阶校正';
 
   @override
   String get premiumFeatureAds => '广告';
@@ -2966,10 +2966,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get premiumBannerToneCurveBody =>
-      'Premium 会员或色调曲线权益可以用色调曲线调整绘图图层的亮度和颜色。';
+      'Premium 会员或色调曲线权益可以在绘图滤镜和演出滤镜中用色调曲线调整亮度和颜色。';
 
   @override
-  String get premiumBannerLevelsBody => 'Premium 会员或色阶校正权益可以用色阶校正调整绘图图层的明暗范围。';
+  String get premiumBannerLevelsBody =>
+      'Premium 会员或色阶校正权益可以在绘图滤镜和演出滤镜中用色阶校正调整明暗范围。';
 
   @override
   String get premiumBannerAutomationBody => 'Premium 会员或自动操作权益可以创建、编辑和运行自动操作。';
@@ -12261,10 +12262,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumFeatureWatermark => '新增和編輯自訂浮水印';
 
   @override
-  String get premiumFeatureToneCurve => '色調曲線（繪圖）';
+  String get premiumFeatureToneCurve => '色調曲線';
 
   @override
-  String get premiumFeatureLevelCorrection => '色階校正（繪圖）';
+  String get premiumFeatureLevelCorrection => '色階校正';
 
   @override
   String get premiumFeatureAds => '廣告';
@@ -14080,10 +14081,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get premiumBannerToneCurveBody =>
-      'Premium 會員或色調曲線權益可以用色調曲線調整繪圖圖層的亮度和顏色。';
+      'Premium 會員或色調曲線權益可以在繪圖濾鏡和特效濾鏡中用色調曲線調整亮度和顏色。';
 
   @override
-  String get premiumBannerLevelsBody => 'Premium 會員或色階校正權益可以用色階校正調整繪圖圖層的明暗範圍。';
+  String get premiumBannerLevelsBody =>
+      'Premium 會員或色階校正權益可以在繪圖濾鏡和特效濾鏡中用色階校正調整明暗範圍。';
 
   @override
   String get premiumBannerAutomationBody => 'Premium 會員或自動操作權益可以建立、編輯和執行自動操作。';

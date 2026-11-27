@@ -1171,10 +1171,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumFeatureWatermark => '내 워터마크 추가 및 편집';
 
   @override
-  String get premiumFeatureToneCurve => '톤 커브(그리기)';
+  String get premiumFeatureToneCurve => '톤 커브';
 
   @override
-  String get premiumFeatureLevelCorrection => '레벨 보정(그리기)';
+  String get premiumFeatureLevelCorrection => '레벨 보정';
 
   @override
   String get premiumFeatureAds => '광고';
@@ -3008,11 +3008,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumBannerToneCurveBody =>
-      '프리미엄 또는 톤 커브 혜택을 이용하면 드로잉 레이어의 밝기와 색상을 조정할 수 있습니다.';
+      '프리미엄 또는 톤 커브 혜택을 이용하면 그리기 필터와 연출 필터의 톤 커브로 밝기와 색상을 조정할 수 있습니다.';
 
   @override
   String get premiumBannerLevelsBody =>
-      '프리미엄 또는 레벨 보정 혜택을 이용하면 드로잉 레이어의 밝고 어두운 범위를 조정할 수 있습니다.';
+      '프리미엄 또는 레벨 보정 혜택을 이용하면 그리기 필터와 연출 필터의 레벨 보정으로 밝고 어두운 범위를 조정할 수 있습니다.';
 
   @override
   String get premiumBannerAutomationBody =>

@@ -1232,10 +1232,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ajouter et modifier votre propre filigrane';
 
   @override
-  String get premiumFeatureToneCurve => 'Courbe de tons (dessin)';
+  String get premiumFeatureToneCurve => 'Courbe de tons';
 
   @override
-  String get premiumFeatureLevelCorrection => 'Correction des niveaux (dessin)';
+  String get premiumFeatureLevelCorrection => 'Correction des niveaux';
 
   @override
   String get premiumFeatureAds => 'Publicités';
@@ -3168,11 +3168,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumBannerToneCurveBody =>
-      'Pour ajuster la luminosité et les couleurs d’un calque de dessin avec Courbe de tons, l’abonnement Premium ou l’avantage Courbe de tons est nécessaire.';
+      'Pour ajuster la luminosité et les couleurs avec Courbe de tons dans les filtres de dessin et d’effet, l’abonnement Premium ou l’avantage Courbe de tons est nécessaire.';
 
   @override
   String get premiumBannerLevelsBody =>
-      'Ajustez la plage tonale d’un calque de dessin avec Niveaux grâce à l’abonnement Premium ou à l’avantage correspondant.';
+      'Ajustez la plage tonale avec Niveaux dans les filtres de dessin et d’effet grâce à l’abonnement Premium ou à l’avantage correspondant.';
 
   @override
   String get premiumBannerAutomationBody =>

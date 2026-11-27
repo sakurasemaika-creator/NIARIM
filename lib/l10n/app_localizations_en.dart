@@ -1206,10 +1206,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumFeatureWatermark => 'Add and edit your own watermark';
 
   @override
-  String get premiumFeatureToneCurve => 'Tone Curve (drawing)';
+  String get premiumFeatureToneCurve => 'Tone Curve';
 
   @override
-  String get premiumFeatureLevelCorrection => 'Levels (drawing)';
+  String get premiumFeatureLevelCorrection => 'Levels';
 
   @override
   String get premiumFeatureAds => 'Ads';
@@ -3121,11 +3121,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumBannerToneCurveBody =>
-      'Adjust a drawing layer’s brightness and colors with Tone Curve using Premium membership or the Tone Curve benefit.';
+      'Adjust brightness and colors with Tone Curve in draw and effect filters using Premium membership or the Tone Curve benefit.';
 
   @override
   String get premiumBannerLevelsBody =>
-      'Adjust the tonal range of a drawing layer with Levels using Premium membership or the Levels benefit.';
+      'Adjust the tonal range with Levels in draw and effect filters using Premium membership or the Levels benefit.';
 
   @override
   String get premiumBannerAutomationBody =>

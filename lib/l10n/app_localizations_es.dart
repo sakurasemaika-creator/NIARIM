@@ -1235,10 +1235,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Añadir y editar tu propia marca de agua';
 
   @override
-  String get premiumFeatureToneCurve => 'Curva de tonos (dibujo)';
+  String get premiumFeatureToneCurve => 'Curva de tonos';
 
   @override
-  String get premiumFeatureLevelCorrection => 'Corrección de niveles (dibujo)';
+  String get premiumFeatureLevelCorrection => 'Corrección de niveles';
 
   @override
   String get premiumFeatureAds => 'Anuncios';
@@ -3168,11 +3168,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get premiumBannerToneCurveBody =>
-      'Ajusta el brillo y el color de una capa de dibujo con Curva de tonos usando la suscripción Premium o la ventaja de Curva de tonos.';
+      'Ajusta el brillo y el color con Curva de tonos en los filtros de dibujo y de efecto usando la suscripción Premium o la ventaja de Curva de tonos.';
 
   @override
   String get premiumBannerLevelsBody =>
-      'Ajusta la gama tonal de una capa de dibujo con Niveles usando la suscripción Premium o la ventaja de Niveles.';
+      'Ajusta la gama tonal con Niveles en los filtros de dibujo y de efecto usando la suscripción Premium o la ventaja de Niveles.';
 
   @override
   String get premiumBannerAutomationBody =>

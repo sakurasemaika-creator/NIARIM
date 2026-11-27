@@ -2208,13 +2208,13 @@ abstract class AppLocalizations {
   /// No description provided for @premiumFeatureToneCurve.
   ///
   /// In ja, this message translates to:
-  /// **'トーンカーブ（描画）'**
+  /// **'トーンカーブ'**
   String get premiumFeatureToneCurve;
 
   /// No description provided for @premiumFeatureLevelCorrection.
   ///
   /// In ja, this message translates to:
-  /// **'レベル補正（描画）'**
+  /// **'レベル補正'**
   String get premiumFeatureLevelCorrection;
 
   /// No description provided for @premiumFeatureAds.
@@ -5496,13 +5496,13 @@ abstract class AppLocalizations {
   /// No description provided for @premiumBannerToneCurveBody.
   ///
   /// In ja, this message translates to:
-  /// **'描画レイヤーの明るさや色をトーンカーブで調整するには、プレミアム会員またはトーンカーブの特典が必要です。'**
+  /// **'描画フィルター・演出フィルターのトーンカーブで明るさや色を調整するには、プレミアム会員またはトーンカーブの特典が必要です。'**
   String get premiumBannerToneCurveBody;
 
   /// No description provided for @premiumBannerLevelsBody.
   ///
   /// In ja, this message translates to:
-  /// **'描画レイヤーの明暗の範囲をレベル補正で調整するには、プレミアム会員またはレベル補正の特典が必要です。'**
+  /// **'描画フィルター・演出フィルターのレベル補正で明暗の範囲を調整するには、プレミアム会員またはレベル補正の特典が必要です。'**
   String get premiumBannerLevelsBody;
 
   /// No description provided for @premiumBannerAutomationBody.

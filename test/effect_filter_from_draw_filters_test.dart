@@ -14,6 +14,7 @@ import 'package:niarim/models/filter_def.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/models/scene.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -299,7 +300,16 @@ void main() {
     appRouter.go('/home');
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
-      MultiProvider(providers: providers!, child: const NiarimApp()),
+      MultiProvider(
+        providers: [
+          ...providers!,
+          // The tone curve and levels need premium, as on the canvas.
+          ChangeNotifierProvider<PremiumService>(
+            create: (_) => _PremiumMember(),
+          ),
+        ],
+        child: const NiarimApp(),
+      ),
     );
     await settle();
     final projects = tester
@@ -399,4 +409,9 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(projects.effectFiltersOf(project.id, sceneId), hasLength(5));
   });
+}
+
+class _PremiumMember extends PremiumService {
+  @override
+  bool get isPremium => true;
 }

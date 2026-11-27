@@ -8,6 +8,8 @@
 // * 書き出しが失敗した文が、形式・プリセットを変えても残った。
 // * 書き出し完了の画面は、タイムラインから開いても「キャンバスへ戻る」で、
 //   閉じる・続けて書き出すが無かった（所有者の判断、判断カードJ13）。
+// * 演出フィルターのトーンカーブ・レベル補正は無料で足せた。描画フィルターと
+//   同じく特典にそろえる（所有者の判断、判断カードJ11）。
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -335,6 +337,64 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(ExportScreen), findsNothing);
     expect(find.byType(TimelineScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('without premium the tone curve and levels effects are locked', (
+    tester,
+  ) async {
+    final (:ps, :projectId, :sceneId) = await openApp(tester);
+    appRouter.go('/timeline/$projectId');
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(TimelineScreen)),
+    )!;
+    await tester.tap(find.byIcon(Icons.movie_filter).first);
+    await tester.pumpAndSettle();
+    for (final name in [l10n.filterNameToneCurve, l10n.filterNameLevels]) {
+      await tester.tap(find.text(l10n.commonAdd).last);
+      await tester.pumpAndSettle();
+      final option = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text(name),
+      );
+      await tester.scrollUntilVisible(
+        option,
+        120,
+        scrollable: find
+            .descendant(
+              of: find.byType(AlertDialog),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      final row = find.ancestor(of: option, matching: find.byType(ListTile));
+      expect(
+        find.descendant(of: row, matching: find.byIcon(Icons.lock_outline)),
+        findsOneWidget,
+        reason: name,
+      );
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      expect(ps.effectFiltersOf(projectId, sceneId), isEmpty, reason: name);
+      expect(
+        find.text(l10n.filterNameSharpen),
+        findsNothing,
+        reason: 'the add list closed',
+      );
+      // The premium banner tells what it needs; close it.
+      expect(
+        find.textContaining(
+          name == l10n.filterNameToneCurve
+              ? l10n.premiumFeatureToneCurve
+              : l10n.premiumFeatureLevelCorrection,
+        ),
+        findsWidgets,
+        reason: name,
+      );
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+    }
     expect(tester.takeException(), isNull);
   });
 }

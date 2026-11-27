@@ -1168,10 +1168,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumFeatureWatermark => '自分のウォーターマークを追加・編集';
 
   @override
-  String get premiumFeatureToneCurve => 'トーンカーブ（描画）';
+  String get premiumFeatureToneCurve => 'トーンカーブ';
 
   @override
-  String get premiumFeatureLevelCorrection => 'レベル補正（描画）';
+  String get premiumFeatureLevelCorrection => 'レベル補正';
 
   @override
   String get premiumFeatureAds => '広告';
@@ -2994,11 +2994,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get premiumBannerToneCurveBody =>
-      '描画レイヤーの明るさや色をトーンカーブで調整するには、プレミアム会員またはトーンカーブの特典が必要です。';
+      '描画フィルター・演出フィルターのトーンカーブで明るさや色を調整するには、プレミアム会員またはトーンカーブの特典が必要です。';
 
   @override
   String get premiumBannerLevelsBody =>
-      '描画レイヤーの明暗の範囲をレベル補正で調整するには、プレミアム会員またはレベル補正の特典が必要です。';
+      '描画フィルター・演出フィルターのレベル補正で明暗の範囲を調整するには、プレミアム会員またはレベル補正の特典が必要です。';
 
   @override
   String get premiumBannerAutomationBody =>
