@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -305,6 +306,7 @@ class BucketFillEngine {
     required int startX,
     required int startY,
     double tolerance = 30.0,
+    bool softEdge = true,
   }) {
     final mask = Uint8List(width * height);
     if (startX < 0 || startX >= width || startY < 0 || startY >= height) {
@@ -320,6 +322,7 @@ class BucketFillEngine {
     final startPos = startY * width + startX;
     visited[startPos] = 1;
     final stack = <int>[startPos];
+    var minX = width, minY = height, maxX = -1, maxY = -1;
 
     while (stack.isNotEmpty) {
       final pos = stack.removeLast();
@@ -342,6 +345,10 @@ class BucketFillEngine {
       }
 
       mask[pos] = 1;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
 
       void tryAdd(int newPos) {
         if (visited[newPos] == 0) {
@@ -355,7 +362,87 @@ class BucketFillEngine {
       if (y > 0) tryAdd(pos - width);
       if (y < height - 1) tryAdd(pos + width);
     }
+    if (softEdge && maxX >= 0) {
+      for (var pass = 1; pass <= 2; pass++) {
+        // 縁はpass画素まで外に出る：選んだ所の外接矩形をその分だけ広げて探す。
+        final taken = _takeSoftEdge(
+          mask,
+          canvasData,
+          width,
+          height,
+          math.max(0, minX - pass),
+          math.max(0, minY - pass),
+          math.min(width - 1, maxX + pass),
+          math.min(height - 1, maxY + pass),
+        );
+        if (!taken) break;
+      }
+    }
     return mask;
+  }
+
+  /// 選んだ所のすぐ外の、選んだ色と外の色の間の色の画素（ペンの柔らかい縁）を
+  /// 選択に入れる。入れなかった頃は、選んで動かすと元の場所に薄い輪が残った。
+  ///
+  /// 画素は乗算済みのRGBAで比べるので、透明なレイヤーの上の縁（同じ色で薄い）
+  /// も、紙の上の縁（選んだ色と紙の色が混ざった色）も同じ式で見分けられる：
+  /// 内側の隣の色Iと、反対側の外の隣の色Oを結ぶ線の上（両端を除く）にある色。
+  /// 1つでも入れたらtrue。
+  static bool _takeSoftEdge(
+    Uint8List mask,
+    Uint8List rgba,
+    int w,
+    int h,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+  ) {
+    final taken = <int>[];
+    for (var y = y0; y <= y1; y++) {
+      for (var x = x0; x <= x1; x++) {
+        final p = y * w + x;
+        if (mask[p] != 0) continue;
+        for (var d = 0; d < 4; d++) {
+          final dx = d == 0 ? -1 : (d == 1 ? 1 : 0);
+          final dy = d == 2 ? -1 : (d == 3 ? 1 : 0);
+          final ix = x + dx, iy = y + dy; // inside neighbour
+          final ox = x - dx, oy = y - dy; // outside neighbour, across p
+          if (ix < 0 || ix >= w || iy < 0 || iy >= h) continue;
+          if (ox < 0 || ox >= w || oy < 0 || oy >= h) continue;
+          final i = iy * w + ix, o = oy * w + ox;
+          if (mask[i] == 0 || mask[o] != 0) continue;
+          if (_between(rgba, i * 4, p * 4, o * 4)) {
+            taken.add(p);
+            break;
+          }
+        }
+      }
+    }
+    for (final p in taken) {
+      mask[p] = 1;
+    }
+    return taken.isNotEmpty;
+  }
+
+  /// [p]の色が[i]と[o]の色を結ぶ線の上（両端の近くを除く）にあるか。
+  static bool _between(Uint8List c, int i, int p, int o) {
+    var span = 0.0, along = 0.0;
+    for (var k = 0; k < 4; k++) {
+      final d = (c[o + k] - c[i + k]).toDouble();
+      span += d * d;
+      along += (c[p + k] - c[i + k]) * d;
+    }
+    // 内と外がほとんど同じ色なら、縁ではない。
+    if (span < 24 * 24) return false;
+    final t = along / span;
+    if (t <= 0.02 || t >= 0.98) return false;
+    var off = 0.0;
+    for (var k = 0; k < 4; k++) {
+      final e = c[p + k] - (c[i + k] + t * (c[o + k] - c[i + k]));
+      off += e * e;
+    }
+    return off <= 16 * 16;
   }
 
   bool _colorMatch(
