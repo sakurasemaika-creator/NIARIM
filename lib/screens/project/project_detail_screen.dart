@@ -595,9 +595,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         ),
                       ),
                     ),
+                  // 実際のコマの数（全シーン）。Project.totalFramesは
+                  // fps×秒（秒は切り上げ）で、コマの数と違った。
                   _infoRow(
                     l10n.projectDetailInfoTotalFrames,
-                    '${project.totalFrames}',
+                    '${flat.length}',
                   ),
                   _infoRow(
                     l10n.projectDetailInfoWorkTime,

@@ -37,13 +37,17 @@ void main() {
       200,
     ]);
     final got = applyBrightnessToAlpha(src, grayMode: true);
-    expect(got.sublist(0, 3), equals([0, 0, 0]));
-    expect(got[3], 255);
-    expect(got.sublist(4, 7), equals([128, 128, 128]));
+    // 画素は乗算済み：色は不透明度を掛けた値で、どのチャンネルも不透明度以下。
+    expect(got.sublist(0, 4), equals([0, 0, 0, 255]));
     expect(got[7], inInclusiveRange(126, 128));
-    expect(got[11], 0);
-    expect(got.sublist(12, 15), equals([200, 100, 50]));
-    expect(got[15], lessThan(200));
+    expect(got.sublist(4, 7), everyElement(inInclusiveRange(63, 65)));
+    expect(got.sublist(8, 12), equals([0, 0, 0, 0]));
+    // [200,100,50,200]は乗算前で(255,128,64)。その色のまま白ほど透明に。
+    final a = got[15];
+    expect(a, lessThan(200));
+    expect(got[12], inInclusiveRange(a - 1, a));
+    expect(got[13] * 255 / a, closeTo(127.5, 3));
+    expect(got[14] * 255 / a, closeTo(63.75, 3));
   });
 
   test('明度で透過：カラーモードは白を透明化し残色を復元', () async {
@@ -66,9 +70,10 @@ void main() {
       255,
     ]);
     final got = applyBrightnessToAlpha(src, grayMode: false);
-    expect(got.sublist(0, 4), equals([255, 255, 255, 0]));
+    expect(got.sublist(0, 4), equals([0, 0, 0, 0]));
     expect(got[7], inInclusiveRange(126, 128));
-    expect(got[4], 255);
+    // 乗算済み：赤は不透明度と同じ（乗算前で255）。
+    expect(got[4], got[7]);
     expect(got[5], inInclusiveRange(0, 2));
     expect(got[6], inInclusiveRange(0, 2));
     expect(got[11], inInclusiveRange(126, 128));
