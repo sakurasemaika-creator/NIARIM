@@ -1667,10 +1667,13 @@ class _CommunityScreenState extends State<CommunityScreen>
                       clipBehavior: Clip.antiAlias,
                       child: InkWell(
                         key: const Key('communitySearchModeToggle'),
-                        // 打った語は残し、同じ語を別の探し方で探し直す
-                        // （以前は切り替えると黙って消えた）。
                         onTap: () {
-                          setState(() => _tagSearchMode = !_tagSearchMode);
+                          setState(() {
+                            _tagSearchMode = !_tagSearchMode;
+                            _searchQuery = '';
+                            _draftQuery = '';
+                            _searchController.clear();
+                          });
                           _refreshSearchAfterSettingChange();
                         },
                         child: SizedBox(

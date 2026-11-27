@@ -328,13 +328,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
             label: locked && !owner ? l10n.commonOk : l10n.commonCancel,
             icon: locked && !owner ? Icons.check : Icons.close,
           ),
-          // ヘルプ・縦画面の視聴と同じく、タグからそのタグの作品を探せる
-          // （以前はこの画面だけ、編集・削除しか選べなかった）。
-          (
-            value: _TagAction.search,
-            label: l10n.communityTagSearchAction,
-            icon: Icons.search,
-          ),
           if (owner || !locked)
             (
               value: _TagAction.edit,
@@ -385,6 +378,16 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 SizedBox(height: largeText ? 16 : 10),
                 Text(l10n.communityTagUnlockBeforeDelete),
               ],
+              // ヘルプ・縦画面の視聴と同じく、タグからそのタグの作品を探せる
+              // （以前はこの画面だけ、編集・削除しか選べなかった）。下の操作の
+              // 並びとは分けて置く（並びに入れると狭い画面で文字が入らない）。
+              SizedBox(height: largeText ? 16 : 12),
+              OutlinedButton.icon(
+                key: const Key('communityTagSearch'),
+                onPressed: () => Navigator.pop(ctx, _TagAction.search),
+                icon: const Icon(Icons.search),
+                label: Text(l10n.communityTagSearchAction),
+              ),
             ],
           ),
           actions: [
