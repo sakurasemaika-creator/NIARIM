@@ -13,6 +13,8 @@ import 'package:path_provider/path_provider.dart';
 import 'corner_logo.dart';
 import 'export_audio.dart';
 import 'export_filename.dart';
+import 'filter_engine.dart' show EffectFilterType;
+import 'frame_png.dart';
 import 'gif_palette.dart';
 import '../engine/layer_range_resolver.dart';
 import '../engine/timeline_stack.dart';
@@ -522,15 +524,7 @@ class ExportEngine {
       format: ui.ImageByteFormat.rawRgba,
     );
     uiImage.dispose();
-    final rgba = byteData!.buffer.asUint8List();
-    return img.encodePng(
-      img.Image.fromBytes(
-        width: width,
-        height: height,
-        bytes: rgba.buffer,
-        numChannels: 4,
-      ),
-    );
+    return encodeFramePng(byteData!.buffer.asUint8List(), width, height);
   }
 
   // An encoder can hold a name before the file exists on disk.
@@ -780,6 +774,7 @@ class ExportEngine {
           Scene? lastScene;
           Frame? lastFrame;
           Uint8List? lastPng;
+          String? lastPath;
           for (final (:scene, :frame) in timing.samples(scenes)) {
             if (cancelToken?.isCancelled == true) {
               throw const ExportCancelledException();
@@ -810,22 +805,18 @@ class ExportEngine {
                 groups: scene.groups,
                 videoPixels: video,
               );
-              lastPng = img.encodePng(
-                img.Image.fromBytes(
-                  width: width,
-                  height: height,
-                  bytes: rgba.buffer,
-                  numChannels: 4,
-                ),
-              );
+              lastPng = encodeFramePng(rgba, width, height);
               lastScene = scene;
               lastFrame = frame;
+              final file = File(
+                '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+              );
+              await file.writeAsBytes(lastPng);
+              lastPath = file.path;
             }
-            final file = File(
-              '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-            );
-            await file.writeAsBytes(lastPng);
-            framePaths.add(file.path);
+            // The encoder reads each path in turn: an output frame repeating
+            // the source frame before it reads the same file again.
+            framePaths.add(lastPath!);
             onProgress?.call(globalIndex + 1, totalFrames);
             globalIndex++;
           }
@@ -925,37 +916,23 @@ class ExportEngine {
           final frames = await input.open(mode: FileMode.write);
           try {
             int index = 0;
+            // Output frames showing the same source frame (an output rate
+            // above the source's) write the same bytes and watermark
+            // overlap again instead of drawing the frame again, unless the
+            // scene has an effect that draws differently each time (noise).
+            Scene? lastScene;
+            Frame? lastFrame;
+            Uint8List? lastRgba;
+            Map<LogoCorner, double>? lastOverlap;
             for (final (:scene, :frame) in timing.samples(scenes)) {
               if (cancelToken?.isCancelled == true) {
                 throw const ExportCancelledException();
               }
-              final rgba = await renderFrame(
-                layers: resolveFrameLayers(
-                  scenes,
-                  layerHomes,
-                  scene.id,
-                  frame.index,
-                  frame.layers,
-                ),
-                tileManager: tileManager,
-                sceneId: scene.id,
-                scene: scene,
-                frameIndex: frame.index,
-                drawingWidth: drawingWidth,
-                drawingHeight: drawingHeight,
-                width: width,
-                height: height,
-                backgroundColor: backgroundColor,
-                cameraKeyframes: scene.cameraKeyframes,
-                effectFilters: scene.effectFilters,
-                layerHomes: layerHomes,
-                groups: scene.groups,
-                videoPixels: video,
-              );
-              await frames.writeFrom(rgba);
-              if (watermarkOverlap != null) {
-                await _addWatermarkOverlap(
-                  watermarkOverlap,
+              if (!identical(lastScene, scene) ||
+                  !identical(lastFrame, frame) ||
+                  lastRgba == null ||
+                  _drawsAnewEachTime(scene)) {
+                lastRgba = await renderFrame(
                   layers: resolveFrameLayers(
                     scenes,
                     layerHomes,
@@ -964,14 +941,48 @@ class ExportEngine {
                     frame.layers,
                   ),
                   tileManager: tileManager,
+                  sceneId: scene.id,
                   scene: scene,
                   frameIndex: frame.index,
                   drawingWidth: drawingWidth,
                   drawingHeight: drawingHeight,
                   width: width,
                   height: height,
+                  backgroundColor: backgroundColor,
+                  cameraKeyframes: scene.cameraKeyframes,
+                  effectFilters: scene.effectFilters,
                   layerHomes: layerHomes,
+                  groups: scene.groups,
+                  videoPixels: video,
                 );
+                lastOverlap = watermarkOverlap == null
+                    ? null
+                    : await _watermarkOverlap(
+                        layers: resolveFrameLayers(
+                          scenes,
+                          layerHomes,
+                          scene.id,
+                          frame.index,
+                          frame.layers,
+                        ),
+                        tileManager: tileManager,
+                        scene: scene,
+                        frameIndex: frame.index,
+                        drawingWidth: drawingWidth,
+                        drawingHeight: drawingHeight,
+                        width: width,
+                        height: height,
+                        layerHomes: layerHomes,
+                      );
+                lastScene = scene;
+                lastFrame = frame;
+              }
+              await frames.writeFrom(lastRgba);
+              if (watermarkOverlap != null && lastOverlap != null) {
+                for (final corner in LogoCorner.values) {
+                  watermarkOverlap[corner] =
+                      watermarkOverlap[corner]! + lastOverlap[corner]!;
+                }
               }
               onProgress?.call(++index, totalFrames);
             }
@@ -1013,11 +1024,17 @@ class ExportEngine {
     );
   }
 
-  /// Adds to [overlap] how much of the frame's own watermark layers (the
-  /// premium watermark feature) is drawn where the GIF logo would go in each
-  /// corner. The watermark layers are drawn alone, placed as in the frame.
-  Future<void> _addWatermarkOverlap(
-    Map<LogoCorner, double> overlap, {
+  /// Whether [scene] has an effect filter whose result differs each time a
+  /// frame is drawn (the noise effect draws fresh noise), so an output frame
+  /// repeating a source frame is drawn again rather than copied.
+  static bool _drawsAnewEachTime(Scene scene) =>
+      scene.effectFilters.any((e) => e.type == EffectFilterType.noise);
+
+  /// How much of the frame's own watermark layers (the premium watermark
+  /// feature) is drawn where the GIF logo would go in each corner (null when
+  /// the frame has none). The watermark layers are drawn alone, placed as in
+  /// the frame.
+  Future<Map<LogoCorner, double>?> _watermarkOverlap({
     required List<Layer> layers,
     required TileManager tileManager,
     required Scene scene,
@@ -1032,7 +1049,7 @@ class ExportEngine {
       for (final layer in layers)
         if (layer.type == LayerType.watermark && layer.isVisible) layer,
     ];
-    if (marks.isEmpty) return;
+    if (marks.isEmpty) return null;
     final rgba = await renderFrame(
       layers: marks,
       tileManager: tileManager,
@@ -1048,15 +1065,14 @@ class ExportEngine {
       layerHomes: layerHomes,
       groups: scene.groups,
     );
-    for (final corner in LogoCorner.values) {
-      overlap[corner] =
-          overlap[corner]! +
-          alphaInside(
-            rgba,
-            width,
-            CornerLogoPlacement(width, height, corner).clearArea,
-          );
-    }
+    return {
+      for (final corner in LogoCorner.values)
+        corner: alphaInside(
+          rgba,
+          width,
+          CornerLogoPlacement(width, height, corner).clearArea,
+        ),
+    };
   }
 
   Future<void> _publishImageExport(String path, List<int> bytes) async {
@@ -1157,14 +1173,7 @@ class ExportEngine {
                 groups: scene.groups,
                 videoPixels: video,
               );
-              lastPng = img.encodePng(
-                img.Image.fromBytes(
-                  width: width,
-                  height: height,
-                  bytes: rgba.buffer,
-                  numChannels: 4,
-                ),
-              );
+              lastPng = encodeFramePng(rgba, width, height);
               lastScene = scene;
               lastFrame = frame;
             }
@@ -1308,14 +1317,7 @@ class ExportEngine {
                 groups: scene.groups,
                 videoPixels: video,
               );
-              lastPng = img.encodePng(
-                img.Image.fromBytes(
-                  width: width,
-                  height: height,
-                  bytes: rgba.buffer,
-                  numChannels: 4,
-                ),
-              );
+              lastPng = encodeFramePng(rgba, width, height);
               lastScene = scene;
               lastFrame = frame;
             }

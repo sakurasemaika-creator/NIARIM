@@ -75,6 +75,10 @@ class TimelineFrameRenderer {
     return null;
   }
 
+  /// Draws the output frame even where it would copy the drawing (for
+  /// tests comparing the two).
+  static bool debugAlwaysDrawViewport = false;
+
   /// The frame before effect filters, at the output size.
   Future<ui.Image> compose(TimelineFrameRequest request) async {
     final drawing = await LayerCompositor.composite(
@@ -92,6 +96,13 @@ class TimelineFrameRenderer {
       maskGroups: request.maskGroups,
       pixelsOf: request.pixelsOf,
     );
+    final camera = _cameraEngine.valueAt(
+      request.cameraKeyframes,
+      request.frameIndex,
+    );
+    if (!debugAlwaysDrawViewport && _viewportCopiesDrawing(request, camera)) {
+      return drawing;
+    }
     try {
       return await renderOutputViewportImage(
         drawingImage: drawing,
@@ -103,14 +114,34 @@ class TimelineFrameRenderer {
         ),
         backgroundColor: request.backgroundColor,
         cameraEngine: _cameraEngine,
-        cameraKeyframe: _cameraEngine.valueAt(
-          request.cameraKeyframes,
-          request.frameIndex,
-        ),
+        cameraKeyframe: camera,
       );
     } finally {
       drawing.dispose();
     }
+  }
+
+  /// Whether the output frame would be a pixel-for-pixel copy of the
+  /// composited drawing, so drawing it a second time can be skipped: the
+  /// output is the whole drawing (no crop), the camera does not move it, and
+  /// the background under it changes nothing (opaque, so the drawing was
+  /// composited onto that same paper and covers it; or fully transparent).
+  static bool _viewportCopiesDrawing(
+    TimelineFrameRequest request,
+    CameraKeyframe camera,
+  ) {
+    if (request.outputWidth != request.drawingWidth ||
+        request.outputHeight != request.drawingHeight) {
+      return false;
+    }
+    if (camera.x != 0 ||
+        camera.y != 0 ||
+        camera.rotation != 0 ||
+        (camera.zoom != 1 && camera.zoom != 0)) {
+      return false;
+    }
+    final alpha = request.backgroundColor >>> 24;
+    return alpha == 0xFF || alpha == 0;
   }
 
   /// The finished frame as RGBA bytes (what the export encodes).

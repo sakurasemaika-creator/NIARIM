@@ -1153,6 +1153,18 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   FFmpegで音を作らない）。音の無い動画素材・無い素材は入れずに映像は書き、完了の画面で
   件数を知らせる（`audioLeftOut`）。GIFは音なし。MP4の音は実機でしか確かめられない。
   `test/export_audio_test.dart`が本物のffmpegで音の位置まで見張る。
+- **書き出しのコマを軽く作る（2026-11-27）**：MP4・WebM・AVIはコマをPNGのファイルにして符号化に渡す。
+  そのPNGは`lib/engine/frame_png.dart`の`encodeFramePng`（8bitのRGBA、上の行を引くフィルターを8バイトずつ、
+  端末のzlibの段階1）で作る。image packageの`encodePng`（DartのPaethとDartの圧縮）は1920×1080の1コマに
+  0.2〜1秒以上かかった。符号化に渡すだけのファイルなので、展開した画素が同じならよい（ファイルは1〜3割
+  大きい。ffmpegで符号化したAVI・WebMは1バイトも変わらない）。作品として保存するPNG
+  （`exportFrameImage`）はimage packageのまま。出力のfpsが元より高く同じ元のコマが続くとき、MP4は同じ
+  ファイルの道をもう一度渡し、GIFは前のコマのバイト列とウォーターマークの重なりを使い回す（描くたびに
+  違う模様になる「ノイズ」の演出がある場面だけは毎回描く、`_drawsAnewEachTime`）。
+  `TimelineFrameRenderer.compose`は、出力が描画の全体で、カメラが動かさず、背景が不透明か透明のときは、
+  合成した絵をそのまま渡す（出力の枠へもう1回描き写さない。`debugAlwaysDrawViewport`で比べる
+  `test/engine/timeline_viewport_copy_test.dart`）。演出に新しく乱数を使うときは、種を決めるか
+  `_drawsAnewEachTime`に足すこと。
 - **メイキング動画の書き出しにも公式エンドマーク（NIARIMのロゴ、5秒）を付ける（所有者の依頼、
   2026-11-27「メイキング動画の出力時も無料会員はNIARIMロゴをつけるようにしましょう。プレミアム会員と
   特典にこのメイキングのロゴ削除も追加してください」）**：付けるかどうかは作品の書き出しと同じ決まり
