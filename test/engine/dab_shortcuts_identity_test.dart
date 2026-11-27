@@ -181,6 +181,65 @@ void main() {
     }
   });
 
+  // A soft round dab without a tip image (a brush of the user's own with
+  // blur): the falloff alone, with blur from the pressure and fixed.
+  test('soft round dabs without a tip image: the same as every pixel', () {
+    final soft = {
+      'airbrush': builtIns['Brush0003']!.copyWith(clearCustomImages: true),
+      'blur 80': builtIns['Brush0011']!.copyWith(
+        size: 80,
+        clearCustomImages: true,
+      ),
+      'pen, blur by pressure': builtIns['Brush0001']!.copyWith(
+        size: 30,
+        clearCustomImages: true,
+        pressureOn: BrushPressureOnSettings.defaults.copyWith(
+          blur: const PressureRangeSetting(enabled: true, weak: 5, strong: 60),
+          opacity: const PressureRangeSetting(
+            enabled: true,
+            weak: 30,
+            strong: 100,
+          ),
+        ),
+      ),
+      'pen, fixed blur at 40%': builtIns['Brush0001']!.copyWith(
+        size: 24,
+        opacity: 40,
+        clearCustomImages: true,
+        pressureOff: BrushPressureOffSettings.defaults.copyWith(
+          blur: const FixedBrushSetting(enabled: true, value: 35),
+        ),
+      ),
+    };
+    for (final entry in soft.entries) {
+      expect(entry.value.resolvedCustomImagePaths, isEmpty);
+      for (final tilt in [false, true]) {
+        for (final pressure in [true, false]) {
+          final name = '${entry.key} tilt=$tilt pressure=$pressure';
+          final points = _wave(tilt: tilt, pressure: pressure);
+          final quick = _draw(entry.value, points, everyPixel: false);
+          final slow = _draw(entry.value, points, everyPixel: true);
+          _expectSame(quick.tiles, slow.tiles, '$name tiles');
+          _expectSame(quick.before, slow.before, '$name undo before');
+          _expectSame(quick.after, slow.after, '$name undo after');
+        }
+        final eraser = _draw(
+          entry.value,
+          _wave(tilt: tilt),
+          everyPixel: false,
+          eraser: true,
+        );
+        final eraserSlow = _draw(
+          entry.value,
+          _wave(tilt: tilt),
+          everyPixel: true,
+          eraser: true,
+        );
+        _expectSame(eraser.tiles, eraserSlow.tiles, '${entry.key} eraser');
+      }
+    }
+  });
+
   test('eraser and a mouse line: the same as every pixel', () {
     for (final id in ['Brush0001', 'Brush0003', 'Brush0005']) {
       final brush = builtIns[id]!.copyWith(size: 40);

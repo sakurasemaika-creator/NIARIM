@@ -80,11 +80,25 @@ import 'dart:typed_data';
     final x1 = math.min(width - 1, (ex + reach).ceil());
     final y0 = math.max(0, (ey - reach).floor());
     final y1 = math.min(height - 1, (ey + reach).ceil());
+    // [towards] from [lighter] to [darker], its axis worked out once.
+    final l = lighter * 4, d = darker * 4;
+    final l0 = lab[l], l1 = lab[l + 1], l2 = lab[l + 2], l3 = lab[l + 3];
+    final a0 = lab[d] - l0, a1 = lab[d + 1] - l1;
+    final a2 = lab[d + 2] - l2, a3 = lab[d + 3] - l3;
+    final length = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3;
     for (var y = y0; y <= y1; y++) {
       final dy = y + .5 - ey;
       for (var x = x0; x <= x1; x++) {
         final p = y * width + x;
-        if (!ramp.contains(p) && towards(p, lighter, darker) < .5) continue;
+        if (!ramp.contains(p)) {
+          final m = p * 4;
+          final along =
+              (lab[m] - l0) * a0 +
+              (lab[m + 1] - l1) * a1 +
+              (lab[m + 2] - l2) * a2 +
+              (lab[m + 3] - l3) * a3;
+          if ((length > 0 ? along / length : .5) < .5) continue;
+        }
         final dx = x + .5 - ex;
         final c = (reach - math.sqrt(dx * dx + dy * dy)).clamp(0.0, 1.0);
         if (c > coverage[p]) coverage[p] = c;
@@ -101,51 +115,90 @@ import 'dart:typed_data';
     }
   }
 
-  // Every row and column, pixel by pixel.
-  void scan(int start, int stride, int count, bool across) {
-    int at(int k) => start + k * stride;
-    bool mixed(int k) =>
-        k > 0 && k < count - 1 && mixes(at(k - 1), at(k), at(k + 1));
-    for (var k = 0; k + 1 < count; k++) {
-      final p = at(k), q = at(k + 1);
-      // The colours on either side, past up to two mixed pixels each.
-      var i = k, j = k + 1;
-      for (var s = 0; s < 2 && mixed(i); s++) {
-        i--;
-      }
-      for (var s = 0; s < 2 && mixed(j); s++) {
-        j++;
-      }
-      final a = at(i), c = at(j);
-      if (difference(a, c) < threshold) continue;
-      // The border is where the mix is half and half: between p and q
-      // only if that is where it changes sides.
-      final vp = towards(p, a, c), vq = towards(q, a, c);
-      if (!(vp < .5 && vq >= .5)) continue;
-      final t = vq - vp > 0 ? (.5 - vp) / (vq - vp) : .5;
-      final along = k + .5 + t;
-      final darker = shade(c) <= shade(a) ? c : a;
-      border(
-        across ? along : (start % width) + .5,
-        across ? (start ~/ width) + .5 : along,
-        darker == c ? a : c,
-        darker,
-        [for (var m = i + 1; m < j; m++) at(m)],
+  // Whether pixel [k] of the line that starts at [start] and steps by
+  // [stride] over [count] pixels is a mix of its two neighbours.
+  bool mixedAt(int start, int stride, int count, int k) =>
+      k > 0 &&
+      k < count - 1 &&
+      mixes(
+        start + (k - 1) * stride,
+        start + k * stride,
+        start + (k + 1) * stride,
       );
+
+  // The pair of pixels [k] and [k] + 1 of a different colour along that
+  // line, a row ([across]) or a column.
+  void pair(int start, int stride, int count, int k, bool across) {
+    final p = start + k * stride, q = p + stride;
+    // The colours on either side, past up to two mixed pixels each.
+    var i = k, j = k + 1;
+    for (var s = 0; s < 2 && mixedAt(start, stride, count, i); s++) {
+      i--;
     }
+    for (var s = 0; s < 2 && mixedAt(start, stride, count, j); s++) {
+      j++;
+    }
+    final a = start + i * stride, c = start + j * stride;
+    if (difference(a, c) < threshold) return;
+    // The border is where the mix is half and half: between p and q
+    // only if that is where it changes sides.
+    final vp = towards(p, a, c), vq = towards(q, a, c);
+    if (!(vp < .5 && vq >= .5)) return;
+    final t = vq - vp > 0 ? (.5 - vp) / (vq - vp) : .5;
+    final along = k + .5 + t;
+    final darker = shade(c) <= shade(a) ? c : a;
+    border(
+      across ? along : (start % width) + .5,
+      across ? (start ~/ width) + .5 : along,
+      darker == c ? a : c,
+      darker,
+      [for (var m = i + 1; m < j; m++) start + m * stride],
+    );
   }
 
+  // Every pair of neighbours along the rows, then down the columns (a row
+  // of column pairs at a time, reading the picture in order: each border
+  // only raises the coverage and the kept light, so the order of the pairs
+  // changes nothing). Two pixels of the same colour (and opacity) are no
+  // border: neither is a mix of its neighbours (there is no step to one
+  // side of it), so the colours on either side are their own, and they do
+  // not differ.
   for (var y = 0; y < height; y++) {
-    scan(y * width, 1, width, true);
+    final start = y * width;
+    for (var k = 0; k + 1 < width; k++) {
+      final p = (start + k) * 4;
+      if (lab[p] == lab[p + 4] &&
+          lab[p + 1] == lab[p + 5] &&
+          lab[p + 2] == lab[p + 6] &&
+          lab[p + 3] == lab[p + 7]) {
+        continue;
+      }
+      pair(start, 1, width, k, true);
+    }
   }
-  for (var x = 0; x < width; x++) {
-    scan(x, width, height, false);
+  final down = width * 4;
+  for (var k = 0; k + 1 < height; k++) {
+    final row = k * width;
+    for (var x = 0; x < width; x++) {
+      final p = (row + x) * 4;
+      if (lab[p] == lab[p + down] &&
+          lab[p + 1] == lab[p + down + 1] &&
+          lab[p + 2] == lab[p + down + 2] &&
+          lab[p + 3] == lab[p + down + 3]) {
+        continue;
+      }
+      pair(x, width, height, k, false);
+    }
   }
   return (coverage: coverage, light: light);
 }
 
 /// CIELAB (D65) of every pixel of straight [rgba] as it looks on white
 /// paper, and its opacity on the same scale (0 to 100): 4 values a pixel.
+///
+/// The colour depends only on the pixel's channels laid over white, so a
+/// pixel like the one before it copies its values, and the colours already
+/// worked out are kept (a few thousand at a time) to look up again.
 Float32List _lab(Uint8List rgba, int n) {
   final linear = Float64List(256);
   for (var v = 0; v < 256; v++) {
@@ -156,19 +209,47 @@ Float32List _lab(Uint8List rgba, int n) {
   }
   double f(double t) =>
       t > .008856 ? math.pow(t, 1 / 3).toDouble() : 7.787 * t + 16 / 116;
+  final opacity = Float32List(256);
+  for (var a = 0; a < 256; a++) {
+    opacity[a] = a * 100 / 255;
+  }
+  const slots = 4096;
+  final keys = Int32List(slots)..fillRange(0, slots, -1);
+  final kept = Float32List(slots * 3);
   final lab = Float32List(n * 4);
   for (var p = 0; p < n; p++) {
-    final a = rgba[p * 4 + 3];
-    double channel(int c) =>
-        linear[(rgba[p * 4 + c] * a + 255 * (255 - a)) ~/ 255];
-    final r = channel(0), g = channel(1), b = channel(2);
-    final x = f((r * .4124 + g * .3576 + b * .1805) / .95047);
-    final y = f(r * .2126 + g * .7152 + b * .0722);
-    final z = f((r * .0193 + g * .1192 + b * .9505) / 1.08883);
-    lab[p * 4] = 116 * y - 16;
-    lab[p * 4 + 1] = 500 * (x - y);
-    lab[p * 4 + 2] = 200 * (y - z);
-    lab[p * 4 + 3] = a * 100 / 255;
+    final i = p * 4;
+    if (p > 0 &&
+        rgba[i] == rgba[i - 4] &&
+        rgba[i + 1] == rgba[i - 3] &&
+        rgba[i + 2] == rgba[i - 2] &&
+        rgba[i + 3] == rgba[i - 1]) {
+      lab[i] = lab[i - 4];
+      lab[i + 1] = lab[i - 3];
+      lab[i + 2] = lab[i - 2];
+      lab[i + 3] = lab[i - 1];
+      continue;
+    }
+    final a = rgba[i + 3];
+    final ir = (rgba[i] * a + 255 * (255 - a)) ~/ 255;
+    final ig = (rgba[i + 1] * a + 255 * (255 - a)) ~/ 255;
+    final ib = (rgba[i + 2] * a + 255 * (255 - a)) ~/ 255;
+    final key = ir << 16 | ig << 8 | ib;
+    final slot = ((key * 0x9E3779B1) & 0xFFFFFFFF) >> 20;
+    if (keys[slot] != key) {
+      final r = linear[ir], g = linear[ig], b = linear[ib];
+      final x = f((r * .4124 + g * .3576 + b * .1805) / .95047);
+      final y = f(r * .2126 + g * .7152 + b * .0722);
+      final z = f((r * .0193 + g * .1192 + b * .9505) / 1.08883);
+      keys[slot] = key;
+      kept[slot * 3] = 116 * y - 16;
+      kept[slot * 3 + 1] = 500 * (x - y);
+      kept[slot * 3 + 2] = 200 * (y - z);
+    }
+    lab[i] = kept[slot * 3];
+    lab[i + 1] = kept[slot * 3 + 1];
+    lab[i + 2] = kept[slot * 3 + 2];
+    lab[i + 3] = opacity[a];
   }
   return lab;
 }

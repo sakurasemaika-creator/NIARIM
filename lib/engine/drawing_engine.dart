@@ -2259,6 +2259,38 @@ class DrawingEngine {
         }
       }
     }
+    // A soft dab lays less the further a pixel is from its centre: the most
+    // it can lay a quarter pixel at a time ([_softDabBound]), so a pixel this
+    // stroke already covered that far is not worked out (as found below once
+    // its alpha is).
+    final softBound =
+        !pixelMode &&
+            blur > 0 &&
+            (oilMixer == null || behindExisting) &&
+            silhouetteDistanceMap == null &&
+            pixelMask == null &&
+            (customTexture != null ||
+                (!hollowSquare && !chainLink && !hexagon)) &&
+            cx.isFinite &&
+            cy.isFinite &&
+            tilt.scaleX > 0 &&
+            tilt.scaleY > 0 &&
+            tilt.scaleX.isFinite &&
+            tilt.scaleY.isFinite &&
+            !debugEveryDabPixel
+        ? _softDabBound(
+            radius,
+            blur,
+            alpha,
+            hardShare,
+            softnessMix,
+            falloffScale,
+            totalRadius / math.min(tilt.scaleX, tilt.scaleY) + 2,
+          )
+        : null;
+    final alphaDouble = alpha.toDouble();
+    final softBoundLength = _softBoundLength;
+    final softBoundReachesZero = _softBoundReachesZero;
     final redrawMasks = _redrawMasks;
     for (int ty = minTy; ty <= maxTy; ty++) {
       for (int tx = minTx; tx <= maxTx; tx++) {
@@ -2317,6 +2349,7 @@ class DrawingEngine {
         // where the pixel is and never raise a pixel above [alpha].)
         final skipCovered = oil == null && !debugEveryDabPixel;
         final skipCoveredOil = oil != null && !debugEveryDabPixel;
+        final bound = oil == null ? softBound : null;
 
         // タイル内の影響ピクセル範囲
         final localMinX = pixelMask != null
@@ -2416,6 +2449,13 @@ class DrawingEngine {
               final ux = rdx / tilt.scaleX;
               final uy = rdy / tilt.scaleY;
               final dist = math.sqrt(ux * ux + uy * uy);
+              if (bound != null) {
+                final k = (dist * 4).toInt();
+                final most = k < softBoundLength
+                    ? bound[k]
+                    : (softBoundReachesZero ? 0 : 255);
+                if (most <= coverage[py * TileManager.tileSize + px]) continue;
+              }
 
               double pixelAlpha;
               if (pixelMask != null) {
@@ -2640,7 +2680,7 @@ class DrawingEngine {
                 pixelAlpha *= shade;
               }
 
-              desiredAlpha = _byte(roundHalfAway(alpha * pixelAlpha));
+              desiredAlpha = _byte(roundHalfAway(alphaDouble * pixelAlpha));
             }
             if (fadeAlong != null && desiredAlpha > 0) {
               desiredAlpha = _byte(
@@ -2698,14 +2738,8 @@ class DrawingEngine {
               coverage,
               watercolor,
             );
-            var incrementalAlpha = oldCoverage >= 255
-                ? 0
-                : _byte(
-                    roundHalfAway(
-                      ((desiredAlpha - oldCoverage) * 255) /
-                          (255 - oldCoverage),
-                    ),
-                  );
+            var incrementalAlpha =
+                _incrementalAlpha[oldCoverage << 8 | desiredAlpha];
             coverage[coveragePos] = desiredAlpha;
             if (watercolor != null) {
               if (pixelMode) tileManager.markPaintedPixel(tile, coveragePos);
@@ -2782,6 +2816,75 @@ class DrawingEngine {
         }
       }
     }
+  }
+
+  /// What a pixel the stroke has covered to `old` takes to be covered to
+  /// `desired` (laid over what it already has), at `old << 8 | desired`:
+  /// `((desired − old) · 255 / (255 − old)).round()`, worked out once.
+  static final Uint8List _incrementalAlpha = () {
+    final table = Uint8List(1 << 16);
+    for (var old = 0; old < 255; old++) {
+      for (var desired = 0; desired < 256; desired++) {
+        table[old << 8 | desired] = _byte(
+          roundHalfAway(((desired - old) * 255) / (255 - old)),
+        );
+      }
+    }
+    return table;
+  }();
+
+  Uint8List _softBound = Uint8List(64);
+  int _softBoundLength = 0;
+  bool _softBoundReachesZero = false;
+
+  /// The most a soft dab ([blur] > 0, laid at [alpha]) lays on a pixel
+  /// [dist] px from its centre, for `dist` from `k / 4` up to `(k + 1) / 4`
+  /// at entry k: the dab's falloff (the rim's smoothstep and the Gaussian,
+  /// the same expressions as the pixels', and no more than 1 for a tip
+  /// image or after the paper tooth, bristles, coverage cap, tilt shading
+  /// and fade) falls with the distance, so its value a quarter pixel nearer
+  /// is an upper bound, with a hair to spare for rounding. Entries up to
+  /// [maxDistance] px; when the bound reaches 0 earlier it stops there
+  /// ([_softBoundReachesZero]: nothing is laid further out).
+  Uint8List _softDabBound(
+    double radius,
+    double blur,
+    int alpha,
+    double hardShare,
+    double softnessMix,
+    double falloffScale,
+    double maxDistance,
+  ) {
+    final limit = (maxDistance * 4).ceil() + 1;
+    var table = _softBound;
+    if (table.length < limit) {
+      table = _softBound = Uint8List(limit);
+    }
+    var length = 0;
+    var reachesZero = false;
+    for (var k = 0; k < limit; k++) {
+      final dist = k / 4;
+      var classic = 1.0;
+      if (dist > radius) {
+        final t = math.min(1.0, (dist - radius) / blur);
+        classic = 1.0 - t * t * (3.0 - 2.0 * t);
+      }
+      final soft = math.exp(falloffScale * math.max(0.0, dist * dist - 0.5));
+      final most = _byte(
+        roundHalfAway(
+          alpha * (classic * hardShare + soft * softnessMix + 1e-9),
+        ),
+      );
+      table[k] = most;
+      length = k + 1;
+      if (most <= 0) {
+        reachesZero = true;
+        break;
+      }
+    }
+    _softBoundLength = length;
+    _softBoundReachesZero = reachesZero;
+    return table;
   }
 
   /// 書き込むタイル（[TileManager.getOrCreateTile]）。ピクセルモードの線を

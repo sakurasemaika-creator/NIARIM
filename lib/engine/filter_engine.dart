@@ -1396,40 +1396,99 @@ class FilterEngine {
       maxCanvasR * (radiusPercent / 100.0).clamp(0.01, 1.0),
     );
     final result = Uint8List(data.length);
+    // Whole pixels are copied as 32-bit words.
+    final aligned = data.offsetInBytes % 4 == 0
+        ? data
+        : Uint8List.fromList(data);
+    final from = aligned.buffer.asUint32List(
+      aligned.offsetInBytes,
+      aligned.length ~/ 4,
+    );
+    final to = result.buffer.asUint32List(0, result.length ~/ 4);
+    // The source of a pixel is the centre plus its offset scaled by
+    // newR / r (what the angle's cosine and sine come to), the quick way;
+    // only a source that comes nearer than [margin] to the middle between
+    // two pixels (where the quick way could round to the other one) is
+    // worked out with the angle, the way the filter is defined.
+    final margin =
+        debugFisheyeMargin * (cx.abs() + cy.abs() + maxR + width + height);
+    // The pixel mirrored across the centre column (and the row mirrored
+    // across the centre row) has the same distance, and so the same power,
+    // when the centre falls on a whole or half pixel.
+    final rowR = Float64List(width);
+    final rowPower = Float64List(width);
+    final twiceCx = 2 * cx, twiceCy = 2 * cy;
+    final columnsMirror =
+        twiceCx == twiceCx.roundToDouble() && twiceCx.abs() < 1e9;
+    final rowsMirror =
+        twiceCy == twiceCy.roundToDouble() && twiceCy.abs() < 1e9;
+    final columnSum = columnsMirror ? twiceCx.toInt() : 0;
+    final rowSum = rowsMirror ? twiceCy.toInt() : 0;
+    final lastX = width - 1, lastY = height - 1;
     for (int y = 0; y < height; y++) {
+      final pair = rowSum - y;
+      final ny = (y - cy) / maxR;
+      final pairNy = (pair - cy) / maxR;
+      final mirrors = rowsMirror && pairNy == -ny;
+      // Done along with the row it mirrors.
+      if (mirrors && pair >= 0 && pair < y) continue;
+      final rows = mirrors && pair > y && pair < height ? 2 : 1;
       for (int x = 0; x < width; x++) {
         final nx = (x - cx) / maxR;
-        final ny = (y - cy) / maxR;
         final r = math.sqrt(nx * nx + ny * ny);
-        double srcX, srcY;
+        rowR[x] = r;
         if (r > 1.0) {
-          final q = (y * width + x) * 4;
-          result[q] = data[q];
-          result[q + 1] = data[q + 1];
-          result[q + 2] = data[q + 2];
-          result[q + 3] = data[q + 3];
+          to[y * width + x] = from[y * width + x];
+          if (rows == 2) to[pair * width + x] = from[pair * width + x];
           continue;
-        } else if (r <= 1e-6) {
-          srcX = cx;
-          srcY = cy;
-        } else {
-          final newR = math.pow(r, exponent).toDouble();
-          final theta = math.atan2(ny, nx);
-          srcX = cx + math.cos(theta) * newR * maxR;
-          srcY = cy + math.sin(theta) * newR * maxR;
         }
-        final sx = srcX.round().clamp(0, width - 1);
-        final sy = srcY.round().clamp(0, height - 1);
-        final srcIdx = (sy * width + sx) * 4;
-        final dstIdx = (y * width + x) * 4;
-        result[dstIdx] = data[srcIdx];
-        result[dstIdx + 1] = data[srcIdx + 1];
-        result[dstIdx + 2] = data[srcIdx + 2];
-        result[dstIdx + 3] = data[srcIdx + 3];
+        var newR = 0.0;
+        if (r > 1e-6) {
+          final mirror = columnSum - x;
+          if (columnsMirror && mirror >= 0 && mirror < x && rowR[mirror] == r) {
+            newR = rowPower[mirror];
+          } else {
+            newR = math.pow(r, exponent).toDouble();
+          }
+          rowPower[x] = newR;
+        }
+        final scale = r > 1e-6 ? newR * maxR / r : 0.0;
+        for (var row = 0; row < rows; row++) {
+          final atY = row == 0 ? y : pair;
+          final atNy = row == 0 ? ny : pairNy;
+          double srcX, srcY;
+          if (r <= 1e-6) {
+            srcX = cx;
+            srcY = cy;
+          } else {
+            srcX = cx + nx * scale;
+            srcY = cy + atNy * scale;
+            final fx = srcX - srcX.floorToDouble() - .5;
+            final fy = srcY - srcY.floorToDouble() - .5;
+            if (!(fx > margin || fx < -margin) ||
+                !(fy > margin || fy < -margin)) {
+              final theta = math.atan2(atNy, nx);
+              srcX = cx + math.cos(theta) * newR * maxR;
+              srcY = cy + math.sin(theta) * newR * maxR;
+            }
+          }
+          var sx = roundHalfAway(srcX);
+          if (sx < 0) sx = 0;
+          if (sx > lastX) sx = lastX;
+          var sy = roundHalfAway(srcY);
+          if (sy < 0) sy = 0;
+          if (sy > lastY) sy = lastY;
+          to[atY * width + x] = from[sy * width + sx];
+        }
       }
     }
     return result;
   }
+
+  /// Tests only: how near, as a share of the size of the coordinates, a
+  /// fisheye source may come to the middle between two pixels before it is
+  /// worked out with the angle instead of the quick way.
+  static double debugFisheyeMargin = 1e-9;
 
   /// 眼鏡断層フィルター：塗った範囲（[maskData]、眼鏡のレンズ部分）を、
   /// 度の強い眼鏡のレンズ越しに見たように写す。[maskData]は[data]と同じ
@@ -1770,17 +1829,16 @@ class FilterEngine {
   }) {
     // ① 色数削減（ポスタリゼーション）
     final step = (256 / colorCount.clamp(2, 32)).round();
+    // Each value's level, worked out once.
+    final level = Uint8List(256);
+    for (var v = 0; v < 256; v++) {
+      level[v] = ((v / step).round() * step).clamp(0, 255);
+    }
     final posterized = Uint8List.fromList(data);
     for (int i = 0; i < posterized.length; i += 4) {
-      posterized[i] = ((posterized[i] / step).round() * step).clamp(0, 255);
-      posterized[i + 1] = ((posterized[i + 1] / step).round() * step).clamp(
-        0,
-        255,
-      );
-      posterized[i + 2] = ((posterized[i + 2] / step).round() * step).clamp(
-        0,
-        255,
-      );
+      posterized[i] = level[posterized[i]];
+      posterized[i + 1] = level[posterized[i + 1]];
+      posterized[i + 2] = level[posterized[i + 2]];
     }
     // ② 色が変わる境目に境界線
     if (edgeStrength <= 0 || borderWidth <= 0) return posterized;

@@ -449,23 +449,31 @@ class TileManager {
     if (px < 0 || px >= tileSize || py < 0 || py >= tileSize) return;
     if (a <= 0) return;
     final idx = (py * tileSize + px) * 4;
-    final srcA = a / 255.0;
-    final keep = 1.0 - srcA;
     final bytes = byteDoubles;
-    final outA = _atMost(
-      roundHalfAway(a.toDouble() + bytes[tile[idx + 3]] * keep),
-      255,
-    );
+    // Bytes as doubles are looked up (the same values as converted).
+    final inBytes = (r | g | b | a) & ~0xFF == 0;
+    final aD = inBytes ? bytes[a] : a.toDouble();
+    final srcA = aD / 255.0;
+    final keep = 1.0 - srcA;
+    final outA = _atMost(roundHalfAway(aD + bytes[tile[idx + 3]] * keep), 255);
     tile[idx] = _atMost(
-      roundHalfAway(r.toDouble() * srcA + bytes[tile[idx]] * keep),
+      roundHalfAway(
+        (inBytes ? bytes[r] : r.toDouble()) * srcA + bytes[tile[idx]] * keep,
+      ),
       outA,
     );
     tile[idx + 1] = _atMost(
-      roundHalfAway(g.toDouble() * srcA + bytes[tile[idx + 1]] * keep),
+      roundHalfAway(
+        (inBytes ? bytes[g] : g.toDouble()) * srcA +
+            bytes[tile[idx + 1]] * keep,
+      ),
       outA,
     );
     tile[idx + 2] = _atMost(
-      roundHalfAway(b.toDouble() * srcA + bytes[tile[idx + 2]] * keep),
+      roundHalfAway(
+        (inBytes ? bytes[b] : b.toDouble()) * srcA +
+            bytes[tile[idx + 2]] * keep,
+      ),
       outA,
     );
     tile[idx + 3] = outA;
