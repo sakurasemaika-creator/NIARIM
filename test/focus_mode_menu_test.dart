@@ -228,7 +228,15 @@ void main() {
     final resizeHandle = find.byKey(
       const ValueKey('focus-mode-menu-resize-handle'),
     );
+    final moveGrip = find.byKey(
+      const ValueKey('focus-mode-menu-move-grip'),
+    );
     final before = tester.getRect(surface);
+    expect(
+      tester.getRect(moveGrip).center.dx,
+      closeTo(before.center.dx, 0.1),
+      reason: 'the visual move grip stays centered even without trailing buttons',
+    );
     await tester.drag(resizeHandle, const Offset(-60, -50));
     await tester.pumpAndSettle();
     final larger = tester.getRect(surface);
