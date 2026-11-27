@@ -9026,6 +9026,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn’t rename the file. Please try again.';
 
   @override
+  String get homeWorkFileNameTaken =>
+      'A work file with that name already exists. Choose another name.';
+
+  @override
   String get homeDrawerTutorial => 'How to use';
 
   @override

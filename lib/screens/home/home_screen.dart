@@ -25,6 +25,7 @@ import '../../services/google_auth_service.dart';
 import '../../services/api/community_api.dart';
 import '../../services/font_service.dart';
 import '../../services/export_share_service.dart';
+import '../../services/export_storage.dart';
 import '../../services/project_service.dart';
 import '../../services/local_file_trash_service.dart';
 import '../../services/outgoing_share_library.dart';
@@ -7640,6 +7641,13 @@ class _WorksTabState extends State<_WorksTab>
     }
   }
 
+  /// A renamed file keeps its star.
+  Future<void> _moveFavorite(String from, String to) async {
+    if (!_favoritePaths.contains(from)) return;
+    await _toggleFavorite(from);
+    await _toggleFavorite(to);
+  }
+
   Future<void> _toggleFavorite(String path) async {
     setState(() {
       if (!_favoritePaths.add(path)) _favoritePaths.remove(path);
@@ -7750,6 +7758,7 @@ class _WorksTabState extends State<_WorksTab>
               compactActions: widget.viewMode.size == CollectionViewSize.small,
               isFavorite: _favoritePaths.contains(file.path),
               onToggleFavorite: () => _toggleFavorite(file.path),
+              onRenamed: _moveFavorite,
               onDeleted: _reload,
               onCopy: widget.onCopyEntry == null
                   ? null
@@ -7844,6 +7853,7 @@ class _WorksTabState extends State<_WorksTab>
                           ),
                       favoritePaths: _favoritePaths,
                       onToggleFavorite: _toggleFavorite,
+                      onFileRenamed: _moveFavorite,
                       onViewModeChanged: widget.onViewModeChanged,
                       onDeleted: _reload,
                       listing: listing,
@@ -7950,6 +7960,7 @@ class _WorksFolderScreen extends StatefulWidget {
   final bool favoritesOnly;
   final Set<String> favoritePaths;
   final ValueChanged<String> onToggleFavorite;
+  final void Function(String from, String to)? onFileRenamed;
   const _WorksFolderScreen({
     required this.folderId,
     required this.listing,
@@ -7964,6 +7975,7 @@ class _WorksFolderScreen extends StatefulWidget {
     required this.onViewModeChanged,
     required this.onDeleted,
     this.onCopyEntry,
+    this.onFileRenamed,
   });
 
   @override
@@ -8131,6 +8143,7 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                       widget.onToggleFavorite(file.path);
                       setState(() {});
                     },
+                    onRenamed: widget.onFileRenamed,
                     onCopy: widget.onCopyEntry == null
                         ? null
                         : () => widget.onCopyEntry!(
@@ -8183,6 +8196,9 @@ class _WorkListItem extends StatefulWidget {
   final bool compactActions;
   final bool isFavorite;
   final VoidCallback? onToggleFavorite;
+
+  /// The file was renamed (its favourite moves with it).
+  final void Function(String from, String to)? onRenamed;
   const _WorkListItem({
     super.key,
     required this.file,
@@ -8193,6 +8209,7 @@ class _WorkListItem extends StatefulWidget {
     this.compactActions = false,
     this.isFavorite = false,
     this.onToggleFavorite,
+    this.onRenamed,
   });
 
   @override
@@ -8319,6 +8336,7 @@ class _WorkListItemState extends State<_WorkListItem> {
           deleteLabel: l10n.homeMoveToTrash,
           onOpen: _sharing ? null : () => _openPreview(context),
           onMove: () => _showMoveToFolderSheet(context),
+          onRename: _sharing ? null : () => _rename(context),
           onCopy: widget.onCopy,
           onShare: _sharing ? null : _share,
           onDelete: _sharing ? null : () => _confirmDelete(context),
@@ -8328,6 +8346,48 @@ class _WorkListItemState extends State<_WorkListItem> {
               : exportShareFailureText(l10n, _shareError!),
         );
       },
+    );
+  }
+
+  /// Renames the exported file (the owner's choice, 2026-11-27: only its
+  /// folder could be changed). The extension stays; its folder, thumbnail
+  /// setting and favourite go with it.
+  Future<void> _rename(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final folders = context.read<WorkFolderService>();
+    final name = file.uri.pathSegments.last;
+    final dot = name.lastIndexOf('.');
+    final stem = dot > 0 ? name.substring(0, dot) : name;
+    final extension = dot > 0 ? name.substring(dot) : '';
+    await showDialog<void>(
+      context: context,
+      builder: (_) => NameEntryDialog(
+        title: l10n.commonRename,
+        confirmLabel: l10n.commonChange,
+        cancelLabel: l10n.commonCancel,
+        initialName: stem,
+        failureText: (error) => error is _ShareNameTaken
+            ? l10n.homeWorkFileNameTaken
+            : l10n.homeShareFileRenameFailed,
+        onSubmit: (value) async {
+          final newStem = value.replaceAll(RegExp(r'[\\/]'), '_');
+          if (newStem == stem) return;
+          if (newStem == '.' || newStem == '..') {
+            throw FileSystemException('Invalid file name', newStem);
+          }
+          final target = File(
+            '${file.parent.path}${Platform.pathSeparator}$newStem$extension',
+          );
+          if (await target.exists()) throw const _ShareNameTaken();
+          final from = file.path;
+          final renamed = await file.rename(target.path);
+          await ExportedWorkCoverStore.renamed(from, renamed.path);
+          await folders.renameFile(from, renamed.path);
+          ExportStorage.invalidate();
+          widget.onRenamed?.call(from, renamed.path);
+          widget.onDeleted();
+        },
+      ),
     );
   }
 

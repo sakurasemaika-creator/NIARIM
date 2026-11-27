@@ -336,6 +336,32 @@ class WorkFolderService extends ChangeNotifier {
         _notify();
       });
 
+  /// Carries a renamed exported file's folder and cover over to its new
+  /// name ([fromPath] → [toPath], full paths; folders are kept by name).
+  Future<void> renameFile(String fromPath, String toPath) => _enqueue(() async {
+    String nameOf(String path) => path.split(RegExp(r'[\\/]')).last;
+    final folders = Map<String, String>.from(_fileFolder);
+    final covers = Map<String, WorkFileCover>.from(_fileCovers);
+    final folder = folders.remove(nameOf(fromPath));
+    if (folder != null) folders[nameOf(toPath)] = folder;
+    final cover = covers.remove(fromPath);
+    if (cover != null) covers[toPath] = cover;
+    if (folder == null && cover == null) return;
+    await _save({
+      _fileFolderPrefsKey: jsonEncode(folders),
+      _fileCoverPrefsKey: jsonEncode(
+        covers.map((key, value) => MapEntry(key, value.toJson())),
+      ),
+    });
+    _fileFolder
+      ..clear()
+      ..addAll(folders);
+    _fileCovers
+      ..clear()
+      ..addAll(covers);
+    _notify();
+  });
+
   void _notify() {
     if (_disposed) return;
     _revision++;

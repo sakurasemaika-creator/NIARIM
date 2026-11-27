@@ -4467,6 +4467,7 @@
     "description": "共有の「自分が作成したもの」の名前を、すでにある共有ファイルと同じ名前に変えようとしたとき（名前の変更のダイアログの中）"
   },
   "homeShareFileRenameFailed": "名前を変更できませんでした。もう一度お試しください。",
+  "homeWorkFileNameTaken": "同じ名前の作品のファイルがあります。別の名前にしてください。",
   "@homeShareFileRenameFailed": {
     "description": "共有の「自分が作成したもの」の名前を変更できなかったとき（名前の変更のダイアログの中）"
   },

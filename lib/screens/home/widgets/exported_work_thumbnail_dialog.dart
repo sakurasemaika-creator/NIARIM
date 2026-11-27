@@ -41,6 +41,17 @@ class ExportedWorkCoverStore {
     return Map<String, dynamic>.from(entry);
   }
 
+  /// Carries [from]'s thumbnail setting to the file's new name (a rename
+  /// keeps its size and date, so the setting stays valid).
+  static Future<void> renamed(String from, String to) async {
+    final prefs = await SharedPreferences.getInstance();
+    final map = _decode(prefs.readString(prefsKey));
+    final entry = map.remove(from);
+    if (entry == null) return;
+    map[to] = entry;
+    await prefs.setString(prefsKey, jsonEncode(map));
+  }
+
   static Map<String, dynamic> _decode(String? json) {
     try {
       final value = json == null ? null : jsonDecode(json);

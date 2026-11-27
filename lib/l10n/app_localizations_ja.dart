@@ -8611,6 +8611,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeShareFileRenameFailed => '名前を変更できませんでした。もう一度お試しください。';
 
   @override
+  String get homeWorkFileNameTaken => '同じ名前の作品のファイルがあります。別の名前にしてください。';
+
+  @override
   String get homeDrawerTutorial => '使い方';
 
   @override

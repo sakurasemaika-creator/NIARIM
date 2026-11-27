@@ -3457,6 +3457,7 @@
   "homeTrashCopyOneAtATime": "En la papelera, los elementos se copian de uno en uno. Selecciona solo uno.",
   "homeShareFileNameTaken": "Ya existe un archivo compartido con este nombre. Elige otro nombre.",
   "homeShareFileRenameFailed": "No se pudo cambiar el nombre. Inténtalo de nuevo.",
+  "homeWorkFileNameTaken": "Ya existe un archivo de obra con ese nombre. Elige otro nombre.",
   "homeDrawerTutorial": "Cómo se usa",
   "themeColorAccentText": "Color del texto y los iconos de acento",
   "projectDetailNotFoundBackToList": "Ir a los proyectos",

@@ -15489,6 +15489,12 @@ abstract class AppLocalizations {
   /// **'名前を変更できませんでした。もう一度お試しください。'**
   String get homeShareFileRenameFailed;
 
+  /// No description provided for @homeWorkFileNameTaken.
+  ///
+  /// In ja, this message translates to:
+  /// **'同じ名前の作品のファイルがあります。別の名前にしてください。'**
+  String get homeWorkFileNameTaken;
+
   /// No description provided for @homeDrawerTutorial.
   ///
   /// In ja, this message translates to:

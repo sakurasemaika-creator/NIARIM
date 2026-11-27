@@ -10,6 +10,8 @@
 //   閉じる・続けて書き出すが無かった（所有者の判断、判断カードJ13）。
 // * 演出フィルターのトーンカーブ・レベル補正は無料で足せた。描画フィルターと
 //   同じく特典にそろえる（所有者の判断、判断カードJ11）。
+// * 演出フィルターの名前を変える場所・自動塗り設定を1つ複製する道が無かった
+//   （判断カードJ19）。
 // * 演出フィルターのシートが下から6割を覆ってプレビューを暗くし、値を変えた
 //   結果は閉じてそのコマへ動かさないと見えなかった（判断カードJ14、U64）。
 import 'dart:io';
@@ -28,6 +30,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/export/export_screen.dart';
 import 'package:niarim/screens/project/project_detail_screen.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
+import 'package:niarim/services/autofill_preset_service.dart';
 import 'package:niarim/services/pixel_art_palette_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -441,6 +444,56 @@ void main() {
       '7/12',
     );
     expect(find.text(l10n.filterNameVignette), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('an effect filter can be renamed', (tester) async {
+    final (:ps, :projectId, :sceneId) = await openApp(tester);
+    ps.addEffectFilter(
+      projectId,
+      sceneId,
+      const EffectFilterInstance(
+        id: 'v',
+        type: EffectFilterType.vignette,
+        startFrame: 0,
+        endFrame: 5,
+      ),
+    );
+    final l10n = await openEffect(
+      tester,
+      projectId,
+      (l) => l.filterNameVignette,
+    );
+    final rename = find.byKey(const ValueKey('timelineEffectRename-v'));
+    await tester.ensureVisible(rename);
+    await tester.tap(rename);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'Dusk');
+    await tester.tap(find.text(l10n.commonChange).last);
+    await tester.pumpAndSettle();
+    expect(effectOf(ps, projectId, sceneId, 'v').name, 'Dusk');
+    expect(find.text('Dusk'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('one auto-fill setting is duplicated from its own menu', (
+    tester,
+  ) async {
+    await openApp(tester);
+    final presets = tester
+        .element(find.byType(MaterialApp).first)
+        .read<AutofillPresetService>();
+    final before = presets.presets.length;
+    appRouter.go('/autofill-presets');
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(Scaffold).last),
+    )!;
+    await tester.tap(find.byIcon(Icons.more_vert).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.commonDuplicate).last);
+    await tester.pumpAndSettle();
+    expect(presets.presets.length, before + 1);
     expect(tester.takeException(), isNull);
   });
 }

@@ -9168,6 +9168,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo cambiar el nombre. Inténtalo de nuevo.';
 
   @override
+  String get homeWorkFileNameTaken =>
+      'Ya existe un archivo de obra con ese nombre. Elige otro nombre.';
+
+  @override
   String get homeDrawerTutorial => 'Cómo se usa';
 
   @override

@@ -373,6 +373,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                                         ),
                                       ),
                                   onEdit: () => _showEditDialog(preset),
+                                  onDuplicate: () => _duplicate([preset]),
                                   onDelete: () => _confirmDelete(preset),
                                   onSetThumbnail: () =>
                                       _showThumbnailDialog(preset),
@@ -465,12 +466,16 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
 
   /// 選択中のプリセットを複製する（一覧へ即座に追加し、いつでも再度
   /// 貼り付けられるようクリップボードにも保持する）。
-  void _bulkDuplicate(List<AutofillPreset> filtered) {
+  void _bulkDuplicate(List<AutofillPreset> filtered) => _duplicate([
+    for (final p in filtered)
+      if (_selectedIds.contains(p.id)) p,
+  ]);
+
+  /// Duplicates [selected] (from a preset's own menu too: there was no way
+  /// to copy one setting without the selection mode, U43).
+  void _duplicate(List<AutofillPreset> selected) {
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<AutofillPresetService>();
-    final selected = filtered
-        .where((p) => _selectedIds.contains(p.id))
-        .toList();
     // ブラシ・作品の複製・引き継ぎで足す複製と同じ形の名前（同じ名前が
     // あれば番号を付ける）。
     final taken = {
@@ -956,6 +961,7 @@ class _PresetCard extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onToggleFavorite;
   final VoidCallback onEdit;
+  final VoidCallback onDuplicate;
   final VoidCallback onDelete;
   final VoidCallback onSetThumbnail;
   final VoidCallback onExport;
@@ -971,6 +977,7 @@ class _PresetCard extends StatelessWidget {
     required this.isSelected,
     required this.onToggleFavorite,
     required this.onEdit,
+    required this.onDuplicate,
     required this.onDelete,
     required this.onSetThumbnail,
     required this.onExport,
@@ -1044,6 +1051,7 @@ class _PresetCard extends StatelessWidget {
           iconColor: Theme.of(context).colorScheme.onSurfaceVariant,
           onSelected: (v) {
             if (v == 'edit') onEdit();
+            if (v == 'duplicate') onDuplicate();
             if (v == 'thumbnail') onSetThumbnail();
             if (v == 'export') onExport();
             if (v == 'exportCard') onExportCard();
@@ -1051,6 +1059,10 @@ class _PresetCard extends StatelessWidget {
           },
           itemBuilder: (_) => [
             PopupMenuItem(value: 'edit', child: Text(l10n.commonRename)),
+            PopupMenuItem(
+              value: 'duplicate',
+              child: Text(l10n.commonDuplicate),
+            ),
             PopupMenuItem(
               value: 'thumbnail',
               child: Text(l10n.autofillThumbnailMenuItem),

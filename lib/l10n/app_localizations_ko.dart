@@ -8658,6 +8658,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeShareFileRenameFailed => '이름을 바꾸지 못했습니다. 다시 시도해 주세요.';
 
   @override
+  String get homeWorkFileNameTaken => '같은 이름의 작품 파일이 있습니다. 다른 이름을 입력하세요.';
+
+  @override
   String get homeDrawerTutorial => '사용법';
 
   @override

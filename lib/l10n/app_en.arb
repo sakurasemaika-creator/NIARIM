@@ -3487,6 +3487,7 @@
   "homeTrashCopyOneAtATime": "In the Trash, items are copied one at a time. Select just one.",
   "homeShareFileNameTaken": "A shared file with this name already exists. Choose a different name.",
   "homeShareFileRenameFailed": "Couldn’t rename the file. Please try again.",
+  "homeWorkFileNameTaken": "A work file with that name already exists. Choose another name.",
   "homeDrawerTutorial": "How to use",
   "themeColorAccentText": "Accent text & icon color",
   "projectDetailNotFoundBackToList": "Go to projects",

@@ -25,6 +25,7 @@ class ExportedWorkCard extends StatelessWidget {
     required this.deleteLabel,
     required this.onOpen,
     required this.onMove,
+    this.onRename,
     this.onCopy,
     required this.onShare,
     required this.onDelete,
@@ -49,6 +50,9 @@ class ExportedWorkCard extends StatelessWidget {
   final String deleteLabel;
   final VoidCallback? onOpen;
   final VoidCallback onMove;
+
+  /// Renames the exported file (null: not offered).
+  final VoidCallback? onRename;
   final VoidCallback? onCopy;
   final VoidCallback? onChangeThumbnail;
   final String? thumbnailPath;
@@ -196,6 +200,8 @@ class ExportedWorkCard extends StatelessWidget {
               onCopy?.call();
             case 'move':
               onMove();
+            case 'rename':
+              onRename?.call();
             case 'share':
               onShare?.call();
             case 'thumbnail':
@@ -212,6 +218,8 @@ class ExportedWorkCard extends StatelessWidget {
               enabled: onOpen != null,
               child: Text(l10n.projectListOpenAction),
             ),
+            if (onRename != null)
+              PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
             PopupMenuItem(value: 'move', child: Text(moveLabel)),
             PopupMenuItem(
               value: 'share',

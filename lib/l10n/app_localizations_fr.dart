@@ -9185,6 +9185,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible de renommer le fichier. Réessayez.';
 
   @override
+  String get homeWorkFileNameTaken =>
+      'Un fichier d’œuvre porte déjà ce nom. Choisissez un autre nom.';
+
+  @override
   String get homeDrawerTutorial => 'Mode d’emploi';
 
   @override

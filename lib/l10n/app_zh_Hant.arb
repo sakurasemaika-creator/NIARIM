@@ -3457,6 +3457,7 @@
   "homeTrashCopyOneAtATime": "在垃圾桶中，一次只能複製一項。請只選擇一項。",
   "homeShareFileNameTaken": "已有同名的共享檔案。請換一個名稱。",
   "homeShareFileRenameFailed": "無法重新命名。請再試一次。",
+  "homeWorkFileNameTaken": "已有同名的作品檔案。請換一個名稱。",
   "homeDrawerTutorial": "使用方法",
   "themeColorAccentText": "強調文字與圖示顏色",
   "projectDetailNotFoundBackToList": "前往專案列表",

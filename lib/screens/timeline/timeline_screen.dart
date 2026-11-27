@@ -12252,6 +12252,27 @@ class _EffectFilterSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // A name of its own, to tell the same kinds apart (the
+                // owner's choice, 2026-11-27: there was no place to rename).
+                TextButton.icon(
+                  key: ValueKey('timelineEffectRename-${e.id}'),
+                  icon: const Icon(Icons.drive_file_rename_outline, size: 18),
+                  label: Text(l10n.commonRename),
+                  onPressed: () => showDialog<void>(
+                    context: context,
+                    builder: (_) => NameEntryDialog(
+                      title: l10n.commonRename,
+                      initialName: _displayName(l10n, e),
+                      confirmLabel: l10n.commonChange,
+                      cancelLabel: l10n.commonCancel,
+                      onSubmit: (name) async => _edit(
+                        context,
+                        e.id,
+                        (latest) => latest.copyWith(name: name),
+                      ),
+                    ),
+                  ),
+                ),
                 _rangeRow(
                   l10n.timelineRangeStartLabel,
                   e.startFrame,

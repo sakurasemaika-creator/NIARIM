@@ -8514,6 +8514,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeShareFileRenameFailed => '无法重命名。请重试。';
 
   @override
+  String get homeWorkFileNameTaken => '已有同名的作品文件。请换一个名称。';
+
+  @override
   String get homeDrawerTutorial => '使用方法';
 
   @override
@@ -19639,6 +19642,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeShareFileRenameFailed => '無法重新命名。請再試一次。';
+
+  @override
+  String get homeWorkFileNameTaken => '已有同名的作品檔案。請換一個名稱。';
 
   @override
   String get homeDrawerTutorial => '使用方法';
