@@ -513,7 +513,9 @@ class NiaproSerializer {
         : tileManager.isTileAutosaveDirty;
     return _writeArchiveAtomically(path, (encoder) {
       _addManifestAndScenes(encoder, project, scenes);
+      final used = _usedTileLayers(scenes);
       for (final layerEntry in tileManager.exportAll().entries) {
+        if (!used(layerEntry.key)) continue;
         for (final tileEntry in layerEntry.value.entries) {
           final name = _tilePath(layerEntry.key, tileEntry.key);
           final copy = stored?[name];
@@ -726,7 +728,9 @@ class NiaproSerializer {
       }
 
       final allTiles = tileManager.exportAll();
+      final used = _usedTileLayers(scenes);
       for (final layerEntry in allTiles.entries) {
+        if (!used(layerEntry.key)) continue;
         for (final tileEntry in layerEntry.value.entries) {
           encoder.addArchiveFile(
             ArchiveFile(
@@ -780,6 +784,25 @@ class NiaproSerializer {
         );
       }
     }, savedTiles: clearDirty ? tileManager : null);
+  }
+
+  /// Whether the tiles under a TileManager layer key belong in the file: a
+  /// layer removed from its frame (a deleted layer or timeline clip) keeps
+  /// its tiles in memory so that Undo can bring it back, but they are not
+  /// written (they made every later save and autosave larger). Keys in no
+  /// frame-layer form are kept.
+  static bool Function(String layerKey) _usedTileLayers(List<Scene> scenes) {
+    final used = <String>{};
+    for (final scene in scenes) {
+      for (var i = 0; i < scene.frames.length; i++) {
+        final frame = scene.frames[i];
+        for (final layer in frame.layers) {
+          used.add(frameLayerKey(scene.id, i, layer.id));
+          used.add(frameLayerKey(scene.id, frame.index, layer.id));
+        }
+      }
+    }
+    return (key) => parseFrameLayerKey(key) == null || used.contains(key);
   }
 
   /// TileManagerの合成キー（[frameLayerKey]形式）とタイル座標キーから、
@@ -843,7 +866,9 @@ class NiaproSerializer {
         return;
       }
       final allTiles = tileManager.exportAll();
+      final used = _usedTileLayers(scenes);
       for (final layerEntry in allTiles.entries) {
+        if (!used(layerEntry.key)) continue;
         final layerId = layerEntry.key;
         // 変更されたタイルキー（非破壊：グローバルなdirty集合は消費しない）
         final dirtyTiles = tileManager.getDirtyTilesForLayer(layerId);
