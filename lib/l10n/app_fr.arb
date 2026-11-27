@@ -1427,6 +1427,10 @@
     }
   },
   "filterEmpty": "Aucun filtre",
+  "filterReorder": "Réorganiser",
+  "filterReorderDone": "Terminer la réorganisation",
+  "filterReorderReset": "Revenir à l’ordre initial",
+  "filterReorderHint": "Faites glisser la poignée à droite d’une ligne pour réorganiser.",
   "filterApplyingTitle": "Application du filtre",
   "filterApplyingSubtitle": "{name}　{count} images",
   "@filterApplyingSubtitle": {

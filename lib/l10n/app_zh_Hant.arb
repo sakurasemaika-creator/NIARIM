@@ -1427,6 +1427,10 @@
     }
   },
   "filterEmpty": "沒有濾鏡",
+  "filterReorder": "調整順序",
+  "filterReorderDone": "完成調整順序",
+  "filterReorderReset": "恢復初始順序",
+  "filterReorderHint": "拖曳列右側的把手來調整順序。",
   "filterApplyingTitle": "套用濾鏡中",
   "filterApplyingSubtitle": "{name}　{count}格",
   "@filterApplyingSubtitle": {

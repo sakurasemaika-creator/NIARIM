@@ -3902,6 +3902,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterEmpty => '没有滤镜';
 
   @override
+  String get filterReorder => '调整顺序';
+
+  @override
+  String get filterReorderDone => '完成调整顺序';
+
+  @override
+  String get filterReorderReset => '恢复初始顺序';
+
+  @override
+  String get filterReorderHint => '拖动行右侧的手柄来调整顺序。';
+
+  @override
   String get filterApplyingTitle => '正在应用滤镜';
 
   @override
@@ -15135,6 +15147,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterEmpty => '沒有濾鏡';
+
+  @override
+  String get filterReorder => '調整順序';
+
+  @override
+  String get filterReorderDone => '完成調整順序';
+
+  @override
+  String get filterReorderReset => '恢復初始順序';
+
+  @override
+  String get filterReorderHint => '拖曳列右側的把手來調整順序。';
 
   @override
   String get filterApplyingTitle => '套用濾鏡中';

@@ -1427,6 +1427,10 @@
     }
   },
   "filterEmpty": "No hay filtros",
+  "filterReorder": "Reordenar",
+  "filterReorderDone": "Terminar de reordenar",
+  "filterReorderReset": "Volver al orden inicial",
+  "filterReorderHint": "Arrastra el asa a la derecha de una fila para reordenar.",
   "filterApplyingTitle": "Aplicando filtro",
   "filterApplyingSubtitle": "{name}　{count} fotogramas",
   "@filterApplyingSubtitle": {

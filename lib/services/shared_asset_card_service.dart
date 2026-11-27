@@ -216,7 +216,10 @@ class SharedAssetCardService {
     String? sourceImagePath,
   }) async {
     await _showSettingsCard(context, (l10n) async {
-      final archive = _assetArchive({...settings, 'isFavorite': false});
+      // The folder is this device's own list; the card carries none.
+      final archive = _assetArchive(
+        {...settings, 'isFavorite': false}..remove('folderId'),
+      );
       if (sourceImagePath != null) {
         final bytes = await readCreativeImageSource(sourceImagePath);
         if (bytes == null) throw const FormatException('Missing source image');

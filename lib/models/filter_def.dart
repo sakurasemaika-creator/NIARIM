@@ -122,6 +122,12 @@ class FilterDef {
   final FilterKind kind;
   final bool isFavorite;
   final bool isSettingsPreset;
+
+  /// The user's tags (as the brushes, tones and stamps have; built-in
+  /// filters can carry them too) and the user's folder in the filter list.
+  /// They sort the list only and are not settings of the filter.
+  final List<String> tags;
+  final String? folderId;
   final double strength;
   final NoiseStyle noiseStyle;
   final int noiseSeed;
@@ -283,6 +289,8 @@ class FilterDef {
     required this.kind,
     this.isFavorite = false,
     this.isSettingsPreset = false,
+    this.tags = const [],
+    this.folderId,
     this.strength = 8,
     this.noiseStyle = NoiseStyle.filmGrain,
     this.noiseSeed = 1984,
@@ -427,6 +435,9 @@ class FilterDef {
     FilterKind? kind,
     bool? isFavorite,
     bool? isSettingsPreset,
+    List<String>? tags,
+    String? folderId,
+    bool clearFolder = false,
     double? strength,
     NoiseStyle? noiseStyle,
     int? noiseSeed,
@@ -531,6 +542,8 @@ class FilterDef {
       kind: kind ?? this.kind,
       isFavorite: isFavorite ?? this.isFavorite,
       isSettingsPreset: isSettingsPreset ?? this.isSettingsPreset,
+      tags: tags ?? this.tags,
+      folderId: clearFolder ? null : (folderId ?? this.folderId),
       strength: strength ?? this.strength,
       noiseStyle: noiseStyle ?? this.noiseStyle,
       noiseSeed: noiseSeed ?? this.noiseSeed,
@@ -652,6 +665,8 @@ class FilterDef {
     'kind': kind.name,
     'isFavorite': isFavorite,
     if (isSettingsPreset) 'isSettingsPreset': true,
+    if (tags.isNotEmpty) 'tags': tags,
+    if (folderId != null) 'folderId': folderId,
     'strength': strength,
     'noiseStyle': noiseStyle.name,
     'noiseSeed': noiseSeed,
@@ -776,6 +791,17 @@ class FilterDef {
     ),
     isFavorite: j['isFavorite'] as bool? ?? false,
     isSettingsPreset: j['isSettingsPreset'] == true,
+    tags: switch (j['tags']) {
+      final List list => [
+        for (final tag in list)
+          if (tag is String) tag,
+      ],
+      _ => const [],
+    },
+    folderId: switch (j['folderId']) {
+      final String id => id,
+      _ => null,
+    },
     strength: (j['strength'] as num?)?.toDouble() ?? 8,
     // One-time compatibility for snapshots written before noiseStyle existed.
     // New definitions and rendering never depend on a preset ID.

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/asset_tags.dart';
 import '../models/custom_automation_builtin_presets.dart';
 import '../models/filter_canvas_gizmo.dart';
 import '../models/filter_def.dart';
@@ -15,8 +16,42 @@ import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/transfer_merge.dart';
 
+/// A folder of the drawing-filter list (the user's own, as the brushes',
+/// tones' and stamps' folders are).
+class FilterFolder {
+  const FilterFolder({
+    required this.id,
+    required this.name,
+    this.isFavorite = false,
+  });
+
+  final String id;
+  final String name;
+  final bool isFavorite;
+
+  FilterFolder copyWith({String? name, bool? isFavorite}) => FilterFolder(
+    id: id,
+    name: name ?? this.name,
+    isFavorite: isFavorite ?? this.isFavorite,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'isFavorite': isFavorite,
+  };
+
+  factory FilterFolder.fromJson(Map<String, dynamic> j) => FilterFolder(
+    id: j['id'] as String,
+    name: j['name'] as String,
+    isFavorite: j['isFavorite'] as bool? ?? false,
+  );
+}
+
 class FilterService extends ChangeNotifier {
   static const _prefsKey = 'draw_filters';
+  static const foldersKey = 'draw_filter_folders';
+  static const _userOrderKey = 'draw_filters_user_order';
   static const _colorNoiseProfileKey = 'draw_filter_noise_color_profile';
   static const filmGrainFilterId = 'Filter0010';
   static const prismFilterId = 'Filter0022';
@@ -47,6 +82,11 @@ class FilterService extends ChangeNotifier {
   bool _disposed = false;
   String _searchQuery = '';
   bool _favoritesOnly = false;
+  final List<FilterFolder> _folders = [];
+  final List<String> _unreadableFolderEntries = [];
+  // Whether the user has put the list in an order of their own (then the
+  // recommended built-ins are no longer put first).
+  bool _userOrder = false;
   final List<_FilterEditStep> _filterEditUndo = [];
   final List<_FilterEditStep> _filterEditRedo = [];
   int _editGroupDepth = 0;
@@ -71,9 +111,11 @@ class FilterService extends ChangeNotifier {
   /// [filters] in the order the filter gallery shows them: the signature
   /// built-ins ([signatureFilterIds]) first, then every other filter in its
   /// own order (the other built-ins, then the user's own filters as they
-  /// were added). Every filter is in it once.
+  /// were added). Every filter is in it once. Once the user has moved a
+  /// filter ([moveInGallery]), the list is in the user's order.
   List<FilterDef> get galleryFilters {
     final all = filters;
+    if (_userOrder) return all;
     final byId = {for (final f in all) f.id: f};
     final first = [for (final id in signatureFilterIds) ?byId[id]];
     final firstIds = {for (final f in first) f.id};
@@ -93,6 +135,12 @@ class FilterService extends ChangeNotifier {
     _disposed = true;
     super.dispose();
   }
+
+  /// The user's folders, in the user's order.
+  List<FilterFolder> get folders => List.unmodifiable(_folders);
+
+  /// Whether the list is in an order the user chose.
+  bool get inUserOrder => _userOrder;
 
   List<FilterDef> savedSettingsFor(FilterKind kind) => [
     for (final filter in _filters)
@@ -377,6 +425,19 @@ class FilterService extends ChangeNotifier {
     _colorNoiseProfile ??= _defaultFilters().firstWhere(
       (f) => f.id == genericNoiseFilterId,
     );
+    _folders.clear();
+    _unreadableFolderEntries.clear();
+    final foldersRaw = prefs.readStringList(foldersKey);
+    if (foldersRaw != null) {
+      _folders.addAll(
+        readSavedJsonList(
+          foldersRaw,
+          FilterFolder.fromJson,
+          unreadable: _unreadableFolderEntries,
+        ),
+      );
+    }
+    _userOrder = prefs.readBool(_userOrderKey) ?? false;
     _currentFilterId = null;
     _presetDraft = null;
   }
@@ -601,6 +662,9 @@ class FilterService extends ChangeNotifier {
       _filters[index] = before.copyWith(
         name: now.name,
         isFavorite: now.isFavorite,
+        tags: now.tags,
+        folderId: now.folderId,
+        clearFolder: now.folderId == null,
       );
       restored = true;
     }
@@ -968,13 +1032,33 @@ class FilterService extends ChangeNotifier {
   Future<void> mergeTransferred(
     List<String> saved, {
     required TransferCopyNames copyNames,
+    List<String> folders = const [],
   }) async {
-    final incoming = readSavedJsonList<FilterDef?>(
-      saved,
-      (json) => FilterDef.hasKnownKind(json)
-          ? _upToDate(FilterDef.fromJson(json))
-          : null,
-    ).whereType<FilterDef>().toList();
+    // The other device's folders this device does not have (by id) come
+    // first, so its filters keep their folder; a filter in a folder that
+    // did not come along is in none.
+    var foldersChanged = false;
+    for (final folder in readSavedJsonList(folders, FilterFolder.fromJson)) {
+      if (_folders.any((f) => f.id == folder.id)) continue;
+      _folders.add(folder);
+      foldersChanged = true;
+    }
+    if (foldersChanged) {
+      await _persistFolders();
+      notifyListeners();
+    }
+    final folderIds = {for (final f in _folders) f.id};
+    final incoming =
+        readSavedJsonList<FilterDef?>(
+          saved,
+          (json) => FilterDef.hasKnownKind(json)
+              ? _upToDate(FilterDef.fromJson(json))
+              : null,
+        ).whereType<FilterDef>().map((f) {
+          return folderIds.contains(f.folderId) || f.folderId == null
+              ? f
+              : f.copyWith(clearFolder: true);
+        }).toList();
     final added = <FilterDef>[];
     // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
     final copies = await TransferCopyRecord.read(
@@ -989,15 +1073,24 @@ class FilterService extends ChangeNotifier {
         contentOf: (f) => f.toJson()
           ..remove('id')
           ..remove('name')
-          ..remove('isFavorite'),
+          ..remove('isFavorite')
+          ..remove('tags')
+          ..remove('folderId'),
         duplicateContentOf: (f) => f.toJson()
           ..remove('id')
           ..remove('name')
           ..remove('isFavorite')
+          ..remove('tags')
+          ..remove('folderId')
           ..['builtIn'] = isBuiltIn(f.id),
         organizationOf: (f) =>
-            (favorite: f.isFavorite, tags: const [], folderId: null),
-        withOrganization: (f, o) => f.copyWith(isFavorite: o.favorite),
+            (favorite: f.isFavorite, tags: f.tags, folderId: f.folderId),
+        withOrganization: (f, o) => f.copyWith(
+          isFavorite: o.favorite,
+          tags: o.tags,
+          folderId: o.folderId,
+          clearFolder: o.folderId == null,
+        ),
         asCopy: (f, id, name) {
           final copy = f.copyWith(id: id, name: name);
           added.add(copy);
@@ -1124,6 +1217,164 @@ class FilterService extends ChangeNotifier {
   void setFavoritesOnly(bool value) {
     _favoritesOnly = value;
     notifyListeners();
+  }
+
+  /// Moves [id] to [index] in the list as it is shown ([galleryFilters];
+  /// [index] is its place once it has been taken out). From then on the
+  /// list is in the user's order ([inUserOrder]).
+  void moveInGallery(String id, int index) {
+    final order = galleryFilters.toList();
+    final from = order.indexWhere((f) => f.id == id);
+    if (from < 0) return;
+    final to = index.clamp(0, order.length - 1);
+    if (from == to) return;
+    order.insert(to, order.removeAt(from));
+    _putInOrder(order);
+    _userOrder = true;
+    notifyListeners();
+    _persist();
+    _persistUserOrder();
+  }
+
+  /// Puts the list back in the order the app comes with: the recommended
+  /// built-ins first, then the other built-ins, then the user's own filters
+  /// in the order they are in now.
+  void resetGalleryOrder() {
+    if (!_userOrder) return;
+    final builtInOrder = {
+      for (final (i, f) in _defaultFilters().indexed) f.id: i,
+    };
+    final shown = filters.toList();
+    final builtIns = shown.where((f) => builtInOrder.containsKey(f.id)).toList()
+      ..sort((a, b) => builtInOrder[a.id]!.compareTo(builtInOrder[b.id]!));
+    _putInOrder([
+      ...builtIns,
+      for (final f in shown)
+        if (!builtInOrder.containsKey(f.id)) f,
+    ]);
+    _userOrder = false;
+    notifyListeners();
+    _persist();
+    _persistUserOrder();
+  }
+
+  /// [order] (every shown filter once) written over the shown filters'
+  /// places in the saved list (the hidden noise presets keep theirs).
+  void _putInOrder(List<FilterDef> order) {
+    var next = 0;
+    for (var i = 0; i < _filters.length; i++) {
+      if (!_isMergedNoisePreset(_filters[i])) {
+        _filters[i] = order[next++];
+      }
+    }
+  }
+
+  Future<void> _persistUserOrder() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_userOrderKey, _userOrder);
+  }
+
+  Future<void> _persistFolders() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(foldersKey, [
+      for (final folder in _folders) jsonEncode(folder.toJson()),
+      ..._unreadableFolderEntries,
+    ]);
+  }
+
+  /// The tags of [id] (replacing the ones it has). Built-in filters can
+  /// carry tags too: how the user sorts the list is their own.
+  void setTags(String id, List<String> tags) {
+    final idx = _filters.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    _filters[idx] = _filters[idx].copyWith(tags: normalizeTags(tags));
+    notifyListeners();
+    _persist();
+  }
+
+  /// Every tag in use, the most used first (then by name), counted without
+  /// telling capitals from small letters (the first spelling is shown).
+  List<String> allTags() {
+    final count = <String, int>{};
+    final display = <String, String>{};
+    for (final f in filters) {
+      for (final tag in f.tags) {
+        final key = tag.toLowerCase();
+        count[key] = (count[key] ?? 0) + 1;
+        display.putIfAbsent(key, () => tag);
+      }
+    }
+    final keys = count.keys.toList()
+      ..sort((a, b) {
+        final c = count[b]!.compareTo(count[a]!);
+        return c != 0 ? c : a.compareTo(b);
+      });
+    return [for (final key in keys) display[key]!];
+  }
+
+  Future<FilterFolder> createFolder(String name) async {
+    final folder = FilterFolder(
+      id: 'FilterFolder${DateTime.now().microsecondsSinceEpoch}',
+      name: name,
+    );
+    _folders.add(folder);
+    notifyListeners();
+    await _persistFolders();
+    return folder;
+  }
+
+  Future<void> renameFolder(String id, String name) async {
+    final idx = _folders.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    _folders[idx] = _folders[idx].copyWith(name: name);
+    notifyListeners();
+    await _persistFolders();
+  }
+
+  void toggleFolderFavorite(String id) {
+    final idx = _folders.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    _folders[idx] = _folders[idx].copyWith(
+      isFavorite: !_folders[idx].isFavorite,
+    );
+    notifyListeners();
+    _persistFolders();
+  }
+
+  /// [newIndex] is the place before taking the folder out (as the other
+  /// lists' reorder methods).
+  void reorderFolder(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) newIndex--;
+    final folder = _folders.removeAt(oldIndex);
+    _folders.insert(newIndex, folder);
+    notifyListeners();
+    _persistFolders();
+  }
+
+  /// Removes the folder; its filters stay, in no folder.
+  Future<void> deleteFolder(String id) async {
+    _folders.removeWhere((f) => f.id == id);
+    for (var i = 0; i < _filters.length; i++) {
+      if (_filters[i].folderId == id) {
+        _filters[i] = _filters[i].copyWith(clearFolder: true);
+      }
+    }
+    notifyListeners();
+    // The filters first: if this stops half-way, the folder is still there
+    // to delete again.
+    await _persist();
+    await _persistFolders();
+  }
+
+  void moveToFolder(String filterId, String? folderId) {
+    final idx = _filters.indexWhere((f) => f.id == filterId);
+    if (idx < 0) return;
+    _filters[idx] = _filters[idx].copyWith(
+      folderId: folderId,
+      clearFolder: folderId == null,
+    );
+    notifyListeners();
+    _persist();
   }
 
   void reorderFilter(String id, int newIndex) {

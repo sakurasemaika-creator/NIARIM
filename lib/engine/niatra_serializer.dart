@@ -173,6 +173,7 @@ class NiatraSerializer {
     'shortcut_bindings',
     'custom_size_presets',
     'draw_filters',
+    'draw_filter_folders',
     'first_use_tooltips_seen',
     'watermark_assets',
   };
@@ -282,6 +283,9 @@ class NiatraSerializer {
   /// 読み込んでも書かない。
   static const Set<String> keptSettingKeys = {
     'draw_filter_noise_color_profile',
+    // 描画フィルターの一覧を利用者の並びにしたか。並びはこの端末の一覧のもので、
+    // 受け取ったフィルターは一覧の後ろへ足すので、この端末のまま。
+    'draw_filters_user_order',
   };
 
   static bool _isDeviceRecord(String key) =>
@@ -1627,8 +1631,13 @@ class TransferredSavedLists {
       await settings?.mergeTransferredCanvasSizes(sizes, copyNames: copyNames);
     }
     final drawFilters = saved['draw_filters'];
-    if (drawFilters != null) {
-      await filters?.mergeTransferred(drawFilters, copyNames: copyNames);
+    final filterFolders = saved['draw_filter_folders'];
+    if (drawFilters != null || filterFolders != null) {
+      await filters?.mergeTransferred(
+        drawFilters ?? const [],
+        copyNames: copyNames,
+        folders: filterFolders ?? const [],
+      );
     }
     final seen = saved['first_use_tooltips_seen'];
     if (seen != null) await firstUseTooltips?.mergeTransferred(seen);

@@ -4125,6 +4125,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterEmpty => 'No filters';
 
   @override
+  String get filterReorder => 'Reorder';
+
+  @override
+  String get filterReorderDone => 'Finish reordering';
+
+  @override
+  String get filterReorderReset => 'Back to the original order';
+
+  @override
+  String get filterReorderHint =>
+      'Drag the handle on the right of a row to reorder.';
+
+  @override
   String get filterApplyingTitle => 'Applying filter';
 
   @override

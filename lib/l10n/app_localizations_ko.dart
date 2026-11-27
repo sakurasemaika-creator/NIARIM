@@ -3956,6 +3956,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterEmpty => '필터가 없습니다';
 
   @override
+  String get filterReorder => '순서 바꾸기';
+
+  @override
+  String get filterReorderDone => '순서 바꾸기 마치기';
+
+  @override
+  String get filterReorderReset => '처음 순서로 되돌리기';
+
+  @override
+  String get filterReorderHint => '행 오른쪽의 손잡이를 끌어서 순서를 바꿉니다.';
+
+  @override
   String get filterApplyingTitle => '필터 적용 중';
 
   @override

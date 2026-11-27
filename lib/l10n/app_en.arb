@@ -1450,6 +1450,10 @@
     }
   },
   "filterEmpty": "No filters",
+  "filterReorder": "Reorder",
+  "filterReorderDone": "Finish reordering",
+  "filterReorderReset": "Back to the original order",
+  "filterReorderHint": "Drag the handle on the right of a row to reorder.",
   "filterApplyingTitle": "Applying filter",
   "filterApplyingSubtitle": "{name}　{count} frames",
   "@filterApplyingSubtitle": {

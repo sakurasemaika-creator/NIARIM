@@ -3935,6 +3935,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterEmpty => 'フィルターがありません';
 
   @override
+  String get filterReorder => '並べ替え';
+
+  @override
+  String get filterReorderDone => '並べ替えを終える';
+
+  @override
+  String get filterReorderReset => '最初の並びに戻す';
+
+  @override
+  String get filterReorderHint => '行の右のつまみをドラッグして並べ替えます。';
+
+  @override
   String get filterApplyingTitle => 'フィルター適用中';
 
   @override

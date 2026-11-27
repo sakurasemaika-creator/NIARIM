@@ -7167,6 +7167,30 @@ abstract class AppLocalizations {
   /// **'フィルターがありません'**
   String get filterEmpty;
 
+  /// No description provided for @filterReorder.
+  ///
+  /// In ja, this message translates to:
+  /// **'並べ替え'**
+  String get filterReorder;
+
+  /// No description provided for @filterReorderDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'並べ替えを終える'**
+  String get filterReorderDone;
+
+  /// No description provided for @filterReorderReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'最初の並びに戻す'**
+  String get filterReorderReset;
+
+  /// No description provided for @filterReorderHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'行の右のつまみをドラッグして並べ替えます。'**
+  String get filterReorderHint;
+
   /// No description provided for @filterApplyingTitle.
   ///
   /// In ja, this message translates to:

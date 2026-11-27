@@ -4188,6 +4188,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterEmpty => 'Aucun filtre';
 
   @override
+  String get filterReorder => 'Réorganiser';
+
+  @override
+  String get filterReorderDone => 'Terminer la réorganisation';
+
+  @override
+  String get filterReorderReset => 'Revenir à l’ordre initial';
+
+  @override
+  String get filterReorderHint =>
+      'Faites glisser la poignée à droite d’une ligne pour réorganiser.';
+
+  @override
   String get filterApplyingTitle => 'Application du filtre';
 
   @override

@@ -1427,6 +1427,10 @@
     }
   },
   "filterEmpty": "没有滤镜",
+  "filterReorder": "调整顺序",
+  "filterReorderDone": "完成调整顺序",
+  "filterReorderReset": "恢复初始顺序",
+  "filterReorderHint": "拖动行右侧的手柄来调整顺序。",
   "filterApplyingTitle": "正在应用滤镜",
   "filterApplyingSubtitle": "{name}　{count}帧",
   "@filterApplyingSubtitle": {

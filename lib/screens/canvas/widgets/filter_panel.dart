@@ -59,15 +59,21 @@ import '../../../widgets/typing_dialog_inset.dart';
 import '../../../widgets/menu_card.dart';
 import '../../../utils/file_failure_reason.dart';
 import '../../../widgets/icon_notice.dart';
+import '../../../models/asset_tags.dart';
+import '../../../widgets/asset_tag_label.dart';
+import 'asset_tag_dialog.dart';
+import 'creative_folder_sheets.dart';
 
 enum FilterColorEyedropperTarget { inkPool, outline }
 
-enum _FilterCardAction { duplicate, rename, delete }
+enum _FilterCardAction { duplicate, rename, move, tags, delete }
 
 enum _FocusFilterMenuAction {
   toggleFavoritesOnly,
   toggleSearch,
   importFilter,
+  folders,
+  reorder,
   backToList,
   exportFilter,
   toggleCollapse,
@@ -157,6 +163,11 @@ const double _kBottomLabelWidth = 112;
 class _FilterPanelState extends State<FilterPanel> {
   bool _showFavoritesOnly = false;
   bool _showSearch = false;
+  // The folder the list shows: null for every filter, '' for the filters in
+  // no folder, otherwise the folder's id.
+  String? _folderFilter;
+  // Whether the list is shown as rows to drag into another order.
+  bool _reordering = false;
   bool _applying = false;
   int _toneCurveChannel = 0; // 0=RGB, 1=R, 2=G, 3=B
   int _levelsChannel = 0; // 0=RGB, 1=R, 2=G, 3=B
@@ -798,9 +809,23 @@ class _FilterPanelState extends State<FilterPanel> {
     final l10n = AppLocalizations.of(context)!;
     final service = context.watch<FilterService>();
     final query = service.searchQuery;
+    final folderIds = {for (final folder in service.folders) folder.id};
+    final folderFilter =
+        _folderFilter == '' || folderIds.contains(_folderFilter)
+        ? _folderFilter
+        : null;
     final filters = service.galleryFilters.where((f) {
       if (_showFavoritesOnly && !f.isFavorite) return false;
-      return filterSearchMatches(l10n, f, query);
+      if (folderFilter == '' && folderIds.contains(f.folderId)) return false;
+      if (folderFilter != null &&
+          folderFilter != '' &&
+          f.folderId != folderFilter) {
+        return false;
+      }
+      // The name, or one of the tags (in this language).
+      return filterSearchMatches(l10n, f, query) ||
+          (query.trim().isNotEmpty &&
+              tagsMatch(localizeAssetTags(l10n, f.tags), query));
     }).toList();
     final current = service.currentFilter;
 
@@ -871,12 +896,16 @@ class _FilterPanelState extends State<FilterPanel> {
                 if (current == null) ...[
                   PanelCenterCloseBar(onClose: widget.onClose),
                   _listTitleRow(l10n),
-                  if (_showSearch) _searchField(l10n, service),
+                  if (_showSearch && !_reordering) _searchField(l10n, service),
+                  if (service.folders.isNotEmpty && !_reordering)
+                    _folderChips(l10n, service, folderFilter),
                   const SizedBox(height: 6),
                   Expanded(
-                    child: _filterCards(l10n, service, filters, current),
+                    child: _reordering
+                        ? _reorderList(l10n, service)
+                        : _filterCards(l10n, service, filters, current),
                   ),
-                  if (filters.isEmpty)
+                  if (filters.isEmpty && !_reordering)
                     Text(l10n.filterEmpty, textAlign: TextAlign.center),
                 ] else ...[
                   _editHeader(
@@ -932,12 +961,16 @@ class _FilterPanelState extends State<FilterPanel> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (current == null) ...[
-                if (_showSearch) _searchField(l10n, service),
+                if (_showSearch && !_reordering) _searchField(l10n, service),
+                if (service.folders.isNotEmpty && !_reordering)
+                  _folderChips(l10n, service, _folderFilterIn(service)),
                 SizedBox(
                   height: math.min(228.0, screenHeight * 0.30),
-                  child: _filterCards(l10n, service, filters, current),
+                  child: _reordering
+                      ? _reorderList(l10n, service)
+                      : _filterCards(l10n, service, filters, current),
                 ),
-                if (filters.isEmpty)
+                if (filters.isEmpty && !_reordering)
                   Padding(
                     padding: const EdgeInsets.all(8),
                     child: Text(l10n.filterEmpty, textAlign: TextAlign.center),
@@ -987,6 +1020,16 @@ class _FilterPanelState extends State<FilterPanel> {
               value: _FocusFilterMenuAction.importFilter,
               child: Text(l10n.creativePanelImportButton),
             ),
+            PopupMenuItem(
+              value: _FocusFilterMenuAction.folders,
+              child: Text(l10n.creativePanelFolderButton),
+            ),
+            PopupMenuItem(
+              value: _FocusFilterMenuAction.reorder,
+              child: Text(
+                _reordering ? l10n.filterReorderDone : l10n.filterReorder,
+              ),
+            ),
           ];
         }
         return [
@@ -1019,6 +1062,12 @@ class _FilterPanelState extends State<FilterPanel> {
             break;
           case _FocusFilterMenuAction.importFilter:
             unawaited(_importFilterCard());
+            break;
+          case _FocusFilterMenuAction.folders:
+            _openFolderManagement(service);
+            break;
+          case _FocusFilterMenuAction.reorder:
+            setState(() => _reordering = !_reordering);
             break;
           case _FocusFilterMenuAction.backToList:
             _cancelPreview();
@@ -1090,6 +1139,21 @@ class _FilterPanelState extends State<FilterPanel> {
           tooltip: l10n.creativePanelImportButton,
           onPressed: _importFilterCard,
         ),
+        IconButton(
+          key: const ValueKey('filter-folders'),
+          visualDensity: VisualDensity.compact,
+          icon: const Icon(Icons.folder_outlined, size: 18),
+          tooltip: l10n.creativePanelFolderButton,
+          onPressed: () => _openFolderManagement(context.read<FilterService>()),
+        ),
+        IconButton(
+          key: const ValueKey('filter-reorder'),
+          visualDensity: VisualDensity.compact,
+          isSelected: _reordering,
+          icon: const Icon(Icons.swap_vert, size: 18),
+          tooltip: _reordering ? l10n.filterReorderDone : l10n.filterReorder,
+          onPressed: () => setState(() => _reordering = !_reordering),
+        ),
         if (withClose) PanelCenterCloseBar(onClose: widget.onClose),
       ],
     );
@@ -1125,6 +1189,7 @@ class _FilterPanelState extends State<FilterPanel> {
           filter.copyWith(
             id: 'custom_${DateTime.now().microsecondsSinceEpoch}',
             isFavorite: false,
+            clearFolder: true,
           ),
           select: false,
         );
@@ -1173,6 +1238,20 @@ class _FilterPanelState extends State<FilterPanel> {
                 Navigator.pop(dialogContext, _FilterCardAction.duplicate),
             child: Text(l10n.commonDuplicate),
           ),
+          // The folder and the tags sort the list; built-in filters can
+          // have them too (as the built-in brushes, tones and stamps).
+          SimpleDialogOption(
+            key: const ValueKey('filter-action-move'),
+            onPressed: () =>
+                Navigator.pop(dialogContext, _FilterCardAction.move),
+            child: Text(l10n.folderMoveToTitle),
+          ),
+          SimpleDialogOption(
+            key: const ValueKey('filter-action-tags'),
+            onPressed: () =>
+                Navigator.pop(dialogContext, _FilterCardAction.tags),
+            child: Text(l10n.creativePanelTagsLabel),
+          ),
           if (!service.isBuiltIn(filter.id)) ...[
             SimpleDialogOption(
               onPressed: () =>
@@ -1215,11 +1294,175 @@ class _FilterPanelState extends State<FilterPanel> {
             onSubmit: (name) async => service.renameFilter(filter.id, name),
           ),
         );
+      case _FilterCardAction.move:
+        showMoveToCreativeFolderSheet(
+          context,
+          folders: [
+            for (final folder in service.folders)
+              (id: folder.id, name: folder.name),
+          ],
+          onSelect: (folderId) => service.moveToFolder(filter.id, folderId),
+        );
+      case _FilterCardAction.tags:
+        await showAssetTagDialog(
+          context,
+          assetName: name,
+          currentTags: localizeAssetTags(l10n, filter.tags),
+          suggestions: localizeAssetTags(l10n, service.allTags()),
+          // The dialog edits the tags as shown; the built-in tags are kept
+          // by their keys.
+          onSave: (tags) =>
+              service.setTags(filter.id, delocalizeAssetTags(l10n, tags)),
+        );
       case _FilterCardAction.delete:
         if (await confirmDelete(context, itemName: name) && mounted) {
           service.removeFilter(filter.id);
         }
     }
+  }
+
+  /// [_folderFilter] if its folder still exists ('' and null as they are).
+  String? _folderFilterIn(FilterService service) =>
+      _folderFilter == '' ||
+          service.folders.any((folder) => folder.id == _folderFilter)
+      ? _folderFilter
+      : null;
+
+  /// Every filter, the filters in no folder, then each folder (shown once
+  /// there is a folder).
+  Widget _folderChips(
+    AppLocalizations l10n,
+    FilterService service,
+    String? selected,
+  ) {
+    Widget chip(Key key, String label, String? value) => Padding(
+      padding: const EdgeInsetsDirectional.only(end: 4),
+      child: ChoiceChip(
+        key: key,
+        label: Text(
+          label,
+          style: localizedHeadingStyle(context, const TextStyle(fontSize: 11)),
+        ),
+        selected: selected == value,
+        onSelected: (_) => setState(() => _folderFilter = value),
+        visualDensity: VisualDensity.compact,
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            chip(
+              const ValueKey('filter-folder-all'),
+              l10n.creativePanelFolderAllChip,
+              null,
+            ),
+            chip(const ValueKey('filter-folder-none'), l10n.folderNone, ''),
+            for (final folder in service.folders)
+              chip(
+                ValueKey('filter-folder-${folder.id}'),
+                folder.name,
+                folder.id,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openFolderManagement(FilterService service) {
+    showFolderManagementSheet(
+      context,
+      getFolders: () => [
+        for (final folder in service.folders)
+          (id: folder.id, name: folder.name, isFavorite: folder.isFavorite),
+      ],
+      onCreate: (name) => service.createFolder(name),
+      onRename: service.renameFolder,
+      onToggleFavorite: service.toggleFolderFavorite,
+      onReorder: service.reorderFolder,
+      onDelete: (id) async {
+        await service.deleteFolder(id);
+        if (mounted && _folderFilter == id) {
+          setState(() => _folderFilter = null);
+        }
+      },
+    );
+  }
+
+  /// The whole list (no folder, favourite or search narrowing it) as rows
+  /// with a handle to drag each into another place.
+  Widget _reorderList(AppLocalizations l10n, FilterService service) {
+    final all = service.galleryFilters;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          l10n.filterReorderHint,
+          style: TextStyle(fontSize: 12, color: muted),
+        ),
+        const SizedBox(height: 4),
+        Expanded(
+          child: ReorderableListView.builder(
+            key: const ValueKey('filter-reorder-list'),
+            buildDefaultDragHandles: false,
+            itemCount: all.length,
+            // The place it lands once taken out, as [moveInGallery] wants.
+            onReorderItem: (oldIndex, newIndex) =>
+                service.moveInGallery(all[oldIndex].id, newIndex),
+            itemBuilder: (context, index) {
+              final filter = all[index];
+              return ListTile(
+                key: ValueKey('filter-reorder-${filter.id}'),
+                dense: true,
+                contentPadding: const EdgeInsetsDirectional.only(start: 4),
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: FilterSamplePreview(filter, width: 44, height: 32),
+                ),
+                title: Text(
+                  filterDisplayName(l10n, filter),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: ReorderableDragStartListener(
+                  index: index,
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Icon(
+                      Icons.drag_handle,
+                      semanticLabel: l10n.filterReorder,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ).clipListInk(),
+        ),
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          children: [
+            if (service.inUserOrder)
+              TextButton(
+                key: const ValueKey('filter-reorder-reset'),
+                onPressed: service.resetGalleryOrder,
+                child: Text(l10n.filterReorderReset),
+              ),
+            TextButton(
+              key: const ValueKey('filter-reorder-done'),
+              onPressed: () => setState(() => _reordering = false),
+              child: Text(l10n.filterReorderDone),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   /// The catalog is a vertical 2/3-column gallery. It is only mounted while

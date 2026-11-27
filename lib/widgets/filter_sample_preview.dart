@@ -121,7 +121,9 @@ Future<void> _queue = Future.value();
 Future<ui.Image> filterSampleImage(FilterDef filter) {
   final settings = filter.toJson()
     ..remove('name')
-    ..remove('isFavorite');
+    ..remove('isFavorite')
+    ..remove('tags')
+    ..remove('folderId');
   final key = jsonEncode(settings);
   return _samples.putIfAbsent(key, () {
     if (_samples.length > 96) _samples.remove(_samples.keys.first);
