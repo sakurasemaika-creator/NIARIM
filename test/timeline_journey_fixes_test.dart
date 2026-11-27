@@ -9,6 +9,8 @@
 // * 全画面表示のボタンの最初の説明に、キャンバスのツールバーの「基本の操作」が
 //   付いていた。
 // * 分割のボタンの吹き出しと分割モードの文が、日本語と英語の手書きだった。
+// * 選んでいる素材の枠とつまみが、全画面表示にも出て、プレビューの外（上部
+//   バー・シークバー）にもはみ出していた。
 import 'dart:io';
 
 import 'package:flutter/material.dart' hide MaterialType;
@@ -22,6 +24,7 @@ import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/layer_keyframe.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
+import 'package:niarim/screens/timeline/widgets/material_gizmo.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/editable_slider_value.dart';
 import 'package:provider/provider.dart';
@@ -416,6 +419,37 @@ void main() {
     await tester.tap(split);
     await tester.pump();
     expect(find.text(l10n.timelineSplitModeHint), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the material frame stays in the preview, not in fullscreen', (
+    tester,
+  ) async {
+    final (ps: _, projectId: _, sceneId: _, :videoId, l10n: _) =
+        await openTimeline(tester);
+    final clip = find.byKey(ValueKey('timelineClip-$videoId'));
+    await tester.ensureVisible(clip);
+    await tester.pump();
+    await tester.tapAt(tester.getTopLeft(clip) + const Offset(20, 10));
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    final gizmo = find.byType(MaterialTransformGizmo);
+    expect(gizmo, findsOneWidget);
+    // Drawn handles are cut at the edge of the preview band.
+    final band = find.byKey(const Key('timelinePreviewArea'));
+    final clip0 = find.ancestor(of: band, matching: find.byType(ClipRect));
+    expect(clip0, findsWidgets);
+    expect(
+      tester.getRect(clip0.first),
+      tester.getRect(band),
+      reason: 'the clip is the preview band itself',
+    );
+
+    await tester.tap(find.byKey(const Key('timelinePreviewFullscreenButton')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(gizmo, findsNothing);
+    await tester.tap(find.byIcon(Icons.fullscreen_exit));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(gizmo, findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

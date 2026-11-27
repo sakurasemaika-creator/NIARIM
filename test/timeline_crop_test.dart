@@ -203,5 +203,24 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(find.byType(MaterialCropGizmo), findsNothing);
     expect(find.byType(MaterialTransformGizmo), findsOneWidget);
+    MaterialTransformGizmo moveHandles() =>
+        tester.widget(find.byType(MaterialTransformGizmo));
+    expect(moveHandles().contentBounds, frame);
+
+    // After a crop, the move handles frame the kept part, not the whole
+    // picture (実際に使ってみたとき、切る前の大きさの枠が出ていた).
+    await tester.tap(find.byIcon(Icons.undo).first);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    final kept = picture().crop!;
+    expect(
+      moveHandles().contentBounds,
+      MaterialCropGizmo.keptRect(
+        kept,
+        frame,
+        width.toDouble(),
+        height.toDouble(),
+      ),
+    );
+    expect(moveHandles().contentBounds!.width, lessThan(frame.width - 5));
   });
 }

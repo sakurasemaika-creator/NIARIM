@@ -3124,7 +3124,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Widget? _buildMaterialGizmo(ProjectService ps, int frameIndex) {
-    if (_showStackOrder) return null;
+    // 全画面表示は仕上がりを見るためのものなので、素材の枠・つまみを
+    // 重ねない（閉じると選んでいる素材の枠がまた出る）。
+    if (_showStackOrder || _isPreviewFullscreen) return null;
     final found = _editingMaterial(ps);
     if (found == null) return null;
     final layer = found.layer;
@@ -3300,7 +3302,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
           .where((p) => p.id == widget.projectId)
           .firstOrNull
           ?.exportHeight,
-      contentBounds: _editingBounds,
+      // トリミングした素材は、残した部分を枠で囲む（切る前の大きさの
+      // 枠だと、何も見えない所まで囲んでいた）。
+      contentBounds: switch (_editingBounds) {
+        final bounds? when layer.crop != null => MaterialCropGizmo.keptRect(
+          layer.crop,
+          bounds,
+          tm.canvasWidth.toDouble(),
+          tm.canvasHeight.toDouble(),
+        ),
+        final bounds => bounds,
+      },
       value: materialTransformAt(layer, frameIndex),
       camera: camera,
       onChanged: (next) {
@@ -3624,111 +3636,115 @@ class _TimelineScreenState extends State<TimelineScreen> {
           pictureWidth = math.min(pictureWidth, 900);
         }
         final pictureHeight = aspect > 0 ? pictureWidth / aspect : 0.0;
-        return Stack(
-          key: const Key('timelinePreviewArea'),
-          children: [
-            // 描かれた絵そのもの（timelinePreviewPicture）は、この枠の中に
-            // 絵の縦横比で収まる（_TimelinePreview）。
-            Center(
-              child: SizedBox(
-                width: pictureWidth,
-                height: pictureHeight,
-                child: _buildPreviewContent(),
+        // 素材の枠・つまみは絵の外まで描くので、プレビュー欄の中に限る
+        // （上部バー・シークバー・再生の操作の上に重なっていた）。
+        return ClipRect(
+          child: Stack(
+            key: const Key('timelinePreviewArea'),
+            children: [
+              // 描かれた絵そのもの（timelinePreviewPicture）は、この枠の中に
+              // 絵の縦横比で収まる（_TimelinePreview）。
+              Center(
+                child: SizedBox(
+                  width: pictureWidth,
+                  height: pictureHeight,
+                  child: _buildPreviewContent(),
+                ),
               ),
-            ),
-            // 長いフレーム数は、絵との間（操作の大きさ）に収まるよう縮める。
-            Positioned(
-              left: edge,
-              bottom: edge,
-              width: _previewControlSize,
-              child: IgnorePointer(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.bottomLeft,
-                  child: ValueListenableBuilder<int>(
-                    valueListenable: _currentFrameNotifier,
-                    builder: (_, frame, _) => Text(
-                      '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/$_totalFrames',
-                      key: const Key('timelinePreviewFrameCount'),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+              // 長いフレーム数は、絵との間（操作の大きさ）に収まるよう縮める。
+              Positioned(
+                left: edge,
+                bottom: edge,
+                width: _previewControlSize,
+                child: IgnorePointer(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.bottomLeft,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: _currentFrameNotifier,
+                      builder: (_, frame, _) => Text(
+                        '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/$_totalFrames',
+                        key: const Key('timelinePreviewFrameCount'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // At the band's top, beside the full-screen button: the export's
+              // frame rate when the preview plays at it, and, while playing,
+              // that frames are skipped because playback cannot keep up (the
+              // export has them all).
+              Positioned(
+                left: edge,
+                top: edge,
+                right: edge + _previewControlSize + edge,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_previewOutputFps case final output?)
+                      _PreviewOutputFpsChip(
+                        text: l10n.timelinePreviewOutputFps(
+                          output,
+                          _projectFps(context.read<ProjectService>()),
+                        ),
+                        backTooltip: l10n.timelinePreviewWorkFps(
+                          _projectFps(context.read<ProjectService>()),
+                        ),
+                        onBack: () {
+                          if (_isPlaying) _togglePlay();
+                          setState(() => _previewOutputFps = null);
+                        },
+                      ),
+                    if (_isPlaying)
+                      ValueListenableBuilder<int>(
+                        valueListenable: _playbackSkips,
+                        builder: (context, skips, _) => skips == 0
+                            ? const SizedBox.shrink()
+                            : Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: _PlaybackSkipNotice(
+                                  text: l10n.timelinePlaybackSkipNotice,
+                                ),
+                              ),
+                      ),
+                  ],
+                ),
+              ),
+              if (!inFullscreen)
+                Positioned(
+                  right: edge,
+                  top: edge,
+                  child: FirstUseTooltip(
+                    tooltipKey: 'timeline_preview_fullscreen',
+                    message: l10n.timelinePreviewFullscreenTip,
+                    toolbarGuide: false,
+                    child: IconButton(
+                      key: const Key('timelinePreviewFullscreenButton'),
+                      padding: EdgeInsets.zero,
+                      visualDensity: VisualDensity.standard,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 48,
+                        height: 48,
+                      ),
+                      icon: Icon(
+                        Icons.fullscreen,
                         color: scheme.onSurfaceVariant,
                       ),
+                      tooltip: l10n.timelinePreviewFullscreenTooltip,
+                      onPressed: sceneId == null
+                          ? null
+                          : () => setState(() => _isPreviewFullscreen = true),
                     ),
                   ),
                 ),
-              ),
-            ),
-            // At the band's top, beside the full-screen button: the export's
-            // frame rate when the preview plays at it, and, while playing,
-            // that frames are skipped because playback cannot keep up (the
-            // export has them all).
-            Positioned(
-              left: edge,
-              top: edge,
-              right: edge + _previewControlSize + edge,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (_previewOutputFps case final output?)
-                    _PreviewOutputFpsChip(
-                      text: l10n.timelinePreviewOutputFps(
-                        output,
-                        _projectFps(context.read<ProjectService>()),
-                      ),
-                      backTooltip: l10n.timelinePreviewWorkFps(
-                        _projectFps(context.read<ProjectService>()),
-                      ),
-                      onBack: () {
-                        if (_isPlaying) _togglePlay();
-                        setState(() => _previewOutputFps = null);
-                      },
-                    ),
-                  if (_isPlaying)
-                    ValueListenableBuilder<int>(
-                      valueListenable: _playbackSkips,
-                      builder: (context, skips, _) => skips == 0
-                          ? const SizedBox.shrink()
-                          : Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: _PlaybackSkipNotice(
-                                text: l10n.timelinePlaybackSkipNotice,
-                              ),
-                            ),
-                    ),
-                ],
-              ),
-            ),
-            if (!inFullscreen)
-              Positioned(
-                right: edge,
-                top: edge,
-                child: FirstUseTooltip(
-                  tooltipKey: 'timeline_preview_fullscreen',
-                  message: l10n.timelinePreviewFullscreenTip,
-                  toolbarGuide: false,
-                  child: IconButton(
-                    key: const Key('timelinePreviewFullscreenButton'),
-                    padding: EdgeInsets.zero,
-                    visualDensity: VisualDensity.standard,
-                    constraints: const BoxConstraints.tightFor(
-                      width: 48,
-                      height: 48,
-                    ),
-                    icon: Icon(
-                      Icons.fullscreen,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                    tooltip: l10n.timelinePreviewFullscreenTooltip,
-                    onPressed: sceneId == null
-                        ? null
-                        : () => setState(() => _isPreviewFullscreen = true),
-                  ),
-                ),
-              ),
-          ],
+            ],
+          ),
         );
       },
     );
