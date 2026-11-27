@@ -147,11 +147,11 @@ void main() {
               staging
                   .listSync()
                   .whereType<File>()
-                  .where((f) => f.path.endsWith('.jpg'))
+                  .where((f) => f.path.endsWith('.png'))
                   .toList()
                 ..sort((a, b) => a.path.compareTo(b.path));
           encodedFrames.add([
-            for (final file in files) img.decodeJpg(file.readAsBytesSync())!,
+            for (final file in files) img.decodeImage(file.readAsBytesSync())!,
           ]);
           File(arguments.last).writeAsBytesSync([1, 2, 3]);
           return null;

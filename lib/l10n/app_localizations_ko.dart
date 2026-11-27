@@ -11171,7 +11171,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get makingStorageLimit =>
-      '메이킹 기록 64MB 한도에 도달했습니다. 새 기록은 중지되었으며 기존 기록은 유지됩니다.';
+      '메이킹 기록 2GB 한도에 도달했습니다. 자동 기록은 중지되었으며 기존 기록은 유지됩니다.';
 
   @override
   String get makingFormatWebm => 'WebM';

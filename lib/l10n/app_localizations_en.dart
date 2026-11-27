@@ -11951,7 +11951,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get makingStorageLimit =>
-      'The 64 MB limit for making-of history has been reached. New snapshots have stopped; existing history is kept.';
+      'The 2 GB limit for making-of history has been reached. Recording has stopped; existing history is kept.';
 
   @override
   String get makingFormatWebm => 'WebM';

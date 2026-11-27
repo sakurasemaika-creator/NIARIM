@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/signal_colors.dart';
@@ -295,20 +294,7 @@ class _MakingScreenState extends State<MakingScreen> {
     });
     _playTimer?.cancel();
     String? partialOutput;
-    Directory? pictures;
     try {
-      // The pictures of the recorded steps are made now (nothing was drawn
-      // while recording).
-      pictures = await Directory(
-        '${(await getTemporaryDirectory()).path}/niarim_making_pictures_${DateTime.now().microsecondsSinceEpoch}',
-      ).create(recursive: true);
-      final snapshotPaths = await player.writePictures(
-        pictures,
-        onProgress: (done, total) {
-          if (mounted) setState(() => _exportProgress = done / total);
-        },
-      );
-      if (mounted) setState(() => _exportProgress = null);
       final exportDirectory = await ExportEngine.exportsDir();
       // The work's name, like the work's own exports (it was the project's
       // id, so a search by the work's name in the Works list missed it).
@@ -318,13 +304,20 @@ class _MakingScreenState extends State<MakingScreen> {
         format.name,
       );
       partialOutput = outputPath;
+      // The pictures of the recorded steps are made now (nothing was drawn
+      // while recording); the steps already turned into video are used as
+      // they are.
       await MakingExport.export(
-        snapshotPaths: snapshotPaths,
+        frames: player,
         format: format,
         outputPath: outputPath,
         officialMark: officialMark,
         watermarkAreas: watermarkAreas,
+        onProgress: (done, total) {
+          if (mounted) setState(() => _exportProgress = done / total);
+        },
       );
+      if (mounted) setState(() => _exportProgress = null);
 
       final outputFile = File(outputPath);
       if (!await outputFile.exists() || await outputFile.length() == 0) {
@@ -352,13 +345,6 @@ class _MakingScreenState extends State<MakingScreen> {
         SnackBar(content: Text(MakingStrings.exportFailed(context))),
       );
     } finally {
-      if (pictures != null) {
-        try {
-          await pictures.delete(recursive: true);
-        } catch (error) {
-          debugPrint('Could not remove the making pictures: $error');
-        }
-      }
       if (mounted) {
         setState(() {
           _exporting = false;

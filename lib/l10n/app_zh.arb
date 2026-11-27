@@ -4137,7 +4137,7 @@
   "makingTitle": "制作过程",
   "makingEmpty": "此作品没有制作记录。请在作品详情中开启记录后继续编辑。",
   "makingLoadFailed": "无法加载制作记录",
-  "makingStorageLimit": "制作记录已达到64MB上限。新快照已停止，现有记录会保留。",
+  "makingStorageLimit": "制作记录已达到2GB上限。自动记录已停止，现有记录会保留。",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "导出制作过程",
   "makingExportComplete": "制作过程视频已导出。",

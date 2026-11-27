@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../engine/making_log.dart';
 import 'making_recorder.dart';
+import 'storage_info_service.dart';
 
 class MakingSnapshot {
   const MakingSnapshot({
@@ -34,14 +35,14 @@ class MakingHistory {
   final bool limitReached;
 }
 
-/// A work's making, stored outside the editable project archive and capped
-/// at 64 MB. Nothing recorded is removed automatically when the cap is
-/// reached.
+/// A work's making, stored outside the editable project archive.
 ///
-/// The making is now recorded as the steps of the history
-/// ([MakingRecorder], `Making/log/`). The picture records ([MakingSnapshot],
-/// `Making/making_*.jpg`) are those of earlier versions; they still play
-/// before the recorded steps.
+/// The making is recorded as the steps of the history ([MakingRecorder],
+/// `Making/log/`); the oldest steps are turned into video segments in idle
+/// time when that is smaller (`Making/segments/`). The picture records
+/// ([MakingSnapshot], `Making/making_*.jpg`) are those of earlier versions;
+/// they still play first. Recording stops only at the safety limit
+/// [maxBytesPerProject]; nothing recorded is removed when it is reached.
 abstract final class MakingService {
   static const int maxBytesPerProject = MakingLog.maxBytes;
 
@@ -192,6 +193,11 @@ abstract final class MakingService {
     // knows of the deleted log is used again.
     await MakingRecorder.current?.forget(projectId);
     final dir = await _directory(projectId);
-    if (await dir.exists()) await dir.delete(recursive: true);
+    try {
+      if (await dir.exists()) await dir.delete(recursive: true);
+    } finally {
+      // The storage screen's totals were made before.
+      StorageInfoService().invalidate();
+    }
   }
 }

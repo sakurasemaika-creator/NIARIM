@@ -12139,7 +12139,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get makingStorageLimit =>
-      'La limite de 64 Mo est atteinte. Les nouvelles captures sont arrêtées et l’historique existant est conservé.';
+      'La limite de 2 Go est atteinte. L’enregistrement automatique est arrêté et l’historique existant est conservé.';
 
   @override
   String get makingFormatWebm => 'WebM';

@@ -4,12 +4,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../engine/making_log.dart';
+import '../engine/making_video.dart';
 import '../engine/niapro_serializer.dart';
 import '../engine/tile_manager.dart';
 import '../engine/undo_manager.dart';
 import '../models/layer.dart';
 import '../utils/app_error_reporter.dart';
 import '../utils/making_strings.dart';
+import 'making_compactor.dart';
 import 'making_service.dart';
 import 'project_service.dart';
 import 'push_notification_service.dart';
@@ -28,12 +30,29 @@ import 'push_notification_service.dart';
 /// log holds, so changes made while recording was off show up there. Tiles
 /// unchanged since the work file was read are compared by the work file's
 /// CRC-32 without being copied.
+///
+/// When a log keeps a lot of history, its oldest steps are turned into video
+/// while the app is idle ([MakingCompactor]): recording never stops for it.
 class MakingRecorder {
-  MakingRecorder(this._projects, this._history) {
+  MakingRecorder(
+    this._projects,
+    this._history, {
+    MakingVideoTools? videoTools,
+    Duration idleDelay = const Duration(seconds: 4),
+  }) {
+    compactor = MakingCompactor(
+      isWorkActive: (id) => _projects.projects.any((p) => p.id == id),
+      onCompacted: (id) => _works[id]?.limitReached = false,
+      idleDelay: idleDelay,
+      tools: videoTools,
+    );
     _history.addListener(_onHistoryChanged);
     _projects.addListener(_onProjectsChanged);
     current = this;
   }
+
+  /// Turns the oldest steps of the logs into video in idle time.
+  late final MakingCompactor compactor;
 
   /// The recorder of the running app (the making history is deleted through
   /// it).
@@ -59,6 +78,7 @@ class MakingRecorder {
   }
 
   void _onHistoryChanged() {
+    compactor.noteInput();
     if (_scheduled) return;
     _scheduled = true;
     // Several changes in one go (a grouped operation) make one step.
@@ -216,6 +236,7 @@ class MakingRecorder {
     await (work.opened ??= MakingLogWriter.open(dir).then((opened) {
       work.crcs.addAll(opened.crcs);
       work.limitReached = opened.limitReached;
+      compactor.noteHistory(projectId, dir, opened.historyBytes);
     }));
     if (work.limitReached) return;
     final tiles = work.tiles!;
@@ -256,6 +277,7 @@ class MakingRecorder {
           work.crcs[key] = value;
         }
       }
+      compactor.noteHistory(projectId, dir, result.historyBytes);
       if (result.limitReached) {
         work.limitReached = true;
         _tellLimitReached();
@@ -277,17 +299,22 @@ class MakingRecorder {
     );
   }
 
-  /// Waits until every step taken so far is stored.
+  /// Waits until every step taken so far is stored (and, once disposed,
+  /// until nothing is being turned into video).
   Future<void> flush() async {
     // A step taken in this microtask turn is queued first.
     await Future<void>.microtask(() {});
     await _queue;
     await MakingLogWriter.flush();
+    if (_disposed) await compactor.settled;
   }
+
+  bool _disposed = false;
 
   /// Forgets [projectId]'s making (its history is about to be deleted). The
   /// steps already taken are stored first.
   Future<void> forget(String projectId) async {
+    await compactor.cancel(projectId);
     await flush();
     final work = _works.remove(projectId);
     final dir = work?.dir ?? await MakingService.logDirectory(projectId);
@@ -297,6 +324,8 @@ class MakingRecorder {
   }
 
   void dispose() {
+    _disposed = true;
+    compactor.dispose();
     _history.removeListener(_onHistoryChanged);
     _projects.removeListener(_onProjectsChanged);
     if (identical(current, this)) current = null;

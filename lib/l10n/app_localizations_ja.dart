@@ -11110,7 +11110,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get makingStorageLimit =>
-      'メイキングの保存上限（64MB）に達しました。これ以上の自動記録は停止しています。既存の記録は保持されています。';
+      'メイキングの保存上限（2GB）に達しました。これ以上の自動記録は停止しています。既存の記録は保持されています。';
 
   @override
   String get makingFormatWebm => 'WebM';

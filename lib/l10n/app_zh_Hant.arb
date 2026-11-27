@@ -4137,7 +4137,7 @@
   "makingTitle": "製作過程",
   "makingEmpty": "此作品沒有製作記錄。請在作品詳細資訊中開啟記錄後繼續編輯。",
   "makingLoadFailed": "無法載入製作記錄",
-  "makingStorageLimit": "製作記錄已達到64MB上限。新快照已停止，現有記錄會保留。",
+  "makingStorageLimit": "製作記錄已達到2GB上限。自動記錄已停止，現有記錄會保留。",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "匯出製作過程",
   "makingExportComplete": "製作過程影片已匯出。",

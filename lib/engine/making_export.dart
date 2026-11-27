@@ -2,23 +2,79 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
-import '../services/hw_video_encoder.dart';
 import 'corner_logo.dart';
 import 'export_engine.dart';
+import 'making_log.dart';
+import 'making_player.dart';
+import 'making_video.dart';
 
 /// メイキング動画の書き出しの形式。名前（[Enum.name]）がそのままファイルの
 /// 拡張子。
 enum MakingExportFormat { mp4, gif, webm, avi }
 
-/// メイキング動画（記録したキャンバスの画像を順に並べた動画）の書き出し。
+/// How [MakingFrames.writeFrames] gives the picture records of earlier
+/// versions.
+enum MakingPictureMode {
+  /// The file as it is, whatever its size (the caller resizes it).
+  asIs,
+
+  /// The file as it is when it has the size asked for, else a PNG of it.
+  sameSize,
+
+  /// Always a PNG of the size asked for.
+  png,
+}
+
+/// A video file that shows frames [start]…[start]+[frames]−1 of a making.
+class MakingVideoSpan {
+  const MakingVideoSpan({
+    required this.start,
+    required this.frames,
+    required this.path,
+    required this.width,
+    required this.height,
+    required this.fps,
+  });
+
+  final int start;
+  final int frames;
+  final String path;
+  final int width;
+  final int height;
+  final int fps;
+}
+
+/// The frames of a making video, made as they are written.
+abstract interface class MakingFrames {
+  int get length;
+
+  /// The size of the making's frames.
+  int get width;
+  int get height;
+
+  /// The video files that already show some of the frames.
+  List<MakingVideoSpan> get videoSpans;
+
+  /// Writes frames [from]…[to]−1 as image files of exactly [width]×[height]
+  /// in [directory] (the picture records as [pictures] says) and returns
+  /// them in order.
+  Future<List<String>> writeFrames(
+    Directory directory,
+    int from,
+    int to, {
+    required int width,
+    required int height,
+    MakingPictureMode pictures,
+  });
+}
+
+/// メイキング動画（記録の1コマずつを順に並べた動画）の書き出し。
 abstract final class MakingExport {
   /// メイキング動画のfps。
-  static const int fps = 8;
+  static const int fps = MakingLog.fps;
 
   /// GIFの1コマの長さ（1/100秒単位）。
   static const int _gifFrameCentiseconds = 100 ~/ fps;
@@ -28,6 +84,12 @@ abstract final class MakingExport {
 
   /// GIFのコマの長辺の上限。
   static const int _gifMaxSide = 360;
+
+  /// One encoder pass takes at most this many frames, and the frames waiting
+  /// for it at most [maxChunkBytes] of files: a long making is encoded in
+  /// parts that are put together without encoding them again.
+  static const int maxChunkFrames = 240;
+  static const int maxChunkBytes = 48 * 1024 * 1024;
 
   /// 公式エンドマークを付ける形式。作品の書き出しと同じく、GIFには付けず、
   /// 代わりに隅へNIARIMのロゴを入れる（[CornerLogoStamp]）。
@@ -48,120 +110,245 @@ abstract final class MakingExport {
     return frames * _gifFrameCentiseconds ~/ 100;
   }
 
-  /// [snapshotPaths]（記録の画像。表示順）を[format]で[outputPath]へ書き出す。
-  /// [officialMark]が真のときは、作品の書き出しと同じ公式エンドマーク
-  /// （[ExportEngine.officialEndCardSeconds]秒）を最後に足す。GIFでは
-  /// エンドマークの代わりに、どのコマにも隅へNIARIMのロゴを入れる。その隅は
-  /// [watermarkAreas]（利用者のウォーターマークの描かれた所。キャンバスに
-  /// 対する0〜1の割合）を避けて選ぶ。
+  /// [frames]（または記録の画像[snapshotPaths]。表示順）を[format]で
+  /// [outputPath]へ書き出す。[officialMark]が真のときは、作品の書き出しと
+  /// 同じ公式エンドマーク（[ExportEngine.officialEndCardSeconds]秒）を最後に
+  /// 足す。GIFではエンドマークの代わりに、どのコマにも隅へNIARIMのロゴを
+  /// 入れる。その隅は[watermarkAreas]（利用者のウォーターマークの描かれた所。
+  /// キャンバスに対する0〜1の割合）を避けて選ぶ。MP4では、動画になった記録は
+  /// エンコードし直さずにつなぐ。
   static Future<void> export({
-    required List<String> snapshotPaths,
+    List<String>? snapshotPaths,
+    MakingFrames? frames,
     required MakingExportFormat format,
     required String outputPath,
     required bool officialMark,
     List<ui.Rect> watermarkAreas = const [],
     ExportEngine? engine,
+    void Function(int done, int total)? onProgress,
+    MakingVideoTools? tools,
   }) async {
-    if (snapshotPaths.isEmpty) {
+    if (frames == null && (snapshotPaths == null || snapshotPaths.isEmpty)) {
       throw ArgumentError.value(snapshotPaths, 'snapshotPaths');
     }
-    final first = img.decodeImage(
-      await File(snapshotPaths.first).readAsBytes(),
+    final source = frames ?? await MakingPictureFrames.of(snapshotPaths!);
+    await _export(
+      source,
+      format: format,
+      outputPath: outputPath,
+      officialMark: officialMark,
+      watermarkAreas: watermarkAreas,
+      engine: engine,
+      onProgress: onProgress,
+      video: tools ?? MakingVideoTools.instance,
     );
-    if (first == null) {
-      throw StateError('Making snapshot image is unreadable.');
-    }
-    final width = first.width;
-    final height = first.height;
-    final endCard = officialMark && carriesOfficialEndCard(format)
-        ? await (engine ?? ExportEngine()).renderOfficialEndCardPng(
-            width: width,
-            height: height,
-          )
-        : null;
-    const endCardFrames = fps * ExportEngine.officialEndCardSeconds;
+  }
 
-    switch (format) {
-      case MakingExportFormat.mp4:
-        Directory? staging;
-        try {
-          final framePaths = [...snapshotPaths];
-          if (endCard != null) {
-            staging = await _stagingDirectory();
-            final endCardFile = File('${staging.path}/endcard.png');
-            await endCardFile.writeAsBytes(endCard, flush: true);
-            framePaths.addAll(List.filled(endCardFrames, endCardFile.path));
-          }
-          await HardwareVideoEncoder.encodeMp4(
+  static Future<void> _export(
+    MakingFrames frames, {
+    required MakingExportFormat format,
+    required String outputPath,
+    required bool officialMark,
+    required List<ui.Rect> watermarkAreas,
+    required ExportEngine? engine,
+    required void Function(int done, int total)? onProgress,
+    required MakingVideoTools video,
+  }) async {
+    if (frames.length == 0) throw ArgumentError.value(frames, 'frames');
+    final width = frames.width;
+    final height = frames.height;
+    final staging = await _stagingDirectory();
+    try {
+      if (format == MakingExportFormat.gif) {
+        await _exportGif(
+          frames,
+          staging,
+          outputPath,
+          cornerLogo: officialMark,
+          watermarkAreas: watermarkAreas,
+          onProgress: onProgress,
+        );
+        return;
+      }
+      String? endCard;
+      if (officialMark) {
+        final png = await (engine ?? ExportEngine()).renderOfficialEndCardPng(
+          width: width,
+          height: height,
+        );
+        endCard = '${staging.path}/endcard.png';
+        await File(endCard).writeAsBytes(png, flush: true);
+      }
+      const endCardFrames = fps * ExportEngine.officialEndCardSeconds;
+      final parts = <String>[];
+      final partFrames = <int>[];
+      var endCardAdded = false;
+      Future<void> encode(List<String> paths, int first) async {
+        final framePaths = [...paths];
+        if (endCard != null &&
+            !endCardAdded &&
+            first + paths.length >= frames.length) {
+          framePaths.addAll(List.filled(endCardFrames, endCard));
+          endCardAdded = true;
+        }
+        if (framePaths.isEmpty) return;
+        final part =
+            '${staging.path}/part_${parts.length.toString().padLeft(4, '0')}.'
+            '${format.name}';
+        if (format == MakingExportFormat.mp4) {
+          await video.encodeMp4(
             framePaths: framePaths,
             fps: fps,
             width: width,
             height: height,
-            outputPath: outputPath,
+            outputPath: part,
           );
-        } finally {
-          await _removeStaging(staging);
+        } else {
+          await _encodeWithFfmpeg(video, framePaths, first, format, part);
         }
-      case MakingExportFormat.gif:
-        await _exportGif(
-          snapshotPaths,
-          outputPath,
-          cornerLogo: officialMark,
-          watermarkAreas: watermarkAreas,
+        parts.add(part);
+        partFrames.add(framePaths.length);
+      }
+
+      // The video segments already are MP4 parts of this size.
+      final spans = {
+        if (format == MakingExportFormat.mp4)
+          for (final span in frames.videoSpans)
+            if (span.width == width && span.height == height && span.fps == fps)
+              span.start: span,
+      };
+      final pictures = format == MakingExportFormat.mp4
+          ? MakingPictureMode.sameSize
+          : MakingPictureMode.png;
+      var i = 0;
+      var chunk = <String>[];
+      var chunkStart = 0;
+      var chunkBytes = 0;
+      final written = <String>{};
+      Future<void> flushChunk() async {
+        await encode(chunk, chunkStart);
+        for (final path in chunk) {
+          if (written.remove(path)) await _delete(File(path));
+        }
+        chunk = [];
+        chunkBytes = 0;
+      }
+
+      while (i < frames.length) {
+        final span = spans[i];
+        if (span != null) {
+          if (chunk.isNotEmpty) await flushChunk();
+          parts.add(span.path);
+          partFrames.add(span.frames);
+          i += span.frames;
+          onProgress?.call(i, frames.length);
+          continue;
+        }
+        if (chunk.isEmpty) chunkStart = i;
+        // Up to the next segment, a few frames at a time (one pass reads
+        // several frames of a segment).
+        var to = math.min(frames.length, i + 16);
+        for (final start in spans.keys) {
+          if (start > i && start < to) to = start;
+        }
+        final paths = await frames.writeFrames(
+          staging,
+          i,
+          to,
+          width: width,
+          height: height,
+          pictures: pictures,
         );
-      case MakingExportFormat.webm:
-      case MakingExportFormat.avi:
-        final staging = await _stagingDirectory();
-        try {
-          for (var i = 0; i < snapshotPaths.length; i++) {
-            await File(snapshotPaths[i]).copy(_framePath(staging, i));
+        for (final path in paths) {
+          if (path.startsWith(staging.path)) {
+            written.add(path);
+            chunkBytes += await File(path).length();
           }
-          if (endCard != null) {
-            // The frame pattern reads JPEG files, like the snapshots.
-            final decoded = img.decodePng(endCard)!;
-            final jpeg = img.encodeJpg(decoded, quality: 95);
-            for (var i = 0; i < endCardFrames; i++) {
-              await File(
-                _framePath(staging, snapshotPaths.length + i),
-              ).writeAsBytes(jpeg);
-            }
-          }
-          final args = <String>[
-            '-y',
-            '-framerate',
-            fps.toString(),
-            '-i',
-            '${staging.path}/frame_%06d.jpg',
-          ];
-          // YUV 4:2:0 encoders need even dimensions on some devices.
-          args.addAll(['-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2']);
-          if (format == MakingExportFormat.webm) {
-            args.addAll([
-              '-c:v',
-              'libvpx-vp9',
-              '-pix_fmt',
-              'yuv420p',
-              '-b:v',
-              '2M',
-            ]);
-          } else {
-            args.addAll(['-c:v', 'mjpeg', '-q:v', '3', '-pix_fmt', 'yuvj420p']);
-          }
-          args.add(outputPath);
-          final session = await FFmpegKit.executeWithArguments(args);
-          if (!ReturnCode.isSuccess(await session.getReturnCode())) {
-            throw StateError(
-              'Video encoder failed: ${await session.getOutput() ?? ''}',
-            );
-          }
-        } finally {
-          await _removeStaging(staging);
         }
+        chunk.addAll(paths);
+        i = to;
+        onProgress?.call(i, frames.length);
+        if (chunk.length >= maxChunkFrames || chunkBytes >= maxChunkBytes) {
+          await flushChunk();
+        }
+      }
+      if (chunk.isNotEmpty || (endCard != null && !endCardAdded)) {
+        // The end mark ends the last part (alone after a segment).
+        if (chunk.isEmpty) chunkStart = frames.length;
+        await flushChunk();
+      }
+      if (parts.length == 1 && parts.single.startsWith(staging.path)) {
+        await _move(File(parts.single), outputPath);
+      } else {
+        await MakingVideo.concat(
+          parts: parts,
+          frames: partFrames,
+          fps: fps,
+          outputPath: outputPath,
+          workDirectory: staging,
+          tools: video,
+        );
+      }
+    } finally {
+      await _removeStaging(staging);
     }
   }
 
-  static String _framePath(Directory staging, int index) =>
-      '${staging.path}/frame_${index.toString().padLeft(6, '0')}.jpg';
+  static Future<void> _encodeWithFfmpeg(
+    MakingVideoTools video,
+    List<String> framePaths,
+    int first,
+    MakingExportFormat format,
+    String outputPath,
+  ) async {
+    // The frames in the order and names the frame pattern reads.
+    final dir = await Directory(
+      '${File(outputPath).parent.path}/'
+      'frames_${DateTime.now().microsecondsSinceEpoch}',
+    ).create();
+    try {
+      for (var i = 0; i < framePaths.length; i++) {
+        final target = makingFramePath(dir, i);
+        try {
+          await Link(target).create(framePaths[i]);
+        } on FileSystemException {
+          await File(framePaths[i]).copy(target);
+        }
+      }
+      final args = <String>[
+        '-y',
+        '-framerate',
+        fps.toString(),
+        '-i',
+        '${dir.path}/f_%06d.png',
+        // YUV 4:2:0 encoders need even dimensions on some devices.
+        '-vf',
+        'pad=ceil(iw/2)*2:ceil(ih/2)*2',
+      ];
+      if (format == MakingExportFormat.webm) {
+        args.addAll([
+          '-c:v',
+          'libvpx-vp9',
+          '-pix_fmt',
+          'yuv420p',
+          '-b:v',
+          '2M',
+        ]);
+      } else {
+        args.addAll(['-c:v', 'mjpeg', '-q:v', '3', '-pix_fmt', 'yuvj420p']);
+      }
+      args.add(outputPath);
+      if (!await video.runFfmpeg(args)) {
+        throw StateError('Video encoder failed for $outputPath.');
+      }
+    } finally {
+      try {
+        await dir.delete(recursive: true);
+      } on FileSystemException {
+        // Removed with the staging folder.
+      }
+    }
+  }
 
   static Future<Directory> _stagingDirectory() async {
     final temp = await getTemporaryDirectory();
@@ -178,6 +365,23 @@ abstract final class MakingExport {
       if (await staging.exists()) await staging.delete(recursive: true);
     } on FileSystemException {
       // A leftover temporary folder does not affect the exported video.
+    }
+  }
+
+  static Future<void> _delete(File file) async {
+    try {
+      if (await file.exists()) await file.delete();
+    } on FileSystemException {
+      // Removed with the staging folder.
+    }
+  }
+
+  static Future<void> _move(File from, String to) async {
+    try {
+      await from.rename(to);
+    } on FileSystemException {
+      await from.copy(to);
+      await _delete(from);
     }
   }
 
@@ -198,15 +402,35 @@ abstract final class MakingExport {
   }
 
   static Future<void> _exportGif(
-    List<String> snapshotPaths,
+    MakingFrames frames,
+    Directory staging,
     String outputPath, {
     required bool cornerLogo,
     required List<ui.Rect> watermarkAreas,
+    void Function(int done, int total)? onProgress,
   }) async {
     final encoder = newExportGifEncoder();
     CornerLogoStamp? logo;
     (int, int)? logoFrameSize;
-    Future<void> add(img.Image decoded) async {
+    // The frames made for the GIF are made at its size.
+    final scale = math.min(
+      1.0,
+      _gifMaxSide / math.max(frames.width, frames.height),
+    );
+    final gifWidth = math.max(2, (frames.width * scale).round());
+    final gifHeight = math.max(2, (frames.height * scale).round());
+    Future<void> add(int index) async {
+      final path = (await frames.writeFrames(
+        staging,
+        index,
+        index + 1,
+        width: gifWidth,
+        height: gifHeight,
+        pictures: MakingPictureMode.asIs,
+      )).single;
+      final decoded = img.decodeImage(await File(path).readAsBytes());
+      if (path.startsWith(staging.path)) await _delete(File(path));
+      if (decoded == null) return;
       var frame = _gifFrame(decoded);
       if (cornerLogo) {
         // A canvas resized while recording gives snapshots of other sizes.
@@ -233,24 +457,17 @@ abstract final class MakingExport {
         frame = logo!.stampOnto(frame);
       }
       encoder.addFrame(frame, duration: _gifFrameCentiseconds);
+      onProgress?.call(index + 1, frames.length);
     }
 
     // GIF palette frames remain resident in the encoder. Downsample and cap
     // this format to keep export memory bounded on phones.
-    final step = gifStep(snapshotPaths.length);
-    for (var i = 0; i < snapshotPaths.length; i += step) {
-      final decoded = img.decodeImage(
-        await File(snapshotPaths[i]).readAsBytes(),
-      );
-      if (decoded == null) continue;
-      await add(decoded);
+    final count = frames.length;
+    final step = gifStep(count);
+    for (var i = 0; i < count; i += step) {
+      await add(i);
     }
-    if ((snapshotPaths.length - 1) % step != 0) {
-      final last = img.decodeImage(
-        await File(snapshotPaths.last).readAsBytes(),
-      );
-      if (last != null) await add(last);
-    }
+    if ((count - 1) % step != 0) await add(count - 1);
     final gif = encoder.finish();
     if (gif == null || gif.isEmpty) {
       throw StateError('GIF encoder returned no data.');

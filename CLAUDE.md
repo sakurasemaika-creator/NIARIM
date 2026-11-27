@@ -1241,8 +1241,9 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   パレットの番号のバイト列から書く（1920×1080の1コマの色の引き当てと符号化で約37→15ms）。パレットの絵を
   渡したときは、image packageと同じく書く時点で読む。image packageを上げるときは
   `test/engine/gif_writer_identity_test.dart`（そのパッケージの`GifEncoder`と突き合わせる）を流すこと。
-- **メイキングは取り消しの履歴の変化ごとに、変わったタイルだけを記録する（所有者の依頼、2026-11-27
-  「取り消した部分も入れておいてほしいです。メイキングの記録方法は最も軽量になる方法を模索してください」）**：
+- **メイキングは取り消しの履歴の変化ごとに、変わったタイルだけを記録し、古い所は動画の方が軽いときだけ1080pの動画にする（所有者の依頼、2026-11-27
+  「取り消した部分も入れておいてほしいです。メイキングの記録方法は最も軽量になる方法を模索してください」、
+  「とにかく、最もアプリが軽量になる方法で実装してくれたら問題ないです」「解像度は1080pで」）**：
   `lib/services/making_recorder.dart`の`MakingRecorder`が`UndoManager`を聞き、操作・取り消し・やり直しの
   1回ずつ（同じ流れの中のまとまりは1回）を1コマにする。描いている間に絵は作らない：変わったタイル
   （`TileManager.consumeMakingDirtyTiles`、消えたタイルも入る）を写し、そのコマのレイヤーの並び（JSON）と
@@ -1250,16 +1251,32 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   タイルは1回だけzlibで`Making/log/blobs.bin`へ足し、`steps.jsonl`に1行ずつ書く（取り消し・やり直しは前に
   保存したタイルを指すだけ）。作品を開いた後・記録を入れ直した後に初めて出るレイヤーは、作品ファイルの
   CRC-32（`TileManager.storedCrc`、`loadTilesSync(crcs:)`）で記録と同じか確かめ、違うタイルだけ写す
-  （記録を切っていた間の変化はここで入る）。上限は今までの絵の記録と合わせて64MB。絵は再生・書き出しの
-  ときに`lib/engine/making_player.dart`の`MakingPlayer`が作る（再生は前のコマと違うタイルだけ読んで展開、
-  書き出しは全部のコマを一時フォルダへJPEGにしてから`MakingExport`。紙は作品の背景色、透明なら白）。
-  以前の版の絵の記録（`Making/making_*.jpg`）はその前に流れる。**レイヤーのタイルを丸ごと捨てる・付け
+  （記録を切っていた間の変化はここで入る）。記録に残る履歴（最後に見えていないタイルと行）が16MBを超えると、
+  `lib/services/making_compactor.dart`の`MakingCompactor`が、何もしていない間（画面に触れず・キーも押さず
+  4秒、アプリが前にある間）だけ、先頭から動画にした方が軽くなるステップ（`MakingLogWriter.plan`：消せる
+  タイル＋行−見込みの動画の大きさが最大になる数。見込みはその作品の区切りの1コマの平均、無ければ端末の
+  エンコーダーに渡すビットレート〔0.1bit/画素・1Mbit/s以上〕）を1コマずつ描き（1920×1080〔縦は1080×1920〕に
+  収め、拡大しない、偶数の辺。`MakingLog.frameSize`）、端末のH.264エンコーダーで120コマまでの区切り
+  （`Making/segments/seg_NNNNNN.mp4`、8fps）にして、コマの数と最後のコマの絵を確かめてから、記録を「その時の
+  全部のタイル〔キーフレーム。保存済みのタイルを指す〕＋後のステップ」に書き直す（`log.next/`に全部書いてから
+  名前を替える。途中で落ちても古いか新しいかのどちらかで、記録に無い区切りは次に読むとき消す）。線画のように
+  記録の方が軽いときは動画にしない。作れない・確かめに通らない端末では記録をそのまま残す（その起動では
+  もう試さない）。止まる上限は端末の容量を守るための2GB（絵の記録・記録・動画の合計）だけ。絵は再生・
+  書き出しのときに`lib/engine/making_player.dart`の`MakingPlayer`が作る（以前の版の絵の記録`Making/making_*.jpg`
+  →動画の区切り〔`FfmpegVideoFrameDecoder`で8コマずつ読み、次を先に読む〕→記録のステップ〔キーフレームから、
+  前のコマと違うタイルだけ読んで展開〕。紙は作品の背景色、透明なら白）。書き出し（`MakingExport.export(frames:)`）は
+  メイキングの大きさ（区切りの大きさ）で、MP4は区切りをエンコードし直さずにFFmpegのconcat（`-c copy`）でつなぎ、
+  残りの記録とエンドマークだけを240コマずつエンコードする。WebM・AVI・GIFは区切りのコマをFFmpegで読む。
+  メイキングの画面（再生・書き出し）が開いている間は記録を入れ替えない（`MakingPlayer.isOpen`）。履歴の削除は
+  動画にしている途中なら止めてから消す（`MakingRecorder.forget`→`MakingCompactor.cancel`）。動画のツールは
+  `MakingVideoTools.instance`（端末：`HardwareVideoEncoder`とFFmpegKit）で、testはシステムのffmpegで代える
+  （`test/helpers/system_video_tools.dart`、`test/making_compaction_test.dart`）。**レイヤーのタイルを丸ごと捨てる・付け
   替える処理を足したら、メイキングにも消えたと伝えること**（`_markMakingRemoved`。`removeLayer`・
   `removeSceneTiles`・`renameKey`・`importAll`が実例）。記録を切っても前の記録は消えず、入れ直すと続きに
   足す。作品詳細では記録の入切を編集の操作より下の「メイキング」の欄に置き、その下に「メイキング再生」
   （`/making/:id?play=1`、開いたらすぐ再生。記録を切っている間は薄く押せない）。メイキングの画面の書き出し
   ボタンは「メイキングを書き出す」。キャンバスの設定/編集メニューの「自動化と入力」にも同じ入切のスイッチ。
-  `test/making_recorder_test.dart`・`test/making_controls_test.dart`が見張る。
+  `test/making_recorder_test.dart`・`test/making_controls_test.dart`・`test/making_compaction_test.dart`が見張る。
 - **数と単位をコードでつなげない（ARBのICU pluralにする）**：特典交換の期間は
   `'${amount}$unit'`でつないでいて、英語「1hours」・スペイン語「1horas」・
   フランス語「1heures」と出ていた。`rewardDurationHours`等（`{count, plural,

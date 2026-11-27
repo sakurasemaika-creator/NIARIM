@@ -4174,7 +4174,7 @@
   "makingTitle": "Making-of",
   "makingEmpty": "There is no making-of history for this project. Turn on recording when you create a new project, or enable it in the project details, and then keep working.",
   "makingLoadFailed": "Could not load the making-of history",
-  "makingStorageLimit": "The 64 MB limit for making-of history has been reached. New snapshots have stopped; existing history is kept.",
+  "makingStorageLimit": "The 2 GB limit for making-of history has been reached. Recording has stopped; existing history is kept.",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "Export the making-of",
   "makingExportComplete": "Making-of video exported.",

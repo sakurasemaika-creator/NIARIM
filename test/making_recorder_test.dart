@@ -191,14 +191,21 @@ void main() {
     // Back to an earlier step (the slider) still shows that step.
     expect(await pixel(1, 10, 10), _blue);
 
-    // Export: the pictures are written as JPEG files, in order.
+    // Export: the frames are written at the making's size (the canvas's,
+    // within 1920×1080), in order.
+    expect((player.width, player.height), (640, 360));
     final out = Directory('${temp.path}/pictures')..createSync();
-    final paths = await player.writePictures(out);
+    final paths = await player.writeFrames(
+      out,
+      0,
+      3,
+      width: player.width,
+      height: player.height,
+    );
     expect(paths, hasLength(3));
-    final second = img.decodeJpg(File(paths[1]).readAsBytesSync())!;
+    final second = img.decodePng(File(paths[1]).readAsBytesSync())!;
     final p = second.getPixel(10, 10);
-    expect((p.b - _blue[2]).abs(), lessThan(12));
-    expect((p.r - _blue[0]).abs(), lessThan(12));
+    expect([p.r, p.g, p.b], _blue.take(3));
   });
 
   test('nothing is recorded while the making is off; the changes made '

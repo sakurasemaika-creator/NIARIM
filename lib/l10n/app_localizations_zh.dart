@@ -10978,7 +10978,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get makingLoadFailed => '无法加载制作记录';
 
   @override
-  String get makingStorageLimit => '制作记录已达到64MB上限。新快照已停止，现有记录会保留。';
+  String get makingStorageLimit => '制作记录已达到2GB上限。自动记录已停止，现有记录会保留。';
 
   @override
   String get makingFormatWebm => 'WebM';
@@ -22108,7 +22108,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get makingLoadFailed => '無法載入製作記錄';
 
   @override
-  String get makingStorageLimit => '製作記錄已達到64MB上限。新快照已停止，現有記錄會保留。';
+  String get makingStorageLimit => '製作記錄已達到2GB上限。自動記錄已停止，現有記錄會保留。';
 
   @override
   String get makingFormatWebm => 'WebM';

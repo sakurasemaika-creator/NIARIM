@@ -4137,7 +4137,7 @@
   "makingTitle": "Making-of",
   "makingEmpty": "Aucun historique de création. Activez l’enregistrement dans les détails du projet et continuez à créer.",
   "makingLoadFailed": "Impossible de charger l’historique de création",
-  "makingStorageLimit": "La limite de 64 Mo est atteinte. Les nouvelles captures sont arrêtées et l’historique existant est conservé.",
+  "makingStorageLimit": "La limite de 2 Go est atteinte. L’enregistrement automatique est arrêté et l’historique existant est conservé.",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "Exporter le making-of",
   "makingExportComplete": "Vidéo du making-of exportée.",
