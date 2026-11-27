@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../config/font_fallback.dart';
+
 /// The current focus-window header can host an action supplied by its child.
 /// The child registers a builder so its action can live in the shared header
 /// without moving its editing state out of the panel.
