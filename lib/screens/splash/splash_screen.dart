@@ -18,7 +18,6 @@ import '../../config/font_fallback.dart';
 import '../../utils/line_break.dart';
 import '../../widgets/responsive.dart';
 import '../../utils/app_error_reporter.dart';
-import '../../utils/tolerant_preferences.dart';
 import '../home/home_screen.dart';
 import '../home/widgets/project_list_widget.dart';
 import '../../widgets/theme_rescue_button.dart';
@@ -123,7 +122,7 @@ class _SplashScreenState extends State<SplashScreen> {
     String? savedViewMode;
     try {
       final prefs = await SharedPreferences.getInstance();
-      savedViewMode = prefs.readString(homeProjectViewModeKey);
+      savedViewMode = savedHomeProjectViewMode(prefs);
     } catch (error) {
       debugPrint('Project tile preference could not be read: $error');
     }

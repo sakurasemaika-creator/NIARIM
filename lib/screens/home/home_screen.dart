@@ -8637,6 +8637,11 @@ class _WorkPreviewState extends State<_WorkPreview> {
 /// ホームの「プロジェクト」の一覧の表示を覚える保存キー。
 const String homeProjectViewModeKey = 'home.projectViewMode.v1';
 
+/// [prefs]に保存したホームの「プロジェクト」の一覧の表示（無い・読めなければnull）。
+/// 起動画面の先読みも、一覧と同じキーをこれで読む。
+String? savedHomeProjectViewMode(SharedPreferences prefs) =>
+    prefs.readString(homeProjectViewModeKey);
+
 /// ホームの「プロジェクト」の一覧の表示：保存した[saved]、無い・読めない
 /// ときは画面の幅[width]で決まる表示（ホームが開いたときと同じ決め方）。
 ProjectViewMode homeProjectViewModeFor(String? saved, double width) {
