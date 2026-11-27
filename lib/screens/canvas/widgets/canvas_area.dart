@@ -5378,6 +5378,9 @@ class CanvasAreaState extends State<CanvasArea> {
                     selectionOverlayImage: _selectionOverlayImage,
                     selectionClip: _selectionClip,
                     selectionLayerOverlayImage: _selectionLayerOverlayImage,
+                    currentIsSelectionLayer: _layers.any(
+                      (l) => l.id == _layerId && l.type == LayerType.selection,
+                    ),
                     lensMaskImage: widget.filterLensMask == null
                         ? null
                         : _lensMaskImage,
@@ -5606,6 +5609,12 @@ class _CanvasPainter extends CustomPainter {
   // 常に最前面（選択ツールの確定範囲表示より手前）へ、テーマの選択色
   // （handleColorと同じ、色固定を廃止している）でタイントして重ねる。
   final ui.Image? selectionLayerOverlayImage;
+
+  /// The current layer is the selection layer: it is drawn half see-through
+  /// in the selection colour, so the picture under it shows. While another
+  /// layer is in use, the selection layer is a dashed outline instead (the
+  /// owner's choice, 2026-11-27; before, it covered the picture in both).
+  final bool currentIsSelectionLayer;
   final List<Offset> lassoPoints;
   final List<Offset> subToolStrokePoints;
   final Ruler? activeRuler;
@@ -5675,6 +5684,7 @@ class _CanvasPainter extends CustomPainter {
     this.selectionOverlayImage,
     this.selectionClip,
     this.selectionLayerOverlayImage,
+    this.currentIsSelectionLayer = false,
     this.lensMaskImage,
     this.lensStroke = const [],
     this.lensStrokeScreenRadius = 0,
@@ -5706,6 +5716,12 @@ class _CanvasPainter extends CustomPainter {
   });
 
   ColorFilter? get _currentTintFilter {
+    if (currentIsSelectionLayer) {
+      return ColorFilter.mode(
+        handleColor.withValues(alpha: 0.5),
+        BlendMode.srcIn,
+      );
+    }
     final tint = currentLayerTint;
     return tint == null ? null : ColorFilter.mode(Color(tint), BlendMode.srcIn);
   }
@@ -5829,17 +5845,13 @@ class _CanvasPainter extends CustomPainter {
     // レイヤーのため、通常合成には含めず、常にテーマの選択色で半透明
     // タイントして最前面付近へ重ねる。BlendMode.srcInで画像のアルファ形状
     // はそのまま、色だけをタイント色（透明度50%）へ置き換える）。
-    if (selectionLayerOverlayImage != null) {
-      final tintPaint = Paint()
-        ..colorFilter = ColorFilter.mode(
-          handleColor.withValues(alpha: 0.5),
-          BlendMode.srcIn,
-        );
-      _drawFrameImage(
+    // While the selection layer itself is in use it is the current layer,
+    // drawn half see-through above; otherwise its outline is dashed.
+    if (selectionLayerOverlayImage != null && !currentIsSelectionLayer) {
+      _paintSelectionLayerOutline(
         canvas,
         drawingRect,
-        selectionLayerOverlayImage,
-        tintPaint,
+        selectionLayerOverlayImage!,
       );
     }
 
@@ -6415,6 +6427,55 @@ class _CanvasPainter extends CustomPainter {
     canvas.restore();
   }
 
+  /// A dashed line just outside the shape of [mask] (the selection layer),
+  /// about 1.5 screen pixels wide at any zoom: the shape spread a little in
+  /// four directions, less the shape itself, filled with stripes of the
+  /// selection colour and its outline colour. Drawn on the GPU each frame
+  /// (no outline is worked out on the CPU).
+  void _paintSelectionLayerOutline(
+    Canvas canvas,
+    Rect drawingRect,
+    ui.Image mask,
+  ) {
+    final zoom = viewTransform.getMaxScaleOnAxis();
+    final width = 1.5 / (zoom > 0 ? zoom : 1);
+    final bounds = drawingRect.inflate(width * 2);
+    canvas.saveLayer(bounds, Paint());
+    final solid = Paint()
+      ..colorFilter = const ColorFilter.mode(
+        Color(0xFF000000),
+        BlendMode.srcIn,
+      );
+    for (final offset in [
+      Offset(width, 0),
+      Offset(-width, 0),
+      Offset(0, width),
+      Offset(0, -width),
+    ]) {
+      _drawFrameImage(canvas, drawingRect.shift(offset), mask, solid);
+    }
+    _drawFrameImage(
+      canvas,
+      drawingRect,
+      mask,
+      Paint()..blendMode = BlendMode.dstOut,
+    );
+    final period = 8 / (zoom > 0 ? zoom : 1);
+    canvas.drawRect(
+      bounds,
+      Paint()
+        ..blendMode = BlendMode.srcIn
+        ..shader = ui.Gradient.linear(
+          Offset.zero,
+          Offset(period, period),
+          [handleColor, handleColor, handleOutlineColor, handleOutlineColor],
+          const [0, .5, .5, 1],
+          TileMode.repeated,
+        ),
+    );
+    canvas.restore();
+  }
+
   void _drawFrameImage(
     Canvas canvas,
     Rect drawingRect,
@@ -6508,6 +6569,7 @@ class _CanvasPainter extends CustomPainter {
       old.selectionOverlayImage != selectionOverlayImage ||
       old.selectionClip != selectionClip ||
       old.selectionLayerOverlayImage != selectionLayerOverlayImage ||
+      old.currentIsSelectionLayer != currentIsSelectionLayer ||
       old.lensMaskImage != lensMaskImage ||
       old.lensStroke != lensStroke ||
       old.lensStrokeScreenRadius != lensStrokeScreenRadius ||
