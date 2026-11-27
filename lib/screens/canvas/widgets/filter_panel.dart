@@ -598,6 +598,9 @@ class _FilterPanelState extends State<FilterPanel> {
       return;
     }
     _clearPendingPreview();
+    // Leaving the open filter without applying puts its values back first,
+    // so that the tile's own fix below is not taken for an edit to undo.
+    if (service.currentFilter?.id != filter.id) service.clearCurrentFilter();
     _autoLineartBaseGraph = null;
     _autoLineartPreviewGraph = null;
     _autoLineartEditBaselineGraph = null;
@@ -3537,7 +3540,9 @@ class _FilterPanelState extends State<FilterPanel> {
         // canvas overlay and reload the now-committed pixels before another
         // filter can be chosen, so the next preview stacks on the result.
         _clearPendingPreview();
-        context.read<FilterService>().clearCurrentFilter();
+        context.read<FilterService>()
+          ..keepFilterEdits()
+          ..clearCurrentFilter();
         setState(() => _collapsed = false);
         await _loadPreviewBase();
       }

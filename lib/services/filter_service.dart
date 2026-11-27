@@ -500,6 +500,7 @@ class FilterService extends ChangeNotifier {
     if (filter.isSettingsPreset && filter.id == _currentFilterId) {
       _presetDraft = filter;
     } else {
+      _keepBeforeEdit(_filters[index]);
       _filters[index] = filter;
       _persist();
     }
@@ -517,6 +518,7 @@ class FilterService extends ChangeNotifier {
     }
 
     if (filter.noiseStyle == NoiseStyle.color) {
+      _keepNoiseProfileBeforeEdit();
       _colorNoiseProfile = filter;
     } else {
       final previousId = filter.noiseStyle == NoiseStyle.vhs
@@ -524,6 +526,7 @@ class FilterService extends ChangeNotifier {
           : filmGrainFilterId;
       final previousIndex = _filters.indexWhere((f) => f.id == previousId);
       if (previousIndex >= 0) {
+        _keepBeforeEdit(_filters[previousIndex]);
         _filters[previousIndex] = _filters[previousIndex].copyWith(
           strength: filter.strength,
           noiseSeed: filter.noiseSeed,
@@ -560,7 +563,55 @@ class FilterService extends ChangeNotifier {
     }
   }
 
+  /// The filters as they were before the open filter's settings changed
+  /// (by id), while a filter is open: the values stay only when it is
+  /// applied ([keepFilterEdits]); cancelling, closing it or choosing another
+  /// filter puts them back (the owner's choice, 2026-11-27).
+  final Map<String, FilterDef> _beforeEdit = {};
+  bool _noiseProfileKept = false;
+  FilterDef? _noiseProfileBeforeEdit;
+
+  void _keepBeforeEdit(FilterDef filter) {
+    if (_currentFilterId == null) return;
+    _beforeEdit.putIfAbsent(filter.id, () => filter);
+  }
+
+  void _keepNoiseProfileBeforeEdit() {
+    if (_currentFilterId == null || _noiseProfileKept) return;
+    _noiseProfileKept = true;
+    _noiseProfileBeforeEdit = _colorNoiseProfile;
+  }
+
+  /// Keeps the open filter's changed settings (it was applied).
+  void keepFilterEdits() {
+    _beforeEdit.clear();
+    _noiseProfileKept = false;
+    _noiseProfileBeforeEdit = null;
+  }
+
+  /// Puts back the settings changed since the filter was opened. Its name
+  /// and favourite are not settings: they stay as they are now.
+  void _restoreBeforeEdit() {
+    if (_noiseProfileKept) _colorNoiseProfile = _noiseProfileBeforeEdit;
+    var restored = false;
+    for (final MapEntry(key: id, value: before) in _beforeEdit.entries) {
+      final index = _filters.indexWhere((f) => f.id == id);
+      if (index < 0) continue;
+      final now = _filters[index];
+      _filters[index] = before.copyWith(
+        name: now.name,
+        isFavorite: now.isFavorite,
+      );
+      restored = true;
+    }
+    keepFilterEdits();
+    _filterEditUndo.clear();
+    _filterEditRedo.clear();
+    if (restored) _persist();
+  }
+
   void selectFilter(String id) {
+    if (_currentFilterId != id) _restoreBeforeEdit();
     _currentFilterId = id;
     _presetDraft = null;
     _filterEditUndo.clear();
@@ -570,6 +621,7 @@ class FilterService extends ChangeNotifier {
 
   void clearCurrentFilter() {
     if (_currentFilterId == null) return;
+    _restoreBeforeEdit();
     _currentFilterId = null;
     _presetDraft = null;
     notifyListeners();
