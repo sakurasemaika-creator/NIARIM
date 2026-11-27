@@ -157,6 +157,15 @@ void main() {
     expect(move.right, closeTo(close.left, 0.1),
         reason: 'panels without contextual actions must not reserve an empty menu slot');
     expect(close.right, closeTo(tester.getRect(surface).right, 0.1));
+
+    // The visible title is itself an easy-to-hit move target; users do not
+    // need to aim precisely at the tiny central grip.
+    final beforeTitleDrag = tester.getRect(surface);
+    await tester.drag(find.text('色調調整'), const Offset(54, -36));
+    await tester.pumpAndSettle();
+    final afterTitleDrag = tester.getRect(surface);
+    expect(afterTitleDrag.left, closeTo(beforeTitleDrag.left + 54, 0.1));
+    expect(afterTitleDrag.top, closeTo(beforeTitleDrag.top - 36, 0.1));
   });
 
   testWidgets('starts at bottom-right with a single-row control header', (
