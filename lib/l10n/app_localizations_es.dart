@@ -3629,7 +3629,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get brushSettingsMixingWatercolorHint =>
-      'Aplica aguadas transparentes. Al levantar el lápiz, la aguada se seca, se difunde un poco más allá del pincel y el color se acumula en su borde.';
+      'Aplica aguadas transparentes. Al levantar el lápiz, la aguada se seca y se difunde un poco más allá del pincel. Para que el color se acumule en el borde, aplica el filtro de dibujo Borde de acuarela.';
 
   @override
   String get projectDetailNotFoundTitle => 'Proyecto';

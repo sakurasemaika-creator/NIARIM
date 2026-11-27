@@ -1198,7 +1198,7 @@
   "brushSettingsMixingTexture": "斑駁",
   "brushSettingsMixingSoftEdge": "邊界柔化",
   "brushSettingsMixingOilHint": "像顏料一樣與下方的顏色混合，並把沾到的顏色沿筆畫拖開。",
-  "brushSettingsMixingWatercolorHint": "疊加透明的顏料。抬筆後顏料變乾，向筆刷外稍微暈開，顏色聚集在邊緣。",
+  "brushSettingsMixingWatercolorHint": "疊加透明的顏料。抬筆後顏料變乾，向筆刷外稍微暈開。要讓顏色聚集在邊緣，請使用繪圖濾鏡「水彩邊界」。",
   "projectDetailNotFoundTitle": "專案",
   "projectDetailNotFoundBody": "找不到專案",
   "projectDetailFirstFrameTooltip": "第一格",

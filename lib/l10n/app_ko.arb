@@ -1198,7 +1198,7 @@
   "brushSettingsMixingTexture": "얼룩",
   "brushSettingsMixingSoftEdge": "경계 흐림",
   "brushSettingsMixingOilHint": "아래 색과 물감처럼 섞이고, 묻어난 색을 끌어서 늘입니다.",
-  "brushSettingsMixingWatercolorHint": "투명한 물감을 겹쳐 칠합니다. 펜을 떼면 마르면서 붓 바깥으로 조금 번지고 가장자리에 색이 고입니다.",
+  "brushSettingsMixingWatercolorHint": "투명한 물감을 겹쳐 칠합니다. 펜을 떼면 마르면서 붓 바깥으로 조금 번집니다. 가장자리에 색이 고이게 하려면 그리기 필터 '수채 경계'를 적용하세요.",
   "projectDetailNotFoundTitle": "프로젝트",
   "projectDetailNotFoundBody": "프로젝트를 찾을 수 없습니다",
   "projectDetailFirstFrameTooltip": "첫 프레임",

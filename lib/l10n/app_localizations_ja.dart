@@ -3425,7 +3425,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get brushSettingsMixingWatercolorHint =>
-      '透明な絵の具を重ねて塗ります。ペンを離すと乾いて、筆の外へ少しにじみ、縁に色が溜まります。';
+      '透明な絵の具を重ねて塗ります。ペンを離すと乾いて、筆の外へ少しにじみます。縁に色を溜めるときは、描画フィルター「水彩境界」をかけます。';
 
   @override
   String get projectDetailNotFoundTitle => 'プロジェクト';

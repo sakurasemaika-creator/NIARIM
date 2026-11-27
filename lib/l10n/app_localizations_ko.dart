@@ -3442,7 +3442,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get brushSettingsMixingWatercolorHint =>
-      '투명한 물감을 겹쳐 칠합니다. 펜을 떼면 마르면서 붓 바깥으로 조금 번지고 가장자리에 색이 고입니다.';
+      '투명한 물감을 겹쳐 칠합니다. 펜을 떼면 마르면서 붓 바깥으로 조금 번집니다. 가장자리에 색이 고이게 하려면 그리기 필터 \'수채 경계\'를 적용하세요.';
 
   @override
   String get projectDetailNotFoundTitle => '프로젝트';

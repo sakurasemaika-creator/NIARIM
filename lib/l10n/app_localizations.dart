@@ -6234,7 +6234,7 @@ abstract class AppLocalizations {
   /// No description provided for @brushSettingsMixingWatercolorHint.
   ///
   /// In ja, this message translates to:
-  /// **'透明な絵の具を重ねて塗ります。ペンを離すと乾いて、筆の外へ少しにじみ、縁に色が溜まります。'**
+  /// **'透明な絵の具を重ねて塗ります。ペンを離すと乾いて、筆の外へ少しにじみます。縁に色を溜めるときは、描画フィルター「水彩境界」をかけます。'**
   String get brushSettingsMixingWatercolorHint;
 
   /// No description provided for @projectDetailNotFoundTitle.

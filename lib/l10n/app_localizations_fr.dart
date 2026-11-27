@@ -3623,7 +3623,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get brushSettingsMixingWatercolorHint =>
-      'Pose des lavis transparents. Quand vous levez le stylet, le lavis sèche, se diffuse un peu au-delà du pinceau et la couleur s’accumule sur son bord.';
+      'Pose des lavis transparents. Quand vous levez le stylet, le lavis sèche et se diffuse un peu au-delà du pinceau. Pour que la couleur s’accumule sur le bord, appliquez le filtre de dessin « Bord aquarelle ».';
 
   @override
   String get projectDetailNotFoundTitle => 'Projet';

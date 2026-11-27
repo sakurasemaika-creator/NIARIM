@@ -1606,7 +1606,7 @@
   "brushSettingsMixingTexture": "むら",
   "brushSettingsMixingSoftEdge": "境界のぼかし",
   "brushSettingsMixingOilHint": "下の色と絵の具のように混ざり、拾った色を引きずって伸ばします。",
-  "brushSettingsMixingWatercolorHint": "透明な絵の具を重ねて塗ります。ペンを離すと乾いて、筆の外へ少しにじみ、縁に色が溜まります。",
+  "brushSettingsMixingWatercolorHint": "透明な絵の具を重ねて塗ります。ペンを離すと乾いて、筆の外へ少しにじみます。縁に色を溜めるときは、描画フィルター「水彩境界」をかけます。",
   "projectDetailNotFoundTitle": "プロジェクト",
   "projectDetailNotFoundBody": "プロジェクトが見つかりません",
   "projectDetailFirstFrameTooltip": "先頭フレーム",

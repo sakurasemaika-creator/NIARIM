@@ -1198,7 +1198,7 @@
   "brushSettingsMixingTexture": "Textura",
   "brushSettingsMixingSoftEdge": "Borde suave",
   "brushSettingsMixingOilHint": "Se mezcla con los colores de debajo como la pintura y arrastra el color recogido a lo largo del trazo.",
-  "brushSettingsMixingWatercolorHint": "Aplica aguadas transparentes. Al levantar el lápiz, la aguada se seca, se difunde un poco más allá del pincel y el color se acumula en su borde.",
+  "brushSettingsMixingWatercolorHint": "Aplica aguadas transparentes. Al levantar el lápiz, la aguada se seca y se difunde un poco más allá del pincel. Para que el color se acumule en el borde, aplica el filtro de dibujo Borde de acuarela.",
   "projectDetailNotFoundTitle": "Proyecto",
   "projectDetailNotFoundBody": "No se encontró el proyecto",
   "projectDetailFirstFrameTooltip": "Primer fotograma",

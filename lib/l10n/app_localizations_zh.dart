@@ -3391,7 +3391,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get brushSettingsMixingWatercolorHint =>
-      '叠加透明的颜料。抬笔后颜料变干，向笔刷外稍微晕开，颜色聚集在边缘。';
+      '叠加透明的颜料。抬笔后颜料变干，向笔刷外稍微晕开。要让颜色聚集在边缘，请使用绘图滤镜“水彩边界”。';
 
   @override
   String get projectDetailNotFoundTitle => '项目';
@@ -14448,7 +14448,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushSettingsMixingWatercolorHint =>
-      '疊加透明的顏料。抬筆後顏料變乾，向筆刷外稍微暈開，顏色聚集在邊緣。';
+      '疊加透明的顏料。抬筆後顏料變乾，向筆刷外稍微暈開。要讓顏色聚集在邊緣，請使用繪圖濾鏡「水彩邊界」。';
 
   @override
   String get projectDetailNotFoundTitle => '專案';

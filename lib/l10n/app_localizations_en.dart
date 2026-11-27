@@ -3572,7 +3572,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushSettingsMixingWatercolorHint =>
-      'Lays transparent washes. When you lift the pen the wash dries, bleeds a little past the brush, and color gathers at its edge.';
+      'Lays transparent washes. When you lift the pen the wash dries and bleeds a little past the brush. To pool color at the edge, apply the Watercolor Edge draw filter.';
 
   @override
   String get projectDetailNotFoundTitle => 'Project';
