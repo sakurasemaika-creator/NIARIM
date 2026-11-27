@@ -491,22 +491,29 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                                     child: Align(
                                                       alignment:
                                                           Alignment.centerLeft,
-                                                      child: Text(
-                                                        widget.title,
-                                                        key: const ValueKey(
-                                                          'focus-mode-menu-title',
-                                                        ),
-                                                        maxLines: 1,
-                                                        overflow:
-                                                            TextOverflow.ellipsis,
-                                                        style: localizedHeadingStyle(
-                                                          context,
-                                                          TextStyle(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color:
-                                                                scheme.onSurface,
+                                                      // Let pointer gestures pass
+                                                      // through the title text to
+                                                      // the shared move-handle
+                                                      // GestureDetector below.
+                                                      child: IgnorePointer(
+                                                        ignoring: true,
+                                                        child: Text(
+                                                          widget.title,
+                                                          key: const ValueKey(
+                                                            'focus-mode-menu-title',
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow:
+                                                              TextOverflow.ellipsis,
+                                                          style: localizedHeadingStyle(
+                                                            context,
+                                                            TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight.w600,
+                                                              color:
+                                                                  scheme.onSurface,
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
