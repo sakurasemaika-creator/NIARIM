@@ -269,6 +269,18 @@ void main() {
       ).first;
       expect(find.byKey(const ValueKey('color-adjust-save-menu')), findsOneWidget);
       expect(
+        tester.getRect(
+          find.byKey(const ValueKey('focus-mode-menu-move-grip-handle')),
+        ).right,
+        closeTo(
+          tester.getRect(
+            find.byKey(const ValueKey('color-adjust-save-menu')),
+          ).left,
+          0.1,
+        ),
+        reason: 'the move grip must sit immediately left of the color-adjust menu',
+      );
+      expect(
         find.text(
           AppLocalizations.of(tester.element(find.byType(Scaffold).last))!
               .canvasColorAdjustTitle,
@@ -338,6 +350,20 @@ void main() {
       expect(find.byType(MeshTransformPanel), findsOneWidget);
       expect(find.text(meshL10n.meshTransformPanelTitle), findsOneWidget,
           reason: 'the embedded panel must use the shared header title only');
+      expect(find.text(meshL10n.meshTransformPanelHint), findsNothing,
+          reason: 'mesh editing should be self-explanatory without a hint paragraph');
+      expect(
+        tester.getRect(
+          find.byKey(const ValueKey('focus-mode-menu-move-grip-handle')),
+        ).right,
+        closeTo(
+          tester.getRect(
+            find.byKey(const ValueKey('focus-mode-menu-close')),
+          ).left,
+          0.1,
+        ),
+        reason: 'without a contextual menu the move grip sits beside close',
+      );
       final meshFocusSurface = find.byKey(
         const ValueKey('focus-mode-menu-surface'),
       );
