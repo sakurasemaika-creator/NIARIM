@@ -519,11 +519,15 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                 builder: (context, _) {
                                   final builder =
                                       _menuController.headerMenuBuilder;
+                                  if (builder == null) {
+                                    // Do not leave an empty menu-sized gap on
+                                    // panels that have no contextual actions.
+                                    return const SizedBox.shrink();
+                                  }
                                   return SizedBox(
                                     width: headerControlWidth,
                                     height: _headerHeight,
-                                    child: builder?.call(context) ??
-                                        const SizedBox.shrink(),
+                                    child: builder(context),
                                   );
                                 },
                               ),
