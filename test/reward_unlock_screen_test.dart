@@ -464,7 +464,7 @@ void main() {
       await tester.tap(find.byKey(const Key('rewardDurationButton')));
       await tester.pumpAndSettle();
       // Categories start collapsed so days remains reachable on small screens.
-      await tester.tap(find.widgetWithText(ExpansionTile, 'days'));
+      await tester.tap(find.widgetWithText(ExpansionTile, 'Days'));
       await tester.pumpAndSettle();
       final day2 = find.byKey(const ValueKey('rewardDuration_day_2'));
       await tester.ensureVisible(day2);

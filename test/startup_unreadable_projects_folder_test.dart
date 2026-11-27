@@ -2835,7 +2835,17 @@ void main() {
       await _settleWithFiles(tester, rounds: 2);
     }
     await _settleWithFiles(tester, rounds: 3);
-    expect(find.byType(SnackBar), findsNothing, reason: 'the restore failed');
+    // 戻せたときは「ゴミ箱から戻しました」だけが出る（失敗の知らせは出ない）。
+    for (final bar in tester.widgetList<SnackBar>(find.byType(SnackBar))) {
+      expect(
+        find.descendant(
+          of: find.byWidget(bar),
+          matching: find.textContaining(early.name),
+        ),
+        findsWidgets,
+        reason: 'the restore failed',
+      );
+    }
     expect(projects.trashedFolders.map((t) => t.folder.id), [folder.id]);
     expect(projects.folders.map((f) => f.id), [early.id]);
     expect(find.byKey(ValueKey('trashedFolder_${early.id}')), findsNothing);

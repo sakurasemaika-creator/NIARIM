@@ -150,6 +150,9 @@ void main() {
     await pumpScreen(tester, const SettingsScreen());
     final row = find.byKey(const ValueKey('settingsCommerceDisclosureRow'));
     await tester.scrollUntilVisible(row, 200);
+    // 行が増えた（容量削減）ので、行の全体が見える所まで送ってから押す。
+    await tester.ensureVisible(row);
+    await tester.pumpAndSettle();
     expect(find.text(ja.settingsCommerceDisclosure), findsOneWidget);
 
     await tap(tester, row);

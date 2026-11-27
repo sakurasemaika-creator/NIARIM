@@ -2677,10 +2677,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Recherche par étiquette (appuyez pour la recherche par mot-clé)';
 
   @override
-  String get communitySearchModeKeywordLabel => 'Mot-clé';
+  String get communitySearchModeKeywordLabel => 'Par mot-clé';
 
   @override
-  String get communitySearchModeTagLabel => 'Tag';
+  String get communitySearchModeTagLabel => 'Par tag';
 
   @override
   String get creativePanelTagSearchHint => 'Rechercher par étiquette';

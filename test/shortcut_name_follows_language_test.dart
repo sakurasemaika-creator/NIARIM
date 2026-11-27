@@ -220,10 +220,20 @@ void main() {
         find.descendant(of: row, matching: find.byIcon(Icons.delete_outline)),
       );
       await tester.pumpAndSettle();
-      final body = l10n.confirmDeleteNamedBody(
-        l10n.shortcutCommandPreviousFrame,
-      );
-      if (find.text(body).evaluate().isEmpty) {
+      // 削除の確かめにはキーも書く（「←：1フレーム戻る」）。
+      final bodies = [
+        for (final binding
+            in tester.element(row.first).read<ShortcutService>().bindings)
+          if (binding.command == ShortcutCommand.previousFrame)
+            l10n.confirmDeleteNamedBody(
+              l10n.shortcutBindingName(
+                binding.comboLabel,
+                l10n.shortcutCommandPreviousFrame,
+              ),
+            ),
+      ];
+      final body = bodies.join(' / ');
+      if (!bodies.any((b) => find.text(b).evaluate().isNotEmpty)) {
         problems.add('$tag: the delete confirmation does not say「$body」');
       }
       await tester.tap(find.text(l10n.commonCancel).last);

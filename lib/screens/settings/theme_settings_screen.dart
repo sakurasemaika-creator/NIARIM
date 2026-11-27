@@ -929,20 +929,35 @@ class ThemeSettingsScreen extends StatelessWidget {
         cancelLabel: l10n.commonCancel,
         initialName: l10n.themeDefaultPresetName,
         onSubmit: (name) async {
+          final id = 'theme_${DateTime.now().millisecondsSinceEpoch}';
           service.savePreset(
-            service.current.copyWith(
-              id: 'theme_${DateTime.now().millisecondsSinceEpoch}',
-              name: name,
-              isFavorite: false,
-            ),
+            service.current.copyWith(id: id, name: name, isFavorite: false),
           );
-          // 新しいテーマは一覧の最後（画面の外）に足されるので、保存できた
-          // ことを知らせる（以前はダイアログが閉じるだけだった）。
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.commonSavedAsSnackbar(name))),
-            );
-          }
+          // 新しいテーマは一覧の最後（画面の外）に足されるので、その行まで
+          // 送って見せる（以前はダイアログが閉じるだけで、保存できたか分から
+          // なかった。知らせを出すと、すぐ下の新しい行の︙に重なった）。
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!context.mounted) return;
+            Element? row;
+            void visit(Element element) {
+              if (row != null) return;
+              if (element.widget.key == ValueKey(id)) {
+                row = element;
+                return;
+              }
+              element.visitChildren(visit);
+            }
+
+            context.visitChildElements(visit);
+            final found = row;
+            if (found != null) {
+              Scrollable.ensureVisible(
+                found,
+                alignment: 0.5,
+                duration: const Duration(milliseconds: 300),
+              );
+            }
+          });
         },
       ),
     );
