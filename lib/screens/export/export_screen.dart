@@ -56,6 +56,14 @@ class _ExportScreenState extends State<ExportScreen> {
   // 「カスタム」選択時のみ編集可能なFPS（「カスタム」タップで
   // アコーディオン展開して詳細設定を表示する）
   int _customFps = 30;
+
+  /// 書き出しの設定（形式・プリセット・FPS）を変える。前の書き出しの失敗の
+  /// 文は、その設定での失敗なので消す（残すと、変えた設定でも失敗するように
+  /// 読めた）。
+  void _changeSettings(VoidCallback change) => setState(() {
+    change();
+    _error = null;
+  });
   static const int _minCustomFps = 12;
   static const int _maxCustomFps = 60;
 
@@ -201,7 +209,7 @@ class _ExportScreenState extends State<ExportScreen> {
       sectionLabel(l10n.exportPresetSection),
       ExportPresetSelector(
         value: _preset,
-        onChanged: (value) => setState(() => _preset = value),
+        onChanged: (value) => _changeSettings(() => _preset = value),
       ),
       // 「カスタム」選択時のみ詳細設定を展開表示する（初心者はプリセットを
       // 選ぶだけで書き出しが完了する。詳細設定は「カスタム」タップ時のみ表示）。
@@ -239,7 +247,7 @@ class _ExportScreenState extends State<ExportScreen> {
                             sliderLabel: '$_customFps',
                             valueText: '$_customFps',
                             onChanged: (v) =>
-                                setState(() => _customFps = v.round()),
+                                _changeSettings(() => _customFps = v.round()),
                           ),
                         ],
                       ),
@@ -257,7 +265,7 @@ class _ExportScreenState extends State<ExportScreen> {
     final formatSection = <Widget>[
       RadioGroup<ExportFormat>(
         groupValue: _format,
-        onChanged: (v) => setState(() => _format = v!),
+        onChanged: (v) => _changeSettings(() => _format = v!),
         child: GroupedSheet(
           title: l10n.exportFormatSection,
           children: [
@@ -337,7 +345,7 @@ class _ExportScreenState extends State<ExportScreen> {
                     key: const ValueKey('exportUseWorkFps'),
                     onPressed: _isExporting
                         ? null
-                        : () => setState(() {
+                        : () => _changeSettings(() {
                             _preset = ExportPreset.custom;
                             _customFps = project.fps;
                           }),

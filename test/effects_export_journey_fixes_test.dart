@@ -5,6 +5,7 @@
 //   「色数を指定する」に戻った（方式と色を、古い値から続けて2回作り直した）。
 // * 作品詳細の再生に演出フィルターとカメラが出ず、書き出しと違った。
 // * 名前の無い演出フィルターを複製すると、同じ名前が2つ並んだ。
+// * 書き出しが失敗した文が、形式・プリセットを変えても残った。
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -247,6 +248,32 @@ void main() {
       [data.getUint8(i), data.getUint8(i + 1), data.getUint8(i + 2)],
       [255, 0, 0],
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a failed export\'s message goes once the settings change', (
+    tester,
+  ) async {
+    final (ps: _, :projectId, sceneId: _) = await openApp(tester);
+    appRouter.go('/export/$projectId');
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(Scaffold).last),
+    )!;
+    // MP4 needs the device's encoder, which a test does not have: it fails.
+    final start = find.text(l10n.exportStartButton);
+    await tester.ensureVisible(start);
+    await tester.tap(start);
+    final failed = find.textContaining(l10n.exportFailedError('').trim());
+    for (var i = 0; i < 40 && failed.evaluate().isEmpty; i++) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 250));
+    }
+    expect(failed, findsOneWidget);
+    final gif = find.text(l10n.exportFormatGif);
+    await tester.ensureVisible(gif);
+    await tester.tap(gif);
+    await tester.pump();
+    expect(failed, findsNothing);
     expect(tester.takeException(), isNull);
   });
 }
