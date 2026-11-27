@@ -353,6 +353,17 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                           builder: (context, _) {
                             final headerMenuBuilder =
                                 _menuController.headerMenuBuilder;
+                            final trailingHeaderWidth =
+                                (headerMenuBuilder == null
+                                    ? 0.0
+                                    : headerControlWidth) +
+                                (widget.onClose == null
+                                    ? 0.0
+                                    : headerControlWidth);
+                            final centerGripOffset =
+                                (trailingHeaderWidth -
+                                    headerControlWidth * 2) /
+                                2;
                             return SizedBox(
                               width: menuWidth,
                               height: _headerHeight,
@@ -465,10 +476,8 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                             final titleWidth = math.max(
                                               0.0,
                                               constraints.maxWidth / 2 -
-                                                  22 -
-                                                  (headerMenuBuilder == null
-                                                      ? headerControlWidth / 2
-                                                      : 0),
+                                                  22 +
+                                                  centerGripOffset,
                                             );
                                             return Stack(
                                               fit: StackFit.expand,
@@ -506,9 +515,7 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                                 Center(
                                                   child: Transform.translate(
                                                     offset: Offset(
-                                                      headerMenuBuilder == null
-                                                          ? -headerControlWidth / 2
-                                                          : 0,
+                                                      centerGripOffset,
                                                       0,
                                                     ),
                                                     child: Container(
