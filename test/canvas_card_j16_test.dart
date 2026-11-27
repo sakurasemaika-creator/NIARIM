@@ -118,7 +118,7 @@ void main() {
   testWidgets('the phone menu opens the canvas preview as a window', (
     tester,
   ) async {
-    final (:ps, :id, :scene, :l10n) = await openCanvas(tester);
+    await openCanvas(tester);
     await tester.tap(find.byIcon(Icons.settings).first);
     await settle(tester);
     final item = find.byKey(const ValueKey('canvasEditMenuPreviewNavigator'));
