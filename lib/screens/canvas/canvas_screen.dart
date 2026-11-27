@@ -1989,6 +1989,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           ),
                                           maxWidth: 336,
                                           scrollBodyOnResize: true,
+                                          title: _currentTool ==
+                                                  DrawingTool.meshTransform
+                                              ? AppLocalizations.of(context)!
+                                                    .meshTransformPanelTitle
+                                              : AppLocalizations.of(context)!
+                                                    .helpSelectToolTitle,
+                                          onClose: _currentTool ==
+                                                  DrawingTool.meshTransform
+                                              ? _cancelMeshTransform
+                                              : _exitSelectionTool,
+                                          closeTooltip:
+                                              AppLocalizations.of(context)!
+                                                  .commonClose,
                                           collapseTooltip: AppLocalizations.of(
                                             context,
                                           )!.filterPanelCollapse,
@@ -2033,6 +2046,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                         maxWidth: 360,
                                         fillWidth: true,
                                         scrollBodyOnResize: true,
+                                        title: AppLocalizations.of(context)!
+                                            .filterPanelTitle,
+                                        onClose: _closeFilterFocusMenu,
+                                        closeTooltip:
+                                            AppLocalizations.of(context)!
+                                                .commonClose,
                                         collapseTooltip: AppLocalizations.of(
                                           context,
                                         )!.filterPanelCollapse,
@@ -2051,6 +2070,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                         maxWidth: 360,
                                         fillWidth: true,
                                         scrollBodyOnResize: false,
+                                        title: AppLocalizations.of(context)!
+                                            .canvasColorAdjustTitle,
+                                        onClose: _closeColorAdjustPanel,
+                                        closeTooltip:
+                                            AppLocalizations.of(context)!
+                                                .commonClose,
                                         collapseTooltip: AppLocalizations.of(
                                           context,
                                         )!.filterPanelCollapse,
@@ -3321,21 +3346,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
     onCanvasPreviewChanged: _setFilterCanvasPreview,
     selectionMask: _canvasSelectionMask,
     lensMask: _filterLensMask,
-    onClose: () {
-      setState(() {
-        _filterLensMask.reset();
-        _filterCanvasPreview?.dispose();
-        _filterCanvasPreview = null;
-        _showFilterPanel = false;
-        _filterBulkFrames = null;
-        if (_frameMultiSelectMode) {
-          _frameMultiSelectMode = false;
-          _selectedFrameIndices = {};
-        }
-      });
-      _persistDesktopDockVisibility();
-    },
+    onClose: _closeFilterFocusMenu,
   );
+
+  void _closeFilterFocusMenu() {
+    setState(() {
+      _filterLensMask.reset();
+      _filterCanvasPreview?.dispose();
+      _filterCanvasPreview = null;
+      _showFilterPanel = false;
+      _filterBulkFrames = null;
+      if (_frameMultiSelectMode) {
+        _frameMultiSelectMode = false;
+        _selectedFrameIndices = {};
+      }
+    });
+    _persistDesktopDockVisibility();
+  }
 
   Widget _quickToolPanel() => QuickToolPanel(
     onClose: () => _setDesktopPanelVisible(CanvasDockPanel.quickTool, false),
