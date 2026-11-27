@@ -4723,10 +4723,16 @@ class ProjectService extends ChangeNotifier {
     // 最終保存の日時は1回だけ読み、ファイルと一覧の両方へ同じ値を書く
     // （別々に読むと数ミリ秒ずれ、ゴミ箱へ移す前の保存〔一覧の値を書く〕が
     // 作品を変えていないのにファイルを書き換えた）。
-    final content = NiaproSerializer.contentSignature(project, scenes);
+    // 設定・シーンの比べに使う文は、キャンバス・タイムラインで開いた作品の
+    // 保存のときだけ作る（開いていない作品の名前の変更などでは作らない）。
+    final content =
+        keepUpdatedAtIfUnchanged || _writtenContent.containsKey(projectId)
+        ? NiaproSerializer.contentSignature(project, scenes)
+        : null;
     final unchanged =
         keepUpdatedAtIfUnchanged &&
         !tm.hasDirtyTiles &&
+        content != null &&
         _writtenContent[projectId] == content;
     final keep = keepUpdatedAt || unchanged;
     final updatedAt = keep ? project.updatedAt : DateTime.now();
@@ -4739,7 +4745,7 @@ class ProjectService extends ChangeNotifier {
       keepStoredTiles: keepStoredTiles,
     );
     _needsArchiveRewrite.remove(projectId);
-    _writtenContent[projectId] = content;
+    if (content != null) _writtenContent[projectId] = content;
     // 容量と最終保存の時刻は、ファイルに書いたものに合わせる。保存は
     // 描いている間にも走るので、通知はせず次に画面を作るときに使われる
     // 値だけを更新する。
