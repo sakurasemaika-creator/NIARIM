@@ -2998,7 +2998,7 @@
   "filterInkPoolCenterWidth": "Center width",
   "filterInkPoolMaxAngle": "Max angle",
   "filterInkPoolMaxAngleHint": "Ink pools inside corners where lines meet at this angle or less (90° takes acute and right angles; 180° takes obtuse ones too).",
-  "filterInkPoolLayerNameSuffix": "{name} Ink Pooling",
+  "filterInkPoolLayerNameSuffix": "{name} (Ink Pooling)",
   "@filterInkPoolLayerNameSuffix": {
     "placeholders": {
       "name": {
@@ -3015,7 +3015,7 @@
   "filterAutoLineartTaperLength": "Taper length",
   "filterAutoLineartTaper": "Taper the ends",
   "filterAutoLineartSmoothing": "Smoothing",
-  "filterAutoLineartLayerNameSuffix": "{name} Auto line art",
+  "filterAutoLineartLayerNameSuffix": "{name} (Auto line art)",
   "@filterAutoLineartLayerNameSuffix": {
     "placeholders": {
       "name": {

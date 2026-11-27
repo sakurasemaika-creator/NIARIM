@@ -7125,7 +7125,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String filterInkPoolLayerNameSuffix(String name) {
-    return '$name 墨溜まり';
+    return '$name（墨溜まり）';
   }
 
   @override
@@ -7157,7 +7157,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String filterAutoLineartLayerNameSuffix(String name) {
-    return '$name 自動線画';
+    return '$name（自動線画）';
   }
 
   @override

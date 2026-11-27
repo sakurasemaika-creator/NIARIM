@@ -7052,7 +7052,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String filterInkPoolLayerNameSuffix(String name) {
-    return '$name 积墨';
+    return '$name（积墨）';
   }
 
   @override
@@ -7084,7 +7084,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String filterAutoLineartLayerNameSuffix(String name) {
-    return '$name 自动线稿';
+    return '$name（自动线稿）';
   }
 
   @override
@@ -18133,7 +18133,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String filterInkPoolLayerNameSuffix(String name) {
-    return '$name 積墨';
+    return '$name（積墨）';
   }
 
   @override
@@ -18165,7 +18165,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String filterAutoLineartLayerNameSuffix(String name) {
-    return '$name 自動線稿';
+    return '$name（自動線稿）';
   }
 
   @override

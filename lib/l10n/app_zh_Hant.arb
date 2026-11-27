@@ -2977,7 +2977,7 @@
   "filterAutoLineartTaperLength": "收筆長度",
   "filterAutoLineartTaper": "起筆收筆",
   "filterAutoLineartSmoothing": "平滑修正",
-  "filterAutoLineartLayerNameSuffix": "{name} 自動線稿",
+  "filterAutoLineartLayerNameSuffix": "{name}（自動線稿）",
   "@filterAutoLineartLayerNameSuffix": {
     "placeholders": {
       "name": {
@@ -3018,7 +3018,7 @@
   "filterInkPoolCenterWidth": "中央寬度",
   "filterInkPoolMaxAngle": "最大角度",
   "filterInkPoolMaxAngleHint": "線條以此角度或更小角度相交的夾角內側會積墨（90°為銳角和直角，180°也包括鈍角）。",
-  "filterInkPoolLayerNameSuffix": "{name} 積墨",
+  "filterInkPoolLayerNameSuffix": "{name}（積墨）",
   "@filterInkPoolLayerNameSuffix": {
     "placeholders": {
       "name": {

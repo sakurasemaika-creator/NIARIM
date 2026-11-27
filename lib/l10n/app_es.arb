@@ -2978,7 +2978,7 @@
   "filterAutoLineartTaperLength": "Longitud del afinado",
   "filterAutoLineartTaper": "Afinar los extremos",
   "filterAutoLineartSmoothing": "Suavizado",
-  "filterAutoLineartLayerNameSuffix": "{name} Entintado automático",
+  "filterAutoLineartLayerNameSuffix": "{name} (Entintado automático)",
   "@filterAutoLineartLayerNameSuffix": {
     "placeholders": {
       "name": {
@@ -3019,7 +3019,7 @@
   "filterInkPoolCenterWidth": "Grosor central",
   "filterInkPoolMaxAngle": "Ángulo máximo",
   "filterInkPoolMaxAngleHint": "La tinta se acumula en los ángulos donde las líneas se encuentran con este ángulo o menos (90° abarca los agudos y rectos; 180°, también los obtusos).",
-  "filterInkPoolLayerNameSuffix": "{name} Acumulación de tinta",
+  "filterInkPoolLayerNameSuffix": "{name} (Acumulación de tinta)",
   "@filterInkPoolLayerNameSuffix": {
     "placeholders": {
       "name": {

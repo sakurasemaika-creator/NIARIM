@@ -786,7 +786,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final query = service.searchQuery;
     final filters = service.galleryFilters.where((f) {
       if (_showFavoritesOnly && !f.isFavorite) return false;
-      return filterNameMatches(filterDisplayName(l10n, f), query);
+      return filterSearchMatches(l10n, f, query);
     }).toList();
     final current = service.currentFilter;
 

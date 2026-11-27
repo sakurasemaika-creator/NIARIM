@@ -32,4 +32,26 @@ void main() {
     expect(filterNameMatches(l10n.filterNameGaussianBlur, 'prism'), isFalse);
     expect(filterNameMatches(l10n.filterNameGaussianBlur, ''), isTrue);
   });
+
+  test('the Noise tile is found by the names of its kinds', () {
+    // 実際に使ってみたとき（2026-11-27）、「フィルムグレイン」「VHSノイズ」で
+    // 探すと「フィルターがありません」だった（どちらもノイズの種類）。
+    for (final locale in AppLocalizations.supportedLocales) {
+      final l10n = lookupAppLocalizations(locale);
+      final noise = FilterService.builtInFilters.singleWhere(
+        (f) => f.id == FilterService.genericNoiseFilterId,
+      );
+      for (final kind in [
+        l10n.filterNameNoise,
+        l10n.filterNoiseColor,
+        l10n.filterNameVhsNoise,
+      ]) {
+        expect(filterSearchMatches(l10n, noise, kind), isTrue, reason: kind);
+      }
+      final blur = FilterService.builtInFilters.firstWhere(
+        (f) => filterDisplayName(l10n, f) == l10n.filterNameGaussianBlur,
+      );
+      expect(filterSearchMatches(l10n, blur, l10n.filterNameVhsNoise), isFalse);
+    }
+  });
 }

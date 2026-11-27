@@ -2978,7 +2978,7 @@
   "filterAutoLineartTaperLength": "테이퍼 길이",
   "filterAutoLineartTaper": "선 끝 테이퍼",
   "filterAutoLineartSmoothing": "부드럽게",
-  "filterAutoLineartLayerNameSuffix": "{name} 자동 선화",
+  "filterAutoLineartLayerNameSuffix": "{name}(자동 선화)",
   "@filterAutoLineartLayerNameSuffix": {
     "placeholders": {
       "name": {
@@ -3019,7 +3019,7 @@
   "filterInkPoolCenterWidth": "중앙 두께",
   "filterInkPoolMaxAngle": "최대 각도",
   "filterInkPoolMaxAngleHint": "선끼리 이 각도 이하로 만나는 모서리 안쪽에 먹물이 고입니다(90°는 예각과 직각, 180°는 둔각까지).",
-  "filterInkPoolLayerNameSuffix": "{name} 먹물 고임",
+  "filterInkPoolLayerNameSuffix": "{name}(먹물 고임)",
   "@filterInkPoolLayerNameSuffix": {
     "placeholders": {
       "name": {

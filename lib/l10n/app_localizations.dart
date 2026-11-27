@@ -12870,7 +12870,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterInkPoolLayerNameSuffix.
   ///
   /// In ja, this message translates to:
-  /// **'{name} 墨溜まり'**
+  /// **'{name}（墨溜まり）'**
   String filterInkPoolLayerNameSuffix(String name);
 
   /// No description provided for @filterCanvasEyedropperTooltip.
@@ -12930,7 +12930,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterAutoLineartLayerNameSuffix.
   ///
   /// In ja, this message translates to:
-  /// **'{name} 自動線画'**
+  /// **'{name}（自動線画）'**
   String filterAutoLineartLayerNameSuffix(String name);
 
   /// No description provided for @customAutomationTitle.

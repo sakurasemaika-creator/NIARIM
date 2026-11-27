@@ -66,6 +66,23 @@ String generatedLayerName(
   _ => '$sourceName ${filterDisplayName(l10n, filter)}',
 };
 
+/// Whether the search [query] finds [filter]: by its name, and for the Noise
+/// tile also by the names of its kinds (Film grain, Color noise, VHS noise),
+/// which are chosen inside it.
+bool filterSearchMatches(
+  AppLocalizations l10n,
+  FilterDef filter,
+  String query,
+) {
+  if (filterNameMatches(filterDisplayName(l10n, filter), query)) return true;
+  if (filter.kind != FilterKind.noise) return false;
+  return [
+    l10n.filterNameNoise,
+    l10n.filterNoiseColor,
+    l10n.filterNameVhsNoise,
+  ].any((name) => filterNameMatches(name, query));
+}
+
 /// Whether a filter named [name] is found by the search [query]: anywhere
 /// in the name, regardless of case ("blur" finds Gaussian Blur).
 bool filterNameMatches(String name, String query) {

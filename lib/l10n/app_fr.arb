@@ -2978,7 +2978,7 @@
   "filterAutoLineartTaperLength": "Longueur de l’effilé",
   "filterAutoLineartTaper": "Effiler les extrémités",
   "filterAutoLineartSmoothing": "Lissage",
-  "filterAutoLineartLayerNameSuffix": "{name} Encrage automatique",
+  "filterAutoLineartLayerNameSuffix": "{name} (Encrage automatique)",
   "@filterAutoLineartLayerNameSuffix": {
     "placeholders": {
       "name": {
@@ -3019,7 +3019,7 @@
   "filterInkPoolCenterWidth": "Épaisseur centrale",
   "filterInkPoolMaxAngle": "Angle maximal",
   "filterInkPoolMaxAngleHint": "L’encre s’accumule dans les angles où les traits se rejoignent à cet angle ou moins (90° couvre les angles aigus et droits ; 180°, aussi les angles obtus).",
-  "filterInkPoolLayerNameSuffix": "{name} Accumulation d’encre",
+  "filterInkPoolLayerNameSuffix": "{name} (Accumulation d’encre)",
   "@filterInkPoolLayerNameSuffix": {
     "placeholders": {
       "name": {

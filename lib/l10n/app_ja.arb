@@ -3675,7 +3675,7 @@
   "filterInkPoolCenterWidth": "中央の太さ",
   "filterInkPoolMaxAngle": "最大角度",
   "filterInkPoolMaxAngleHint": "線どうしがこの角度以下で出会う角の内側に溜まります（90°で鋭角と直角、180°で鈍角まで）。",
-  "filterInkPoolLayerNameSuffix": "{name} 墨溜まり",
+  "filterInkPoolLayerNameSuffix": "{name}（墨溜まり）",
   "@filterInkPoolLayerNameSuffix": {
     "placeholders": {
       "name": {
@@ -3692,7 +3692,7 @@
   "filterAutoLineartTaperLength": "入り抜きの長さ",
   "filterAutoLineartTaper": "入り抜き",
   "filterAutoLineartSmoothing": "なめらか補正",
-  "filterAutoLineartLayerNameSuffix": "{name} 自動線画",
+  "filterAutoLineartLayerNameSuffix": "{name}（自動線画）",
   "@filterAutoLineartLayerNameSuffix": {
     "placeholders": {
       "name": {

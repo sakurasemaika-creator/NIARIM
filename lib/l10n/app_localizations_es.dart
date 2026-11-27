@@ -7557,7 +7557,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String filterInkPoolLayerNameSuffix(String name) {
-    return '$name Acumulación de tinta';
+    return '$name (Acumulación de tinta)';
   }
 
   @override
@@ -7591,7 +7591,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String filterAutoLineartLayerNameSuffix(String name) {
-    return '$name Entintado automático';
+    return '$name (Entintado automático)';
   }
 
   @override
