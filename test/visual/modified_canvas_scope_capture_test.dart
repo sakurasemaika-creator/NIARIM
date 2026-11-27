@@ -221,6 +221,17 @@ void main() {
       expect(find.byType(ToolbarWidget), findsNothing);
       expect(find.byKey(const ValueKey('filter-bottom-bar')), findsOneWidget);
       await shot('04_pc_filter_immersive_live_preview');
+      expect(
+        find.byKey(const ValueKey('filter-focus-menu-actions')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('focus-mode-menu-surface')),
+          matching: find.byKey(const ValueKey('focus-mode-menu-title')),
+        ),
+        findsOneWidget,
+      );
       await tester.tap(find.byKey(const ValueKey('filter-cancel-button')));
       await settle();
       expect(find.byType(MenuBar), findsNothing);
