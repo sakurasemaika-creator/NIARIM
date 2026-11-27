@@ -303,6 +303,42 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('a work changed while the newer autosave is being read is not '
+      'replaced by it', (tester) async {
+    final (service: projects, :id) = await open(tester);
+    final home = tester.element(find.byType(HomeScreen));
+    final autosaves = home.read<AutosaveService>();
+    final scene = projects.scenesOf(id).single;
+    final key = projects.tileKeyFor(
+      id,
+      scene.id,
+      0,
+      scene.frames.first.layers.first.id,
+    );
+    final tiles = projects.tileManagerOf(id);
+    await tester.runAsync(() async {
+      tiles.getOrCreateTile(key, 0, 0).setRange(0, 4, [30, 60, 220, 255]);
+      await autosaves.save(id, projects);
+      // The work file was not written after the stroke: the autosave is from
+      // the last launch and newer than the work file.
+      tiles.importAll(const {});
+      autosaves.debugTreatSlotsAsFromEarlierLaunch();
+    });
+    appRouter.go('/canvas/$id');
+    await tester.pump();
+    await tester.pump();
+    // Drawn on before the autosave was read and compared.
+    const drawn = [200, 10, 10, 255];
+    tiles.getOrCreateTile(key, 0, 0).setRange(0, 4, drawn);
+    await settleIo(tester);
+    expect(tiles.getTile(key, 0, 0)?.take(4), drawn);
+    expect(
+      find.byKey(const ValueKey('autosaveNewerOpenedNotice')),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('an autosave older than the work file is not offered', (
     tester,
   ) async {

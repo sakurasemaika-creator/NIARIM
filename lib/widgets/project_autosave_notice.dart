@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../engine/niapro_serializer.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/save_tree/widgets/save_display_name.dart'
     show formatSaveTime;
@@ -85,8 +86,25 @@ Future<void> settleOpenedWork(
   // Screens built without the app's providers (some tests) have none.
   final autosaves = context.read<AutosaveService?>();
   if (autosaves == null) return;
+  final project = projects.projects.where((p) => p.id == projectId).firstOrNull;
+  if (project == null) return;
+  final tiles = projects.tileManagerOf(projectId);
+  final content = NiaproSerializer.contentSignature(
+    project,
+    projects.scenesOf(projectId),
+  );
   final newer = await autosaves.newerThanWorkFile(projects, projectId);
   if (newer == null || !context.mounted) return;
+  // Reading and comparing the automatic save takes a moment: a work already
+  // changed meanwhile (the canvas was opened and drawn on) is not replaced.
+  final now = projects.projects.where((p) => p.id == projectId).firstOrNull;
+  if (now == null ||
+      !identical(projects.tileManagerOf(projectId), tiles) ||
+      tiles.hasDirtyTiles ||
+      NiaproSerializer.contentSignature(now, projects.scenesOf(projectId)) !=
+          content) {
+    return;
+  }
   projects.useSavedVersion(projectId, newer.data);
   onRestored?.call();
   ScaffoldMessenger.maybeOf(context)?.showSnackBar(
