@@ -7,6 +7,7 @@ import 'package:provider/single_child_widget.dart';
 import 'engine/niapro_serializer.dart';
 import 'engine/undo_manager.dart' as app_undo;
 import 'services/advertising_service.dart';
+import 'services/making_recorder.dart';
 import 'services/premium_service.dart';
 import 'services/project_service.dart';
 import 'services/local_file_trash_service.dart';
@@ -441,6 +442,11 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   final undoManager = app_undo.UndoManager();
   undoManager.setMaxUndoCount(settingsService.undoLimit);
   projectService.setUndoManager(undoManager);
+  // The making of the works that record it: each change of the history
+  // becomes a step, stored in the background.
+  final makingRecorder = MakingRecorder(projectService, undoManager);
+  disposers.add(makingRecorder.dispose);
+  settlers.add(makingRecorder.flush);
 
   return [
     ChangeNotifierProvider.value(value: settingsService),

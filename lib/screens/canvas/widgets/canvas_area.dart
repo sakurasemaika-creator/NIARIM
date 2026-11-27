@@ -8,7 +8,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart' show HardwareKeyboard;
-import 'package:image/image.dart' as img;
 import 'package:provider/provider.dart';
 
 import '../../../config/signal_colors.dart';
@@ -37,7 +36,6 @@ import '../../../engine/tile_manager.dart';
 import '../../../engine/tone_engine.dart';
 import '../../../engine/undo_manager.dart' as app_undo;
 import '../../../utils/app_error_reporter.dart';
-import '../../../utils/making_strings.dart';
 import '../../../models/filter_canvas_gizmo.dart';
 import '../../../models/layer.dart';
 import '../../../models/layer_keyframe.dart';
@@ -46,7 +44,6 @@ import '../../../models/pixel_color_mode.dart';
 import '../../../models/project.dart';
 import '../../../models/ruler.dart';
 import '../../../services/brush_service.dart';
-import '../../../services/making_service.dart';
 import '../../../services/performance_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/settings_service.dart';
@@ -1207,7 +1204,6 @@ class CanvasAreaState extends State<CanvasArea> {
     }
     _bucketGesture = null;
     _holdEyedropperTimer?.cancel();
-    _makingTrailingCapture?.cancel();
     meshSourceImage?.dispose();
     _meshBaseImage?.dispose();
     _transformController.removeListener(_publishViewInfo);
@@ -2346,15 +2342,6 @@ class CanvasAreaState extends State<CanvasArea> {
 
   String? _undoRecordingLayerKey;
   app_undo.HistoryFrame? _undoRecordingFrame;
-  DateTime? _lastMakingCaptureAt;
-  bool _makingCaptureInFlight = false;
-  bool _makingLimitNoticeShown = false;
-
-  /// A capture held back by the one-per-second limit, taken when the limit
-  /// allows. Without it the last edits of a quick run (several strokes within
-  /// a second, then a pause) never reached the making.
-  Timer? _makingTrailingCapture;
-  ({String sceneId, int frameIndex})? _makingPendingTarget;
 
   /// 描画操作（ストローク・バケツ・投げ縄塗り・トーン・スタンプ・移動・
   /// 変形・図形）の直前に呼び、現在のレイヤーへのタイル変更差分の記録を開始する。
@@ -2451,163 +2438,7 @@ class CanvasAreaState extends State<CanvasArea> {
       _tileManager.notifyStrokeCommitted(layerKey);
       if (project != null) {
         _projects.recordConfirmedEdit(project.id);
-        if (project.makingEnabled) _queueMakingSnapshot(project);
       }
-    }
-  }
-
-  /// Queue a lightweight making snapshot after a real canvas edit.
-  /// Captures are throttled to at most one per second and stored outside the
-  /// editable project archive.
-  void _queueMakingSnapshot(
-    Project project, [
-    ({String sceneId, int frameIndex})? target,
-  ]) {
-    if (!project.makingEnabled) return;
-    // The frame that was edited, fixed now: a capture held back for a moment
-    // still records it after a switch to another frame.
-    target ??= (sceneId: widget.sceneId, frameIndex: widget.currentFrame);
-    final now = DateTime.now();
-    final last = _lastMakingCaptureAt;
-    final wait = last == null
-        ? Duration.zero
-        : const Duration(seconds: 1) - now.difference(last);
-    if (wait > Duration.zero || _makingCaptureInFlight) {
-      _makingPendingTarget = target;
-      _makingTrailingCapture ??= Timer(
-        wait > Duration.zero ? wait : const Duration(milliseconds: 250),
-        () {
-          _makingTrailingCapture = null;
-          final pending = _makingPendingTarget;
-          _makingPendingTarget = null;
-          final current = widget.project;
-          if (!mounted || pending == null || current?.id != project.id) {
-            return;
-          }
-          _queueMakingSnapshot(current!, pending);
-        },
-      );
-      return;
-    }
-    _lastMakingCaptureAt = now;
-    _makingCaptureInFlight = true;
-    unawaited(
-      _captureMakingSnapshot(project, target)
-          .catchError((Object error, StackTrace stack) {
-            AppErrorReporter.record(error, stack);
-          })
-          .whenComplete(() => _makingCaptureInFlight = false),
-    );
-  }
-
-  Future<void> _captureMakingSnapshot(
-    Project project,
-    ({String sceneId, int frameIndex}) target,
-  ) async {
-    if (!mounted ||
-        widget.project?.id != project.id ||
-        widget.project?.makingEnabled != true) {
-      return;
-    }
-    final sceneId = target.sceneId;
-    final frameIndex = target.frameIndex;
-    final scene = _projects.sceneOf(project.id, sceneId);
-    if (scene == null || frameIndex < 0 || frameIndex >= scene.frames.length) {
-      return;
-    }
-    final stacked = _projects.stackedLayersOf(project.id, sceneId, frameIndex);
-    final composite = await LayerCompositor.composite(
-      _tileManager,
-      stacked.layers,
-      (layer) =>
-          _projects.tileKeyFor(project.id, sceneId, frameIndex, layer.id),
-      _tileManager.canvasWidth,
-      _tileManager.canvasHeight,
-      paperColor: LayerCompositor.paperForBlendModes(
-        stacked.layers,
-        project.backgroundColor,
-      ),
-      maskGroups: stacked.maskGroups,
-    );
-    try {
-      // Downsample on the rendering engine before reading pixels back. Converting
-      // a full 4K canvas to raw RGBA would briefly allocate more than 30 MB.
-      const maxEdge = 720;
-      final scale = math.min(
-        1.0,
-        maxEdge / math.max(composite.width, composite.height),
-      );
-      final captureWidth = math
-          .max(1, (composite.width * scale).round())
-          .toInt();
-      final captureHeight = math
-          .max(1, (composite.height * scale).round())
-          .toInt();
-      final recorder = ui.PictureRecorder();
-      final canvas = ui.Canvas(recorder);
-      canvas.drawImageRect(
-        composite,
-        ui.Rect.fromLTWH(
-          0,
-          0,
-          composite.width.toDouble(),
-          composite.height.toDouble(),
-        ),
-        ui.Rect.fromLTWH(
-          0,
-          0,
-          captureWidth.toDouble(),
-          captureHeight.toDouble(),
-        ),
-        ui.Paint()..filterQuality = ui.FilterQuality.medium,
-      );
-      final picture = recorder.endRecording();
-      ui.Image captured;
-      try {
-        captured = await picture.toImage(captureWidth, captureHeight);
-      } finally {
-        picture.dispose();
-      }
-      late final List<int> jpeg;
-      try {
-        final data = await captured.toByteData(
-          format: ui.ImageByteFormat.rawRgba,
-        );
-        if (data == null) return;
-        final smallImage = img.Image.fromBytes(
-          width: captureWidth,
-          height: captureHeight,
-          bytes: data.buffer,
-          bytesOffset: data.offsetInBytes,
-          numChannels: 4,
-        );
-        jpeg = img.encodeJpg(smallImage, quality: 60);
-      } finally {
-        captured.dispose();
-      }
-      // Recording may have been switched off while compositing or encoding.
-      if (!mounted ||
-          widget.project?.id != project.id ||
-          widget.project?.makingEnabled != true) {
-        return;
-      }
-      final saved = await MakingService.recordSnapshot(
-        projectId: project.id,
-        sceneId: sceneId,
-        frameIndex: frameIndex,
-        bytes: jpeg,
-      );
-      if (!saved && !_makingLimitNoticeShown && mounted) {
-        final history = await MakingService.history(project.id);
-        if (history.limitReached && mounted) {
-          _makingLimitNoticeShown = true;
-          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-            SnackBar(content: Text(MakingStrings.storageLimit(context))),
-          );
-        }
-      }
-    } finally {
-      composite.dispose();
     }
   }
 

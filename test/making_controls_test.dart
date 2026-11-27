@@ -3,8 +3,9 @@
 //   その下に「メイキング再生」（押すと再生の画面を開いてすぐ再生する。記録を
 //   切っている間は薄く描き、押せない）。
 // - キャンバスの設定/編集メニューからも記録を入切できる（作品詳細と同じ設定）。
-// - 1秒以内に続けて描いた最後の線も記録に残る（以前は1秒に1枚に抑えたまま
-//   後から撮り直さず、素早く続けた最後の線がメイキングに入らなかった）。
+// - キャンバスで描いた線の1本ずつと取り消しが、メイキングの1コマずつになる
+//   （以前は描いた後に1秒に1枚だけ撮り、続けた線と取り消しが入らなかった）。
+//   再生の画面は記録から絵を作って見せる。
 import 'dart:io';
 
 import 'package:flutter/gestures.dart';
@@ -13,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/making_log.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
@@ -173,8 +175,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('strokes drawn within a second of each other: the last one '
-      'still reaches the making', (tester) async {
+  testWidgets('each stroke on the canvas and each Undo is a step of the '
+      'making, and the making screen shows its picture', (tester) async {
     final (service: projects, :id) = await open(tester);
     await projects.setMakingEnabled(id, true);
     appRouter.go('/canvas/$id');
@@ -196,31 +198,36 @@ void main() {
       await tester.pump();
     }
 
-    Future<List<MakingSnapshot>> snapshots() async =>
-        (await tester.runAsync(() => MakingService.history(id)))!.snapshots;
+    // The steps are stored in the background: read the log as it is (the
+    // recorder's work advances while the test clock is pumped).
+    final logDir = (await tester.runAsync(
+      () => MakingService.logDirectory(id),
+    ))!;
+    Future<List<MakingLogStep>> steps() async =>
+        (await tester.runAsync(() async => MakingLogData.read(logDir)))!.steps;
 
-    // Three strokes in quick succession: the first is captured at once, the
-    // next two fall inside the one-per-second limit.
+    // Three strokes in quick succession, then Undo.
     await stroke(-60);
     await stroke(0);
     await stroke(60);
-    // Let the first capture finish and the held-back one fire (the capture
-    // and its file work are real asynchronous work).
-    var taken = await snapshots();
-    for (var i = 0; i < 120 && taken.length < 2; i++) {
+    await settleIo(tester, 2);
+    await tester.tap(find.byTooltip(l10n.commonUndo));
+    await settleIo(tester, 2);
+    var recorded = await steps();
+    for (var i = 0; i < 40 && recorded.length < 4; i++) {
       await settleIo(tester, 1);
-      await tester.pump(const Duration(milliseconds: 300));
-      taken = await snapshots();
+      recorded = await steps();
     }
-    // One capture right away and one held back for the later strokes (before,
-    // the held-back strokes were never captured: one picture only).
-    expect(taken, hasLength(2));
-    // Nothing more is pending: no further captures come.
-    for (var i = 0; i < 6; i++) {
+    expect(recorded, hasLength(4));
+
+    appRouter.go('/making/$id');
+    await settleIo(tester, 4);
+    final picture = find.byKey(const Key('makingStepPicture'));
+    for (var i = 0; i < 40 && picture.evaluate().isEmpty; i++) {
       await settleIo(tester, 1);
-      await tester.pump(const Duration(milliseconds: 300));
     }
-    expect(await snapshots(), hasLength(2));
+    expect(picture, findsOneWidget);
+    expect(find.text(l10n.makingFrameCounter(1, 4)), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

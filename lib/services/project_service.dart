@@ -325,9 +325,11 @@ class ProjectService extends ChangeNotifier {
       try {
         // The tiles are the work file's: the next save of the work file
         // copies them as stored and writes only the ones changed meanwhile.
+        final crcs = <String, int>{};
         tiles.importAll(
-          NiaproSerializer.loadTilesSync(path),
+          NiaproSerializer.loadTilesSync(path, crcs: crcs),
           asStoredInWorkFile: true,
+          storedCrcs: crcs,
         );
       } catch (error, stackTrace) {
         AppErrorReporter.record(error, stackTrace);

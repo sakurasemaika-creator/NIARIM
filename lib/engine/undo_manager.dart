@@ -16,6 +16,12 @@ class UndoManager extends ChangeNotifier {
   List<UndoAction> get _undoStack => _stacksFor(_projectId).undo;
   List<UndoAction> get _redoStack => _stacksFor(_projectId).redo;
 
+  /// The project and frame of the last change to the history (an operation
+  /// recorded, undone or redone), for the making recorder. The frame is null
+  /// when the operation does not belong to one.
+  ({String? projectId, HistoryFrame? frame})? get lastChange => _lastChange;
+  ({String? projectId, HistoryFrame? frame})? _lastChange;
+
   void selectProject(String projectId) {
     if (_projectId == projectId) return;
     _projectId = projectId;
@@ -76,6 +82,7 @@ class UndoManager extends ChangeNotifier {
     history.undo.add(action);
     history.redo.clear();
     if (history.undo.length > _maxUndoCount) history.undo.removeAt(0);
+    _lastChange = (projectId: id, frame: action.frameForHistory(redo: true));
     notifyListeners();
   }
 
@@ -109,8 +116,10 @@ class UndoManager extends ChangeNotifier {
     final action = history.undo.removeLast();
     action.undo();
     history.redo.add(action);
+    final frame = action.frameForHistory(redo: false);
+    _lastChange = (projectId: projectId ?? _projectId, frame: frame);
     notifyListeners();
-    return action.frameForHistory(redo: false);
+    return frame;
   }
 
   HistoryFrame? redo({String? projectId}) {
@@ -119,8 +128,10 @@ class UndoManager extends ChangeNotifier {
     final action = history.redo.removeLast();
     action.redo();
     history.undo.add(action);
+    final frame = action.frameForHistory(redo: true);
+    _lastChange = (projectId: projectId ?? _projectId, frame: frame);
     notifyListeners();
-    return action.frameForHistory(redo: true);
+    return frame;
   }
 
   /// Removes the specified operations from both stacks after their caller

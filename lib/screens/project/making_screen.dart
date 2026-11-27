@@ -3,11 +3,13 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/signal_colors.dart';
 import '../../engine/export_engine.dart';
 import '../../engine/making_export.dart';
+import '../../engine/making_player.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/layer.dart';
 import '../../models/project.dart';
@@ -42,8 +44,15 @@ class MakingScreen extends StatefulWidget {
 }
 
 class _MakingScreenState extends State<MakingScreen> {
-  MakingHistory? _history;
+  MakingPlayer? _player;
   bool _loading = true;
+
+  /// The picture of the recorded step shown last, made by the player.
+  ui.Image? _picture;
+  bool _rendering = false;
+
+  /// How far the export has got (0〜1), while it makes the pictures.
+  double? _exportProgress;
 
   /// 記録を読めなかった。読めていない間は「記録はありません」と言わず、
   /// 知らせと「再試行」を出す。
@@ -69,19 +78,28 @@ class _MakingScreenState extends State<MakingScreen> {
   @override
   void dispose() {
     _playTimer?.cancel();
+    _picture?.dispose();
+    _player?.dispose();
     super.dispose();
   }
 
+  int get _length => _player?.length ?? 0;
+
   Future<void> _load() async {
     try {
-      final history = await MakingService.history(widget.projectId);
-      if (!mounted) return;
+      final player = await MakingPlayer.open(widget.projectId);
+      if (!mounted) {
+        player.dispose();
+        return;
+      }
+      _player?.dispose();
       setState(() {
-        _history = history;
+        _player = player;
         _index = 0;
         _loading = false;
         _loadFailed = false;
       });
+      await _show(0);
       if (widget.playOnOpen && !_playing) _togglePlayback();
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
@@ -101,26 +119,52 @@ class _MakingScreenState extends State<MakingScreen> {
     _load();
   }
 
+  /// Shows the picture at [index]: a picture record as it is, a recorded
+  /// step once the player has made its picture.
+  Future<void> _show(int index) async {
+    final player = _player;
+    if (player == null || index < 0 || index >= player.length) return;
+    setState(() => _index = index);
+    if (player.picturePath(index) != null) return;
+    _rendering = true;
+    try {
+      final picture = await player.render(index);
+      if (!mounted || !identical(player, _player)) {
+        picture.dispose();
+        return;
+      }
+      setState(() {
+        _picture?.dispose();
+        _picture = picture;
+      });
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    } finally {
+      _rendering = false;
+    }
+  }
+
   void _togglePlayback() {
-    final snapshots = _history?.snapshots ?? const <MakingSnapshot>[];
-    if (snapshots.length < 2) return;
+    if (_length < 2) return;
     if (_playing) {
       _playTimer?.cancel();
       setState(() => _playing = false);
       return;
     }
-    if (_index >= snapshots.length - 1) setState(() => _index = 0);
+    if (_index >= _length - 1) unawaited(_show(0));
     setState(() => _playing = true);
     _playTimer = Timer.periodic(const Duration(milliseconds: 125), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
-      if (_index >= snapshots.length - 1) {
+      // A step whose picture is still being made holds the playback.
+      if (_rendering) return;
+      if (_index >= _length - 1) {
         timer.cancel();
         setState(() => _playing = false);
       } else {
-        setState(() => _index++);
+        unawaited(_show(_index + 1));
       }
     });
   }
@@ -150,12 +194,11 @@ class _MakingScreenState extends State<MakingScreen> {
     try {
       await MakingService.deleteHistory(widget.projectId);
       if (!mounted) return;
+      _player?.dispose();
+      _picture?.dispose();
       setState(() {
-        _history = const MakingHistory(
-          snapshots: [],
-          sizeBytes: 0,
-          limitReached: false,
-        );
+        _player = MakingPlayer.empty();
+        _picture = null;
         _index = 0;
         _playing = false;
       });
@@ -231,8 +274,8 @@ class _MakingScreenState extends State<MakingScreen> {
       projects.projects.where((p) => p.id == widget.projectId).firstOrNull;
 
   Future<void> _export() async {
-    final snapshots = _history?.snapshots ?? const <MakingSnapshot>[];
-    if (snapshots.length < 2 || _exporting) return;
+    final player = _player;
+    if (player == null || player.length < 2 || _exporting) return;
     // The output conditions are fixed before the first frame is encoded.
     final projects = context.read<ProjectService>();
     final officialMark = _officialMarkDue(
@@ -246,17 +289,31 @@ class _MakingScreenState extends State<MakingScreen> {
         : const <ui.Rect>[];
     setState(() {
       _exporting = true;
+      _exportProgress = 0;
       _playing = false;
     });
     _playTimer?.cancel();
     String? partialOutput;
+    Directory? pictures;
     try {
+      // The pictures of the recorded steps are made now (nothing was drawn
+      // while recording).
+      pictures = await Directory(
+        '${(await getTemporaryDirectory()).path}/niarim_making_pictures_${DateTime.now().microsecondsSinceEpoch}',
+      ).create(recursive: true);
+      final snapshotPaths = await player.writePictures(
+        pictures,
+        onProgress: (done, total) {
+          if (mounted) setState(() => _exportProgress = done / total);
+        },
+      );
+      if (mounted) setState(() => _exportProgress = null);
       final exportDirectory = await ExportEngine.exportsDir();
       final outputPath =
           '${exportDirectory.path}/Making_${widget.projectId}_${DateTime.now().millisecondsSinceEpoch}.${format.name}';
       partialOutput = outputPath;
       await MakingExport.export(
-        snapshotPaths: [for (final snapshot in snapshots) snapshot.path],
+        snapshotPaths: snapshotPaths,
         format: format,
         outputPath: outputPath,
         officialMark: officialMark,
@@ -289,7 +346,19 @@ class _MakingScreenState extends State<MakingScreen> {
         SnackBar(content: Text(MakingStrings.exportFailed(context))),
       );
     } finally {
-      if (mounted) setState(() => _exporting = false);
+      if (pictures != null) {
+        try {
+          await pictures.delete(recursive: true);
+        } catch (error) {
+          debugPrint('Could not remove the making pictures: $error');
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _exporting = false;
+          _exportProgress = null;
+        });
+      }
     }
   }
 
@@ -320,7 +389,10 @@ class _MakingScreenState extends State<MakingScreen> {
     final project = _project(context.watch<ProjectService>());
     final premium = context.watch<PremiumService?>();
     final settings = context.watch<SettingsService?>();
-    final snapshots = _history?.snapshots ?? const <MakingSnapshot>[];
+    final player = _player;
+    final length = _length;
+    final index = length == 0 ? 0 : _index.clamp(0, length - 1).toInt();
+    final picturePath = player?.picturePath(index);
     return Scaffold(
       appBar: AppBar(title: FitOrHideTitle(MakingStrings.makingTitle(context))),
       body: _loading
@@ -347,7 +419,7 @@ class _MakingScreenState extends State<MakingScreen> {
                 ),
               ),
             )
-          : snapshots.isEmpty
+          : length == 0
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -381,22 +453,27 @@ class _MakingScreenState extends State<MakingScreen> {
                     width: double.infinity,
                     color: Colors.black,
                     alignment: Alignment.center,
-                    child: Image.file(
-                      File(
-                        snapshots[_index.clamp(0, snapshots.length - 1).toInt()]
-                            .path,
-                      ),
-                      key: ValueKey(
-                        snapshots[_index.clamp(0, snapshots.length - 1).toInt()]
-                            .path,
-                      ),
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.broken_image_outlined,
-                        color: Colors.white,
-                        size: 48,
-                      ),
-                    ),
+                    child: picturePath != null
+                        ? Image.file(
+                            File(picturePath),
+                            key: ValueKey(picturePath),
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                                  Icons.broken_image_outlined,
+                                  color: Colors.white,
+                                  size: 48,
+                                ),
+                          )
+                        : _picture != null
+                        // The last picture made stays until the next one is
+                        // ready (no blink while a step is being made).
+                        ? RawImage(
+                            key: const Key('makingStepPicture'),
+                            image: _picture,
+                            fit: BoxFit.contain,
+                          )
+                        : const SizedBox.shrink(),
                   ),
                 ),
                 Padding(
@@ -404,22 +481,16 @@ class _MakingScreenState extends State<MakingScreen> {
                   child: Column(
                     children: [
                       Text(
-                        MakingStrings.frameCounter(
-                          context,
-                          _index + 1,
-                          snapshots.length,
-                        ),
+                        MakingStrings.frameCounter(context, index + 1, length),
                       ),
                       Slider(
-                        value: _index.toDouble(),
+                        value: index.toDouble(),
                         min: 0,
-                        max: (snapshots.length - 1).toDouble(),
-                        divisions: snapshots.length > 1
-                            ? snapshots.length - 1
-                            : null,
-                        onChanged: _playing || snapshots.length < 2
+                        max: (length - 1).toDouble(),
+                        divisions: length > 1 ? length - 1 : null,
+                        onChanged: _playing || length < 2
                             ? null
-                            : (value) => setState(() => _index = value.round()),
+                            : (value) => unawaited(_show(value.round())),
                       ),
                       Row(
                         children: [
@@ -427,7 +498,7 @@ class _MakingScreenState extends State<MakingScreen> {
                             icon: Icon(
                               _playing ? Icons.pause : Icons.play_arrow,
                             ),
-                            onPressed: _exporting || snapshots.length < 2
+                            onPressed: _exporting || length < 2
                                 ? null
                                 : _togglePlayback,
                             tooltip: _playing
@@ -437,7 +508,7 @@ class _MakingScreenState extends State<MakingScreen> {
                           const Spacer(),
                           // 言語ごとの書き方（fr「1,4 Ko」等）で、数と単位を
                           // 改行しない空白でつなぐ。
-                          Text(fileSizeLabel(l10n, _history!.sizeBytes)),
+                          Text(fileSizeLabel(l10n, player!.sizeBytes)),
                         ],
                       ),
                       Align(
@@ -447,7 +518,7 @@ class _MakingScreenState extends State<MakingScreen> {
                           child: Text(
                             _outputSummary(
                               l10n,
-                              snapshots.length,
+                              length,
                               _officialMarkDue(premium, project, settings),
                             ),
                             key: const Key('makingExportOutputSummary'),
@@ -460,7 +531,15 @@ class _MakingScreenState extends State<MakingScreen> {
                           ),
                         ),
                       ),
-                      if (_history?.limitReached == true)
+                      if (_exportProgress != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: LinearProgressIndicator(
+                            key: const Key('makingExportProgress'),
+                            value: _exportProgress,
+                          ),
+                        ),
+                      if (player.limitReached)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           // その場の知らせはエラーの赤にせず、面の文字色と印で。
@@ -505,7 +584,7 @@ class _MakingScreenState extends State<MakingScreen> {
                           ),
                           const SizedBox(width: 12),
                           FilledButton.icon(
-                            onPressed: _exporting || snapshots.length < 2
+                            onPressed: _exporting || length < 2
                                 ? null
                                 : _export,
                             icon: _exporting

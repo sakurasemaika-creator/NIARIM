@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../engine/making_log.dart';
 import '../utils/app_error_reporter.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
@@ -680,6 +681,7 @@ class StorageInfoService {
       }
     } finally {
       SavedListCarryOver.forgetAll();
+      MakingLogWriter.forgetAll();
       LayerClipboardService.instance.clear();
       LocalFileTrashService.forgetAfterErase();
       invalidate();

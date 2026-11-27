@@ -3,6 +3,9 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
+import '../engine/making_log.dart';
+import 'making_recorder.dart';
+
 class MakingSnapshot {
   const MakingSnapshot({
     required this.path,
@@ -31,11 +34,16 @@ class MakingHistory {
   final bool limitReached;
 }
 
-/// Optional per-project canvas snapshots. Files are stored outside the
-/// editable project archive and capped at 64 MB. Existing snapshots are never
-/// removed automatically when the cap is reached.
+/// A work's making, stored outside the editable project archive and capped
+/// at 64 MB. Nothing recorded is removed automatically when the cap is
+/// reached.
+///
+/// The making is now recorded as the steps of the history
+/// ([MakingRecorder], `Making/log/`). The picture records ([MakingSnapshot],
+/// `Making/making_*.jpg`) are those of earlier versions; they still play
+/// before the recorded steps.
 abstract final class MakingService {
-  static const int maxBytesPerProject = 64 * 1024 * 1024;
+  static const int maxBytesPerProject = MakingLog.maxBytes;
 
   static Future<Directory> _directory(String projectId) async {
     if (!RegExp(r'^[A-Za-z0-9_-]{1,100}$').hasMatch(projectId)) {
@@ -49,8 +57,9 @@ abstract final class MakingService {
     return dir;
   }
 
-  static String _snapshotName(int number) =>
-      'making_${number.toString().padLeft(6, '0')}.jpg';
+  /// Where [projectId]'s making steps are recorded (`…/Making/log`).
+  static Future<String> logDirectory(String projectId) async =>
+      '${(await _directory(projectId)).path}/${MakingLog.folder}';
 
   static bool _isSnapshotName(String name) =>
       RegExp(r'^making_[0-9]{6}\.jpg$').hasMatch(name);
@@ -150,65 +159,6 @@ abstract final class MakingService {
     };
   }
 
-  static Future<void> _writeManifest(
-    String projectId,
-    Map<String, dynamic> manifest,
-  ) async {
-    final dir = await _directory(projectId);
-    final file = File('${dir.path}/making.json');
-    final temporary = File('${file.path}.tmp');
-    await temporary.writeAsString(jsonEncode(manifest), flush: true);
-    // On Android this is an atomic rename over the old index.
-    await temporary.rename(file.path);
-  }
-
-  static Future<bool> recordSnapshot({
-    required String projectId,
-    required String sceneId,
-    required int frameIndex,
-    required List<int> bytes,
-  }) async {
-    if (bytes.isEmpty || frameIndex < 0) return false;
-    final dir = await _directory(projectId);
-    final manifest = await _readManifest(projectId);
-    final currentBytes = manifest['sizeBytes'] as int;
-    if (manifest['limitReached'] == true ||
-        currentBytes + bytes.length > maxBytesPerProject) {
-      manifest['limitReached'] = true;
-      await _writeManifest(projectId, manifest);
-      return false;
-    }
-
-    final snapshots = List<dynamic>.from(manifest['snapshots'] as List);
-    final usedNames = snapshots
-        .whereType<Map>()
-        .map((entry) => entry['file'])
-        .whereType<String>()
-        .toSet();
-    var number = snapshots.length + 1;
-    while (usedNames.contains(_snapshotName(number)) ||
-        await File('${dir.path}/${_snapshotName(number)}').exists()) {
-      number++;
-    }
-    final name = _snapshotName(number);
-    final target = File('${dir.path}/$name');
-    final staging = File('${target.path}.tmp');
-    await staging.writeAsBytes(bytes, flush: true);
-    await staging.rename(target.path);
-
-    snapshots.add({
-      'file': name,
-      'capturedAt': DateTime.now().toIso8601String(),
-      'sceneId': sceneId,
-      'frameIndex': frameIndex,
-      'sizeBytes': bytes.length,
-    });
-    manifest['snapshots'] = snapshots;
-    manifest['sizeBytes'] = currentBytes + bytes.length;
-    await _writeManifest(projectId, manifest);
-    return true;
-  }
-
   static Future<MakingHistory> history(String projectId) async {
     final dir = await _directory(projectId);
     final manifest = await _readManifest(projectId);
@@ -238,6 +188,9 @@ abstract final class MakingService {
   }
 
   static Future<void> deleteHistory(String projectId) async {
+    // The steps being stored are written first, and nothing the recorder
+    // knows of the deleted log is used again.
+    await MakingRecorder.current?.forget(projectId);
     final dir = await _directory(projectId);
     if (await dir.exists()) await dir.delete(recursive: true);
   }

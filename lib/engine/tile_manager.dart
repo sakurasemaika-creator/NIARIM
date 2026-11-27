@@ -1,3 +1,4 @@
+import 'dart:collection' show UnmodifiableMapView;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -49,13 +50,55 @@ class TileManager {
   // Tiles changed since the last automatic save of this session (the next
   // one rewrites these and copies the rest from that save as stored).
   final Set<String> _autosaveDirtyTiles = {};
+  // Tiles changed or removed since the making recorder last took them
+  // (`layerId:tileKey`). Removed tiles are listed too: the making records
+  // that they are gone.
+  final Set<String> _makingDirtyTiles = {};
+  // CRC-32 of the tiles exactly as the work file holds them (taken from the
+  // archive when the work is opened). A tile drops out when it changes.
+  final Map<String, int> _storedCrc = {};
 
   /// Marks the tile under the composite key [key] (`layerId:tileKey`) as
   /// changed for both the work file and the automatic save.
   void _markTileChanged(String key) {
     _dirtyTiles.add(key);
     _autosaveDirtyTiles.add(key);
+    _makingDirtyTiles.add(key);
+    _storedCrc.remove(key);
   }
+
+  /// Marks every tile of [layerId] as gone for the making recorder (the layer
+  /// or its key is dropped without the tiles being changed one by one).
+  void _markMakingRemoved(String layerId, Map<String, Uint8List>? tiles) {
+    if (tiles == null) return;
+    for (final tileKey in tiles.keys) {
+      final key = '$layerId:$tileKey';
+      _makingDirtyTiles.add(key);
+      _storedCrc.remove(key);
+    }
+  }
+
+  /// Tiles changed or removed since the last call (`layerId:tileKey`), for the
+  /// making recorder.
+  Set<String> consumeMakingDirtyTiles() {
+    if (_makingDirtyTiles.isEmpty) return const {};
+    final taken = Set<String>.of(_makingDirtyTiles);
+    _makingDirtyTiles.clear();
+    return taken;
+  }
+
+  /// The CRC-32 of the tile as the work file holds it, or null when it changed
+  /// since the work was opened (or was not read from the work file).
+  int? storedCrc(String layerId, String tileKey) =>
+      _storedCrc['$layerId:$tileKey'];
+
+  /// The tiles of [layerId] (read only; the buffers change as it is drawn on).
+  Map<String, Uint8List> layerTiles(String layerId) =>
+      UnmodifiableMapView(_tiles[layerId] ?? const {});
+
+  /// Changes each time every tile is replaced at once ([importAll]).
+  int get importGeneration => _importGeneration;
+  int _importGeneration = 0;
 
   // タイルキャッシュ：compositeLayerToImage()の合成結果（レイヤー1枚分の
   // ui.Image、キャンバス全体サイズ）をlayerIdごとにキャッシュし、そのレイヤーの
@@ -829,7 +872,7 @@ class TileManager {
   }
 
   void removeLayer(String layerId) {
-    _tiles.remove(layerId);
+    _markMakingRemoved(layerId, _tiles.remove(layerId));
     _invalidateCache(layerId);
   }
 
@@ -837,7 +880,11 @@ class TileManager {
   /// された全フレーム・全レイヤー分）のタイルデータを削除する（シーン削除時に使用）。
   void removeSceneTiles(String sceneId) {
     final prefix = '$sceneId#';
-    _tiles.removeWhere((key, _) => key.startsWith(prefix));
+    _tiles.removeWhere((key, tiles) {
+      if (!key.startsWith(prefix)) return false;
+      _markMakingRemoved(key, tiles);
+      return true;
+    });
     _invalidateCachePrefix(prefix);
   }
 
@@ -847,6 +894,10 @@ class TileManager {
     if (oldKey == newKey) return;
     final tiles = _tiles.remove(oldKey);
     if (tiles != null) {
+      // The making's tiles move: gone under the old key, and what the new key
+      // held before is replaced.
+      _markMakingRemoved(oldKey, tiles);
+      _markMakingRemoved(newKey, _tiles[newKey]);
       _tiles[newKey] = tiles;
       // A saved destination may contain different pixels under these same keys.
       for (final tileKey in tiles.keys) {
@@ -1101,6 +1152,23 @@ class TileManager {
     applyTileSnapshot(layerId, before);
   }
 
+  /// Replaces one tile ([pixels] null removes it) and drops only what was
+  /// drawn from it (the layer's composite and that tile's image), unlike
+  /// [applyTileSnapshot], which redraws the whole layer. For a player that
+  /// changes a few tiles at a time (the making's playback).
+  void putTile(String layerId, String tileKey, Uint8List? pixels) {
+    final layerMap = _tiles.putIfAbsent(layerId, () => {});
+    if (pixels == null) {
+      layerMap.remove(tileKey);
+      if (layerMap.isEmpty) _tiles.remove(layerId);
+    } else {
+      layerMap[tileKey] = pixels;
+    }
+    _markTileChanged('$layerId:$tileKey');
+    _invalidateComposite(layerId);
+    _invalidateTileImage(layerId, tileKey);
+  }
+
   /// Undo/Redo用：タイルスナップショットをレイヤーへ適用する。
   /// 値がnullのキーはタイルを削除する（記録時点で未描画だったことを意味する）。
   void applyTileSnapshot(String layerId, Map<String, Uint8List?> snapshot) {
@@ -1186,13 +1254,25 @@ class TileManager {
   /// written again at the next save of the work file (the save copies them
   /// as stored). The buffers are fresh from the reader and are kept as they
   /// are. Otherwise (restoring an automatic or manual save) every tile is
-  /// written at the next save.
+  /// written at the next save. [storedCrcs] (`layerId:tileKey` → CRC-32) are
+  /// the work file's checksums of those tiles, kept for the making recorder.
   void importAll(
     Map<String, Map<String, Uint8List>> data, {
     bool asStoredInWorkFile = false,
+    Map<String, int>? storedCrcs,
   }) {
     // 前にあったレイヤーと読み込んだレイヤーの両方が「まとめて変わった」。
     final changed = {..._tiles.keys, ...data.keys};
+    // Every tile there was is gone for the making, unless the work is being
+    // opened (then there was nothing yet, and the opened tiles are as stored).
+    _makingDirtyTiles.clear();
+    if (!asStoredInWorkFile) {
+      for (final entry in _tiles.entries) {
+        _markMakingRemoved(entry.key, entry.value);
+      }
+    }
+    _storedCrc.clear();
+    _importGeneration++;
     _tiles.clear();
     _dirtyTiles.clear();
     _autosaveDirtyTiles.clear();
@@ -1208,6 +1288,11 @@ class TileManager {
         final key = '${layerEntry.key}:$tileKey';
         // No automatic save of this session holds these tiles yet.
         _autosaveDirtyTiles.add(key);
+        if (asStoredInWorkFile) {
+          if (storedCrcs?[key] case final crc?) _storedCrc[key] = crc;
+        } else {
+          _makingDirtyTiles.add(key);
+        }
         // Restoring an autosave can replace tiles at paths already present
         // in the normal archive. Every restored tile must participate in the
         // next save.

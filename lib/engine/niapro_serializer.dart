@@ -935,7 +935,10 @@ class NiaproSerializer {
 
   // ─── 読み込み ─────────────────────────────────────────────────────────
 
-  static Uint8List _readTilePixels(ArchiveFile file) {
+  static Uint8List _readTilePixels(
+    ArchiveFile file, {
+    void Function()? onRepaired,
+  }) {
     final bytes = Uint8List.fromList(file.content as List<int>);
     // Older paint writers sometimes saved straight RGB in a premultiplied
     // tile. Only pixels that violate RGB <= alpha can be identified safely.
@@ -948,6 +951,7 @@ class NiaproSerializer {
       bytes[i] = (bytes[i] * alpha + 127) ~/ 255;
       bytes[i + 1] = (bytes[i + 1] * alpha + 127) ~/ 255;
       bytes[i + 2] = (bytes[i + 2] * alpha + 127) ~/ 255;
+      onRepaired?.call();
     }
     return bytes;
   }
@@ -970,13 +974,22 @@ class NiaproSerializer {
 
   /// The picture tiles of the work file at [filePath], read at once (a work
   /// listed with `withTiles: false` is opened).
-  static Map<String, Map<String, Uint8List>> loadTilesSync(String filePath) {
+  /// [crcs] receives the archive's CRC-32 of each tile read as stored
+  /// (`layerKey:tileKey`; not tiles repaired on reading).
+  static Map<String, Map<String, Uint8List>> loadTilesSync(
+    String filePath, {
+    Map<String, int>? crcs,
+  }) {
     final source = File(filePath);
     ArchiveSecurity.validateFileSize(source.lengthSync());
-    return loadFromBytes(source.readAsBytesSync()).tileData;
+    return loadFromBytes(source.readAsBytesSync(), tileCrcs: crcs).tileData;
   }
 
-  static NiaproData loadFromBytes(List<int> bytes, {bool withTiles = true}) {
+  static NiaproData loadFromBytes(
+    List<int> bytes, {
+    bool withTiles = true,
+    Map<String, int>? tileCrcs,
+  }) {
     final archive = ArchiveSecurity.decodeZip(bytes);
 
     final manifestFile = archive.findFile(_manifestFile);
@@ -1073,9 +1086,15 @@ class NiaproSerializer {
           skippedTiles++;
           return;
         }
+        var repaired = false;
         tileData.putIfAbsent(compositeKey, () => {})[tileKey] = _readTilePixels(
           file,
+          onRepaired: () => repaired = true,
         );
+        final crc = file.crc32;
+        if (tileCrcs != null && crc != null && !repaired) {
+          tileCrcs['$compositeKey:$tileKey'] = crc;
+        }
       }
 
       // 新形式：Tiles/{sceneId}/{frameIndex}/{layerId}_{tileKey}.bin
@@ -1370,6 +1389,15 @@ class NiaproSerializer {
         },
       )
       .toList();
+
+  /// A layer as the work file writes it (the making records the layers of
+  /// each step this way).
+  static Map<String, dynamic> layerToJson(Layer layer) =>
+      _serializeLayer(layer);
+
+  /// A layer written by [layerToJson].
+  static Layer layerFromJson(Map<String, dynamic> json) =>
+      _deserializeLayer(json);
 
   static Map<String, dynamic> _serializeLayer(Layer l) => {
     'id': l.id,

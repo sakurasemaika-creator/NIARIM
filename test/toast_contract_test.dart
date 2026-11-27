@@ -1552,9 +1552,8 @@ void main() {
         'lib/app_bootstrap.dart': (1, 'コインの特典の貸し出しを10分ごとに取り直す'),
         'lib/app_runner.dart': (1, '全データの削除で画面を差し替えた後、根の差し替えを待つ'),
         'lib/screens/canvas/widgets/canvas_area.dart': (
-          4,
-          '外で変わったレイヤーをまとめて描き直す・長押しのスポイト・'
-              'メイキングの記録を1秒に1枚に抑えた後の最後の1枚',
+          3,
+          '外で変わったレイヤーをまとめて描き直す・長押しのスポイト',
         ),
         'lib/screens/canvas/widgets/canvas_preview_navigator.dart': (
           1,
