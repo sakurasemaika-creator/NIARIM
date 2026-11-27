@@ -3,9 +3,15 @@
 // 感じでNIARIMのロゴを隅に透かしておくのはありですよね」）。付けるかどうかは
 // エンドマークと同じ決まり（PremiumService.shouldAppendOfficialEndCard）。
 //
-// 作品の書き出し・メイキング動画のGIFのどのコマにもロゴが入り、ロゴの所の外の
-// 画素は付けないときと同じ（パレットを乱さない）こと、利用者のウォーターマークの
-// ある隅を避けること、書き出しの画面の文を見張る。
+// ロゴはバッジの右にアプリ名（エンドマークと同じ書き文字）を半透明の暗い下地に
+// 白で並べる（所有者の依頼、2026-11-27「gifで出す透かしはアプリアイコンだけでなく
+// アプリ名も出しておいてほしいです。じゃないと宣伝にならないので。」）。小さすぎる
+// 絵ではバッジだけ。
+//
+// 作品の書き出し・メイキング動画のGIFのどのコマにもロゴ（名前つき）が入り、明るい・
+// 暗い・紺のコマで名前が読めること、ロゴの所の外の画素は付けないときと同じ
+// （パレットを乱さない）こと、利用者のウォーターマークのある隅を避けること、
+// 書き出しの画面の文を見張る。
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -17,6 +23,7 @@ import 'package:image/image.dart' as img;
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/corner_logo.dart';
 import 'package:niarim/engine/export_engine.dart';
+import 'package:niarim/engine/gif_palette.dart';
 import 'package:niarim/engine/making_export.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
@@ -57,10 +64,16 @@ Uint8List _filled(int? rgb) {
 }
 
 /// The user's own watermark: a red block in the bottom right corner.
-Uint8List _bottomRightMark() {
+Uint8List _bottomRightMark() => _markAt(_w - 90, _h - 40, _w - 6, _h - 6);
+
+/// A small watermark that only the app name would cover (left of the
+/// right margin, right of where the badge would go).
+Uint8List _underNameMark() => _markAt(_w - 60, _h - 20, _w - 40, _h - 10);
+
+Uint8List _markAt(int left, int top, int right, int bottom) {
   final pixels = Uint8List(_w * _h * 4);
-  for (var y = _h - 40; y < _h - 6; y++) {
-    for (var x = _w - 90; x < _w - 6; x++) {
+  for (var y = top; y < bottom; y++) {
+    for (var x = left; x < right; x++) {
       final i = (y * _w + x) * 4;
       pixels
         ..[i] = 220
@@ -100,9 +113,42 @@ bool _showsBadge(img.Image frame, img.Image plain, CornerLogoPlacement at) {
   final under = plain.getPixel(x, y);
   final pinkish = p.r - p.g > 70 && p.r - p.b > 40;
   final translucent =
-      (p.g - 0x5C).abs() > 8 || (p.b - 0x7A).abs() > 8 || (p.r - 0xFF) > 8;
+      (p.r - 0xFF).abs() > 8 ||
+      (p.g - 0x5C).abs() > 8 ||
+      (p.b - 0x7A).abs() > 8;
   final changed = p.r != under.r || p.g != under.g || p.b != under.b;
   return pinkish && translucent && changed;
+}
+
+/// The whole logo (badge and name) of [at].
+math.Rectangle<int> _logoRect(CornerLogoPlacement at) =>
+    math.Rectangle(at.left, at.top, at.logoWidth, at.size);
+
+/// Whether [frame] shows the app name of [at] readably: white lettering on
+/// the darker plate (luminance spread inside the name's box), and the box
+/// changed from [plain].
+bool _showsName(img.Image frame, img.Image plain, CornerLogoPlacement at) {
+  if (!at.showsName) return false;
+  final top = at.top + (at.size - at.nameHeight) ~/ 2;
+  final lums = <int>[];
+  var changed = 0;
+  for (var y = top; y < top + at.nameHeight; y++) {
+    for (
+      var x = at.left + at.nameLeft;
+      x < at.left + at.nameLeft + at.nameWidth;
+      x++
+    ) {
+      final p = frame.getPixel(x, y);
+      final q = plain.getPixel(x, y);
+      if (p.r != q.r || p.g != q.g || p.b != q.b) changed++;
+      lums.add((0.2126 * p.r + 0.7152 * p.g + 0.0722 * p.b).round());
+    }
+  }
+  lums.sort();
+  final light = lums[(lums.length * 0.97).floor()];
+  final dark = lums[(lums.length * 0.3).floor()];
+  final lettering = lums.where((l) => l >= 200).length;
+  return changed > lums.length ~/ 2 && light - dark >= 110 && lettering >= 20;
 }
 
 int _colours(img.Image frame) => {
@@ -117,7 +163,7 @@ void main() {
       final big = CornerLogoPlacement(1920, 1080, LogoCorner.bottomRight);
       expect(big.size, 108);
       expect(big.margin, 32);
-      expect(big.left, 1920 - 32 - 108);
+      expect(big.left, 1920 - 32 - big.logoWidth);
       expect(big.top, 1080 - 32 - 108);
       final gif = CornerLogoPlacement(360, 203, LogoCorner.bottomRight);
       expect(gif.size, 24);
@@ -126,6 +172,37 @@ void main() {
       expect(tiny.size, 10);
       expect(tiny.left, tiny.margin);
       expect(tiny.top, tiny.margin);
+    });
+
+    test('the app name follows the badge, half the badge high; badge only '
+        'below ${CornerLogoPlacement.minBadgeForName} px or when the logo '
+        'would take more than half the width', () {
+      for (final (w, h) in const [(1920, 1080), (480, 270), (360, 203)]) {
+        final at = CornerLogoPlacement(w, h, LogoCorner.bottomRight);
+        expect(at.showsName, isTrue, reason: '${w}x$h');
+        expect(at.nameHeight, (at.size * 0.5).round());
+        expect(at.nameLeft, greaterThan(at.size));
+        expect(at.logoWidth, greaterThan(at.nameLeft + at.nameWidth));
+        expect(at.logoWidth, lessThanOrEqualTo(w / 2));
+        // The right corners keep the whole logo inside the margin.
+        expect(at.left + at.logoWidth, w - at.margin);
+      }
+      final big = CornerLogoPlacement(1920, 1080, LogoCorner.bottomRight);
+      expect(big.nameHeight, 54);
+      // Too small for readable lettering: the badge alone.
+      for (final (w, h) in const [(84, 84), (40, 40)]) {
+        final at = CornerLogoPlacement(w, h, LogoCorner.bottomRight);
+        expect(at.size, lessThan(CornerLogoPlacement.minBadgeForName));
+        expect(at.showsName, isFalse);
+        expect(at.logoWidth, at.size);
+      }
+      // Too narrow for the name.
+      final narrow = CornerLogoPlacement(120, 400, LogoCorner.bottomLeft);
+      expect(narrow.showsName, isFalse);
+      expect(narrow.logoWidth, narrow.size);
+      // The watermark's clear area covers the name too.
+      final left = CornerLogoPlacement(480, 270, LogoCorner.bottomLeft);
+      expect(left.clearArea.width, greaterThan(left.logoWidth));
     });
 
     test('bottom right unless the watermark is there', () {
@@ -157,7 +234,7 @@ void main() {
         );
       }
     }
-    final indexed = exportGifPaletteFrame(frame);
+    final indexed = GifPaletteMapper().paletteFrame(frame);
     expect(indexed.hasPalette, isTrue);
     expect(indexed.palette!.numColors, lessThanOrEqualTo(256));
     var worst = 0;
@@ -174,10 +251,40 @@ void main() {
     final flat = img.Image(width: 8, height: 8)
       ..clear(img.ColorRgb8(255, 255, 255));
     flat.setPixelRgb(1, 1, 30, 60, 220);
-    final kept = exportGifPaletteFrame(flat);
+    final mapper = GifPaletteMapper();
+    final kept = mapper.paletteFrame(flat);
     expect(kept.palette!.numColors, 2);
     final blue = kept.getPixel(1, 1);
     expect([blue.r, blue.g, blue.b], [30, 60, 220]);
+    // More distinct colours than the 16-bit table holds (a photograph), with
+    // the same mapper reused: every pixel still finds a near palette entry,
+    // and the next frame starts clean.
+    final dense = img.Image(width: 512, height: 256);
+    for (var i = 0; i < 512 * 256; i++) {
+      dense.setPixelRgb(
+        i % 512,
+        i ~/ 512,
+        (i >> 14) * 2,
+        ((i >> 7) & 127) * 2,
+        (i & 127) * 2,
+      );
+    }
+    final reduced = mapper.paletteFrame(dense);
+    expect(reduced.palette!.numColors, lessThanOrEqualTo(255));
+    var total = 0;
+    for (var y = 0; y < 256; y++) {
+      for (var x = 0; x < 512; x++) {
+        final p = dense.getPixel(x, y);
+        final q = reduced.getPixel(x, y);
+        total += ((p.r - q.r).abs() + (p.g - q.g).abs() + (p.b - q.b).abs())
+            .toInt();
+      }
+    }
+    expect(total / (512 * 256), lessThan(60));
+    final again = mapper.paletteFrame(flat);
+    expect(again.palette!.numColors, 2);
+    final blueAgain = again.getPixel(1, 1);
+    expect([blueAgain.r, blueAgain.g, blueAgain.b], [30, 60, 220]);
   });
 
   group('work export', () {
@@ -200,6 +307,7 @@ void main() {
     Future<List<img.Image>> export({
       required bool cornerLogo,
       bool watermark = false,
+      Uint8List Function() mark = _bottomRightMark,
     }) async {
       final tiles = TileManager(canvasWidth: _w, canvasHeight: _h);
       addTearDown(tiles.dispose);
@@ -212,7 +320,7 @@ void main() {
         if (watermark) {
           tiles.replaceLayerPixels(
             frameLayerKey(_sceneId, index, _mark.id),
-            _bottomRightMark(),
+            mark(),
           );
         }
       }
@@ -248,19 +356,16 @@ void main() {
       final at = CornerLogoPlacement(_w, _h, LogoCorner.bottomRight);
       for (var i = 0; i < logo.length; i++) {
         expect(_showsBadge(logo[i], plain[i], at), isTrue, reason: 'frame $i');
+        expect(_showsName(logo[i], plain[i], at), isTrue, reason: 'frame $i');
         expect(
-          _differencesOutside(
-            logo[i],
-            plain[i],
-            math.Rectangle(at.left, at.top, at.size, at.size),
-          ),
+          _differencesOutside(logo[i], plain[i], _logoRect(at)),
           0,
           reason: 'frame $i: only the logo changes',
         );
-        // The translucent badge adds few colours to the 256-colour palette.
+        // The translucent logo adds few colours to the 256-colour palette.
         expect(
           _colours(logo[i]) - _colours(plain[i]),
-          lessThan(64),
+          lessThan(128),
           reason: 'frame $i',
         );
         // No logo anywhere else.
@@ -273,23 +378,36 @@ void main() {
       }
     });
 
-    test('the logo keeps out of the user\'s own watermark', () async {
-      final plain = await export(cornerLogo: false, watermark: true);
-      final logo = await export(cornerLogo: true, watermark: true);
-      final left = CornerLogoPlacement(_w, _h, LogoCorner.bottomLeft);
-      for (var i = 0; i < logo.length; i++) {
-        expect(_showsBadge(logo[i], plain[i], left), isTrue, reason: '$i');
-        // The watermark (and everything but the logo) is as without the logo.
+    for (final (name, mark) in const [
+      ('in the corner', _bottomRightMark),
+      ('only where the name would go', _underNameMark),
+    ]) {
+      test('the logo keeps out of the user\'s own watermark ($name)', () async {
+        final right = CornerLogoPlacement(_w, _h, LogoCorner.bottomRight);
         expect(
-          _differencesOutside(
-            logo[i],
-            plain[i],
-            math.Rectangle(left.left, left.top, left.size, left.size),
-          ),
-          0,
+          right.clearArea.left,
+          lessThan(_w - 60),
+          reason: 'the bottom right logo would cover the watermark',
         );
-      }
-    });
+        final plain = await export(
+          cornerLogo: false,
+          watermark: true,
+          mark: mark,
+        );
+        final logo = await export(
+          cornerLogo: true,
+          watermark: true,
+          mark: mark,
+        );
+        final left = CornerLogoPlacement(_w, _h, LogoCorner.bottomLeft);
+        for (var i = 0; i < logo.length; i++) {
+          expect(_showsBadge(logo[i], plain[i], left), isTrue, reason: '$i');
+          expect(_showsName(logo[i], plain[i], left), isTrue, reason: '$i');
+          // The watermark (and everything but the logo) is as without the logo.
+          expect(_differencesOutside(logo[i], plain[i], _logoRect(left)), 0);
+        }
+      });
+    }
 
     test('Premium members and the end mark perk: no logo', () async {
       // The work export screen asks the same rule as the end mark.
@@ -390,14 +508,8 @@ void main() {
       final at = CornerLogoPlacement(_w, _h, LogoCorner.bottomRight);
       for (var i = 0; i < logo.length; i++) {
         expect(_showsBadge(logo[i], plain[i], at), isTrue, reason: '$i');
-        expect(
-          _differencesOutside(
-            logo[i],
-            plain[i],
-            math.Rectangle(at.left, at.top, at.size, at.size),
-          ),
-          0,
-        );
+        expect(_showsName(logo[i], plain[i], at), isTrue, reason: '$i');
+        expect(_differencesOutside(logo[i], plain[i], _logoRect(at)), 0);
         expect(
           _showsBadge(plain[i], plain[i], at),
           isFalse,
@@ -415,14 +527,8 @@ void main() {
       final left = CornerLogoPlacement(_w, _h, LogoCorner.bottomLeft);
       for (var i = 0; i < logo.length; i++) {
         expect(_showsBadge(logo[i], plain[i], left), isTrue, reason: '$i');
-        expect(
-          _differencesOutside(
-            logo[i],
-            plain[i],
-            math.Rectangle(left.left, left.top, left.size, left.size),
-          ),
-          0,
-        );
+        expect(_showsName(logo[i], plain[i], left), isTrue, reason: '$i');
+        expect(_differencesOutside(logo[i], plain[i], _logoRect(left)), 0);
       }
     });
   });

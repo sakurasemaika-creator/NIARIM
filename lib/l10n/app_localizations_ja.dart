@@ -1529,7 +1529,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'NIARIMのエンドマークは、MP4・WebM・AVIの本編末尾に付く5秒のロゴで、メイキング動画にも付きます。GIFにはエンドマークの代わりに、隅へ小さなNIARIMのロゴが入ります。エンドマーク特典が有効な間は、作品ごとに表示を切り替えられます。期限後も作品の設定は保存されます。';
+      'NIARIMのエンドマークは、MP4・WebM・AVIの本編末尾に付く5秒のロゴで、メイキング動画にも付きます。GIFにはエンドマークの代わりに、隅へ小さくNIARIMのアイコンとアプリ名が入ります。エンドマーク特典が有効な間は、作品ごとに表示を切り替えられます。期限後も作品の設定は保存されます。';
 
   @override
   String get helpAutoSaveTitle => '自動保存';
@@ -2121,7 +2121,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      '動画に自分の署名や透かしを入れたいときはウォーターマーク機能を使います。エンドマークはMP4・WebM・AVIの末尾に付くNIARIMのロゴです。プレミアム会員またはエンドマーク編集の特典を利用中は、作品ごとに表示・非表示を切り替えられます。GIFには付かず、代わりに隅へ小さなNIARIMのロゴが入ります。エンドマークを使わず自分だけの締めくくりを作りたいときは、画像レイヤーの追加とフェードイン・アウトを組み合わせれば同じような演出を自作できます。';
+      '動画に自分の署名や透かしを入れたいときはウォーターマーク機能を使います。エンドマークはMP4・WebM・AVIの末尾に付くNIARIMのロゴです。プレミアム会員またはエンドマーク編集の特典を利用中は、作品ごとに表示・非表示を切り替えられます。GIFには付かず、代わりに隅へ小さくNIARIMのアイコンとアプリ名が入ります。エンドマークを使わず自分だけの締めくくりを作りたいときは、画像レイヤーの追加とフェードイン・アウトを組み合わせれば同じような演出を自作できます。';
 
   @override
   String get tipsVerticalPixelFontTitle => '実写動画×手描き作画で「実写×アニメ」を作る';

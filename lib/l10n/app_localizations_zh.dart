@@ -1507,7 +1507,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 片尾标记是 MP4、WebM 和 AVI 末尾的 5 秒标志，制作视频也会添加。GIF 则在角落加入小的 NIARIM 标志。权益有效时可按作品切换显示。到期后仍保留设置。';
+      'NIARIM 片尾标记是 MP4、WebM 和 AVI 末尾的 5 秒标志，制作视频也会添加。GIF 则在角落加入小的 NIARIM 图标和应用名称。权益有效时可按作品切换显示。到期后仍保留设置。';
 
   @override
   String get helpAutoSaveTitle => '自动保存';
@@ -2098,7 +2098,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      '想在视频中加入自己的签名或标记时，请使用水印功能。片尾标记是导出的 MP4、WebM 和 AVI 视频末尾的 NIARIM 标志。高级会员或片尾标记编辑权益有效时，可以为每部作品设置显示或隐藏。GIF 不添加片尾标记，而是在角落加入小的 NIARIM 标志。如果不想使用片尾标记而想自制专属的结尾效果，只需添加图片图层并配合淡入淡出，就能自行还原类似的效果。';
+      '想在视频中加入自己的签名或标记时，请使用水印功能。片尾标记是导出的 MP4、WebM 和 AVI 视频末尾的 NIARIM 标志。高级会员或片尾标记编辑权益有效时，可以为每部作品设置显示或隐藏。GIF 不添加片尾标记，而是在角落加入小的 NIARIM 图标和应用名称。如果不想使用片尾标记而想自制专属的结尾效果，只需添加图片图层并配合淡入淡出，就能自行还原类似的效果。';
 
   @override
   String get tipsVerticalPixelFontTitle => '实拍视频×手绘作画，打造“实拍×动画”';
@@ -12565,7 +12565,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 片尾標記是 MP4、WebM 和 AVI 末尾的 5 秒標誌，製作影片也會加上。GIF 則在角落加入小的 NIARIM 標誌。權益有效時可依作品切換顯示。到期後仍保留設定。';
+      'NIARIM 片尾標記是 MP4、WebM 和 AVI 末尾的 5 秒標誌，製作影片也會加上。GIF 則在角落加入小的 NIARIM 圖示和應用程式名稱。權益有效時可依作品切換顯示。到期後仍保留設定。';
 
   @override
   String get helpAutoSaveTitle => '自動儲存';
@@ -13156,7 +13156,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      '想在影片中加入自己的簽名或標記時，請使用浮水印功能。片尾標記是匯出的 MP4、WebM 和 AVI 影片末尾的 NIARIM 標誌。進階會員或片尾標記編輯權益有效時，可以依作品設定顯示或隱藏。GIF 不會加上片尾標記，而是在角落加入小的 NIARIM 標誌。如果不想使用片尾標記而想自製專屬的結尾效果，只要新增圖片圖層並搭配淡入淡出，就能自行還原類似的效果。';
+      '想在影片中加入自己的簽名或標記時，請使用浮水印功能。片尾標記是匯出的 MP4、WebM 和 AVI 影片末尾的 NIARIM 標誌。進階會員或片尾標記編輯權益有效時，可以依作品設定顯示或隱藏。GIF 不會加上片尾標記，而是在角落加入小的 NIARIM 圖示和應用程式名稱。如果不想使用片尾標記而想自製專屬的結尾效果，只要新增圖片圖層並搭配淡入淡出，就能自行還原類似的效果。';
 
   @override
   String get tipsVerticalPixelFontTitle => '實拍影片×手繪作畫，打造「實拍×動畫」';

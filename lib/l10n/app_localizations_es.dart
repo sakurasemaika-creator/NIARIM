@@ -1607,7 +1607,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'La marca final de NIARIM dura cinco segundos y se añade a MP4, WebM y AVI, también en los vídeos del proceso. Los GIF llevan en su lugar un pequeño logo de NIARIM en una esquina. Puedes ocultarlos por proyecto mientras el beneficio esté activo. El ajuste se conserva al caducar.';
+      'La marca final de NIARIM dura cinco segundos y se añade a MP4, WebM y AVI, también en los vídeos del proceso. Los GIF llevan en su lugar el icono y el nombre de NIARIM en pequeño en una esquina. Puedes ocultarlos por proyecto mientras el beneficio esté activo. El ajuste se conserva al caducar.';
 
   @override
   String get helpAutoSaveTitle => 'Guardado automático';
@@ -2236,7 +2236,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      'Usa la función de marca de agua cuando quieras añadir tu propia firma o marca a un vídeo. La marca final es el logotipo de NIARIM que se añade al final de las exportaciones en MP4, WebM y AVI. Con Premium o el beneficio de edición de la marca final, puedes mostrarla u ocultarla por proyecto. Los GIF no la incluyen y llevan en su lugar un pequeño logo de NIARIM en una esquina. Si quieres un cierre personalizado sin usar la marca final, puedes recrear un efecto similar añadiendo una capa de imagen con entrada/salida de fundido.';
+      'Usa la función de marca de agua cuando quieras añadir tu propia firma o marca a un vídeo. La marca final es el logotipo de NIARIM que se añade al final de las exportaciones en MP4, WebM y AVI. Con Premium o el beneficio de edición de la marca final, puedes mostrarla u ocultarla por proyecto. Los GIF no la incluyen y llevan en su lugar el icono y el nombre de NIARIM en pequeño en una esquina. Si quieres un cierre personalizado sin usar la marca final, puedes recrear un efecto similar añadiendo una capa de imagen con entrada/salida de fundido.';
 
   @override
   String get tipsVerticalPixelFontTitle =>

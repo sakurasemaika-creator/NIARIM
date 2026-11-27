@@ -1094,20 +1094,31 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   付けるかどうかはエンドマークと同じ`shouldAppendOfficialEndCard`（作品の書き出しは
   `ExportEngine.exportGif(cornerLogo:)`、メイキングは`MakingExport.export(officialMark:)`。決まりを
   画面で書き直さない）。絵は`lib/engine/corner_logo.dart`：エンドマークと同じバッジ
-  （`paintNiarimBadge`）を、短辺の10%（24px以上。小さい絵では短辺の1/4まで）・短辺の3%（4px以上）の
-  余白で、不透明度80%で重ねる（`CornerLogoStamp`）。重ねた色は8段ごとに丸めて、細かい絵の上でも
-  GIFの256色のパレットへ足す色を少なくする。隅は右下→左下→右上→左上の順で、利用者の
-  ウォーターマーク（`LayerType.watermark`）が無い最初の隅（作品の書き出しはウォーターマークの
-  レイヤーだけをコマごとに同じ置き方で描いて測る、メイキングはレイヤーの描かれた範囲
-  `contentBounds`をキャンバスに対する割合で渡す）。利用者に見える所：書き出し・メイキングの画面の
-  「本編 …（隅にNIARIMのロゴ）」（`exportOutputWithCornerLogo`）、比較表の「GIFの隅のNIARIMロゴ」
-  （`premiumFeatureGifCornerLogo`）、特典の名前「エンドマークとGIFロゴの編集・削除（メイキング動画を
-  含む）」、`premiumBannerEndCardBody`・`helpEndCardDesc`・`workspaceEndCardHint`。
-  `test/gif_corner_logo_test.dart`が見張る（ロゴの外の画素が付けないときと同じ・ウォーターマークを避ける）。
-  あわせて、**GIFのコマは`exportGifPaletteFrame`で自分でパレットの絵にしてから渡す**：image 4.3.0の
-  octreeの色の引き当て（`getColorIndex`）は、256色より多いコマで畳んだ色を違うパレットの色へ送り、
-  グラデーションの空が暗い縞になっていた（ロゴと関係なく以前から）。octreeの節の色
-  （`getQuantizedColor`、最大255色）でパレットを作る。
+  （`paintNiarimBadge`）の右に、エンドマークと同じアプリ名の書き文字（`paintNiarimWordmark`、
+  `assets/logo/title_logo.svg`）を白で、半透明の暗い下地（黒60%）に並べる（所有者の依頼、2026-11-27
+  「gifで出す透かしはアプリアイコンだけでなくアプリ名も出しておいてほしいです。じゃないと宣伝に
+  ならないので。」）。バッジは短辺の10%（24px以上。小さい絵では短辺の1/4まで）、書き文字の高さは
+  バッジの半分、余白は短辺の3%（4px以上）、全体を不透明度85%で重ねる（`CornerLogoStamp`）。
+  バッジが22px（`minBadgeForName`）より小さい絵（短辺88px未満）と、ロゴが幅の半分を超える細い絵は
+  バッジだけ。ロゴは書き出しの始めに1回だけ描き、コマごとには覆う画素だけを整数の計算で重ねる
+  （`stampOntoBytes`）。重ねた色は8段ごとに丸めて、細かい絵の上でもGIFの256色のパレットへ足す色を
+  少なくする。隅は右下→左下→右上→左上の順で、利用者のウォーターマーク（`LayerType.watermark`）が
+  ロゴ全体（名前を含む`clearArea`）に無い最初の隅（作品の書き出しはウォーターマークのレイヤーだけを
+  コマごとに同じ置き方で描いて測る、メイキングはレイヤーの描かれた範囲`contentBounds`をキャンバスに
+  対する割合で渡す）。利用者に見える所：書き出し・メイキングの画面の「本編 …（隅にNIARIMのロゴ）」
+  （`exportOutputWithCornerLogo`）、比較表の「GIFの隅のNIARIMロゴ」（`premiumFeatureGifCornerLogo`）、
+  特典の名前「エンドマークとGIFロゴの編集・削除（メイキング動画を含む）」、`premiumBannerEndCardBody`・
+  `helpEndCardDesc`・`tipsEndCardWatermarkDesc`（「隅へ小さくNIARIMのアイコンとアプリ名が入ります」）・
+  `workspaceEndCardHint`。`test/gif_corner_logo_test.dart`が見張る（名前が明るい・暗い・紺のコマで
+  読める、ロゴの外の画素が付けないときと同じ、名前の所だけにあるウォーターマークも避ける、小さい絵は
+  バッジだけ）。
+  あわせて、**GIFのコマは`lib/engine/gif_palette.dart`の`GifPaletteMapper`で自分でパレットの絵に
+  してから渡す**（`newExportGifEncoder`）：image 4.3.0のoctreeの色の引き当て（`getColorIndex`）は、
+  256色より多いコマで畳んだ色を違うパレットの色へ送り、グラデーションの空が暗い縞になっていた
+  （ロゴと関係なく以前から）。そのうえoctreeを画素ごとに組むので遅かった（1920×1080で1コマ約75ms）。
+  `GifPaletteMapper`は同じoctreeの方法（7bitの色・画素の少ない節から親へ畳む、最大255色）を、色ごとの
+  数を数えた後の異なる色だけで組み、各画素は表を1回引くだけ（1コマ約20ms。表と作業の領域は1回の
+  書き出しで使い回す）。255色以下のコマの色は今までと同じ。
 - **数と単位をコードでつなげない（ARBのICU pluralにする）**：特典交換の期間は
   `'${amount}$unit'`でつないでいて、英語「1hours」・スペイン語「1horas」・
   フランス語「1heures」と出ていた。`rewardDurationHours`等（`{count, plural,

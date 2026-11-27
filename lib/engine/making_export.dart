@@ -207,7 +207,7 @@ abstract final class MakingExport {
     CornerLogoStamp? logo;
     (int, int)? logoFrameSize;
     Future<void> add(img.Image decoded) async {
-      final frame = _gifFrame(decoded);
+      var frame = _gifFrame(decoded);
       if (cornerLogo) {
         // A canvas resized while recording gives snapshots of other sizes.
         if (logoFrameSize != (frame.width, frame.height)) logo = null;
@@ -230,7 +230,7 @@ abstract final class MakingExport {
             ),
           ),
         );
-        logo!.stampOnto(frame);
+        frame = logo!.stampOnto(frame);
       }
       encoder.addFrame(frame, duration: _gifFrameCentiseconds);
     }

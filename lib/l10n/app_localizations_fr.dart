@@ -1600,7 +1600,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'La marque de fin NIARIM de cinq secondes est ajoutée aux exports MP4, WebM et AVI, vidéos du making-of comprises. Les GIF reçoivent à la place un petit logo NIARIM dans un coin. Vous pouvez les masquer par projet tant que l’avantage est actif. Le réglage est conservé après expiration.';
+      'La marque de fin NIARIM de cinq secondes est ajoutée aux exports MP4, WebM et AVI, vidéos du making-of comprises. Les GIF reçoivent à la place l’icône et le nom de NIARIM en petit dans un coin. Vous pouvez les masquer par projet tant que l’avantage est actif. Le réglage est conservé après expiration.';
 
   @override
   String get helpAutoSaveTitle => 'Enregistrement automatique';
@@ -2228,7 +2228,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      'Utilisez le filigrane pour ajouter votre propre signature ou marque à une vidéo. La marque de fin est le logo NIARIM ajouté à la fin des exports MP4, WebM et AVI. Avec Premium ou l’avantage de modification de la marque de fin, vous pouvez l’afficher ou la masquer pour chaque projet. Les GIF ne l’incluent pas et reçoivent à la place un petit logo NIARIM dans un coin. Pour une conclusion personnalisée sans utiliser la marque de fin, vous pouvez recréer un effet similaire en ajoutant un calque image avec un fondu d’entrée/sortie.';
+      'Utilisez le filigrane pour ajouter votre propre signature ou marque à une vidéo. La marque de fin est le logo NIARIM ajouté à la fin des exports MP4, WebM et AVI. Avec Premium ou l’avantage de modification de la marque de fin, vous pouvez l’afficher ou la masquer pour chaque projet. Les GIF ne l’incluent pas et reçoivent à la place l’icône et le nom de NIARIM en petit dans un coin. Pour une conclusion personnalisée sans utiliser la marque de fin, vous pouvez recréer un effet similaire en ajoutant un calque image avec un fondu d’entrée/sortie.';
 
   @override
   String get tipsVerticalPixelFontTitle =>

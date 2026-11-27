@@ -7,13 +7,13 @@ import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_session.dart';
 import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
 import 'package:flutter/foundation.dart' show compute;
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
 import 'corner_logo.dart';
 import 'export_audio.dart';
 import 'export_filename.dart';
+import 'gif_palette.dart';
 import '../engine/layer_range_resolver.dart';
 import '../engine/timeline_stack.dart';
 import '../engine/tile_manager.dart';
@@ -125,14 +125,12 @@ class ExportTiming {
 /// The encoder for exported GIFs. The image package's default (neural
 /// quantizer + Floyd–Steinberg dithering) maps a flat white to a palette
 /// entry like 252 and dithers the difference, so flat paper showed streaks
-/// (39% of a 480×360 frame). The octree quantizer keeps the frame's own
-/// colours exactly and, without dithering, flat areas stay flat. (Its
-/// dithering mode darkens colours in this version, so it is not used.)
+/// (39% of a 480×360 frame). The octree method keeps the frame's own colours
+/// exactly and, without dithering, flat areas stay flat.
 ///
-/// Each frame is turned into a palette image first ([exportGifPaletteFrame]):
-/// the octree quantizer's own colour lookup sends the colours it merged to
-/// the wrong palette entry when a frame has more than 256 colours (a
-/// gradient sky came out in dark streaks).
+/// Each frame is turned into a palette image first by [GifPaletteMapper]
+/// (the octree method on the frame's bytes; the image package's own octree
+/// quantizer is slow and sends merged colours to the wrong palette entry).
 img.GifEncoder newExportGifEncoder() => _ExportGifEncoder();
 
 class _ExportGifEncoder extends img.GifEncoder {
@@ -142,60 +140,13 @@ class _ExportGifEncoder extends img.GifEncoder {
         dither: img.DitherKernel.none,
       );
 
+  final GifPaletteMapper _palette = GifPaletteMapper();
+
   @override
   void addFrame(img.Image image, {int? duration}) => super.addFrame(
-    image.hasPalette ? image : exportGifPaletteFrame(image),
+    image.hasPalette ? image : _palette.paletteFrame(image),
     duration: duration,
   );
-}
-
-/// [frame] as a GIF palette image of at most 255 colours: the octree's
-/// colours (exact while the frame has few colours, the average of the merged
-/// colours otherwise), each pixel taking the colour of the octree node it
-/// falls in.
-img.Image exportGifPaletteFrame(img.Image frame) {
-  final octree = img.OctreeQuantizer(frame, numberOfColors: 255);
-  final indexOfColour = <int, int>{};
-  final paletteColours = <int>[];
-  // The octree tells colours apart by their top 7 bits per channel.
-  final indexOfKey = Int16List(1 << 21)..fillRange(0, 1 << 21, -1);
-  final indices = Uint8List(frame.width * frame.height);
-  var at = 0;
-  for (final pixel in frame) {
-    final r = pixel.r.toInt();
-    final g = pixel.g.toInt();
-    final b = pixel.b.toInt();
-    final key = ((r >> 1) << 14) | ((g >> 1) << 7) | (b >> 1);
-    var index = indexOfKey[key];
-    if (index < 0) {
-      final node = octree.getQuantizedColor(img.ColorRgb8(r, g, b));
-      final colour =
-          (node.r.toInt() << 16) | (node.g.toInt() << 8) | node.b.toInt();
-      index = indexOfColour.putIfAbsent(colour, () {
-        paletteColours.add(colour);
-        return paletteColours.length - 1;
-      });
-      indexOfKey[key] = index;
-    }
-    indices[at++] = index;
-  }
-  final palette = img.PaletteUint8(math.max(1, paletteColours.length), 3);
-  for (final (index, colour) in paletteColours.indexed) {
-    palette.setRgb(
-      index,
-      (colour >> 16) & 0xFF,
-      (colour >> 8) & 0xFF,
-      colour & 0xFF,
-    );
-  }
-  final out = img.Image(
-    width: frame.width,
-    height: frame.height,
-    numChannels: 1,
-    palette: palette,
-  );
-  (out.data! as img.ImageDataUint8).data.setAll(0, indices);
-  return out;
 }
 
 Uint8List _encodeGifFrames(
@@ -219,6 +170,7 @@ Uint8List _encodeGifFrames(
       if (rgba.length != frameBytes) {
         throw const FileSystemException('Incomplete GIF frame data');
       }
+      logo?.stampOntoBytes(rgba, width, height, 4);
       final frame = img.Image.fromBytes(
         width: width,
         height: height,
@@ -226,7 +178,6 @@ Uint8List _encodeGifFrames(
         bytesOffset: rgba.offsetInBytes,
         numChannels: 4,
       );
-      logo?.stampOnto(frame);
       encoder.addFrame(
         frame,
         duration: frameCount == 1 ? null : timing.gifDelayMs(index + 1) ~/ 10,
@@ -546,31 +497,23 @@ class ExportEngine {
 
     // タイトルロゴ（アプリ名の書き文字）：モノグラムの下に、横幅の55%を
     // 目安にした幅で中央揃えに配置する。SVGの元アスペクト比（幅3470×
-    // 高さ690相当）を保つ。
-    final titleInfo = await vg.loadPicture(
-      const SvgAssetLoader('assets/logo/title_logo.svg'),
-      null,
-    );
+    // 高さ690相当）を保つ。単色SVGのため、黒背景で視認できるよう白で描く
+    // （GIFの隅のロゴも同じ書き文字、paintNiarimWordmark）。
+    final titleInfo = await loadNiarimWordmark();
     final titleWidth = width * 0.55;
-    final titleScale = titleWidth / titleInfo.size.width;
-    final titleHeight = titleInfo.size.height * titleScale;
-    final titleLeft = (width - titleWidth) / 2;
-    final titleTop = logoTop + logoSize + height * 0.04;
-    canvas.save();
-    // モノグラムと同じく単色SVGのため、黒背景で視認できるよう白へ着色する。
-    canvas.saveLayer(
-      ui.Rect.fromLTWH(titleLeft, titleTop, titleWidth, titleHeight),
-      ui.Paint()
-        ..colorFilter = const ui.ColorFilter.mode(
-          ui.Color(0xFFFFFFFF),
-          ui.BlendMode.srcIn,
-        ),
+    final titleHeight =
+        titleWidth * titleInfo.size.height / titleInfo.size.width;
+    paintNiarimWordmark(
+      canvas,
+      ui.Rect.fromLTWH(
+        (width - titleWidth) / 2,
+        logoTop + logoSize + height * 0.04,
+        titleWidth,
+        titleHeight,
+      ),
+      titleInfo,
+      const ui.Color(0xFFFFFFFF),
     );
-    canvas.translate(titleLeft, titleTop);
-    canvas.scale(titleScale, titleScale);
-    canvas.drawPicture(titleInfo.picture);
-    canvas.restore();
-    canvas.restore();
     titleInfo.picture.dispose();
 
     final picture = recorder.endRecording();

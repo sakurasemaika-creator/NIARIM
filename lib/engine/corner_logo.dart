@@ -45,6 +45,37 @@ void paintNiarimBadge(ui.Canvas canvas, ui.Rect rect, PictureInfo monogram) {
 Future<PictureInfo> loadNiarimMonogram() =>
     vg.loadPicture(const SvgAssetLoader('assets/logo/app_logo.svg'), null);
 
+/// Loads the NIARIM wordmark (the app name lettering). The caller disposes
+/// the returned picture.
+Future<PictureInfo> loadNiarimWordmark() =>
+    vg.loadPicture(const SvgAssetLoader('assets/logo/title_logo.svg'), null);
+
+/// Width ÷ height of the wordmark (`assets/logo/title_logo.svg`'s viewBox).
+const double niarimWordmarkAspect = 3470 / 690;
+
+/// Paints the NIARIM wordmark into [rect] of [canvas] in [color].
+/// [wordmark] is the decoded `assets/logo/title_logo.svg`; [rect] should
+/// have its aspect ratio.
+void paintNiarimWordmark(
+  ui.Canvas canvas,
+  ui.Rect rect,
+  PictureInfo wordmark,
+  ui.Color color,
+) {
+  canvas.save();
+  // The wordmark SVG has one colour; it is drawn in [color] through a layer.
+  canvas.saveLayer(
+    rect,
+    ui.Paint()..colorFilter = ui.ColorFilter.mode(color, ui.BlendMode.srcIn),
+  );
+  canvas.translate(rect.left, rect.top);
+  final scale = rect.width / wordmark.size.width;
+  canvas.scale(scale, scale);
+  canvas.drawPicture(wordmark.picture);
+  canvas.restore();
+  canvas.restore();
+}
+
 /// A corner of the frame for the GIF logo.
 enum LogoCorner { bottomRight, bottomLeft, topRight, topLeft }
 
@@ -52,17 +83,58 @@ enum LogoCorner { bottomRight, bottomLeft, topRight, topLeft }
 ///
 /// The badge is a tenth of the shorter side, at least 24 px (a quarter of
 /// the shorter side on frames too small for that), with a margin of 3% of
-/// the shorter side (at least 4 px) from both edges of its corner.
+/// the shorter side (at least 4 px) from both edges of its corner. The app
+/// name follows the badge on a translucent dark plate, its lettering about
+/// half the badge high, when the badge is at least [minBadgeForName] px and
+/// the whole logo takes at most half the frame width; otherwise the badge is
+/// alone.
 class CornerLogoPlacement {
   CornerLogoPlacement(this.width, this.height, this.corner)
     : size = sizeFor(width, height),
-      margin = marginFor(width, height);
+      margin = marginFor(width, height) {
+    final nameHeight = (size * nameHeightRatio).round();
+    final nameWidth = (nameHeight * niarimWordmarkAspect).ceil();
+    final gap = (size * 0.2).round();
+    final end = (size * 0.3).round();
+    final wide = size + gap + nameWidth + end;
+    showsName = size >= minBadgeForName && wide <= width / 2;
+    if (showsName) {
+      this.nameHeight = nameHeight;
+      this.nameWidth = nameWidth;
+      nameLeft = size + gap;
+      logoWidth = wide;
+    } else {
+      this.nameHeight = 0;
+      this.nameWidth = 0;
+      nameLeft = size;
+      logoWidth = size;
+    }
+  }
+
+  /// Below this badge size the name would not be readable: badge only.
+  static const int minBadgeForName = 22;
+
+  /// The name's lettering height as a share of the badge size.
+  static const double nameHeightRatio = 0.5;
 
   final int width;
   final int height;
   final LogoCorner corner;
+
+  /// The badge's side.
   final int size;
   final int margin;
+
+  /// Whether the app name follows the badge.
+  late final bool showsName;
+
+  /// The name's lettering box, from the logo's left edge.
+  late final int nameLeft;
+  late final int nameWidth;
+  late final int nameHeight;
+
+  /// The whole logo's width (its height is [size]).
+  late final int logoWidth;
 
   static int sizeFor(int width, int height) {
     final shorter = math.min(width, height);
@@ -76,7 +148,7 @@ class CornerLogoPlacement {
   }
 
   int get left => switch (corner) {
-    LogoCorner.bottomRight || LogoCorner.topRight => width - margin - size,
+    LogoCorner.bottomRight || LogoCorner.topRight => width - margin - logoWidth,
     LogoCorner.bottomLeft || LogoCorner.topLeft => margin,
   };
 
@@ -85,7 +157,7 @@ class CornerLogoPlacement {
     LogoCorner.topRight || LogoCorner.topLeft => margin,
   };
 
-  /// The badge with half the margin around it: the part of the frame the
+  /// The logo with half the margin around it: the part of the frame the
   /// user's own watermark should stay out of.
   math.Rectangle<int> get clearArea {
     final gap = margin ~/ 2;
@@ -94,7 +166,7 @@ class CornerLogoPlacement {
     return math.Rectangle<int>(
       x,
       y,
-      math.min(width, left + size + gap) - x,
+      math.min(width, left + logoWidth + gap) - x,
       math.min(height, top + size + gap) - y,
     );
   }
@@ -160,99 +232,180 @@ double alphaInside(Uint8List rgba, int width, math.Rectangle<int> area) {
   return sum.toDouble();
 }
 
-/// The NIARIM badge rendered for one placement, ready to stamp onto frames
-/// (also in another isolate).
+/// The NIARIM logo (the badge, and the app name on a translucent plate when
+/// the frame is big enough) rendered once for one placement, ready to blend
+/// onto every frame (also in another isolate). Only the logo's own pixels
+/// are touched.
 class CornerLogoStamp {
-  const CornerLogoStamp({
+  CornerLogoStamp._(
+    this._pixelAt,
+    this._source,
+    this._keep, {
     required this.left,
     required this.top,
-    required this.size,
-    required this.pixels,
+    required this.width,
+    required this.height,
   });
 
   final int left;
   final int top;
-  final int size;
+  final int width;
+  final int height;
 
-  /// [size]×[size] premultiplied RGBA of the opaque badge.
-  final Uint8List pixels;
+  /// The covered pixels (y × [width] + x within the logo).
+  final Int32List _pixelAt;
 
-  /// How much of the frame shows through the badge.
-  static const double opacity = 0.8;
+  /// Per covered pixel, the logo's premultiplied R, G, B, A at [opacity],
+  /// × 256.
+  final Uint16List _source;
 
-  /// Colours the badge leaves are rounded to this step, so a badge over a
+  /// Per covered pixel, how much of the frame shows through, × 256.
+  final Uint16List _keep;
+
+  /// How much of the frame shows through the logo.
+  static const double opacity = 0.85;
+
+  /// The plate behind the name: black at this alpha (before [opacity]).
+  static const double plateAlpha = 0.6;
+
+  /// Colours the logo leaves are rounded to this step, so a logo over a
   /// detailed picture adds few colours to the frame's 256-colour GIF palette.
   static const int colourStep = 8;
 
+  static final Uint8List _snapped = Uint8List.fromList([
+    for (var v = 0; v < 256; v++)
+      ((v / colourStep).round() * colourStep).clamp(0, 255).toInt(),
+  ]);
+
   static Future<CornerLogoStamp> render(CornerLogoPlacement placement) async {
-    final size = placement.size;
+    final width = placement.logoWidth;
+    final height = placement.size;
     final monogram = await loadNiarimMonogram();
+    final wordmark = placement.showsName ? await loadNiarimWordmark() : null;
     final recorder = ui.PictureRecorder();
     try {
+      final canvas = ui.Canvas(recorder);
+      final radius = ui.Radius.circular(height * 0.22);
+      if (wordmark != null) {
+        canvas.drawRRect(
+          ui.RRect.fromRectAndRadius(
+            ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+            radius,
+          ),
+          ui.Paint()..color = ui.Color.fromRGBO(0, 0, 0, plateAlpha),
+        );
+        paintNiarimWordmark(
+          canvas,
+          ui.Rect.fromLTWH(
+            placement.nameLeft.toDouble(),
+            (height - placement.nameHeight) / 2,
+            placement.nameWidth.toDouble(),
+            placement.nameHeight.toDouble(),
+          ),
+          wordmark,
+          const ui.Color(0xFFFFFFFF),
+        );
+      }
       paintNiarimBadge(
-        ui.Canvas(recorder),
-        ui.Rect.fromLTWH(0, 0, size.toDouble(), size.toDouble()),
+        canvas,
+        ui.Rect.fromLTWH(0, 0, height.toDouble(), height.toDouble()),
         monogram,
       );
     } finally {
       monogram.picture.dispose();
+      wordmark?.picture.dispose();
     }
     final picture = recorder.endRecording();
     final ui.Image image;
     try {
-      image = await picture.toImage(size, size);
+      image = await picture.toImage(width, height);
     } finally {
       picture.dispose();
     }
+    final Uint8List rgba;
     try {
       final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-      return CornerLogoStamp(
-        left: placement.left,
-        top: placement.top,
-        size: size,
-        pixels: data!.buffer.asUint8List(),
-      );
+      rgba = data!.buffer.asUint8List();
     } finally {
       image.dispose();
     }
+    final covered = <int>[];
+    for (var i = 0; i < width * height; i++) {
+      if (rgba[i * 4 + 3] != 0) covered.add(i);
+    }
+    final pixelAt = Int32List.fromList(covered);
+    final source = Uint16List(covered.length * 4);
+    final keep = Uint16List(covered.length);
+    for (var k = 0; k < covered.length; k++) {
+      final i = covered[k] * 4;
+      for (var c = 0; c < 4; c++) {
+        source[k * 4 + c] = (rgba[i + c] * opacity * 256).round();
+      }
+      keep[k] = ((1 - rgba[i + 3] * opacity / 255) * 256).round();
+    }
+    return CornerLogoStamp._(
+      pixelAt,
+      source,
+      keep,
+      left: placement.left,
+      top: placement.top,
+      width: width,
+      height: height,
+    );
   }
 
-  /// Draws the badge at [opacity] onto [frame] (premultiplied, or opaque).
-  void stampOnto(img.Image frame) {
-    final hasAlpha = frame.numChannels == 4;
-    for (var y = 0; y < size; y++) {
-      final fy = top + y;
-      if (fy < 0 || fy >= frame.height) continue;
-      for (var x = 0; x < size; x++) {
-        final fx = left + x;
-        if (fx < 0 || fx >= frame.width) continue;
-        final i = (y * size + x) * 4;
-        final coverage = pixels[i + 3] * opacity / 255;
-        if (coverage <= 0) continue;
-        final keep = 1 - coverage;
-        final under = frame.getPixel(fx, fy);
-        int mix(int channel, num below) =>
-            _rounded(pixels[i + channel] * opacity + below * keep);
-        final r = mix(0, under.r);
-        final g = mix(1, under.g);
-        final b = mix(2, under.b);
-        if (hasAlpha) {
-          final a = (coverage * 255 + under.a * keep).round().clamp(0, 255);
-          frame.setPixelRgba(
-            fx,
-            fy,
-            math.min(r, a),
-            math.min(g, a),
-            math.min(b, a),
-            a,
-          );
-        } else {
-          frame.setPixelRgb(fx, fy, r, g, b);
-        }
+  /// Blends the logo onto [pixels]: a [frameWidth]×[frameHeight] frame of
+  /// [channels] (3: RGB, 4: premultiplied RGBA) bytes per pixel.
+  void stampOntoBytes(
+    Uint8List pixels,
+    int frameWidth,
+    int frameHeight,
+    int channels,
+  ) {
+    final snapped = _snapped;
+    for (var k = 0; k < _pixelAt.length; k++) {
+      final at = _pixelAt[k];
+      final y = top + at ~/ width;
+      final x = left + at % width;
+      if (x < 0 || y < 0 || x >= frameWidth || y >= frameHeight) continue;
+      final i = (y * frameWidth + x) * channels;
+      final keep = _keep[k];
+      final s = k * 4;
+      final r = snapped[(_source[s] + pixels[i] * keep + 128) >> 8];
+      final g = snapped[(_source[s + 1] + pixels[i + 1] * keep + 128) >> 8];
+      final b = snapped[(_source[s + 2] + pixels[i + 2] * keep + 128) >> 8];
+      if (channels == 4) {
+        final a = (_source[s + 3] + pixels[i + 3] * keep + 128) >> 8;
+        pixels[i] = r < a ? r : a;
+        pixels[i + 1] = g < a ? g : a;
+        pixels[i + 2] = b < a ? b : a;
+        pixels[i + 3] = a;
+      } else {
+        pixels[i] = r;
+        pixels[i + 1] = g;
+        pixels[i + 2] = b;
       }
     }
   }
 
-  static int _rounded(double value) =>
-      ((value / colourStep).round() * colourStep).clamp(0, 255);
+  /// Blends the logo onto [frame]. Returns the frame it drew on: [frame]
+  /// itself, or a copy in 8-bit RGB(A) when [frame] was in another format.
+  img.Image stampOnto(img.Image frame) {
+    var target = frame;
+    if (target.hasPalette ||
+        target.format != img.Format.uint8 ||
+        target.numChannels < 3) {
+      target = target.convert(
+        format: img.Format.uint8,
+        numChannels: target.numChannels == 4 ? 4 : 3,
+      );
+    }
+    stampOntoBytes(
+      (target.data! as img.ImageDataUint8).data,
+      target.width,
+      target.height,
+      target.numChannels,
+    );
+    return target;
+  }
 }

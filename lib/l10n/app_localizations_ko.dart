@@ -1533,7 +1533,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 엔드마크는 MP4, WebM, AVI 끝에 붙는 5초 로고이며, 메이킹 동영상에도 붙습니다. GIF에는 대신 모서리에 작은 NIARIM 로고가 들어갑니다. 혜택이 유효하면 작품별로 표시 여부를 바꿀 수 있습니다. 만료 후에도 설정이 저장됩니다.';
+      'NIARIM 엔드마크는 MP4, WebM, AVI 끝에 붙는 5초 로고이며, 메이킹 동영상에도 붙습니다. GIF에는 대신 모서리에 NIARIM 아이콘과 앱 이름이 작게 들어갑니다. 혜택이 유효하면 작품별로 표시 여부를 바꿀 수 있습니다. 만료 후에도 설정이 저장됩니다.';
 
   @override
   String get helpAutoSaveTitle => '자동 저장';
@@ -2125,7 +2125,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      '동영상에 자신의 서명이나 마크를 넣고 싶을 때는 워터마크 기능을 사용하세요. 엔드마크는 MP4, WebM, AVI 파일 끝에 붙는 NIARIM 로고입니다. 프리미엄 또는 엔드마크 편집 혜택을 이용하면 작품별로 표시하거나 숨길 수 있습니다. GIF에는 붙지 않고, 대신 모서리에 작은 NIARIM 로고가 들어갑니다. 엔드마크를 사용하지 않고 나만의 마무리를 만들고 싶다면, 이미지 레이어 추가와 페이드 인/아웃을 조합해 비슷한 연출을 직접 만들 수 있습니다.';
+      '동영상에 자신의 서명이나 마크를 넣고 싶을 때는 워터마크 기능을 사용하세요. 엔드마크는 MP4, WebM, AVI 파일 끝에 붙는 NIARIM 로고입니다. 프리미엄 또는 엔드마크 편집 혜택을 이용하면 작품별로 표시하거나 숨길 수 있습니다. GIF에는 붙지 않고, 대신 모서리에 NIARIM 아이콘과 앱 이름이 작게 들어갑니다. 엔드마크를 사용하지 않고 나만의 마무리를 만들고 싶다면, 이미지 레이어 추가와 페이드 인/아웃을 조합해 비슷한 연출을 직접 만들 수 있습니다.';
 
   @override
   String get tipsVerticalPixelFontTitle => '실사 영상 × 손그림으로 「실사 × 애니메이션」 만들기';

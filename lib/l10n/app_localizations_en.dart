@@ -1572,7 +1572,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'The NIARIM end mark is a five-second logo appended to MP4, WebM, and AVI exports, including making videos. GIFs get a small NIARIM logo in a corner instead. While the benefit is active, you can show or hide them per project. Project preferences are kept after expiry.';
+      'The NIARIM end mark is a five-second logo appended to MP4, WebM, and AVI exports, including making videos. GIFs get a small NIARIM icon and app name in a corner instead. While the benefit is active, you can show or hide them per project. Project preferences are kept after expiry.';
 
   @override
   String get helpAutoSaveTitle => 'Auto Save';
@@ -2194,7 +2194,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      'Use the watermark feature when you want to add your own signature or mark to a video. The end mark is the NIARIM logo added to the end of MP4, WebM, and AVI exports. Premium membership or the end mark editing benefit lets you show or hide it per project. GIFs get a small NIARIM logo in a corner instead. If you want a custom closing without using the end mark, you can recreate a similar effect yourself by adding an image layer with a fade in/out.';
+      'Use the watermark feature when you want to add your own signature or mark to a video. The end mark is the NIARIM logo added to the end of MP4, WebM, and AVI exports. Premium membership or the end mark editing benefit lets you show or hide it per project. GIFs get a small NIARIM icon and app name in a corner instead. If you want a custom closing without using the end mark, you can recreate a similar effect yourself by adding an image layer with a fade in/out.';
 
   @override
   String get tipsVerticalPixelFontTitle =>
