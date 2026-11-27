@@ -120,6 +120,10 @@ class HairFoldRaster {
   Map<int, int> _runEnds = {};
   double? _crossingApart;
 
+  /// Whether two parts of this crescent far apart along it may overlap
+  /// ([_mayOverlapApart]): from then on, the later lies on top.
+  bool _crosses = false;
+
   /// Fold line starts by (repeat, vertex, front end, back end), with the
   /// samples they were found from: while drawing, only new folds search.
   final Map<(int, int, int, int), _FoldStartCache> _foldStarts = {};
@@ -413,7 +417,31 @@ class HairFoldRaster {
       for (final p in sourcePoints) {
         widest = math.max(widest, p.outerRadius(outlineWidth) * 2);
       }
-      crossingApart = widest * 2;
+      // Only once two parts that far apart along it can overlap at all:
+      // until then no part lies on top of another, and every pixel is
+      // composited as one surface without its place along the strand.
+      final crossed = _crosses;
+      _crosses =
+          _crosses ||
+          _mayOverlapApart(
+            sourcePoints,
+            lengths,
+            widest * 2,
+            outlineWidth,
+            brush.lateralRepeatEnabled
+                ? brush.lateralRepeatCount *
+                      brush.lateralRepeatSpacing.clamp(0.0, 4.0).toDouble()
+                : 0.0,
+          );
+      if (_crosses) crossingApart = widest * 2;
+      // The sections drawn so far kept no place along the strand: they are
+      // all drawn again with it.
+      if (_crosses && !crossed) {
+        for (final run in _runs.values) {
+          _spare(run.mask);
+        }
+        _runs.clear();
+      }
     }
     final repeats = lateralOffsets(
       count: brush.lateralRepeatEnabled ? brush.lateralRepeatCount : 1,
@@ -848,6 +876,7 @@ class HairFoldRaster {
             >
           >{};
       final innerPulls = <int, double>{};
+      final innerMoves = <int, Offset>{};
       final foldWidths = <int, double>{};
       if (brush.foldMode == HairFoldMode.crescent) {
         ({HairRibbonPoint point, Offset outer, Offset inner, double angle})
@@ -1617,6 +1646,31 @@ class HairFoldRaster {
               }
             }
           }
+          // Measured on the drawn edge, too, it never turns against the
+          // curve.
+          innerMoves.addAll(
+            _keepInnerEdgeConvex(
+              runs,
+              points,
+              lengths,
+              crescentTangents,
+              crescentSides,
+              crescentEdges,
+            ),
+          );
+          for (final run in runs) {
+            final edges = crescentEdges[run.start]!;
+            for (var index = run.start; index <= run.end; index++) {
+              final inner = innerMoves[index];
+              if (inner == null) continue;
+              edges[index - run.start] = sectionEdge(
+                run,
+                index,
+                edges[index - run.start].outer,
+                inner,
+              );
+            }
+          }
         }
       }
       // Up to the first sample the crescent shapes, the strand is drawn as
@@ -1632,6 +1686,45 @@ class HairFoldRaster {
           }
         }
       }
+      // Where a crescent has thinned to bare outline (a tip thinner than its
+      // two outlines): whether it joins the part of the strand it lies on
+      // rather than lie on top of it. A tip whose last fill already lies on
+      // an earlier part of the strand, far along it, lies on top, and its
+      // hairline runs on over that part; a tip that reaches an earlier part
+      // only as a hairline (a curl that comes back just to its stem) joins
+      // it: lying on top, the hairline poked into the stem as a dark sliver.
+      final tipJoins = <int, bool>{};
+      bool bareJoins(_RibbonRun run, int index) =>
+          tipJoins.putIfAbsent(index, () {
+            final edges = crescentEdges[run.start]!;
+            var filled = index;
+            ({Offset outer, Offset inner, double fill, double band})? section;
+            for (; filled >= run.start; filled--) {
+              final edge = edges[filled - run.start];
+              final inset = _insetEdges(
+                edge.outer,
+                edge.inner,
+                points[filled].scale,
+                points[filled].outlineOr(brush.outlineWidth),
+              );
+              if (inset.fill > 0) {
+                section = inset;
+                break;
+              }
+            }
+            if (section == null) return true;
+            final apex = (section.outer + section.inner) / 2;
+            final before = lengths[filled] - crossingApart!;
+            for (var j = 0; j < points.length && lengths[j] < before; j++) {
+              final point = points[j];
+              final fill = point.fillRadius(brush.outlineWidth);
+              if (fill > 0 &&
+                  (apex - point.position).distanceSquared < fill * fill) {
+                return false;
+              }
+            }
+            return true;
+          });
       for (final run in runs) {
         final geometry = brush.foldMode == HairFoldMode.crescent
             ? <Object>[
@@ -1649,6 +1742,7 @@ class HairFoldRaster {
                     crescentAngles[index],
                     lengths[index] - lengths[run.start],
                     innerPulls[index] ?? 0.0,
+                    innerMoves[index],
                     penOuter.contains(index),
                   ),
               ]
@@ -1716,7 +1810,7 @@ class HairFoldRaster {
             section.fill,
             section.band,
             point.opacity,
-            along: lengths[index],
+            along: crossingApart == null ? null : lengths[index],
           );
         }
 
@@ -1739,7 +1833,7 @@ class HairFoldRaster {
                 first.outline,
               ),
               brush.outlineWidth,
-              alongA: 0,
+              alongA: crossingApart == null ? null : 0,
               alongB: 0,
             );
           }
@@ -1789,7 +1883,7 @@ class HairFoldRaster {
                 a,
                 b,
                 brush.outlineWidth,
-                alongA: lengths[i - 1],
+                alongA: crossingApart == null ? null : lengths[i - 1],
                 alongB: lengths[i],
               );
             } else {
@@ -1867,7 +1961,7 @@ class HairFoldRaster {
                     [from.outer, to.outer, to.inner, from.inner],
                     from.band,
                     to.band,
-                    alongA: alongFrom,
+                    alongA: crossingApart == null ? null : alongFrom,
                     alongB: alongTo,
                   );
                 } else {
@@ -1889,8 +1983,14 @@ class HairFoldRaster {
                       current.outline,
                     ),
                     brush.outlineWidth,
-                    alongA: alongFrom,
-                    alongB: alongTo,
+                    alongA: crossingApart == null
+                        ? null
+                        : bareJoins(run, i)
+                        ? _joinsAlong
+                        : alongFrom,
+                    alongB: crossingApart == null || bareJoins(run, i)
+                        ? _joinsAlong
+                        : alongTo,
                     spreadThin: !brush.pixelMode,
                   );
                 }
@@ -1915,7 +2015,7 @@ class HairFoldRaster {
                   ),
                   b,
                   brush.outlineWidth,
-                  alongA: lengths[i],
+                  alongA: crossingApart == null ? null : lengths[i],
                   alongB: lengths[i],
                 );
               }
@@ -3124,7 +3224,9 @@ class HairFoldRaster {
           // Crescents form a single surface: only the union perimeter is
           // visible, never a cross-section cap between connected runs.
           outlines[p] = 0;
-        } else if ((alongs![p] - tops[p]).abs() > crossing!) {
+        } else if (alongs![p] >= 0 &&
+            tops[p] >= 0 &&
+            (alongs[p] - tops[p]).abs() > crossing!) {
           // On top of an earlier part of the strand: its own outline shows
           // over it, and its fill hides the earlier outline.
           outlines[p] = edge / cover * front + outlines[p] * (1 - front);
@@ -3133,7 +3235,9 @@ class HairFoldRaster {
           // whose fill hides what it covers.
           outlines[p] *= 1 - fill;
         }
-        if (tops != null && (covered <= 0 || front > .5)) tops[p] = alongs![p];
+        if (tops != null && (covered <= 0 || (front > .5 && alongs![p] >= 0))) {
+          tops[p] = alongs![p];
+        }
         covers[p] = total;
         if (front > .5) owners[p] = run.id;
       }
@@ -3985,6 +4089,433 @@ _foldSides(
 /// is only ever pulled back towards the centre line. The edge's outline is
 /// part of the measured edge. A strand that only narrows (a taper) is left
 /// as drawn, and so is any edge that already bends with the curve.
+
+/// The along value of bare outline with no fill of its own (a tip thinner
+/// than its two outlines) that joins whatever part of the strand it lies
+/// on, never lying on top of it.
+const _joinsAlong = -1.0;
+
+/// Whether two parts of a strand further apart along it than [apart] may
+/// overlap, by stretches of the strand short against [apart]: as far as each
+/// stretch's points reach (a crescent's bow reaches at most the pen's whole
+/// width from the centre line, plus its outline, lateral repeats [spread]
+/// widths further).
+bool _mayOverlapApart(
+  List<HairRibbonPoint> points,
+  List<double> lengths,
+  double apart,
+  double outlineWidth,
+  double spread,
+) {
+  if (lengths.last <= apart) return false;
+  final step = math.max(2.0, apart / 8);
+  final starts = <double>[], ends = <double>[];
+  final lefts = <double>[], tops = <double>[];
+  final rights = <double>[], bottoms = <double>[];
+  for (var k = 0; k < points.length; k++) {
+    final point = points[k];
+    final reach =
+        point.outerRadius(outlineWidth) * 2 + point.width * spread + 2;
+    final at = point.position;
+    final bucket = (lengths[k] / step).floor();
+    while (starts.length <= bucket) {
+      starts.add(double.infinity);
+      ends.add(double.negativeInfinity);
+      lefts.add(double.infinity);
+      tops.add(double.infinity);
+      rights.add(double.negativeInfinity);
+      bottoms.add(double.negativeInfinity);
+    }
+    // A segment's pixels lie between its points.
+    final from = k > 0 ? lengths[k - 1] : lengths[k];
+    starts[bucket] = math.min(starts[bucket], from);
+    ends[bucket] = math.max(ends[bucket], lengths[k]);
+    lefts[bucket] = math.min(lefts[bucket], at.dx - reach);
+    tops[bucket] = math.min(tops[bucket], at.dy - reach);
+    rights[bucket] = math.max(rights[bucket], at.dx + reach);
+    bottoms[bucket] = math.max(bottoms[bucket], at.dy + reach);
+  }
+  for (var b = 0; b < starts.length; b++) {
+    if (!starts[b].isFinite) continue;
+    for (var a = 0; a < b; a++) {
+      if (!starts[a].isFinite || ends[b] - starts[a] <= apart) continue;
+      if (lefts[a] < rights[b] &&
+          lefts[b] < rights[a] &&
+          tops[a] < bottoms[b] &&
+          tops[b] < bottoms[a]) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/// Where a crescent's drawn inner edge still turns against the curve, as one
+/// clean curve that turns only with it: by sample, the edge's new position.
+///
+/// [_keepInnerEdgeWithCurve] keeps the edge from turning against the curve
+/// as measured from the centre line, inside a swell. Measured on the drawn
+/// edge itself it can still turn back where that measure does not reach: the
+/// edge normals are smoothed over part of the strand's width, so where a
+/// thick strand meets a tight curl the edge drew back a pixel before it
+/// turned with the curl; where a crescent's edges lean along the strand and
+/// it gives way to the ordinary strand within a tight turn, the edge ran on
+/// past where the strand's own edge continues and then came back (a hook
+/// at the inside of a hairpin); and where a lowered stretch left the drawn
+/// edge, the edge turned at once. Each such stretch is replaced by a cubic
+/// that leaves the edge before it and meets it after it along the edge's own
+/// headings, inside the corner their headings make, so that it turns only
+/// with the curve and joins the edge either side without a corner. It
+/// reaches only as far either way as it must for that, and for its turn to
+/// be no sharper than [_convexRoundness] of the strand's width. Where no
+/// such curve fits within the strand (the hook), the stretch gives way to
+/// the pen's own edge between where the two meet either side of it. Only
+/// what turns back beyond the pen's own edge counts: where pressure or a
+/// taper narrows the pen itself, its edge turns back too and is left as
+/// drawn. A corner turning with the curve more sharply than the pen's own
+/// edge and than [_convexRoundness] is rounded the same way, except where
+/// the strand narrows to its outline (a waist's and a tip's horns).
+Map<int, Offset> _keepInnerEdgeConvex(
+  List<_RibbonRun> runs,
+  List<HairRibbonPoint> points,
+  List<double> lengths,
+  Map<int, Offset> tangents,
+  Map<int, double> sides,
+  Map<
+    int,
+    List<({HairRibbonPoint point, Offset outer, Offset inner, double angle})>
+  >
+  edges,
+) {
+  final ordered = [...runs]..sort((a, b) => a.start.compareTo(b.start));
+  final moved = <int, Offset>{};
+  final spans = <(double, List<int>, List<int>)>[];
+  for (final run in ordered) {
+    final side = sides[run.start]!;
+    if (spans.isEmpty ||
+        spans.last.$1 != side ||
+        spans.last.$2.last != run.start) {
+      spans.add((side, [run.start], [run.start]));
+    }
+    final span = spans.last;
+    for (var index = run.start + 1; index <= run.end; index++) {
+      span.$2.add(index);
+      span.$3.add(run.start);
+    }
+  }
+  for (final (side, indices, owners) in spans) {
+    final count = indices.length;
+    if (count < 5) continue;
+    final inner = [
+      for (var k = 0; k < count; k++)
+        edges[owners[k]]![indices[k] - owners[k]].inner,
+    ];
+    final outer = [
+      for (var k = 0; k < count; k++)
+        edges[owners[k]]![indices[k] - owners[k]].outer,
+    ];
+    var widest = 0.0;
+    for (var k = 0; k < count; k++) {
+      widest = math.max(widest, points[indices[k]].width);
+    }
+    final roundest = _convexRoundness * widest;
+    // Where the stroke curves to this side: a straight stretch narrowing to
+    // its tip is the pen's own taper.
+    final curved = List<bool>.filled(count, false);
+    for (var k = 1; k < count - 1; k++) {
+      final before = tangents[indices[k - 1]]!,
+          after = tangents[indices[k + 1]]!;
+      final distance = lengths[indices[k + 1]] - lengths[indices[k - 1]];
+      curved[k] =
+          distance > 1e-9 &&
+          math.atan2(_cross(before, after), _dot(before, after)) *
+                  side /
+                  distance >
+              1e-4;
+    }
+    // The pen's own inner edge: the centre line offset across its own
+    // direction by half the pen's width. Where pressure or a taper narrows
+    // the strand, it turns against the curve too, and the drawn edge may
+    // follow it.
+    final pen = [
+      for (var k = 0; k < count; k++)
+        () {
+          final index = indices[k];
+          final at = lengths[index];
+          // Across the stroke over a few pixels (more for a thick pen): a
+          // hand's stroke is a polygon, and across each of its sides alone,
+          // the offset of a thick pen ran back at every corner.
+          final reach = math.max(4.0, points[index].width * .15);
+          final tangent = _unit(
+            _positionAtDistance(points, lengths, at + reach) -
+                _positionAtDistance(points, lengths, at - reach),
+          );
+          return points[index].position +
+              Offset(-tangent.dy, tangent.dx) *
+                  (side * points[index].width / 2);
+        }(),
+    ];
+    // The signed turn of an edge at a sample, positive with the curve.
+    double turnOf(List<Offset> edge, int k) {
+      final a = edge[k] - edge[k - 1], b = edge[k + 1] - edge[k];
+      if (a.distanceSquared < 1e-12 || b.distanceSquared < 1e-12) return 0;
+      return math.atan2(_cross(a, b), _dot(a, b)) * side;
+    }
+
+    double turnAt(int k) => turnOf(inner, k);
+    // How much more than the pen's own edge the drawn edge turns against the
+    // curve over a stretch (and the samples either side).
+    double beyondPen(int first, int last, double drawn) {
+      var own = 0.0;
+      for (
+        var k = math.max(1, first - 2);
+        k <= math.min(count - 2, last + 2);
+        k++
+      ) {
+        own += math.max(0.0, -turnOf(pen, k));
+      }
+      return drawn - own;
+    }
+
+    // Whether the edge turns at a sample (over about a pixel of it either
+    // side) with the curve more sharply than a circle of [roundest] and than
+    // the pen's own edge there, where the strand is not pinched to its
+    // outline: a waist's and a tip's horns are corners by design.
+    bool sharp(int k) {
+      if (!curved[k] ||
+          (inner[k] - outer[k]).distance < .5 * points[indices[k]].width) {
+        return false;
+      }
+      var a = k, b = k;
+      while (a > 0 && (inner[k] - inner[a]).distance < 1) {
+        a--;
+      }
+      while (b < count - 1 && (inner[b] - inner[k]).distance < 1) {
+        b++;
+      }
+      final before = inner[k] - inner[a], after = inner[b] - inner[k];
+      if (before.distanceSquared < 1e-12 || after.distanceSquared < 1e-12) {
+        return false;
+      }
+      final turn =
+          math.atan2(_cross(before, after), _dot(before, after)) * side;
+      if (turn < math.pi / 36) return false;
+      final radius = (before.distance + after.distance) / 2 / turn;
+      if (radius >= roundest) return false;
+      // The pen's own edge, over a tenth of the width either side.
+      a = k;
+      b = k;
+      while (a > 0 && (pen[k] - pen[a]).distance < .1 * widest) {
+        a--;
+      }
+      while (b < count - 1 && (pen[b] - pen[k]).distance < .1 * widest) {
+        b++;
+      }
+      final penBefore = pen[k] - pen[a], penAfter = pen[b] - pen[k];
+      final penTurn =
+          math.atan2(_cross(penBefore, penAfter), _dot(penBefore, penAfter)) *
+          side;
+      return penTurn <= 0 ||
+          radius < (penBefore.distance + penAfter.distance) / 2 / penTurn;
+    }
+
+    final skipped = <int>{};
+    for (var attempt = 0; attempt < 24; attempt++) {
+      // The first stretch turning against the curve by more than a trace
+      // (its turns at most two samples apart).
+      int? p, q;
+      var against = 0.0;
+      for (var k = 1; k < count - 1; k++) {
+        if (skipped.contains(k) || !curved[k]) continue;
+        final turn = turnAt(k);
+        if (turn >= 0) continue;
+        if (q != null && k - q > 2) {
+          if (beyondPen(p!, q, against) > _convexTolerance) break;
+          p = null;
+          against = 0;
+        }
+        p ??= k;
+        q = k;
+        against -= turn;
+      }
+      int? first, last;
+      var corner = false;
+      if (p != null && beyondPen(p, q!, against) > _convexTolerance) {
+        first = p;
+        last = q;
+      } else {
+        // Or the first corner where it turns with the curve sharper than a
+        // circle of [roundest], and than the pen's own edge.
+        for (var k = 1; k < count - 1 && first == null; k++) {
+          if (skipped.contains(k) || !sharp(k)) continue;
+          var end = k;
+          while (end + 1 < count - 1 &&
+              !skipped.contains(end + 1) &&
+              sharp(end + 1)) {
+            end++;
+          }
+          first = k;
+          last = end;
+          corner = true;
+        }
+      }
+      if (first == null || last == null) break;
+      // The nearest pair of samples either side whose headings meet ahead of
+      // the one and behind the other, turning with the curve.
+      (int, int, Offset, Offset)? found;
+      var built = 0;
+      for (
+        var extra = 0;
+        found == null && extra < count && built < 32;
+        extra++
+      ) {
+        for (var back = extra; back >= 0; back--) {
+          final i = first - 1 - back, j = last + 1 + (extra - back);
+          if (i < 1 || j > count - 2) continue;
+          final fromHeading = inner[i] - inner[i - 1];
+          final toHeading = inner[j + 1] - inner[j];
+          if (fromHeading.distanceSquared < 1e-12 ||
+              toHeading.distanceSquared < 1e-12) {
+            continue;
+          }
+          final from = _unit(fromHeading), to = _unit(toHeading);
+          final turn = math.atan2(_cross(from, to), _dot(from, to)) * side;
+          if (turn < 0 || turn > math.pi * 17 / 18) continue;
+          final span = inner[j] - inner[i];
+          final denominator = _cross(from, to);
+          double ahead, behind;
+          if (denominator.abs() < 1e-9) {
+            // Parallel: only along one line.
+            if (_cross(from, span).abs() > .05 || _dot(from, span) <= 0) {
+              continue;
+            }
+            ahead = behind = _dot(from, span) / 2;
+          } else {
+            ahead = _cross(span, to) / denominator;
+            behind = _cross(from, span) / denominator;
+          }
+          if (ahead <= .05 || behind <= .05) continue;
+          // As round as a circle meeting the nearer heading where it
+          // leaves the edge.
+          if ((corner || turn > math.pi / 36) &&
+              math.min(ahead, behind) / math.tan(turn / 2) < roundest) {
+            continue;
+          }
+          built++;
+          // The handles of a circular arc of that turn, as a share of the
+          // way to where the headings meet.
+          final handle = turn < 1e-6
+              ? 2 / 3
+              : 4 / 3 * math.tan(turn / 4) / math.tan(turn / 2);
+          final c1 = inner[i] + from * (ahead * handle);
+          final c2 = inner[j] - to * (behind * handle);
+          // The curve, by its length.
+          const steps = 64;
+          final curve = <Offset>[];
+          final along = <double>[];
+          for (var m = 0; m <= steps; m++) {
+            final t = m / steps, u = 1 - t;
+            final at =
+                inner[i] * (u * u * u) +
+                c1 * (3 * u * u * t) +
+                c2 * (3 * u * t * t) +
+                inner[j] * (t * t * t);
+            along.add(m == 0 ? 0 : along.last + (at - curve.last).distance);
+            curve.add(at);
+          }
+          final total = lengths[indices[j]] - lengths[indices[i]];
+          if (total <= 1e-9) continue;
+          final placed = <Offset>[];
+          var inside = true;
+          for (var k = i + 1; k < j; k++) {
+            final share = (lengths[indices[k]] - lengths[indices[i]]) / total;
+            final target = share * along.last;
+            var m = 1;
+            while (m < steps && along[m] < target) {
+              m++;
+            }
+            final piece = along[m] - along[m - 1];
+            final t = piece <= 1e-12
+                ? 0.0
+                : ((target - along[m - 1]) / piece).clamp(0.0, 1.0);
+            final at = curve[m - 1] + (curve[m] - curve[m - 1]) * t;
+            // Within the strand: on the inner side of its outer edge, and
+            // across it no further than the pen's width (or the crescent's,
+            // which a tight curl's bow can widen beyond it).
+            final across = inner[k] - outer[k];
+            final reach = _dot(at - outer[k], _unit(across));
+            if (reach <= 0 ||
+                reach >
+                    math.max(points[indices[k]].width, across.distance) + 1) {
+              inside = false;
+              break;
+            }
+            placed.add(at);
+          }
+          if (!inside) continue;
+          for (var k = i + 1; k < j; k++) {
+            inner[k] = placed[k - i - 1];
+            moved[indices[k]] = inner[k];
+          }
+          found = (i, j, from, to);
+          break;
+        }
+      }
+      // Otherwise the stretch gives way to the pen's own edge, from where
+      // the two meet before it to where they meet after it: inside a tight
+      // turn, where the drawn edge ran past the pen's and came back, the
+      // pen's edge is the one clean edge it leaves.
+      if (found == null && !corner) {
+        int? from, to;
+        for (var k = first - 1; k >= 1; k--) {
+          if ((inner[k] - pen[k]).distance <= _convexMeet) {
+            from = k;
+            break;
+          }
+        }
+        for (var k = last + 1; k < count - 1; k++) {
+          if ((inner[k] - pen[k]).distance <= _convexMeet) {
+            to = k;
+            break;
+          }
+        }
+        if (from != null && to != null) {
+          // Into and out of it over a short way, where the two lie close.
+          final ease = _convexRoundness * widest;
+          for (var k = 0; k < count; k++) {
+            final along = lengths[indices[k]];
+            final before = lengths[indices[from]] - along;
+            final after = along - lengths[indices[to]];
+            final outside = math.max(before, after);
+            if (outside >= ease) continue;
+            final t = outside <= 0 ? 1.0 : 1 - outside / ease;
+            final weight = t * t * (3 - 2 * t);
+            inner[k] = inner[k] + (pen[k] - inner[k]) * weight;
+            moved[indices[k]] = inner[k];
+          }
+          found = (from, to, Offset.zero, Offset.zero);
+        }
+      }
+      if (found == null) {
+        skipped.addAll([for (var k = first; k <= last; k++) k]);
+      }
+    }
+  }
+  return moved;
+}
+
+/// The least turn against the curve, in radians, of a stretch of a
+/// crescent's inner edge that [_keepInnerEdgeConvex] replaces.
+const _convexTolerance = 1.5 * math.pi / 180;
+
+/// How near (in pixels) a crescent's drawn inner edge and the pen's own
+/// must lie for [_keepInnerEdgeConvex] to hand over from the one to the
+/// other there.
+const _convexMeet = 1.5;
+
+/// How sharply [_keepInnerEdgeConvex]'s curve may turn: its radius, as a
+/// share of the strand's width, at least.
+const _convexRoundness = .15;
 
 /// How much a lowered stretch of a crescent's inner edge still bends with
 /// the curve, as a share of the curve's own bend: lowered to bend not at all,

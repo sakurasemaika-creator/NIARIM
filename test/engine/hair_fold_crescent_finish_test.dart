@@ -16,6 +16,13 @@
 //   at points: the strand pinched to nothing.
 // - The tip-side leg of a hairpin: its inner edge ran straight from the
 //   curl and turned a corner where the taper went on.
+// - A curl tip that only just reaches back over its stem: its last
+//   hairline, bare outline with no fill of its own, lay on top of the stem
+//   and poked into it as a dark sliver.
+// - Where a thick strand meets a tight curl, its inner edge drew back a
+//   pixel or two before it turned with the curl; inside a thick hairpin the
+//   inner edge ran on past the tip-side leg and came back (a hook), and
+//   turned a corner where a lowered stretch left it.
 // Thick strands drawn with the tip images loaded take a while each.
 @Timeout(Duration(minutes: 5))
 library;
@@ -193,6 +200,70 @@ class _Ink {
         return own.isEmpty ? 0.0 : own.first.$2 - own.first.$1;
       }(),
   ];
+}
+
+/// How deep the deepest dent in the outline of a hole in [ink] is: the
+/// furthest any point of its outline lies inside its convex hull. The hole
+/// is the paper (coverage under a half) reached from [seed] over rows
+/// [top] to [bottom]; its outline is found to a fraction of a pixel by each
+/// row's ink coverage either side.
+double _holeDent(_Ink ink, ui.Offset seed, int top, int bottom) {
+  bool paper(int x, int y) => y >= top && y <= bottom && ink.alphaAt(x, y) < .5;
+  final start = (seed.dx.floor(), seed.dy.floor());
+  expect(paper(start.$1, start.$2), isTrue, reason: 'the seed is not paper');
+  final seen = <(int, int)>{start};
+  final queue = [start];
+  while (queue.isNotEmpty) {
+    final (x, y) = queue.removeLast();
+    for (final next in [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]) {
+      if (paper(next.$1, next.$2) && seen.add(next)) queue.add(next);
+    }
+  }
+  final rows = <int, (int, int)>{};
+  for (final (x, y) in seen) {
+    final row = rows[y];
+    rows[y] = row == null ? (x, x) : (math.min(row.$1, x), math.max(row.$2, x));
+  }
+  final outline = <ui.Offset>[];
+  for (final MapEntry(key: y, value: (left, right)) in rows.entries) {
+    outline
+      ..add(ui.Offset(left - (1 - ink.alphaAt(left - 1, y)), y + .5))
+      ..add(ui.Offset(right + 1 + (1 - ink.alphaAt(right + 1, y)), y + .5));
+  }
+  // The convex hull, by Andrew's monotone chain.
+  final sorted = [
+    ...outline,
+  ]..sort((a, b) => a.dx != b.dx ? a.dx.compareTo(b.dx) : a.dy.compareTo(b.dy));
+  double turn(ui.Offset o, ui.Offset a, ui.Offset b) =>
+      (a.dx - o.dx) * (b.dy - o.dy) - (a.dy - o.dy) * (b.dx - o.dx);
+  final hull = <ui.Offset>[];
+  for (final pass in [sorted, sorted.reversed.toList()]) {
+    final start = hull.length;
+    for (final point in pass) {
+      while (hull.length >= start + 2 &&
+          turn(hull[hull.length - 2], hull.last, point) <= 0) {
+        hull.removeLast();
+      }
+      hull.add(point);
+    }
+    hull.removeLast();
+  }
+  var deepest = 0.0;
+  for (final point in outline) {
+    var nearest = double.infinity;
+    for (var i = 0; i < hull.length; i++) {
+      final a = hull[i], b = hull[(i + 1) % hull.length];
+      final ab = b - a;
+      final t = ab.distanceSquared < 1e-12
+          ? 0.0
+          : (((point - a).dx * ab.dx + (point - a).dy * ab.dy) /
+                    ab.distanceSquared)
+                .clamp(0.0, 1.0);
+      nearest = math.min(nearest, (point - (a + ab * t)).distance);
+    }
+    deepest = math.max(deepest, nearest);
+  }
+  return deepest;
 }
 
 void main() {
@@ -502,6 +573,86 @@ void main() {
           'at y=${worst.$2}',
     );
   });
+
+  // A curl tip that comes back only just over its stem ends in a hairline,
+  // bare outline: it joins the stem rather than lie on top of it, and no
+  // outline shows inside the stem (a whole turn and more lies on top, as
+  // above).
+  for (final (scale, down, radius) in [
+    (2.0, 160.0, 30.0),
+    (4.0, 200.0, 50.0),
+  ]) {
+    test('a ${scale}x curl tip that just reaches its stem leaves no sliver '
+        'in it', () async {
+      const x0 = 120.0, y0 = 70.0;
+      final points = _turtle(const ui.Offset(x0, y0), 90, [
+        [0, down],
+        [1, radius, -300],
+      ]);
+      final brush = preset('Brush0035', scale, steadied: true);
+      final ink = _Ink(
+        await _draw(brush, [for (final p in points) (p, 1.0)], 460, 520),
+        460,
+        520,
+      );
+      // Inside the stem, clear of its own outlines.
+      final inset = brush.size / 2 - brush.outlineWidth - 1;
+      final dark = <String>[];
+      for (var y = (y0 + 20).round(); y < (y0 + down).round(); y++) {
+        for (var x = (x0 - inset).ceil(); x <= (x0 + inset).floor(); x++) {
+          if (ink.alphaAt(x, y) > .5 && ink.green(x, y) < 60) {
+            dark.add('($x, $y)');
+          }
+        }
+      }
+      expect(dark, isEmpty, reason: 'outline inside the stem at $dark');
+    });
+  }
+
+  // The paper inside a tight turn of a thick strand is bounded by edges that
+  // only ever turn with the curve: no dent, hook or corner in its outline.
+  for (final (scale, down, radius, sweep) in [
+    (2.0, 160.0, 30.0, 300.0),
+    (4.0, 200.0, 50.0, 300.0),
+    (4.0, 220.0, 60.0, 180.0),
+    (2.0, 220.0, 40.0, 180.0),
+  ]) {
+    final hairpin = sweep == 180;
+    test('the inside of a ${scale}x ${hairpin ? 'hairpin' : 'tight curl'} '
+        'has no dent', () async {
+      const x0 = 120.0, y0 = 70.0;
+      final points = _turtle(const ui.Offset(x0, y0), 90, [
+        [0, down],
+        [1, radius, -sweep],
+        if (hairpin) [0, down],
+      ]);
+      final brush = preset('Brush0035', scale, steadied: true);
+      final ink = _Ink(
+        await _draw(brush, [for (final p in points) (p, 1.0)], 460, 560),
+        460,
+        560,
+      );
+      // The curl's eye, or the bottom of the hairpin's slot, from where it
+      // turns (above, the tip-side leg narrows to its tip and the slot
+      // widens, as the pen does).
+      final centre = ui.Offset(x0 + radius, y0 + down);
+      final dent = hairpin
+          ? _holeDent(
+              ink,
+              centre + ui.Offset(0, radius / 2 - brush.size / 2 - 2),
+              (y0 + down - radius / 2).round(),
+              560,
+            )
+          : _holeDent(ink, centre, 0, 560);
+      expect(
+        dent,
+        lessThan(.5),
+        reason:
+            'the outline of the paper inside dents by '
+            '${dent.toStringAsFixed(2)}px',
+      );
+    });
+  }
 
   // Where a curl drawn first runs into its straight stem, the ordinary
   // strand's outer edge is as smooth as its outline: the round tip image
