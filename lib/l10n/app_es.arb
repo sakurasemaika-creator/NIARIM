@@ -2915,7 +2915,7 @@
   "storageEraseAllConfirmTitle": "¿Borrar todos los datos?",
   "storageEraseAllConfirmBody": "NIARIM vuelve al estado de recién instalada y se reinicia desde la pantalla de inicio. No se puede deshacer.",
   "storageEraseAllErasedTitle": "Se borra",
-  "storageEraseAllErasedItems": "Proyectos y materiales (incluidos la papelera, los guardados y el guardado automático)\nArchivos exportados\nTus pinceles, tramas, sellos, paletas, temas, fuentes y automatizaciones\nTodos los ajustes (también se cierra la sesión de Google)",
+  "storageEraseAllErasedItems": "Proyectos y materiales (incluidos la papelera, los guardados y el guardado automático)\nArchivos exportados\nTus pinceles, tramas, sellos, paletas, temas, fuentes y macros\nTodos los ajustes (también se cierra la sesión de Google)",
   "storageEraseAllKeptTitle": "Se conserva",
   "storageEraseAllKeptItems": "Ópalos, misiones y tu suscripción Premium (se conservan en tu cuenta de Google; inicia sesión con la misma cuenta para recuperarlos)\nObras publicadas en la Plaza de Obras\nArchivos compartidos con otras apps y exportaciones anteriores en carpetas compartidas",
   "storageEraseAllConfirmWord": "BORRAR",
@@ -2979,7 +2979,7 @@
       }
     }
   },
-  "customAutomationTitle": "Automatizaciones",
+  "customAutomationTitle": "Macros",
   "customAutomationAdd": "Añadir automatización",
   "customAutomationNewTitle": "Nueva automatización",
   "customAutomationNameLabel": "Nombre",
@@ -3043,7 +3043,7 @@
   "brushSettingsStrongPressureLabel": "Fuerte",
   "helpCustomAutomationTitle": "Automatización personalizada (grabación de acciones)",
   "helpCustomAutomationDesc": "Graba las acciones compatibles del lienzo o la línea de tiempo como una secuencia con nombre que puedes volver a ejecutar. Añade un elemento en Automatizaciones para iniciar la grabación y, antes de guardarlo, reordena o elimina pasos en la pantalla de revisión. Puedes cambiar el nombre, volver a grabar, eliminar, filtrar por favoritos, exportar e importar automatizaciones guardadas como archivos JSON. Si una automatización solo usa el lienzo y se grabó íntegramente en un fotograma, puedes ejecutarla en el fotograma actual, en un intervalo especificado o en todos los fotogramas. Las opciones de intervalo no aparecen en automatizaciones de la línea de tiempo ni en grabaciones que abarcan varios fotogramas.",
-  "tipsOfficialAutomationPresetsTitle": "Adapta las automatizaciones oficiales a tu dibujo",
+  "tipsOfficialAutomationPresetsTitle": "Adapta las macros oficiales a tu dibujo",
   "tipsOfficialAutomationPresetsDesc": "Los ajustes oficiales son «Dibujo lineal (digital)» (entintado automático → acumulación de tinta), «Extracción de dibujo lineal (analógico)» (ajuste de color → umbral → transparencia por brillo) y «Trazado de color del dibujo lineal» (se ejecuta sobre el dibujo lineal: los colores pintados debajo, en una capa nueva con recorte al dibujo lineal → desenfocar, duplicar y combinar → ajuste de trazado de color, para que cada línea tome un tono más profundo del color contiguo). Al volver a grabar se añaden acciones compatibles. En la pantalla de revisión puedes reordenar o eliminar pasos. Expórtalo antes de editarlo si quieres conservar una forma sencilla de volver a la configuración original.",
   "tipsTexturePrismVhsTitle": "Prueba Textura, Prisma y VHS en capas duplicadas",
   "tipsTexturePrismVhsDesc": "El filtro Cambio de textura parte de Holograma aurora, Oro muestreado, Plata platino, Perla luminosa, Pastel aurora o Arcoíris oscuro, y permite ajustar brillo y saturación. Prisma crea una banda de luz con el desenfoque y la dirección del arcoíris; Ruido VHS combina ruido, saturación, brillo y contraste para imitar una cinta antigua. Probar cada efecto en una capa duplicada facilita la comparación; marca como favoritos los ajustes que quieras reutilizar.",

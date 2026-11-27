@@ -2915,7 +2915,7 @@
   "storageEraseAllConfirmTitle": "Effacer toutes les données ?",
   "storageEraseAllConfirmBody": "NIARIM revient à son état d’installation et redémarre depuis l’écran d’accueil. Action irréversible.",
   "storageEraseAllErasedTitle": "Ce qui est effacé",
-  "storageEraseAllErasedItems": "Les projets et matériaux (corbeille, sauvegardes et enregistrement automatique compris)\nLes fichiers exportés\nVos pinceaux, trames, tampons, palettes, thèmes, polices et automatisations\nTous les paramètres (vous êtes aussi déconnecté de Google)",
+  "storageEraseAllErasedItems": "Les projets et matériaux (corbeille, sauvegardes et enregistrement automatique compris)\nLes fichiers exportés\nVos pinceaux, trames, tampons, palettes, thèmes, polices et macros\nTous les paramètres (vous êtes aussi déconnecté de Google)",
   "storageEraseAllKeptTitle": "Ce qui est conservé",
   "storageEraseAllKeptItems": "Les opales, les missions et votre abonnement Premium (conservés avec votre compte Google ; reconnectez-vous avec le même compte pour les retrouver)\nLes œuvres publiées sur la Place des œuvres\nLes fichiers partagés avec d’autres applications et les anciens exports dans les dossiers partagés",
   "storageEraseAllConfirmWord": "SUPPRIMER",
@@ -2979,7 +2979,7 @@
       }
     }
   },
-  "customAutomationTitle": "Automatisations",
+  "customAutomationTitle": "Macros",
   "customAutomationAdd": "Ajouter une automatisation",
   "customAutomationNewTitle": "Nouvelle automatisation",
   "customAutomationNameLabel": "Nom",
@@ -3043,7 +3043,7 @@
   "brushSettingsStrongPressureLabel": "Forte",
   "helpCustomAutomationTitle": "Automatisations personnalisées (enregistrement d’actions)",
   "helpCustomAutomationDesc": "Enregistrez les actions prises en charge sur le canevas ou la timeline sous forme de séquence nommée à réexécuter. Ajoutez un élément depuis Automatisations pour lancer l’enregistrement, puis réordonnez ou supprimez des étapes dans l’écran de vérification avant de sauvegarder. Vous pouvez renommer, réenregistrer, supprimer, filtrer par favoris, exporter et importer les automatisations enregistrées sous forme de fichiers JSON. Pour une automatisation limitée au canevas et entièrement enregistrée dans une seule image, vous pouvez l’exécuter sur l’image actuelle, une plage précise ou toutes les images. Le choix de la plage n’apparaît pas pour les automatisations de timeline ni pour les enregistrements couvrant plusieurs images.",
-  "tipsOfficialAutomationPresetsTitle": "Adaptez les automatisations officielles à votre dessin",
+  "tipsOfficialAutomationPresetsTitle": "Adaptez les macros officielles à votre dessin",
   "tipsOfficialAutomationPresetsDesc": "Les préréglages officiels sont « Trait (numérique) » (encrage automatique → accumulation d’encre), « Extraction du trait (analogique) » (réglage des couleurs → seuil → transparence par luminosité) et « Trace de couleur du trait » (à lancer sur le trait : les couleurs peintes en dessous, sur un nouveau calque en écrêtage sur le trait → flou, duplication et fusion → réglage de la trace de couleur, pour que chaque trait prenne une teinte plus profonde de la couleur voisine). Le réenregistrement ajoute des actions prises en charge. L’écran de vérification permet de réordonner ou de supprimer des étapes. Exportez un préréglage avant de le modifier si vous souhaitez pouvoir retrouver facilement les réglages d’origine.",
   "tipsTexturePrismVhsTitle": "Essayez Texture, Prisme et VHS sur des calques dupliqués",
   "tipsTexturePrismVhsDesc": "Le filtre Changement de texture part d’une base au choix (Hologramme aurore, Or échantillonné, Argent platine, Perle lumineuse, Pastel aurore ou Arc-en-ciel sombre), puis permet d’ajuster la luminosité et la saturation. Prisme crée une bande lumineuse avec le flou et la direction de l’arc-en-ciel ; Bruit VHS combine bruit, saturation, luminosité et contraste pour évoquer une vieille cassette. Tester chaque effet sur un calque dupliqué facilite la comparaison ; ajoutez vos réglages préférés aux favoris pour les réutiliser rapidement.",

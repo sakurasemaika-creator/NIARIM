@@ -7401,7 +7401,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get storageEraseAllErasedItems =>
-      'Proyectos y materiales (incluidos la papelera, los guardados y el guardado automático)\nArchivos exportados\nTus pinceles, tramas, sellos, paletas, temas, fuentes y automatizaciones\nTodos los ajustes (también se cierra la sesión de Google)';
+      'Proyectos y materiales (incluidos la papelera, los guardados y el guardado automático)\nArchivos exportados\nTus pinceles, tramas, sellos, paletas, temas, fuentes y macros\nTodos los ajustes (también se cierra la sesión de Google)';
 
   @override
   String get storageEraseAllKeptTitle => 'Se conserva';
@@ -7572,7 +7572,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get customAutomationTitle => 'Automatizaciones';
+  String get customAutomationTitle => 'Macros';
 
   @override
   String get customAutomationAdd => 'Añadir automatización';
@@ -7733,7 +7733,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsTitle =>
-      'Adapta las automatizaciones oficiales a tu dibujo';
+      'Adapta las macros oficiales a tu dibujo';
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
