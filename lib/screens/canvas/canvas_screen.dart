@@ -2040,19 +2040,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           ),
                                           maxWidth: 336,
                                           scrollBodyOnResize: true,
-                                          title: _currentTool ==
+                                          title:
+                                              _currentTool ==
                                                   DrawingTool.meshTransform
-                                              ? AppLocalizations.of(context)!
-                                                    .meshTransformPanelTitle
-                                              : AppLocalizations.of(context)!
-                                                    .helpSelectToolTitle,
-                                          onClose: _currentTool ==
+                                              ? AppLocalizations.of(
+                                                  context,
+                                                )!.meshTransformPanelTitle
+                                              : AppLocalizations.of(
+                                                  context,
+                                                )!.helpSelectToolTitle,
+                                          onClose:
+                                              _currentTool ==
                                                   DrawingTool.meshTransform
                                               ? _cancelMeshTransform
                                               : _exitSelectionTool,
-                                          closeTooltip:
-                                              AppLocalizations.of(context)!
-                                                  .commonClose,
+                                          closeTooltip: AppLocalizations.of(
+                                            context,
+                                          )!.commonClose,
                                           collapseTooltip: AppLocalizations.of(
                                             context,
                                           )!.filterPanelCollapse,
@@ -2106,12 +2110,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                         maxWidth: 360,
                                         fillWidth: true,
                                         scrollBodyOnResize: true,
-                                        title: AppLocalizations.of(context)!
-                                            .filterPanelTitle,
+                                        title: AppLocalizations.of(
+                                          context,
+                                        )!.filterPanelTitle,
                                         onClose: _closeFilterFocusMenu,
-                                        closeTooltip:
-                                            AppLocalizations.of(context)!
-                                                .commonClose,
+                                        closeTooltip: AppLocalizations.of(
+                                          context,
+                                        )!.commonClose,
                                         collapseTooltip: AppLocalizations.of(
                                           context,
                                         )!.filterPanelCollapse,
@@ -2130,12 +2135,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                         maxWidth: 360,
                                         fillWidth: true,
                                         scrollBodyOnResize: false,
-                                        title: AppLocalizations.of(context)!
-                                            .canvasColorAdjustTitle,
+                                        title: AppLocalizations.of(
+                                          context,
+                                        )!.canvasColorAdjustTitle,
                                         onClose: _closeColorAdjustPanel,
-                                        closeTooltip:
-                                            AppLocalizations.of(context)!
-                                                .commonClose,
+                                        closeTooltip: AppLocalizations.of(
+                                          context,
+                                        )!.commonClose,
                                         collapseTooltip: AppLocalizations.of(
                                           context,
                                         )!.filterPanelCollapse,
@@ -3137,11 +3143,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         settings,
         right: right,
       ).where((panel) => _visibleInDock(settings, panel)).toList();
-      final fitted = _fitDesktopDock(
-        settings,
-        visible,
-        constraints.maxHeight,
-      );
+      final fitted = _fitDesktopDock(settings, visible, constraints.maxHeight);
       final heights = fitted.bodyHeights;
       return ClipRect(
         child: Scrollbar(
@@ -4352,6 +4354,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// 「保存せず戻る」かをポップアップで選べるようにする
   /// （timeline_screen.dartの同名メソッドと同じ挙動）。
   Future<void> _confirmBackToProjectList() async {
+    // 開いてから（手動保存してから）何も変えていなければ、聞かずに戻る（以前は
+    // 開いて閉じただけ・再生しただけでも「保存してから戻りますか」と聞いた）。
+    if (context.read<ProjectService>().unchangedSinceEditStart(
+      widget.projectId,
+    )) {
+      context.go('/home');
+      return;
+    }
     final l10n = AppLocalizations.of(context)!;
     final choice = await showDialog<String>(
       context: context,

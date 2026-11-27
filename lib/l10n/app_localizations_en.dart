@@ -784,6 +784,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get folderNone => 'No Folder';
 
   @override
+  String folderMovedIntoSnackbar(String folder) {
+    return 'Moved to “$folder”';
+  }
+
+  @override
+  String get folderMovedOutSnackbar => 'Moved out of the folder';
+
+  @override
   String creativeFolderDeleteBody(String name) {
     return 'Delete “$name”? Its items will move to “No Folder”.';
   }
@@ -855,7 +863,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineBackToProjectListDialogBody =>
-      'Save your changes before going back?';
+      'Your project is saved automatically. Make a manual save too before going back?';
 
   @override
   String get timelineBackToProjectListSaveButton => 'Save and go back';

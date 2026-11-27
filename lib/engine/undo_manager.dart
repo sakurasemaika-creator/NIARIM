@@ -44,6 +44,17 @@ class UndoManager extends ChangeNotifier {
   bool canRedoFor(String projectId) =>
       _projectStacks[projectId]?.redo.isNotEmpty ?? false;
 
+  /// The project's place in its history: the newest operation that can be
+  /// undone and how many there are. Two equal places mean the work was not
+  /// changed in between (or was changed and undone back to the same place).
+  ({UndoAction? newest, int count}) historyPointFor(String projectId) {
+    final undo = _projectStacks[projectId]?.undo;
+    return (
+      newest: undo == null || undo.isEmpty ? null : undo.last,
+      count: undo?.length ?? 0,
+    );
+  }
+
   bool retainsMaterial(String projectId, String materialId) {
     final history = _projectStacks[projectId];
     if (history == null) return false;

@@ -749,6 +749,14 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _currentTabIndex = widget.openWorks ? 1 : 0;
+    // キャンバス・タイムラインから家のボタンで戻ったときも、開いていたフォルダを
+    // 開いたまま（以前は一番上へ戻り、作品のあるフォルダを開き直す必要があった）。
+    final projects = context.read<ProjectService>();
+    final rememberedFolder = projects.homeProjectFolderId;
+    if (rememberedFolder != null &&
+        projects.folders.any((folder) => folder.id == rememberedFolder)) {
+      _currentFolderId = rememberedFolder;
+    }
     _tabController = _HomeTabController(
       length: 4,
       vsync: this,
@@ -1501,7 +1509,7 @@ class _HomeScreenState extends State<HomeScreen>
                         searchByTag: _searchByTag,
                         currentFolderId: _currentFolderId,
                         onOpenFolder: _openProjectFolder,
-                        onCreateProject: () => context.push('/new-project'),
+                        onCreateProject: _pushNewProject,
                         onClearSearch: _closeProjectSearch,
                         onShowAll: () => _changeProjectScope(
                           () => _showFavoritesOnly = false,
@@ -2286,7 +2294,7 @@ class _HomeScreenState extends State<HomeScreen>
               title: Text(l10n.homeAddSheetNewProject),
               onTap: () {
                 Navigator.pop(ctx);
-                context.push('/new-project');
+                _pushNewProject();
               },
             ),
             ListTile(
@@ -2441,6 +2449,7 @@ class _HomeScreenState extends State<HomeScreen>
       _selectedIds.clear();
       _isSelectionMode = false;
     });
+    context.read<ProjectService>().homeProjectFolderId = _currentFolderId;
     _listFilterSettings?.updateHomeListFilters(
       HomeList.projects,
       favoritesOnly: _showFavoritesOnly,
@@ -2468,6 +2477,21 @@ class _HomeScreenState extends State<HomeScreen>
   // 同じ順。以前は1回のEscで検索語・結果・選んだものがまとめて消えた）。
   void _escapeInSearch() =>
       _isSelectionMode ? _endProjectSelection() : _closeProjectSearch();
+
+  // 新しい作品は、プロジェクトのタブで開いているフォルダに作る（以前はどこで
+  // 押しても一番上にでき、フォルダの空の表示の「＋ボタンから新規作成」で作った
+  // 作品がフォルダに入らなかった）。
+  void _pushNewProject() {
+    final folder = _currentTabIndex == 0 ? _currentFolderId : null;
+    context.push(
+      folder == null
+          ? '/new-project'
+          : Uri(
+              path: '/new-project',
+              queryParameters: {'folder': folder},
+            ).toString(),
+    );
+  }
 
   void _openProjectFolder(String id) {
     if (_isSearching) _homeFocus.requestFocus();

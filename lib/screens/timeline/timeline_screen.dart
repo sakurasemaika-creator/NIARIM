@@ -5165,8 +5165,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           // heading font draws that character empty.
                           return IconButton(
                             key: const ValueKey('timelineAddScene'),
-                            tooltip: AppLocalizations.of(context)!
-                                .timelineAddSceneTooltip,
+                            tooltip: AppLocalizations.of(
+                              context,
+                            )!.timelineAddSceneTooltip,
                             icon: const Icon(Icons.add),
                             onPressed: () => context
                                 .read<ProjectService>()
@@ -10923,6 +10924,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// プロジェクト一覧へ戻るボタン：タップ時に「保存して
   /// 戻る」か「保存せず戻る」かをポップアップで選べるようにする。
   Future<void> _confirmBackToProjectList() async {
+    // 開いてから（手動保存してから）何も変えていなければ、聞かずに戻る（以前は
+    // 開いて閉じただけ・再生しただけでも「保存してから戻りますか」と聞いた）。
+    if (context.read<ProjectService>().unchangedSinceEditStart(
+      widget.projectId,
+    )) {
+      context.go('/home');
+      return;
+    }
     final l10n = AppLocalizations.of(context)!;
     final choice = await showDialog<String>(
       context: context,

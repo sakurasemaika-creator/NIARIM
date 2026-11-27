@@ -116,8 +116,9 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/new-project',
-      builder: (context, state) =>
-          const AdMockPageFrame(child: NewProjectScreen()),
+      builder: (context, state) => AdMockPageFrame(
+        child: NewProjectScreen(folderId: state.uri.queryParameters['folder']),
+      ),
     ),
     GoRoute(
       path: '/project/:id',

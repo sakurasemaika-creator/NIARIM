@@ -747,6 +747,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get folderNone => '无文件夹';
 
   @override
+  String folderMovedIntoSnackbar(String folder) {
+    return '已移至“$folder”';
+  }
+
+  @override
+  String get folderMovedOutSnackbar => '已移出文件夹';
+
+  @override
   String creativeFolderDeleteBody(String name) {
     return '要删除“$name”吗？其中的素材将移到“无文件夹”。';
   }
@@ -816,7 +824,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineBackToProjectListDialogTitle => '返回项目列表';
 
   @override
-  String get timelineBackToProjectListDialogBody => '要先保存更改再返回吗？';
+  String get timelineBackToProjectListDialogBody => '作品会自动保存。返回前要再手动保存吗？';
 
   @override
   String get timelineBackToProjectListSaveButton => '保存并返回';
@@ -11880,6 +11888,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get folderNone => '無資料夾';
 
   @override
+  String folderMovedIntoSnackbar(String folder) {
+    return '已移至「$folder」';
+  }
+
+  @override
+  String get folderMovedOutSnackbar => '已移出資料夾';
+
+  @override
   String creativeFolderDeleteBody(String name) {
     return '要刪除「$name」嗎？其中的素材會移到「無資料夾」。';
   }
@@ -11949,7 +11965,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineBackToProjectListDialogTitle => '返回專案列表';
 
   @override
-  String get timelineBackToProjectListDialogBody => '要先儲存變更再返回嗎？';
+  String get timelineBackToProjectListDialogBody => '作品會自動儲存。返回前要再手動儲存嗎？';
 
   @override
   String get timelineBackToProjectListSaveButton => '儲存並返回';

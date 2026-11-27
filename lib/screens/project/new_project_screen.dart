@@ -36,7 +36,10 @@ import '../../widgets/keep_together_text.dart';
 import '../../utils/making_strings.dart';
 
 class NewProjectScreen extends StatefulWidget {
-  const NewProjectScreen({super.key});
+  const NewProjectScreen({super.key, this.folderId});
+
+  /// ホームで開いていたフォルダ。作った作品はこのフォルダに入る（nullは一番上）。
+  final String? folderId;
 
   @override
   State<NewProjectScreen> createState() => _NewProjectScreenState();
@@ -1038,6 +1041,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
         drawingAreaScale: _drawingAreaEnabled ? _drawingAreaScale : 1.0,
         enabledAutofillPresetIds: _enabledPresetIds,
         makingEnabled: _makingEnabled,
+        folderId: widget.folderId,
       );
       // 作れたら作成中のまま（押せない）にしておく。戻すと、キャンバスを
       // 描く前に届いたダブルクリックの2回目で、もう1つ作品ができた。

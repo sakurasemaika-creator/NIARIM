@@ -800,6 +800,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get folderNone => 'Sin carpeta';
 
   @override
+  String folderMovedIntoSnackbar(String folder) {
+    return 'Se movió a «$folder»';
+  }
+
+  @override
+  String get folderMovedOutSnackbar => 'Se sacó de la carpeta';
+
+  @override
   String creativeFolderDeleteBody(String name) {
     return '¿Eliminar «$name»? Su contenido se moverá a «Sin carpeta».';
   }
@@ -875,7 +883,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timelineBackToProjectListDialogBody =>
-      '¿Guardar los cambios antes de volver?';
+      'El proyecto se guarda automáticamente. ¿Hacer también un guardado manual antes de volver?';
 
   @override
   String get timelineBackToProjectListSaveButton => 'Guardar y volver';

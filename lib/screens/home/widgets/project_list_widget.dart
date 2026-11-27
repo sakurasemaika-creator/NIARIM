@@ -1340,6 +1340,9 @@ class ProjectListWidget extends StatelessWidget {
         child: Text(l10n.thumbnailChangeAction),
       ),
       PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
+      // 以前はメニューに無く、フォルダへ入れるには選んで切り取り・貼り付けるしか
+      // なかった。
+      PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
       PopupMenuItem(
         value: 'share',
         enabled: !ExportShareService.isRunning(niashareKey(project.id)),
@@ -1381,6 +1384,7 @@ class ProjectListWidget extends StatelessWidget {
         child: Text(l10n.thumbnailChangeAction),
       ),
       PopupMenuItem(value: 'duplicate', child: Text(l10n.commonDuplicate)),
+      PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
       PopupMenuItem(
         value: 'favorite',
         child: Text(
@@ -1702,6 +1706,7 @@ class ProjectListWidget extends StatelessWidget {
     _showFolderPickerSheet(
       context,
       excludeFolderId: null,
+      currentFolderId: project.folderId,
       itemName: project.name,
       onSelect: (folderId) =>
           context.read<ProjectService>().moveToFolder(project.id, folderId),
@@ -1725,6 +1730,7 @@ class ProjectListWidget extends StatelessWidget {
       context,
       // 自分自身の直下へは移動できない（循環防止はサービス側でも二重にガードする）
       excludeFolderId: folder.id,
+      currentFolderId: folder.parentFolderId,
       itemName: folder.name,
       onSelect: (folderId) =>
           context.read<ProjectService>().moveFolderTo(folder.id, folderId),
@@ -1743,6 +1749,7 @@ class ProjectListWidget extends StatelessWidget {
   void _showFolderPickerSheet(
     BuildContext context, {
     required String? excludeFolderId,
+    required String? currentFolderId,
     required String itemName,
     required Future<void> Function(String?) onSelect,
     required Future<void> Function(String name) onCreateAndSelect,
@@ -1758,6 +1765,8 @@ class ProjectListWidget extends StatelessWidget {
         depths: {for (final row in folders) row.folder.id: row.depth},
         filename: itemName,
         rootLabel: AppLocalizations.of(context)!.projectListFolderRootOption,
+        markCurrent: true,
+        currentFolderId: currentFolderId,
         onMove: onSelect,
         onEdit: (folder) => _showEditFolderDialog(context, folder),
         onCreate: () => showCreateFolderNameDialog(context, onCreateAndSelect),

@@ -17,7 +17,14 @@ class WorkFolderMoveSheet extends StatefulWidget {
     this.onEdit,
     this.rootLabel,
     this.depths,
+    this.markCurrent = false,
+    this.currentFolderId,
   });
+
+  /// [currentFolderId]（nullは一番上）の行に今の場所の印を付ける。押しても
+  /// 動かさずに閉じる。
+  final bool markCurrent;
+  final String? currentFolderId;
 
   final List<ProjectFolder> folders;
   final Future<void> Function(String? folderId) onMove;
@@ -40,8 +47,21 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
   Object? _error;
   String? _selectedFolder;
 
+  bool _isCurrent(String? folderId) =>
+      widget.markCurrent && folderId == widget.currentFolderId;
+
   Future<void> _move(String? folderId) async {
     if (_saving) return;
+    if (_isCurrent(folderId)) {
+      closeFolderRoute(context);
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final folderName = widget.folders
+        .where((folder) => folder.id == folderId)
+        .firstOrNull
+        ?.name;
     setState(() {
       _saving = true;
       _error = null;
@@ -50,6 +70,17 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
     try {
       await widget.onMove(folderId);
       if (mounted) closeFolderRoute(context);
+      // 移した先を知らせる（以前はシートが閉じるだけで、移ったのか分からなかった）。
+      messenger?.showSnackBar(
+        SnackBar(
+          persist: false,
+          content: Text(
+            folderName == null
+                ? l10n.folderMovedOutSnackbar
+                : l10n.folderMovedIntoSnackbar(folderName),
+          ),
+        ),
+      );
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (!mounted) return;
@@ -79,7 +110,7 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
               semanticsLabel: l10n.folderMoveToTitle,
             ),
           )
-        : Icon(icon);
+        : Icon(_isCurrent(folderId) ? Icons.check : icon);
     return Semantics(
       namesRoute: true,
       explicitChildNodes: true,
@@ -89,6 +120,19 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // 題（以前は題が無く、何のシートか分からなかった）。
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  l10n.folderMoveToTitle,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: foreground,
+                  ),
+                ),
+              ),
+            ),
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.all(16),
@@ -103,6 +147,7 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
               ),
             ListTile(
               minTileHeight: 48,
+              selected: _isCurrent(null),
               leading: leading(null, Icons.folder_off_outlined),
               title: Text(widget.rootLabel ?? l10n.folderNone),
               onTap: _saving ? null : () => _move(null),
@@ -113,6 +158,7 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
                 contentPadding: widget.depths == null
                     ? null
                     : folderTreeTilePadding(widget.depths![folder.id] ?? 0),
+                selected: _isCurrent(folder.id),
                 leading: leading(folder.id, Icons.folder_outlined),
                 title: Text(folder.name),
                 trailing: widget.onEdit == null

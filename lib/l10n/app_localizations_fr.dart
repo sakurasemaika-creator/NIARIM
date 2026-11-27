@@ -800,6 +800,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get folderNone => 'Aucun dossier';
 
   @override
+  String folderMovedIntoSnackbar(String folder) {
+    return 'Déplacé dans « $folder »';
+  }
+
+  @override
+  String get folderMovedOutSnackbar => 'Sorti du dossier';
+
+  @override
   String creativeFolderDeleteBody(String name) {
     return 'Supprimer « $name » ? Son contenu sera déplacé vers « Aucun dossier ».';
   }
@@ -875,7 +883,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineBackToProjectListDialogBody =>
-      'Enregistrer les modifications avant de revenir ?';
+      'Le projet est enregistré automatiquement. Faire aussi une sauvegarde manuelle avant de revenir ?';
 
   @override
   String get timelineBackToProjectListSaveButton => 'Enregistrer et revenir';

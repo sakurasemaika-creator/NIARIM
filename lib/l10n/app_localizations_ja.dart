@@ -759,6 +759,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get folderNone => 'フォルダなし';
 
   @override
+  String folderMovedIntoSnackbar(String folder) {
+    return '「$folder」へ移動しました';
+  }
+
+  @override
+  String get folderMovedOutSnackbar => 'フォルダの外へ移動しました';
+
+  @override
   String creativeFolderDeleteBody(String name) {
     return '「$name」を削除しますか？中の素材は「フォルダなし」に移動します。';
   }
@@ -828,13 +836,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineBackToProjectListDialogTitle => 'プロジェクト一覧に戻る';
 
   @override
-  String get timelineBackToProjectListDialogBody => '変更を保存してから戻りますか？';
+  String get timelineBackToProjectListDialogBody =>
+      '作品は自動で保存されます。手動保存にも残してから戻りますか？';
 
   @override
   String get timelineBackToProjectListSaveButton => '保存して戻る';
 
   @override
-  String get timelineBackToProjectListDiscardButton => '手動セーブせずに戻る';
+  String get timelineBackToProjectListDiscardButton => '手動保存せずに戻る';
 
   @override
   String get timelineSkipToStart => '先頭フレームへ';

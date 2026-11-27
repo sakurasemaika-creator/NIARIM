@@ -1455,6 +1455,18 @@ abstract class AppLocalizations {
   /// **'フォルダなし'**
   String get folderNone;
 
+  /// No description provided for @folderMovedIntoSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{folder}」へ移動しました'**
+  String folderMovedIntoSnackbar(String folder);
+
+  /// No description provided for @folderMovedOutSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの外へ移動しました'**
+  String get folderMovedOutSnackbar;
+
   /// No description provided for @creativeFolderDeleteBody.
   ///
   /// In ja, this message translates to:
@@ -1572,7 +1584,7 @@ abstract class AppLocalizations {
   /// No description provided for @timelineBackToProjectListDialogBody.
   ///
   /// In ja, this message translates to:
-  /// **'変更を保存してから戻りますか？'**
+  /// **'作品は自動で保存されます。手動保存にも残してから戻りますか？'**
   String get timelineBackToProjectListDialogBody;
 
   /// No description provided for @timelineBackToProjectListSaveButton.
@@ -1584,7 +1596,7 @@ abstract class AppLocalizations {
   /// No description provided for @timelineBackToProjectListDiscardButton.
   ///
   /// In ja, this message translates to:
-  /// **'手動セーブせずに戻る'**
+  /// **'手動保存せずに戻る'**
   String get timelineBackToProjectListDiscardButton;
 
   /// No description provided for @timelineSkipToStart.

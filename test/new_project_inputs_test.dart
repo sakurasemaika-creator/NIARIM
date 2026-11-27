@@ -40,6 +40,7 @@ class _RecordingCreation extends ProjectService {
     double drawingAreaScale = 1.0,
     List<String>? enabledAutofillPresetIds,
     bool makingEnabled = false,
+    String? folderId,
   }) {
     created.add((
       width: exportWidth,
@@ -66,6 +67,7 @@ class _InstantCreation extends ProjectService {
     double drawingAreaScale = 1.0,
     List<String>? enabledAutofillPresetIds,
     bool makingEnabled = false,
+    String? folderId,
   }) async {
     calls++;
     return Project(

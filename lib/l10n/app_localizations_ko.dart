@@ -762,6 +762,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get folderNone => '폴더 없음';
 
   @override
+  String folderMovedIntoSnackbar(String folder) {
+    return '“$folder” 폴더로 이동했습니다';
+  }
+
+  @override
+  String get folderMovedOutSnackbar => '폴더 밖으로 이동했습니다';
+
+  @override
   String creativeFolderDeleteBody(String name) {
     return '“$name” 폴더를 삭제하시겠습니까? 안에 있는 소재는 “폴더 없음”으로 이동합니다.';
   }
@@ -831,7 +839,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineBackToProjectListDialogTitle => '프로젝트 목록으로 돌아가기';
 
   @override
-  String get timelineBackToProjectListDialogBody => '변경 사항을 저장하고 돌아갈까요?';
+  String get timelineBackToProjectListDialogBody =>
+      '작품은 자동으로 저장됩니다. 돌아가기 전에 수동 저장도 할까요?';
 
   @override
   String get timelineBackToProjectListSaveButton => '저장하고 돌아가기';

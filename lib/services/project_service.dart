@@ -1433,9 +1433,21 @@ class ProjectService extends ChangeNotifier {
   /// Each route receives a distinct lease. A canvas disposed AFTER the
   /// timeline opened must not stop the new route's counter.
   int beginWorkTracking(String projectId) {
+    // キャンバスとタイムラインの行き来は同じ編集の続き（変えたかどうかは、
+    // 最初に開いた時から数える）。
+    final continuing = _trackedProjectId == projectId;
     if (_trackedProjectId != null) endWorkTracking();
+    if (!continuing) _markEditClean(projectId);
     final lease = ++_workTrackingLease;
     _trackedProjectId = projectId;
+    final scenes = _scenes[projectId];
+    final opened = _projects.where((p) => p.id == projectId).firstOrNull;
+    if (scenes != null && opened != null) {
+      _writtenContent.putIfAbsent(
+        projectId,
+        () => NiaproSerializer.contentSignature(opened, scenes),
+      );
+    }
     _workStopwatch = Stopwatch()..start();
     _workLastActivityMs = 0;
     _workLastSettledMs = 0;
@@ -1538,7 +1550,32 @@ class ProjectService extends ChangeNotifier {
   /// Explicit user saves, NOT autosaves, trigger a separate lightweight
   /// editing-time checkpoint after the project has been saved successfully.
   /// A network failure never rolls back or blocks the local save.
+  // キャンバス・タイムラインで編集を始めた（または手動保存した）ときの、取り消しの
+  // 履歴の位置。
+  final Map<String, ({UndoAction? newest, int count})> _editCleanPoints = {};
+
+  void _markEditClean(String projectId) {
+    final history = _undoManager;
+    if (history == null) {
+      _editCleanPoints.remove(projectId);
+    } else {
+      _editCleanPoints[projectId] = history.historyPointFor(projectId);
+    }
+  }
+
+  /// キャンバス・タイムラインを開いてから（その後に手動保存してから）作品を
+  /// 変えていないか（変えて取り消し、同じ所へ戻った場合も含む）。分からない
+  /// ときは false。
+  bool unchangedSinceEditStart(String projectId) {
+    final history = _undoManager;
+    final start = _editCleanPoints[projectId];
+    return history != null &&
+        start != null &&
+        history.historyPointFor(projectId) == start;
+  }
+
   void onManualSaveCommitted(String projectId) {
+    _markEditClean(projectId);
     if (projectId != _trackedProjectId || _workPaused) return;
     _settleWorkTime();
     _creatorEditReporter?.manualSaveSucceeded(projectId);
@@ -1572,7 +1609,7 @@ class ProjectService extends ChangeNotifier {
     if (id != null) {
       _autosaves?.detach();
       unawaited(_checkpointAutosave(id));
-      _saveAsync(id);
+      _saveAsync(id, keepUpdatedAtIfUnchanged: true);
     }
   }
 
@@ -1607,7 +1644,9 @@ class ProjectService extends ChangeNotifier {
     unawaited(_checkpointAutosave(id));
     _creatorEditReporter?.end();
     // Persist even a 1-9 second session; no reliance on the next 10s tick.
-    _saveAsync(id);
+    // Only the work time changed when nothing was drawn or edited: keep the
+    // last-saved time (the home list's "updated" order).
+    _saveAsync(id, keepUpdatedAtIfUnchanged: true);
   }
 
   // ─── Scene/Frame/Layer アクセサ ───────────────────────────────────────
@@ -4477,6 +4516,7 @@ class ProjectService extends ChangeNotifier {
     double drawingAreaScale = 1.0,
     List<String>? enabledAutofillPresetIds,
     bool makingEnabled = false,
+    String? folderId,
   }) async {
     final projectId = _nextId('proj');
     // 作成と最終保存は同じ1回の時刻（別々に読むと数マイクロ秒ずれ、その値が
@@ -4496,6 +4536,8 @@ class ProjectService extends ChangeNotifier {
       drawingAreaScale: drawingAreaScale.clamp(1.0, 10.0),
       enabledAutofillPresetIds: enabledAutofillPresetIds,
       makingEnabled: makingEnabled,
+      // ホームで開いていたフォルダへ入れる（作る間に消えたフォルダなら一番上）。
+      folderId: _folders.any((f) => f.id == folderId) ? folderId : null,
     );
     // 初期シーン・フレーム・レイヤーを生成（Scene0001/Frame0/Layer0001）
     final initialLayer = Layer(
@@ -4539,6 +4581,10 @@ class ProjectService extends ChangeNotifier {
     _scenes[projectId] = scenes;
     _tileManagers[projectId] = tileManager;
     _layerIdCounters[projectId] = 2;
+    _writtenContent[projectId] = NiaproSerializer.contentSignature(
+      created,
+      scenes,
+    );
 
     notifyListeners();
     return created;
@@ -4619,12 +4665,30 @@ class ProjectService extends ChangeNotifier {
 
   /// Read the current model when the queued save starts. A background save
   /// requested during a folder move must not overwrite its acknowledged result.
-  void _saveAsync(String projectId, {bool keepUpdatedAt = false}) {
+  void _saveAsync(
+    String projectId, {
+    bool keepUpdatedAt = false,
+    bool keepUpdatedAtIfUnchanged = false,
+  }) {
     _queueProjectSave(
       projectId,
-      () => _writeProjectFile(projectId, keepUpdatedAt: keepUpdatedAt),
+      () => _writeProjectFile(
+        projectId,
+        keepUpdatedAt: keepUpdatedAt,
+        keepUpdatedAtIfUnchanged: keepUpdatedAtIfUnchanged,
+      ),
     ).catchError((Object _, StackTrace _) {});
   }
+
+  /// ホームのプロジェクトのタブで開いていたフォルダ（アプリを閉じるまで覚える。
+  /// 保存はしない）。キャンバス・タイムラインの家のボタンでホームが作り直されても、
+  /// 開いていたフォルダへ戻る。
+  String? homeProjectFolderId;
+
+  // 最後に作品ファイルへ書いた（キャンバス・タイムラインを開いたときは、その時の）
+  // 作品の設定・シーン。制作時間や自動のサムネイルだけの保存で、絵も設定・シーンも
+  // 変わっていなければ、最終保存の日時（「更新日時」の並び）を進めない。
+  final Map<String, String> _writtenContent = {};
 
   Future<void> saveProject(String projectId) =>
       _queueProjectSave(projectId, () => _writeProjectFile(projectId));
@@ -4641,6 +4705,7 @@ class ProjectService extends ChangeNotifier {
   Future<void> _writeProjectFile(
     String projectId, {
     bool keepUpdatedAt = false,
+    bool keepUpdatedAtIfUnchanged = false,
   }) async {
     final project = _projects.where((p) => p.id == projectId).firstOrNull;
     final scenes = _scenes[projectId];
@@ -4658,7 +4723,13 @@ class ProjectService extends ChangeNotifier {
     // 最終保存の日時は1回だけ読み、ファイルと一覧の両方へ同じ値を書く
     // （別々に読むと数ミリ秒ずれ、ゴミ箱へ移す前の保存〔一覧の値を書く〕が
     // 作品を変えていないのにファイルを書き換えた）。
-    final updatedAt = keepUpdatedAt ? project.updatedAt : DateTime.now();
+    final content = NiaproSerializer.contentSignature(project, scenes);
+    final unchanged =
+        keepUpdatedAtIfUnchanged &&
+        !tm.hasDirtyTiles &&
+        _writtenContent[projectId] == content;
+    final keep = keepUpdatedAt || unchanged;
+    final updatedAt = keep ? project.updatedAt : DateTime.now();
     final saved = await NiaproSerializer.save(
       project: project,
       scenes: scenes,
@@ -4668,6 +4739,7 @@ class ProjectService extends ChangeNotifier {
       keepStoredTiles: keepStoredTiles,
     );
     _needsArchiveRewrite.remove(projectId);
+    _writtenContent[projectId] = content;
     // 容量と最終保存の時刻は、ファイルに書いたものに合わせる。保存は
     // 描いている間にも走るので、通知はせず次に画面を作るときに使われる
     // 値だけを更新する。
@@ -4676,16 +4748,23 @@ class ProjectService extends ChangeNotifier {
     if (i >= 0) {
       _projects[i] = _projects[i].copyWith(
         sizeBytes: size,
-        updatedAt: keepUpdatedAt ? null : updatedAt,
+        updatedAt: keep ? null : updatedAt,
       );
     }
   }
 
   /// [saveProject]と同じ保存。保存できたかを返す（失敗しても例外にしない）。
-  Future<bool> _saveReportingSuccess(String projectId) {
+  Future<bool> _saveReportingSuccess(
+    String projectId, {
+    bool keepUpdatedAtIfUnchanged = false,
+  }) {
     if (!_projects.any((p) => p.id == projectId)) return Future.value(false);
-    return saveProject(
+    return _queueProjectSave(
       projectId,
+      () => _writeProjectFile(
+        projectId,
+        keepUpdatedAtIfUnchanged: keepUpdatedAtIfUnchanged,
+      ),
     ).then((_) => true, onError: (Object _, StackTrace _) => false);
   }
 
@@ -5500,7 +5579,12 @@ class ProjectService extends ChangeNotifier {
           ? position
           : _projects[curIdx].thumbnailLastFrameIndex,
     );
-    final saved = _saveReportingSuccess(projectId);
+    // 編集の終わりに自動で作り直したサムネイルは作品の変更ではない（絵も設定も
+    // 変えていなければ、最終保存の日時はそのまま）。
+    final saved = _saveReportingSuccess(
+      projectId,
+      keepUpdatedAtIfUnchanged: !force,
+    );
     notifyListeners();
     // 前のサムネイルは、新しいパスを保存し終えてから、ほかの作品（以前の
     // 版で複製した作品はサムネイルを共有している）が使っていなければ消す（保存の前に消すと、

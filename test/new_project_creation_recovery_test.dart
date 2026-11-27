@@ -27,6 +27,7 @@ class _PendingCreation extends ProjectService {
     double drawingAreaScale = 1.0,
     List<String>? enabledAutofillPresetIds,
     bool makingEnabled = false,
+    String? folderId,
   }) {
     calls++;
     return pending.future;

@@ -33,6 +33,7 @@ import '../../widgets/menu_action_label.dart';
 import '../../widgets/project_duplicated_snack_bar.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/stepped_slider.dart';
+import '../../utils/folder_persistence.dart';
 import '../../utils/duplicate_name.dart';
 import '../../utils/file_size_label.dart';
 import '../../utils/folder_tree.dart';
@@ -40,7 +41,8 @@ import '../../utils/immersive_mode.dart';
 import '../../utils/work_time_label.dart';
 import '../../utils/making_strings.dart';
 import '../../widgets/share_project_file_action.dart';
-import '../home/widgets/project_list_widget.dart' show niashareKey;
+import '../home/widgets/project_list_widget.dart'
+    show niashareKey, showCreateFolderNameDialog;
 import '../../widgets/typing_dialog_inset.dart';
 import '../../widgets/grouped_sheet.dart';
 
@@ -88,7 +90,18 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     ExportShareService.running.addListener(_onShareRunningChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        settleOpenedWork(context, widget.projectId, saveEntry: 'projectDetail');
+        settleOpenedWork(
+          context,
+          widget.projectId,
+          saveEntry: 'projectDetail',
+          // 新しい自動保存で開いたら、プレビューもその絵で描き直す（以前は
+          // 入れ替える前の古い絵のまま残った）。
+          onRestored: () {
+            if (!mounted) return;
+            final ps = context.read<ProjectService>();
+            _renderFrame(ps, _flatten(ps));
+          },
+        );
       }
     });
   }
@@ -601,10 +614,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     ),
                   // 実際のコマの数（全シーン）。Project.totalFramesは
                   // fps×秒（秒は切り上げ）で、コマの数と違った。
-                  _infoRow(
-                    l10n.projectDetailInfoTotalFrames,
-                    '${flat.length}',
-                  ),
+                  _infoRow(l10n.projectDetailInfoTotalFrames, '${flat.length}'),
                   _infoRow(
                     l10n.projectDetailInfoWorkTime,
                     workTimeLabel(l10n, project.totalWorkSeconds),
@@ -1078,16 +1088,39 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     // 階層どおり（親の下に子を名前順・字下げ）に並べる。作った順に平らに
     // 並べると、別の親の同じ名前のフォルダを見分けられなかった。
     final tree = folderTree(service.folders);
+    final project = service.projects
+        .where((p) => p.id == widget.projectId)
+        .first;
     showModalBottomSheet<void>(
       context: context,
       builder: (_) => WorkFolderMoveSheet(
         folders: [for (final entry in tree) entry.folder],
         depths: {for (final entry in tree) entry.folder.id: entry.depth},
-        filename: service.projects
-            .where((p) => p.id == widget.projectId)
-            .first
-            .name,
+        filename: project.name,
+        // 今入っているフォルダに印を付け、フォルダが無くてもここで作れる（以前は
+        // フォルダが無いと「フォルダなし」の1行だけの行き止まりだった）。
+        markCurrent: true,
+        currentFolderId: project.folderId,
         onMove: (id) => service.moveToFolder(widget.projectId, id),
+        onCreate: () => showCreateFolderNameDialog(context, (name) async {
+          final folder = await service.createFolder(name);
+          try {
+            await service.moveToFolder(widget.projectId, folder.id);
+          } catch (error) {
+            throw FolderSaveException(partiallySaved: true, cause: error);
+          }
+          if (!context.mounted) return;
+          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+            SnackBar(
+              persist: false,
+              content: Text(
+                AppLocalizations.of(
+                  context,
+                )!.folderMovedIntoSnackbar(folder.name),
+              ),
+            ),
+          );
+        }),
       ),
     );
   }
