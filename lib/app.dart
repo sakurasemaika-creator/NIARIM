@@ -175,7 +175,9 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final themeService = context.watch<ThemeService>();
     // 表示言語（日本語・English・简体中文・한국어・繁體中文・Français・Españolの7言語対応）。
-    final language = context.watch<SettingsService>().language;
+    final language = context.select<SettingsService, String>(
+      (settings) => settings.language,
+    );
     _syncHomeWidgets(context, themeService, localeFromLanguageCode(language));
     return MaterialApp.router(
       title: 'NIARIM',

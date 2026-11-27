@@ -423,8 +423,10 @@ class _HomeScreenState extends State<HomeScreen>
 
   // プロジェクトの一覧を一番上から送ってあるか（左下の「↑」は、上へ戻せる
   // ときだけ出す。以前は一番上でも、スクロールできない短いフォルダでも出て、
-  // 左下のカードの名前を隠した）。
-  bool _projectsCanGoUp = false;
+  // 左下のカードの名前を隠した）。変わったときは「↑」だけを組み立て直す
+  // （画面ごと組み立て直すと、一覧を一番上から送り出すたびに全部のカードを
+  // 作り直していた）。
+  final _projectsCanGoUp = ValueNotifier<bool>(false);
   double? _floatingActionsClearance;
 
   /// 一覧を送ったとき（コントローラーの知らせ）と、ホームを組み立て直した
@@ -447,9 +449,7 @@ class _HomeScreenState extends State<HomeScreen>
           p.hasContentDimensions &&
           p.pixels > p.minScrollExtent + 0.5,
     );
-    if (canGoUp != _projectsCanGoUp) {
-      setState(() => _projectsCanGoUp = canGoUp);
-    }
+    _projectsCanGoUp.value = canGoUp;
   }
 
   double _homeSwipeDistance = 0;
@@ -928,6 +928,7 @@ class _HomeScreenState extends State<HomeScreen>
     _searchFocus.dispose();
     _homeFocus.dispose();
     _projectScrollController.dispose();
+    _projectsCanGoUp.dispose();
     _pasteTapGuard?.cancel();
     _sharedFileSub?.cancel();
     super.dispose();
@@ -2190,30 +2191,34 @@ class _HomeScreenState extends State<HomeScreen>
     // 出さない（押しても何も起きず、空の表示の案内に重なった）。一覧の一番
     // 上にいるとき・スクロールできない短い一覧でも出さない（上へ戻る先が
     // 無い）。
-    final scrollToTop =
-        creates &&
-        projects &&
-        _projectsCanGoUp &&
-        _visibleProjectIds(context.watch<ProjectService>()).isNotEmpty;
-    final Widget leading = scrollToTop
-        ? _buildHomeAction(
-            compact: compact,
-            key: const Key('homeScrollToTopFab'),
-            heroTag: 'home-scroll-to-top',
-            tooltip: l10n.communityScrollToTop,
-            onPressed: () {
-              if (!_projectScrollController.hasClients) return;
-              if (MediaQuery.disableAnimationsOf(context)) {
-                _projectScrollController.jumpTo(0);
-                return;
-              }
-              _projectScrollController.animateTo(
-                0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
-              );
-            },
-            icon: Icons.arrow_upward,
+    final Widget leading = creates && projects
+        ? ValueListenableBuilder<bool>(
+            valueListenable: _projectsCanGoUp,
+            builder: (context, canGoUp, _) =>
+                canGoUp &&
+                    _visibleProjectIds(
+                      context.watch<ProjectService>(),
+                    ).isNotEmpty
+                ? _buildHomeAction(
+                    compact: compact,
+                    key: const Key('homeScrollToTopFab'),
+                    heroTag: 'home-scroll-to-top',
+                    tooltip: l10n.communityScrollToTop,
+                    onPressed: () {
+                      if (!_projectScrollController.hasClients) return;
+                      if (MediaQuery.disableAnimationsOf(context)) {
+                        _projectScrollController.jumpTo(0);
+                        return;
+                      }
+                      _projectScrollController.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                      );
+                    },
+                    icon: Icons.arrow_upward,
+                  )
+                : const SizedBox.shrink(),
           )
         : const SizedBox.shrink();
     final Widget trailing;

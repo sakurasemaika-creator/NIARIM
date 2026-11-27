@@ -111,6 +111,10 @@ void main() {
         reason: 'A full menu target must be reachable at $size.',
       );
       await tester.tap(target!, kind: PointerDeviceKind.mouse);
+      // カードはダブルタップでキャンバスを開くので、︙のタップはダブル
+      // タップを待つ時間が過ぎてから決まる（偽の時計を進める。以前は
+      // テーマの切り替えの動きがたまたま時計を進めていた）。
+      await tester.pump(kDoubleTapTimeout);
       await tester.pumpAndSettle();
       expect(
         find.text(l10n.commonRename),

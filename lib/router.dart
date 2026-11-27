@@ -39,6 +39,7 @@ import 'screens/settings/privacy_policy_screen.dart';
 import 'screens/settings/error_log_screen.dart';
 import 'screens/settings/storage_screen.dart';
 import 'widgets/ad_banner_mock_widget.dart';
+import 'widgets/hidden_route_project_gate.dart';
 import 'widgets/menu_surface.dart';
 import 'screens/settings/widget_settings_screen.dart';
 import 'screens/settings/widget_artwork_picker_screen.dart';
@@ -68,9 +69,13 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/home',
+      // 作品を開くとキャンバス等の下に残るので、覆われている間は作品の
+      // 変更で組み立て直さない（戻るときに1回だけ）。
       builder: (context, state) => AdMockPageFrame(
-        child: HomeScreen(
-          openWorks: state.uri.queryParameters['tab'] == 'works',
+        child: HiddenRouteProjectGate(
+          child: HomeScreen(
+            openWorks: state.uri.queryParameters['tab'] == 'works',
+          ),
         ),
       ),
     ),
@@ -117,7 +122,9 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/project/:id',
       builder: (context, state) => AdMockPageFrame(
-        child: ProjectDetailScreen(projectId: state.pathParameters['id']!),
+        child: HiddenRouteProjectGate(
+          child: ProjectDetailScreen(projectId: state.pathParameters['id']!),
+        ),
       ),
     ),
     GoRoute(

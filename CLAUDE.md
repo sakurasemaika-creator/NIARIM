@@ -1425,6 +1425,24 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
 - **`MediaQuery.of(context)`ではなく`sizeOf`/`paddingOf`/`orientationOf`**：
   前者はMediaQueryのあらゆる変化（キーボード開閉・文字サイズ変更等）で
   再ビルドを起こす。
+- **画面全体を組み立て直す引き金を作らない（2026-11-27に測って直した3つ）**：
+  （1）テーマ（`ThemeData`）は`ThemeService.themeDataFor`が色（`current`）と言語ごとに
+  同じ物を返す。作り直した`ThemeData`は中身が同じでも等しくならず（拡張の比べは同じ物
+  かどうか）、`MaterialApp`はテーマが変わるたびに約200msかけて移るので、`NiarimApp`を
+  組み立て直すだけで全部の画面（下に残るホームも）を毎フレーム組み立て直していた
+  （設定を1つ変えるたびに約4万の部品）。`NiarimApp`は設定を`select`で言語だけ読む。
+  アプリの一番上でサービス全体を`watch`しないこと（`test/theme_data_reuse_test.dart`）。
+  （2）キャンバス・タイムラインの下に残るホーム・作品詳細は、ルートで
+  `HiddenRouteProjectGate`（`lib/widgets/hidden_route_project_gate.dart`）に包み、覆われて
+  いる間（`TickerMode`が切れている間）は作品の変更を届けず、戻る動きの最初のフレームで
+  1回だけ届ける（キャンバスで1回変えるごとに見えないホームを約2400の部品組み立て直して
+  いた）。ダイアログの下は見えているので今までどおり届く。積んで開く画面で
+  `ProjectService`を`watch`する画面を足したら同じく包むこと
+  （`test/hidden_route_project_gate_test.dart`）。（3）スクロールで変わる小さな表示（ホーム・
+  作品広場の「↑」）は`ValueNotifier`と`ValueListenableBuilder`で、画面の`setState`にしない
+  （一番上から送り出すたびにホームは約2600、作品広場は約3700の部品を作り直していた。
+  `test/scroll_to_top_rebuild_scope_test.dart`）。数は`debugOnRebuildDirtyWidget`で数える
+  （`builtOnce`は`debugPrintRebuildDirtyWidgets`を入れないと常にfalse）。
 - **キャンバス周りの実描画テストは`tester.runAsync`が要る（最重要）**：
   `flutter_test`は既定でFakeAsync（偽装時間）の下で走るため、次のような
   **本物の非同期処理は`tester.pump(Duration)`を何回回しても完了しない**。

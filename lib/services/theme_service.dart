@@ -95,10 +95,28 @@ class ThemeService extends ChangeNotifier {
 
   ThemeData get themeData => themeDataFor(null);
 
+  // [_themeDataPreset]で作った[themeDataFor]のテーマ。プリセットは変更できない
+  // ので、色が変わるのは[_current]が別の物になったときだけ。
+  AppThemePreset? _themeDataPreset;
+  final Map<Locale?, ThemeData> _themeDataByLocale = {};
+
   /// 表示言語[locale]の画面に使うテーマ。本文の書体の列だけが言語で変わる
   /// （中国語は Noto Serif SC を主にする。[bodyFontFamilyFor]）。
+  ///
+  /// 同じプリセット・同じ言語には同じ[ThemeData]を返す。作り直したテーマは
+  /// 中身が同じでも等しくならず（拡張の比べは同じ物かどうか）、[MaterialApp]は
+  /// テーマが変わるたびに切り替えの動き（約200ms）を付けるので、関係の無い
+  /// 理由（設定の変更）でアプリを組み立て直すたびに、全部の画面を毎フレーム
+  /// 組み立て直していた。
   ThemeData themeDataFor(Locale? locale) {
-    final data = _buildTheme(_current, locale: locale);
+    if (!identical(_themeDataPreset, _current)) {
+      _themeDataByLocale.clear();
+      _themeDataPreset = _current;
+    }
+    final data = _themeDataByLocale[locale] ??= _buildTheme(
+      _current,
+      locale: locale,
+    );
     activeColorScheme = data.colorScheme;
     activeAccentText =
         data.extension<AccentTextTheme>()?.color ?? data.colorScheme.primary;

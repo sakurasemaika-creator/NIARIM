@@ -222,7 +222,9 @@ class _CommunityScreenState extends State<CommunityScreen>
   // 左下の「↑」は、いま見ているタブの一覧を上へ戻せるときだけ出す（ホームと
   // 同じ）。以前は一番上でも、空の一覧でも出ていて、押しても何も起きず、
   // 空の広場の案内や左下のカードに重なった。
-  bool _canGoUp = false;
+  // 上へ戻せるか（「↑」だけを組み立て直す。画面ごと組み立て直すと、一覧を
+  // 一番上から送り出すたびに作品広場の全部の部品を作り直していた）。
+  final _canGoUp = ValueNotifier<bool>(false);
 
   void _syncCanGoUp() {
     if (!mounted) return;
@@ -237,7 +239,7 @@ class _CommunityScreenState extends State<CommunityScreen>
           p.hasContentDimensions &&
           p.pixels > p.minScrollExtent + 0.5,
     );
-    if (canGoUp != _canGoUp) setState(() => _canGoUp = canGoUp);
+    _canGoUp.value = canGoUp;
   }
 
   final _visiblePageCounts = List<int>.filled(5, CommunityService.pageSize);
@@ -957,6 +959,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     for (final controller in _tabScrollControllers) {
       controller.dispose();
     }
+    _canGoUp.dispose();
     super.dispose();
   }
 
@@ -1880,23 +1883,25 @@ class _CommunityScreenState extends State<CommunityScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            if (!_canGoUp)
-              const SizedBox.shrink()
-            else
-              FloatingActionButton(
-                key: const Key('communityScrollToTopButton'),
-                heroTag: 'community-scroll-to-top',
-                backgroundColor: scheme.primary,
-                foregroundColor: scheme.onPrimary,
-                shape: const CircleBorder(side: BorderSide.none),
-                elevation: 0,
-                focusElevation: 0,
-                hoverElevation: 0,
-                highlightElevation: 0,
-                tooltip: l10n.communityScrollToTop,
-                onPressed: _scrollCurrentTabToTop,
-                child: const Icon(Icons.arrow_upward),
-              ),
+            ValueListenableBuilder<bool>(
+              valueListenable: _canGoUp,
+              builder: (context, canGoUp, _) => !canGoUp
+                  ? const SizedBox.shrink()
+                  : FloatingActionButton(
+                      key: const Key('communityScrollToTopButton'),
+                      heroTag: 'community-scroll-to-top',
+                      backgroundColor: scheme.primary,
+                      foregroundColor: scheme.onPrimary,
+                      shape: const CircleBorder(side: BorderSide.none),
+                      elevation: 0,
+                      focusElevation: 0,
+                      hoverElevation: 0,
+                      highlightElevation: 0,
+                      tooltip: l10n.communityScrollToTop,
+                      onPressed: _scrollCurrentTabToTop,
+                      child: const Icon(Icons.arrow_upward),
+                    ),
+            ),
             FloatingActionButton(
               key: const Key('communityMyWorksButton'),
               heroTag: 'community-my-works',
