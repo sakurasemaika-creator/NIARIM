@@ -14,7 +14,7 @@ import 'dart:ui' as ui;
 
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/foundation.dart' show listEquals, setEquals;
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:flutter/scheduler.dart' show SchedulerPhase;
 import 'package:flutter/services.dart' show HardwareKeyboard;
@@ -5880,8 +5880,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                                       .tileManagerOf(
                                                         widget.projectId,
                                                       ),
-                                                  layers: projectService
-                                                      .layersOf(
+                                                  // プレビュー・書き出しと同じ
+                                                  // 重なり順とマスクで描く。
+                                                  stacked: projectService
+                                                      .stackedLayersOf(
                                                         widget.projectId,
                                                         frameListSceneId,
                                                         index,
@@ -13693,7 +13695,13 @@ class _TimelineFrameThumbnail extends StatefulWidget {
   final String projectId;
   final String sceneId;
   final int frameIndex;
-  final List<Layer> layers;
+
+  /// The frame's layers in the timeline's stacking order (materials by the
+  /// scene's stack, not by the layer list) and the runs masked together: the
+  /// same as the preview and the export. With the layer list's order a
+  /// material showed in front only on the frame it was added on, and masks
+  /// were left out.
+  final StackedFrameLayers stacked;
   final TileManager tileManager;
 
   /// The project's background: blend modes act on it.
@@ -13704,9 +13712,11 @@ class _TimelineFrameThumbnail extends StatefulWidget {
     required this.sceneId,
     required this.frameIndex,
     required this.tileManager,
-    required this.layers,
+    required this.stacked,
     required this.backgroundColor,
   });
+
+  List<Layer> get layers => stacked.layers;
 
   @override
   State<_TimelineFrameThumbnail> createState() =>
@@ -13737,9 +13747,21 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
         old.sceneId != widget.sceneId ||
         old.frameIndex != widget.frameIndex ||
         old.backgroundColor != widget.backgroundColor ||
-        !listEquals(old.layers, widget.layers)) {
+        !listEquals(old.layers, widget.layers) ||
+        !_sameMaskGroups(old.stacked.maskGroups, widget.stacked.maskGroups)) {
       _generate();
     }
+  }
+
+  static bool _sameMaskGroups(List<LayerMaskGroup> a, List<LayerMaskGroup> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].mask != b[i].mask || !setEquals(a[i].layerIds, b[i].layerIds)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   void _layerChanged(String key) {
@@ -13786,6 +13808,7 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
     final fullImage = await LayerCompositor.composite(
       tileManager,
       layers,
+      maskGroups: frame.stacked.maskGroups,
       (l) =>
           ps.tileKeyFor(frame.projectId, frame.sceneId, frame.frameIndex, l.id),
       drawW,
