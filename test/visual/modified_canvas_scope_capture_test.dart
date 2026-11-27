@@ -263,7 +263,9 @@ void main() {
       );
       final focusClose = find.descendant(
         of: focusSurface,
-        matching: find.byIcon(Icons.close),
+        matching: find.byKey(
+          const ValueKey('focus-mode-menu-close'),
+        ),
       ).first;
       expect(find.byKey(const ValueKey('color-adjust-save-menu')), findsOneWidget);
       expect(
@@ -334,12 +336,12 @@ void main() {
       );
       await settle();
       expect(find.byType(MeshTransformPanel), findsOneWidget);
-      final focusSurface = find.byKey(
+      final meshFocusSurface = find.byKey(
         const ValueKey('focus-mode-menu-surface'),
       );
       expect(
         find.descendant(
-          of: focusSurface,
+          of: meshFocusSurface,
           matching: find.byType(MeshTransformPanel),
         ),
         findsOneWidget,
