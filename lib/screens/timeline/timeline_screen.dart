@@ -8833,27 +8833,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// The first row of [type] where a clip from [start] for [length] frames
   /// overlaps none on it; a new row when every row is taken there (so
   /// texts shown at the same time go on rows of their own).
+  /// Whether a clip of [type] on [row] overlaps frames [start] to
+  /// [start] + [length].
+  bool _rowTaken(_ClipTrackType type, int row, int start, int length) {
+    final clips = switch (type) {
+      _ClipTrackType.audio => _audioClips.where((c) => !c.isReadAloud),
+      _ClipTrackType.video => _videoClips,
+      _ClipTrackType.image => _imageClips,
+      _ClipTrackType.text => _textClips,
+    };
+    final end = start + length;
+    return clips.any(
+      (c) =>
+          c.trackRow == row &&
+          c.startFrame < end &&
+          start < c.startFrame + c.lengthFrames,
+    );
+  }
+
   int _freeRowFor(_ClipTrackType type, int start, int length) {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return 0;
     final ps = context.read<ProjectService>();
     final kind = _rowKindOf(type);
-    final clips = switch (type) {
-      _ClipTrackType.audio => _audioClips.where((c) => !c.isReadAloud).toList(),
-      _ClipTrackType.video => _videoClips,
-      _ClipTrackType.image => _imageClips,
-      _ClipTrackType.text => _textClips,
-    };
     final rows = ps.rowNamesOf(widget.projectId, sceneId, kind).length;
-    final end = start + length;
     for (var row = 0; row < rows; row++) {
-      final taken = clips.any(
-        (c) =>
-            c.trackRow == row &&
-            c.startFrame < end &&
-            start < c.startFrame + c.lengthFrames,
-      );
-      if (!taken) return row;
+      if (!_rowTaken(type, row, start, length)) return row;
     }
     ps.addTrackRow(widget.projectId, sceneId, kind);
     return ps.rowNamesOf(widget.projectId, sceneId, kind).length - 1;
@@ -9422,7 +9427,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final newStart = (clip.startFrame + clip.lengthFrames).clamp(0, maxStart);
     final projects = context.read<ProjectService>();
     projects.editTimeline(widget.projectId, 'Duplicate clip', () {
-      _duplicateClipAt(clip, newStart);
+      // On the clip's own row when that place is free, else on a free row
+      // (a new one if needed): a copy laid over the next clip could not be
+      // seen or chosen.
+      final row =
+          _rowTaken(clip.trackType, clip.trackRow, newStart, clip.lengthFrames)
+          ? _freeRowFor(clip.trackType, newStart, clip.lengthFrames)
+          : clip.trackRow;
+      _duplicateClipAt(clip, newStart, overrideTrackRow: row);
     });
   }
 

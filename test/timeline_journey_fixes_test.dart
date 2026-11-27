@@ -301,4 +301,40 @@ void main() {
     expect(find.widgetWithText(ActionChip, 'F1'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('a duplicate never lies over the next clip', (tester) async {
+    final (:ps, :projectId, :sceneId, videoId: _, l10n: _) = await openTimeline(
+      tester,
+    );
+    // The next place on clip A's row is taken by clip B.
+    ps.addAudioClip(
+      projectId,
+      sceneId,
+      const AudioClip(id: 'b', label: 'B', startFrame: 7, lengthFrames: 6),
+    );
+    appRouter.go('/home');
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    appRouter.go('/timeline/$projectId');
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    expect(
+      find.byKey(const ValueKey('timelineClip-b'), skipOffstage: false),
+      findsOneWidget,
+    );
+    final clip = find.byKey(const ValueKey('timelineClip-a'));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('timelineClip-a'), skipOffstage: false),
+    );
+    await tester.pump();
+    await tester.tapAt(tester.getTopLeft(clip) + const Offset(20, 20));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    await tester.tap(find.text('複製').last);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    final clips = ps.audioClipsOf(projectId, sceneId);
+    expect(clips, hasLength(3));
+    final copy = clips.singleWhere((c) => c.id != 'a' && c.id != 'b');
+    expect(copy.startFrame, 7);
+    final b = clips.singleWhere((c) => c.id == 'b');
+    expect(copy.trackRow, isNot(b.trackRow), reason: 'not over clip B');
+    expect(tester.takeException(), isNull);
+  });
 }
