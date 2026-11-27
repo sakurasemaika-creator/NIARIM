@@ -193,6 +193,8 @@ List<Brush> brushExtensionPresets() => <Brush>[
     strokeDecay: false,
     tags: <String>[AssetTagKeys.paint, AssetTagKeys.rough, AssetTagKeys.analog],
   ),
+  // ガッシュは不透明な水性の絵の具：油彩風混色で下を覆い、引いた所だけ下の
+  // 色を拾って混ぜる。拾い方は油彩（混色ブラシ）より控えめで、色延びも短い。
   const Brush(
     id: 'Brush0027',
     name: 'ガッシュ（不透明水彩）',
@@ -211,19 +213,21 @@ List<Brush> brushExtensionPresets() => <Brush>[
       blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
       edgeJitter: PressureRangeSetting(enabled: true, weak: 65, strong: 65),
       mixing: PressureMixingOnSetting(
-        enabled: false,
+        enabled: true,
         mode: BrushMixingMode.oil,
-        weakRate: 0,
-        strongRate: 0,
+        weakRate: 35,
+        strongRate: 35,
+        stretch: 15,
       ),
     ),
     pressureOff: BrushPressureOffSettings(
       blur: FixedBrushSetting(enabled: false, value: 0),
       edgeJitter: FixedBrushSetting(enabled: true, value: 65),
       mixing: PressureMixingOffSetting(
-        enabled: false,
+        enabled: true,
         mode: BrushMixingMode.oil,
-        rate: 0,
+        rate: 35,
+        stretch: 15,
       ),
     ),
     fadeMode: FadeMode.off,

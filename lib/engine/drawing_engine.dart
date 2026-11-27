@@ -52,8 +52,7 @@ class DrawingEngine {
   OutlineAccent? _outlineAccent;
   final List<ui.Offset> _strokeScreenPositions = [];
   // 油彩風の混色は絵の具の色ごとに、下の色ごとの混ざり方を覚えておく
-  // （同じ色の上を塗る間は1画素1回の参照で済む）。下の色は塗る前のタイル
-  // の色なので、1本の線で作る混ざり方は少ない。近い色（各チャンネル4段）は
+  // （毛は下の色が変わったときだけ混ぜ直す）。近い色（各チャンネル4段）は
   // 同じものを使う。
   final Map<int, AnalogPaintMixer> _oilMixers = {};
   // 油彩風：このストロークで筆の毛が運んでいる絵の具と、塗る前のタイル。
@@ -1825,7 +1824,8 @@ class DrawingEngine {
         ? ((pixelMask.bottom - 1) / TileManager.tileSize).floor()
         : ((cy + totalRadius) / TileManager.tileSize).floor();
     final recording = _pixelRecording;
-    // 油彩風：塗る色は選択色（縁取りは縁取りの色）を下の絵の具へ混ぜたもの。
+    // 油彩風：線は毛が置く絵の具（選択色に拾った絵の具を混ぜた色）で下を
+    // 覆う。縁取りは縁取りの色で覆う。
     final paintRgb = ri << 16 | gi << 8 | bi;
     final oilMixer = mixingMode == BrushMixingMode.oil && !isEraser
         ? _oilMixerFor(paintRgb, mixingBrightnessCorrection)
@@ -1879,7 +1879,7 @@ class DrawingEngine {
         final previousFill = base == null
             ? null
             : _strokeCoverageByTile.existing('fill', layerId, tx, ty);
-        // 油彩風は塗る前のタイルから色を決める（縁取りを下へ回すときを除く）。
+        // 油彩風は塗る前のタイルへ置く（縁取りを下へ回すときを除く）。
         final oil = oilMixer != null && base == null
             ? (_oil ??= OilStroke(layerId: layerId, bristles: 0, seed: 0))
             : null;
@@ -2126,9 +2126,9 @@ class DrawingEngine {
             final coveragePos = py * TileManager.tileSize + px;
             final oldCoverage = coverage[coveragePos];
             if (oil != null) {
-              // 油彩風：塗る前の画素から色を決めて置き直す。筆の中心が通り
-              // 過ぎる時にもう一度置くので、色の移り変わりは線に直角になる
-              // （前の縁で決めたままだと、スタンプの弧の形が残る）。
+              // 油彩風：塗る前の画素の上へ、毛が置く絵の具を置き直す。筆の
+              // 中心が通り過ぎる時にもう一度置くので、色の移り変わりは線に
+              // 直角になる（前の縁で決めたままだと、スタンプの弧の形が残る）。
               final passing = carries && oil.passes(worldX, worldY, cx, cy);
               if (desiredAlpha <= oldCoverage && !passing) continue;
               recording?.remember(
@@ -2150,9 +2150,7 @@ class DrawingEngine {
                 px,
                 py,
                 covered,
-                mixingRate / 100.0,
                 paintRgb,
-                oilMixer!,
                 carry: carries,
                 cx: cx,
                 cy: cy,

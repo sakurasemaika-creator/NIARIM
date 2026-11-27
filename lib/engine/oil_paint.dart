@@ -4,29 +4,42 @@ import 'dart:typed_data';
 import 'perceptual_color_mixer.dart';
 import 'tile_manager.dart';
 
-/// One stroke of 油彩風混色 (oil-style mixing).
+/// How much of the paint already on the layer oil laid at full opacity
+/// covers (the rest shows through, faintly). On an empty pixel the paint is
+/// as opaque as the stroke.
+const double kOilPaintCover = 0.95;
+
+/// One stroke of 油彩風混色 (oil-style mixing): opaque paint from a loaded
+/// brush.
 ///
-/// Where the brush lays paint, its own colour mixes — the way paint mixes
-/// ([AnalogPaintMixer]) — into the wet paint already there, by 混色度合い:
-/// blue over yellow lays green.
+/// The brush is a row of bristles across its width ([OilBristles]), each
+/// holding a reservoir of paint that starts as the brush's own colour. Over
+/// paint already on the layer each bristle picks some of it up — more with
+/// 混色度合い, a little more with each step, so it takes the brush a while
+/// to load up — and the paint it lays is its reservoir: the brush's colour
+/// mixed with what it picked up the way paint mixes ([AnalogPaintMixer]; blue
+/// that picked up yellow lays green), more of it the more loaded it is. Out on bare paper what it picked up
+/// runs out over 色延び's length; over another colour it gives way to that
+/// colour over three quarters as long (at once without 色延び), so the
+/// colour picked up on one patch is dragged into the next and onto the
+/// paper, fading. Bristles pick up and run out at slightly different rates,
+/// so the dragged colour streaks along the stroke.
 ///
-/// The brush is also a row of bristles across its width ([OilBristles]).
-/// Moving over paint, each bristle loads up with the paint the brush is
-/// laying there (green, on the yellow), and it carries that paint on: into
-/// the next colour, where it gives way to the paint the brush lays there
-/// over part of 色延び's length, and out onto bare paper, where it runs out
-/// over 色延び's length. Bristles load and run out at slightly different
-/// rates, so dragged paint streaks along the stroke. Where the paint a
-/// bristle carries differs from what the brush lays there, the two run
-/// together (the carried paint, pressed on by the brush, counting for more).
+/// Oil hardly shows through: at full opacity the paint the bristle lays
+/// covers what was there by [kOilPaintCover]. So where the brush has not
+/// picked anything up yet it covers with its own colour, and the outline of
+/// what lies under the stroke shows through it only faintly; where it has,
+/// the colour changes gradually along the stroke as it loads up. At a
+/// lowered opacity the paint lays over what was there as usual.
 ///
-/// A pixel's colour is worked out from the layer as it was before the stroke
-/// (kept per tile), never by mixing again what this stroke laid a moment
-/// earlier, so a pixel covered by many overlapping dabs ends as if covered
-/// once: no line along the middle where the dabs overlap most, and no arcs
-/// where their edges were. Each pixel is laid when the brush first covers
-/// it and again as the brush's centre passes it, so where the colour
-/// changes along the stroke it changes straight across the stroke.
+/// A pixel's colour is laid over the layer as it was before the stroke (kept
+/// per tile), never over what this stroke laid a moment earlier, so a pixel
+/// covered by many overlapping dabs ends as if covered once: no line along
+/// the middle where the dabs overlap most, and no arcs where their edges
+/// were. Each pixel is laid when the brush first covers it and again as the
+/// brush's centre passes it, so where the colour changes along the stroke it
+/// changes straight across the stroke.
+
 class OilStroke {
   OilStroke({required this.layerId, required int bristles, required int seed})
     : bristles = OilBristles(bristles, seed);
@@ -42,9 +55,14 @@ class OilStroke {
 
   static int _key(int tx, int ty) => tx << 20 | ty;
 
-  /// How much the paint a bristle carries counts against the same amount of
-  /// paint already where it lays it.
-  static const double _pressed = 2.0;
+  /// How far a bristle moves over paint to pick up most of what it will
+  /// hold (1 − 1/e of it): [pickWidths] of the width of a brush
+  /// [pickWidth] pixels wide; further for a wider brush and less far for a
+  /// narrower one, but less than in proportion (as the square root), so a
+  /// wide brush still mixes within a patch of paint and a narrow one does
+  /// not change colour in a few pixels.
+  static const double pickWidths = 0.9;
+  static const double pickWidth = 40;
 
   /// Remembers [tile] as it is before the stroke paints on it. Call before
   /// the first pixel of the tile changes.
@@ -52,12 +70,12 @@ class OilStroke {
     _before.putIfAbsent(_key(tx, ty), () => Uint8List.fromList(tile));
   }
 
-  /// The brush moves to ([x], [y]) with [radius]: the bristles load up with
-  /// the paint the brush has laid under them and run out of some of what
-  /// they carry. [direction] is the way the stroke goes there (radians), if
-  /// known. [stretch] is 色延び (0–100). Where the brush first lands, the
-  /// bristles take up the paint it is about to lay: [paint] (0xRRGGBB)
-  /// mixed by [mixer] into the paint there by [rate] (0–1).
+  /// The brush moves to ([x], [y]) with [radius]: each bristle picks up some
+  /// of the paint that was under it before the stroke, or runs out of some
+  /// of what it holds over bare paper. [direction] is the way the stroke
+  /// goes there (radians), if known. [stretch] is 色延び (0–100) and [rate]
+  /// 混色度合い (0–1); the brush's own colour is [paint] (0xRRGGBB), mixed
+  /// by [mixer].
   void advance(
     TileManager tiles,
     double x,
@@ -99,89 +117,84 @@ class OilStroke {
     b.nx = nx;
     b.ny = ny;
     final count = b.count;
-    if (stretch <= 0 || count == 0) {
-      // 色延び 0: nothing is carried; the brush only mixes where it is.
-      b.amount.fillRange(0, count, 0);
-      b.presence.fillRange(0, count, 0);
-      return;
-    }
-    final width = math.max(1.0, radius * 2);
-    // How far carried paint lasts out on paper, and how soon it gives way
-    // to other paint the brush moves onto.
-    final carry = stretch / 100 * 6 * width;
-    final trade = carry * OilBristles.tradeShare;
-    final first = lastX == null;
-    final colour = b.colour;
-    final amount = b.amount;
-    final scratch = _scratch;
+    if (count == 0) return;
     if (b.paint != paint || b.rate != rate) {
-      // What the brush lays on each colour has changed.
+      // What the bristles lay is worked out for another paint.
       b.paint = paint;
       b.rate = rate;
       b.under.fillRange(0, count, 0);
     }
+    final width = math.max(1.0, radius * 2);
+    // How far a bristle moves over paint to load up, how far what it picked
+    // up lasts on bare paper (色延び; none at 0), and how far it lasts over
+    // another colour.
+    final pickLength = pickWidths * math.sqrt(width * pickWidth);
+    final carry = stretch / 100 * 6 * width;
+    final trade = carry * 0.75;
+    final own0 = linearFromSrgb8(paint >> 16 & 0xFF);
+    final own1 = linearFromSrgb8(paint >> 8 & 0xFF);
+    final own2 = linearFromSrgb8(paint & 0xFF);
+    final colour = b.colour;
+    final amount = b.amount;
+    final laid = b.laid;
     for (var j = 0; j < count; j++) {
       final s = ((j + 0.5) / count * 2 - 1) * radius;
       final sx = (x + nx * s).floor();
       final sy = (y + ny * s).floor();
-      // The paint there before the stroke, and what the brush lays on it
-      // (the same as at the bristle's last dab, mostly).
+      // The paint under the bristle before the stroke.
       final tile = _tileBefore(tiles, sx, sy);
       final i = _index;
       final a = tile == null ? 0 : tile[i + 3];
+      final under = a / 255;
       final o = j * 3;
       if (a > 0) {
+        // The brush's paint with as much of this mixed in as it picks up
+        // here (混色度合い of it), worked out once for each paint below.
         final here =
             _straight(tile![i], a) << 16 |
             _straight(tile[i + 1], a) << 8 |
-            _straight(tile[i + 2], a) |
-            a << 24;
-        if (here != b.under[j] || first) {
-          final laid = mixer.mixNear(here & 0xFFFFFF, rate * a / 255, paint);
-          b.under[j] = here;
-          scratch[0] = linearFromSrgb8(laid >> 16 & 0xFF);
-          scratch[1] = linearFromSrgb8(laid >> 8 & 0xFF);
-          scratch[2] = linearFromSrgb8(laid & 0xFF);
-          b.laid[o] = scratch[0];
-          b.laid[o + 1] = scratch[1];
-          b.laid[o + 2] = scratch[2];
+            _straight(tile[i + 2], a);
+        final key = here << 8 | a;
+        if (b.under[j] != key) {
+          b.under[j] = key;
+          final mixed = mixer.mixNear(here, rate * under, paint);
+          laid[o] = linearFromSrgb8(mixed >> 16 & 0xFF);
+          laid[o + 1] = linearFromSrgb8(mixed >> 8 & 0xFF);
+          laid[o + 2] = linearFromSrgb8(mixed & 0xFF);
+        }
+        if (amount[j] < 1e-3) {
+          // Nothing picked up yet: what it picks up is this.
+          colour[o] = laid[o];
+          colour[o + 1] = laid[o + 1];
+          colour[o + 2] = laid[o + 2];
+        } else if (moved > 0) {
+          // What it picked up before gives way to this (at once without
+          // 色延び).
+          final give = trade <= 0
+              ? under
+              : (1 - math.exp(-moved * b.pickRate[j] / trade)) * under;
+          colour[o] += (laid[o] - colour[o]) * give;
+          colour[o + 1] += (laid[o + 1] - colour[o + 1]) * give;
+          colour[o + 2] += (laid[o + 2] - colour[o + 2]) * give;
         }
       }
-      if (first) {
-        // The brush lands on paint: it is already wet with what it lays.
-        if (a > 0) {
-          colour[o] = b.laid[o];
-          colour[o + 1] = b.laid[o + 1];
-          colour[o + 2] = b.laid[o + 2];
-          amount[j] = a / 255 * b.settled(j);
-        }
-      } else {
-        if (a > 0) {
-          // Trade carried paint for the paint the brush lays here.
-          final pick = 1 - math.exp(-moved * b.pickRate[j] / trade);
-          final underAlpha = a / 255;
-          final keepShare = amount[j] * (1 - pick);
-          final takeShare = underAlpha * pick;
-          final sum = keepShare + takeShare;
-          if (sum > 1e-9) {
-            final k = keepShare / sum;
-            final t = takeShare / sum;
-            colour[o] = colour[o] * k + b.laid[o] * t;
-            colour[o + 1] = colour[o + 1] * k + b.laid[o + 1] * t;
-            colour[o + 2] = colour[o + 2] * k + b.laid[o + 2] * t;
-          }
-          if (underAlpha > amount[j]) {
-            amount[j] += (underAlpha - amount[j]) * pick;
-          }
-        }
-        amount[j] *= math.exp(-moved * b.keepRate[j] / carry);
+      if (moved > 0) {
+        // Over paint the bristle loads up; over bare paper it runs out of
+        // what it picked up.
+        final load = 1 - math.exp(-moved * b.pickRate[j] / pickLength);
+        final runOut = carry <= 0
+            ? 1.0
+            : 1 - math.exp(-moved * b.keepRate[j] / carry);
+        final f = amount[j];
+        amount[j] = f + (1 - f) * under * load - f * (1 - under) * runOut;
       }
-      final presence = amount[j] / b.settled(j);
-      b.presence[j] = presence >= 1 ? 1.0 : presence;
-      b.colour8[j] =
-          srgb8FromLinear(colour[o]) << 16 |
-          srgb8FromLinear(colour[o + 1]) << 8 |
-          srgb8FromLinear(colour[o + 2]);
+      // It lays its own paint, as loaded as it is (in linear light).
+      final f = amount[j];
+      b.colour8[j] = f < 1 / 512
+          ? paint
+          : srgb8FromLinear(own0 + (colour[o] - own0) * f) << 16 |
+                srgb8FromLinear(own1 + (colour[o + 1] - own1) * f) << 8 |
+                srgb8FromLinear(own2 + (colour[o + 2] - own2) * f);
     }
   }
 
@@ -220,12 +233,11 @@ class OilStroke {
     return (x - lastX) * b.lastNy - (y - lastY) * b.lastNx > 0;
   }
 
-  /// Lays the brush's paint on pixel ([px], [py]) of tile ([tx], [ty]) by
-  /// [alpha] (0–255, the most this stroke has covered it): [paint]
-  /// (0xRRGGBB) mixed by [mixer] into the paint there before the stroke by
-  /// [rate] (0–1). With [carry] the paint the bristle over the pixel
-  /// carries (the dab is centred at ([cx], [cy]) with [radius]) runs into
-  /// it.
+  /// Lays paint on pixel ([px], [py]) of tile ([tx], [ty]) by [alpha]
+  /// (0–255, the most this stroke has covered it), over the layer as it was
+  /// before the stroke: with [carry], the paint the bristle over the pixel
+  /// lays (the dab is centred at ([cx], [cy]) with [radius]); otherwise
+  /// [paint] (0xRRGGBB) as it is.
   void lay(
     Uint8List tile,
     int tx,
@@ -233,9 +245,7 @@ class OilStroke {
     int px,
     int py,
     int alpha,
-    double rate,
-    int paint,
-    AnalogPaintMixer mixer, {
+    int paint, {
     required bool carry,
     required double cx,
     required double cy,
@@ -245,16 +255,7 @@ class OilStroke {
     const size = TileManager.tileSize;
     final i = (py * size + px) * 4;
     final belowAlpha = before[i + 3];
-    var mixed = paint;
-    if (belowAlpha > 0 && rate > 0) {
-      mixed = mixer.mixNear(
-        _straight(before[i], belowAlpha) << 16 |
-            _straight(before[i + 1], belowAlpha) << 8 |
-            _straight(before[i + 2], belowAlpha),
-        rate * belowAlpha / 255,
-        paint,
-      );
-    }
+    var laid = paint;
     final b = bristles;
     if (carry && b.count > 0 && radius > 0) {
       final s =
@@ -263,37 +264,22 @@ class OilStroke {
       var j = ((s / radius + 1) * 0.5 * b.count).floor();
       if (j < 0) j = 0;
       if (j >= b.count) j = b.count - 1;
-      final carried = b.presence[j];
-      if (carried > 1 / 256 && b.colour8[j] != mixed) {
-        // Over bare paper the carried paint and the brush's own share the
-        // pixel by how much is carried; over paint the carried paint is
-        // pressed into it.
-        final share = belowAlpha == 0
-            ? carried
-            : carried * _pressed / (carried * _pressed + belowAlpha / 255);
-        final o = j * 3;
-        final colour = b.colour;
-        final r = linearFromSrgb8(mixed >> 16 & 0xFF);
-        final g = linearFromSrgb8(mixed >> 8 & 0xFF);
-        final bl = linearFromSrgb8(mixed & 0xFF);
-        mixed =
-            srgb8FromLinear(r + (colour[o] - r) * share) << 16 |
-            srgb8FromLinear(g + (colour[o + 1] - g) * share) << 8 |
-            srgb8FromLinear(bl + (colour[o + 2] - bl) * share);
-      }
+      laid = b.colour8[j];
     }
-    // Over the layer as it was before the stroke (premultiplied).
+    // Over the layer as it was before the stroke (premultiplied), with the
+    // paint that was there showing through by 1 − [kOilPaintCover].
     final a = alpha / 255;
-    final keep = 1 - a;
-    final outA = (alpha + belowAlpha * keep).round().clamp(0, 255);
-    tile[i] = ((mixed >> 16 & 0xFF) * a + before[i] * keep).round().clamp(
+    final outA = (alpha + belowAlpha * (1 - a)).round().clamp(0, 255);
+    final own = a * (1 - (1 - kOilPaintCover) * belowAlpha / 255);
+    final keep = 1 - a * kOilPaintCover;
+    tile[i] = ((laid >> 16 & 0xFF) * own + before[i] * keep).round().clamp(
       0,
       outA,
     );
-    tile[i + 1] = ((mixed >> 8 & 0xFF) * a + before[i + 1] * keep)
+    tile[i + 1] = ((laid >> 8 & 0xFF) * own + before[i + 1] * keep)
         .round()
         .clamp(0, outA);
-    tile[i + 2] = ((mixed & 0xFF) * a + before[i + 2] * keep).round().clamp(
+    tile[i + 2] = ((laid & 0xFF) * own + before[i + 2] * keep).round().clamp(
       0,
       outA,
     );
@@ -301,14 +287,13 @@ class OilStroke {
   }
 }
 
-/// The paint the bristles of an [OilStroke]'s brush carry, from one side of
+/// The paint the bristles of an [OilStroke]'s brush hold, from one side of
 /// the brush to the other.
 class OilBristles {
   OilBristles(int count, int seed)
     : this._(
         count,
         Float64List(count * 3),
-        Float64List(count),
         Float64List(count),
         Int32List(count),
         Float64List(count * 3),
@@ -321,7 +306,6 @@ class OilBristles {
     this.count,
     this.colour,
     this.amount,
-    this.presence,
     this.colour8,
     this.laid,
     this.under,
@@ -329,32 +313,27 @@ class OilBristles {
     this.keepRate,
   );
 
-  /// What share of 色延び's length carried paint lasts over other paint (it
-  /// gives way to the paint laid there), against bare paper.
-  static const double tradeShare = 0.75;
-
   final int count;
 
-  /// The carried paint's straight colour in linear light, 3 per bristle.
+  /// The colour each bristle lays once fully loaded with what it picked up:
+  /// the brush's paint mixed with it (straight, in linear light, 3 per
+  /// bristle).
   final Float64List colour;
 
-  /// How much paint each bristle carries (0–1).
+  /// How loaded each bristle is with what it picked up (0–1; at 0 it lays
+  /// the brush's own paint).
   final Float64List amount;
 
-  /// [amount] against what the bristle holds after moving over solid paint
-  /// for a while (0–1): how much the carried paint counts.
-  final Float64List presence;
-
-  /// [colour] as 0xRRGGBB.
+  /// The colour each bristle lays (0xRRGGBB).
   final Int32List colour8;
 
-  /// What the brush lays where each bristle is (straight colour in linear
-  /// light, 3 per bristle), and the paint there before the stroke it was
-  /// worked out for (0xAARRGGBB, 0 for none yet).
+  /// The brush's paint mixed with the paint under each bristle (linear
+  /// light, 3 per bristle), and that paint (0xRRGGBB << 8 | its alpha; 0 for
+  /// none yet).
   final Float64List laid;
   final Uint32List under;
 
-  /// The brush's colour (0xRRGGBB) and 混色度合い (0–1) [laid] is for.
+  /// The brush's colour (0xRRGGBB) and 混色度合い [laid] is for.
   int paint = -1;
   double rate = -1;
 
@@ -380,16 +359,11 @@ class OilBristles {
   double nx = 0;
   double ny = 1;
 
-  /// How much bristle [j] carries after moving over solid paint for a while.
-  double settled(int j) =>
-      pickRate[j] / (pickRate[j] + tradeShare * keepRate[j]);
-
   OilBristles copy() =>
       OilBristles._(
           count,
           Float64List.fromList(colour),
           Float64List.fromList(amount),
-          Float64List.fromList(presence),
           Int32List.fromList(colour8),
           Float64List.fromList(laid),
           Uint32List.fromList(under),
@@ -408,11 +382,10 @@ class OilBristles {
         ..nx = nx
         ..ny = ny;
 
-  /// The same brush carrying nothing, before it has moved.
+  /// The same brush holding only its own paint, before it has moved.
   OilBristles empty() => OilBristles._(
     count,
     Float64List(count * 3),
-    Float64List(count),
     Float64List(count),
     Int32List(count),
     Float64List(count * 3),
@@ -444,5 +417,3 @@ class OilBristles {
     return (h & 0xFFFFFF) / 0xFFFFFF;
   }
 }
-
-final Float64List _scratch = Float64List(3);

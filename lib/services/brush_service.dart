@@ -308,6 +308,8 @@ class BrushService extends ChangeNotifier {
       tags: [AssetTagKeys.paint, AssetTagKeys.mixing],
     ),
     // マーカーペン：横長の画像ペン先とストローク減衰でチゼルマーカーを再現。
+    // 重ねた色とは油彩風混色で少し混ざり（青を黄の上に引くと緑）、拾った色は
+    // すぐ消える（色延び10）。
     const Brush(
       id: 'Brush0005',
       name: 'マーカーペン',
@@ -327,6 +329,7 @@ class BrushService extends ChangeNotifier {
           mode: BrushMixingMode.oil,
           weakRate: 15,
           strongRate: 15,
+          stretch: 10,
         ),
       ),
       pressureOff: BrushPressureOffSettings(
@@ -336,6 +339,7 @@ class BrushService extends ChangeNotifier {
           enabled: true,
           mode: BrushMixingMode.oil,
           rate: 15,
+          stretch: 10,
         ),
       ),
       fadeMode: FadeMode.off,

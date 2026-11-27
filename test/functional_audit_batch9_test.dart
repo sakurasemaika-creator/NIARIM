@@ -168,17 +168,17 @@ void main() {
     tm.dispose();
   });
 
-  test('混色：青い下地へ赤50%の油彩風混色ブラシを置くと紫になり不透明度は維持', () async {
-    final tm = TileManager(canvasWidth: 80, canvasHeight: 80);
+  test('混色：青い下地に赤50%の油彩風混色ブラシを置くと赤で覆い、引くと紫に混ざる（不透明度は維持）', () async {
+    final tm = TileManager(canvasWidth: 160, canvasHeight: 80);
     final tile = tm.getOrCreateTile('mix', 0, 0);
     for (var y = 16; y < 64; y++) {
-      for (var x = 16; x < 64; x++) {
+      for (var x = 8; x < 152; x++) {
         tm.setPixel(tile, x, y, 20, 60, 220, 255);
       }
     }
     tm.markDirty('mix', 0, 0);
 
-    final engine = DrawingEngine(tileManager: tm)
+    DrawingEngine engine() => DrawingEngine(tileManager: tm)
       ..currentBrush = _brush(
         size: 20,
         opacity: 100,
@@ -186,12 +186,26 @@ void main() {
         mixingRate: 50,
       )
       ..currentColor = const ui.Color(0xFFDC2814);
-    engine.beginStroke(const StrokePoint(x: 40, y: 40), 'mix');
-    engine.endStroke();
+    // 置いただけ：油彩は透けないので、筆の赤が青を覆う。
+    final tap = engine();
+    tap.beginStroke(const StrokePoint(x: 20, y: 30), 'mix');
+    tap.endStroke();
+    // 引いた所：筆が青を拾い、絵の具のように混ざる。
+    final drag = engine();
+    drag.beginStroke(const StrokePoint(x: 20, y: 50), 'mix');
+    for (var x = 22.0; x <= 140; x += 2) {
+      drag.continueStroke(StrokePoint(x: x, y: 50), 'mix');
+    }
+    drag.endStroke();
 
     final image = await tm.compositeLayerToImage('mix');
     await _save(image, '${out.path}/brush_mixing_50.png');
-    final p = _pixel(await _rgba(image), 80, 40, 40);
+    final rgba = await _rgba(image);
+    final covered = _pixel(rgba, 160, 20, 30);
+    expect(covered[3], 255);
+    expect(covered[0], greaterThan(190));
+    expect(covered[2], lessThan(40));
+    final p = _pixel(rgba, 160, 130, 50);
     expect(p[3], 255);
     // 油彩風混色は絵の具のように混ざる：赤と青の中間は紫（赤・青が強く、
     // 緑が弱い）。RGBの単純平均（灰色寄りの120,50,120）ではない。

@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/drawing_engine.dart';
+import 'package:niarim/engine/oil_paint.dart';
 import 'package:niarim/engine/ruler_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
@@ -92,22 +93,31 @@ void main() {
           mixingRate: rate,
         )
         ..currentColor = _red;
-      // 1回のdabで率そのものを検証する。長いストロークでは同じ画素へ
-      // 複数stampが重なり、各stampが直前結果を再び混色するため、単純な1回分の
-      // 線形補間値との比較にはならない。機能の率追従を見るfixtureとして単発dabを使う。
-      engine.beginStroke(const StrokePoint(x: 128, y: 128), _layer);
+      // 油彩風は筆が動いて下の絵の具を拾ったところで混ざる（置いただけの
+      // 所は筆の絵の具で覆う）。青の上を引き、拾い終えた先で率を検証する。
+      engine.beginStroke(const StrokePoint(x: 8, y: 128), _layer);
+      for (var x = 10.0; x <= 250; x += 2) {
+        engine.continueStroke(StrokePoint(x: x, y: 128), _layer);
+      }
       engine.endStroke();
 
       final image = await tm.compositeLayerToImage(_layer);
       final rgba = await _rgba(image);
-      final p = _pixel(rgba, _w, 128, 128);
+      final p = _pixel(rgba, _w, 236, 128);
       centers[rate] = p;
       // 油彩風混色は絵の具のように混ざる（赤と青の間は紫を通る）ので、
       // RGBの直線補間とは一致しない。端点は元の色のまま、途中は紫。
+      // 0%は筆の赤が青を覆う（青がkOilPaintCoverの残りだけ透ける）。
       if (rate == 0) {
+        int over(int paint, int under) =>
+            (paint * kOilPaintCover + under * (1 - kOilPaintCover)).round();
         _near(
           p,
-          [_red.red8, _red.green8, _red.blue8],
+          [
+            over(_red.red8, _blue.red8),
+            over(_red.green8, _blue.green8),
+            over(_red.blue8, _blue.blue8),
+          ],
           'mix rate=0',
           tolerance: 1,
         );

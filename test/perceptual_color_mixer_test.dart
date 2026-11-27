@@ -338,17 +338,27 @@ void main() {
           )
           ..currentColor = blue
           ..pressureEnabled = false;
+    // A field of yellow the brush is pulled through: it picks the yellow up
+    // as it goes.
     final tile = engine.tileManager.getOrCreateTile('layer', 0, 0);
-    final index = (64 * TileManager.tileSize + 64) * 4;
-    tile[index] = 255;
-    tile[index + 1] = 255;
-    tile[index + 2] = 0;
-    tile[index + 3] = 255;
+    for (var i = 0; i < 128 * TileManager.tileSize * 4; i += 4) {
+      tile[i] = 255;
+      tile[i + 1] = 255;
+      tile[i + 2] = 0;
+      tile[i + 3] = 255;
+    }
+    final index = (64 * TileManager.tileSize + 110) * 4;
 
     engine.beginStroke(
-      const StrokePoint(x: 64, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
+      const StrokePoint(x: 4, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
       'layer',
     );
+    for (var x = 6.0; x <= 124; x += 2) {
+      engine.continueStroke(
+        StrokePoint(x: x, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
+        'layer',
+      );
+    }
     engine.endStroke();
 
     // Blue paint into yellow at 50%: a vivid green-teal, not the grey of an
