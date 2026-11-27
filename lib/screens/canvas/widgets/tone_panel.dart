@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../widgets/confirm_delete.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/creative_preset_labels.dart';
 import '../../../models/tone.dart';
@@ -431,15 +432,29 @@ class _TonePanelState extends State<TonePanel> {
     }
   }
 
-  /// お気に入り登録中は削除できない。
-  void _deleteTone(BuildContext context, ToneService service, Tone tone) {
+  /// お気に入り登録中は削除できない。消したトーンは戻せない（自作の画像は
+  /// 作り直しになる）ので、ブラシと同じく確かめてから消す。
+  Future<void> _deleteTone(
+    BuildContext context,
+    ToneService service,
+    Tone tone,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
     if (tone.isFavorite) {
-      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
+    final confirmed = await confirmDelete(
+      context,
+      itemName: creativePresetLabel(
+        l10n,
+        tone.name,
+        builtIn: service.isBuiltIn(tone.id),
+      ),
+    );
+    if (!confirmed) return;
     service.deleteTone(tone.id);
   }
 

@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../config/signal_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/creative_preset_labels.dart';
 import '../../../models/brush.dart';
@@ -518,8 +519,11 @@ class _BrushPanelState extends State<BrushPanel> {
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(l10n.commonCancel),
           ),
-          TextButton(
+          // 取り消せない操作なので、ほかの削除の確かめと同じ警告色の塗りの
+          // ボタン。
+          FilledButton(
             key: const Key('brushDeleteConfirm'),
+            style: warningFilledButtonStyle(ctx),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.commonDelete),
           ),

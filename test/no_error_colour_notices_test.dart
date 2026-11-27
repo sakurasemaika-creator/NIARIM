@@ -85,7 +85,8 @@ const _warningAllowed = <String, int>{
   'lib/screens/settings/performance_settings_screen.dart': 1,
   'lib/screens/settings/theme_settings_screen.dart': 2,
   // メニューの「削除」（ブラシ・トーン・スタンプ・自動塗り・キャンバスの大きさ）。
-  'lib/screens/canvas/widgets/brush_panel.dart': 1,
+  // ブラシはその確かめの「削除」も（トーン・スタンプは共通の確かめ）。
+  'lib/screens/canvas/widgets/brush_panel.dart': 2,
   'lib/screens/canvas/widgets/tone_panel.dart': 1,
   'lib/screens/canvas/widgets/stamp_panel.dart': 1,
   'lib/screens/project/canvas_size_preset_manage_screen.dart': 1,

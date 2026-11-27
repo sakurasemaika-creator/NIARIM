@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../widgets/confirm_delete.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/creative_preset_labels.dart';
 import '../../../models/stamp.dart';
@@ -437,15 +438,29 @@ class _StampPanelState extends State<StampPanel> {
     }
   }
 
-  /// お気に入り登録中は削除できない。
-  void _deleteStamp(BuildContext context, StampService service, Stamp stamp) {
+  /// お気に入り登録中は削除できない。消したスタンプは戻せない（自作の画像は
+  /// 作り直しになる）ので、ブラシと同じく確かめてから消す。
+  Future<void> _deleteStamp(
+    BuildContext context,
+    StampService service,
+    Stamp stamp,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
     if (stamp.isFavorite) {
-      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
+    final confirmed = await confirmDelete(
+      context,
+      itemName: creativePresetLabel(
+        l10n,
+        stamp.name,
+        builtIn: service.isBuiltIn(stamp.id),
+      ),
+    );
+    if (!confirmed) return;
     service.deleteStamp(stamp.id);
   }
 
