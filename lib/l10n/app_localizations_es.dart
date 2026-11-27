@@ -1219,6 +1219,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Marca final oficial en los vídeos del proceso';
 
   @override
+  String get premiumFeatureGifCornerLogo =>
+      'Logo de NIARIM en la esquina de los GIF';
+
+  @override
   String get premiumFeatureWatermark =>
       'Añadir y editar tu propia marca de agua';
 
@@ -1603,7 +1607,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'La marca final de NIARIM dura cinco segundos y se añade a MP4, WebM y AVI, también en los vídeos del proceso. Puedes ocultarla por proyecto mientras el beneficio esté activo. El ajuste se conserva al caducar. Los GIF no la incluyen.';
+      'La marca final de NIARIM dura cinco segundos y se añade a MP4, WebM y AVI, también en los vídeos del proceso. Los GIF llevan en su lugar un pequeño logo de NIARIM en una esquina. Puedes ocultarlos por proyecto mientras el beneficio esté activo. El ajuste se conserva al caducar.';
 
   @override
   String get helpAutoSaveTitle => 'Guardado automático';
@@ -2232,7 +2236,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      'Usa la función de marca de agua cuando quieras añadir tu propia firma o marca a un vídeo. La marca final es el logotipo de NIARIM que se añade al final de las exportaciones en MP4, WebM y AVI. Con Premium o el beneficio de edición de la marca final, puedes mostrarla u ocultarla por proyecto. Los GIF no la incluyen. Si quieres un cierre personalizado sin usar la marca final, puedes recrear un efecto similar añadiendo una capa de imagen con entrada/salida de fundido.';
+      'Usa la función de marca de agua cuando quieras añadir tu propia firma o marca a un vídeo. La marca final es el logotipo de NIARIM que se añade al final de las exportaciones en MP4, WebM y AVI. Con Premium o el beneficio de edición de la marca final, puedes mostrarla u ocultarla por proyecto. Los GIF no la incluyen y llevan en su lugar un pequeño logo de NIARIM en una esquina. Si quieres un cierre personalizado sin usar la marca final, puedes recrear un efecto similar añadiendo una capa de imagen con entrada/salida de fundido.';
 
   @override
   String get tipsVerticalPixelFontTitle =>
@@ -3150,7 +3154,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      'La suscripción Premium o el beneficio de edición de la marca final permite mostrar u ocultar la marca final oficial. Los vídeos del proceso usan el mismo ajuste.';
+      'La suscripción Premium o el beneficio de edición de la marca final permite mostrar u ocultar la marca final oficial y el logo de la esquina de los GIF. Los vídeos del proceso usan el mismo ajuste.';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -3200,6 +3204,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String exportOutputWithEndCard(String duration) {
     return 'Vídeo principal $duration + marca final de NIARIM (5 segundos)';
+  }
+
+  @override
+  String exportOutputWithCornerLogo(String duration) {
+    return 'Vídeo principal $duration (logo de NIARIM en una esquina)';
   }
 
   @override
@@ -6426,7 +6435,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get workspaceEndCardHint =>
-      'Este ajuste se aplica a los proyectos sin una configuración propia mientras esté activa la ventaja de la marca final. La preferencia se guarda al vencer la ventaja.';
+      'Este ajuste se aplica a los proyectos sin una configuración propia mientras esté activa la ventaja de la marca final. La preferencia se guarda al vencer la ventaja. El logo de la esquina de los GIF sigue el mismo ajuste.';
 
   @override
   String get workspaceEndCardDefaultHiddenTitle =>
@@ -10068,7 +10077,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardUnlockEndCardEdit =>
-      'Editar o quitar la marca final (también en los vídeos del proceso)';
+      'Editar o quitar la marca final y el logo de los GIF (también en los vídeos del proceso)';
 
   @override
   String get rewardUnlockWatermark => 'Añadir y editar tu propia marca de agua';

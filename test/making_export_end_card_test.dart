@@ -195,7 +195,7 @@ void main() {
           snapshotPaths: snapshotPaths,
           format: format,
           outputPath: '${root.path}/with.${format.name}',
-          appendEndCard: true,
+          officialMark: true,
         );
         final frames = encodedFrames.single;
         expect(frames, hasLength(_snapshotCount + _endCardFrames));
@@ -215,7 +215,7 @@ void main() {
           snapshotPaths: snapshotPaths,
           format: format,
           outputPath: '${root.path}/without.${format.name}',
-          appendEndCard: false,
+          officialMark: false,
         );
         final frames = encodedFrames.single;
         expect(frames, hasLength(_snapshotCount));
@@ -223,7 +223,8 @@ void main() {
       });
     }
 
-    test('GIF never carries the end mark, like the work export', () async {
+    test('GIF never carries the end mark, like the work export: it gets the '
+        'corner logo instead', () async {
       expect(
         MakingExport.carriesOfficialEndCard(MakingExportFormat.gif),
         isFalse,
@@ -233,7 +234,7 @@ void main() {
         snapshotPaths: snapshotPaths,
         format: MakingExportFormat.gif,
         outputPath: output,
-        appendEndCard: true,
+        officialMark: true,
       );
       final gif = img.decodeGif(File(output).readAsBytesSync())!;
       expect(gif.numFrames, _snapshotCount);
@@ -265,6 +266,11 @@ void main() {
         ),
       );
       await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      // Reading the history is real file work; under load it takes longer.
+      final line = find.byKey(const Key('makingExportOutputSummary'));
+      for (var i = 0; i < 100 && line.evaluate().isEmpty; i++) {
+        await pumpRealAsync(tester, const Duration(milliseconds: 50));
+      }
     }
 
     Future<List<img.Image>> exportMp4(WidgetTester tester) async {
@@ -302,7 +308,9 @@ void main() {
       expect(frames.skip(_snapshotCount).every(_looksLikeEndCard), isTrue);
     });
 
-    testWidgets('a free member\'s GIF says it has no end mark', (tester) async {
+    testWidgets('a free member\'s GIF says it gets the corner logo', (
+      tester,
+    ) async {
       final premium = PremiumService();
       addTearDown(premium.dispose);
       await pumpScreen(tester, premium);
@@ -313,7 +321,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         summary(tester),
-        l10n.exportOutputWithoutEndCard(duration(tester)),
+        l10n.exportOutputWithCornerLogo(duration(tester)),
       );
     });
 
@@ -335,6 +343,16 @@ void main() {
         final frames = await exportMp4(tester);
         expect(frames, hasLength(_snapshotCount));
         expect(frames.where(_looksLikeEndCard), isEmpty);
+
+        // The GIF has no corner logo either.
+        await tester.tap(find.text(l10n.exportFormatMp4));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(l10n.exportFormatGif).last);
+        await tester.pumpAndSettle();
+        expect(
+          summary(tester),
+          l10n.exportOutputWithoutEndCard(duration(tester)),
+        );
       });
     }
   });

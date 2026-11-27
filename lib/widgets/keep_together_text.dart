@@ -5,7 +5,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import '../utils/line_break.dart'
-    show containsHangul, japaneseLastPhraseParts, lineStartKeepParts;
+    show
+        containsHangul,
+        japaneseLastPhraseParts,
+        japaneseWordParts,
+        lineStartKeepParts;
 import 'action_beside_or_below.dart'
     show ReportsWidestWord, widestUnbreakableWidth;
 
@@ -337,18 +341,24 @@ Widget messageText(
 /// 組み立てた文の中の数と単位（[keep]）を挙げる所で、韓国語の語も語の途中で
 /// 折らないために使う（オパールの画面の「혜택 컴플리트 / 팩」が語の途中で
 /// 折れた）。欄の1行に入らない語だけは字の間で折る。
+///
+/// [japaneseWords]が真なら、日本語の語（[japaneseWordParts]）も途中で切らない
+/// （特典の名前が「…（メイキング動 / 画を含む）」と語の途中で折れた）。
+/// 日本語で表示するときだけ真にすること（中国語では漢字の続きが文全体になる）。
 KeepTogetherText keepTogetherWords(
   String text, {
   required List<String> keep,
   Key? key,
   TextStyle? style,
   TextAlign? textAlign,
+  bool japaneseWords = false,
 }) => KeepTogetherText(
   text,
   key: key,
   keep: [
     ...keep,
     ...koreanWordParts(text, except: keep),
+    if (japaneseWords) ...japaneseWordParts(text),
   ],
   style: style,
   textAlign: textAlign,

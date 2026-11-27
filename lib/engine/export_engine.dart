@@ -11,6 +11,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
+import 'corner_logo.dart';
 import 'export_audio.dart';
 import 'export_filename.dart';
 import '../engine/layer_range_resolver.dart';
@@ -127,16 +128,88 @@ class ExportTiming {
 /// (39% of a 480×360 frame). The octree quantizer keeps the frame's own
 /// colours exactly and, without dithering, flat areas stay flat. (Its
 /// dithering mode darkens colours in this version, so it is not used.)
-img.GifEncoder newExportGifEncoder() => img.GifEncoder(
-  quantizerType: img.QuantizerType.octree,
-  dither: img.DitherKernel.none,
-);
+///
+/// Each frame is turned into a palette image first ([exportGifPaletteFrame]):
+/// the octree quantizer's own colour lookup sends the colours it merged to
+/// the wrong palette entry when a frame has more than 256 colours (a
+/// gradient sky came out in dark streaks).
+img.GifEncoder newExportGifEncoder() => _ExportGifEncoder();
+
+class _ExportGifEncoder extends img.GifEncoder {
+  _ExportGifEncoder()
+    : super(
+        quantizerType: img.QuantizerType.octree,
+        dither: img.DitherKernel.none,
+      );
+
+  @override
+  void addFrame(img.Image image, {int? duration}) => super.addFrame(
+    image.hasPalette ? image : exportGifPaletteFrame(image),
+    duration: duration,
+  );
+}
+
+/// [frame] as a GIF palette image of at most 255 colours: the octree's
+/// colours (exact while the frame has few colours, the average of the merged
+/// colours otherwise), each pixel taking the colour of the octree node it
+/// falls in.
+img.Image exportGifPaletteFrame(img.Image frame) {
+  final octree = img.OctreeQuantizer(frame, numberOfColors: 255);
+  final indexOfColour = <int, int>{};
+  final paletteColours = <int>[];
+  // The octree tells colours apart by their top 7 bits per channel.
+  final indexOfKey = Int16List(1 << 21)..fillRange(0, 1 << 21, -1);
+  final indices = Uint8List(frame.width * frame.height);
+  var at = 0;
+  for (final pixel in frame) {
+    final r = pixel.r.toInt();
+    final g = pixel.g.toInt();
+    final b = pixel.b.toInt();
+    final key = ((r >> 1) << 14) | ((g >> 1) << 7) | (b >> 1);
+    var index = indexOfKey[key];
+    if (index < 0) {
+      final node = octree.getQuantizedColor(img.ColorRgb8(r, g, b));
+      final colour =
+          (node.r.toInt() << 16) | (node.g.toInt() << 8) | node.b.toInt();
+      index = indexOfColour.putIfAbsent(colour, () {
+        paletteColours.add(colour);
+        return paletteColours.length - 1;
+      });
+      indexOfKey[key] = index;
+    }
+    indices[at++] = index;
+  }
+  final palette = img.PaletteUint8(math.max(1, paletteColours.length), 3);
+  for (final (index, colour) in paletteColours.indexed) {
+    palette.setRgb(
+      index,
+      (colour >> 16) & 0xFF,
+      (colour >> 8) & 0xFF,
+      colour & 0xFF,
+    );
+  }
+  final out = img.Image(
+    width: frame.width,
+    height: frame.height,
+    numChannels: 1,
+    palette: palette,
+  );
+  (out.data! as img.ImageDataUint8).data.setAll(0, indices);
+  return out;
+}
 
 Uint8List _encodeGifFrames(
-  ({String path, int width, int height, int frameCount, ExportTiming timing})
+  ({
+    String path,
+    int width,
+    int height,
+    int frameCount,
+    ExportTiming timing,
+    CornerLogoStamp? logo,
+  })
   request,
 ) {
-  final (:path, :width, :height, :frameCount, :timing) = request;
+  final (:path, :width, :height, :frameCount, :timing, :logo) = request;
   final encoder = newExportGifEncoder();
   final input = File(path).openSync();
   final frameBytes = width * height * 4;
@@ -146,14 +219,16 @@ Uint8List _encodeGifFrames(
       if (rgba.length != frameBytes) {
         throw const FileSystemException('Incomplete GIF frame data');
       }
+      final frame = img.Image.fromBytes(
+        width: width,
+        height: height,
+        bytes: rgba.buffer,
+        bytesOffset: rgba.offsetInBytes,
+        numChannels: 4,
+      );
+      logo?.stampOnto(frame);
       encoder.addFrame(
-        img.Image.fromBytes(
-          width: width,
-          height: height,
-          bytes: rgba.buffer,
-          bytesOffset: rgba.offsetInBytes,
-          numChannels: 4,
-        ),
+        frame,
         duration: frameCount == 1 ? null : timing.gifDelayMs(index + 1) ~/ 10,
       );
     }
@@ -453,46 +528,20 @@ class ExportEngine {
     // 純粋な描画エンジンでTheme/BuildContextへアクセスできないため、
     // 既定テーマ（レッド・ライト）のアクセントカラーを直接使う。既定
     // テーマの配色を変更した場合は、tool/gen_app_icon.py・pubspec.yamlの
-    // adaptive_icon_backgroundと合わせてこの値も更新すること。
-    const badgeColor = ui.Color(0xFFFF5C7A);
-    final logoInfo = await vg.loadPicture(
-      const SvgAssetLoader('assets/logo/app_logo.svg'),
-      null,
-    );
+    // adaptive_icon_backgroundと合わせてcorner_logo.dartのniarimBadgeColorも
+    // 更新すること（GIFの隅のロゴも同じバッジ）。
+    final logoInfo = await loadNiarimMonogram();
     final logoSize = width < height ? width * 0.4 : height * 0.4;
     final logoLeft = (width - logoSize) / 2;
     final logoTop = height / 2 - logoSize * 0.65;
-    canvas.drawRRect(
-      ui.RRect.fromRectAndRadius(
-        ui.Rect.fromLTWH(logoLeft, logoTop, logoSize, logoSize),
-        ui.Radius.circular(logoSize * 0.22),
-      ),
-      ui.Paint()..color = badgeColor,
-    );
     // モノグラムはバッジの内側へ8%相当の余白を空けて配置する
     // （splash_screen.dartのlogoSize*0.08と同じ比率。「スマホアプリ版
     // Claudeのアイコンくらいのバランス」という要望を受けて拡大した）。
-    final glyphInset = logoSize * 0.08;
-    final glyphSize = logoSize - glyphInset * 2;
-    final glyphScale = glyphSize / logoInfo.size.width;
-    final glyphLeft = logoLeft + glyphInset;
-    final glyphTop = logoTop + glyphInset;
-    canvas.save();
-    // ロゴは単色SVGのため、バッジ背景の上で視認できるよう白へ着色する
-    // （saveLayerでピクチャ全体をColorFilter.mode(白, srcIn)越しに描画）。
-    canvas.saveLayer(
-      ui.Rect.fromLTWH(glyphLeft, glyphTop, glyphSize, glyphSize),
-      ui.Paint()
-        ..colorFilter = const ui.ColorFilter.mode(
-          ui.Color(0xFFFFFFFF),
-          ui.BlendMode.srcIn,
-        ),
+    paintNiarimBadge(
+      canvas,
+      ui.Rect.fromLTWH(logoLeft, logoTop, logoSize, logoSize),
+      logoInfo,
     );
-    canvas.translate(glyphLeft, glyphTop);
-    canvas.scale(glyphScale, glyphScale);
-    canvas.drawPicture(logoInfo.picture);
-    canvas.restore();
-    canvas.restore();
     logoInfo.picture.dispose();
 
     // タイトルロゴ（アプリ名の書き文字）：モノグラムの下に、横幅の55%を
@@ -896,6 +945,7 @@ class ExportEngine {
     required int width,
     required int height,
     required int backgroundColor,
+    bool cornerLogo = false,
     ExportProgressCallback? onProgress,
     ExportCancelToken? cancelToken,
     VideoMaterialSnapshot? videoMaterials,
@@ -916,6 +966,11 @@ class ExportEngine {
         if (totalFrames == 0) {
           throw StateError('GIF export needs at least one frame');
         }
+        // How much of the user's own watermark falls where the logo would go
+        // in each corner, summed over every frame.
+        final watermarkOverlap = cornerLogo
+            ? {for (final corner in LogoCorner.values) corner: 0.0}
+            : null;
         final layerHomes = buildLayerHomeIndex(scenes);
         final tmpDir = await getTemporaryDirectory();
         final framesDir = _newFramesDir(tmpDir, 'gif_export_frames');
@@ -955,6 +1010,26 @@ class ExportEngine {
                 videoPixels: video,
               );
               await frames.writeFrom(rgba);
+              if (watermarkOverlap != null) {
+                await _addWatermarkOverlap(
+                  watermarkOverlap,
+                  layers: resolveFrameLayers(
+                    scenes,
+                    layerHomes,
+                    scene.id,
+                    frame.index,
+                    frame.layers,
+                  ),
+                  tileManager: tileManager,
+                  scene: scene,
+                  frameIndex: frame.index,
+                  drawingWidth: drawingWidth,
+                  drawingHeight: drawingHeight,
+                  width: width,
+                  height: height,
+                  layerHomes: layerHomes,
+                );
+              }
               onProgress?.call(++index, totalFrames);
             }
           } finally {
@@ -964,12 +1039,22 @@ class ExportEngine {
           if (cancelToken?.isCancelled == true) {
             throw const ExportCancelledException();
           }
+          final logo = watermarkOverlap == null
+              ? null
+              : await CornerLogoStamp.render(
+                  CornerLogoPlacement(
+                    width,
+                    height,
+                    chooseLogoCorner((corner) => watermarkOverlap[corner]!),
+                  ),
+                );
           final gifBytes = await compute(_encodeGifFrames, (
             path: input.path,
             width: width,
             height: height,
             frameCount: totalFrames,
             timing: timing,
+            logo: logo,
           ), debugLabel: 'Encode export GIF');
           final exportsDir = await ExportEngine.exportsDir();
           if (cancelToken?.isCancelled == true) {
@@ -983,6 +1068,52 @@ class ExportEngine {
         }
       },
     );
+  }
+
+  /// Adds to [overlap] how much of the frame's own watermark layers (the
+  /// premium watermark feature) is drawn where the GIF logo would go in each
+  /// corner. The watermark layers are drawn alone, placed as in the frame.
+  Future<void> _addWatermarkOverlap(
+    Map<LogoCorner, double> overlap, {
+    required List<Layer> layers,
+    required TileManager tileManager,
+    required Scene scene,
+    required int frameIndex,
+    required int drawingWidth,
+    required int drawingHeight,
+    required int width,
+    required int height,
+    required Map<String, LayerHome> layerHomes,
+  }) async {
+    final marks = [
+      for (final layer in layers)
+        if (layer.type == LayerType.watermark && layer.isVisible) layer,
+    ];
+    if (marks.isEmpty) return;
+    final rgba = await renderFrame(
+      layers: marks,
+      tileManager: tileManager,
+      sceneId: scene.id,
+      scene: scene,
+      frameIndex: frameIndex,
+      drawingWidth: drawingWidth,
+      drawingHeight: drawingHeight,
+      width: width,
+      height: height,
+      backgroundColor: 0x00000000,
+      cameraKeyframes: scene.cameraKeyframes,
+      layerHomes: layerHomes,
+      groups: scene.groups,
+    );
+    for (final corner in LogoCorner.values) {
+      overlap[corner] =
+          overlap[corner]! +
+          alphaInside(
+            rgba,
+            width,
+            CornerLogoPlacement(width, height, corner).clearArea,
+          );
+    }
   }
 
   Future<void> _publishImageExport(String path, List<int> bytes) async {

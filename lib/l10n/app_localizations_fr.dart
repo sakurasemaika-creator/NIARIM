@@ -1215,6 +1215,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Marque de fin officielle des vidéos du making-of';
 
   @override
+  String get premiumFeatureGifCornerLogo => 'Logo NIARIM dans le coin des GIF';
+
+  @override
   String get premiumFeatureWatermark =>
       'Ajouter et modifier votre propre filigrane';
 
@@ -1597,7 +1600,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'La marque de fin NIARIM de cinq secondes est ajoutée aux exports MP4, WebM et AVI, vidéos du making-of comprises. Vous pouvez la masquer par projet tant que l’avantage est actif. Le réglage est conservé après expiration. Les GIF sont exclus.';
+      'La marque de fin NIARIM de cinq secondes est ajoutée aux exports MP4, WebM et AVI, vidéos du making-of comprises. Les GIF reçoivent à la place un petit logo NIARIM dans un coin. Vous pouvez les masquer par projet tant que l’avantage est actif. Le réglage est conservé après expiration.';
 
   @override
   String get helpAutoSaveTitle => 'Enregistrement automatique';
@@ -2225,7 +2228,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      'Utilisez le filigrane pour ajouter votre propre signature ou marque à une vidéo. La marque de fin est le logo NIARIM ajouté à la fin des exports MP4, WebM et AVI. Avec Premium ou l’avantage de modification de la marque de fin, vous pouvez l’afficher ou la masquer pour chaque projet. Les GIF ne l’incluent pas. Pour une conclusion personnalisée sans utiliser la marque de fin, vous pouvez recréer un effet similaire en ajoutant un calque image avec un fondu d’entrée/sortie.';
+      'Utilisez le filigrane pour ajouter votre propre signature ou marque à une vidéo. La marque de fin est le logo NIARIM ajouté à la fin des exports MP4, WebM et AVI. Avec Premium ou l’avantage de modification de la marque de fin, vous pouvez l’afficher ou la masquer pour chaque projet. Les GIF ne l’incluent pas et reçoivent à la place un petit logo NIARIM dans un coin. Pour une conclusion personnalisée sans utiliser la marque de fin, vous pouvez recréer un effet similaire en ajoutant un calque image avec un fondu d’entrée/sortie.';
 
   @override
   String get tipsVerticalPixelFontTitle =>
@@ -3147,7 +3150,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      'L’abonnement Premium ou l’avantage de modification de la marque de fin permet d’afficher ou de masquer la marque de fin officielle. Les vidéos du making-of suivent le même réglage.';
+      'L’abonnement Premium ou l’avantage de modification de la marque de fin permet d’afficher ou de masquer la marque de fin officielle et le logo dans le coin des GIF. Les vidéos du making-of suivent le même réglage.';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -3196,6 +3199,11 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String exportOutputWithEndCard(String duration) {
     return 'Vidéo principale $duration + marque de fin NIARIM (5 secondes)';
+  }
+
+  @override
+  String exportOutputWithCornerLogo(String duration) {
+    return 'Vidéo principale $duration (logo NIARIM dans un coin)';
   }
 
   @override
@@ -6432,7 +6440,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get workspaceEndCardHint =>
-      'Ce réglage par défaut s’applique aux projets sans réglage spécifique tant que l’avantage lié à la marque de fin est actif. Votre préférence est conservée après expiration.';
+      'Ce réglage par défaut s’applique aux projets sans réglage spécifique tant que l’avantage lié à la marque de fin est actif. Votre préférence est conservée après expiration. Le logo dans le coin des GIF suit le même réglage.';
 
   @override
   String get workspaceEndCardDefaultHiddenTitle =>
@@ -10094,7 +10102,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockEndCardEdit =>
-      'Modifier / retirer la marque de fin (vidéos du making-of incluses)';
+      'Modifier / retirer la marque de fin et le logo des GIF (vidéos du making-of incluses)';
 
   @override
   String get rewardUnlockWatermark =>

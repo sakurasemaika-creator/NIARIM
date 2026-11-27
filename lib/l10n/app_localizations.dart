@@ -2175,6 +2175,12 @@ abstract class AppLocalizations {
   /// **'メイキング動画の公式エンドマーク'**
   String get premiumFeatureMakingEndLogo;
 
+  /// No description provided for @premiumFeatureGifCornerLogo.
+  ///
+  /// In ja, this message translates to:
+  /// **'GIFの隅のNIARIMロゴ'**
+  String get premiumFeatureGifCornerLogo;
+
   /// No description provided for @premiumFeatureWatermark.
   ///
   /// In ja, this message translates to:
@@ -2862,7 +2868,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpEndCardDesc.
   ///
   /// In ja, this message translates to:
-  /// **'NIARIMのエンドマークは、MP4・WebM・AVIの本編末尾に付く5秒のロゴで、メイキング動画にも付きます。エンドマーク特典が有効な間は、作品ごとに表示を切り替えられます。期限後も作品の設定は保存されます。GIFには付きません。'**
+  /// **'NIARIMのエンドマークは、MP4・WebM・AVIの本編末尾に付く5秒のロゴで、メイキング動画にも付きます。GIFにはエンドマークの代わりに、隅へ小さなNIARIMのロゴが入ります。エンドマーク特典が有効な間は、作品ごとに表示を切り替えられます。期限後も作品の設定は保存されます。'**
   String get helpEndCardDesc;
 
   /// No description provided for @helpAutoSaveTitle.
@@ -3882,7 +3888,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsEndCardWatermarkDesc.
   ///
   /// In ja, this message translates to:
-  /// **'動画に自分の署名や透かしを入れたいときはウォーターマーク機能を使います。エンドマークはMP4・WebM・AVIの末尾に付くNIARIMのロゴです。プレミアム会員またはエンドマーク編集の特典を利用中は、作品ごとに表示・非表示を切り替えられます。GIFには付きません。エンドマークを使わず自分だけの締めくくりを作りたいときは、画像レイヤーの追加とフェードイン・アウトを組み合わせれば同じような演出を自作できます。'**
+  /// **'動画に自分の署名や透かしを入れたいときはウォーターマーク機能を使います。エンドマークはMP4・WebM・AVIの末尾に付くNIARIMのロゴです。プレミアム会員またはエンドマーク編集の特典を利用中は、作品ごとに表示・非表示を切り替えられます。GIFには付かず、代わりに隅へ小さなNIARIMのロゴが入ります。エンドマークを使わず自分だけの締めくくりを作りたいときは、画像レイヤーの追加とフェードイン・アウトを組み合わせれば同じような演出を自作できます。'**
   String get tipsEndCardWatermarkDesc;
 
   /// No description provided for @tipsVerticalPixelFontTitle.
@@ -5460,7 +5466,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumBannerEndCardBody.
   ///
   /// In ja, this message translates to:
-  /// **'公式エンドマークの表示・非表示は、プレミアム会員またはエンドマーク編集の特典を利用中に設定できます。メイキング動画にも同じ設定が使われます。'**
+  /// **'公式エンドマークとGIFの隅のロゴの表示・非表示は、プレミアム会員またはエンドマーク編集の特典を利用中に設定できます。メイキング動画にも同じ設定が使われます。'**
   String get premiumBannerEndCardBody;
 
   /// No description provided for @premiumBannerWatermarkBody.
@@ -5534,6 +5540,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'本編 {duration}  +  NIARIMエンドマーク（5秒）'**
   String exportOutputWithEndCard(String duration);
+
+  /// No description provided for @exportOutputWithCornerLogo.
+  ///
+  /// In ja, this message translates to:
+  /// **'本編 {duration}（隅にNIARIMのロゴ）'**
+  String exportOutputWithCornerLogo(String duration);
 
   /// No description provided for @exportProjectNotFoundError.
   ///
@@ -10914,7 +10926,7 @@ abstract class AppLocalizations {
   /// No description provided for @workspaceEndCardHint.
   ///
   /// In ja, this message translates to:
-  /// **'作品ごとの表示設定がない場合に使う設定です。エンドマーク特典が有効な間に適用され、期限後も設定は保存されます。'**
+  /// **'作品ごとの表示設定がない場合に使う設定です。エンドマーク特典が有効な間に適用され、期限後も設定は保存されます。GIFの隅のロゴにも同じ設定が使われます。'**
   String get workspaceEndCardHint;
 
   /// No description provided for @workspaceEndCardDefaultHiddenTitle.
@@ -16920,7 +16932,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockEndCardEdit.
   ///
   /// In ja, this message translates to:
-  /// **'エンドマーク編集・削除（メイキング動画を含む）'**
+  /// **'エンドマークとGIFロゴの編集・削除（メイキング動画を含む）'**
   String get rewardUnlockEndCardEdit;
 
   /// No description provided for @rewardUnlockWatermark.

@@ -1131,6 +1131,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumFeatureMakingEndLogo => '制作视频的官方片尾标记';
 
   @override
+  String get premiumFeatureGifCornerLogo => 'GIF 角落的 NIARIM 标志';
+
+  @override
   String get premiumFeatureWatermark => '添加和编辑自定义水印';
 
   @override
@@ -1504,7 +1507,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 片尾标记是 MP4、WebM 和 AVI 末尾的 5 秒标志，制作视频也会添加。权益有效时可按作品切换显示。到期后仍保留设置。GIF 不添加标志。';
+      'NIARIM 片尾标记是 MP4、WebM 和 AVI 末尾的 5 秒标志，制作视频也会添加。GIF 则在角落加入小的 NIARIM 标志。权益有效时可按作品切换显示。到期后仍保留设置。';
 
   @override
   String get helpAutoSaveTitle => '自动保存';
@@ -2095,7 +2098,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      '想在视频中加入自己的签名或标记时，请使用水印功能。片尾标记是导出的 MP4、WebM 和 AVI 视频末尾的 NIARIM 标志。高级会员或片尾标记编辑权益有效时，可以为每部作品设置显示或隐藏。GIF 不添加片尾标记。如果不想使用片尾标记而想自制专属的结尾效果，只需添加图片图层并配合淡入淡出，就能自行还原类似的效果。';
+      '想在视频中加入自己的签名或标记时，请使用水印功能。片尾标记是导出的 MP4、WebM 和 AVI 视频末尾的 NIARIM 标志。高级会员或片尾标记编辑权益有效时，可以为每部作品设置显示或隐藏。GIF 不添加片尾标记，而是在角落加入小的 NIARIM 标志。如果不想使用片尾标记而想自制专属的结尾效果，只需添加图片图层并配合淡入淡出，就能自行还原类似的效果。';
 
   @override
   String get tipsVerticalPixelFontTitle => '实拍视频×手绘作画，打造“实拍×动画”';
@@ -2947,7 +2950,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      '使用高级会员或片尾标记编辑权益时，可以显示或隐藏官方片尾标记。制作视频也使用相同的设置。';
+      '使用高级会员或片尾标记编辑权益时，可以显示或隐藏官方片尾标记和 GIF 角落的标志。制作视频也使用相同的设置。';
 
   @override
   String get premiumBannerWatermarkBody => '高级会员或水印权益可以添加和编辑自定义水印。';
@@ -2987,6 +2990,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String exportOutputWithEndCard(String duration) {
     return '正片 $duration  +  NIARIM 片尾标记（5 秒）';
+  }
+
+  @override
+  String exportOutputWithCornerLogo(String duration) {
+    return '正片 $duration（角落带 NIARIM 标志）';
   }
 
   @override
@@ -5987,7 +5995,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceEndCardSection => '片尾标记';
 
   @override
-  String get workspaceEndCardHint => '片尾标记权益有效且作品没有单独设置时，使用此默认设置。权益到期后仍会保留此设置。';
+  String get workspaceEndCardHint =>
+      '片尾标记权益有效且作品没有单独设置时，使用此默认设置。权益到期后仍会保留此设置。GIF 角落的标志也使用相同的设置。';
 
   @override
   String get workspaceEndCardDefaultHiddenTitle => '默认隐藏片尾标记';
@@ -9316,7 +9325,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockMonth => '个月';
 
   @override
-  String get rewardUnlockEndCardEdit => '编辑或移除片尾标记（含制作视频）';
+  String get rewardUnlockEndCardEdit => '编辑或移除片尾标记和 GIF 标志（含制作视频）';
 
   @override
   String get rewardUnlockWatermark => '添加和编辑自定义水印';
@@ -12180,6 +12189,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumFeatureMakingEndLogo => '製作影片的官方片尾標記';
 
   @override
+  String get premiumFeatureGifCornerLogo => 'GIF 角落的 NIARIM 標誌';
+
+  @override
   String get premiumFeatureWatermark => '新增和編輯自訂浮水印';
 
   @override
@@ -12553,7 +12565,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 片尾標記是 MP4、WebM 和 AVI 末尾的 5 秒標誌，製作影片也會加上。權益有效時可依作品切換顯示。到期後仍保留設定。GIF 不會加上標誌。';
+      'NIARIM 片尾標記是 MP4、WebM 和 AVI 末尾的 5 秒標誌，製作影片也會加上。GIF 則在角落加入小的 NIARIM 標誌。權益有效時可依作品切換顯示。到期後仍保留設定。';
 
   @override
   String get helpAutoSaveTitle => '自動儲存';
@@ -13144,7 +13156,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      '想在影片中加入自己的簽名或標記時，請使用浮水印功能。片尾標記是匯出的 MP4、WebM 和 AVI 影片末尾的 NIARIM 標誌。進階會員或片尾標記編輯權益有效時，可以依作品設定顯示或隱藏。GIF 不會加上片尾標記。如果不想使用片尾標記而想自製專屬的結尾效果，只要新增圖片圖層並搭配淡入淡出，就能自行還原類似的效果。';
+      '想在影片中加入自己的簽名或標記時，請使用浮水印功能。片尾標記是匯出的 MP4、WebM 和 AVI 影片末尾的 NIARIM 標誌。進階會員或片尾標記編輯權益有效時，可以依作品設定顯示或隱藏。GIF 不會加上片尾標記，而是在角落加入小的 NIARIM 標誌。如果不想使用片尾標記而想自製專屬的結尾效果，只要新增圖片圖層並搭配淡入淡出，就能自行還原類似的效果。';
 
   @override
   String get tipsVerticalPixelFontTitle => '實拍影片×手繪作畫，打造「實拍×動畫」';
@@ -13996,7 +14008,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get premiumBannerEndCardBody =>
-      '使用進階會員或片尾標記編輯權益時，可以顯示或隱藏官方片尾標記。製作影片也使用相同的設定。';
+      '使用進階會員或片尾標記編輯權益時，可以顯示或隱藏官方片尾標記和 GIF 角落的標誌。製作影片也使用相同的設定。';
 
   @override
   String get premiumBannerWatermarkBody => '進階會員或浮水印權益可以新增和編輯自訂浮水印。';
@@ -14036,6 +14048,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String exportOutputWithEndCard(String duration) {
     return '正片 $duration  +  NIARIM 片尾標記（5 秒）';
+  }
+
+  @override
+  String exportOutputWithCornerLogo(String duration) {
+    return '正片 $duration（角落帶 NIARIM 標誌）';
   }
 
   @override
@@ -17036,7 +17053,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceEndCardSection => '片尾標記';
 
   @override
-  String get workspaceEndCardHint => '片尾標記權益有效且作品沒有個別設定時，會套用此預設。權益到期後仍會保留設定。';
+  String get workspaceEndCardHint =>
+      '片尾標記權益有效且作品沒有個別設定時，會套用此預設。權益到期後仍會保留設定。GIF 角落的標誌也使用相同的設定。';
 
   @override
   String get workspaceEndCardDefaultHiddenTitle => '預設隱藏片尾標記';
@@ -20367,7 +20385,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockMonth => '個月';
 
   @override
-  String get rewardUnlockEndCardEdit => '編輯或移除片尾標記（含製作影片）';
+  String get rewardUnlockEndCardEdit => '編輯或移除片尾標記和 GIF 標誌（含製作影片）';
 
   @override
   String get rewardUnlockWatermark => '新增和編輯自訂浮水印';

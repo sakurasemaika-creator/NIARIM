@@ -303,3 +303,61 @@ List<String> japaneseLastPhraseParts(String text, {int minLetters = 3}) {
   }
   return const [];
 }
+
+/// 漢字（々〆ヶを含む）。
+final RegExp _kanji = RegExp(
+  r'[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\u3005\u3006\u30F6]',
+);
+
+/// カタカナ（長音符を含み、中黒「・」は含まない）。
+final RegExp _katakanaLetter = RegExp(
+  r'[\u30A1-\u30FA\u30FC-\u30FF\u31F0-\u31FF]',
+);
+
+/// 英字・数字（全角を含む）。
+final RegExp _latinOrDigit = RegExp(
+  r'[A-Za-z0-9\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A]',
+);
+
+/// 日本語の文[text]の語（漢字の続き・カタカナの続き・英数字の続きに、すぐ
+/// 後のひらがな〔送り仮名・助詞〕を足したもの。ひらがなで始まる語はひらがなの
+/// 続き）。2字以上の語だけを返す。`KeepTogetherText`の`keep`に渡すと、語の
+/// 途中では行を変えず、語と語の間（ひらがなの後・漢字とカタカナの境目・
+/// 記号や括弧の所）で行を変える（欄の1行に入らない語だけは字の間で折る）。
+///
+/// 日本語は字と字の間のどこでも行を変えるので、特典の名前が360pxの幅で
+/// 「…（メイキング動 / 画を含む）」と語の途中で折れた。ひらがなの無い漢字
+/// だけの文（中国語）では漢字の続きが文全体になるので、日本語の表示のときだけ
+/// 使うこと。
+List<String> japaneseWordParts(String text) {
+  int kind(String char) {
+    if (_kanji.hasMatch(char)) return 1;
+    if (_katakanaLetter.hasMatch(char)) return 2;
+    if (_latinOrDigit.hasMatch(char)) return 3;
+    if (_hiragana.hasMatch(char)) return 4;
+    return 0;
+  }
+
+  final parts = <String>[];
+  final chars = [for (final rune in text.runes) String.fromCharCode(rune)];
+  var i = 0;
+  while (i < chars.length) {
+    final head = kind(chars[i]);
+    if (head == 0) {
+      i++;
+      continue;
+    }
+    var end = i + 1;
+    while (end < chars.length && kind(chars[end]) == head) {
+      end++;
+    }
+    if (head != 4) {
+      while (end < chars.length && kind(chars[end]) == 4) {
+        end++;
+      }
+    }
+    if (end - i > 1) parts.add(chars.sublist(i, end).join());
+    i = end;
+  }
+  return parts;
+}

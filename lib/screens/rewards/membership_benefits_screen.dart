@@ -189,7 +189,14 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
                           Icons.verified_outlined,
                           color: AccentTextTheme.of(context),
                         ),
-                        title: Text(reward[feature]),
+                        // 特典の名前は日本語・韓国語の語の途中で折らない。
+                        title: keepTogetherWords(
+                          reward[feature],
+                          keep: const [],
+                          japaneseWords:
+                              Localizations.localeOf(context).languageCode ==
+                              'ja',
+                        ),
                         subtitle: Text(
                           paused
                               ? reward['paused']

@@ -356,6 +356,11 @@
   描き直しが3400回に増えた）。行の始めに来てはいけない字（長音符・小さいかな・
   閉じ括弧・句読点）の続きをその前の字とつなぐ部分は`line_break.dart`の
   `lineStartKeepParts`（ブラシ・トーン・スタンプの名前で「ー」が行頭に来ていた）。
+  日本語の題（特典の名前など）を語の途中で折らないときは`line_break.dart`の`japaneseWordParts`
+  （漢字・カタカナ・英数字の続きに、すぐ後のひらがなを足した語）を`keep`に渡す
+  （`keepTogetherWords(japaneseWords: true)`。日本語の表示のときだけ。中国語では漢字の続きが文全体に
+  なる）。特典の名前が360pxで「メイキング動 / 画を含む」と折れた（2026-11-27、
+  `test/reward_perk_name_word_breaks_test.dart`）。
 - **確認・知らせの文は`messageText`、打つ欄のあるダイアログは`typingDialogInsetPadding`**
   （DISC171・172、2026-11-15）：Flutterはハングルのどの字の間でも行を変えるので、
   韓国語の確認の文が「휴지통 / 으로」と語の途中で切れた。`keep_together_text.dart`の
@@ -429,8 +434,9 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   増やす場合もcairosvgは避けること。
 - **`ExportEngine`は`Theme`/`BuildContext`にアクセスできない**：
   ウィジェットツリー外の純粋な描画エンジンのため、エンドカード
-  （`_renderEndCardPng`）の背景色は既定テーマのアクセントカラー
-  （`0xFFFF5C7A`）を直接ハードコードしている。この値は
+  （`_renderEndCardPng`）とGIFの隅のロゴのバッジの色は既定テーマのアクセント
+  カラー（`0xFFFF5C7A`、`lib/engine/corner_logo.dart`の`niarimBadgeColor`）を
+  直接ハードコードしている。この値は
   `tool/gen_app_icon.py`・`pubspec.yaml`の`adaptive_icon_background`と
   合わせて**3箇所を同期**する必要がある。既定テーマの配色を変更したら
   3箇所とも更新すること。
@@ -1076,6 +1082,25 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   「メイキング動画の公式エンドマーク」（`premiumFeatureMakingEndLogo`）、案内の文
   （`premiumBannerEndCardBody`・`helpEndCardDesc`）、メイキングの画面の「本編 … + NIARIMエンド
   マーク（5秒）」（作品の書き出しの画面と同じ文）。`test/making_export_end_card_test.dart`が見張る。
+  **GIFにはエンドマークの代わりに、隅へ半透明のNIARIMのロゴを入れる**（所有者の依頼、2026-11-27
+  「gifにはエンドマークではなくウォーターマーク的な感じでNIARIMのロゴを隅に透かしておくのはありですよね」）：
+  付けるかどうかはエンドマークと同じ`shouldAppendOfficialEndCard`（作品の書き出しは
+  `ExportEngine.exportGif(cornerLogo:)`、メイキングは`MakingExport.export(officialMark:)`。決まりを
+  画面で書き直さない）。絵は`lib/engine/corner_logo.dart`：エンドマークと同じバッジ
+  （`paintNiarimBadge`）を、短辺の10%（24px以上。小さい絵では短辺の1/4まで）・短辺の3%（4px以上）の
+  余白で、不透明度80%で重ねる（`CornerLogoStamp`）。重ねた色は8段ごとに丸めて、細かい絵の上でも
+  GIFの256色のパレットへ足す色を少なくする。隅は右下→左下→右上→左上の順で、利用者の
+  ウォーターマーク（`LayerType.watermark`）が無い最初の隅（作品の書き出しはウォーターマークの
+  レイヤーだけをコマごとに同じ置き方で描いて測る、メイキングはレイヤーの描かれた範囲
+  `contentBounds`をキャンバスに対する割合で渡す）。利用者に見える所：書き出し・メイキングの画面の
+  「本編 …（隅にNIARIMのロゴ）」（`exportOutputWithCornerLogo`）、比較表の「GIFの隅のNIARIMロゴ」
+  （`premiumFeatureGifCornerLogo`）、特典の名前「エンドマークとGIFロゴの編集・削除（メイキング動画を
+  含む）」、`premiumBannerEndCardBody`・`helpEndCardDesc`・`workspaceEndCardHint`。
+  `test/gif_corner_logo_test.dart`が見張る（ロゴの外の画素が付けないときと同じ・ウォーターマークを避ける）。
+  あわせて、**GIFのコマは`exportGifPaletteFrame`で自分でパレットの絵にしてから渡す**：image 4.3.0の
+  octreeの色の引き当て（`getColorIndex`）は、256色より多いコマで畳んだ色を違うパレットの色へ送り、
+  グラデーションの空が暗い縞になっていた（ロゴと関係なく以前から）。octreeの節の色
+  （`getQuantizedColor`、最大255色）でパレットを作る。
 - **数と単位をコードでつなげない（ARBのICU pluralにする）**：特典交換の期間は
   `'${amount}$unit'`でつないでいて、英語「1hours」・スペイン語「1horas」・
   フランス語「1heures」と出ていた。`rewardDurationHours`等（`{count, plural,

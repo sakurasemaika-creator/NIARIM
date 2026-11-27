@@ -73,16 +73,16 @@ class _ExportScreenState extends State<ExportScreen> {
     });
   }
 
-  bool _appendEndCard(
+  /// NIARIMの公式の印を付けるか（MP4・WebM・AVIは最後のエンドマーク、GIFは
+  /// 隅のロゴ）。
+  bool _officialMarkDue(
     PremiumService premium,
     bool? projectHidden,
     bool defaultHidden,
-  ) =>
-      _format != ExportFormat.gif &&
-      premium.shouldAppendOfficialEndCard(
-        projectHidden: projectHidden,
-        defaultHidden: defaultHidden,
-      );
+  ) => premium.shouldAppendOfficialEndCard(
+    projectHidden: projectHidden,
+    defaultHidden: defaultHidden,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +158,7 @@ class _ExportScreenState extends State<ExportScreen> {
       MaterialLocalizations.of(context),
       wholeSeconds,
     );
-    final appendEndCard = _appendEndCard(
+    final officialMark = _officialMarkDue(
       premium,
       project?.hideEndCard,
       settings?.endCardDefaultHiddenForPremium ?? true,
@@ -315,9 +315,12 @@ class _ExportScreenState extends State<ExportScreen> {
                 ),
               ),
             Text(
-              appendEndCard
-                  ? l10n.exportOutputWithEndCard(duration)
-                  : l10n.exportOutputWithoutEndCard(duration),
+              !officialMark
+                  ? l10n.exportOutputWithoutEndCard(duration)
+                  : _format == ExportFormat.gif
+                  ? l10n.exportOutputWithCornerLogo(duration)
+                  : l10n.exportOutputWithEndCard(duration),
+              key: const ValueKey('exportOutputSummary'),
             ),
             Text(l10n.exportKeepsPlaybackTime),
             // The output frame rate is not applied silently: the preview
@@ -536,11 +539,12 @@ class _ExportScreenState extends State<ExportScreen> {
       }
 
       // Capture the output conditions once before rendering the first frame.
-      final shouldAppendEndCard = _appendEndCard(
+      final officialMark = _officialMarkDue(
         premiumService,
         project.hideEndCard,
         defaultHidden,
       );
+      final shouldAppendEndCard = officialMark && format != ExportFormat.gif;
 
       // The timeline's sounds (audio clips and the sound of video
       // materials), placed as the timeline plays them. A GIF has no sound.
@@ -591,6 +595,7 @@ class _ExportScreenState extends State<ExportScreen> {
             width: project.exportWidth,
             height: project.exportHeight,
             backgroundColor: project.backgroundColor,
+            cornerLogo: officialMark,
             onProgress: onProgress,
             cancelToken: cancelToken,
             videoMaterials: videoMaterials,

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,7 @@ import '../../config/signal_colors.dart';
 import '../../engine/export_engine.dart';
 import '../../engine/making_export.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/layer.dart';
 import '../../models/project.dart';
 import '../../services/export_storage.dart';
 import '../../services/making_service.dart';
@@ -161,20 +163,60 @@ class _MakingScreenState extends State<MakingScreen> {
     }
   }
 
-  /// この書き出しに公式エンドマークを付けるか。作品の書き出しと同じ決まり
-  /// （プレミアム会員・エンドマークの特典を使っている間は作品の設定と既定の
-  /// 設定に従い、それ以外は付ける。GIFには付けない）。
-  bool _appendsEndCard(
+  /// この書き出しにNIARIMの公式の印（MP4・WebM・AVIはエンドマーク、GIFは
+  /// 隅のロゴ）を付けるか。作品の書き出しと同じ決まり（プレミアム会員・
+  /// エンドマークの特典を使っている間は作品の設定と既定の設定に従い、それ
+  /// 以外は付ける）。
+  bool _officialMarkDue(
     PremiumService? premium,
     Project? project,
     SettingsService? settings,
   ) {
-    if (!MakingExport.carriesOfficialEndCard(_format)) return false;
     if (premium == null) return true;
     return premium.shouldAppendOfficialEndCard(
       projectHidden: project?.hideEndCard,
       defaultHidden: settings?.endCardDefaultHiddenForPremium ?? true,
     );
+  }
+
+  /// 作品の自分のウォーターマークが描かれている所（キャンバスに対する0〜1の
+  /// 割合）。メイキング動画の記録はキャンバス全体を写すので、GIFの隅の
+  /// ロゴはここを避ける。
+  List<ui.Rect> _watermarkAreas(ProjectService projects) {
+    final keys = <String>{};
+    for (final scene in projects.scenesOf(widget.projectId)) {
+      for (final frame in scene.frames) {
+        for (final layer in projects.layersOf(
+          widget.projectId,
+          scene.id,
+          frame.index,
+        )) {
+          if (layer.type != LayerType.watermark) continue;
+          keys.add(
+            projects.tileKeyFor(
+              widget.projectId,
+              scene.id,
+              frame.index,
+              layer.id,
+            ),
+          );
+        }
+      }
+    }
+    if (keys.isEmpty) return const [];
+    final tiles = projects.tileManagerOf(widget.projectId);
+    final width = tiles.canvasWidth.toDouble();
+    final height = tiles.canvasHeight.toDouble();
+    return [
+      for (final key in keys)
+        if (tiles.contentBounds(key) case final bounds?)
+          ui.Rect.fromLTRB(
+            bounds.left / width,
+            bounds.top / height,
+            bounds.right / width,
+            bounds.bottom / height,
+          ),
+    ];
   }
 
   Project? _project(ProjectService projects) =>
@@ -184,12 +226,16 @@ class _MakingScreenState extends State<MakingScreen> {
     final snapshots = _history?.snapshots ?? const <MakingSnapshot>[];
     if (snapshots.length < 2 || _exporting) return;
     // The output conditions are fixed before the first frame is encoded.
-    final appendEndCard = _appendsEndCard(
+    final projects = context.read<ProjectService>();
+    final officialMark = _officialMarkDue(
       context.read<PremiumService?>(),
-      _project(context.read<ProjectService>()),
+      _project(projects),
       context.read<SettingsService?>(),
     );
     final format = _format;
+    final watermarkAreas = officialMark && format == MakingExportFormat.gif
+        ? _watermarkAreas(projects)
+        : const <ui.Rect>[];
     setState(() {
       _exporting = true;
       _playing = false;
@@ -205,7 +251,8 @@ class _MakingScreenState extends State<MakingScreen> {
         snapshotPaths: [for (final snapshot in snapshots) snapshot.path],
         format: format,
         outputPath: outputPath,
-        appendEndCard: appendEndCard,
+        officialMark: officialMark,
+        watermarkAreas: watermarkAreas,
       );
 
       final outputFile = File(outputPath);
@@ -238,16 +285,17 @@ class _MakingScreenState extends State<MakingScreen> {
     }
   }
 
-  /// 書き出す動画の長さと、公式エンドマークが付くか（作品の書き出しの画面と
-  /// 同じ文）。
-  String _outputSummary(AppLocalizations l10n, int count, bool endCard) {
+  /// 書き出す動画の長さと、公式エンドマーク（GIFは隅のロゴ）が付くか
+  /// （作品の書き出しの画面と同じ文）。
+  String _outputSummary(AppLocalizations l10n, int count, bool officialMark) {
     final duration = clockDurationLabel(
       MaterialLocalizations.of(context),
       MakingExport.bodySeconds(count, _format),
     );
-    return endCard
+    if (!officialMark) return l10n.exportOutputWithoutEndCard(duration);
+    return MakingExport.carriesOfficialEndCard(_format)
         ? l10n.exportOutputWithEndCard(duration)
-        : l10n.exportOutputWithoutEndCard(duration);
+        : l10n.exportOutputWithCornerLogo(duration);
   }
 
   String _formatName(AppLocalizations l10n, MakingExportFormat format) =>
@@ -392,7 +440,7 @@ class _MakingScreenState extends State<MakingScreen> {
                             _outputSummary(
                               l10n,
                               snapshots.length,
-                              _appendsEndCard(premium, project, settings),
+                              _officialMarkDue(premium, project, settings),
                             ),
                             key: const Key('makingExportOutputSummary'),
                             style: Theme.of(context).textTheme.bodyMedium

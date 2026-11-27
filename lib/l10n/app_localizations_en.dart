@@ -1190,6 +1190,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Official End Mark on Making Videos';
 
   @override
+  String get premiumFeatureGifCornerLogo => 'NIARIM Logo in the Corner of GIFs';
+
+  @override
   String get premiumFeatureWatermark => 'Add and edit your own watermark';
 
   @override
@@ -1569,7 +1572,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'The NIARIM end mark is a five-second logo appended to MP4, WebM, and AVI exports, including making videos. While the benefit is active, you can show or hide it per project. Project preferences are kept after expiry. GIFs do not include it.';
+      'The NIARIM end mark is a five-second logo appended to MP4, WebM, and AVI exports, including making videos. GIFs get a small NIARIM logo in a corner instead. While the benefit is active, you can show or hide them per project. Project preferences are kept after expiry.';
 
   @override
   String get helpAutoSaveTitle => 'Auto Save';
@@ -2191,7 +2194,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsEndCardWatermarkDesc =>
-      'Use the watermark feature when you want to add your own signature or mark to a video. The end mark is the NIARIM logo added to the end of MP4, WebM, and AVI exports. Premium membership or the end mark editing benefit lets you show or hide it per project. GIFs do not include it. If you want a custom closing without using the end mark, you can recreate a similar effect yourself by adding an image layer with a fade in/out.';
+      'Use the watermark feature when you want to add your own signature or mark to a video. The end mark is the NIARIM logo added to the end of MP4, WebM, and AVI exports. Premium membership or the end mark editing benefit lets you show or hide it per project. GIFs get a small NIARIM logo in a corner instead. If you want a custom closing without using the end mark, you can recreate a similar effect yourself by adding an image layer with a fade in/out.';
 
   @override
   String get tipsVerticalPixelFontTitle =>
@@ -3101,7 +3104,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      'Premium membership or the end mark editing benefit lets you show or hide the official end mark. Making videos use the same setting.';
+      'Premium membership or the end mark editing benefit lets you show or hide the official end mark and the GIF corner logo. Making videos use the same setting.';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -3149,6 +3152,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String exportOutputWithEndCard(String duration) {
     return 'Main video $duration + NIARIM end mark (5 seconds)';
+  }
+
+  @override
+  String exportOutputWithCornerLogo(String duration) {
+    return 'Main video $duration (NIARIM logo in a corner)';
   }
 
   @override
@@ -6325,7 +6333,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get workspaceEndCardHint =>
-      'This default applies while the end mark benefit is active, for projects without their own setting. Your preference is saved after expiry.';
+      'This default applies while the end mark benefit is active, for projects without their own setting. Your preference is saved after expiry. GIF corner logos follow the same setting.';
 
   @override
   String get workspaceEndCardDefaultHiddenTitle =>
@@ -9916,7 +9924,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockEndCardEdit =>
-      'Edit / remove end mark (including making videos)';
+      'Edit / remove end mark and GIF logo (including making videos)';
 
   @override
   String get rewardUnlockWatermark => 'Add and edit your own watermark';

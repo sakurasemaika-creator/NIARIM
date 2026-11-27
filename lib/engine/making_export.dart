@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
@@ -7,6 +8,7 @@ import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
 import '../services/hw_video_encoder.dart';
+import 'corner_logo.dart';
 import 'export_engine.dart';
 
 /// メイキング動画の書き出しの形式。名前（[Enum.name]）がそのままファイルの
@@ -27,7 +29,8 @@ abstract final class MakingExport {
   /// GIFのコマの長辺の上限。
   static const int _gifMaxSide = 360;
 
-  /// 公式エンドマークを付ける形式。作品の書き出しと同じく、GIFには付けない。
+  /// 公式エンドマークを付ける形式。作品の書き出しと同じく、GIFには付けず、
+  /// 代わりに隅へNIARIMのロゴを入れる（[CornerLogoStamp]）。
   static bool carriesOfficialEndCard(MakingExportFormat format) =>
       format != MakingExportFormat.gif;
 
@@ -46,13 +49,17 @@ abstract final class MakingExport {
   }
 
   /// [snapshotPaths]（記録の画像。表示順）を[format]で[outputPath]へ書き出す。
-  /// [appendEndCard]が真のときは、作品の書き出しと同じ公式エンドマーク
-  /// （[ExportEngine.officialEndCardSeconds]秒）を最後に足す。
+  /// [officialMark]が真のときは、作品の書き出しと同じ公式エンドマーク
+  /// （[ExportEngine.officialEndCardSeconds]秒）を最後に足す。GIFでは
+  /// エンドマークの代わりに、どのコマにも隅へNIARIMのロゴを入れる。その隅は
+  /// [watermarkAreas]（利用者のウォーターマークの描かれた所。キャンバスに
+  /// 対する0〜1の割合）を避けて選ぶ。
   static Future<void> export({
     required List<String> snapshotPaths,
     required MakingExportFormat format,
     required String outputPath,
-    required bool appendEndCard,
+    required bool officialMark,
+    List<ui.Rect> watermarkAreas = const [],
     ExportEngine? engine,
   }) async {
     if (snapshotPaths.isEmpty) {
@@ -66,7 +73,7 @@ abstract final class MakingExport {
     }
     final width = first.width;
     final height = first.height;
-    final endCard = appendEndCard && carriesOfficialEndCard(format)
+    final endCard = officialMark && carriesOfficialEndCard(format)
         ? await (engine ?? ExportEngine()).renderOfficialEndCardPng(
             width: width,
             height: height,
@@ -96,7 +103,12 @@ abstract final class MakingExport {
           await _removeStaging(staging);
         }
       case MakingExportFormat.gif:
-        await _exportGif(snapshotPaths, outputPath);
+        await _exportGif(
+          snapshotPaths,
+          outputPath,
+          cornerLogo: officialMark,
+          watermarkAreas: watermarkAreas,
+        );
       case MakingExportFormat.webm:
       case MakingExportFormat.avi:
         final staging = await _stagingDirectory();
@@ -187,9 +199,42 @@ abstract final class MakingExport {
 
   static Future<void> _exportGif(
     List<String> snapshotPaths,
-    String outputPath,
-  ) async {
+    String outputPath, {
+    required bool cornerLogo,
+    required List<ui.Rect> watermarkAreas,
+  }) async {
     final encoder = newExportGifEncoder();
+    CornerLogoStamp? logo;
+    (int, int)? logoFrameSize;
+    Future<void> add(img.Image decoded) async {
+      final frame = _gifFrame(decoded);
+      if (cornerLogo) {
+        // A canvas resized while recording gives snapshots of other sizes.
+        if (logoFrameSize != (frame.width, frame.height)) logo = null;
+        logoFrameSize = (frame.width, frame.height);
+        logo ??= await CornerLogoStamp.render(
+          CornerLogoPlacement(
+            frame.width,
+            frame.height,
+            chooseLogoCorner(
+              (corner) => fractionalAreasInside(
+                watermarkAreas,
+                frame.width,
+                frame.height,
+                CornerLogoPlacement(
+                  frame.width,
+                  frame.height,
+                  corner,
+                ).clearArea,
+              ),
+            ),
+          ),
+        );
+        logo!.stampOnto(frame);
+      }
+      encoder.addFrame(frame, duration: _gifFrameCentiseconds);
+    }
+
     // GIF palette frames remain resident in the encoder. Downsample and cap
     // this format to keep export memory bounded on phones.
     final step = gifStep(snapshotPaths.length);
@@ -198,15 +243,13 @@ abstract final class MakingExport {
         await File(snapshotPaths[i]).readAsBytes(),
       );
       if (decoded == null) continue;
-      encoder.addFrame(_gifFrame(decoded), duration: _gifFrameCentiseconds);
+      await add(decoded);
     }
     if ((snapshotPaths.length - 1) % step != 0) {
       final last = img.decodeImage(
         await File(snapshotPaths.last).readAsBytes(),
       );
-      if (last != null) {
-        encoder.addFrame(_gifFrame(last), duration: _gifFrameCentiseconds);
-      }
+      if (last != null) await add(last);
     }
     final gif = encoder.finish();
     if (gif == null || gif.isEmpty) {

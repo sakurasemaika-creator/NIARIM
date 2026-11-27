@@ -1037,9 +1037,14 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             // ListTileの題と2行目の間と同じくらい空ける。
             spacing: 4,
             children: [
-              // 名前の中の数と単位（「1作品」「1개」「1篇」「2時間」）は
-              // 途中で行を変えない。
-              keepTogetherWords(t[target.name], keep: const []),
+              // 名前の中の数と単位（「1作品」「1개」「1篇」「2時間」）と、
+              // 日本語・韓国語の語は途中で行を変えない。
+              keepTogetherWords(
+                t[target.name],
+                keep: const [],
+                japaneseWords:
+                    Localizations.localeOf(context).languageCode == 'ja',
+              ),
               DefaultTextStyle(style: priceStyle, child: price),
             ],
           ),
