@@ -196,14 +196,19 @@ class CanvasIconButton extends StatelessWidget {
               ),
             ),
           );
+    // 長押しで開く物があるときは、ボタン自身が長押し（マウスでも効く）と
+    // 右クリックで開く。吹き出しの長押しはタッチ・ペンでしか起きず、マウスでは
+    // 開けなかった（早替えツールの編集）。
+    final longPress = onTooltipLongPress;
     final button = Tooltip(
       message: tooltip,
-      triggerMode: longPressTooltip
+      triggerMode: longPressTooltip && longPress == null
           ? TooltipTriggerMode.longPress
           : TooltipTriggerMode.manual,
-      onTriggered: onTooltipLongPress,
       child: InkResponse(
         onTap: onPressed,
+        onLongPress: longPress,
+        onSecondaryTap: longPress,
         radius: toolbarTarget != null
             ? toolbarTarget / 2
             : padding > 6
