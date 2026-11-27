@@ -47,6 +47,7 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
   static const double _maxMenuWidth = 640;
 
   final GlobalKey _surfaceKey = GlobalKey();
+  final GlobalKey _contentKey = GlobalKey();
   double _left = _edgeInset;
   double _bottom = _edgeInset;
   double? _menuWidth;
@@ -242,20 +243,28 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                   .clamp(0.0, bodyMaxHeight)
                   .toDouble();
 
+        // Keep the content subtree under a stable GlobalKey when the
+        // resizable viewport adds/removes its scroll view. Stateful editors
+        // (notably color adjustment and live filters) must not be recreated.
+        final content = KeyedSubtree(
+          key: _contentKey,
+          child: SizedBox(width: menuWidth, child: widget.child),
+        );
         final Widget body = SizedBox(
           width: menuWidth,
           height: bodyHeight,
-          child: bodyHeight != null
-              ? (widget.scrollBodyOnResize
-                    ? SingleChildScrollView(
+          child: widget.scrollBodyOnResize
+              ? (bodyHeight == null
+                    ? content
+                    : SingleChildScrollView(
                         primary: false,
-                        child: SizedBox(width: menuWidth, child: widget.child),
-                      )
-                    : Align(
-                        alignment: Alignment.topLeft,
-                        child: widget.child,
+                        child: content,
                       ))
-              : widget.child,
+              : Align(
+                  alignment: Alignment.topLeft,
+                  heightFactor: bodyHeight == null ? 1 : null,
+                  child: content,
+                ),
         );
 
         return Stack(

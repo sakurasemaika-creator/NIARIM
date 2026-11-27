@@ -149,14 +149,25 @@ void main() {
     expect(find.byType(FrameStripWidget), findsOneWidget);
 
     final canvas = find.byType(CanvasArea);
-    final canvasBounds = tester.getRect(canvas);
+    final canvasBoundsBeforeSelection = tester.getRect(canvas);
+    final canvasScreenHeight = MediaQuery.sizeOf(
+      tester.element(find.byType(CanvasScreen)),
+    ).height;
     final selectTool = find.byIcon(Icons.highlight_alt);
     await tester.ensureVisible(selectTool.first);
     await tester.pump(const Duration(milliseconds: 120));
     await tester.tap(selectTool.first);
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(tester.getRect(canvas), canvasBounds);
+    final canvasBounds = tester.getRect(canvas);
+    expect(canvasBounds.left, closeTo(canvasBoundsBeforeSelection.left, 0.1));
+    expect(canvasBounds.right, closeTo(canvasBoundsBeforeSelection.right, 0.1));
+    expect(canvasBounds.bottom, closeTo(canvasScreenHeight, 1));
+    expect(
+      canvasBounds.height,
+      greaterThan(canvasBoundsBeforeSelection.height),
+      reason: 'selection focus mode reclaims the hidden toolbar and frame-strip space',
+    );
     final selectAll = find.text(l10n.canvasSelectAllButton);
     final selectAllBounds = tester.getRect(selectAll);
 
