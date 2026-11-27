@@ -352,19 +352,34 @@ void main() {
     await tester.tap(find.text(l10n.commonCancel));
     await settle();
 
-    // ── メッシュ変形：分割数スライダーが画面下部へ出る ────────────────
+    // ── メッシュ変形：分割数スライダーも集中メニュー内に収まる ────────
     await tester.ensureVisible(find.byIcon(Icons.highlight_alt).first);
     await tester.pump(const Duration(milliseconds: 120));
     await tester.tap(find.byIcon(Icons.highlight_alt).first);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text(l10n.canvasSelectionMeshTransform));
     await settle();
+    final meshFocusSurface = find.byKey(
+      const ValueKey('focus-mode-menu-surface'),
+    );
+    final meshDensityLabel = find.text(l10n.meshTransformDensityLabel);
+    expect(meshDensityLabel, findsOneWidget);
     expect(
-      find.text(l10n.meshTransformDensityLabel),
+      find.descendant(of: meshFocusSurface, matching: meshDensityLabel),
       findsOneWidget,
-      reason: 'メッシュ変形では分割数スライダーを出すこと',
+      reason: 'メッシュ分割数も移動・最小化できる集中メニュー内へ置くこと',
     );
     await capture('mesh_transform');
+    final focusMenuToggle = find.byKey(
+      const ValueKey('focus-mode-menu-toggle'),
+    );
+    await tester.tap(focusMenuToggle);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.meshTransformDensityLabel), findsNothing);
+    await tester.tap(focusMenuToggle);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.meshTransformDensityLabel), findsOneWidget);
+    await capture('mesh_transform_menu_restored');
 
     await tester.tap(find.text(l10n.commonCancel));
     await settle();

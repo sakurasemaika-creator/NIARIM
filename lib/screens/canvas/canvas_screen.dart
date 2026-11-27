@@ -1989,7 +1989,17 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           child:
                                               _currentTool ==
                                                   DrawingTool.meshTransform
-                                              ? _meshCancelBar(context)
+                                              ? Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    _meshCancelBar(context),
+                                                    if (!isDesktop &&
+                                                        _meshDensity > 1)
+                                                      _meshDensitySlider(context),
+                                                  ],
+                                                )
                                               : _buildSelectionControls(
                                                   context,
                                                   dockRowConstraints.maxHeight,
@@ -2012,6 +2022,25 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           context,
                                         )!.filterPanelExpand,
                                         child: _filterPanel(bottomBar: true),
+                                      ),
+                                    ),
+                                  if (colorAdjusting)
+                                    Positioned.fill(
+                                      child: FocusModeMenu(
+                                        key: const ValueKey(
+                                          'color-adjust-focus-menu',
+                                        ),
+                                        maxWidth: 360,
+                                        fillWidth: true,
+                                        collapseTooltip: AppLocalizations.of(
+                                          context,
+                                        )!.filterPanelCollapse,
+                                        expandTooltip: AppLocalizations.of(
+                                          context,
+                                        )!.filterPanelExpand,
+                                        child: _colorAdjustPanel(
+                                          bottomBar: true,
+                                        ),
                                       ),
                                     ),
                                   // ツールオプション系フローティングパネル（ブラシ・トーン・
@@ -2064,9 +2093,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     ),
                     // Keep the drawing viewport stable when a tool hides the
                     // brush row or temporarily folds the lower rails.
-                    if (colorAdjusting)
-                      _colorAdjustPanel(bottomBar: true)
-                    else if (!filterAdjusting)
+                    if (!immersiveAdjusting)
                       Visibility(
                         visible: _usesBrushSize(_currentTool),
                         maintainSize: true,
@@ -2098,12 +2125,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           },
                         ),
                       ),
-                    // メッシュ変形中は分割数のスライダーだけを画面下部へ出す
-                    // （自由変形＝分割数1のときは何も出さない）。
-                    if (!immersiveAdjusting &&
-                        _currentTool == DrawingTool.meshTransform &&
-                        _meshDensity > 1)
-                      _meshDensitySlider(context),
                     // ツールバーの折りたたみ用ハンドル（フレーム一覧と
                     // 同様に、任意のタイミングで開閉できるようにし描画領域を広げる）。
                     // デスクトップでは常設の縦レール表示に切り替わるため対象外。
@@ -3958,9 +3979,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
-  /// 自由変形・メッシュ変形の実行中にキャンバス左下へ固定で出すキャンセル
-  /// ボタン。仕様上、この2モードではこれ以外の変形用メニューは出さない
-  /// （メッシュ変形のときだけ、画面下部に分割数のスライダーが付く）。
+  /// 自由変形・メッシュ変形中に集中メニューへ表示する確定・キャンセル操作。
+  /// スマホでは分割数スライダーも同じメニュー内にまとめ、最小化時に一緒に隠す。
   Widget _meshCancelBar(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     // A raised Material cast a dark, border-like halo around both buttons.
@@ -4013,7 +4033,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     return (w < h ? w : h) / 2;
   }
 
-  /// メッシュ変形中に画面下部へ出す分割数スライダー。
+  /// スマホのメッシュ変形集中メニュー内に置く分割数スライダー。
   Widget _meshDensitySlider(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;

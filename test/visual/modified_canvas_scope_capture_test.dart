@@ -230,6 +230,10 @@ void main() {
       await navigate('/home');
       await navigate('/canvas/${demo.id}');
       expect(find.byType(ColorAdjustSheet), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('color-adjust-focus-menu')),
+        findsOneWidget,
+      );
       expect(find.byType(MenuBar), findsNothing);
       expect(find.byType(ToolbarWidget), findsNothing);
       expect(
@@ -241,10 +245,32 @@ void main() {
         of: find.byType(ColorAdjustSheet),
         matching: find.byType(Slider),
       );
-      if (sliders.evaluate().isNotEmpty) {
-        await tester.drag(sliders.first, const Offset(65, 0));
-        await shot('07_pc_color_adjust_live_change');
-      }
+      expect(sliders, findsNWidgets(3));
+      await tester.drag(sliders.first, const Offset(65, 0));
+      await shot('07_pc_color_adjust_live_change');
+      final adjustedSaturation = tester.widget<Slider>(sliders.first).value;
+
+      final colorFocusToggle = find.byKey(
+        const ValueKey('focus-mode-menu-toggle'),
+      );
+      await tester.tap(colorFocusToggle);
+      await tester.pumpAndSettle();
+      expect(find.byType(ColorAdjustSheet), findsNothing);
+      await shot('08_pc_color_adjust_menu_minimized');
+
+      await tester.tap(colorFocusToggle);
+      await tester.pumpAndSettle();
+      expect(find.byType(ColorAdjustSheet), findsOneWidget);
+      expect(
+        tester.widget<Slider>(sliders.first).value,
+        closeTo(adjustedSaturation, 0.01),
+        reason: 'minimizing the common menu must retain color-adjust edits',
+      );
+      await tester.drag(
+        find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
+        const Offset(34, -42),
+      );
+      await shot('09_pc_color_adjust_menu_moved');
 
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;

@@ -106,6 +106,37 @@ void main() {
     expect(restored.right, lessThanOrEqualTo(400));
     expect(restored.top, greaterThanOrEqualTo(0));
   });
+  testWidgets('menu keeps its raised surface without a heavy outline', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(400, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: FocusModeMenu(
+            collapseTooltip: 'Minimize',
+            expandTooltip: 'Expand',
+            child: SizedBox(width: 180, height: 60),
+          ),
+        ),
+      ),
+    );
+
+    final surface = find.byKey(
+      const ValueKey('focus-mode-menu-surface'),
+    );
+    final material = tester.widget<Material>(
+      find.descendant(of: surface, matching: find.byType(Material)).first,
+    );
+    expect(material.elevation, greaterThan(0));
+    expect(material.shape, isA<RoundedRectangleBorder>());
+    expect(
+      (material.shape! as RoundedRectangleBorder).side,
+      BorderSide.none,
+    );
+  });
 }
 
 class _CounterContent extends StatefulWidget {

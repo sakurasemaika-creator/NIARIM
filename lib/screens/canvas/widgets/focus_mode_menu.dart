@@ -135,7 +135,6 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                   clipBehavior: Clip.antiAlias,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(11),
-                    side: BorderSide(color: scheme.outlineVariant),
                   ),
                   child: AnimatedSize(
                     duration: const Duration(milliseconds: 160),
