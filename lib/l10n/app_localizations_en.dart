@@ -234,7 +234,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homeShareOpenWith => 'Share / Open in a photo app';
+  String get homeShareOpenWith => 'Share / Open with…';
 
   @override
   String get homePreviewFailed => 'Unable to play preview';

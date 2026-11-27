@@ -62,7 +62,7 @@
   "homeWorkFolderEmpty": "Ce dossier ne contient aucune œuvre exportée",
   "homeSharedFolderEmpty": "Ce dossier ne contient aucun projet partagé",
   "homeDeleteFolderKeepContents": "« {name} » sera supprimé. Son contenu reviendra dans la liste principale et ne sera pas supprimé.",
-  "homeShareOpenWith": "Partager / Ouvrir dans une app photo, etc.",
+  "homeShareOpenWith": "Partager / Ouvrir avec…",
   "homePreviewFailed": "Impossible de lire l’aperçu",
   "homeFirstLaunchMessage": "Vous pouvez créer des animations dessinées à la main",
   "homeFirstLaunchStart": "Commencer",

@@ -243,7 +243,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get homeShareOpenWith => 'Partager / Ouvrir dans une app photo, etc.';
+  String get homeShareOpenWith => 'Partager / Ouvrir avec…';
 
   @override
   String get homePreviewFailed => 'Impossible de lire l’aperçu';

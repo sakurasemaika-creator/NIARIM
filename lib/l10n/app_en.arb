@@ -62,7 +62,7 @@
   "homeWorkFolderEmpty": "No exported works in this folder",
   "homeSharedFolderEmpty": "No shared projects in this folder",
   "homeDeleteFolderKeepContents": "“{name}” will be deleted. Its contents will return to the main list and will not be deleted.",
-  "homeShareOpenWith": "Share / Open in a photo app",
+  "homeShareOpenWith": "Share / Open with…",
   "homePreviewFailed": "Unable to play preview",
   "homeFirstLaunchMessage": "You can create hand-drawn animations",
   "homeFirstLaunchStart": "Get Started",
