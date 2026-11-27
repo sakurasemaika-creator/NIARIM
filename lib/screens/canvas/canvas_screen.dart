@@ -464,7 +464,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// 何も反映されない。
   void _cancelMeshTransform() => setState(() {
     _meshCancelToken++;
-    _showMeshTransformPanel = false;
     _currentTool = DrawingTool.pen;
   });
 
