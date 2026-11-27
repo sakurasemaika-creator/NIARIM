@@ -3108,7 +3108,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpGestureSettingsDesc.
   ///
   /// In ja, this message translates to:
-  /// **'2本指タップ・3本指タップ・2本指スワイプ・長押しに、Undo/Redo・フレーム移動・スポイトなどの操作を割り当てられる設定です。ペンボタン（対応スタイラス使用時）にも別途操作を割り当てられます。指を使わずワンタッチで頻用操作を呼び出したい場合に便利です。'**
+  /// **'2本指タップ・3本指タップ・2本指スワイプ・長押しに、Undo/Redo・フレーム移動・スポイトなどの操作を割り当てられる設定です。ペンボタン（対応スタイラス使用時）にも別途操作を割り当てられます。メニューを開かずに、よく使う操作をすぐ呼び出したい場合に便利です。'**
   String get helpGestureSettingsDesc;
 
   /// No description provided for @helpBucketDetailSettingsTitle.
@@ -3906,7 +3906,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsVerticalPixelFontDesc.
   ///
   /// In ja, this message translates to:
-  /// **'イラストアプリと動画編集アプリを兼ねているからこそできる遊び方です。実写の動画クリップをタイムラインに配置し、その上のレイヤーへオニオンスキンを使いながら手描きで効果線やキャラクターを描き足せば、実写に手描きアニメが重なった「実写×アニメ」のミックスメディア動画が作れます。'**
+  /// **'イラストアプリと動画編集アプリを兼ねているので、こんな遊び方もできます。実写の動画クリップをタイムラインに配置し、その上のレイヤーへオニオンスキンを使いながら手描きで効果線やキャラクターを描き足せば、実写に手描きアニメが重なった「実写×アニメ」のミックスメディア動画が作れます。'**
   String get tipsVerticalPixelFontDesc;
 
   /// No description provided for @tipsTimelineMarkerTitle.
@@ -3930,7 +3930,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsCommunityYoutubeDesc.
   ///
   /// In ja, this message translates to:
-  /// **'作品広場に投稿すると、YouTubeを通じて作品が公開されます。NIARIMは動画ファイル本体を開発者のサーバーへ送信・収集・保存する機能を持っていません。YouTube側の公開設定を「限定公開」にすれば、YouTube上の一般公開一覧には表示されず、作品広場内だけに投稿された状態にできます。'**
+  /// **'作品広場に投稿すると、YouTubeを通じて作品が公開されます。NIARIMは動画ファイル本体を開発者のサーバーへ送信・収集・保存する機能を持っていません。YouTube側の公開設定を「限定公開」にすると、YouTubeの検索結果やチャンネルの動画一覧には表示されず、作品広場から見られる状態にできます。ただし、限定公開の動画もリンクを知っている人なら誰でも見られます。'**
   String get tipsCommunityYoutubeDesc;
 
   /// No description provided for @tipsToolbarCustomizeTitle.
@@ -4032,13 +4032,13 @@ abstract class AppLocalizations {
   /// No description provided for @tipsRadialVignetteTitle.
   ///
   /// In ja, this message translates to:
-  /// **'放射定規×周辺減光で集中線演出'**
+  /// **'集中線定規×周辺減光で集中線演出'**
   String get tipsRadialVignetteTitle;
 
   /// No description provided for @tipsRadialVignetteDesc.
   ///
   /// In ja, this message translates to:
-  /// **'放射定規で集中線を一気に描き、描画フィルターの周辺減光を重ねると、漫画のクライマックスのような迫力ある演出になります。'**
+  /// **'集中線定規で集中線を一気に描き、描画フィルターの周辺減光を重ねると、漫画のクライマックスのような迫力ある演出になります。'**
   String get tipsRadialVignetteDesc;
 
   /// No description provided for @tipsClippingGradientTitle.
@@ -4638,7 +4638,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetSectionCreateDesc.
   ///
   /// In ja, this message translates to:
-  /// **'タップすると「作品をつくる」画面が開きます。'**
+  /// **'タップすると「新規プロジェクト」画面が開きます。'**
   String get widgetSectionCreateDesc;
 
   /// No description provided for @widgetSectionPlaza.
@@ -10014,7 +10014,7 @@ abstract class AppLocalizations {
   /// No description provided for @timelineAutofillNote2.
   ///
   /// In ja, this message translates to:
-  /// **'※ 自動塗りレイヤーのみ存在する場合は、一から領域を判定して自動塗りします。'**
+  /// **'※ 自動塗りレイヤーが存在しない場合は、一から領域を判定して自動塗りします。'**
   String get timelineAutofillNote2;
 
   /// No description provided for @timelineAutofillTargetLabel.
@@ -10572,7 +10572,7 @@ abstract class AppLocalizations {
   /// No description provided for @legalLastUpdated.
   ///
   /// In ja, this message translates to:
-  /// **'最終更新日：2026年11月25日'**
+  /// **'最終更新日：2026年11月27日'**
   String get legalLastUpdated;
 
   /// No description provided for @legalConsentTitle.
@@ -10752,7 +10752,7 @@ abstract class AppLocalizations {
   /// No description provided for @licenseTermsArt12Body.
   ///
   /// In ja, this message translates to:
-  /// **'1. 本アプリは、ユーザーが作成したアニメーション作品を、ユーザー自身のGoogleアカウントを通じてYouTubeへ投稿し、「作品広場」上で公開・閲覧できる機能（以下「本コミュニティ機能」といいます。）を任意で提供します。作品の閲覧・作成自体は、本コミュニティ機能を利用しなくても行えます。\n2. 投稿された動画ファイル本体はYouTube上に保存され、開発者のサーバーには保存されません。一方、投稿作品の識別・表示に必要な情報（YouTube動画ID、タイトル、統計情報、通報情報等）、および投稿・通報・ブロック機能の利用にあたり発行されるNIARIM User ID（Googleアカウントとは別に本アプリ内部で発行する識別子）は、開発者のサーバーで管理します。\n3. 本コミュニティ機能のうち、作品の投稿、通報およびユーザーのブロックには、Googleアカウントによるログインが必要です。\n4. 投稿できる作品数には1日あたりの上限があります。（無料会員・プレミアム会員で上限が異なります。）当該上限は、運営上の都合により変更されることがあります。\n5. ユーザーは、他のユーザーが投稿した作品のうち、法令もしくは公序良俗に違反する、または第3条各号に該当するおそれがあると考えるものについて、本アプリ内の通報機能を通じて開発者に報告できます。開発者は、通報の内容を確認のうえ、合理的な理由に基づき当該作品の一覧からの非表示その他の必要な措置を講じることがあります。虚偽の通報または通報機能の濫用は禁止します。通報が重なった作品または重大な違反のおそれがある作品は、確認が終わるまで一時的に非表示にすることがあります。開発者は、本規約に反する投稿を繰り返したユーザーについて、作品広場への投稿を停止することがあります。これらの措置への異議は、お問い合わせフォームまたはメール（support@miranima-studio.com）で受け付けます。\n6. ユーザーが投稿を削除した場合、または本アプリにおけるGoogleアカウント連携を解除した場合、当該投稿に対応するYouTube動画が削除されることがあります。また、YouTube側で動画が非公開または削除された場合、当該作品は作品広場上でも表示されなくなります。\n7. 本コミュニティ機能の利用にあたっては、本規約に加えてYouTubeの利用規約およびコミュニティガイドラインが適用されます。\n8. ユーザーは、他のユーザーをフォローし、他のユーザーの作品をブックマークまたはリポストできます。フォロー中のユーザー、フォロワー、ブックマークした作品の一覧は、本人だけが閲覧できます。他のユーザーには、フォロー数とフォロワー数だけを表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。\n9. 作品に付けるタグは、投稿者以外のユーザーも追加・削除できます。投稿者は、自分の作品のタグをロックして他のユーザーによる編集を禁止できます。ユーザーは、他人を誹謗中傷するタグ、作品の内容と無関係なタグその他不適切なタグを付けてはなりません。開発者は、不適切なタグを削除することがあります。\n10. 開発者は、本人の作品の投稿・公開やミッション達成などに関する通知を、本アプリ内の通知一覧に表示します。端末の通知が許可されている場合は、プッシュ通知が送信されることがあります。プッシュ通知は本アプリまたは端末の設定から無効にできます。\n11. ユーザーは、本コミュニティ機能を、他のユーザーへの嫌がらせ、宣伝・勧誘、その他本来の目的（作品の公開と閲覧）から外れる目的で利用してはなりません。 ミュートは自分の表示だけに反映されます。ブロックすると、作品広場にログイン中の双方に相手の投稿が表示されなくなります。どちらの操作でも相手に通知は送られません。'**
+  /// **'1. 本アプリは、ユーザーが作成したアニメーション作品を、ユーザー自身のGoogleアカウントを通じてYouTubeへ投稿し、「作品広場」上で公開・閲覧できる機能（以下「本コミュニティ機能」といいます。）を任意で提供します。作品の閲覧・作成自体は、本コミュニティ機能を利用しなくても行えます。\n2. 投稿された動画ファイル本体はYouTube上に保存され、開発者のサーバーには保存されません。一方、投稿作品の識別・表示に必要な情報（YouTube動画ID、タイトル、統計情報、通報情報等）、および投稿・通報・ブロック機能の利用にあたり発行されるNIARIM User ID（Googleアカウントとは別に本アプリ内部で発行する識別子）は、開発者のサーバーで管理します。\n3. 本コミュニティ機能のうち、作品の投稿、通報およびユーザーのブロックには、Googleアカウントによるログインが必要です。\n4. 投稿できる作品数には1日あたりの上限があります。（無料会員・プレミアム会員で上限が異なります。）当該上限は、運営上の都合により変更されることがあります。\n5. ユーザーは、他のユーザーが投稿した作品のうち、法令もしくは公序良俗に違反する、または第3条各号に該当するおそれがあると考えるものについて、本アプリ内の通報機能を通じて開発者に報告できます。開発者は、通報の内容を確認のうえ、合理的な理由に基づき当該作品の一覧からの非表示その他の必要な措置を講じることがあります。虚偽の通報または通報機能の濫用は禁止します。通報が重なった作品または重大な違反のおそれがある作品は、確認が終わるまで一時的に非表示にすることがあります。開発者は、本規約に反する投稿を繰り返したユーザーについて、作品広場への投稿を停止することがあります。これらの措置への異議は、お問い合わせフォームまたはメール（support@miranima-studio.com）で受け付けます。\n6. ユーザーが投稿を削除した場合、または本アプリにおけるGoogleアカウント連携を解除した場合でも、当該投稿に対応するYouTube動画は削除されません。YouTube上の動画の削除等は、ユーザーがYouTube上で行うものとします。また、YouTube側で動画が非公開または削除された場合、当該作品は作品広場上でも表示されなくなります。\n7. 本コミュニティ機能の利用にあたっては、本規約に加えてYouTubeの利用規約およびコミュニティガイドラインが適用されます。\n8. ユーザーは、他のユーザーをフォローし、他のユーザーの作品をブックマークまたはリポストできます。フォロー中のユーザー、フォロワー、ブックマークした作品の一覧は、本人だけが閲覧できます。他のユーザーには、フォロー数とフォロワー数だけを表示します。フォロー、ブックマークまたはリポストを行っても、相手にその操作を知らせる個別通知は送信されません。\n9. 作品に付けるタグは、投稿者以外のユーザーも追加・削除できます。投稿者は、自分の作品のタグをロックして他のユーザーによる編集を禁止できます。ユーザーは、他人を誹謗中傷するタグ、作品の内容と無関係なタグその他不適切なタグを付けてはなりません。開発者は、不適切なタグを削除することがあります。\n10. 開発者は、本人の作品の投稿・公開やミッション達成などに関する通知を、本アプリ内の通知一覧に表示します。端末の通知が許可されている場合は、プッシュ通知が送信されることがあります。プッシュ通知は本アプリまたは端末の設定から無効にできます。\n11. ユーザーは、本コミュニティ機能を、他のユーザーへの嫌がらせ、宣伝・勧誘、その他本来の目的（作品の公開と閲覧）から外れる目的で利用してはなりません。 ミュートは自分の表示だけに反映されます。ブロックすると、作品広場にログイン中の双方に相手の投稿が表示されなくなります。どちらの操作でも相手に通知は送られません。'**
   String get licenseTermsArt12Body;
 
   /// No description provided for @licenseTermsArt13Title.
@@ -10830,7 +10830,7 @@ abstract class AppLocalizations {
   /// No description provided for @privacyPolicyArt5Body.
   ///
   /// In ja, this message translates to:
-  /// **'本アプリは、13歳未満のお子様を主な対象として意図的に情報を収集するものではありません。保護者の方は、お子様が本アプリを利用する際、必要に応じて端末の設定からパーソナライズ広告の無効化等をご検討ください。'**
+  /// **'本アプリは、13歳未満（お住まいの国・地域の法令がこれより高い年齢を定めている場合は、その年齢未満。たとえば韓国では14歳未満）のお子様を主な対象として意図的に情報を収集するものではありません。保護者の方は、お子様が本アプリを利用する際、必要に応じて端末の設定からパーソナライズ広告の無効化等をご検討ください。'**
   String get privacyPolicyArt5Body;
 
   /// No description provided for @privacyPolicyArt6Title.
@@ -11052,7 +11052,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpMeshTransformDesc.
   ///
   /// In ja, this message translates to:
-  /// **'キャンバス右上の編集・設定メニューから開ける、レイヤー全体を対象にした変形ツールです。範囲選択の変形と異なり選択範囲は不要で、角や格子点を指で個別にドラッグして自由な形に変形できます。コントロールパネルの分割数スライダーでメッシュを最大10×10まで細かくでき、2本の指で別々の点を同時につまめば回転・拡大縮小のような操作も直感的に行えます。'**
+  /// **'キャンバス右上の設定/編集メニューから開ける、レイヤー全体を対象にした変形ツールです。範囲選択の変形と異なり選択範囲は不要で、角や格子点を指で個別にドラッグして自由な形に変形できます。コントロールパネルの分割数スライダーでメッシュを最大10×10まで細かくでき、2本の指で別々の点を同時につまめば回転・拡大縮小のような操作も直感的に行えます。'**
   String get helpMeshTransformDesc;
 
   /// No description provided for @layerPanelBrightnessToAlphaLabel.
@@ -11700,13 +11700,13 @@ abstract class AppLocalizations {
   /// No description provided for @tipsLineArtExtractionTitle.
   ///
   /// In ja, this message translates to:
-  /// **'色調補正・二値化・明度で透過を組み合わせて線画を抽出する'**
+  /// **'色調調整・二値化・明度で透過を組み合わせて線画を抽出する'**
   String get tipsLineArtExtractionTitle;
 
   /// No description provided for @tipsLineArtExtractionDesc.
   ///
   /// In ja, this message translates to:
-  /// **'色調補正でコントラストを強めて線を際立たせたあと、二値化フィルターで画像を白黒2色に分けると、線とそれ以外がはっきり分離します。二値化の閾値はスライダーで自由に調整でき、線の太さ・かすれ具合を好みに合わせられます。仕上げにレイヤーの三点メニューにある「明度で透過（グレー）」を使うと、白い部分（線以外）だけが透過し、線画だけを抽出できます。写真や下描きから線画だけを取り出したいときに便利です。'**
+  /// **'色調調整でコントラストを強めて線を際立たせたあと、二値化フィルターで画像を白黒2色に分けると、線とそれ以外がはっきり分離します。二値化の閾値はスライダーで自由に調整でき、線の太さ・かすれ具合を好みに合わせられます。仕上げにレイヤーの三点メニューにある「明度で透過（グレー）」を使うと、白い部分（線以外）だけが透過し、線画だけを抽出できます。写真や下描きから線画だけを取り出したいときに便利です。'**
   String get tipsLineArtExtractionDesc;
 
   /// No description provided for @tipsLineColorUsageTitle.
@@ -12174,7 +12174,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityFavoriteAuthorsEmptyTitle.
   ///
   /// In ja, this message translates to:
-  /// **'お気に入り作者がいません'**
+  /// **'フォロー中の作者がいません'**
   String get communityFavoriteAuthorsEmptyTitle;
 
   /// No description provided for @communityFavoriteAuthorsEmptyBody.
@@ -13200,7 +13200,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsOfficialAutomationPresetsDesc.
   ///
   /// In ja, this message translates to:
-  /// **'「線画作成（デジタル）」は、自動線画から墨溜まりまでの処理をまとめたプリセットです。\n確認画面では、手順の並べ替えや削除ができ、再記録では操作を追加できます。\n編集前に設定を書き出しておくと、元の状態へ戻せて安心です。\n「線画抽出（アナログ）」は、色調補正→二値化→明度で透過の順に処理します。\n「線画色トレス」は、下の塗り色を線画へ取り込み、ぼかし・複製・結合・色トレス補正で線を隣の塗りより深い色になじませます。'**
+  /// **'「線画作成（デジタル）」は、自動線画から墨溜まりまでの処理をまとめたプリセットです。\n確認画面では、手順の並べ替えや削除ができ、再記録では操作を追加できます。\n編集前に設定を書き出しておくと、元の状態へ戻せて安心です。\n「線画抽出（アナログ）」は、色調調整→二値化→明度で透過の順に処理します。\n「線画色トレス」は、下の塗り色を線画へ取り込み、ぼかし・複製・結合・色トレス補正で線を隣の塗りより深い色になじませます。'**
   String get tipsOfficialAutomationPresetsDesc;
 
   /// No description provided for @tipsTexturePrismVhsTitle.

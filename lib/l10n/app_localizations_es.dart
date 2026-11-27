@@ -6205,7 +6205,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get legalLastUpdated =>
-      'Última actualización: 25 de noviembre de 2026';
+      'Última actualización: 27 de noviembre de 2026';
 
   @override
   String get legalConsentTitle => 'Términos de uso y Política de privacidad';

@@ -6114,7 +6114,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progressDialogTipLabel => 'Tip';
 
   @override
-  String get legalLastUpdated => 'Last updated: November 25, 2026';
+  String get legalLastUpdated => 'Last updated: November 27, 2026';
 
   @override
   String get legalConsentTitle => 'Terms of Service and Privacy Policy';

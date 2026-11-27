@@ -5790,7 +5790,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get progressDialogTipLabel => '提示';
 
   @override
-  String get legalLastUpdated => '最后更新日期：2026年11月25日';
+  String get legalLastUpdated => '最后更新日期：2026年11月27日';
 
   @override
   String get legalConsentTitle => '使用条款和隐私政策';
@@ -16849,7 +16849,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get progressDialogTipLabel => '提示';
 
   @override
-  String get legalLastUpdated => '最後更新日期：2026年11月25日';
+  String get legalLastUpdated => '最後更新日期：2026年11月27日';
 
   @override
   String get legalConsentTitle => '使用條款及隱私權政策';
