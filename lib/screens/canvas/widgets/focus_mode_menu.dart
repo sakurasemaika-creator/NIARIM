@@ -122,9 +122,12 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
 
   void _startResizing(DragStartDetails details, Size expandedSize) {
     _resizeStartPosition = details.globalPosition;
+    // Read the live laid-out size at gesture start. The size calculated during
+    // build may still be the provisional fallback on a first frame.
+    final measured = _measuredSurfaceSize ?? expandedSize;
     _resizeStartSize = Size(
-      _menuWidth ?? expandedSize.width,
-      _menuHeight ?? expandedSize.height,
+      _menuWidth ?? measured.width,
+      _menuHeight ?? measured.height,
     );
   }
 
@@ -421,8 +424,10 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                           ),
                           child: TickerMode(
                             enabled: !_minimized,
-                            child: Offstage(
-                              offstage: _minimized,
+                            child: Visibility(
+                              visible: !_minimized,
+                              maintainState: true,
+                              maintainAnimation: true,
                               child: body,
                             ),
                           ),
