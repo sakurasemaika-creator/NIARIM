@@ -227,6 +227,11 @@ void main() {
           find.byTooltip(l10n.timelineBackToCanvasTooltip).hitTestable().first,
         );
         expect(find.byType(CanvasArea), findsOneWidget);
+        // 作品を変えたまま戻る（何も変えていなければ、聞かずに一覧へ戻る）。
+        history.push(
+          ProjectEditUndoAction('Canvas action', () {}, () {}),
+          projectId: id,
+        );
         await press(
           find
               .byTooltip(l10n.timelineBackToProjectListTooltip)
@@ -246,7 +251,7 @@ void main() {
   testWidgets('first Home click works as soon as the canvas is laid out', (
     tester,
   ) async {
-    await openTimeline(
+    final id = await openTimeline(
       tester,
       project: const Size(160, 90),
       screen: const Size(1280, 800),
@@ -271,6 +276,14 @@ void main() {
       await tester.pump();
     }
     expect(canvas, findsOneWidget);
+    // 作品を変えておく（何も変えていなければ、聞かずに一覧へ戻る）。
+    tester
+        .element(canvas)
+        .read<UndoManager>()
+        .push(
+          ProjectEditUndoAction('Canvas action', () {}, () {}),
+          projectId: id,
+        );
     final home = find.descendant(
       of: canvas,
       matching: find.byTooltip(l10n.timelineBackToProjectListTooltip),
