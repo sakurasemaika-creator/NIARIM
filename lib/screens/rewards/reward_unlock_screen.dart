@@ -1113,12 +1113,23 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                           ),
                         ),
                       )
+                    // 読み込めなかったときは知らせの印を付け、下の「残高を
+                    // 更新」でもう一度読み込める（以前は「画面を開き直して
+                    // ください」と、すぐ下にあるボタンと違う道を案内していた）。
+                    : !_walletLoading && _lastAccountId != null
+                    ? DefaultTextStyle.merge(
+                        style: theme.textTheme.bodyMedium,
+                        child: IconNotice.caution(
+                          t['balanceLoadFailed'],
+                          key: const Key('rewardWalletLoadFailed'),
+                        ),
+                      )
                     : messageText(
                         _walletLoading
                             ? t['loading']
-                            : _lastAccountId == null
-                            ? t['balanceSignIn']
-                            : t['balanceLoadFailed'],
+                            : earn
+                            ? t['earnSignIn']
+                            : t['balanceSignIn'],
                         style: theme.textTheme.bodyMedium,
                       ),
               ),
@@ -1274,8 +1285,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 ),
               ),
             ],
-            if (earn && _rewardState?['rewardEarningEnabled'] != true)
+            // 広告を止めているのはサーバーが答えたときだけ。読み込み中・
+            // ログインしていない・読み込めなかったときは残高の欄がそれぞれの
+            // 状態を出す（以前は残高が無いだけで「利用できません」と出て、
+            // 広告を配っている間も止まっているように読めた）。
+            if (earn &&
+                _rewardState != null &&
+                _rewardState!['rewardEarningEnabled'] != true)
               Padding(
+                key: const Key('rewardEarningPausedNotice'),
                 padding: const EdgeInsets.only(top: 16),
                 child: IconNotice(
                   nav['earnUnavailable'],

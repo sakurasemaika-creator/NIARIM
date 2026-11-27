@@ -9332,7 +9332,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardNavigationEarnDescription => '광고 시청으로 오팔 획득';
 
   @override
-  String get rewardNavigationEarnUnavailable => '현재 보상 광고를 이용할 수 없습니다';
+  String get rewardNavigationEarnUnavailable => '보상 광고를 일시적으로 중지했습니다';
 
   @override
   String get rewardUnlockTitle => '보상';
@@ -9384,8 +9384,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockBalanceSignIn => 'Google로 로그인하면 오팔 잔액이 표시됩니다';
 
   @override
-  String get rewardUnlockBalanceLoadFailed =>
-      '오팔 잔액을 불러오지 못했습니다. 화면을 다시 열어 주세요.';
+  String get rewardUnlockEarnSignIn => '오팔을 획득하려면 Google로 로그인해 주세요';
+
+  @override
+  String get rewardUnlockBalanceLoadFailed => '오팔 잔액을 불러오지 못했습니다';
 
   @override
   String get rewardUnlockRedeem => '오팔로 교환';

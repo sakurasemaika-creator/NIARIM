@@ -9903,7 +9903,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardNavigationEarnUnavailable =>
-      'Los anuncios con recompensa no están disponibles en este momento';
+      'Los anuncios con recompensa están en pausa por ahora';
 
   @override
   String get rewardUnlockTitle => 'Recompensas';
@@ -9959,8 +9959,12 @@ class AppLocalizationsEs extends AppLocalizations {
       'Inicia sesión con Google para ver tu saldo de ópalos';
 
   @override
+  String get rewardUnlockEarnSignIn =>
+      'Inicia sesión con Google para ganar ópalos';
+
+  @override
   String get rewardUnlockBalanceLoadFailed =>
-      'No se pudo cargar tu saldo de ópalos. Vuelve a abrir esta pantalla.';
+      'No se pudo cargar tu saldo de ópalos';
 
   @override
   String get rewardUnlockRedeem => 'Canjear ópalos';

@@ -9926,7 +9926,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardNavigationEarnUnavailable =>
-      'Les publicités récompensées ne sont pas disponibles pour le moment';
+      'Les publicités récompensées sont suspendues pour le moment';
 
   @override
   String get rewardUnlockTitle => 'Récompenses';
@@ -9982,8 +9982,12 @@ class AppLocalizationsFr extends AppLocalizations {
       'Connectez-vous avec Google pour voir votre solde d’opales';
 
   @override
+  String get rewardUnlockEarnSignIn =>
+      'Connectez-vous avec Google pour gagner des opales';
+
+  @override
   String get rewardUnlockBalanceLoadFailed =>
-      'Impossible de charger votre solde d’opales. Rouvrez cet écran.';
+      'Impossible de charger votre solde d’opales';
 
   @override
   String get rewardUnlockRedeem => 'Échanger les opales';

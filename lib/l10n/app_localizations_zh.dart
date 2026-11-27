@@ -9164,7 +9164,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardNavigationEarnDescription => '观看广告赚取欧泊';
 
   @override
-  String get rewardNavigationEarnUnavailable => '激励广告目前无法使用';
+  String get rewardNavigationEarnUnavailable => '激励广告已暂时停止';
 
   @override
   String get rewardUnlockTitle => '奖励';
@@ -9216,7 +9216,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockBalanceSignIn => '使用 Google 登录后即可查看欧泊余额';
 
   @override
-  String get rewardUnlockBalanceLoadFailed => '无法加载欧泊余额。请重新打开此页面。';
+  String get rewardUnlockEarnSignIn => '使用 Google 登录后即可赚取欧泊';
+
+  @override
+  String get rewardUnlockBalanceLoadFailed => '无法加载欧泊余额';
 
   @override
   String get rewardUnlockRedeem => '用欧泊兑换';
@@ -20199,7 +20202,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardNavigationEarnDescription => '觀看廣告賺取歐泊';
 
   @override
-  String get rewardNavigationEarnUnavailable => '獎勵廣告目前無法使用';
+  String get rewardNavigationEarnUnavailable => '獎勵廣告已暫時停止';
 
   @override
   String get rewardUnlockTitle => '獎勵';
@@ -20251,7 +20254,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockBalanceSignIn => '使用 Google 登入後即可查看歐泊餘額';
 
   @override
-  String get rewardUnlockBalanceLoadFailed => '無法載入歐泊餘額。請重新開啟此畫面。';
+  String get rewardUnlockEarnSignIn => '使用 Google 登入後即可賺取歐泊';
+
+  @override
+  String get rewardUnlockBalanceLoadFailed => '無法載入歐泊餘額';
 
   @override
   String get rewardUnlockRedeem => '用歐泊兌換';

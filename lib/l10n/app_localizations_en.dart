@@ -9755,7 +9755,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardNavigationEarnUnavailable =>
-      'Rewarded ads aren’t available right now';
+      'Rewarded ads are paused for now';
 
   @override
   String get rewardUnlockTitle => 'Rewards';
@@ -9811,8 +9811,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Sign in with Google to see your opal balance';
 
   @override
-  String get rewardUnlockBalanceLoadFailed =>
-      'Couldn’t load your opal balance. Please reopen this screen.';
+  String get rewardUnlockEarnSignIn => 'Sign in with Google to earn opals';
+
+  @override
+  String get rewardUnlockBalanceLoadFailed => 'Couldn’t load your opal balance';
 
   @override
   String get rewardUnlockRedeem => 'Redeem opals';

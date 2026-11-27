@@ -32,6 +32,7 @@ class RewardUnlockLabels {
     'total' => _l10n.rewardUnlockTotal,
     'unavailable' => _l10n.rewardUnlockUnavailable,
     'balanceSignIn' => _l10n.rewardUnlockBalanceSignIn,
+    'earnSignIn' => _l10n.rewardUnlockEarnSignIn,
     'balanceLoadFailed' => _l10n.rewardUnlockBalanceLoadFailed,
     'redeem' => _l10n.rewardUnlockRedeem,
     'watchRewardedAd' => _l10n.rewardUnlockWatchRewardedAd,

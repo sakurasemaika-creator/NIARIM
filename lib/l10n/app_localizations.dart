@@ -16626,7 +16626,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardNavigationEarnUnavailable.
   ///
   /// In ja, this message translates to:
-  /// **'現在リワード広告は利用できません'**
+  /// **'リワード広告は一時的に停止しています'**
   String get rewardNavigationEarnUnavailable;
 
   /// No description provided for @rewardUnlockTitle.
@@ -16719,16 +16719,22 @@ abstract class AppLocalizations {
   /// **'特典を選ぶと、必要なオパールの合計が表示されます'**
   String get rewardUnlockUnavailable;
 
-  /// 特典交換・広告：ログインしていないときの、オパールの残高の欄
+  /// 特典交換：ログインしていないときの、オパールの残高の欄
   ///
   /// In ja, this message translates to:
   /// **'Googleでログインすると、オパールの残高が表示されます'**
   String get rewardUnlockBalanceSignIn;
 
+  /// 広告で貯めるタブ：ログインしていないときの、オパールの残高の欄
+  ///
+  /// In ja, this message translates to:
+  /// **'オパールを獲得するには、Googleでログインしてください'**
+  String get rewardUnlockEarnSignIn;
+
   /// 特典交換・広告：ログインしているが、オパールの残高を読み込めなかったときの欄
   ///
   /// In ja, this message translates to:
-  /// **'オパールの残高を読み込めませんでした。画面を開き直してください。'**
+  /// **'オパールの残高を読み込めませんでした'**
   String get rewardUnlockBalanceLoadFailed;
 
   /// No description provided for @rewardUnlockRedeem.

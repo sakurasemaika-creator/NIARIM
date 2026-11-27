@@ -4814,7 +4814,7 @@
   "rewardNavigationPremiumJoin": "プレミアム会員になる",
   "rewardNavigationPremiumPlans": "月額・年額プランを選ぶ",
   "rewardNavigationEarnDescription": "広告を見るとオパールを獲得できます",
-  "rewardNavigationEarnUnavailable": "現在リワード広告は利用できません",
+  "rewardNavigationEarnUnavailable": "リワード広告は一時的に停止しています",
   "rewardUnlockTitle": "報酬",
   "rewardUnlockMissionTitle": "ミッション",
   "rewardUnlockMissionSubtitle": "作品の投稿やブックマーク達成でオパールを獲得",
@@ -4832,9 +4832,13 @@
   "rewardUnlockUnavailable": "特典を選ぶと、必要なオパールの合計が表示されます",
   "rewardUnlockBalanceSignIn": "Googleでログインすると、オパールの残高が表示されます",
   "@rewardUnlockBalanceSignIn": {
-    "description": "特典交換・広告：ログインしていないときの、オパールの残高の欄"
+    "description": "特典交換：ログインしていないときの、オパールの残高の欄"
   },
-  "rewardUnlockBalanceLoadFailed": "オパールの残高を読み込めませんでした。画面を開き直してください。",
+  "rewardUnlockEarnSignIn": "オパールを獲得するには、Googleでログインしてください",
+  "@rewardUnlockEarnSignIn": {
+    "description": "広告で貯めるタブ：ログインしていないときの、オパールの残高の欄"
+  },
+  "rewardUnlockBalanceLoadFailed": "オパールの残高を読み込めませんでした",
   "@rewardUnlockBalanceLoadFailed": {
     "description": "特典交換・広告：ログインしているが、オパールの残高を読み込めなかったときの欄"
   },

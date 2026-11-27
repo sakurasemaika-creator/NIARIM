@@ -9280,7 +9280,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardNavigationEarnDescription => '広告を見るとオパールを獲得できます';
 
   @override
-  String get rewardNavigationEarnUnavailable => '現在リワード広告は利用できません';
+  String get rewardNavigationEarnUnavailable => 'リワード広告は一時的に停止しています';
 
   @override
   String get rewardUnlockTitle => '報酬';
@@ -9332,8 +9332,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockBalanceSignIn => 'Googleでログインすると、オパールの残高が表示されます';
 
   @override
-  String get rewardUnlockBalanceLoadFailed =>
-      'オパールの残高を読み込めませんでした。画面を開き直してください。';
+  String get rewardUnlockEarnSignIn => 'オパールを獲得するには、Googleでログインしてください';
+
+  @override
+  String get rewardUnlockBalanceLoadFailed => 'オパールの残高を読み込めませんでした';
 
   @override
   String get rewardUnlockRedeem => 'オパールと引き換え';

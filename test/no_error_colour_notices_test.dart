@@ -102,6 +102,7 @@ const _cautionAllowed = <String, int>{
   'lib/screens/community/community_post_screen.dart': 1,
   'lib/screens/premium/premium_screen.dart': 1,
   'lib/screens/rewards/opal_gifts.dart': 1,
+  'lib/screens/rewards/reward_unlock_screen.dart': 1,
   'lib/screens/export/export_screen.dart': 1,
   'lib/screens/project/new_project_screen.dart': 1,
   'lib/screens/project/making_screen.dart': 2,
