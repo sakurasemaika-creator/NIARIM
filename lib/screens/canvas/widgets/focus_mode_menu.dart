@@ -250,6 +250,13 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
         final menuWidth = (_menuWidth ?? initialWidth)
             .clamp(minWidth, maxWidth)
             .toDouble();
+        // Keep the four edge actions inside the header even when the user
+        // narrows the window to its minimum width.
+        final headerControlWidth = menuWidth < 240
+            ? 36.0
+            : menuWidth < 300
+            ? 42.0
+            : _headerHeight;
 
         final maxMenuHeight = math
             .max(0.0, viewportHeight - _edgeInset * 2)
@@ -348,7 +355,7 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                             children: [
                               // Top-left resize handle: drag left/up to grow.
                               SizedBox(
-                                width: _headerHeight,
+                                width: headerControlWidth,
                                 height: _headerHeight,
                                 child: MouseRegion(
                                   cursor: SystemMouseCursors.resizeUpLeft,
@@ -399,7 +406,7 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                               ),
                               // Minimize/restore sits immediately beside resize.
                               SizedBox(
-                                width: _headerHeight,
+                                width: headerControlWidth,
                                 height: _headerHeight,
                                 child: IconButton(
                                   key: const ValueKey(
@@ -410,7 +417,7 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                       : widget.collapseTooltip,
                                   visualDensity: VisualDensity.compact,
                                   constraints: BoxConstraints.tightFor(
-                                    width: _headerHeight,
+                                    width: headerControlWidth,
                                     height: _headerHeight,
                                   ),
                                   padding: EdgeInsets.zero,
@@ -513,7 +520,7 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                   final builder =
                                       _menuController.headerMenuBuilder;
                                   return SizedBox(
-                                    width: _headerHeight,
+                                    width: headerControlWidth,
                                     height: _headerHeight,
                                     child: builder?.call(context) ??
                                         const SizedBox.shrink(),
@@ -522,13 +529,16 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                               ),
                               if (widget.onClose != null)
                                 SizedBox(
-                                  width: _headerHeight,
+                                  width: headerControlWidth,
                                   height: _headerHeight,
                                   child: IconButton(
+                                    key: const ValueKey(
+                                      'focus-mode-menu-close',
+                                    ),
                                     tooltip: widget.closeTooltip ?? '',
                                     visualDensity: VisualDensity.compact,
                                     constraints: BoxConstraints.tightFor(
-                                      width: _headerHeight,
+                                      width: headerControlWidth,
                                       height: _headerHeight,
                                     ),
                                     padding: EdgeInsets.zero,
