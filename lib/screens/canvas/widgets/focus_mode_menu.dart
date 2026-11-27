@@ -468,6 +468,9 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                                       Alignment.centerLeft,
                                                   child: Text(
                                                     widget.title,
+                                                    key: const ValueKey(
+                                                      'focus-mode-menu-title',
+                                                    ),
                                                     maxLines: 1,
                                                     overflow:
                                                         TextOverflow.ellipsis,
