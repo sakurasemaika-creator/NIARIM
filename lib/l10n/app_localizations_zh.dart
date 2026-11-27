@@ -5963,7 +5963,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get privacyPolicyArt5Body =>
-      '本应用并非以未满13岁（如所居住的国家或地区的法令规定了更高的年龄，则为未满该年龄；例如在韩国为未满14岁）的儿童为主要对象而有意收集信息。建议家长在孩子使用本应用时，根据需要通过设备设置停用个性化广告等。';
+      '本应用并非以未满13岁（如所居住的国家或地区的法令规定了高于13岁的标准，则以该标准为准；例如在韩国为未满14岁）的儿童为主要对象而有意收集信息。建议家长在孩子使用本应用时，根据需要通过设备设置停用个性化广告等。';
 
   @override
   String get privacyPolicyArt6Title => '第6条（关于信息的跨境转移）';
@@ -9144,7 +9144,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardNavigationMembership => '会员状态';
 
   @override
-  String get rewardNavigationMembershipDetail => '了解 Premium 会员';
+  String get rewardNavigationMembershipDetail => '了解 Premium';
 
   @override
   String get rewardNavigationMembershipFree => '免费会员';
@@ -17045,7 +17045,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get privacyPolicyArt5Body =>
-      '本應用程式並非以未滿13歲（如使用者所居住國家或地區之法令訂有高於此之年齡，則為未滿該年齡；例如於韓國為未滿14歲）之兒童為主要對象而刻意蒐集資訊。建議家長於子女使用本應用程式時，視需要透過裝置設定停用個人化廣告等。';
+      '本應用程式並非以未滿13歲（如使用者所居住國家或地區之法令訂有高於13歲之標準，則以該標準為準；例如於韓國為未滿14歲）之兒童為主要對象而刻意蒐集資訊。建議家長於子女使用本應用程式時，視需要透過裝置設定停用個人化廣告等。';
 
   @override
   String get privacyPolicyArt6Title => '第6條（關於資訊之跨境傳輸）';
@@ -20228,7 +20228,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardNavigationMembership => '會員狀態';
 
   @override
-  String get rewardNavigationMembershipDetail => '了解 Premium 會員';
+  String get rewardNavigationMembershipDetail => '了解 Premium';
 
   @override
   String get rewardNavigationMembershipFree => '免費會員';

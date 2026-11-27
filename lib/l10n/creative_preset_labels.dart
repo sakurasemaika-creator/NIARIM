@@ -50,7 +50,7 @@ final _dither = RegExp(r'^ピクセルディザ（[^・]+・(\d+×\d+)・(\d+)%�
 const _labels = <String, List<String>>{
   "ペン": ["Pen", "Pluma", "Plume", "펜", "钢笔", "鋼筆"],
   "Gペン": ["G pen", "Plumilla G", "Plume G", "G펜", "G笔", "G筆"],
-  "エアブラシ": ["Airbrush", "Aerógrafo", "Aérographe", "에어브러시", "喷枪", "噴槍"],
+  "エアブラシ": ["Airbrush", "Aerógrafo", "Aérosol", "에어브러시", "喷枪", "噴槍"],
   "混色ブラシ": [
     "Mixing brush",
     "Pincel mezclador",
