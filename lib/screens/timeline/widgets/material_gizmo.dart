@@ -788,6 +788,10 @@ class _MaterialRegionGizmoState extends State<MaterialRegionGizmo> {
   CropHandle? _resizeHandle;
   LayerRegionEdit? _startEdit;
   int _stretchHandle = 0;
+
+  /// The handle of the moved part that was grabbed (layer pixels): resizing
+  /// follows it, not the point the finger came down on.
+  Offset _grabbedHandle = Offset.zero;
   List<Offset> _freehand = [];
 
   /// Where the first finger came down: a drag starts there (the gesture is
@@ -855,15 +859,18 @@ class _MaterialRegionGizmoState extends State<MaterialRegionGizmo> {
         _drag = _RegionDrag.turnPiece;
         return;
       }
-      var best = _hitRadius;
-      int? hit;
       final offered = _offered(handles);
+      var best = _reachAt(offered, at);
+      int? hit;
       for (var i = 0; i < offered.length; i++) {
         final distance = (offered[i] - at).distance;
         if (distance < best) {
           best = distance;
           hit = i;
         }
+      }
+      if (hit != null) {
+        _grabbedHandle = MaterialRegionGizmo.pieceHandles(piece, _w, _h)[hit];
       }
       if (hit == null) {
         _drag = _RegionDrag.movePiece;
@@ -884,7 +891,7 @@ class _MaterialRegionGizmoState extends State<MaterialRegionGizmo> {
           for (final p in MaterialRegionGizmo.selectionHandles(box))
             g._layerToBox(p),
         ]);
-        var best = _hitRadius;
+        var best = _reachAt(points, at);
         _resizeHandle = null;
         for (var i = 0; i < points.length; i++) {
           final distance = (points[i] - at).distance;
@@ -905,6 +912,36 @@ class _MaterialRegionGizmoState extends State<MaterialRegionGizmo> {
     }
     _drag = _RegionDrag.draw;
     _freehand = [_fraction(_clampedLayer(_startLayer))];
+  }
+
+  /// How near (preview pixels) [at] must be to one of [handles] (corners
+  /// first) to grab it. Inside a small box the corners only take the part
+  /// near them, so the middle of the box still moves it (a corner's reach
+  /// covered the whole of a 43 × 27 part, and grabbing it near the middle
+  /// resized it). Outside the box the reach is the whole radius.
+  static double _reachAt(List<Offset> handles, Offset at) {
+    final corners = handles.sublist(0, 4);
+    var depth = double.infinity;
+    var turn = 0.0;
+    for (var i = 0; i < 4; i++) {
+      final a = corners[i];
+      final b = corners[(i + 1) % 4];
+      final side = b - a;
+      final length = side.distance;
+      if (length < 1e-6) return _hitRadius;
+      final cross = side.dx * (at.dy - a.dy) - side.dy * (at.dx - a.dx);
+      // The corners go round one way or the other (a flip mirrors them):
+      // inside, every side sees the point on the same hand.
+      if (turn == 0) turn = cross.sign;
+      if (cross.sign != turn) return _hitRadius;
+      depth = math.min(depth, cross.abs() / length);
+    }
+    if (depth <= 0) return _hitRadius;
+    final shortest = math.min(
+      (corners[1] - corners[0]).distance,
+      (corners[2] - corners[1]).distance,
+    );
+    return math.min(_hitRadius, shortest / 3);
   }
 
   /// The handles that are offered of [handles] (preview pixels, corners
@@ -1019,17 +1056,20 @@ class _MaterialRegionGizmoState extends State<MaterialRegionGizmo> {
     switch (drag) {
       case _RegionDrag.movePiece:
         return _moved(start, now - _startLayer);
-      case _RegionDrag.scalePiece:
-        final from = (_startLayer - centre).distance;
-        if (from < 1e-6) return null;
-        final ratio = (now - centre).distance / from;
-        return _resized(start, ratio, ratio);
-      case _RegionDrag.stretchPiece:
-        final axis = _startLayer - centre;
+      case _RegionDrag.scalePiece || _RegionDrag.stretchPiece:
+        // The grabbed handle goes where the finger goes; the size follows
+        // how far along from the centre it now is (never through it).
+        final axis = _grabbedHandle - centre;
         final squared = axis.dx * axis.dx + axis.dy * axis.dy;
         if (squared < 1e-9) return null;
-        final towards = now - centre;
-        final ratio = (towards.dx * axis.dx + towards.dy * axis.dy) / squared;
+        final towards = _grabbedHandle + (now - _startLayer) - centre;
+        final ratio = math.max(
+          0.0,
+          (towards.dx * axis.dx + towards.dy * axis.dy) / squared,
+        );
+        if (drag == _RegionDrag.scalePiece) {
+          return _resized(start, ratio, ratio);
+        }
         // The middles of the top and bottom sides stretch it down, the
         // others across.
         final down = _stretchHandle == 4 || _stretchHandle == 6;

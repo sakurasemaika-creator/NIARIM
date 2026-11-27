@@ -272,6 +272,57 @@ void main() {
       expect(harness.edit!.scaleX, greaterThan(1));
       expect(harness.edit!.scaleY, harness.edit!.scaleX);
     });
+
+    // 実際に使ってみたとき（2026-11-27）、43×27pxほどに見える小さな部分の中を
+    // つかんで動かすと、角のつまみ（24px）が中まで届いていて、×10まで
+    // 大きくなった（大きさを、指を置いた所の中心からの距離の比で変えていた）。
+    final small = LayerRegionEdit(
+      id: 's',
+      kind: RegionEditKind.move,
+      region: RegionSelection.box(
+        RegionShape.rectangle,
+        // 17 × 11 layer pixels: 42.5 × 27.5 on the preview.
+        const Rect.fromLTRB(40 / _w, 30 / _h, 57 / _w, 41 / _h),
+      ),
+    );
+
+    testWidgets('the middle of a small part moves it', (tester) async {
+      final harness = await pump(tester, edit: small);
+      final centre = _onPreview(const Offset(48.5, 35.5));
+      await drag(tester, centre + const Offset(3, 2), const Offset(30, 0));
+      expect(harness.edit!.scaleX, 1);
+      expect(harness.edit!.scaleY, 1);
+      expect(harness.edit!.dx * _w, 12);
+    });
+
+    testWidgets('a corner of a small part resizes it from that corner', (
+      tester,
+    ) async {
+      final harness = await pump(tester, edit: small);
+      // Just outside the bottom-right corner (57, 41), 8.5 × 5.5 from the
+      // centre: pulled 8.5 × 5.5 further is twice the size.
+      await drag(
+        tester,
+        _onPreview(const Offset(57, 41)) + const Offset(4, 4),
+        const Offset(8.5 * _fit, 5.5 * _fit),
+      );
+      expect(harness.edit!.scaleX, 2);
+      expect(harness.edit!.scaleY, 2);
+    });
+
+    testWidgets('grabbed just inside a corner, the corner follows the finger', (
+      tester,
+    ) async {
+      final harness = await pump(tester, edit: edit);
+      // 5 preview pixels inside the bottom-right corner (80, 60).
+      await drag(
+        tester,
+        _onPreview(const Offset(80, 60)) - const Offset(4, 3),
+        const Offset(20 * _fit, 15 * _fit),
+      );
+      expect(harness.edit!.scaleX, 2);
+      expect(harness.edit!.scaleY, 2);
+    });
   });
 }
 
