@@ -256,14 +256,14 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
-      const MaterialApp(
+      MaterialApp(
         home: Scaffold(
           body: FocusModeMenu(
             collapseTooltip: 'Minimize',
             expandTooltip: 'Expand',
             closeTooltip: 'Close',
             onClose: () {},
-            child: SizedBox(width: 180, height: 80),
+            child: const SizedBox(width: 180, height: 80),
           ),
         ),
       ),
