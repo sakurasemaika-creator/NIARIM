@@ -433,7 +433,7 @@ void main() {
     await _frames(tester, 4);
     await tester.tap(find.byTooltip(l10n.commonSearch));
     await _frames(tester, 8);
-    final toggle = find.byTooltip(l10n.projectDetailTagsQuickAction);
+    final toggle = find.byKey(const Key('homeSearchTagToggle'));
     for (final width in [412.0, 399.0, 360.0, 320.0]) {
       tester.view.physicalSize = Size(width, 844);
       await _frames(tester, 4);

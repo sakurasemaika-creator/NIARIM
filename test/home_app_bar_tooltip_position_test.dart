@@ -122,7 +122,7 @@ void main() {
         await home.settle();
         await check(
           find.byKey(const Key('homeSearchTagToggle')),
-          l10n.projectDetailTagsQuickAction,
+          l10n.creativePanelTagSearchHint,
         );
         await check(
           find.byKey(const Key('homeSearchCloseButton')),
