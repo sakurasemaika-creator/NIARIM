@@ -234,7 +234,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homeShareOpenWith => 'Share / Open in Photos';
+  String get homeShareOpenWith => 'Share / Open in a photo app';
 
   @override
   String get homePreviewFailed => 'Unable to play preview';
@@ -913,14 +913,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsShortcutSubtitle =>
-      'Assign tools and actions to keyboard/left-hand devices';
+      'Assign tools and actions to a keyboard or shortcut device';
 
   @override
   String get shortcutSettingsTitle => 'Shortcuts';
 
   @override
   String get shortcutSettingsHint =>
-      'Assign keyboard or left-hand device keys to tools (down to a specific brush and size) or actions like Undo/Redo. Works in both Canvas and Timeline mode.';
+      'Assign keys on a keyboard or shortcut device (such as a left-hand keypad) to tools (down to a specific brush and size) or actions like Undo/Redo. Works in both Canvas and Timeline mode.';
 
   @override
   String get shortcutEmpty => 'No shortcuts registered';
@@ -1197,7 +1197,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumFeatureMakingEndLogo =>
-      'Official End Mark on Making Videos';
+      'Official End Mark on Making-of Videos';
 
   @override
   String get premiumFeatureGifCornerLogo => 'NIARIM Logo in the Corner of GIFs';
@@ -1209,7 +1209,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumFeatureToneCurve => 'Tone Curve (drawing)';
 
   @override
-  String get premiumFeatureLevelCorrection => 'Level Correction (drawing)';
+  String get premiumFeatureLevelCorrection => 'Levels (drawing)';
 
   @override
   String get premiumFeatureAds => 'Ads';
@@ -1575,14 +1575,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpEffectFilterDesc =>
-      'A visual effect (blur, color correction, glow, pixel art, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Of the drawing filters, Tone Curve (a preset and its strength), Levels, Sharpen, Unsharp Mask, Vignette (color, range and density) and Watercolor Edge are effect filters too, so the same effect can be applied to many frames at once. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors in a regular pattern (dithering) that stays in place from frame to frame; edges stay crisp. Dithering can be switched off, to fill each dot with the nearest single color. Multiple effect filters can be stacked, and they’re applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they’re actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.';
+      'A visual effect (blur, color correction, glow, pixel art, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Of the draw filters, Tone Curve (a preset and its strength), Levels, Sharpen, Unsharp Mask, Vignette (color, range and density) and Watercolor Edge are effect filters too, so the same effect can be applied to many frames at once. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors in a regular pattern (dithering) that stays in place from frame to frame; edges stay crisp. Dithering can be switched off, to fill each dot with the nearest single color. Multiple effect filters can be stacked, and they’re applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they’re actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.';
 
   @override
   String get helpEndCardTitle => 'End Mark';
 
   @override
   String get helpEndCardDesc =>
-      'The NIARIM end mark is a five-second logo appended to MP4, WebM, and AVI exports, including making videos. GIFs get a small NIARIM icon and app name in a corner instead. While the benefit is active, you can show or hide them per project. Project preferences are kept after expiry.';
+      'The NIARIM end mark is a five-second logo appended to MP4, WebM, and AVI exports, including making-of videos. GIFs get a small NIARIM icon and app name in a corner instead. While the benefit is active, you can show or hide them per project. Project preferences are kept after expiry.';
 
   @override
   String get helpAutoSaveTitle => 'Auto Save';
@@ -1705,7 +1705,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpMaterialClipDesc =>
-      'Clips placed on the timeline’s text, image, video and audio tracks. Long-press-drag a clip’s body to move its start position, or drag the handles at either end to change how much of it is used. Materials shown at the same time go on rows of their own automatically. Tapping a text, image or video clip opens its edit panel below the preview: the text, font, colour and outline; the position, scale, X/Y/Z-axis rotation and opacity (you can also drag it on the preview, and adding keyframes makes it move); its mask (rectangle or ellipse, feathered, inverted); and the row it sits on. It can be duplicated or deleted there too. An audio clip’s volume and fades are set in its detail sheet.';
+      'Clips placed on the timeline’s text, image, video and audio tracks. Long-press-drag a clip’s body to move its start position, or drag the handles at either end to change how much of it is used. Materials shown at the same time go on rows of their own automatically. Tapping a text, image or video clip opens its edit panel below the preview: the text, font, color and outline; the position, scale, X/Y/Z-axis rotation and opacity (you can also drag it on the preview, and adding keyframes makes it move); its mask (rectangle or ellipse, feathered, inverted); and the row it sits on. It can be duplicated or deleted there too. An audio clip’s volume and fades are set in its detail sheet.';
 
   @override
   String get helpGestureSettingsTitle => 'Gesture settings';
@@ -1888,7 +1888,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpWatermarkEditDesc =>
-      'Adjust angle, size, opacity, and display range from the shared-layer track in the timeline. Placed watermarks stay in projects and exports after expiry. An active benefit is required to change these settings.';
+      'Adjust angle, size, opacity, and display range from the common layer track in the timeline. Placed watermarks stay in projects and exports after expiry. An active benefit is required to change these settings.';
 
   @override
   String get helpAudioClipTitle => 'Volume';
@@ -1923,14 +1923,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'Choose “Standard”, “High Quality”, or “Custom” under “Preset”. With “Custom”, you can adjust the FPS. Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device’s performance. Find your export by its project name in Works on the home screen. Choose Share to save it to Photos or open it in another app.';
+      'Choose “Standard”, “High Quality”, or “Custom” under “Preset”. With “Custom”, you can adjust the FPS. Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device’s performance. Find your export by its project name in Works on the home screen. Choose Share to save it to a photo app or open it in another app.';
 
   @override
   String get helpDrawingFilterTitle => 'Draw filters';
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 26 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture, Background Blend, Ink Pool, Auto Line Art, Prism, Invert colors, Mosaic, Noise, Sphere Shading, and Watercolor Edge. Watercolor Edge only adds color gathered along the edges of what is painted on the working layer, deepening them like dried watercolor (inside the edges the paint stays as it was painted; with “Also at color borders”, borders between neighboring colors get an edge too). Anime Style reduces the colors and draws a line of the “Border width” on the darker side of every border where neighboring colors differ by at least the “Color difference threshold” (line art doesn’t get thicker). Prism paints each shape on the layer with the six rainbow colors (red, green, cyan, blue, purple, red), blurs it and sets the layer to Linear Dodge. Draw small, slender leaf-like shapes in a dark color on their own layer first, and you get soft rainbow streaks of light over your picture (Blur amount is measured like an ordinary Gaussian blur). Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel’s “Pen” and “Bucket” (corrected with “Eraser”; it starts from the selection or Selection layer if there is one). When the canvas has a selection, drawing filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors laid out in a regular pattern (dithering) that looks closer to the original; edges stay crisp. With a color count, the colors are taken from what most of the picture is made of. Dithering can be switched off, to fill each dot with the nearest single color. Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose “Add control point” next to Apply and tap a line to add a point, or choose “Delete control point” and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor’s Undo and Redo. On the Tone Curve, tap an empty spot to add a point, drag a point to move it and long-press it to delete it; the R, G and B curves apply after the RGB curve. Levels can also be set for R, G and B on their own, and Gamma changes the midtones. The Outline’s “Reach inside” widens the edge into the original shape, and the outline’s new layer is placed right below the original layer. Chromatic Aberration lets you share the shift between X (sideways), Y (up and down) and Z (outward from the centre). The Fisheye’s centre and radius can also be dragged on the canvas, with the + and the knob on the circle. Vignette softly darkens the four corners of the whole canvas (transparent, undrawn areas get the shadow too). “Range” sets how far in from the corners it reaches, and “Density” how dark the corners get. Lens Distortion works like real strong glasses: what is seen through the lens shrinks evenly towards the lens centre (negative values, for short sight) or grows (positive values, for long sight), and the outline steps out of line at the lens rim. Ink Pooling collects only inside corners where lines meet at the “Max angle” or less (at the default 90°, acute and right angles: a V, the narrow side of a crossing, a T-junction, a square corner), never in wider ones: at the meeting point it is the “Center width” beyond the line’s edge, and it thins in a straight slope to nothing, a smooth point, at the end of the “Range” (however large the “Center width”, it never bulges past the straight line between the two pools’ ends: at its widest the middle is flat); where a line ends sooner, the pool along that line thins to nothing where the line ends, so each line can have its own length, and the two pools still meet in the middle of the corner, as thick from either line (the longer line’s pool thins on from there to the end of the range). Auto line art traces the centre of the rough lines and draws them thin. Lines running close together stay separate lines as long as any gap shows between them; only tiny specks of paper inside a stroke are filled. Where two lines run into each other, they come together gradually as in the rough, rather than turning into one line down the middle. Where lines cross or lie over each other, each line carries on as drawn in the rough (it does not bend into the crossing, and two overlapping lines do not melt into one). Lines crossing at a shallow slant carry straight on through the crossing, and lines that only touch (such as a hair outline drawn along the head) stay separate lines, each on its own side. Dots such as eyes stay filled dots. Branches shorter than the “Rough line width” are left out. “Taper the ends” can be switched on or off; when off, lines keep the same width right to their ends. Background Blend lays the background’s light and shadow over the picture in the “Hard Light” blend mode (the shadow colour is not black or grey but the colour of the background’s own shadows, darkened). The surroundings’ colour goes over the whole picture in “Overlay” to set its overall colour, light bouncing up from below and reflected from around goes on in “Screen”, and a strong coloured light such as neon glows along the outline in “Addition (Glow)”. “Match the background’s tones” brings colours brighter or more vivid than the background back into its range, and gives the dark, middle and light tones the colour cast of the background’s tones of the same brightness (black line art stays as it is). “Blur amount” is how much the background is blurred before its colours are taken.';
+      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 26 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture, Background Blend, Ink Pooling, Auto Line Art, Prism, Invert colors, Mosaic, Noise, Sphere Shading, and Watercolor Edge. Watercolor Edge only adds color gathered along the edges of what is painted on the working layer, deepening them like dried watercolor (inside the edges the paint stays as it was painted; with “Also at color borders”, borders between neighboring colors get an edge too). Anime Style reduces the colors and draws a line of the “Border width” on the darker side of every border where neighboring colors differ by at least the “Color difference threshold” (line art doesn’t get thicker). Prism paints each shape on the layer with the six rainbow colors (red, green, cyan, blue, purple, red), blurs it and sets the layer to Linear Dodge. Draw small, slender leaf-like shapes in a dark color on their own layer first, and you get soft rainbow streaks of light over your picture (Blur amount is measured like an ordinary Gaussian blur). Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel’s “Pen” and “Bucket” (corrected with “Eraser”; it starts from the selection or Selection layer if there is one). When the canvas has a selection, draw filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors laid out in a regular pattern (dithering) that looks closer to the original; edges stay crisp. With a color count, the colors are taken from what most of the picture is made of. Dithering can be switched off, to fill each dot with the nearest single color. Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose “Add control point” next to Apply and tap a line to add a point, or choose “Delete control point” and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor’s Undo and Redo. On the Tone Curve, tap an empty spot to add a point, drag a point to move it and long-press it to delete it; the R, G and B curves apply after the RGB curve. Levels can also be set for R, G and B on their own, and Gamma changes the midtones. The Outline’s “Reach inside” widens the edge into the original shape, and the outline’s new layer is placed right below the original layer. Chromatic Aberration lets you share the shift between X (sideways), Y (up and down) and Z (outward from the center). The Fisheye’s center and radius can also be dragged on the canvas, with the + and the knob on the circle. Vignette softly darkens the four corners of the whole canvas (transparent, undrawn areas get the shadow too). “Range” sets how far in from the corners it reaches, and “Density” how dark the corners get. Lens Distortion works like real strong glasses: what is seen through the lens shrinks evenly towards the lens center (negative values, for nearsightedness) or grows (positive values, for farsightedness), and the outline steps out of line at the lens rim. Ink Pooling collects only inside corners where lines meet at the “Max angle” or less (at the default 90°, acute and right angles: a V, the narrow side of a crossing, a T-junction, a square corner), never in wider ones: at the meeting point it is the “Center width” beyond the line’s edge, and it thins in a straight slope to nothing, a smooth point, at the end of the “Range” (however large the “Center width”, it never bulges past the straight line between the two pools’ ends: at its widest the middle is flat); where a line ends sooner, the pool along that line thins to nothing where the line ends, so each line can have its own length, and the two pools still meet in the middle of the corner, as thick from either line (the longer line’s pool thins on from there to the end of the range). Auto line art traces the center of the rough lines and draws them thin. Lines running close together stay separate lines as long as any gap shows between them; only tiny specks of paper inside a stroke are filled. Where two lines run into each other, they come together gradually as in the rough, rather than turning into one line down the middle. Where lines cross or lie over each other, each line carries on as drawn in the rough (it does not bend into the crossing, and two overlapping lines do not melt into one). Lines crossing at a shallow slant carry straight on through the crossing, and lines that only touch (such as a hair outline drawn along the head) stay separate lines, each on its own side. Dots such as eyes stay filled dots. Branches shorter than the “Rough line width” are left out. “Taper the ends” can be switched on or off; when off, lines keep the same width right to their ends. Background Blend lays the background’s light and shadow over the picture in the “Hard Light” blend mode (the shadow color is not black or gray but the color of the background’s own shadows, darkened). The surroundings’ color goes over the whole picture in “Overlay” to set its overall color, light bouncing up from below and reflected from around goes on in “Screen”, and a strong colored light such as neon glows along the outline in “Addition (Glow)”. “Match the background’s tones” brings colors brighter or more vivid than the background back into its range, and gives the dark, middle and light tones the color cast of the background’s tones of the same brightness (black line art stays as it is). “Blur amount” is how much the background is blurred before its colors are taken.';
 
   @override
   String get helpLayerKeyframeTitle => 'Layer keyframes (per-part animation)';
@@ -2001,11 +2001,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsAutofillManualPartColorTitle =>
-      'Separate temporary fill colours by hand; keep the real lineart on one normal layer';
+      'Separate temporary fill colors by hand; keep the real lineart on one normal layer';
 
   @override
   String get tipsAutofillManualPartColorDesc =>
-      'Use this workflow when you want to separate parts with bright temporary colours first, then replace them with their final colours. Draw all real lineart on one normal layer and keep it above the fill layers.\nFor each part, add an “Auto-fill lineart layer” and use its three-dot menu > “Assign part” to link the part. These are helper layers for this workflow, so leave them empty—do not draw the real lineart on them. From the same menu, choose “Run auto-fill” once to create the paired “Auto-fill layer”.\nOn each “Auto-fill layer”, manually paint a solid area for the matching part using an easy-to-see temporary colour. Paint the area to be recoloured, not just its outline.\nWhen the shapes are right, open “Run auto-fill” from the corresponding “Auto-fill lineart layer” menu and select “Update color while keeping shape”. This keeps your hand-painted shapes and applies the final colours from “Autofill Settings”. If you want the app to detect the parts from the lineart and colour them automatically in one pass, use a different workflow: draw the actual lineart on the “Auto-fill lineart layers”.';
+      'Use this workflow when you want to separate parts with bright temporary colors first, then replace them with their final colors. Draw all real lineart on one normal layer and keep it above the fill layers.\nFor each part, add an “Auto-fill lineart layer” and use its three-dot menu > “Assign part” to link the part. These are helper layers for this workflow, so leave them empty—do not draw the real lineart on them. From the same menu, choose “Run auto-fill” once to create the paired “Auto-fill layer”.\nOn each “Auto-fill layer”, manually paint a solid area for the matching part using an easy-to-see temporary color. Paint the area to be recolored, not just its outline.\nWhen the shapes are right, open “Run auto-fill” from the corresponding “Auto-fill lineart layer” menu and select “Update color while keeping shape”. This keeps your hand-painted shapes and applies the final colors from “Autofill Settings”. If you want the app to detect the parts from the lineart and color them automatically in one pass, use a different workflow: draw the actual lineart on the “Auto-fill lineart layers”.';
 
   @override
   String get tipsBrushFavoriteTitle =>
@@ -2204,7 +2204,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsVerticalPixelFontDesc =>
-      'A trick only possible because this app is both an illustration app and a video editor at once. Place a live-action video clip on the timeline, then use onion skin on a layer above it to hand-draw speed lines or a character over the footage — creating a mixed-media video where hand-drawn animation overlays live action.';
+      'A trick that works because this app is both an illustration app and a video editor at once. Place a live-action video clip on the timeline, then use onion skin on a layer above it to hand-draw speed lines or a character over the footage — creating a mixed-media video where hand-drawn animation overlays live action.';
 
   @override
   String get tipsTimelineMarkerTitle =>
@@ -2268,7 +2268,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsAutofillMisfillDesc =>
-      'Autofill is not a generative-AI feature — it is an application of per-layer bucket fill. So when a single part has a gap enclosed by lines, such as inside long hair, that gap gets filled too. A good countermeasure is to first assign each part a bright, highly saturated colour and run one pass. Mistakes stand out immediately, making the autofill layer easy to correct by hand; once you have fixed it, set the real colours and run autofill again to overwrite, and misfills drop sharply.';
+      'Autofill is not a generative-AI feature — it is an application of per-layer bucket fill. So when a single part has a gap enclosed by lines, such as inside long hair, that gap gets filled too. A good countermeasure is to first assign each part a bright, highly saturated color and run one pass. Mistakes stand out immediately, making the autofill layer easy to correct by hand; once you have fixed it, set the real colors and run autofill again to overwrite, and misfills drop sharply.';
 
   @override
   String get tipsHomeWidgetTitle =>
@@ -2280,11 +2280,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsAutofillTransparentFixTitle =>
-      'Erase autofill overflow with a transparent-colour bucket fill';
+      'Erase autofill overflow with a transparent-color bucket fill';
 
   @override
   String get tipsAutofillTransparentFixDesc =>
-      'When autofill spills into an area you did not want filled, a bucket fill with the drawing colour set to transparent is easier than scrubbing with the eraser. Bucket fill processes a whole line-enclosed region at once, so a single tap wipes out just the overflow cleanly.';
+      'When autofill spills into an area you did not want filled, a bucket fill with the drawing color set to transparent is easier than scrubbing with the eraser. Bucket fill processes a whole line-enclosed region at once, so a single tap wipes out just the overflow cleanly.';
 
   @override
   String get tipsRadialVignetteTitle =>
@@ -2627,10 +2627,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetSettingsDescription =>
-      'Place three widgets on your home screen: a single frame from a work you choose, “New work”, and “Plaza”. Add them by long-pressing your home screen.';
+      'Place three widgets on your home screen: a single frame from a work you choose, “Create an Animation”, and “Work Plaza”. Add them by long-pressing your home screen.';
 
   @override
-  String get widgetSettingsSubtitle => 'Work to display, widget colour';
+  String get widgetSettingsSubtitle => 'Work to display, widget color';
 
   @override
   String get widgetArtworkSection => 'Work to display';
@@ -2646,17 +2646,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Shows one frame from the work you pick. Tapping it opens NIARIM.';
 
   @override
-  String get widgetSectionCreate => 'New work widget';
+  String get widgetSectionCreate => 'Create an Animation widget';
 
   @override
   String get widgetSectionCreateDesc =>
-      'Tapping it opens the “New work” screen.';
+      'Tapping it opens the “New Project” screen.';
 
   @override
-  String get widgetSectionPlaza => 'Plaza widget';
+  String get widgetSectionPlaza => 'Work Plaza widget';
 
   @override
-  String get widgetSectionPlazaDesc => 'Tapping it opens the Plaza.';
+  String get widgetSectionPlazaDesc => 'Tapping it opens the Work Plaza.';
 
   @override
   String get widgetArtworkNone => 'No work selected';
@@ -2684,7 +2684,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get widgetColorFollowTheme => 'Match the app theme';
 
   @override
-  String get widgetColorCustom => 'Pick a colour';
+  String get widgetColorCustom => 'Pick a color';
 
   @override
   String get widgetColorBase => 'Background color';
@@ -3106,7 +3106,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      'Premium membership or the end mark editing benefit lets you show or hide the official end mark and the GIF corner logo. Making videos use the same setting.';
+      'Premium membership or the end mark editing benefit lets you show or hide the official end mark and the GIF corner logo. Making-of videos use the same setting.';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -3228,7 +3228,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      'Find your export by its project name in Works on the home screen. Choose Share to save it to Photos or open it in another app.';
+      'Find your export by its project name in Works on the home screen. Choose Share to save it to a photo app or open it in another app.';
 
   @override
   String get exportOpenWorks => 'Open Works';
@@ -3932,7 +3932,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterCrtScreenStrength => 'Scanlines & phosphor';
 
   @override
-  String get filterCrtAberration => 'Colour misregistration';
+  String get filterCrtAberration => 'Color misregistration';
 
   @override
   String get filterCrtBleed => 'Beam bleed';
@@ -3991,7 +3991,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterToneCurveHint =>
-      'Tap an empty spot on the curve to add a point, drag a point to move it, and long-press any point except the two ends to delete it. R, G and B are curves for each colour, applied after the RGB curve.';
+      'Tap an empty spot on the curve to add a point, drag a point to move it, and long-press any point except the two ends to delete it. R, G and B are curves for each color, applied after the RGB curve.';
 
   @override
   String get filterLevelsInputBlack => 'Input: Black';
@@ -4010,7 +4010,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterLevelsHint =>
-      'R, G and B adjust each colour on its own, after the RGB settings. Gamma changes the midtones (above 1 brightens, below 1 darkens).';
+      'R, G and B adjust each color on its own, after the RGB settings. Gamma changes the midtones (above 1 brightens, below 1 darkens).';
 
   @override
   String get filterApplyButton => 'Apply';
@@ -4544,7 +4544,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String timelineExportFrameSuccessSnackbar(String fileName) {
-    return 'Saved as $fileName (you can find it in the Exports tab)';
+    return 'Saved as $fileName (you can find it in the Works tab)';
   }
 
   @override
@@ -4725,7 +4725,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String saveTreeDeleteOptionSubtitle(int count) {
-    return 'Permanently deletes the $count unselected item(s).\nFrees up storage space.\n※ Deleted data cannot be recovered.';
+    return 'Permanently deletes the $count unselected item(s).\nFrees up storage space.\nNote: Deleted data cannot be recovered.';
   }
 
   @override
@@ -5069,7 +5069,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelCommonDeleteMidDialogBody =>
-      'A shared layer’s display range can only be a single continuous span, so it can’t be deleted from a frame in the middle of that range. Choose whether to keep the part before or after this frame instead.';
+      'A common layer’s display range can only be a single continuous span, so it can’t be deleted from a frame in the middle of that range. Choose whether to keep the part before or after this frame instead.';
 
   @override
   String get layerPanelCommonDeleteKeepBeforeButton => 'Keep before this frame';
@@ -5205,11 +5205,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelAutofillNote1 =>
-      '✳ On the first auto-fill, every method creates a new fill from the lineart.';
+      'Note: On the first auto-fill, every method creates a new fill from the lineart.';
 
   @override
   String get layerPanelAutofillNote2 =>
-      '✳ If no auto-fill layer exists yet, the area will be judged from scratch either way.';
+      'Note: If no auto-fill layer exists yet, the area will be judged from scratch either way.';
 
   @override
   String get layerPanelAutofillSmartUpdateTitle => 'Update changed shape only';
@@ -5220,7 +5220,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelAutofillSmartUpdateNote =>
-      '✳ New areas are filled automatically, colors in overlapping existing areas are preserved, and areas removed from the lineart are cleared.';
+      'Note: New areas are filled automatically, colors in overlapping existing areas are preserved, and areas removed from the lineart are cleared.';
 
   @override
   String get layerPanelAutofillRepaintTitle =>
@@ -5232,7 +5232,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelAutofillRepaintNote =>
-      '✳ Re-detects the region from the auto-fill lineart. The current auto-fill shape will be replaced.';
+      'Note: Re-detects the region from the auto-fill lineart. The current auto-fill shape will be replaced.';
 
   @override
   String get layerPanelAutofillColorUpdateTitle =>
@@ -5244,7 +5244,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelAutofillColorUpdateNote =>
-      '✳ Updates to the latest color inside the current opaque region. Manual shape adjustments are preserved.';
+      'Note: Updates to the latest color inside the current opaque region. Manual shape adjustments are preserved.';
 
   @override
   String get layerPanelExecuteButton => 'Run';
@@ -5723,11 +5723,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineDurationLimitBodyFree =>
-      'The free plan lets you extend a project up to 90 seconds. The longer-duration benefit raises the limit to two hours.';
+      'The free plan lets you extend a project up to 90 seconds. The extended duration benefit raises the limit to two hours.';
 
   @override
   String get timelineDurationLimitBodyPremium =>
-      'The longer-duration benefit lets you extend a project up to two hours.';
+      'The extended duration benefit lets you extend a project up to two hours.';
 
   @override
   String timelineSceneDeleteConfirmTitle(String name) {
@@ -5802,7 +5802,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineAutofillNote2 =>
-      '✳ If only an auto-fill layer exists (with no lineart), the area will be judged from scratch either way.';
+      'Note: If only an auto-fill layer exists (with no lineart), the area will be judged from scratch either way.';
 
   @override
   String get timelineAutofillTargetLabel => 'Target';
@@ -6335,7 +6335,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get workspaceEndCardHint =>
-      'This default applies while the end mark benefit is active, for projects without their own setting. Your preference is saved after expiry. GIF corner logos follow the same setting.';
+      'This default applies while the end mark benefit is active, for projects without their own setting. Your preference is kept after the benefit expires. GIF corner logos follow the same setting.';
 
   @override
   String get workspaceEndCardDefaultHiddenTitle =>
@@ -6343,7 +6343,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsTransparentColorTitle =>
-      'Transparent is not just an eraser, use it like a regular pen color';
+      'Transparent is not just an eraser: use it like a regular pen color';
 
   @override
   String get tipsTransparentColorDesc =>
@@ -6355,7 +6355,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsQuickToolVariantDesc =>
-      'The quick-tool slot is not limited to switching between tools like pen and eraser, you can register the same pen with a different brush, or the same eraser at a different size, as separate entries. Curating just the combinations you actually use often means fewer trips back to the settings panel.';
+      'The quick-tool slot is not limited to switching between tools like pen and eraser; you can register the same pen with a different brush, or the same eraser at a different size, as separate entries. Curating just the combinations you actually use often means fewer trips back to the settings panel.';
 
   @override
   String get tipsCommonLayerLipSyncTitle =>
@@ -6363,7 +6363,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsCommonLayerLipSyncDesc =>
-      'It is not just backgrounds, turning a character layer itself into a common layer works well too. Keep only the parts that change frame to frame, like the mouth or blinking eyes, as regular layers, and make the rest (body, hair) a common layer. This can shrink file size dramatically even for lip-sync or blinking animation.';
+      'It is not just backgrounds: turning a character layer itself into a common layer works well too. Keep only the parts that change frame to frame, like the mouth or blinking eyes, as regular layers, and make the rest (body, hair) a common layer. This can shrink file size dramatically even for lip-sync or blinking animation.';
 
   @override
   String get tipsCommonLayerKeyframeTitle =>
@@ -6371,7 +6371,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsCommonLayerKeyframeDesc =>
-      'Common layers can be moved, scaled, and rotated with layer keyframes. Instead of redrawing each frame, turn a single drawing into a common layer and animate it with keyframes, you get simple motion without growing your file size.';
+      'Common layers can be moved, scaled, and rotated with layer keyframes. Instead of redrawing each frame, turn a single drawing into a common layer and animate it with keyframes; you get simple motion without growing your file size.';
 
   @override
   String get tipsTransferCustomizationTitle =>
@@ -6459,7 +6459,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String canvasColorAdjustDrawFilterAdded(String name) {
-    return 'Added “$name” to drawing filters.';
+    return 'Added “$name” to draw filters.';
   }
 
   @override
@@ -6636,7 +6636,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterHologramKeepLinesHint =>
-      'Thin, near-black lines (line art drawn on the same layer) keep their colour; only the surfaces take the texture.';
+      'Thin, near-black lines (line art drawn on the same layer) keep their color; only the surfaces take the texture.';
 
   @override
   String get filterAuroraHologramPresetSilverHologram => 'Aurora Hologram';
@@ -6738,7 +6738,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsFisheyeChromaticDesc =>
-      'The fisheye filter bulges the center of the frame and compresses the edges, recreating the curvature of a wide-angle or fisheye lens shot. The chromatic aberration filter shifts the RGB channels slightly to recreate the color fringing you’d get from a cheap lens. Both are available as drawing filters (applied directly to a layer) and as effect filters (applied to a range on the timeline). The fisheye center can also be moved by dragging the + on the canvas.';
+      'The fisheye filter bulges the center of the frame and compresses the edges, recreating the curvature of a wide-angle or fisheye lens shot. The chromatic aberration filter shifts the RGB channels slightly to recreate the color fringing you’d get from a cheap lens. Both are available as draw filters (applied directly to a layer) and as effect filters (applied to a range on the timeline). The fisheye center can also be moved by dragging the + on the canvas.';
 
   @override
   String get tipsLensDistortionTitle =>
@@ -6762,15 +6762,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsBackgroundBlendDesc =>
-      'To make a character you drew sit naturally in a background photo or painting, first apply the drawing filter “Background Blend” to the character’s layer. It brings your colours within the background’s brightness and saturation and adds, in one go, the background’s overall colour (Overlay), light and shadow in the colour of the background’s own shadows (Hard Light), light bouncing up from below (Screen) and strong lights such as neon (Addition (Glow)). To go further, paint the large shadows first on a Multiply or Hard Light layer, and add reflections for each material (glass, metal) and light along the outline on Screen or Addition (Glow) layers. Keep the part you want seen (such as the face) bright and vivid and darken the surroundings a little with Vignette so it stands out. Finish by adjusting the overall colour with Tone Curve or Levels.';
+      'To make a character you drew sit naturally in a background photo or painting, first apply the draw filter “Background Blend” to the character’s layer. It brings your colors within the background’s brightness and saturation and adds, in one go, the background’s overall color (Overlay), light and shadow in the color of the background’s own shadows (Hard Light), light bouncing up from below (Screen) and strong lights such as neon (Addition (Glow)). To go further, paint the large shadows first on a Multiply or Hard Light layer, and add reflections for each material (glass, metal) and light along the outline on Screen or Addition (Glow) layers. Keep the part you want seen (such as the face) bright and vivid and darken the surroundings a little with Vignette so it stands out. Finish by adjusting the overall color with Tone Curve or Levels.';
 
   @override
   String get tipsLineArtExtractionTitle =>
-      'Extract line art by combining color adjust, threshold, and brightness-to-alpha';
+      'Extract line art by combining color adjust, threshold, and transparency from brightness';
 
   @override
   String get tipsLineArtExtractionDesc =>
-      'Boost contrast with color adjust to make the lines stand out, then use the threshold filter to split the image into pure black and white — the lines separate cleanly from everything else. The threshold slider lets you fine-tune the line thickness and how faint or bold it looks. Finally, use “Brightness to alpha (gray)” from the layer’s three-dot menu to make the white areas (everything but the lines) transparent, leaving just the line art. Handy for pulling clean line art out of a photo or rough sketch.';
+      'Boost contrast with color adjust to make the lines stand out, then use the threshold filter to split the image into pure black and white — the lines separate cleanly from everything else. The threshold slider lets you fine-tune the line thickness and how faint or bold it looks. Finally, use “Transparency from Brightness (Gray)” from the layer’s three-dot menu to make the white areas (everything but the lines) transparent, leaving just the line art. Handy for pulling clean line art out of a photo or rough sketch.';
 
   @override
   String get tipsLineColorUsageTitle =>
@@ -6778,7 +6778,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsLineColorUsageDesc =>
-      'To keep a part’s outline clear without making the line stand out, set “Line color” to “Color trace / blend with lines”. For parts used for shadows or highlights, choose “Same as fill”: the line follows the fill colour instead of standing out as a darker line. Choose “Specified color” when you intentionally want a different line colour.';
+      'To keep a part’s outline clear without making the line stand out, set “Line color” to “Color trace / blend with lines”. For parts used for shadows or highlights, choose “Same as fill”: the line follows the fill color instead of standing out as a darker line. Choose “Specified color” when you intentionally want a different line color.';
 
   @override
   String get tipsBlushAutofillTitle => 'Even soft blush can be auto-filled';
@@ -6896,10 +6896,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityAddTagDialogHint => 'Enter a tag name';
 
   @override
-  String get communityTagLockTooltip => 'Lock this tag (author only)';
+  String get communityTagLockTooltip => 'Lock this tag (creator only)';
 
   @override
-  String get communityTagUnlockTooltip => 'Unlock this tag (author only)';
+  String get communityTagUnlockTooltip => 'Unlock this tag (creator only)';
 
   @override
   String get communityRemoveTagTooltip => 'Remove this tag';
@@ -6957,11 +6957,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityVisibilityPublishedDesc =>
-      'Visible: shown in New Arrivals, Rankings, and this author’s work list.';
+      'Visible: shown in the New and Ranking tabs and in this creator’s work list.';
 
   @override
   String get communityVisibilityHiddenDesc =>
-      'Hidden: removed from New Arrivals, Rankings, and this author’s work list (independent of the YouTube-side visibility setting).';
+      'Hidden: removed from the New and Ranking tabs and from this creator’s work list (independent of the YouTube-side visibility setting).';
 
   @override
   String get communityVisibilityHiddenBadge => 'Hidden';
@@ -7036,7 +7036,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityFavoriteAuthorFollowing => 'Following';
 
   @override
-  String get communityFavoriteAuthorsEmptyTitle => 'No favorite authors yet';
+  String get communityFavoriteAuthorsEmptyTitle =>
+      'You’re not following any creators yet';
 
   @override
   String get communityFavoriteAuthorsEmptyBody =>
@@ -7216,14 +7217,14 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count unused assets',
-      one: '$count unused asset',
+      other: '$count unused materials',
+      one: '$count unused material',
     );
     return 'Delete $_temp0 ($size)? This can’t be undone.';
   }
 
   @override
-  String get storageNoUnusedMaterials => 'There are no unused assets.';
+  String get storageNoUnusedMaterials => 'There are no unused materials.';
 
   @override
   String get storageEmptyTrashButton => 'Empty trash';
@@ -7281,7 +7282,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storageEraseAllErasedItems =>
-      'Projects and materials (including Trash, saves and auto saves)\nExported files\nYour brushes, screentones, stamps, palettes, themes, fonts and automations\nAll settings (you are also signed out of Google)';
+      'Projects and materials (including Trash, saves and autosaves)\nExported files\nYour brushes, screentones, stamps, palettes, themes, fonts and automations\nAll settings (you are also signed out of Google)';
 
   @override
   String get storageEraseAllKeptTitle => 'Kept';
@@ -7320,7 +7321,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpWidgetSettingsDesc =>
-      'Settings for the three widget types you can place on your phone’s home screen: a single frame from a work (launch screen), the New work widget, and the Plaza widget. Widgets themselves are added by long-pressing the home screen, not from inside the app. “Choose a work” uses the same sort, display mode, search, and favorites filter as the project list tab, then lets you pick the exact frame to show in a preview with playback controls. The New work and Plaza widgets let you choose whether the background follows the app theme or uses a color you set.';
+      'Settings for the three widget types you can place on your phone’s home screen: a single frame from a work (launch screen), the Create an Animation widget, and the Work Plaza widget. Widgets themselves are added by long-pressing the home screen, not from inside the app. “Choose a work” uses the same sort, display mode, search, and favorites filter as the project list tab, then lets you pick the exact frame to show in a preview with playback controls. The Create an Animation and Work Plaza widgets let you choose whether the background follows the app theme or uses a color you set.';
 
   @override
   String get colorPickerImportPaletteTooltip => 'Import palette';
@@ -7614,7 +7615,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      'The official presets are “Line Art (Digital)” (Auto Line Art → Ink Pool), “Line Art Extraction (Analog)” (Color Adjust → Threshold → Brightness to Alpha), and “Line Art Color Trace” (run it on the line art: the colors painted beneath it on a new layer clipped to it → blur, duplicate, and merge → color-trace adjustment, so each line takes a deeper tone of the color beside it). Re-recording appends supported actions. In the review screen, you can reorder or remove steps. Export it before editing if you want an easy way back to the original settings.';
+      'The official presets are “Line Art (Digital)” (Auto Line Art → Ink Pooling), “Line Art Extraction (Analog)” (Color Adjust → Threshold → Transparency from Brightness), and “Line Art Color Trace” (run it on the line art: the colors painted beneath it on a new layer clipped to it → blur, duplicate, and merge → color-trace adjustment, so each line takes a deeper tone of the color beside it). Re-recording appends supported actions. In the review screen, you can reorder or remove steps. Export it before editing if you want an easy way back to the original settings.';
 
   @override
   String get tipsTexturePrismVhsTitle =>
@@ -8148,7 +8149,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityPostYoutubeSyntheticQuestion =>
-      'Does this video contain realistic altered or synthetic content for YouTube?';
+      'YouTube disclosure: Does this video contain realistic altered or synthetic content?';
 
   @override
   String get communityPostYoutubeSyntheticHelp =>
@@ -8723,7 +8724,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityTileSize => 'Work tile size';
 
   @override
-  String get communityMutedWordsEmpty => 'No hidden keywords';
+  String get communityMutedWordsEmpty => 'No hidden title words';
 
   @override
   String get communityMutedTagsEmpty => 'No hidden tags';
@@ -9353,7 +9354,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityPostVisibilityUnlistedHelp =>
-      'Visible in the NIARIM plaza and eligible for bookmark rankings.';
+      'Visible in the Work Plaza and eligible for bookmark rankings.';
 
   @override
   String get communityPostVisibilityPublicTitle =>
@@ -9500,7 +9501,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsHint =>
-      'Claim once per account or per work after the goal is met. Previously claimed milestones cannot pay again.';
+      'You can claim after the goal is met. A mission you have already claimed can’t be claimed again for the same account or work.';
 
   @override
   String get creatorMissionNotAchieved => 'Not achieved';
@@ -9541,7 +9542,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsDraftCount =>
-      'Multiple-work progress is provisional. The server rechecks before a payout.';
+      'Multiple-work progress is provisional. The server rechecks it when you claim.';
 
   @override
   String get creatorMissionDetailsPerWorkRule =>
@@ -9549,7 +9550,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsAccountRule =>
-      'This milestone pays once per account.';
+      'This milestone’s reward can be claimed once per account.';
 
   @override
   String get creatorMissionDetailsTemplateRule =>
@@ -9789,7 +9790,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockLoading => 'Loading balance…';
 
   @override
-  String get rewardUnlockPaused => 'Saved remaining seconds';
+  String get rewardUnlockPaused => 'On hold (remaining time is kept)';
 
   @override
   String get rewardUnlockActiveUntil => 'Active until';
@@ -9887,7 +9888,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockRedemptionSuccess =>
-      'Redemption completed. Premium expiry was updated from the server.';
+      'Redemption completed. The expiry date was updated from the server.';
 
   @override
   String get rewardUnlockRedemptionUncertain =>
@@ -9923,7 +9924,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockEndCardEdit =>
-      'Edit / remove end mark and GIF logo (including making videos)';
+      'Edit / remove end mark and GIF logo (including making-of videos)';
 
   @override
   String get rewardUnlockWatermark => 'Add and edit your own watermark';
@@ -9943,10 +9944,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockCommunityPostQuota =>
-      'Work Plaza: 1 to 3 posts per day';
+      'Work Plaza: 3 posts per day instead of 1';
 
   @override
-  String get rewardUnlockProjectListAds => 'No ads in projects';
+  String get rewardUnlockProjectListAds => 'No ads in the project list';
 
   @override
   String get rewardUnlockCanvasAds => 'No ads on canvas';
@@ -10569,7 +10570,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$coins opals',
       one: '$coins opal',
     );
-    return 'CLAIM: Earn $_temp0 for this milestone. Each milestone pays once per period. You may earn it again in a new period, but cannot claim an expired period.';
+    return 'CLAIM: Earn $_temp0 for this milestone. Each milestone can be claimed once per period. You may earn it again in a new period, but cannot claim an expired period.';
   }
 
   @override
@@ -10635,7 +10636,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$coins opals',
       one: '$coins opal',
     );
-    return 'CLAIM: Completing the goal grants $_temp0. Each milestone can pay only once per period. Progress resets in a new week/month; rewards from the previous period cannot be claimed later.';
+    return 'CLAIM: Completing the goal grants $_temp0. Each milestone can be claimed only once per period. Progress resets in a new week/month; rewards from the previous period cannot be claimed later.';
   }
 
   @override
@@ -10665,7 +10666,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$days days',
       one: '$days day',
     );
-    return 'Visit on $_temp0 this week';
+    return 'Sign in on $_temp0 this week';
   }
 
   @override
@@ -10676,7 +10677,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$days days',
       one: '$days day',
     );
-    return 'Visit on $_temp0 this month';
+    return 'Sign in on $_temp0 this month';
   }
 
   @override
@@ -10687,7 +10688,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$days days',
       one: '$days day',
     );
-    return 'Visit on $_temp0 in total';
+    return 'Sign in on $_temp0 in total';
   }
 
   @override
@@ -11373,7 +11374,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpShortcutSettingsDesc =>
-      'Assign keys on a keyboard or left-hand device to tools (down to a specific brush and size) or to actions such as undo, redo, play, frame stepping, select all, copy, cut and paste. Shortcuts work in both Canvas and Timeline. If a key combination is already used by another action, you’re asked before it’s replaced.';
+      'Assign keys on a keyboard or shortcut device (such as a left-hand keypad) to tools (down to a specific brush and size) or to actions such as undo, redo, play, frame stepping, select all, copy, cut and paste. Shortcuts work in both Canvas and Timeline. If a key combination is already used by another action, you’re asked before it’s replaced.';
 
   @override
   String get themePreviewCardTitle => 'Screen preview';
@@ -11498,7 +11499,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineSelectionScenes => 'Scenes';
 
   @override
-  String get timelineSelectionClips => 'Media clips';
+  String get timelineSelectionClips => 'Material clips';
 
   @override
   String get helpShowAllTopics => 'Show all topics';
@@ -11826,7 +11827,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterSettingsSaved => 'Filter settings saved';
 
   @override
-  String get makingRecordProject => 'Record making for this project';
+  String get makingRecordProject => 'Record the making-of for this project';
 
   @override
   String get makingRecordProjectHint =>
@@ -11865,46 +11866,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get makingStartFrame => 'Start frame';
 
   @override
-  String get makingPlay => 'Play making';
+  String get makingPlay => 'Play the making-of';
 
   @override
-  String get makingTitle => 'Making';
+  String get makingTitle => 'Making-of';
 
   @override
   String get makingEmpty =>
-      'There is no making history for this project. Enable recording in the project details and continue editing.';
+      'There is no making-of history for this project. Enable recording in the project details and continue editing.';
 
   @override
-  String get makingLoadFailed => 'Could not load the making history';
+  String get makingLoadFailed => 'Could not load the making-of history';
 
   @override
   String get makingStorageLimit =>
-      'The 64 MB making-history limit has been reached. New snapshots have stopped; existing history is kept.';
+      'The 64 MB limit for making-of history has been reached. New snapshots have stopped; existing history is kept.';
 
   @override
   String get makingFormatWebm => 'WebM';
 
   @override
-  String get makingExportLabel => 'Export making';
+  String get makingExportLabel => 'Export the making-of';
 
   @override
-  String get makingExportComplete => 'Making video exported.';
+  String get makingExportComplete => 'Making-of video exported.';
 
   @override
-  String get makingExportFailed => 'Could not export making video.';
+  String get makingExportFailed => 'Could not export the making-of video.';
 
   @override
-  String get makingDeleteHistory => 'Delete making history';
+  String get makingDeleteHistory => 'Delete making-of history';
 
   @override
   String get makingDeleteHistoryConfirm =>
-      'Delete all making snapshots and history for this project? This cannot be undone.';
+      'Delete all making-of snapshots and history for this project? This cannot be undone.';
 
   @override
-  String get makingDeleteFailed => 'Could not delete making history.';
+  String get makingDeleteFailed => 'Could not delete the making-of history.';
 
   @override
-  String get makingHistoryDeleted => 'Making history deleted.';
+  String get makingHistoryDeleted => 'Making-of history deleted.';
 
   @override
   String makingFrameCounter(int current, int total) {

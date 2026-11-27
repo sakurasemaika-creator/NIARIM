@@ -203,7 +203,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeWorksEmpty => '还没有导出的作品';
 
   @override
-  String get homeWorksEmptyHint => '从时间线导出视频或 GIF 后，即可在这里查看。';
+  String get homeWorksEmptyHint => '从时间轴导出视频或 GIF 后，即可在这里查看。';
 
   @override
   String get homeWorkFolderEmpty => '此文件夹中没有导出的作品';
@@ -223,7 +223,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homePreviewFailed => '无法播放预览';
 
   @override
-  String get homeFirstLaunchMessage => '您可以制作手绘动画';
+  String get homeFirstLaunchMessage => '你可以制作手绘动画';
 
   @override
   String get homeFirstLaunchStart => '开始使用';
@@ -434,7 +434,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get gestureHoldEyedropperHint =>
-      '使用画笔或橡皮擦绘图时，手指不动按住一段时间即可拾取该处颜色并设为当前颜色。';
+      '使用笔或橡皮擦绘图时，手指不动按住一段时间即可拾取该处颜色并设为当前颜色。';
 
   @override
   String get gestureHoldEyedropperDurationLabel => '保持时长';
@@ -1138,7 +1138,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumFeatureEndLogo => '官方片尾标记';
 
   @override
-  String get premiumFeatureMakingEndLogo => '制作视频的官方片尾标记';
+  String get premiumFeatureMakingEndLogo => '制作过程视频的官方片尾标记';
 
   @override
   String get premiumFeatureGifCornerLogo => 'GIF 角落的 NIARIM 标志';
@@ -1419,7 +1419,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpBlendModeDesc =>
-      '用于更改图层与下方图层的合成方式，常用于叠加网点或颜色效果的图层。\n正常：直接叠加。\n正片叠底：与下方图层相乘后变暗，是阴影表现的经典手法。\n滤色：叠加亮度后变亮，适合表现光效。\n叠加：暗部更暗、亮部更亮，增强对比度。\n相加（发光）：直接相加颜色，适合光效线条等。\n减去：相减颜色，呈现暗沉的效果。\n变暗：取上下两图层中较暗的颜色。\n变亮：取上下两图层中较亮的颜色。\n颜色加深：使下方颜色变暗并加深发色。\n颜色减淡：使下方颜色变亮并加深发色。\n强光：比叠加更强烈的对比效果。\n柔光：比叠加更柔和的对比效果，适合柔和的阴影。\n差值：显示上下两色的差异，可用于检查颜色偏差等。\n色相、饱和度、颜色、明度：分别仅将该图层的色相、饱和度、色彩或明度反映到下方图层。\n线性加深：将上下颜色相加后减去基准值，产生更强的变暗效果。\n线性减淡：线性相加上下颜色使其变亮。它与“相加（发光）”是不同的混合模式，图层半透明时“相加（发光）”会更亮。\n亮光：根据上层颜色在加深与减淡之间切换，产生很强的对比。\n线性光：根据上层颜色线性提高或降低亮度。\n点光：根据上层颜色向较暗或较亮一侧替换。\n实色混合：对亮光结果进行阈值化，形成强烈的原色分离。\n排除：比“差值”更柔和的反相与差异效果。\n划分：用上层颜色除下层颜色，可用于提亮校正和强调色差。\n在混合模式列表中，每种模式旁会显示将红、黄、蓝、白、黑叠加在由暗到亮的颜色上的样例（样例下方为半透明叠加时的效果）。';
+      '用于更改图层与下方图层的合成方式，常用于叠加网点或颜色效果的图层。\n正常：直接叠加。\n正片叠底：与下方图层相乘后变暗，是阴影表现的经典手法。\n滤色：叠加亮度后变亮，适合表现光效。\n叠加：暗部更暗、亮部更亮，增强对比度。\n相加（发光）：直接相加颜色，适合光效线条等。\n减去：相减颜色，呈现暗沉的效果。\n变暗：取上下两图层中较暗的颜色。\n变亮：取上下两图层中较亮的颜色。\n颜色加深：使下方颜色变暗，同时让颜色更浓重。\n颜色减淡：使下方颜色变亮，同时让颜色更鲜明。\n强光：比叠加更强烈的对比效果。\n柔光：比叠加更柔和的对比效果，适合柔和的阴影。\n差值：显示上下两色的差异，可用于检查颜色偏差等。\n色相、饱和度、颜色、明度：分别仅将该图层的色相、饱和度、色彩或明度反映到下方图层。\n线性加深：将上下颜色相加后减去基准值，产生更强的变暗效果。\n线性减淡：线性相加上下颜色使其变亮。它与“相加（发光）”是不同的混合模式，图层半透明时“相加（发光）”会更亮。\n亮光：根据上层颜色在加深与减淡之间切换，产生很强的对比。\n线性光：根据上层颜色线性提高或降低亮度。\n点光：根据上层颜色向较暗或较亮一侧替换。\n实色混合：对亮光结果进行阈值化，形成强烈的原色分离。\n排除：比“差值”更柔和的反相与差异效果。\n划分：用上层颜色除下层颜色，可用于提亮校正和强调色差。\n在混合模式列表中，每种模式旁会显示将红、黄、蓝、白、黑叠加在由暗到亮的颜色上的样例（样例下方为半透明叠加时的效果）。';
 
   @override
   String get helpClippingTitle => '剪贴蒙版';
@@ -1433,14 +1433,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpCommonLayerDesc =>
-      '普通图层按每一帧独立存在，而公共图层则是在多个帧、场景中共享同一内容的图层。像背景这样不随帧变化而移动的元素，无需每帧重新绘制，只需画一次即可。在时间轴上会以专用轨道的形式显示。 可以把普通图层转换为共同图层（在多个帧中持续显示相同内容的图层）的功能。也可以先把当前显示的图层合并为一张，再进行共同化。想反复使用背景等每帧内容相同的部分时，可以省去重新绘制的麻烦。';
+      '普通图层按每一帧独立存在，而公共图层则是在多个帧、场景中共享同一内容的图层。像背景这样不随帧变化而移动的元素，无需每帧重新绘制，只需画一次即可。在时间轴上会以专用轨道的形式显示。 可以把普通图层转换为公共图层（在多个帧中持续显示相同内容的图层）的功能。也可以先把当前显示的图层合并为一张，再转为公共图层。想反复使用背景等每帧内容相同的部分时，可以省去重新绘制的麻烦。';
 
   @override
   String get helpAutoFillTitle => '自动上色';
 
   @override
   String get helpAutoFillDesc =>
-      '在自动上色专用线稿图层下方创建自动上色图层，并根据预先制作的“自动上色设置”（各部位的颜色、网点组合）自动进行上色的功能。由于可以在画完线稿后一次性上色，能大幅减少需要反复绘制同一角色的手绘动画中的上色工作量。重新绘制线稿后，时间轴和图层面板会显示更新标记，提示需要重新执行自动上色。在时间轴画面的三点菜单中选择“执行自动上色”，即可一次性重新计算所有带有更新标记的自动上色图层，省去重新绘制线稿后逐个图层在图层面板中执行的麻烦。自动上色设置的每个部位都有关于如何处理线稿颜色的设置（指定颜色、与填充色相同、色彩描边）。选择色彩描边（贴合线稿）后，线稿颜色会按HSL偏移以匹配填充色，使线条不显突兀、自然融合。设置越积越多，分配部位时显示的列表就会变长、难以浏览。可以在项目设置（或图层面板的部位分配对话框）中，将列表筛选为只显示本项目使用的设置，让列表更简洁、更易于挑选。“填补线稿与填色之间的缝隙”调大后，会填充到线条较淡的边缘下方，描边或线稿颜色与填充色相同时可见的线稿与填色之间的缝隙会变小。';
+      '在自动上色专用线稿图层下方创建自动上色图层，并根据预先制作的“自动上色设置”（各部位的颜色、网点组合）自动进行上色的功能。由于可以在画完线稿后一次性上色，能大幅减少需要反复绘制同一角色的手绘动画中的上色工作量。重新绘制线稿后，时间轴和图层面板会显示更新标记，提示需要重新执行自动上色。在时间轴画面的三点菜单中选择“执行自动上色”，即可一次性重新计算所有带有更新标记的自动上色图层，省去重新绘制线稿后逐个图层在图层面板中执行的麻烦。自动上色设置的每个部位都有关于如何处理线稿颜色的设置（指定颜色、与填色相同、颜色描线）。选择“颜色描线、与线稿融合”后，线稿颜色会按HSL偏移以匹配填充色，使线条不显突兀、自然融合。设置越积越多，分配部位时显示的列表就会变长、难以浏览。可以在项目设置（或图层面板的部位分配对话框）中，将列表筛选为只显示本项目使用的设置，让列表更简洁、更易于挑选。“填补线稿与填色之间的缝隙”调大后，会填充到线条较淡的边缘下方，描边或线稿颜色与填充色相同时可见的线稿与填色之间的缝隙会变小。';
 
   @override
   String get helpOnionSkinTitle => '洋葱皮';
@@ -1510,14 +1510,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpEffectFilterDesc =>
-      '可应用于场景或帧的画面效果（模糊、色调校正、辉光、像素画等）。在不改变手绘画面本身的前提下，作为演出手段调整整个画面观感时使用。绘画滤镜中的色调曲线（预设与强度）、色阶、锐化、USM锐化、暗角（颜色、范围、浓度）、水彩边界也收录在演出滤镜中，可以一次对多个帧施加相同的效果。像素画也可以选择配色方式（不指定颜色、指定颜色、指定颜色数、从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动）来接近原色，这种排列在帧与帧之间不会移动；轮廓处保持清晰。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。 演出滤镜可以叠加应用多个，其应用顺序依照时间轴上的排列顺序。拖动滤镜列表重新排序后，实际反映到画面上的顺序也会随之改变。 一种演出滤镜，会逐帧改变类似胶片颗粒感的噪点。可以用滑块调整强度、数量（噪点出现的密度）和颗粒大小。回到同一帧时噪点形态相同（拖动时不会闪烁），播放时颗粒则会呈现出跳动的效果。 用来表现画面中降雨的演出滤镜。可以用滑块调整降雨强度（雨滴数量）、速度、雨滴大小和风向角度。每滴雨都会随着帧数推进以恒定速度持续下落，呈现自然的降雨效果。';
+      '可应用于场景或帧的画面效果（模糊、色调校正、辉光、像素画等）。在不改变手绘画面本身的前提下，作为演出手段调整整个画面观感时使用。绘图滤镜中的色调曲线（预设与强度）、色阶、锐化、USM锐化、暗角（颜色、范围、浓度）、水彩边界也收录在演出滤镜中，可以一次对多个帧施加相同的效果。像素画也可以选择配色方式（不指定颜色、指定颜色、指定颜色数、从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动）来接近原色，这种排列在帧与帧之间不会移动；轮廓处保持清晰。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。 演出滤镜可以叠加应用多个，其应用顺序依照时间轴上的排列顺序。拖动滤镜列表重新排序后，实际反映到画面上的顺序也会随之改变。 一种演出滤镜，会逐帧改变类似胶片颗粒感的噪点。可以用滑块调整强度、数量（噪点出现的密度）和颗粒大小。回到同一帧时噪点形态相同（拖动时不会闪烁），播放时颗粒则会呈现出跳动的效果。 用来表现画面中降雨的演出滤镜。可以用滑块调整降雨强度（雨滴数量）、速度、雨滴大小和风向角度。每滴雨都会随着帧数推进以恒定速度持续下落，呈现自然的降雨效果。';
 
   @override
   String get helpEndCardTitle => '片尾标记';
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 片尾标记是 MP4、WebM 和 AVI 末尾的 5 秒标志，制作视频也会添加。GIF 则在角落加入小的 NIARIM 图标和应用名称。权益有效时可按作品切换显示。到期后仍保留设置。';
+      'NIARIM 片尾标记是 MP4、WebM 和 AVI 末尾的 5 秒标志，制作过程视频也会添加。GIF 则在角落加入小的 NIARIM 图标和应用名称。权益有效时可按作品切换显示。到期后仍保留设置。';
 
   @override
   String get helpAutoSaveTitle => '自动保存';
@@ -1565,7 +1565,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpFolderDesc =>
-      '将项目（作品）分组整理的功能。支持多层级结构，因此也可以用来统一管理同一作品的多个话数或系列作品（例如：在“作品名”文件夹中依次排列“第1话”“第2话”……等项目）。如果想在一部动画内划分场景，请使用画布画面中的“场景”功能，而不是文件夹。';
+      '将项目（作品）分组整理的功能。支持多层级结构，因此也可以用来统一管理同一作品的多集或系列作品（例如：在“作品名”文件夹中依次排列“第1集”“第2集”……等项目）。如果想在一部动画内划分场景，请使用画布画面中的“场景”功能，而不是文件夹。';
 
   @override
   String get helpTrashTitle => '回收站';
@@ -1593,7 +1593,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      '支持导出 MP4、WebM、GIF 和 AVI。完整导出超过90秒的作品需要高级会员或时长延长权益。你也可以导出开头90秒。 更改导出帧率会保留原播放时长。导出前可以确认正片长度和是否有片尾标志。时间轴上的音频和视频素材的声音会放入 MP4、WebM 和 AVI（GIF 无声音）。';
+      '支持导出 MP4、WebM、GIF 和 AVI。完整导出超过90秒的作品需要高级会员或时长延长权益。你也可以导出开头90秒。 更改导出帧率会保留原播放时长。导出前可以确认正片长度和是否有片尾标记。时间轴上的音频和视频素材的声音会放入 MP4、WebM 和 AVI（GIF 无声音）。';
 
   @override
   String get helpTransparentWebmTitle => '透明WebM';
@@ -1603,7 +1603,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      '可以将动画、插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换“最新”“排行榜”“关注”三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击“查看详情”按钮可打开作品详情画面（投稿者、发布日期、标签编辑、收藏、转发等）。点击投稿者名称旁的“关注”按钮即可将其加入关注列表，“关注”标签页会按时间顺序汇总显示该作者的作品。仅本人可查看关注的用户列表、粉丝列表和已收藏的作品列表。其他用户只能看到关注数和粉丝数。关注、收藏或转发时，系统不会向对方发送有关该操作的单独通知。除自己发布的作品外，都可以用“转发”按钮转发；当关注的作者转发了他人的作品时，该作品也会以“发布日期”和“转发日期”中较新的一方为基准，混入“关注”标签页中显示（卡片上会显示“○○转发了”）。收藏的作品会汇总显示在主页的“已收藏”标签页中，也可以在自己的投稿者页面的“收藏”标签页中查看。你可以举报作品和用户。静音只影响自己的视图，屏蔽会在双方登录后隐藏对方的投稿。竖屏视频可以在“竖屏模式”中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏“包含生成式 AI 图像或视频”的作品外，还可以通过“新增”逐条登记只匹配作品标题的隐藏标题关键词，以及只匹配作品广场标签的隐藏标签。可用编辑图标修改或垃圾桶图标删除，无需输入逗号或 #。这些筛选适用于“最新”“排行榜”“关注”（含转发）、竖屏模式、投稿者页面、作品详情和收藏。“包含生成式 AI 图像或视频”由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在“我的投稿”或作品详情画面中更改）。';
+      '可以将动画、插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换“最新”“排行榜”“关注”“搜索”“已收藏”五个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击“查看详情”按钮可打开作品详情画面（投稿者、发布日期、标签编辑、收藏、转发等）。点击投稿者名称旁的“关注”按钮即可将其加入关注列表，“关注”标签页会按时间顺序汇总显示该作者的作品。仅本人可查看关注的用户列表、粉丝列表和已收藏的作品列表。其他用户只能看到关注数和粉丝数。关注、收藏或转发时，系统不会向对方发送有关该操作的单独通知。除自己发布的作品外，都可以用“转发”按钮转发；当关注的作者转发了他人的作品时，该作品也会以“发布日期”和“转发日期”中较新的一方为基准，混入“关注”标签页中显示（卡片上会显示“○○转发了”）。收藏的作品会汇总显示在作品广场的“已收藏”标签页中，也可以在自己的投稿者页面的“收藏”标签页中查看。你可以举报作品和用户。隐藏只影响自己的显示，屏蔽会在双方登录后隐藏对方的投稿。竖屏视频可以在“竖屏模式”中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏“包含生成式 AI 图像或视频”的作品外，还可以通过“新增”逐条登记只匹配作品标题的隐藏标题关键词，以及只匹配作品广场标签的隐藏标签。可用编辑图标修改或垃圾桶图标删除，无需输入逗号或 #。这些筛选适用于“最新”“排行榜”“关注”（含转发）、竖屏模式、投稿者页面、作品详情和收藏。“包含生成式 AI 图像或视频”由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在“我的投稿”或作品详情画面中更改）。';
 
   @override
   String get helpWatermarkEntryTitle => '水印';
@@ -1648,32 +1648,32 @@ class AppLocalizationsZh extends AppLocalizations {
       '可以将撤销/重做、跳转帧、取色等操作分配给双指点击、三指点击、双指滑动或长按。数位笔按键（在支持的触控笔上）也可以单独分配操作。想不切换工具就用一个动作触发常用操作时很方便。';
 
   @override
-  String get helpBucketDetailSettingsTitle => '填充工具详细设置';
+  String get helpBucketDetailSettingsTitle => '油漆桶填充详细设置';
 
   @override
   String get helpBucketDetailSettingsDesc =>
-      '在设置画面的“填充工具”中可以调整容差（点击位置的颜色相差多少仍视为同一区域）、扩展px（填充区域向边界外扩展多少以填补线稿的缝隙）以及潜入线条下方（不覆盖线稿本身，而是把扩展部分合成到已有像素的背后，从而保持线条外观不变）。当线稿有细小缝隙或填色感觉不完整时，调整这些设置能让效果更稳定。';
+      '在设置画面的“油漆桶填充”中可以调整容差（点击位置的颜色相差多少仍视为同一区域）、扩展px（填充区域向边界外扩展多少以填补线稿的缝隙）以及潜入线条下方（不覆盖线稿本身，而是把扩展部分合成到已有像素的背后，从而保持线条外观不变）。当线稿有细小缝隙或填色感觉不完整时，调整这些设置能让效果更稳定。';
 
   @override
-  String get helpStampToolTitle => '印章工具';
+  String get helpStampToolTitle => '图章工具';
 
   @override
   String get helpStampToolDesc =>
-      '像画笔一样把已注册的图像放到画布上，可重复使用速度线、背景图案和小道具而无需重新绘制。像素模式使用与像素画滤镜相同的处理，在像素化和减色时保持清晰的透明边界。马赛克是独立效果，不用于印章像素模式。印章面板还可调整旋转角度和大小。';
+      '像画笔一样把已注册的图像放到画布上，可重复使用速度线、背景图案和小道具而无需重新绘制。像素模式使用与像素画滤镜相同的处理，在像素化和减色时保持清晰的透明边界。马赛克是独立效果，不用于图章像素模式。图章面板还可调整旋转角度和大小。';
 
   @override
   String get helpToneFillTitle => '网点上色';
 
   @override
   String get helpToneFillDesc =>
-      '在填充工具的设置中把纯色填充切换为网点填充，就能用选中的网点、线条等网点图案进行填充。还提供像素模式专用的方格纹、格子纹网点，可以做出符合像素画质感的上色效果。荷叶边、针织纹理、连裤袜等手绘起来很费工夫的细致花纹也能轻松画出。还可以自制原创网点并添加使用，或与其他用户分享。 色调列表按网点、线条、织物图案和像素图案分组。像素抖动的名称会显示颗粒粗细、矩阵大小和覆盖率。';
+      '在填充桶工具的设置中把纯色填充切换为网点填充，就能用选中的网点、线条等网点图案进行填充。还提供像素模式专用的方格纹、格子纹网点，可以做出符合像素画质感的上色效果。荷叶边、针织纹理、连裤袜等手绘起来很费工夫的细致花纹也能轻松画出。还可以自制原创网点并添加使用，或与其他用户分享。 网点列表按网点、线条、织物图案和像素图案分组。像素抖动的名称会显示颗粒粗细、矩阵大小和覆盖率。';
 
   @override
   String get helpPixelModeTitle => '像素模式';
 
   @override
   String get helpPixelModeDesc =>
-      '笔刷、字体、印章各自都提供的设置，开启后会去除抗锯齿，呈现清晰的像素画风轮廓。想特意做出老游戏般的质感，或想营造低分辨率效果时使用。配色方式可从“不指定颜色”“指定颜色”“指定颜色数”“从调色板选择”4种中选择，也可以使用像素画专用调色板。';
+      '笔刷、字体、图章各自都提供的设置，开启后会去除抗锯齿，呈现清晰的像素画风轮廓。想特意做出老游戏般的质感，或想营造低分辨率效果时使用。配色方式可从“不指定颜色”“指定颜色”“指定颜色数”“从调色板选择”4种中选择，也可以使用像素画专用调色板。';
 
   @override
   String get helpHomeScreenTitle => '主页';
@@ -1704,7 +1704,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '汇集了左手模式（左右翻转停靠面板）、手动切换电脑/DeX模式、手掌工具显示条件等设置的画面。可以根据所用设备和惯用手调整成更方便操作的布局。';
 
   @override
-  String get helpPenSettingsTitle => '画笔设置';
+  String get helpPenSettingsTitle => '笔输入设置';
 
   @override
   String get helpPenSettingsDesc =>
@@ -1792,7 +1792,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpLayerMultiSelectDesc =>
-      '使用图层面板的选择模式，可以用勾选框一次选中多个图层进行合并或批量删除。合并只能在普通图层、自动上色用线稿、自动上色图层之间进行（共同图层、文件夹、时间轴素材不能合并）。';
+      '使用图层面板的选择模式，可以用勾选框一次选中多个图层进行合并或批量删除。合并只能在普通图层、自动上色用线稿、自动上色图层之间进行（公共图层、文件夹、时间轴素材不能合并）。';
 
   @override
   String get helpDrawingAreaTitle => '作画区域';
@@ -1820,7 +1820,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpWatermarkEditDesc =>
-      '可在时间轴的共用图层轨道调整角度、大小、不透明度及显示范围。到期后，已放置的水印仍会保留在作品及导出文件中。更改设置需要有效权益。';
+      '可在时间轴的公共图层轨道调整角度、大小、不透明度及显示范围。到期后，已放置的水印仍会保留在作品及导出文件中。更改设置需要有效权益。';
 
   @override
   String get helpAudioClipTitle => '音量调整';
@@ -1830,11 +1830,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '放置在时间轴上的音频片段，可以在详情面板中调整音量、淡入、淡出的秒数。可用来调整音效和背景音乐的音量平衡，或让曲子的开头、结尾更加顺滑。';
 
   @override
-  String get helpPenSubToolTitle => '画笔';
+  String get helpPenSubToolTitle => '笔';
 
   @override
   String get helpPenSubToolDesc =>
-      '长按画笔工具，可以从普通绘图切换到网点填充或印章放置等子工具。无需每次切换工具，就能用同一支笔在多种作业之间来回操作。';
+      '长按笔工具，可以从普通绘图切换到网点填充或图章放置等子工具。无需每次切换工具，就能用同一支笔在多种作业之间来回操作。';
 
   @override
   String get helpTiltDetectionTitle => '倾斜检测';
@@ -1844,11 +1844,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '利用支持的触控笔的倾斜信息，在笔尖倾斜放倒时让线条变粗或变淡，重现更接近实际画具的书写手感的设置。可以在性能设置中开关。';
 
   @override
-  String get helpFontImportTitle => '字体读取';
+  String get helpFontImportTitle => '导入字体';
 
   @override
   String get helpFontImportDesc =>
-      '可以直接读取设备内的字体文件来使用的功能。可在设置画面字体管理的“读取”标签页中添加。想使用未公开发布的自制字体或已购买的商用字体时可以使用此功能。';
+      '可以直接导入设备内的字体文件来使用的功能。可在设置画面字体管理的“导入”标签页中添加。想使用未公开发布的自制字体或已购买的商用字体时可以使用此功能。';
 
   @override
   String get helpExportScreenTitle => '导出画面';
@@ -1862,7 +1862,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置26种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、复古动漫、老电视、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换、背景融合、积墨、自动线稿、棱镜、反色、马赛克、噪点、球体阴影和水彩边界。水彩边界只会让作业图层上涂色部分的边缘聚集颜色并加深，就像干了的水彩（边缘以内保持涂色时的样子；开启“颜色交界处也添加”后，相邻颜色的交界处也会出现边缘）。动漫风格会减少颜色数，并在相邻颜色之差达到“颜色差阈值”以上的边界上，于较暗的一侧画出“边界线粗细”的线（线稿的线条不会变粗）。棱镜会把图层上每个形状分别涂上彩虹六色（红、绿、青色、蓝、紫、红）并模糊，再把图层设为线性减淡。先在单独的图层上用深色画出细小的叶片状形状再使用，画面上就会出现柔和的彩虹光痕（模糊量与一般的高斯模糊采用相同标准）。球体阴影会在椭圆形光的内侧叠加光色、外侧叠加阴影色，且只加在已绘制的地方（也可以在画布上拖动光）。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对用面板的“画笔”“填充桶”在画布上涂抹的范围（可用“橡皮擦”修改）施加类似强力眼镜镜片的局部变形（如果有选区或选区图层，会从该范围开始）。画布上有选区时，绘图滤镜只应用于选区内。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动），使其更接近原色；轮廓处不混色，保持清晰。指定颜色数时，会从占画面大部分的颜色中选取。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。大小可在“指定色块大小”（1～100共100级）和“指定点数”（横向、纵向点数滑块，最左为1，最右为画布尺寸）之间切换，横向和纵向会在保持画面宽高比的同时一起变化，两种指定方式也会联动。两种方式下点都保持正方形，不会产生半透明的边缘。 自动线稿可在应用滤镜前直接编辑临时矢量控制点。拖动控制点时只移动该点。选择“应用”右侧的“添加控制点”后点击线条可添加控制点，选择“删除控制点”后点击控制点可将其删除（两者都未选择时点击控制点，会先确认再删除）。编辑后的形状会直接用于最终应用结果，控制点的移动、添加和删除也可以用滤镜编辑的撤销、重做逐一恢复。 色调曲线中，轻点曲线上的空白处可添加点，拖动点可移动，长按可删除；R、G、B 各颜色的曲线在 RGB 曲线之后生效。色阶也可按 R、G、B 分别调整，伽马可改变中间调的亮度。描边的“向内延伸”可将边缘扩展到原轮廓内侧，描边的新图层会放在原图层的正下方。色差可指定将偏移分配到 X（横向）、Y（纵向）、Z（从中心向外）各多少。鱼眼镜头的中心和半径也可以在画布上拖动 ＋ 和圆上的手柄来更改。暗角会柔和地压暗整个画布的四个角（没有绘画的透明处也会有阴影）。可用“范围”调整从四角向中心压暗到多远，用“浓度”调整四角的暗度。眼镜断层像真正的高度数眼镜一样，让透过镜片看到的景物朝镜片中心均匀缩小（负值，近视用）或放大（正值，远视用），并在镜片边缘使轮廓错开成台阶状。积墨只积在线条以“最大角度”或更小角度相交处（初始值90°时为锐角和直角：V字、交叉的窄侧、T字、方角）的夹角内侧，更宽的角不积：在相交点从线条边缘起为“中央宽度”，再朝“范围”的末端笔直变细，末端为0px，平滑地收成尖端（即使加大“中央宽度”，也不会鼓出连接两侧积墨末端的直线之外，最宽时中间也是平的）；若线条在范围内中断，该线条上的积墨会以中断处为终点细到0px（每条线的长度可以不同），此时两处积墨仍会在夹角的正中相接，距两条线的宽度相同（较长线条的积墨从那里再细到范围的末端）。自动线稿沿草稿线条的中心描出细线。靠得很近的线条只要中间有一点空隙，就仍画成两条线，只填补线条内部的小白点。两条线靠拢并贴在一起的地方，不会在中间画成一条线，而是像草稿一样两条线逐渐靠近并合在一起。线条交叉或重叠的地方，也会像草稿一样让每条线照原样延续（不会在交点处折弯，重叠的两条线也不会融成一条）。以较浅角度斜向交叉的线也会笔直地穿过交叉处，仅相互接触的线（例如沿着头部画的头发轮廓）则各自留在自己的一侧，仍是分开的线。眼睛之类的点会画成实心的点。比“草稿线宽”短的分叉不绘制。“起笔收笔”可以用开关打开或关闭，关闭后线条直到末端都保持相同粗细。背景融入以混合模式“强光”叠加背景的光与影（影子的颜色不是黑色或灰色，而是把背景中阴影部分的颜色压暗后的颜色）。周围的颜色以“叠加”覆盖整幅画来统一色彩方向，从下方反上来的光和周围的反射光以“滤色”加入，霓虹灯之类的强烈有色光以“相加（发光）”加在轮廓上。“匹配背景的明暗与色调”会把比背景过亮或过于鲜艳的颜色拉回背景的范围，并让暗部、中间调、亮部分别带上背景中相同明度的色调（线稿的黑色保持不变）。“模糊程度”是取色前模糊背景的程度。';
+      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间轴或整个场景，而绘图滤镜按图层生效）。内置26种滤镜：高斯模糊、镜头模糊、动漫风格、色调曲线、色阶、描边、锐化、USM锐化、暗角、复古动漫、老电视、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换、背景融入、积墨、自动线稿、棱镜、反色、马赛克、噪点、球体阴影和水彩边界。水彩边界只会让工作图层上涂色部分的边缘聚集颜色并加深，就像干了的水彩（边缘以内保持涂色时的样子；开启“颜色交界处也添加”后，相邻颜色的交界处也会出现边缘）。动漫风格会减少颜色数，并在相邻颜色之差达到“颜色差阈值”以上的边界上，于较暗的一侧画出“边界线粗细”的线（线稿的线条不会变粗）。棱镜会把图层上每个形状分别涂上彩虹六色（红、绿、青色、蓝、紫、红）并模糊，再把图层设为线性减淡。先在单独的图层上用深色画出细小的叶片状形状再使用，画面上就会出现柔和的彩虹光痕（模糊量与一般的高斯模糊采用相同标准）。球体阴影会在椭圆形光的内侧叠加光色、外侧叠加阴影色，且只加在已绘制的地方（也可以在画布上拖动光）。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对用面板的“画笔”“填充桶”在画布上涂抹的范围（可用“橡皮擦”修改）施加类似强力眼镜镜片的局部变形（如果有选区或选区图层，会从该范围开始）。画布上有选区时，绘图滤镜只应用于选区内。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动），使其更接近原色；轮廓处不混色，保持清晰。指定颜色数时，会从占画面大部分的颜色中选取。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。大小可在“指定色块大小”（1～100共100级）和“指定点数”（横向、纵向点数滑块，最左为1，最右为画布尺寸）之间切换，横向和纵向会在保持画面宽高比的同时一起变化，两种指定方式也会联动。两种方式下点都保持正方形，不会产生半透明的边缘。 自动线稿可在应用滤镜前直接编辑临时矢量控制点。拖动控制点时只移动该点。选择“应用”右侧的“添加控制点”后点击线条可添加控制点，选择“删除控制点”后点击控制点可将其删除（两者都未选择时点击控制点，会先确认再删除）。编辑后的形状会直接用于最终应用结果，控制点的移动、添加和删除也可以用滤镜编辑的撤销、重做逐一恢复。 色调曲线中，轻点曲线上的空白处可添加点，拖动点可移动，长按可删除；R、G、B 各颜色的曲线在 RGB 曲线之后生效。色阶也可按 R、G、B 分别调整，伽马可改变中间调的亮度。描边的“向内延伸”可将边缘扩展到原轮廓内侧，描边的新图层会放在原图层的正下方。色差可指定将偏移分配到 X（横向）、Y（纵向）、Z（从中心向外）各多少。鱼眼镜头的中心和半径也可以在画布上拖动 ＋ 和圆上的手柄来更改。暗角会柔和地压暗整个画布的四个角（没有绘画的透明处也会有阴影）。可用“范围”调整从四角向中心压暗到多远，用“浓度”调整四角的暗度。眼镜断层像真正的高度数眼镜一样，让透过镜片看到的景物朝镜片中心均匀缩小（负值，近视用）或放大（正值，远视用），并在镜片边缘使轮廓错开成台阶状。积墨只积在线条以“最大角度”或更小角度相交处（初始值90°时为锐角和直角：V字、交叉的窄侧、T字、方角）的夹角内侧，更宽的角不积：在相交点从线条边缘起为“中央宽度”，再朝“范围”的末端笔直变细，末端为0px，平滑地收成尖端（即使加大“中央宽度”，也不会鼓出连接两侧积墨末端的直线之外，最宽时中间也是平的）；若线条在范围内中断，该线条上的积墨会以中断处为终点细到0px（每条线的长度可以不同），此时两处积墨仍会在夹角的正中相接，距两条线的宽度相同（较长线条的积墨从那里再细到范围的末端）。自动线稿沿草稿线条的中心描出细线。靠得很近的线条只要中间有一点空隙，就仍画成两条线，只填补线条内部的小白点。两条线靠拢并贴在一起的地方，不会在中间画成一条线，而是像草稿一样两条线逐渐靠近并合在一起。线条交叉或重叠的地方，也会像草稿一样让每条线照原样延续（不会在交点处折弯，重叠的两条线也不会融成一条）。以较浅角度斜向交叉的线也会笔直地穿过交叉处，仅相互接触的线（例如沿着头部画的头发轮廓）则各自留在自己的一侧，仍是分开的线。眼睛之类的点会画成实心的点。比“草稿线宽”短的分叉不绘制。“起笔收笔”可以用开关打开或关闭，关闭后线条直到末端都保持相同粗细。背景融入以混合模式“强光”叠加背景的光与影（影子的颜色不是黑色或灰色，而是把背景中阴影部分的颜色压暗后的颜色）。周围的颜色以“叠加”覆盖整幅画来统一色彩方向，从下方反上来的光和周围的反射光以“滤色”加入，霓虹灯之类的强烈有色光以“相加（发光）”加在轮廓上。“匹配背景的明暗与色调”会把比背景过亮或过于鲜艳的颜色拉回背景的范围，并让暗部、中间调、亮部分别带上背景中相同明度的色调（线稿的黑色保持不变）。“模糊程度”是取色前模糊背景的程度。';
 
   @override
   String get helpLayerKeyframeTitle => '图层关键帧（分部件动画）';
@@ -1970,11 +1970,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '想反复使用同一段音效时，复制片段并错开时间排列，再分别设置淡入淡出，就能做出有节奏感的自然音效连击。';
 
   @override
-  String get tipsVerticalRubyTitle => '直书×注音打造标题Logo风效果';
+  String get tipsVerticalRubyTitle => '竖排×注音打造标题Logo风效果';
 
   @override
   String get tipsVerticalRubyDesc =>
-      '在文字工具中把直书和注音（振假名）组合使用，可以做出和风标题Logo或有个性的标题效果。半角英数字会自动横向旋转排列，即使混入符号或数字也能保持易读。';
+      '在文字工具中把竖排和注音（振假名）组合使用，可以做出和风标题Logo或有个性的标题效果。半角英数字会自动横向旋转排列，即使混入符号或数字也能保持易读。';
 
   @override
   String get tipsBrushTrySaveTreeTitle => '新的笔刷设置先用保存树试试看';
@@ -1991,18 +1991,18 @@ class AppLocalizationsZh extends AppLocalizations {
       '在手势设置中把取色器分配给双指点击，就能不切换工具、立即吸取附近的颜色。想保持角色配色统一地继续上色时很方便。';
 
   @override
-  String get tipsRulerOnionTitle => '透视尺×洋葱皮，重复利用背景';
+  String get tipsRulerOnionTitle => '透视标尺×洋葱皮，重复利用背景';
 
   @override
   String get tipsRulerOnionDesc =>
-      '先用透视尺定好背景的纵深，再一边用洋葱皮透视前后帧，一边只移动角色，就不用每一帧都重新画背景了。';
+      '先用透视标尺定好背景的纵深，再一边用洋葱皮透视前后帧，一边只移动角色，就不用每一帧都重新画背景了。';
 
   @override
-  String get tipsGradientTraceTitle => '渐变自动上色×色彩描摹，让色彩更自然融合';
+  String get tipsGradientTraceTitle => '渐变自动上色×颜色描线，让色彩更自然融合';
 
   @override
   String get tipsGradientTraceDesc =>
-      '在自动上色设置中使用渐变时，将线稿颜色设置为色彩描边（贴合线稿），线稿颜色就会随渐变的细微色彩变化而变化，使边界不易显得突兀。';
+      '在自动上色设置中使用渐变时，将线稿颜色设置为“颜色描线、与线稿融合”，线稿颜色就会随渐变的细微色彩变化而变化，使边界不易显得突兀。';
 
   @override
   String get tipsGradientOutlineHairTitle => '渐变×指定颜色描边，让刘海呈现透明感';
@@ -2040,11 +2040,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '制作同一作品的多集时，用文件夹按集数归类项目，并为每个项目筛选要使用的自动上色设置，这样就不会混淆各角色的配色，工作效率也更高。';
 
   @override
-  String get tipsPixelToneRetroTitle => '印章像素模式×网点上色，统一复古感';
+  String get tipsPixelToneRetroTitle => '图章像素模式×网点上色，统一复古感';
 
   @override
   String get tipsPixelToneRetroDesc =>
-      '把像素模式的印章和像素模式专用的方格纹、格子纹网点组合使用，可以让整个画面统一呈现像素画质感。适合复古游戏风的演出。';
+      '把像素模式的图章和像素模式专用的方格纹、格子纹网点组合使用，可以让整个画面统一呈现像素画质感。适合复古游戏风的演出。';
 
   @override
   String get tipsMagicWandLassoTitle => '魔术棒选取×套索上色，提高分色效率';
@@ -2054,18 +2054,18 @@ class AppLocalizationsZh extends AppLocalizations {
       '先用选择工具的自动选取（魔术棒）一次性选中大致范围，再用套索选取只调整超出的部分，即使是复杂的分色也能快速完成。';
 
   @override
-  String get tipsCommonLayerFolderTitle => '共同图层×文件夹，跨集数重复使用';
+  String get tipsCommonLayerFolderTitle => '公共图层×文件夹，跨集数重复使用';
 
   @override
   String get tipsCommonLayerFolderDesc =>
-      '系列作品中每集都会用到的Logo或字幕，做成共同图层后整理进文件夹，复制到新一集的项目时也能轻松处理。';
+      '系列作品中每集都会用到的Logo或字幕，做成公共图层后整理进文件夹，复制到新一集的项目时也能轻松处理。';
 
   @override
-  String get tipsStrokeDecayFadeTitle => '笔触衰减×淡出，做出毛笔般的表现';
+  String get tipsStrokeDecayFadeTitle => '笔画衰减×淡出，做出毛笔般的表现';
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      '在画笔设置中，可以分别调整入笔（笔画起点）和收笔（笔画终点）的数值与距离。再配合笔触衰减，可以只让起点变细、只延长收笔，或让两端采用非对称设置，做出毛笔或墨水笔般富有轻重变化的线条。';
+      '在画笔设置中，可以分别调整入笔（笔画起点）和收笔（笔画终点）的数值与距离。再配合笔画衰减，可以只让起点变细、只延长收笔，或让两端采用非对称设置，做出毛笔或墨水笔般富有轻重变化的线条。';
 
   @override
   String get tipsColorMixingFadeTitle => '混色×淡出，做出类似颜料的融合感';
@@ -2093,7 +2093,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsMosaicChromaticDesc =>
-      '先用马赛克降低分辨率，再叠加色差效果，能营造出像在看老式显像管电视般的粗糙质感，与单独使用显像管滤镜的效果又有所不同。';
+      '先用马赛克降低分辨率，再叠加色差效果，能营造出像在看老式显像管电视般的粗糙质感，与单独使用老电视滤镜的效果又有所不同。';
 
   @override
   String get tipsEndCardWatermarkTitle => '水印是你的签名，片尾标记是另一回事';
@@ -2107,7 +2107,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsVerticalPixelFontDesc =>
-      '正因为这款应用兼具插画App和视频剪辑App的双重身份，才能玩出这种手法。把实拍视频片段放到时间轴上，在其上方图层用洋葱皮一边参考一边手绘特效线或角色，就能做出实拍画面叠加手绘动画的“实拍×动画”混合媒体视频。';
+      '这款应用兼具插画App和视频剪辑App的双重身份，所以可以这样玩。把实拍视频片段放到时间轴上，在其上方图层用洋葱皮一边参考一边手绘特效线或角色，就能做出实拍画面叠加手绘动画的“实拍×动画”混合媒体视频。';
 
   @override
   String get tipsTimelineMarkerTitle => '对齐声音与口型的时间点，交给时间戳';
@@ -2138,18 +2138,18 @@ class AppLocalizationsZh extends AppLocalizations {
       '自动上色设置的每个部位都可以设置混合模式。将阴影部位设为“叠加”或“柔光”而不是“正片叠底”，可以做出仿佛透光般的柔和阴影。即使颜色相同，也能改变质感，这是一个隐藏的自由度。';
 
   @override
-  String get tipsStampBlendModeTitle => '印章×混合模式，做出发光特效';
+  String get tipsStampBlendModeTitle => '图章×混合模式，做出发光特效';
 
   @override
   String get tipsStampBlendModeDesc =>
-      '把放置的印章图层的混合模式设为“滤色”或“相加（发光）”，光效线条或闪亮特效就能自然融入背景，显得更加突出。';
+      '把放置的图章图层的混合模式设为“滤色”或“相加（发光）”，光效线条或闪亮特效就能自然融入背景，显得更加突出。';
 
   @override
-  String get tipsQuickToolPenSubTitle => '快捷工具×画笔子工具，打造不间断的作业流程';
+  String get tipsQuickToolPenSubTitle => '快捷工具×笔的子工具，打造不间断的作业流程';
 
   @override
   String get tipsQuickToolPenSubDesc =>
-      '把常用工具登记到快捷工具，同时善用长按画笔即可切换到网点填充、印章放置的子工具，就能减少画面间的来回切换，保持作业节奏。';
+      '把常用工具登记到快捷工具，同时善用长按笔工具即可切换到网点填充、图章放置的子工具，就能减少画面间的来回切换，保持作业节奏。';
 
   @override
   String get tipsAutofillToneReuseTitle => '利用自动上色的网点设置，只需重画线稿就能重现上色';
@@ -2170,7 +2170,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsHomeWidgetDesc =>
-      '在设置的“主屏幕小组件”中选择作品后，选中的那一帧会以静态图片的形式显示在手机主屏幕上。“选择作品”画面可以使用与作品列表标签页相同的排序、搜索和收藏筛选；在选择帧的画面中，还能用与时间轴相同的播放和拖动控件，找到自己满意的那一帧。同时放置“创作作品”和“作品广场”小组件，就能从主屏幕一键进入创作或浏览已发布的作品。';
+      '在设置的“主屏幕小组件”中选择作品后，选中的那一帧会以静态图片的形式显示在手机主屏幕上。“选择作品”画面可以使用与项目标签页相同的排序、搜索和收藏筛选；在选择帧的画面中，还能用与时间轴相同的播放和拖动控件，找到自己满意的那一帧。同时放置“创作作品”和“作品广场”小组件，就能从主屏幕一键进入创作或浏览已发布的作品。';
 
   @override
   String get tipsAutofillTransparentFixTitle => '自动上色溢出的部分用透明色油漆桶擦掉';
@@ -2180,11 +2180,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '当自动上色填到了不该填的地方时，比起用橡皮反复擦，把绘图色设为透明色再对该范围使用油漆桶更为简便。油漆桶会一次性处理被线条围住的整个区域，因此轻点一下就能干净地只清除溢出的部分。';
 
   @override
-  String get tipsRadialVignetteTitle => '放射尺×暗角，营造集中线效果';
+  String get tipsRadialVignetteTitle => '集中线标尺×暗角，营造集中线效果';
 
   @override
   String get tipsRadialVignetteDesc =>
-      '用放射尺一口气画出集中线，再叠加绘图滤镜的暗角效果，就能做出如漫画高潮般有魄力的演出。';
+      '用集中线标尺一口气画出集中线，再叠加绘图滤镜的暗角效果，就能做出如漫画高潮般富有气势的演出。';
 
   @override
   String get tipsClippingGradientTitle => '剪裁×渐变，让阴影可以随时重画';
@@ -2205,7 +2205,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsCameraLensBlurDesc =>
-      '在摄像机关键帧推近的瞬间，临时把镜头模糊演出滤镜调强，就能演绎出如实拍变焦拉伸般的魄力。';
+      '在摄像机关键帧推近的瞬间，临时把镜头模糊演出滤镜调强，就能演绎出如实拍变焦拉伸般的气势。';
 
   @override
   String get tipsBlurVignetteBgTitle => '高斯模糊×暗角，做出柔和的背景虚化';
@@ -2250,11 +2250,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '把作画区域设置得比导出范围更宽，就不用担心用摄像机关键帧做平移、缩放时画面边缘被裁切。在加入较大幅度的运镜之前先确认一下会比较放心。';
 
   @override
-  String get tipsWebmCommonLayerTitle => '透明WebM×用共同图层分开管理背景';
+  String get tipsWebmCommonLayerTitle => '透明WebM×用公共图层分开管理背景';
 
   @override
   String get tipsWebmCommonLayerDesc =>
-      '如果打算把导出为透明WebM的角色，在其他视频剪辑软件中与背景合成，把背景用共同图层单独管理，可以避免多余颜色混进透明部分，让抠像效果更干净。';
+      '如果打算把导出为透明WebM的角色，在其他视频剪辑软件中与背景合成，把背景用公共图层单独管理，可以避免多余颜色混进透明部分，让抠像效果更干净。';
 
   @override
   String get tipsLeftHandedWorkspaceTitle => '左手模式×工作区设置，让操作更顺手';
@@ -2264,11 +2264,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '如果是左撇子，打开工作区设置中的左手模式后，停靠面板会左右翻转，惯用手一侧的画面就不容易被面板遮住。';
 
   @override
-  String get tipsTransferDeviceTitle => '用转移文件把制作内容搬到其他设备';
+  String get tipsTransferDeviceTitle => '用数据迁移文件把制作内容搬到其他设备';
 
   @override
   String get tipsTransferDeviceDesc =>
-      '想换设备也保持相同环境继续绘制时，使用转移（.niatra）功能，可以把设置、笔刷、网点、印章、调色板等环境一起搬过去。如果想传递正在制作的项目本身，请改用“共享（.niashare）”。';
+      '想换设备也保持相同环境继续绘制时，使用数据迁移（.niatra）功能，可以把设置、笔刷、网点、图章、调色板等环境一起搬过去。如果想传递正在制作的项目本身，请改用“共享（.niashare）”。';
 
   @override
   String get fontSettingsTabDownloaded => '已下载';
@@ -2425,7 +2425,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpBasicGestureDesc =>
-      '单击工具栏图标即可切换到该工具。长按同一图标或向上滑动，可打开详细设置。钢笔可切换笔刷、网点、图章、套索填充，油漆桶可切换纯色填充与网点填充，选择工具可切换矩形、套索、自动选择，手指工具可切换模糊与马赛克，快速切换工具可编辑已登记的内容，这些都在长按或上滑之后。双击图标时，画面下方会显示该工具的简短说明。\n在画布上，双指捏合可缩放，双指拖动可平移，双指点击撤销，三指点击重做。双击画面左右边缘可移动到前后一帧。\n连接鼠标或数位板时，可用滚轮缩放、按住中键拖动平移。';
+      '单击工具栏图标即可切换到该工具。长按同一图标或向上滑动，可打开详细设置。笔工具可切换画笔、网点、图章、套索填充，填充桶可切换纯色填充与网点填充，选择工具可切换矩形、套索、自动选择，手指工具可切换模糊与马赛克，快速切换工具可编辑已登记的内容，这些都在长按或上滑之后。双击图标时，画面下方会显示该工具的简短说明。\n在画布上，双指捏合可缩放，双指拖动可平移，双指点击撤销，三指点击重做。双击画面左右边缘可移动到前后一帧。\n连接鼠标或数位板时，可用滚轮缩放、按住中键拖动平移。';
 
   @override
   String get toolbarStampColorLockedSnackbar => '图章保留了自身的颜色信息，因此无法更改颜色';
@@ -2952,7 +2952,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      '使用高级会员或片尾标记编辑权益时，可以显示或隐藏官方片尾标记和 GIF 角落的标志。制作视频也使用相同的设置。';
+      '使用高级会员或片尾标记编辑权益时，可以显示或隐藏官方片尾标记和 GIF 角落的标志。制作过程视频也使用相同的设置。';
 
   @override
   String get premiumBannerWatermarkBody => '高级会员或水印权益可以添加和编辑自定义水印。';
@@ -3098,7 +3098,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get newProjectPresetPortrait => '4:5 竖长（适合Instagram信息流发布）';
 
   @override
-  String get newProjectPresetAnalog => '4:3（模拟广播比例）';
+  String get newProjectPresetAnalog => '4:3（模拟电视比例）';
 
   @override
   String get newProjectCustomSize => '自定义';
@@ -3280,7 +3280,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get penSubToolTabLassoFill => '套索填色';
 
   @override
-  String get penSubToolToneTooltipMessage => '选择网点后，可以用填色桶或画笔涂上网点纹理。';
+  String get penSubToolToneTooltipMessage => '选择网点后，可以用填充桶或笔涂上网点纹理。';
 
   @override
   String get penSubToolStampTooltipMessage => '可以放置固定形状的图章。长按可设置旋转、密度等。';
@@ -3819,7 +3819,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectListNewFolderTitle => '新建文件夹';
 
   @override
-  String get projectListFolderHint => '也可用于整理同一作品的多话内容或系列作品';
+  String get projectListFolderHint => '也可用于整理同一作品的多集内容或系列作品';
 
   @override
   String get projectListEmptyTitle => '没有项目';
@@ -4304,7 +4304,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String timelineExportFrameSuccessSnackbar(String fileName) {
-    return '已保存为$fileName（可在作品一览标签页中查看）';
+    return '已保存为$fileName（可在作品列表标签页中查看）';
   }
 
   @override
@@ -4516,7 +4516,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasEditMenuPressureCurve => '笔压曲线·防抖';
 
   @override
-  String get canvasEditMenuPressureCurveSubtitle => '打开钢笔输入设置（与设置画面共用）';
+  String get canvasEditMenuPressureCurveSubtitle => '打开笔输入设置（与设置画面共用）';
 
   @override
   String get canvasEditMenuMeshTransform => '自由变形、网格变形';
@@ -4549,10 +4549,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasInvertSelectionTooltip => '反转选区';
 
   @override
-  String get canvasRulerFirstUseTip => '使用尺子可以画出笔直的线条和整齐的图形。';
+  String get canvasRulerFirstUseTip => '使用标尺可以画出笔直的线条和整齐的图形。';
 
   @override
-  String get canvasRulerTooltip => '尺子';
+  String get canvasRulerTooltip => '标尺';
 
   @override
   String get commonUndo => '撤销';
@@ -4743,7 +4743,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get layerPanelClippingBadge => '裁剪';
+  String get layerPanelClippingBadge => '剪贴';
 
   @override
   String get layerPanelAddTooltip => '添加其他';
@@ -4806,7 +4806,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get layerPanelCommonDeleteMidDialogBody =>
-      '共用图层的显示范围只能设置为一个连续区间，因此无法在范围中间的某一帧删除。请选择要保留此帧之前还是之后的部分。';
+      '公共图层的显示范围只能设置为一个连续区间，因此无法在范围中间的某一帧删除。请选择要保留此帧之前还是之后的部分。';
 
   @override
   String get layerPanelCommonDeleteKeepBeforeButton => '保留此帧之前';
@@ -6015,21 +6015,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsQuickToolVariantDesc =>
-      '快捷工具槽位不仅限于在钢笔、橡皮擦等不同工具间切换，还可以将同一支钢笔但不同笔刷、或同一个橡皮擦但不同粗细分别登记为独立项目。只精选常用的组合排列好，就能减少每次都要重新打开设置面板调整细节的麻烦。';
+      '快捷工具槽位不仅限于在笔、橡皮擦等不同工具间切换，还可以将同一支笔但不同笔刷、或同一个橡皮擦但不同粗细分别登记为独立项目。只精选常用的组合排列好，就能减少每次都要重新打开设置面板调整细节的麻烦。';
 
   @override
-  String get tipsCommonLayerLipSyncTitle => '共通图层不仅能用于背景，也能给人物省容量';
+  String get tipsCommonLayerLipSyncTitle => '公共图层不仅能用于背景，也能给人物省容量';
 
   @override
   String get tipsCommonLayerLipSyncDesc =>
-      '不只是背景，将人物图层本身设为共通图层也很有效。只把嘴部、眨眼的眼睛等每帧都会变化的部分保留为普通图层叠加，身体、头发等不动的部分设为共通图层，即使是对口型或眨眼动画，也能大幅削减容量。';
+      '不只是背景，将人物图层本身设为公共图层也很有效。只把嘴部、眨眼的眼睛等每帧都会变化的部分保留为普通图层叠加，身体、头发等不动的部分设为公共图层，即使是对口型或眨眼动画，也能大幅削减容量。';
 
   @override
-  String get tipsCommonLayerKeyframeTitle => '共通图层与图层关键帧同样能节省容量';
+  String get tipsCommonLayerKeyframeTitle => '公共图层与图层关键帧同样能节省容量';
 
   @override
   String get tipsCommonLayerKeyframeDesc =>
-      '共通图层可以通过图层关键帧移动位置、缩放、旋转。不必逐帧重新绘制，只需将一张图设为共通图层并用关键帧让它动起来，就能在不增加容量的前提下加入简单的动作。';
+      '公共图层可以通过图层关键帧移动位置、缩放、旋转。不必逐帧重新绘制，只需将一张图设为公共图层并用关键帧让它动起来，就能在不增加容量的前提下加入简单的动作。';
 
   @override
   String get tipsTransferCustomizationTitle => '迁移功能让你换设备也能保持一贯的使用体验';
@@ -6085,7 +6085,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsRoughLayerRescueDesc =>
-      '即使不小心把线稿画在了草图图层上，也能在不删除任何内容的情况下把线稿单独取出来。①新建一个图层，将其混合模式设为“除法”。②用取色器吸取草图的颜色，将整个除法图层填满该颜色（草图会变淡）。③复制该除法图层，草图会完全消失。④在图层面板中使用“合并所有可见图层”将其合并为一层。⑤在合并后图层的三点菜单中选择“按明度透明化（灰色）”，白色部分就会变透明，只留下线稿。';
+      '即使不小心把线稿画在了草图图层上，也能在不删除任何内容的情况下把线稿单独取出来。①新建一个图层，将其混合模式设为“划分”。②用取色器吸取草图的颜色，将整个“划分”图层填满该颜色（草图会变淡）。③复制该“划分”图层，草图会完全消失。④在图层面板中使用“合并所有可见图层”将其合并为一层。⑤在合并后图层的三点菜单中选择“按明度透明化（灰色）”，白色部分就会变透明，只留下线稿。';
 
   @override
   String get timelineEffectTypeMonochrome => '单色化滤镜';
@@ -6165,16 +6165,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceDockPanelTone => '网点';
 
   @override
-  String get workspaceDockPanelStamp => '贴纸';
+  String get workspaceDockPanelStamp => '图章';
 
   @override
-  String get workspaceDockPanelPenSubTool => '画笔';
+  String get workspaceDockPanelPenSubTool => '笔';
 
   @override
   String get workspaceDockPanelOnionSkin => '洋葱皮';
 
   @override
-  String get workspaceDockPanelRuler => '尺规';
+  String get workspaceDockPanelRuler => '标尺';
 
   @override
   String get workspaceDockPanelFilter => '滤镜';
@@ -6230,7 +6230,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasEditMenuPreviewNavigator => '画布预览';
 
   @override
-  String get canvasEditMenuPreviewNavigatorSubtitle => '显示缩小的整体览（导航器）';
+  String get canvasEditMenuPreviewNavigatorSubtitle => '缩小显示全图（导航器）';
 
   @override
   String get filterNamePrism => '棱镜';
@@ -6407,11 +6407,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '要让画好的人物自然地融入背景照片或画作，先对人物图层使用绘图滤镜“背景融入”。它会把所画颜色的明暗与饱和度收进背景的范围，并一次加上背景的整体色调（叠加）、以背景阴影颜色呈现的光与影（强光）、从下方反上来的光（滤色）以及霓虹灯之类的强光（相加（发光））。想再细化时，先在正片叠底或强光图层上画出大块阴影，再用滤色或相加（发光）图层添加玻璃、金属等各材质的反光和轮廓光。想突出的部分（如脸部）保持明亮鲜艳，并用暗角把周围稍微压暗，主角就会更醒目。最后用色调曲线或色阶统一整体颜色。';
 
   @override
-  String get tipsLineArtExtractionTitle => '组合色调调整、二值化、明度转透明来提取线稿';
+  String get tipsLineArtExtractionTitle => '组合色调调整、二值化、按明度透明化来提取线稿';
 
   @override
   String get tipsLineArtExtractionDesc =>
-      '先用色调调整提高对比度，让线条更突出，再用二值化滤镜把图像分成纯黑白两色，线条就会和其余部分清晰分离。二值化的阈值可以用滑块自由调整，按喜好控制线条的粗细和虚实程度。最后，在图层的三点菜单中使用“明度转透明（灰色）”，让白色部分（线条以外）变为透明，就只剩下线稿了。想从照片或草稿中单独提取线稿时非常实用。';
+      '先用色调调整提高对比度，让线条更突出，再用二值化滤镜把图像分成纯黑白两色，线条就会和其余部分清晰分离。二值化的阈值可以用滑块自由调整，按喜好控制线条的粗细和虚实程度。最后，在图层的三点菜单中使用“按明度透明化（灰色）”，让白色部分（线条以外）变为透明，就只剩下线稿了。想从照片或草稿中单独提取线稿时非常实用。';
 
   @override
   String get tipsLineColorUsageTitle => '根据用途分开使用线稿颜色，效果会更好';
@@ -6563,7 +6563,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityRankingPeriodDaily => '每日';
 
   @override
-  String get communityRankingSortBookmarks => '书签数';
+  String get communityRankingSortBookmarks => '收藏数';
 
   @override
   String get communityRankingSortAscendingTooltip => '升序（从少到多）';
@@ -6580,10 +6580,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityWorkDetailViewOnYoutube => '在YouTube上观看';
 
   @override
-  String get communityWorkDetailBookmarkAdd => '加入书签';
+  String get communityWorkDetailBookmarkAdd => '收藏';
 
   @override
-  String get communityWorkDetailBookmarkRemove => '已加书签';
+  String get communityWorkDetailBookmarkRemove => '已收藏';
 
   @override
   String get communityWorkDetailReportButton => '举报';
@@ -6595,11 +6595,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityVisibilityCardTitle => '在作品广场的公开状态';
 
   @override
-  String get communityVisibilityPublishedDesc => '公开中：显示在新着、排行榜和该投稿者的作品列表中。';
+  String get communityVisibilityPublishedDesc => '公开中：显示在最新、排行榜和该投稿者的作品列表中。';
 
   @override
   String get communityVisibilityHiddenDesc =>
-      '非公开中：已从新着、排行榜和该投稿者的作品列表中隐藏（这是独立于YouTube端公开设置的设置）。';
+      '非公开中：已从最新、排行榜和该投稿者的作品列表中隐藏（这是独立于YouTube端公开设置的设置）。';
 
   @override
   String get communityVisibilityHiddenBadge => '非公开';
@@ -6696,13 +6696,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityAuthorTabWorks => '作品';
 
   @override
-  String get communityAuthorTabBookmarks => '书签';
+  String get communityAuthorTabBookmarks => '收藏';
 
   @override
-  String get communityBookmarksHiddenMessage => '加入书签的作品尚未加载，或目前未公开';
+  String get communityBookmarksHiddenMessage => '收藏的作品尚未加载，或目前未公开';
 
   @override
-  String get communityBookmarksEmptyMessage => '暂无加入书签的作品';
+  String get communityBookmarksEmptyMessage => '暂无收藏的作品';
 
   @override
   String get communityShortsBadge => '竖屏';
@@ -6940,7 +6940,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpWidgetSettingsDesc =>
-      '可放置在手机主屏幕上的三种小组件（启动页的作品单帧画面／“创作作品”／“作品广场”）设置。添加小组件本身需要长按主屏幕进行，应用内没有添加按钮。“选择作品”使用与作品列表标签页相同的排序、显示方式、搜索和收藏筛选，选好作品后还可以在带播放控件的预览中选择要显示的具体帧。“创作作品”和“作品广场”小组件可以选择背景色跟随应用主题，还是自行指定颜色。';
+      '可放置在手机主屏幕上的三种小组件（启动页的作品单帧画面／“创作作品”／“作品广场”）设置。添加小组件本身需要长按主屏幕进行，应用内没有添加按钮。“选择作品”使用与项目标签页相同的排序、显示方式、搜索和收藏筛选，选好作品后还可以在带播放控件的预览中选择要显示的具体帧。“创作作品”和“作品广场”小组件可以选择背景色跟随应用主题，还是自行指定颜色。';
 
   @override
   String get colorPickerImportPaletteTooltip => '导入调色板';
@@ -7007,7 +7007,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get toolbarFingerSubtoolWarp => '弯曲';
 
   @override
-  String get brushSettingsEdgeJitterTitle => '边缘渗漏';
+  String get brushSettingsEdgeJitterTitle => '边缘渗色';
 
   @override
   String get filterNameInkPool => '积墨';
@@ -7216,14 +7216,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpCustomAutomationDesc =>
-      '将在画布或时间线上进行的受支持操作录制为命名步骤，以便重复执行。从“自动操作”中新建项目开始录制，停止后可在检查画面中调整步骤顺序或删除步骤，再进行保存。已保存的自动操作可以重命名、重新录制、删除、仅筛选收藏项，还能以JSON文件导出和导入。仅包含画布操作且全部录制于同一帧的自动操作，可在执行时选择当前帧、指定帧范围或所有帧。时间线自动操作以及跨越多帧的录制不会显示帧范围选项。';
+      '将在画布或时间轴上进行的受支持操作录制为命名步骤，以便重复执行。从“自动操作”中新建项目开始录制，停止后可在检查画面中调整步骤顺序或删除步骤，再进行保存。已保存的自动操作可以重命名、重新录制、删除、仅筛选收藏项，还能以JSON文件导出和导入。仅包含画布操作且全部录制于同一帧的自动操作，可在执行时选择当前帧、指定帧范围或所有帧。时间轴自动操作以及跨越多帧的录制不会显示帧范围选项。';
 
   @override
   String get tipsOfficialAutomationPresetsTitle => '按自己的画面调整官方自动操作预设';
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      '官方预设包括“线稿制作（数字）”（自动线稿→积墨）、“线稿提取（模拟）”（色彩调整→二值化→亮度转透明）以及“线稿颜色描线”（在线稿图层上执行：把下方的填色取到剪贴到线稿的新图层→模糊、复制与合并→色彩描线调整，使线条成为相邻填色更深的颜色）。重新录制会追加支持录制的操作。在确认画面中可以调整步骤顺序或删除步骤。若希望轻松恢复原始设置，可在编辑前先导出一份。';
+      '官方预设包括“线稿制作（数字）”（自动线稿→积墨）、“线稿提取（模拟）”（色调调整→二值化→按明度透明化）以及“线稿颜色描线”（在线稿图层上执行：把下方的填色取到剪贴到线稿的新图层→模糊、复制与合并→颜色描线调整，使线条成为相邻填色更深的颜色）。重新录制会追加支持录制的操作。在确认画面中可以调整步骤顺序或删除步骤。若希望轻松恢复原始设置，可在编辑前先导出一份。';
 
   @override
   String get tipsTexturePrismVhsTitle => '在复制图层上尝试质感、棱镜和VHS';
@@ -7318,11 +7318,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '开启描边和折叠模式后，先用初始设置画一条平缓的S形试试。要让先画的一侧在前就选“波浪俯视”，让后画的一侧在前则选“波浪仰视”。表现卷入时，比较朝前进方向右侧卷的“右卷”和朝左侧卷的“左卷”更容易决定。连续画C形曲线时，用“月牙卷”整理月牙的连接。每种类型都使用你所画的弯曲，直线不会自动变成波浪。折返线太短就调高“折返长度”，弯曲不足就调高“折返角度”，想让头发或丝带显得更薄时就调高“折返线的弯曲起点”。关闭折叠模式即可回到普通笔画。';
 
   @override
-  String get tipsFourPanelBrushTitle => '四格漫画画笔×直线尺快速绘制分格';
+  String get tipsFourPanelBrushTitle => '四格漫画画笔×直线标尺快速绘制分格';
 
   @override
   String get tipsFourPanelBrushDesc =>
-      '四格漫画画笔沿笔画排列细线方框。画笔大小同时控制分格大小与间距。打开直线尺即可绘制水平或垂直的整齐分格。';
+      '四格漫画画笔沿笔画排列细线方框。画笔大小同时控制分格大小与间距。打开直线标尺即可绘制水平或垂直的整齐分格。';
 
   @override
   String get canvasSelectionReferenceWorkingLayer => '仅工作图层';
@@ -8128,7 +8128,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterWatercolorBorderHint =>
-      '颜色只聚集在涂色区域的边缘并加深，就像干了的水彩（直接绘制在作业图层上，边缘以内保持涂色时的样子）。范围：从边缘向内加深到哪里。边缘浓度：边缘聚集的颜色有多浓。模糊宽度：浓淡过渡有多平滑。';
+      '颜色只聚集在涂色区域的边缘并加深，就像干了的水彩（直接绘制在工作图层上，边缘以内保持涂色时的样子）。范围：从边缘向内加深到哪里。边缘浓度：边缘聚集的颜色有多浓。模糊宽度：浓淡过渡有多平滑。';
 
   @override
   String get filterFisheyeCanvasHint => '拖动画布上的＋可移动中心，拖动圆上的圆形手柄可改变半径。';
@@ -8603,7 +8603,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tutorialPage3Title => '在画布上绘画';
 
   @override
-  String get tutorialPage3Step1 => '在下方的工具栏中选择画笔、橡皮擦、填充等工具。';
+  String get tutorialPage3Step1 => '在下方的工具栏中选择笔、橡皮擦、填充等工具。';
 
   @override
   String get tutorialPage3Step2 => '点击颜色圆圈即可更改绘画颜色。';
@@ -8796,14 +8796,14 @@ class AppLocalizationsZh extends AppLocalizations {
       '发布到 NIARIM（YouTube 不公开列出）';
 
   @override
-  String get communityPostVisibilityUnlistedHelp => '在 NIARIM 作品广场展示，并可参与书签排名。';
+  String get communityPostVisibilityUnlistedHelp => '在 NIARIM 作品广场展示，并可参与收藏排名。';
 
   @override
   String get communityPostVisibilityPublicTitle => '同时公开到 YouTube';
 
   @override
   String get communityPostVisibilityPublicHelp =>
-      '可能出现在 YouTube 搜索和推荐中，也可参与 NIARIM 书签排名。';
+      '可能出现在 YouTube 搜索和推荐中，也可参与 NIARIM 收藏排名。';
 
   @override
   String get communityPostVisibilityUnlistedDisclosure =>
@@ -9020,7 +9020,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creatorMissionSubtitle => '通过创作和作品广场里程碑获取欧泊';
 
   @override
-  String get creatorMissionPerWork => '每篇作品一次';
+  String get creatorMissionPerWork => '每件作品一次';
 
   @override
   String get creatorMissionClaimed => '已领取';
@@ -9324,7 +9324,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockMonth => '个月';
 
   @override
-  String get rewardUnlockEndCardEdit => '编辑或移除片尾标记和 GIF 标志（含制作视频）';
+  String get rewardUnlockEndCardEdit => '编辑或移除片尾标记和 GIF 标志（含制作过程视频）';
 
   @override
   String get rewardUnlockWatermark => '添加和编辑自定义水印';
@@ -9360,7 +9360,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockAllAds => '移除所有广告';
 
   @override
-  String get rewardUnlockFullPremium => '权益全套礼包（与Premium会员内容相同）';
+  String get rewardUnlockFullPremium => '全功能组合包（与Premium会员内容相同）';
 
   @override
   String get rewardUnlockChoose => '选择';
@@ -10775,10 +10775,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAccountDeletionLinkFailed => '无法打开账号删除页面。';
 
   @override
-  String get settingsCommerceDisclosure => '特定商业交易法规定的标示';
+  String get settingsCommerceDisclosure => '特定商业交易法相关标示';
 
   @override
-  String get settingsCommerceDisclosureLinkFailed => '无法打开特定商业交易法规定的标示页面。';
+  String get settingsCommerceDisclosureLinkFailed => '无法打开特定商业交易法相关标示页面。';
 
   @override
   String get communitySampleReportUnavailable => '无法举报示例作品或创作者。';
@@ -10917,10 +10917,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get makingExportLabel => '导出制作过程';
 
   @override
-  String get makingExportComplete => '制作视频已导出。';
+  String get makingExportComplete => '制作过程视频已导出。';
 
   @override
-  String get makingExportFailed => '无法导出制作视频。';
+  String get makingExportFailed => '无法导出制作过程视频。';
 
   @override
   String get makingDeleteHistory => '删除制作记录';
@@ -10959,7 +10959,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get opalGiftPresentEmpty => '没有可领取的礼物';
 
   @override
-  String get opalGiftPresentEmptyHint => '运营团队赠送的礼物会送到这里。超过领取期限的礼物不会显示。';
+  String get opalGiftPresentEmptyHint => '运营方赠送的礼物会送到这里。超过领取期限的礼物不会显示。';
 
   @override
   String get opalGiftClaim => '领取';
@@ -11001,19 +11001,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get opalGiftSignInRequired => 'Google 账号登录已过期。请重新登录。';
 
   @override
-  String get opalCouponEnter => '输入优惠码';
+  String get opalCouponEnter => '输入兑换码';
 
   @override
-  String get opalCouponIntro => '输入在社交媒体等处发放的优惠码，即可领取欧泊。';
+  String get opalCouponIntro => '输入在社交媒体等处发放的兑换码，即可领取欧泊。';
 
   @override
-  String get opalCouponOfferTitle => '有优惠码吗？';
+  String get opalCouponOfferTitle => '有兑换码吗？';
 
   @override
-  String get opalCouponOfferBody => '输入优惠码即可领取欧泊。之后也可以在“欧泊与奖励”页面输入。';
+  String get opalCouponOfferBody => '输入兑换码即可领取欧泊。之后也可以在“欧泊与奖励”页面输入。';
 
   @override
-  String get opalCouponField => '优惠码';
+  String get opalCouponField => '兑换码';
 
   @override
   String get opalCouponFieldHint => '例：ABCD-2345-EFGH';
@@ -11025,31 +11025,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String get opalCouponLater => '稍后';
 
   @override
-  String get opalCouponErrorFormat => '优惠码为4～32个英文字母和数字。请检查输入的内容。';
+  String get opalCouponErrorFormat => '兑换码为4～32个英文字母和数字。请检查输入的内容。';
 
   @override
-  String get opalCouponErrorNotFound => '找不到此优惠码。请检查输入的内容。';
+  String get opalCouponErrorNotFound => '找不到此兑换码。请检查输入的内容。';
 
   @override
-  String get opalCouponErrorEnded => '此优惠码已停止发放。';
+  String get opalCouponErrorEnded => '此兑换码已停止发放。';
 
   @override
-  String get opalCouponErrorExpired => '此优惠码已过期。';
+  String get opalCouponErrorExpired => '此兑换码已过期。';
 
   @override
-  String get opalCouponErrorNotYet => '此优惠码尚不能使用。请在发放开始后输入。';
+  String get opalCouponErrorNotYet => '此兑换码尚不能使用。请在发放开始后输入。';
 
   @override
-  String get opalCouponErrorLimit => '此优惠码已达到发放数量上限。';
+  String get opalCouponErrorLimit => '此兑换码已达到发放数量上限。';
 
   @override
-  String get opalCouponErrorUsed => '此账号已使用过此优惠码。';
+  String get opalCouponErrorUsed => '此账号已使用过此兑换码。';
 
   @override
-  String get opalCouponErrorNewOnly => '此优惠码仅限新注册的账号使用。';
+  String get opalCouponErrorNewOnly => '此兑换码仅限新注册的账号使用。';
 
   @override
-  String get opalCouponErrorNotEligible => '此账号无法使用此优惠码。';
+  String get opalCouponErrorNotEligible => '此账号无法使用此兑换码。';
 
   @override
   String get opalCouponErrorRateLimited => '输入次数过多，已暂停受理。请约1小时后再输入。';
@@ -11058,7 +11058,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockHistoryPresent => '礼物';
 
   @override
-  String get rewardUnlockHistoryCoupon => '优惠码';
+  String get rewardUnlockHistoryCoupon => '兑换码';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

@@ -210,14 +210,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeWorksEmptyHint => '타임라인에서 동영상이나 GIF를 내보내면 여기에 표시됩니다.';
 
   @override
-  String get homeWorkFolderEmpty => '이 폴더에는 내보낸 작품이 없어요';
+  String get homeWorkFolderEmpty => '이 폴더에는 내보낸 작품이 없습니다';
 
   @override
-  String get homeSharedFolderEmpty => '이 폴더에는 공유된 프로젝트가 없어요';
+  String get homeSharedFolderEmpty => '이 폴더에는 공유된 프로젝트가 없습니다';
 
   @override
   String homeDeleteFolderKeepContents(String name) {
-    return '「$name」 폴더를 삭제해요. 안의 항목은 목록으로 돌아가며 삭제되지 않아요.';
+    return '「$name」 폴더를 삭제합니다. 안의 항목은 목록으로 돌아가며 삭제되지 않습니다.';
   }
 
   @override
@@ -234,7 +234,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeFirstLaunchSaveFailed =>
-      '이 안내를 확인했다는 기록을 저장하지 못했어요. 「시작하기」를 다시 눌러 주세요.';
+      '이 안내를 확인했다는 기록을 저장하지 못했습니다. 「시작하기」를 다시 눌러 주세요.';
 
   @override
   String get settingsScreenTitle => '설정';
@@ -450,10 +450,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get gestureHoldEyedropperNeedsLongPress =>
-      '위의 「길게 누르기」를 「스포이드」로 설정하면 사용할 수 있습니다.';
+      '위의 「길게 누르기」를 「스포이트」로 설정하면 사용할 수 있습니다.';
 
   @override
-  String get gestureHoldEyedropperUseLongPress => '길게 누르기를 스포이드로 설정';
+  String get gestureHoldEyedropperUseLongPress => '길게 누르기를 스포이트로 설정';
 
   @override
   String gestureHoldEyedropperSecondsValue(String seconds) {
@@ -467,7 +467,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get gestureActionRedo => '다시 실행';
 
   @override
-  String get gestureActionEyedropper => '스포이드';
+  String get gestureActionEyedropper => '스포이트';
 
   @override
   String get gestureActionPanTool => '손 도구';
@@ -671,7 +671,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get transferProjectsHint =>
-      '인계 내용에 포함할 프로젝트만 선택할 수 있습니다. 선택한 프로젝트는 소재·폰트를 포함해 통째로 인계됩니다.';
+      '이전할 내용에 포함할 프로젝트만 선택할 수 있습니다. 선택한 프로젝트는 소재·폰트를 포함해 통째로 이전됩니다.';
 
   @override
   String get transferProjectsEmpty => '프로젝트가 없습니다.';
@@ -728,14 +728,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get folderManagementEmpty => '아직 폴더가 없습니다';
 
   @override
-  String get folderCreateFailed => '폴더를 만들지 못했어요. 다시 시도해 주세요.';
+  String get folderCreateFailed => '폴더를 만들지 못했습니다. 다시 시도해 주세요.';
 
   @override
-  String get folderChangesSaveFailed => '폴더 변경 사항을 저장하지 못했어요. 다시 시도해 주세요.';
+  String get folderChangesSaveFailed => '폴더 변경 사항을 저장하지 못했습니다. 다시 시도해 주세요.';
 
   @override
   String get folderChangesPartiallySaved =>
-      '일부 변경 사항만 저장됐어요. 목록을 확인하고 다시 시도해 주세요.';
+      '일부 변경 사항만 저장되었습니다. 목록을 확인하고 다시 시도해 주세요.';
 
   @override
   String get folderNameLabel => '폴더 이름';
@@ -873,7 +873,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get quickToolEraser => '지우개';
 
   @override
-  String get quickToolEyedropper => '스포이드';
+  String get quickToolEyedropper => '스포이트';
 
   @override
   String get quickToolBucket => '페인트통';
@@ -1153,7 +1153,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumDurationExportNote =>
-      '90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다.';
+      '90초가 넘는 작품 전체를 내보내려면 프리미엄이나 최대 길이 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다.';
 
   @override
   String get premiumFeatureMaxDuration => '최대 길이';
@@ -1195,7 +1195,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumValueDuration2Hours => '2시간';
 
   @override
-  String get premiumValueDuration90Sec => '1.5분';
+  String get premiumValueDuration90Sec => '90초';
 
   @override
   String get premiumValueUploadFree => '1개';
@@ -1219,7 +1219,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get toolbarItemBucket => '페인트통';
 
   @override
-  String get toolbarItemEyedropper => '스포이드';
+  String get toolbarItemEyedropper => '스포이트';
 
   @override
   String get toolbarItemFinger => '손가락';
@@ -1295,7 +1295,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String workspaceLoadConfirmBody(String name) {
-    return '「$name」을(를) 불러오면 현재 워크스페이스 설정이 바뀝니다. 현재 설정을 먼저 저장할 수 있습니다.';
+    return '「$name」을(를) 불러오면 현재 작업 공간 설정이 바뀝니다. 현재 설정을 먼저 저장할 수 있습니다.';
   }
 
   @override
@@ -1392,7 +1392,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '둘러싸고 싶은 범위를 손가락으로 따라 그려 다각형 영역을 만들고, 그 안쪽을 한꺼번에 채우는 도구입니다. 페인트통 도구와 달리 선화가 닫혀 있지 않은 부분이 있어도 직접 둘러쌀 범위를 지정할 수 있어, 복잡한 형태나 선이 끊긴 부분을 채우는 데 적합합니다. 「둘러싸서 채우기」를 켜면 둘러싼 범위 안에서 선으로 닫힌 영역을 몇 개든 페인트통처럼 한꺼번에 채웁니다(올가미와 그림 사이의 여백은 채우지 않습니다).';
 
   @override
-  String get helpEyedropperToolTitle => '스포이드 도구';
+  String get helpEyedropperToolTitle => '스포이트 도구';
 
   @override
   String get helpEyedropperToolDesc =>
@@ -1424,7 +1424,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpTextToolDesc =>
-      '캔버스 위에 문자를 배치하는 도구입니다. 글꼴·크기·색·세로쓰기/가로쓰기를 선택할 수 있습니다. 세로쓰기에서는 반각 영숫자의 자동 회전·다테추요코（숫자를 가로 방향 그대로 나열하는 표기）·루비（후리가나）에도 대응합니다. 배치한 텍스트는 내보내기 시에도 픽셀로 구워집니다. 텍스트 도구로 배치한 문자를 탭하면 편집하고, 끌면 이동할 수 있습니다. 새 문자는 마지막으로 확정한 문자와 같은 서식으로 시작합니다. 텍스트 도구에서 사용할 폰트를 추가·검색·삭제할 수 있는 화면입니다. 기본 내장 폰트 외의 추가 무료 폰트는, 초기 설치 용량을 줄이기 위해 이곳에서 필요할 때 다운로드하는 방식으로 되어 있습니다.';
+      '캔버스 위에 문자를 배치하는 도구입니다. 글꼴·크기·색·세로쓰기/가로쓰기를 선택할 수 있습니다. 세로쓰기에서는 반각 영숫자의 자동 회전·세로 중 가로（숫자를 가로 방향 그대로 나열하는 표기）·루비（덧말）에도 대응합니다. 배치한 텍스트는 내보내기 시에도 픽셀로 구워집니다. 텍스트 도구로 배치한 문자를 탭하면 편집하고, 끌면 이동할 수 있습니다. 새 문자는 마지막으로 확정한 문자와 같은 서식으로 시작합니다. 텍스트 도구에서 사용할 폰트를 추가·검색·삭제할 수 있는 화면입니다. 기본 내장 폰트 외의 추가 무료 폰트는, 초기 설치 용량을 줄이기 위해 이곳에서 필요할 때 다운로드하는 방식으로 되어 있습니다.';
 
   @override
   String get helpQuickToolTitle => '빠른 도구';
@@ -1445,7 +1445,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpBlendModeDesc =>
-      '레이어의 합성 방법을 바꾸는 기능입니다. 스크린톤이나 색상 효과를 레이어로 겹칠 때 자주 사용됩니다.\n표준: 그대로 겹칩니다.\n곱하기: 아래 레이어와 곱해 어둡게 합니다. 그림자, 음영 표현의 정석입니다.\n스크린: 밝기를 더해 밝게 합니다. 빛 표현에 적합합니다.\n오버레이: 어두운 부분은 더 어둡게, 밝은 부분은 더 밝게 해 대비를 강조합니다.\n더하기(발광): 색을 단순히 더합니다. 빛 효과선 등에 적합합니다.\n빼기: 색을 뺀 값으로, 어둡게 가라앉은 효과가 됩니다.\n어둡게 비교: 위아래 레이어 중 어두운 쪽 색을 채택합니다.\n밝게 비교: 위아래 레이어 중 밝은 쪽 색을 채택합니다.\n색상 번: 아래 색을 어둡게 가라앉히며 진하게 발색시킵니다.\n색상 닷지: 아래 색을 밝게 날리며 발색시킵니다.\n하드 라이트: 오버레이보다 강하게 대비가 붙습니다.\n소프트 라이트: 오버레이보다 부드럽게 대비가 붙습니다. 부드러운 음영에 적합합니다.\n차이: 위아래 색의 차이를 표시합니다. 색상 어긋남 확인 등에 씁니다.\n색조, 채도, 색상, 광도: 각각 색조, 채도, 색감, 밝기만을 아래 레이어에 반영합니다.\n선형 번: 두 색을 더한 뒤 기준값을 빼 강하게 어둡게 합니다.\n선형 닷지: 두 색을 선형으로 더해 밝게 합니다. 더하기(발광)와는 별도의 블렌드 모드로, 레이어가 반투명할 때는 더하기(발광) 쪽이 더 밝아집니다.\n비비드 라이트: 위 색에 따라 번과 닷지를 전환해 매우 강한 대비를 만듭니다.\n선형 라이트: 위 색을 기준으로 밝기를 선형으로 높이거나 낮춥니다.\n핀 라이트: 위 색에 따라 더 어두운 쪽 또는 더 밝은 쪽으로 바꿉니다.\n하드 믹스: 비비드 라이트 결과를 임계값으로 나눠 강한 원색 분리를 만듭니다.\n제외: 차이보다 부드러운 반전·차이 효과입니다.\n나누기: 아래 색을 위 색으로 나누어 밝기 보정이나 색 차이 강조에 사용합니다.\n블렌드 모드 목록에서는 각 모드 옆에 빨강·노랑·파랑·흰색·검정을 어두운 색부터 밝은 색 위에 겹친 견본이 표시됩니다(견본의 아래쪽은 반투명으로 겹친 모습입니다).';
+      '레이어의 합성 방법을 바꾸는 기능입니다. 스크린톤이나 색상 효과를 레이어로 겹칠 때 자주 사용됩니다.\n표준: 그대로 겹칩니다.\n곱하기: 아래 레이어와 곱해 어둡게 합니다. 그림자, 음영 표현의 정석입니다.\n스크린: 밝기를 더해 밝게 합니다. 빛 표현에 적합합니다.\n오버레이: 어두운 부분은 더 어둡게, 밝은 부분은 더 밝게 해 대비를 강조합니다.\n더하기(발광): 색을 단순히 더합니다. 빛 효과선 등에 적합합니다.\n빼기: 색을 뺀 값으로, 어둡게 가라앉은 효과가 됩니다.\n어둡게 하기: 위아래 레이어 중 어두운 쪽 색을 채택합니다.\n밝게 하기: 위아래 레이어 중 밝은 쪽 색을 채택합니다.\n색상 번: 아래 색을 어둡게 가라앉히며 진하게 발색시킵니다.\n색상 닷지: 아래 색을 밝게 날리며 발색시킵니다.\n하드 라이트: 오버레이보다 강하게 대비가 붙습니다.\n소프트 라이트: 오버레이보다 부드럽게 대비가 붙습니다. 부드러운 음영에 적합합니다.\n차이: 위아래 색의 차이를 표시합니다. 색상 어긋남 확인 등에 씁니다.\n색조, 채도, 색상, 광도: 각각 색조, 채도, 색감, 밝기만을 아래 레이어에 반영합니다.\n선형 번: 두 색을 더한 뒤 기준값을 빼 강하게 어둡게 합니다.\n선형 닷지: 두 색을 선형으로 더해 밝게 합니다. 더하기(발광)와는 별도의 블렌드 모드로, 레이어가 반투명할 때는 더하기(발광) 쪽이 더 밝아집니다.\n비비드 라이트: 위 색에 따라 번과 닷지를 전환해 매우 강한 대비를 만듭니다.\n리니어 라이트: 위 색을 기준으로 밝기를 선형으로 높이거나 낮춥니다.\n핀 라이트: 위 색에 따라 더 어두운 쪽 또는 더 밝은 쪽으로 바꿉니다.\n하드 믹스: 비비드 라이트 결과를 임계값으로 나눠 강한 원색 분리를 만듭니다.\n제외: 차이보다 부드러운 반전·차이 효과입니다.\n나누기: 아래 색을 위 색으로 나누어 밝기 보정이나 색 차이 강조에 사용합니다.\n블렌드 모드 목록에서는 각 모드 옆에 빨강·노랑·파랑·흰색·검정을 어두운 색부터 밝은 색 위에 겹친 견본이 표시됩니다(견본의 아래쪽은 반투명으로 겹친 모습입니다).';
 
   @override
   String get helpClippingTitle => '클리핑';
@@ -1515,14 +1515,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      '애니메이션의 시간축을 관리하는 화면입니다. 프레임（정지 화면 1컷）을 나열하여 플립북처럼 재생하면 애니메이션이 됩니다. 텍스트·이미지·동영상·오디오 소재 트랙, 공통 레이어 트랙, 카메라 키프레임도 같은 타임라인에서 관리합니다. 텍스트·이미지·동영상과 프레임 일러스트의 앞뒤 관계는 「겹침 순서」에서 장면 전체 또는 지정한 프레임 범위별로 바꿀 수 있습니다. 항목을 길게 눌러 여러 개를 선택하고 한꺼번에 옮길 수도 있습니다.';
+      '애니메이션의 시간축을 관리하는 화면입니다. 프레임（정지 화면 1컷）을 나열하여 플립북처럼 재생하면 애니메이션이 됩니다. 텍스트·이미지·동영상·오디오 소재 트랙, 공통 레이어 트랙, 카메라 키프레임도 같은 타임라인에서 관리합니다. 텍스트·이미지·동영상과 프레임 일러스트의 앞뒤 관계는 「겹침 순서」에서 씬 전체 또는 지정한 프레임 범위별로 바꿀 수 있습니다. 항목을 길게 눌러 여러 개를 선택하고 한꺼번에 옮길 수도 있습니다.';
 
   @override
   String get helpSceneTitle => '씬';
 
   @override
   String get helpSceneDesc =>
-      '하나의 프로젝트（동영상 한 편） 안을 장면（컷）별로 나누어 관리하는 기능입니다. 폴더가 프로젝트 단위의 정리라면, 신은 한 편의 동영상 안에서 장면 전환을 표현하는 데 사용합니다. 타임라인의 신 탭에서는 신 추가·복제·삭제·이름 변경·순서 변경이 가능합니다. 다중 선택 모드로 전환하면 여러 신을 한 번에 이동·복제·삭제할 수도 있습니다.';
+      '하나의 프로젝트（동영상 한 편） 안을 장면（컷）별로 나누어 관리하는 기능입니다. 폴더가 프로젝트 단위의 정리라면, 씬은 한 편의 동영상 안에서 장면 전환을 표현하는 데 사용합니다. 타임라인의 씬 탭에서는 씬 추가·복제·삭제·이름 변경·순서 변경이 가능합니다. 다중 선택 모드로 전환하면 여러 씬을 한 번에 이동·복제·삭제할 수도 있습니다.';
 
   @override
   String get helpCameraKeyframeTitle => '카메라 키프레임';
@@ -1550,7 +1550,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      '편집 중 자동 저장본을 최대 3개까지 보관합니다. 작품 파일이 손상되면 읽을 수 있는 최신 자동 저장본에서 자동으로 복구합니다. 저장 목록에서 자동 저장과 수동 저장(세이브 슬롯 또는 저장 트리)을 전환해 불러올 버전을 선택할 수 있습니다.';
+      '편집 중 자동 저장본을 최대 3개까지 보관합니다. 작품 파일이 손상되면 읽을 수 있는 최신 자동 저장본에서 자동으로 복구합니다. 저장 목록에서 자동 저장과 수동 저장(세이브 슬롯 또는 세이브 트리)을 전환해 불러올 버전을 선택할 수 있습니다.';
 
   @override
   String get saveDataManualTab => '수동 저장';
@@ -1591,7 +1591,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpFolderDesc =>
-      '프로젝트（작품）를 그룹화하여 정리하는 기능입니다. 여러 계층을 지원하므로, 같은 작품의 여러 화차나 시리즈물을 함께 관리하는 용도로도 사용할 수 있습니다（예: 「작품명」 폴더 안에 「제1화」「제2화」…처럼 프로젝트를 나열）. 하나의 동영상 안에서 장면을 나누어 만들고 싶을 때는 폴더가 아니라 캔버스 화면의 「씬」 기능을 이용해 주세요.';
+      '프로젝트（작품）를 그룹화하여 정리하는 기능입니다. 여러 계층을 지원하므로, 같은 작품의 여러 회차나 시리즈물을 함께 관리하는 용도로도 사용할 수 있습니다（예: 「작품명」 폴더 안에 「제1화」「제2화」…처럼 프로젝트를 나열）. 하나의 동영상 안에서 장면을 나누어 만들고 싶을 때는 폴더가 아니라 캔버스 화면의 「씬」 기능을 이용해 주세요.';
 
   @override
   String get helpTrashTitle => '휴지통';
@@ -1619,7 +1619,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'MP4, WebM, GIF, AVI로 내보낼 수 있습니다. 90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 내보내기 FPS를 바꿔도 재생 시간은 유지됩니다. 내보내기 전에 길이와 엔드마크를 확인할 수 있습니다. 타임라인의 오디오와 동영상 소재의 소리는 MP4·WebM·AVI에 들어갑니다(GIF는 소리 없음).';
+      'MP4, WebM, GIF, AVI로 내보낼 수 있습니다. 90초가 넘는 작품 전체를 내보내려면 프리미엄이나 최대 길이 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 내보내기 FPS를 바꿔도 재생 시간은 유지됩니다. 내보내기 전에 길이와 엔드마크를 확인할 수 있습니다. 타임라인의 오디오와 동영상 소재의 소리는 MP4·WebM·AVI에 들어갑니다(GIF는 소리 없음).';
 
   @override
   String get helpTransparentWebmTitle => '투명 WebM';
@@ -1629,7 +1629,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      '애니메이션·일러스트 작품을 YouTube 동영상으로 커뮤니티에 게시하고, 다른 사용자의 작품을 둘러볼 수 있는 기능입니다. 「신작」·「랭킹」·「팔로잉」 탭을 전환할 수 있으며, 작품 제목 또는 게시자 이름으로 검색할 수 있습니다. 태그 검색 모드로 전환하면 태그로 작품을 좁혀볼 수 있으며, 태그는 게시자 외의 사용자도 자유롭게 추가·삭제할 수 있습니다（게시자가 잠근 태그는 게시자 본인만 해제할 수 있습니다）. 태그를 탭하기만 해도 같은 태그의 작품으로 좁혀집니다. 작품 카드를 탭하면 드래그·크기 조절이 가능한 플로팅 미리보기 창이 열려 다른 화면을 조작하면서도 계속 시청할 수 있습니다. 「상세보기」 버튼으로 작품의 상세 화면（게시자·게시일·태그 편집·북마크·리포스트 등）을 열 수 있습니다. 게시자 이름 옆의 「팔로우」 버튼을 누르면 팔로우가 되어, 「팔로잉」 탭에서 그 작가의 게시물만 최신순으로 모아 볼 수 있습니다. 팔로잉 목록, 팔로워 목록, 북마크한 작품 목록은 본인만 볼 수 있습니다. 다른 사용자에게는 팔로잉 수와 팔로워 수만 표시합니다. 팔로우, 북마크 또는 리포스트를 해도 상대방에게 해당 작업에 대한 개별 알림이 전송되지 않습니다. 다른 사람의 작품（자신의 게시물은 제외）은 「리포스트」 버튼으로 재게시할 수 있으며, 팔로우 중인 작가가 누군가의 작품을 리포스트하면 그 작품도 「게시일」과 「리포스트한 날짜」 중 더 최근인 쪽을 기준으로 「팔로잉」 탭에 섞여 표시됩니다（카드에 「○○님이 리포스트함」이라고 표시）. 북마크한 작품은 홈 화면의 「북마크됨」 탭에 모아서 표시되며, 자신의 작품 목록 화면의 「북마크」 탭에서도 확인할 수 있습니다. 작품과 사용자를 신고할 수 있습니다. 숨기기는 내 화면에만 적용되며, 차단은 로그인 상태에서 서로의 게시물을 숨깁니다. 세로로 긴 동영상은 「세로 화면 모드」에서 연속 재생으로 시청할 수 있습니다. 하루에 게시할 수 있는 작품 수에는 상한이 있으며, 무료 회원은 하루 1개, 프리미엄 회원은 하루 3개까지입니다. 화면 오른쪽 위의 표시 필터 버튼（사선이 그어진 눈 아이콘）으로 보고 싶지 않은 작품을 숨길 수 있습니다. 「생성형 AI 이미지·동영상 포함」 작품을 숨기는 설정 외에도, 작품 제목만을 대상으로 하는 숨길 제목 키워드과 작품 광장에서 작품에 붙은 태그만을 대상으로 하는 숨길 태그를 「새로 추가」로 하나씩 등록하고 연필 아이콘으로 수정하거나 휴지통 아이콘으로 삭제할 수 있습니다. 쉼표나 #은 필요하지 않습니다. 이 필터는 신착·랭킹·팔로잉（리포스트 포함）·세로 화면 모드·게시자 페이지·작품 상세·북마크에 적용됩니다. 「생성형 AI 이미지·동영상 포함」은 게시할 때 게시자가 직접 표시하는 항목이며, 게시한 후에도 게시자 본인만 변경할 수 있습니다（「내 게시물」 또는 작품 상세 화면에서 변경）.';
+      '애니메이션·일러스트 작품을 YouTube 동영상으로 커뮤니티에 게시하고, 다른 사용자의 작품을 둘러볼 수 있는 기능입니다. 「신작」·「랭킹」·「팔로잉」·「검색」·「북마크됨」의 5개 탭으로 목록을 전환할 수 있으며, 작품 제목 또는 게시자 이름으로 검색할 수 있습니다. 태그 검색 모드로 전환하면 태그로 작품을 좁혀볼 수 있으며, 태그는 게시자 외의 사용자도 자유롭게 추가·삭제할 수 있습니다（게시자가 잠근 태그는 게시자 본인만 해제할 수 있습니다）. 태그를 탭하기만 해도 같은 태그의 작품으로 좁혀집니다. 작품 카드를 탭하면 드래그·크기 조절이 가능한 플로팅 미리보기 창이 열려 다른 화면을 조작하면서도 계속 시청할 수 있습니다. 「상세보기」 버튼으로 작품의 상세 화면（게시자·게시일·태그 편집·북마크·리포스트 등）을 열 수 있습니다. 게시자 이름 옆의 「팔로우」 버튼을 누르면 팔로우가 되어, 「팔로잉」 탭에서 그 작가의 게시물만 최신순으로 모아 볼 수 있습니다. 팔로잉 목록, 팔로워 목록, 북마크한 작품 목록은 본인만 볼 수 있습니다. 다른 사용자에게는 팔로잉 수와 팔로워 수만 표시합니다. 팔로우, 북마크 또는 리포스트를 해도 상대방에게 해당 작업에 대한 개별 알림이 전송되지 않습니다. 다른 사람의 작품（자신의 게시물은 제외）은 「리포스트」 버튼으로 재게시할 수 있으며, 팔로우 중인 작가가 누군가의 작품을 리포스트하면 그 작품도 「게시일」과 「리포스트한 날짜」 중 더 최근인 쪽을 기준으로 「팔로잉」 탭에 섞여 표시됩니다（카드에 「○○님이 리포스트함」이라고 표시）. 북마크한 작품은 작품 광장의 「북마크됨」 탭에 모아서 표시되며, 자신의 작품 목록 화면의 「북마크」 탭에서도 확인할 수 있습니다. 작품과 사용자를 신고할 수 있습니다. 숨기기는 내 화면에만 적용되며, 차단은 로그인 상태에서 서로의 게시물을 숨깁니다. 세로로 긴 동영상은 「세로 화면 모드」에서 연속 재생으로 시청할 수 있습니다. 하루에 게시할 수 있는 작품 수에는 상한이 있으며, 무료 회원은 하루 1개, 프리미엄 회원은 하루 3개까지입니다. 화면 오른쪽 위의 표시 필터 버튼（사선이 그어진 눈 아이콘）으로 보고 싶지 않은 작품을 숨길 수 있습니다. 「생성형 AI 이미지·동영상 포함」 작품을 숨기는 설정 외에도, 작품 제목만을 대상으로 하는 숨길 제목 키워드와 작품 광장에서 작품에 붙은 태그만을 대상으로 하는 숨길 태그를 「새로 추가」로 하나씩 등록하고 연필 아이콘으로 수정하거나 휴지통 아이콘으로 삭제할 수 있습니다. 쉼표나 #은 필요하지 않습니다. 이 필터는 신작·랭킹·팔로잉（리포스트 포함）·세로 화면 모드·게시자 페이지·작품 상세·북마크에 적용됩니다. 「생성형 AI 이미지·동영상 포함」은 게시할 때 게시자가 직접 표시하는 항목이며, 게시한 후에도 게시자 본인만 변경할 수 있습니다（「내 게시물」 또는 작품 상세 화면에서 변경）.';
 
   @override
   String get helpWatermarkEntryTitle => '워터마크';
@@ -1643,14 +1643,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpPremiumEntryDesc =>
-      '길이 연장 혜택이 유효하면 최대 2시간까지 만들고 내보낼 수 있습니다. 만료 후에도 작품은 남으며 적용한 색 보정을 포함해 처음 90초를 내보낼 수 있습니다. 엔드마크는 내보내기 시작 시의 혜택에 따라 결정됩니다.';
+      '최대 길이 혜택이 유효하면 최대 2시간까지 만들고 내보낼 수 있습니다. 만료 후에도 작품은 남으며 적용한 색 보정을 포함해 처음 90초를 내보낼 수 있습니다. 엔드마크는 내보내기 시작 시의 혜택에 따라 결정됩니다.';
 
   @override
   String get helpPremiumExpiryTitle => '혜택이 만료되면';
 
   @override
   String get helpPremiumExpiryDesc =>
-      '90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 프레임 추가·복제에는 90초 제한이 적용됩니다. 편집 기록이 남아 있으면 실행 취소와 다시 실행으로 삭제한 프레임을 복구할 수 있습니다. 엔드마크 혜택 만료 후 새로 내보내는 MP4·WebM·AVI 끝에는 5초간 NIARIM 로고가 표시됩니다. GIF와 이미 내보낸 파일에는 영향이 없습니다. 내보내기 시작 시의 조건이 완료될 때까지 적용됩니다. 배치한 워터마크, 적용한 색 보정, 자동 작업의 결과는 남습니다. 저장한 자동 작업을 다시 실행하려면 유효한 혜택이 필요합니다.';
+      '90초가 넘는 작품 전체를 내보내려면 프리미엄이나 최대 길이 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 프레임 추가·복제에는 90초 제한이 적용됩니다. 편집 기록이 남아 있으면 실행 취소와 다시 실행으로 삭제한 프레임을 복구할 수 있습니다. 엔드마크 혜택 만료 후 새로 내보내는 MP4·WebM·AVI 끝에는 5초간 NIARIM 로고가 표시됩니다. GIF와 이미 내보낸 파일에는 영향이 없습니다. 내보내기 시작 시의 조건이 완료될 때까지 적용됩니다. 배치한 워터마크, 적용한 색 보정, 자동 작업의 결과는 남습니다. 저장한 자동 작업을 다시 실행하려면 유효한 혜택이 필요합니다.';
 
   @override
   String get helpPerformanceSettingsTitle => '성능 설정';
@@ -1674,11 +1674,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '두 손가락 탭·세 손가락 탭·두 손가락 스와이프·길게 누르기에 실행 취소/다시 실행·프레임 이동·스포이트 등의 동작을 할당할 수 있는 설정입니다. 펜 버튼（지원 스타일러스 사용 시）에도 별도로 동작을 할당할 수 있습니다. 도구를 바꾸지 않고 자주 쓰는 동작을 한 번에 불러오고 싶을 때 편리합니다.';
 
   @override
-  String get helpBucketDetailSettingsTitle => '버킷 채우기 세부 설정';
+  String get helpBucketDetailSettingsTitle => '페인트 통 채우기 세부 설정';
 
   @override
   String get helpBucketDetailSettingsDesc =>
-      '설정 화면의 「버킷 채우기」에서 허용 오차（클릭한 위치의 색에서 어디까지의 색 차이를 같은 영역으로 볼지）·확장 px（채운 영역을 경계 바깥쪽으로 넓혀 선화와의 틈을 메우는 정도）·선 아래까지 파고들기（확장분을 선화 위에 덮어쓰지 않고, 선의 모양은 유지한 채 뒤쪽으로 채우기 색을 합성）를 조정할 수 있습니다. 선화에 작은 틈이 있거나 덜 칠해진 부분이 신경 쓰일 때 조정하면 마무리가 안정됩니다.';
+      '설정 화면의 「페인트 통 채우기」에서 허용 오차（클릭한 위치의 색에서 어디까지의 색 차이를 같은 영역으로 볼지）·확장 px（채운 영역을 경계 바깥쪽으로 넓혀 선화와의 틈을 메우는 정도）·선 아래까지 파고들기（확장분을 선화 위에 덮어쓰지 않고, 선의 모양은 유지한 채 뒤쪽으로 채우기 색을 합성）를 조정할 수 있습니다. 선화에 작은 틈이 있거나 덜 칠해진 부분이 신경 쓰일 때 조정하면 마무리가 안정됩니다.';
 
   @override
   String get helpStampToolTitle => '스탬프 도구';
@@ -1692,7 +1692,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpToneFillDesc =>
-      '버킷 도구 설정에서 단색 채우기를 스크린톤 채우기로 바꾸면 선택한 망점·선 무늬 등의 스크린톤 패턴으로 채울 수 있습니다. 픽셀 모드 전용 체크무늬·격자무늬 스크린톤도 준비되어 있어, 픽셀 아트 질감을 살린 채색이 가능합니다. 프릴이나 니트, 타이츠 등 손그림으로는 손이 많이 가는 세밀한 무늬도 간단히 그릴 수 있습니다. 오리지널 스크린톤을 직접 만들어 추가하거나 다른 사용자와 공유할 수도 있습니다. 톤 목록은 망점, 선, 직물 무늬와 픽셀 무늬를 모아서 보여 줍니다. 픽셀 디더 이름에는 입자 크기, 행렬 크기와 농도가 표시됩니다.';
+      '페인트통 도구 설정에서 단색 채우기를 스크린톤 채우기로 바꾸면 선택한 망점·선 무늬 등의 스크린톤 패턴으로 채울 수 있습니다. 픽셀 모드 전용 체크무늬·격자무늬 스크린톤도 준비되어 있어, 픽셀 아트 질감을 살린 채색이 가능합니다. 프릴이나 니트, 타이츠 등 손그림으로는 손이 많이 가는 세밀한 무늬도 간단히 그릴 수 있습니다. 오리지널 스크린톤을 직접 만들어 추가하거나 다른 사용자와 공유할 수도 있습니다. 톤 목록은 망점, 선, 직물 무늬와 픽셀 무늬를 모아서 보여 줍니다. 픽셀 디더 이름에는 입자 크기, 행렬 크기와 농도가 표시됩니다.';
 
   @override
   String get helpPixelModeTitle => '픽셀 모드';
@@ -1723,7 +1723,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '테마 목록에서 앱 전체의 색 구성을 선택할 수 있습니다. 기본 색 6개를 조정하거나 색상 상세 설정에서 메뉴 글자와 선택 표시 등의 색을 따로 지정할 수 있습니다.제목·항목명용 폰트와 설명문용 폰트가 나뉘어 있어, 가독성을 유지하면서 꾸미기를 즐길 수 있습니다.';
 
   @override
-  String get helpWorkspaceSettingsTitle => '워크스페이스 설정';
+  String get helpWorkspaceSettingsTitle => '작업 공간 설정';
 
   @override
   String get helpWorkspaceSettingsDesc =>
@@ -1734,7 +1734,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpPenSettingsDesc =>
-      '타블렛·액정 타블렛의 필압 곡선과 더불어, 펜 옆면 버튼（지원 스타일러스 사용 시）에 지우개 전환이나 스포이트 등의 동작을 할당할 수 있는 설정 화면입니다. 손떨림 보정의 강도도 여기서 바꿀 수 있으며, 모든 브러시에 같은 강도로 적용됩니다.';
+      '판 태블릿·액정 태블릿의 필압 곡선과 더불어, 펜 옆면 버튼（지원 스타일러스 사용 시）에 지우개 전환이나 스포이트 등의 동작을 할당할 수 있는 설정 화면입니다. 손떨림 보정의 강도도 여기서 바꿀 수 있으며, 모든 브러시에 같은 강도로 적용됩니다.';
 
   @override
   String get helpMaterialListTitle => '소재 목록';
@@ -1751,11 +1751,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '프레임 목록에서는 새로 추가·복제·삭제할 수 있고, 다중 선택 모드에서는 여러 프레임을 한꺼번에 이동·복제·삭제할 수 있습니다. 보유 셀 수를 늘리면 같은 프레임을 여러 칸에 걸쳐 계속 표시할 수 있어（이른바 「멈춤」）, 움직임이 적은 컷에서 매수를 절약할 수 있습니다. 캔버스의 프레임 목록에서 프레임을 길게 누르면 그 프레임의 복제·삭제·유지 셀 수를 선택할 수 있습니다.';
 
   @override
-  String get helpSceneOperationsTitle => '장면 조작';
+  String get helpSceneOperationsTitle => '씬 조작';
 
   @override
   String get helpSceneOperationsDesc =>
-      '타임라인의 장면 탭에서는 장면 추가·복제·삭제·이름 변경·순서 바꾸기를 할 수 있습니다. 다중 선택 모드로 하면 여러 장면을 한꺼번에 이동·복제·삭제하는 것도 가능합니다.';
+      '타임라인의 씬 탭에서는 씬 추가·복제·삭제·이름 변경·순서 바꾸기를 할 수 있습니다. 다중 선택 모드로 하면 여러 씬을 한꺼번에 이동·복제·삭제하는 것도 가능합니다.';
 
   @override
   String get helpQuickToolManagementTitle => '빠른 도구 관리';
@@ -1821,7 +1821,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '레이어 패널의 선택 모드를 사용하면 여러 레이어를 체크박스로 한꺼번에 선택해 병합하거나 일괄 삭제할 수 있습니다. 병합은 일반·자동 채색용 선화·자동 채색 레이어끼리만 가능합니다（공통 레이어·폴더·타임라인 소재는 병합 대상 아님）.';
 
   @override
-  String get helpDrawingAreaTitle => '작화 영역';
+  String get helpDrawingAreaTitle => '그리기 영역';
 
   @override
   String get helpDrawingAreaDesc =>
@@ -1874,7 +1874,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpFontImportDesc =>
-      '기기 내의 폰트 파일을 직접 불러와 사용할 수 있게 하는 기능입니다. 설정 화면의 폰트 관리 「가져오기」 탭에서 추가할 수 있습니다. 배포되지 않은 자작 폰트나 구매한 상업용 폰트를 사용하고 싶을 때 이용합니다.';
+      '기기 내의 폰트 파일을 직접 불러와 사용할 수 있게 하는 기능입니다. 설정 화면의 폰트 관리 「불러오기」 탭에서 추가할 수 있습니다. 배포되지 않은 자작 폰트나 구매한 상업용 폰트를 사용하고 싶을 때 이용합니다.';
 
   @override
   String get helpExportScreenTitle => '내보내기 화면';
@@ -1888,7 +1888,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '선택한 레이어에 직접 적용하는 필터입니다(연출 필터가 타임라인 전체나 장면 단위로 적용되는 것과 달리 그리기 필터는 레이어 단위로 작동합니다). 제공되는 26종은 가우시안 흐림, 렌즈 흐림, 애니메이션풍, 톤 커브, 레벨 보정, 윤곽선, 선명하게, 언샤프 마스크, 비네트, 레트로 애니메이션, 브라운관, 이진화, 어안 렌즈, 색수차, 안경 단면, 픽셀 아트, 질감 변경, 배경 어우러짐, 먹물 고임, 자동 선화, 프리즘, 색상 반전, 모자이크, 노이즈, 구체 음영, 수채 경계입니다. 수채 경계는 작업 레이어에 칠한 부분의 가장자리에만 색을 고이게 해 진하게 하여, 마른 수채화처럼 만듭니다(가장자리 안쪽은 칠한 그대로입니다. 「색 경계에도 적용」을 켜면 이웃한 색의 경계에도 가장자리가 생깁니다). 애니메 스타일은 색 수를 줄이고, 이웃한 색의 차이가 「색 차이 임계값」 이상인 경계에 「경계선 굵기」의 선을 어두운 쪽으로 긋습니다(선화의 선은 굵어지지 않습니다). 프리즘은 레이어에 그린 모양마다 무지개 6색(빨강·초록·하늘색·파랑·보라·빨강)으로 칠해 흐리게 하고, 레이어를 선형 닷지로 바꿉니다. 어두운 색의 가늘고 작은 잎 같은 모양을 별도의 레이어에 먼저 그린 뒤 사용하면 그림 위에 은은한 무지갯빛 줄기가 들어갑니다(블러 양은 일반적인 가우스 블러와 같은 기준). 구체 음영은 타원형 빛의 안쪽에 빛 색을, 바깥쪽에 그림자 색을 그려진 곳에만 겹칩니다(빛은 캔버스 위에서도 드래그할 수 있습니다). 윤곽선은 원본 레이어를 다시 쓰지 않고 결과만 새 레이어에 그립니다. 안경 단면은 패널의「펜」「페인트통」으로 캔버스에 칠한 범위（「지우개」로 수정）에만 강한 안경 렌즈 같은 국소 왜곡을 적용합니다（선택 범위나 선택 레이어가 있으면 그 범위에서 시작합니다）. 캔버스에 선택 범위가 있으면 그리기 필터는 그 안에만 적용됩니다. 픽셀 아트는 배색 방식(제한 없음, 색 지정, 색 수 지정, 팔레트 선택)도 고를 수 있습니다. 색을 제한하면, 한 가지 색으로는 원래 색과 먼 곳을 사용할 수 있는 색 중 두세 가지를 규칙적으로 배치해(디더링) 원래 색에 가깝게 합니다. 윤곽 부분은 섞지 않고 또렷하게 유지합니다. 색 수를 지정하면 그림의 많은 부분을 차지하는 색에서 고릅니다. 디더링은 스위치로 켜고 끌 수 있으며, 끄면 가장 가까운 한 가지 색으로 칠합니다. 크기는 「블록 크기 지정」(1~100의 100단계)과 「도트 수 지정」(가로·세로 도트 수 슬라이더. 왼쪽 끝은 1, 오른쪽 끝은 캔버스 크기) 중에서 바꿀 수 있으며, 그림의 가로세로 비율을 유지한 채 가로와 세로가 함께 바뀝니다. 두 지정 방식도 서로 연동됩니다. 어느 쪽이든 도트는 정사각형 그대로이고 반투명한 테두리가 생기지 않습니다. 자동 선화에서는 필터를 적용하기 전에 임시 벡터 제어점을 직접 편집할 수 있습니다. 점을 드래그하면 해당 점만 이동합니다. 「적용」 오른쪽의 「제어점 추가」를 고르고 선을 탭하면 제어점을 추가하고, 「제어점 삭제」를 고르고 점을 탭하면 삭제할 수 있습니다(둘 다 고르지 않았을 때 점을 탭하면 확인한 뒤 삭제합니다). 편집한 형상이 그대로 적용 결과에 사용되며, 제어점의 이동·추가·삭제도 필터 편집의 실행 취소·다시 실행으로 하나씩 되돌릴 수 있습니다. 톤 커브는 곡선의 빈 곳을 탭하면 점을 추가하고, 점을 드래그하면 이동하며, 길게 누르면 삭제할 수 있습니다. R·G·B 색마다의 곡선은 RGB 곡선 다음에 적용됩니다. 레벨 보정도 R·G·B마다 따로 조정할 수 있고, 감마로 중간 밝기를 바꿀 수 있습니다. 테두리의 「안쪽으로 파고들기」로 원래 윤곽의 안쪽까지 테두리를 넓힐 수 있으며, 테두리의 새 레이어는 원래 레이어 바로 아래에 만들어집니다. 색수차는 어긋남을 X(가로)·Y(세로)·Z(중심에서 바깥쪽)에 얼마나 나눌지 지정할 수 있습니다. 어안 렌즈의 중심과 반지름은 캔버스 위의 ＋와 원의 손잡이를 드래그해서도 바꿀 수 있습니다. 비네트는 캔버스 전체의 네 모서리를 부드럽게 어둡게 합니다(그리지 않은 투명한 곳에도 그림자가 집니다). 「범위」로 네 모서리에서 중심 쪽으로 어디까지 어둡게 할지, 「농도」로 네 모서리의 어두운 정도를 조정할 수 있습니다. 안경 렌즈 왜곡은 실제 도수가 높은 안경처럼, 렌즈 너머의 풍경을 렌즈 중심 쪽으로 고르게 줄이거나(음수 값, 근시용) 넓히며(양수 값, 원시용), 렌즈 가장자리에서 윤곽이 계단처럼 어긋납니다. 먹물 고임은 선이 「최대 각도」 이하로 만나는 곳(초기값 90°에서는 예각과 직각: V자, 교차의 좁은 쪽, T자, 네모난 모서리)의 각 안쪽에만 고이며, 그보다 넓은 각에는 고이지 않습니다. 만나는 점에서 선의 가장자리로부터 「중앙 두께」, 그로부터 「범위」 끝을 향해 곧게 가늘어져 끝에서 0px이 되며 매끄럽게 뾰족해집니다. 「중앙 두께」를 크게 해도 양쪽 먹물 고임의 끝을 잇는 직선 바깥으로는 부풀지 않으며, 가장 두꺼워도 가운데는 평평합니다. 범위 도중에 선이 끊기면 그 선에서는 끊긴 곳을 끝으로 삼아 0px까지 가늘어집니다(선마다 길이가 달라집니다). 이때도 두 먹물 고임은 각의 한가운데에서 어느 선으로부터나 같은 두께로 만납니다(긴 쪽 선의 먹물 고임은 거기서부터 범위 끝까지 가늘어집니다). 자동 선화는 밑그림 선의 중심을 따라 가는 선으로 그립니다. 가까이 붙은 선도 사이가 조금이라도 비어 있으면 두 줄 그대로 그리고, 선 안의 작은 흰 점만 메웁니다. 두 선이 가까워져 붙는 곳은 가운데에 한 줄을 긋지 않고, 밑그림처럼 두 선이 서서히 가까워지며 합쳐집니다. 선이 교차하거나 겹친 곳도 밑그림 그대로 각 선이 이어집니다(교차점으로 꺾이거나, 겹친 두 선이 한 줄로 녹아들지 않습니다). 비스듬히 얕게 교차하는 선도 교차한 채 곧게 이어지며, 맞닿기만 하는 선(머리를 따라 그린 머리카락 윤곽 등)은 각자 자기 쪽을 지나는 별개의 선으로 남습니다. 눈 같은 점은 채운 점 그대로 그립니다. 「러프 선 굵기」보다 짧은 가지는 그리지 않습니다. 「선 끝 테이퍼」는 스위치로 켜고 끌 수 있으며, 끄면 선 끝까지 같은 굵기가 됩니다. 배경 어우러짐은 배경의 빛과 그림자를 블렌드 모드 「하드 라이트」로 겹칩니다(그림자 색은 검정이나 회색이 아니라 배경의 그림자 부분 색을 어둡게 한 것). 주변의 색은 「오버레이」로 전체에 겹쳐 색의 방향을 맞추고, 아래에서 올라오는 반사광과 주변의 반사는 「스크린」으로, 네온 같은 강한 색광은 「더하기(발광)」로 윤곽에 넣습니다. 「배경의 밝기·색감에 맞추기」는 배경보다 너무 밝거나 선명한 색을 배경의 범위로 가져오고, 어두운 곳·중간·밝은 곳을 각각 같은 밝기의 배경 색감 쪽으로 맞춥니다(선화의 검정은 그대로). 「흐림 정도」는 색을 가져올 배경을 흐리게 하는 양입니다.';
+      '선택한 레이어에 직접 적용하는 필터입니다(연출 필터가 타임라인 전체나 씬 단위로 적용되는 것과 달리 그리기 필터는 레이어 단위로 작동합니다). 제공되는 26종은 가우시안 흐림, 렌즈 흐림, 애니메 스타일, 톤 커브, 레벨 보정, 테두리, 선명하게, 언샤프 마스크, 비네트, 레트로 애니메, 브라운관, 이진화, 어안 렌즈, 색수차, 안경 렌즈 왜곡, 픽셀 아트, 질감 변경, 배경 어우러짐, 먹물 고임, 자동 선화, 프리즘, 색상 반전, 모자이크, 노이즈, 구체 음영, 수채 경계입니다. 수채 경계는 작업 레이어에 칠한 부분의 가장자리에만 색을 고이게 해 진하게 하여, 마른 수채화처럼 만듭니다(가장자리 안쪽은 칠한 그대로입니다. 「색 경계에도 적용」을 켜면 이웃한 색의 경계에도 가장자리가 생깁니다). 애니메 스타일은 색 수를 줄이고, 이웃한 색의 차이가 「색 차이 임계값」 이상인 경계에 「경계선 굵기」의 선을 어두운 쪽으로 긋습니다(선화의 선은 굵어지지 않습니다). 프리즘은 레이어에 그린 모양마다 무지개 6색(빨강·초록·하늘색·파랑·보라·빨강)으로 칠해 흐리게 하고, 레이어를 선형 닷지로 바꿉니다. 어두운 색의 가늘고 작은 잎 같은 모양을 별도의 레이어에 먼저 그린 뒤 사용하면 그림 위에 은은한 무지갯빛 줄기가 들어갑니다(블러 양은 일반적인 가우스 블러와 같은 기준). 구체 음영은 타원형 빛의 안쪽에 빛 색을, 바깥쪽에 그림자 색을 그려진 곳에만 겹칩니다(빛은 캔버스 위에서도 드래그할 수 있습니다). 테두리는 원본 레이어를 다시 쓰지 않고 결과만 새 레이어에 그립니다. 안경 렌즈 왜곡은 패널의 「펜」「페인트통」으로 캔버스에 칠한 범위（「지우개」로 수정）에만 강한 안경 렌즈 같은 국소 왜곡을 적용합니다（선택 범위나 선택 레이어가 있으면 그 범위에서 시작합니다）. 캔버스에 선택 범위가 있으면 그리기 필터는 그 안에만 적용됩니다. 픽셀 아트는 배색 방식(제한 없음, 색 지정, 색 수 지정, 팔레트 선택)도 고를 수 있습니다. 색을 제한하면, 한 가지 색으로는 원래 색과 먼 곳을 사용할 수 있는 색 중 두세 가지를 규칙적으로 배치해(디더링) 원래 색에 가깝게 합니다. 윤곽 부분은 섞지 않고 또렷하게 유지합니다. 색 수를 지정하면 그림의 많은 부분을 차지하는 색에서 고릅니다. 디더링은 스위치로 켜고 끌 수 있으며, 끄면 가장 가까운 한 가지 색으로 칠합니다. 크기는 「블록 크기 지정」(1~100의 100단계)과 「도트 수 지정」(가로·세로 도트 수 슬라이더. 왼쪽 끝은 1, 오른쪽 끝은 캔버스 크기) 중에서 바꿀 수 있으며, 그림의 가로세로 비율을 유지한 채 가로와 세로가 함께 바뀝니다. 두 지정 방식도 서로 연동됩니다. 어느 쪽이든 도트는 정사각형 그대로이고 반투명한 테두리가 생기지 않습니다. 자동 선화에서는 필터를 적용하기 전에 임시 벡터 제어점을 직접 편집할 수 있습니다. 점을 드래그하면 해당 점만 이동합니다. 「적용」 오른쪽의 「제어점 추가」를 고르고 선을 탭하면 제어점을 추가하고, 「제어점 삭제」를 고르고 점을 탭하면 삭제할 수 있습니다(둘 다 고르지 않았을 때 점을 탭하면 확인한 뒤 삭제합니다). 편집한 형상이 그대로 적용 결과에 사용되며, 제어점의 이동·추가·삭제도 필터 편집의 실행 취소·다시 실행으로 하나씩 되돌릴 수 있습니다. 톤 커브는 곡선의 빈 곳을 탭하면 점을 추가하고, 점을 드래그하면 이동하며, 길게 누르면 삭제할 수 있습니다. R·G·B 색마다의 곡선은 RGB 곡선 다음에 적용됩니다. 레벨 보정도 R·G·B마다 따로 조정할 수 있고, 감마로 중간 밝기를 바꿀 수 있습니다. 테두리의 「안쪽으로 파고들기」로 원래 윤곽의 안쪽까지 테두리를 넓힐 수 있으며, 테두리의 새 레이어는 원래 레이어 바로 아래에 만들어집니다. 색수차는 어긋남을 X(가로)·Y(세로)·Z(중심에서 바깥쪽)에 얼마나 나눌지 지정할 수 있습니다. 어안 렌즈의 중심과 반지름은 캔버스 위의 ＋와 원의 손잡이를 드래그해서도 바꿀 수 있습니다. 비네트는 캔버스 전체의 네 모서리를 부드럽게 어둡게 합니다(그리지 않은 투명한 곳에도 그림자가 집니다). 「범위」로 네 모서리에서 중심 쪽으로 어디까지 어둡게 할지, 「농도」로 네 모서리의 어두운 정도를 조정할 수 있습니다. 안경 렌즈 왜곡은 실제 도수가 높은 안경처럼, 렌즈 너머의 풍경을 렌즈 중심 쪽으로 고르게 줄이거나(음수 값, 근시용) 넓히며(양수 값, 원시용), 렌즈 가장자리에서 윤곽이 계단처럼 어긋납니다. 먹물 고임은 선이 「최대 각도」 이하로 만나는 곳(초기값 90°에서는 예각과 직각: V자, 교차의 좁은 쪽, T자, 네모난 모서리)의 각 안쪽에만 고이며, 그보다 넓은 각에는 고이지 않습니다. 만나는 점에서 선의 가장자리로부터 「중앙 두께」, 그로부터 「범위」 끝을 향해 곧게 가늘어져 끝에서 0px이 되며 매끄럽게 뾰족해집니다. 「중앙 두께」를 크게 해도 양쪽 먹물 고임의 끝을 잇는 직선 바깥으로는 부풀지 않으며, 가장 두꺼워도 가운데는 평평합니다. 범위 도중에 선이 끊기면 그 선에서는 끊긴 곳을 끝으로 삼아 0px까지 가늘어집니다(선마다 길이가 달라집니다). 이때도 두 먹물 고임은 각의 한가운데에서 어느 선으로부터나 같은 두께로 만납니다(긴 쪽 선의 먹물 고임은 거기서부터 범위 끝까지 가늘어집니다). 자동 선화는 밑그림 선의 중심을 따라 가는 선으로 그립니다. 가까이 붙은 선도 사이가 조금이라도 비어 있으면 두 줄 그대로 그리고, 선 안의 작은 흰 점만 메웁니다. 두 선이 가까워져 붙는 곳은 가운데에 한 줄을 긋지 않고, 밑그림처럼 두 선이 서서히 가까워지며 합쳐집니다. 선이 교차하거나 겹친 곳도 밑그림 그대로 각 선이 이어집니다(교차점으로 꺾이거나, 겹친 두 선이 한 줄로 녹아들지 않습니다). 비스듬히 얕게 교차하는 선도 교차한 채 곧게 이어지며, 맞닿기만 하는 선(머리를 따라 그린 머리카락 윤곽 등)은 각자 자기 쪽을 지나는 별개의 선으로 남습니다. 눈 같은 점은 채운 점 그대로 그립니다. 「러프 선 굵기」보다 짧은 가지는 그리지 않습니다. 「선 끝 테이퍼」는 스위치로 켜고 끌 수 있으며, 끄면 선 끝까지 같은 굵기가 됩니다. 배경 어우러짐은 배경의 빛과 그림자를 블렌드 모드 「하드 라이트」로 겹칩니다(그림자 색은 검정이나 회색이 아니라 배경의 그림자 부분 색을 어둡게 한 것). 주변의 색은 「오버레이」로 전체에 겹쳐 색의 방향을 맞추고, 아래에서 올라오는 반사광과 주변의 반사는 「스크린」으로, 네온 같은 강한 색광은 「더하기(발광)」로 윤곽에 넣습니다. 「배경의 밝기·색감에 맞추기」는 배경보다 너무 밝거나 선명한 색을 배경의 범위로 가져오고, 어두운 곳·중간·밝은 곳을 각각 같은 밝기의 배경 색감 쪽으로 맞춥니다(선화의 검정은 그대로). 「흐림 정도」는 색을 가져올 배경을 흐리게 하는 양입니다.';
 
   @override
   String get helpLayerKeyframeTitle => '레이어 키프레임（파츠 단위 애니메이션）';
@@ -1926,7 +1926,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get tipsCategoryExport => '내보내기·조작 팁';
 
   @override
-  String get tipsClipDuplicateTitle => '타임라인 소재도 복제·이동·삭제할 수 있어요';
+  String get tipsClipDuplicateTitle => '타임라인 소재도 복제·이동·삭제할 수 있습니다';
 
   @override
   String get tipsClipDuplicateDesc =>
@@ -1947,7 +1947,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '피부·머리카락·옷 등 부위별로 음영까지 포함해 자동 채색 설정을 등록해두면, 선화만 그려도 채색 대부분을 자동화할 수 있습니다. 프로젝트마다 사용하는 설정만 필터링할 수도 있습니다.';
 
   @override
-  String get tipsAutofillBaseCoatTitle => '자동 채색은 부위 나누지 않고 밑칠 레이어로만 써도 편리해요';
+  String get tipsAutofillBaseCoatTitle => '자동 채색은 부위를 나누지 않고 밑칠 레이어로만 써도 편리합니다';
 
   @override
   String get tipsAutofillBaseCoatDesc =>
@@ -1962,7 +1962,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '먼저 눈에 잘 띄는 임시 색으로 부위를 나눈 뒤 실제 색으로 바꾸려면 이 방법을 사용하세요. 실제 선화는 일반 레이어 한 장에 모두 그리고 채색 레이어 위에 배치합니다.\n부위마다 「자동 채색용 선화 레이어」를 추가하고, 점 세 개 메뉴의 「파츠 설정」에서 해당 부위를 연결하세요. 이 방법에서는 이 레이어가 설정 연결용 보조 레이어이므로 비워 두면 됩니다. 실제 선화는 그리지 마세요. 같은 메뉴에서 「자동 채색 실행」을 한 번 실행해 연결된 「자동 채색 레이어」를 만듭니다.\n각 「자동 채색 레이어」에는 부위별로 눈에 잘 띄는 임시 색을 면으로 직접 칠합니다. 나중에 색을 바꿀 영역을 채우고, 윤곽선만 그리지 마세요.\n형태를 다듬은 뒤 해당 「자동 채색용 선화 레이어」 메뉴에서 「자동 채색 실행」을 열고 「형태를 유지하고 색만 업데이트」를 선택하세요. 직접 칠한 형태는 유지하면서 「자동 채색 설정」의 실제 색을 적용할 수 있습니다. 선화에서 부위를 자동으로 판별해 한 번에 채색하려면 다른 방법을 사용하세요. 이때는 실제 선화를 「자동 채색용 선화 레이어」에 그립니다.';
 
   @override
-  String get tipsBrushFavoriteTitle => '브러시는 즐겨찾기로 등록해두면 헤매지 않고 고를 수 있어요';
+  String get tipsBrushFavoriteTitle => '브러시는 즐겨찾기로 등록해두면 헤매지 않고 고를 수 있습니다';
 
   @override
   String get tipsBrushFavoriteDesc =>
@@ -2001,7 +2001,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsVerticalRubyDesc =>
-      '텍스트 도구의 세로쓰기에 루비（후리가나）를 조합하면 일본풍 타이틀 로고나 개성 있는 제목 연출을 만들 수 있습니다. 반각 영숫자는 자동으로 가로 방향으로 회전해 배열되므로 기호나 숫자가 섞여도 읽기 쉽게 완성됩니다.';
+      '텍스트 도구의 세로쓰기에 루비를 조합하면 일본풍 타이틀 로고나 개성 있는 제목 연출을 만들 수 있습니다. 반각 영숫자는 자동으로 가로 방향으로 회전해 배열되므로 기호나 숫자가 섞여도 읽기 쉽게 완성됩니다.';
 
   @override
   String get tipsBrushTrySaveTreeTitle => '새 브러시 설정은 세이브 트리에서 시험해보기';
@@ -2102,11 +2102,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '혼색을 켠 브러시에 페이드도 함께 조합하면, 아래 색과 섞이면서 서서히 옅어지는 실제 물감에 가까운 채색감을 얻을 수 있습니다.';
 
   @override
-  String get tipsOutlineAnimeStyleTitle => '윤곽선 × 애니메이션풍으로 셀 애니메이션풍 마무리';
+  String get tipsOutlineAnimeStyleTitle => '테두리 × 애니메 스타일로 셀 애니메이션풍 마무리';
 
   @override
   String get tipsOutlineAnimeStyleDesc =>
-      '그리기 필터의 윤곽선으로 외곽선을 새 레이어에 그려내고, 애니메이션풍 필터로 색상 수를 줄이면 셀 애니메이션 같은 또렷한 마무리가 됩니다.';
+      '그리기 필터의 테두리로 외곽선을 새 레이어에 그려내고, 애니메 스타일 필터로 색상 수를 줄이면 셀 애니메이션 같은 또렷한 마무리가 됩니다.';
 
   @override
   String get tipsLevelsToneCurveTitle => '레벨 보정 × 톤 커브로 그래픽풍으로';
@@ -2151,11 +2151,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '작품 광장에 게시하면 YouTube를 통해 작품이 공개됩니다. NIARIM은 동영상 파일 본체를 개발자의 서버로 전송·수집·저장하는 기능을 가지고 있지 않습니다. YouTube 측 공개 설정을 「일부 공개」로 설정하면, YouTube의 일반 공개 목록에는 표시되지 않고 작품 광장 내에만 게시된 상태로 만들 수 있습니다.';
 
   @override
-  String get tipsToolbarCustomizeTitle => '툴바 재배열·숨기기로 손가락 이동 거리 줄이기';
+  String get tipsToolbarCustomizeTitle => '도구 모음 재배열·숨기기로 손가락 이동 거리 줄이기';
 
   @override
   String get tipsToolbarCustomizeDesc =>
-      '설정 화면의 툴바 편집에서 사용하지 않는 도구를 숨기고, 자주 쓰는 도구를 손가락이 닿기 쉬운 위치로 재배열할 수 있습니다. 표시 항목을 줄여 깔끔하게 하는 것만으로 도구를 찾는 시간과 손가락 이동 거리가 줄어 작화 리듬이 좋아집니다.';
+      '설정 화면의 도구 모음 편집에서 사용하지 않는 도구를 숨기고, 자주 쓰는 도구를 손가락이 닿기 쉬운 위치로 재배열할 수 있습니다. 표시 항목을 줄여 깔끔하게 하는 것만으로 도구를 찾는 시간과 손가락 이동 거리가 줄어 작화 리듬이 좋아집니다.';
 
   @override
   String get tipsAutofillBlendModeTitle => '자동 채색 파츠의 블렌드 모드로 음영 질감 바꾸기';
@@ -2169,7 +2169,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsStampBlendModeDesc =>
-      '배치한 스탬프 레이어의 블렌드 모드를 「스크린」이나 「가산」으로 하면, 빛 효과선이나 반짝이는 이펙트가 배경에 자연스럽게 어우러져 돋보입니다.';
+      '배치한 스탬프 레이어의 블렌드 모드를 「스크린」이나 「더하기(발광)」으로 하면, 빛 효과선이나 반짝이는 이펙트가 배경에 자연스럽게 어우러져 돋보입니다.';
 
   @override
   String get tipsQuickToolPenSubTitle => '빠른 도구 × 펜 서브 도구로 멈추지 않는 작업 흐름';
@@ -2193,7 +2193,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '자동 채색은 생성형 AI를 쓴 기능이 아니라, 레이어별 페인트통 칠하기를 응용한 것입니다. 그래서 긴 머리카락처럼 같은 부위 안에 선으로 둘러싸인 틈이 생기면 그곳까지 함께 칠해집니다. 대책으로는 우선 부위마다 채도가 높은 눈에 띄는 색을 지정해 한 번 칠해 보는 것을 권합니다. 잘못 칠해진 곳이 한눈에 보여 자동 채색 레이어를 손으로 고치기 쉽고, 고친 뒤에 원래 색으로 다시 설정해 덮어쓰는 형태로 자동 채색을 재실행하면 칠하기 실수를 크게 줄일 수 있습니다.';
 
   @override
-  String get tipsHomeWidgetTitle => '홈 화면 위젯으로 작품을 항상 볼 수 있어요';
+  String get tipsHomeWidgetTitle => '홈 화면 위젯으로 작품을 항상 볼 수 있습니다';
 
   @override
   String get tipsHomeWidgetDesc =>
@@ -2236,11 +2236,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '카메라 키프레임이 줌인하는 순간에 맞춰 렌즈 블러 연출 필터를 일시적으로 강하게 설정하면, 실사 줌 블러 같은 박력을 연출할 수 있습니다.';
 
   @override
-  String get tipsBlurVignetteBgTitle => '가우시안 블러 × 비네트로 부드러운 배경 보케';
+  String get tipsBlurVignetteBgTitle => '가우시안 흐림 × 비네트로 부드러운 배경 보케';
 
   @override
   String get tipsBlurVignetteBgDesc =>
-      '배경 레이어에만 가우시안 블러와 비네트 그리기 필터를 겹쳐 걸면, 주인공 캐릭터가 자연스럽게 돋보이는 심도감 있는 카메라풍 마무리가 됩니다.';
+      '배경 레이어에만 가우시안 흐림과 비네트 그리기 필터를 겹쳐 걸면, 주인공 캐릭터가 자연스럽게 돋보이는 심도감 있는 카메라풍 마무리가 됩니다.';
 
   @override
   String get tipsSepiaVignetteTitle => '세피아 × 비네트로 앤티크 사진풍 영상으로';
@@ -2261,21 +2261,21 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsSaveSlotAutoSaveDesc =>
-      '자동 저장본은 최대 3개까지 보관됩니다. 중요한 버전은 저장 슬롯에 보관하고 나중에 저장 목록에서 불러오세요.';
+      '자동 저장본은 최대 3개까지 보관됩니다. 중요한 버전은 세이브 슬롯에 보관하고 나중에 저장 목록에서 불러오세요.';
 
   @override
-  String get tipsQuickToolSwipeTitle => '빠른 도구는 위로 스와이프해서 재배열할 수 있어요';
+  String get tipsQuickToolSwipeTitle => '빠른 도구는 위로 스와이프해서 재배열할 수 있습니다';
 
   @override
   String get tipsQuickToolSwipeDesc =>
       '빠른 도구의 등록 내용을 바꾸고 싶을 때는 길게 누르기뿐 아니라 위로 스와이프해도 관리 팝업을 열 수 있습니다. 한 손으로 조작할 때 빠르게 재배열하고 싶을 때 편리합니다.';
 
   @override
-  String get tipsDrawingAreaCameraTitle => '작화 영역을 넓게 × 카메라 키프레임으로 안전하게 팬·줌';
+  String get tipsDrawingAreaCameraTitle => '그리기 영역을 넓게 × 카메라 키프레임으로 안전하게 팬·줌';
 
   @override
   String get tipsDrawingAreaCameraDesc =>
-      '작화 영역을 내보내기 범위보다 넓게 설정해두면, 카메라 키프레임으로 팬·줌을 해도 화면 끝이 잘릴 걱정이 없습니다. 움직임이 큰 연출을 넣기 전에 확인해두면 안심입니다.';
+      '그리기 영역을 내보내기 범위보다 넓게 설정해두면, 카메라 키프레임으로 팬·줌을 해도 화면 끝이 잘릴 걱정이 없습니다. 움직임이 큰 연출을 넣기 전에 확인해두면 안심입니다.';
 
   @override
   String get tipsWebmCommonLayerTitle => '투명 WebM × 배경을 공통 레이어로 분리 관리';
@@ -2285,18 +2285,18 @@ class AppLocalizationsKo extends AppLocalizations {
       '투명 WebM으로 내보낸 캐릭터를 다른 영상 편집 소프트웨어에서 배경과 합성할 경우, 배경을 공통 레이어로 따로 관리해두면 투명 부분에 불필요한 색이 섞이지 않고 깔끔하게 빠집니다.';
 
   @override
-  String get tipsLeftHandedWorkspaceTitle => '왼손잡이 모드 × 워크스페이스 설정으로 작업하기 편하게';
+  String get tipsLeftHandedWorkspaceTitle => '왼손잡이 모드 × 작업 공간 설정으로 작업하기 편하게';
 
   @override
   String get tipsLeftHandedWorkspaceDesc =>
-      '왼손잡이라면 워크스페이스 설정의 왼손잡이 모드를 켜면 도킹 패널이 좌우 반전되어, 주로 쓰는 손 쪽 화면이 패널에 가려지기 어려워집니다.';
+      '왼손잡이라면 작업 공간 설정의 왼손잡이 모드를 켜면 도킹 패널이 좌우 반전되어, 주로 쓰는 손 쪽 화면이 패널에 가려지기 어려워집니다.';
 
   @override
-  String get tipsTransferDeviceTitle => '인계 파일로 다른 기기로 작업을 옮기기';
+  String get tipsTransferDeviceTitle => '데이터 이전 파일로 다른 기기에 환경 옮기기';
 
   @override
   String get tipsTransferDeviceDesc =>
-      '기기를 바꿔도 같은 환경에서 계속 그리고 싶을 때는 인계（.niatra）기능을 사용하면 설정·브러시·스크린톤·스탬프·팔레트 등의 환경을 한꺼번에 옮길 수 있습니다. 작업 중인 프로젝트 자체를 전달하고 싶을 때는 「공유（.niashare）」를 사용하세요.';
+      '기기를 바꿔도 같은 환경에서 계속 그리고 싶을 때는 데이터 이전（.niatra） 기능을 사용하면 설정·브러시·스크린톤·스탬프·팔레트 등의 환경을 한꺼번에 옮길 수 있습니다. 작업 중인 프로젝트 자체를 전달하고 싶을 때는 「공유（.niashare）」를 사용하세요.';
 
   @override
   String get fontSettingsTabDownloaded => '다운로드됨';
@@ -2620,7 +2620,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get assetTagEffect => '효과';
 
   @override
-  String get assetTagTaper => '인입출';
+  String get assetTagTaper => '입출';
 
   @override
   String get assetTagPixelArt => '픽셀 아트';
@@ -3028,7 +3028,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get exportLongProjectNote =>
-      '90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다.';
+      '90초가 넘는 작품 전체를 내보내려면 프리미엄이나 최대 길이 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다.';
 
   @override
   String exportOutputWithoutEndCard(String duration) {
@@ -3200,7 +3200,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String newProjectDurationLabelWithPremiumHint(String max) {
-    return '길이(최대 $max, Premium 이용 시 최대 2시간)';
+    return '길이(최대 $max, 최대 길이 혜택 이용 시 2시간)';
   }
 
   @override
@@ -4387,7 +4387,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineDurationShrinkConfirmBody =>
-      '장면을 줄이면 새 범위 밖의 프레임과 그 안의 그림 및 레이어가 삭제됩니다. 삭제하시겠습니까?';
+      '씬을 줄이면 새 범위 밖의 프레임과 그 안의 그림 및 레이어가 삭제됩니다. 삭제하시겠습니까?';
 
   @override
   String get timelineCanvasSizeDragHint =>
@@ -4739,14 +4739,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasHelpRotationBody => '영문자·기호는 자동으로 90° 회전하여 표시됩니다.';
 
   @override
-  String get canvasHelpTatechuyokoTitle => '다테추요코(세로쓰기 전용)';
+  String get canvasHelpTatechuyokoTitle => '세로 중 가로(세로쓰기 전용)';
 
   @override
   String get canvasHelpTatechuyokoBody =>
       '반각 숫자가 2자리 연속되면 한 글자 높이에 가로로 나란히 자동으로 들어갑니다(예: 12).';
 
   @override
-  String get canvasHelpRubyTitle => '루비(후리가나)';
+  String get canvasHelpRubyTitle => '루비(덧말)';
 
   @override
   String canvasHelpRubyBody(String example) {
@@ -5120,18 +5120,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineStackTargetLabel => '이 겹침 순서를 쓸 곳';
 
   @override
-  String get timelineStackTargetScenes => '장면 여러 개 선택';
+  String get timelineStackTargetScenes => '씬 여러 개 선택';
 
   @override
   String get timelineStackTargetAllFrames => '모든 프레임';
 
   @override
   String get timelineStackScenesHint =>
-      '선택한 장면의 모든 프레임에 같은 순서를 씁니다. 여기서 순서를 바꾸면 선택한 장면 모두에 적용됩니다.';
+      '선택한 씬의 모든 프레임에 같은 순서를 씁니다. 여기서 순서를 바꾸면 선택한 씬 모두에 적용됩니다.';
 
   @override
   String get timelineStackAllFramesHint =>
-      '모든 장면의 모든 프레임에 같은 순서를 씁니다. 여기서 순서를 바꾸면 모든 장면에 적용됩니다.';
+      '모든 씬의 모든 프레임에 같은 순서를 씁니다. 여기서 순서를 바꾸면 모든 씬에 적용됩니다.';
 
   @override
   String get timelineStackRangesTakePriority =>
@@ -5149,7 +5149,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineStackRangeHint =>
-      '지정한 범위의 프레임만 여기서 정한 순서가 됩니다. 범위 밖은 장면 전체의 순서입니다.';
+      '지정한 범위의 프레임만 여기서 정한 순서가 됩니다. 범위 밖은 씬 전체의 순서입니다.';
 
   @override
   String get timelineStackRangeEmpty => '범위가 없습니다. 위의 버튼으로 현재 프레임에 만들 수 있습니다.';
@@ -5391,7 +5391,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '위에 있을수록 앞에 표시됩니다. 손잡이를 드래그하거나 화살표로 순서를 바꿉니다.';
 
   @override
-  String get timelineStackScopeScene => '현재 장면 전체';
+  String get timelineStackScopeScene => '현재 씬 전체';
 
   @override
   String get timelineStackFrameUnit => '프레임 (일러스트)';
@@ -5467,7 +5467,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineWatermarkLoopLabel => '항상 표시（반복 표시）';
 
   @override
-  String get timelineWatermarkLoopSubtitle => '끄면 현재 장면에서만 표시됩니다';
+  String get timelineWatermarkLoopSubtitle => '끄면 현재 씬에서만 표시됩니다';
 
   @override
   String get timelineConfirmButton => '확정';
@@ -5728,7 +5728,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineClipSpeedPastSceneEnd =>
-      '이 속도로 하면 장면의 끝을 넘으므로 변경하지 않았습니다. 먼저 장면을 길게 하세요.';
+      '이 속도로 하면 씬의 끝을 넘으므로 변경하지 않았습니다. 먼저 씬을 길게 하세요.';
 
   @override
   String get timelineClipSpeedKeyframeClash =>
@@ -6074,11 +6074,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get privacyPolicyAdConsentButton => '광고 동의 설정 변경';
 
   @override
-  String get tipsPcDexLayoutTitle => '넓은 화면에서는 PC 모드(DeX)의 본격 레이아웃으로';
+  String get tipsPcDexLayoutTitle => '넓은 화면에서는 PC 모드(DeX)의 본격적인 레이아웃으로';
 
   @override
   String get tipsPcDexLayoutDesc =>
-      'Chromebook이나 키보드를 연결한 태블릿, DeX 등 화면이 넓은 환경에서 사용하면 도킹 패널 방식의 전문적인 레이아웃으로 자동 전환됩니다. 워크스페이스 설정에서 항상 PC 모드·항상 모바일 모드로 수동 고정할 수도 있어, 외부 디스플레이에 연결해 작업할 때도 유용합니다.';
+      'Chromebook이나 키보드를 연결한 태블릿, DeX 등 화면이 넓은 환경에서 사용하면 도킹 패널 방식의 전문적인 레이아웃으로 자동 전환됩니다. 작업 공간 설정에서 항상 PC 모드·항상 모바일 모드로 수동 고정할 수도 있어, 외부 디스플레이에 연결해 작업할 때도 유용합니다.';
 
   @override
   String get workspaceTimelineSection => '타임라인 표시';
@@ -6134,11 +6134,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '공통 레이어는 레이어 키프레임으로 위치, 확대, 회전을 움직일 수 있습니다. 프레임마다 다시 그리는 대신, 그림 한 장을 공통 레이어로 만들어 키프레임으로 움직이기만 해도 용량을 늘리지 않고 간단한 움직임을 줄 수 있습니다.';
 
   @override
-  String get tipsTransferCustomizationTitle => '이관 기능으로 기기를 바꿔도 늘 쓰던 그대로';
+  String get tipsTransferCustomizationTitle => '데이터 이전 기능으로 기기를 바꿔도 늘 쓰던 그대로';
 
   @override
   String get tipsTransferCustomizationDesc =>
-      '인계(.niatra) 기능은 브러시, 테마, 툴바 배치, 팔레트 등 커스터마이즈한 설정을 한꺼번에 다른 기기로 옮길 수 있습니다. 기기를 바꾸거나 여러 기기를 오가며 써도 매번 처음부터 다시 설정할 필요가 없습니다.';
+      '데이터 이전(.niatra) 기능은 브러시, 테마, 도구 모음 배치, 팔레트 등 커스터마이즈한 설정을 한꺼번에 다른 기기로 옮길 수 있습니다. 기기를 바꾸거나 여러 기기를 오가며 써도 매번 처음부터 다시 설정할 필요가 없습니다.';
 
   @override
   String get tipsBlendModeUsageTitle => '블렌드 모드는 목적에 따라 구분해 쓰면 효과적';
@@ -6167,7 +6167,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpMeshTransformDesc =>
-      '캔버스 오른쪽 위의 편집/설정 메뉴에서 열 수 있는, 레이어 전체를 대상으로 하는 변형 도구입니다. 선택 범위 변형과 달리 선택 범위가 필요 없으며, 모서리나 격자점을 손가락으로 개별적으로 드래그해 자유로운 형태로 변형할 수 있습니다. 컨트롤 패널의 분할 수 슬라이더로 메시를 최대 10×10까지 세밀하게 나눌 수 있고, 두 손가락으로 각각 다른 점을 동시에 잡으면 회전·확대축소 같은 조작도 직관적으로 할 수 있습니다.';
+      '캔버스 오른쪽 위의 설정/편집 메뉴에서 열 수 있는, 레이어 전체를 대상으로 하는 변형 도구입니다. 선택 범위 변형과 달리 선택 범위가 필요 없으며, 모서리나 격자점을 손가락으로 개별적으로 드래그해 자유로운 형태로 변형할 수 있습니다. 컨트롤 패널의 분할 수 슬라이더로 메시를 최대 10×10까지 세밀하게 나눌 수 있고, 두 손가락으로 각각 다른 점을 동시에 잡으면 회전·확대축소 같은 조작도 직관적으로 할 수 있습니다.';
 
   @override
   String get layerPanelBrightnessToAlphaLabel => '명도로 투명화';
@@ -6187,7 +6187,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsRoughLayerRescueDesc =>
-      '러프 스케치 레이어 위에 실수로 선화를 그려버려도, 아무것도 지우지 않고 선화만 꺼낼 수 있습니다. ①새 레이어를 추가하고 블렌드 모드를 「나누기」로 설정. ②스포이드로 러프의 색을 추출해 그 나누기 레이어 전체를 채운다（러프가 옅어집니다）. ③나누기 레이어를 복제하면 러프가 완전히 사라집니다. ④레이어 패널의 「표시 중인 모든 레이어 결합」으로 한 장으로 합친다. ⑤합친 레이어의 세 점 메뉴에서 「명도로 투명화（그레이）」를 선택하면 흰 부분이 투명해지고 선화만 남습니다.';
+      '러프 스케치 레이어 위에 실수로 선화를 그려버려도, 아무것도 지우지 않고 선화만 꺼낼 수 있습니다. ①새 레이어를 추가하고 블렌드 모드를 「나누기」로 설정. ②스포이트로 러프의 색을 추출해 그 나누기 레이어 전체를 채운다（러프가 옅어집니다）. ③나누기 레이어를 복제하면 러프가 완전히 사라집니다. ④레이어 패널의 「표시 중인 모든 레이어 결합」으로 한 장으로 합친다. ⑤합친 레이어의 세 점 메뉴에서 「명도로 투명화（그레이）」를 선택하면 흰 부분이 투명해지고 선화만 남습니다.';
 
   @override
   String get timelineEffectTypeMonochrome => '단색화 필터';
@@ -6301,7 +6301,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get pcWorkspaceLayoutIntroHint =>
-      'PC 모드(가로 화면 + 마우스·펜타블릿 연결)로 캔버스 화면을 열었을 때의 패널 순서와 너비를 조정할 수 있습니다.';
+      'PC 모드(가로 화면 + 마우스·펜 태블릿 연결)로 캔버스 화면을 열었을 때의 패널 순서와 너비를 조정할 수 있습니다.';
 
   @override
   String get pcWorkspaceLayoutToolOrderSection => '도구 패널 순서';
@@ -6510,11 +6510,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '그린 인물을 배경 사진이나 그림에 자연스럽게 어우러지게 하려면, 먼저 인물 레이어에 그리기 필터 「배경 어우러짐」을 적용합니다. 그린 색의 밝기·채도가 배경의 범위에 들어오고, 배경 색의 방향(오버레이), 배경의 그림자 색으로 된 빛과 그림자(하드 라이트), 아래에서의 반사광(스크린), 네온 같은 강한 빛(더하기(발광))이 한 번에 들어갑니다. 더 다듬으려면 큰 그림자부터 곱하기나 하드 라이트 레이어에 그려 넣고, 유리나 금속 등 소재별 반사와 윤곽의 빛을 스크린·더하기(발광) 레이어로 더합니다. 보여 주고 싶은 곳(얼굴 등)은 밝고 선명하게 남기고 비네트로 주변을 조금 어둡게 하면 주인공이 돋보입니다. 마지막으로 톤 커브나 레벨 보정으로 전체 색을 정돈합니다.';
 
   @override
-  String get tipsLineArtExtractionTitle => '색조 보정·이진화·명도로 투과를 조합해 선화를 추출하기';
+  String get tipsLineArtExtractionTitle => '색조 조정·이진화·명도로 투명화를 조합해 선화를 추출하기';
 
   @override
   String get tipsLineArtExtractionDesc =>
-      '색조 보정으로 대비를 높여 선을 도드라지게 한 뒤, 이진화 필터로 이미지를 흑백 2색으로 나누면 선과 그 외 부분이 뚜렷하게 분리됩니다. 이진화의 임계값은 슬라이더로 자유롭게 조정할 수 있어 선의 굵기·흐릿한 정도를 취향에 맞게 조절할 수 있습니다. 마지막으로 레이어의 점 3개 메뉴에 있는 「명도로 투과（그레이）」를 사용하면 흰 부분（선 이외）만 투과되어 선화만 추출할 수 있습니다. 사진이나 밑그림에서 선화만 뽑아내고 싶을 때 유용합니다.';
+      '색조 조정으로 대비를 높여 선을 도드라지게 한 뒤, 이진화 필터로 이미지를 흑백 2색으로 나누면 선과 그 외 부분이 뚜렷하게 분리됩니다. 이진화의 임계값은 슬라이더로 자유롭게 조정할 수 있어 선의 굵기·흐릿한 정도를 취향에 맞게 조절할 수 있습니다. 마지막으로 레이어의 점 3개 메뉴에 있는 「명도로 투명화（그레이）」를 사용하면 흰 부분（선 이외）만 투명해져 선화만 추출할 수 있습니다. 사진이나 밑그림에서 선화만 뽑아내고 싶을 때 유용합니다.';
 
   @override
   String get tipsLineColorUsageTitle => '선화색은 용도에 따라 구분해 쓰면 완성도가 달라집니다';
@@ -6528,7 +6528,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsBlushAutofillDesc =>
-      '선화색을 지정색으로 하여 투명색을 선택하고, 채움색을 방사형: 중앙→외부로 하여 볼 홍조색과 투명색 두 가지를 지정하면, 피부 위에 볼 홍조만 부드럽게 올릴 수 있습니다. 홍조색의 불투명도와 색 전환 위치를 조절하면 경계가 더 자연스럽게 어울립니다.';
+      '「선화 색상」을 「지정 색상」으로 하여 투명색을 선택하고, 「채우기 색상」을 「방사형: 중앙→바깥쪽」으로 하여 볼 홍조색과 투명색 두 가지를 지정하면, 피부 위에 볼 홍조만 부드럽게 올릴 수 있습니다. 홍조색의 불투명도와 색 전환 위치를 조절하면 경계가 더 자연스럽게 어울립니다.';
 
   @override
   String get autofillPartResetTraceButton => '기본값으로 되돌리기';
@@ -6550,16 +6550,16 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get workspaceAppliedSnackbar => '워크스페이스 설정을 반영했습니다.';
+  String get workspaceAppliedSnackbar => '작업 공간 설정을 반영했습니다.';
 
   @override
-  String get workspaceSaveAsButton => '워크스페이스 이름을 지정해 저장·덮어쓰기';
+  String get workspaceSaveAsButton => '작업 공간 이름을 지정해 저장·덮어쓰기';
 
   @override
-  String get workspaceShareButton => '워크스페이스 공유';
+  String get workspaceShareButton => '작업 공간 공유';
 
   @override
-  String get workspaceShareSelectTitle => '공유할 워크스페이스 선택';
+  String get workspaceShareSelectTitle => '공유할 작업 공간 선택';
 
   @override
   String workspaceShareFailedSnackbar(String error) {
@@ -6578,14 +6578,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspaceNameRequiredError => '이름을 입력해 주세요.';
 
   @override
-  String get workspaceOverwriteSelectTitle => '덮어쓸 워크스페이스 선택';
+  String get workspaceOverwriteSelectTitle => '덮어쓸 작업 공간 선택';
 
   @override
   String get workspaceOverwriteConfirmTitle => '덮어쓰기 확인';
 
   @override
   String workspaceOverwriteConfirmBody(String name) {
-    return '「$name」을(를) 현재 설정으로 덮어씁니다. 기존 내용은 삭제됩니다. 계속하시겠습니까？';
+    return '「$name」을(를) 현재 설정으로 덮어씁니다. 기존 내용은 삭제됩니다. 계속하시겠습니까?';
   }
 
   @override
@@ -6607,7 +6607,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityScreenTitle => '작품 광장';
 
   @override
-  String get communityTabNew => '신착';
+  String get communityTabNew => '신작';
 
   @override
   String get communityTabRanking => '랭킹';
@@ -6616,7 +6616,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityTabFavoriteAuthors => '팔로잉';
 
   @override
-  String get communitySearchHint => '작품 제목·투고자 이름으로 검색';
+  String get communitySearchHint => '작품 제목·게시자 이름으로 검색';
 
   @override
   String get communityEmptyState => '표시할 작품이 없습니다';
@@ -6639,10 +6639,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityAddTagDialogHint => '태그명을 입력하세요';
 
   @override
-  String get communityTagLockTooltip => '태그 잠금(투고자 전용)';
+  String get communityTagLockTooltip => '태그 잠금(게시자 전용)';
 
   @override
-  String get communityTagUnlockTooltip => '태그 잠금 해제(투고자 전용)';
+  String get communityTagUnlockTooltip => '태그 잠금 해제(게시자 전용)';
 
   @override
   String get communityRemoveTagTooltip => '태그 삭제';
@@ -6699,11 +6699,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityVisibilityPublishedDesc =>
-      '공개 중: 신착·랭킹·이 투고자의 작품 목록에 표시됩니다.';
+      '공개 중: 신작·랭킹·이 게시자의 작품 목록에 표시됩니다.';
 
   @override
   String get communityVisibilityHiddenDesc =>
-      '비공개 중: 신착·랭킹·이 투고자의 작품 목록에서 숨겨집니다（YouTube 측 공개 설정과는 독립된 설정입니다）.';
+      '비공개 중: 신작·랭킹·이 게시자의 작품 목록에서 숨겨집니다（YouTube 측 공개 설정과는 독립된 설정입니다）.';
 
   @override
   String get communityVisibilityHiddenBadge => '비공개';
@@ -6822,7 +6822,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityVideoTypeFilterTooltip => '동영상 종류로 좁혀보기';
 
   @override
-  String get communityVideoTypeFilterAll => '종합';
+  String get communityVideoTypeFilterAll => '전체';
 
   @override
   String get communityVideoTypeFilterShortOnly => '세로 화면만';
@@ -7115,7 +7115,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get toolbarItemMosaic => '모자이크';
 
   @override
-  String get toolbarFingerSubtoolWarp => '우그리기';
+  String get toolbarFingerSubtoolWarp => '왜곡';
 
   @override
   String get brushSettingsEdgeJitterTitle => '가장자리 번짐';
@@ -7334,7 +7334,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      '공식 프리셋은 「선화 작성(디지털)」(자동 선화 → 잉크 고임), 「선화 추출(아날로그)」(색조 보정 → 이진화 → 밝기로 투명도 변환), 「선화 색 트레이스」(선화 레이어에서 실행: 아래에 칠한 색을 선화에 클리핑한 새 레이어로 가져오기 → 블러·복제·병합 → 색 트레이스 보정으로 선이 옆 채색보다 깊은 색이 됩니다)입니다. 다시 기록하면 지원되는 작업이 추가됩니다. 확인 화면에서 단계 순서를 바꾸거나 삭제할 수 있습니다. 원래 설정으로 쉽게 돌아가려면 편집 전에 내보내 두세요.';
+      '공식 프리셋은 「선화 작성(디지털)」(자동 선화 → 먹물 고임), 「선화 추출(아날로그)」(색조 조정 → 이진화 → 명도로 투명화), 「선화 색 트레이스」(선화 레이어에서 실행: 아래에 칠한 색을 선화에 클리핑한 새 레이어로 가져오기 → 블러·복제·병합 → 색 트레이스 보정으로 선이 옆 채색보다 깊은 색이 됩니다)입니다. 다시 기록하면 지원되는 작업이 추가됩니다. 확인 화면에서 단계 순서를 바꾸거나 삭제할 수 있습니다. 원래 설정으로 쉽게 돌아가려면 편집 전에 내보내 두세요.';
 
   @override
   String get tipsTexturePrismVhsTitle => '질감, 프리즘, VHS는 복제 레이어에서 시험하기';
@@ -7369,7 +7369,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushOutlineColorPicker => '색상 선택기';
 
   @override
-  String get brushOutlineEyedropper => '스포이드';
+  String get brushOutlineEyedropper => '스포이트';
 
   @override
   String get brushOutlineKeepOverlap => '겹침 유지';
@@ -7386,7 +7386,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get brushOutlineAccentHelp =>
-      '획의 곡선 꼭짓점으로 갈수록 외곽선을 두껍게 합니다. 곡선의 시작과 끝은 외곽선 두께 그대로이고, 꼭짓점에서 이 두께가 되도록 서서히 두꺼워집니다(필압과 인입출은 외곽선 두께를 바꾸지 않으므로 외곽선의 강약은 이것으로 줍니다). 펜을 떼면 반영됩니다.';
+      '획의 곡선 꼭짓점으로 갈수록 외곽선을 두껍게 합니다. 곡선의 시작과 끝은 외곽선 두께 그대로이고, 꼭짓점에서 이 두께가 되도록 서서히 두꺼워집니다(필압과 입출은 외곽선 두께를 바꾸지 않으므로 외곽선의 강약은 이것으로 줍니다). 펜을 떼면 반영됩니다.';
 
   @override
   String get brushFold => '접힘 모드';
@@ -7542,7 +7542,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      '제목에 해당 단어가 포함된 작품을 숨깁니다(작성자 이름과 태그는 제외). 단어를 하나씩 추가하고 수정하세요.';
+      '제목에 해당 단어가 포함된 작품을 숨깁니다(게시자 이름과 태그는 제외). 단어를 하나씩 추가하고 수정하세요.';
 
   @override
   String get communityMutedTags => '숨길 태그';
@@ -7848,7 +7848,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityPostYoutubeSyntheticQuestion =>
-      'YouTube에 신고할 실제처럼 보이는 변경 또는 합성 콘텐츠가 있나요?';
+      'YouTube에 알릴 사항: 실제와 구별하기 어려운 변경 또는 합성 콘텐츠가 포함되어 있나요?';
 
   @override
   String get communityPostYoutubeSyntheticHelp =>
@@ -9268,10 +9268,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loginBonusVisitMissing => '오늘의 로그인 확인 중';
 
   @override
-  String get rewardNavigationExchange => '특전 교환';
+  String get rewardNavigationExchange => '혜택 교환';
 
   @override
-  String get rewardNavigationHub => '오팔·특전';
+  String get rewardNavigationHub => '오팔·혜택';
 
   @override
   String get rewardNavigationEarnTab => '광고 보고 오팔 받기';
@@ -9304,10 +9304,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardNavigationMembershipCoin => '오팔로 잠금 해제됨';
 
   @override
-  String get rewardNavigationMembershipBenefit => '사용 중인 특전';
+  String get rewardNavigationMembershipBenefit => '사용 중인 혜택';
 
   @override
-  String get rewardNavigationMembershipNoBenefit => '사용 중인 특전 없음';
+  String get rewardNavigationMembershipNoBenefit => '사용 중인 혜택 없음';
 
   @override
   String get rewardNavigationMembershipUpsell => '프리미엄의 기능과 요금을 확인한 후 가입하세요.';
@@ -9333,7 +9333,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get rewardNavigationMembershipUnavailable => '특전 정보 확인 불가';
+  String get rewardNavigationMembershipUnavailable => '혜택 정보 확인 불가';
 
   @override
   String get rewardNavigationMembershipLogin => '로그인이 필요합니다';
@@ -9366,7 +9366,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockLoading => '잔액 확인 중…';
 
   @override
-  String get rewardUnlockPaused => '보관된 남은 초';
+  String get rewardUnlockPaused => '보관 중·남은 초';
 
   @override
   String get rewardUnlockActiveUntil => '만료 시각';
@@ -9476,7 +9476,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get rewardUnlockBestExplain =>
-      'Premium 회원과 동일한 대상 기능을 묶음 할인으로 이용할 수 있어요';
+      'Premium 회원과 동일한 대상 기능을 묶음 할인으로 이용할 수 있습니다';
 
   @override
   String get rewardUnlockEarning => 'Premium 회원도 오팔을 모을 수 있습니다';
@@ -9701,7 +9701,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsFollowerRule =>
-      '【팔로워 조건】NIARIM 계정의 현재 팔로워가 목표 이상이어야 합니다. 기기에서 신고한 수치가 아닌 서버 기록을 사용합니다.';
+      '【팔로워 조건】NIARIM 계정의 현재 팔로워가 목표 이상이어야 합니다. 기기에서 보고한 수치가 아닌 서버 기록을 사용합니다.';
 
   @override
   String get creatorMissionDetailsTimeRule =>
@@ -10692,7 +10692,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themePreviewScreenPost => '작품 광장: 게시하기';
 
   @override
-  String get themePreviewScreenAuthor => '투고자의 작품';
+  String get themePreviewScreenAuthor => '게시자의 작품';
 
   @override
   String get themePreviewScreenNotifications => '알림';
@@ -10713,7 +10713,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themePreviewSampleArtist => '샘플 작가';
 
   @override
-  String get themePreviewSampleStudio => '아사카제 공방';
+  String get themePreviewSampleStudio => '아침바람 공방';
 
   @override
   String get themePreviewSampleDescriptionLabel => '설명';
@@ -10745,7 +10745,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushFoldEndTaper => '접힌 끝 가늘기';
 
   @override
-  String get timelineSelectionScenes => '장면';
+  String get timelineSelectionScenes => '씬';
 
   @override
   String get timelineSelectionClips => '소재 클립';
@@ -10754,10 +10754,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get helpShowAllTopics => '모든 항목 보기';
 
   @override
-  String get transferExportFileFailed => '이전 파일을 만들지 못했습니다.';
+  String get transferExportFileFailed => '데이터 이전 파일을 만들지 못했습니다.';
 
   @override
-  String get transferImportFileFailed => '이전 파일을 읽지 못했습니다.';
+  String get transferImportFileFailed => '데이터 이전 파일을 읽지 못했습니다.';
 
   @override
   String get transferImportInterrupted =>
@@ -10827,7 +10827,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pcTimelineZoomOut => '타임라인 축소';
 
   @override
-  String get communityTagLockedMessage => '이 태그는 잠겨 있습니다. 작성자만 편집할 수 있습니다.';
+  String get communityTagLockedMessage => '이 태그는 잠겨 있습니다. 게시자 본인만 편집할 수 있습니다.';
 
   @override
   String get communityTagEditPrompt => '이 태그를 편집할까요?';
@@ -10945,7 +10945,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get keyframeRetimeClash =>
-      '키가 같은 프레임에 겹치거나, 범위 뒤의 키를 앞지르거나, 신 밖으로 나가므로 이 속도로 할 수 없습니다.';
+      '키가 같은 프레임에 겹치거나, 범위 뒤의 키를 앞지르거나, 씬 밖으로 나가므로 이 속도로 할 수 없습니다.';
 
   @override
   String keyframeRetimePreview(String before, String after) {
@@ -10985,7 +10985,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityReportSend => '신고 보내기';
 
   @override
-  String get communityReportSent => '운영자에 신고를 보냈습니다';
+  String get communityReportSent => '운영자에게 신고를 보냈습니다';
 
   @override
   String get communityModerationSaved => '변경 사항을 저장했습니다';
@@ -11157,7 +11157,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get opalGiftPresentEmptyHint =>
-      '운영팀이 보낸 선물은 여기에 도착합니다. 수령 기한이 지난 선물은 표시되지 않습니다.';
+      '운영자가 보낸 선물은 여기에 도착합니다. 수령 기한이 지난 선물은 표시되지 않습니다.';
 
   @override
   String get opalGiftClaim => '받기';
@@ -11209,7 +11209,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get opalCouponOfferBody =>
-      '쿠폰 코드를 입력하면 오팔을 받을 수 있습니다. 나중에 오팔·특전 화면에서도 입력할 수 있습니다.';
+      '쿠폰 코드를 입력하면 오팔을 받을 수 있습니다. 나중에 오팔·혜택 화면에서도 입력할 수 있습니다.';
 
   @override
   String get opalCouponField => '쿠폰 코드';
