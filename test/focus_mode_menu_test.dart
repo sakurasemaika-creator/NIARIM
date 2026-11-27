@@ -142,6 +142,9 @@ void main() {
     final move = tester.getRect(
       find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
     );
+    final moveGrip = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-move-grip')),
+    );
     final resize = tester.getRect(
       find.byKey(const ValueKey('focus-mode-menu-resize-handle')),
     );
@@ -149,7 +152,7 @@ void main() {
       find.byKey(const ValueKey('focus-mode-menu-close')),
     );
 
-    expect(move.center.dx, closeTo(tester.getRect(surface).center.dx, 0.1));
+    expect(moveGrip.center.dx, closeTo(tester.getRect(surface).center.dx, 0.1));
     expect(resize.left, closeTo(tester.getRect(surface).left, 0.1));
     expect(move.right, closeTo(close.left, 0.1),
         reason: 'panels without contextual actions must not reserve an empty menu slot');
@@ -186,6 +189,9 @@ void main() {
     final move = tester.getRect(
       find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
     );
+    final moveGrip = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-move-grip')),
+    );
     final resize = tester.getRect(
       find.byKey(const ValueKey('focus-mode-menu-resize-handle')),
     );
@@ -194,7 +200,8 @@ void main() {
     expect(rect.bottom, closeTo(788, 0.1));
     expect(resize.left, closeTo(rect.left, 0.1));
     expect(minimize.left, closeTo(rect.left + 48, 0.1));
-    expect(move.center.dx, closeTo(rect.center.dx, 0.1));
+    expect(moveGrip.center.dx, closeTo(rect.center.dx, 0.1));
+    expect(move.left, closeTo(minimize.right, 0.1));
   });
 
   testWidgets('top-left resize handle changes width and height and anchors bottom-right', (
