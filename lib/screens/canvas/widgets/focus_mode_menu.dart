@@ -387,6 +387,7 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                             final headerMenuBuilder =
                                 _menuController.headerMenuBuilder;
                             return SizedBox(
+                              key: const ValueKey('focus-mode-menu-header'),
                               width: menuWidth,
                               height: _headerHeight,
                               child: Row(
@@ -468,7 +469,8 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                       onPressed: _toggleMinimized,
                                     ),
                                   ),
-                                  // The title is a wide drag target of its own.
+                                  // Keep the title and move grip compactly
+                                  // stacked inside the same single-row header.
                                   Expanded(
                                     child: _buildMoveDragTarget(
                                       key: const ValueKey(
@@ -478,57 +480,65 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                       expandedSize: expandedSize,
                                       viewportWidth: viewportWidth,
                                       viewportHeight: viewportHeight,
-                                      child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                          ),
-                                          child: Text(
-                                            widget.title,
-                                            key: const ValueKey(
-                                              'focus-mode-menu-title',
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: localizedHeadingStyle(
-                                              context,
-                                              TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: scheme.onSurface,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  // Keep the move grip directly beside the
-                                  // contextual menu, not in the title area.
-                                  SizedBox(
-                                    width: headerControlWidth,
-                                    height: _headerHeight,
-                                    child: _buildMoveDragTarget(
-                                      key: const ValueKey(
-                                        'focus-mode-menu-move-grip-handle',
-                                      ),
-                                      left: left,
-                                      expandedSize: expandedSize,
-                                      viewportWidth: viewportWidth,
-                                      viewportHeight: viewportHeight,
                                       child: Center(
-                                        child: Container(
-                                          key: const ValueKey(
-                                            'focus-mode-menu-move-grip',
-                                          ),
-                                          width: 32,
-                                          height: 4,
-                                          decoration: BoxDecoration(
-                                            color: scheme.onSurfaceVariant
-                                                .withValues(alpha: 0.48),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              Text(
+                                                widget.title,
+                                                key: const ValueKey(
+                                                  'focus-mode-menu-title',
+                                                ),
+                                                maxLines: 1,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                                textAlign: TextAlign.center,
+                                                style: localizedHeadingStyle(
+                                                  context,
+                                                  TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight:
+                                                        FontWeight.w600,
+                                                    color: scheme.onSurface,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Center(
+                                                child: SizedBox(
+                                                  key: const ValueKey(
+                                                    'focus-mode-menu-move-grip-handle',
+                                                  ),
+                                                  width: 32,
+                                                  height: 6,
+                                                  child: Center(
+                                                    child: Container(
+                                                      key: const ValueKey(
+                                                        'focus-mode-menu-move-grip',
+                                                      ),
+                                                      width: 32,
+                                                      height: 4,
+                                                      decoration: BoxDecoration(
+                                                        color: scheme
+                                                            .onSurfaceVariant
+                                                            .withValues(
+                                                              alpha: 0.48,
+                                                            ),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
