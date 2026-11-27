@@ -358,208 +358,208 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                               height: _headerHeight,
                               child: Row(
                                 children: [
-                              // Top-left resize handle: drag left/up to grow.
-                              SizedBox(
-                                width: headerControlWidth,
-                                height: _headerHeight,
-                                child: MouseRegion(
-                                  cursor: SystemMouseCursors.resizeUpLeft,
-                                  child: GestureDetector(
-                                    key: const ValueKey(
-                                      'focus-mode-menu-resize-handle',
-                                    ),
-                                    behavior: HitTestBehavior.opaque,
-                                    onPanStart: (details) => _startResizing(
-                                      details,
-                                      expandedSize,
-                                      left: left,
-                                    ),
-                                    onPanUpdate: (details) => _resizeBy(
-                                      details,
-                                      viewportHeight: viewportHeight,
-                                    ),
-                                    onPanEnd: (_) {
-                                      _resizeStartPosition = null;
-                                      _resizeStartSize = null;
-                                      _resizeStartLeft = null;
-                                      _resizeStartBottom = null;
-                                    },
-                                    onPanCancel: () {
-                                      _resizeStartPosition = null;
-                                      _resizeStartSize = null;
-                                      _resizeStartLeft = null;
-                                      _resizeStartBottom = null;
-                                    },
-                                    child: Center(
-                                      child: SvgPicture.string(
-                                        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 19h6v-6"/><path d="M11 5H5v6"/><path d="M5 5 19 19"/></svg>',
+                                  // Top-left resize handle: drag left/up to grow.
+                                  SizedBox(
+                                    width: headerControlWidth,
+                                    height: _headerHeight,
+                                    child: MouseRegion(
+                                      cursor: SystemMouseCursors.resizeUpLeft,
+                                      child: GestureDetector(
                                         key: const ValueKey(
-                                          'focus-mode-menu-resize-handle-icon',
+                                          'focus-mode-menu-resize-handle',
                                         ),
-                                        width: 18,
-                                        height: 18,
-                                        colorFilter: ColorFilter.mode(
-                                          scheme.onSurfaceVariant.withValues(
-                                            alpha: 0.62,
+                                        behavior: HitTestBehavior.opaque,
+                                        onPanStart: (details) => _startResizing(
+                                          details,
+                                          expandedSize,
+                                          left: left,
+                                        ),
+                                        onPanUpdate: (details) => _resizeBy(
+                                          details,
+                                          viewportHeight: viewportHeight,
+                                        ),
+                                        onPanEnd: (_) {
+                                          _resizeStartPosition = null;
+                                          _resizeStartSize = null;
+                                          _resizeStartLeft = null;
+                                          _resizeStartBottom = null;
+                                        },
+                                        onPanCancel: () {
+                                          _resizeStartPosition = null;
+                                          _resizeStartSize = null;
+                                          _resizeStartLeft = null;
+                                          _resizeStartBottom = null;
+                                        },
+                                        child: Center(
+                                          child: SvgPicture.string(
+                                            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 19h6v-6"/><path d="M11 5H5v6"/><path d="M5 5 19 19"/></svg>',
+                                            key: const ValueKey(
+                                              'focus-mode-menu-resize-handle-icon',
+                                            ),
+                                            width: 18,
+                                            height: 18,
+                                            colorFilter: ColorFilter.mode(
+                                              scheme.onSurfaceVariant.withValues(
+                                                alpha: 0.62,
+                                              ),
+                                              BlendMode.srcIn,
+                                            ),
                                           ),
-                                          BlendMode.srcIn,
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              // Minimize/restore sits immediately beside resize.
-                              SizedBox(
-                                width: headerControlWidth,
-                                height: _headerHeight,
-                                child: IconButton(
-                                  key: const ValueKey(
-                                    'focus-mode-menu-toggle',
-                                  ),
-                                  tooltip: _minimized
-                                      ? widget.expandTooltip
-                                      : widget.collapseTooltip,
-                                  visualDensity: VisualDensity.compact,
-                                  constraints: BoxConstraints.tightFor(
+                                  // Minimize/restore sits immediately beside resize.
+                                  SizedBox(
                                     width: headerControlWidth,
                                     height: _headerHeight,
-                                  ),
-                                  padding: EdgeInsets.zero,
-                                  icon: Icon(
-                                    _minimized
-                                        ? Icons.expand_more
-                                        : Icons.expand_less,
-                                    size: 20,
-                                  ),
-                                  onPressed: _toggleMinimized,
-                                ),
-                              ),
-                              // The title and central grip share one drag area.
-                              Expanded(
-                                child: MouseRegion(
-                                  cursor: SystemMouseCursors.grab,
-                                  child: GestureDetector(
-                                    key: const ValueKey(
-                                      'focus-mode-menu-drag-handle',
+                                    child: IconButton(
+                                      key: const ValueKey(
+                                        'focus-mode-menu-toggle',
+                                      ),
+                                      tooltip: _minimized
+                                          ? widget.expandTooltip
+                                          : widget.collapseTooltip,
+                                      visualDensity: VisualDensity.compact,
+                                      constraints: BoxConstraints.tightFor(
+                                        width: headerControlWidth,
+                                        height: _headerHeight,
+                                      ),
+                                      padding: EdgeInsets.zero,
+                                      icon: Icon(
+                                        _minimized
+                                            ? Icons.expand_more
+                                            : Icons.expand_less,
+                                        size: 20,
+                                      ),
+                                      onPressed: _toggleMinimized,
                                     ),
-                                    behavior: HitTestBehavior.opaque,
-                                    onPanStart: (details) =>
-                                        _startMoving(details, left: left),
-                                    onPanUpdate: (details) => _moveBy(
-                                      details,
-                                      expandedSize: expandedSize,
-                                      viewportWidth: viewportWidth,
-                                      viewportHeight: viewportHeight,
-                                    ),
-                                    onPanEnd: (_) {
-                                      _moveStartPosition = null;
-                                      _moveStartOffset = null;
-                                    },
-                                    onPanCancel: () {
-                                      _moveStartPosition = null;
-                                      _moveStartOffset = null;
-                                    },
-                                    child: LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        final titleWidth = math.max(
-                                          0.0,
-                                          constraints.maxWidth / 2 -
-                                              22 -
-                                              (headerMenuBuilder == null
-                                                  ? headerControlWidth / 2
-                                                  : 0),
-                                        );
-                                        return Stack(
-                                          fit: StackFit.expand,
-                                          children: [
-                                            if (widget.title.isNotEmpty)
-                                              Positioned(
-                                                left: 8,
-                                                top: 0,
-                                                bottom: 0,
-                                                width: titleWidth,
-                                                child: Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: Text(
-                                                    widget.title,
-                                                    key: const ValueKey(
-                                                      'focus-mode-menu-title',
+                                  ),
+                                  // The title and central grip share one drag area.
+                                  Expanded(
+                                    child: MouseRegion(
+                                      cursor: SystemMouseCursors.grab,
+                                      child: GestureDetector(
+                                        key: const ValueKey(
+                                          'focus-mode-menu-drag-handle',
+                                        ),
+                                        behavior: HitTestBehavior.opaque,
+                                        onPanStart: (details) =>
+                                            _startMoving(details, left: left),
+                                        onPanUpdate: (details) => _moveBy(
+                                          details,
+                                          expandedSize: expandedSize,
+                                          viewportWidth: viewportWidth,
+                                          viewportHeight: viewportHeight,
+                                        ),
+                                        onPanEnd: (_) {
+                                          _moveStartPosition = null;
+                                          _moveStartOffset = null;
+                                        },
+                                        onPanCancel: () {
+                                          _moveStartPosition = null;
+                                          _moveStartOffset = null;
+                                        },
+                                        child: LayoutBuilder(
+                                          builder: (context, constraints) {
+                                            final titleWidth = math.max(
+                                              0.0,
+                                              constraints.maxWidth / 2 -
+                                                  22 -
+                                                  (headerMenuBuilder == null
+                                                      ? headerControlWidth / 2
+                                                      : 0),
+                                            );
+                                            return Stack(
+                                              fit: StackFit.expand,
+                                              children: [
+                                                if (widget.title.isNotEmpty)
+                                                  Positioned(
+                                                    left: 8,
+                                                    top: 0,
+                                                    bottom: 0,
+                                                    width: titleWidth,
+                                                    child: Align(
+                                                      alignment:
+                                                          Alignment.centerLeft,
+                                                      child: Text(
+                                                        widget.title,
+                                                        key: const ValueKey(
+                                                          'focus-mode-menu-title',
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow:
+                                                            TextOverflow.ellipsis,
+                                                        style: localizedHeadingStyle(
+                                                          context,
+                                                          TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color:
+                                                                scheme.onSurface,
+                                                          ),
+                                                        ),
+                                                      ),
                                                     ),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: localizedHeadingStyle(
-                                                      context,
-                                                      TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color:
-                                                            scheme.onSurface,
+                                                  ),
+                                                Center(
+                                                  child: Transform.translate(
+                                                    offset: Offset(
+                                                      headerMenuBuilder == null
+                                                          ? -headerControlWidth / 2
+                                                          : 0,
+                                                      0,
+                                                    ),
+                                                    child: Container(
+                                                      key: const ValueKey(
+                                                        'focus-mode-menu-move-grip',
+                                                      ),
+                                                      width: 32,
+                                                      height: 4,
+                                                      decoration: BoxDecoration(
+                                                        color: scheme.onSurfaceVariant
+                                                            .withValues(alpha: 0.48),
+                                                        borderRadius:
+                                                            BorderRadius.circular(8),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                            Center(
-                                              child: Transform.translate(
-                                                offset: Offset(
-                                                  headerMenuBuilder == null
-                                                      ? -headerControlWidth / 2
-                                                      : 0,
-                                                  0,
-                                                ),
-                                                child: Container(
-                                                  key: const ValueKey(
-                                                    'focus-mode-menu-move-grip',
-                                                  ),
-                                                  width: 32,
-                                                  height: 4,
-                                                  decoration: BoxDecoration(
-                                                    color: scheme.onSurfaceVariant
-                                                        .withValues(alpha: 0.48),
-                                                    borderRadius:
-                                                        BorderRadius.circular(8),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      },
+                                              ],
+                                            );
+                                          },
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              // Panels without contextual actions omit this
-                              // slot entirely, keeping the close button adjacent.
-                              if (headerMenuBuilder != null)
-                                SizedBox(
-                                  width: headerControlWidth,
-                                  height: _headerHeight,
-                                  child: headerMenuBuilder(context),
-                                ),
-                              if (widget.onClose != null)
-                                SizedBox(
-                                  width: headerControlWidth,
-                                  height: _headerHeight,
-                                  child: IconButton(
-                                    key: const ValueKey(
-                                      'focus-mode-menu-close',
-                                    ),
-                                    tooltip: widget.closeTooltip ?? '',
-                                    visualDensity: VisualDensity.compact,
-                                    constraints: BoxConstraints.tightFor(
+                                  // Panels without contextual actions omit this
+                                  // slot entirely, keeping the close button adjacent.
+                                  if (headerMenuBuilder != null)
+                                    SizedBox(
                                       width: headerControlWidth,
                                       height: _headerHeight,
+                                      child: headerMenuBuilder(context),
                                     ),
-                                    padding: EdgeInsets.zero,
-                                    icon: const Icon(Icons.close, size: 18),
-                                    onPressed: widget.onClose,
-                                  ),
-                                ),
+                                  if (widget.onClose != null)
+                                    SizedBox(
+                                      width: headerControlWidth,
+                                      height: _headerHeight,
+                                      child: IconButton(
+                                        key: const ValueKey(
+                                          'focus-mode-menu-close',
+                                        ),
+                                        tooltip: widget.closeTooltip ?? '',
+                                        visualDensity: VisualDensity.compact,
+                                        constraints: BoxConstraints.tightFor(
+                                          width: headerControlWidth,
+                                          height: _headerHeight,
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                        icon: const Icon(Icons.close, size: 18),
+                                        onPressed: widget.onClose,
+                                      ),
+                                    ),
                                 ],
                               ),
                             );
