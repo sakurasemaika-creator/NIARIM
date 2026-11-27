@@ -27,6 +27,7 @@ import 'tone_service.dart';
 import 'shared_asset_card_codec.dart';
 import 'shared_asset_card_preview.dart';
 import '../widgets/export_share_feedback.dart';
+import '../utils/duplicate_name.dart';
 import '../utils/file_failure_reason.dart';
 
 /// Self-contained PNG sharing for creative assets.
@@ -429,16 +430,18 @@ class SharedAssetCardService {
         ),
       );
       if (confirm != true) return;
-      await importCard(
+      final addedAs = await importCard(
         card,
+        l10n: l10n,
         brushService: brushService,
         toneService: toneService,
         stampService: stampService,
       );
       if (context.mounted) {
+        // The name it got in the list (renamed when the name was taken).
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.shareCardAddedSnackbar(expected, card.name)),
+            content: Text(l10n.shareCardAddedSnackbar(expected, addedAs)),
           ),
         );
       }
@@ -622,8 +625,12 @@ class SharedAssetCardService {
     }
   }
 
-  static Future<void> importCard(
+  /// Adds the asset of [card] and returns the name it got: its own name, or
+  /// when that is taken, the same numbered copy name as a duplicate
+  /// （「名前 (コピー)」「名前 (コピー 2)」…, [numberedCopyName]）.
+  static Future<String> importCard(
     SharedAssetCardPayload card, {
+    required AppLocalizations l10n,
     BrushService? brushService,
     ToneService? toneService,
     StampService? stampService,
@@ -665,55 +672,52 @@ class SharedAssetCardService {
       if (brushService != null) {
         final original = Brush.fromJson(data);
         final names = {for (final b in brushService.brushes) b.name};
+        final name = _uniqueName(l10n, original.name, names);
         final imported = await brushService.importBrushFile(file.path);
         brushService.updateBrush(
-          imported.copyWith(
-            name: _uniqueName(original.name, names),
-            isFavorite: false,
-            tags: original.tags,
-          ),
+          imported.copyWith(name: name, isFavorite: false, tags: original.tags),
         );
         brushService.selectBrush(imported.id);
+        return name;
       } else if (toneService != null) {
         final original = Tone.fromJson(data);
         final names = {for (final t in toneService.tones) t.name};
+        final name = _uniqueName(l10n, original.name, names);
         final imported = await toneService.importToneFile(file.path);
         toneService.updateTone(
           imported.copyWith(
-            name: _uniqueName(original.name, names),
+            name: name,
             patternName: original.patternName,
             isFavorite: false,
             tags: original.tags,
           ),
         );
         toneService.selectTone(imported.id);
+        return name;
       } else {
         final original = Stamp.fromJson(data);
         final stamps = stampService!;
         final names = {for (final t in stamps.stamps) t.name};
+        final name = _uniqueName(l10n, original.name, names);
         final imported = await stamps.importStampFile(file.path);
         stamps.updateStamp(
-          imported.copyWith(
-            name: _uniqueName(original.name, names),
-            isFavorite: false,
-            tags: original.tags,
-          ),
+          imported.copyWith(name: name, isFavorite: false, tags: original.tags),
         );
         stamps.selectStamp(imported.id);
+        return name;
       }
     } finally {
       if (await file.exists()) await file.delete();
     }
   }
 
-  static String _uniqueName(String original, Set<String> existing) {
-    if (!existing.contains(original)) return original;
-    var number = 2;
-    while (existing.contains('$original ($number)')) {
-      number++;
-    }
-    return '$original ($number)';
-  }
+  static String _uniqueName(
+    AppLocalizations l10n,
+    String original,
+    Set<String> existing,
+  ) => existing.contains(original)
+      ? numberedCopyName(l10n, original, existing)
+      : original;
 
   static Future<File> _createCard(
     String kind,

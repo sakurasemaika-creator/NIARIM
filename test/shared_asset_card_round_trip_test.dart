@@ -96,10 +96,17 @@ void main() {
     final brushCard = await SharedAssetCardService.inspect(brushPng);
     expect(brushCard.kind, 'brush');
     expect(brushCard.name, custom.name);
-    await SharedAssetCardService.importCard(brushCard, brushService: brushes);
+    final addedAs = await SharedAssetCardService.importCard(
+      brushCard,
+      l10n: l10n,
+      brushService: brushes,
+    );
     final restoredBrush = brushes.brushes.last;
     expect(restoredBrush.id, isNot(custom.id));
-    expect(restoredBrush.name, '共有テスト・ブラシ (2)');
+    // The name was taken: named like a duplicate, and the notice tells the
+    // name it got (it told the card's name before).
+    expect(restoredBrush.name, '共有テスト・ブラシ (コピー)');
+    expect(addedAs, restoredBrush.name);
     expect(restoredBrush.isFavorite, isFalse);
     expect(restoredBrush.tags, custom.tags);
     expect(restoredBrush.pressureOn.toJson(), custom.pressureOn.toJson());
@@ -129,7 +136,11 @@ void main() {
       l10n: l10n,
     );
     final multiCard = await SharedAssetCardService.inspect(multiPng);
-    await SharedAssetCardService.importCard(multiCard, brushService: brushes);
+    await SharedAssetCardService.importCard(
+      multiCard,
+      l10n: l10n,
+      brushService: brushes,
+    );
     final restoredMulti = brushes.brushes.last;
     expect(restoredMulti.id, isNot(multiBrush.id));
     expect(restoredMulti.tags, multiBrush.tags);
@@ -160,9 +171,13 @@ void main() {
     );
     await tonePng.copy('${screenshots.path}/tone_complete_share_card.png');
     final toneCard = await SharedAssetCardService.inspect(tonePng);
-    await SharedAssetCardService.importCard(toneCard, toneService: tones);
+    await SharedAssetCardService.importCard(
+      toneCard,
+      l10n: l10n,
+      toneService: tones,
+    );
     final restoredTone = tones.tones.last;
-    expect(restoredTone.name, '共有テスト・トーン (2)');
+    expect(restoredTone.name, '共有テスト・トーン (コピー)');
     expect(restoredTone.patternName, customTone.patternName);
     expect(restoredTone.tags, customTone.tags);
     expect(restoredTone.isFavorite, isFalse);
@@ -189,9 +204,13 @@ void main() {
     );
     await stampPng.copy('${screenshots.path}/stamp_complete_share_card.png');
     final stampCard = await SharedAssetCardService.inspect(stampPng);
-    await SharedAssetCardService.importCard(stampCard, stampService: stamps);
+    await SharedAssetCardService.importCard(
+      stampCard,
+      l10n: l10n,
+      stampService: stamps,
+    );
     final restoredStamp = stamps.stamps.last;
-    expect(restoredStamp.name, '共有テスト・スタンプ (2)');
+    expect(restoredStamp.name, '共有テスト・スタンプ (コピー)');
     expect(restoredStamp.opacity, 77);
     expect(restoredStamp.density, 2.2);
     expect(restoredStamp.scatter, .25);
