@@ -672,9 +672,38 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return distance.sign * strength * 14;
   }
 
-  void _updateTimelineDragScroll(double globalX, {VoidCallback? onScroll}) {
+  /// For an edge dragged along the timeline (a clip's or a range's end): the
+  /// timeline scrolls only while the pointer is held near an edge of the
+  /// visible timeline, faster nearer the edge. With the grab-point step a
+  /// clip's edge moved two frames and held there kept running on (to F10).
+  double _timelineEdgeScrollStep(double globalX) {
+    if (!_frameScrollCtrl.hasClients) return 0;
+    final box =
+        _frameScrollCtrl.position.context.notificationContext
+                ?.findRenderObject()
+            as RenderBox?;
+    if (box == null || !box.hasSize) return 0;
+    final left = box.localToGlobal(Offset.zero).dx;
+    final right = left + box.size.width;
+    const edge = 48.0;
+    if (globalX < left + edge) {
+      return -14 * ((left + edge - globalX) / edge).clamp(0.0, 1.0);
+    }
+    if (globalX > right - edge) {
+      return 14 * ((globalX - (right - edge)) / edge).clamp(0.0, 1.0);
+    }
+    return 0;
+  }
+
+  void _updateTimelineDragScroll(
+    double globalX, {
+    VoidCallback? onScroll,
+    bool nearEdges = false,
+  }) {
     if (_timelineDragStartX == null) return;
-    _dragScrollStep = _timelineScrollStep(globalX);
+    _dragScrollStep = nearEdges
+        ? _timelineEdgeScrollStep(globalX)
+        : _timelineScrollStep(globalX);
     _onDragScroll = onScroll;
     if (_dragScrollStep == 0) {
       _dragScrollTimer?.cancel();
@@ -6969,6 +6998,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _updateTimelineDragScroll(
       globalX,
       onScroll: () => _applyClipDrag(clip, globalX),
+      // Moving a clip keeps the grab-point step (the timeline follows the
+      // clip under the fixed playhead); an edge stays where it is dragged.
+      nearEdges: _clipDragMode != _ClipDragMode.move,
     );
   }
 
@@ -7537,6 +7569,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               _updateTimelineDragScroll(
                 globalX,
                 onScroll: () => updateRange(globalX),
+                nearEdges: true,
               );
             },
             onHorizontalDragEnd: (_) => finishDrag(commit: true),

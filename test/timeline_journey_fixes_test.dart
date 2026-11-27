@@ -26,9 +26,16 @@ import 'helpers/first_use_tooltips.dart';
 import 'helpers/pump_real_async.dart';
 
 void main() {
-  testWidgets('timeline: add scene, choose scenes, typed frame and volume', (
-    tester,
-  ) async {
+  Future<
+    ({
+      ProjectService ps,
+      String projectId,
+      String sceneId,
+      String videoId,
+      AppLocalizations l10n,
+    })
+  >
+  openTimeline(WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
       'language': 'ja',
@@ -103,6 +110,27 @@ void main() {
       return project.id;
     });
     final projectId = created!;
+
+    appRouter.go('/timeline/$projectId');
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(TimelineScreen)),
+    )!;
+    return (
+      ps: ps,
+      projectId: projectId,
+      sceneId: sceneId,
+      videoId: videoId,
+      l10n: l10n,
+    );
+  }
+
+  testWidgets('timeline: add scene, choose scenes, typed frame and volume', (
+    tester,
+  ) async {
+    final (:ps, :projectId, :sceneId, :videoId, :l10n) = await openTimeline(
+      tester,
+    );
     Layer video() => ps
         .storedLayersOf(projectId, sceneId, 0)
         .firstWhere((l) => l.id == videoId);
@@ -110,12 +138,6 @@ void main() {
         ps.audioClipsOf(projectId, sceneId).firstWhere((c) => c.id == 'a');
     Future<void> settle() =>
         pumpRealAsync(tester, const Duration(milliseconds: 300));
-
-    appRouter.go('/timeline/$projectId');
-    await pumpRealAsync(tester, const Duration(milliseconds: 600));
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(TimelineScreen)),
-    )!;
 
     Future<void> typeInto(String shown, String typed) async {
       final value = find.widgetWithText(EditableSliderValue, shown);
@@ -202,6 +224,41 @@ void main() {
     await tester.tap(chip);
     await settle();
     expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(2));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a clip edge dragged two frames and held stays two frames', (
+    tester,
+  ) async {
+    final (:ps, :projectId, :sceneId, videoId: _, l10n: _) = await openTimeline(
+      tester,
+    );
+    AudioClip audio() =>
+        ps.audioClipsOf(projectId, sceneId).firstWhere((c) => c.id == 'a');
+    final clip = find.byKey(const ValueKey('timelineClip-a'));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('timelineClip-a'), skipOffstage: false),
+    );
+    await tester.pump();
+    final rect = tester.getRect(clip);
+    final cell = rect.width / audio().lengthFrames;
+    // The left edge (the right one is past the screen) moved two frames
+    // right, staying well inside the timeline.
+    final edge = await tester.startGesture(
+      rect.centerLeft + const Offset(3, 0),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+    await edge.moveBy(Offset(cell, 0));
+    await tester.pump(const Duration(milliseconds: 16));
+    await edge.moveBy(Offset(cell, 0));
+    // Held still for 1.5 s.
+    for (var i = 0; i < 90; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await edge.up();
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(audio().startFrame, 3, reason: 'started at F1, edge moved by 2');
+    expect(audio().lengthFrames, 4);
     expect(tester.takeException(), isNull);
   });
 }
