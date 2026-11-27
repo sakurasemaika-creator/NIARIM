@@ -2480,16 +2480,6 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
             ),
             _paramSlider(
-              l10n.filterWatercolorBorderOpacity,
-              current.watercolorBorderOpacity,
-              0,
-              100,
-              (v) => service.updateFilterParams(
-                current.id,
-                watercolorBorderOpacity: v,
-              ),
-            ),
-            _paramSlider(
               l10n.filterWatercolorBorderBlur,
               current.watercolorBorderBlur,
               0,

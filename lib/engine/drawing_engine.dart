@@ -10,6 +10,7 @@ import 'brush_texture_selector.dart';
 import 'brush_render_plan.dart';
 import 'brush_stroke_geometry.dart';
 import 'hair_fold_raster.dart';
+import 'oil_paint.dart';
 import 'outline_accent.dart';
 import 'perceptual_color_mixer.dart';
 import 'pixel_line_path.dart';
@@ -51,13 +52,12 @@ class DrawingEngine {
   OutlineAccent? _outlineAccent;
   final List<ui.Offset> _strokeScreenPositions = [];
   // 油彩風の混色は絵の具の色ごとに、下の色ごとの混ざり方を覚えておく
-  // （同じ色の上を塗る間は1画素1回の参照で済む）。拾った色で絵の具の色が
-  // 少しずつ変わるので、近い色（各チャンネル4段）は同じものを使う。
+  // （同じ色の上を塗る間は1画素1回の参照で済む）。下の色は塗る前のタイル
+  // の色なので、1本の線で作る混ざり方は少ない。近い色（各チャンネル4段）は
+  // 同じものを使う。
   final Map<int, AnalogPaintMixer> _oilMixers = {};
-  // 油彩風：筆に含まれた絵の具の色（拾った色が混ざっていく）と、前回の
-  // スタンプの位置。ストロークごとに選択色から始まる。
-  int? _oilPaint;
-  ui.Offset? _lastOilStamp;
+  // 油彩風：このストロークで筆の毛が運んでいる絵の具と、塗る前のタイル。
+  OilStroke? _oil;
   // 水彩風：このストロークの水彩の状態（ペンを離すと乾かす）。
   WatercolorStroke? _watercolor;
   // ピクセルモードの格子に置く線（_beginPixelStroke）。散布するブラシでは
@@ -95,8 +95,7 @@ class DrawingEngine {
     _strokeCoverageByTile.clear();
     _strokeBaseAlpha.clear();
     _foldRaster = null;
-    _oilPaint = null;
-    _lastOilStamp = null;
+    _oil = null;
     _watercolor = null;
     _smoothed = point;
     final effective = _replayingFinalStroke
@@ -309,8 +308,7 @@ class DrawingEngine {
     }
     if (!cancel) _watercolor?.finish(tileManager);
     _watercolor = null;
-    _oilPaint = null;
-    _lastOilStamp = null;
+    _oil = null;
     _currentStroke.clear();
     _strokeDistance = 0;
     _strokeCoverageByTile.clear();
@@ -945,8 +943,8 @@ class DrawingEngine {
     for (final (tx, ty) in log.takeTouched()) {
       tileManager.invalidateTile(layerId, tx, ty);
     }
-    _oilPaint = oil.paint;
-    _lastOilStamp = oil.stamp;
+    final current = _oil;
+    if (current != null) current.bristles = oil ?? current.bristles.empty();
   }
 
   /// [chain]の[from]から[to]の手前までの点を描く（[draw]が偽なら描かずに
@@ -1009,11 +1007,7 @@ class DrawingEngine {
           }
       }
       if (!draw) continue;
-      log?.beginPoint(
-        keys?[k - keyOffset] ?? const [],
-        _oilPaint,
-        _lastOilStamp,
-      );
+      log?.beginPoint(keys?[k - keyOffset] ?? const [], _oil?.bristles.copy());
       if (shape == null) continue;
       final dab = chain.dataAt(k);
       _pixelRecording = log;
@@ -1201,11 +1195,27 @@ class DrawingEngine {
     final alphaInt = (opacity * 255).round().clamp(0, 255);
     if (alphaInt == 0) return;
 
-    // 油彩風：このスタンプが置く前に、筆の下の絵の具を拾う。
-    final oilPaint =
-        resolvedPressure.mixingMode == BrushMixingMode.oil && !isEraser
-        ? _carryOilPaint(layerId, stampX, stampY, size, resolvedPressure)
-        : null;
+    // 油彩風：このスタンプを置く前に、筆の毛が下の絵の具を拾う。
+    if (resolvedPressure.mixingMode == BrushMixingMode.oil && !isEraser) {
+      (_oil ??= OilStroke(
+        layerId: layerId,
+        bristles: brush.size.ceil().clamp(2, 128).toInt(),
+        seed: (stampX * 7919 + stampY * 104729).round(),
+      )).advance(
+        tileManager,
+        stampX,
+        stampY,
+        size / 2,
+        direction: hasPathDirection ? pathAngle : null,
+        stretch: resolvedPressure.mixingStretch,
+        paint: _rgb24(currentColor),
+        rate: resolvedPressure.mixingRate / 100,
+        mixer: _oilMixerFor(
+          _rgb24(currentColor),
+          resolvedPressure.mixingBrightnessCorrection,
+        ),
+      );
+    }
     if (resolvedPressure.mixingMode == BrushMixingMode.watercolor &&
         !isEraser &&
         _watercolor == null) {
@@ -1312,7 +1322,6 @@ class DrawingEngine {
           mixingRate: resolvedPressure.mixingRate,
           mixingBrightnessCorrection:
               resolvedPressure.mixingBrightnessCorrection,
-          oilPaint: oilPaint,
           coverageNamespace: outline != null ? 'fill' : 'legacy',
           pixelMask: fillMask,
         );
@@ -1449,7 +1458,6 @@ class DrawingEngine {
           mixingRate: resolvedPressure.mixingRate,
           mixingBrightnessCorrection:
               resolvedPressure.mixingBrightnessCorrection,
-          oilPaint: oilPaint,
           hexagon: isGlitterHexagon,
           particleRotation: particleRotation,
           chainLink: isChainLink,
@@ -1514,7 +1522,6 @@ class DrawingEngine {
     BrushMixingMode mixingMode = BrushMixingMode.off,
     int mixingRate = 0,
     int mixingBrightnessCorrection = 3,
-    int? oilPaint,
     bool hexagon = false,
     double particleRotation = 0.0,
     bool chainLink = false,
@@ -1574,6 +1581,13 @@ class DrawingEngine {
         ? ((pixelMask.bottom - 1) / TileManager.tileSize).floor()
         : ((cy + totalRadius) / TileManager.tileSize).floor();
     final recording = _pixelRecording;
+    // 油彩風：塗る色は選択色（縁取りは縁取りの色）を下の絵の具へ混ぜたもの。
+    final paintRgb = ri << 16 | gi << 8 | bi;
+    final oilMixer = mixingMode == BrushMixingMode.oil && !isEraser
+        ? _oilMixerFor(paintRgb, mixingBrightnessCorrection)
+        : null;
+    // 縁取りは選択色の毛が運ぶ絵の具を使わない。
+    final carries = colorOverride == null;
 
     for (int ty = minTy; ty <= maxTy; ty++) {
       for (int tx = minTx; tx <= maxTx; tx++) {
@@ -1611,6 +1625,11 @@ class DrawingEngine {
         final previousFill = base == null
             ? null
             : _strokeCoverageByTile['fill:$layerId:$tx:$ty'];
+        // 油彩風は塗る前のタイルから色を決める（縁取りを下へ回すときを除く）。
+        final oil = oilMixer != null && base == null
+            ? (_oil ??= OilStroke(layerId: layerId, bristles: 0, seed: 0))
+            : null;
+        oil?.touchTile(tx, ty, tile);
 
         // タイル内の影響ピクセル範囲
         final localMinX = pixelMask != null
@@ -1829,6 +1848,41 @@ class DrawingEngine {
             // 「そのストロークがこの画素をどこまで覆ったか」の最大値だけを採用する。
             final coveragePos = py * TileManager.tileSize + px;
             final oldCoverage = coverage[coveragePos];
+            if (oil != null) {
+              // 油彩風：塗る前の画素から色を決めて置き直す。筆の中心が通り
+              // 過ぎる時にもう一度置くので、色の移り変わりは線に直角になる
+              // （前の縁で決めたままだと、スタンプの弧の形が残る）。
+              final passing = carries && oil.passes(worldX, worldY, cx, cy);
+              if (desiredAlpha <= oldCoverage && !passing) continue;
+              recording?.remember(
+                tileManager,
+                tile,
+                tx,
+                ty,
+                coveragePos,
+                coverage,
+                null,
+              );
+              final covered = math.max(desiredAlpha, oldCoverage);
+              coverage[coveragePos] = covered;
+              if (pixelMode) tileManager.markPaintedPixel(tile, coveragePos);
+              oil.lay(
+                tile,
+                tx,
+                ty,
+                px,
+                py,
+                covered,
+                mixingRate / 100.0,
+                paintRgb,
+                oilMixer!,
+                carry: carries,
+                cx: cx,
+                cy: cy,
+                radius: radius,
+              );
+              continue;
+            }
             if (desiredAlpha <= oldCoverage) continue;
             recording?.remember(
               tileManager,
@@ -1875,8 +1929,8 @@ class DrawingEngine {
 
             if (isEraser) {
               tileManager.erasePixel(tile, px, py, incrementalAlpha);
-            } else if (mixingMode == BrushMixingMode.oil) {
-              final paint = oilPaint ?? (ri << 16 | gi << 8 | bi);
+            } else if (oilMixer != null) {
+              final paint = paintRgb;
               final idx = (py * TileManager.tileSize + px) * 4;
               final belowAlpha = tile[idx + 3];
               // A faint edge holds less paint to pick up than a solid area.
@@ -1884,7 +1938,7 @@ class DrawingEngine {
               // its RGB divided back by its alpha.
               int under(int c) => (c * 255 ~/ belowAlpha).clamp(0, 255);
               final mixed = belowAlpha > 0
-                  ? _oilMixerFor(paint, mixingBrightnessCorrection).mixNear(
+                  ? oilMixer.mixNear(
                       under(tile[idx]) << 16 |
                           under(tile[idx + 1]) << 8 |
                           under(tile[idx + 2]),
@@ -1982,75 +2036,6 @@ class DrawingEngine {
       selected: near,
       brightnessCorrection: correction,
     );
-  }
-
-  /// 油彩風：the colour of the paint on the brush for the stamp at ([x],
-  /// [y]). Before the stamp is laid, the brush picks up some of the paint
-  /// under it (混色度合い) and carries it on; fresh paint keeps coming from
-  /// the brush, and 色延び sets how far the picked-up colour lasts (up to six
-  /// brush widths). At 色延び 0 the brush stays its own colour.
-  int _carryOilPaint(
-    String layerId,
-    double x,
-    double y,
-    double size,
-    ResolvedBrushPressure pressure,
-  ) {
-    final own = _rgb24(currentColor);
-    final last = _lastOilStamp;
-    _lastOilStamp = ui.Offset(x, y);
-    final stretch = pressure.mixingStretch;
-    if (stretch <= 0 || pressure.mixingRate <= 0) return _oilPaint = own;
-    var paint = _oilPaint ?? own;
-    final width = math.max(1.0, size);
-    // How much of the brush's footprint is new since the last stamp.
-    final step = last == null
-        ? 0.25
-        : (math.sqrt(
-                    (x - last.dx) * (x - last.dx) +
-                        (y - last.dy) * (y - last.dy),
-                  ) /
-                  width)
-              .clamp(0.02, 1.0);
-
-    var r = 0.0;
-    var g = 0.0;
-    var b = 0.0;
-    var alpha = 0.0;
-    final reach = width * 0.3;
-    for (var k = 0; k < 9; k++) {
-      final angle = k * math.pi / 4;
-      final sx = k == 8 ? x : x + math.cos(angle) * reach;
-      final sy = k == 8 ? y : y + math.sin(angle) * reach;
-      final c = tileManager.getPixelColorAt(layerId, sx.floor(), sy.floor());
-      if (c == null) continue;
-      final a = c.a;
-      r += linearFromSrgb8((c.r * 255).round()) * a;
-      g += linearFromSrgb8((c.g * 255).round()) * a;
-      b += linearFromSrgb8((c.b * 255).round()) * a;
-      alpha += a;
-    }
-    if (alpha > 0) {
-      final picked =
-          srgb8FromLinear(r / alpha) << 16 |
-          srgb8FromLinear(g / alpha) << 8 |
-          srgb8FromLinear(b / alpha);
-      final take =
-          (pressure.mixingRate / 100 * (alpha / 9) * math.min(1.0, step * 2))
-              .clamp(0.0, 1.0)
-              .toDouble();
-      paint = _oilMixerFor(
-        paint,
-        pressure.mixingBrightnessCorrection,
-      ).mixNear(picked, take, paint);
-    }
-    final carry = stretch / 100 * 6;
-    final refill = 1 - math.exp(-step / carry);
-    paint = _oilMixerFor(
-      own,
-      pressure.mixingBrightnessCorrection,
-    ).mixNear(paint, 1 - refill, own);
-    return _oilPaint = paint;
   }
 
   static int _rgb24(ui.Color color) =>
@@ -2221,11 +2206,10 @@ class _PixelLog {
   final List<Uint8List> _coverages = [];
   final List<WatercolorStroke?> _washes = [];
   final List<int> _values = [];
-  // 点ごと：その点の最初の画素の番号・描き方・描く前の油彩の絵の具。
+  // 点ごと：その点の最初の画素の番号・描き方・描く前の油彩の筆の毛。
   final List<int> _starts = [];
   final List<List<double>> _keys = [];
-  final List<int?> _oilPaints = [];
-  final List<ui.Offset?> _oilStamps = [];
+  final List<OilBristles?> _oilBristles = [];
   int _first = 0;
   final Set<(int, int)> _touched = {};
 
@@ -2234,11 +2218,10 @@ class _PixelLog {
 
   List<double> keyAt(int i) => _keys[_first + i];
 
-  void beginPoint(List<double> key, int? oilPaint, ui.Offset? oilStamp) {
+  void beginPoint(List<double> key, OilBristles? oil) {
     _starts.add(_tiles.length);
     _keys.add(key);
-    _oilPaints.add(oilPaint);
-    _oilStamps.add(oilStamp);
+    _oilBristles.add(oil);
   }
 
   void remember(
@@ -2265,8 +2248,8 @@ class _PixelLog {
   }
 
   /// [keep]番目の点から先の画素を、覚えたのと逆の順に戻して忘れる。戻した
-  /// 時点の油彩の絵の具を返す。
-  ({int? paint, ui.Offset? stamp}) rollBack(int keep, TileManager tileManager) {
+  /// 時点の油彩の筆の毛を返す。
+  OilBristles? rollBack(int keep, TileManager tileManager) {
     final point = _first + keep;
     final start = _starts[point];
     for (var p = _tiles.length - 1; p >= start; p--) {
@@ -2287,15 +2270,14 @@ class _PixelLog {
       }
       _touched.add((_values[v + 5], _values[v + 6]));
     }
-    final oil = (paint: _oilPaints[point], stamp: _oilStamps[point]);
+    final oil = _oilBristles[point];
     _tiles.length = start;
     _coverages.length = start;
     _washes.length = start;
     _values.length = start * _stride;
     _starts.length = point;
     _keys.length = point;
-    _oilPaints.length = point;
-    _oilStamps.length = point;
+    _oilBristles.length = point;
     return oil;
   }
 
@@ -2319,8 +2301,7 @@ class _PixelLog {
       _values.removeRange(0, offset * _stride);
       _starts.removeRange(0, _first);
       _keys.removeRange(0, _first);
-      _oilPaints.removeRange(0, _first);
-      _oilStamps.removeRange(0, _first);
+      _oilBristles.removeRange(0, _first);
       for (var i = 0; i < _starts.length; i++) {
         _starts[i] -= offset;
       }
@@ -2334,8 +2315,7 @@ class _PixelLog {
       _values.clear();
       _starts.clear();
       _keys.clear();
-      _oilPaints.clear();
-      _oilStamps.clear();
+      _oilBristles.clear();
       _first = 0;
     }
   }

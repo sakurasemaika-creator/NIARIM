@@ -217,7 +217,6 @@ void main() {
       _w,
       _h,
       range: 6,
-      opacityEffect: 25,
       darkenEffect: 45,
       blur: 1,
     );

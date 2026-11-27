@@ -263,11 +263,16 @@ class FilterDef {
   final double sphereShadowBlur;
 
   /// 水彩境界: how far in from an edge the darker rim reaches and how much
-  /// it is softened (pixels), how much more transparent the inside becomes
-  /// and how much darker the rim is (0–100), and whether borders between
-  /// clearly different colours get a rim too (not just the paint's outline).
+  /// it is softened (pixels), how much darker the rim is (0–100), and
+  /// whether borders between clearly different colours get a rim too (not
+  /// just the paint's outline).
   final double watercolorBorderRange;
   final double watercolorBorderBlur;
+
+  /// The former 透明度の影響 (0–100), which made the inside see-through. The
+  /// filter only adds the rim now (the brush's 水分量 decides how see-through
+  /// a wash is), so this is not used; it is kept so saved filters load and
+  /// save as they were.
   final double watercolorBorderOpacity;
   final double watercolorBorderDarken;
   final bool watercolorBorderColorEdges;

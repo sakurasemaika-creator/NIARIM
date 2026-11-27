@@ -1,38 +1,36 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-/// 水彩境界 (watercolour border): each painted area looks like a wash that
-/// dried — denser and darker in a band along its edge, more transparent
-/// inside — as with Clip Studio Paint's watercolour-edge layer effect.
+/// 水彩境界 (watercolour border): only adds the pigment a wash gathers
+/// along its edge as it dries — a denser, darker band, as with Clip Studio
+/// Paint's watercolour-edge layer effect. Everything else stays exactly as
+/// it was painted: the inside is neither lightened nor made see-through
+/// (how see-through a wash is belongs to the brush, 水分量). (The owner,
+/// 2026-11-27: 「透けさせるのはブラシ側でやるので水彩境界では透けさせないで
+/// そのままにして名前の通り縁の境界だけに色が溜まるように描画追加するだけ」.)
 ///
 /// [data] is premultiplied RGBA (as layers hold it). The edges are where the
 /// paint meets transparency and, with [colorEdges], where it meets paint of a
 /// clearly different colour (so areas painted side by side on one layer
 /// each get their own rim). [range] is how far in from the edge the rim
-/// reaches and [blur] softens it, both in pixels; [opacityEffect] (0–100)
-/// is how much more transparent the inside becomes, and [darkenEffect]
-/// (0–100) how much deeper the rim's colour is.
-///
-/// On an opaque frame (演出フィルター) there is nothing behind the paint, so
-/// with [onPaper] "more transparent" lets white paper show through instead.
+/// reaches and [blur] softens it, both in pixels; [darkenEffect] (0–100) is
+/// how much deeper the rim's colour is. Pixels the rim does not reach come
+/// out unchanged, on a layer and on an opaque frame (演出フィルター) alike.
 Uint8List applyWatercolorBorder(
   Uint8List data,
   int width,
   int height, {
   required double range,
-  required double opacityEffect,
   required double darkenEffect,
   double blur = 2,
   bool colorEdges = true,
-  bool onPaper = false,
 }) {
   final out = Uint8List.fromList(data);
   final n = width * height;
   if (n == 0 || data.length < n * 4) return out;
   final reach = math.max(0.5, range);
-  final transparency = (opacityEffect / 100).clamp(0.0, 1.0) * 0.9;
   final darkness = (darkenEffect / 100).clamp(0.0, 1.0) * 1.6;
-  if (transparency <= 0 && darkness <= 0) return out;
+  if (darkness <= 0) return out;
 
   // Coverage. The edge is where any paint ends (not where the coverage
   // crosses a half, which paper grain inside a pale wash does all over);
@@ -124,27 +122,23 @@ Uint8List applyWatercolorBorder(
     final a = data[p + 3];
     if (a == 0) continue;
     final e = rim[i].clamp(0.0, 1.0);
+    // Beyond the rim the paint stays exactly as it was.
+    if (e == 0) continue;
     // Where pigment gathers it lies thicker, as a second layer of the same
     // paint does: each channel is raised to a power above 1 (a multiply of
     // the colour with itself at most), so the rim deepens towards a richer
     // shade of the same colour rather than towards grey, and white (no
     // pigment) stays white.
     final deepen = 1 + darkness * e;
-    final thin = transparency * (1 - e);
     // The gathered pigment also makes a pale wash denser at its rim.
-    final gathered = a / 255 * (1 - thin);
-    final newA = onPaper
-        ? a
-        : ((gathered + (1 - gathered) * e * darkness * 0.3) * 255)
-              .round()
-              .clamp(0, 255);
+    final gathered = a / 255;
+    final newA = ((gathered + (1 - gathered) * e * darkness * 0.3) * 255)
+        .round()
+        .clamp(0, 255);
     out[p + 3] = newA;
     for (var c = 0; c < 3; c++) {
       final straight = data[p + c] / a;
-      var value = math.pow(straight, deepen).toDouble();
-      // On an opaque frame the paper (white) shows through the thinner
-      // inside instead.
-      if (onPaper) value += (1 - value) * thin;
+      final value = math.pow(straight, deepen).toDouble();
       out[p + c] = (value * newA).round().clamp(0, newA);
     }
   }
@@ -183,23 +177,45 @@ double _smoothstep(double x) {
 /// coverage (so a pale wash keeps its own colour).
 Float32List _softColours(Uint8List data, int width, int height) {
   final soft = Float32List(width * height * 3);
-  for (var y = 0; y < height; y++) {
+  // Premultiplied channels summed over the coverage: the average straight
+  // colour, weighted by how much paint each pixel holds. Summed along each
+  // row first (three rows kept at a time), then down: whole numbers, so
+  // the same sums as adding up the 3×3 directly.
+  final rows = List.generate(3, (_) => Int32List(width * 4));
+  void sumRow(int y, Int32List row) {
+    final base = y * width;
     for (var x = 0; x < width; x++) {
-      var r = 0.0, g = 0.0, b = 0.0, weight = 0;
-      for (var dy = -1; dy <= 1; dy++) {
-        final yy = y + dy;
+      var r = 0, g = 0, b = 0, a = 0;
+      for (var xx = x - 1; xx <= x + 1; xx++) {
+        if (xx < 0 || xx >= width) continue;
+        final p = (base + xx) * 4;
+        r += data[p];
+        g += data[p + 1];
+        b += data[p + 2];
+        a += data[p + 3];
+      }
+      final o = x * 4;
+      row[o] = r;
+      row[o + 1] = g;
+      row[o + 2] = b;
+      row[o + 3] = a;
+    }
+  }
+
+  if (height > 0) sumRow(0, rows[0]);
+  if (height > 1) sumRow(1, rows[1]);
+  for (var y = 0; y < height; y++) {
+    if (y + 1 < height && y >= 1) sumRow(y + 1, rows[(y + 1) % 3]);
+    for (var x = 0; x < width; x++) {
+      var r = 0, g = 0, b = 0, weight = 0;
+      for (var yy = y - 1; yy <= y + 1; yy++) {
         if (yy < 0 || yy >= height) continue;
-        for (var dx = -1; dx <= 1; dx++) {
-          final xx = x + dx;
-          if (xx < 0 || xx >= width) continue;
-          final p = (yy * width + xx) * 4;
-          // Premultiplied channels summed over the coverage: the average
-          // straight colour, weighted by how much paint each pixel holds.
-          r += data[p];
-          g += data[p + 1];
-          b += data[p + 2];
-          weight += data[p + 3];
-        }
+        final row = rows[yy % 3];
+        final o = x * 4;
+        r += row[o];
+        g += row[o + 1];
+        b += row[o + 2];
+        weight += row[o + 3];
       }
       final o = (y * width + x) * 3;
       if (weight > 0) {

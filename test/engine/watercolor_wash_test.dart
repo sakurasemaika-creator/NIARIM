@@ -1,6 +1,8 @@
-// 水彩風混色（WatercolorStroke）の振る舞い：透明な重ね塗り、乾くとにじんで
-// 広がること（縁の溜まりは水彩境界フィルター）、水分量・絵具量・にじみの
-// 効き方、重ねると深くなること、Undoの記録に乾かした結果まで入ること。
+// 水彩風混色（WatercolorStroke）の振る舞い：既定では選んだ色、水分量を
+// 多くすると透ける重ね塗り、乾くとにじんで広がること（縁の溜まりは水彩境界
+// フィルター）、水分量・絵具量・にじみの効き方、重ねると深くなること、
+// Undoの記録に乾かした結果まで入ること。色の測り方は
+// watercolor_wash_colour_test。
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -109,16 +111,25 @@ TileManager _paint(
 }
 
 void main() {
-  test('a wash is transparent paint of the brush colour', () {
-    final tiles = _paint(_brush());
-    final c = tiles.getPixelColorAt('layer', 100, 100)!;
-    expect(c.a, inExclusiveRange(0.15, 0.85));
-    // Over bare paper the wash keeps the paint's own colour (the tile is
-    // premultiplied, so reading it back can be a level off).
-    expect((c.r * 255).round(), closeTo(0x2A, 1));
-    expect((c.g * 255).round(), closeTo(0x6F, 1));
-    expect((c.b * 255).round(), closeTo(0xD0, 1));
-  });
+  test(
+    'a wash is paint of the brush colour; with a lot of water see-through',
+    () {
+      // Where the paper's texture leaves it thinner than the chosen colour,
+      // the wash is the paint's own colour, partly covering the paper (the
+      // tile is premultiplied, so reading it back can be a level off).
+      final tiles = _paint(_brush(water: 100, texture: 0));
+      final c = tiles.getPixelColorAt('layer', 100, 100)!;
+      expect(c.a, inExclusiveRange(0.15, 0.85));
+      expect((c.r * 255).round(), closeTo(0x2A, 1));
+      expect((c.g * 255).round(), closeTo(0x6F, 1));
+      expect((c.b * 255).round(), closeTo(0xD0, 1));
+      // At the default water it covers the paper.
+      final full = _paint(
+        _brush(texture: 0),
+      ).getPixelColorAt('layer', 100, 100)!;
+      expect(full.a, greaterThan(0.95));
+    },
+  );
 
   test('drying leaves no rim of its own (水彩境界 is a filter)', () {
     final tiles = _paint(_brush(water: 30));
@@ -206,10 +217,10 @@ void main() {
     final yellow = tiles.getPixelColorAt('layer', 100, 100)!;
     _stroke(engine, _brush());
     final mixed = tiles.getPixelColorAt('layer', 100, 100)!;
-    // Blue over yellow turns green and deeper.
+    // Blue over yellow turns green, and no thinner.
     expect(mixed.g, greaterThan(mixed.r));
     expect(mixed.g, greaterThan(mixed.b));
-    expect(mixed.a, greaterThan(yellow.a + 0.1));
+    expect(mixed.a, greaterThanOrEqualTo(yellow.a));
   });
 
   test('over paint it glazes; 混色度合い instead blends wet into wet', () {

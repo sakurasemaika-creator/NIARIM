@@ -429,6 +429,21 @@ final Float64List _linearLut = () {
 }();
 
 int _encode(double linear) {
+  if (!(linear > 0)) return 0;
+  if (linear >= 1) return 255;
+  // The code at the start of the linear value's bucket, then on past each
+  // code whose lowest linear value it reaches (one step at most, mostly).
+  var code = _encodeStart[(linear * _encodeBuckets).toInt()];
+  final lowest = _encodeLowest;
+  while (code < 255 && linear >= lowest[code + 1]) {
+    code++;
+  }
+  return code;
+}
+
+/// sRGB encoding (rounded to 8 bits) worked out with the power function:
+/// [_encode] gives exactly the same, from the tables below.
+int _encodeByPower(double linear) {
   final v = linear <= 0
       ? 0.0
       : linear >= 1
@@ -438,6 +453,39 @@ int _encode(double linear) {
       : 12.92 * linear;
   return (v * 255).round().clamp(0, 255).toInt();
 }
+
+const int _encodeBuckets = 4096;
+
+/// For each 8-bit code, the lowest linear value [_encodeByPower] encodes
+/// as that code or above (found by halving down to adjacent doubles).
+final Float64List _encodeLowest = () {
+  final lowest = Float64List(256);
+  for (var code = 1; code < 256; code++) {
+    var lo = 0.0;
+    var hi = 1.0;
+    while (true) {
+      final mid = lo + (hi - lo) / 2;
+      if (mid <= lo || mid >= hi) break;
+      if (_encodeByPower(mid) >= code) {
+        hi = mid;
+      } else {
+        lo = mid;
+      }
+    }
+    lowest[code] = hi;
+  }
+  return lowest;
+}();
+
+/// The code at the start of each of [_encodeBuckets] equal steps of linear
+/// light.
+final Uint8List _encodeStart = () {
+  final start = Uint8List(_encodeBuckets);
+  for (var b = 0; b < _encodeBuckets; b++) {
+    start[b] = _encodeByPower(b / _encodeBuckets);
+  }
+  return start;
+}();
 
 double _cbrt(double v) =>
     v < 0 ? -math.pow(-v, 1 / 3).toDouble() : math.pow(v, 1 / 3).toDouble();

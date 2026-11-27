@@ -247,7 +247,6 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
         height,
         range: filter.watercolorBorderRange * scale,
         blur: filter.watercolorBorderBlur * scale,
-        opacityEffect: filter.watercolorBorderOpacity,
         darkenEffect: filter.watercolorBorderDarken,
         colorEdges: filter.watercolorBorderColorEdges,
       );

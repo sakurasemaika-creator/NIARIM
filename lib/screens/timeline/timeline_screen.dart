@@ -12617,14 +12617,6 @@ class _EffectFilterSheet extends StatelessWidget {
         (v) => _update(context, e.copyWith(param2: v)),
       ),
       _paramRow(
-        l10n.filterWatercolorBorderOpacity,
-        e.param3,
-        0,
-        100,
-        100,
-        (v) => _update(context, e.copyWith(param3: v)),
-      ),
-      _paramRow(
         l10n.filterWatercolorBorderBlur,
         e.param4,
         0,
@@ -12997,9 +12989,6 @@ class _EffectFilterSheet extends StatelessWidget {
                               : type == EffectFilterType.colorAdjust ||
                                     type == EffectFilterType.auroraHologram
                               ? 0.0
-                              // 水彩境界の透明度の影響45。
-                              : type == EffectFilterType.watercolorBorder
-                              ? 45.0
                               : 2.0,
                           // 水彩境界のぼかし幅2px。
                           param4: type == EffectFilterType.vhsNoise
