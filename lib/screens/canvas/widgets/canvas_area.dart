@@ -989,9 +989,7 @@ class CanvasAreaState extends State<CanvasArea> {
       });
     }
     if (oldWidget.background != widget.background ||
-        oldWidget.project?.backgroundColor != widget.project?.backgroundColor ||
-        oldWidget.onionSkinSettings.enabled !=
-            widget.onionSkinSettings.enabled) {
+        oldWidget.project?.backgroundColor != widget.project?.backgroundColor) {
       _recomposeSurroundings(force: true);
     }
     if (oldWidget.activeRuler != widget.activeRuler) {
@@ -4750,6 +4748,11 @@ class CanvasAreaState extends State<CanvasArea> {
     final h = manager.canvasHeight;
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
+    // 確認の表示でも、オニオンスキンは塗りの下。
+    _paintOnionUnderlay(
+      canvas,
+      Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+    );
     var partIndex = 0;
     final byId = {for (final layer in layers) layer.id: layer};
     for (var i = layers.length - 1; i >= 0; i--) {
@@ -4827,6 +4830,10 @@ class CanvasAreaState extends State<CanvasArea> {
             groupKeyframeOf: groupKf,
             // The paper takes part in the blending, as in the export.
             paperColor: _paperColor,
+            // オニオンスキンは紙のすぐ上・今のコマのすべてのレイヤーの下
+            // （表示だけ。レイヤーの絵と、紙の上での合成モードの効き方は
+            // オニオンスキンを切ったときと同じ）。
+            underlay: _paintOnionUnderlay,
           )
         : await _composeAutofillCheckLayers(manager, layers, keyOf, checkMode);
     if (!mounted) {
@@ -4879,12 +4886,7 @@ class CanvasAreaState extends State<CanvasArea> {
   /// the transparency checkerboard) and it is opaque; null otherwise.
   int? get _paperColor {
     final project = widget.project;
-    // オニオンスキンを出している間は、紙を下のレイヤーの合成に入れない（紙は
-    // ペインターが敷き、その上にオニオンスキン、その上に今のコマの全レイヤー）。
-    // その間だけ、下のレイヤーの合成モードは紙ではなく透明の上で効く。
-    if (project == null ||
-        widget.background != CanvasBackground.white ||
-        widget.onionSkinSettings.enabled) {
+    if (project == null || widget.background != CanvasBackground.white) {
       return null;
     }
     return (project.backgroundColor >>> 24) == 0xFF
@@ -5001,6 +5003,7 @@ class CanvasAreaState extends State<CanvasArea> {
           _onionImages.clear();
           _onionImagesView = const {};
         });
+        _recomposeSurroundings(force: true);
       }
       return;
     }
@@ -5054,6 +5057,35 @@ class CanvasAreaState extends State<CanvasArea> {
         ..addAll(newImages);
       _onionImagesView = Map.unmodifiable(_onionImages);
     });
+    // 下のレイヤーの絵（紙・オニオンスキン・下のレイヤー）を作り直す。
+    _recomposeSurroundings(force: true);
+  }
+
+  /// 下のレイヤーの絵の、紙のすぐ上に前後のコマの影を描く（遠いコマから順に、
+  /// 近いコマを上に。色・濃さはオニオンスキンの設定どおり）。
+  void _paintOnionUnderlay(ui.Canvas canvas, Rect bounds) {
+    final settings = widget.onionSkinSettings;
+    final images = _onionImagesView;
+    if (!settings.enabled || images.isEmpty) return;
+    final order = images.keys.toList()
+      ..sort((a, b) => b.abs().compareTo(a.abs()));
+    for (final offset in order) {
+      if (offset == 0) continue;
+      final img = images[offset]!;
+      final opacity = _onionSkinEngine.getOpacityForFrame(settings, offset);
+      if (opacity <= 0) continue;
+      final color = _onionSkinEngine.getColorForFrame(settings, offset);
+      canvas.drawImageRect(
+        img,
+        Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble()),
+        bounds,
+        Paint()
+          ..colorFilter = ui.ColorFilter.mode(
+            color.withValues(alpha: color.a * opacity),
+            BlendMode.srcIn,
+          ),
+      );
+    }
   }
 
   // ─── build ────────────────────────────────────────────────────────────
@@ -5612,17 +5644,9 @@ class _CanvasPainter extends CustomPainter {
 
     // 現在レイヤーより奥（背面）のレイヤー群。現在レイヤーがGPUで描けない
     // 合成モードのときは、下のレイヤーと現在レイヤーを正確に合成した1枚。
-    // オニオンスキン：前のコマも後のコマも、紙のすぐ上・今のコマのすべての
-    // レイヤーの下に透かして出す（前後は色で見分ける。上に重ねると描いている
-    // 線にかぶって見づらい、所有者の指定、2026-11-27）。オニオンスキンを
-    // 出している間は、下のレイヤーの合成に紙を入れていない（_paperColor）。
-    // 遠いコマから順に描き、近いコマを上に。
-    final onionOrder = onionImages.keys.toList()
-      ..sort((a, b) => b.abs().compareTo(a.abs()));
-    for (final key in onionOrder) {
-      if (key == 0) continue;
-      _drawOnionFrame(canvas, drawingRect, onionImages[key]!, key);
-    }
+    // オニオンスキン（前後のコマの影）は、下のレイヤーの絵の中に、紙のすぐ上・
+    // 今のコマのすべてのレイヤーの下として描いてある（CanvasArea.
+    // _paintOnionUnderlay。所有者の指定、2026-11-27）。
 
     final exact = moveDelta == null && meshSourceImage == null
         ? exactCurrentBlend
@@ -6321,33 +6345,6 @@ class _CanvasPainter extends CustomPainter {
       image.height.toDouble(),
     );
     canvas.drawImageRect(image, src, drawingRect, paint);
-  }
-
-  void _drawOnionFrame(
-    Canvas canvas,
-    Rect drawingRect,
-    ui.Image img,
-    int offset,
-  ) {
-    final opacity = onionEngine.getOpacityForFrame(onionSettings, offset);
-    if (opacity <= 0) return;
-    final color = onionEngine.getColorForFrame(onionSettings, offset);
-    final src = Rect.fromLTWH(
-      0,
-      0,
-      img.width.toDouble(),
-      img.height.toDouble(),
-    );
-    canvas.drawImageRect(
-      img,
-      src,
-      drawingRect,
-      Paint()
-        ..colorFilter = ui.ColorFilter.mode(
-          color.withValues(alpha: color.a * opacity),
-          BlendMode.srcIn,
-        ),
-    );
   }
 
   void _paintBackground(Canvas canvas, Rect rect) {

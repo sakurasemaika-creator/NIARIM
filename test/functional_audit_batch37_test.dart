@@ -331,6 +331,164 @@ void main() {
           File('${out.path}/onion_next_under_current.png').writeAsBytes(on.png),
     );
   });
+  testWidgets('オニオンスキンは表示だけ：紙の上の合成モードの見え方を変えない', (tester) async {
+    tester.view.physicalSize = const Size(480, 360);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final ps = ProjectService();
+    await tester.runAsync(() => ps.init());
+    final undo = app_undo.UndoManager();
+    ps.setUndoManager(undo);
+    final p = await ps.createProject(
+      name: 'onion-blend',
+      fps: 3,
+      durationSeconds: 1,
+      backgroundColor: 0xFF203048,
+      exportWidth: 96,
+      exportHeight: 80,
+    );
+    final sceneId = ps.scenesOf(p.id).first.id;
+    // 今のコマ（F2）は緑の四角、後のコマ（F3）は今の四角に重なる所と
+    // 重ならない所にまたがる白い帯。
+    final shapes = <int, List<({int x0, int x1, int r, int g, int b})>>{
+      1: [(x0: 40, x1: 56, r: 30, g: 220, b: 70)],
+      2: [(x0: 44, x1: 84, r: 255, g: 255, b: 255)],
+    };
+    for (final entry in shapes.entries) {
+      final layer = ps.layersOf(p.id, sceneId, entry.key).first;
+      final key = ps.tileKeyFor(p.id, sceneId, entry.key, layer.id);
+      final rgba = Uint8List(96 * 80 * 4);
+      for (final q in entry.value) {
+        for (var y = 25; y < 41; y++) {
+          for (var x = q.x0; x < q.x1; x++) {
+            final i = (y * 96 + x) * 4;
+            rgba[i] = q.r;
+            rgba[i + 1] = q.g;
+            rgba[i + 2] = q.b;
+            rgba[i + 3] = 255;
+          }
+        }
+      }
+      ps.tileManagerOf(p.id).replaceLayerPixels(key, rgba);
+    }
+    final currentLayer = ps.layersOf(p.id, sceneId, 1).first;
+    // 今のコマの、今のレイヤーより下のレイヤー：灰色の四角（88..94。後のコマの
+    // 影〔44..84〕とは重ならない）。
+    final lower = ps.addLayer(
+      projectId: p.id,
+      sceneId: sceneId,
+      frameIndex: 1,
+      type: LayerType.normal,
+      name: 'lower',
+      insertIndex: 1,
+    );
+    final grey = Uint8List(96 * 80 * 4);
+    for (var y = 25; y < 41; y++) {
+      for (var x = 88; x < 94; x++) {
+        final i = (y * 96 + x) * 4;
+        grey[i] = 120;
+        grey[i + 1] = 120;
+        grey[i + 2] = 120;
+        grey[i + 3] = 255;
+      }
+    }
+    ps
+        .tileManagerOf(p.id)
+        .replaceLayerPixels(ps.tileKeyFor(p.id, sceneId, 1, lower.id), grey);
+    // 下のレイヤーは「スクリーン」：紙の色と混ざる。
+    ps.updateLayer(
+      projectId: p.id,
+      sceneId: sceneId,
+      frameIndex: 1,
+      layer: ps
+          .layersOf(p.id, sceneId, 1)
+          .firstWhere((l) => l.id == lower.id)
+          .copyWith(blendMode: LayerBlendMode.screen),
+      recordUndo: false,
+    );
+    expect(ps.layersOf(p.id, sceneId, 1).first.id, currentLayer.id);
+    final providers = await tester.runAsync(buildAppProviders);
+    final boundaryKey = GlobalKey();
+    var settings = const OnionSkinSettings(enabled: false);
+    StateSetter? hostSetState;
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ...providers!,
+          ChangeNotifierProvider<ProjectService>.value(value: ps),
+          ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  hostSetState = setState;
+                  return RepaintBoundary(
+                    key: boundaryKey,
+                    child: SizedBox(
+                      width: 288,
+                      height: 240,
+                      child: CanvasArea(
+                        project: p,
+                        currentLayerId: currentLayer.id,
+                        currentTool: DrawingTool.pen,
+                        currentFrame: 1,
+                        sceneId: sceneId,
+                        onionSkinSettings: settings,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 250));
+    final off = await _captureWhen(
+      tester,
+      boundaryKey,
+      (c) => _pixel(c.rgba, c.width, 90 * 3, 33 * 3)[0] > 100,
+      reason: '下のスクリーンのレイヤーが紙の上に描画されること',
+    );
+    final lowerOff = _pixel(off.rgba, off.width, 90 * 3, 33 * 3);
+    hostSetState!(() {
+      settings = const OnionSkinSettings(
+        enabled: true,
+        showPrev: true,
+        showNext: true,
+        prevFrames: 1,
+        nextFrames: 1,
+        frameInterval: 1,
+        prevColor: Color(0xFFFF0000),
+        nextColor: Color(0xFF0000FF),
+        prevOpacity: 0.8,
+        nextOpacity: 0.8,
+        fadeByDistance: false,
+      );
+    });
+    await tester.pump();
+    final on = await _captureWhen(
+      tester,
+      boundaryKey,
+      (c) => _pixel(c.rgba, c.width, 76 * 3, 33 * 3)[2] > 150,
+      reason: '後のコマのオニオンスキンが描画されること',
+    );
+    // 後のコマの影は出ている。
+    final next = _pixel(on.rgba, on.width, 76 * 3, 33 * 3);
+    expect(next[2], greaterThan(next[0]));
+    // スクリーンのレイヤーは紙（紺）と混ざって灰色より明るく、オニオン
+    // スキンを出してもまったく同じ色のまま。
+    final lowerOn = _pixel(on.rgba, on.width, 90 * 3, 33 * 3);
+    expect(lowerOff[2], greaterThan(130), reason: 'screen over the paper');
+    for (var c = 0; c < 3; c++) {
+      expect((lowerOn[c] - lowerOff[c]).abs(), lessThanOrEqualTo(1));
+    }
+  });
 }
 
 /// [predicate]を満たす撮影が得られるまで、実時間とWidgetのfake-asyncを

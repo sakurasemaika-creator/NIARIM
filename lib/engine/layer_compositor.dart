@@ -186,6 +186,7 @@ class LayerCompositor {
     List<LayerMaskGroup> maskGroups = const [],
     ui.Size? rasterSize,
     LayerPixelSource? pixelsOf,
+    void Function(ui.Canvas canvas, ui.Rect bounds)? underlay,
   }) async {
     final rasterWidth = rasterSize?.width.toInt() ?? width;
     final rasterHeight = rasterSize?.height.toInt() ?? height;
@@ -199,6 +200,12 @@ class LayerCompositor {
         ui.Paint()..color = ui.Color(paperColor),
       );
     }
+    // 紙のすぐ上・レイヤーの下に描く表示だけの物（キャンバスのオニオン
+    // スキン）。レイヤーはこの上へ、紙の上と同じ合成モードで重なる。
+    underlay?.call(
+      canvas,
+      ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+    );
 
     final byId = {for (final layer in layers) layer.id: layer};
     for (int i = layers.length - 1; i >= 0; i--) {
