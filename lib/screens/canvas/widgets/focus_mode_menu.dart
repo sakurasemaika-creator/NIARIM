@@ -39,6 +39,7 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
   double _left = _edgeInset;
   double _bottom = _edgeInset;
   bool _minimized = false;
+  Size? _lastExpandedSize;
 
   Size? get _measuredSurfaceSize {
     final renderObject = _surfaceKey.currentContext?.findRenderObject();
@@ -46,6 +47,16 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
       return renderObject.size;
     }
     return null;
+  }
+
+  void _toggleMinimized() {
+    final measured = _measuredSurfaceSize;
+    setState(() {
+      if (!_minimized && measured != null) {
+        _lastExpandedSize = measured;
+      }
+      _minimized = !_minimized;
+    });
   }
 
   @override
@@ -60,11 +71,18 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
 
         final viewportWidth = constraints.maxWidth;
         final viewportHeight = constraints.maxHeight;
-        final menuWidth = math.max(0.0, math.min(
-          widget.maxWidth,
-          viewportWidth - _edgeInset * 2,
-        )).toDouble();
-        final maxMenuHeight = math.max(0.0, viewportHeight - _edgeInset * 2).toDouble();
+        final menuWidth = math
+            .max(
+              0.0,
+              math.min(
+                widget.maxWidth,
+                viewportWidth - _edgeInset * 2,
+              ),
+            )
+            .toDouble();
+        final maxMenuHeight = math
+            .max(0.0, viewportHeight - _edgeInset * 2)
+            .toDouble();
         final measured = _measuredSurfaceSize;
         final estimatedSize = Size(
           widget.fillWidth ? menuWidth : math.min(menuWidth, 320).toDouble(),
@@ -72,20 +90,32 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
               ? _headerHeight
               : math.min(maxMenuHeight, 420).toDouble(),
         );
-        final currentSize = measured ?? estimatedSize;
+        // When minimized, keep the expanded dimensions for boundary checks.
+        // This prevents a pill dragged to the edge from opening off-screen.
+        final currentSize = _minimized
+            ? (_lastExpandedSize ?? measured ?? estimatedSize)
+            : (measured ?? estimatedSize);
 
-        final maxLeft = math.max(
-          _edgeInset,
-          viewportWidth - currentSize.width - _edgeInset,
-        ).toDouble();
-        final maxBottom = math.max(
-          _edgeInset,
-          viewportHeight - currentSize.height - _edgeInset,
-        ).toDouble();
+        final maxLeft = math
+            .max(
+              _edgeInset,
+              viewportWidth - currentSize.width - _edgeInset,
+            )
+            .toDouble();
+        final maxBottom = math
+            .max(
+              _edgeInset,
+              viewportHeight - currentSize.height - _edgeInset,
+            )
+            .toDouble();
         final left = _left.clamp(_edgeInset, maxLeft).toDouble();
         final bottom = _bottom.clamp(_edgeInset, maxBottom).toDouble();
-        final bodyMaxHeight = math.max(0.0, maxMenuHeight - _headerHeight).toDouble();
-        final headerWidth = widget.fillWidth ? menuWidth : math.min(menuWidth, 104).toDouble();
+        final bodyMaxHeight = math
+            .max(0.0, maxMenuHeight - _headerHeight)
+            .toDouble();
+        final headerWidth = widget.fillWidth
+            ? menuWidth
+            : math.min(menuWidth, 104).toDouble();
 
         return Stack(
           clipBehavior: Clip.none,
@@ -97,124 +127,136 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                 key: const ValueKey('focus-mode-menu-surface'),
                 child: Material(
                   key: _surfaceKey,
-                color: scheme.surface,
-                elevation: 6,
-                surfaceTintColor: Colors.transparent,
-                clipBehavior: Clip.antiAlias,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(11),
-                  side: BorderSide(color: scheme.outlineVariant),
-                ),
-                child: AnimatedSize(
-                  duration: const Duration(milliseconds: 160),
-                  curve: Curves.easeOut,
-                  alignment: Alignment.topCenter,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: headerWidth,
-                        height: _headerHeight,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Positioned.fill(
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.grab,
-                                child: GestureDetector(
-                                  key: const ValueKey(
-                                    'focus-mode-menu-drag-handle',
-                                  ),
-                                  behavior: HitTestBehavior.opaque,
-                                  onPanUpdate: (details) {
-                                    final size =
-                                        _measuredSurfaceSize ?? estimatedSize;
-                                    final dragMaxLeft = math.max(
-                                      _edgeInset,
-                                      viewportWidth -
-                                          size.width -
-                                          _edgeInset,
-                                    ).toDouble();
-                                    final dragMaxBottom = math.max(
-                                      _edgeInset,
-                                      viewportHeight -
-                                          size.height -
-                                          _edgeInset,
-                                    ).toDouble();
-                                    setState(() {
-                                      _left = (_left + details.delta.dx)
-                                          .clamp(_edgeInset, dragMaxLeft)
+                  color: scheme.surface,
+                  elevation: 6,
+                  surfaceTintColor: Colors.transparent,
+                  clipBehavior: Clip.antiAlias,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(11),
+                    side: BorderSide(color: scheme.outlineVariant),
+                  ),
+                  child: AnimatedSize(
+                    duration: const Duration(milliseconds: 160),
+                    curve: Curves.easeOut,
+                    alignment: Alignment.topCenter,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: headerWidth,
+                          height: _headerHeight,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Positioned.fill(
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.grab,
+                                  child: GestureDetector(
+                                    key: const ValueKey(
+                                      'focus-mode-menu-drag-handle',
+                                    ),
+                                    behavior: HitTestBehavior.opaque,
+                                    onPanUpdate: (details) {
+                                      final size = _minimized
+                                          ? (_lastExpandedSize ??
+                                                _measuredSurfaceSize ??
+                                                estimatedSize)
+                                          : (_measuredSurfaceSize ??
+                                                estimatedSize);
+                                      final dragMaxLeft = math
+                                          .max(
+                                            _edgeInset,
+                                            viewportWidth -
+                                                size.width -
+                                                _edgeInset,
+                                          )
                                           .toDouble();
-                                      // Screen Y grows downward; a positive
-                                      // bottom offset moves the menu upward.
-                                      _bottom = (_bottom - details.delta.dy)
-                                          .clamp(_edgeInset, dragMaxBottom)
+                                      final dragMaxBottom = math
+                                          .max(
+                                            _edgeInset,
+                                            viewportHeight -
+                                                size.height -
+                                                _edgeInset,
+                                          )
                                           .toDouble();
-                                    });
-                                  },
-                                  child: Center(
-                                    child: Container(
-                                      width: 38,
-                                      height: 4,
-                                      decoration: BoxDecoration(
-                                        color: scheme.onSurfaceVariant
-                                            .withValues(alpha: 0.48),
-                                        borderRadius: BorderRadius.circular(8),
+                                      setState(() {
+                                        _left = (_left + details.delta.dx)
+                                            .clamp(_edgeInset, dragMaxLeft)
+                                            .toDouble();
+                                        // Screen Y grows downward; a positive
+                                        // bottom offset moves the menu upward.
+                                        _bottom =
+                                            (_bottom - details.delta.dy)
+                                                .clamp(
+                                                  _edgeInset,
+                                                  dragMaxBottom,
+                                                )
+                                                .toDouble();
+                                      });
+                                    },
+                                    child: Center(
+                                      child: Container(
+                                        width: 38,
+                                        height: 4,
+                                        decoration: BoxDecoration(
+                                          color: scheme.onSurfaceVariant
+                                              .withValues(alpha: 0.48),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Positioned(
-                              right: 0,
-                              child: IconButton(
-                                key: const ValueKey(
-                                  'focus-mode-menu-toggle',
-                                ),
-                                tooltip: _minimized
-                                    ? widget.expandTooltip
-                                    : widget.collapseTooltip,
-                                visualDensity: VisualDensity.compact,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: _headerHeight,
-                                  height: _headerHeight,
-                                ),
-                                padding: EdgeInsets.zero,
-                                icon: Icon(
-                                  _minimized
-                                      ? Icons.expand_more
-                                      : Icons.expand_less,
-                                  size: 20,
-                                ),
-                                onPressed: () => setState(
-                                  () => _minimized = !_minimized,
+                              Positioned(
+                                right: 0,
+                                child: IconButton(
+                                  key: const ValueKey(
+                                    'focus-mode-menu-toggle',
+                                  ),
+                                  tooltip: _minimized
+                                      ? widget.expandTooltip
+                                      : widget.collapseTooltip,
+                                  visualDensity: VisualDensity.compact,
+                                  constraints: const BoxConstraints.tightFor(
+                                    width: _headerHeight,
+                                    height: _headerHeight,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  icon: Icon(
+                                    _minimized
+                                        ? Icons.expand_more
+                                        : Icons.expand_less,
+                                    size: 20,
+                                  ),
+                                  onPressed: _toggleMinimized,
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: menuWidth,
-                          maxHeight: bodyMaxHeight,
-                        ),
-                        child: TickerMode(
-                          enabled: !_minimized,
-                          child: Offstage(
-                            offstage: _minimized,
-                            child: SizedBox(
-                              width: widget.fillWidth ? menuWidth : null,
-                              child: widget.child,
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: menuWidth,
+                            maxHeight: bodyMaxHeight,
+                          ),
+                          child: TickerMode(
+                            enabled: !_minimized,
+                            child: Offstage(
+                              offstage: _minimized,
+                              child: SizedBox(
+                                width: widget.fillWidth ? menuWidth : null,
+                                child: widget.child,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
                 ),
               ),
             ),
