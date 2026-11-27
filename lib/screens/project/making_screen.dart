@@ -284,6 +284,7 @@ class _MakingScreenState extends State<MakingScreen> {
       context.read<SettingsService?>(),
     );
     final format = _format;
+    final projectName = _project(projects)?.name;
     final watermarkAreas = officialMark && format == MakingExportFormat.gif
         ? _watermarkAreas(projects)
         : const <ui.Rect>[];
@@ -309,8 +310,13 @@ class _MakingScreenState extends State<MakingScreen> {
       );
       if (mounted) setState(() => _exportProgress = null);
       final exportDirectory = await ExportEngine.exportsDir();
-      final outputPath =
-          '${exportDirectory.path}/Making_${widget.projectId}_${DateTime.now().millisecondsSinceEpoch}.${format.name}';
+      // The work's name, like the work's own exports (it was the project's
+      // id, so a search by the work's name in the Works list missed it).
+      final outputPath = ExportEngine.freshMakingOutputPath(
+        exportDirectory,
+        projectName,
+        format.name,
+      );
       partialOutput = outputPath;
       await MakingExport.export(
         snapshotPaths: snapshotPaths,

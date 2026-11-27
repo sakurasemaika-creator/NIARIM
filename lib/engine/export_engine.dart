@@ -556,16 +556,26 @@ class ExportEngine {
     return frames;
   }
 
+  /// A new file in [dir] for a making video of the work [projectName]
+  /// ("作品名 Making 日時"), never an existing one.
+  static String freshMakingOutputPath(
+    Directory dir,
+    String? projectName,
+    String extension,
+  ) => _freshOutputPath(dir, projectName, extension, making: true);
+
   static String _freshOutputPath(
     Directory dir,
     String? projectName,
     String extension, {
     int? frameIndex,
+    bool making = false,
   }) {
     final stem = exportFilenameStem(
       projectName,
       DateTime.now(),
       frameIndex: frameIndex,
+      making: making,
     );
     for (var version = 1; ; version++) {
       final suffix = version == 1 ? '' : ' ($version)';

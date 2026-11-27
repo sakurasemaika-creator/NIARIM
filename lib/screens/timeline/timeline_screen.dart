@@ -11992,6 +11992,24 @@ class _EffectFilterSheet extends StatelessWidget {
   void _update(BuildContext context, EffectFilterInstance e) =>
       context.read<ProjectService>().updateEffectFilter(projectId, sceneId, e);
 
+  /// [id]のフィルターを、いま保存されている値から[change]で変える。1回の操作で
+  /// 続けて2つの値を変える所（ドット絵の「パレットから選ぶ」は配色方式と色を
+  /// 続けて知らせる）で使う。古い値から2回作り直すと、2回目が1回目を消した
+  /// （配色方式が「色数を指定する」に戻った）。
+  void _edit(
+    BuildContext context,
+    String id,
+    EffectFilterInstance Function(EffectFilterInstance latest) change,
+  ) {
+    final ps = context.read<ProjectService>();
+    final latest = ps
+        .effectFiltersOf(projectId, sceneId)
+        .where((f) => f.id == id)
+        .firstOrNull;
+    if (latest == null) return;
+    ps.updateEffectFilter(projectId, sceneId, change(latest));
+  }
+
   /// 演出フィルターを複製する（「フィルター操作＞複製」）。
   /// 複製先は元フィルターの直後へ挿入する。
   void _duplicate(
@@ -12001,13 +12019,13 @@ class _EffectFilterSheet extends StatelessWidget {
   ) {
     final service = context.read<ProjectService>();
     final l10n = AppLocalizations.of(context)!;
+    // 名前の無いフィルター（種類の名前で出る）の複製にも印を付ける（以前は
+    // 「周辺減光」が2つ並び、見分けられなかった）。
     final copy = e.copyWith(
       id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
-      name: e.name == null
-          ? null
-          : numberedCopyName(l10n, e.name!, {
-              for (final effect in effects) _displayName(l10n, effect),
-            }),
+      name: numberedCopyName(l10n, _displayName(l10n, e), {
+        for (final effect in effects) _displayName(l10n, effect),
+      }),
     );
     service.addEffectFilter(projectId, sceneId, copy);
     final index = effects.indexWhere((f) => f.id == e.id);
@@ -12439,6 +12457,7 @@ class _EffectFilterSheet extends StatelessWidget {
           ),
           SizedBox(width: 8),
           GestureDetector(
+            key: const ValueKey('fadeColorSwatch'),
             onTap: () => _pickFadeColor(context, e),
             child: Container(
               width: 32,
@@ -12883,11 +12902,12 @@ class _EffectFilterSheet extends StatelessWidget {
         mode: e.pixelColorMode,
         colorLevels: e.param2.round(),
         explicitColors: e.pixelExplicitColors,
-        onModeChanged: (m) => _update(context, e.copyWith(pixelColorMode: m)),
+        onModeChanged: (m) =>
+            _edit(context, e.id, (f) => f.copyWith(pixelColorMode: m)),
         onColorLevelsChanged: (v) =>
-            _update(context, e.copyWith(param2: v.toDouble())),
+            _edit(context, e.id, (f) => f.copyWith(param2: v.toDouble())),
         onExplicitColorsChanged: (c) =>
-            _update(context, e.copyWith(pixelExplicitColors: c)),
+            _edit(context, e.id, (f) => f.copyWith(pixelExplicitColors: c)),
       ),
       // Dithering only matters once the colours are limited.
       if (e.pixelColorMode != PixelColorMode.none)
@@ -12986,8 +13006,41 @@ class _EffectFilterSheet extends StatelessWidget {
       l10n.filterAuroraHologramPresetDarkRainbow,
   };
 
+  /// フェードの色：黒・白と、ほかの色（色選び）。作品の色なので、テーマの
+  /// 色から取らない（以前はテーマの文字色を2つ並べ、黒・白を選べず、テーマを
+  /// 変えると選べる色も変わった）。
   void _pickFadeColor(BuildContext context, EffectFilterInstance e) {
     final l10n = AppLocalizations.of(context)!;
+    Widget swatch({
+      required Key key,
+      required String label,
+      required Color color,
+      Widget? child,
+      required VoidCallback onTap,
+    }) => Semantics(
+      button: true,
+      label: label,
+      child: Tooltip(
+        message: label,
+        child: InkWell(
+          key: key,
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(4),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color,
+              border: Border.all(
+                color: ThemeService.activeColorScheme.onSurfaceVariant,
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    );
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -12996,29 +13049,43 @@ class _EffectFilterSheet extends StatelessWidget {
           spacing: 12,
           runSpacing: 12,
           children: [
-            for (final c in [
-              ThemeService.activeColorScheme.onSurface,
-              ThemeService.activeColorScheme.onSurface,
-              ThemeService.activeColorScheme.error,
-              ThemeService.activeColorScheme.primary,
+            for (final (key, label, color) in [
+              (
+                'fadeColorBlack',
+                l10n.timelineColorBlack,
+                const Color(0xFF000000),
+              ),
+              (
+                'fadeColorWhite',
+                l10n.timelineColorWhite,
+                const Color(0xFFFFFFFF),
+              ),
             ])
-              GestureDetector(
+              swatch(
+                key: ValueKey(key),
+                label: label,
+                color: color,
                 onTap: () {
-                  _update(context, e.copyWith(fadeColor: c));
+                  _update(context, e.copyWith(fadeColor: color));
                   Navigator.pop(ctx);
                 },
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: c,
-                    border: Border.all(
-                      color: ThemeService.activeColorScheme.onSurfaceVariant,
-                    ),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
               ),
+            swatch(
+              key: const ValueKey('fadeColorOther'),
+              label: l10n.timelineColorCustom,
+              color: e.fadeColor,
+              child: Icon(
+                Icons.palette_outlined,
+                size: 20,
+                color: e.fadeColor.computeLuminance() > 0.5
+                    ? const Color(0xFF000000)
+                    : const Color(0xFFFFFFFF),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickMonochromeColor(context, e);
+              },
+            ),
           ],
         ),
       ),

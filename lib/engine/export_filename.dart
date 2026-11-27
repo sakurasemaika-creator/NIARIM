@@ -13,10 +13,13 @@ final _reserved = RegExp(
 
 /// Produces a portable basename without splitting a visible character.
 /// Leaves space for the date, frame number, collision suffix and extension.
+/// [making] marks a making video ("作品名 Making 日時"): found by the work's
+/// name in the Works list like the work's own exports.
 String exportFilenameStem(
   String? projectName,
   DateTime time, {
   int? frameIndex,
+  bool making = false,
 }) {
   final title = (projectName ?? '')
       .replaceAll(_invalid, ' ')
@@ -32,11 +35,17 @@ String exportFilenameStem(
   }
   final name = buffer.toString().trimRight();
   if (name.isEmpty) {
-    final prefix = frameIndex == null ? 'niarim' : 'niarim_frame';
+    final prefix = making
+        ? 'niarim_making'
+        : frameIndex == null
+        ? 'niarim'
+        : 'niarim_frame';
     return '${prefix}_${time.millisecondsSinceEpoch}';
   }
   final safeName = _reserved.hasMatch(name) ? '_$name' : name;
-  final frame = frameIndex == null
+  final frame = making
+      ? ' Making'
+      : frameIndex == null
       ? ''
       : ' F${(frameIndex + 1).toString().padLeft(3, '0')}';
   final local = time.toLocal();

@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../engine/layer_compositor.dart';
+import '../../engine/timeline_frame_renderer.dart';
 import '../../engine/undo_manager.dart';
 import '../../config/accent_text_theme.dart';
 import '../../l10n/app_localizations.dart';
@@ -72,6 +72,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   Widget? _lastPage;
   Timer? _timer;
   ui.Image? _previewImage;
+  final TimelineFrameRenderer _renderer = TimelineFrameRenderer();
   // プレビュー全画面化：確認・仕上がりチェックに集中できるよう、
   // プレビューと再生コントロールのみを全画面表示する
   // （タイムラインモードのプレビュー全画面化と同等の機能）。
@@ -137,32 +138,35 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           entry.sceneId,
           entry.frameIndex,
         );
-        final keyframes = ps.frameKeyframes(
-          widget.projectId,
-          entry.sceneId,
-          entry.frameIndex,
-        );
-        final img = await LayerCompositor.composite(
-          tileManager,
-          stacked.layers,
-          (l) => ps.tileKeyFor(
-            widget.projectId,
-            entry.sceneId,
-            entry.frameIndex,
-            l.id,
+        final project = ps.projects
+            .where((p) => p.id == widget.projectId)
+            .firstOrNull;
+        // タイムラインのプレビューと書き出しと同じ描き方（カメラと演出
+        // フィルターも。以前はレイヤーだけを重ね、書き出しと見え方が違った）。
+        final img = await _renderer.renderImage(
+          TimelineFrameRequest(
+            tileManager: tileManager,
+            layers: stacked.layers,
+            keyOf: (l) => ps.tileKeyFor(
+              widget.projectId,
+              entry.sceneId,
+              entry.frameIndex,
+              l.id,
+            ),
+            frameIndex: entry.frameIndex,
+            drawingWidth: tileManager.canvasWidth,
+            drawingHeight: tileManager.canvasHeight,
+            outputWidth: project?.exportWidth ?? tileManager.canvasWidth,
+            outputHeight: project?.exportHeight ?? tileManager.canvasHeight,
+            backgroundColor: project?.backgroundColor ?? 0xFFFFFFFF,
+            maskGroups: stacked.maskGroups,
+            groups: ps.layerGroupsOf(widget.projectId, entry.sceneId),
+            cameraKeyframes: ps.cameraKeyframesOf(
+              widget.projectId,
+              entry.sceneId,
+            ),
+            effectFilters: ps.effectFiltersOf(widget.projectId, entry.sceneId),
           ),
-          tileManager.canvasWidth,
-          tileManager.canvasHeight,
-          keyframeOf: keyframes.keyframeOf,
-          groupKeyframeOf: keyframes.groupKeyframeOf,
-          paperColor: LayerCompositor.paperForBlendModes(
-            stacked.layers,
-            ps.projects
-                .where((p) => p.id == widget.projectId)
-                .firstOrNull
-                ?.backgroundColor,
-          ),
-          maskGroups: stacked.maskGroups,
         );
         if (!mounted) {
           img.dispose();

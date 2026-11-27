@@ -37,4 +37,16 @@ void main() {
       lessThan(180),
     );
   });
+  // メイキング動画も作品名で（以前は「Making_作品のID_ミリ秒」で、作品一覧で
+  // 作品名で探しても出なかった）。
+  test('a making video is named after the work', () {
+    expect(
+      exportFilenameStem('全部入りアニメ', time, making: true),
+      '全部入りアニメ Making 20261120-143000',
+    );
+    expect(
+      exportFilenameStem(null, time, making: true),
+      'niarim_making_${time.millisecondsSinceEpoch}',
+    );
+  });
 }
