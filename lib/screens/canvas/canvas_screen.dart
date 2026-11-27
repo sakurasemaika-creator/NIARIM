@@ -2032,7 +2032,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                         ),
                                       ),
                                     ),
-                                  if (filterAdjusting)
+                                  if (filterAdjusting && !colorAdjusting)
                                     Positioned.fill(
                                       child: FocusModeMenu(
                                         key: const ValueKey(
