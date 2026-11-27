@@ -3,7 +3,6 @@
 // 実際に使ってみたとき（2026-11-27）、縦書きの「{漢|かん}」のルビが基底文字の
 // 右半分の上に重なっていた（列の幅は文字1つ分で、ルビをその6割の所から描いていた）。
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
