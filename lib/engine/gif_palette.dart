@@ -51,15 +51,51 @@ class GifPaletteMapper {
 
   /// [frame] as a palette image.
   img.Image paletteFrame(img.Image frame) {
+    final (:indices, :rgb, :colours, :width, :height) = paletteIndices(frame);
+    final palette = img.PaletteUint8(colours, 3);
+    palette.toUint8List().setAll(0, rgb);
+    final out = img.Image(
+      width: width,
+      height: height,
+      numChannels: 1,
+      palette: palette,
+    );
+    (out.data! as img.ImageDataUint8).data.setAll(0, indices);
+    return out;
+  }
+
+  /// [frame] as palette indices (one byte a pixel, row by row) and the
+  /// palette ([colours] entries of 3 bytes, red, green, blue): what
+  /// [paletteFrame] puts in its palette image.
+  ({Uint8List indices, Uint8List rgb, int colours, int width, int height})
+  paletteIndices(img.Image frame) {
     var source = frame;
     if (source.hasPalette ||
         source.format != img.Format.uint8 ||
         source.numChannels < 3) {
       source = source.convert(format: img.Format.uint8, numChannels: 3);
     }
-    final bytes = (source.data! as img.ImageDataUint8).data;
-    final channels = source.numChannels;
-    final pixelCount = source.width * source.height;
+    final (:indices, :rgb, :colours) = paletteIndicesOfBytes(
+      (source.data! as img.ImageDataUint8).data,
+      source.width * source.height,
+      source.numChannels,
+    );
+    return (
+      indices: indices,
+      rgb: rgb,
+      colours: colours,
+      width: source.width,
+      height: source.height,
+    );
+  }
+
+  /// [paletteIndices] of [pixelCount] pixels of 8-bit [channels] (3 or 4:
+  /// red, green, blue first) in [bytes], row by row.
+  ({Uint8List indices, Uint8List rgb, int colours}) paletteIndicesOfBytes(
+    Uint8List bytes,
+    int pixelCount,
+    int channels,
+  ) {
     final slotOfKey = _slotOfKey;
     final moreLeaves = _moreLeaves;
 
@@ -69,10 +105,23 @@ class GifPaletteMapper {
     final leafR = _leafR..length = 0;
     final leafG = _leafG..length = 0;
     final leafB = _leafB..length = 0;
-    for (var p = 0, i = 0; p < pixelCount; p++, i += channels) {
+    // A run of pixels of the same colour is looked up once and counted at
+    // once (the same counts and sums as one pixel at a time).
+    for (var p = 0, i = 0; p < pixelCount;) {
       final r = bytes[i];
       final g = bytes[i + 1];
       final b = bytes[i + 2];
+      var run = 1;
+      p++;
+      i += channels;
+      while (p < pixelCount &&
+          bytes[i] == r &&
+          bytes[i + 1] == g &&
+          bytes[i + 2] == b) {
+        run++;
+        p++;
+        i += channels;
+      }
       final key = ((r >> 1) << 14) | ((g >> 1) << 7) | (b >> 1);
       var leaf = slotOfKey[key] - 1;
       if (leaf < 0 && moreLeaves.isNotEmpty) leaf = moreLeaves[key] ?? -1;
@@ -84,15 +133,15 @@ class GifPaletteMapper {
           moreLeaves[key] = leaf;
         }
         leafKey.add(key);
-        leafCount.add(1);
-        leafR.add(r);
-        leafG.add(g);
-        leafB.add(b);
+        leafCount.add(run);
+        leafR.add(r * run);
+        leafG.add(g * run);
+        leafB.add(b * run);
       } else {
-        leafCount.data[leaf]++;
-        leafR.data[leaf] += r;
-        leafG.data[leaf] += g;
-        leafB.data[leaf] += b;
+        leafCount.data[leaf] += run;
+        leafR.data[leaf] += r * run;
+        leafG.data[leaf] += g * run;
+        leafB.data[leaf] += b * run;
       }
     }
     final leaves = leafKey.length;
@@ -119,13 +168,19 @@ class GifPaletteMapper {
     // 3. Each pixel's palette entry, then the table is cleared for the next
     // frame (only the keys this frame used).
     final indices = Uint8List(pixelCount);
+    var lastKey = -1;
+    var lastIndex = 0;
     for (var p = 0, i = 0; p < pixelCount; p++, i += channels) {
       final key =
           ((bytes[i] >> 1) << 14) |
           ((bytes[i + 1] >> 1) << 7) |
           (bytes[i + 2] >> 1);
-      final slot = slotOfKey[key];
-      indices[p] = paletteOfLeaf[slot > 0 ? slot - 1 : moreLeaves[key]!];
+      if (key != lastKey) {
+        final slot = slotOfKey[key];
+        lastIndex = paletteOfLeaf[slot > 0 ? slot - 1 : moreLeaves[key]!];
+        lastKey = key;
+      }
+      indices[p] = lastIndex;
     }
     final keys = leafKey.data;
     for (var leaf = 0; leaf < leaves && leaf < _slots; leaf++) {
@@ -133,24 +188,14 @@ class GifPaletteMapper {
     }
     moreLeaves.clear();
 
-    final colours = img.PaletteUint8(palette.length, 3);
+    final rgb = Uint8List(palette.length * 3);
     for (var index = 0; index < palette.length; index++) {
       final colour = palette[index];
-      colours.setRgb(
-        index,
-        (colour >> 16) & 0xFF,
-        (colour >> 8) & 0xFF,
-        colour & 0xFF,
-      );
+      rgb[index * 3] = (colour >> 16) & 0xFF;
+      rgb[index * 3 + 1] = (colour >> 8) & 0xFF;
+      rgb[index * 3 + 2] = colour & 0xFF;
     }
-    final out = img.Image(
-      width: source.width,
-      height: source.height,
-      numChannels: 1,
-      palette: colours,
-    );
-    (out.data! as img.ImageDataUint8).data.setAll(0, indices);
-    return out;
+    return (indices: indices, rgb: rgb, colours: palette.length);
   }
 
   static int _average(int r, int g, int b, int count) =>

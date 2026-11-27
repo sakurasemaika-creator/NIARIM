@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'thinning.dart';
+
 /// A lightweight vector-like representation used only while the Auto Line Art
 /// filter is being previewed/applied. It is never persisted as a project layer.
 class AutoLineartPoint {
@@ -3546,62 +3548,39 @@ class AutoLineartEngine {
   /// is made for, so it only finishes Zhang-Suen's work.
   static Uint8List _thinGuoHall(Uint8List input, int width, int height) {
     final img = Uint8List.fromList(input);
-    if (width < 3 || height < 3) return img;
-    var foreground = <int>[
-      for (var y = 1; y < height - 1; y++)
-        for (var x = 1; x < width - 1; x++)
-          if (img[y * width + x] != 0) y * width + x,
-    ];
-    final remove = <int>[];
-    var changed = true;
-    while (changed) {
-      changed = false;
-      for (var pass = 0; pass < 2; pass++) {
-        remove.clear();
-        for (final i in foreground) {
-          if (img[i] == 0) continue;
-          final p2 = img[i - width] != 0 ? 1 : 0;
-          final p3 = img[i - width + 1] != 0 ? 1 : 0;
-          final p4 = img[i + 1] != 0 ? 1 : 0;
-          final p5 = img[i + width + 1] != 0 ? 1 : 0;
-          final p6 = img[i + width] != 0 ? 1 : 0;
-          final p7 = img[i + width - 1] != 0 ? 1 : 0;
-          final p8 = img[i - 1] != 0 ? 1 : 0;
-          final p9 = img[i - width - 1] != 0 ? 1 : 0;
-          // One run of neighbours (the pixel joins nothing else together).
-          final runs =
-              (p2 == 0 && (p3 | p4) != 0 ? 1 : 0) +
-              (p4 == 0 && (p5 | p6) != 0 ? 1 : 0) +
-              (p6 == 0 && (p7 | p8) != 0 ? 1 : 0) +
-              (p8 == 0 && (p9 | p2) != 0 ? 1 : 0);
-          if (runs != 1) continue;
-          // Not a line's end, and on the edge of the ink.
-          final n1 = (p9 | p2) + (p3 | p4) + (p5 | p6) + (p7 | p8);
-          final n2 = (p2 | p3) + (p4 | p5) + (p6 | p7) + (p8 | p9);
-          final n = math.min(n1, n2);
-          if (n < 2 || n > 3) continue;
-          // The first pass peels the south-east side, the second the
-          // north-west, so a line keeps its middle.
-          final side = pass == 0
-              ? (p6 | p7 | (1 - p9)) & p8
-              : (p2 | p3 | (1 - p5)) & p4;
-          if (side != 0) continue;
-          remove.add(i);
-        }
-        if (remove.isNotEmpty) {
-          changed = true;
-          for (final i in remove) {
-            img[i] = 0;
-          }
-        }
-      }
-      if (changed) {
-        foreground = [
-          for (final i in foreground)
-            if (img[i] != 0) i,
-        ];
-      }
-    }
+    thinTwoPass(
+      img,
+      width,
+      height,
+      removable: (i, pass) {
+        final p2 = img[i - width] != 0 ? 1 : 0;
+        final p3 = img[i - width + 1] != 0 ? 1 : 0;
+        final p4 = img[i + 1] != 0 ? 1 : 0;
+        final p5 = img[i + width + 1] != 0 ? 1 : 0;
+        final p6 = img[i + width] != 0 ? 1 : 0;
+        final p7 = img[i + width - 1] != 0 ? 1 : 0;
+        final p8 = img[i - 1] != 0 ? 1 : 0;
+        final p9 = img[i - width - 1] != 0 ? 1 : 0;
+        // One run of neighbours (the pixel joins nothing else together).
+        final runs =
+            (p2 == 0 && (p3 | p4) != 0 ? 1 : 0) +
+            (p4 == 0 && (p5 | p6) != 0 ? 1 : 0) +
+            (p6 == 0 && (p7 | p8) != 0 ? 1 : 0) +
+            (p8 == 0 && (p9 | p2) != 0 ? 1 : 0);
+        if (runs != 1) return false;
+        // Not a line's end, and on the edge of the ink.
+        final n1 = (p9 | p2) + (p3 | p4) + (p5 | p6) + (p7 | p8);
+        final n2 = (p2 | p3) + (p4 | p5) + (p6 | p7) + (p8 | p9);
+        final n = math.min(n1, n2);
+        if (n < 2 || n > 3) return false;
+        // The first pass peels the south-east side, the second the
+        // north-west, so a line keeps its middle.
+        final side = pass == 0
+            ? (p6 | p7 | (1 - p9)) & p8
+            : (p2 | p3 | (1 - p5)) & p4;
+        return side == 0;
+      },
+    );
     return img;
   }
 
@@ -3610,53 +3589,43 @@ class AutoLineartEngine {
   /// one direction stays a 2 px staircase, which [_thinGuoHall] finishes.
   static Uint8List _thinZhangSuen(Uint8List input, int width, int height) {
     final img = Uint8List.fromList(input);
-    if (width < 3 || height < 3) return img;
-    var changed = true;
-    var guard = 0;
-    while (changed && guard++ < math.max(width, height)) {
-      changed = false;
-      for (var pass = 0; pass < 2; pass++) {
-        final remove = <int>[];
-        for (var y = 1; y < height - 1; y++) {
-          for (var x = 1; x < width - 1; x++) {
-            final i = y * width + x;
-            if (img[i] == 0) continue;
-            final p2 = img[(y - 1) * width + x];
-            final p3 = img[(y - 1) * width + x + 1];
-            final p4 = img[y * width + x + 1];
-            final p5 = img[(y + 1) * width + x + 1];
-            final p6 = img[(y + 1) * width + x];
-            final p7 = img[(y + 1) * width + x - 1];
-            final p8 = img[y * width + x - 1];
-            final p9 = img[(y - 1) * width + x - 1];
-            final ns = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
-            // At least 3 neighbours (Lü and Wang's correction): a diagonal
-            // line peeled down to a 2 px staircase has 2 at its end, and
-            // taking that end pass after pass eats the whole line (one
-            // stroke of an X vanished, a 45° line came out shorter).
-            if (ns < 3 || ns > 6) continue;
-            final ring = [p2, p3, p4, p5, p6, p7, p8, p9, p2];
-            var transitions = 0;
-            for (var r = 0; r < 8; r++) {
-              if (ring[r] == 0 && ring[r + 1] != 0) transitions++;
-            }
-            if (transitions != 1) continue;
-            if (pass == 0) {
-              if (p2 * p4 * p6 != 0 || p4 * p6 * p8 != 0) continue;
-            } else {
-              if (p2 * p4 * p8 != 0 || p2 * p6 * p8 != 0) continue;
-            }
-            remove.add(i);
-          }
+    thinTwoPass(
+      img,
+      width,
+      height,
+      maxRounds: math.max(width, height),
+      removable: (i, pass) {
+        final p2 = img[i - width];
+        final p3 = img[i - width + 1];
+        final p4 = img[i + 1];
+        final p5 = img[i + width + 1];
+        final p6 = img[i + width];
+        final p7 = img[i + width - 1];
+        final p8 = img[i - 1];
+        final p9 = img[i - width - 1];
+        final ns = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+        // At least 3 neighbours (Lü and Wang's correction): a diagonal
+        // line peeled down to a 2 px staircase has 2 at its end, and
+        // taking that end pass after pass eats the whole line (one
+        // stroke of an X vanished, a 45° line came out shorter).
+        if (ns < 3 || ns > 6) return false;
+        // Background-to-ink steps going round the neighbours.
+        final transitions =
+            (p2 == 0 && p3 != 0 ? 1 : 0) +
+            (p3 == 0 && p4 != 0 ? 1 : 0) +
+            (p4 == 0 && p5 != 0 ? 1 : 0) +
+            (p5 == 0 && p6 != 0 ? 1 : 0) +
+            (p6 == 0 && p7 != 0 ? 1 : 0) +
+            (p7 == 0 && p8 != 0 ? 1 : 0) +
+            (p8 == 0 && p9 != 0 ? 1 : 0) +
+            (p9 == 0 && p2 != 0 ? 1 : 0);
+        if (transitions != 1) return false;
+        if (pass == 0) {
+          return p2 * p4 * p6 == 0 && p4 * p6 * p8 == 0;
         }
-        if (remove.isNotEmpty) {
-          changed = true;
-          for (final i in remove) {
-            img[i] = 0;
-          }
-        }
-      }
-    }
+        return p2 * p4 * p8 == 0 && p2 * p6 * p8 == 0;
+      },
+    );
     return img;
   }
 }

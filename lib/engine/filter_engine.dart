@@ -15,6 +15,7 @@ import 'sphere_shading_engine.dart';
 import 'vhs_noise_engine.dart';
 import 'watercolor_border_engine.dart';
 import 'premultiplied.dart';
+import 'tile_manager.dart' show roundHalfAway;
 import 'tone_curve.dart';
 
 /// Preview, apply and recorded replay share the same seeded noise settings.
@@ -113,11 +114,7 @@ Uint8List applySphereShadingFilter(
   r = gray + (r - gray) * 1.05;
   g = gray + (g - gray) * 1.05;
   b = gray + (b - gray) * 1.05;
-  return (
-    r.round().clamp(0, 255),
-    g.round().clamp(0, 255),
-    b.round().clamp(0, 255),
-  );
+  return (_byteOf(r), _byteOf(g), _byteOf(b));
 }
 
 /// 描画フィルターの本適用（低スペック端末でのUIスレッドブロック防止のため
@@ -655,6 +652,20 @@ Uint8List quantizeColors(
   );
 }
 
+/// `value.round().clamp(0, 255)` for a finite [value], without the native
+/// call [double.round] makes (the same integer).
+@pragma('vm:prefer-inline')
+int _byteOf(double value) {
+  final v = roundHalfAway(value);
+  return v < 0 ? 0 : (v > 255 ? 255 : v);
+}
+
+/// `value.clamp(0, 255)` for a [value] that is not NaN, as a double (the
+/// same number).
+@pragma('vm:prefer-inline')
+double _channelRange(double value) =>
+    value < 0 ? 0.0 : (value > 255 ? 255.0 : value);
+
 class FilterEngine {
   /// タイムラインの演出フィルター一覧を、[frameIndex]が範囲内かつ有効なものだけ、
   /// タイムライン上の並び順（[effects]の順）に適用する。
@@ -869,8 +880,8 @@ class FilterEngine {
             255,
           ),
           inputGamma: e.param3.clamp(0.1, 9.99),
-          outputBlack: e.param4.round().clamp(0, 255),
-          outputWhite: e.param5.round().clamp(0, 255),
+          outputBlack: _byteOf(e.param4),
+          outputWhite: _byteOf(e.param5),
         ),
         // シャープ：param1=強さ（0〜100）。
         EffectFilterType.sharpen => applySharpen(
@@ -981,7 +992,9 @@ class FilterEngine {
   }
 
   /// One running-sum box blur of radius [r] along rows or columns (edges
-  /// extend the outermost pixel, as the exact kernel does).
+  /// extend the outermost pixel, as the exact kernel does). The sums are
+  /// whole numbers, so the columns are summed side by side a row at a time
+  /// (reading the picture in order) with the same totals.
   Uint8List _boxPass(
     Uint8List data,
     int width,
@@ -991,27 +1004,55 @@ class FilterEngine {
   }) {
     if (r <= 0) return Uint8List.fromList(data);
     final out = Uint8List(data.length);
-    final lines = horizontal ? height : width;
-    final length = horizontal ? width : height;
-    final step = horizontal ? 4 : width * 4;
     final window = 2 * r + 1;
-    final sum = Int32List(4);
-    for (var line = 0; line < lines; line++) {
-      final base = horizontal ? line * width * 4 : line * 4;
-      int at(int i) => base + i.clamp(0, length - 1) * step;
-      for (var c = 0; c < 4; c++) {
-        var acc = 0;
+    // Each possible sum's rounded average, worked out once.
+    final average = Uint8List(255 * window + 1);
+    for (var sum = 0; sum < average.length; sum++) {
+      average[sum] = roundHalfAway(sum / window);
+    }
+    if (horizontal) {
+      for (var y = 0; y < height; y++) {
+        final base = y * width * 4;
+        var s0 = 0, s1 = 0, s2 = 0, s3 = 0;
         for (var k = -r; k <= r; k++) {
-          acc += data[at(k) + c];
+          final at = base + (k < 0 ? 0 : (k > width - 1 ? width - 1 : k)) * 4;
+          s0 += data[at];
+          s1 += data[at + 1];
+          s2 += data[at + 2];
+          s3 += data[at + 3];
         }
-        sum[c] = acc;
+        for (var x = 0; x < width; x++) {
+          final o = base + x * 4;
+          out[o] = average[s0];
+          out[o + 1] = average[s1];
+          out[o + 2] = average[s2];
+          out[o + 3] = average[s3];
+          final into =
+              base + (x + r + 1 > width - 1 ? width - 1 : x + r + 1) * 4;
+          final from = base + (x - r < 0 ? 0 : x - r) * 4;
+          s0 += data[into] - data[from];
+          s1 += data[into + 1] - data[from + 1];
+          s2 += data[into + 2] - data[from + 2];
+          s3 += data[into + 3] - data[from + 3];
+        }
       }
-      for (var i = 0; i < length; i++) {
-        final o = base + i * step;
-        for (var c = 0; c < 4; c++) {
-          out[o + c] = (sum[c] / window).round();
-          sum[c] += data[at(i + r + 1) + c] - data[at(i - r) + c];
-        }
+      return out;
+    }
+    final stride = width * 4;
+    final sums = Int32List(stride);
+    for (var k = -r; k <= r; k++) {
+      final row = (k < 0 ? 0 : (k > height - 1 ? height - 1 : k)) * stride;
+      for (var i = 0; i < stride; i++) {
+        sums[i] += data[row + i];
+      }
+    }
+    for (var y = 0; y < height; y++) {
+      final row = y * stride;
+      final into = (y + r + 1 > height - 1 ? height - 1 : y + r + 1) * stride;
+      final from = (y - r < 0 ? 0 : y - r) * stride;
+      for (var i = 0; i < stride; i++) {
+        out[row + i] = average[sums[i]];
+        sums[i] += data[into + i] - data[from + i];
       }
     }
     return out;
@@ -1057,7 +1098,7 @@ class FilterEngine {
           }
           final neighborAvg = n > 0 ? sum / n : center.toDouble();
           final sharpened = center + amount * (center - neighborAvg);
-          result[idx + c] = sharpened.round().clamp(0, 255);
+          result[idx + c] = _byteOf(sharpened);
         }
       }
     }
@@ -1085,7 +1126,7 @@ class FilterEngine {
         final orig = data[i + c];
         final blur = blurred[i + c];
         final sharpened = orig + amount * (orig - blur);
-        result[i + c] = sharpened.round().clamp(0, 255);
+        result[i + c] = _byteOf(sharpened);
       }
     }
     return clampChannelsToAlpha(result);
@@ -1126,12 +1167,13 @@ class FilterEngine {
     final rowLength = width + 1;
     final ring = 2 * radius + 1;
     // Running totals along each of the last [ring] rows: weight × each
-    // premultiplied colour channel, weight × opacity, and opacity.
-    final totals = List.generate(5, (_) => Int32List(ring * rowLength));
+    // premultiplied colour channel, weight × opacity, and opacity, five to
+    // a column.
+    final totals = Int32List(ring * rowLength * 5);
     void buildRow(int y) {
-      final slot = (y % ring) * rowLength;
+      var at = (y % ring) * rowLength * 5 + 5;
       var r = 0, g = 0, b = 0, wa = 0, a = 0;
-      for (var x = 0; x < width; x++) {
+      for (var x = 0; x < width; x++, at += 5) {
         final p = y * width + x;
         final i = p * 4;
         final wt = weight[p];
@@ -1140,53 +1182,61 @@ class FilterEngine {
         b += data[i + 2] * wt;
         wa += data[i + 3] * wt;
         a += data[i + 3];
-        totals[0][slot + x + 1] = r;
-        totals[1][slot + x + 1] = g;
-        totals[2][slot + x + 1] = b;
-        totals[3][slot + x + 1] = wa;
-        totals[4][slot + x + 1] = a;
+        totals[at] = r;
+        totals[at + 1] = g;
+        totals[at + 2] = b;
+        totals[at + 3] = wa;
+        totals[at + 4] = a;
       }
     }
 
-    final halfWidths = [
+    final halfWidths = Int32List.fromList([
       for (var dy = -radius; dy <= radius; dy++)
         math.sqrt(radius * radius - dy * dy).floor(),
-    ];
+    ]);
+    final slots = Int32List(ring);
     final result = Uint8List(data.length);
     var built = -1;
-    final sums = List<int>.filled(5, 0);
     for (var y = 0; y < height; y++) {
       final last = math.min(height - 1, y + radius);
       while (built < last) {
         built++;
         buildRow(built);
       }
+      // The disc's rows inside the picture, and where their totals are.
+      final dyFrom = y - radius < 0 ? -y : -radius;
+      final dyTo = y + radius >= height ? height - 1 - y : radius;
+      for (var dy = dyFrom; dy <= dyTo; dy++) {
+        slots[dy + radius] = ((y + dy) % ring) * rowLength * 5;
+      }
       for (var x = 0; x < width; x++) {
-        sums.fillRange(0, 5, 0);
+        // Whole numbers: the same sums in any order.
+        var s0 = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0;
         var count = 0;
-        for (var dy = -radius; dy <= radius; dy++) {
-          final ny = y + dy;
-          if (ny < 0 || ny >= height) continue;
+        for (var dy = dyFrom; dy <= dyTo; dy++) {
           final half = halfWidths[dy + radius];
-          final x0 = math.max(0, x - half);
-          final x1 = math.min(width - 1, x + half);
+          final x0 = x - half < 0 ? 0 : x - half;
+          final x1 = x + half > width - 1 ? width - 1 : x + half;
           count += x1 - x0 + 1;
-          final slot = (ny % ring) * rowLength;
-          for (var c = 0; c < 5; c++) {
-            final row = totals[c];
-            sums[c] += row[slot + x1 + 1] - row[slot + x0];
-          }
+          final slot = slots[dy + radius];
+          final hi = slot + (x1 + 1) * 5;
+          final lo = slot + x0 * 5;
+          s0 += totals[hi] - totals[lo];
+          s1 += totals[hi + 1] - totals[lo + 1];
+          s2 += totals[hi + 2] - totals[lo + 2];
+          s3 += totals[hi + 3] - totals[lo + 3];
+          s4 += totals[hi + 4] - totals[lo + 4];
         }
-        final weightedAlpha = sums[3];
+        final weightedAlpha = s3;
         if (weightedAlpha == 0 || count == 0) continue;
         final o = (y * width + x) * 4;
-        final a = (sums[4] / count).round().clamp(0, 255);
+        final a = _byteOf(s4 / count);
         result[o + 3] = a;
         // The brightness-weighted straight colour, at the disc's opacity.
         final scale = a / weightedAlpha;
-        result[o] = math.min(a, (sums[0] * scale).round());
-        result[o + 1] = math.min(a, (sums[1] * scale).round());
-        result[o + 2] = math.min(a, (sums[2] * scale).round());
+        result[o] = math.min(a, roundHalfAway(s0 * scale));
+        result[o + 1] = math.min(a, roundHalfAway(s1 * scale));
+        result[o + 2] = math.min(a, roundHalfAway(s2 * scale));
       }
     }
     return result;
@@ -1274,21 +1324,26 @@ class FilterEngine {
     final corner = math.max(1.0, math.sqrt(cx * cx + cy * cy));
     final perPixel = radial / corner;
     final result = Uint8List(data.length);
-    // Bilinear sample of one channel and its alpha, clamped at the edges so
-    // a picture that fills the canvas doesn't gain a dark border.
-    (double, double) sample(double x, double y, int channel) {
-      final fx = x.clamp(0.0, width - 1.0), fy = y.clamp(0.0, height - 1.0);
+    final maxX = width - 1.0, maxY = height - 1.0;
+    // Bilinear sample of one channel and of the alpha, clamped at the edges
+    // so a picture that fills the canvas doesn't gain a dark border.
+    var sampled = 0.0, sampledAlpha = 0.0;
+    void sample(double x, double y, int channel) {
+      final fx = x < 0.0 ? 0.0 : (x > maxX ? maxX : x);
+      final fy = y < 0.0 ? 0.0 : (y > maxY ? maxY : y);
       final x0 = fx.floor(), y0 = fy.floor();
       final x1 = math.min(x0 + 1, width - 1), y1 = math.min(y0 + 1, height - 1);
       final tx = fx - x0, ty = fy - y0;
-      double at(int px, int py, int c) => data[(py * width + px) * 4 + c] * 1.0;
-      double mix(int c) {
-        final top = at(x0, y0, c) * (1 - tx) + at(x1, y0, c) * tx;
-        final bottom = at(x0, y1, c) * (1 - tx) + at(x1, y1, c) * tx;
-        return top * (1 - ty) + bottom * ty;
-      }
-
-      return (mix(channel), mix(3));
+      final i00 = (y0 * width + x0) * 4, i10 = (y0 * width + x1) * 4;
+      final i01 = (y1 * width + x0) * 4, i11 = (y1 * width + x1) * 4;
+      var top =
+          data[i00 + channel] * 1.0 * (1 - tx) + data[i10 + channel] * 1.0 * tx;
+      var bottom =
+          data[i01 + channel] * 1.0 * (1 - tx) + data[i11 + channel] * 1.0 * tx;
+      sampled = top * (1 - ty) + bottom * ty;
+      top = data[i00 + 3] * 1.0 * (1 - tx) + data[i10 + 3] * 1.0 * tx;
+      bottom = data[i01 + 3] * 1.0 * (1 - tx) + data[i11 + 3] * 1.0 * tx;
+      sampledAlpha = top * (1 - ty) + bottom * ty;
     }
 
     for (var y = 0; y < height; y++) {
@@ -1297,16 +1352,18 @@ class FilterEngine {
         final dx = shiftX + (x - cx) * perPixel;
         final dy = shiftY + (y - cy) * perPixel;
         // Red appears moved by (dx, dy): read it from the opposite side.
-        final (red, redAlpha) = sample(x - dx, y - dy, 0);
-        final (blue, blueAlpha) = sample(x + dx, y + dy, 2);
+        sample(x - dx, y - dy, 0);
+        final red = sampled, redAlpha = sampledAlpha;
+        sample(x + dx, y + dy, 2);
+        final blue = sampled, blueAlpha = sampledAlpha;
         final alpha = math.max(
           data[i + 3] * 1.0,
           math.max(redAlpha, blueAlpha),
         );
-        result[i] = red.round().clamp(0, 255);
+        result[i] = _byteOf(red);
         result[i + 1] = data[i + 1];
-        result[i + 2] = blue.round().clamp(0, 255);
-        result[i + 3] = alpha.round().clamp(0, 255);
+        result[i + 2] = _byteOf(blue);
+        result[i + 3] = _byteOf(alpha);
       }
     }
     return result;
@@ -1474,10 +1531,9 @@ class FilterEngine {
         // 元の色をアルファでブレンドして継ぎ目を目立たなくする。
         final maskAlpha = maskData[dstIdx + 3] / 255.0;
         for (int c = 0; c < 4; c++) {
-          result[dstIdx +
-              c] = (sample[c] * maskAlpha + data[dstIdx + c] * (1 - maskAlpha))
-              .round()
-              .clamp(0, 255);
+          result[dstIdx + c] = _byteOf(
+            sample[c] * maskAlpha + data[dstIdx + c] * (1 - maskAlpha),
+          );
         }
       }
     }
@@ -1509,7 +1565,7 @@ class FilterEngine {
     for (var c = 0; c < 4; c++) {
       final top = data[i00 + c] + (data[i10 + c] - data[i00 + c]) * tx;
       final bottom = data[i01 + c] + (data[i11 + c] - data[i01 + c]) * tx;
-      out[c] = (top + (bottom - top) * ty).round().clamp(0, 255);
+      out[c] = _byteOf(top + (bottom - top) * ty);
     }
   }
 
@@ -1565,7 +1621,7 @@ class FilterEngine {
   ) {
     final result = Uint8List.fromList(data);
     final rng = math.Random();
-    final s = (strength * 255).round().clamp(0, 255);
+    final s = _byteOf(strength * 255);
     for (int i = 0; i < result.length; i += 4) {
       if (result[i + 3] == 0) continue;
       final n = type == NoiseType.gaussian
@@ -1595,7 +1651,7 @@ class FilterEngine {
     final result = Uint8List.fromList(data);
     final blockSize = size.clamp(1, 8);
     final rng = math.Random(frameIndex * 7919 + 13);
-    final s = (strength * 255).round().clamp(0, 255);
+    final s = _byteOf(strength * 255);
     for (int by = 0; by < height; by += blockSize) {
       final y1 = math.min(by + blockSize, height);
       for (int bx = 0; bx < width; bx += blockSize) {
@@ -1658,15 +1714,13 @@ class FilterEngine {
           final rx = ((px + tx) % width + width) % width;
           final idx = (py * width + rx) * 4;
           if (result[idx + 3] == 0) continue;
-          result[idx] = (result[idx] + (220 - result[idx]) * alpha)
-              .round()
-              .clamp(0, 255);
-          result[idx + 1] = (result[idx + 1] + (235 - result[idx + 1]) * alpha)
-              .round()
-              .clamp(0, 255);
-          result[idx + 2] = (result[idx + 2] + (255 - result[idx + 2]) * alpha)
-              .round()
-              .clamp(0, 255);
+          result[idx] = _byteOf(result[idx] + (220 - result[idx]) * alpha);
+          result[idx + 1] = _byteOf(
+            result[idx + 1] + (235 - result[idx + 1]) * alpha,
+          );
+          result[idx + 2] = _byteOf(
+            result[idx + 2] + (255 - result[idx + 2]) * alpha,
+          );
         }
       }
     }
@@ -1749,9 +1803,7 @@ class FilterEngine {
       // Only the darker colour's share of an anti-aliased pixel darkens.
       for (var c = 0; c < 3; c++) {
         final ink = math.max(0.0, posterized[i + c] - lines.light[p * 3 + c]);
-        posterized[i + c] = (posterized[i + c] - ink * darkness * cover)
-            .round()
-            .clamp(0, 255);
+        posterized[i + c] = _byteOf(posterized[i + c] - ink * darkness * cover);
       }
     }
     return posterized;
@@ -1852,25 +1904,66 @@ class FilterEngine {
     final endY = (maxY + radius).clamp(0, height - 1);
     final r2 = radius * radius;
 
+    // A pixel is in the ring when a shape pixel lies within the disk of
+    // [radius] around it: on some row dy away, within that row's half
+    // width of the disk. Each row's distance to its nearest shape pixel
+    // (capped past the radius) answers that for the whole row at once.
+    final halfWidths = Int32List(2 * radius + 1);
+    for (var dy = -radius; dy <= radius; dy++) {
+      halfWidths[dy + radius] = math.sqrt(r2 - dy * dy).floor();
+    }
+    final far = radius + 1;
+    final spanWidth = endX - startX + 1;
+    final rowsFrom = (startY - radius).clamp(0, height - 1);
+    final rowsTo = (endY + radius).clamp(0, height - 1);
+    final nearest = Uint8List(
+      (rowsTo - rowsFrom + 1) * spanWidth,
+    ); // 0..far: distance along the row
+    for (var ny = rowsFrom; ny <= rowsTo; ny++) {
+      final rowBase = ny * width;
+      final at = (ny - rowsFrom) * spanWidth;
+      // The nearest shape pixel on the left, looking from radius beyond the
+      // span, then on the right.
+      var run = far;
+      for (var nx = math.max(0, startX - radius); nx < startX; nx++) {
+        run = data[(rowBase + nx) * 4 + 3] > alphaThreshold
+            ? 0
+            : (run < far ? run + 1 : far);
+      }
+      for (var x = startX; x <= endX; x++) {
+        run = data[(rowBase + x) * 4 + 3] > alphaThreshold
+            ? 0
+            : (run < far ? run + 1 : far);
+        nearest[at + x - startX] = run;
+      }
+      run = far;
+      for (var nx = math.min(width - 1, endX + radius); nx > endX; nx--) {
+        run = data[(rowBase + nx) * 4 + 3] > alphaThreshold
+            ? 0
+            : (run < far ? run + 1 : far);
+      }
+      for (var x = endX; x >= startX; x--) {
+        run = data[(rowBase + x) * 4 + 3] > alphaThreshold
+            ? 0
+            : (run < far ? run + 1 : far);
+        final o = at + x - startX;
+        if (run < nearest[o]) nearest[o] = run;
+      }
+    }
+
     for (int y = startY; y <= endY; y++) {
+      final dyFrom = math.max(-radius, rowsFrom - y);
+      final dyTo = math.min(radius, rowsTo - y);
       for (int x = startX; x <= endX; x++) {
         final idx = (y * width + x) * 4;
         if (data[idx + 3] > alphaThreshold) continue; // 形の中には付けない
         bool hit = false;
-        for (int dy = -radius; dy <= radius && !hit; dy++) {
-          final ny = y + dy;
-          if (ny < 0 || ny >= height) continue;
-          final dxMax2 = r2 - dy * dy;
-          if (dxMax2 < 0) continue;
-          final dxMax = math.sqrt(dxMax2).floor();
-          final rowBase = ny * width;
-          for (int dx = -dxMax; dx <= dxMax; dx++) {
-            final nx = x + dx;
-            if (nx < 0 || nx >= width) continue;
-            if (data[(rowBase + nx) * 4 + 3] > alphaThreshold) {
-              hit = true;
-              break;
-            }
+        final column = x - startX;
+        for (var dy = dyFrom; dy <= dyTo; dy++) {
+          if (nearest[(y + dy - rowsFrom) * spanWidth + column] <=
+              halfWidths[dy + radius]) {
+            hit = true;
+            break;
           }
         }
         if (hit) {
@@ -1949,35 +2042,24 @@ class FilterEngine {
         final mix = t * t * (3 - 2 * t) * amount;
         if (onlyOnPaint) {
           // Towards the colour at this pixel's own opacity (premultiplied).
-          result[idx] =
-              (data[idx] + (premultipliedChannel(cr, a) - data[idx]) * mix)
-                  .round()
-                  .clamp(0, 255);
-          result[idx + 1] =
-              (data[idx + 1] +
-                      (premultipliedChannel(cg, a) - data[idx + 1]) * mix)
-                  .round()
-                  .clamp(0, 255);
-          result[idx + 2] =
-              (data[idx + 2] +
-                      (premultipliedChannel(cb, a) - data[idx + 2]) * mix)
-                  .round()
-                  .clamp(0, 255);
+          result[idx] = _byteOf(
+            data[idx] + (premultipliedChannel(cr, a) - data[idx]) * mix,
+          );
+          result[idx + 1] = _byteOf(
+            data[idx + 1] + (premultipliedChannel(cg, a) - data[idx + 1]) * mix,
+          );
+          result[idx + 2] = _byteOf(
+            data[idx + 2] + (premultipliedChannel(cb, a) - data[idx + 2]) * mix,
+          );
           continue;
         }
         // The shadow, of opacity [mix], laid over the pixel (premultiplied
         // source-over): on transparent canvas it is the shadow itself.
         final keep = 1 - mix;
-        result[idx] = (cr * mix + data[idx] * keep).round().clamp(0, 255);
-        result[idx + 1] = (cg * mix + data[idx + 1] * keep).round().clamp(
-          0,
-          255,
-        );
-        result[idx + 2] = (cb * mix + data[idx + 2] * keep).round().clamp(
-          0,
-          255,
-        );
-        result[idx + 3] = (255 * mix + a * keep).round().clamp(0, 255);
+        result[idx] = _byteOf(cr * mix + data[idx] * keep);
+        result[idx + 1] = _byteOf(cg * mix + data[idx + 1] * keep);
+        result[idx + 2] = _byteOf(cb * mix + data[idx + 2] * keep);
+        result[idx + 3] = _byteOf(255 * mix + a * keep);
       }
     }
     return result;
@@ -1992,12 +2074,12 @@ class FilterEngine {
     for (int i = 0; i < data.length; i += 4) {
       if (data[i + 3] == 0) continue;
       final r = data[i], g = data[i + 1], b = data[i + 2];
-      final sr = (r * 0.393 + g * 0.769 + b * 0.189).clamp(0, 255);
-      final sg = (r * 0.349 + g * 0.686 + b * 0.168).clamp(0, 255);
-      final sb = (r * 0.272 + g * 0.534 + b * 0.131).clamp(0, 255);
-      result[i] = (r + (sr - r) * amount).round().clamp(0, 255);
-      result[i + 1] = (g + (sg - g) * amount).round().clamp(0, 255);
-      result[i + 2] = (b + (sb - b) * amount).round().clamp(0, 255);
+      final sr = _channelRange(r * 0.393 + g * 0.769 + b * 0.189);
+      final sg = _channelRange(r * 0.349 + g * 0.686 + b * 0.168);
+      final sb = _channelRange(r * 0.272 + g * 0.534 + b * 0.131);
+      result[i] = _byteOf(r + (sr - r) * amount);
+      result[i + 1] = _byteOf(g + (sg - g) * amount);
+      result[i + 2] = _byteOf(b + (sb - b) * amount);
     }
     return result;
   }
@@ -2023,12 +2105,12 @@ class FilterEngine {
       if (data[i + 3] == 0) continue;
       final r = data[i], g = data[i + 1], b = data[i + 2];
       final luminance = (r * 0.299 + g * 0.587 + b * 0.114) / 255.0;
-      final mr = (tr * luminance).round().clamp(0, 255);
-      final mg = (tg * luminance).round().clamp(0, 255);
-      final mb = (tb * luminance).round().clamp(0, 255);
-      result[i] = (r + (mr - r) * amount).round().clamp(0, 255);
-      result[i + 1] = (g + (mg - g) * amount).round().clamp(0, 255);
-      result[i + 2] = (b + (mb - b) * amount).round().clamp(0, 255);
+      final mr = _byteOf(tr * luminance);
+      final mg = _byteOf(tg * luminance);
+      final mb = _byteOf(tb * luminance);
+      result[i] = _byteOf(r + (mr - r) * amount);
+      result[i + 1] = _byteOf(g + (mg - g) * amount);
+      result[i + 2] = _byteOf(b + (mb - b) * amount);
     }
     return result;
   }
@@ -2219,10 +2301,7 @@ class FilterEngine {
     for (int i = 0; i < data.length; i += 4) {
       if (data[i + 3] == 0) continue;
       final r = data[i], g = data[i + 1], b = data[i + 2];
-      final luminanceIdx = ((r * 0.299 + g * 0.587 + b * 0.114)).round().clamp(
-        0,
-        255,
-      );
+      final luminanceIdx = _byteOf(r * 0.299 + g * 0.587 + b * 0.114);
       var mapped = cache[luminanceIdx];
       if (mapped == null) {
         final (mr, mg, mb) = _sampleGradient(stops, luminanceIdx / 255.0);
@@ -2430,9 +2509,9 @@ class FilterEngine {
         }
       }
       final mix = amount * (1 - (lines?[i ~/ 4] ?? 0));
-      result[i] = (r + (outR - r) * mix).round().clamp(0, 255);
-      result[i + 1] = (g + (outG - g) * mix).round().clamp(0, 255);
-      result[i + 2] = (b + (outB - b) * mix).round().clamp(0, 255);
+      result[i] = _byteOf(r + (outR - r) * mix);
+      result[i + 1] = _byteOf(g + (outG - g) * mix);
+      result[i + 2] = _byteOf(b + (outB - b) * mix);
     }
     return result;
   }
@@ -2476,11 +2555,7 @@ class FilterEngine {
     final newS = (s + saturationDelta).clamp(0.0, 1.0);
     final newL = (l + lightnessDelta).clamp(0.0, 1.0);
     final (nr, ng, nb) = _hslToRgb(h, newS, newL);
-    return (
-      (nr * 255).round().clamp(0, 255),
-      (ng * 255).round().clamp(0, 255),
-      (nb * 255).round().clamp(0, 255),
-    );
+    return (_byteOf(nr * 255), _byteOf(ng * 255), _byteOf(nb * 255));
   }
 
   (double, double, double) _rgbToHsl(double r, double g, double b) {
@@ -2598,9 +2673,9 @@ class FilterEngine {
         g = conF * (g - 128) + 128;
         b = conF * (b - 128) + 128;
       }
-      result[i] = premultipliedChannel(r.round().clamp(0, 255), alpha);
-      result[i + 1] = premultipliedChannel(g.round().clamp(0, 255), alpha);
-      result[i + 2] = premultipliedChannel(b.round().clamp(0, 255), alpha);
+      result[i] = premultipliedChannel(_byteOf(r), alpha);
+      result[i + 1] = premultipliedChannel(_byteOf(g), alpha);
+      result[i + 2] = premultipliedChannel(_byteOf(b), alpha);
     }
     return result;
   }
@@ -2649,9 +2724,9 @@ class FilterEngine {
       final dr = (work[i] - cyan.r).abs();
       final dg = (work[i + 1] - cyan.g).abs();
       final db = (work[i + 2] - cyan.b).abs();
-      work[i] = (work[i] * 0.89 + dr * 0.11).round().clamp(0, 255);
-      work[i + 1] = (work[i + 1] * 0.89 + dg * 0.11).round().clamp(0, 255);
-      work[i + 2] = (work[i + 2] * 0.89 + db * 0.11).round().clamp(0, 255);
+      work[i] = _byteOf(work[i] * 0.89 + dr * 0.11);
+      work[i + 1] = _byteOf(work[i + 1] * 0.89 + dg * 0.11);
+      work[i + 2] = _byteOf(work[i + 2] * 0.89 + db * 0.11);
     }
 
     // 2) Warm beige, Multiply, 85%.
@@ -2661,9 +2736,9 @@ class FilterEngine {
       final mr = work[i] * beige.r / 255.0;
       final mg = work[i + 1] * beige.g / 255.0;
       final mb = work[i + 2] * beige.b / 255.0;
-      work[i] = (work[i] * 0.15 + mr * 0.85).round().clamp(0, 255);
-      work[i + 1] = (work[i + 1] * 0.15 + mg * 0.85).round().clamp(0, 255);
-      work[i + 2] = (work[i + 2] * 0.15 + mb * 0.85).round().clamp(0, 255);
+      work[i] = _byteOf(work[i] * 0.15 + mr * 0.85);
+      work[i + 1] = _byteOf(work[i + 1] * 0.15 + mg * 0.85);
+      work[i + 2] = _byteOf(work[i + 2] * 0.15 + mb * 0.85);
     }
 
     // 3) Inverted merged copy at 5% to soften contrast.
@@ -2682,9 +2757,7 @@ class FilterEngine {
     for (var i = 0; i < work.length; i += 4) {
       if (work[i + 3] == 0) continue;
       for (var ch = 0; ch < 3; ch++) {
-        work[i + ch] = (work[i + ch] * 0.73 + glow[i + ch] * 0.27)
-            .round()
-            .clamp(0, 255);
+        work[i + ch] = _byteOf(work[i + ch] * 0.73 + glow[i + ch] * 0.27);
       }
     }
 
@@ -2699,9 +2772,9 @@ class FilterEngine {
         final sy = (y - 1).clamp(0, height - 1);
         final e = edges[sy * width + sx] / 255.0;
         final multiplier = 1.0 - e * 0.28;
-        edged[dst] = (work[dst] * multiplier).round().clamp(0, 255);
-        edged[dst + 1] = (work[dst + 1] * multiplier).round().clamp(0, 255);
-        edged[dst + 2] = (work[dst + 2] * multiplier).round().clamp(0, 255);
+        edged[dst] = _byteOf(work[dst] * multiplier);
+        edged[dst + 1] = _byteOf(work[dst + 1] * multiplier);
+        edged[dst + 2] = _byteOf(work[dst + 2] * multiplier);
       }
     }
     work = edged;
@@ -2775,7 +2848,7 @@ class FilterEngine {
         final overlay = base < 128
             ? (2 * base * grain / 255.0)
             : (255 - 2 * (255 - base) * (255 - grain) / 255.0);
-        work[i + ch] = (base * 0.25 + overlay * 0.75).round().clamp(0, 255);
+        work[i + ch] = _byteOf(base * 0.25 + overlay * 0.75);
       }
     }
 
@@ -2783,10 +2856,9 @@ class FilterEngine {
     for (var i = 0; i < result.length; i += 4) {
       if (original[i + 3] == 0) continue;
       for (var ch = 0; ch < 3; ch++) {
-        result[i + ch] =
-            (original[i + ch] + (work[i + ch] - original[i + ch]) * amount)
-                .round()
-                .clamp(0, 255);
+        result[i + ch] = _byteOf(
+          original[i + ch] + (work[i + ch] - original[i + ch]) * amount,
+        );
       }
     }
     return result;
@@ -2830,7 +2902,8 @@ class FilterEngine {
         for (var c = 0; c < 3; c++) {
           var f = c == x % 3 ? lift : dim;
           if (y.isEven) f *= gap;
-          result[i + c] = (result[i + c] * f).round().clamp(0, a);
+          final v = roundHalfAway(result[i + c] * f);
+          result[i + c] = v < 0 ? 0 : (v > a ? a : v);
         }
       }
     }
@@ -2882,9 +2955,9 @@ class FilterEngine {
     final fb = (fadeColor.b * 255).round();
     final t = progress.clamp(0.0, 1.0);
     for (int i = 0; i < result.length; i += 4) {
-      result[i] = (result[i] * (1 - t) + fr * t).round().clamp(0, 255);
-      result[i + 1] = (result[i + 1] * (1 - t) + fg * t).round().clamp(0, 255);
-      result[i + 2] = (result[i + 2] * (1 - t) + fb * t).round().clamp(0, 255);
+      result[i] = _byteOf(result[i] * (1 - t) + fr * t);
+      result[i + 1] = _byteOf(result[i + 1] * (1 - t) + fg * t);
+      result[i + 2] = _byteOf(result[i + 2] * (1 - t) + fb * t);
     }
     return result;
   }
@@ -2969,15 +3042,9 @@ class FilterEngine {
     for (var i = 0; i < out.length; i += 4) {
       final a = ink[i + 3] / 255.0;
       if (a <= 0) continue;
-      out[i] = (ink[i] * a + out[i] * (1 - a)).round().clamp(0, 255);
-      out[i + 1] = (ink[i + 1] * a + out[i + 1] * (1 - a)).round().clamp(
-        0,
-        255,
-      );
-      out[i + 2] = (ink[i + 2] * a + out[i + 2] * (1 - a)).round().clamp(
-        0,
-        255,
-      );
+      out[i] = _byteOf(ink[i] * a + out[i] * (1 - a));
+      out[i + 1] = _byteOf(ink[i + 1] * a + out[i + 1] * (1 - a));
+      out[i + 2] = _byteOf(ink[i + 2] * a + out[i + 2] * (1 - a));
       out[i + 3] = math.max(out[i + 3], ink[i + 3]);
     }
     return out;
@@ -3058,6 +3125,7 @@ class FilterEngine {
     return kernel.map((v) => v / sum).toList();
   }
 
+  /// [kernel] along each row (edges extend the outermost pixel).
   Uint8List _convolveH(
     Uint8List data,
     int width,
@@ -3065,28 +3133,68 @@ class FilterEngine {
     List<double> kernel,
   ) {
     final radius = kernel.length ~/ 2;
+    final taps = kernel.length;
+    final weights = Float64List.fromList(kernel);
+    final flat = _flatSums(weights);
+    final words = _pixelWords(data);
+    // Where the run of identical pixels each pixel is in starts, along the
+    // row: a window inside one run is a flat window.
+    final runStart = Int32List(width);
     final result = Uint8List(data.length);
     for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-        double r = 0, g = 0, b = 0, a = 0;
-        for (int k = 0; k < kernel.length; k++) {
-          final nx = (x + k - radius).clamp(0, width - 1);
-          final idx = (y * width + nx) * 4;
-          r += data[idx] * kernel[k];
-          g += data[idx + 1] * kernel[k];
-          b += data[idx + 2] * kernel[k];
-          a += data[idx + 3] * kernel[k];
+      final row = y * width;
+      if (words != null) {
+        for (int x = 1; x < width; x++) {
+          runStart[x] = words[row + x] == words[row + x - 1]
+              ? runStart[x - 1]
+              : x;
         }
-        final idx = (y * width + x) * 4;
-        result[idx] = r.round().clamp(0, 255);
-        result[idx + 1] = g.round().clamp(0, 255);
-        result[idx + 2] = b.round().clamp(0, 255);
-        result[idx + 3] = a.round().clamp(0, 255);
+      }
+      for (int x = 0; x < width; x++) {
+        final idx = (row + x) * 4;
+        if (words != null &&
+            runStart[x + radius < width ? x + radius : width - 1] <=
+                (x > radius ? x - radius : 0)) {
+          result[idx] = flat[data[idx]];
+          result[idx + 1] = flat[data[idx + 1]];
+          result[idx + 2] = flat[data[idx + 2]];
+          result[idx + 3] = flat[data[idx + 3]];
+          continue;
+        }
+        double r = 0, g = 0, b = 0, a = 0;
+        if (x >= radius && x + radius < width) {
+          // Inside the row: the taps are the pixels in a run.
+          var at = (row + x - radius) * 4;
+          for (int k = 0; k < taps; k++, at += 4) {
+            final w = weights[k];
+            r += data[at] * w;
+            g += data[at + 1] * w;
+            b += data[at + 2] * w;
+            a += data[at + 3] * w;
+          }
+        } else {
+          for (int k = 0; k < taps; k++) {
+            var nx = x + k - radius;
+            if (nx < 0) nx = 0;
+            if (nx > width - 1) nx = width - 1;
+            final at = (row + nx) * 4;
+            final w = weights[k];
+            r += data[at] * w;
+            g += data[at + 1] * w;
+            b += data[at + 2] * w;
+            a += data[at + 3] * w;
+          }
+        }
+        result[idx] = _byteOf(r);
+        result[idx + 1] = _byteOf(g);
+        result[idx + 2] = _byteOf(b);
+        result[idx + 3] = _byteOf(a);
       }
     }
     return result;
   }
 
+  /// [kernel] down each column (edges extend the outermost pixel).
   Uint8List _convolveV(
     Uint8List data,
     int width,
@@ -3094,52 +3202,107 @@ class FilterEngine {
     List<double> kernel,
   ) {
     final radius = kernel.length ~/ 2;
+    final taps = kernel.length;
+    final weights = Float64List.fromList(kernel);
+    final flat = _flatSums(weights);
+    final words = _pixelWords(data);
+    final rows = Int32List(taps);
+    // Where the run of identical pixels down each column starts, at the
+    // lowest row the window reaches.
+    final runStart = Int32List(width);
+    var lead = 0;
     final result = Uint8List(data.length);
+    final stride = width * 4;
     for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-        double r = 0, g = 0, b = 0, a = 0;
-        for (int k = 0; k < kernel.length; k++) {
-          final ny = (y + k - radius).clamp(0, height - 1);
-          final idx = (ny * width + x) * 4;
-          r += data[idx] * kernel[k];
-          g += data[idx + 1] * kernel[k];
-          b += data[idx + 2] * kernel[k];
-          a += data[idx + 3] * kernel[k];
+      for (int k = 0; k < taps; k++) {
+        var ny = y + k - radius;
+        if (ny < 0) ny = 0;
+        if (ny > height - 1) ny = height - 1;
+        rows[k] = ny * stride;
+      }
+      final lowest = y + radius < height ? y + radius : height - 1;
+      final highest = y > radius ? y - radius : 0;
+      if (words != null) {
+        while (lead < lowest) {
+          lead++;
+          final below = lead * width;
+          final above = below - width;
+          for (int x = 0; x < width; x++) {
+            if (words[below + x] != words[above + x]) runStart[x] = lead;
+          }
         }
-        final idx = (y * width + x) * 4;
-        result[idx] = r.round().clamp(0, 255);
-        result[idx + 1] = g.round().clamp(0, 255);
-        result[idx + 2] = b.round().clamp(0, 255);
-        result[idx + 3] = a.round().clamp(0, 255);
+      }
+      final out = y * stride;
+      for (int x = 0; x < stride; x += 4) {
+        if (words != null && runStart[x >> 2] <= highest) {
+          final at = out + x;
+          result[at] = flat[data[at]];
+          result[at + 1] = flat[data[at + 1]];
+          result[at + 2] = flat[data[at + 2]];
+          result[at + 3] = flat[data[at + 3]];
+          continue;
+        }
+        double r = 0, g = 0, b = 0, a = 0;
+        for (int k = 0; k < taps; k++) {
+          final idx = rows[k] + x;
+          final w = weights[k];
+          r += data[idx] * w;
+          g += data[idx + 1] * w;
+          b += data[idx + 2] * w;
+          a += data[idx + 3] * w;
+        }
+        result[out + x] = _byteOf(r);
+        result[out + x + 1] = _byteOf(g);
+        result[out + x + 2] = _byteOf(b);
+        result[out + x + 3] = _byteOf(a);
       }
     }
     return result;
   }
 
+  /// What a convolution with [weights] gives where every tap holds the
+  /// same value, for each value: the same sum, term by term, as any window
+  /// of that value.
+  static Uint8List _flatSums(Float64List weights) {
+    final flat = Uint8List(256);
+    for (var v = 0; v < 256; v++) {
+      double sum = 0;
+      for (var k = 0; k < weights.length; k++) {
+        sum += v * weights[k];
+      }
+      flat[v] = _byteOf(sum);
+    }
+    return flat;
+  }
+
+  /// [data]'s pixels as 32-bit words (to tell identical pixels apart in one
+  /// comparison), or null when its bytes do not start on a word.
+  static Uint32List? _pixelWords(Uint8List data) =>
+      data.offsetInBytes % 4 == 0 && data.length % 4 == 0
+      ? data.buffer.asUint32List(data.offsetInBytes, data.length ~/ 4)
+      : null;
+
   List<int> _sobelEdge(Uint8List data, int width, int height) {
-    final result = List<int>.filled(width * height, 0);
+    final result = Int32List(width * height);
+    if (width < 3 || height < 3) return result;
+    // Each pixel's grey, once (every 3×3 around it uses the same value).
+    final grey = Int32List(width * height);
+    for (var p = 0; p < grey.length; p++) {
+      final idx = p * 4;
+      grey[p] = roundHalfAway(
+        data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114,
+      );
+    }
     for (int y = 1; y < height - 1; y++) {
       for (int x = 1; x < width - 1; x++) {
-        int gx = 0, gy = 0;
-        const kx = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
-        const ky = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
-        for (int ky2 = -1; ky2 <= 1; ky2++) {
-          for (int kx2 = -1; kx2 <= 1; kx2++) {
-            final idx = ((y + ky2) * width + (x + kx2)) * 4;
-            final gray =
-                (data[idx] * 0.299 +
-                        data[idx + 1] * 0.587 +
-                        data[idx + 2] * 0.114)
-                    .round();
-            final ki = (ky2 + 1) * 3 + (kx2 + 1);
-            gx += gray * kx[ki];
-            gy += gray * ky[ki];
-          }
-        }
-        result[y * width + x] = math
-            .sqrt(gx * gx + gy * gy)
-            .round()
-            .clamp(0, 255);
+        final m = y * width + x;
+        final a = m - width, b = m + width;
+        final g00 = grey[a - 1], g01 = grey[a], g02 = grey[a + 1];
+        final g10 = grey[m - 1], g12 = grey[m + 1];
+        final g20 = grey[b - 1], g21 = grey[b], g22 = grey[b + 1];
+        final gx = -g00 + g02 - 2 * g10 + 2 * g12 - g20 + g22;
+        final gy = -g00 - 2 * g01 - g02 + g20 + 2 * g21 + g22;
+        result[m] = _byteOf(math.sqrt(gx * gx + gy * gy));
       }
     }
     return result;

@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'thinning.dart';
+
 /// 墨溜まり: where lines meet at an angle no wider than [maxAngleDegrees]
 /// (by default 90: a V, a fork, the narrow side of a crossing, a T, a square
 /// corner), ink pools inside that angle; wider ones get none. Along each of the two lines, on
@@ -507,54 +509,40 @@ class InkPoolEngine {
     bool lwCorrection = false,
   }) {
     final image = Uint8List.fromList(mask);
-    var foreground = <int>[
-      for (var p = 0; p < image.length; p++)
-        if (image[p] != 0) p,
-    ];
-    final remove = <int>[];
-    for (var iteration = 0; iteration < 60; iteration++) {
-      var changed = false;
-      for (var pass = 0; pass < 2; pass++) {
-        remove.clear();
-        for (final p in foreground) {
-          if (image[p] == 0) continue;
-          final x = p % width;
-          final y = p ~/ width;
-          if (x == 0 || y == 0 || x == width - 1 || y == height - 1) continue;
-          final p2 = image[p - width];
-          final p3 = image[p - width + 1];
-          final p4 = image[p + 1];
-          final p5 = image[p + width + 1];
-          final p6 = image[p + width];
-          final p7 = image[p + width - 1];
-          final p8 = image[p - 1];
-          final p9 = image[p - width - 1];
-          final neighbours = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
-          if (neighbours < (lwCorrection ? 3 : 2) || neighbours > 6) continue;
-          final ring = [p2, p3, p4, p5, p6, p7, p8, p9, p2];
-          var transitions = 0;
-          for (var k = 0; k < 8; k++) {
-            if (ring[k] == 0 && ring[k + 1] != 0) transitions++;
-          }
-          if (transitions != 1) continue;
-          if (pass == 0) {
-            if (p2 * p4 * p6 != 0 || p4 * p6 * p8 != 0) continue;
-          } else {
-            if (p2 * p4 * p8 != 0 || p2 * p6 * p8 != 0) continue;
-          }
-          remove.add(p);
+    final fewest = lwCorrection ? 3 : 2;
+    thinTwoPass(
+      image,
+      width,
+      height,
+      maxRounds: 60,
+      removable: (p, pass) {
+        final p2 = image[p - width];
+        final p3 = image[p - width + 1];
+        final p4 = image[p + 1];
+        final p5 = image[p + width + 1];
+        final p6 = image[p + width];
+        final p7 = image[p + width - 1];
+        final p8 = image[p - 1];
+        final p9 = image[p - width - 1];
+        final neighbours = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+        if (neighbours < fewest || neighbours > 6) return false;
+        // Background-to-ink steps going round the neighbours.
+        final transitions =
+            (p2 == 0 && p3 != 0 ? 1 : 0) +
+            (p3 == 0 && p4 != 0 ? 1 : 0) +
+            (p4 == 0 && p5 != 0 ? 1 : 0) +
+            (p5 == 0 && p6 != 0 ? 1 : 0) +
+            (p6 == 0 && p7 != 0 ? 1 : 0) +
+            (p7 == 0 && p8 != 0 ? 1 : 0) +
+            (p8 == 0 && p9 != 0 ? 1 : 0) +
+            (p9 == 0 && p2 != 0 ? 1 : 0);
+        if (transitions != 1) return false;
+        if (pass == 0) {
+          return p2 * p4 * p6 == 0 && p4 * p6 * p8 == 0;
         }
-        for (final p in remove) {
-          image[p] = 0;
-        }
-        if (remove.isNotEmpty) changed = true;
-      }
-      if (!changed) break;
-      foreground = [
-        for (final p in foreground)
-          if (image[p] != 0) p,
-      ];
-    }
+        return p2 * p4 * p8 == 0 && p2 * p6 * p8 == 0;
+      },
+    );
     return image;
   }
 
@@ -563,61 +551,39 @@ class InkPoolEngine {
   /// which thins a diagonal staircase without eating it).
   static Uint8List _thinGuoHall(Uint8List input, int width, int height) {
     final image = Uint8List.fromList(input);
-    var foreground = <int>[
-      for (var y = 1; y < height - 1; y++)
-        for (var x = 1; x < width - 1; x++)
-          if (image[y * width + x] != 0) y * width + x,
-    ];
-    final remove = <int>[];
-    var changed = true;
-    while (changed) {
-      changed = false;
-      for (var pass = 0; pass < 2; pass++) {
-        remove.clear();
-        for (final p in foreground) {
-          if (image[p] == 0) continue;
-          final p2 = image[p - width] != 0 ? 1 : 0;
-          final p3 = image[p - width + 1] != 0 ? 1 : 0;
-          final p4 = image[p + 1] != 0 ? 1 : 0;
-          final p5 = image[p + width + 1] != 0 ? 1 : 0;
-          final p6 = image[p + width] != 0 ? 1 : 0;
-          final p7 = image[p + width - 1] != 0 ? 1 : 0;
-          final p8 = image[p - 1] != 0 ? 1 : 0;
-          final p9 = image[p - width - 1] != 0 ? 1 : 0;
-          // One run of neighbours (the pixel joins nothing else together).
-          final runs =
-              (p2 == 0 && (p3 | p4) != 0 ? 1 : 0) +
-              (p4 == 0 && (p5 | p6) != 0 ? 1 : 0) +
-              (p6 == 0 && (p7 | p8) != 0 ? 1 : 0) +
-              (p8 == 0 && (p9 | p2) != 0 ? 1 : 0);
-          if (runs != 1) continue;
-          // Not a line's end, and on the edge of the ink.
-          final n1 = (p9 | p2) + (p3 | p4) + (p5 | p6) + (p7 | p8);
-          final n2 = (p2 | p3) + (p4 | p5) + (p6 | p7) + (p8 | p9);
-          final count = math.min(n1, n2);
-          if (count < 2 || count > 3) continue;
-          // The first pass peels the south-east side, the second the
-          // north-west, so a line keeps its middle.
-          final side = pass == 0
-              ? (p6 | p7 | (1 - p9)) & p8
-              : (p2 | p3 | (1 - p5)) & p4;
-          if (side != 0) continue;
-          remove.add(p);
-        }
-        if (remove.isNotEmpty) {
-          changed = true;
-          for (final p in remove) {
-            image[p] = 0;
-          }
-        }
-      }
-      if (changed) {
-        foreground = [
-          for (final p in foreground)
-            if (image[p] != 0) p,
-        ];
-      }
-    }
+    thinTwoPass(
+      image,
+      width,
+      height,
+      removable: (p, pass) {
+        final p2 = image[p - width] != 0 ? 1 : 0;
+        final p3 = image[p - width + 1] != 0 ? 1 : 0;
+        final p4 = image[p + 1] != 0 ? 1 : 0;
+        final p5 = image[p + width + 1] != 0 ? 1 : 0;
+        final p6 = image[p + width] != 0 ? 1 : 0;
+        final p7 = image[p + width - 1] != 0 ? 1 : 0;
+        final p8 = image[p - 1] != 0 ? 1 : 0;
+        final p9 = image[p - width - 1] != 0 ? 1 : 0;
+        // One run of neighbours (the pixel joins nothing else together).
+        final runs =
+            (p2 == 0 && (p3 | p4) != 0 ? 1 : 0) +
+            (p4 == 0 && (p5 | p6) != 0 ? 1 : 0) +
+            (p6 == 0 && (p7 | p8) != 0 ? 1 : 0) +
+            (p8 == 0 && (p9 | p2) != 0 ? 1 : 0);
+        if (runs != 1) return false;
+        // Not a line's end, and on the edge of the ink.
+        final n1 = (p9 | p2) + (p3 | p4) + (p5 | p6) + (p7 | p8);
+        final n2 = (p2 | p3) + (p4 | p5) + (p6 | p7) + (p8 | p9);
+        final count = math.min(n1, n2);
+        if (count < 2 || count > 3) return false;
+        // The first pass peels the south-east side, the second the
+        // north-west, so a line keeps its middle.
+        final side = pass == 0
+            ? (p6 | p7 | (1 - p9)) & p8
+            : (p2 | p3 | (1 - p5)) & p4;
+        return side == 0;
+      },
+    );
     return image;
   }
 

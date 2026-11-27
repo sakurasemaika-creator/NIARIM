@@ -7,6 +7,7 @@ import '../models/filter_def.dart';
 import '../models/layer.dart';
 import 'blend_math.dart';
 import 'premultiplied.dart';
+import 'tile_manager.dart' show byteDoubles, roundHalfAway;
 
 /// 背景馴染ませ v2 の解析結果。画像認識やネットワーク処理には頼らず、
 /// 対象シルエット周囲の画素だけから環境光を推定する。
@@ -142,6 +143,14 @@ class _SectorAccumulator {
 /// 合成モードを重ねて統合したときに見え方が変わることはない。
 ///
 /// すべて決定論的な画素処理で、AI画像認識・通信は不要。
+/// `value.round().clamp(0, 255)` for a finite [value], without the native
+/// call [double.round] makes (the same integer).
+@pragma('vm:prefer-inline')
+int _byteOf(double value) {
+  final v = roundHalfAway(value);
+  return v < 0 ? 0 : (v > 255 ? 255 : v);
+}
+
 class BackgroundAcclimationEngine {
   static const int sectorCount = 16;
 
@@ -814,9 +823,9 @@ class BackgroundAcclimationEngine {
           }
         }
 
-        final nr = r.round().clamp(0, 255);
-        final ng = g.round().clamp(0, 255);
-        final nb = b.round().clamp(0, 255);
+        final nr = _byteOf(r);
+        final ng = _byteOf(g);
+        final nb = _byteOf(b);
         // A pixel left as it was keeps its exact bytes.
         if (nr == subject[idx] &&
             ng == subject[idx + 1] &&
@@ -1032,25 +1041,30 @@ class BackgroundAcclimationEngine {
     final box = (radius / 2).round();
     if (box <= 0 || width <= 0 || height <= 0) return background;
     var work = Float64List(width * height * 4);
+    final doubles = byteDoubles;
     for (var i = 0; i < work.length; i++) {
-      work[i] = background[i].toDouble();
+      work[i] = doubles[background[i]];
     }
     var next = Float64List(work.length);
-    void pass(int length, int lines, int Function(int line, int at) index) {
-      final size = box * 2 + 1;
-      for (var line = 0; line < lines; line++) {
+    final size = box * 2 + 1;
+    // Running box sums, each one's terms added in the same order as along
+    // its own row or column (so the same values), the four channels of a
+    // row side by side, and the columns all at once a row at a time (which
+    // reads the picture in order instead of a column at a time).
+    void rows() {
+      for (var y = 0; y < height; y++) {
+        final row = y * width * 4;
         for (var c = 0; c < 4; c++) {
           var sum = 0.0;
           for (var k = -box; k <= box; k++) {
-            sum += work[index(line, k.clamp(0, length - 1)) * 4 + c];
+            final x = k < 0 ? 0 : (k > width - 1 ? width - 1 : k);
+            sum += work[row + x * 4 + c];
           }
-          for (var at = 0; at < length; at++) {
-            next[index(line, at) * 4 + c] = sum / size;
-            final out = (at - box).clamp(0, length - 1);
-            final into = (at + box + 1).clamp(0, length - 1);
-            sum +=
-                work[index(line, into) * 4 + c] -
-                work[index(line, out) * 4 + c];
+          for (var x = 0; x < width; x++) {
+            next[row + x * 4 + c] = sum / size;
+            final out = x - box < 0 ? 0 : x - box;
+            final into = x + box + 1 > width - 1 ? width - 1 : x + box + 1;
+            sum += work[row + into * 4 + c] - work[row + out * 4 + c];
           }
         }
       }
@@ -1059,13 +1073,39 @@ class BackgroundAcclimationEngine {
       next = swap;
     }
 
+    final sums = Float64List(width * 4);
+    void columns() {
+      final stride = width * 4;
+      sums.fillRange(0, stride, 0);
+      for (var k = -box; k <= box; k++) {
+        final y = k < 0 ? 0 : (k > height - 1 ? height - 1 : k);
+        final row = y * stride;
+        for (var i = 0; i < stride; i++) {
+          sums[i] += work[row + i];
+        }
+      }
+      for (var y = 0; y < height; y++) {
+        final row = y * stride;
+        final out = (y - box < 0 ? 0 : y - box) * stride;
+        final into =
+            (y + box + 1 > height - 1 ? height - 1 : y + box + 1) * stride;
+        for (var i = 0; i < stride; i++) {
+          next[row + i] = sums[i] / size;
+          sums[i] += work[into + i] - work[out + i];
+        }
+      }
+      final swap = work;
+      work = next;
+      next = swap;
+    }
+
     for (var round = 0; round < 2; round++) {
-      pass(width, height, (y, x) => y * width + x);
-      pass(height, width, (x, y) => y * width + x);
+      rows();
+      columns();
     }
     final out = Uint8List(background.length);
     for (var i = 0; i < out.length; i++) {
-      out[i] = work[i].round().clamp(0, 255);
+      out[i] = _byteOf(work[i]);
     }
     return out;
   }

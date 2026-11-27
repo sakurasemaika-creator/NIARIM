@@ -16,6 +16,7 @@ import 'export_filename.dart';
 import 'filter_engine.dart' show EffectFilterType;
 import 'frame_png.dart';
 import 'gif_palette.dart';
+import 'gif_writer.dart';
 import '../engine/layer_range_resolver.dart';
 import '../engine/timeline_stack.dart';
 import '../engine/tile_manager.dart';
@@ -130,26 +131,12 @@ class ExportTiming {
 /// (39% of a 480×360 frame). The octree method keeps the frame's own colours
 /// exactly and, without dithering, flat areas stay flat.
 ///
-/// Each frame is turned into a palette image first by [GifPaletteMapper]
-/// (the octree method on the frame's bytes; the image package's own octree
-/// quantizer is slow and sends merged colours to the wrong palette entry).
-img.GifEncoder newExportGifEncoder() => _ExportGifEncoder();
-
-class _ExportGifEncoder extends img.GifEncoder {
-  _ExportGifEncoder()
-    : super(
-        quantizerType: img.QuantizerType.octree,
-        dither: img.DitherKernel.none,
-      );
-
-  final GifPaletteMapper _palette = GifPaletteMapper();
-
-  @override
-  void addFrame(img.Image image, {int? duration}) => super.addFrame(
-    image.hasPalette ? image : _palette.paletteFrame(image),
-    duration: duration,
-  );
-}
+/// Each frame is turned into palette indices by [GifPaletteMapper] (the
+/// octree method on the frame's bytes; the image package's own octree
+/// quantizer is slow and sends merged colours to the wrong palette entry),
+/// and [ExportGifWriter] writes the file the image package's `GifEncoder`
+/// writes for those palette frames, byte for byte.
+ExportGifWriter newExportGifEncoder() => ExportGifWriter();
 
 Uint8List _encodeGifFrames(
   ({
@@ -173,15 +160,10 @@ Uint8List _encodeGifFrames(
         throw const FileSystemException('Incomplete GIF frame data');
       }
       logo?.stampOntoBytes(rgba, width, height, 4);
-      final frame = img.Image.fromBytes(
-        width: width,
-        height: height,
-        bytes: rgba.buffer,
-        bytesOffset: rgba.offsetInBytes,
-        numChannels: 4,
-      );
-      encoder.addFrame(
-        frame,
+      encoder.addRgbaFrame(
+        rgba,
+        width,
+        height,
         duration: frameCount == 1 ? null : timing.gifDelayMs(index + 1) ~/ 10,
       );
     }

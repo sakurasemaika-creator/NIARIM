@@ -150,6 +150,24 @@ Float32List _boxBlur3(Float32List src, int width, int height) {
   final out = Float32List(src.length);
   for (var y = 0; y < height; y++) {
     for (var x = 0; x < width; x++) {
+      if (x > 0 && y > 0 && x < width - 1 && y < height - 1) {
+        // Inside: all nine, added in the same order as below.
+        final above = (y - 1) * width + x;
+        final row = y * width + x;
+        final below = (y + 1) * width + x;
+        var sum = 0.0;
+        sum += src[above - 1];
+        sum += src[above];
+        sum += src[above + 1];
+        sum += src[row - 1];
+        sum += src[row];
+        sum += src[row + 1];
+        sum += src[below - 1];
+        sum += src[below];
+        sum += src[below + 1];
+        out[row] = sum / 9;
+        continue;
+      }
       var sum = 0.0;
       var count = 0;
       for (var dy = -1; dy <= 1; dy++) {
@@ -183,45 +201,37 @@ Float32List _softColours(Uint8List data, int width, int height) {
   // the same sums as adding up the 3×3 directly.
   final rows = List.generate(3, (_) => Int32List(width * 4));
   void sumRow(int y, Int32List row) {
-    final base = y * width;
-    for (var x = 0; x < width; x++) {
-      var r = 0, g = 0, b = 0, a = 0;
-      for (var xx = x - 1; xx <= x + 1; xx++) {
-        if (xx < 0 || xx >= width) continue;
-        final p = (base + xx) * 4;
-        r += data[p];
-        g += data[p + 1];
-        b += data[p + 2];
-        a += data[p + 3];
-      }
-      final o = x * 4;
-      row[o] = r;
-      row[o + 1] = g;
-      row[o + 2] = b;
-      row[o + 3] = a;
+    final base = y * width * 4;
+    for (var o = 0; o < width * 4; o++) {
+      // A channel of the pixel and its left and right neighbours (the
+      // ones inside the row).
+      final x = o >> 2;
+      var sum = data[base + o];
+      if (x > 0) sum += data[base + o - 4];
+      if (x < width - 1) sum += data[base + o + 4];
+      row[o] = sum;
     }
   }
 
   if (height > 0) sumRow(0, rows[0]);
   if (height > 1) sumRow(1, rows[1]);
+  final none = Int32List(width * 4);
   for (var y = 0; y < height; y++) {
     if (y + 1 < height && y >= 1) sumRow(y + 1, rows[(y + 1) % 3]);
+    final above = y >= 1 ? rows[(y - 1) % 3] : none;
+    final middle = rows[y % 3];
+    final below = y + 1 < height ? rows[(y + 1) % 3] : none;
     for (var x = 0; x < width; x++) {
-      var r = 0, g = 0, b = 0, weight = 0;
-      for (var yy = y - 1; yy <= y + 1; yy++) {
-        if (yy < 0 || yy >= height) continue;
-        final row = rows[yy % 3];
-        final o = x * 4;
-        r += row[o];
-        g += row[o + 1];
-        b += row[o + 2];
-        weight += row[o + 3];
-      }
-      final o = (y * width + x) * 3;
+      final o = x * 4;
+      final r = above[o] + middle[o] + below[o];
+      final g = above[o + 1] + middle[o + 1] + below[o + 1];
+      final b = above[o + 2] + middle[o + 2] + below[o + 2];
+      final weight = above[o + 3] + middle[o + 3] + below[o + 3];
+      final p = (y * width + x) * 3;
       if (weight > 0) {
-        soft[o] = r * 255 / weight;
-        soft[o + 1] = g * 255 / weight;
-        soft[o + 2] = b * 255 / weight;
+        soft[p] = r * 255 / weight;
+        soft[p + 1] = g * 255 / weight;
+        soft[p + 2] = b * 255 / weight;
       }
     }
   }
@@ -261,12 +271,13 @@ Float64List _distanceToSeeds(Uint8List seeds, int width, int height) {
     z[0] = -far;
     z[1] = far;
     for (var q = 1; q < count; q++) {
-      double meet(int at) =>
-          ((f[q] + q * q) - (f[at] + at * at)) / (2 * q - 2 * at);
-      var s = meet(v[k]);
+      final fq = f[q] + q * q;
+      var at = v[k];
+      var s = (fq - (f[at] + at * at)) / (2 * q - 2 * at);
       while (s <= z[k]) {
         k--;
-        s = meet(v[k]);
+        at = v[k];
+        s = (fq - (f[at] + at * at)) / (2 * q - 2 * at);
       }
       k++;
       v[k] = q;
@@ -283,13 +294,43 @@ Float64List _distanceToSeeds(Uint8List seeds, int width, int height) {
     }
   }
 
-  for (var x = 0; x < width; x++) {
+  // Down the columns, a few side by side (each read a row at a time, not a
+  // column at a time). A column without a seed gives what every such
+  // column gives.
+  const block = 8;
+  final columns = Float64List(block * height);
+  Float64List? seedless;
+  for (var x0 = 0; x0 < width; x0 += block) {
+    final count = math.min(block, width - x0);
     for (var y = 0; y < height; y++) {
-      f[y] = grid[y * width + x];
+      final row = y * width + x0;
+      for (var c = 0; c < count; c++) {
+        columns[c * height + y] = grid[row + c];
+      }
     }
-    pass(height);
+    for (var c = 0; c < count; c++) {
+      final at = c * height;
+      var seeded = false;
+      for (var y = 0; y < height; y++) {
+        if (columns[at + y] != far) {
+          seeded = true;
+          break;
+        }
+      }
+      if (!seeded && seedless != null) {
+        columns.setRange(at, at + height, seedless);
+        continue;
+      }
+      f.setRange(0, height, columns, at);
+      pass(height);
+      columns.setRange(at, at + height, d);
+      if (!seeded) seedless = Float64List.fromList(d.sublist(0, height));
+    }
     for (var y = 0; y < height; y++) {
-      grid[y * width + x] = d[y];
+      final row = y * width + x0;
+      for (var c = 0; c < count; c++) {
+        grid[row + c] = columns[c * height + y];
+      }
     }
   }
   for (var y = 0; y < height; y++) {
@@ -305,35 +346,46 @@ Float64List _distanceToSeeds(Uint8List seeds, int width, int height) {
 }
 
 /// Three box blurs approximating a Gaussian of [sigma] pixels.
+///
+/// Each row's and each column's running sum adds its terms in the same
+/// order as one sum at a time would; the columns are run side by side, a
+/// row at a time (reading the picture in order instead of down each
+/// column).
 Float32List _blur(Float32List src, int width, int height, double sigma) {
   final radius = math.max(1, (sigma - 0.3).round());
   final out = Float32List.fromList(src);
   final tmp = Float32List(width * height);
   final scale = 1 / (2 * radius + 1);
+  final sums = Float64List(width);
   for (var pass = 0; pass < 3; pass++) {
     for (var y = 0; y < height; y++) {
       final row = y * width;
       var sum = 0.0;
       for (var k = -radius; k <= radius; k++) {
-        sum += out[row + k.clamp(0, width - 1)];
+        sum += out[row + (k < 0 ? 0 : (k > width - 1 ? width - 1 : k))];
       }
       for (var x = 0; x < width; x++) {
         tmp[row + x] = sum * scale;
         sum +=
-            out[row + math.min(width - 1, x + radius + 1)] -
-            out[row + math.max(0, x - radius)];
+            out[row + (x + radius + 1 < width ? x + radius + 1 : width - 1)] -
+            out[row + (x - radius > 0 ? x - radius : 0)];
       }
     }
-    for (var x = 0; x < width; x++) {
-      var sum = 0.0;
-      for (var k = -radius; k <= radius; k++) {
-        sum += tmp[k.clamp(0, height - 1) * width + x];
+    sums.fillRange(0, width, 0);
+    for (var k = -radius; k <= radius; k++) {
+      final row = (k < 0 ? 0 : (k > height - 1 ? height - 1 : k)) * width;
+      for (var x = 0; x < width; x++) {
+        sums[x] += tmp[row + x];
       }
-      for (var y = 0; y < height; y++) {
-        out[y * width + x] = sum * scale;
-        sum +=
-            tmp[math.min(height - 1, y + radius + 1) * width + x] -
-            tmp[math.max(0, y - radius) * width + x];
+    }
+    for (var y = 0; y < height; y++) {
+      final row = y * width;
+      final into =
+          (y + radius + 1 < height ? y + radius + 1 : height - 1) * width;
+      final out0 = (y - radius > 0 ? y - radius : 0) * width;
+      for (var x = 0; x < width; x++) {
+        out[row + x] = sums[x] * scale;
+        sums[x] += tmp[into + x] - tmp[out0 + x];
       }
     }
   }
