@@ -10,6 +10,8 @@
 //   閉じる・続けて書き出すが無かった（所有者の判断、判断カードJ13）。
 // * 演出フィルターのトーンカーブ・レベル補正は無料で足せた。描画フィルターと
 //   同じく特典にそろえる（所有者の判断、判断カードJ11）。
+// * 演出フィルターのシートが下から6割を覆ってプレビューを暗くし、値を変えた
+//   結果は閉じてそのコマへ動かさないと見えなかった（判断カードJ14、U64）。
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -94,8 +96,9 @@ void main() {
   Future<AppLocalizations> openEffect(
     WidgetTester tester,
     String projectId,
-    String Function(AppLocalizations l10n) label,
-  ) async {
+    String Function(AppLocalizations l10n) label, {
+    bool expand = true,
+  }) async {
     appRouter.go('/timeline/$projectId');
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     final l10n = AppLocalizations.of(
@@ -105,6 +108,15 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text(label(l10n)).last);
     await tester.pumpAndSettle();
+    if (expand) {
+      // The sheet opens low (the preview stays in sight); pull it up to
+      // reach the settings, as a person would.
+      await tester.drag(
+        find.byType(DraggableScrollableSheet),
+        const Offset(0, -500),
+      );
+      await tester.pumpAndSettle();
+    }
     return l10n;
   }
 
@@ -395,6 +407,40 @@ void main() {
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
     }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the effect sheet leaves the preview in sight, on its frames', (
+    tester,
+  ) async {
+    final (:ps, :projectId, :sceneId) = await openApp(tester);
+    ps.addEffectFilter(
+      projectId,
+      sceneId,
+      const EffectFilterInstance(
+        id: 'late',
+        type: EffectFilterType.vignette,
+        startFrame: 6,
+        endFrame: 9,
+      ),
+    );
+    final l10n = await openEffect(
+      tester,
+      projectId,
+      (l) => l.filterNameVignette,
+      expand: false,
+    );
+    // Not dimmed.
+    final barriers = tester.widgetList<ModalBarrier>(find.byType(ModalBarrier));
+    expect(barriers.last.color, anyOf(isNull, const Color(0x00000000)));
+    // The preview went to the effect's first frame (F7 of 12).
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('timelinePreviewFrameCount')))
+          .data,
+      '7/12',
+    );
+    expect(find.text(l10n.filterNameVignette), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 }

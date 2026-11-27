@@ -19,5 +19,6 @@ const List<String> kAllFirstUseTooltipKeys = <String>[
   'quick_tool',
   'ruler_tool',
   'text_tool',
+  'timeline_clip_move',
   'timeline_preview_fullscreen',
 ];

@@ -1071,7 +1071,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   ),
                 ),
                 title: messageText(l10n.newProjectBackgroundColorLabel),
-                subtitle: messageText(l10n.canvasBackgroundColorChoices),
+                // While the canvas shows transparency the colour does not
+                // show on it (U24): say so, and that the export uses it.
+                subtitle: messageText(
+                  _canvasBackground == CanvasBackground.transparent
+                      ? l10n.canvasBackgroundColorHiddenWhileTransparent
+                      : l10n.canvasBackgroundColorChoices,
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showBackgroundColorPicker(context);

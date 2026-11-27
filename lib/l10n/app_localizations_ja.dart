@@ -5102,6 +5102,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineSplitModeHint => '押して選んだクリップを再生位置で分割します（選ばなければ全部）';
 
   @override
+  String get timelineClipMoveTip => '長押ししたまま左右へ動かすと、クリップを移動できます。押すと設定が開きます。';
+
+  @override
+  String get timelineVideoFrameUnavailable => '動画の絵を表示できません';
+
+  @override
   String get timelinePreviewFullscreenTooltip => 'プレビューを全画面表示';
 
   @override
@@ -8341,6 +8347,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get canvasBackgroundColorChoices => '白 / 黒 / 透明';
+
+  @override
+  String get canvasBackgroundColorHiddenWhileTransparent =>
+      '透過で表示している間は、キャンバスに背景色は出ません（書き出しでは使います）';
 
   @override
   String get canvasBackgroundTransparent => '透明';

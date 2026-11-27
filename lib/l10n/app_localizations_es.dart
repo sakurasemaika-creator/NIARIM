@@ -5418,6 +5418,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Divide los clips que toques en la posición de reproducción (todos si no eliges ninguno)';
 
   @override
+  String get timelineClipMoveTip =>
+      'Mantén pulsado un clip y arrástralo a los lados para moverlo. Tócalo para abrir sus ajustes.';
+
+  @override
+  String get timelineVideoFrameUnavailable =>
+      'No se puede mostrar la imagen del vídeo';
+
+  @override
   String get timelinePreviewFullscreenTooltip =>
       'Ver la vista previa a pantalla completa';
 
@@ -8846,6 +8854,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get canvasBackgroundColorChoices => 'Blanco / Negro / Transparente';
+
+  @override
+  String get canvasBackgroundColorHiddenWhileTransparent =>
+      'Mientras el lienzo muestra la transparencia, el color de fondo no aparece en él (las exportaciones lo usan)';
 
   @override
   String get canvasBackgroundTransparent => 'Transparente';

@@ -9231,6 +9231,18 @@ abstract class AppLocalizations {
   /// **'押して選んだクリップを再生位置で分割します（選ばなければ全部）'**
   String get timelineSplitModeHint;
 
+  /// No description provided for @timelineClipMoveTip.
+  ///
+  /// In ja, this message translates to:
+  /// **'長押ししたまま左右へ動かすと、クリップを移動できます。押すと設定が開きます。'**
+  String get timelineClipMoveTip;
+
+  /// No description provided for @timelineVideoFrameUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の絵を表示できません'**
+  String get timelineVideoFrameUnavailable;
+
   /// No description provided for @timelinePreviewFullscreenTooltip.
   ///
   /// In ja, this message translates to:
@@ -15098,6 +15110,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'白 / 黒 / 透明'**
   String get canvasBackgroundColorChoices;
+
+  /// No description provided for @canvasBackgroundColorHiddenWhileTransparent.
+  ///
+  /// In ja, this message translates to:
+  /// **'透過で表示している間は、キャンバスに背景色は出ません（書き出しでは使います）'**
+  String get canvasBackgroundColorHiddenWhileTransparent;
 
   /// No description provided for @canvasBackgroundTransparent.
   ///

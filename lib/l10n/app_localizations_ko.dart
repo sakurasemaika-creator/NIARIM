@@ -5131,6 +5131,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineSplitModeHint => '누른 클립을 재생 위치에서 분할합니다(선택하지 않으면 전부)';
 
   @override
+  String get timelineClipMoveTip => '클립을 길게 누른 채 좌우로 끌면 이동합니다. 누르면 설정이 열립니다.';
+
+  @override
+  String get timelineVideoFrameUnavailable => '동영상 화면을 표시할 수 없습니다';
+
+  @override
   String get timelinePreviewFullscreenTooltip => '미리보기 전체 화면으로 보기';
 
   @override
@@ -8385,6 +8391,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get canvasBackgroundColorChoices => '흰색 / 검정 / 투명';
+
+  @override
+  String get canvasBackgroundColorHiddenWhileTransparent =>
+      '캔버스를 투명으로 표시하는 동안에는 배경색이 캔버스에 나타나지 않습니다(내보내기에는 사용됩니다)';
 
   @override
   String get canvasBackgroundTransparent => '투명';

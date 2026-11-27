@@ -5052,6 +5052,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineSplitModeHint => '在播放位置分割点选的片段（未选则全部）';
 
   @override
+  String get timelineClipMoveTip => '长按片段并左右拖动即可移动。点按可打开设置。';
+
+  @override
+  String get timelineVideoFrameUnavailable => '无法显示视频画面';
+
+  @override
   String get timelinePreviewFullscreenTooltip => '全屏显示预览';
 
   @override
@@ -8248,6 +8254,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get canvasBackgroundColorChoices => '白 / 黑 / 透明';
+
+  @override
+  String get canvasBackgroundColorHiddenWhileTransparent =>
+      '画布以透明显示时，背景色不会出现在画布上（导出时仍会使用）';
 
   @override
   String get canvasBackgroundTransparent => '透明';
@@ -16167,6 +16177,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineSplitModeHint => '在播放位置分割點選的片段（未選則全部）';
 
   @override
+  String get timelineClipMoveTip => '長按片段並左右拖曳即可移動。點按可開啟設定。';
+
+  @override
+  String get timelineVideoFrameUnavailable => '無法顯示影片畫面';
+
+  @override
   String get timelinePreviewFullscreenTooltip => '全螢幕顯示預覽';
 
   @override
@@ -19364,6 +19380,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasBackgroundColorChoices => '白 / 黑 / 透明';
+
+  @override
+  String get canvasBackgroundColorHiddenWhileTransparent =>
+      '畫布以透明顯示時，背景色不會出現在畫布上（匯出時仍會使用）';
 
   @override
   String get canvasBackgroundTransparent => '透明';

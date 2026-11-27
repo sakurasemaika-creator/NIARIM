@@ -57,6 +57,22 @@ class _SolidDecoder implements VideoFrameDecoder {
   }
 }
 
+/// A file that cannot be read as a video.
+class _UnreadableDecoder implements VideoFrameDecoder {
+  @override
+  Future<VideoFrameTimeline> probe(String path) async =>
+      throw const FileSystemException('not a video');
+
+  @override
+  Future<DecodedVideoFrame> decode({
+    required String path,
+    required VideoFrameTimeline timeline,
+    required int frameIndex,
+    required int width,
+    required int height,
+  }) async => throw const FileSystemException('not a video');
+}
+
 void main() {
   testWidgets('the timeline preview composites the decoded video frame and '
       'releases its decoder when the timeline closes', (tester) async {
@@ -182,6 +198,11 @@ void main() {
     }
     expect(seen, expected, reason: 'not the grey placeholder (0x808080FF)');
     expect(decoder.decodes, contains(3));
+    expect(
+      find.byKey(const Key('timelineVideoFrameUnavailable')),
+      findsNothing,
+      reason: 'the picture is drawn',
+    );
 
     List<String> previewFolders() => [
       for (final entity in directory.listSync())
@@ -194,4 +215,115 @@ void main() {
     expect(find.byType(TimelineScreen), findsNothing);
     expect(previewFolders(), isEmpty);
   });
+
+  testWidgets(
+    'a video whose picture cannot be drawn is marked in the preview',
+    (tester) async {
+      final decoder = _UnreadableDecoder();
+      TimelineScreen.videoDecoderFor = (_) => decoder;
+      addTearDown(
+        () =>
+            TimelineScreen.videoDecoderFor = FfmpegVideoFrameDecoder.ffmpegKit,
+      );
+      SharedPreferences.setMockInitialValues({
+        'first_launch': false,
+        'language': 'ja',
+        'force_pc_mode': 0,
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      });
+      final directory = Directory.systemTemp.createTempSync('timeline-video-');
+      const channel = MethodChannel('plugins.flutter.io/path_provider');
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(channel, (_) async => directory.path);
+      // Registering a material reads its metadata with FFmpegKit, which has no
+      // plugin in tests; the material stays registered without it.
+      const ffmpegEvents = EventChannel(
+        'flutter.arthenica.com/ffmpeg_kit_event',
+      );
+      messenger.setMockStreamHandler(
+        ffmpegEvents,
+        MockStreamHandler.inline(onListen: (_, _) {}),
+      );
+      addTearDown(() {
+        messenger.setMockStreamHandler(ffmpegEvents, null);
+        messenger.setMockMethodCallHandler(channel, null);
+        if (directory.existsSync()) directory.deleteSync(recursive: true);
+      });
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      appRouter.go('/');
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      final context = tester.element(find.byType(MaterialApp).first);
+      final ps = context.read<ProjectService>();
+      final materials = context.read<MaterialService>();
+
+      final projectId = await tester.runAsync(() async {
+        final project = await ps.createProject(
+          name: 'video-preview',
+          fps: 10,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 160,
+          exportHeight: 90,
+        );
+        final source = File('${directory.path}/clip.mp4')
+          ..writeAsBytesSync(List.filled(64, 7));
+        final asset = await materials.addMaterial(
+          projectId: project.id,
+          sourcePath: source.path,
+          type: MaterialType.video,
+        );
+        final sceneId = ps.scenesOf(project.id).first.id;
+        final layer = ps.addLayer(
+          projectId: project.id,
+          sceneId: sceneId,
+          frameIndex: 0,
+          type: LayerType.timelineVideo,
+          name: 'clip',
+        );
+        final tiles = ps.tileManagerOf(project.id);
+        // The grey placeholder the project stores for a video layer.
+        tiles.replaceLayerPixels(
+          ps.tileKeyFor(project.id, sceneId, 0, layer.id),
+          Uint8List.fromList(
+            List.generate(
+              tiles.canvasWidth * tiles.canvasHeight * 4,
+              (i) => i % 4 == 3 ? 255 : 128,
+            ),
+          ),
+        );
+        ps.updateLayer(
+          projectId: project.id,
+          sceneId: sceneId,
+          frameIndex: 0,
+          layer: layer.copyWith(
+            rangeMode: LayerRangeMode.frameRange,
+            rangeStart: 1,
+            rangeEnd: 10,
+            materialId: asset.id,
+            sourceTrimStart: 3,
+            sourceTrimEnd: 12,
+          ),
+        );
+        return project.id;
+      });
+
+      appRouter.go('/timeline/$projectId');
+      await pumpRealAsync(tester, const Duration(milliseconds: 600));
+
+      // The file cannot be read: the preview draws nothing for it, and says so.
+      final mark = find.byKey(const Key('timelineVideoFrameUnavailable'));
+      for (var i = 0; i < 40 && mark.evaluate().isEmpty; i++) {
+        await pumpRealAsync(tester, const Duration(milliseconds: 50));
+      }
+      expect(mark, findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

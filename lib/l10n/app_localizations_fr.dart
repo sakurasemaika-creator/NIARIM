@@ -5426,6 +5426,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Scinder les clips touchés à la position de lecture (tous si aucun)';
 
   @override
+  String get timelineClipMoveTip =>
+      'Appuyez longuement sur un clip et faites-le glisser sur le côté pour le déplacer. Touchez-le pour ouvrir ses réglages.';
+
+  @override
+  String get timelineVideoFrameUnavailable =>
+      'Impossible d’afficher l’image de la vidéo';
+
+  @override
   String get timelinePreviewFullscreenTooltip =>
       'Afficher l’aperçu en plein écran';
 
@@ -8861,6 +8869,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasBackgroundColorChoices => 'Blanc / Noir / Transparent';
+
+  @override
+  String get canvasBackgroundColorHiddenWhileTransparent =>
+      'Tant que le canevas affiche la transparence, la couleur de fond n’y apparaît pas (les exports l’utilisent)';
 
   @override
   String get canvasBackgroundTransparent => 'Transparent';

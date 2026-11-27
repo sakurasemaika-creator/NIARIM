@@ -2619,6 +2619,8 @@
     "description": "タイムラインの分割モードを始めるボタンの吹き出し"
   },
   "timelineSplitModeHint": "押して選んだクリップを再生位置で分割します（選ばなければ全部）",
+  "timelineClipMoveTip": "長押ししたまま左右へ動かすと、クリップを移動できます。押すと設定が開きます。",
+  "timelineVideoFrameUnavailable": "動画の絵を表示できません",
   "@timelineSplitModeHint": {
     "description": "分割モードのバーの説明。再生位置にかかるクリップを全部分割する"
   },
@@ -4248,6 +4250,7 @@
   "canvasAutofillCheckParts": "パーツ分け確認",
   "canvasAutofillCheckSilhouette": "シルエット確認",
   "canvasBackgroundColorChoices": "白 / 黒 / 透明",
+  "canvasBackgroundColorHiddenWhileTransparent": "透過で表示している間は、キャンバスに背景色は出ません（書き出しでは使います）",
   "canvasBackgroundTransparent": "透明",
   "canvasTimelineModeTooltip": "タイムラインモード",
   "startupFailedTitle": "NIARIMを起動できませんでした",

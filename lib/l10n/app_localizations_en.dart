@@ -5338,6 +5338,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Split the clips you tap at the playback position (all if none)';
 
   @override
+  String get timelineClipMoveTip =>
+      'Long-press a clip and drag it sideways to move it. Tap it to open its settings.';
+
+  @override
+  String get timelineVideoFrameUnavailable =>
+      'The video’s picture cannot be shown';
+
+  @override
   String get timelinePreviewFullscreenTooltip => 'Show preview fullscreen';
 
   @override
@@ -8707,6 +8715,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canvasBackgroundColorChoices => 'White / Black / Transparent';
+
+  @override
+  String get canvasBackgroundColorHiddenWhileTransparent =>
+      'While the canvas shows transparency, the background color does not appear on it (exports still use it)';
 
   @override
   String get canvasBackgroundTransparent => 'Transparent';

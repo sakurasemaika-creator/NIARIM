@@ -972,6 +972,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _stopTimelineDrag(snap: false);
     _regionEdit.dispose();
     _screenFocus.dispose();
+    _videoProblemLayers.dispose();
     ImmersiveMode.exitWorkspace();
     _playTimer?.cancel();
     for (final ctrl in _trackScrollCtrls) {
@@ -1589,6 +1590,34 @@ class _TimelineScreenState extends State<TimelineScreen> {
   int _previewVideoGeneration = 0;
   TimelineVideoLayerPixels? _previewVideoPixels;
 
+  /// The video layers whose picture the preview could not draw (missing or
+  /// unreadable file, failed decode), told by the frame source.
+  final ValueNotifier<Set<String>> _videoProblemLayers = ValueNotifier(
+    const {},
+  );
+
+  void _noteVideoProblem(VideoLayerProblem problem) {
+    if (_videoProblemLayers.value.contains(problem.layerId)) return;
+    // Told while a picture is being composed, which can be during a build.
+    Future.microtask(() {
+      if (!mounted) return;
+      _videoProblemLayers.value = {
+        ..._videoProblemLayers.value,
+        problem.layerId,
+      };
+    });
+  }
+
+  /// Whether a video clip at [frame] is one whose picture failed.
+  bool _videoClipFailsAt(Set<String> problems, int frame) =>
+      problems.isNotEmpty &&
+      _clipsOfType(_ClipTrackType.video).any(
+        (clip) =>
+            problems.contains(clip.id) &&
+            frame >= clip.startFrame &&
+            frame < clip.startFrame + clip.lengthFrames,
+      );
+
   void _watchPreviewVideoMaterials() {
     final MaterialService materials;
     try {
@@ -1631,6 +1660,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
         _stripVideoFrames = strip;
         _previewVideoPixels = null;
       });
+      // Told again by the new source if still so.
+      _videoProblemLayers.value = const {};
       // Pictures still being built with the old frames are not shown.
       previous?.dispose();
       previousStrip?.dispose();
@@ -1664,6 +1695,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       framesPerSecond: fps.toDouble(),
       canvasWidth: tiles.canvasWidth,
       canvasHeight: tiles.canvasHeight,
+      onProblem: _noteVideoProblem,
     );
   }
 
@@ -3732,6 +3764,29 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           setState(() => _previewOutputFps = null);
                         },
                       ),
+                    // A video at this frame whose picture cannot be drawn
+                    // (missing or unreadable file): the preview would show
+                    // nothing there, as if there were no video.
+                    ValueListenableBuilder<Set<String>>(
+                      valueListenable: _videoProblemLayers,
+                      builder: (context, problems, _) =>
+                          ValueListenableBuilder<int>(
+                            valueListenable: _currentFrameNotifier,
+                            builder: (context, frame, _) =>
+                                !_videoClipFailsAt(problems, frame)
+                                ? const SizedBox.shrink()
+                                : Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: _PlaybackSkipNotice(
+                                      text: l10n.timelineVideoFrameUnavailable,
+                                      icon: Icons.videocam_off_outlined,
+                                      noticeKey: const Key(
+                                        'timelineVideoFrameUnavailable',
+                                      ),
+                                    ),
+                                  ),
+                          ),
+                    ),
                     if (_isPlaying)
                       ValueListenableBuilder<int>(
                         valueListenable: _playbackSkips,
@@ -6752,135 +6807,141 @@ class _TimelineScreenState extends State<TimelineScreen> {
           top: rowPadding,
           width: width.clamp(handleW * 2 + 4, double.infinity),
           height: _materialTrackHeight - rowPadding * 2,
-          child: Listener(
-            onPointerCancel: (_) => _endClipDrag(clip, commit: false),
-            child: GestureDetector(
-              key: ValueKey('timelineClip-${clip.id}'),
-              onTap: () {
-                if (_isSplitMode) {
-                  setState(() {
-                    if (!_splitTargetIds.remove(clip.id)) {
-                      _splitTargetIds.add(clip.id);
-                    }
-                  });
-                } else if (_isClipMultiSelect) {
-                  setState(() {
-                    if (isSelected) {
-                      _selectedClipIds.remove(clip.id);
-                    } else {
-                      _selectedClipIds.add(clip.id);
-                    }
-                  });
-                } else {
-                  _showEditClipDialog(clip);
-                }
-              },
-              // 長押しドラッグでクリップ本体を移動＝表示開始位置を変更する
-              // （「開始フレーム変更：タイムライン上で表示開始
-              // 位置を変更」）。複数選択モード中は選択操作と競合するため無効化する。
-              onLongPressStart: _isClipMultiSelect
-                  ? null
-                  : (d) => _beginClipDrag(
-                      clip,
-                      _ClipDragMode.move,
-                      d.globalPosition.dx,
-                    ),
-              onLongPressMoveUpdate: _isClipMultiSelect
-                  ? null
-                  : (d) => _updateClipDrag(clip, d.globalPosition.dx),
-              onLongPressEnd: _isClipMultiSelect
-                  ? null
-                  : (_) => _endClipDrag(clip),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: clip.color.withValues(
-                          alpha: isDragging ? 1.0 : 0.85,
+          child: FirstUseTooltip(
+            tooltipKey: 'timeline_clip_move',
+            message: AppLocalizations.of(context)!.timelineClipMoveTip,
+            toolbarGuide: false,
+            child: Listener(
+              onPointerCancel: (_) => _endClipDrag(clip, commit: false),
+              child: GestureDetector(
+                key: ValueKey('timelineClip-${clip.id}'),
+                onTap: () {
+                  if (_isSplitMode) {
+                    setState(() {
+                      if (!_splitTargetIds.remove(clip.id)) {
+                        _splitTargetIds.add(clip.id);
+                      }
+                    });
+                  } else if (_isClipMultiSelect) {
+                    setState(() {
+                      if (isSelected) {
+                        _selectedClipIds.remove(clip.id);
+                      } else {
+                        _selectedClipIds.add(clip.id);
+                      }
+                    });
+                  } else {
+                    _showEditClipDialog(clip);
+                  }
+                },
+                // 長押しドラッグでクリップ本体を移動＝表示開始位置を変更する
+                // （「開始フレーム変更：タイムライン上で表示開始
+                // 位置を変更」）。複数選択モード中は選択操作と競合するため無効化する。
+                onLongPressStart: _isClipMultiSelect
+                    ? null
+                    : (d) => _beginClipDrag(
+                        clip,
+                        _ClipDragMode.move,
+                        d.globalPosition.dx,
+                      ),
+                onLongPressMoveUpdate: _isClipMultiSelect
+                    ? null
+                    : (d) => _updateClipDrag(clip, d.globalPosition.dx),
+                onLongPressEnd: _isClipMultiSelect
+                    ? null
+                    : (_) => _endClipDrag(clip),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: clip.color.withValues(
+                            alpha: isDragging ? 1.0 : 0.85,
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                          border: isDragging
+                              ? Border.all(
+                                  color:
+                                      ThemeService.activeColorScheme.onSurface,
+                                  width: 1.5,
+                                )
+                              : (isSelected
+                                    ? Border.all(
+                                        color: ThemeService
+                                            .activeColorScheme
+                                            .onSurface,
+                                        width: 1.5,
+                                      )
+                                    : null),
+                          boxShadow: isDragging
+                              ? null
+                              : [
+                                  BoxShadow(
+                                    color: ThemeService
+                                        .activeColorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.25),
+                                    blurRadius: 2,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
                         ),
-                        borderRadius: BorderRadius.circular(4),
-                        border: isDragging
-                            ? Border.all(
-                                color: ThemeService.activeColorScheme.onSurface,
-                                width: 1.5,
-                              )
-                            : (isSelected
-                                  ? Border.all(
-                                      color: ThemeService
-                                          .activeColorScheme
-                                          .onSurface,
-                                      width: 1.5,
-                                    )
-                                  : null),
-                        boxShadow: isDragging
-                            ? null
-                            : [
-                                BoxShadow(
-                                  color: ThemeService
-                                      .activeColorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.25),
-                                  blurRadius: 2,
-                                  offset: const Offset(0, 1),
+                        clipBehavior: Clip.antiAlias,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            if (clip.trackType == _ClipTrackType.audio ||
+                                _videoRowDisplay(clip.trackRow) ==
+                                    VideoTrackDisplay.waveform)
+                              ?_clipWaveform(clip)
+                            else if (clip.trackType == _ClipTrackType.video &&
+                                clip.materialId != null)
+                              Opacity(
+                                opacity: 0.75,
+                                child: VideoFilmstrip(
+                                  key: ValueKey('filmstrip_${clip.id}'),
+                                  frames: _stripVideoFrames,
+                                  materialId: clip.materialId!,
+                                  timing: (
+                                    startFrame: clip.startFrame,
+                                    lengthFrames: clip.lengthFrames,
+                                    trimStartFrame:
+                                        clip.useStart + clip.sourceFraction,
+                                    trimEndFrame: clip.useEnd,
+                                    playbackRate: clip.playbackRate,
+                                  ),
+                                  framesPerSecond: _projectFps(
+                                    context.read<ProjectService>(),
+                                  ).toDouble(),
                                 ),
-                              ],
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          if (clip.trackType == _ClipTrackType.audio ||
-                              _videoRowDisplay(clip.trackRow) ==
-                                  VideoTrackDisplay.waveform)
-                            ?_clipWaveform(clip)
-                          else if (clip.trackType == _ClipTrackType.video &&
-                              clip.materialId != null)
-                            Opacity(
-                              opacity: 0.75,
-                              child: VideoFilmstrip(
-                                key: ValueKey('filmstrip_${clip.id}'),
-                                frames: _stripVideoFrames,
-                                materialId: clip.materialId!,
-                                timing: (
-                                  startFrame: clip.startFrame,
-                                  lengthFrames: clip.lengthFrames,
-                                  trimStartFrame:
-                                      clip.useStart + clip.sourceFraction,
-                                  trimEndFrame: clip.useEnd,
-                                  playbackRate: clip.playbackRate,
-                                ),
-                                framesPerSecond: _projectFps(
-                                  context.read<ProjectService>(),
-                                ).toDouble(),
                               ),
-                            ),
-                          _buildClipName(clip),
-                        ],
+                            _buildClipName(clip),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  if (_isClipMultiSelect)
-                    Positioned(
-                      right: 2,
-                      top: 2,
-                      child: Icon(
-                        isSelected
-                            ? Icons.check_circle
-                            : Icons.radio_button_unchecked,
-                        size: 12,
-                        color: ThemeService.activeColorScheme.onSurface,
+                    if (_isClipMultiSelect)
+                      Positioned(
+                        right: 2,
+                        top: 2,
+                        child: Icon(
+                          isSelected
+                              ? Icons.check_circle
+                              : Icons.radio_button_unchecked,
+                          size: 12,
+                          color: ThemeService.activeColorScheme.onSurface,
+                        ),
                       ),
-                    ),
-                  // 左右端のドラッグハンドル：表示範囲（長さ）を変更する
-                  // （「使用範囲変更：タイムライン上でドラッグ
-                  // ハンドルにより変更」）。複数選択モード中は選択操作と
-                  // 競合するため表示しない。
-                  if (!_isClipMultiSelect) ...[
-                    _buildClipResizeHandle(clip, handleW, isLeft: true),
-                    _buildClipResizeHandle(clip, handleW, isLeft: false),
+                    // 左右端のドラッグハンドル：表示範囲（長さ）を変更する
+                    // （「使用範囲変更：タイムライン上でドラッグ
+                    // ハンドルにより変更」）。複数選択モード中は選択操作と
+                    // 競合するため表示しない。
+                    if (!_isClipMultiSelect) ...[
+                      _buildClipResizeHandle(clip, handleW, isLeft: true),
+                      _buildClipResizeHandle(clip, handleW, isLeft: false),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
@@ -10525,11 +10586,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      // The preview above stays as it is (not dimmed): a changed value shows
+      // there while the sheet is open (the owner's choice, 2026-11-27).
+      barrierColor: Colors.transparent,
       builder: (ctx) => _EffectFilterSheet(
         projectId: widget.projectId,
         sceneId: sceneId,
         totalFrames: _totalFrames,
         currentFrame: _currentFrame,
+        onShowEffect: (effect) {
+          if (!mounted) return;
+          final frame = _currentFrame;
+          if (frame < effect.startFrame || frame > effect.endFrame) {
+            _seekToTimestamp(effect.startFrame);
+          }
+        },
       ),
     );
   }
@@ -11624,9 +11695,15 @@ class _PreviewOutputFpsChip extends StatelessWidget {
 /// The preview's note that playback is skipping frames: a small card over
 /// the band's corner, its text in the card's own colours.
 class _PlaybackSkipNotice extends StatelessWidget {
-  const _PlaybackSkipNotice({required this.text});
+  const _PlaybackSkipNotice({
+    required this.text,
+    this.icon = Icons.speed,
+    this.noticeKey = const Key('timelinePlaybackSkipNotice'),
+  });
 
   final String text;
+  final IconData icon;
+  final Key noticeKey;
 
   @override
   Widget build(BuildContext context) {
@@ -11636,7 +11713,7 @@ class _PlaybackSkipNotice extends StatelessWidget {
     return Semantics(
       liveRegion: true,
       child: Material(
-        key: const Key('timelinePlaybackSkipNotice'),
+        key: noticeKey,
         color: theme.cardTheme.color ?? theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
         child: Padding(
@@ -11644,7 +11721,7 @@ class _PlaybackSkipNotice extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.speed, size: 16, color: colour),
+              Icon(icon, size: 16, color: colour),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(
@@ -11852,11 +11929,15 @@ class _EffectFilterSheet extends StatelessWidget {
   final String sceneId;
   final int totalFrames;
   final int currentFrame;
+
+  /// An effect's settings were opened: the preview goes to a frame it is on.
+  final ValueChanged<EffectFilterInstance>? onShowEffect;
   const _EffectFilterSheet({
     required this.projectId,
     required this.sceneId,
     required this.totalFrames,
     required this.currentFrame,
+    this.onShowEffect,
   });
 
   static String _displayName(AppLocalizations l10n, EffectFilterInstance e) =>
@@ -11929,10 +12010,11 @@ class _EffectFilterSheet extends StatelessWidget {
       projectId,
       sceneId,
     );
+    // The preview at the top stays in sight at the first size.
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 0.6,
-      minChildSize: 0.4,
+      initialChildSize: 0.45,
+      minChildSize: 0.3,
       maxChildSize: 0.9,
       builder: (ctx, scrollCtrl) => Column(
         children: [
@@ -12107,6 +12189,9 @@ class _EffectFilterSheet extends StatelessWidget {
       ),
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: ExpansionTile(
+        onExpansionChanged: (open) {
+          if (open) onShowEffect?.call(e);
+        },
         leading: Icon(_typeIcons[e.type], size: 20),
         title: Text(
           _displayName(l10n, e),
