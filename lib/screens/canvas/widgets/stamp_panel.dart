@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../widgets/confirm_delete.dart';
+import '../../../widgets/list_reveal.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/creative_preset_labels.dart';
 import '../../../models/stamp.dart';
@@ -56,10 +57,13 @@ class _StampPanelState extends State<StampPanel> {
   String _searchQuery = '';
   final _searchController = TextEditingController();
   String? _folderFilter;
+  // 複製・作った素材を見える所まで送るための一覧のスクロール。
+  final _listScroll = ScrollController();
 
   @override
   void dispose() {
     _searchController.dispose();
+    _listScroll.dispose();
     super.dispose();
   }
 
@@ -236,6 +240,7 @@ class _StampPanelState extends State<StampPanel> {
                   // 選んだ行の背景を一覧の外（上のタブ・ボタン）へはみ出させない
                   // （末尾のclipListInk）。
                   : ReorderableListView.builder(
+                      scrollController: _listScroll,
                       // ドラッグハンドルは行末に明示アイコンとして置く
                       // （既定のドラッグハンドルだと、行全体の長押しで開く
                       // 編集シートや、お気に入り・三点メニューのタップと
@@ -407,6 +412,8 @@ class _StampPanelState extends State<StampPanel> {
             for (final s in service.stamps) s.name,
           }),
         );
+        // 足した所（一覧の最後）を見せる。
+        revealListEnd(_listScroll);
       case 'move':
         showMoveToCreativeFolderSheet(
           context,
@@ -510,6 +517,7 @@ class _StampPanelState extends State<StampPanel> {
     );
     if (name == null) return;
     await service.createStampFromImage(result.files.first.path!, name: name);
+    revealListEnd(_listScroll);
   }
 
   static String _exportKey(Stamp stamp) => 'stamp:${stamp.id}';

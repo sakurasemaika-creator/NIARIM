@@ -137,16 +137,16 @@ void main() {
       // 一覧は見える分だけ作るので、複製（一覧の最後）まで送る。
       final brush = brushes.brushes.singleWhere((b) => b.name == brushName);
       final row = find.byKey(ValueKey(brush.id));
-      await tester.scrollUntilVisible(
-        row,
-        200,
-        scrollable: find
-            .descendant(
-              of: find.byType(ReorderableListView),
-              matching: find.byType(Scrollable),
-            )
-            .first,
-      );
+      final list = find
+          .descendant(
+            of: find.byType(ReorderableListView),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      // 複製すると一覧は複製（最後）まで送られるので、上から探す。
+      tester.state<ScrollableState>(list).position.jumpTo(0);
+      await tester.pump();
+      await tester.scrollUntilVisible(row, 200, scrollable: list);
       await tester.tap(
         find.descendant(of: row, matching: find.byIcon(Icons.more_vert)),
       );

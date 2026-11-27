@@ -13,6 +13,7 @@ import '../../../services/brush_service.dart';
 import '../../../services/export_share_service.dart';
 import '../../../services/shared_asset_card_service.dart';
 import '../../../services/settings_service.dart';
+import '../../../widgets/list_reveal.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/menu_action_label.dart';
 import '../../../widgets/keep_together_text.dart';
@@ -71,10 +72,13 @@ class _BrushPanelState extends State<BrushPanel> {
   final _searchController = TextEditingController();
   // null=全て表示・''(空文字)=フォルダなしのみ・その他=そのフォルダIDのみ
   String? _folderFilter;
+  // 複製・作った素材を見える所まで送るための一覧のスクロール。
+  final _listScroll = ScrollController();
 
   @override
   void dispose() {
     _searchController.dispose();
+    _listScroll.dispose();
     super.dispose();
   }
 
@@ -260,6 +264,7 @@ class _BrushPanelState extends State<BrushPanel> {
                   // 選んだ行の背景を一覧の外（上のタブ・ボタン）へはみ出させない
                   // （末尾のclipListInk）。
                   : ReorderableListView.builder(
+                      scrollController: _listScroll,
                       // ドラッグハンドルは行末に明示アイコンとして置く（既定の
                       // ドラッグハンドルだと、行全体の長押しで開く編集シート
                       // （onLongPress）や、お気に入り・三点メニューのタップと
@@ -448,12 +453,18 @@ class _BrushPanelState extends State<BrushPanel> {
         // 言語に合わせた「名前 (コピー)」、同じ名前があれば番号を付ける
         // （以前は日本語の「(コピー)」固定で、2回複製すると同じ名前が並んだ）。
         // 引き継ぎで足す複製と同じ形にして、番号を続けて数える。
-        service.duplicateBrush(
+        final copyId = service.duplicateBrush(
           brush.id,
           name: numberedCopyName(l10n, brush.name, {
             for (final b in service.brushes) b.name,
           }),
         );
+        // 足したブラシを選び、一覧の最後（足した所）を見せる（以前は末尾に
+        // 黙って入り、探さないと見つからなかった）。
+        if (copyId != null) {
+          service.selectBrush(copyId);
+          revealListEnd(_listScroll);
+        }
       case 'move':
         showMoveToCreativeFolderSheet(
           context,
@@ -588,7 +599,12 @@ class _BrushPanelState extends State<BrushPanel> {
       title: AppLocalizations.of(context)!.brushCreateDialogTitle,
     );
     if (name == null) return;
-    await service.createBrushFromImage(result.files.first.path!, name: name);
+    final created = await service.createBrushFromImage(
+      result.files.first.path!,
+      name: name,
+    );
+    service.selectBrush(created.id);
+    revealListEnd(_listScroll);
   }
 
   static String _exportKey(Brush brush) => 'brush:${brush.id}';
