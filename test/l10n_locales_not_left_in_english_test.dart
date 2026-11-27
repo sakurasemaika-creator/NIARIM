@@ -67,6 +67,10 @@ const _sameInLocale = <String, Set<String>>{
     'timelineEffectTypeSepia',
   },
   'fr': {
+    'makingTitle', // メイキングは仏語でも « Making-of » と書く（英語と同じ）。
+    // タイムラインは画面のボタン（« Mode timeline »）と同じ借用語にそろえた。
+    'premiumFeatureTimeline',
+    'helpTimelineTitle',
     'assetTagManga',
     'assetTagPixelArt',
     'assetTagTexture',

@@ -413,9 +413,9 @@ List<String> _completionTexts(String locale, int n) {
   return switch (locale) {
     'en' => [
       'Mission completed!',
-      'Visit on ${c('day', 'days')} this week',
-      'Visit on ${c('day', 'days')} this month',
-      'Visit on ${c('day', 'days')} in total',
+      'Sign in on ${c('day', 'days')} this week',
+      'Sign in on ${c('day', 'days')} this month',
+      'Sign in on ${c('day', 'days')} in total',
       'Go to Missions',
     ],
     'es' => [

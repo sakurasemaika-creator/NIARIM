@@ -108,7 +108,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'hour_1': '1 hora',
     },
     redeemConfirmation:
-        'Pack completo de ventajas (igual que Premium) · 1 mes · 55.000 ópalos',
+        'Paquete completo (igual que Premium) · 1 mes · 55.000 ópalos',
   ),
   RewardDurationLanguage(
     code: 'fr',
@@ -172,7 +172,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12个月',
       'hour_1': '1小时',
     },
-    redeemConfirmation: '权益全套礼包（与Premium会员内容相同） · 1个月 · 55,000欧泊',
+    redeemConfirmation: '全功能组合包（与Premium会员内容相同） · 1个月 · 55,000欧泊',
   ),
   RewardDurationLanguage(
     code: 'zh_Hant',
@@ -193,7 +193,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12個月',
       'hour_1': '1小時',
     },
-    redeemConfirmation: '權益全套禮包（與Premium會員內容相同） · 1個月 · 55,000歐泊',
+    redeemConfirmation: '全功能組合包（與Premium會員內容相同） · 1個月 · 55,000歐泊',
   ),
 ];
 

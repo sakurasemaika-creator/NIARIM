@@ -25,35 +25,35 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeTabWorks => 'Œuvres';
 
   @override
-  String get homeTabBookmarked => 'Enregistrées';
+  String get homeTabBookmarked => 'Favoris';
 
   @override
-  String get homeBookmarkedEmptyTitle => 'Aucune œuvre enregistrée à afficher';
+  String get homeBookmarkedEmptyTitle => 'Aucune œuvre en favoris à afficher';
 
   @override
   String get homeBookmarkedEmptyBody =>
-      'Enregistrez les œuvres publiques qui vous plaisent sur la Place des œuvres pour les retrouver ici.';
+      'Ajoutez aux favoris les œuvres publiques qui vous plaisent sur la Place des œuvres pour les retrouver ici.';
 
   @override
-  String get homeBookmarkedHiddenTitle => 'Vos œuvres restent enregistrées';
+  String get homeBookmarkedHiddenTitle => 'Vos œuvres restent dans vos favoris';
 
   @override
   String get homeBookmarkedHiddenBody =>
       'Les filtres d’affichage ou le statut public des œuvres peuvent les masquer. Vérifiez les filtres sur la Place des œuvres.';
 
   @override
-  String get homeBookmarkedLoading => 'Chargement des œuvres enregistrées…';
+  String get homeBookmarkedLoading => 'Chargement de vos œuvres en favoris…';
 
   @override
   String get homeBookmarkedLoadFailed =>
-      'Impossible de charger vos œuvres enregistrées';
+      'Impossible de charger vos œuvres en favoris';
 
   @override
-  String get homeBookmarkedLoadPrompt => 'Charger vos œuvres enregistrées';
+  String get homeBookmarkedLoadPrompt => 'Charger vos œuvres en favoris';
 
   @override
   String get homeBookmarkedSignInBody =>
-      'Connectez votre compte Google sur la Place des œuvres pour charger vos œuvres enregistrées.';
+      'Connectez votre compte Google sur la Place des œuvres pour charger vos œuvres en favoris.';
 
   @override
   String get homeSearchHint => 'Rechercher par nom de projet';
@@ -243,7 +243,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get homeShareOpenWith => 'Partager / Ouvrir dans Photos';
+  String get homeShareOpenWith => 'Partager / Ouvrir dans une app photo, etc.';
 
   @override
   String get homePreviewFailed => 'Impossible de lire l’aperçu';
@@ -470,7 +470,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get gestureHoldEyedropperHint =>
-      'En dessinant avec le stylo ou la gomme, maintenir le doigt immobile un instant prélève la couleur sous le doigt comme couleur actuelle.';
+      'En dessinant avec la plume ou la gomme, maintenir le doigt immobile un instant prélève la couleur sous le doigt comme couleur actuelle.';
 
   @override
   String get gestureHoldEyedropperDurationLabel => 'Durée de maintien';
@@ -942,7 +942,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get shortcutSettingsHint =>
-      'Assignez des touches du clavier ou d’un périphérique main gauche à des outils (jusqu’à un pinceau et une taille précis) ou à des actions comme Annuler/Rétablir. Fonctionne en mode Canevas et en mode Chronologie.';
+      'Assignez des touches du clavier ou d’un périphérique main gauche à des outils (jusqu’à un pinceau et une taille précis) ou à des actions comme Annuler/Rétablir. Fonctionne en mode Canevas et en mode Timeline.';
 
   @override
   String get shortcutEmpty => 'Aucun raccourci enregistré';
@@ -1020,7 +1020,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get materialEmptyHint =>
-      'Ajoutez des images, vidéos ou fichiers audio depuis la chronologie et ils apparaîtront ici';
+      'Ajoutez des images, vidéos ou fichiers audio depuis la timeline et ils apparaîtront ici';
 
   @override
   String get materialUsedLabel => 'Utilisé';
@@ -1205,7 +1205,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get premiumFeatureDrawing => 'Dessin et animation';
 
   @override
-  String get premiumFeatureTimeline => 'Chronologie';
+  String get premiumFeatureTimeline => 'Timeline';
 
   @override
   String get premiumFeatureExport => 'Export vidéo';
@@ -1251,7 +1251,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get premiumValueNo => 'Non';
 
   @override
-  String get premiumValueRemovable => 'Amovible';
+  String get premiumValueRemovable => 'Supprimable';
 
   @override
   String get premiumValueDuration2Hours => '2 heures';
@@ -1470,7 +1470,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpSelectToolDesc =>
-      'Sélectionne une partie du canevas afin de pouvoir déplacer, faire pivoter ou redimensionner uniquement cette zone. Un appui long permet de choisir parmi trois méthodes de sélection : « Sélection rectangulaire », « Sélection au lasso » (contour libre), ou « Sélection automatique » (baguette magique — regroupe automatiquement les zones de couleur similaire). Pendant une sélection, un contour marque la zone sélectionnée sur le canevas, et la même zone reste fixée sur toutes les images et tous les calques jusqu’à ce que vous désélectionniez. En sélection au lasso, activer « Magnétiser aux lignes » examine les zones que le dessin au trait découpe dans la toile, comme le fait le pot de peinture, et ne sélectionne que les zones situées en majeure partie dans le lasso. Le bord de la sélection suit exactement le bord extérieur du dessin au trait : les traits qui entourent ces zones et ceux à l’intérieur sont sélectionnés avec elles (un trait qui continue hors du contour est coupé là où il le quitte). Les couleurs remplies comptent comme des zones à part entière, comme pour le pot de peinture : un calque avec des aplats et des traits se sélectionne lui aussi selon la forme du dessin. Les interruptions d’un trait jusqu’à la largeur de « Tolérance des espaces » sont considérées comme fermées. S’il n’y a pas de dessin au trait dans le lasso, le lasso est sélectionné tel que tracé. Les traits sont pris dans la référence de sélection (« Calque de travail uniquement » / « Tous les calques visibles »).';
+      'Sélectionne une partie du canevas afin de pouvoir déplacer, faire pivoter ou redimensionner uniquement cette zone. Un appui long permet de choisir parmi trois méthodes de sélection : « Sélection rectangulaire », « Sélection au lasso » (contour libre), ou « Sélection automatique » (baguette magique — regroupe automatiquement les zones de couleur similaire). Pendant une sélection, un contour marque la zone sélectionnée sur le canevas, et la même zone reste fixée sur toutes les images et tous les calques jusqu’à ce que vous désélectionniez. En sélection au lasso, activer « Magnétiser aux lignes » examine les zones que le dessin au trait découpe dans le canevas, comme le fait le pot de peinture, et ne sélectionne que les zones situées en majeure partie dans le lasso. Le bord de la sélection suit exactement le bord extérieur du dessin au trait : les traits qui entourent ces zones et ceux à l’intérieur sont sélectionnés avec elles (un trait qui continue hors du contour est coupé là où il le quitte). Les couleurs remplies comptent comme des zones à part entière, comme pour le pot de peinture : un calque avec des aplats et des traits se sélectionne lui aussi selon la forme du dessin. Les interruptions d’un trait jusqu’à la largeur de « Tolérance des espaces » sont considérées comme fermées. S’il n’y a pas de dessin au trait dans le lasso, le lasso est sélectionné tel que tracé. Les traits sont pris dans la référence de sélection (« Calque de travail uniquement » / « Tous les calques visibles »).';
 
   @override
   String get helpFingerToolTitle => 'Outil doigt (déformation)';
@@ -1526,14 +1526,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpCommonLayerDesc =>
-      'Les calques ordinaires sont indépendants par image, mais un calque commun partage le même contenu sur plusieurs images et scènes. Les éléments qui ne bougent pas d’une image à l’autre, comme les fonds, peuvent être dessinés une seule fois au lieu d’être redessinés à chaque image. Il apparaît comme une piste dédiée dans la chronologie. Convertit un calque normal en calque commun (qui continue d’afficher le même contenu sur plusieurs images). Vous pouvez aussi fusionner les calques actuellement visibles en un seul avant la conversion. Vous évite de redessiner un élément comme un arrière-plan qui reste identique à chaque image.';
+      'Les calques ordinaires sont indépendants par image, mais un calque commun partage le même contenu sur plusieurs images et scènes. Les éléments qui ne bougent pas d’une image à l’autre, comme les fonds, peuvent être dessinés une seule fois au lieu d’être redessinés à chaque image. Il apparaît comme une piste dédiée dans la timeline. Convertit un calque normal en calque commun (qui continue d’afficher le même contenu sur plusieurs images). Vous pouvez aussi fusionner les calques actuellement visibles en un seul avant la conversion. Vous évite de redessiner un élément comme un arrière-plan qui reste identique à chaque image.';
 
   @override
-  String get helpAutoFillTitle => 'Coloriage automatique';
+  String get helpAutoFillTitle => 'Remplissage automatique';
 
   @override
   String get helpAutoFillDesc =>
-      'Crée un calque de coloriage automatique sous le calque de trait pour coloriage automatique et le colore automatiquement selon un « réglage de coloriage automatique » préétabli (une combinaison de couleurs et de trames par partie). Comme vous pouvez tout colorer en une fois après avoir terminé le trait, cela réduit considérablement l’effort de coloriage dans une animation dessinée à la main où le même personnage est dessiné à répétition. Si vous redessinez le trait, une marque de mise à jour apparaît sur la chronologie et le panneau de calques pour vous indiquer que le coloriage automatique doit être réappliqué. Choisir « Exécuter le remplissage automatique » dans le menu à trois points de l’écran timeline recalcule d’un coup tous les calques de remplissage automatique marqués de l’indicateur de mise à jour . Vous évite de le relancer calque par calque dans le panneau des calques après avoir retracé le trait. Chaque partie d’un réglage de remplissage automatique a un réglage pour la gestion de la couleur du trait — une couleur spécifiée, identique à la couleur de remplissage, ou calque de couleur. Choisir le calque de couleur décale la teinte du trait pour correspondre à la couleur de remplissage, afin que le trait ne ressorte pas et se fonde naturellement. À mesure que les réglages s’accumulent, la liste affichée lors de l’attribution des parties s’allonge et devient difficile à parcourir. Depuis les réglages du projet (ou la boîte de dialogue d’attribution des parties dans le panneau des calques), vous pouvez la limiter aux seuls réglages utilisés dans ce projet, gardant la liste claire et facile à choisir. En augmentant « Combler l’écart entre traits et aplat », l’aplat passe plus loin sous le bord adouci des traits et l’écart entre le trait et l’aplat, visible avec un contour ou une couleur de trait identique à l’aplat, se réduit.';
+      'Crée un calque de remplissage auto sous le calque de trait pour remplissage auto et le colore automatiquement selon un « réglage de remplissage automatique » préétabli (une combinaison de couleurs et de trames par partie). Comme vous pouvez tout colorer en une fois après avoir terminé le trait, cela réduit considérablement l’effort de coloriage dans une animation dessinée à la main où le même personnage est dessiné à répétition. Si vous redessinez le trait, une marque de mise à jour apparaît sur la timeline et le panneau de calques pour vous indiquer que le remplissage automatique doit être réappliqué. Choisir « Exécuter le remplissage automatique » dans le menu à trois points de l’écran timeline recalcule d’un coup tous les calques de remplissage automatique marqués de l’indicateur de mise à jour. Vous évite de le relancer calque par calque dans le panneau des calques après avoir retracé le trait. Chaque partie d’un réglage de remplissage automatique a un réglage pour la gestion de la couleur du trait — une couleur spécifiée, identique à la couleur de remplissage, ou trace de couleur. Choisir la trace de couleur décale la teinte du trait pour correspondre à la couleur de remplissage, afin que le trait ne ressorte pas et se fonde naturellement. À mesure que les réglages s’accumulent, la liste affichée lors de l’attribution des parties s’allonge et devient difficile à parcourir. Depuis les réglages du projet (ou la boîte de dialogue d’attribution des parties dans le panneau des calques), vous pouvez la limiter aux seuls réglages utilisés dans ce projet, gardant la liste claire et facile à choisir. En augmentant « Combler l’écart entre traits et aplat », l’aplat passe plus loin sous le bord adouci des traits et l’écart entre le trait et l’aplat, visible avec un contour ou une couleur de trait identique à l’aplat, se réduit.';
 
   @override
   String get helpOnionSkinTitle => 'Papier calque';
@@ -1578,11 +1578,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Une fonctionnalité des réglages de saisie au stylet qui permet d’ajuster librement, via un graphique, la relation entre la pression réelle du stylet et son effet sur la taille et l’opacité du pinceau. Que vous vouliez des lignes épaisses même avec une légère pression, ou l’inverse — nécessitant une pression ferme pour obtenir des lignes épaisses —, vous pouvez personnaliser finement la sensation pour l’adapter à vos habitudes. Vous pouvez essayer de dessiner directement pour vérifier l’effet après avoir modifié les réglages.';
 
   @override
-  String get helpTimelineTitle => 'Chronologie';
+  String get helpTimelineTitle => 'Timeline';
 
   @override
   String get helpTimelineDesc =>
-      'L’écran de gestion de l’axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l’animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l’image se règle dans « Ordre d’empilement », pour toute la scène ou pour une plage d’images. Vous pouvez aussi appuyer longuement sur un élément pour en sélectionner plusieurs et les déplacer ensemble.';
+      'L’écran de gestion de l’axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l’animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même timeline. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l’image se règle dans « Ordre d’empilement », pour toute la scène ou pour une plage d’images. Vous pouvez aussi appuyer longuement sur un élément pour en sélectionner plusieurs et les déplacer ensemble.';
 
   @override
   String get helpSceneTitle => 'Scène';
@@ -1596,7 +1596,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpCameraKeyframeDesc =>
-      'Enregistre la position, le niveau de zoom et la rotation de la caméra à un point précis de la chronologie. Comme les valeurs sont automatiquement interpolées en douceur entre les images clés, vous pouvez facilement ajouter des mouvements de caméra tels que des panoramiques ou des zooms avant/arrière.';
+      'Enregistre la position, le niveau de zoom et la rotation de la caméra à un point précis de la timeline. Comme les valeurs sont automatiquement interpolées en douceur entre les images clés, vous pouvez facilement ajouter des mouvements de caméra tels que des panoramiques ou des zooms avant/arrière.';
 
   @override
   String get helpEffectFilterTitle => 'Filtre d’effet';
@@ -1674,7 +1674,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpShareDesc =>
-      'Un format de fichier dédié pour remettre un projet à quelqu’un d’autre (ou à un autre appareil de vous-même). Lorsque le destinataire ouvre ce fichier, il est dupliqué et ajouté à sa propre liste de projets. Le fichier .niashare d’origine lui-même n’est pas modifié.';
+      'Un format de fichier dédié pour remettre un projet à quelqu’un d’autre (ou à un autre de vos appareils). Lorsque le destinataire ouvre ce fichier, il est dupliqué et ajouté à sa propre liste de projets. Le fichier .niashare d’origine lui-même n’est pas modifié.';
 
   @override
   String get helpTransferTitle => 'Transfert (.niatra)';
@@ -1688,7 +1688,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Exportez en MP4, WebM, GIF ou AVI. L’export intégral d’un projet de plus de 90 secondes nécessite Premium ou l’avantage de durée étendue. Vous pouvez exporter les 90 premières secondes. Changer la cadence d’export conserve la durée de lecture. Vérifiez la durée et le logo final avant l’export. Les sons de la chronologie et le son des vidéos de matériel sont inclus dans les fichiers MP4, WebM et AVI (le GIF n’a pas de son).';
+      'Exportez en MP4, WebM, GIF ou AVI. L’export intégral d’un projet de plus de 90 secondes nécessite Premium ou l’avantage de durée étendue. Vous pouvez exporter les 90 premières secondes. Changer la cadence d’export conserve la durée de lecture. Vérifiez la durée et la marque de fin avant l’export. Les sons de la timeline et le son des matériaux vidéo sont inclus dans les fichiers MP4, WebM et AVI (le GIF n’a pas de son).';
 
   @override
   String get helpTransparentWebmTitle => 'WebM transparent';
@@ -1698,7 +1698,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Publiez vos animations et illustrations dans la communauté sous forme de vidéos YouTube, et parcourez les œuvres des autres utilisateurs. Basculez entre les onglets « Nouveautés », « Classement » et « Abonnements », et effectuez une recherche par titre d’œuvre ou nom du créateur. Passez en mode recherche par tag pour filtrer les œuvres par tag : n’importe quel utilisateur (pas seulement le créateur) peut ajouter ou retirer des tags, mais un tag verrouillé par le créateur ne peut être retiré que par lui, et toucher un tag filtre instantanément les œuvres correspondantes. Toucher une carte d’œuvre ouvre une fenêtre d’aperçu flottante déplaçable et redimensionnable, pour continuer à naviguer sur d’autres écrans pendant la lecture. Le bouton « Voir les détails » ouvre l’écran de détails de l’œuvre (créateur, date de publication, modification des tags, mise en favori, republication, etc.). Toucher le bouton « Suivre » à côté du nom d’un créateur l’ajoute à vos abonnements : l’onglet « Abonnements » regroupe alors uniquement les publications de ce créateur, triées par date. Vous seul pouvez consulter les listes des personnes que vous suivez, de vos abonnés et des œuvres que vous avez mises en favori. Les autres utilisateurs ne voient que le nombre d’abonnements et d’abonnés. Suivre une personne, mettre une œuvre en favori ou la repartager ne déclenche aucune notification individuelle à l’autre utilisateur concernant cette action. Vous pouvez repartager l’œuvre de n’importe qui d’autre (sauf la vôtre) avec le bouton « Repartager » ; lorsqu’un créateur que vous suivez repartage l’œuvre de quelqu’un d’autre, cette œuvre apparaît aussi dans votre onglet « Abonnements », triée selon la date la plus récente — sa date de publication d’origine ou sa date de republication (la carte affiche « Repartagé par… »). Les œuvres mises en favori apparaissent regroupées dans l’onglet « Favoris » de l’écran d’accueil, ainsi que dans l’onglet « Favoris » de votre propre page de créateur. Vous pouvez signaler des œuvres ou des comptes. Le masquage agit sur votre affichage seulement. Le blocage masque les publications des deux comptes lorsqu’ils sont connectés. Les vidéos verticales peuvent être visionnées en « mode vertical », qui les enchaîne comme un flux de vidéos courtes. Le nombre de publications par jour est limité : 1 par jour pour les membres gratuits, 3 par jour pour les membres Premium. Le bouton des filtres d’affichage en haut à droite (l’icône d’œil barré) permet de masquer les œuvres que vous ne souhaitez pas voir. Vous pouvez masquer les œuvres marquées « Contient des images ou vidéos générées par IA », et ajouter des titres masqués (comparés uniquement au titre de l’œuvre) et des tags masqués (comparés uniquement aux tags de la Place des œuvres), un par un avec « Ajouter ». Modifiez avec le crayon ou supprimez avec la corbeille ; aucune virgule ni # nécessaire. Ces filtres s’appliquent aux onglets « Nouveautés », « Classement » et « Abonnements » (repartages compris), au mode vertical, aux pages des créateurs, aux détails des œuvres et aux favoris. La mention « Contient des images ou vidéos générées par IA » est déclarée par l’auteur au moment de la publication, et lui seul peut la modifier ensuite (depuis « Mes publications » ou l’écran de détails de l’œuvre).';
+      'Publiez vos animations et illustrations dans la communauté sous forme de vidéos YouTube, et parcourez les œuvres des autres utilisateurs. Basculez entre les onglets « Nouveautés », « Classement », « Abonnements », « Recherche » et « Favoris », et effectuez une recherche par titre d’œuvre ou nom du créateur. Passez en mode recherche par tag pour filtrer les œuvres par tag : n’importe quel utilisateur (pas seulement le créateur) peut ajouter ou retirer des tags, mais un tag verrouillé par le créateur ne peut être retiré que par lui, et toucher un tag filtre instantanément les œuvres correspondantes. Toucher une carte d’œuvre ouvre une fenêtre d’aperçu flottante déplaçable et redimensionnable, pour continuer à naviguer sur d’autres écrans pendant la lecture. Le bouton « Voir les détails » ouvre l’écran de détails de l’œuvre (créateur, date de publication, modification des tags, mise en favori, repartage, etc.). Toucher le bouton « Suivre » à côté du nom d’un créateur l’ajoute à vos abonnements : l’onglet « Abonnements » regroupe alors uniquement les publications de ce créateur, triées par date. Vous seul pouvez consulter les listes des personnes que vous suivez, de vos abonnés et des œuvres que vous avez mises en favori. Les autres utilisateurs ne voient que le nombre d’abonnements et d’abonnés. Suivre une personne, mettre une œuvre en favori ou la repartager ne déclenche aucune notification individuelle à l’autre utilisateur concernant cette action. Vous pouvez repartager l’œuvre de n’importe qui d’autre (sauf la vôtre) avec le bouton « Repartager » ; lorsqu’un créateur que vous suivez repartage l’œuvre de quelqu’un d’autre, cette œuvre apparaît aussi dans votre onglet « Abonnements », triée selon la date la plus récente — sa date de publication d’origine ou sa date de repartage (la carte affiche « Repartagé par… »). Les œuvres mises en favori apparaissent regroupées dans l’onglet « Favoris » de la Place des œuvres, ainsi que dans l’onglet « Favoris » de votre propre page de créateur. Vous pouvez signaler des œuvres ou des comptes. Le masquage agit sur votre affichage seulement. Le blocage agit sur l’affichage des deux comptes lorsqu’ils sont connectés : chacun ne voit plus les publications de l’autre. Les vidéos verticales peuvent être visionnées en « mode vertical », qui les enchaîne comme un flux de vidéos courtes. Le nombre de publications par jour est limité : 1 par jour pour les membres gratuits, 3 par jour pour les membres Premium. Le bouton des filtres d’affichage en haut à droite (l’icône d’œil barré) permet de masquer les œuvres que vous ne souhaitez pas voir. Vous pouvez masquer les œuvres marquées « Contient des images ou vidéos générées par IA », et ajouter des titres masqués (comparés uniquement au titre de l’œuvre) et des tags masqués (comparés uniquement aux tags de la Place des œuvres), un par un avec « Ajouter ». Modifiez avec le crayon ou supprimez avec la corbeille ; aucune virgule ni # nécessaire. Ces filtres s’appliquent aux onglets « Nouveautés », « Classement » et « Abonnements » (repartages compris), au mode vertical, aux pages des créateurs, aux détails des œuvres et aux favoris. La mention « Contient des images ou vidéos générées par IA » est déclarée par l’auteur au moment de la publication, et lui seul peut la modifier ensuite (depuis « Mes publications » ou l’écran de détails de l’œuvre).';
 
   @override
   String get helpWatermarkEntryTitle => 'Filigrane';
@@ -1712,7 +1712,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpPremiumEntryDesc =>
-      'L’avantage de durée permet de créer et d’exporter jusqu’à deux heures. À l’expiration, le projet est conservé et ses 90 premières secondes peuvent être exportées avec les corrections appliquées. Le logo final dépend du droit actif au début de l’export.';
+      'L’avantage de durée permet de créer et d’exporter jusqu’à deux heures. À l’expiration, le projet est conservé et ses 90 premières secondes peuvent être exportées avec les corrections appliquées. La marque de fin dépend de l’avantage actif au début de l’export.';
 
   @override
   String get helpPremiumExpiryTitle => 'À l’expiration des avantages';
@@ -1730,7 +1730,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpMaterialClipTitle =>
-      'Clips de matériel (texte / image / vidéo / audio)';
+      'Clips de matériaux (texte / image / vidéo / audio)';
 
   @override
   String get helpMaterialClipDesc =>
@@ -1741,29 +1741,29 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpGestureSettingsDesc =>
-      'Permet d’associer des actions — annuler/rétablir, déplacement de fotogramme, pipette et plus — à un appui à deux doigts, un appui à trois doigts, un glissement à deux doigts ou un appui long. Les boutons du stylet (sur les modèles compatibles) peuvent aussi être associés séparément. Pratique pour déclencher des actions fréquentes d’un seul geste sans changer d’outil.';
+      'Permet d’associer des actions — annuler/rétablir, changement d’image, pipette et plus — à un appui à deux doigts, un appui à trois doigts, un glissement à deux doigts ou un appui long. Les boutons du stylet (sur les modèles compatibles) peuvent aussi être associés séparément. Pratique pour déclencher des actions fréquentes d’un seul geste sans changer d’outil.';
 
   @override
   String get helpBucketDetailSettingsTitle =>
-      'Réglages détaillés du seau de peinture';
+      'Réglages détaillés du pot de peinture';
 
   @override
   String get helpBucketDetailSettingsDesc =>
-      'Depuis la section « Seau de peinture » des réglages, vous pouvez ajuster la tolérance (quelle différence de couleur par rapport au pixel cliqué compte encore comme la même zone), l’extension en px (de combien la zone remplie dépasse la bordure pour combler les écarts du trait) et le remplissage sous le trait (compose le remplissage étendu derrière les pixels existants au lieu de peindre par-dessus le trait, préservant son apparence). Les ajuster aide quand le trait a de petits écarts ou que le remplissage semble incomplet.';
+      'Depuis la section « Pot de peinture » des réglages, vous pouvez ajuster la tolérance (quelle différence de couleur par rapport au pixel cliqué compte encore comme la même zone), l’extension en px (de combien la zone remplie dépasse la bordure pour combler les écarts du trait) et le remplissage sous le trait (compose le remplissage étendu derrière les pixels existants au lieu de peindre par-dessus le trait, préservant son apparence). Les ajuster aide quand le trait a de petits écarts ou que le remplissage semble incomplet.';
 
   @override
   String get helpStampToolTitle => 'Outil tampon';
 
   @override
   String get helpStampToolDesc =>
-      'Place une image enregistrée sur la toile comme un pinceau afin de réutiliser lignes de vitesse, motifs de fond et petits objets sans les redessiner. En mode pixel, les tampons utilisent le même traitement Pixel Art que le filtre pixel art, en conservant des bords de transparence nets pendant la pixellisation et la réduction des couleurs. Mosaïque est un effet distinct et n’est pas utilisé par le mode pixel du tampon. Le panneau permet aussi de régler la rotation et la taille.';
+      'Place une image enregistrée sur le canevas comme un pinceau afin de réutiliser lignes de vitesse, motifs de fond et petits objets sans les redessiner. En mode pixel, les tampons utilisent le même traitement Pixel Art que le filtre pixel art, en conservant des bords de transparence nets pendant la pixellisation et la réduction des couleurs. Mosaïque est un effet distinct et n’est pas utilisé par le mode pixel du tampon. Le panneau permet aussi de régler la rotation et la taille.';
 
   @override
   String get helpToneFillTitle => 'Remplissage en trame';
 
   @override
   String get helpToneFillDesc =>
-      'Passer le réglage de l’outil seau du remplissage uni au remplissage en trame permet de remplir avec une trame de demi-teintes ou de lignes choisie. Des trames en damier et en grille réservées au mode pixel sont aussi disponibles, pour des remplissages assortis à une texture pixel art. Idéal pour les volants, le tricot, les collants et autres motifs fins fastidieux à dessiner à la main. Vous pouvez aussi créer et ajouter vos propres trames personnalisées, ou les partager avec d’autres utilisateurs. La liste regroupe les trames, les lignes, les motifs textiles et les motifs pixel. Le nom des trames de dithering indique le grain, la taille de la matrice et la couverture.';
+      'Passer le réglage de l’outil pot de peinture du remplissage uni au remplissage en trame permet de remplir avec une trame de demi-teintes ou de lignes choisie. Des trames en damier et en grille réservées au mode pixel sont aussi disponibles, pour des remplissages assortis à une texture pixel art. Idéal pour les volants, le tricot, les collants et autres motifs fins fastidieux à dessiner à la main. Vous pouvez aussi créer et ajouter vos propres trames personnalisées, ou les partager avec d’autres utilisateurs. La liste regroupe les trames, les lignes, les motifs textiles et les motifs pixel. Le nom des trames de dithering indique le grain, la taille de la matrice et la couverture.';
 
   @override
   String get helpPixelModeTitle => 'Mode pixel';
@@ -1808,18 +1808,18 @@ class AppLocalizationsFr extends AppLocalizations {
       'En plus de la courbe de pression pour tablettes et écrans à stylet, cet écran permet d’associer des actions — comme basculer la gomme ou la pipette — aux boutons latéraux d’un stylet compatible. Vous pouvez aussi y régler l’intensité de la stabilisation, qui s’applique de la même façon à tous les pinceaux.';
 
   @override
-  String get helpMaterialListTitle => 'Liste des matériels';
+  String get helpMaterialListTitle => 'Liste des matériaux';
 
   @override
   String get helpMaterialListDesc =>
       'Un écran qui rassemble les images, vidéos et audios utilisés dans un projet. Il regroupe les fichiers source de tout ce qui est placé sur la timeline.';
 
   @override
-  String get helpFrameOperationsTitle => 'Opérations sur les fotogrammes';
+  String get helpFrameOperationsTitle => 'Opérations sur les images';
 
   @override
   String get helpFrameOperationsDesc =>
-      'Dans la liste des fotogrammes, vous pouvez ajouter, dupliquer et supprimer des fotogrammes, et en mode sélection multiple en déplacer, dupliquer ou supprimer plusieurs à la fois. Augmenter le nombre de maintien garde un même fotogramme affiché sur plusieurs cellules (un « maintien »), économisant du travail de dessin sur les plans avec peu de mouvement. Dans la liste des images du canevas, appuyez longuement sur une image pour la dupliquer, la supprimer ou changer ses images de maintien.';
+      'Dans la liste des images, vous pouvez ajouter, dupliquer et supprimer des images, et en mode sélection multiple en déplacer, dupliquer ou supprimer plusieurs à la fois. Augmenter le nombre de maintien garde une même image affichée sur plusieurs cellules (un « maintien »), économisant du travail de dessin sur les plans avec peu de mouvement. Dans la liste des images du canevas, appuyez longuement sur une image pour la dupliquer, la supprimer ou changer ses images de maintien.';
 
   @override
   String get helpSceneOperationsTitle => 'Opérations sur les scènes';
@@ -1883,7 +1883,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpLayerFolderDesc =>
-      'Permet d’organiser plusieurs calques dans un dossier. Garde le panneau des calques lisible même pour des illustrations avec beaucoup de parties. Le détourage ne peut pas traverser les limites d’un dossier, donc si vous l’utilisez, gardez les calques concernés dans le même dossier.';
+      'Permet d’organiser plusieurs calques dans un dossier. Garde le panneau des calques lisible même pour des illustrations avec beaucoup de parties. L’écrêtage ne peut pas traverser les limites d’un dossier, donc si vous l’utilisez, gardez les calques concernés dans le même dossier.';
 
   @override
   String get helpLayerMultiSelectTitle =>
@@ -1891,7 +1891,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpLayerMultiSelectDesc =>
-      'Le mode de sélection du panneau des calques permet de cocher plusieurs calques à la fois pour les fusionner ou les supprimer en masse. La fusion ne fonctionne qu’entre calques normaux, de trait de remplissage automatique et de remplissage automatique (les calques communs, dossiers et matériels de timeline ne peuvent pas être fusionnés).';
+      'Le mode de sélection du panneau des calques permet de cocher plusieurs calques à la fois pour les fusionner ou les supprimer en masse. La fusion ne fonctionne qu’entre calques normaux, de trait de remplissage automatique et de remplissage automatique (les calques communs, dossiers et matériaux de la timeline ne peuvent pas être fusionnés).';
 
   @override
   String get helpDrawingAreaTitle => 'Zone de dessin';
@@ -1919,7 +1919,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpWatermarkEditDesc =>
-      'Modifiez l’angle, la taille, l’opacité et la plage dans la piste des calques partagés. Les filigranes déjà placés restent dans les projets et les exports. Un avantage actif est requis pour modifier ces réglages.';
+      'Modifiez l’angle, la taille, l’opacité et la plage dans la piste des calques communs de la timeline. Les filigranes déjà placés restent dans les projets et les exports. Un avantage actif est requis pour modifier ces réglages.';
 
   @override
   String get helpAudioClipTitle => 'Volume';
@@ -1929,11 +1929,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Un clip audio placé sur la timeline peut avoir son volume et ses durées de fondu d’entrée et de sortie ajustés depuis sa fiche détaillée. Utile pour équilibrer le volume des effets sonores et de la musique, ou adoucir le début et la fin d’un morceau.';
 
   @override
-  String get helpPenSubToolTitle => 'Stylet';
+  String get helpPenSubToolTitle => 'Plume';
 
   @override
   String get helpPenSubToolDesc =>
-      'Un appui long sur l’outil stylet le fait passer du dessin normal aux sous-outils de remplissage en trame ou de placement de tampon. Permet de passer d’une tâche à l’autre avec le même stylet sans changer d’outil sans arrêt.';
+      'Un appui long sur l’outil plume le fait passer du dessin normal aux sous-outils de remplissage en trame ou de placement de tampon. Permet de passer d’une tâche à l’autre avec la même plume sans changer d’outil sans arrêt.';
 
   @override
   String get helpTiltDetectionTitle => 'Détection d’inclinaison';
@@ -1954,14 +1954,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'Dans « Préréglage », choisissez « Standard », « Haute qualité » ou « Personnalisé ». Le mode « Personnalisé » permet de régler les images par seconde (i/s). Affiche la progression pendant l’export d’une vidéo ou d’une image, et permet d’annuler en cours de route. Le temps nécessaire dépend des performances de l’appareil. Dans Œuvres, sur l’écran d’accueil, recherchez le fichier par le nom du projet. Choisissez Partager pour l’enregistrer dans Photos ou l’ouvrir dans une autre application.';
+      'Dans « Préréglage », choisissez « Standard », « Haute qualité » ou « Personnalisé ». Le mode « Personnalisé » permet de régler les images par seconde (i/s). Affiche la progression pendant l’export d’une vidéo ou d’une image, et permet d’annuler en cours de route. Le temps nécessaire dépend des performances de l’appareil. Dans Œuvres, sur l’écran d’accueil, recherchez le fichier par le nom du projet. Choisissez Partager pour l’enregistrer dans une app photo ou l’ouvrir dans une autre application.';
 
   @override
   String get helpDrawingFilterTitle => 'Filtres de dessin';
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 26 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Anime rétro, Tube cathodique, Seuil, Œil de poisson, Aberration chromatique, Distorsion optique, Pixel art, Changement de texture, Fondu d’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Inverser les couleurs, Mosaïque, Bruit, Ombrage sphérique et Bord aquarelle. Bord aquarelle accumule la couleur uniquement sur les bords de ce qui est peint sur le calque de travail et les intensifie, comme une aquarelle sèche (à l’intérieur des bords, la peinture reste telle quelle. Avec « Aussi aux limites de couleur », les limites entre couleurs voisines reçoivent aussi un bord). Style anime réduit les couleurs et trace un trait de l’« Épaisseur de bordure » du côté le plus sombre de chaque limite où les couleurs voisines diffèrent d’au moins le « Seuil de différence de couleur » (les traits du dessin ne s’épaississent pas). Prisme peint chaque forme du calque avec les six couleurs de l’arc-en-ciel (rouge, vert, cyan, bleu, violet, rouge), la floute et passe le calque en mode Densité linéaire -. Dessinez d’abord sur leur propre calque de petites formes fines comme des feuilles, d’une couleur sombre : vous obtenez de doux reflets arc-en-ciel sur votre dessin (l’Intensité du flou se mesure comme un flou gaussien ordinaire). L’Ombrage sphérique applique une couleur de lumière à l’intérieur d’une lumière elliptique et une couleur d’ombre à l’extérieur, uniquement sur le dessin (la lumière peut aussi être déplacée sur le canevas). Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes puissant, uniquement sur la zone peinte sur le canevas avec le « Pinceau » et le « Pot de peinture » du panneau (corrigée avec la « Gomme » ; elle part de la sélection ou du calque de sélection s’il y en a un). Lorsque le canevas comporte une sélection, les filtres de dessin ne s’appliquent qu’à l’intérieur. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Quand les couleurs sont limitées, les zones dont aucune couleur permise n’est proche sont faites de deux ou trois couleurs permises disposées selon un motif régulier (tramage) qui se rapproche davantage de l’original ; les contours restent nets. Avec un nombre de couleurs, celles-ci sont prises parmi ce qui compose la plus grande partie de l’image. Le tramage peut être désactivé pour remplir chaque point de la couleur la plus proche. Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par des curseurs de points en largeur et en hauteur (1 tout à gauche, la taille du canevas tout à droite) ; déplacer l’un déplace l’autre en gardant les proportions du dessin, et les deux réglages restent liés. Dans les deux cas, les points restent carrés, sans bord semi-transparent. Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point. Choisissez « Ajouter un point de contrôle » à côté d’Appliquer et touchez une ligne pour ajouter un point, ou choisissez « Supprimer un point de contrôle » et touchez un point pour le supprimer (sans aucun des deux choisi, toucher un point demande confirmation avant de le supprimer). La géométrie modifiée est utilisée directement dans le résultat appliqué, et le déplacement, l’ajout ou la suppression de points peuvent être annulés et rétablis un par un avec Annuler et Rétablir de l’éditeur de filtres. Sur la Courbe de tons, touchez une zone vide pour ajouter un point, faites glisser un point pour le déplacer et appuyez longuement dessus pour le supprimer ; les courbes R, G et B s’appliquent après la courbe RGB. Les Niveaux se règlent aussi séparément pour R, G et B, et le Gamma modifie les tons moyens. L’« Empiètement vers l’intérieur » du contour élargit le bord vers l’intérieur de la forme d’origine, et le nouveau calque du contour est placé juste sous le calque d’origine. L’aberration chromatique permet de répartir le décalage entre X (horizontal), Y (vertical) et Z (vers l’extérieur depuis le centre). Le centre et le rayon de l’œil de poisson se déplacent aussi sur le canevas, avec le + et la poignée du cercle. Vignettage assombrit doucement les quatre coins de toute la toile (les zones transparentes non dessinées reçoivent aussi l’ombre). La « Portée » règle jusqu’où il s’étend des coins vers le centre, et l’« Intensité » à quel point les coins s’assombrissent. Distorsion de lentille fonctionne comme de vraies lunettes à forte correction : ce que l’on voit à travers le verre rétrécit uniformément vers son centre (valeurs négatives, pour la myopie) ou s’agrandit (valeurs positives, pour l’hypermétropie), et le contour se décale en marche au bord du verre. Accumulation d’encre ne se forme qu’à l’intérieur des angles où les traits se rejoignent à l’« Angle maximal » ou moins (à 90°, la valeur initiale, les angles aigus et droits : un V, le côté étroit d’un croisement, une jonction en T, un coin carré), jamais dans les angles plus ouverts : au point de rencontre elle a l’« Épaisseur centrale » depuis le bord du trait, puis s’affine en ligne droite jusqu’à disparaître en une pointe douce au bout de la « Plage » (même avec une grande « Épaisseur centrale », elle ne bombe jamais au-delà de la droite qui relie les extrémités des deux accumulations : au maximum, le milieu reste plat) ; si un trait s’arrête avant, l’accumulation le long de ce trait s’affine jusqu’à disparaître là où il s’arrête, si bien que chaque trait peut avoir sa propre longueur, et les deux accumulations se rejoignent tout de même au milieu de l’angle, aussi épaisses depuis l’un que depuis l’autre trait (celle du trait le plus long continue ensuite de s’affiner jusqu’au bout de la plage). Encrage automatique suit le milieu des traits du brouillon et les dessine fins. Les traits proches l’un de l’autre restent des traits distincts tant qu’un espace les sépare ; seules les petites taches de papier à l’intérieur d’un trait sont comblées. Là où deux traits se rejoignent, ils se rapprochent peu à peu comme dans le brouillon, au lieu de devenir un seul trait au milieu. Là où des traits se croisent ou se superposent, chacun continue comme dans le brouillon (il ne se plie pas vers le croisement et deux traits superposés ne se fondent pas en un seul). Les traits qui se croisent en biais continuent tout droit à travers le croisement, et ceux qui ne font que se toucher (comme le contour des cheveux tracé le long de la tête) restent des traits distincts, chacun de son côté. Les points, comme les yeux, restent des points pleins. Les branches plus courtes que l’« Épaisseur du brouillon » ne sont pas dessinées. « Effiler les extrémités » peut être activé ou désactivé ; désactivé, les traits gardent la même épaisseur jusqu’à leurs extrémités. Fondu d’arrière-plan superpose la lumière et l’ombre de l’arrière-plan avec le mode de fusion « Lumière crue » (la couleur de l’ombre n’est ni noire ni grise, mais celle des ombres de l’arrière-plan lui-même, assombrie). La couleur de l’environnement est superposée à tout le dessin en « Incrustation » pour en fixer la teinte générale, la lumière renvoyée par le sol et par les alentours s’ajoute en « Écran », et une lumière colorée intense comme un néon brille le long du contour en « Addition (lueur) ». « Accorder aux tons de l’arrière-plan » ramène dans sa plage les couleurs plus claires ou plus vives que l’arrière-plan, et donne aux tons sombres, moyens et clairs la dominante des tons de l’arrière-plan de même luminosité (le noir du trait ne change pas). « Intensité du flou » indique combien l’arrière-plan est flouté avant d’en prendre les couleurs.';
+      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 26 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Anime rétro, Tube cathodique, Seuil, Œil de poisson, Aberration chromatique, Distorsion de lentille, Pixel art, Changement de texture, Fondu d’arrière-plan, Accumulation d’encre, Encrage automatique, Prisme, Inverser les couleurs, Mosaïque, Bruit, Ombrage sphérique et Bord aquarelle. Bord aquarelle accumule la couleur uniquement sur les bords de ce qui est peint sur le calque de travail et les intensifie, comme une aquarelle sèche (à l’intérieur des bords, la peinture reste telle quelle. Avec « Aussi aux limites de couleur », les limites entre couleurs voisines reçoivent aussi un bord). Style anime réduit les couleurs et trace un trait de l’« Épaisseur de bordure » du côté le plus sombre de chaque limite où les couleurs voisines diffèrent d’au moins le « Seuil de différence de couleur » (les traits du dessin ne s’épaississent pas). Prisme peint chaque forme du calque avec les six couleurs de l’arc-en-ciel (rouge, vert, cyan, bleu, violet, rouge), la floute et passe le calque en mode Densité linéaire -. Dessinez d’abord sur leur propre calque de petites formes fines comme des feuilles, d’une couleur sombre : vous obtenez de doux reflets arc-en-ciel sur votre dessin (l’Intensité du flou se mesure comme un flou gaussien ordinaire). L’Ombrage sphérique applique une couleur de lumière à l’intérieur d’une lumière elliptique et une couleur d’ombre à l’extérieur, uniquement sur le dessin (la lumière peut aussi être déplacée sur le canevas). Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion de lentille applique une déformation localisée, comme à travers un verre de lunettes puissant, uniquement sur la zone peinte sur le canevas avec le « Pinceau » et le « Pot de peinture » du panneau (corrigée avec la « Gomme » ; elle part de la sélection ou du calque de sélection s’il y en a un). Lorsque le canevas comporte une sélection, les filtres de dessin ne s’appliquent qu’à l’intérieur. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Quand les couleurs sont limitées, les zones dont aucune couleur permise n’est proche sont faites de deux ou trois couleurs permises disposées selon un motif régulier (tramage) qui se rapproche davantage de l’original ; les contours restent nets. Avec un nombre de couleurs, celles-ci sont prises parmi ce qui compose la plus grande partie de l’image. Le tramage peut être désactivé pour remplir chaque point de la couleur la plus proche. Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par des curseurs de points en largeur et en hauteur (1 tout à gauche, la taille du canevas tout à droite) ; déplacer l’un déplace l’autre en gardant les proportions du dessin, et les deux réglages restent liés. Dans les deux cas, les points restent carrés, sans bord semi-transparent. L’Encrage automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point. Choisissez « Ajouter un point de contrôle » à côté d’Appliquer et touchez une ligne pour ajouter un point, ou choisissez « Supprimer un point de contrôle » et touchez un point pour le supprimer (sans aucun des deux choisi, toucher un point demande confirmation avant de le supprimer). La géométrie modifiée est utilisée directement dans le résultat appliqué, et le déplacement, l’ajout ou la suppression de points peuvent être annulés et rétablis un par un avec Annuler et Rétablir de l’éditeur de filtres. Sur la Courbe de tons, touchez une zone vide pour ajouter un point, faites glisser un point pour le déplacer et appuyez longuement dessus pour le supprimer ; les courbes R, G et B s’appliquent après la courbe RGB. Les Niveaux se règlent aussi séparément pour R, G et B, et le Gamma modifie les tons moyens. L’« Empiètement vers l’intérieur » du contour élargit le bord vers l’intérieur de la forme d’origine, et le nouveau calque du contour est placé juste sous le calque d’origine. L’aberration chromatique permet de répartir le décalage entre X (horizontal), Y (vertical) et Z (vers l’extérieur depuis le centre). Le centre et le rayon de l’œil de poisson se déplacent aussi sur le canevas, avec le + et la poignée du cercle. Vignettage assombrit doucement les quatre coins de tout le canevas (les zones transparentes non dessinées reçoivent aussi l’ombre). La « Portée » règle jusqu’où il s’étend des coins vers le centre, et l’« Intensité » à quel point les coins s’assombrissent. Distorsion de lentille fonctionne comme de vraies lunettes à forte correction : ce que l’on voit à travers le verre rétrécit uniformément vers son centre (valeurs négatives, pour la myopie) ou s’agrandit (valeurs positives, pour l’hypermétropie), et le contour se décale en marche au bord du verre. Accumulation d’encre ne se forme qu’à l’intérieur des angles où les traits se rejoignent à l’« Angle maximal » ou moins (à 90°, la valeur initiale, les angles aigus et droits : un V, le côté étroit d’un croisement, une jonction en T, un coin carré), jamais dans les angles plus ouverts : au point de rencontre elle a l’« Épaisseur centrale » depuis le bord du trait, puis s’affine en ligne droite jusqu’à disparaître en une pointe douce au bout de la « Plage » (même avec une grande « Épaisseur centrale », elle ne bombe jamais au-delà de la droite qui relie les extrémités des deux accumulations : au maximum, le milieu reste plat) ; si un trait s’arrête avant, l’accumulation le long de ce trait s’affine jusqu’à disparaître là où il s’arrête, si bien que chaque trait peut avoir sa propre longueur, et les deux accumulations se rejoignent tout de même au milieu de l’angle, aussi épaisses depuis l’un que depuis l’autre trait (celle du trait le plus long continue ensuite de s’affiner jusqu’au bout de la plage). Encrage automatique suit le milieu des traits du brouillon et les dessine fins. Les traits proches l’un de l’autre restent des traits distincts tant qu’un espace les sépare ; seules les petites taches de papier à l’intérieur d’un trait sont comblées. Là où deux traits se rejoignent, ils se rapprochent peu à peu comme dans le brouillon, au lieu de devenir un seul trait au milieu. Là où des traits se croisent ou se superposent, chacun continue comme dans le brouillon (il ne se plie pas vers le croisement et deux traits superposés ne se fondent pas en un seul). Les traits qui se croisent en biais continuent tout droit à travers le croisement, et ceux qui ne font que se toucher (comme le contour des cheveux tracé le long de la tête) restent des traits distincts, chacun de son côté. Les points, comme les yeux, restent des points pleins. Les branches plus courtes que l’« Épaisseur du brouillon » ne sont pas dessinées. « Effiler les extrémités » peut être activé ou désactivé ; désactivé, les traits gardent la même épaisseur jusqu’à leurs extrémités. Fondu d’arrière-plan superpose la lumière et l’ombre de l’arrière-plan avec le mode de fusion « Lumière crue » (la couleur de l’ombre n’est ni noire ni grise, mais celle des ombres de l’arrière-plan lui-même, assombrie). La couleur de l’environnement est superposée à tout le dessin en « Incrustation » pour en fixer la teinte générale, la lumière renvoyée par le sol et par les alentours s’ajoute en « Écran », et une lumière colorée intense comme un néon brille le long du contour en « Addition (lueur) ». « Accorder aux tons de l’arrière-plan » ramène dans sa plage les couleurs plus claires ou plus vives que l’arrière-plan, et donne aux tons sombres, moyens et clairs la dominante des tons de l’arrière-plan de même luminosité (le noir du trait ne change pas). « Intensité du flou » indique combien l’arrière-plan est flouté avant d’en prendre les couleurs.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -2030,7 +2030,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsAutofillBaseCoatDesc =>
-      'Le remplissage automatique sert normalement à colorer partie par partie, mais inutile de tout découper soigneusement : l’utiliser comme une seule couche de base d’une couleur unie sur tout le trait est déjà bien utile en soi. Il remplit tout l’intérieur du trait d’un coup, ce qui évite les oublis de remplissage (les interstices où la couleur du dessous transparaît) fréquents avec le seau manuel. Peignez ensuite vos couleurs à la main par-dessus, et vous profitez du gain sans le travail de découpage par partie.';
+      'Le remplissage automatique sert normalement à colorer partie par partie, mais inutile de tout découper soigneusement : l’utiliser comme une seule couche de base d’une couleur unie sur tout le trait est déjà bien utile en soi. Il remplit tout l’intérieur du trait d’un coup, ce qui évite les oublis de remplissage (les interstices où la couleur du dessous transparaît) fréquents avec un remplissage manuel au pot de peinture. Peignez ensuite vos couleurs à la main par-dessus, et vous profitez du gain sans le travail de découpage par partie.';
 
   @override
   String get tipsAutofillManualPartColorTitle =>
@@ -2114,11 +2114,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsGradientTraceTitle =>
-      'Remplissage automatique en dégradé + calque de couleur pour un fondu naturel';
+      'Remplissage automatique en dégradé + trace de couleur pour un fondu naturel';
 
   @override
   String get tipsGradientTraceDesc =>
-      'En utilisant un dégradé dans un réglage de remplissage automatique, réglez le mode de couleur du trait sur calque de couleur pour que la couleur du trait suive les subtils changements du dégradé, évitant que la limite ne ressorte.';
+      'En utilisant un dégradé dans un réglage de remplissage automatique, réglez le mode de couleur du trait sur trace de couleur pour que la couleur du trait suive les subtils changements du dégradé, évitant que la limite ne ressorte.';
 
   @override
   String get tipsGradientOutlineHairTitle =>
@@ -2186,7 +2186,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeTitle =>
-      'Dégradé de trait + fondu pour un rendu pinceau calligraphique';
+      'Atténuation du trait + fondu pour un rendu pinceau calligraphique';
 
   @override
   String get tipsStrokeDecayFadeDesc =>
@@ -2234,11 +2234,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsVerticalPixelFontTitle =>
-      'Mélangez images réelles et dessin à la main pour du « prise de vue réelle × anime »';
+      'Mélangez images réelles et dessin à la main pour un rendu « prise de vue réelle × anime »';
 
   @override
   String get tipsVerticalPixelFontDesc =>
-      'Une astuce possible uniquement parce que cette app est à la fois une app d’illustration et un éditeur vidéo. Placez un clip vidéo réel sur la timeline, puis utilisez le papier calque sur un calque au-dessus pour dessiner à la main des traits de vitesse ou un personnage par-dessus les images — créant une vidéo mixte où une animation dessinée à la main se superpose à des prises de vue réelles.';
+      'Une astuce rendue possible parce que cette app est à la fois une app d’illustration et un éditeur vidéo. Placez un clip vidéo réel sur la timeline, puis utilisez le papier calque sur un calque au-dessus pour dessiner à la main des traits de vitesse ou un personnage par-dessus les images — créant une vidéo mixte où une animation dessinée à la main se superpose à des prises de vue réelles.';
 
   @override
   String get tipsTimelineMarkerTitle =>
@@ -2282,11 +2282,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsQuickToolPenSubTitle =>
-      'Outil rapide + sous-outils du stylet pour un flux de travail sans interruption';
+      'Outil rapide + sous-outils de la plume pour un flux de travail sans interruption';
 
   @override
   String get tipsQuickToolPenSubDesc =>
-      'Enregistrez vos outils les plus utilisés dans l’outil rapide, et profitez aussi des sous-outils du stylet (appui long sur le stylet pour passer au remplissage en trame ou au placement de tampon) — vous réduirez les allers-retours entre panneaux et garderez votre rythme.';
+      'Enregistrez vos outils les plus utilisés dans l’outil rapide, et profitez aussi des sous-outils de la plume (appui long sur la plume pour passer au remplissage en trame ou au placement de tampon) — vous réduirez les allers-retours entre panneaux et garderez votre rythme.';
 
   @override
   String get tipsAutofillToneReuseTitle =>
@@ -2310,7 +2310,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsHomeWidgetDesc =>
-      'Choisissez une œuvre depuis Réglages → Widgets de l’écran d’accueil, et une image de celle-ci s’affichera en image statique sur l’écran d’accueil du téléphone. L’écran « Choisir une œuvre » reprend le même tri, la même recherche et le même filtre des favoris que l’onglet des projets, et le sélecteur d’image propose les mêmes commandes de lecture et de recherche que la timeline pour trouver l’image idéale. Ajoutez aussi les widgets de création et de la place pour accéder en un geste au dessin ou à la consultation des œuvres publiées depuis l’écran d’accueil.';
+      'Choisissez une œuvre depuis Réglages → Widgets de l’écran d’accueil, et une image de celle-ci s’affichera en image statique sur l’écran d’accueil du téléphone. L’écran « Choisir une œuvre » reprend le même tri, la même recherche et le même filtre des favoris que l’onglet des projets, et le sélecteur d’image propose les mêmes commandes de lecture et de recherche que la timeline pour trouver l’image idéale. Ajoutez aussi les widgets « Créer une animation » et « Place des œuvres » pour accéder en un geste au dessin ou à la consultation des œuvres publiées depuis l’écran d’accueil.';
 
   @override
   String get tipsAutofillTransparentFixTitle =>
@@ -2330,11 +2330,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsClippingGradientTitle =>
-      'Détourage + dégradé pour garder l’ombrage modifiable';
+      'Écrêtage + dégradé pour garder l’ombrage modifiable';
 
   @override
   String get tipsClippingGradientDesc =>
-      'Détourez un calque de dégradé sur un calque de personnage, et vous pourrez réajuster l’ombrage juste en changeant l’étendue et l’angle du dégradé — plus besoin de redessiner sa forme au pinceau.';
+      'Écrêtez un calque de dégradé sur un calque de personnage, et vous pourrez réajuster l’ombrage juste en changeant l’étendue et l’angle du dégradé — plus besoin de redessiner sa forme au pinceau.';
 
   @override
   String get tipsToneCurveSepiaTitle =>
@@ -2374,7 +2374,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsVideoTrimReuseDesc =>
-      'Même le même fichier vidéo peut donner un plan différent à chaque fois en changeant son début/fin d’utilisation par clip. Apporte de la variété sans ajouter de nouveau matériel source.';
+      'Même le même fichier vidéo peut donner un plan différent à chaque fois en changeant son début/fin d’utilisation par clip. Apporte de la variété sans ajouter de nouveau matériau.';
 
   @override
   String get tipsSaveSlotAutoSaveTitle =>
@@ -2596,7 +2596,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpBasicGestureDesc =>
-      'Une simple pression sur une icône de la barre d’outils bascule vers cet outil. Appuyez longuement sur cette icône, ou faites-la glisser vers le haut, pour ouvrir ses réglages détaillés. Derrière cet appui long ou ce balayage se trouvent : pinceau, trame, tampon ou remplissage au lasso pour le stylo ; remplissage uni ou tramé pour le pot ; rectangle, lasso ou sélection automatique pour l’outil de sélection ; flou ou mosaïque pour l’outil doigt ; et la liste des outils enregistrés pour le changement rapide. Un double appui sur une icône affiche une brève description en bas de l’écran.\nSur le canevas, pincez à deux doigts pour zoomer, faites glisser à deux doigts pour vous déplacer, touchez à deux doigts pour annuler et à trois doigts pour rétablir. Appuyez deux fois sur le bord gauche ou droit de l’écran pour passer à l’image précédente ou suivante.\nAvec une souris ou une tablette graphique, la molette zoome et le glissement avec le bouton central déplace la vue.';
+      'Une simple pression sur une icône de la barre d’outils bascule vers cet outil. Appuyez longuement sur cette icône, ou faites-la glisser vers le haut, pour ouvrir ses réglages détaillés. Derrière cet appui long ou ce balayage se trouvent : pinceau, trame, tampon ou remplissage au lasso pour la plume ; remplissage uni ou tramé pour le pot ; rectangle, lasso ou sélection automatique pour l’outil de sélection ; flou ou mosaïque pour l’outil doigt ; et la liste des outils enregistrés pour le changement rapide. Un double appui sur une icône affiche une brève description en bas de l’écran.\nSur le canevas, pincez à deux doigts pour zoomer, faites glisser à deux doigts pour vous déplacer, touchez à deux doigts pour annuler et à trois doigts pour rétablir. Appuyez deux fois sur le bord gauche ou droit de l’écran pour passer à l’image précédente ou suivante.\nAvec une souris ou une tablette graphique, la molette zoome et le glissement avec le bouton central déplace la vue.';
 
   @override
   String get toolbarStampColorLockedSnackbar =>
@@ -2668,7 +2668,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get widgetSettingsDescription =>
-      'Placez trois widgets sur votre écran d’accueil : une image d’une œuvre de votre choix, « Créer » et « Place ». Ajoutez-les par un appui long sur l’écran d’accueil.';
+      'Placez trois widgets sur votre écran d’accueil : une image d’une œuvre de votre choix, « Créer une animation » et « Place des œuvres ». Ajoutez-les par un appui long sur l’écran d’accueil.';
 
   @override
   String get widgetSettingsSubtitle => 'Œuvre à afficher, couleur du widget';
@@ -2690,13 +2690,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get widgetSectionCreate => 'Widget de création';
 
   @override
-  String get widgetSectionCreateDesc => 'Un appui ouvre l’écran « Créer ».';
+  String get widgetSectionCreateDesc =>
+      'Un appui ouvre l’écran « Créer une animation ».';
 
   @override
-  String get widgetSectionPlaza => 'Widget de la place';
+  String get widgetSectionPlaza => 'Widget de la Place des œuvres';
 
   @override
-  String get widgetSectionPlazaDesc => 'Un appui ouvre la Place.';
+  String get widgetSectionPlazaDesc => 'Un appui ouvre la Place des œuvres.';
 
   @override
   String get widgetArtworkNone => 'Aucune œuvre sélectionnée';
@@ -3091,7 +3092,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String exportPreviewAtFps(int fps) {
-    return 'Voir l’aperçu à $fps fps dans la chronologie';
+    return 'Voir l’aperçu à $fps i/s dans la timeline';
   }
 
   @override
@@ -3160,7 +3161,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumBannerToneCurveBody =>
-      'Ajustez la luminosité et les couleurs d’un calque de dessin avec Courbe de tonalité grâce à l’abonnement Premium ou à l’avantage correspondant.';
+      'Ajustez la luminosité et les couleurs d’un calque de dessin avec Courbe de tons grâce à l’abonnement Premium ou à l’avantage correspondant.';
 
   @override
   String get premiumBannerLevelsBody =>
@@ -3231,11 +3232,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get exportOutdatedAutofillTitle =>
-      'Le coloriage automatique n’est pas à jour';
+      'Le remplissage automatique n’est pas à jour';
 
   @override
   String get exportOutdatedAutofillBody =>
-      'Certains calques de coloriage automatique n’ont pas été mis à jour. Exporter quand même ?';
+      'Certains calques de remplissage automatique n’ont pas été mis à jour. Exporter quand même ?';
 
   @override
   String get exportContinueButton => 'Continuer';
@@ -3254,9 +3255,9 @@ class AppLocalizationsFr extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count sons n’ont pas pu être ajoutés à l’export (leurs fichiers de matériel sont absents ou illisibles). La vidéo a été exportée sans eux.',
+          '$count sons n’ont pas pu être ajoutés à l’export (leurs fichiers de matériau sont absents ou illisibles). La vidéo a été exportée sans eux.',
       one:
-          '$count son n’a pas pu être ajouté à l’export (son fichier de matériel est absent ou illisible). La vidéo a été exportée sans lui.',
+          '$count son n’a pas pu être ajouté à l’export (son fichier de matériau est absent ou illisible). La vidéo a été exportée sans lui.',
     );
     return '$_temp0';
   }
@@ -3267,16 +3268,16 @@ class AppLocalizationsFr extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count vidéos n’ont pas pu être affichées dans l’export (leurs fichiers de matériel sont absents ou illisibles). Rien n’a été dessiné à leur place.',
+          '$count vidéos n’ont pas pu être affichées dans l’export (leurs fichiers de matériau sont absents ou illisibles). Rien n’a été dessiné à leur place.',
       one:
-          '$count vidéo n’a pas pu être affichée dans l’export (son fichier de matériel est absent ou illisible). Rien n’a été dessiné à sa place.',
+          '$count vidéo n’a pas pu être affichée dans l’export (son fichier de matériau est absent ou illisible). Rien n’a été dessiné à sa place.',
     );
     return '$_temp0';
   }
 
   @override
   String get exportSaveLocationHint =>
-      'Dans Œuvres, sur l’écran d’accueil, recherchez le fichier par le nom du projet. Choisissez Partager pour l’enregistrer dans Photos ou l’ouvrir dans une autre application.';
+      'Dans Œuvres, sur l’écran d’accueil, recherchez le fichier par le nom du projet. Choisissez Partager pour l’enregistrer dans une app photo ou l’ouvrir dans une autre application.';
 
   @override
   String get exportOpenWorks => 'Ouvrir les œuvres';
@@ -3508,7 +3509,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get penSubToolToneTooltipMessage =>
-      'Choisissez une trame pour peindre des motifs de trame avec le pot de peinture ou le stylo.';
+      'Choisissez une trame pour peindre des motifs de trame avec le pot de peinture ou la plume.';
 
   @override
   String get penSubToolStampTooltipMessage =>
@@ -3625,7 +3626,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get brushSettingsMixingWatercolorHint =>
-      'Peint avec la couleur choisie. Sur une autre peinture, la couleur se superpose comme une peinture transparente et s’y mélange. Quand vous levez le stylet, le lavis sèche et se diffuse au-delà du pinceau. Plus d’eau le rend plus clair et plus transparent, le fond dans les couleurs du dessous et l’étend davantage. Moins d’eau donne un tracé net, qui se mélange peu et s’étend à peine. Pour que la couleur s’accumule sur le bord, appliquez le filtre de dessin « Bord aquarelle ».';
+      'Peint avec la couleur choisie. Sur une autre peinture, la couleur se superpose comme une peinture transparente et s’y mélange. Quand vous levez le stylet, le lavis sèche et se diffuse au-delà du pinceau. Plus d’eau le rend plus clair et plus transparent, le fait se fondre davantage dans les couleurs du dessous et l’étend plus loin. Moins d’eau donne un tracé net, qui se mélange peu et s’étend à peine. Pour que la couleur s’accumule sur le bord, appliquez le filtre de dessin « Bord aquarelle ».';
 
   @override
   String get projectDetailNotFoundTitle => 'Projet';
@@ -3868,14 +3869,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get perfSettingsOnionCountPrevLabel =>
-      'Nombre d’images de calque (avant)';
+      'Nombre d’images du papier calque (avant)';
 
   @override
   String get perfSettingsShowNextOnionTitle => 'Afficher l’image suivante';
 
   @override
   String get perfSettingsOnionCountNextLabel =>
-      'Nombre d’images de calque (après)';
+      'Nombre d’images du papier calque (après)';
 
   @override
   String get perfSettingsSaveModeSlot => 'Par emplacements';
@@ -4594,11 +4595,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineExportMenuItem => 'Exporter';
 
   @override
-  String get timelineExportFrameMenuItem => 'Exporter l’image en tant qu’image';
+  String get timelineExportFrameMenuItem => 'Exporter l’image en PNG/JPEG';
 
   @override
-  String get timelineExportFrameDialogTitle =>
-      'Exporter l’image en tant qu’image';
+  String get timelineExportFrameDialogTitle => 'Exporter l’image en PNG/JPEG';
 
   @override
   String get timelineExportFrameDialogMessage =>
@@ -4612,7 +4612,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String timelineExportFrameSuccessSnackbar(String fileName) {
-    return 'Enregistré sous $fileName (consultable dans l’onglet des créations)';
+    return 'Enregistré sous $fileName (consultable dans l’onglet Œuvres)';
   }
 
   @override
@@ -4799,15 +4799,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String saveTreeDeleteOptionSubtitle(int count) {
-    return 'Supprime définitivement les $count éléments non sélectionnés.\nLibère de l’espace de stockage.\n※ Les données supprimées ne peuvent pas être récupérées.';
+    return 'Supprime définitivement les $count éléments non sélectionnés.\nLibère de l’espace de stockage.\nRemarque : les données supprimées ne peuvent pas être récupérées.';
   }
 
   @override
   String get saveTreeApplyChangeButton => 'Appliquer le changement';
 
   @override
-  String get canvasEditMenuAutofillPresets =>
-      'Réglages de coloriage automatique';
+  String get canvasEditMenuAutofillPresets => 'Réglages de remplissage auto';
 
   @override
   String get canvasEditMenuAutofillPresetsSubtitle =>
@@ -5151,7 +5150,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get layerPanelCommonDeleteMidDialogBody =>
-      'La plage d’affichage d’un calque partagé ne peut être qu’une seule plage continue, elle ne peut donc pas être supprimée depuis une image au milieu de cette plage. Choisissez plutôt de conserver la partie avant ou après cette image.';
+      'La plage d’affichage d’un calque commun ne peut être qu’une seule plage continue, elle ne peut donc pas être supprimée depuis une image au milieu de cette plage. Choisissez plutôt de conserver la partie avant ou après cette image.';
 
   @override
   String get layerPanelCommonDeleteKeepBeforeButton =>
@@ -5269,7 +5268,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get layerPanelHelpBlendModeBody =>
-      'Modifie la façon dont le calque est composité : produit, filtre, incrustation, etc. Touchez une vignette pour voir au-dessus l’image dans ce mode, puis touchez Appliquer pour le choisir.';
+      'Modifie la façon dont le calque est composité : produit, écran, incrustation, etc. Touchez une vignette pour voir au-dessus l’image dans ce mode, puis touchez Appliquer pour le choisir.';
 
   @override
   String get layerPanelHelpClippingBody =>
@@ -5292,11 +5291,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get layerPanelAutofillNote1 =>
-      '✳ Lors du premier remplissage automatique, chaque méthode crée un nouveau remplissage à partir du trait.';
+      'Remarque : lors du premier remplissage automatique, chaque méthode crée un nouveau remplissage à partir du trait.';
 
   @override
   String get layerPanelAutofillNote2 =>
-      '✳ Si aucun calque de remplissage automatique n’existe encore, la zone sera de toute façon déterminée à partir de zéro.';
+      'Remarque : si aucun calque de remplissage automatique n’existe encore, la zone sera de toute façon déterminée à partir de zéro.';
 
   @override
   String get layerPanelAutofillSmartUpdateTitle =>
@@ -5308,7 +5307,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get layerPanelAutofillSmartUpdateNote =>
-      '✳ Les nouvelles zones sont remplies automatiquement, les couleurs des zones existantes qui se chevauchent sont conservées et les zones retirées du trait sont effacées.';
+      'Remarque : les nouvelles zones sont remplies automatiquement, les couleurs des zones existantes qui se chevauchent sont conservées et les zones retirées du trait sont effacées.';
 
   @override
   String get layerPanelAutofillRepaintTitle =>
@@ -5320,7 +5319,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get layerPanelAutofillRepaintNote =>
-      '✳ Redétecte la zone depuis le trait de remplissage automatique. La forme actuelle du remplissage sera remplacée.';
+      'Remarque : la zone est redétectée depuis le trait de remplissage automatique. La forme actuelle du remplissage sera remplacée.';
 
   @override
   String get layerPanelAutofillColorUpdateTitle =>
@@ -5332,7 +5331,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get layerPanelAutofillColorUpdateNote =>
-      '✳ Actualise avec la dernière couleur dans la zone opaque actuelle. Les ajustements manuels de forme sont conservés.';
+      'Remarque : la zone opaque actuelle est gardée et reçoit la dernière couleur. Les ajustements manuels de forme sont conservés.';
 
   @override
   String get layerPanelExecuteButton => 'Exécuter';
@@ -5595,7 +5594,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineDurationRangeHint =>
-      'La première et la dernière image occupées par le clip dans la chronologie. Vous pouvez aussi faire glisser les bords du clip dans la chronologie.';
+      'La première et la dernière image occupées par le clip dans la timeline. Vous pouvez aussi faire glisser les bords du clip dans la timeline.';
 
   @override
   String get timelineDurationStartLabel => 'Image de début';
@@ -5896,7 +5895,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineAutofillNote2 =>
-      '✳ S’il n’existe qu’un calque de remplissage automatique (sans dessin au trait), la zone sera de toute façon déterminée à partir de zéro.';
+      'Remarque : s’il n’existe qu’un calque de remplissage automatique (sans dessin au trait), la zone sera de toute façon déterminée à partir de zéro.';
 
   @override
   String get timelineAutofillTargetLabel => 'Cible';
@@ -6072,12 +6071,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String timelinePreviewOutputFps(int output, int work) {
-    return 'Lecture à $output fps, comme l’export (l’œuvre est à $work fps)';
+    return 'Lecture à $output i/s, comme l’export (l’œuvre est à $work i/s)';
   }
 
   @override
   String timelinePreviewWorkFps(int fps) {
-    return 'Revenir aux $fps fps de l’œuvre';
+    return 'Revenir aux $fps i/s de l’œuvre';
   }
 
   @override
@@ -6426,11 +6425,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Sur un Chromebook, une tablette avec clavier, Samsung DeX ou tout environnement à écran large, l’application bascule automatiquement vers une mise en page professionnelle à panneaux ancrés. Vous pouvez aussi forcer Toujours en mode PC ou Toujours en mode mobile depuis les paramètres d’espace de travail, utile lors d’une connexion à un écran externe.';
 
   @override
-  String get workspaceTimelineSection => 'Affichage de la chronologie';
+  String get workspaceTimelineSection => 'Affichage de la timeline';
 
   @override
   String get workspaceTimelineHint =>
-      'Ajustez la hauteur de chaque ligne de piste vidéo/audio sur 5 niveaux. Vous pouvez aussi pincer avec deux doigts pour zoomer temporairement sur la largeur des images de la chronologie.';
+      'Ajustez la hauteur de chaque ligne de piste vidéo/audio sur 5 niveaux. Vous pouvez aussi pincer avec deux doigts pour zoomer temporairement sur la largeur des images de la timeline.';
 
   @override
   String get workspaceTimelineTrackHeightLabel => 'Hauteur de la piste';
@@ -6451,7 +6450,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsTransparentColorTitle =>
-      'La transparence n’est pas qu’une gomme : utilisez-la comme une couleur de stylo';
+      'La transparence n’est pas qu’une gomme : utilisez-la à la plume comme une couleur';
 
   @override
   String get tipsTransparentColorDesc =>
@@ -6463,7 +6462,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsQuickToolVariantDesc =>
-      'L’emplacement d’outil rapide ne se limite pas à alterner entre des outils comme le stylo et la gomme : vous pouvez enregistrer le même stylo avec un pinceau différent, ou la même gomme à une autre taille, comme entrées séparées. En ne gardant que les combinaisons que vous utilisez vraiment souvent, vous évitez de retourner sans cesse au panneau de réglages.';
+      'L’emplacement d’outil rapide ne se limite pas à alterner entre des outils comme la plume et la gomme : vous pouvez enregistrer la même plume avec un pinceau différent, ou la même gomme à une autre taille, comme entrées séparées. En ne gardant que les combinaisons que vous utilisez vraiment souvent, vous évitez de retourner sans cesse au panneau de réglages.';
 
   @override
   String get tipsCommonLayerLipSyncTitle =>
@@ -6576,7 +6575,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String canvasColorAdjustEffectFilterAdded(String name) {
-    return '« $name » a été ajouté aux filtres d’effets de la chronologie.';
+    return '« $name » a été ajouté aux filtres d’effets de la timeline.';
   }
 
   @override
@@ -6628,10 +6627,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get workspaceDockPanelStamp => 'Tampon';
 
   @override
-  String get workspaceDockPanelPenSubTool => 'Stylet';
+  String get workspaceDockPanelPenSubTool => 'Plume';
 
   @override
-  String get workspaceDockPanelOnionSkin => 'Pelure d’oignon';
+  String get workspaceDockPanelOnionSkin => 'Papier calque';
 
   @override
   String get workspaceDockPanelRuler => 'Règle';
@@ -7326,7 +7325,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storageCategoryCustomAssets =>
-      'Brosses/trames/tampons/polices personnalisés';
+      'Pinceaux/trames/tampons/polices personnalisés';
 
   @override
   String get storageCategoryCache => 'Cache';
@@ -7346,14 +7345,14 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count ressources inutilisées',
-      one: '$count ressource inutilisée',
+      other: '$count matériaux inutilisés',
+      one: '$count matériau inutilisé',
     );
     return 'Supprimer $_temp0 ($size) ? Cette action est irréversible.';
   }
 
   @override
-  String get storageNoUnusedMaterials => 'Aucune ressource inutilisée.';
+  String get storageNoUnusedMaterials => 'Aucun matériau inutilisé.';
 
   @override
   String get storageEmptyTrashButton => 'Vider la corbeille';
@@ -7412,7 +7411,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storageEraseAllErasedItems =>
-      'Les projets et matériaux (corbeille, sauvegardes et enregistrement automatique compris)\nLes fichiers exportés\nVos brosses, trames, tampons, palettes, thèmes, polices et macros\nTous les paramètres (vous êtes aussi déconnecté de Google)';
+      'Les projets et matériaux (corbeille, sauvegardes et enregistrement automatique compris)\nLes fichiers exportés\nVos pinceaux, trames, tampons, palettes, thèmes, polices et automatisations\nTous les paramètres (vous êtes aussi déconnecté de Google)';
 
   @override
   String get storageEraseAllKeptTitle => 'Ce qui est conservé';
@@ -7444,14 +7443,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpStorageDesc =>
-      'Consultez l’espace utilisé par NIARIM sur votre appareil, ainsi qu’une répartition de son contenu (projets, matériaux, fichiers exportés, brosses/trames/tampons/polices personnalisés, cache et corbeille) sous forme de graphiques circulaires. Vous pouvez vider le cache, supprimer les matériaux inutilisés dans tous les projets, vider la corbeille, organiser vos projets ou effacer toutes les données (remise à zéro).';
+      'Consultez l’espace utilisé par NIARIM sur votre appareil, ainsi qu’une répartition de son contenu (projets, matériaux, fichiers exportés, pinceaux/trames/tampons/polices personnalisés, cache et corbeille) sous forme de graphiques circulaires. Vous pouvez vider le cache, supprimer les matériaux inutilisés dans tous les projets, vider la corbeille, organiser vos projets ou effacer toutes les données (remise à zéro).';
 
   @override
   String get helpWidgetSettingsTitle => 'Widgets de l’écran d’accueil';
 
   @override
   String get helpWidgetSettingsDesc =>
-      'Réglages des trois types de widgets à placer sur l’écran d’accueil du téléphone : une image d’une œuvre (écran de démarrage), le widget de création et le widget de la place. Les widgets eux-mêmes s’ajoutent par appui long sur l’écran d’accueil, pas depuis l’application. « Choisir une œuvre » reprend le même tri, mode d’affichage, recherche et filtre des favoris que l’onglet des projets, puis permet de choisir l’image exacte à afficher dans un aperçu doté de commandes de lecture. Les widgets de création et de la place permettent de choisir si le fond suit le thème de l’application ou utilise une couleur définie par vous.';
+      'Réglages des trois types de widgets à placer sur l’écran d’accueil du téléphone : une image d’une œuvre (écran de démarrage), le widget « Créer une animation » et le widget « Place des œuvres ». Les widgets eux-mêmes s’ajoutent par appui long sur l’écran d’accueil, pas depuis l’application. « Choisir une œuvre » reprend le même tri, mode d’affichage, recherche et filtre des favoris que l’onglet des projets, puis permet de choisir l’image exacte à afficher dans un aperçu doté de commandes de lecture. Les widgets « Créer une animation » et « Place des œuvres » permettent de choisir si le fond suit le thème de l’application ou utilise une couleur définie par vous.';
 
   @override
   String get colorPickerImportPaletteTooltip => 'Importer une palette';
@@ -7550,15 +7549,15 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterCanvasEyedropperTooltip =>
-      'Choisir une couleur sur la toile';
+      'Choisir une couleur sur le canevas';
 
   @override
   String get filterInkPoolEyedropperHint =>
-      'Touchez la toile pour choisir la couleur de l’accumulation d’encre';
+      'Touchez le canevas pour choisir la couleur de l’accumulation d’encre';
 
   @override
   String get filterOutlineEyedropperHint =>
-      'Touchez la toile pour choisir la couleur du contour';
+      'Touchez le canevas pour choisir la couleur du contour';
 
   @override
   String get filterNameAutoLineart => 'Encrage automatique';
@@ -7584,7 +7583,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get customAutomationTitle => 'Macros';
+  String get customAutomationTitle => 'Automatisations';
 
   @override
   String get customAutomationAdd => 'Ajouter une automatisation';
@@ -7745,11 +7744,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsTitle =>
-      'Adaptez les macros officielles à votre dessin';
+      'Adaptez les automatisations officielles à votre dessin';
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      'Les préréglages officiels sont « Trait (numérique) » (trait automatique → accumulation d’encre), « Extraction du trait (analogique) » (réglage des couleurs → seuil → luminosité vers alpha) et « Trace de couleur du trait » (à lancer sur le trait : les couleurs peintes en dessous, sur un nouveau calque en écrêtage sur le trait → flou, duplication et fusion → réglage du calque de couleur, pour que chaque trait prenne une teinte plus profonde de la couleur voisine). Le réenregistrement ajoute des actions prises en charge. L’écran de révision permet de réordonner ou de supprimer des étapes. Exportez-le avant modification si vous souhaitez pouvoir retrouver facilement les réglages d’origine.';
+      'Les préréglages officiels sont « Trait (numérique) » (encrage automatique → accumulation d’encre), « Extraction du trait (analogique) » (réglage des couleurs → seuil → transparence par luminosité) et « Trace de couleur du trait » (à lancer sur le trait : les couleurs peintes en dessous, sur un nouveau calque en écrêtage sur le trait → flou, duplication et fusion → réglage de la trace de couleur, pour que chaque trait prenne une teinte plus profonde de la couleur voisine). Le réenregistrement ajoute des actions prises en charge. L’écran de vérification permet de réordonner ou de supprimer des étapes. Exportez un préréglage avant de le modifier si vous souhaitez pouvoir retrouver facilement les réglages d’origine.';
 
   @override
   String get tipsTexturePrismVhsTitle =>
@@ -7757,7 +7756,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsTexturePrismVhsDesc =>
-      'Filtre de texture part d’Hologramme aurore, Or échantillonné, Argent platine, Perle lumineuse, Pastel aurore ou Arc-en-ciel sombre, puis permet d’ajuster luminosité et saturation. Prisme crée une bande lumineuse avec le flou et la direction de l’arc-en-ciel ; Bruit VHS combine bruit, saturation, luminosité et contraste pour évoquer une vieille cassette. Tester chaque effet sur un calque dupliqué facilite la comparaison ; ajoutez vos réglages favoris aux favoris pour les réutiliser rapidement.';
+      'Le filtre Changement de texture part d’une base au choix (Hologramme aurore, Or échantillonné, Argent platine, Perle lumineuse, Pastel aurore ou Arc-en-ciel sombre), puis permet d’ajuster la luminosité et la saturation. Prisme crée une bande lumineuse avec le flou et la direction de l’arc-en-ciel ; Bruit VHS combine bruit, saturation, luminosité et contraste pour évoquer une vieille cassette. Tester chaque effet sur un calque dupliqué facilite la comparaison ; ajoutez vos réglages préférés aux favoris pour les réutiliser rapidement.';
 
   @override
   String get customAutomationExecutionFailed =>
@@ -7991,7 +7990,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communitySignInPromptBody =>
-      'Un compte Google lié est requis pour publier et gérer des œuvres, suivre des créateurs, enregistrer et signaler du contenu.';
+      'Un compte Google lié est requis pour publier et gérer des œuvres, suivre des créateurs, mettre des œuvres en favori et signaler du contenu.';
 
   @override
   String get communitySignInPromptConnect => 'Associer un compte Google';
@@ -9290,7 +9289,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tutorialPage3Step1 =>
-      'Choisissez un outil (stylo, gomme, remplissage…) dans la barre d’outils du bas.';
+      'Choisissez un outil (plume, gomme, remplissage…) dans la barre d’outils du bas.';
 
   @override
   String get tutorialPage3Step2 =>
@@ -9486,7 +9485,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityPlazaMuteSettings => 'Paramètres de masquage';
 
   @override
-  String get communityPlazaPartialHint => '※Désactivé : recherche partielle';
+  String get communityPlazaPartialHint => 'Désactivé : recherche partielle';
 
   @override
   String get communityPlazaDeleteHistory =>
@@ -9709,7 +9708,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsDraftCount =>
-      'Le décompte est provisoire. Le serveur revérifie avant le paiement.';
+      'Le décompte des réussites sur plusieurs œuvres est provisoire. Le serveur le revérifie lorsque vous réclamez la récompense.';
 
   @override
   String get creatorMissionDetailsPerWorkRule =>
@@ -10064,7 +10063,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockRedemptionSuccess =>
-      'Échange réussi. La date d’expiration Premium a été mise à jour.';
+      'Échange réussi. La date d’expiration de vos avantages a été mise à jour sur le serveur.';
 
   @override
   String get rewardUnlockRedemptionUncertain =>
@@ -10082,7 +10081,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockBestExplain =>
-      'Retrouvez les mêmes avantages que Premium dans un pack à tarif réduit';
+      'Retrouvez les mêmes fonctions que Premium réunies dans un pack, moins cher que l’échange de chaque avantage séparément';
 
   @override
   String get rewardUnlockEarning =>
@@ -10122,16 +10121,18 @@ class AppLocalizationsFr extends AppLocalizations {
       'Automatisations personnalisées (enregistrement d’actions)';
 
   @override
-  String get rewardUnlockCommunityPostQuota => 'Publications : 1 à 3 par jour';
+  String get rewardUnlockCommunityPostQuota =>
+      'Publications sur la Place des œuvres : 3 par jour au lieu de 1';
 
   @override
-  String get rewardUnlockProjectListAds => 'Sans publicité dans les projets';
+  String get rewardUnlockProjectListAds =>
+      'Sans publicité dans la liste des projets';
 
   @override
-  String get rewardUnlockCanvasAds => 'Sans publicité sur la toile';
+  String get rewardUnlockCanvasAds => 'Sans publicité sur le canevas';
 
   @override
-  String get rewardUnlockTimelineAds => 'Sans publicité sur la chronologie';
+  String get rewardUnlockTimelineAds => 'Sans publicité sur la timeline';
 
   @override
   String get rewardUnlockProcessingAds =>
@@ -11549,7 +11550,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpShortcutSettingsDesc =>
-      'Attribuez des touches du clavier ou d’un périphérique main gauche à des outils (jusqu’à un pinceau et une taille précis) ou à des actions comme annuler, rétablir, lire, avancer image par image, tout sélectionner, copier, couper et coller. Les raccourcis fonctionnent sur le canevas comme dans la chronologie. Si une combinaison est déjà utilisée par une autre action, une confirmation vous est demandée avant de la remplacer.';
+      'Attribuez des touches du clavier ou d’un périphérique main gauche à des outils (jusqu’à un pinceau et une taille précis) ou à des actions comme annuler, rétablir, lire, avancer image par image, tout sélectionner, copier, couper et coller. Les raccourcis fonctionnent sur le canevas comme dans la timeline. Si une combinaison est déjà utilisée par une autre action, une confirmation vous est demandée avant de la remplacer.';
 
   @override
   String get themePreviewCardTitle => 'Aperçu des écrans';
@@ -11755,7 +11756,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get pcInspectorHint =>
-      'Sélectionnez un matériau dans la chronologie pour régler ici sa position, sa taille, son opacité, etc.';
+      'Sélectionnez un matériau dans la timeline pour régler ici sa position, sa taille, son opacité, etc.';
 
   @override
   String get pcPaneInspector => 'Détails';
@@ -11764,14 +11765,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pcPaneProgram => 'Aperçu';
 
   @override
-  String get pcTimelineZoomIn => 'Agrandir la chronologie';
+  String get pcTimelineZoomIn => 'Agrandir la timeline';
 
   @override
-  String get pcTimelineZoomOut => 'Réduire la chronologie';
+  String get pcTimelineZoomOut => 'Réduire la timeline';
 
   @override
   String get communityTagLockedMessage =>
-      'Ce tag est verrouillé. Seul son auteur peut le modifier.';
+      'Ce tag est verrouillé. Seul l’auteur de l’œuvre peut le modifier.';
 
   @override
   String get communityTagEditPrompt => 'Modifier ce tag ?';
@@ -11968,7 +11969,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityBlockedUsersEmpty => 'Vous n’avez bloqué aucun compte.';
 
   @override
-  String get canvasViewActions => 'Affichage de la toile';
+  String get canvasViewActions => 'Affichage du canevas';
 
   @override
   String get canvasViewZoomIn => 'Agrandir';
