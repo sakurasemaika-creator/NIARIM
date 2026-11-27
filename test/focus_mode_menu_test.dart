@@ -139,11 +139,20 @@ void main() {
     final surface = find.byKey(
       const ValueKey('focus-mode-menu-surface'),
     );
+    final header = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-header')),
+    );
     final move = tester.getRect(
       find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
     );
+    final title = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-title')),
+    );
     final moveGrip = tester.getRect(
       find.byKey(const ValueKey('focus-mode-menu-move-grip')),
+    );
+    final moveGripHandle = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-move-grip-handle')),
     );
     final resize = tester.getRect(
       find.byKey(const ValueKey('focus-mode-menu-resize-handle')),
@@ -152,24 +161,18 @@ void main() {
       find.byKey(const ValueKey('focus-mode-menu-close')),
     );
 
-    final moveGripHandle = tester.getRect(
-      find.byKey(const ValueKey('focus-mode-menu-move-grip-handle')),
-    );
-    expect(
-      moveGrip.center.dx,
-      closeTo(moveGripHandle.center.dx, 0.1),
-      reason: 'the visual grip belongs to its dedicated right-side drag target',
-    );
+    expect(header.height, closeTo(48, 0.1),
+        reason: 'title and grip stay inside one unchanged header row');
     expect(resize.left, closeTo(tester.getRect(surface).left, 0.1));
-    expect(move.right, closeTo(moveGripHandle.left, 0.1));
-    expect(
-      moveGripHandle.right,
-      closeTo(close.left, 0.1),
-      reason: 'the move grip sits immediately left of the close/menu area',
-    );
-    expect(close.right, closeTo(tester.getRect(surface).right, 0.1));
+    expect(move.right, closeTo(close.left, 0.1));
     expect(move.width, greaterThan(80),
-        reason: 'the title keeps the remaining wide drag area');
+        reason: 'the title and grip share the full central area');
+    expect(title.center.dx, closeTo(move.center.dx, 0.1));
+    expect(moveGrip.center.dx, closeTo(title.center.dx, 0.1));
+    expect(moveGripHandle.center.dx, closeTo(title.center.dx, 0.1));
+    expect(moveGrip.top, greaterThan(title.bottom),
+        reason: 'the move grip is stacked directly beneath the centered title');
+    expect(close.right, closeTo(tester.getRect(surface).right, 0.1));
 
     // The visible title is itself an easy-to-hit move target; users do not
     // need to aim precisely at the tiny central grip.
@@ -211,6 +214,9 @@ void main() {
     final move = tester.getRect(
       find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
     );
+    final title = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-title')),
+    );
     final moveGrip = tester.getRect(
       find.byKey(const ValueKey('focus-mode-menu-move-grip')),
     );
@@ -229,9 +235,10 @@ void main() {
     expect(resize.left, closeTo(rect.left, 0.1));
     expect(minimize.left, closeTo(rect.left + 48, 0.1));
     expect(move.left, closeTo(minimize.right, 0.1));
-    expect(move.right, closeTo(moveGripHandle.left, 0.1));
-    expect(moveGrip.center.dx, closeTo(moveGripHandle.center.dx, 0.1));
-    expect(moveGripHandle.right, closeTo(close.left, 0.1));
+    expect(move.right, closeTo(close.left, 0.1));
+    expect(moveGrip.center.dx, closeTo(title.center.dx, 0.1));
+    expect(moveGripHandle.center.dx, closeTo(title.center.dx, 0.1));
+    expect(moveGrip.top, greaterThan(title.bottom));
   });
 
   testWidgets('top-left resize handle changes width and height and anchors bottom-right', (
@@ -258,22 +265,25 @@ void main() {
     final resizeHandle = find.byKey(
       const ValueKey('focus-mode-menu-resize-handle'),
     );
+    final moveArea = find.byKey(
+      const ValueKey('focus-mode-menu-drag-handle'),
+    );
+    final title = find.byKey(
+      const ValueKey('focus-mode-menu-title'),
+    );
     final moveGrip = find.byKey(
       const ValueKey('focus-mode-menu-move-grip'),
-    );
-    final moveGripHandle = find.byKey(
-      const ValueKey('focus-mode-menu-move-grip-handle'),
     );
     final before = tester.getRect(surface);
     expect(
       tester.getRect(moveGrip).center.dx,
-      closeTo(tester.getRect(moveGripHandle).center.dx, 0.1),
-      reason: 'the visual move grip stays inside its trailing drag target',
+      closeTo(tester.getRect(title).center.dx, 0.1),
+      reason: 'the visual grip is vertically stacked beneath the title',
     );
     expect(
-      tester.getRect(moveGripHandle).right,
+      tester.getRect(moveArea).right,
       closeTo(before.right, 0.1),
-      reason: 'without a close button the move grip is the last header item',
+      reason: 'without trailing actions the centered title/grip region fills the header',
     );
     await tester.drag(resizeHandle, const Offset(-60, -50));
     await tester.pumpAndSettle();
