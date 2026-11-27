@@ -94,7 +94,9 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
         // This prevents a pill dragged to the edge from opening off-screen.
         final currentSize = _minimized
             ? (_lastExpandedSize ?? measured ?? estimatedSize)
-            : (measured ?? estimatedSize);
+            : (measured != null && measured.height > _headerHeight
+                  ? measured
+                  : (_lastExpandedSize ?? estimatedSize));
 
         final maxLeft = math
             .max(
@@ -158,12 +160,18 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                     ),
                                     behavior: HitTestBehavior.opaque,
                                     onPanUpdate: (details) {
+                                      final measuredForDrag =
+                                          _measuredSurfaceSize;
                                       final size = _minimized
                                           ? (_lastExpandedSize ??
-                                                _measuredSurfaceSize ??
+                                                measuredForDrag ??
                                                 estimatedSize)
-                                          : (_measuredSurfaceSize ??
-                                                estimatedSize);
+                                          : (measuredForDrag != null &&
+                                                    measuredForDrag.height >
+                                                        _headerHeight
+                                                ? measuredForDrag
+                                                : (_lastExpandedSize ??
+                                                      estimatedSize));
                                       final dragMaxLeft = math
                                           .max(
                                             _edgeInset,
