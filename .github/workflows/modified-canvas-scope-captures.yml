@@ -4,6 +4,8 @@ on:
     branches: [dev_branch]
     paths:
       - 'test/visual/modified_canvas_scope_capture_test.dart'
+      - 'lib/screens/canvas/canvas_screen.dart'
+      - 'lib/screens/canvas/widgets/focus_mode_menu.dart'
       - 'lib/screens/canvas/widgets/hsv_color_wheel.dart'
       - 'lib/screens/canvas/widgets/color_picker_panel.dart'
       - 'lib/screens/canvas/widgets/pen_sub_tool_panel.dart'

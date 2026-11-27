@@ -8,6 +8,7 @@ on:
       - "lib/engine/lasso_region_snap_engine.dart"
       - "lib/screens/canvas/canvas_screen.dart"
       - "lib/screens/canvas/widgets/canvas_area.dart"
+      - "lib/screens/canvas/widgets/focus_mode_menu.dart"
       - "lib/l10n/**"
       - "test/lasso_region_snap_engine_test.dart"
       - "test/lasso_snap_canvas_test.dart"
@@ -42,6 +43,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: niarim-selection-focus-menu-captures
-          path: build/visual-reaudit/canvas-panels/
+          path: |
+            build/visual-reaudit/canvas-panels/
+            build/selection-walkthrough/
           if-no-files-found: warn
           retention-days: 7

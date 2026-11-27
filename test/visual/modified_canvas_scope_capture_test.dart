@@ -323,6 +323,50 @@ void main() {
         const Offset(0, -84),
       );
       await shot('12_mobile_filter_menu_moved');
+
+      await navigate('/home');
+      await navigate('/canvas/${demo.id}');
+      await tester.tap(find.byIcon(Icons.settings).first);
+      await settle();
+      final mobileL10n = AppLocalizations.of(
+        tester.element(find.byType(Scaffold).last),
+      )!;
+      await tester.tap(find.text(mobileL10n.canvasColorAdjustMenuTitle).last);
+      await settle();
+      expect(find.byType(ColorAdjustSheet), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('color-adjust-focus-menu')),
+        findsOneWidget,
+      );
+      final colorAdjustSliders = find.descendant(
+        of: find.byType(ColorAdjustSheet),
+        matching: find.byType(Slider),
+      );
+      expect(colorAdjustSliders, findsNWidgets(3));
+      await tester.drag(colorAdjustSliders.first, const Offset(48, 0));
+      await shot('13_mobile_color_adjust_menu_expanded');
+      final saturationAfterEdit = tester
+          .widget<Slider>(colorAdjustSliders.first)
+          .value;
+      final colorMenuToggle = find.byKey(
+        const ValueKey('focus-mode-menu-toggle'),
+      );
+      await tester.tap(colorMenuToggle);
+      await tester.pumpAndSettle();
+      expect(find.byType(ColorAdjustSheet), findsNothing);
+      await shot('14_mobile_color_adjust_menu_minimized');
+      await tester.tap(colorMenuToggle);
+      await tester.pumpAndSettle();
+      expect(find.byType(ColorAdjustSheet), findsOneWidget);
+      expect(
+        tester.widget<Slider>(colorAdjustSliders.first).value,
+        closeTo(saturationAfterEdit, 0.01),
+      );
+      await tester.drag(
+        find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
+        const Offset(0, -52),
+      );
+      await shot('15_mobile_color_adjust_menu_moved');
     },
   );
 }
