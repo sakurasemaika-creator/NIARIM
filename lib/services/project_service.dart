@@ -3197,6 +3197,7 @@ class ProjectService extends ChangeNotifier {
       }
       final start = (layer.rangeStart ?? 1) - 1;
       final end = (layer.rangeEnd ?? start + 1) - 1;
+      if (after(start) == start && after(end) == end) return layer;
       return layer.copyWith(
         rangeStart: after(start) + 1,
         rangeEnd: after(end) + 1,
@@ -3205,17 +3206,16 @@ class ProjectService extends ChangeNotifier {
 
     final newFrames = [
       for (final frame in targetScene.frames)
-        frame.layers.any((l) => isRangeLayerType(l.type))
-            ? frame.copyWith(
-                layers: frame.layers.map(withShiftedRange).toList(),
-              )
-            : frame,
+        _withLayers(frame, withShiftedRange),
     ]..insert(clampedInsertAt, newFrame);
-    final reindexed = newFrames
-        .asMap()
-        .entries
-        .map((e) => e.value.copyWith(index: e.key))
-        .toList();
+    // 番号の変わらないコマは同じ物のまま（取り消しで戻るコマが、足した所に
+    // なるように）。
+    final reindexed = [
+      for (var i = 0; i < newFrames.length; i++)
+        newFrames[i].index == i
+            ? newFrames[i]
+            : newFrames[i].copyWith(index: i),
+    ];
     var updatedScene =
         _remapFrameAnchors(
           targetScene,
@@ -3341,12 +3341,17 @@ class ProjectService extends ChangeNotifier {
     for (final home in movedHomes) {
       tm?.renameKey(home.oldKey, home.newKey);
     }
+    // 番号も中身も変わらないコマは同じ物のまま（取り消しで戻るコマが、消した
+    // 所になるように）。
     final reindexed = [
       for (var i = 0; i < newLength; i++)
-        scene.frames[i < frameIndex ? i : i + 1].copyWith(
-          index: i,
-          layers: keptLayers[i],
-        ),
+        switch (scene.frames[i < frameIndex ? i : i + 1]) {
+          final frame
+              when frame.index == i &&
+                  listEquals(frame.layers, keptLayers[i]) =>
+            frame,
+          final frame => frame.copyWith(index: i, layers: keptLayers[i]),
+        },
     ];
     final effects = [
       for (final effect in scene.effectFilters)
@@ -3461,6 +3466,18 @@ class ProjectService extends ChangeNotifier {
     _saveAsync(projectId);
   }
 
+  /// [frame]の各レイヤーへ[change]をかけたコマ。どのレイヤーも変わらなければ
+  /// 同じコマを返す。
+  static Frame _withLayers(Frame frame, Layer Function(Layer layer) change) {
+    List<Layer>? changed;
+    for (var i = 0; i < frame.layers.length; i++) {
+      final next = change(frame.layers[i]);
+      if (identical(next, frame.layers[i])) continue;
+      (changed ??= List.of(frame.layers))[i] = next;
+    }
+    return changed == null ? frame : frame.copyWith(layers: changed);
+  }
+
   Scene _remapFrameAnchors(
     Scene scene,
     List<Frame> frames,
@@ -3475,33 +3492,43 @@ class ProjectService extends ChangeNotifier {
     // レイヤーとグループのキーフレームはコマの番号で持つので、コマが動いたら
     // 一緒に動かす（消えたコマの分は外す）。[freshFrame]は今足したコマで、
     // その写したレイヤーのキーフレームは呼び出し側が合わせてある。
-    List<LayerKeyframe> remapKeys(List<LayerKeyframe> keys) => [
-      for (final key in keys)
-        if (newIndex(key.frameIndex) case final int index)
-          key.frameIndex == index ? key : key.copyWith(frameIndex: index),
-    ]..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
+    // 変わらないものは同じ物のまま返す（取り消しで戻るコマは「変わった最初の
+    // コマ」で決まるので、作り直すと1コマ目へ戻った）。
+    List<LayerKeyframe> remapKeys(List<LayerKeyframe> keys) {
+      final moved = [
+        for (final key in keys)
+          if (newIndex(key.frameIndex) case final int index)
+            key.frameIndex == index ? key : key.copyWith(frameIndex: index),
+      ];
+      var same = moved.length == keys.length;
+      for (var i = 0; same && i < keys.length; i++) {
+        same = identical(moved[i], keys[i]);
+      }
+      if (same) return keys;
+      return moved..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
+    }
+
+    Layer remapLayer(Layer layer) {
+      if (layer.keyframes.isEmpty) return layer;
+      final keys = remapKeys(layer.keyframes);
+      return identical(keys, layer.keyframes)
+          ? layer
+          : layer.copyWith(keyframes: keys);
+    }
+
     final remappedFrames = [
       for (var i = 0; i < frames.length; i++)
-        i == freshFrame ||
-                frames[i].layers.every((layer) => layer.keyframes.isEmpty)
-            ? frames[i]
-            : frames[i].copyWith(
-                layers: [
-                  for (final layer in frames[i].layers)
-                    layer.keyframes.isEmpty
-                        ? layer
-                        : layer.copyWith(keyframes: remapKeys(layer.keyframes)),
-                ],
-              ),
+        i == freshFrame ? frames[i] : _withLayers(frames[i], remapLayer),
     ];
 
     return scene.copyWith(
       frames: remappedFrames,
       groups: [
         for (final group in scene.groups)
-          group.keyframes.isEmpty
-              ? group
-              : group.copyWith(keyframes: remapKeys(group.keyframes)),
+          switch (remapKeys(group.keyframes)) {
+            final keys when identical(keys, group.keyframes) => group,
+            final keys => group.copyWith(keyframes: keys),
+          },
       ],
       cameraKeyframes: [
         for (final keyframe in scene.cameraKeyframes)

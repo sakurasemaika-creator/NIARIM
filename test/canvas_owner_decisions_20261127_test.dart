@@ -149,6 +149,23 @@ void main() {
     await chooseOnCell(1, const Key('frameStripMenuDelete'));
     expect(ps.frameCount(project.id, scene), before);
 
+    // 取り消すと、足した・消した所のコマへ戻る（以前は1コマ目へ飛んだ）。
+    await tester.tap(find.byKey(const ValueKey('frameStripCell3')));
+    await tester.pumpAndSettle();
+    await chooseOnCell(3, const Key('frameStripMenuDuplicate'));
+    expect(ps.frameCount(project.id, scene), before + 1);
+    await tester.tap(find.byIcon(Icons.undo).first);
+    await settle(tester, 4);
+    expect(ps.frameCount(project.id, scene), before);
+    expect(
+      tester
+          .widget<FrameStripWidget>(find.byType(FrameStripWidget))
+          .currentFrame,
+      4,
+    );
+    await tester.tap(find.byKey(const ValueKey('frameStripCell0')));
+    await tester.pumpAndSettle();
+
     // 今のコマでないコマを長押しすると、そのコマが今のコマになる。
     await chooseOnCell(1, const Key('frameStripMenuHold'));
     expect(
