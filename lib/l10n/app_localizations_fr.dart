@@ -10199,16 +10199,16 @@ class AppLocalizationsFr extends AppLocalizations {
       'Les abonnés Premium peuvent aussi cumuler des opales';
 
   @override
-  String get rewardUnlockHour => 'heures';
+  String get rewardUnlockHour => 'Heures';
 
   @override
-  String get rewardUnlockDay => 'jours';
+  String get rewardUnlockDay => 'Jours';
 
   @override
-  String get rewardUnlockWeek => 'semaines';
+  String get rewardUnlockWeek => 'Semaines';
 
   @override
-  String get rewardUnlockMonth => 'mois';
+  String get rewardUnlockMonth => 'Mois';
 
   @override
   String get rewardUnlockEndCardEdit =>

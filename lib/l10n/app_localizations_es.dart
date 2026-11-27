@@ -10175,16 +10175,16 @@ class AppLocalizationsEs extends AppLocalizations {
       'Los miembros Premium también pueden acumular ópalos';
 
   @override
-  String get rewardUnlockHour => 'horas';
+  String get rewardUnlockHour => 'Horas';
 
   @override
-  String get rewardUnlockDay => 'días';
+  String get rewardUnlockDay => 'Días';
 
   @override
-  String get rewardUnlockWeek => 'semanas';
+  String get rewardUnlockWeek => 'Semanas';
 
   @override
-  String get rewardUnlockMonth => 'meses';
+  String get rewardUnlockMonth => 'Meses';
 
   @override
   String get rewardUnlockEndCardEdit =>

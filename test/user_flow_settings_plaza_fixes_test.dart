@@ -172,7 +172,7 @@ void main() {
     expect(find.byType(BottomSheet), findsNothing);
     expect(shortcuts.bindings.length, before + 1);
 
-    final added = shortcuts.bindings.last;
+    final added = shortcuts.bindings.singleWhere((b) => b.toolKey == 'eraser');
     final delete = find.descendant(
       of: find.ancestor(
         of: find.text(added.comboLabel).first,
@@ -180,7 +180,11 @@ void main() {
       ),
       matching: find.byIcon(Icons.delete_outline),
     );
-    await tester.ensureVisible(delete);
+    // 浮かぶ「追加」のボタンに重ならない所（画面の真ん中）まで送ってから押す。
+    await tester.runAsync(
+      () => Scrollable.ensureVisible(tester.element(delete), alignment: 0.5),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(delete);
     await tester.pumpAndSettle();
     expect(
