@@ -25,10 +25,18 @@ void main() {
     );
 
     expect(find.text('Count: 0'), findsOneWidget);
+    final menuSurface = find.byKey(
+      const ValueKey('focus-mode-menu-surface'),
+    );
     await tester.tap(find.byKey(const ValueKey('focus-mode-menu-toggle')));
     await tester.pumpAndSettle();
 
     expect(find.text('Count: 0'), findsNothing);
+    expect(
+      tester.getRect(menuSurface).height,
+      closeTo(44, 1),
+      reason: 'minimized mode should collapse the panel to its header only',
+    );
 
     await tester.tap(find.byKey(const ValueKey('focus-mode-menu-toggle')));
     await tester.pumpAndSettle();
