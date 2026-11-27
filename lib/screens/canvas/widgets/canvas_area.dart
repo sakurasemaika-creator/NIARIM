@@ -3862,25 +3862,43 @@ class CanvasAreaState extends State<CanvasArea> {
     final isMosaic = widget.currentTool == DrawingTool.mosaic;
     final cx = center.dx.round();
     final cy = center.dy.round();
-    final minX = (cx - radius).clamp(0, w - 1);
-    final maxX = (cx + radius).clamp(0, w - 1);
-    final minY = (cy - radius).clamp(0, h - 1);
-    final maxY = (cy + radius).clamp(0, h - 1);
+    final strength = (brushSize / 10).clamp(1.0, 8.0);
+    final block = strength.round().clamp(2, 16);
+    // The filter reads the real pixels around the circle too (only the
+    // circle was read before, the rest stayed transparent, and the blur and
+    // the mosaic blocks at the circle's edge mixed in that transparency: a
+    // light ring on a filled area). The mosaic's blocks keep to one grid on
+    // the canvas, so dabs next to each other line up.
+    final margin = isMosaic ? 0 : (strength * 3).ceil();
+    var minX = cx - radius - margin;
+    var minY = cy - radius - margin;
+    var maxX = cx + radius + margin;
+    var maxY = cy + radius + margin;
+    if (isMosaic) {
+      minX = (minX / block).floor() * block;
+      minY = (minY / block).floor() * block;
+      maxX = (maxX / block).floor() * block + block - 1;
+      maxY = (maxY / block).floor() * block + block - 1;
+    }
+    // Clamped to the canvas, the start stays on the grid (0 is on it).
+    minX = minX.clamp(0, w - 1);
+    minY = minY.clamp(0, h - 1);
+    maxX = maxX.clamp(0, w - 1);
+    maxY = maxY.clamp(0, h - 1);
     if (minX >= maxX || minY >= maxY) return;
     final regionW = maxX - minX + 1;
     final regionH = maxY - minY + 1;
     final region = Uint8List(regionW * regionH * 4);
     final key = _tileKeyFor(_layerId);
-    // 対象範囲のピクセルをタイルから読み出す
+    // 対象範囲のピクセルをタイルから読み出す（読むだけなので、タイルを作らない）
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
-        final dist = math.sqrt(
-          (x - cx) * (x - cx) + (y - cy) * (y - cy).toDouble(),
+        final tile = _tileManager.getTile(
+          key,
+          x ~/ TileManager.tileSize,
+          y ~/ TileManager.tileSize,
         );
-        if (dist > radius) continue;
-        final tx = x ~/ TileManager.tileSize;
-        final ty = y ~/ TileManager.tileSize;
-        final tile = _tileManager.getOrCreateTile(key, tx, ty);
+        if (tile == null) continue;
         final lx = x % TileManager.tileSize;
         final ly = y % TileManager.tileSize;
         final ti = (ly * TileManager.tileSize + lx) * 4;
@@ -3892,14 +3910,8 @@ class CanvasAreaState extends State<CanvasArea> {
       }
     }
     // フィルター適用
-    final strength = (brushSize / 10).clamp(1.0, 8.0);
     final processed = isMosaic
-        ? _filterEngine.applyMosaic(
-            region,
-            regionW,
-            regionH,
-            strength.round().clamp(2, 16),
-          )
+        ? _filterEngine.applyMosaic(region, regionW, regionH, block)
         : _filterEngine.applyGaussianBlur(region, regionW, regionH, strength);
     // 結果を書き戻す（円形マスク内のみ）
     bool changed = false;

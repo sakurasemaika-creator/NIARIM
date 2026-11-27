@@ -223,12 +223,20 @@ void main() {
     e.beginStroke();
     final first = e.snapToRuler(const ui.Offset(20, 20));
     expect(first, const ui.Offset(20, 20));
-    final second = e.snapToRuler(const ui.Offset(60, 35));
-    final vp = const ui.Offset(0, 50);
-    final a = first - vp;
-    final b = second - vp;
-    final cross = a.dx * b.dy - a.dy * b.dx;
-    expect(cross.abs(), lessThan(1e-6));
+    // Drawn toward VP2=(100,50) (VP1 is nearer the start): the stroke follows
+    // the VP2 ray, and keeps to it even when the hand drifts.
+    const vp = ui.Offset(100, 50);
+    for (final raw in const [
+      ui.Offset(60, 35),
+      ui.Offset(70, 30),
+      ui.Offset(85, 50),
+    ]) {
+      final snapped = e.snapToRuler(raw);
+      final a = first - vp;
+      final b = snapped - vp;
+      final cross = a.dx * b.dy - a.dy * b.dx;
+      expect(cross.abs(), lessThan(1e-6));
+    }
   });
 
   test('スタンプ：透明背景へRGBAを正しくsrc-over合成', () async {

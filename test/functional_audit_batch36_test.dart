@@ -107,6 +107,9 @@ void main() {
               0,
             ),
           ),
+          // 透視定規：描き始めて向きが決まった所で、その向きに最も近い案内線に
+          // 沿う。手ぶれは±1.5px（以前は±6〜12pxの波で、描き始めの向きが意味を
+          // 持たず、描き始めの点に近い消失点を選ぶ決まりのときだけ通っていた）。
           (
             name: 'perspective1',
             ruler: const Ruler(
@@ -117,8 +120,8 @@ void main() {
             raw: [
               for (double t = 0; t <= 1.0; t += 0.08)
                 ui.Offset(
-                  88 - 50 * t + 8 * math.sin(t * 15),
-                  102 - 60 * t + 5 * math.cos(t * 11),
+                  88 - 50 * t + 1.5 * math.sin(t * 15),
+                  102 - 60 * t + 1.5 * math.cos(t * 11),
                 ),
             ],
             distance: (x, y) => _distanceToInfiniteLine(
@@ -137,14 +140,15 @@ void main() {
                 vanishingPoint2: ui.Offset(113, 35),
               ),
             ),
+            // Starts nearer VP2=(113,35) but is drawn toward VP1=(15,35): the
+            // stroke follows the VP1 ray.
             raw: [
               for (double t = 0; t <= 1.0; t += 0.08)
-                ui.Offset(92 - 35 * t, 100 - 25 * t + 6 * math.sin(t * 12)),
+                ui.Offset(92 - 46 * t + 1.5 * math.sin(t * 12), 100 - 39 * t),
             ],
-            // First anchor(92,100) is nearer VP2=(113,35), so the full stroke must stay on that ray.
             distance: (x, y) => _distanceToInfiniteLine(
               ui.Offset(x, y),
-              const ui.Offset(113, 35),
+              const ui.Offset(15, 35),
               const ui.Offset(92, 100),
             ),
           ),
@@ -159,15 +163,14 @@ void main() {
                 vanishingPoint3: ui.Offset(64, 8),
               ),
             ),
+            // Drawn up toward the third (vertical) vanishing point.
             raw: [
               for (double t = 0; t <= 1.0; t += 0.08)
-                ui.Offset(70 + 12 * math.sin(t * 8), 92 - 35 * t),
+                ui.Offset(70 - 4 * t + 1.5 * math.sin(t * 8), 92 - 60 * t),
             ],
-            // Anchor (70,92) is nearest VP2=(113,40); RulerEngine chooses the nearest
-            // vanishing point at stroke start and keeps that ray for the whole stroke.
             distance: (x, y) => _distanceToInfiniteLine(
               ui.Offset(x, y),
-              const ui.Offset(113, 40),
+              const ui.Offset(64, 8),
               const ui.Offset(70, 92),
             ),
           ),

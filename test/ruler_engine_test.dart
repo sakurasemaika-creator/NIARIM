@@ -57,9 +57,22 @@ void main() {
     expect(angle, closeTo(0.1, 0.01));
   });
 
-  test('1点透視定規：ストローク開始点と消失点を結ぶ直線へスナップし続ける', () {
+  // 透視定規は、描き始めて向きが決まった（既定で8px動いた）ところで、
+  // 描き始めの点を通る案内線のうち向きの最も近い1本に沿わせる。
+  Offset along(Offset anchor, Offset dir, Offset point) {
+    final unit = dir / dir.distance;
+    final rel = point - anchor;
+    return anchor + unit * (rel.dx * unit.dx + rel.dy * unit.dy);
+  }
+
+  void expectNear(Offset actual, Offset expected) {
+    expect(actual.dx, closeTo(expected.dx, 0.01));
+    expect(actual.dy, closeTo(expected.dy, 0.01));
+  }
+
+  test('1点透視定規：消失点へ向かって描くと消失点の線に沿う', () {
     final engine = RulerEngine();
-    final vp = const Offset(500, 500);
+    const vp = Offset(500, 500);
     engine.setActiveRuler(
       Ruler(
         type: RulerType.onePointPerspective,
@@ -68,24 +81,41 @@ void main() {
       ),
     );
     engine.beginStroke();
-    // 最初の点：そのまま返り、以後のスナップ基準（直線）を確定する
-    final first = engine.snapToRuler(const Offset(100, 300));
-    expect(first, const Offset(100, 300));
-    // 2点目：消失点(500,500)と最初の点(100,300)を結ぶ直線上へ投影される
-    final second = engine.snapToRuler(const Offset(300, 700));
-    // 直線の方向ベクトル
-    final dir = (first - vp);
-    final normDir = dir / dir.distance;
-    final rel = second - vp;
-    final projection = rel.dx * normDir.dx + rel.dy * normDir.dy;
-    final expected = vp + normDir * projection;
-    expect(second.dx, closeTo(expected.dx, 0.01));
-    expect(second.dy, closeTo(expected.dy, 0.01));
+    const first = Offset(100, 300);
+    expect(engine.snapToRuler(first), first);
+    // 向きが決まるまでは描き始めの点に留まる。
+    expect(engine.snapToRuler(const Offset(103, 302)), first);
+    final second = engine.snapToRuler(const Offset(300, 420));
+    expectNear(second, along(first, vp - first, const Offset(300, 420)));
+  });
+
+  test('1点透視定規：横・縦に描くと水平・垂直の線に沿う', () {
+    final engine = RulerEngine();
+    const vp = Offset(500, 500);
+    engine.setActiveRuler(
+      Ruler(
+        type: RulerType.onePointPerspective,
+        position: vp,
+        settings: RulerSettings(vanishingPoint1: vp),
+      ),
+    );
+    engine.beginStroke();
+    engine.snapToRuler(const Offset(100, 300));
+    expectNear(
+      engine.snapToRuler(const Offset(300, 310)),
+      const Offset(300, 300),
+    );
+    engine.beginStroke();
+    engine.snapToRuler(const Offset(100, 300));
+    expectNear(
+      engine.snapToRuler(const Offset(95, 100)),
+      const Offset(100, 100),
+    );
   });
 
   test('1点透視定規：新しいストローク開始でスナップ基準がリセットされる', () {
     final engine = RulerEngine();
-    final vp = const Offset(0, 0);
+    const vp = Offset(0, 0);
     engine.setActiveRuler(
       Ruler(
         type: RulerType.onePointPerspective,
@@ -94,8 +124,8 @@ void main() {
       ),
     );
     engine.beginStroke();
-    engine.snapToRuler(const Offset(100, 0)); // 1本目：水平線を確定
-    final duringFirstStroke = engine.snapToRuler(const Offset(100, 50));
+    engine.snapToRuler(const Offset(100, 0));
+    final duringFirstStroke = engine.snapToRuler(const Offset(200, 20));
     expect(duringFirstStroke.dy, closeTo(0, 0.001)); // 水平線上に投影される
 
     engine.beginStroke(); // 2本目のストローク開始：基準をリセット
@@ -103,10 +133,10 @@ void main() {
     expect(newAnchor, const Offset(0, 100)); // 新しい基準点としてそのまま返る
   });
 
-  test('2点透視定規：最初の点に近い消失点が選ばれる', () {
+  test('2点透視定規：遠い方の消失点へ向かって描くとその線に沿い、縦にも引ける', () {
     final engine = RulerEngine();
-    final vp1 = const Offset(0, 0);
-    final vp2 = const Offset(1000, 0);
+    const vp1 = Offset(0, 0);
+    const vp2 = Offset(1000, 0);
     engine.setActiveRuler(
       Ruler(
         type: RulerType.twoPointPerspective,
@@ -114,19 +144,30 @@ void main() {
         settings: RulerSettings(vanishingPoint1: vp1, vanishingPoint2: vp2),
       ),
     );
+    // vp1に近い点から、遠いvp2の方へ描く（以前はvp1の線に決まっていた）。
     engine.beginStroke();
-    // vp1に近い点から開始
-    final first = engine.snapToRuler(const Offset(50, 50));
-    expect(first, const Offset(50, 50));
-    // 以後の点はvp1を通る直線へスナップされるはず
-    final second = engine.snapToRuler(const Offset(100, 200));
-    final dir = (first - vp1);
-    final normDir = dir / dir.distance;
-    final rel = second - vp1;
-    final projection = rel.dx * normDir.dx + rel.dy * normDir.dy;
-    final expected = vp1 + normDir * projection;
-    expect(second.dx, closeTo(expected.dx, 0.01));
-    expect(second.dy, closeTo(expected.dy, 0.01));
+    const first = Offset(50, 50);
+    engine.snapToRuler(first);
+    final towardFar = engine.snapToRuler(const Offset(400, 40));
+    expectNear(towardFar, along(first, vp2 - first, const Offset(400, 40)));
+    // 近いvp1の方へ描けばvp1の線。
+    engine.beginStroke();
+    engine.snapToRuler(const Offset(500, 300));
+    expectNear(
+      engine.snapToRuler(const Offset(400, 230)),
+      along(
+        const Offset(500, 300),
+        vp1 - const Offset(500, 300),
+        const Offset(400, 230),
+      ),
+    );
+    // 縦に描けば垂直の線。
+    engine.beginStroke();
+    engine.snapToRuler(const Offset(500, 300));
+    expectNear(
+      engine.snapToRuler(const Offset(510, 500)),
+      const Offset(500, 500),
+    );
   });
 
   test('定規なしの場合はそのまま座標を返す', () {

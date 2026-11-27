@@ -296,7 +296,11 @@ Future<void> _perspectiveCase({
     final normal = ui.Offset(-delta.dy, delta.dx) / delta.distance;
     for (var s = 1; s <= 12; s++) {
       final t = s / 14.0;
-      final jitter = math.sin((s + i) * 1.7) * 10;
+      // A hand's tremor (±2px). The ruler follows the guide line the stroke
+      // heads along once it has moved a little; ±10px at every step made that
+      // direction meaningless (it passed only while the ruler took the
+      // vanishing point nearest the start).
+      final jitter = math.sin((s + i) * 1.7) * 2;
       final raw = ray.anchor + delta * t + normal * jitter;
       draw.continueStroke(StrokePoint(x: raw.dx, y: raw.dy), _layer);
     }

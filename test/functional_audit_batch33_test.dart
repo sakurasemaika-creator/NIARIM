@@ -70,6 +70,17 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     expect(_read(r.tm, r.key, 96, 80), orderedEquals(r.after));
   });
+
+  // 実際に使ってみたとき（2026-11-27）、塗った面の中で指のぼかし・モザイクを
+  // 使うと、なぞった跡の縁に明るい輪・白い筋が残った（円の外を透明として
+  // 読んでいた）。1色の面はぼかしてもモザイクにしても同じ色のまま。
+  for (final tool in const [DrawingTool.blur, DrawingTool.mosaic]) {
+    testWidgets('${tool.name}: a filled area keeps its colour (no light ring '
+        'at the edge)', (tester) async {
+      final r = await _operate(tester, tool, brushSize: 20, solid: true);
+      expect(r.after, orderedEquals(r.before));
+    });
+  }
 }
 
 typedef _Result = ({
@@ -83,6 +94,7 @@ Future<_Result> _operate(
   WidgetTester tester,
   DrawingTool tool, {
   required double brushSize,
+  bool solid = false,
 }) async {
   tester.view.physicalSize = const Size(480, 360);
   tester.view.devicePixelRatio = 1;
@@ -112,6 +124,10 @@ Future<_Result> _operate(
   for (var y = 0; y < 80; y++) {
     for (var x = 0; x < 96; x++) {
       final i = (y * 96 + x) * 4;
+      if (solid) {
+        initial.setRange(i, i + 4, const [200, 60, 40, 255]);
+        continue;
+      }
       final v = (x + y).isEven ? 20 : 235;
       initial[i] = v;
       initial[i + 1] = v;
@@ -165,7 +181,8 @@ Future<_Result> _operate(
   }
   expect(undo.undoCount, 1);
   final after = _read(tm, key, 96, 80);
-  expect(after, isNot(orderedEquals(before)));
+  // A single colour stays as it is (checked by the caller).
+  if (!solid) expect(after, isNot(orderedEquals(before)));
   return (tm: tm, key: key, before: before, after: after, undo: undo);
 }
 

@@ -11,7 +11,9 @@ class RulerEngine {
   // 透視定規（1〜3点透視）用：1ストローク中は最初に決定した消失点・直線を
   // 維持し続けるための状態（消失点へ向かう直線に沿って描画補助する）。
   Offset? _strokeAnchor;
-  Offset? _strokeVp;
+
+  /// The direction of the guide line the stroke follows (unit length).
+  Offset? _strokeGuide;
 
   // 魚眼パース定規用：ストロークが沿う線（描き始めの向きで決める）と、
   // 向きを決めるまでに動く距離（キャンバスpx）。
@@ -21,7 +23,7 @@ class RulerEngine {
   void setActiveRuler(Ruler? ruler) {
     _activeRuler = ruler;
     _strokeAnchor = null;
-    _strokeVp = null;
+    _strokeGuide = null;
     _strokeCurve = null;
   }
 
@@ -32,7 +34,7 @@ class RulerEngine {
   /// 呼び出し側が拡大率から決める）。
   void beginStroke({double? directionDistance}) {
     _strokeAnchor = null;
-    _strokeVp = null;
+    _strokeGuide = null;
     _strokeCurve = null;
     if (directionDistance != null) _directionDistance = directionDistance;
   }
@@ -49,13 +51,16 @@ class RulerEngine {
       RulerType.circle => _snapToCircle(point),
       RulerType.ellipse => _snapToEllipse(point),
       RulerType.radial => _snapToRadial(point),
-      RulerType.onePointPerspective => _snapToPerspective(point, [
-        settings.vanishingPoint1 ?? ruler.position,
-      ]),
+      RulerType.onePointPerspective => _snapToPerspective(
+        point,
+        [settings.vanishingPoint1 ?? ruler.position],
+        horizontal: true,
+        vertical: true,
+      ),
       RulerType.twoPointPerspective => _snapToPerspective(point, [
         settings.vanishingPoint1 ?? const Offset(200, 540),
         settings.vanishingPoint2 ?? const Offset(1720, 540),
-      ]),
+      ], vertical: true),
       RulerType.threePointPerspective => _snapToPerspective(point, [
         settings.vanishingPoint1 ?? const Offset(200, 540),
         settings.vanishingPoint2 ?? const Offset(1720, 540),
@@ -236,32 +241,64 @@ class RulerEngine {
     );
   }
 
-  /// 透視定規（1〜3点透視）：消失点から放射状に伸びる直線へスナップする。
-  /// ストロークの最初の点で「どの消失点に向かう直線か」を、最も近い消失点を
-  /// 選ぶことで決定し（1点透視では常に単一の消失点）、以後の点は同じ直線上へ
-  /// 投影し続ける。これにより1本のストロークが常にまっすぐ消失点へ向かう
-  /// 直線として描画される。
-  Offset _snapToPerspective(Offset point, List<Offset> vanishingPoints) {
-    if (_strokeAnchor == null) {
-      Offset bestVp = vanishingPoints.first;
-      double bestDist = double.infinity;
-      for (final vp in vanishingPoints) {
-        final d = (point - vp).distance;
-        if (d < bestDist) {
-          bestDist = d;
-          bestVp = vp;
-        }
-      }
+  /// 透視定規（1〜3点透視）：描き始めの点を通る案内線（各消失点へ向かう
+  /// 直線、1点透視では水平・垂直、2点透視では垂直も）のうち、描き始めた
+  /// 向きに最も近い1本に沿わせる。向きが決まるまで（[_directionDistance]
+  /// 動くまで）は描き始めの点に留め、決まった後は同じ線の上へ投影し続ける。
+  ///
+  /// 以前は描き始めの点に最も近い消失点の線に決めていたため、2点透視で
+  /// 遠い方の消失点へ向かう線・垂直の線、1点透視で水平の線が引けなかった。
+  Offset _snapToPerspective(
+    Offset point,
+    List<Offset> vanishingPoints, {
+    bool horizontal = false,
+    bool vertical = false,
+  }) {
+    final anchor = _strokeAnchor;
+    if (anchor == null) {
       _strokeAnchor = point;
-      _strokeVp = bestVp;
       return point;
     }
-    final vp = _strokeVp ?? vanishingPoints.first;
-    final dirRaw = _strokeAnchor! - vp;
-    if (dirRaw.distance < 1e-6) return point;
-    final dir = dirRaw / dirRaw.distance;
-    final rel = point - vp;
-    final projection = rel.dx * dir.dx + rel.dy * dir.dy;
-    return vp + dir * projection;
+    var guide = _strokeGuide;
+    if (guide == null) {
+      final drawn = point - anchor;
+      if (drawn.distance < _directionDistance) return anchor;
+      final along = drawn / drawn.distance;
+      // The angle between the drawn direction and a line (either way along
+      // it).
+      double angleTo(Offset line) =>
+          acos((line.dx * along.dx + line.dy * along.dy).abs().clamp(0.0, 1.0));
+      Offset? best;
+      var bestAngle = double.infinity;
+      for (final vp in vanishingPoints) {
+        final toVp = vp - anchor;
+        if (toVp.distance < 1e-6) continue;
+        final line = toVp / toVp.distance;
+        final angle = angleTo(line);
+        if (angle < bestAngle) {
+          bestAngle = angle;
+          best = line;
+        }
+      }
+      // Horizontal and vertical help where no vanishing point's line goes:
+      // taken only when clearly closer (a line to the vanishing point a few
+      // degrees off vertical is not told apart from vertical by the start of
+      // a stroke).
+      const margin = 8 * pi / 180;
+      for (final axis in [
+        if (horizontal) const Offset(1, 0),
+        if (vertical) const Offset(0, 1),
+      ]) {
+        final angle = angleTo(axis);
+        if (best == null || angle + margin < bestAngle) {
+          bestAngle = angle;
+          best = axis;
+        }
+      }
+      if (best == null) return point;
+      guide = _strokeGuide = best;
+    }
+    final rel = point - anchor;
+    return anchor + guide * (rel.dx * guide.dx + rel.dy * guide.dy);
   }
 }

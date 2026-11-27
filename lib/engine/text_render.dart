@@ -426,6 +426,12 @@ Future<Uint8List?> _rasterizeVertical(
   final columns = rawColumns.map(_parseColumnUnits).toList();
   final charAdvance = text.fontSize * text.lineHeight; // 1文字分の縦送り量
   final columnAdvance = text.fontSize * 1.15 + text.letterSpacing; // 列の間隔
+  // ルビは列の右隣の空き（ルビの幅ぶん）に置く。以前は列の中（基底文字の
+  // 右半分の上）に重ねていた。
+  final rubySize = text.fontSize * 0.48;
+  final hasRuby = columns.any((units) => units.any((u) => u.ruby != null));
+  final rubyRoom = hasRuby ? rubySize * 1.2 : 0.0;
+  final columnPitch = columnAdvance + rubyRoom;
 
   final slotsPerColumn = columns
       .map((units) => units.fold<int>(0, (sum, u) => sum + u.slotCount))
@@ -434,7 +440,7 @@ Future<Uint8List?> _rasterizeVertical(
   if (maxSlots == 0) return null;
 
   final totalHeight = maxSlots * charAdvance;
-  final totalWidth = columns.length * columnAdvance;
+  final totalWidth = columns.length * columnPitch;
 
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
@@ -505,8 +511,8 @@ Future<Uint8List?> _rasterizeVertical(
     );
   }
 
-  // ルビ（{base|ruby}記法）：基底文字の右側（列の右隣＝既に描画済みの
-  // 前の列側）へ、基底が占める高さへ均等配置した小さな縦書きで表示する。
+  // ルビ（{base|ruby}記法）：基底文字の列の右に取った空き（[rubyRoom]）へ、
+  // 基底が占める高さへ均等配置した小さな縦書きで表示する。
   void drawRuby(
     String ruby,
     double columnX,
@@ -516,7 +522,6 @@ Future<Uint8List?> _rasterizeVertical(
   ) {
     final chars = ruby.characters;
     if (chars.isEmpty) return;
-    final rubySize = text.fontSize * 0.48;
     final rubyStyle = styleFor(color, size: rubySize);
     final step = slotHeight / chars.length;
     for (int i = 0; i < chars.length; i++) {
@@ -525,11 +530,11 @@ Future<Uint8List?> _rasterizeVertical(
             ..pushStyle(rubyStyle)
             ..addText(chars[i]);
       final paragraph = builder.build()
-        ..layout(ui.ParagraphConstraints(width: rubySize * 1.3));
+        ..layout(ui.ParagraphConstraints(width: rubyRoom));
       final ry = y + i * step + (step - rubySize) / 2;
       canvas.drawParagraph(
         paragraph,
-        ui.Offset(columnX + columnAdvance * 0.6, ry.clamp(y, y + slotHeight)),
+        ui.Offset(columnX + columnAdvance, ry.clamp(y, y + slotHeight)),
       );
     }
   }
@@ -542,8 +547,7 @@ Future<Uint8List?> _rasterizeVertical(
   }) {
     for (int colIdx = 0; colIdx < columns.length; colIdx++) {
       // 列は右から左へ進む（縦書きの伝統的な配置）
-      final columnX =
-          totalWidth - (colIdx + 1) * columnAdvance + extraOffset.dx;
+      final columnX = totalWidth - (colIdx + 1) * columnPitch + extraOffset.dx;
       final units = columns[colIdx];
       final columnSlots = units.fold<int>(0, (sum, u) => sum + u.slotCount);
       final columnHeight = columnSlots * charAdvance;
