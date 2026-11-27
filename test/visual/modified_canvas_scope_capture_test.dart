@@ -336,6 +336,8 @@ void main() {
       );
       await settle();
       expect(find.byType(MeshTransformPanel), findsOneWidget);
+      expect(find.text(meshL10n.meshTransformPanelTitle), findsOneWidget,
+          reason: 'the embedded panel must use the shared header title only');
       final meshFocusSurface = find.byKey(
         const ValueKey('focus-mode-menu-surface'),
       );
