@@ -121,10 +121,14 @@ SaveTreeEntryMode parseSaveTreeEntryMode(String? raw) => switch (raw) {
 class SaveTreeScreen extends StatefulWidget {
   final String projectId;
   final SaveTreeEntryMode entryMode;
+
+  /// Opens on the automatic saves instead of the manual saves.
+  final bool startWithAutosaves;
   const SaveTreeScreen({
     super.key,
     required this.projectId,
     this.entryMode = SaveTreeEntryMode.quickSave,
+    this.startWithAutosaves = false,
   });
 
   @override
@@ -133,7 +137,7 @@ class SaveTreeScreen extends StatefulWidget {
 
 class _SaveTreeScreenState extends State<SaveTreeScreen> {
   String? _selectedNodeId;
-  bool _showAutosaves = false;
+  late bool _showAutosaves = widget.startWithAutosaves;
 
   @override
   Widget build(BuildContext context) {

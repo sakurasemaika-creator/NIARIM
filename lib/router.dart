@@ -275,6 +275,7 @@ final appRouter = GoRouter(
         child: SaveManagementScreen(
           projectId: state.pathParameters['id']!,
           entryMode: parseSaveTreeEntryMode(state.uri.queryParameters['entry']),
+          startWithAutosaves: state.uri.queryParameters['source'] == 'autosave',
         ),
       ),
     ),

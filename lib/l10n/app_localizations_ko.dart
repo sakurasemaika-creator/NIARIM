@@ -1546,14 +1546,26 @@ class AppLocalizationsKo extends AppLocalizations {
   String get saveDataAutosavesEmpty => '이 작품에는 아직 자동 저장본이 없습니다.';
 
   @override
-  String get projectAutosaveRecovered => '작품 파일을 열 수 없어 자동 저장본에서 복구했습니다.';
+  String projectAutosaveRecovered(String time) {
+    return '작품 파일이 손상되었거나 찾을 수 없어 최신 자동 저장본($time)에서 복원했습니다. 다른 저장 데이터를 선택해 불러올 수도 있습니다.';
+  }
 
   @override
-  String get canvasAutosaveRecoveryTitle => '자동 저장 복원';
+  String get projectAutosaveRecoveredTitle => '작품 파일을 열 수 없습니다';
 
   @override
-  String get canvasAutosaveRecoveryBody =>
-      '이 작품과 내용이 다른 자동 저장본이 있습니다. 자동 저장본을 여시겠습니까?';
+  String get projectAutosaveRecoveredContinue => '이 내용으로 계속';
+
+  @override
+  String autosaveNewerOpenedNotice(String time) {
+    return '지난번에 작품 파일에 저장되기 전에 앱이 종료되어 자동 저장본($time)의 내용으로 열었습니다.';
+  }
+
+  @override
+  String get autosaveRecoveryBackToList => '프로젝트 목록으로 돌아가기';
+
+  @override
+  String get autosaveRecoveryChooseData => '불러올 데이터 선택';
 
   @override
   String get helpSaveSlotTitle => '세이브 슬롯';

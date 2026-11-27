@@ -1620,15 +1620,27 @@ class AppLocalizationsEs extends AppLocalizations {
       'Este proyecto aún no tiene guardados automáticos.';
 
   @override
-  String get projectAutosaveRecovered =>
-      'No se pudo abrir el archivo del proyecto. Se ha recuperado a partir de un guardado automático.';
+  String projectAutosaveRecovered(String time) {
+    return 'El archivo del proyecto estaba dañado o no se encontró, así que se restauró desde el guardado automático más reciente ($time). También puedes elegir otros datos guardados para cargarlos.';
+  }
 
   @override
-  String get canvasAutosaveRecoveryTitle => 'Restaurar guardado automático';
+  String get projectAutosaveRecoveredTitle =>
+      'No se pudo abrir el archivo del proyecto';
 
   @override
-  String get canvasAutosaveRecoveryBody =>
-      'Hay una versión guardada automáticamente con contenido distinto. ¿Quieres abrirla?';
+  String get projectAutosaveRecoveredContinue => 'Continuar con esta versión';
+
+  @override
+  String autosaveNewerOpenedNotice(String time) {
+    return 'La última vez, la app se cerró antes de guardar los cambios en el archivo del proyecto, así que se abrió desde el guardado automático ($time).';
+  }
+
+  @override
+  String get autosaveRecoveryBackToList => 'Volver a la lista de proyectos';
+
+  @override
+  String get autosaveRecoveryChooseData => 'Elegir datos para cargar';
 
   @override
   String get helpSaveSlotTitle => 'Ranura de guardado';

@@ -230,15 +230,15 @@ class AutosaveService extends ChangeNotifier {
   void debugTreatSlotsAsFromEarlierLaunch() =>
       _fromEarlierLaunch.addAll(_slots);
 
-  /// The newest autosave of [projectId] when it is newer than the work file
-  /// and holds different content (the app was closed before the work file
-  /// caught up, e.g. it was forced to quit). Offered once per launch; null
-  /// when there is nothing to offer.
+  /// The newest autosave of [projectId] and its time when it is newer than
+  /// the work file and holds different content (the app was closed before the
+  /// work file caught up, e.g. it was forced to quit). Looked for once per
+  /// launch; null when there is none.
   ///
   /// Only a snapshot saved after the work file counts: an autosave older than
   /// the file (the last strokes were saved to the file but not yet to an
   /// autosave) would take the work back, not forward.
-  Future<NiaproData?> newerThanWorkFile(
+  Future<({NiaproData data, DateTime savedAt})?> newerThanWorkFile(
     ProjectService projectService,
     String projectId,
   ) async {
@@ -258,7 +258,9 @@ class AutosaveService extends ChangeNotifier {
       scenes: projectService.scenesOf(projectId),
       tileData: projectService.tileManagerOf(projectId).exportAll(),
     );
-    return NiaproSerializer.sameContent(current, backup) ? null : backup;
+    return NiaproSerializer.sameContent(current, backup)
+        ? null
+        : (data: backup, savedAt: slot.savedAt);
   }
 
   /// Skip damaged snapshots and recover from the newest readable one.

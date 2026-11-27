@@ -1586,15 +1586,26 @@ class AppLocalizationsEn extends AppLocalizations {
       'There are no autosaves for this project yet.';
 
   @override
-  String get projectAutosaveRecovered =>
-      'The project file could not be opened, so NIARIM recovered it from an autosave.';
+  String projectAutosaveRecovered(String time) {
+    return 'The project file was damaged or missing, so it was restored from the latest autosave ($time). You can also choose other saved data to load.';
+  }
 
   @override
-  String get canvasAutosaveRecoveryTitle => 'Restore autosave';
+  String get projectAutosaveRecoveredTitle => 'Couldn’t open the project file';
 
   @override
-  String get canvasAutosaveRecoveryBody =>
-      'An autosave contains different changes from this project. Open the autosaved version?';
+  String get projectAutosaveRecoveredContinue => 'Continue with this version';
+
+  @override
+  String autosaveNewerOpenedNotice(String time) {
+    return 'Last time, the app closed before your changes were saved to the project file, so the project was opened from the autosave ($time).';
+  }
+
+  @override
+  String get autosaveRecoveryBackToList => 'Back to project list';
+
+  @override
+  String get autosaveRecoveryChooseData => 'Choose data to load';
 
   @override
   String get helpSaveSlotTitle => 'Save Slot';

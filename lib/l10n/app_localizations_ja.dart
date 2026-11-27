@@ -1542,14 +1542,26 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveDataAutosavesEmpty => 'この作品の自動保存はまだありません。';
 
   @override
-  String get projectAutosaveRecovered => '作品ファイルを読み込めなかったため、自動保存から復旧しました。';
+  String projectAutosaveRecovered(String time) {
+    return '作品ファイルが壊れていたか見つからなかったため、最新の自動保存（$time）から復元しました。別の保存データを選んで読み込むこともできます。';
+  }
 
   @override
-  String get canvasAutosaveRecoveryTitle => '自動保存から復元';
+  String get projectAutosaveRecoveredTitle => '作品ファイルを読み込めませんでした';
 
   @override
-  String get canvasAutosaveRecoveryBody =>
-      'この作品と内容が異なる自動保存があります。その内容で作品を開きますか？';
+  String get projectAutosaveRecoveredContinue => 'この内容で続ける';
+
+  @override
+  String autosaveNewerOpenedNotice(String time) {
+    return '前回、作品ファイルに保存される前にアプリが終了したため、自動保存（$time）の内容で開きました。';
+  }
+
+  @override
+  String get autosaveRecoveryBackToList => 'プロジェクト一覧に戻る';
+
+  @override
+  String get autosaveRecoveryChooseData => '読み込むデータを選ぶ';
 
   @override
   String get helpSaveSlotTitle => 'セーブスロット';

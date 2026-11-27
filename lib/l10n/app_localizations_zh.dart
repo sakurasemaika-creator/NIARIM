@@ -1520,13 +1520,26 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saveDataAutosavesEmpty => '此作品还没有自动保存版本。';
 
   @override
-  String get projectAutosaveRecovered => '无法打开作品文件，已从自动保存恢复。';
+  String projectAutosaveRecovered(String time) {
+    return '作品文件已损坏或找不到，因此已从最新的自动保存（$time）恢复。也可以选择其他保存数据来读取。';
+  }
 
   @override
-  String get canvasAutosaveRecoveryTitle => '恢复自动保存';
+  String get projectAutosaveRecoveredTitle => '无法打开作品文件';
 
   @override
-  String get canvasAutosaveRecoveryBody => '此作品有内容不同的自动保存版本。要打开该版本吗？';
+  String get projectAutosaveRecoveredContinue => '以此内容继续';
+
+  @override
+  String autosaveNewerOpenedNotice(String time) {
+    return '上次在保存到作品文件之前应用已关闭，因此已用自动保存（$time）的内容打开。';
+  }
+
+  @override
+  String get autosaveRecoveryBackToList => '返回项目列表';
+
+  @override
+  String get autosaveRecoveryChooseData => '选择要读取的数据';
 
   @override
   String get helpSaveSlotTitle => '存档槽';
@@ -12556,13 +12569,26 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get saveDataAutosavesEmpty => '此作品還沒有自動儲存版本。';
 
   @override
-  String get projectAutosaveRecovered => '無法開啟作品檔案，已從自動儲存復原。';
+  String projectAutosaveRecovered(String time) {
+    return '作品檔案已損毀或找不到，因此已從最新的自動儲存（$time）復原。也可以選擇其他儲存資料來讀取。';
+  }
 
   @override
-  String get canvasAutosaveRecoveryTitle => '還原自動儲存';
+  String get projectAutosaveRecoveredTitle => '無法開啟作品檔案';
 
   @override
-  String get canvasAutosaveRecoveryBody => '此作品有內容不同的自動儲存版本。要開啟該版本嗎？';
+  String get projectAutosaveRecoveredContinue => '以此內容繼續';
+
+  @override
+  String autosaveNewerOpenedNotice(String time) {
+    return '上次在儲存到作品檔案之前應用程式已關閉，因此已用自動儲存（$time）的內容開啟。';
+  }
+
+  @override
+  String get autosaveRecoveryBackToList => '返回專案列表';
+
+  @override
+  String get autosaveRecoveryChooseData => '選擇要讀取的資料';
 
   @override
   String get helpSaveSlotTitle => '存檔槽';

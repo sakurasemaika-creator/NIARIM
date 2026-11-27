@@ -262,8 +262,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('DISC574: opening restores the newer autosave when chosen, '
-      'once per launch', (tester) async {
+  testWidgets('DISC574: opening uses the newer autosave without asking, '
+      'once per launch, and says so', (tester) async {
     final (service: projects, :id) = await open(tester);
     final home = tester.element(find.byType(HomeScreen));
     final autosaves = home.read<AutosaveService>();
@@ -287,20 +287,19 @@ void main() {
     });
     appRouter.go('/canvas/$id');
     await settleIo(tester);
-    await tester.tap(
-      find.byKey(const ValueKey('canvasAutosaveRecoveryRestore')),
-    );
-    await settleIo(tester);
+    expect(find.byType(AlertDialog), findsNothing);
     expect(tiles.getTile(key, 0, 0)?.take(4), drawn);
-    // Offered once per launch.
+    expect(
+      find.textContaining(l10n.autosaveNewerOpenedNotice('').split('（').first),
+      findsOneWidget,
+    );
+    // Looked for once per launch: a later change is not taken back.
+    tiles.importAll(const {});
     appRouter.go('/home');
     await settleIo(tester);
     appRouter.go('/canvas/$id');
     await settleIo(tester);
-    expect(
-      find.widgetWithText(AlertDialog, l10n.canvasAutosaveRecoveryTitle),
-      findsNothing,
-    );
+    expect(tiles.getTile(key, 0, 0), isNull);
     expect(tester.takeException(), isNull);
   });
 
@@ -310,7 +309,6 @@ void main() {
     final (service: projects, :id) = await open(tester);
     final home = tester.element(find.byType(HomeScreen));
     final autosaves = home.read<AutosaveService>();
-    final l10n = AppLocalizations.of(home)!;
     final scene = projects.scenesOf(id).single;
     final key = projects.tileKeyFor(
       id,
@@ -330,8 +328,9 @@ void main() {
     });
     appRouter.go('/canvas/$id');
     await settleIo(tester);
+    expect(tiles.getTile(key, 0, 0)?.take(4), [30, 60, 220, 255]);
     expect(
-      find.widgetWithText(AlertDialog, l10n.canvasAutosaveRecoveryTitle),
+      find.byKey(const ValueKey('autosaveNewerOpenedNotice')),
       findsNothing,
     );
     expect(tester.takeException(), isNull);
@@ -343,7 +342,6 @@ void main() {
     final (service: projects, :id) = await open(tester);
     final home = tester.element(find.byType(HomeScreen));
     final autosaves = home.read<AutosaveService>();
-    final l10n = AppLocalizations.of(home)!;
     final scene = projects.scenesOf(id).single;
     final key = projects.tileKeyFor(
       id,
@@ -360,16 +358,17 @@ void main() {
     });
     appRouter.go('/canvas/$id');
     await settleIo(tester);
+    expect(tiles.getTile(key, 0, 0), isNull);
     expect(
-      find.widgetWithText(AlertDialog, l10n.canvasAutosaveRecoveryTitle),
+      find.byKey(const ValueKey('autosaveNewerOpenedNotice')),
       findsNothing,
     );
     expect(tester.takeException(), isNull);
   });
 
   for (final tree in [false, true]) {
-    testWidgets('a newer autosave is offered on opening; declined, the list '
-        'can still load other versions (tree: $tree)', (tester) async {
+    testWidgets('a newer autosave opens without asking; the list can still '
+        'load the other versions (tree: $tree)', (tester) async {
       if (tree) {
         SharedPreferences.setMockInitialValues({
           firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
@@ -435,15 +434,10 @@ void main() {
       await settleIo(tester);
       expect(find.byType(CanvasScreen), findsOneWidget);
       // The autosaves are newer than the work file and differ from it (the
-      // app closed before the file caught up): opening offers the newest.
-      expect(
-        find.widgetWithText(AlertDialog, l10n.canvasAutosaveRecoveryTitle),
-        findsOneWidget,
-      );
-      await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
-      await settleIo(tester);
+      // app closed before the file caught up): the work opens with the newest
+      // without asking.
       expect(find.byType(AlertDialog), findsNothing);
-      expect(tiles.getTile(key, 0, 0), isNull);
+      expect(tiles.getTile(key, 0, 0)?.take(4), latest);
 
       appRouter.push('/save-tree/$id');
       await settleIo(tester);

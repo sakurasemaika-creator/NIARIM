@@ -43,26 +43,42 @@ class SaveManagementScreen extends StatelessWidget {
   final String projectId;
   final SaveTreeEntryMode entryMode;
 
+  /// Opens on the automatic saves (from the dialog of a work restored from
+  /// one) instead of the manual saves.
+  final bool startWithAutosaves;
+
   const SaveManagementScreen({
     super.key,
     required this.projectId,
     this.entryMode = SaveTreeEntryMode.quickSave,
+    this.startWithAutosaves = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final saveService = context.watch<SaveTreeService>();
     if (saveService.isTreeMode) {
-      return SaveTreeScreen(projectId: projectId, entryMode: entryMode);
+      return SaveTreeScreen(
+        projectId: projectId,
+        entryMode: entryMode,
+        startWithAutosaves: startWithAutosaves,
+      );
     }
-    return _GameStyleSlotScreen(projectId: projectId);
+    return _GameStyleSlotScreen(
+      projectId: projectId,
+      startWithAutosaves: startWithAutosaves,
+    );
   }
 }
 
 class _GameStyleSlotScreen extends StatefulWidget {
   final String projectId;
+  final bool startWithAutosaves;
 
-  const _GameStyleSlotScreen({required this.projectId});
+  const _GameStyleSlotScreen({
+    required this.projectId,
+    this.startWithAutosaves = false,
+  });
 
   @override
   State<_GameStyleSlotScreen> createState() => _GameStyleSlotScreenState();
@@ -70,7 +86,7 @@ class _GameStyleSlotScreen extends StatefulWidget {
 
 class _GameStyleSlotScreenState extends State<_GameStyleSlotScreen> {
   String get projectId => widget.projectId;
-  bool _showAutosaves = false;
+  late bool _showAutosaves = widget.startWithAutosaves;
 
   @override
   Widget build(BuildContext context) {

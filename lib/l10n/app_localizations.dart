@@ -2889,23 +2889,41 @@ abstract class AppLocalizations {
   /// **'この作品の自動保存はまだありません。'**
   String get saveDataAutosavesEmpty;
 
-  /// No description provided for @projectAutosaveRecovered.
+  /// Dialog body when the work file was damaged or missing and the work was restored from the newest autosave. {time} is the autosave date and time.
   ///
   /// In ja, this message translates to:
-  /// **'作品ファイルを読み込めなかったため、自動保存から復旧しました。'**
-  String get projectAutosaveRecovered;
+  /// **'作品ファイルが壊れていたか見つからなかったため、最新の自動保存（{time}）から復元しました。別の保存データを選んで読み込むこともできます。'**
+  String projectAutosaveRecovered(String time);
 
-  /// No description provided for @canvasAutosaveRecoveryTitle.
+  /// No description provided for @projectAutosaveRecoveredTitle.
   ///
   /// In ja, this message translates to:
-  /// **'自動保存から復元'**
-  String get canvasAutosaveRecoveryTitle;
+  /// **'作品ファイルを読み込めませんでした'**
+  String get projectAutosaveRecoveredTitle;
 
-  /// No description provided for @canvasAutosaveRecoveryBody.
+  /// No description provided for @projectAutosaveRecoveredContinue.
   ///
   /// In ja, this message translates to:
-  /// **'この作品と内容が異なる自動保存があります。その内容で作品を開きますか？'**
-  String get canvasAutosaveRecoveryBody;
+  /// **'この内容で続ける'**
+  String get projectAutosaveRecoveredContinue;
+
+  /// Notice shown when a work is opened from an autosave of the last launch that is newer than the work file. {time} is the autosave date and time.
+  ///
+  /// In ja, this message translates to:
+  /// **'前回、作品ファイルに保存される前にアプリが終了したため、自動保存（{time}）の内容で開きました。'**
+  String autosaveNewerOpenedNotice(String time);
+
+  /// No description provided for @autosaveRecoveryBackToList.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト一覧に戻る'**
+  String get autosaveRecoveryBackToList;
+
+  /// No description provided for @autosaveRecoveryChooseData.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込むデータを選ぶ'**
+  String get autosaveRecoveryChooseData;
 
   /// No description provided for @helpSaveSlotTitle.
   ///

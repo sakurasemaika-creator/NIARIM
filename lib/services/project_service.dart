@@ -231,11 +231,16 @@ class ProjectService extends ChangeNotifier {
   ProjectService([this._autosaves]);
 
   final AutosaveService? _autosaves;
-  final Set<String> _recoveredFromAutosave = {};
+  final Map<String, DateTime> _recoveredFromAutosave = {};
   final Set<String> _needsArchiveRewrite = {};
 
   /// Report the recovery once when the user first opens the restored work.
   bool takeAutosaveRecoveryNotice(String projectId) =>
+      takeAutosaveRecovery(projectId) != null;
+
+  /// The time of the automatic save [projectId] was restored from at start-up
+  /// (its work file was damaged or missing), told once; null otherwise.
+  DateTime? takeAutosaveRecovery(String projectId) =>
       _recoveredFromAutosave.remove(projectId);
 
   final List<Project> _projects = [];
@@ -899,7 +904,7 @@ class ProjectService extends ChangeNotifier {
             data = backup.data;
             recoveredAt = backup.savedAt;
             sizeBytes = await _rewriteRecoveredArchive(data, recoveredAt);
-            _recoveredFromAutosave.add(projectId);
+            _recoveredFromAutosave[projectId] = backup.savedAt;
           }
         }
         if (data == null) {

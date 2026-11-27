@@ -12,7 +12,6 @@ import 'package:provider/provider.dart';
 
 import '../../widgets/layer_locked_notice.dart';
 import '../../widgets/project_autosave_notice.dart';
-import '../../services/autosave_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/project_service.dart';
 import '../../services/layer_clipboard_service.dart';
@@ -1490,8 +1489,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
       );
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        showProjectAutosaveNotice(context, widget.projectId);
-        _offerNewerAutosave();
+        settleOpenedWork(
+          context,
+          widget.projectId,
+          saveEntry: 'quickSave',
+          onRestored: () => setState(() => _canvasContentRevision++),
+        );
       });
     }
     // 不足素材の検出（プロジェクトを開いた際に参照先の素材が
@@ -1543,38 +1546,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// で作品ファイルへ書く前に閉じた）、その内容で開くかを確かめる。以前は
   /// 作品ファイルの古い内容で黙って開き、自動保存にだけある描いた分は、開閉の
   /// たびにできる新しい自動保存で3つの枠が回って消えた。
-  Future<void> _offerNewerAutosave() async {
-    final projects = context.read<ProjectService>();
-    // Screens built without the app's providers (some tests) have none.
-    final autosaves = context.read<AutosaveService?>();
-    if (autosaves == null) return;
-    final data = await autosaves.newerThanWorkFile(projects, widget.projectId);
-    if (data == null || !mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    final restore = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.canvasAutosaveRecoveryTitle),
-        content: messageText(l10n.canvasAutosaveRecoveryBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            key: const ValueKey('canvasAutosaveRecoveryRestore'),
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(l10n.commonRestore),
-          ),
-        ],
-      ),
-    );
-    if (mounted && restore == true) {
-      projects.useSavedVersion(widget.projectId, data);
-      setState(() => _canvasContentRevision++);
-    }
-  }
-
   /// 不足素材の検出。プロジェクトを開いた際に参照先の素材ファイルが
   /// 見つからない場合、「不足素材があります」と「再検索」ボタンを表示する。
   Future<void> _checkMissingMaterials(MaterialService materialService) async {
@@ -2009,14 +1980,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                             'selection-focus-menu',
                                           ),
                                           maxWidth: 336,
-                                          collapseTooltip:
-                                              AppLocalizations.of(
-                                                context,
-                                              )!.filterPanelCollapse,
-                                          expandTooltip:
-                                              AppLocalizations.of(
-                                                context,
-                                              )!.filterPanelExpand,
+                                          collapseTooltip: AppLocalizations.of(
+                                            context,
+                                          )!.filterPanelCollapse,
+                                          expandTooltip: AppLocalizations.of(
+                                            context,
+                                          )!.filterPanelExpand,
                                           child:
                                               _currentTool ==
                                                   DrawingTool.meshTransform
@@ -2036,14 +2005,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                         ),
                                         maxWidth: 360,
                                         fillWidth: true,
-                                        collapseTooltip:
-                                            AppLocalizations.of(
-                                              context,
-                                            )!.filterPanelCollapse,
-                                        expandTooltip:
-                                            AppLocalizations.of(
-                                              context,
-                                            )!.filterPanelExpand,
+                                        collapseTooltip: AppLocalizations.of(
+                                          context,
+                                        )!.filterPanelCollapse,
+                                        expandTooltip: AppLocalizations.of(
+                                          context,
+                                        )!.filterPanelExpand,
                                         child: _filterPanel(bottomBar: true),
                                       ),
                                     ),
@@ -3689,14 +3656,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 scale: _selectionScale,
                 rotateDeg: _selectionRotateDeg,
                 maxMove: _selectionSliderMaxMove(context),
-                onChanged: ({moveX, moveY, scale, rotateDeg}) =>
-                    setState(() {
-                      _selectionMoveX = moveX ?? _selectionMoveX;
-                      _selectionMoveY = moveY ?? _selectionMoveY;
-                      _selectionScale = scale ?? _selectionScale;
-                      _selectionRotateDeg =
-                          rotateDeg ?? _selectionRotateDeg;
-                    }),
+                onChanged: ({moveX, moveY, scale, rotateDeg}) => setState(() {
+                  _selectionMoveX = moveX ?? _selectionMoveX;
+                  _selectionMoveY = moveY ?? _selectionMoveY;
+                  _selectionScale = scale ?? _selectionScale;
+                  _selectionRotateDeg = rotateDeg ?? _selectionRotateDeg;
+                }),
                 onCommit: () => setState(() {
                   _selectionTransformCommitValues = (
                     moveX: _selectionMoveX,

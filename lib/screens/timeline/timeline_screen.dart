@@ -892,7 +892,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _workTrackingLease = _projectService.beginWorkTracking(widget.projectId);
     _watchPreviewVideoMaterials();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) showProjectAutosaveNotice(context, widget.projectId);
+      if (mounted) {
+        settleOpenedWork(context, widget.projectId, saveEntry: 'timeline');
+      }
     });
   }
 

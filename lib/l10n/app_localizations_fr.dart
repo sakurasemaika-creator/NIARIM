@@ -1614,16 +1614,27 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ce projet n’a pas encore de sauvegarde automatique.';
 
   @override
-  String get projectAutosaveRecovered =>
-      'Impossible d’ouvrir le fichier du projet. Le projet a été récupéré depuis une sauvegarde automatique.';
+  String projectAutosaveRecovered(String time) {
+    return 'Le fichier du projet était endommagé ou introuvable. Il a été restauré depuis la sauvegarde automatique la plus récente ($time). Vous pouvez aussi choisir d’autres données enregistrées à charger.';
+  }
 
   @override
-  String get canvasAutosaveRecoveryTitle =>
-      'Restaurer la sauvegarde automatique';
+  String get projectAutosaveRecoveredTitle =>
+      'Impossible d’ouvrir le fichier du projet';
 
   @override
-  String get canvasAutosaveRecoveryBody =>
-      'Une version enregistrée automatiquement contient des modifications différentes. Voulez-vous l’ouvrir ?';
+  String get projectAutosaveRecoveredContinue => 'Continuer avec cette version';
+
+  @override
+  String autosaveNewerOpenedNotice(String time) {
+    return 'La dernière fois, l’app s’est fermée avant que les modifications soient enregistrées dans le fichier du projet. Le projet a donc été ouvert depuis la sauvegarde automatique ($time).';
+  }
+
+  @override
+  String get autosaveRecoveryBackToList => 'Retour à la liste des projets';
+
+  @override
+  String get autosaveRecoveryChooseData => 'Choisir les données à charger';
 
   @override
   String get helpSaveSlotTitle => 'Emplacement de sauvegarde';

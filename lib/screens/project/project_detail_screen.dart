@@ -86,7 +86,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     // 続く。自分の印ではなく、作品ごとの進行中の状態を見て「共有」を描く。
     ExportShareService.running.addListener(_onShareRunningChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) showProjectAutosaveNotice(context, widget.projectId);
+      if (mounted) {
+        settleOpenedWork(context, widget.projectId, saveEntry: 'projectDetail');
+      }
     });
   }
 
