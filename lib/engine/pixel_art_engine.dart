@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../models/pixel_color_mode.dart';
+import 'pixel_art_lines.dart';
 
 /// Shared NIARIM pixel-art conversion contract.
 ///
@@ -30,6 +31,12 @@ import '../models/pixel_color_mode.dart';
 /// side by side, look nearest to it, in a fixed 4 x 4 pattern (ordered
 /// dithering, which stays put from one animation frame to the next). A dot
 /// a colour of the set already matches well stays that one colour.
+///
+/// 細い線（変換後に2.5ドット未満の太さ）は、[squareBlocks]で2画素以上の
+/// ドットのとき[PixelArtLines]が中心線から描き直す（[redrawLines]が偽なら
+/// 描き直さない）：線ごとに1つの色・1つの太さで、L字の角の無い
+/// （ピクセルパーフェクトな）線にする。描き直した線のインクはほかのドットの
+/// 色から外す。細い線の無い絵では何も変わらない。
 class PixelArtEngine {
   const PixelArtEngine();
 
@@ -43,6 +50,7 @@ class PixelArtEngine {
     List<int> paletteColors = const [],
     bool squareBlocks = true,
     bool dither = false,
+    bool redrawLines = true,
   }) {
     final size = pixelSize.toDouble().clamp(
       1.0,
@@ -54,6 +62,12 @@ class PixelArtEngine {
     final cellsX = xs.length - 1;
     final cellsY = ys.length - 1;
     final cellCount = cellsX * cellsY;
+    // 細い線を描き直す（ブラシのピクセルモードのように色だけ変えるときと、
+    // 1画素のドットでは描き直さない）。
+    final lines = squareBlocks && redrawLines
+        ? PixelArtLines.find(data, width, height, xs, ys, size)
+        : null;
+    final inked = lines?.inked;
     final rawColors = List<int?>.filled(cellCount, null);
     final alphaSum = Int32List(cellCount);
     final alphaMax = Uint8List(cellCount);
@@ -68,8 +82,11 @@ class PixelArtEngine {
         var sx = 0, sy = 0, sxx = 0, syy = 0;
         for (var dy = 0; dy < ys[cy + 1] - ys[cy]; dy++) {
           for (var dx = 0; dx < xs[cx + 1] - xs[cx]; dx++) {
+            final p = (ys[cy] + dy) * width + xs[cx] + dx;
+            // 描き直す線のインクは、そのドットの地の色に数えない。
+            if (inked != null && inked[p] != 0) continue;
             n++;
-            final i = (((ys[cy] + dy) * width) + xs[cx] + dx) * 4;
+            final i = p * 4;
             final a = data[i + 3];
             if (a == 0) continue;
             // Premultiplied channels are the colour already weighted by alpha.
@@ -104,30 +121,48 @@ class PixelArtEngine {
       }
     }
 
-    final blockAlpha = squareBlocks
-        ? _bridgeGaps(
-            data,
-            width,
-            size,
-            xs,
-            ys,
-            alphaMax,
-            _blockAlphas(
-              cellsX,
-              cellsY,
-              alphaSum,
-              alphaMax,
-              pixels,
-              orientation,
-            ),
-          )
-        : null;
+    Uint8List? blockAlpha;
+    // 色を決め直さないドット：描き直した線と、地の色を隣から借りたもの。
+    Uint8List? settled;
+    if (squareBlocks) {
+      if (lines != null) {
+        // 線のドットの周りは、線の不透明度を基準に地を決める（線のインクを
+        // 外した後の薄い縁だけで決めると、ほとんど透明なドットが残る）。
+        for (var c = 0; c < cellCount; c++) {
+          if (lines.line[c] != 0) alphaMax[c] = lines.alpha[c];
+        }
+      }
+      final kept = _blockAlphas(
+        cellsX,
+        cellsY,
+        alphaSum,
+        alphaMax,
+        pixels,
+        orientation,
+      );
+      if (lines != null) {
+        settled = Uint8List(cellCount);
+        _placeLines(lines, xs, ys, pixels, kept, rawColors, settled);
+      }
+      blockAlpha = _bridgeGaps(data, width, size, xs, ys, alphaMax, kept);
+    }
     if (blockAlpha != null) {
       for (var c = 0; c < cellCount; c++) {
         if (blockAlpha[c] == 0) rawColors[c] = null;
       }
     }
-    _keepDetails(data, width, xs, ys, cellsX, cellsY, rawColors);
+    _keepDetails(
+      data,
+      width,
+      xs,
+      ys,
+      cellsX,
+      cellsY,
+      rawColors,
+      inked: inked,
+      settled: settled,
+    );
+    final lineCell = lines?.line;
 
     final countPalette = colorMode == PixelColorMode.count
         ? _buildCountPalette(rawColors.whereType<int>().toList(), colorLevels)
@@ -153,13 +188,19 @@ class PixelArtEngine {
       final edge = Uint8List(cellCount);
       for (var c = 0; c < cellCount; c++) {
         if (rawColors[c] != null &&
-            _onEdge(rawColors, labs, cellsX, cellsY, c)) {
+            ((lineCell != null && lineCell[c] != 0) ||
+                _onEdge(rawColors, labs, cellsX, cellsY, c))) {
           edge[c] = 1;
         }
       }
       for (var c = 0; c < cellCount; c++) {
         var color = rawColors[c];
         if (color == null) continue;
+        // 描き直した線は、その色に最も近い1色（混ぜない）。
+        if (lineCell != null && lineCell[c] != 0) {
+          colors[c] = ditherer.nearest(color);
+          continue;
+        }
         // A dot on a hard edge between two colours (often a blend of both)
         // takes the colour of its most alike neighbour off the edge, so the
         // pattern runs right up to the edge and no dots of some third colour
@@ -214,6 +255,14 @@ class PixelArtEngine {
         final bl = colors[(cy + 1) * cellsX + cx];
         final br = colors[(cy + 1) * cellsX + cx + 1];
         if (tl == null || tr == null || bl == null || br == null) continue;
+        // 描き直した線の段の横に中間の色を足すと、線がL字に太って見える。
+        if (lineCell != null &&
+            (lineCell[cy * cellsX + cx] != 0 ||
+                lineCell[cy * cellsX + cx + 1] != 0 ||
+                lineCell[(cy + 1) * cellsX + cx] != 0 ||
+                lineCell[(cy + 1) * cellsX + cx + 1] != 0)) {
+          continue;
+        }
         if (mixed[cy * cellsX + cx] != 0 ||
             mixed[cy * cellsX + cx + 1] != 0 ||
             mixed[(cy + 1) * cellsX + cx] != 0 ||
@@ -276,8 +325,10 @@ class PixelArtEngine {
     List<int> ys,
     int cellsX,
     int cellsY,
-    List<int?> colors,
-  ) {
+    List<int?> colors, {
+    Uint8List? inked,
+    Uint8List? settled,
+  }) {
     final around = Float64List(cellsX * cellsY * 3);
     for (var cy = 0; cy < cellsY; cy++) {
       for (var cx = 0; cx < cellsX; cx++) {
@@ -312,12 +363,14 @@ class PixelArtEngine {
       for (var cx = 0; cx < cellsX; cx++) {
         final c = cy * cellsX + cx;
         if (colors[c] == null) continue;
+        if (settled != null && settled[c] != 0) continue;
         final ar = around[c * 3],
             ag = around[c * 3 + 1],
             ab = around[c * 3 + 2];
         var wr = 0.0, wg = 0.0, wb = 0.0, total = 0.0;
         for (var y = ys[cy]; y < ys[cy + 1]; y++) {
           for (var x = xs[cx]; x < xs[cx + 1]; x++) {
+            if (inked != null && inked[y * width + x] != 0) continue;
             final i = (y * width + x) * 4;
             final a = data[i + 3];
             if (a == 0) continue;
@@ -341,6 +394,88 @@ class PixelArtEngine {
           (wb / total).round().clamp(0, 255),
         );
       }
+    }
+  }
+
+  /// 描き直した線を置く：線のドットは線の色と不透明度にする。描いた線から
+  /// 外れたのに線のインクで9割以上覆われたドットは、線の幅の中なので隣の
+  /// 線の色にし、それ以外で地の画素が1つも無いドット（線のインクの印は
+  /// 線の縁のぼけまで含む）は、近くの地のドットの色と不透明度を借りる。
+  /// どれも[settled]に印を付ける。
+  static void _placeLines(
+    PixelArtLines lines,
+    List<int> xs,
+    List<int> ys,
+    Int32List pixels,
+    Uint8List kept,
+    List<int?> rawColors,
+    Uint8List settled,
+  ) {
+    final cellsX = xs.length - 1, cellsY = ys.length - 1;
+    final count = cellsX * cellsY;
+    for (var c = 0; c < count; c++) {
+      if (lines.line[c] == 0) continue;
+      kept[c] = lines.alpha[c];
+      rawColors[c] = lines.color[c];
+      settled[c] = 1;
+    }
+    for (var c = 0; c < count; c++) {
+      final cx = c % cellsX, cy = c ~/ cellsX;
+      if (lines.line[c] != 0) continue;
+      final covered = lines.cover[c] >= 0.9;
+      if (!covered && pixels[c] != 0) continue;
+      int? borrowed, borrowedAlpha, lineColor, lineAlpha;
+      // ほとんど線のインクで覆われたドット（線の幅の中）は線の色。
+      for (final (ox, oy) in covered ? _ring : const <(int, int)>[]) {
+        final nx = cx + ox, ny = cy + oy;
+        if (nx < 0 || ny < 0 || nx >= cellsX || ny >= cellsY) continue;
+        final o = ny * cellsX + nx;
+        if (lines.line[o] == 0) continue;
+        lineColor = lines.color[o];
+        lineAlpha = lines.alpha[o];
+        break;
+      }
+      if (lineColor == null && pixels[c] > 0) continue;
+      for (var r = 1; r <= 2 && borrowed == null && lineColor == null; r++) {
+        var red = 0, green = 0, blue = 0, coloured = 0, top = 0, ground = 0;
+        for (var ny = cy - r; ny <= cy + r; ny++) {
+          for (var nx = cx - r; nx <= cx + r; nx++) {
+            if (nx < 0 || ny < 0 || nx >= cellsX || ny >= cellsY) continue;
+            final o = ny * cellsX + nx;
+            if (o == c) continue;
+            if (lines.line[o] != 0) continue;
+            if (pixels[o] == 0) continue;
+            ground++;
+            top = math.max(top, kept[o]);
+            final color = rawColors[o];
+            if (kept[o] == 0 || color == null) continue;
+            red += (color >> 16) & 0xff;
+            green += (color >> 8) & 0xff;
+            blue += color & 0xff;
+            coloured++;
+          }
+        }
+        if (ground == 0) continue;
+        borrowedAlpha = top;
+        borrowed = coloured == 0
+            ? 0xff000000
+            : _opaque(
+                ((red / coloured).round() << 16) |
+                    ((green / coloured).round() << 8) |
+                    (blue / coloured).round(),
+              );
+      }
+      if (lineColor != null) {
+        kept[c] = lineAlpha!;
+        rawColors[c] = lineColor;
+        lines.line[c] = 1;
+      } else if (borrowed != null) {
+        kept[c] = borrowedAlpha!;
+        rawColors[c] = kept[c] == 0 ? null : borrowed;
+      } else {
+        continue;
+      }
+      settled[c] = 1;
     }
   }
 
@@ -396,7 +531,9 @@ class PixelArtEngine {
           }
         }
         level[c] = top;
-        if (top > 0) coverage[c] = alphaSum[c] / (pixels[c] * top);
+        if (top > 0 && pixels[c] > 0) {
+          coverage[c] = alphaSum[c] / (pixels[c] * top);
+        }
       }
     }
     // An even area: the cell is filled at its own strength, and so are most

@@ -2856,7 +2856,8 @@ class FilterEngine {
 
   /// モザイク化（[mosaicSize]）＋配色処理（[colorMode]）を組み合わせた
   /// ドット絵化。色を限るときは、[dither]なら1色では遠いドットを2色の
-  /// 組み合わせ（4×4の規則的な配置）で近づける。
+  /// 組み合わせ（4×4の規則的な配置）で近づける。細い線は線ごとに1色・
+  /// 1つの太さのピクセルパーフェクトな線に描き直す（[redrawLines]）。
   Uint8List applyPixelate(
     Uint8List data,
     int width,
@@ -2866,6 +2867,7 @@ class FilterEngine {
     int colorLevels = 6,
     List<int> paletteColors = const [],
     bool dither = true,
+    bool redrawLines = true,
   }) => const PixelArtEngine().convert(
     data,
     width,
@@ -2875,6 +2877,7 @@ class FilterEngine {
     colorLevels: colorLevels,
     paletteColors: paletteColors,
     dither: dither,
+    redrawLines: redrawLines,
   );
 
   Uint8List applyFade(

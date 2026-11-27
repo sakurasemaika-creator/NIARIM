@@ -690,7 +690,15 @@ Future<Uint8List> generateBuiltInStampTexture(
     );
   }
   if (stamp.pixelMode) {
-    texture = FilterEngine().applyPixelate(texture, size, size, dither: false);
+    // スタンプは塗った形の絵：とがった先や細い部分を同じ太さの線として
+    // 描き直すと形の輪郭が変わるので、線は描き直さない。
+    texture = FilterEngine().applyPixelate(
+      texture,
+      size,
+      size,
+      dither: false,
+      redrawLines: false,
+    );
   }
   final opacityScale = stamp.opacity.clamp(1, 100) / 100.0;
   if (opacityScale < 1.0) {
