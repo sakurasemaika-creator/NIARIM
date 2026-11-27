@@ -273,6 +273,7 @@ void main() {
       );
       await shot('09_pc_color_adjust_menu_moved');
 
+      await settings.setDefaultDockedPanels(<CanvasDockPanel>{});
       await navigate('/home');
       await navigate('/canvas/${demo.id}');
       await tester.tap(find.byIcon(Icons.settings).first);
