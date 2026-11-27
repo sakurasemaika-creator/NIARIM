@@ -229,13 +229,14 @@ void main() {
       final marker = brushes['マーカーペン']!;
       final pixel = brushes['ピクセルペン']!;
       final glitter = brushes['グリッターペン']!;
-      final spray = brushes['スプレー']!;
 
       // A soft tool must not rasterize as a crisp marker.
       expect(air.pixelMode, isFalse);
       expect(air.pressureOn.blur.enabled, isTrue);
       expect(air.pressureOff.blur.value, greaterThan(0));
-      expect(air.opacity, lessThan(100));
+      // The airbrush is soft at its edge, not see-through: its centre is the
+      // chosen colour.
+      expect(air.opacity, 100);
       expect(
         blur.pressureOff.blur.value,
         greaterThan(air.pressureOff.blur.value),
@@ -256,7 +257,8 @@ void main() {
       ]);
       expect(pixel.pixelMode, isTrue);
       expect(glitter.tipShape, BrushTipShape.hexagon);
-      expect(spray.scatter, greaterThan(0));
+      // The spray is no longer shipped (the owner does not use it).
+      expect(brushes['スプレー'], isNull);
     });
 
     test('設定値がUIの許容範囲に収まっている', () async {

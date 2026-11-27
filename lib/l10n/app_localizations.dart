@@ -2790,8 +2790,20 @@ abstract class AppLocalizations {
   /// No description provided for @helpFadeDesc.
   ///
   /// In ja, this message translates to:
-  /// **'入り（始点）と抜き（終点）の値と距離をそれぞれ独立して設定できるブラシ機能です。入りだけ、抜きだけ、または非対称の設定にでき、線の描き始め・描き終わりの太さや不透明度を別々に調整できます。縁取りペンでは全体の形（太さ）だけが変わり、不透明度は変わりません。'**
+  /// **'線の始点と終点に向かって色を透けさせるブラシ機能です。不透明度は始点から設定した距離までに開始値から100%へ、終点までの設定した距離で100%から終了値へなめらかに変わり、その間はブラシの不透明度のまま描きます。始点だけ・終点だけ、または非対称にも設定できます。線の太さは変わりません（太さを細くするのは入り抜きです）。縁取りペンにはフェードはありません。'**
   String get helpFadeDesc;
+
+  /// No description provided for @helpTaperTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'入り抜き'**
+  String get helpTaperTitle;
+
+  /// No description provided for @helpTaperDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'線の始点と終点に向かって太さを細くするブラシ機能です。太さは始点から設定した距離までに入りの値から100%へ、終点までの設定した距離で100%から抜きの値へなめらかに変わり、その間はブラシの太さのまま描きます。色と不透明度は変わりません。筆圧のないマウスでも、入りと抜きの細い線を描けます。筆圧で太さが変わるブラシではその太さをさらに細くし、縁取りペンでは縁取りを含む全体の形を細くします。'**
+  String get helpTaperDesc;
 
   /// No description provided for @helpStrokeDecayTitle.
   ///
@@ -3834,7 +3846,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsStrokeDecayFadeDesc.
   ///
   /// In ja, this message translates to:
-  /// **'ブラシ設定では、入り（始点）と抜き（終点）の値・距離を別々に調整できます。ストローク減衰も組み合わせると、入りだけ細くする、抜きだけ長く伸ばす、両端を非対称にするなど、毛筆やインクブラシらしい抑揚を作れます。'**
+  /// **'フェードでは始点と終点の不透明度と距離を、入り抜きでは太さと距離を、それぞれ別々に調整できます。ストローク減衰も組み合わせると、始点だけ透けさせる、抜きだけ細く長く伸ばす、両端を非対称にするなど、毛筆やインクブラシらしい抑揚を作れます。'**
   String get tipsStrokeDecayFadeDesc;
 
   /// No description provided for @tipsColorMixingFadeTitle.
@@ -3846,7 +3858,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsColorMixingFadeDesc.
   ///
   /// In ja, this message translates to:
-  /// **'混色を有効にしたブラシへフェードも組み合わせると、下の色と混ざりながら徐々に薄くなる、実際の絵の具に近い塗り心地になります。'**
+  /// **'混色を有効にしたブラシへフェードも組み合わせると、下の色と混ざりながら線の始点と終点が透けていく、実際の絵の具に近い塗り心地になります。'**
   String get tipsColorMixingFadeDesc;
 
   /// No description provided for @tipsOutlineAnimeStyleTitle.
@@ -6146,6 +6158,36 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'距離(px)'**
   String get brushSettingsFadeDistanceLabel;
+
+  /// No description provided for @brushSettingsTaperModeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'入り抜き'**
+  String get brushSettingsTaperModeTitle;
+
+  /// No description provided for @brushSettingsTaperStartValueLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'入りの太さ(%)'**
+  String get brushSettingsTaperStartValueLabel;
+
+  /// No description provided for @brushSettingsTaperStartDistanceLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'入りの距離(px)'**
+  String get brushSettingsTaperStartDistanceLabel;
+
+  /// No description provided for @brushSettingsTaperEndValueLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'抜きの太さ(%)'**
+  String get brushSettingsTaperEndValueLabel;
+
+  /// No description provided for @brushSettingsTaperEndDistanceLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'抜きの距離(px)'**
+  String get brushSettingsTaperEndDistanceLabel;
 
   /// No description provided for @brushSettingsStrokeDecayTitle.
   ///
@@ -13362,7 +13404,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpBrushFoldDesc.
   ///
   /// In ja, this message translates to:
-  /// **'ブラシ設定で「縁取り」をONにすると「折り畳みモード」を使えます。OFFでは通常の縁取りペンと同じ描画です。ONにすると、描いたストロークの方向と曲がりをもとに、縁取りペンの線そのものが折れたり巻いたりします。波形を自動生成する機能ではありません。曲がり角ごとに、内側の輪郭から分かれてカーブし、すっと消える折り返し線が入ります。同じ向きに回り続けたときは270°ごとに控えめな折り返し線が入ります。折り畳みタイプは5種類です。「ウェーブ俯瞰」は先に描いた側、「ウェーブ煽り」は後に描いた側を手前にします。「右巻き」はストロークの進行方向の右へ、「左巻き」は左へ巻き込むように前後を決めます。基準は画面の向きではなく描いた向きです。「三日月カール」は描いたC字のカーブに沿って三日月がつながる形に整えます。「折り返し長さ」は折り返し線の長さ（ブラシサイズに連動）、「折り返し角度」はストロークのカーブへの追従の強さ（50%で自然に連動）、「折り返し線のカーブ開始位置」は素材の見かけの厚み（0%で分岐位置からすぐにカーブ）を調整します。縁取りペンの筆圧とフェード（入り抜き）は縁取りを含む全体の形だけを変え、縁取り線の太さと色の濃さは変わりません。縁取りの「重なりを維持する」をオフにすると、重なったストロークは境目を縁取らずにつながり（重なった所には折り返し線も描きません）、全体の周りだけを縁取ります。縁取りの「強弱」をオンにすると、ストロークのカーブの頂点に向かって縁取り線が太くなります（カーブの始まりと終わりは縁取り幅のまま、頂点で「頂点の縁取り幅」になるよう徐々に太くなり、ペンを離したときに反映されます）。'**
+  /// **'ブラシ設定で「縁取り」をONにすると「折り畳みモード」を使えます。OFFでは通常の縁取りペンと同じ描画です。ONにすると、描いたストロークの方向と曲がりをもとに、縁取りペンの線そのものが折れたり巻いたりします。波形を自動生成する機能ではありません。曲がり角ごとに、内側の輪郭から分かれてカーブし、すっと消える折り返し線が入ります。同じ向きに回り続けたときは270°ごとに控えめな折り返し線が入ります。折り畳みタイプは5種類です。「ウェーブ俯瞰」は先に描いた側、「ウェーブ煽り」は後に描いた側を手前にします。「右巻き」はストロークの進行方向の右へ、「左巻き」は左へ巻き込むように前後を決めます。基準は画面の向きではなく描いた向きです。「三日月カール」は描いたC字のカーブに沿って三日月がつながる形に整えます。「折り返し長さ」は折り返し線の長さ（ブラシサイズに連動）、「折り返し角度」はストロークのカーブへの追従の強さ（50%で自然に連動）、「折り返し線のカーブ開始位置」は素材の見かけの厚み（0%で分岐位置からすぐにカーブ）を調整します。縁取りペンの筆圧と入り抜きは縁取りを含む全体の形だけを変え、縁取り線の太さと色の濃さは変わりません。縁取りの「重なりを維持する」をオフにすると、重なったストロークは境目を縁取らずにつながり（重なった所には折り返し線も描きません）、全体の周りだけを縁取ります。縁取りの「強弱」をオンにすると、ストロークのカーブの頂点に向かって縁取り線が太くなります（カーブの始まりと終わりは縁取り幅のまま、頂点で「頂点の縁取り幅」になるよう徐々に太くなり、ペンを離したときに反映されます）。'**
   String get helpBrushFoldDesc;
 
   /// No description provided for @tipsBrushFoldTitle.

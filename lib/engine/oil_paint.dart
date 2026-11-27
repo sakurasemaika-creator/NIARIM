@@ -5,9 +5,10 @@ import 'perceptual_color_mixer.dart';
 import 'tile_manager.dart';
 
 /// How much of the paint already on the layer oil laid at full opacity
-/// covers (the rest shows through, faintly). On an empty pixel the paint is
-/// as opaque as the stroke.
-const double kOilPaintCover = 0.95;
+/// covers: all of it (oil does not show through; at 95% the edge of what lay
+/// under the stroke still showed). On an empty pixel the paint is as opaque
+/// as the stroke.
+const double kOilPaintCover = 1.0;
 
 /// One stroke of 油彩風混色 (oil-style mixing): opaque paint from a loaded
 /// brush.
@@ -25,12 +26,12 @@ const double kOilPaintCover = 0.95;
 /// paper, fading. Bristles pick up and run out at slightly different rates,
 /// so the dragged colour streaks along the stroke.
 ///
-/// Oil hardly shows through: at full opacity the paint the bristle lays
-/// covers what was there by [kOilPaintCover]. So where the brush has not
+/// Oil does not show through: at full opacity the paint the bristle lays
+/// covers what was there ([kOilPaintCover]). So where the brush has not
 /// picked anything up yet it covers with its own colour, and the outline of
-/// what lies under the stroke shows through it only faintly; where it has,
-/// the colour changes gradually along the stroke as it loads up. At a
-/// lowered opacity the paint lays over what was there as usual.
+/// what lies under the stroke does not show through it; where it has, the
+/// colour changes gradually along the stroke as it loads up. At a lowered
+/// opacity the paint lays over what was there as usual.
 ///
 /// A pixel's colour is laid over the layer as it was before the stroke (kept
 /// per tile), never over what this stroke laid a moment earlier, so a pixel

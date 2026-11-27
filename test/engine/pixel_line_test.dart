@@ -1393,7 +1393,10 @@ void main() {
 
     expect(hashOf(brush(12, pressure: true)), '0xda9879cb');
     expect(hashOf(brush(1.5, opacity: 70)), '0xc1b807c1');
-    expect(hashOf(brush(8, fade: true)), '0x998d8f07');
+    // The fade fades the colour towards the ends of the line and no longer
+    // narrows it (2026-11-27: フェードは始点と終点に向かって透けていく), so
+    // this line is new.
+    expect(hashOf(brush(8, fade: true)), '0x9395e932');
     expect(hashOf(brush(10, opacity: 60), eraser: true), '0x9d8312de');
     expect(hashOf(brush(6, spacing: 14)), '0x01b56d89');
     expect(

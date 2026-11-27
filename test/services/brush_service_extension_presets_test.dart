@@ -68,7 +68,7 @@ void main() {
       final hair = first.brushes.singleWhere((b) => b.id == 'Brush0023');
       final bangs = first.brushes.singleWhere((b) => b.id == 'Brush0024');
       final oldHair = hair.copyWith(
-        fadeMode: FadeMode.weak,
+        taperMode: FadeMode.weak,
         isFavorite: true,
         folderId: 'my-folder',
         tags: ['my-hair-tag'],
@@ -77,19 +77,19 @@ void main() {
       SharedPreferences.setMockInitialValues({
         'brushes': [
           jsonEncode(oldHair.toJson()),
-          jsonEncode(bangs.copyWith(fadeMode: FadeMode.weak).toJson()),
+          jsonEncode(bangs.copyWith(taperMode: FadeMode.weak).toJson()),
           jsonEncode(custom.toJson()),
         ],
       });
       final restored = BrushService();
       await restored.init();
       final updated = restored.brushes.singleWhere((b) => b.id == hair.id);
-      expect(updated.fadeMode, FadeMode.custom);
-      expect(updated.fadeOut.value, 0);
+      expect(updated.taperMode, FadeMode.custom);
+      expect(updated.taperOut.value, 0);
       expect(updated.folderId, 'my-folder');
       expect(updated.tags, ['my-hair-tag']);
       expect(
-        restored.brushes.singleWhere((b) => b.id == bangs.id).fadeMode,
+        restored.brushes.singleWhere((b) => b.id == bangs.id).taperMode,
         FadeMode.off,
       );
       expect(
@@ -97,7 +97,7 @@ void main() {
         isTrue,
       );
       expect(
-        restored.brushes.singleWhere((b) => b.id == custom.id).fadeMode,
+        restored.brushes.singleWhere((b) => b.id == custom.id).taperMode,
         FadeMode.weak,
       );
       first.dispose();

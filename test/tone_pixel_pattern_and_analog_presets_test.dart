@@ -164,11 +164,14 @@ void main() {
 
   test('Charcoal, gouache, 4B pencil and pastel have real grain settings', () {
     final brushes = {for (final b in BrushService.builtInBrushes) b.id: b};
+    // Grain leaves paper between the pigment; where pigment lands it is the
+    // chosen colour (opacity 100), so the grain is lighter than it was when
+    // these brushes were also see-through.
     final types = <String, int>{
-      'Brush0026': 78,
+      'Brush0026': 55,
       'Brush0027': 18,
-      'Brush0028': 46,
-      'Brush0029': 70,
+      'Brush0028': 35,
+      'Brush0029': 45,
     };
     for (final entry in types.entries) {
       final brush = brushes[entry.key];

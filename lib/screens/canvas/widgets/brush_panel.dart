@@ -842,61 +842,41 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
         title: l10n.brushSettingsStrokeSection,
         initiallyExpanded: true,
         children: [
-          _fieldLabel(l10n.brushSettingsFadeModeTitle),
-          _choices<FadeMode>(
-            values: FadeMode.values,
-            selected: _brush.fadeMode,
-            label: (mode) => _fadeModeLabel(l10n, mode),
-            keyOf: (mode) => Key('brush-fade-${mode.name}'),
-            onSelected: (v) =>
-                setState(() => _brush = _brush.copyWith(fadeMode: v)),
+          // フェード（色が端で透ける）は縁取りペンには無い：縁取りペンの端は
+          // 入り抜きで形だけが細くなる。
+          if (!_brush.outlineEnabled)
+            ..._endsControls(
+              l10n,
+              keyPrefix: 'brush-fade',
+              title: l10n.brushSettingsFadeModeTitle,
+              mode: _brush.fadeMode,
+              start: _brush.fadeIn,
+              end: _brush.fadeOut,
+              startValueLabel: l10n.brushSettingsFadeStartValueLabel,
+              startDistanceLabel:
+                  '${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeStartValueLabel})',
+              endValueLabel: l10n.brushSettingsFadeEndValueLabel,
+              endDistanceLabel:
+                  '${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeEndValueLabel})',
+              withMode: (v) => _brush.copyWith(fadeMode: v),
+              withStart: (v) => _brush.copyWith(fadeIn: v),
+              withEnd: (v) => _brush.copyWith(fadeOut: v),
+            ),
+          ..._endsControls(
+            l10n,
+            keyPrefix: 'brush-taper',
+            title: l10n.brushSettingsTaperModeTitle,
+            mode: _brush.taperMode,
+            start: _brush.taperIn,
+            end: _brush.taperOut,
+            startValueLabel: l10n.brushSettingsTaperStartValueLabel,
+            startDistanceLabel: l10n.brushSettingsTaperStartDistanceLabel,
+            endValueLabel: l10n.brushSettingsTaperEndValueLabel,
+            endDistanceLabel: l10n.brushSettingsTaperEndDistanceLabel,
+            withMode: (v) => _brush.copyWith(taperMode: v),
+            withStart: (v) => _brush.copyWith(taperIn: v),
+            withEnd: (v) => _brush.copyWith(taperOut: v),
           ),
-          if (_brush.fadeMode == FadeMode.custom) ...[
-            _sliderRow(
-              l10n.brushSettingsFadeStartValueLabel,
-              _brush.fadeIn.value,
-              0,
-              100,
-              (v) => setState(
-                () => _brush = _brush.copyWith(
-                  fadeIn: _brush.fadeIn.copyWith(value: v),
-                ),
-              ),
-            ),
-            _sliderRow(
-              '${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeStartValueLabel})',
-              _brush.fadeIn.rangePx,
-              10,
-              2000,
-              (v) => setState(
-                () => _brush = _brush.copyWith(
-                  fadeIn: _brush.fadeIn.copyWith(rangePx: v),
-                ),
-              ),
-            ),
-            _sliderRow(
-              l10n.brushSettingsFadeEndValueLabel,
-              _brush.fadeOut.value,
-              0,
-              100,
-              (v) => setState(
-                () => _brush = _brush.copyWith(
-                  fadeOut: _brush.fadeOut.copyWith(value: v),
-                ),
-              ),
-            ),
-            _sliderRow(
-              '${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeEndValueLabel})',
-              _brush.fadeOut.rangePx,
-              10,
-              2000,
-              (v) => setState(
-                () => _brush = _brush.copyWith(
-                  fadeOut: _brush.fadeOut.copyWith(rangePx: v),
-                ),
-              ),
-            ),
-          ],
           _sliderRow(
             l10n.brushSettingsSpacingLabel,
             _brush.spacing.toDouble(),
@@ -961,7 +941,8 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           BrushExtensionSettings(
             brush: _brush,
             labels: BrushExtensionLabels.fromLocalizations(l10n),
-            onChanged: (value) => setState(() => _brush = value),
+            onChanged: (value) =>
+                setState(() => _brush = _withOutlineEnds(_brush, value)),
             onPickOutlineColor: _showOutlineColorPicker,
             onEyedropOutlineColor: widget.onEyedropOutlineColor == null
                 ? null
@@ -1530,6 +1511,63 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     onSelected: onChanged,
   );
 
+  /// The choices and, for カスタム, the sliders of a brush's ends (フェード or
+  /// 入り抜き): a value (%) and a distance (px) for the start and the end.
+  List<Widget> _endsControls(
+    AppLocalizations l10n, {
+    required String keyPrefix,
+    required String title,
+    required FadeMode mode,
+    required FadeEndpointSettings start,
+    required FadeEndpointSettings end,
+    required String startValueLabel,
+    required String startDistanceLabel,
+    required String endValueLabel,
+    required String endDistanceLabel,
+    required Brush Function(FadeMode) withMode,
+    required Brush Function(FadeEndpointSettings) withStart,
+    required Brush Function(FadeEndpointSettings) withEnd,
+  }) => [
+    _fieldLabel(title),
+    _choices<FadeMode>(
+      values: FadeMode.values,
+      selected: mode,
+      label: (mode) => _fadeModeLabel(l10n, mode),
+      keyOf: (mode) => Key('$keyPrefix-${mode.name}'),
+      onSelected: (v) => setState(() => _brush = withMode(v)),
+    ),
+    if (mode == FadeMode.custom) ...[
+      _sliderRow(
+        startValueLabel,
+        start.value,
+        0,
+        100,
+        (v) => setState(() => _brush = withStart(start.copyWith(value: v))),
+      ),
+      _sliderRow(
+        startDistanceLabel,
+        start.rangePx,
+        10,
+        2000,
+        (v) => setState(() => _brush = withStart(start.copyWith(rangePx: v))),
+      ),
+      _sliderRow(
+        endValueLabel,
+        end.value,
+        0,
+        100,
+        (v) => setState(() => _brush = withEnd(end.copyWith(value: v))),
+      ),
+      _sliderRow(
+        endDistanceLabel,
+        end.rangePx,
+        10,
+        2000,
+        (v) => setState(() => _brush = withEnd(end.copyWith(rangePx: v))),
+      ),
+    ],
+  ];
+
   Widget _sliderRow(
     String label,
     double value,
@@ -1566,6 +1604,27 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
       padding: _sliderPadding,
       valueText: value.toStringAsFixed(step < 0.1 ? 2 : 1),
       onChanged: onChanged,
+    );
+  }
+
+  /// [next] after the outline settings changed from [previous]. An outline
+  /// pen's ends change only its shape: turning the outline on moves a fade
+  /// without 入り抜き to 入り抜き (as the pen would draw it anyway), so the
+  /// sheet shows what draws.
+  static Brush _withOutlineEnds(Brush previous, Brush next) {
+    if (previous.outlineEnabled ||
+        !next.outlineEnabled ||
+        next.taperMode != FadeMode.off ||
+        next.fadeMode == FadeMode.off) {
+      return next;
+    }
+    return next.copyWith(
+      fadeMode: FadeMode.off,
+      fadeIn: FadeEndpointSettings.full,
+      fadeOut: FadeEndpointSettings.full,
+      taperMode: next.fadeMode,
+      taperIn: next.fadeIn,
+      taperOut: next.fadeOut,
     );
   }
 

@@ -1461,7 +1461,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      '可分别独立设置入笔（笔画起点）和收笔（笔画终点）的数值与距离的画笔功能。可以只调整起点、只调整终点，或使用非对称设置，分别控制两端的粗细和不透明度。描边笔只改变整体形状（粗细），不改变不透明度。';
+      '让颜色在笔画起点和终点附近逐渐变透明的画笔功能。在从起点开始设定的距离内，不透明度从起始值平滑升到100%；在终点前设定的距离内，从100%平滑降到结束值；中间部分按画笔的不透明度绘制。可以只设置起点、只设置终点，或使用非对称设置。线条粗细不会改变（要让线条变细，请使用入笔与收笔）。描边笔没有淡出。';
+
+  @override
+  String get helpTaperTitle => '入笔与收笔';
+
+  @override
+  String get helpTaperDesc =>
+      '让笔画在起点和终点附近逐渐变细的画笔功能。在从起点开始设定的距离内，粗细从入笔值平滑增加到100%；在终点前设定的距离内，从100%平滑减到收笔值；中间部分按画笔的粗细绘制。颜色和不透明度不会改变。即使使用没有笔压的鼠标，也能画出入笔和收笔都很细的线条。对于粗细随笔压变化的画笔，会让其粗细进一步变细；描边笔则会让包括描边在内的整体形状变细。';
 
   @override
   String get helpStrokeDecayTitle => '笔画衰减';
@@ -2065,14 +2072,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      '在画笔设置中，可以分别调整入笔（笔画起点）和收笔（笔画终点）的数值与距离。再配合笔画衰减，可以只让起点变细、只延长收笔，或让两端采用非对称设置，做出毛笔或墨水笔般富有轻重变化的线条。';
+      '在画笔设置中，淡出可以调整笔画起点和终点的不透明度与距离，入笔与收笔可以调整粗细与距离，两者分别设置。再配合笔画衰减，可以只让起点变透明、只让收笔细长地延伸，或让两端采用非对称设置，做出毛笔或墨水笔般富有轻重变化的线条。';
 
   @override
   String get tipsColorMixingFadeTitle => '混色×淡出，做出类似颜料的融合感';
 
   @override
   String get tipsColorMixingFadeDesc =>
-      '在开启混色的笔刷上再加上淡出，会与底色融合的同时逐渐变淡，更接近真实颜料的上色手感。';
+      '在开启混色的笔刷上再加上淡出，会在与底色融合的同时，让线条的起点和终点逐渐变透明，更接近真实颜料的上色手感。';
 
   @override
   String get tipsOutlineAnimeStyleTitle => '描边×动画风，做出赛璐璐动画质感';
@@ -3345,6 +3352,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get brushSettingsFadeDistanceLabel => '距离(px)';
+
+  @override
+  String get brushSettingsTaperModeTitle => '入笔与收笔';
+
+  @override
+  String get brushSettingsTaperStartValueLabel => '入笔粗细(%)';
+
+  @override
+  String get brushSettingsTaperStartDistanceLabel => '入笔距离(px)';
+
+  @override
+  String get brushSettingsTaperEndValueLabel => '收笔粗细(%)';
+
+  @override
+  String get brushSettingsTaperEndDistanceLabel => '收笔距离(px)';
 
   @override
   String get brushSettingsStrokeDecayTitle => '笔画衰减';
@@ -7308,7 +7330,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      '在画笔设置中开启“描边”后即可使用“折叠模式”。关闭时与普通描边笔的绘制完全相同。开启后，描边笔的线条本身会根据所画笔画的方向和弯曲而折叠、卷曲；它不会自动生成波浪。每个弯曲处都会出现一条从内侧轮廓分出、弯曲后渐渐消失的折返线。若笔画持续朝同一方向转动，每转270°会加入一条较含蓄的折返线。折叠类型有5种。“波浪俯视”让先画的一侧在前，“波浪仰视”让后画的一侧在前。“右卷”按照朝笔画前进方向右侧卷入的方式决定前后，“左卷”则朝左侧；依据的是所画方向而不是屏幕方向。“月牙卷”会沿着所画的C形曲线整理成相连的月牙形。“折返长度”调整折返线的长度（与画笔大小联动），“折返角度”调整跟随笔画弯曲的强度（50%时自然联动），“折返线的弯曲起点”调整材质看起来的厚度（0%时从分叉处立即弯曲）。描边笔的笔压和淡出（入笔与收笔）只改变包括描边在内的整体形状，描边线的粗细和颜色都不会改变。关闭“描边”中的“保持重叠”后，重叠的笔画在交界处不描边而连成一体（重叠处也不画折返线），只描整体的外围。开启“描边”中的“强弱”后，描边线会朝笔画中每段曲线的顶点变粗（曲线的起点和终点保持描边宽度，到顶点逐渐变为“顶点处的描边宽度”，抬起笔时生效）。';
+      '在画笔设置中开启“描边”后即可使用“折叠模式”。关闭时与普通描边笔的绘制完全相同。开启后，描边笔的线条本身会根据所画笔画的方向和弯曲而折叠、卷曲；它不会自动生成波浪。每个弯曲处都会出现一条从内侧轮廓分出、弯曲后渐渐消失的折返线。若笔画持续朝同一方向转动，每转270°会加入一条较含蓄的折返线。折叠类型有5种。“波浪俯视”让先画的一侧在前，“波浪仰视”让后画的一侧在前。“右卷”按照朝笔画前进方向右侧卷入的方式决定前后，“左卷”则朝左侧；依据的是所画方向而不是屏幕方向。“月牙卷”会沿着所画的C形曲线整理成相连的月牙形。“折返长度”调整折返线的长度（与画笔大小联动），“折返角度”调整跟随笔画弯曲的强度（50%时自然联动），“折返线的弯曲起点”调整材质看起来的厚度（0%时从分叉处立即弯曲）。描边笔的笔压以及入笔与收笔只改变包括描边在内的整体形状，描边线的粗细和颜色都不会改变。关闭“描边”中的“保持重叠”后，重叠的笔画在交界处不描边而连成一体（重叠处也不画折返线），只描整体的外围。开启“描边”中的“强弱”后，描边线会朝笔画中每段曲线的顶点变粗（曲线的起点和终点保持描边宽度，到顶点逐渐变为“顶点处的描边宽度”，抬起笔时生效）。';
 
   @override
   String get tipsBrushFoldTitle => '选择头发折返时显示在前的部分';
@@ -12520,7 +12542,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpFadeDesc =>
-      '可分別獨立設定入筆（筆畫起點）與收筆（筆畫終點）的數值和距離的筆刷功能。可以只調整起點、只調整終點，或使用非對稱設定，分別控制兩端的粗細與不透明度。描邊筆只改變整體形狀（粗細），不改變不透明度。';
+      '讓顏色在筆畫起點和終點附近逐漸變透明的筆刷功能。在從起點開始設定的距離內，不透明度從起始值平滑升到100%；在終點前設定的距離內，從100%平滑降到結束值；中間部分以筆刷的不透明度繪製。可以只設定起點、只設定終點，或使用非對稱設定。線條粗細不會改變（要讓線條變細，請使用入筆與收筆）。描邊筆沒有淡出。';
+
+  @override
+  String get helpTaperTitle => '入筆與收筆';
+
+  @override
+  String get helpTaperDesc =>
+      '讓筆畫在起點和終點附近逐漸變細的筆刷功能。在從起點開始設定的距離內，粗細從入筆值平滑增加到100%；在終點前設定的距離內，從100%平滑減到收筆值；中間部分以筆刷的粗細繪製。顏色和不透明度不會改變。即使使用沒有筆壓的滑鼠，也能畫出入筆和收筆都很細的線條。對於粗細隨筆壓變化的筆刷，會讓其粗細進一步變細；描邊筆則會讓包含描邊在內的整體形狀變細。';
 
   @override
   String get helpStrokeDecayTitle => '筆畫衰減';
@@ -13124,14 +13153,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      '在筆刷設定中，可以分別調整入筆（筆畫起點）與收筆（筆畫終點）的數值和距離。再搭配筆觸衰減，可以只讓起點變細、只延長收筆，或讓兩端採用非對稱設定，做出毛筆或墨水筆般富有輕重變化的線條。';
+      '在筆刷設定中，淡出可以調整筆畫起點和終點的不透明度與距離，入筆與收筆可以調整粗細與距離，兩者分別設定。再搭配筆觸衰減，可以只讓起點變透明、只讓收筆細長地延伸，或讓兩端採用非對稱設定，做出毛筆或墨水筆般富有輕重變化的線條。';
 
   @override
   String get tipsColorMixingFadeTitle => '混色×淡出，做出類似顏料的融合感';
 
   @override
   String get tipsColorMixingFadeDesc =>
-      '在開啟混色的筆刷上再加上淡出，會與底色融合的同時逐漸變淡，更接近真實顏料的上色手感。';
+      '在開啟混色的筆刷上再加上淡出，會在與底色融合的同時，讓線條的起點和終點逐漸變透明，更接近真實顏料的上色手感。';
 
   @override
   String get tipsOutlineAnimeStyleTitle => '描邊×動漫風格，做出賽璐璐動畫質感';
@@ -14403,6 +14432,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushSettingsFadeDistanceLabel => '距離(px)';
+
+  @override
+  String get brushSettingsTaperModeTitle => '入筆與收筆';
+
+  @override
+  String get brushSettingsTaperStartValueLabel => '入筆粗細(%)';
+
+  @override
+  String get brushSettingsTaperStartDistanceLabel => '入筆距離(px)';
+
+  @override
+  String get brushSettingsTaperEndValueLabel => '收筆粗細(%)';
+
+  @override
+  String get brushSettingsTaperEndDistanceLabel => '收筆距離(px)';
 
   @override
   String get brushSettingsStrokeDecayTitle => '筆畫衰減';
@@ -18367,7 +18411,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpBrushFoldDesc =>
-      '在筆刷設定中開啟「描邊」後即可使用「折疊模式」。關閉時與一般描邊筆的繪製完全相同。開啟後，描邊筆的線條本身會依照所畫筆畫的方向與彎曲而折疊、捲曲；它不會自動產生波浪。每個彎曲處都會出現一條從內側輪廓分出、彎曲後漸漸消失的折返線。若筆畫持續朝同一方向轉動，每轉270°會加入一條較含蓄的折返線。折疊類型有5種。「波浪俯視」讓先畫的一側在前，「波浪仰視」讓後畫的一側在前。「右捲」依照朝筆畫前進方向右側捲入的方式決定前後，「左捲」則朝左側；依據的是所畫方向而不是螢幕方向。「月牙捲」會沿著所畫的C形曲線整理成相連的月牙形。「折返長度」調整折返線的長度（與筆刷大小連動），「折返角度」調整跟隨筆畫彎曲的強度（50%時自然連動），「折返線的彎曲起點」調整材質看起來的厚度（0%時從分岔處立即彎曲）。描邊筆的筆壓與淡出（入筆與收筆）只改變包含描邊在內的整體形狀，描邊線的粗細與顏色都不會改變。關閉「描邊」中的「保持重疊」後，重疊的筆畫在交界處不描邊而連成一體（重疊處也不畫折返線），只描整體的外圍。開啟「描邊」中的「強弱」後，描邊線會朝筆畫中每段曲線的頂點變粗（曲線的起點和終點保持描邊寬度，到頂點逐漸變為「頂點處的描邊寬度」，抬起筆時生效）。';
+      '在筆刷設定中開啟「描邊」後即可使用「折疊模式」。關閉時與一般描邊筆的繪製完全相同。開啟後，描邊筆的線條本身會依照所畫筆畫的方向與彎曲而折疊、捲曲；它不會自動產生波浪。每個彎曲處都會出現一條從內側輪廓分出、彎曲後漸漸消失的折返線。若筆畫持續朝同一方向轉動，每轉270°會加入一條較含蓄的折返線。折疊類型有5種。「波浪俯視」讓先畫的一側在前，「波浪仰視」讓後畫的一側在前。「右捲」依照朝筆畫前進方向右側捲入的方式決定前後，「左捲」則朝左側；依據的是所畫方向而不是螢幕方向。「月牙捲」會沿著所畫的C形曲線整理成相連的月牙形。「折返長度」調整折返線的長度（與筆刷大小連動），「折返角度」調整跟隨筆畫彎曲的強度（50%時自然連動），「折返線的彎曲起點」調整材質看起來的厚度（0%時從分岔處立即彎曲）。描邊筆的筆壓以及入筆與收筆只改變包含描邊在內的整體形狀，描邊線的粗細與顏色都不會改變。關閉「描邊」中的「保持重疊」後，重疊的筆畫在交界處不描邊而連成一體（重疊處也不畫折返線），只描整體的外圍。開啟「描邊」中的「強弱」後，描邊線會朝筆畫中每段曲線的頂點變粗（曲線的起點和終點保持描邊寬度，到頂點逐漸變為「頂點處的描邊寬度」，抬起筆時生效）。';
 
   @override
   String get tipsBrushFoldTitle => '選擇頭髮折返時顯示在前的部分';

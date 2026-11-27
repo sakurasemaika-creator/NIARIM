@@ -302,6 +302,12 @@ class _HelpScreenState extends State<HelpScreen>
       category: l10n.helpCategoryBrush,
     ),
     _HelpEntry(
+      topicKey: '入り抜き',
+      title: l10n.helpTaperTitle,
+      description: l10n.helpTaperDesc,
+      category: l10n.helpCategoryBrush,
+    ),
+    _HelpEntry(
       topicKey: 'ストローク減衰',
       title: l10n.helpStrokeDecayTitle,
       description: l10n.helpStrokeDecayDesc,

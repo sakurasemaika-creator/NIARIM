@@ -13,46 +13,51 @@ void main() {
   final out = Directory('build/functional-visual');
   setUpAll(() => out.createSync(recursive: true));
 
-  test('フェード仕様：強フェードは長い1ストロークで不透明度だけでなく線幅も細くなる', () async {
-    final tm = TileManager(canvasWidth: 260, canvasHeight: 100);
+  // フェードは始点と終点に向かって透けていき、その間は不透明度100%のまま。
+  // 線幅は変えない（所有者の定義、2026-11-27「エアブラシが360度全体に向かって
+  // 透けていくペンだとしたら、フェードは始点と終点に向かって透けていくが
+  // それ以外は不透明度100%になるペンと考えてください。」）。
+  test('フェード仕様：強フェードは始点と終点に向かって透け、その間は不透明で線幅は変わらない', () async {
+    final tm = TileManager(canvasWidth: 460, canvasHeight: 100);
     final e = DrawingEngine(tileManager: tm)
       ..currentBrush = _brush(size: 30, fadeMode: FadeMode.strong)
       ..currentColor = const ui.Color(0xFF2040C0);
+    tm.beginUndoRecording('fade');
     _line(
       e,
       'fade',
       const ui.Offset(20, 50),
-      const ui.Offset(238, 50),
-      steps: 55,
+      const ui.Offset(438, 50),
+      steps: 105,
+      finalizeCustomFade: false,
     );
+    final preview = tm.endUndoRecording();
+    if (preview.before.isNotEmpty) {
+      tm.applyTileSnapshot('fade', preview.before);
+    }
+    e.replayCurrentStrokeWithFinalFade();
+    e.endStroke();
     final image = await tm.compositeLayerToImage('fade');
-    await _save(image, '${out.path}/fade_strong_size_and_opacity.png');
+    await _save(image, '${out.path}/fade_strong_ends.png');
     final d = await _rgba(image);
 
-    final earlySpan = _verticalSpan(d, 260, 100, 35, threshold: 15);
-    final midSpan = _verticalSpan(d, 260, 100, 115, threshold: 15);
-    final lateSpan = _verticalSpan(d, 260, 100, 185, threshold: 15);
-    final earlyAlpha = _pixel(d, 260, 35, 50)[3];
-    final midAlpha = _pixel(d, 260, 115, 50)[3];
-    final lateAlpha = _pixel(d, 260, 185, 50)[3];
+    final earlySpan = _verticalSpan(d, 460, 100, 60, threshold: 15);
+    final midSpan = _verticalSpan(d, 460, 100, 229, threshold: 15);
+    final lateSpan = _verticalSpan(d, 460, 100, 400, threshold: 15);
+    final earlyAlpha = _pixel(d, 460, 60, 50)[3];
+    final midAlpha = _pixel(d, 460, 229, 50)[3];
+    final lateAlpha = _pixel(d, 460, 400, 50)[3];
 
-    expect(earlyAlpha, greaterThan(midAlpha));
-    expect(midAlpha, greaterThan(lateAlpha));
-    expect(
-      earlySpan,
-      greaterThan(midSpan),
-      reason: 'fade must reduce brush size, not opacity only',
-    );
-    expect(
-      midSpan,
-      greaterThan(lateSpan),
-      reason: 'later stroke must continue becoming thinner',
-    );
+    expect(earlyAlpha, lessThan(midAlpha));
+    expect(lateAlpha, lessThan(midAlpha));
+    expect(midAlpha, 255, reason: 'between the fades the stroke is opaque');
+    expect((earlySpan - midSpan).abs(), lessThanOrEqualTo(2));
+    expect((lateSpan - midSpan).abs(), lessThanOrEqualTo(2));
     image.dispose();
     tm.dispose();
   });
 
-  test('カスタムフェード：100→30%/120pxで線幅とalphaが設定距離に沿って同時減衰', () async {
+  test('カスタムフェード：100→30%/120pxで終点に向かって透け、線幅は変わらない', () async {
     final tm = TileManager(canvasWidth: 210, canvasHeight: 100);
     final e = DrawingEngine(tileManager: tm)
       ..currentBrush = _brush(
@@ -78,21 +83,20 @@ void main() {
     e.replayCurrentStrokeWithFinalFade();
     e.endStroke();
     final image = await tm.compositeLayerToImage('fade');
-    await _save(image, '${out.path}/fade_custom_size_and_opacity.png');
+    await _save(image, '${out.path}/fade_custom_end.png');
     final d = await _rgba(image);
 
     final startSpan = _verticalSpan(d, 210, 100, 30, threshold: 10);
     final endSpan = _verticalSpan(d, 210, 100, 176, threshold: 10);
     final startAlpha = _pixel(d, 210, 30, 50)[3];
     final endAlpha = _pixel(d, 210, 176, 50)[3];
-    expect(startSpan, greaterThan(endSpan * 1.8));
     expect(startAlpha, greaterThan(endAlpha * 1.8));
     expect(
-      endSpan,
-      inInclusiveRange(6, 12),
-      reason:
-          'near the finalized endpoint, 30% of 28px should be roughly 8px plus raster edge',
+      endAlpha,
+      inInclusiveRange(77, 100),
+      reason: 'near the end, about 30% of full',
     );
+    expect((startSpan - endSpan).abs(), lessThanOrEqualTo(2));
     image.dispose();
     tm.dispose();
   });
@@ -132,11 +136,15 @@ void main() {
           'fade',
         );
       }
-      final preview = tm.endUndoRecording();
-      if (preview.before.isNotEmpty) {
-        tm.applyTileSnapshot('fade', preview.before);
+      // As the canvas does: a fade at the start only of a long stroke is
+      // already drawn as it will be, and is not drawn again.
+      if (e.needsFinalFadeReplay) {
+        final preview = tm.endUndoRecording();
+        if (preview.before.isNotEmpty) {
+          tm.applyTileSnapshot('fade', preview.before);
+        }
+        e.replayCurrentStrokeWithFinalFade();
       }
-      e.replayCurrentStrokeWithFinalFade();
       e.endStroke();
       final image = await tm.compositeLayerToImage('fade');
       final d = await _rgba(image);

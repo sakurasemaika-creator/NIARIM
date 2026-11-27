@@ -121,9 +121,8 @@ class BrushService extends ChangeNotifier {
     'Brush0010',
     'Brush0027',
     'Brush0004',
-    // Airbrush, spray and blending.
+    // Airbrush and blending.
     'Brush0003',
-    'Brush0013',
     'Brush0011',
     // Pixel drawing.
     'Brush0014',
@@ -216,7 +215,7 @@ class BrushService extends ChangeNotifier {
       pixelMode: false,
       pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 10, strong: 100),
-        opacity: PressureRangeSetting(enabled: true, weak: 10, strong: 100),
+        opacity: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
@@ -235,7 +234,10 @@ class BrushService extends ChangeNotifier {
           rate: 0,
         ),
       ),
-      fadeMode: FadeMode.weak,
+      fadeMode: FadeMode.off,
+      taperMode: FadeMode.custom,
+      taperIn: FadeEndpointSettings(value: 20, rangePx: 30),
+      taperOut: FadeEndpointSettings(value: 10, rangePx: 60),
       strokeDecay: false,
       tags: [AssetTagKeys.lineArt, AssetTagKeys.mainLine],
     ),
@@ -243,7 +245,7 @@ class BrushService extends ChangeNotifier {
       id: 'Brush0003',
       name: 'エアブラシ',
       size: 30,
-      opacity: 40,
+      opacity: 100,
       spacing: 3,
       stabilization: false,
       stabilizationStrength: 0,
@@ -277,7 +279,7 @@ class BrushService extends ChangeNotifier {
       id: 'Brush0004',
       name: '混色ブラシ',
       size: 15,
-      opacity: 80,
+      opacity: 100,
       spacing: 1,
       stabilization: false,
       stabilizationStrength: 0,
@@ -285,7 +287,7 @@ class BrushService extends ChangeNotifier {
       pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 40, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
-        blur: PressureRangeSetting(enabled: true, weak: 10, strong: 10),
+        blur: PressureRangeSetting(enabled: true, weak: 3, strong: 3),
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: true,
@@ -295,7 +297,7 @@ class BrushService extends ChangeNotifier {
         ),
       ),
       pressureOff: BrushPressureOffSettings(
-        blur: FixedBrushSetting(enabled: true, value: 10),
+        blur: FixedBrushSetting(enabled: true, value: 3),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: true,
@@ -307,14 +309,14 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       tags: [AssetTagKeys.paint, AssetTagKeys.mixing],
     ),
-    // マーカーペン：横長の画像ペン先とストローク減衰でチゼルマーカーを再現。
-    // 重ねた色とは油彩風混色で少し混ざり（青を黄の上に引くと緑）、拾った色は
-    // すぐ消える（色延び10）。
+    // マーカーペン：横長の画像ペン先でチゼルマーカーを再現。油性マーカーの
+    // ように上から塗りつぶすので、不透明度100で混色せず、線の途中で薄く
+    // ならない（インク切れの減衰なし）。
     const Brush(
       id: 'Brush0005',
       name: 'マーカーペン',
       size: 52,
-      opacity: 65,
+      opacity: 100,
       spacing: 1,
       stabilization: false,
       stabilizationStrength: 0,
@@ -325,25 +327,23 @@ class BrushService extends ChangeNotifier {
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
-          enabled: true,
+          enabled: false,
           mode: BrushMixingMode.oil,
-          weakRate: 15,
-          strongRate: 15,
-          stretch: 10,
+          weakRate: 0,
+          strongRate: 0,
         ),
       ),
       pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
-          enabled: true,
+          enabled: false,
           mode: BrushMixingMode.oil,
-          rate: 15,
-          stretch: 10,
+          rate: 0,
         ),
       ),
       fadeMode: FadeMode.off,
-      strokeDecay: true,
+      strokeDecay: false,
       customImagePaths: ['assets/brushes/marker_tip.png'],
       imageInkMode: BrushImageInkMode.alpha,
       tags: [AssetTagKeys.paint, AssetTagKeys.analog],
@@ -396,14 +396,14 @@ class BrushService extends ChangeNotifier {
       id: 'Brush0007',
       name: '鉛筆',
       size: 4,
-      opacity: 85,
+      opacity: 100,
       spacing: 1,
       stabilization: true,
       stabilizationStrength: 30,
       pixelMode: false,
       pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 15, strong: 100),
-        opacity: PressureRangeSetting(enabled: true, weak: 15, strong: 100),
+        opacity: PressureRangeSetting(enabled: true, weak: 45, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
         edgeJitter: PressureRangeSetting(enabled: true, weak: 70, strong: 70),
         mixing: PressureMixingOnSetting(
@@ -458,7 +458,10 @@ class BrushService extends ChangeNotifier {
           rate: 0,
         ),
       ),
-      fadeMode: FadeMode.weak,
+      fadeMode: FadeMode.off,
+      taperMode: FadeMode.custom,
+      taperIn: FadeEndpointSettings(value: 20, rangePx: 20),
+      taperOut: FadeEndpointSettings(value: 10, rangePx: 40),
       strokeDecay: false,
       tags: [AssetTagKeys.lineArt, AssetTagKeys.mainLine],
     ),
@@ -467,14 +470,14 @@ class BrushService extends ChangeNotifier {
       id: 'Brush0009',
       name: '平筆',
       size: 68,
-      opacity: 90,
+      opacity: 100,
       spacing: 1,
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
       pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
-        opacity: PressureRangeSetting(enabled: true, weak: 40, strong: 100),
+        opacity: PressureRangeSetting(enabled: true, weak: 70, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
@@ -499,8 +502,10 @@ class BrushService extends ChangeNotifier {
       imageInkMode: BrushImageInkMode.alpha,
       tags: [AssetTagKeys.paint, AssetTagKeys.analog],
     ),
-    // 水彩：水彩風混色。透明な絵の具が重なるほど深くなり、乾くと縁に
-    // 色が溜まり紙の目が出る。濃さは絵具量で決めるので不透明度は100。
+    // 水彩：水彩風混色。透明な絵の具が重なるほど深くなり、乾くと紙の目が
+    // 出る。濃さは絵具量で決めるので不透明度は100。ぼかし・縁のぶれは
+    // 使わない（筆の跡の縁は水彩風混色が水の量で決める：少なければ紙の目に
+    // 沿ってくっきり、多ければ紙へ不揃いににじむ）。
     const Brush(
       id: 'Brush0010',
       name: '水彩',
@@ -513,8 +518,8 @@ class BrushService extends ChangeNotifier {
       pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 25, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 25, strong: 100),
-        blur: PressureRangeSetting(enabled: true, weak: 30, strong: 30),
-        edgeJitter: PressureRangeSetting(enabled: true, weak: 40, strong: 40),
+        blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+        edgeJitter: PressureRangeSetting(enabled: false, weak: 40, strong: 40),
         mixing: PressureMixingOnSetting(
           enabled: true,
           mode: BrushMixingMode.watercolor,
@@ -523,8 +528,8 @@ class BrushService extends ChangeNotifier {
         ),
       ),
       pressureOff: BrushPressureOffSettings(
-        blur: FixedBrushSetting(enabled: true, value: 30),
-        edgeJitter: FixedBrushSetting(enabled: true, value: 40),
+        blur: FixedBrushSetting(enabled: false, value: 0),
+        edgeJitter: FixedBrushSetting(enabled: false, value: 40),
         mixing: PressureMixingOffSetting(
           enabled: true,
           mode: BrushMixingMode.watercolor,
@@ -572,19 +577,20 @@ class BrushService extends ChangeNotifier {
       tags: [AssetTagKeys.paint, AssetTagKeys.blur],
     ),
     // チョーク／木炭：粒が散ってざらつく質感。散布（scatter）と密度を
-    // 上げ、ふち滲みも最大にして粉っぽさを出す。
+    // 上げ、ふち滲みも最大にして粉っぽさを出す。紙の目（grainStrength）で
+    // 粉の乗らない所を残し、乗った所は選んだ色（不透明度100）。
     const Brush(
       id: 'Brush0012',
       name: 'チョーク',
       size: 18,
-      opacity: 70,
+      opacity: 100,
       spacing: 3,
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
       pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
-        opacity: PressureRangeSetting(enabled: true, weak: 30, strong: 100),
+        opacity: PressureRangeSetting(enabled: true, weak: 60, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
         edgeJitter: PressureRangeSetting(enabled: true, weak: 100, strong: 100),
         mixing: PressureMixingOnSetting(
@@ -605,47 +611,10 @@ class BrushService extends ChangeNotifier {
       ),
       fadeMode: FadeMode.off,
       strokeDecay: false,
+      grainStrength: 35,
       density: 1.8,
       scatter: 0.35,
       tags: [AssetTagKeys.paint, AssetTagKeys.rough, AssetTagKeys.analog],
-    ),
-    // スプレー（ハイライトの粒・雪・星などの散布用）。間隔を広く取って
-    // 粒を独立させ、進行方向へ大きく散らす。
-    const Brush(
-      id: 'Brush0013',
-      name: 'スプレー',
-      size: 22,
-      opacity: 55,
-      spacing: 10,
-      stabilization: false,
-      stabilizationStrength: 0,
-      pixelMode: false,
-      pressureOn: BrushPressureOnSettings(
-        size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
-        opacity: PressureRangeSetting(enabled: true, weak: 40, strong: 100),
-        blur: PressureRangeSetting(enabled: true, weak: 20, strong: 20),
-        edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
-        mixing: PressureMixingOnSetting(
-          enabled: false,
-          mode: BrushMixingMode.oil,
-          weakRate: 0,
-          strongRate: 0,
-        ),
-      ),
-      pressureOff: BrushPressureOffSettings(
-        blur: FixedBrushSetting(enabled: true, value: 20),
-        edgeJitter: FixedBrushSetting(enabled: false, value: 50),
-        mixing: PressureMixingOffSetting(
-          enabled: false,
-          mode: BrushMixingMode.oil,
-          rate: 0,
-        ),
-      ),
-      fadeMode: FadeMode.off,
-      strokeDecay: false,
-      density: 2.5,
-      scatter: 0.9,
-      tags: [AssetTagKeys.effect, AssetTagKeys.blur],
     ),
     // ピクセルペン：ドット絵用。アンチエイリアスの無い硬い1px単位の線に
     // なるよう、ピクセルモードをONにしてぼかしと筆圧を切る。
@@ -683,7 +652,7 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       tags: [AssetTagKeys.lineArt, AssetTagKeys.pixelArt],
     ),
-    // 面相筆：入り抜き（fadeMode）を強くかけ、線の始まりと終わりが自然に
+    // 面相筆：入り抜き（taperMode）を強くかけ、線の始まりと終わりが自然に
     // 細くなる筆。まつ毛・髪の毛先・和風の線に向く。
     const Brush(
       id: 'Brush0015',
@@ -715,7 +684,10 @@ class BrushService extends ChangeNotifier {
           rate: 0,
         ),
       ),
-      fadeMode: FadeMode.strong,
+      fadeMode: FadeMode.off,
+      taperMode: FadeMode.custom,
+      taperIn: FadeEndpointSettings(value: 0, rangePx: 40),
+      taperOut: FadeEndpointSettings(value: 0, rangePx: 100),
       strokeDecay: false,
       tags: [AssetTagKeys.lineArt, AssetTagKeys.taper],
     ),
@@ -729,14 +701,14 @@ class BrushService extends ChangeNotifier {
       imageInkMode: BrushImageInkMode.alpha,
       name: 'グリッターペン',
       size: 14,
-      opacity: 90,
+      opacity: 100,
       spacing: 18,
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
       pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
-        opacity: PressureRangeSetting(enabled: true, weak: 65, strong: 100),
+        opacity: PressureRangeSetting(enabled: true, weak: 80, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
         edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
         mixing: PressureMixingOnSetting(
@@ -767,14 +739,14 @@ class BrushService extends ChangeNotifier {
       id: 'Brush0017',
       name: 'ラメペン',
       size: 5,
-      opacity: 76,
+      opacity: 100,
       spacing: 4,
       stabilization: true,
       stabilizationStrength: 20,
       pixelMode: false,
       pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
-        opacity: PressureRangeSetting(enabled: true, weak: 75, strong: 100),
+        opacity: PressureRangeSetting(enabled: true, weak: 80, strong: 100),
         blur: PressureRangeSetting(enabled: true, weak: 1, strong: 1),
         edgeJitter: PressureRangeSetting(enabled: true, weak: 30, strong: 30),
         mixing: PressureMixingOnSetting(
@@ -990,7 +962,8 @@ class BrushService extends ChangeNotifier {
         prefs.containsKey(_groupedPresetsKey);
     _brushes.clear();
     _unreadableEntries.clear();
-    _readBuiltInWorking(prefs);
+    final retiredNeighbours = <String, String>{};
+    if (_readBuiltInWorking(prefs)) await _persistBuiltInWorking();
     if (raw == null) {
       // 初回起動：初期ブラシ一式を投入して即座に永続化する。
       // 読めない型の値が入っているとき（保存はあるが一覧として読めない）は
@@ -1008,19 +981,37 @@ class BrushService extends ChangeNotifier {
       // （[_unreadableEntries]）。
       var dropped = false;
       final seen = <String>{};
+      // A brush the app no longer ships is taken out of the list. If it was
+      // the one in use, the brush that took its place is (as deleting it).
+      final retired = <String>[];
       for (final entry in raw) {
         try {
           final brush = Brush.fromJson(
             jsonDecode(entry) as Map<String, dynamic>,
           );
+          if (isRetiredBuiltInBrush(brush.id)) {
+            retired.add(brush.id);
+            dropped = true;
+            continue;
+          }
           if (!seen.add(brush.id)) {
             dropped = true;
             continue;
           }
+          for (final id in retired) {
+            retiredNeighbours[id] ??= brush.id;
+          }
+          retired.clear();
           _brushes.add(brush);
         } catch (error, stack) {
           _unreadableEntries.add(entry);
           AppErrorReporter.record(error, stack);
+        }
+      }
+      final last = _brushes.lastOrNull;
+      if (last != null) {
+        for (final id in retired) {
+          retiredNeighbours[id] ??= last.id;
         }
       }
       // 既存ユーザーにも新規追加した初期ブラシ（マーカーペン・カリグラフィー）を
@@ -1148,9 +1139,12 @@ class BrushService extends ChangeNotifier {
     SavedListCarryOver.remember(_prefsKey, _unreadableEntries);
     SavedListCarryOver.remember(_foldersKey, _unreadableFolderEntries);
     final currentId = prefs.readString(_currentIdKey);
+    final neighbour = retiredNeighbours[currentId];
     _currentBrush =
         _brushes.where((b) => b.id == currentId).firstOrNull ??
+        _brushes.where((b) => b.id == neighbour).firstOrNull ??
         _brushes.firstOrNull;
+    if (isRetiredBuiltInBrush(currentId)) await _persistCurrent();
     final presetColor = _currentBrush?.presetColor;
     if (presetColor != null) _currentColor = Color(presetColor);
     // The first stroke after selecting a bundled tip must already have its
@@ -1329,15 +1323,21 @@ class BrushService extends ChangeNotifier {
   /// （壊れた文字列・数でない値・今は無いブラシ）は使わない。起動は止めず、
   /// 保存も書き換えない（覚えた値を次に変えたときに、読めた分だけで保存
   /// し直される）。
-  void _readBuiltInWorking(SharedPreferences prefs) {
+  /// Returns whether the saved values name a brush the app no longer
+  /// ships (they are saved again without it).
+  bool _readBuiltInWorking(SharedPreferences prefs) {
     _builtInWorking.clear();
     final raw = prefs.readString(_builtInWorkingKey);
-    if (raw == null) return;
+    if (raw == null) return false;
     try {
-      _builtInWorking.addAll(_builtInWorkingFrom(jsonDecode(raw)));
+      final decoded = jsonDecode(raw);
+      _builtInWorking.addAll(_builtInWorkingFrom(decoded));
+      return decoded is Map &&
+          decoded.keys.any((id) => id is String && isRetiredBuiltInBrush(id));
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
       _builtInWorking.clear();
+      return false;
     }
   }
 
@@ -1477,6 +1477,7 @@ class BrushService extends ChangeNotifier {
     final resolved = <Brush>[];
     var workingChanged = false;
     for (final brush in incoming) {
+      if (isRetiredBuiltInBrush(brush.id)) continue;
       final definition = _builtInDefinitions[brush.id];
       if (definition != null) {
         final theirs = remembered != null
@@ -1952,14 +1953,23 @@ class BrushService extends ChangeNotifier {
     return value;
   }
 
-  static Object? _unpackBrushQr(Object? value, Object? schema) {
+  static Object? _unpackBrushQr(
+    Object? value,
+    Object? schema, {
+    bool top = false,
+  }) {
     if (schema is Map) {
-      if (value is! List || value.length != schema.length) {
+      // A code made before later settings existed ends before their keys
+      // (they are added at the end of a brush), which then read as not set.
+      if (value is! List ||
+          value.length > schema.length ||
+          (!top && value.length != schema.length)) {
         throw const FormatException('Brush QR schema mismatch');
       }
       final result = <String, dynamic>{};
       var index = 0;
       for (final entry in schema.entries) {
+        if (index >= value.length) break;
         result[entry.key.toString()] = _unpackBrushQr(
           value[index++],
           entry.value,
@@ -2005,7 +2015,11 @@ class BrushService extends ChangeNotifier {
       throw const FormatException('Brush QR data too large');
     }
     final schema = _builtInDefinitions.values.first.toJson();
-    final decoded = _unpackBrushQr(jsonDecode(utf8.decode(bytes)), schema);
+    final decoded = _unpackBrushQr(
+      jsonDecode(utf8.decode(bytes)),
+      schema,
+      top: true,
+    );
     if (decoded is! Map<String, dynamic> ||
         decoded['customImagePath'] != null ||
         (decoded['customImagePaths'] is List &&

@@ -5,14 +5,13 @@
 // 引っ張り、色延びの長さで薄れていく（同「異なる色が重なるようにストローク
 // をした時には色が引っ張られるはず」）。混ざる色は絵の具らしい（青と黄で
 // 緑、赤と青で紫）。1回の取り消しで線全体が戻る。
-// 油彩は透けない：不透明度100%の線は筆の絵の具で下を覆い（下の色は
-// kOilPaintCoverの残りだけわずかに透ける）、筆は下の絵の具を少しずつ拾って
-// 色が変わる。黄色に入った所は青のまま、そこから少しずつ緑になり、黄色の
-// 形の縁がくっきり残らない（所有者の指摘、2026-11-27「最初に黄色に入る
-// ところだけその下に描画した領域の境界線が混ざらずくっきり残っちゃってる」
-// 「不透明度100%で書いている場合は色が引っ張られて混ざっている部分以外は
-// 上に描画された色で上書きされるように」「90%～95%とかにして若干透け
-// させるくらいならOKです」）。
+// 油彩は透けない：不透明度100%の線は筆の絵の具で下を覆い、筆は下の絵の具を
+// 少しずつ拾って色が変わる。黄色に入った所は青のまま、そこから少しずつ緑に
+// なり、黄色の形の縁がくっきり残らない（所有者の指摘、2026-11-27「最初に
+// 黄色に入るところだけその下に描画した領域の境界線が混ざらずくっきり
+// 残っちゃってる」「不透明度100%で書いている場合は色が引っ張られて混ざって
+// いる部分以外は上に描画された色で上書きされるように」。95%で透けさせた後に
+// 「今透けすぎてるので100％にしてください」）。
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -32,9 +31,8 @@ const _red = 0xD8363A;
 const _blue = 0x2648D6;
 
 /// The most the stroke's colour may change from one pixel to the next along
-/// it where it enters a colour: the paint below showing through
-/// (1 − [kOilPaintCover]) and a step of loading up, no more.
-const _edgeStep = 4.5;
+/// it where it enters a colour: a step of loading up, no more.
+const _edgeStep = 2.5;
 
 Brush _oil({
   double size = 30,
@@ -227,8 +225,8 @@ void main() {
     final mixer = AnalogPaintMixer(selected: _blue);
 
     test('at full opacity the brush lays its own paint over what was there, '
-        'which shows through only faintly', () {
-      expect(kOilPaintCover, inInclusiveRange(0.9, 0.95));
+        'none of which shows through', () {
+      expect(kOilPaintCover, 1.0);
       // Without 混色度合い the brush picks nothing up: wherever it goes it
       // lays its own blue.
       final tiles = TileManager(canvasWidth: _w, canvasHeight: _h);

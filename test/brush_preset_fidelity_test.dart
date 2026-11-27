@@ -27,10 +27,8 @@ void main() {
     final presets = {for (final b in BrushService.builtInBrushes) b.id: b};
     for (final (id, blur) in <(String, int)>[
       ('Brush0003', 50), // Airbrush.
-      ('Brush0004', 10), // Color-mixing brush.
-      ('Brush0010', 30), // Watercolor.
+      ('Brush0004', 3), // Color-mixing brush: soft edges, solid body.
       ('Brush0011', 90), // Soft blur brush.
-      ('Brush0013', 20), // Spray.
     ]) {
       final brush = presets[id]!;
       expect(brush.pressureOff.blur.enabled, isTrue, reason: brush.name);
@@ -47,11 +45,18 @@ void main() {
       expect(off.blur, blur, reason: brush.name);
       expect(on.blur, blur, reason: brush.name);
     }
+    // The watercolor brush has no airbrush-like blur and no jittered edge:
+    // its edge is the wash's own (crisp with little water, an uneven bleed
+    // with much).
+    final watercolor = presets['Brush0010']!;
+    expect(watercolor.pressureOn.blur.enabled, isFalse);
+    expect(watercolor.pressureOff.blur.enabled, isFalse);
+    expect(watercolor.pressureOn.edgeJitter.enabled, isFalse);
+    expect(watercolor.pressureOff.edgeJitter.enabled, isFalse);
     expect(presets['Brush0014']!.pixelMode, isTrue);
     expect(presets['Brush0014']!.pressureOff.blur.enabled, isFalse);
     expect(presets['Brush0001']!.pressureOff.blur.enabled, isFalse);
     expect(presets['Brush0012']!.scatter, greaterThan(0));
-    expect(presets['Brush0013']!.scatter, greaterThan(0));
   });
 
   testWidgets('Airbrush paints a graded feathered halo, not a hard disc', (

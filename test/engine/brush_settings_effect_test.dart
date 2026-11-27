@@ -47,11 +47,19 @@ void main() {
       ..pressureEnabled = false;
     StrokePoint p(double x, double y) =>
         StrokePoint(x: x, y: y, pressure: 1, tiltX: 0, tiltY: 0);
+    tm.beginUndoRecording('L');
     engine.beginStroke(p(20, 70), 'L');
     for (var i = 1; i <= 76; i++) {
       final x = 20 + i * 5.0;
       final y = 70 + 30 * math.sin(i / 6);
       engine.continueStroke(p(x, y), 'L');
+    }
+    // The canvas draws a faded stroke again once it is complete (the fade at
+    // the end needs its length).
+    final drawn = tm.endUndoRecording();
+    if (engine.needsFinalFadeReplay) {
+      tm.applyTileSnapshot('L', drawn.before);
+      engine.replayCurrentStrokeWithFinalFade();
     }
     engine.endStroke();
     final rgba = Uint8List(_w * _h * 4);
@@ -205,13 +213,13 @@ void main() {
       expect(
         results[fade]!.tailAlpha,
         lessThan(reference.tailAlpha),
-        reason: '$fade：終わりが細く・薄くなる',
+        reason: '$fade：終わりが薄くなる',
       );
     }
     expect(
       results['fade_strong']!.tailAlpha,
       lessThanOrEqualTo(results['fade_weak']!.tailAlpha),
-      reason: '強いほど終わりが細い',
+      reason: '強いほど終わりが薄い',
     );
   });
 }

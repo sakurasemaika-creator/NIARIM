@@ -13,7 +13,7 @@ void main() {
   final out = Directory('build/functional-visual');
   setUpAll(() => out.createSync(recursive: true));
 
-  test('入力イベント密度：カスタムフェードは2点だけの長い線でも途中位置に応じて連続的に細く薄くなる', () async {
+  test('入力イベント密度：カスタムフェードは2点だけの長い線でも途中位置に応じて連続的に薄くなる', () async {
     final sparse = await _drawFade(segments: 1);
     final dense = await _drawFade(segments: 50);
     await _saveRgba(sparse, 260, 100, '${out.path}/fade_sparse_input.png');
@@ -26,12 +26,9 @@ void main() {
     final aMid = _pixel(sparse, 260, 130, 50)[3];
     final aLate = _pixel(sparse, 260, 205, 50)[3];
 
-    expect(
-      sEarly,
-      greaterThan(sMid),
-      reason: 'sparse input must still taper progressively',
-    );
-    expect(sMid, greaterThan(sLate));
+    // The fade fades the colour towards the end; the line keeps its width.
+    expect((sEarly - sMid).abs(), lessThanOrEqualTo(2));
+    expect((sMid - sLate).abs(), lessThanOrEqualTo(2));
     expect(aEarly, greaterThan(aMid));
     expect(aMid, greaterThan(aLate));
 

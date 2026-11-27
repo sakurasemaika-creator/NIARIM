@@ -313,7 +313,7 @@ void main() {
     // Exercise the actual raster path with the oil brush setting.
     final engine =
         DrawingEngine(
-            tileManager: TileManager(canvasWidth: 128, canvasHeight: 128),
+            tileManager: TileManager(canvasWidth: 256, canvasHeight: 128),
           )
           ..currentBrush = Brush(
             id: 'oil-mixing',
@@ -347,13 +347,13 @@ void main() {
       tile[i + 2] = 0;
       tile[i + 3] = 255;
     }
-    final index = (64 * TileManager.tileSize + 110) * 4;
+    final index = (64 * TileManager.tileSize + 240) * 4;
 
     engine.beginStroke(
       const StrokePoint(x: 4, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
       'layer',
     );
-    for (var x = 6.0; x <= 124; x += 2) {
+    for (var x = 6.0; x <= 250; x += 2) {
       engine.continueStroke(
         StrokePoint(x: x, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
         'layer',
@@ -398,11 +398,11 @@ void main() {
     },
   );
 
-  test('a faint pixel below gives up less paint than a solid one', () {
+  test('faint paint below gives up less paint than solid paint', () {
     ui.Color paintOver(int alpha) {
       final engine =
           DrawingEngine(
-              tileManager: TileManager(canvasWidth: 128, canvasHeight: 128),
+              tileManager: TileManager(canvasWidth: 256, canvasHeight: 128),
             )
             ..currentBrush = Brush(
               id: 'analog-mixing',
@@ -427,17 +427,27 @@ void main() {
             )
             ..currentColor = blue
             ..pressureEnabled = false;
+      // A field of yellow at [alpha] (premultiplied) the brush is pulled
+      // through.
       final tile = engine.tileManager.getOrCreateTile('layer', 0, 0);
-      final index = (64 * TileManager.tileSize + 64) * 4;
-      tile[index] = 255;
-      tile[index + 1] = 255;
-      tile[index + 2] = 0;
-      tile[index + 3] = alpha;
+      for (var i = 0; i < 128 * TileManager.tileSize * 4; i += 4) {
+        tile[i] = alpha;
+        tile[i + 1] = alpha;
+        tile[i + 2] = 0;
+        tile[i + 3] = alpha;
+      }
       engine.beginStroke(
-        const StrokePoint(x: 64, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
+        const StrokePoint(x: 4, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
         'layer',
       );
+      for (var x = 6.0; x <= 250; x += 2) {
+        engine.continueStroke(
+          StrokePoint(x: x, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
+          'layer',
+        );
+      }
       engine.endStroke();
+      final index = (64 * TileManager.tileSize + 240) * 4;
       return ui.Color.fromARGB(
         255,
         tile[index],

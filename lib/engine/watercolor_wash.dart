@@ -291,17 +291,16 @@ class WatercolorStroke {
     final changed = <String>{};
     if (_maxX < _minX) return changed;
     const tileSize = TileManager.tileSize;
-    // The water carries the wash past the brush (none without water);
-    // にじみ sets how far it gets.
-    final spread =
-        _size * (0.01 + 0.22 * math.pow(_water, 1.5) * (0.3 + 1.4 * _bleed));
-    // 境界のぼかし fades the wash out over a band this wide; more water
-    // softens it further.
-    final soft = 1 - (1 - _soft) * (1 - _bloom);
-    final fade = _size * (0.04 + 0.3 * soft);
-    final margin =
-        (math.max(math.max(spread, soft > 0 ? fade : 0), _runReach) * 2.5 + 2)
-            .ceil();
+    // How soft the dried edge is, 0–1: from 境界のぼかし and the water.
+    final soft = 1 - (1 - _soft) * (1 - _bloom / 0.6);
+    // The water carries the wash past the brush (only to the paper's tooth
+    // without water); にじみ sets how far it gets, and 境界のぼかし lets it
+    // run on as far as a damp sheet would.
+    final spread = math.max(
+      math.max(1.5, _size * 0.3 * _soft),
+      _size * (0.01 + 0.22 * math.pow(_water, 1.5) * (0.3 + 1.4 * _bleed)),
+    );
+    final margin = (math.max(spread, _runReach) * 2.5 + 2).ceil();
     final left = math.max(0, _minX - margin);
     final top = math.max(0, _minY - margin);
     final right = math.min(tiles.canvasWidth - 1, _maxX + margin);
@@ -339,45 +338,55 @@ class WatercolorStroke {
     // along the edge, which makes it ragged rather than a blurred circle.
     final wet = _blur(covered, w, h, spread);
     final amount = Float32List(w * h);
-    final reachScale = _size * 0.22;
-    final fringeScale = math.max(1.5, _size * 0.05);
+    final reachScale = _size * 0.3;
+    // How far the water's reach wanders along the edge: barely with little
+    // water (a crisp edge, only following the paper's tooth), into broad
+    // irregular lobes with much (and more with more にじみ).
+    final lobes = (0.06 + 0.3 * _water) * (0.5 + _bleed);
+    // The paper's tooth (none on paper without texture, むら 0).
+    final tooth = 0.35 * math.min(1.0, _textureAmount);
     for (var y = 0; y < h; y++) {
       for (var x = 0; x < w; x++) {
         final i = y * w + x;
         final c = covered[i];
         // Too little water reaches here to carry pigment, whatever the edge
-        // does (the reach below is at most 1.95).
-        if (wet[i] < 0.082) {
-          amount[i] = c;
+        // does (the reach below is at most 1.6, the threshold at least
+        // 0.06).
+        if (wet[i] < 0.035) {
+          amount[i] = c * (1 - soft);
           continue;
         }
         final wx = left + x;
         final wy = top + y;
-        final reach =
-            0.85 +
-            (0.25 + 0.15 * _water + 0.45 * _bleed) *
-                (_fractalNoise(wx / reachScale, wy / reachScale, seed + 17) -
-                    0.5) *
-                2 +
-            (0.2 + 0.3 * _bleed) *
-                (_valueNoise(wx / fringeScale, wy / fringeScale, seed + 23) -
-                    0.5);
-        // Where the water stops, the wash ends in an edge, not a fade (a
-        // softer one with more water).
+        // The edge wanders only near the edge: well inside, the wash is
+        // whole.
+        final whole = _smoothstep((wet[i] - 0.5) / 0.45);
+        var reach = 0.85 + 0.15 * whole;
+        if (whole < 1) {
+          reach +=
+              (lobes *
+                      (_fractalNoise(
+                            wx / reachScale,
+                            wy / reachScale,
+                            seed + 17,
+                          ) -
+                          0.5) *
+                      2 +
+                  tooth * _paperGrain(wx, wy)) *
+              (1 - whole);
+        }
+        // Where the water stops, the wash ends in an edge that follows the
+        // paper and the water's reach, not an even fade: crisp with little
+        // water, and with much (or 境界のぼかし) a soft, uneven bleed that
+        // thins the wash on both sides of where the brush went, as wet-in-wet
+        // paint does.
         final spreadOut = _smoothstep(
-          (wet[i] * reach - 0.16) / (0.26 + 0.4 * _bloom),
+          (wet[i] * reach - (0.16 - 0.1 * soft)) / (0.26 + 0.5 * soft),
         );
-        amount[i] = math.max(c, spreadOut * math.min(1.0, wet[i] * 2.5));
-      }
-    }
-
-    if (soft > 0) {
-      // A soft edge: the blurred footprint fades from the full wash inside
-      // to nothing outside, as a wash laid wet into a damp sheet does.
-      final faded = _blur(covered, w, h, fade);
-      for (var i = 0; i < amount.length; i++) {
-        final fadedOut = _smoothstep(faded[i] * 1.15);
-        amount[i] += (fadedOut - amount[i]) * soft;
+        amount[i] = math.max(
+          c * (1 - soft),
+          spreadOut * math.min(1.0, wet[i] * (2.5 + 1.5 * soft)),
+        );
       }
     }
 
@@ -696,23 +705,31 @@ class WatercolorStroke {
   /// same colour laid side by side join without a seam. Around 1 on
   /// average: thinner and denser in about equal measure.
   double _texture(int x, int y) {
-    final grain =
-        (_valueNoise(x / 1.4, y / 1.4, 7) * 0.35 +
-            _valueNoise(x / 3.8, y / 3.8, 11) * 0.65) -
-        0.5;
-    final blotchScale = _size * 0.75;
-    var blotch =
+    final grain = _paperGrain(x, y);
+    // A dried wash is a little uneven over wide areas: a faint, broad
+    // variation (more with more water), not patches.
+    final blotchScale = math.max(
+      24.0,
+      _size * 1.6 / math.max(1.0, _textureAmount),
+    );
+    final blotch =
         (_fractalNoise(x / blotchScale, y / blotchScale, 13) - 0.5) * 2;
-    // Pigment settles in patches rather than in a gentle ripple.
-    blotch = blotch.sign * math.pow(blotch.abs(), 0.7);
     final amount = _textureAmount;
-    // More water leaves more blotches; with little it is nearly even.
+    // (むら past its default brings the variation up faster and closer
+    // together, to blotches at the most.)
     return math.max(
       0.0,
       (1 + (0.08 + 0.08 * _pigment) * grain * 2 * amount) *
-          (1 + (0.1 + 0.4 * _water) * blotch * amount),
+          (1 + (0.05 + 0.12 * _water) * blotch * amount * amount),
     );
   }
+
+  /// The paper's grain at canvas pixel ([x], [y]), −0.5 to 0.5: where its
+  /// tooth holds more pigment (granulation) and where a wash's edge reaches.
+  static double _paperGrain(int x, int y) =>
+      (_valueNoise(x / 2.1, y / 2.1, 7) * 0.4 +
+          _valueNoise(x / 5.2, y / 5.2, 11) * 0.6) -
+      0.5;
 
   /// Writes the straight colour ([r], [g], [b]) at [alpha] (0–1) as the
   /// tile's premultiplied pixel at [p].

@@ -1003,6 +1003,74 @@ class TileManager {
     return (layerId: layerId, tileKeys: _undoBefore.keys.toSet());
   }
 
+  /// While recording [layerId], puts the tiles [tileKeys] ("tx,ty") back as
+  /// they were when the recording began, keeping the recording (its record
+  /// of what they were stays as it is): for drawing part of an operation
+  /// again, as putting back every tile with [applyTileSnapshot] and recording
+  /// again would. Tiles the operation has not touched are left alone.
+  void restoreRecordedTiles(String layerId, Iterable<String> tileKeys) {
+    if (!_recordingUndo || layerId != _recordingLayerId) return;
+    final layerMap = _tiles.putIfAbsent(layerId, () => {});
+    var restored = false;
+    for (final key in tileKeys) {
+      if (!_undoBefore.containsKey(key)) continue;
+      final before = _undoBefore[key];
+      final current = layerMap[key];
+      if (current != null) _paintedPixels.remove(current);
+      if (before == null) {
+        layerMap.remove(key);
+      } else {
+        layerMap[key] = Uint8List.fromList(before);
+      }
+      _markTileChanged('$layerId:$key');
+      restored = true;
+    }
+    if (layerMap.isEmpty) _tiles.remove(layerId);
+    if (restored) _invalidateCache(layerId);
+  }
+
+  /// Like [restoreRecordedTiles] for parts of one tile kept as it is: puts
+  /// back the [cellSize] px cells of tile ([tx], [ty]) in [cellMask] (bit
+  /// `row * cells + column`) as they were before the stroke, and forgets
+  /// that they were painted.
+  void restoreRecordedCells(
+    String layerId,
+    int tx,
+    int ty,
+    int cellMask,
+    int cellSize,
+  ) {
+    if (!_recordingUndo || layerId != _recordingLayerId) return;
+    final key = '$tx,$ty';
+    if (!_undoBefore.containsKey(key)) return;
+    final current = _tiles[layerId]?[key];
+    if (current == null) return;
+    final before = _undoBefore[key];
+    final painted = _paintedPixels[current];
+    final perRow = tileSize ~/ cellSize;
+    for (var bit = 0; bit < perRow * perRow; bit++) {
+      if (cellMask & 1 << bit == 0) continue;
+      final x0 = bit % perRow * cellSize;
+      final y0 = bit ~/ perRow * cellSize;
+      for (var y = y0; y < y0 + cellSize; y++) {
+        final pixel = y * tileSize + x0;
+        if (before == null) {
+          current.fillRange(pixel * 4, (pixel + cellSize) * 4, 0);
+        } else {
+          current.setRange(
+            pixel * 4,
+            (pixel + cellSize) * 4,
+            before,
+            pixel * 4,
+          );
+        }
+        painted?.fillRange(pixel, pixel + cellSize, 0);
+      }
+    }
+    _markTileChanged('$layerId:$key');
+    _invalidateCache(layerId);
+  }
+
   /// Records brush coverage even when painting leaves an identical color.
   void markPaintedPixel(Uint8List tile, int pixelIndex) {
     if (!_recordingUndo) return;

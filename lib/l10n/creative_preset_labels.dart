@@ -67,7 +67,6 @@ const _labels = <String, List<String>>{
   "水彩": ["Watercolour", "Acuarela", "Aquarelle", "수채화", "水彩", "水彩"],
   "ぼかし": ["Blur", "Desenfoque", "Flou", "흐림", "模糊", "模糊"],
   "チョーク": ["Chalk", "Tiza", "Craie", "분필", "粉笔", "粉筆"],
-  "スプレー": ["Spray", "Espray", "Vaporisateur", "스프레이", "喷雾", "噴霧"],
   "ピクセルペン": [
     "Pixel pen",
     "Lápiz de píxeles",

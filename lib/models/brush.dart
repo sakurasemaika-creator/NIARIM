@@ -27,6 +27,15 @@ int _wholeNumber(Object? value) {
   throw FormatException('Expected a whole number, found ${value.runtimeType}');
 }
 
+/// Built-in brushes the app no longer ships (the spray). Saved data that
+/// still names one (the brush list, the brush in use, quick tools,
+/// shortcuts, a workspace, a received .niatra) drops it as it is read.
+const retiredBuiltInBrushIds = {'Brush0013'};
+
+/// Whether [id] names a brush in [retiredBuiltInBrushIds].
+bool isRetiredBuiltInBrush(String? id) =>
+    id != null && retiredBuiltInBrushIds.contains(id);
+
 class Brush {
   final String id;
   final String name;
@@ -41,6 +50,13 @@ class Brush {
   final FadeMode fadeMode;
   final FadeEndpointSettings fadeIn;
   final FadeEndpointSettings fadeOut;
+
+  /// 入り抜き：線の始点と終点に向かって太さだけを細くする（色・不透明度は
+  /// 変えない）。値（%）は端での太さ、距離（px）はそこから全部の太さになる
+  /// までの長さ。縁取りペンは縁取りを含む全体の形を細くする。
+  final FadeMode taperMode;
+  final FadeEndpointSettings taperIn;
+  final FadeEndpointSettings taperOut;
   final bool strokeDecay;
   final bool isFavorite;
   final String? folderId;
@@ -122,6 +138,9 @@ class Brush {
     required this.fadeMode,
     this.fadeIn = FadeEndpointSettings.full,
     this.fadeOut = FadeEndpointSettings.full,
+    this.taperMode = FadeMode.off,
+    this.taperIn = FadeEndpointSettings.full,
+    this.taperOut = FadeEndpointSettings.full,
     required this.strokeDecay,
     this.isFavorite = false,
     this.folderId,
@@ -212,6 +231,9 @@ class Brush {
     FadeMode? fadeMode,
     FadeEndpointSettings? fadeIn,
     FadeEndpointSettings? fadeOut,
+    FadeMode? taperMode,
+    FadeEndpointSettings? taperIn,
+    FadeEndpointSettings? taperOut,
     bool? strokeDecay,
     bool? isFavorite,
     String? folderId,
@@ -273,6 +295,9 @@ class Brush {
     fadeMode: fadeMode ?? this.fadeMode,
     fadeIn: fadeIn ?? this.fadeIn,
     fadeOut: fadeOut ?? this.fadeOut,
+    taperMode: taperMode ?? this.taperMode,
+    taperIn: taperIn ?? this.taperIn,
+    taperOut: taperOut ?? this.taperOut,
     strokeDecay: strokeDecay ?? this.strokeDecay,
     isFavorite: isFavorite ?? this.isFavorite,
     folderId: clearFolder ? null : (folderId ?? this.folderId),
@@ -344,6 +369,22 @@ class Brush {
     tipShape: tipShape ?? this.tipShape,
   );
 
+  /// Whether the ends' width comes from the fade fields: an outline pen
+  /// built in code with only a fade (the way an outline pen was shaped
+  /// before 入り抜き existed; saved ones are moved to 入り抜き when read).
+  bool get _shapesWithFade =>
+      outlineEnabled && taperMode == FadeMode.off && fadeMode != FadeMode.off;
+
+  /// 入り抜き as drawn: how the width narrows towards the ends.
+  FadeMode get shapeTaperMode => _shapesWithFade ? fadeMode : taperMode;
+  FadeEndpointSettings get shapeTaperIn => _shapesWithFade ? fadeIn : taperIn;
+  FadeEndpointSettings get shapeTaperOut =>
+      _shapesWithFade ? fadeOut : taperOut;
+
+  /// フェード as drawn: how the colour fades towards the ends. An outline
+  /// pen never fades (its ends change only its shape).
+  FadeMode get colourFadeMode => outlineEnabled ? FadeMode.off : fadeMode;
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
@@ -412,145 +453,150 @@ class Brush {
     'yBranchWidthRatio': yBranchWidthRatio,
     'yBranchEndTaperRatio': yBranchEndTaperRatio,
     'tipShape': tipShape.name,
+    // Last, so a brush QR code made before 入り抜き existed (its values in
+    // the order of the keys) still reads: it just ends before these.
+    'taperMode': taperMode.name,
+    'taperIn': taperIn.toJson(),
+    'taperOut': taperOut.toJson(),
   };
 
-  factory Brush.fromJson(Map<String, dynamic> j) => Brush(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    size: (j['size'] as num).toDouble(),
-    opacity: _wholeNumber(j['opacity']),
-    spacing: _wholeNumber(j['spacing']),
-    stabilization: j['stabilization'] as bool,
-    stabilizationStrength: _wholeNumber(j['stabilizationStrength']),
-    pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
-    pressureOn: BrushPressureOnSettings.fromJson(
-      j['pressureOn'] as Map<String, dynamic>,
-    ),
-    pressureOff: BrushPressureOffSettings.fromJson(
-      j['pressureOff'] as Map<String, dynamic>,
-    ),
-    fadeMode: FadeMode.values.firstWhere(
-      (e) => e.name == j['fadeMode'],
-      orElse: () => FadeMode.off,
-    ),
-    // Brushes saved before fade-in/out existed have neither.
-    fadeIn: j['fadeIn'] is Map<String, dynamic>
-        ? FadeEndpointSettings.fromJson(j['fadeIn'] as Map<String, dynamic>)
-        : FadeEndpointSettings.full,
-    fadeOut: j['fadeOut'] is Map<String, dynamic>
-        ? FadeEndpointSettings.fromJson(j['fadeOut'] as Map<String, dynamic>)
-        : FadeEndpointSettings.full,
-    strokeDecay: j['strokeDecay'] as bool,
-    isFavorite: j['isFavorite'] as bool? ?? false,
-    folderId: j['folderId'] as String?,
-    customImagePath: j['customImagePath'] as String?,
-    customImagePaths:
-        (j['customImagePaths'] as List<dynamic>?)
-            ?.whereType<String>()
-            .toList() ??
-        const [],
-    customImageSelectionMode: BrushImageSelectionMode.values.firstWhere(
-      (e) => e.name == j['customImageSelectionMode'],
-      orElse: () => BrushImageSelectionMode.random,
-    ),
-    imageInkMode: BrushImageInkMode.values.firstWhere(
-      (e) => e.name == j['imageInkMode'],
-      // Older snapshots did not store the source-ink setting. Preserve their
-      // bundled light-on-dark material once, then serialize an explicit mode.
-      orElse: () =>
-          j['imageInkMode'] == null &&
-              [
-                j['customImagePath'],
-                ...?j['customImagePaths'] as List<dynamic>?,
-              ].whereType<String>().any(
-                (path) => path.startsWith('assets/brushes/bangs_'),
-              )
-          ? BrushImageInkMode.light
-          : BrushImageInkMode.dark,
-    ),
-    tipSpacingFactor: (j['tipSpacingFactor'] as num?)?.toDouble() ?? 0,
-    chainAspect: (j['chainAspect'] as num?)?.toDouble() ?? .64,
-    chainThickness: (j['chainThickness'] as num?)?.toDouble() ?? .25,
-    rotation: j['rotation'] as bool? ?? false,
-    density: (j['density'] as num?)?.toDouble() ?? 1,
-    scatter: (j['scatter'] as num?)?.toDouble() ?? 0,
-    grainStrength: (j['grainStrength'] as num?)?.round().clamp(0, 100) ?? 0,
-    calligraphyAngle: j['verticalNib'] == true
-        ? 0
-        : (j['calligraphyAngle'] as num?)?.toDouble(),
-    nibWidthRatio: clampNibWidthRatio(
-      (j['nibWidthRatio'] as num?)?.toDouble() ??
-          (j['verticalNib'] == true ? .38 : kDefaultNibWidthRatio),
-    ),
-    pixelColorMode: PixelColorMode.values.firstWhere(
-      (e) => e.name == j['pixelColorMode'],
-      orElse: () => PixelColorMode.none,
-    ),
-    pixelColorLevels: j['pixelColorLevels'] == null
-        ? 8
-        : _wholeNumber(j['pixelColorLevels']),
-    pixelExplicitColors:
-        (j['pixelExplicitColors'] as List<dynamic>?)
-            ?.map(_wholeNumber)
-            .toList() ??
-        const [0xFF000000],
-    tags: parseTags(j['tags']),
-    lateralRepeatEnabled: j['lateralRepeatEnabled'] as bool? ?? false,
-    lateralRepeatCount: clampLateralRepeatCount(
-      (j['lateralRepeatCount'] as num?)?.toInt() ?? 1,
-    ),
-    lateralRepeatSpacing: (j['lateralRepeatSpacing'] as num?)?.toDouble() ?? 1,
-    outlineEnabled: j['outlineEnabled'] as bool? ?? false,
-    outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.5,
-    outlineColor: (j['outlineColor'] as num?)?.toInt() ?? 0xFF000000,
-    outlineKeepOverlap: j['outlineKeepOverlap'] as bool? ?? true,
-    outlineAccentEnabled: j['outlineAccentEnabled'] as bool? ?? false,
-    outlineAccentWidth: (j['outlineAccentWidth'] as num?)?.toDouble() ?? 4,
-    presetColor: (j['presetColor'] as num?)?.toInt(),
-    foldEnabled: j['foldEnabled'] as bool? ?? false,
-    foldFlatEnds: j['foldFlatEnds'] as bool? ?? false,
-    foldDepartureAngle: clampFoldDepartureAngle(
-      j['foldDepartureAngle'] is num
-          ? (j['foldDepartureAngle'] as num).toDouble()
-          : 0,
-    ),
-    foldCurveStartRatio: clampFoldRatio(
-      (j['foldCurveStartRatio'] as num?)?.toDouble() ??
-          BrushExtensionDefaults.foldCurveStartRatio,
-      BrushExtensionDefaults.foldCurveStartRatio,
-    ),
-    foldAngleRatio: clampFoldRatio(
-      (j['foldAngleRatio'] as num?)?.toDouble() ??
-          BrushExtensionDefaults.foldAngleRatio,
-      BrushExtensionDefaults.foldAngleRatio,
-    ),
-    foldTriggerDepthRatio: clampFoldTriggerDepthRatio(
-      (j['foldTriggerDepthRatio'] as num?)?.toDouble() ??
-          (j['foldCrescentDepthThreshold'] as num?)?.toDouble() ??
-          BrushExtensionDefaults.foldTriggerDepthRatio,
-    ),
-    foldLengthRatio: clampFoldRatio(
-      (j['foldLengthRatio'] as num?)?.toDouble() ??
-          BrushExtensionDefaults.foldLengthRatio,
-      BrushExtensionDefaults.foldLengthRatio,
-    ),
-    foldEndTaperRatio: clampFoldRatio(
-      (j['foldEndTaperRatio'] as num?)?.toDouble() ?? .35,
-      .35,
-    ),
-    foldMode: HairFoldMode.values.firstWhere(
-      (e) => e.name == j['foldMode'],
-      orElse: () => HairFoldMode.waveTopView,
-    ),
-    yBranchAngle: (j['yBranchAngle'] as num?)?.toDouble() ?? 45,
-    yBranchLengthRatio: (j['yBranchLengthRatio'] as num?)?.toDouble() ?? .6,
-    yBranchWidthRatio: (j['yBranchWidthRatio'] as num?)?.toDouble() ?? .08,
-    yBranchEndTaperRatio: (j['yBranchEndTaperRatio'] as num?)?.toDouble() ?? .4,
-    tipShape: BrushTipShape.values.firstWhere(
-      (e) => e.name == j['tipShape'],
-      orElse: () => BrushTipShape.round,
-    ),
-  );
+  factory Brush.fromJson(Map<String, dynamic> j) {
+    final ends = BrushEnds.read(j);
+    return Brush(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      size: (j['size'] as num).toDouble(),
+      opacity: _wholeNumber(j['opacity']),
+      spacing: _wholeNumber(j['spacing']),
+      stabilization: j['stabilization'] as bool,
+      stabilizationStrength: _wholeNumber(j['stabilizationStrength']),
+      pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
+      pressureOn: BrushPressureOnSettings.fromJson(
+        j['pressureOn'] as Map<String, dynamic>,
+      ),
+      pressureOff: BrushPressureOffSettings.fromJson(
+        j['pressureOff'] as Map<String, dynamic>,
+      ),
+      fadeMode: ends.fadeMode,
+      fadeIn: ends.fadeIn,
+      fadeOut: ends.fadeOut,
+      taperMode: ends.taperMode,
+      taperIn: ends.taperIn,
+      taperOut: ends.taperOut,
+      strokeDecay: j['strokeDecay'] as bool,
+      isFavorite: j['isFavorite'] as bool? ?? false,
+      folderId: j['folderId'] as String?,
+      customImagePath: j['customImagePath'] as String?,
+      customImagePaths:
+          (j['customImagePaths'] as List<dynamic>?)
+              ?.whereType<String>()
+              .toList() ??
+          const [],
+      customImageSelectionMode: BrushImageSelectionMode.values.firstWhere(
+        (e) => e.name == j['customImageSelectionMode'],
+        orElse: () => BrushImageSelectionMode.random,
+      ),
+      imageInkMode: BrushImageInkMode.values.firstWhere(
+        (e) => e.name == j['imageInkMode'],
+        // Older snapshots did not store the source-ink setting. Preserve their
+        // bundled light-on-dark material once, then serialize an explicit mode.
+        orElse: () =>
+            j['imageInkMode'] == null &&
+                [
+                  j['customImagePath'],
+                  ...?j['customImagePaths'] as List<dynamic>?,
+                ].whereType<String>().any(
+                  (path) => path.startsWith('assets/brushes/bangs_'),
+                )
+            ? BrushImageInkMode.light
+            : BrushImageInkMode.dark,
+      ),
+      tipSpacingFactor: (j['tipSpacingFactor'] as num?)?.toDouble() ?? 0,
+      chainAspect: (j['chainAspect'] as num?)?.toDouble() ?? .64,
+      chainThickness: (j['chainThickness'] as num?)?.toDouble() ?? .25,
+      rotation: j['rotation'] as bool? ?? false,
+      density: (j['density'] as num?)?.toDouble() ?? 1,
+      scatter: (j['scatter'] as num?)?.toDouble() ?? 0,
+      grainStrength: (j['grainStrength'] as num?)?.round().clamp(0, 100) ?? 0,
+      calligraphyAngle: j['verticalNib'] == true
+          ? 0
+          : (j['calligraphyAngle'] as num?)?.toDouble(),
+      nibWidthRatio: clampNibWidthRatio(
+        (j['nibWidthRatio'] as num?)?.toDouble() ??
+            (j['verticalNib'] == true ? .38 : kDefaultNibWidthRatio),
+      ),
+      pixelColorMode: PixelColorMode.values.firstWhere(
+        (e) => e.name == j['pixelColorMode'],
+        orElse: () => PixelColorMode.none,
+      ),
+      pixelColorLevels: j['pixelColorLevels'] == null
+          ? 8
+          : _wholeNumber(j['pixelColorLevels']),
+      pixelExplicitColors:
+          (j['pixelExplicitColors'] as List<dynamic>?)
+              ?.map(_wholeNumber)
+              .toList() ??
+          const [0xFF000000],
+      tags: parseTags(j['tags']),
+      lateralRepeatEnabled: j['lateralRepeatEnabled'] as bool? ?? false,
+      lateralRepeatCount: clampLateralRepeatCount(
+        (j['lateralRepeatCount'] as num?)?.toInt() ?? 1,
+      ),
+      lateralRepeatSpacing:
+          (j['lateralRepeatSpacing'] as num?)?.toDouble() ?? 1,
+      outlineEnabled: j['outlineEnabled'] as bool? ?? false,
+      outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.5,
+      outlineColor: (j['outlineColor'] as num?)?.toInt() ?? 0xFF000000,
+      outlineKeepOverlap: j['outlineKeepOverlap'] as bool? ?? true,
+      outlineAccentEnabled: j['outlineAccentEnabled'] as bool? ?? false,
+      outlineAccentWidth: (j['outlineAccentWidth'] as num?)?.toDouble() ?? 4,
+      presetColor: (j['presetColor'] as num?)?.toInt(),
+      foldEnabled: j['foldEnabled'] as bool? ?? false,
+      foldFlatEnds: j['foldFlatEnds'] as bool? ?? false,
+      foldDepartureAngle: clampFoldDepartureAngle(
+        j['foldDepartureAngle'] is num
+            ? (j['foldDepartureAngle'] as num).toDouble()
+            : 0,
+      ),
+      foldCurveStartRatio: clampFoldRatio(
+        (j['foldCurveStartRatio'] as num?)?.toDouble() ??
+            BrushExtensionDefaults.foldCurveStartRatio,
+        BrushExtensionDefaults.foldCurveStartRatio,
+      ),
+      foldAngleRatio: clampFoldRatio(
+        (j['foldAngleRatio'] as num?)?.toDouble() ??
+            BrushExtensionDefaults.foldAngleRatio,
+        BrushExtensionDefaults.foldAngleRatio,
+      ),
+      foldTriggerDepthRatio: clampFoldTriggerDepthRatio(
+        (j['foldTriggerDepthRatio'] as num?)?.toDouble() ??
+            (j['foldCrescentDepthThreshold'] as num?)?.toDouble() ??
+            BrushExtensionDefaults.foldTriggerDepthRatio,
+      ),
+      foldLengthRatio: clampFoldRatio(
+        (j['foldLengthRatio'] as num?)?.toDouble() ??
+            BrushExtensionDefaults.foldLengthRatio,
+        BrushExtensionDefaults.foldLengthRatio,
+      ),
+      foldEndTaperRatio: clampFoldRatio(
+        (j['foldEndTaperRatio'] as num?)?.toDouble() ?? .35,
+        .35,
+      ),
+      foldMode: HairFoldMode.values.firstWhere(
+        (e) => e.name == j['foldMode'],
+        orElse: () => HairFoldMode.waveTopView,
+      ),
+      yBranchAngle: (j['yBranchAngle'] as num?)?.toDouble() ?? 45,
+      yBranchLengthRatio: (j['yBranchLengthRatio'] as num?)?.toDouble() ?? .6,
+      yBranchWidthRatio: (j['yBranchWidthRatio'] as num?)?.toDouble() ?? .08,
+      yBranchEndTaperRatio:
+          (j['yBranchEndTaperRatio'] as num?)?.toDouble() ?? .4,
+      tipShape: BrushTipShape.values.firstWhere(
+        (e) => e.name == j['tipShape'],
+        orElse: () => BrushTipShape.round,
+      ),
+    );
+  }
 }
 
 class PressureRangeSetting {
@@ -1009,6 +1055,82 @@ class FadeEndpointSettings {
         value: (j['value'] as num).toDouble(),
         rangePx: (j['rangePx'] as num).toDouble(),
       );
+
+  /// [value] read from a saved brush: [full] when it is missing or not an
+  /// end's setting (a value of another type does not stop the brush loading).
+  static FadeEndpointSettings readOr(Object? value) {
+    if (value is! Map) return full;
+    final v = value['value'];
+    final range = value['rangePx'];
+    if (v is! num || range is! num) return full;
+    return FadeEndpointSettings(value: v.toDouble(), rangePx: range.toDouble());
+  }
+}
+
+/// A saved brush's フェード (opacity at the ends) and 入り抜き (width at the
+/// ends).
+///
+/// Brushes saved before 入り抜き existed have no `taperMode`: their custom
+/// fade drew thin ends (it narrowed the width as well as the colour), and an
+/// outline pen's fade always shaped the pen. Those move to 入り抜き with the
+/// fade off, so they keep their shape. The weak/medium/strong fades of other
+/// brushes stay fades. A brush saved since has `taperMode` and is read as it
+/// is, so this happens on every read of the old brush until it is next
+/// saved, the same each time.
+class BrushEnds {
+  const BrushEnds({
+    required this.fadeMode,
+    required this.fadeIn,
+    required this.fadeOut,
+    required this.taperMode,
+    required this.taperIn,
+    required this.taperOut,
+  });
+
+  final FadeMode fadeMode;
+  final FadeEndpointSettings fadeIn;
+  final FadeEndpointSettings fadeOut;
+  final FadeMode taperMode;
+  final FadeEndpointSettings taperIn;
+  final FadeEndpointSettings taperOut;
+
+  static FadeMode _mode(Object? name) => FadeMode.values.firstWhere(
+    (e) => e.name == name,
+    orElse: () => FadeMode.off,
+  );
+
+  static BrushEnds read(Map<String, dynamic> j) {
+    final fadeMode = _mode(j['fadeMode']);
+    // Brushes saved before fade-in/out existed have neither.
+    final fadeIn = j['fadeIn'] is Map<String, dynamic>
+        ? FadeEndpointSettings.fromJson(j['fadeIn'] as Map<String, dynamic>)
+        : FadeEndpointSettings.full;
+    final fadeOut = j['fadeOut'] is Map<String, dynamic>
+        ? FadeEndpointSettings.fromJson(j['fadeOut'] as Map<String, dynamic>)
+        : FadeEndpointSettings.full;
+    if (!j.containsKey('taperMode')) {
+      final outline = j['outlineEnabled'] == true;
+      if (fadeMode != FadeMode.off &&
+          (outline || fadeMode == FadeMode.custom)) {
+        return BrushEnds(
+          fadeMode: FadeMode.off,
+          fadeIn: FadeEndpointSettings.full,
+          fadeOut: FadeEndpointSettings.full,
+          taperMode: fadeMode,
+          taperIn: fadeIn,
+          taperOut: fadeOut,
+        );
+      }
+    }
+    return BrushEnds(
+      fadeMode: fadeMode,
+      fadeIn: fadeIn,
+      fadeOut: fadeOut,
+      taperMode: _mode(j['taperMode']),
+      taperIn: FadeEndpointSettings.readOr(j['taperIn']),
+      taperOut: FadeEndpointSettings.readOr(j['taperOut']),
+    );
+  }
 }
 
 /// How a brush mixes with the paint already on the layer.

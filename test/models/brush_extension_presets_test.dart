@@ -50,8 +50,12 @@ void main() {
       expect(hair.foldAngleRatio, .80);
       expect(hair.foldLengthRatio, .95);
       expect(hair.foldEndTaperRatio, .65);
-      expect(hair.fadeIn, FadeEndpointSettings.full);
-      expect(hair.fadeOut.rangePx, 165);
+      // Its ends narrow (入り抜き); they never fade (an outline pen has no
+      // フェード).
+      expect(hair.fadeMode, FadeMode.off);
+      expect(hair.taperMode, FadeMode.custom);
+      expect(hair.taperIn, FadeEndpointSettings.full);
+      expect(hair.taperOut.rangePx, 165);
       expect(hair.toJson().containsKey('fillColor'), isFalse);
     },
   );
@@ -66,6 +70,7 @@ void main() {
     expect(bangs.outlineEnabled, isTrue);
     expect(bangs.foldEnabled, isFalse);
     expect(bangs.fadeMode, FadeMode.off);
+    expect(bangs.taperMode, FadeMode.off);
     expect(bangs.pressureOn.size.enabled, isTrue);
     expect(bangs.toJson().containsKey('fillColor'), isFalse);
   });
@@ -125,6 +130,7 @@ void main() {
         expect(restored.calligraphyAngle, isNull);
         expect(restored.customImagePaths, ['assets/brushes/ribbon_tip.png']);
         expect(restored.fadeMode, FadeMode.off);
+        expect(restored.taperMode, FadeMode.off);
         expect(restored.pressureOn.size.enabled, isFalse);
         expect(restored.pressureOn.opacity.enabled, isFalse);
         expect(restored.presetColor, 0xffdb424b);

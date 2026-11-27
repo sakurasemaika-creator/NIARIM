@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/brush.dart';
 import '../models/quick_tool_entry.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/transfer_merge.dart';
@@ -50,10 +51,21 @@ class QuickToolService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey);
     // 1件ずつ読む（読めない1件で起動を止めない）。
-    final saved = raw == null
+    var intact = true;
+    final read = raw == null
         ? const <QuickToolEntry>[]
-        : readSavedJsonList(listKey: _prefsKey, raw, QuickToolEntry.fromJson);
-    if (saved.isEmpty) {
+        : readSavedJsonList(
+            listKey: _prefsKey,
+            raw,
+            QuickToolEntry.fromJson,
+            onSkipped: () => intact = false,
+          );
+    // A tool for a brush the app no longer ships is taken out.
+    final saved = _withoutRetiredBrushes(read);
+    if (read.isNotEmpty && saved.isEmpty) {
+      _entries.addAll(_defaults);
+      if (intact) await _persist();
+    } else if (saved.isEmpty) {
       _entries.addAll(_defaults);
       // 保存が無い（初回）・空のときだけ既定を保存する。読めない値・
       // 読めない項目だけの保存は、既定の内容で動かすだけで書き換えない。
@@ -62,8 +74,16 @@ class QuickToolService extends ChangeNotifier {
       }
     } else {
       _entries.addAll(saved);
+      if (intact && saved.length != read.length) await _persist();
     }
   }
+
+  static List<QuickToolEntry> _withoutRetiredBrushes(
+    List<QuickToolEntry> entries,
+  ) => [
+    for (final entry in entries)
+      if (!isRetiredBuiltInBrush(entry.brushId)) entry,
+  ];
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
@@ -95,7 +115,9 @@ class QuickToolService extends ChangeNotifier {
     final changed = mergeTransferredItems(
       _entries,
       [
-        for (final entry in readSavedJsonList(saved, QuickToolEntry.fromJson))
+        for (final entry in _withoutRetiredBrushes(
+          readSavedJsonList(saved, QuickToolEntry.fromJson),
+        ))
           _transferred(entry, brushIds),
       ],
       TransferMergeRules<QuickToolEntry>(
@@ -166,7 +188,7 @@ class QuickToolService extends ChangeNotifier {
   void replaceAll(List<QuickToolEntry> newEntries) {
     _entries
       ..clear()
-      ..addAll(newEntries);
+      ..addAll(_withoutRetiredBrushes(newEntries));
     _currentIndex = -1;
     notifyListeners();
     _persist();

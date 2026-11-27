@@ -156,6 +156,19 @@ void main() {
         reason: 'the chosen fade is the selected chip',
       );
 
+      // 入り抜き（太さ）はフェード（透け方）のすぐ下の別の設定。
+      final taperCustom = find.byKey(const Key('brush-taper-custom'));
+      await tester.ensureVisible(taperCustom);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getTopLeft(taperCustom).dy,
+        greaterThan(tester.getTopLeft(custom).dy),
+      );
+      await tester.tap(taperCustom);
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.brushSettingsTaperEndValueLabel), findsOneWidget);
+      expect(find.text(l10n.brushSettingsTaperModeTitle), findsOneWidget);
+
       // 送った後も保存は同じ所で押せる。
       final sheetScroll = find
           .descendant(
@@ -172,6 +185,7 @@ void main() {
       await tester.pumpAndSettle();
       final saved = brushes.brushes.firstWhere((b) => b.id == copy.id);
       expect(saved.fadeMode, FadeMode.custom);
+      expect(saved.taperMode, FadeMode.custom);
       expect(find.byType(BottomSheet), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.runAsync(() => Future<void>.delayed(Duration.zero));

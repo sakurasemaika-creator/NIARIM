@@ -1554,7 +1554,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'Une fonction de pinceau qui permet de régler indépendamment la valeur et la distance de l’entrée (début du trait) et de la sortie (fin du trait). Vous pouvez effiler uniquement le début, uniquement la fin, ou utiliser des réglages asymétriques pour contrôler séparément l’épaisseur et l’opacité à chaque extrémité. Avec le stylo de contour, seule la forme d’ensemble (l’épaisseur) change, jamais l’opacité.';
+      'Une fonction de pinceau qui rend la couleur transparente vers le début et la fin du trait. Sur la distance choisie depuis le début, l’opacité monte progressivement de la valeur de début à 100 %, et sur la distance choisie avant la fin, elle descend progressivement de 100 % à la valeur de fin ; entre les deux, le trait est dessiné à l’opacité du pinceau. Vous pouvez estomper uniquement le début, uniquement la fin, ou les deux de façon asymétrique. L’épaisseur du trait ne change pas (pour l’affiner, utilisez l’Effilage). Le stylo de contour n’a pas de fondu.';
+
+  @override
+  String get helpTaperTitle => 'Effilage';
+
+  @override
+  String get helpTaperDesc =>
+      'Une fonction de pinceau qui affine le trait vers le début et la fin. Sur la distance choisie depuis le début, l’épaisseur augmente progressivement de la valeur d’entrée à 100 %, et sur la distance choisie avant la fin, elle diminue progressivement de 100 % à la valeur de sortie ; entre les deux, le trait est dessiné à l’épaisseur du pinceau. La couleur et l’opacité ne changent pas. Même à la souris, sans pression du stylet, vous pouvez dessiner des traits qui s’affinent à l’entrée et à la sortie. Sur les pinceaux dont l’épaisseur suit la pression, il affine encore cette épaisseur ; avec le stylo de contour, il affine toute la forme, contour compris.';
 
   @override
   String get helpStrokeDecayTitle => 'Atténuation de trait';
@@ -2190,7 +2197,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      'Dans les réglages du pinceau, vous pouvez ajuster séparément la valeur et la distance de l’entrée (début du trait) et de la sortie (fin du trait). Combinez-les avec l’atténuation du trait pour effiler seulement le début, prolonger seulement la fin ou rendre les deux extrémités asymétriques, comme avec un pinceau de calligraphie ou à encre.';
+      'Dans les réglages du pinceau, le Fondu règle l’opacité et la distance au début et à la fin du trait, et l’Effilage (entrée et sortie) en règle l’épaisseur et la distance, chacun séparément. Combinez-les avec l’atténuation du trait pour estomper seulement le début, prolonger seulement une sortie fine ou rendre les deux extrémités asymétriques, comme avec un pinceau de calligraphie ou à encre.';
 
   @override
   String get tipsColorMixingFadeTitle =>
@@ -2198,7 +2205,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsColorMixingFadeDesc =>
-      'Ajouter un fondu à un pinceau avec le mélange de couleurs activé le fait se mélanger avec la couleur dessous tout en s’éclaircissant progressivement, bien plus proche du comportement de la vraie peinture.';
+      'Ajouter un fondu à un pinceau avec le mélange de couleurs activé le fait se mélanger avec la couleur dessous tandis que le trait devient translucide vers son début et sa fin, bien plus proche du comportement de la vraie peinture.';
 
   @override
   String get tipsOutlineAnimeStyleTitle =>
@@ -3575,6 +3582,21 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get brushSettingsFadeDistanceLabel => 'Distance (px)';
+
+  @override
+  String get brushSettingsTaperModeTitle => 'Effilage';
+
+  @override
+  String get brushSettingsTaperStartValueLabel => 'Épaisseur d’entrée (%)';
+
+  @override
+  String get brushSettingsTaperStartDistanceLabel => 'Distance d’entrée (px)';
+
+  @override
+  String get brushSettingsTaperEndValueLabel => 'Épaisseur de sortie (%)';
+
+  @override
+  String get brushSettingsTaperEndDistanceLabel => 'Distance de sortie (px)';
 
   @override
   String get brushSettingsStrokeDecayTitle => 'Atténuation du trait';
@@ -7835,7 +7857,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      'Activez Contour dans les réglages du pinceau pour utiliser le Mode pliage. Désactivé, le pinceau dessine exactement comme le stylo de contour normal. Activé, le trait du stylo de contour lui-même se plie et s’enroule selon la direction et les courbes du trait que vous dessinez ; il ne génère pas d’ondulations automatiquement. À chaque courbe, une ligne de pli part du bord intérieur, se courbe puis s’efface. Un trait qui continue de tourner dans le même sens reçoit une ligne de pli plus discrète tous les 270°. Il existe cinq types de pliage. Ondulation en plongée place devant la partie dessinée en premier, Ondulation en contre-plongée celle dessinée ensuite. Boucle à droite choisit l’avant et l’arrière comme si le trait s’enroulait vers la droite de son sens de dessin, Boucle à gauche vers la gauche ; ils suivent le trait, pas l’écran. Boucle en croissant suit les courbes en C que vous dessinez pour former des croissants enchaînés. Longueur du pli règle la longueur de la ligne de pli (elle suit la taille du pinceau), Angle du pli règle la force avec laquelle il suit la courbe du trait (à 50 %, il la suit naturellement) et Début de la courbe de la ligne de pli règle l’épaisseur apparente de la matière (à 0 %, elle se courbe dès son point de départ). Avec le stylo de contour, la pression et le Fondu (entrée et sortie) ne modifient que la forme d’ensemble, contour compris ; le contour garde son épaisseur et la couleur ne pâlit jamais. Désactivez Conserver les chevauchements sous Contour pour fusionner les traits qui se chevauchent : leurs jonctions ne sont pas contournées et aucune ligne de pli n’est tracée là où ils se chevauchent ; seul l’extérieur de la forme combinée est contourné. Activez Variation d’épaisseur sous Contour pour épaissir le contour vers le sommet de chaque courbe : il garde la largeur du contour là où la courbe commence et finit, et atteint progressivement la Largeur du contour au sommet (appliqué quand vous levez le stylet).';
+      'Activez Contour dans les réglages du pinceau pour utiliser le Mode pliage. Désactivé, le pinceau dessine exactement comme le stylo de contour normal. Activé, le trait du stylo de contour lui-même se plie et s’enroule selon la direction et les courbes du trait que vous dessinez ; il ne génère pas d’ondulations automatiquement. À chaque courbe, une ligne de pli part du bord intérieur, se courbe puis s’efface. Un trait qui continue de tourner dans le même sens reçoit une ligne de pli plus discrète tous les 270°. Il existe cinq types de pliage. Ondulation en plongée place devant la partie dessinée en premier, Ondulation en contre-plongée celle dessinée ensuite. Boucle à droite choisit l’avant et l’arrière comme si le trait s’enroulait vers la droite de son sens de dessin, Boucle à gauche vers la gauche ; ils suivent le trait, pas l’écran. Boucle en croissant suit les courbes en C que vous dessinez pour former des croissants enchaînés. Longueur du pli règle la longueur de la ligne de pli (elle suit la taille du pinceau), Angle du pli règle la force avec laquelle il suit la courbe du trait (à 50 %, il la suit naturellement) et Début de la courbe de la ligne de pli règle l’épaisseur apparente de la matière (à 0 %, elle se courbe dès son point de départ). Avec le stylo de contour, la pression et l’Effilage (entrée et sortie) ne modifient que la forme d’ensemble, contour compris ; le contour garde son épaisseur et la couleur ne pâlit jamais. Désactivez Conserver les chevauchements sous Contour pour fusionner les traits qui se chevauchent : leurs jonctions ne sont pas contournées et aucune ligne de pli n’est tracée là où ils se chevauchent ; seul l’extérieur de la forme combinée est contourné. Activez Variation d’épaisseur sous Contour pour épaissir le contour vers le sommet de chaque courbe : il garde la largeur du contour là où la courbe commence et finit, et atteint progressivement la Largeur du contour au sommet (appliqué quand vous levez le stylet).';
 
   @override
   String get tipsBrushFoldTitle =>

@@ -46,6 +46,28 @@ class DrawingEngine {
   HairFoldRaster? _foldRaster;
   final BrushTextureSelector _brushTextureSelector = BrushTextureSelector();
   double? _finalizedStrokeLengthOverride;
+
+  /// How far along the stroke each cell ([_cellShift]) was reached while
+  /// the stroke was drawn (the length at the furthest dab into it plus that
+  /// dab's reach), keyed `cx << 24 | cy` in cells (for [redrawStrokeEnd]).
+  final Map<int, double> _cellReach = {};
+
+  /// A cell is 64 px square, 4 × 4 to a tile.
+  static const _cellShift = 6;
+  static const _cellsPerTile = TileManager.tileSize >> _cellShift;
+  static const _allCells = (1 << _cellsPerTile * _cellsPerTile) - 1;
+
+  /// While [redrawStrokeEnd] draws the stroke again: the only cells it draws
+  /// into (keyed like [_cellReach]), and for each of their tiles (keyed
+  /// `tx << 24 | ty`), those cells as bits (`row * 4 + column`).
+  Set<int>? _redrawCells;
+  Map<int, int>? _redrawMasks;
+
+  /// The length along the stroke of the dab being drawn.
+  double _stampLength = 0;
+
+  /// Whether this stroke keeps [_cellReach] (its end may be drawn again).
+  bool _recordsReach = false;
   bool _replayingFinalStroke = false;
   // 縁取りの強弱：ストローク全体の形から決まるので、ペンを離した後の
   // 描き直し（replayCurrentStrokeWithFinalFade）でだけ設定する。
@@ -102,6 +124,16 @@ class DrawingEngine {
     _strokeScreenPositions.clear();
     _strokeCoverageByTile.clear();
     _strokeBaseAlpha.clear();
+    if (!_replayingFinalStroke) {
+      _cellReach.clear();
+      final brush = currentBrush;
+      _recordsReach =
+          brush != null &&
+          !brush.outlineEnabled &&
+          !brush.pixelMode &&
+          (brush.colourFadeMode != FadeMode.off ||
+              brush.shapeTaperMode != FadeMode.off);
+    }
     _foldRaster = null;
     _oil = null;
     _watercolor = null;
@@ -234,12 +266,32 @@ class DrawingEngine {
     }
   }
 
-  /// Whether the stroke is drawn again once it is complete: a custom fade
-  /// needs its total length, and an outline's 強弱 the whole stroke's
-  /// curves.
-  bool get needsFinalFadeReplay =>
-      _currentStroke.isNotEmpty &&
-      (currentBrush?.fadeMode == FadeMode.custom || _accentsOutline);
+  /// Whether the stroke is drawn again once it is complete: a フェード or
+  /// 入り抜き needs its total length (for the ramp at the end), and an
+  /// outline's 強弱 the whole stroke's curves. One that only changes the
+  /// start of a stroke longer than its two distances was already drawn as it
+  /// will be.
+  bool get needsFinalFadeReplay {
+    if (_currentStroke.isEmpty) return false;
+    if (_accentsOutline) return true;
+    final brush = currentBrush;
+    if (brush == null) return false;
+    if (brush.outlineEnabled) return brush.shapeTaperMode != FadeMode.off;
+    final ramps = [
+      if (brush.colourFadeMode != FadeMode.off) _fadeRamp(brush),
+      if (brush.shapeTaperMode != FadeMode.off) _taperRamp(brush),
+    ];
+    if (ramps.isEmpty) return false;
+    var total = 0.0;
+    for (var i = 1; i < _currentStroke.length; i++) {
+      total += _distance(_currentStroke[i - 1], _currentStroke[i]);
+    }
+    for (final ramp in ramps) {
+      if (ramp.outRange > 0 && ramp.outValue < 1) return true;
+      if (ramp.inRange + ramp.outRange > total) return true;
+    }
+    return false;
+  }
 
   bool get _accentsOutline {
     final brush = currentBrush;
@@ -289,6 +341,126 @@ class DrawingEngine {
     _rebuildHairFold();
   }
 
+  /// Draws again, with the stroke's final length, only where the end of the
+  /// stroke changes (the tiles reached from within the end's フェード or
+  /// 入り抜き), keeping what was drawn elsewhere: the same pixels as putting
+  /// the tiles back as they were before the stroke and calling
+  /// [replayCurrentStrokeWithFinalFade], for a fraction of the work. The tile
+  /// manager must be recording the stroke's undo: the tiles drawn again are
+  /// put back from that record, which stays as it is.
+  ///
+  /// Returns false, having done nothing, when the stroke has to be drawn
+  /// again whole: a stroke shorter than its two distances (its start
+  /// changes too), an outline pen (its fold and 強弱 take the whole stroke),
+  /// the pixel grid, colour mixing (the bristles and the wash carry paint
+  /// along the stroke).
+  bool redrawStrokeEnd() {
+    if (!needsFinalFadeReplay) return false;
+    final brush = currentBrush;
+    final layerId = _activeLayerId;
+    if (brush == null ||
+        layerId == null ||
+        brush.outlineEnabled ||
+        _accentsOutline ||
+        _foldRaster != null ||
+        _pixelStroke != null ||
+        brush.pixelMode ||
+        _oil != null ||
+        _watercolor != null ||
+        brush.pressureOn.mixing.enabled ||
+        brush.pressureOff.mixing.enabled) {
+      return false;
+    }
+    final recording = tileManager.recordingTouchedTiles;
+    if (recording == null || recording.layerId != layerId) return false;
+    var total = 0.0;
+    for (var i = 1; i < _currentStroke.length; i++) {
+      total += _distance(_currentStroke[i - 1], _currentStroke[i]);
+    }
+    var end = 0.0;
+    for (final ramp in [
+      if (brush.colourFadeMode != FadeMode.off)
+        _fadeRamp(brush, totalLength: total),
+      if (brush.shapeTaperMode != FadeMode.off)
+        _taperRamp(brush, totalLength: total),
+    ]) {
+      if (ramp.shrunk) return false;
+      if (ramp.outValue < 1 && ramp.outRange > end) end = ramp.outRange;
+    }
+    if (end <= 0) return false;
+    // A dab changes when its length is within the end's distance (its
+    // width) or its reach is (its colour, laid per pixel along the
+    // stroke). Its dabs are where they were (the spacing does not depend
+    // on the width), no wider than they were, and the same up to there.
+    final from = total - end - 1;
+    // The cells to draw again, and all the cells the stroke reached, by tile.
+    final touched = <int, int>{};
+    final masks = <int, int>{};
+    for (final entry in _cellReach.entries) {
+      final cx = entry.key >> 24;
+      final cy = entry.key & 0xFFFFFF;
+      final tileKey = (cx ~/ _cellsPerTile) << 24 | cy ~/ _cellsPerTile;
+      final bit =
+          1 << (cy % _cellsPerTile * _cellsPerTile + cx % _cellsPerTile);
+      touched[tileKey] = (touched[tileKey] ?? 0) | bit;
+      if (entry.value >= from) masks[tileKey] = (masks[tileKey] ?? 0) | bit;
+    }
+    // A tile whose every reached cell is drawn again is put back whole (as
+    // drawing the stroke whole would, it is there afterwards only if a dab
+    // reaches it); the rest keep their tile, reached by dabs that stay.
+    final whole = <String>[];
+    final cells = <int>{};
+    for (final entry in masks.entries) {
+      final tx = entry.key >> 24;
+      final ty = entry.key & 0xFFFFFF;
+      var mask = entry.value;
+      if (mask == touched[entry.key]) {
+        whole.add('$tx,$ty');
+        mask = masks[entry.key] = _allCells;
+      } else {
+        tileManager.restoreRecordedCells(
+          layerId,
+          tx,
+          ty,
+          mask,
+          1 << _cellShift,
+        );
+      }
+      for (var bit = 0; bit < _cellsPerTile * _cellsPerTile; bit++) {
+        if (mask & 1 << bit == 0) continue;
+        cells.add(
+          (tx * _cellsPerTile + bit % _cellsPerTile) << 24 |
+              ty * _cellsPerTile + bit ~/ _cellsPerTile,
+        );
+      }
+    }
+    tileManager.restoreRecordedTiles(layerId, whole);
+    _redrawCells = cells;
+    _redrawMasks = masks;
+    try {
+      replayCurrentStrokeWithFinalFade();
+    } finally {
+      _redrawCells = null;
+      _redrawMasks = null;
+    }
+    return true;
+  }
+
+  /// Whether a square [reach] px round ([x], [y]) touches any of [cells]
+  /// (keyed like [_cellReach]).
+  static bool _reachesAny(Set<int> cells, double x, double y, double reach) {
+    final minX = math.max(0, (x - reach).floor()) >> _cellShift;
+    final maxX = (x + reach).ceil() >> _cellShift;
+    final minY = math.max(0, (y - reach).floor()) >> _cellShift;
+    final maxY = (y + reach).ceil() >> _cellShift;
+    for (var cy = minY; cy <= maxY; cy++) {
+      for (var cx = minX; cx <= maxX; cx++) {
+        if (cells.contains(cx << 24 | cy)) return true;
+      }
+    }
+    return false;
+  }
+
   void endStroke({bool cancel = false}) {
     if (!cancel) _rebuildHairFold(finalize: true);
     if (!cancel && _activeLayerId != null && _pixelStroke != null) {
@@ -332,6 +504,25 @@ class DrawingEngine {
     _outlineAccent = null;
   }
 
+  Brush? _foldViewSource;
+  Brush? _foldView;
+
+  /// [brush] as the fold's drawing reads it: that takes the shape of the
+  /// ends from the fade fields, so they carry the brush's 入り抜き. The same
+  /// brush gives the same object (the fold keeps its work while it does).
+  Brush _foldViewOf(Brush brush) {
+    if (brush.taperMode == FadeMode.off) return brush;
+    if (!identical(brush, _foldViewSource)) {
+      _foldViewSource = brush;
+      _foldView = brush.copyWith(
+        fadeMode: brush.taperMode,
+        fadeIn: brush.taperIn,
+        fadeOut: brush.taperOut,
+      );
+    }
+    return _foldView!;
+  }
+
   void _rebuildHairFold({bool finalize = false}) {
     // Final fade replay already knows the complete input: rasterize the fold
     // once after replay instead of rebuilding every intermediate prefix.
@@ -340,6 +531,10 @@ class DrawingEngine {
     final raster = _foldRaster;
     if (brush == null || raster == null) return;
     final samples = <HairRibbonPoint>[];
+    final taper = _taperRamp(
+      brush,
+      totalLength: _finalizedStrokeLengthOverride,
+    );
     // 強弱 while drawing follows the curves drawn so far; once the stroke
     // is complete, its final curves.
     final accent =
@@ -351,12 +546,7 @@ class DrawingEngine {
         pressureEnabled: pressureEnabled,
         curvedPressure: curvedPressure,
       );
-      final fade = _calculateFade(
-        brush,
-        distance,
-        totalLength: _finalizedStrokeLengthOverride,
-      );
-      final scale = pressure.sizeScale * fade;
+      final scale = pressure.sizeScale * taper.at(distance);
       samples.add(
         HairRibbonPoint(
           position,
@@ -379,13 +569,12 @@ class DrawingEngine {
     // is drawn with widths straight between its points: a long segment
     // there (a fast flick) gets points every 2px, so the tail has the same
     // shape as the ordinary stamps give it.
-    final total = _finalizedStrokeLengthOverride;
     bool inTaper(double from, double to) =>
-        brush.fadeMode == FadeMode.custom &&
-        ((brush.fadeIn.rangePx > 0 && from < brush.fadeIn.rangePx) ||
-            (total != null &&
-                brush.fadeOut.rangePx > 0 &&
-                to > total - brush.fadeOut.rangePx));
+        brush.shapeTaperMode != FadeMode.off &&
+        ((taper.inRange > 0 && from < taper.inRange) ||
+            (taper.total != null &&
+                taper.outRange > 0 &&
+                to > taper.total! - taper.outRange));
     var distance = 0.0;
     for (var i = 0; i < _currentStroke.length; i++) {
       final point = _currentStroke[i];
@@ -414,7 +603,7 @@ class DrawingEngine {
     raster.render(
       points: samples,
       taperEnd: finalize,
-      brush: brush,
+      brush: _foldViewOf(brush),
       fillColor: currentColor,
       texture: texture == null
           ? null
@@ -639,16 +828,37 @@ class DrawingEngine {
     // A one-pixel gap between dab centers is still visible on the edge of a
     // fine or tapered stroke. Sample those continuous strokes at half-pixels.
     // Wider explicit gaps and shaped/texture tips keep their stamp rhythm.
+    // 入り抜き narrows the width (the fade changes only the colour): a stroke
+    // is fine where its ends are narrowest. Outline pens always take
+    // half-pixels when they taper.
+    final narrowest = brush.shapeTaperMode == FadeMode.off
+        ? 1.0
+        : brush.outlineEnabled
+        ? 0.0
+        : _narrowestTaper(brush);
     if (brush.spacing == 1 &&
         safeDensity >= 1 &&
         !brush.pixelMode &&
         brush.tipShape == BrushTipShape.round &&
         brush.scatter == 0 &&
-        (brush.size * minPressureScale <= 2 ||
-            brush.fadeMode != FadeMode.off)) {
+        brush.size * minPressureScale * narrowest <= 2) {
       return 0.5;
     }
     return math.max(1.0, brush.spacing.toDouble() / safeDensity);
+  }
+
+  /// The narrowest 入り抜き makes a dab, as a share of its width.
+  double _narrowestTaper(Brush brush) {
+    final ramp = _endsRamp(
+      brush.shapeTaperMode,
+      brush.shapeTaperIn,
+      brush.shapeTaperOut,
+      fitsShortStroke: false,
+    );
+    var narrowest = 1.0;
+    if (ramp.inRange > 0) narrowest = math.min(narrowest, ramp.inValue);
+    if (ramp.outRange > 0) narrowest = math.min(narrowest, ramp.outValue);
+    return narrowest;
   }
 
   double _stableDouble(double value) => (value * 1000000).round() / 1000000;
@@ -781,12 +991,12 @@ class DrawingEngine {
       curvedPressure: dab.pressure,
     );
     var size = brush.size * pressure.sizeScale;
-    if (brush.fadeMode != FadeMode.off) {
-      size *= _calculateFade(
+    // 入り抜き narrows the dot; the fade changes only its colour.
+    if (brush.shapeTaperMode != FadeMode.off) {
+      size *= _taperRamp(
         brush,
-        dab.strokeLength,
         totalLength: _finalizedStrokeLengthOverride,
-      );
+      ).at(dab.strokeLength);
     }
     return size.clamp(0.5, 2000.0).toDouble();
   }
@@ -1005,6 +1215,7 @@ class DrawingEngine {
     final pressure = _resolvePressure(brush, 1.0);
     if (pressure.mixingMode != BrushMixingMode.watercolor) return false;
     if (brush.fadeMode != FadeMode.off ||
+        brush.shapeTaperMode != FadeMode.off ||
         brush.strokeDecay ||
         _outlineAccent != null) {
       return true;
@@ -1022,6 +1233,7 @@ class DrawingEngine {
     if (identical(a, b)) return true;
     final brush = currentBrush!;
     if ((brush.fadeMode != FadeMode.off ||
+            brush.shapeTaperMode != FadeMode.off ||
             brush.strokeDecay ||
             _outlineAccent != null) &&
         a.strokeLength != b.strokeLength) {
@@ -1363,23 +1575,62 @@ class DrawingEngine {
         (brush.outlineEnabled ? 1.0 : resolvedPressure.opacityScale);
 
     final strokeLength = strokeLengthOverride ?? _strokeDistance;
+    _stampLength = strokeLength;
 
-    // フェード仕様は「ストロークが進むにつれて不透明度・サイズが減少」。
-    // 同じ係数を両方へ適用し、終端で薄いだけの同径線にならないようにする。
-    // ただし縁取りペンでは、入り抜き・筆圧は縁取りを含む全体の形だけを変え、
-    // 縁取り線の太さと透明度は変えない（outlinedStrokeRadii）。0%では何も
-    // 描かない。
-    if (brush.fadeMode != FadeMode.off) {
-      final fade = _calculateFade(
+    // 入り抜きは線の始点と終点に向かって太さだけを細くする（色・不透明度は
+    // 変えない）。縁取りペンでは、入り抜き・筆圧は縁取りを含む全体の形だけを
+    // 変え、縁取り線の太さと透明度は変えない（outlinedStrokeRadii）。0%では
+    // 何も描かない。
+    if (brush.shapeTaperMode != FadeMode.off) {
+      final taper = _taperRamp(
         brush,
-        strokeLength,
+        totalLength: _finalizedStrokeLengthOverride,
+      ).at(strokeLength);
+      size *= taper;
+      if (taper <= 0) return;
+    }
+    // Drawing only the end again: a dab that reaches none of those tiles
+    // draws nothing in them and changes nothing a later dab uses (no
+    // scattering, random flakes or changing tip images).
+    final redrawCells = _redrawCells;
+    if (redrawCells != null &&
+        brush.scatter <= 0 &&
+        brush.tipShape != BrushTipShape.hexagon &&
+        brush.resolvedCustomImagePaths.length <= 1) {
+      var reach = size * 3 + resolvedPressure.blur * 1.5 + 16;
+      if (brush.lateralRepeatEnabled) {
+        reach +=
+            size *
+            Brush.clampLateralRepeatCount(brush.lateralRepeatCount) *
+            (brush.lateralRepeatSpacing.abs() + 1) *
+            2;
+      }
+      if (!_reachesAny(redrawCells, x, y, reach)) return;
+    }
+    // フェードは線の始点と終点に向かって透けていき、その間はブラシの
+    // 不透明度のまま（太さは変えない。縁取りペンは透けない）。透け方は
+    // 画素ごとに、その画素が線に沿ってどこにあるかで決める（スタンプごとに
+    // 決めると、重なったスタンプのうち先のものが線の真ん中ほど遠くまで
+    // 届き、真ん中だけ先に濃く・遅く薄くなる）。
+    _FadeAlong? fadeAlong;
+    if (brush.colourFadeMode != FadeMode.off) {
+      final ramp = _fadeRamp(
+        brush,
         totalLength: _finalizedStrokeLengthOverride,
       );
-      size *= fade;
-      if (brush.outlineEnabled) {
-        if (fade <= 0) return;
+      if (hasPathDirection && pixelShape == null) {
+        // (Dots on the pixel grid take the fade of their own dot.)
+        final reach = size / 2 + resolvedPressure.blur + 2;
+        if (ramp.changesWithin(strokeLength - reach, strokeLength + reach)) {
+          fadeAlong = _FadeAlong(
+            ramp,
+            strokeLength,
+            math.cos(pathAngle),
+            math.sin(pathAngle),
+          );
+        }
       } else {
-        opacity *= fade;
+        opacity *= ramp.at(strokeLength);
       }
     }
     // ストローク減衰はインク切れ表現なので、不透明度だけを減らして太さは維持する。
@@ -1542,6 +1793,7 @@ class DrawingEngine {
               resolvedPressure.mixingBrightnessCorrection,
           coverageNamespace: outline != null ? 'fill' : 'legacy',
           pixelMask: fillMask,
+          fadeAlong: fadeAlong,
         );
       }
       return;
@@ -1685,6 +1937,7 @@ class DrawingEngine {
           hollowSquare: usesExtensionRaster && extensionPlan.hollowSquare,
           hollowSquareInnerRatio: extensionPlan.hollowSquareInnerRatio,
           coverageNamespace: usesExtensionRaster ? 'fill' : 'legacy',
+          fadeAlong: fadeAlong,
         );
       }
     }
@@ -1787,6 +2040,7 @@ class DrawingEngine {
     Uint8List? silhouetteDistanceMap,
     double silhouetteOutlineWidth = 0,
     PixelMask? pixelMask,
+    _FadeAlong? fadeAlong,
   }) {
     final paintColor = colorOverride ?? currentColor;
     final r = paintColor.r;
@@ -1816,6 +2070,8 @@ class DrawingEngine {
     final softnessMix = blur > 0
         ? (blur / (blur + radius)).clamp(0.0, 1.0)
         : 0.0;
+    final hardShare = 1.0 - softnessMix;
+    final blurReach = radius + blur;
 
     // ピクセルモードの格子に置く形（[pixelMask]の画素だけを塗る）。
     final minTx = pixelMask != null
@@ -1849,9 +2105,32 @@ class DrawingEngine {
         ? _byte((alpha * 1.0).round())
         : -1;
 
+    if (pixelMask == null && !_replayingFinalStroke && _recordsReach) {
+      final reach = _stampLength + totalRadius;
+      final minX = math.max(0, (cx - totalRadius).floor()) >> _cellShift;
+      final maxX = (cx + totalRadius).ceil() >> _cellShift;
+      final minY = math.max(0, (cy - totalRadius).floor()) >> _cellShift;
+      final maxY = (cy + totalRadius).ceil() >> _cellShift;
+      for (var gy = minY; gy <= maxY; gy++) {
+        for (var gx = minX; gx <= maxX; gx++) {
+          final key = gx << 24 | gy;
+          final reached = _cellReach[key];
+          if (reached == null || reached < reach) _cellReach[key] = reach;
+        }
+      }
+    }
+    final redrawMasks = _redrawMasks;
     for (int ty = minTy; ty <= maxTy; ty++) {
       for (int tx = minTx; tx <= maxTx; tx++) {
         if (tx < 0 || ty < 0) continue;
+        // Drawing only the end again: only in its cells.
+        var cellMask = _allCells;
+        if (redrawMasks != null) {
+          final mask = redrawMasks[tx << 24 | ty];
+          if (mask == null) continue;
+          cellMask = mask;
+        }
+        final clip = cellMask != _allCells;
         _foldRaster?.rememberTile(tx, ty);
         final tile = _writableTile(layerId, tx, ty);
         // 水彩風は塗る前のタイルを覚え、そこへ透明な絵の具を重ねて描く。
@@ -1919,7 +2198,21 @@ class DrawingEngine {
               );
 
         for (int py = localMinY; py <= localMaxY; py++) {
+          var rowCells = _allCells;
+          if (clip) {
+            rowCells =
+                cellMask >> (py >> _cellShift) * _cellsPerTile &
+                (1 << _cellsPerTile) - 1;
+            if (rowCells == 0) {
+              py |= (1 << _cellShift) - 1;
+              continue;
+            }
+          }
           for (int px = localMinX; px <= localMaxX; px++) {
+            if (clip && rowCells & 1 << (px >> _cellShift) == 0) {
+              px |= (1 << _cellShift) - 1;
+              continue;
+            }
             // 格子に置く形は、その形の画素だけを塗る（外の画素は何もしない）。
             if (pixelMask != null &&
                 !pixelMask.contains(tileOriginX + px, tileOriginY + py)) {
@@ -2008,13 +2301,18 @@ class DrawingEngine {
                       4;
                 }
                 if (!pixelMode && blur > 0 && pixelAlpha > 0) {
-                  final t = math.max(0.0, (dist - radius) / blur);
-                  final classic = math.max(0.0, 1.0 - t * t);
+                  // The rim eases out (smoothstep): level where it meets the
+                  // tip and where it meets nothing, so a soft stroke falls
+                  // off as a bell, not a cone with a crease at its edge.
+                  var classic = 1.0;
+                  if (dist > radius) {
+                    final t = math.min(1.0, (dist - radius) / blur);
+                    classic = 1.0 - t * t * (3.0 - 2.0 * t);
+                  }
                   final soft = math.exp(
                     falloffScale * math.max(0.0, dist * dist - 0.5),
                   );
-                  pixelAlpha *=
-                      classic * (1.0 - softnessMix) + soft * softnessMix;
+                  pixelAlpha *= classic * hardShare + soft * softnessMix;
                 }
               } else if (hollowSquare) {
                 final outerDistance = math.max(ux.abs(), uy.abs());
@@ -2068,14 +2366,16 @@ class DrawingEngine {
                 // like a thick marker. Blend the original coverage with a
                 // smooth, center-weighted Gaussian as blur grows; tiny blur
                 // values retain the crisp underlying brush character.
-                if (dist <= radius + blur) {
-                  final t = dist <= radius ? 0.0 : (dist - radius) / blur;
-                  final classic = 1.0 - t * t;
+                if (dist <= blurReach) {
+                  var classic = 1.0;
+                  if (dist > radius) {
+                    final t = (dist - radius) / blur;
+                    classic = 1.0 - t * t * (3.0 - 2.0 * t);
+                  }
                   final soft = math.exp(
                     falloffScale * math.max(0.0, dist * dist - 0.5),
                   );
-                  pixelAlpha =
-                      classic * (1.0 - softnessMix) + soft * softnessMix;
+                  pixelAlpha = classic * hardShare + soft * softnessMix;
                 } else {
                   pixelAlpha = 0.0;
                 }
@@ -2125,6 +2425,11 @@ class DrawingEngine {
               }
 
               desiredAlpha = _byte((alpha * pixelAlpha).round());
+            }
+            if (fadeAlong != null && desiredAlpha > 0) {
+              desiredAlpha = _byte(
+                (desiredAlpha * fadeAlong.at(worldX, worldY, cx, cy)).round(),
+              );
             }
             if (desiredAlpha <= 0) continue;
 
@@ -2286,36 +2591,76 @@ class DrawingEngine {
     return math.sqrt(dx * dx + dy * dy);
   }
 
-  double _calculateFade(
-    Brush brush,
-    double strokeLength, {
+  /// [brush]'s fade (フェード) as a ramp at each end of the stroke: from its
+  /// start value up to full over its start distance, and from full down to
+  /// its end value over its end distance; full in between. 弱・中・強 are set
+  /// ramps; カスタム takes the brush's own. The end ramp needs [totalLength],
+  /// known once the stroke is complete (the stroke is then drawn again).
+  /// When the two ramps would overlap on an ordinary brush's short stroke,
+  /// they are shortened in proportion so that they meet at full, not dip
+  /// below either end.
+  _FadeRamp _fadeRamp(Brush brush, {double? totalLength}) => _endsRamp(
+    brush.colourFadeMode,
+    brush.fadeIn,
+    brush.fadeOut,
+    fitsShortStroke: true,
+    totalLength: totalLength,
+  );
+
+  /// The stroke's 入り抜き: how much of the width is left along it, with the
+  /// same ramps as the fade. An outline pen's ends shape the whole pen and
+  /// keep their distances on a short stroke.
+  _FadeRamp _taperRamp(Brush brush, {double? totalLength}) => _endsRamp(
+    brush.shapeTaperMode,
+    brush.shapeTaperIn,
+    brush.shapeTaperOut,
+    fitsShortStroke: !brush.outlineEnabled,
+    totalLength: totalLength,
+  );
+
+  _FadeRamp _endsRamp(
+    FadeMode mode,
+    FadeEndpointSettings fadeIn,
+    FadeEndpointSettings fadeOut, {
+    required bool fitsShortStroke,
     double? totalLength,
   }) {
-    return switch (brush.fadeMode) {
-      FadeMode.weak => (1.0 - strokeLength / 1000).clamp(0.3, 1.0),
-      FadeMode.medium => (1.0 - strokeLength / 500).clamp(0.1, 1.0),
-      FadeMode.strong => (1.0 - strokeLength / 200).clamp(0.0, 1.0),
-      FadeMode.custom => () {
-        final fadeInRange = brush.fadeIn.rangePx;
-        final fadeOutRange = brush.fadeOut.rangePx;
-        final fadeInProgress = fadeInRange <= 0
-            ? 1.0
-            : _taperShoulder((strokeLength / fadeInRange).clamp(0.0, 1.0));
-        final distanceFromEnd = totalLength == null
-            ? double.infinity
-            : math.max(0.0, totalLength - strokeLength);
-        final fadeOutProgress = fadeOutRange <= 0
-            ? 1.0
-            : _taperShoulder((distanceFromEnd / fadeOutRange).clamp(0.0, 1.0));
-        final fadeIn =
-            brush.fadeIn.value / 100 +
-            (1.0 - brush.fadeIn.value / 100) * fadeInProgress;
-        final fadeOutTarget = brush.fadeOut.value / 100;
-        final fadeOut = fadeOutTarget + (1.0 - fadeOutTarget) * fadeOutProgress;
-        return (fadeIn * fadeOut).clamp(0.0, 1.0);
-      }(),
-      FadeMode.off => 1.0,
+    final (inValue, inRange, outValue, outRange) = switch (mode) {
+      FadeMode.off => (1.0, 0.0, 1.0, 0.0),
+      FadeMode.weak => (0.5, 40.0, 0.5, 40.0),
+      FadeMode.medium => (0.2, 80.0, 0.2, 80.0),
+      FadeMode.strong => (0.0, 150.0, 0.0, 150.0),
+      FadeMode.custom => (
+        fadeIn.value / 100,
+        fadeIn.rangePx,
+        fadeOut.value / 100,
+        fadeOut.rangePx,
+      ),
     };
+    var start = math.max(0.0, inRange);
+    var end = math.max(0.0, outRange);
+    var shrunk = false;
+    if (fitsShortStroke) {
+      // An end left at 100% does not change, so its distance takes no share
+      // of a short stroke (the custom setting's untouched end is 100% over
+      // 500px).
+      if (inValue >= 1) start = 0;
+      if (outValue >= 1) end = 0;
+      if (totalLength != null && start + end > totalLength) {
+        final share = totalLength / (start + end);
+        start *= share;
+        end *= share;
+        shrunk = true;
+      }
+    }
+    return _FadeRamp(
+      inValue: inValue.clamp(0.0, 1.0).toDouble(),
+      inRange: start,
+      outValue: outValue.clamp(0.0, 1.0).toDouble(),
+      outRange: end,
+      total: totalLength,
+      shrunk: shrunk,
+    );
   }
 
   /// How far a custom taper has grown at [progress] (0 at the tip, 1 where
@@ -2798,5 +3143,85 @@ class _PixelLog {
       _pointCount = 0;
       _first = 0;
     }
+  }
+}
+
+/// A stroke's fade (フェード) along its length: [inValue] at the start rising
+/// to full over [inRange] px, and full falling to [outValue] over the last
+/// [outRange] px of a stroke [total] px long (no end ramp until it is known).
+final class _FadeRamp {
+  const _FadeRamp({
+    required this.inValue,
+    required this.inRange,
+    required this.outValue,
+    required this.outRange,
+    required this.total,
+    this.shrunk = false,
+  });
+
+  final double inValue;
+  final double inRange;
+  final double outValue;
+  final double outRange;
+  final double? total;
+
+  /// Whether the ramps were shortened to fit a short stroke (so the start
+  /// changes once the length is known, too).
+  final bool shrunk;
+
+  /// The fade [s] px along the stroke (0 to 1).
+  double at(double s) {
+    var fade = 1.0;
+    if (inRange > 0 && inValue < 1 && s < inRange) {
+      final p = s <= 0 ? 0.0 : s / inRange;
+      fade = inValue + (1 - inValue) * DrawingEngine._taperShoulder(p);
+    }
+    final total = this.total;
+    if (total != null && outRange > 0 && outValue < 1) {
+      final left = total - s;
+      if (left < outRange) {
+        final p = left <= 0 ? 0.0 : left / outRange;
+        fade *= outValue + (1 - outValue) * DrawingEngine._taperShoulder(p);
+      }
+    }
+    return fade;
+  }
+
+  /// Whether the fade changes anywhere from [from] to [to] px along the
+  /// stroke.
+  bool changesWithin(double from, double to) {
+    if (inRange > 0 && inValue < 1 && from < inRange) return true;
+    final total = this.total;
+    return total != null &&
+        outRange > 0 &&
+        outValue < 1 &&
+        to > total - outRange;
+  }
+}
+
+/// An ordinary brush's fade laid per pixel by where the pixel is along the
+/// stroke (its distance along the stroke's direction from the dab), not by
+/// the dab: dabs overlap, and each would otherwise lay its own fade over its
+/// whole round footprint, the dab ahead (more opaque on the way in) reaching
+/// further along the middle of the stroke than its edges, so the middle
+/// would fade later than the edges.
+final class _FadeAlong {
+  const _FadeAlong(this.ramp, this.length, this.dx, this.dy);
+
+  final _FadeRamp ramp;
+
+  /// How far along the stroke the dab is, and the stroke's direction there
+  /// (unit vector).
+  final double length;
+  final double dx;
+  final double dy;
+
+  /// The fade at canvas point ([x], [y]) of the dab centred at ([cx], [cy]).
+  double at(double x, double y, double cx, double cy) {
+    var s = length + (x - cx) * dx + (y - cy) * dy;
+    if (s < 0) s = 0;
+    final total = ramp.total;
+    if (total != null && s > total) s = total;
+    return ramp.at(s);
   }
 }

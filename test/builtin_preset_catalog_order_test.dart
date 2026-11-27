@@ -23,7 +23,7 @@ void main() {
     await stamps.init();
 
     final brushIds = brushes.brushes.map((brush) => brush.id).toList();
-    expect(brushIds.sublist(24), [
+    expect(brushIds.sublist(23), [
       'Brush0021',
       'Brush0022',
       'Brush0025',

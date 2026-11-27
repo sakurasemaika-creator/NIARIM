@@ -2354,7 +2354,11 @@ class CanvasAreaState extends State<CanvasArea> {
     }
     _lastStrokeContact = null;
     _lastStrokeScreenPosition = null;
-    if (_drawingEngine.needsFinalFadeReplay && _undoRecordingLayerKey != null) {
+    // Only the end of the stroke changes, when it can: drawing it again
+    // whole is the fallback (a short stroke, an outline pen, mixing).
+    if (_drawingEngine.needsFinalFadeReplay &&
+        _undoRecordingLayerKey != null &&
+        !_drawingEngine.redrawStrokeEnd()) {
       final layerKey = _undoRecordingLayerKey!;
       final previewSnapshot = _tileManager.endUndoRecording();
       if (previewSnapshot.before.isNotEmpty) {

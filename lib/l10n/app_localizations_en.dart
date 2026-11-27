@@ -1526,7 +1526,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'A brush feature that lets you set the value and distance of the entry (stroke start) and exit (stroke end) independently. You can taper only the start, only the end, or use asymmetric settings to control thickness and opacity separately at each endpoint. On the outline pen, only the overall shape (thickness) changes, never the opacity.';
+      'A brush feature that makes the color fade out towards the start and end of a stroke. Over the distance you set from the start, the opacity rises smoothly from the start value to 100%; over the distance you set before the end, it falls smoothly from 100% to the end value; in between, the stroke is drawn at the brush opacity. You can fade only the start, only the end, or both asymmetrically. The thickness of the stroke does not change (Taper narrows it). The outline pen has no fade.';
+
+  @override
+  String get helpTaperTitle => 'Taper';
+
+  @override
+  String get helpTaperDesc =>
+      'A brush feature that narrows the stroke towards its start and end. Over the distance you set from the start, the width grows smoothly from the entry value to 100%; over the distance you set before the end, it narrows smoothly from 100% to the exit value; in between, the stroke is drawn at the width of the brush. The color and opacity do not change. Even with a mouse, without pen pressure, you can draw lines with thin entries and exits. On brushes whose width follows pen pressure, it narrows that width further; on the outline pen, it narrows the whole shape, outline included.';
 
   @override
   String get helpStrokeDecayTitle => 'Stroke Decay';
@@ -2156,7 +2163,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      'Brush settings let you adjust the value and distance of the entry (stroke start) and exit (stroke end) separately. Combine them with stroke decay to taper only the start, extend only the end, or make the two endpoints asymmetric for expressive calligraphy- and ink-brush strokes.';
+      'In the brush settings, Fade sets the opacity and distance at the start and end of a stroke, and Taper (entry and exit) sets the width and distance there, each separately. Combine them with stroke decay to fade only the start, draw out only a long thin exit, or make the two ends asymmetric for expressive calligraphy- and ink-brush strokes.';
 
   @override
   String get tipsColorMixingFadeTitle =>
@@ -2164,7 +2171,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsColorMixingFadeDesc =>
-      'Adding fade to a brush that has color mixing enabled makes it blend with the color underneath while gradually thinning out — much closer to how real paint behaves.';
+      'Adding fade to a brush that has color mixing enabled makes it blend with the color underneath while the stroke turns translucent towards its start and end — much closer to how real paint behaves.';
 
   @override
   String get tipsOutlineAnimeStyleTitle =>
@@ -3524,6 +3531,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushSettingsFadeDistanceLabel => 'Distance (px)';
+
+  @override
+  String get brushSettingsTaperModeTitle => 'Taper';
+
+  @override
+  String get brushSettingsTaperStartValueLabel => 'Entry width (%)';
+
+  @override
+  String get brushSettingsTaperStartDistanceLabel => 'Entry distance (px)';
+
+  @override
+  String get brushSettingsTaperEndValueLabel => 'Exit width (%)';
+
+  @override
+  String get brushSettingsTaperEndDistanceLabel => 'Exit distance (px)';
 
   @override
   String get brushSettingsStrokeDecayTitle => 'Stroke decay';
@@ -7702,7 +7724,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      'Turn on Outline in the brush settings to use Fold mode. With it off, the brush draws exactly like the normal outline pen. With it on, the outline pen’s own line folds and curls along the direction and bends of the stroke you draw; it does not generate waves automatically. At each bend, a fold line branches from the inner edge, curves and fades out. A stroke that keeps turning the same way gets a subtler fold line every 270°. There are five fold types. Wave (top view) brings the earlier part of the stroke forward, and Wave (low angle) the later part. Right curl decides front and back as if rolling to the right of the drawing direction, and Left curl to the left; they follow the stroke, not the screen. Crescent curl follows the C-shaped curves you draw to form connected crescents. Fold length sets the length of the fold line (it scales with the brush size), Fold angle sets how strongly it follows the stroke’s curve (50% follows it naturally), and Fold line curve start sets how thick the material looks (at 0% it curves right from where it branches). On the outline pen, pressure and Fade (entry and exit) change only the overall shape, outline included; the outline keeps its width and the color never gets lighter. Turn off Keep overlaps under Outline to merge overlapping strokes: their joins are not outlined and no fold lines are drawn where they overlap, only the outside of the combined shape is outlined. Turn on Weight variation under Outline to thicken the outline toward the apex of each curve: it keeps the outline width where the curve begins and ends and gradually reaches the Outline width at the apex (applied when you lift the pen).';
+      'Turn on Outline in the brush settings to use Fold mode. With it off, the brush draws exactly like the normal outline pen. With it on, the outline pen’s own line folds and curls along the direction and bends of the stroke you draw; it does not generate waves automatically. At each bend, a fold line branches from the inner edge, curves and fades out. A stroke that keeps turning the same way gets a subtler fold line every 270°. There are five fold types. Wave (top view) brings the earlier part of the stroke forward, and Wave (low angle) the later part. Right curl decides front and back as if rolling to the right of the drawing direction, and Left curl to the left; they follow the stroke, not the screen. Crescent curl follows the C-shaped curves you draw to form connected crescents. Fold length sets the length of the fold line (it scales with the brush size), Fold angle sets how strongly it follows the stroke’s curve (50% follows it naturally), and Fold line curve start sets how thick the material looks (at 0% it curves right from where it branches). On the outline pen, pressure and Taper (entry and exit) change only the overall shape, outline included; the outline keeps its width and the color never gets lighter. Turn off Keep overlaps under Outline to merge overlapping strokes: their joins are not outlined and no fold lines are drawn where they overlap, only the outside of the combined shape is outlined. Turn on Weight variation under Outline to thicken the outline toward the apex of each curve: it keeps the outline width where the curve begins and ends and gradually reaches the Outline width at the apex (applied when you lift the pen).';
 
   @override
   String get tipsBrushFoldTitle =>

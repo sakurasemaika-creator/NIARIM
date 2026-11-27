@@ -1558,7 +1558,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'Una función del pincel que permite ajustar de forma independiente el valor y la distancia de entrada (inicio del trazo) y salida (final del trazo). Puedes afinar solo el inicio, solo el final o usar ajustes asimétricos para controlar por separado el grosor y la opacidad en cada extremo. En el lápiz de contorno solo cambia la forma general (el grosor), nunca la opacidad.';
+      'Una función del pincel que vuelve transparente el color hacia el inicio y el final del trazo. En la distancia que fijes desde el inicio, la opacidad sube suavemente del valor inicial al 100 %, y en la distancia que fijes antes del final baja suavemente del 100 % al valor final; entre ambos, el trazo se dibuja con la opacidad del pincel. Puedes desvanecer solo el inicio, solo el final o ambos de forma asimétrica. El grosor del trazo no cambia (para afinarlo se usa el Afinado). El lápiz de contorno no tiene desvanecido.';
+
+  @override
+  String get helpTaperTitle => 'Afinado';
+
+  @override
+  String get helpTaperDesc =>
+      'Una función del pincel que afina el trazo hacia el inicio y el final. En la distancia que fijes desde el inicio, el grosor crece suavemente del valor de entrada al 100 %, y en la distancia que fijes antes del final se reduce suavemente del 100 % al valor de salida; entre ambos, el trazo se dibuja con el grosor del pincel. El color y la opacidad no cambian. Incluso con un ratón, sin presión del lápiz, puedes dibujar líneas con entradas y salidas finas. En los pinceles cuyo grosor sigue la presión, afina aún más ese grosor; en el lápiz de contorno, afina toda la forma, contorno incluido.';
 
   @override
   String get helpStrokeDecayTitle => 'Atenuación de trazo';
@@ -2195,7 +2202,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      'En los ajustes del pincel puedes ajustar por separado el valor y la distancia de la entrada (inicio del trazo) y la salida (final del trazo). Combínalos con la atenuación del trazo para afinar solo el inicio, alargar solo el final o hacer ambos extremos asimétricos y conseguir trazos expresivos de caligrafía o tinta.';
+      'En los ajustes del pincel, el Desvanecido ajusta la opacidad y la distancia al inicio y al final del trazo, y el Afinado (entrada y salida), el grosor y la distancia, cada uno por separado. Combínalos con la atenuación del trazo para desvanecer solo el inicio, alargar solo una salida fina o hacer ambos extremos asimétricos y conseguir trazos expresivos de caligrafía o tinta.';
 
   @override
   String get tipsColorMixingFadeTitle =>
@@ -2203,7 +2210,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsColorMixingFadeDesc =>
-      'Añadir desvanecido a un pincel con mezcla de color activada hace que se mezcle con el color de debajo mientras se va aclarando gradualmente, mucho más parecido a cómo se comporta la pintura real.';
+      'Añadir desvanecido a un pincel con mezcla de color activada hace que se mezcle con el color de debajo mientras el trazo se vuelve translúcido hacia su inicio y su final, mucho más parecido a cómo se comporta la pintura real.';
 
   @override
   String get tipsOutlineAnimeStyleTitle =>
@@ -3577,6 +3584,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get brushSettingsFadeDistanceLabel => 'Distancia (px)';
+
+  @override
+  String get brushSettingsTaperModeTitle => 'Afinado';
+
+  @override
+  String get brushSettingsTaperStartValueLabel => 'Grosor de entrada (%)';
+
+  @override
+  String get brushSettingsTaperStartDistanceLabel =>
+      'Distancia de entrada (px)';
+
+  @override
+  String get brushSettingsTaperEndValueLabel => 'Grosor de salida (%)';
+
+  @override
+  String get brushSettingsTaperEndDistanceLabel => 'Distancia de salida (px)';
 
   @override
   String get brushSettingsStrokeDecayTitle => 'Atenuación del trazo';
@@ -7824,7 +7847,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      'Activa Contorno en los ajustes del pincel para usar el Modo de pliegue. Desactivado, el pincel dibuja igual que el lápiz de contorno normal. Activado, la propia línea del lápiz de contorno se pliega y se riza según la dirección y las curvas del trazo que dibujas; no genera ondas automáticamente. En cada curva, una línea de pliegue sale del borde interior, se curva y se desvanece. Si el trazo sigue girando en el mismo sentido, aparece una línea de pliegue más sutil cada 270°. Hay cinco tipos de pliegue. Onda (vista superior) pone delante la parte dibujada antes y Onda (contrapicado), la dibujada después. Rizo a la derecha decide qué queda delante como si se enrollara hacia la derecha de la dirección de dibujo, y Rizo a la izquierda, hacia la izquierda; siguen el trazo, no la pantalla. Rizo de media luna sigue las curvas en C que dibujas para formar medias lunas encadenadas. Longitud del pliegue ajusta la longitud de la línea de pliegue (se adapta al tamaño del pincel), Ángulo del pliegue ajusta cuánto sigue la curva del trazo (al 50 % la sigue de forma natural) e Inicio de la curva de la línea de pliegue ajusta el grosor aparente del material (al 0 % se curva justo desde donde se ramifica). En el lápiz de contorno, la presión y el Desvanecido (entrada y salida) solo cambian la forma general, contorno incluido; el contorno conserva su grosor y el color nunca se aclara. Desactiva Mantener superposiciones en Contorno para fusionar los trazos superpuestos: sus uniones no se contornean ni se dibujan líneas de pliegue donde se superponen; solo se contornea el exterior de la forma combinada. Activa Variación de grosor en Contorno para engrosar el contorno hacia el vértice de cada curva: conserva el ancho del contorno donde la curva empieza y termina, y alcanza poco a poco el Ancho del contorno en el vértice (se aplica al levantar el lápiz).';
+      'Activa Contorno en los ajustes del pincel para usar el Modo de pliegue. Desactivado, el pincel dibuja igual que el lápiz de contorno normal. Activado, la propia línea del lápiz de contorno se pliega y se riza según la dirección y las curvas del trazo que dibujas; no genera ondas automáticamente. En cada curva, una línea de pliegue sale del borde interior, se curva y se desvanece. Si el trazo sigue girando en el mismo sentido, aparece una línea de pliegue más sutil cada 270°. Hay cinco tipos de pliegue. Onda (vista superior) pone delante la parte dibujada antes y Onda (contrapicado), la dibujada después. Rizo a la derecha decide qué queda delante como si se enrollara hacia la derecha de la dirección de dibujo, y Rizo a la izquierda, hacia la izquierda; siguen el trazo, no la pantalla. Rizo de media luna sigue las curvas en C que dibujas para formar medias lunas encadenadas. Longitud del pliegue ajusta la longitud de la línea de pliegue (se adapta al tamaño del pincel), Ángulo del pliegue ajusta cuánto sigue la curva del trazo (al 50 % la sigue de forma natural) e Inicio de la curva de la línea de pliegue ajusta el grosor aparente del material (al 0 % se curva justo desde donde se ramifica). En el lápiz de contorno, la presión y el Afinado (entrada y salida) solo cambian la forma general, contorno incluido; el contorno conserva su grosor y el color nunca se aclara. Desactiva Mantener superposiciones en Contorno para fusionar los trazos superpuestos: sus uniones no se contornean ni se dibujan líneas de pliegue donde se superponen; solo se contornea el exterior de la forma combinada. Activa Variación de grosor en Contorno para engrosar el contorno hacia el vértice de cada curva: conserva el ancho del contorno donde la curva empieza y termina, y alcanza poco a poco el Ancho del contorno en el vértice (se aplica al levantar el lápiz).';
 
   @override
   String get tipsBrushFoldTitle =>

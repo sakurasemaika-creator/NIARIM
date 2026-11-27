@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/brush.dart';
 import '../models/shortcut_binding.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
@@ -27,7 +28,7 @@ class ShortcutService extends ChangeNotifier {
     final raw = prefs.readStringList(_prefsKey);
     // 1件ずつ読む（読めない1件で起動を止めない）。
     var intact = true;
-    final saved = raw == null
+    final read = raw == null
         ? const <ShortcutBinding>[]
         : readSavedJsonList(
             listKey: _prefsKey,
@@ -35,6 +36,12 @@ class ShortcutService extends ChangeNotifier {
             ShortcutBinding.fromJson,
             onSkipped: () => intact = false,
           );
+    // A key for a brush the app no longer ships is taken out.
+    final saved = [
+      for (final binding in read)
+        if (!isRetiredBuiltInBrush(binding.brushId)) binding,
+    ];
+    final removed = saved.length != read.length;
     if (saved.isEmpty) {
       // 既定値：従来ハードコードされていたUndo/Redoのキー割り当てを
       // そのまま初期状態として引き継ぐ。
@@ -50,6 +57,8 @@ class ShortcutService extends ChangeNotifier {
       if (raw == null ? !prefs.containsKey(_prefsKey) : raw.isEmpty) {
         await _persist();
         await prefs.setBool(_canvasDefaultsKey, true);
+      } else if (removed && intact) {
+        await _persist();
       }
     } else {
       _bindings.addAll(saved);
@@ -76,7 +85,7 @@ class ShortcutService extends ChangeNotifier {
         added = true;
       }
       if (intact) {
-        if (added) await _persist();
+        if (added || removed) await _persist();
         if (needsCanvasDefaults) await prefs.setBool(_canvasDefaultsKey, true);
       }
     }
@@ -181,6 +190,7 @@ class ShortcutService extends ChangeNotifier {
     };
     var changed = false;
     for (final received in readSavedJsonList(saved, ShortcutBinding.fromJson)) {
+      if (isRetiredBuiltInBrush(received.brushId)) continue;
       if (_bindings.any((b) => b.id == received.id)) continue;
       if (shipped[received.id] == jsonEncode(received.toJson())) continue;
       final brushId = transferredItemId(received.brushId, brushIds);
