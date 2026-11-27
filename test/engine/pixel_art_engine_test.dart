@@ -199,7 +199,8 @@ void main() {
     },
   );
 
-  test('opaque diagonal crossing may use a middle color', () {
+  test('colours as they are: an opaque diagonal crossing gets no invented '
+      'middle colour', () {
     final input = Uint8List.fromList([
       255,
       0,
@@ -225,8 +226,9 @@ void main() {
       pixelSize: 1,
       colorMode: PixelColorMode.none,
     );
-    expect(out.sublist(4, 7), [128, 0, 128]);
-    expect([out[3], out[7], out[11], out[15]], [255, 255, 255, 255]);
+    // 色を指定しない（元の色のまま）ときは、絵に無い中間の色（赤と青の間の
+    // 紫）を作らない。
+    expect(out, input);
   });
 
   test('explicit palette never invents an unavailable middle color', () {

@@ -75,14 +75,19 @@ class PixelArtEngine {
     // How the paint inside each cell is laid out: 1 = along x (a flat
     // stroke), 2 = along y (an upright one), 0 = neither (a dot, a diagonal).
     final orientation = Uint8List(cellCount);
+    final even = Uint8List(cellCount);
 
+    final edgeX = Int32List.fromList(xs), edgeY = Int32List.fromList(ys);
     for (var cy = 0; cy < cellsY; cy++) {
+      final y0 = edgeY[cy], h = edgeY[cy + 1] - y0;
       for (var cx = 0; cx < cellsX; cx++) {
+        final x0 = edgeX[cx], w = edgeX[cx + 1] - x0;
         var wr = 0, wg = 0, wb = 0, aw = 0, top = 0, n = 0;
-        var sx = 0, sy = 0, sxx = 0, syy = 0;
-        for (var dy = 0; dy < ys[cy + 1] - ys[cy]; dy++) {
-          for (var dx = 0; dx < xs[cx + 1] - xs[cx]; dx++) {
-            final p = (ys[cy] + dy) * width + xs[cx] + dx;
+        var sx = 0, sy = 0, sxx = 0, syy = 0, squares = 0;
+        for (var dy = 0; dy < h; dy++) {
+          final row = (y0 + dy) * width + x0;
+          for (var dx = 0; dx < w; dx++) {
+            final p = row + dx;
             // 描き直す線のインクは、そのドットの地の色に数えない。
             if (inked != null && inked[p] != 0) continue;
             n++;
@@ -90,10 +95,12 @@ class PixelArtEngine {
             final a = data[i + 3];
             if (a == 0) continue;
             // Premultiplied channels are the colour already weighted by alpha.
-            wr += data[i];
-            wg += data[i + 1];
-            wb += data[i + 2];
+            final d0 = data[i], d1 = data[i + 1], d2 = data[i + 2];
+            wr += d0;
+            wg += d1;
+            wb += d2;
             aw += a;
+            squares += d0 * d0 + d1 * d1 + d2 * d2 + a * a;
             if (a > top) top = a;
             sx += dx * a;
             sy += dy * a;
@@ -118,12 +125,17 @@ class PixelArtEngine {
           (wg * 255 / aw).round().clamp(0, 255),
           (wb * 255 / aw).round().clamp(0, 255),
         );
+        // ほとんど1色のドット（乗算済みの値と不透明度のばらつきが小さい）：
+        // その平均の色が、ドットにある色。
+        final m0 = wr / n, m1 = wg / n, m2 = wb / n, m3 = aw / n;
+        final spread = squares / n - (m0 * m0 + m1 * m1 + m2 * m2 + m3 * m3);
+        if (spread <= _evenSpread) even[c] = 1;
       }
     }
 
     Uint8List? blockAlpha;
     // 色を決め直さないドット：描き直した線と、地の色を隣から借りたもの。
-    Uint8List? settled;
+    Uint8List? settled, borrowedRing;
     if (squareBlocks) {
       if (lines != null) {
         // 線のドットの周りは、線の不透明度を基準に地を決める（線のインクを
@@ -139,10 +151,21 @@ class PixelArtEngine {
         alphaMax,
         pixels,
         orientation,
+        lineCells: lines?.line,
       );
       if (lines != null) {
         settled = Uint8List(cellCount);
-        _placeLines(lines, xs, ys, pixels, kept, rawColors, settled);
+        borrowedRing = Uint8List(cellCount);
+        _placeLines(
+          lines,
+          xs,
+          ys,
+          pixels,
+          kept,
+          rawColors,
+          settled,
+          borrowedRing,
+        );
       }
       blockAlpha = _bridgeGaps(data, width, size, xs, ys, alphaMax, kept);
     }
@@ -161,7 +184,19 @@ class PixelArtEngine {
       rawColors,
       inked: inked,
       settled: settled,
+      even: even,
     );
+    if (lines != null && borrowedRing != null && blockAlpha != null) {
+      _settleBorrowed(
+        lines,
+        cellsX,
+        cellsY,
+        pixels,
+        blockAlpha,
+        rawColors,
+        borrowedRing,
+      );
+    }
     final lineCell = lines?.line;
 
     final countPalette = colorMode == PixelColorMode.count
@@ -183,7 +218,7 @@ class PixelArtEngine {
       for (var c = 0; c < cellCount; c++) {
         final color = rawColors[c];
         if (color == null) continue;
-        labs.setAll(c * 3, _Ditherer.labOf(color));
+        _Ditherer.labInto(color, labs, c * 3);
       }
       final edge = Uint8List(cellCount);
       for (var c = 0; c < cellCount; c++) {
@@ -282,6 +317,34 @@ class PixelArtEngine {
       }
     }
 
+    if (blockAlpha != null && Endian.host == Endian.little) {
+      // ドットごとに同じ4バイトなので、行ごとにまとめて書く。
+      final words = result.buffer.asUint32List(
+        result.offsetInBytes,
+        result.length >> 2,
+      );
+      for (var cy = 0; cy < cellsY; cy++) {
+        final y0 = edgeY[cy], y1 = edgeY[cy + 1];
+        for (var cx = 0; cx < cellsX; cx++) {
+          final c = cy * cellsX + cx;
+          final color = colors[c];
+          final a = blockAlpha[c];
+          final r = color == null ? 0 : (color >> 16) & 0xff;
+          final g = color == null ? 0 : (color >> 8) & 0xff;
+          final b = color == null ? 0 : color & 0xff;
+          final word =
+              (r * a + 127) ~/ 255 |
+              ((g * a + 127) ~/ 255) << 8 |
+              ((b * a + 127) ~/ 255) << 16 |
+              a << 24;
+          final x0 = edgeX[cx], x1 = edgeX[cx + 1];
+          for (var y = y0; y < y1; y++) {
+            words.fillRange(y * width + x0, y * width + x1, word);
+          }
+        }
+      }
+      return result;
+    }
     for (var cy = 0; cy < cellsY; cy++) {
       for (var cx = 0; cx < cellsX; cx++) {
         final c = cy * cellsX + cx;
@@ -328,6 +391,7 @@ class PixelArtEngine {
     List<int?> colors, {
     Uint8List? inked,
     Uint8List? settled,
+    Uint8List? even,
   }) {
     final around = Float64List(cellsX * cellsY * 3);
     for (var cy = 0; cy < cellsY; cy++) {
@@ -359,19 +423,37 @@ class PixelArtEngine {
       }
     }
     const span = 255 * 1.7320508075688772;
+    final edgeX = Int32List.fromList(xs), edgeY = Int32List.fromList(ys);
+    var cellW = 0, cellH = 0;
+    for (var cx = 0; cx < cellsX; cx++) {
+      cellW = math.max(cellW, edgeX[cx + 1] - edgeX[cx]);
+    }
+    for (var cy = 0; cy < cellsY; cy++) {
+      cellH = math.max(cellH, edgeY[cy + 1] - edgeY[cy]);
+    }
+    final cell = _CellPaint(cellW * cellH);
+    final pr = cell.r, pg = cell.g, pb = cell.b, pw = cell.w, pa = cell.a;
+    final keys = cell._key;
+    // 隣のドットの、色を決め直す前の色。
+    final raw = List<int?>.of(colors);
     for (var cy = 0; cy < cellsY; cy++) {
       for (var cx = 0; cx < cellsX; cx++) {
         final c = cy * cellsX + cx;
         if (colors[c] == null) continue;
         if (settled != null && settled[c] != 0) continue;
+        if (even != null && even[c] != 0) continue;
         final ar = around[c * 3],
             ag = around[c * 3 + 1],
             ab = around[c * 3 + 2];
         var wr = 0.0, wg = 0.0, wb = 0.0, total = 0.0;
-        for (var y = ys[cy]; y < ys[cy + 1]; y++) {
-          for (var x = xs[cx]; x < xs[cx + 1]; x++) {
-            if (inked != null && inked[y * width + x] != 0) continue;
-            final i = (y * width + x) * 4;
+        // ドットの画素（[cell]へ）と、隣の画素と同じ色（各色4段・不透明度
+        // 16段ごと）だった数。
+        var n = 0, same = 0, lastKey = -1;
+        final x0 = edgeX[cx], x1 = edgeX[cx + 1];
+        for (var y = edgeY[cy]; y < edgeY[cy + 1]; y++) {
+          for (var x = x0, p = y * width + x0; x < x1; x++, p++) {
+            if (inked != null && inked[p] != 0) continue;
+            final i = p * 4;
             final a = data[i + 3];
             if (a == 0) continue;
             final r = data[i] * 255 / a;
@@ -384,14 +466,33 @@ class PixelArtEngine {
             wg += g * w;
             wb += b * w;
             total += w;
+            final d0 = data[i], d1 = data[i + 1], d2 = data[i + 2];
+            pr[n] = r;
+            pg[n] = g;
+            pb[n] = b;
+            pw[n] = w;
+            pa[n] = a;
+            final key =
+                d0 >> 2 | (d1 >> 2) << 6 | (d2 >> 2) << 12 | (a >> 4) << 18;
+            keys[n] = key;
+            if (key == lastKey) same++;
+            lastKey = key;
+            n++;
           }
         }
+        cell
+          ..count = n
+          .._same = same;
         // An even area (every pixel the colour around it) keeps its mean.
         if (total < 1e-3) continue;
-        colors[c] = _rgb(
-          (wr / total).round().clamp(0, 255),
-          (wg / total).round().clamp(0, 255),
-          (wb / total).round().clamp(0, 255),
+        colors[c] = cell.colour(
+          wr / total,
+          wg / total,
+          wb / total,
+          raw,
+          cellsX,
+          cellsY,
+          c,
         );
       }
     }
@@ -410,6 +511,7 @@ class PixelArtEngine {
     Uint8List kept,
     List<int?> rawColors,
     Uint8List settled,
+    Uint8List borrowedRing,
   ) {
     final cellsX = xs.length - 1, cellsY = ys.length - 1;
     final count = cellsX * cellsY;
@@ -425,6 +527,7 @@ class PixelArtEngine {
       final covered = lines.cover[c] >= 0.9;
       if (!covered && pixels[c] != 0) continue;
       int? borrowed, borrowedAlpha, lineColor, lineAlpha;
+      var ring = 0;
       // ほとんど線のインクで覆われたドット（線の幅の中）は線の色。
       for (final (ox, oy) in covered ? _ring : const <(int, int)>[]) {
         final nx = cx + ox, ny = cy + oy;
@@ -456,6 +559,7 @@ class PixelArtEngine {
           }
         }
         if (ground == 0) continue;
+        ring = r;
         borrowedAlpha = top;
         borrowed = coloured == 0
             ? 0xff000000
@@ -472,10 +576,50 @@ class PixelArtEngine {
       } else if (borrowed != null) {
         kept[c] = borrowedAlpha!;
         rawColors[c] = kept[c] == 0 ? null : borrowed;
+        borrowedRing[c] = ring;
       } else {
         continue;
       }
       settled[c] = 1;
+    }
+  }
+
+  /// 地の画素が無いので近くの地のドットから色を借りたドット（[_placeLines]）
+  /// は、近くのドットの色を混ぜずに、近くでいちばん多い色（同じ数なら
+  /// 上の行から先に見つかった色）にする。混ぜると、肌とシャツの間の灰色の
+  /// ような、絵に無い色になった。
+  static void _settleBorrowed(
+    PixelArtLines lines,
+    int cellsX,
+    int cellsY,
+    Int32List pixels,
+    Uint8List kept,
+    List<int?> colors,
+    Uint8List borrowedRing,
+  ) {
+    final counts = <int, int>{};
+    for (var c = 0; c < cellsX * cellsY; c++) {
+      final r = borrowedRing[c];
+      if (r == 0 || colors[c] == null) continue;
+      final cx = c % cellsX, cy = c ~/ cellsX;
+      counts.clear();
+      int? pick;
+      var most = 0;
+      for (var ny = cy - r; ny <= cy + r; ny++) {
+        for (var nx = cx - r; nx <= cx + r; nx++) {
+          if (nx < 0 || ny < 0 || nx >= cellsX || ny >= cellsY) continue;
+          final o = ny * cellsX + nx;
+          if (o == c || lines.line[o] != 0 || pixels[o] == 0) continue;
+          final color = colors[o];
+          if (kept[o] == 0 || color == null || borrowedRing[o] != 0) continue;
+          final n = counts[color] = (counts[color] ?? 0) + 1;
+          if (n > most) {
+            most = n;
+            pick = color;
+          }
+        }
+      }
+      if (pick != null) colors[c] = pick;
     }
   }
 
@@ -512,8 +656,9 @@ class PixelArtEngine {
     Int32List alphaSum,
     Uint8List alphaMax,
     Int32List pixels,
-    Uint8List orientation,
-  ) {
+    Uint8List orientation, {
+    Uint8List? lineCells,
+  }) {
     final count = cellsX * cellsY;
     final level = Uint8List(count);
     final coverage = Float64List(count);
@@ -545,21 +690,34 @@ class PixelArtEngine {
         final own = alphaMax[c];
         if (own == 0 || alphaSum[c] < 0.9 * pixels[c] * own) continue;
         var neighbours = 0, similar = 0;
-        for (final (nx, ny) in [
-          (cx - 1, cy),
-          (cx + 1, cy),
-          (cx, cy - 1),
-          (cx, cy + 1),
-        ]) {
-          if (nx < 0 || ny < 0 || nx >= cellsX || ny >= cellsY) continue;
+        if (cx > 0) {
           neighbours++;
-          final a = alphaMax[ny * cellsX + nx];
-          if (_similar(a, own)) similar++;
+          if (_similar(alphaMax[c - 1], own)) similar++;
+        }
+        if (cx + 1 < cellsX) {
+          neighbours++;
+          if (_similar(alphaMax[c + 1], own)) similar++;
+        }
+        if (cy > 0) {
+          neighbours++;
+          if (_similar(alphaMax[c - cellsX], own)) similar++;
+        }
+        if (cy + 1 < cellsY) {
+          neighbours++;
+          if (_similar(alphaMax[c + cellsX], own)) similar++;
         }
         even[c] = neighbours >= 2 && similar >= math.min(3, neighbours - 1);
       }
     }
 
+    // 描き直す線のドットは、その線で埋まったドット（線のインクを外した
+    // 残りで測ると空に近く、線の横に残った縁のわずかなインクが線の頂として
+    // 残り、線から1ドット飛び出した）。
+    if (lineCells != null) {
+      for (var c = 0; c < count; c++) {
+        if (lineCells[c] != 0) coverage[c] = 1;
+      }
+    }
     double cov(int x, int y) => x < 0 || y < 0 || x >= cellsX || y >= cellsY
         ? 0
         : coverage[y * cellsX + x];
@@ -798,18 +956,12 @@ class PixelArtEngine {
     int c,
   ) {
     final cx = c % cellsX, cy = c ~/ cellsX;
-    for (final (nx, ny) in [
-      (cx - 1, cy),
-      (cx + 1, cy),
-      (cx, cy - 1),
-      (cx, cy + 1),
-    ]) {
-      if (nx < 0 || ny < 0 || nx >= cellsX || ny >= cellsY) continue;
-      final n = ny * cellsX + nx;
-      if (colors[n] == null) continue;
-      if (_apart(labs, c, n) > _edge * _edge) return true;
-    }
-    return false;
+    bool edgeTo(int n) =>
+        colors[n] != null && _apart(labs, c, n) > _edge * _edge;
+    return (cx > 0 && edgeTo(c - 1)) ||
+        (cx + 1 < cellsX && edgeTo(c + 1)) ||
+        (cy > 0 && edgeTo(c - cellsX)) ||
+        (cy + 1 < cellsY && edgeTo(c + cellsX));
   }
 
   /// The colour of the side neighbour of dot [c] that is not itself on an
@@ -825,14 +977,22 @@ class PixelArtEngine {
     final cx = c % cellsX, cy = c ~/ cellsX;
     int? best;
     var bestDistance = double.infinity;
-    for (final (nx, ny) in [
-      (cx - 1, cy),
-      (cx + 1, cy),
-      (cx, cy - 1),
-      (cx, cy + 1),
-    ]) {
-      if (nx < 0 || ny < 0 || nx >= cellsX || ny >= cellsY) continue;
-      final n = ny * cellsX + nx;
+    for (var k = 0; k < 4; k++) {
+      final int n;
+      switch (k) {
+        case 0:
+          if (cx == 0) continue;
+          n = c - 1;
+        case 1:
+          if (cx + 1 >= cellsX) continue;
+          n = c + 1;
+        case 2:
+          if (cy == 0) continue;
+          n = c - cellsX;
+        default:
+          if (cy + 1 >= cellsY) continue;
+          n = c + cellsX;
+      }
       final other = colors[n];
       if (other == null || edge[n] != 0) continue;
       final d = _apart(labs, c, n);
@@ -873,6 +1033,8 @@ class PixelArtEngine {
     List<int> explicitPalette,
     List<int> countPalette,
   ) {
+    // 色を指定しない（元の色のまま）ときは、絵に無い中間の色を作らない。
+    if (mode == PixelColorMode.none) return null;
     final middle = _rgb(
       ((((a >> 16) & 0xff) + ((b >> 16) & 0xff)) / 2).round(),
       ((((a >> 8) & 0xff) + ((b >> 8) & 0xff)) / 2).round(),
@@ -888,7 +1050,7 @@ class PixelArtEngine {
       final candidate = _nearestColor(middle, explicitPalette);
       return candidate == a || candidate == b ? null : candidate;
     }
-    return middle;
+    return null;
   }
 
   /// The [requestedCount] colours that best stand for [colors] (one entry
@@ -1053,10 +1215,400 @@ class PixelArtEngine {
 
   static int _opaque(int rgb) => 0xff000000 | (rgb & 0xffffff);
 
+  /// ドットの画素の乗算済みの値と不透明度のばらつき（4つの値の分散の和）が
+  /// これ以下なら、ほとんど1色のドット（各値の差がおよそ2以下）。
+  static const double _evenSpread = 16;
+
   /// The 4 x 4 ordered-dithering pattern (Bayer): which of the 16 colours of
   /// a mix (darkest first) each dot of a 4 x 4 square shows, so every share
   /// of the mix is spread evenly over the square.
   static const _bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+}
+
+/// 1つのドットの地の画素（乗算前の色・細部の重み・不透明度）と、そこから
+/// ドットの色を決めるもの。
+///
+/// 色を混ぜた平均は、2つの面にまたがるドットで絵に無い中間の色になる
+/// （髪と紙の境目が灰色、髪と線の境目がくすんだ茶色）。そこで、ドットの
+/// 画素を色の近いまとまり（最大3つ）に分け、細部の重みの合計がいちばん
+/// 大きいまとまりの色（中央値に最も近い、実際にある画素の色）にする。
+/// 2つの面の間のアンチエイリアスの画素（2つのまとまりの色を結ぶ線の上の
+/// 色）は、自分のまとまりにせず近い方の面へ入れる。面の色がはっきり
+/// まとまっていない所（グラデーション・質感）は、今までどおり重み付きの
+/// 平均（に最も近い、実際にある画素の色）。色は、なるべく不透明な画素
+/// （不透明度が半分以上）から取る。
+class _CellPaint {
+  _CellPaint(int capacity)
+    : r = Float64List(capacity),
+      g = Float64List(capacity),
+      b = Float64List(capacity),
+      w = Float64List(capacity),
+      a = Uint8List(capacity),
+      _key = Int32List(capacity),
+      _runFirst = Int32List(capacity),
+      _runSlot = Int32List(capacity),
+      _runArea = Float64List(capacity),
+      _runShare = Float64List(capacity),
+      _runGroup = Uint8List(capacity),
+      _mask = _slotsFor(capacity) - 1 {
+    _slotKey = Int32List(_mask + 1)..fillRange(0, _mask + 1, -1);
+    _slotRun = Int32List(_mask + 1);
+  }
+
+  static int _slotsFor(int capacity) {
+    var n = 16;
+    while (n < capacity * 2) {
+      n <<= 1;
+    }
+    return n;
+  }
+
+  final Float64List r, g, b, w;
+  final Uint8List a;
+
+  /// 画素ごとの色（乗算済みの値と不透明度を各4段・16段ごとにまとめた）。
+  final Int32List _key;
+
+  /// 同じ色の画素のまとまり：最初の画素・表の場所・不透明度の合計・細部の
+  /// 重み・どの面のまとまりか。
+  final Int32List _runFirst, _runSlot;
+  final Float64List _runArea, _runShare;
+  final Uint8List _runGroup;
+
+  int _runs = 0;
+  final int _mask;
+  late final Int32List _slotKey, _slotRun;
+
+  int count = 0;
+
+  /// 前の画素と同じ色（[_key]）だった画素の数。
+  int _same = 0;
+
+  /// まとまりに分けない色の幅と、別の面とみなすまとまりどうしの色の差、
+  /// 隣のドットへ続く面とみなす色の差（RGBの距離）。
+  static const double _spread = 12, _apartAreas = 32, _sameArea = 20;
+
+  /// 面の色とみなす、まとまりの色からの距離（まとまりどうしの距離に
+  /// 対する割合）と、面の色でドットの半分以上が占められていること。
+  static const double _pureShare = 0.12, _pureEnough = 0.5;
+
+  /// 塗った面のドット：前の画素と同じ色の画素がこの割合以上。
+  static const double _flat = 0.2;
+
+  double _d2(int i, double x, double y, double z) {
+    final dr = r[i] - x, dg = g[i] - y, db = b[i] - z;
+    return dr * dr + dg * dg + db * db;
+  }
+
+  /// 細部の重みで平均した色が([mr], [mg], [mb])のドット[c]の色。[raw]は
+  /// ドットの（決め直す前の）色（[cellsX]×[cellsY]）。
+  int colour(
+    double mr,
+    double mg,
+    double mb,
+    List<int?> raw,
+    int cellsX,
+    int cellsY,
+    int c,
+  ) {
+    // 隣の画素どうしの色がほとんど違えば、面ではなく質感・ざらつき・
+    // グラデーション：平均に最も近い画素の色。
+    if (_same < _flat * count) return _nearest(mr, mg, mb);
+    // 平均からいちばん離れた画素から、どの画素も色の差が小さければ1つの面：
+    // 平均に最も近い画素の色（離れた画素が1つ見つかれば、そこで止める）。
+    var far = 0, best = -1.0;
+    for (var i = 0; i < count; i++) {
+      final d = _d2(i, mr, mg, mb);
+      if (d > best) {
+        best = d;
+        far = i;
+      }
+    }
+    final fr = r[far], fg = g[far], fb = b[far];
+    var oneArea = true;
+    for (var i = 0; i < count; i++) {
+      if (_d2(i, fr, fg, fb) > _spread * _spread) {
+        oneArea = false;
+        break;
+      }
+    }
+    if (oneArea) return _nearest(mr, mg, mb);
+    // 同じ色の画素をまとめる。広い3色でドットの半分に満たなければ、面では
+    // ない：平均。
+    final total = _distinct();
+    final runs = _runs;
+    var top1 = 0.0, top2 = 0.0, top3 = 0.0;
+    for (var k = 0; k < runs; k++) {
+      final v = _runArea[k];
+      if (v > top1) {
+        top3 = top2;
+        top2 = top1;
+        top1 = v;
+      } else if (v > top2) {
+        top3 = top2;
+        top2 = v;
+      } else if (v > top3) {
+        top3 = v;
+      }
+    }
+    if (top1 + top2 + top3 < _pureEnough * total) {
+      return _nearest(mr, mg, mb);
+    }
+    // まとまりの種は広い面の色：いちばん広い色、それから「広さ×ほかの種
+    // からの距離」が最も大きい色（アンチエイリアスの画素は1つずつ色が
+    // 違って狭いので、種にならない）。
+    var s1 = 0;
+    for (var k = 1; k < runs; k++) {
+      if (_runArea[k] > _runArea[s1]) s1 = k;
+    }
+    final s2 = _seed(s1, -1);
+    if (s2 < 0) return _nearest(mr, mg, mb);
+    final s3 = _seed(s1, s2);
+    final k = s3 < 0 ? 2 : 3;
+    final cr = _cr, cg = _cg, cb = _cb, ca = _ca;
+    for (var j = 0; j < k; j++) {
+      final i = _runFirst[j == 0 ? s1 : (j == 1 ? s2 : s3)];
+      cr[j] = r[i];
+      cg[j] = g[i];
+      cb[j] = b[i];
+    }
+    // 色ごとのまとまりを、近い種の面へ（不透明度で重み付けした色の平均で
+    // 1回だけ直す：種が広い面の色なので、ほぼ決まっている）。
+    _assign(k);
+    _centres(k);
+    _assign(k);
+    _centres(k);
+    final alive = _alive
+      ..[0] = ca[0] > 0
+      ..[1] = ca[1] > 0
+      ..[2] = k == 3 && ca[2] > 0;
+    // 2つの面の色を結ぶ線の上にあるまとまりは、その間のアンチエイリアス：
+    // 近い方の面へ入れる。
+    if (k == 3 && alive[0] && alive[1] && alive[2]) {
+      for (var j = 0; j < 3; j++) {
+        final aj = (j + 1) % 3, bj = (j + 2) % 3;
+        final ex = cr[bj] - cr[aj], ey = cg[bj] - cg[aj], ez = cb[bj] - cb[aj];
+        final length2 = ex * ex + ey * ey + ez * ez;
+        if (length2 < 1e-9) continue;
+        final t =
+            ((cr[j] - cr[aj]) * ex +
+                (cg[j] - cg[aj]) * ey +
+                (cb[j] - cb[aj]) * ez) /
+            length2;
+        if (t < 0.1 || t > 0.9) continue;
+        final ox = cr[aj] + ex * t - cr[j],
+            oy = cg[aj] + ey * t - cg[j],
+            oz = cb[aj] + ez * t - cb[j];
+        final off = math.sqrt(ox * ox + oy * oy + oz * oz);
+        if (off > math.max(8, 0.1 * math.sqrt(length2))) continue;
+        for (var q = 0; q < runs; q++) {
+          if (_runGroup[q] != j) continue;
+          final i = _runFirst[q];
+          _runGroup[q] =
+              _d2(i, cr[aj], cg[aj], cb[aj]) <= _d2(i, cr[bj], cg[bj], cb[bj])
+              ? aj
+              : bj;
+        }
+        alive[j] = false;
+        _centres(k);
+        break;
+      }
+    }
+    // まとまりの色が近い（同じ面の質感・グラデーション）なら平均。
+    var spanAll = 0.0;
+    for (var j = 0; j < k; j++) {
+      for (var l = j + 1; l < k; l++) {
+        if (!alive[j] || !alive[l]) continue;
+        final dx = cr[j] - cr[l], dy = cg[j] - cg[l], dz = cb[j] - cb[l];
+        spanAll = math.max(spanAll, math.sqrt(dx * dx + dy * dy + dz * dz));
+      }
+    }
+    if (spanAll < _apartAreas) return _nearest(mr, mg, mb);
+    // 面の色（まとまりの色の近く）がドットの半分以上を占めるときだけ、
+    // 面の色にする。
+    final near = math.max(_spread, _pureShare * spanAll);
+    var pure = 0.0;
+    final share = _share..fillRange(0, 3, 0);
+    for (var q = 0; q < runs; q++) {
+      final j = _runGroup[q], i = _runFirst[q];
+      share[j] += _runShare[q];
+      if (_d2(i, cr[j], cg[j], cb[j]) <= near * near) pure += _runArea[q];
+    }
+    if (pure < _pureEnough * total) return _nearest(mr, mg, mb);
+    // どのまとまりの色も隣のドットへ続く（隣のドットがほぼその色1色）なら、
+    // 大きな面どうしの境目や角：広い方の面（細部の重みで選ぶと、面の角が
+    // 1ドット外へ出た）。隣に無い色（目・口・ドットを通る線）があれば、
+    // 細部の重み（の2乗）の大きい方。
+    var continuing = true;
+    final cx = c % cellsX, cy = c ~/ cellsX;
+    for (var j = 0; j < k && continuing; j++) {
+      if (!alive[j]) continue;
+      var found = false;
+      for (var o = 0; o < 9 && !found; o++) {
+        final nx = cx + o % 3 - 1, ny = cy + o ~/ 3 - 1;
+        if (o == 4 || nx < 0 || ny < 0 || nx >= cellsX || ny >= cellsY) {
+          continue;
+        }
+        final colour = raw[ny * cellsX + nx];
+        if (colour == null) continue;
+        final dr = ((colour >> 16) & 0xff) - cr[j],
+            dg = ((colour >> 8) & 0xff) - cg[j],
+            db = (colour & 0xff) - cb[j];
+        if (dr * dr + dg * dg + db * db <= _sameArea * _sameArea) {
+          found = true;
+        }
+      }
+      continuing = found;
+    }
+    final score = continuing ? ca : share;
+    var pick = -1;
+    for (var j = 0; j < k; j++) {
+      if (!alive[j]) continue;
+      if (pick < 0 || score[j] > score[pick]) pick = j;
+    }
+    // その面の色：その面でいちばん広い色（なるべく不透明な画素の）。
+    var mode = -1, modeOpaque = false;
+    for (var q = 0; q < runs; q++) {
+      if (_runGroup[q] != pick) continue;
+      final opaque = a[_runFirst[q]] >= 128;
+      if (mode < 0 ||
+          (opaque && !modeOpaque) ||
+          (opaque == modeOpaque && _runArea[q] > _runArea[mode])) {
+        mode = q;
+        modeOpaque = opaque;
+      }
+    }
+    return _colourOf(_runFirst[mode]);
+  }
+
+  /// 種のまとまり[a1]（と[a2]）から色が離れたまとまりのうち、「広さ×種から
+  /// の距離」が最も大きいもの（無ければ-1）。
+  int _seed(int a1, int a2) {
+    var top = 0.0, at = -1;
+    final f1 = _runFirst[a1], f2 = a2 < 0 ? -1 : _runFirst[a2];
+    for (var k = 0; k < _runs; k++) {
+      final i = _runFirst[k];
+      var near = _d2(i, r[f1], g[f1], b[f1]);
+      if (f2 >= 0) near = math.min(near, _d2(i, r[f2], g[f2], b[f2]));
+      if (near <= _spread * _spread) continue;
+      final score = _runArea[k] * math.sqrt(near);
+      if (score > top) {
+        top = score;
+        at = k;
+      }
+    }
+    return at;
+  }
+
+  /// 同じ色の画素をまとめ（[_runs]個）、画素の不透明度の合計を返す。
+  double _distinct() {
+    final n = count, mask = _mask;
+    final keys = _slotKey, slotRun = _slotRun;
+    var runs = 0;
+    var total = 0.0;
+    for (var i = 0; i < n; i++) {
+      final key = _key[i];
+      var slot = (key * 0x9E3779B1) >> 7 & mask;
+      int run;
+      while (true) {
+        final k = keys[slot];
+        if (k == key) {
+          run = slotRun[slot];
+          break;
+        }
+        if (k < 0) {
+          keys[slot] = key;
+          run = slotRun[slot] = runs++;
+          _runSlot[run] = slot;
+          _runFirst[run] = i;
+          _runArea[run] = 0;
+          _runShare[run] = 0;
+          break;
+        }
+        slot = (slot + 1) & mask;
+      }
+      final t = a[i].toDouble();
+      _runArea[run] += t;
+      _runShare[run] += w[i] * w[i] / (t < 1 ? 1 : t);
+      total += t;
+    }
+    for (var k = 0; k < runs; k++) {
+      keys[_runSlot[k]] = -1;
+    }
+    _runs = runs;
+    return total;
+  }
+
+  /// 色ごとのまとまりを、近い面の色のまとまりへ。
+  void _assign(int k) {
+    final cr = _cr, cg = _cg, cb = _cb;
+    for (var q = 0; q < _runs; q++) {
+      final i = _runFirst[q];
+      var bestJ = 0, best = _d2(i, cr[0], cg[0], cb[0]);
+      for (var j = 1; j < k; j++) {
+        final d = _d2(i, cr[j], cg[j], cb[j]);
+        if (d < best) {
+          best = d;
+          bestJ = j;
+        }
+      }
+      _runGroup[q] = bestJ;
+    }
+  }
+
+  /// 面のまとまりごとの不透明度で重み付けした色の平均（[_cr]・[_cg]・
+  /// [_cb]）と不透明度の合計（[_ca]）。
+  void _centres(int k) {
+    final cr = _cr, cg = _cg, cb = _cb, ca = _ca;
+    final sr = _sr..fillRange(0, 3, 0),
+        sg = _sg..fillRange(0, 3, 0),
+        sb = _sb..fillRange(0, 3, 0);
+    ca.fillRange(0, 3, 0);
+    for (var q = 0; q < _runs; q++) {
+      final j = _runGroup[q], i = _runFirst[q], t = _runArea[q];
+      sr[j] += r[i] * t;
+      sg[j] += g[i] * t;
+      sb[j] += b[i] * t;
+      ca[j] += t;
+    }
+    for (var j = 0; j < k; j++) {
+      if (ca[j] == 0) continue;
+      cr[j] = sr[j] / ca[j];
+      cg[j] = sg[j] / ca[j];
+      cb[j] = sb[j] / ca[j];
+    }
+  }
+
+  final _cr = Float64List(3), _cg = Float64List(3), _cb = Float64List(3);
+  final _ca = Float64List(3), _share = Float64List(3);
+  final _sr = Float64List(3), _sg = Float64List(3), _sb = Float64List(3);
+  final _alive = List<bool>.filled(3, false);
+
+  int _colourOf(int i) =>
+      0xff000000 |
+      r[i].round().clamp(0, 255) << 16 |
+      g[i].round().clamp(0, 255) << 8 |
+      b[i].round().clamp(0, 255);
+
+  /// ([x], [y], [z])に最も近い、実際にある画素の色（なるべく不透明な
+  /// 画素から）。
+  int _nearest(double x, double y, double z) {
+    var pick = -1, best = double.infinity;
+    var faint = -1, faintBest = double.infinity;
+    for (var i = 0; i < count; i++) {
+      final d = _d2(i, x, y, z);
+      if (a[i] >= 128) {
+        if (d < best) {
+          best = d;
+          pick = i;
+        }
+      } else if (d < faintBest) {
+        faintBest = d;
+        faint = i;
+      }
+    }
+    return _colourOf(pick < 0 ? faint : pick);
+  }
 }
 
 /// For each colour, how 16 dots of a limited set of colours (up to three of
@@ -1121,6 +1673,22 @@ class _Ditherer {
     _toLinear((color >> 8) & 0xff),
     _toLinear(color & 0xff),
   );
+
+  /// [labOf]を[out]の[at]〜[at] + 2へ（同じ計算、配列を作らない）。
+  static void labInto(int color, Float64List out, int at) {
+    final r = _toLinear((color >> 16) & 0xff),
+        g = _toLinear((color >> 8) & 0xff),
+        b = _toLinear(color & 0xff);
+    final x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047;
+    final y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    final z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883;
+    final fx = x > 216 / 24389 ? _cubeRoot(x) : (24389 / 27 * x + 16) / 116;
+    final fy = y > 216 / 24389 ? _cubeRoot(y) : (24389 / 27 * y + 16) / 116;
+    final fz = z > 216 / 24389 ? _cubeRoot(z) : (24389 / 27 * z + 16) / 116;
+    out[at] = 116 * fy - 16;
+    out[at + 1] = 500 * (fx - fy);
+    out[at + 2] = 200 * (fy - fz);
+  }
 
   /// The colour of the set that looks nearest to [color].
   int nearest(int color) {

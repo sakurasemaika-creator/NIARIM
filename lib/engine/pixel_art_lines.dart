@@ -57,6 +57,10 @@ class PixelArtLines {
   /// これより薄いインクは線の一部として数えない（0〜255）。
   static const int _faint = 5;
 
+  /// 線が隣の行（列）へこの割合（ドット）より浅くしか入らずに戻るなら、
+  /// 前後と同じ行（列）にそろえる。
+  static const double _shallow = 0.25;
+
   /// 描き直す線の太さの上限（ドット）。これ以上の太さは塗りの面として扱う。
   static const double _maxDots = 2.5;
 
@@ -65,6 +69,17 @@ class PixelArtLines {
   /// 描くと、模様の濃淡が消えて塗りつぶしになる。2ドットおきの線や、
   /// 隣り合う2〜3本の線は描き直す）。
   static const double _crowded = 0.5;
+
+  /// min(255, d × 255 ÷ depth)（[depth] << 8 | [d]、depthは1以上）。
+  static final Uint8List _ratio = () {
+    final table = Uint8List(1 << 16);
+    for (var depth = 1; depth < 256; depth++) {
+      for (var d = 0; d < 256; d++) {
+        table[depth << 8 | d] = math.min(255, d * 255 ~/ depth);
+      }
+    }
+    return table;
+  }();
 
   /// 8近傍のずれ（上から時計回り）。
   static const _ring = [
@@ -94,10 +109,26 @@ class PixelArtLines {
     // 1ドットが4画素以上になるようにする。線の色は元の絵の芯の画素から取る。
     final scale = math.max(1, math.min(4, (size / 4).floor()));
     if (scale == 1) {
-      return _findAt(data, width, height, xs, ys, size, 1, data, width, height);
+      return _findAt(
+        data,
+        width,
+        height,
+        xs,
+        ys,
+        size,
+        1,
+        data,
+        width,
+        height,
+        null,
+      );
     }
     final sw = (width + scale - 1) ~/ scale, sh = (height + scale - 1) ~/ scale;
     final small = Uint8List(sw * sh * 4);
+    var all = 255;
+    for (var i = 3; i < data.length; i += 4) {
+      all &= data[i];
+    }
     for (var y = 0; y < sh; y++) {
       final y0 = y * scale, y1 = math.min(height, y0 + scale);
       for (var x = 0; x < sw; x++) {
@@ -131,6 +162,7 @@ class PixelArtLines {
       data,
       width,
       height,
+      all == 255,
     );
   }
 
@@ -148,34 +180,32 @@ class PixelArtLines {
     Uint8List full,
     int fullWidth,
     int fullHeight,
+    bool? fullOpaque,
   ) {
     final n = width * height;
     // 白い紙の上での明るさ（透明な所は白）と不透明度。
     final lum = Uint8List(n), alpha = Uint8List(n);
-    var opaque = true;
-    for (var p = 0; p < n; p++) {
-      final i = p * 4;
+    var all = 255;
+    for (var p = 0, i = 0; p < n; p++, i += 4) {
       final a = data[i + 3];
       alpha[p] = a;
-      if (a != 255) opaque = false;
+      all &= a;
       final over = 255 - a;
-      final r = math.min(255, data[i] + over);
-      final g = math.min(255, data[i + 1] + over);
-      final b = math.min(255, data[i + 2] + over);
+      var r = data[i] + over, g = data[i + 1] + over, b = data[i + 2] + over;
+      if (r > 255) r = 255;
+      if (g > 255) g = 255;
+      if (b > 255) b = 255;
       lum[p] = (r * 77 + g * 150 + b * 29) >> 8;
     }
+    final opaque = all == 255;
 
     // 細い形だけを取り出す（モルフォロジーのトップハット）。窓は描き直す
     // 太さの上限より少し広い正方形：それより細い暗い形は「閉じる」で消え、
     // 消えた分が線の暗さになる。
     final reach = (1.25 * size).ceil() + 1;
-    final closed = _square(
-      _square(lum, width, height, reach, max: true),
-      width,
-      height,
-      reach,
-      max: false,
-    );
+    final morph = _Morph(width, height, reach);
+    final closed = Uint8List(n);
+    morph.close(lum, closed);
     final dark = Uint8List(n);
     var strongest = 0;
     for (var p = 0; p < n; p++) {
@@ -185,20 +215,55 @@ class PixelArtLines {
     }
     Uint8List? opened, solid;
     var anyDark = strongest >= _minDark, anySolid = false;
+    // 不透明でない画素の外接矩形から2窓分より遠い所は、開いても255のまま
+    // （細い不透明な形は無い）：開くのは外接矩形を4窓分広げた範囲[rect]
+    // だけで、正しい値を使うのは2窓分広げた範囲[near]（その中の画素の窓は
+    // 絵の端か[rect]の中に収まる）。
+    late final _Rect rect, near;
+    late final _Morph local;
     if (!opaque) {
-      opened = _square(
-        _square(alpha, width, height, reach, max: false),
-        width,
-        height,
-        reach,
-        max: true,
-      );
-      solid = Uint8List(n);
-      for (var p = 0; p < n; p++) {
-        final d = alpha[p] - opened[p];
-        solid[p] = d;
-        if (d >= _minAlpha) anySolid = true;
+      var bx0 = width, by0 = height, bx1 = -1, by1 = -1;
+      for (var y = 0, row = 0; y < height; y++, row += width) {
+        var first = -1;
+        for (var x = 0; x < width; x++) {
+          if (alpha[row + x] != 255) {
+            first = x;
+            break;
+          }
+        }
+        if (first < 0) continue;
+        var last = first;
+        for (var x = width - 1; x > first; x--) {
+          if (alpha[row + x] != 255) {
+            last = x;
+            break;
+          }
+        }
+        if (first < bx0) bx0 = first;
+        if (last > bx1) bx1 = last;
+        if (y < by0) by0 = y;
+        by1 = y;
       }
+      rect = _Rect.around(bx0, by0, bx1, by1, 4 * reach, width, height);
+      near = _Rect.around(bx0, by0, bx1, by1, 2 * reach, width, height);
+      local = _Morph(rect.w, rect.h, reach);
+      final sub = rect.copy(alpha, width);
+      final subOpened = Uint8List(sub.length);
+      local.open(sub, subOpened);
+      opened = Uint8List(n)..fillRange(0, n, 255);
+      solid = Uint8List(n);
+      var most = 0;
+      for (var y = near.y0; y < near.y1; y++) {
+        final row = y * width, from = (y - rect.y0) * rect.w - rect.x0;
+        for (var x = near.x0; x < near.x1; x++) {
+          final o = subOpened[from + x];
+          opened[row + x] = o;
+          final d = alpha[row + x] - o;
+          solid[row + x] = d;
+          if (d > most) most = d;
+        }
+      }
+      anySolid = most >= _minAlpha;
     }
     if (!anyDark && !anySolid) return null;
 
@@ -206,48 +271,65 @@ class PixelArtLines {
     // いちばん暗い（不透明な）画素で、線の縁の画素は芯と地の間のどこに
     // あるかで測る（両側の地の明るさが違っても、半分かかった画素は半分）。
     final ink = Uint8List(n);
+    final core = Uint8List(n), coreOut = Uint8List(n);
     if (anyDark) {
-      final core = Uint8List(n);
       for (var p = 0; p < n; p++) {
         core[p] = dark[p] >= _minDark ? lum[p] : 255;
       }
-      final coreLum = _square(core, width, height, reach, max: false);
+      morph.filter(core, coreOut, max: false);
+      final ratio = _ratio;
       for (var p = 0; p < n; p++) {
         final d = dark[p];
         if (d == 0) continue;
-        final depth = closed[p] - coreLum[p];
+        final depth = closed[p] - coreOut[p];
         if (depth < _minDark) continue;
-        ink[p] = math.min(255, d * 255 ~/ depth);
+        ink[p] = ratio[depth << 8 | d];
       }
     }
     if (anySolid) {
-      final core = Uint8List(n);
-      for (var p = 0; p < n; p++) {
-        core[p] = solid![p] >= _minAlpha ? alpha[p] : 0;
+      final solidOf = solid!, openedOf = opened!;
+      final sub = Uint8List(rect.w * rect.h), subOut = Uint8List(sub.length);
+      for (var y = rect.y0, k = 0; y < rect.y1; y++) {
+        for (var x = rect.x0, p = y * width + x; x < rect.x1; x++, p++, k++) {
+          sub[k] = solidOf[p] >= _minAlpha ? alpha[p] : 0;
+        }
       }
-      final coreAlpha = _square(core, width, height, reach, max: true);
-      for (var p = 0; p < n; p++) {
-        final d = solid![p];
-        if (d == 0) continue;
-        final depth = coreAlpha[p] - opened![p];
-        if (depth < _minAlpha) continue;
-        final v = math.min(255, d * 255 ~/ depth);
-        if (v > ink[p]) ink[p] = v;
+      local.filter(sub, subOut, max: true);
+      for (var y = near.y0; y < near.y1; y++) {
+        final row = y * width, from = (y - rect.y0) * rect.w - rect.x0;
+        for (var x = near.x0; x < near.x1; x++) {
+          final p = row + x;
+          final d = solidOf[p];
+          if (d == 0) continue;
+          final depth = subOut[from + x] - openedOf[p];
+          if (depth < _minAlpha) continue;
+          final v = _ratio[depth << 8 | d];
+          if (v > ink[p]) ink[p] = v;
+        }
       }
     }
 
     // 線の形（インクが半分以上）の範囲。
     var mx0 = width, my0 = height, mx1 = -1, my1 = -1;
-    for (var y = 0; y < height; y++) {
+    var count = 0;
+    for (var y = 0, row = 0; y < height; y++, row += width) {
+      var first = -1, last = -1;
       for (var x = 0; x < width; x++) {
-        if (ink[y * width + x] < 128) continue;
-        if (x < mx0) mx0 = x;
-        if (x > mx1) mx1 = x;
-        if (y < my0) my0 = y;
-        if (y > my1) my1 = y;
+        if (ink[row + x] >= 128) {
+          if (first < 0) first = x;
+          last = x;
+          count++;
+        }
       }
+      if (first < 0) continue;
+      if (first < mx0) mx0 = first;
+      if (last > mx1) mx1 = last;
+      if (y < my0) my0 = y;
+      my1 = y;
     }
     if (mx1 < 0) return null;
+    // 線の形が絵の4分の1を超えるなら線画ではない（細かい模様・ざらつき）。
+    if (count * 4 > n) return null;
 
     final analysis = _Analysis(
       data: data,
@@ -269,163 +351,249 @@ class PixelArtLines {
       full: full,
       fullWidth: fullWidth,
       fullHeight: fullHeight,
+      fullOpaque: fullOpaque ?? opaque,
     );
     return analysis.run();
   }
+}
 
-  /// [src]の各画素を、半径[r]の正方形の窓の中の最大（[max]）か最小にした
-  /// もの（縦横に分け、それぞれvan Herk/Gil-Wermanの方法で、窓の大きさに
-  /// よらず1画素あたり定数の手間。どちらも行の順に読む）。最小は値を
-  /// 反転して最大で求める。
-  static Uint8List _square(
-    Uint8List src,
-    int w,
-    int h,
-    int r, {
-    required bool max,
-  }) {
-    final n = src.length;
-    final input = max ? src : Uint8List(n);
-    if (!max) {
-      for (var i = 0; i < n; i++) {
-        input[i] = 255 - src[i];
-      }
-    }
-    final out = _squareMax(input, w, h, r);
-    if (!max) {
-      for (var i = 0; i < n; i++) {
-        out[i] = 255 - out[i];
-      }
+/// 絵の中の矩形（[x0], [y0]を含み[x1], [y1]を含まない）。
+class _Rect {
+  _Rect(this.x0, this.y0, this.x1, this.y1);
+
+  /// 画素[x0]〜[x1]、[y0]〜[y1]（含む）を[margin]だけ広げ、絵（[width]×
+  /// [height]）の中に収めたもの。
+  factory _Rect.around(
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    int margin,
+    int width,
+    int height,
+  ) => _Rect(
+    math.max(0, x0 - margin),
+    math.max(0, y0 - margin),
+    math.min(width, x1 + margin + 1),
+    math.min(height, y1 + margin + 1),
+  );
+
+  final int x0, y0, x1, y1;
+  int get w => x1 - x0;
+  int get h => y1 - y0;
+
+  /// 幅[width]の絵[src]から、この矩形の画素を詰めて写したもの。
+  Uint8List copy(Uint8List src, int width) {
+    final out = Uint8List(w * h);
+    for (var y = y0; y < y1; y++) {
+      out.setRange((y - y0) * w, (y - y0 + 1) * w, src, y * width + x0);
     }
     return out;
   }
+}
 
-  static Uint8List _squareMax(Uint8List src, int w, int h, int r) {
+/// 正方形の窓（半径[r]、絵の端で切れる）の中の最大・最小（縦横に分け、
+/// それぞれvan Herk/Gil-Wermanの方法：窓の大きさによらず1画素あたり定数の
+/// 手間）。作業用の配列は使い回す。
+class _Morph {
+  _Morph(this.w, this.h, this.r)
+    : _a = Uint8List(w * h),
+      _f = Uint8List(w * h),
+      _g = Uint8List(w * h),
+      _rf = Uint8List(w),
+      _rg = Uint8List(w);
+
+  final int w, h, r;
+  final Uint8List _a, _f, _g, _rf, _rg;
+
+  /// 閉じる（最大の後に最小）。
+  void close(Uint8List src, Uint8List out) {
+    _across(src, _a, true);
+    _down(_a, out, true);
+    _across(out, _a, false);
+    _down(_a, out, false);
+  }
+
+  /// 開く（最小の後に最大）。
+  void open(Uint8List src, Uint8List out) {
+    _across(src, _a, false);
+    _down(_a, out, false);
+    _across(out, _a, true);
+    _down(_a, out, true);
+  }
+
+  void filter(Uint8List src, Uint8List out, {required bool max}) {
+    _across(src, _a, max);
+    _down(_a, out, max);
+  }
+
+  /// 横：行ごとに、ブロック（k画素）の始めからの累積[_f]と終わりからの
+  /// 累積[_g]。窓[x-r, x+r]は、始めで切れた窓はブロック0の始めからの累積、
+  /// それ以外は隣り合う2つのブロックにまたがる（終わりで切れた窓が最後の
+  /// ブロックの中だけなら終わりからの累積だけ）。
+  void _across(Uint8List src, Uint8List dst, bool max) {
+    final w = this.w, h = this.h, r = this.r;
     final k = 2 * r + 1;
-    final across = Uint8List(src.length);
-    // 横：行ごとに、ブロック（k画素）の始めからの累積と終わりからの累積。
-    final forward = Uint8List(w), backward = Uint8List(w);
-    for (var y = 0; y < h; y++) {
-      final row = y * w;
-      var at = 0;
-      var f = 0;
-      for (var x = 0; x < w; x++) {
-        final v = src[row + x];
-        if (at == 0) {
-          f = v;
-        } else if (v > f) {
-          f = v;
-        }
-        forward[x] = f;
-        if (++at == k) at = 0;
-      }
-      var b = 0;
-      for (var x = w - 1; x >= 0; x--) {
-        final v = src[row + x];
-        if (x % k == k - 1 || x == w - 1) {
-          b = v;
-        } else if (v > b) {
-          b = v;
-        }
-        backward[x] = b;
-      }
-      // 窓[x-r, x+r]：始めで切れた窓はブロックの始めからの累積、終わりで
-      // 切れた窓は終わりまでの累積、それ以外は隣り合う2つのブロックにまたがる。
-      for (var x = 0; x < w; x++) {
-        final lo = x - r, hi = x + r;
-        int v;
-        if (lo <= 0) {
-          v = forward[hi < w ? hi : w - 1];
-          if (hi >= k) {
-            final c = backward[0];
-            if (c > v) v = c;
+    final f = _rf, g = _rg;
+    final lastStart = (w - 1) ~/ k * k;
+    final left = math.min(r, w - 1);
+    // 終わりで切れない最後のx。
+    final interiorEnd = w - 1 - r;
+    for (var y = 0, row = 0; y < h; y++, row += w) {
+      for (var b0 = 0; b0 < w; b0 += k) {
+        final b1 = b0 + k < w ? b0 + k : w;
+        var m = src[row + b0];
+        f[b0] = m;
+        var n = src[row + b1 - 1];
+        g[b1 - 1] = n;
+        if (max) {
+          for (var x = b0 + 1; x < b1; x++) {
+            final v = src[row + x];
+            final d = v - m;
+            m = v - (d & (d >> 63));
+            f[x] = m;
           }
-        } else if (hi >= w - 1) {
-          v = backward[lo];
-          if ((w - 1) ~/ k != lo ~/ k) {
-            final c = forward[w - 1];
-            if (c > v) v = c;
+          for (var x = b1 - 2; x >= b0; x--) {
+            final v = src[row + x];
+            final d = v - n;
+            n = v - (d & (d >> 63));
+            g[x] = n;
           }
-        } else if (lo % k == 0) {
-          v = forward[hi];
         } else {
-          final c = backward[lo];
-          v = forward[hi];
-          if (c > v) v = c;
-        }
-        across[row + x] = v;
-      }
-    }
-    // 縦：同じことを行ごとにまとめて。
-    final down = Uint8List(src.length), up = Uint8List(src.length);
-    for (var y = 0; y < h; y++) {
-      final row = y * w;
-      if (y % k == 0) {
-        for (var x = 0; x < w; x++) {
-          down[row + x] = across[row + x];
-        }
-      } else {
-        final above = row - w;
-        for (var x = 0; x < w; x++) {
-          final v = across[row + x], f = down[above + x];
-          down[row + x] = v > f ? v : f;
-        }
-      }
-    }
-    for (var y = h - 1; y >= 0; y--) {
-      final row = y * w;
-      if (y % k == k - 1 || y == h - 1) {
-        for (var x = 0; x < w; x++) {
-          up[row + x] = across[row + x];
-        }
-      } else {
-        final below = row + w;
-        for (var x = 0; x < w; x++) {
-          final v = across[row + x], b = up[below + x];
-          up[row + x] = v > b ? v : b;
-        }
-      }
-    }
-    final out = Uint8List(src.length);
-    for (var y = 0; y < h; y++) {
-      final lo = y - r, hi = y + r;
-      final row = y * w;
-      if (lo <= 0) {
-        final from = (hi < h ? hi : h - 1) * w;
-        final split = hi >= k;
-        for (var x = 0; x < w; x++) {
-          var v = down[from + x];
-          if (split) {
-            final c = up[x];
-            if (c > v) v = c;
+          for (var x = b0 + 1; x < b1; x++) {
+            final v = src[row + x];
+            final d = v - m;
+            m = m + (d & (d >> 63));
+            f[x] = m;
           }
-          out[row + x] = v;
-        }
-      } else if (hi >= h - 1) {
-        final from = lo * w, last = (h - 1) * w;
-        final split = (h - 1) ~/ k != lo ~/ k;
-        for (var x = 0; x < w; x++) {
-          var v = up[from + x];
-          if (split) {
-            final c = down[last + x];
-            if (c > v) v = c;
+          for (var x = b1 - 2; x >= b0; x--) {
+            final v = src[row + x];
+            final d = v - n;
+            n = n + (d & (d >> 63));
+            g[x] = n;
           }
-          out[row + x] = v;
         }
-      } else if (lo % k == 0) {
-        final from = hi * w;
-        for (var x = 0; x < w; x++) {
-          out[row + x] = down[from + x];
+      }
+      for (var x = 0; x <= left; x++) {
+        dst[row + x] = f[x + r < w ? x + r : w - 1];
+      }
+      if (max) {
+        for (var x = left + 1; x <= interiorEnd; x++) {
+          final a = g[x - r], b = f[x + r];
+          final d = a - b;
+          dst[row + x] = a - (d & (d >> 63));
         }
       } else {
-        final a = lo * w, b = hi * w;
-        for (var x = 0; x < w; x++) {
-          final p = up[a + x], q = down[b + x];
-          out[row + x] = p > q ? p : q;
+        for (var x = left + 1; x <= interiorEnd; x++) {
+          final a = g[x - r], b = f[x + r];
+          final d = a - b;
+          dst[row + x] = b + (d & (d >> 63));
+        }
+      }
+      final last = f[w - 1];
+      for (var x = math.max(left + 1, interiorEnd + 1); x < w; x++) {
+        final lo = x - r;
+        var v = g[lo];
+        if (lo < lastStart && (max ? last > v : last < v)) v = last;
+        dst[row + x] = v;
+      }
+    }
+  }
+
+  /// 縦：同じことを行ごとにまとめて。
+  void _down(Uint8List src, Uint8List dst, bool max) {
+    final w = this.w, h = this.h, r = this.r;
+    final k = 2 * r + 1;
+    final f = _f, g = _g;
+    for (var b0 = 0; b0 < h; b0 += k) {
+      final b1 = b0 + k < h ? b0 + k : h;
+      final first = b0 * w;
+      for (var x = 0; x < w; x++) {
+        f[first + x] = src[first + x];
+      }
+      for (var y = b0 + 1; y < b1; y++) {
+        final row = y * w, above = row - w;
+        if (max) {
+          for (var x = 0; x < w; x++) {
+            final v = src[row + x], m = f[above + x];
+            final d = v - m;
+            f[row + x] = v - (d & (d >> 63));
+          }
+        } else {
+          for (var x = 0; x < w; x++) {
+            final v = src[row + x], m = f[above + x];
+            final d = v - m;
+            f[row + x] = m + (d & (d >> 63));
+          }
+        }
+      }
+      final end = (b1 - 1) * w;
+      for (var x = 0; x < w; x++) {
+        g[end + x] = src[end + x];
+      }
+      for (var y = b1 - 2; y >= b0; y--) {
+        final row = y * w, below = row + w;
+        if (max) {
+          for (var x = 0; x < w; x++) {
+            final v = src[row + x], m = g[below + x];
+            final d = v - m;
+            g[row + x] = v - (d & (d >> 63));
+          }
+        } else {
+          for (var x = 0; x < w; x++) {
+            final v = src[row + x], m = g[below + x];
+            final d = v - m;
+            g[row + x] = m + (d & (d >> 63));
+          }
         }
       }
     }
-    return out;
+    final lastStart = (h - 1) ~/ k * k;
+    final top = math.min(r, h - 1);
+    final interiorEnd = h - 1 - r;
+    for (var y = 0; y <= top; y++) {
+      final from = (y + r < h ? y + r : h - 1) * w, row = y * w;
+      for (var x = 0; x < w; x++) {
+        dst[row + x] = f[from + x];
+      }
+    }
+    for (var y = top + 1; y <= interiorEnd; y++) {
+      final a = (y - r) * w, b = (y + r) * w, row = y * w;
+      if (max) {
+        for (var x = 0; x < w; x++) {
+          final p = g[a + x], q = f[b + x];
+          final d = p - q;
+          dst[row + x] = p - (d & (d >> 63));
+        }
+      } else {
+        for (var x = 0; x < w; x++) {
+          final p = g[a + x], q = f[b + x];
+          final d = p - q;
+          dst[row + x] = q + (d & (d >> 63));
+        }
+      }
+    }
+    final lastRow = (h - 1) * w;
+    for (var y = math.max(top + 1, interiorEnd + 1); y < h; y++) {
+      final lo = y - r, a = lo * w, row = y * w;
+      if (lo >= lastStart) {
+        for (var x = 0; x < w; x++) {
+          dst[row + x] = g[a + x];
+        }
+      } else if (max) {
+        for (var x = 0; x < w; x++) {
+          final p = g[a + x], q = f[lastRow + x];
+          final d = p - q;
+          dst[row + x] = p - (d & (d >> 63));
+        }
+      } else {
+        for (var x = 0; x < w; x++) {
+          final p = g[a + x], q = f[lastRow + x];
+          final d = p - q;
+          dst[row + x] = q + (d & (d >> 63));
+        }
+      }
+    }
   }
 }
 
@@ -486,6 +654,7 @@ class _Analysis {
     required this.full,
     required this.fullWidth,
     required this.fullHeight,
+    required this.fullOpaque,
   }) : x0 = box.$1,
        y0 = box.$2,
        lw = box.$3 - box.$1 + 3,
@@ -505,6 +674,21 @@ class _Analysis {
   final Uint8List full;
   final int fullWidth, fullHeight;
 
+  /// 元の絵がどこも不透明か。
+  final bool fullOpaque;
+
+  /// 元の絵の列（行）ごとの、それを含むドットの列（行）。
+  late final Int32List cellOfX = _cellsOf(xs, fullWidth);
+  late final Int32List cellOfY = _cellsOf(ys, fullHeight);
+
+  static Int32List _cellsOf(List<int> edges, int length) {
+    final out = Int32List(length);
+    for (var c = 0; c + 1 < edges.length; c++) {
+      out.fillRange(edges[c], edges[c + 1], c);
+    }
+    return out;
+  }
+
   /// 細線化する範囲（線の形の外接矩形に1画素の余白）。ローカルの位置
   /// (lx, ly) は元の画素 (x0 + lx - 1, y0 + ly - 1)。
   final int x0, y0, lw, lh;
@@ -512,41 +696,51 @@ class _Analysis {
   int get cellsX => xs.length - 1;
   int get cellsY => ys.length - 1;
 
-  late final List<int> _offsets = [
+  late final Int32List _offsets = Int32List.fromList([
     for (final (dx, dy) in PixelArtLines._ring) dy * lw + dx,
-  ];
+  ]);
 
   int _global(int li) => (y0 + li ~/ lw - 1) * width + x0 + li % lw - 1;
 
-  Uint8List? _degree, _visited;
+  Uint8List? _degree, _visited, _flags, _masks;
+
+  /// 細線化で、取り除いたときに周りが残っていなかった画素。
+  final _alone = <int>[];
   Int32List? _nodeOf;
 
   PixelArtLines? run() {
     // 線の形（インクが半分以上）。
     final shape = Uint8List(lw * lh);
-    final fore = <int>[];
+    var count = 0;
     for (var ly = 1; ly < lh - 1; ly++) {
-      for (var lx = 1; lx < lw - 1; lx++) {
-        final li = ly * lw + lx;
-        if (ink[_global(li)] >= 128) {
+      final from = ly * lw + 1, at = (y0 + ly - 1) * width + x0 - from;
+      for (var li = from; li < from + lw - 2; li++) {
+        if (ink[at + li] >= 128) {
           shape[li] = 1;
-          fore.add(li);
+          count++;
         }
       }
+    }
+    // 線の形の画素（細線化する画素の位置、上の行から順に）。
+    final fore = Int32List(count);
+    for (var li = 0, k = 0; k < count; li++) {
+      if (shape[li] != 0) fore[k++] = li;
     }
     // 線の形が絵の4分の1を超えるなら線画ではない（細かい模様・ざらつき）。
     if (fore.length * 4 > width * height) return null;
     final skeleton = Uint8List.fromList(shape);
     _thinZhangSuen(skeleton, fore);
     _thinGuoHall(skeleton, fore);
-    _keepVanishedDots(shape, skeleton, fore);
-    _removeSteps(skeleton, fore);
+    _keepVanishedDots(shape, skeleton);
+    // ここからは中心線の画素だけを見る（上の行から順）。
+    var live = _kept(fore, skeleton);
+    live = _removeSteps(skeleton, live);
 
     // 細線化で線の端・角に出る短いひげを、線の太さの半分ほどまで取り除く。
     var branches = <_Branch>[];
     late List<List<int>> nodes;
     for (var round = 0; round < 4; round++) {
-      final traced = _trace(skeleton, fore);
+      final traced = _trace(skeleton, live);
       branches = traced.branches;
       nodes = traced.nodes;
       if (round == 3) break;
@@ -569,13 +763,10 @@ class _Analysis {
         pruned = true;
       }
       if (!pruned) break;
-      _removeSteps(skeleton, fore);
+      live = _removeSteps(skeleton, _kept(live, skeleton));
     }
 
-    final skel = <int>[
-      for (final li in fore)
-        if (skeleton[li] != 0) li,
-    ];
+    final skel = _kept(live, skeleton);
     if (skel.isEmpty) return null;
     final index = Int32List(lw * lh)..fillRange(0, lw * lh, -1);
     for (var k = 0; k < skel.length; k++) {
@@ -854,77 +1045,112 @@ class _Analysis {
       }
     }
     var inked = Uint8List(width * height);
+    final ownerOf = slices.owner;
+    // 線として外す画素（この絵の画素）：中心線へ割り当てたインクと、
+    // 中心線の近く。
+    final here = Int32List(slices.pixels.length);
+    var hereCount = 0;
     for (final p in slices.pixels) {
-      if (owned[slices.owner[p]] != 0) inked[p] = 1;
+      if (owned[ownerOf[p] - 1] != 0) {
+        inked[p] = 1;
+        here[hereCount++] = p;
+      }
     }
     // 線の縁の画素は、線と隣の面の間の色でも、インクとして測れないことが
     // ある（塗りの面の縁を囲む線の、紙の側の縁）：描き直した線の中心線から
     // 太さの半分と1.5画素の内側も、線のインクとして外す。
-    _markFootprints(branches, inked);
+    final footprint = _markFootprints(branches, inked);
+    final cellOfX = this.cellOfX, cellOfY = this.cellOfY;
+    // 印の付いたドット。
+    final touched = Uint8List(cellCount);
     if (scale > 1) {
       // 縮めた絵の1画素は、元の絵のscale×scale画素。
       final marks = Uint8List(fullWidth * fullHeight);
-      for (var y = 0; y < fullHeight; y++) {
-        final from = (y ~/ scale) * width;
-        final row = y * fullWidth;
-        for (var x = 0; x < fullWidth; x++) {
-          marks[row + x] = inked[from + x ~/ scale];
+      void spread(int p) {
+        final ay = p ~/ width, ax = p - ay * width;
+        final left = ax * scale, top = ay * scale;
+        final right = math.min(left + scale, fullWidth);
+        final bottom = math.min(top + scale, fullHeight);
+        for (var y = top; y < bottom; y++) {
+          marks.fillRange(y * fullWidth + left, y * fullWidth + right, 1);
+        }
+        for (var cy = cellOfY[top]; cy <= cellOfY[bottom - 1]; cy++) {
+          for (var cx = cellOfX[left]; cx <= cellOfX[right - 1]; cx++) {
+            touched[cy * cellsX + cx] = 1;
+          }
         }
       }
+
+      for (var k = 0; k < hereCount; k++) {
+        spread(here[k]);
+      }
+      for (final p in footprint) {
+        spread(p);
+      }
       inked = marks;
+    } else {
+      for (var k = 0; k < hereCount; k++) {
+        final p = here[k];
+        final y = p ~/ width;
+        touched[cellOfY[y] * cellsX + cellOfX[p - y * width]] = 1;
+      }
+      for (final p in footprint) {
+        final y = p ~/ width;
+        touched[cellOfY[y] * cellsX + cellOfX[p - y * width]] = 1;
+      }
     }
     // 線を外したドットに、線の縁のごく薄い画素（透明なレイヤーの線の縁）が
     // 残ると、ほとんど透明なドットになる：線のインクがあったドットでは、
     // それも線のインクとして外す。
-    final cellOfX = Int32List(fullWidth), cellOfY = Int32List(fullHeight);
-    for (var c = 0; c < cellsX; c++) {
-      cellOfX.fillRange(xs[c], xs[c + 1], c);
-    }
-    for (var c = 0; c < cellsY; c++) {
-      cellOfY.fillRange(ys[c], ys[c + 1], c);
-    }
-    final touched = Uint8List(cellCount);
-    for (var y = 0; y < fullHeight; y++) {
-      final row = y * fullWidth, cy = cellOfY[y] * cellsX;
-      for (var x = 0; x < fullWidth; x++) {
-        if (inked[row + x] != 0) touched[cy + cellOfX[x]] = 1;
-      }
-    }
-    for (var y = 0; y < fullHeight; y++) {
-      final row = y * fullWidth, cy = cellOfY[y] * cellsX;
-      for (var x = 0; x < fullWidth; x++) {
-        final p = row + x;
-        final a = full[p * 4 + 3];
-        if (a != 0 && a <= 8 && touched[cy + cellOfX[x]] != 0) inked[p] = 1;
+    if (!fullOpaque) {
+      for (var c = 0; c < cellCount; c++) {
+        if (touched[c] == 0) continue;
+        final cx = c % cellsX, cy = c ~/ cellsX;
+        for (var y = ys[cy]; y < ys[cy + 1]; y++) {
+          for (
+            var x = xs[cx], p = y * fullWidth + x;
+            x < xs[cx + 1];
+            x++, p++
+          ) {
+            final a = full[p * 4 + 3];
+            if (a != 0 && a <= 8) inked[p] = 1;
+          }
+        }
       }
     }
     // ドットごとの、描き直した線のインクの量（縮めた絵の上で数える）。
     final cover = Float64List(cellCount);
-    final area = Float64List(cellCount);
+    final columns = Int32List(cellsX), rows = Int32List(cellsY);
+    for (var x = 0; x < width; x++) {
+      columns[cellOfX[math.min(fullWidth - 1, x * scale)]]++;
+    }
     for (var y = 0; y < height; y++) {
-      final cy = cellOfY[math.min(fullHeight - 1, y * scale)] * cellsX;
-      for (var x = 0; x < width; x++) {
-        final c = cy + cellOfX[math.min(fullWidth - 1, x * scale)];
-        area[c] += 255;
-        final p = y * width + x;
-        final s = slices.owner[p];
-        if (s >= 0 && owned[s] != 0) cover[c] += ink[p];
-      }
+      rows[cellOfY[math.min(fullHeight - 1, y * scale)]]++;
+    }
+    for (var k = 0; k < hereCount; k++) {
+      final p = here[k];
+      final y = p ~/ width, x = p - y * width;
+      final c =
+          cellOfY[math.min(fullHeight - 1, y * scale)] * cellsX +
+          cellOfX[math.min(fullWidth - 1, x * scale)];
+      cover[c] += ink[p];
     }
     for (var c = 0; c < cellCount; c++) {
-      if (area[c] > 0) cover[c] /= area[c];
+      final area = 255.0 * columns[c % cellsX] * rows[c ~/ cellsX];
+      if (area > 0) cover[c] /= area;
     }
     return PixelArtLines._(line, color, alphaOut, inked, cover);
   }
 
   /// 描き直す線の中心線から（太さの半分＋1.5画素）以内の画素に印を付ける
-  /// （中心線の点から、最も近い点の距離で広げる）。
-  void _markFootprints(List<_Branch> branches, Uint8List marks) {
+  /// （中心線の点から、最も近い点の距離で広げる）。印を付けた画素を返す。
+  Int32List _markFootprints(List<_Branch> branches, Uint8List marks) {
     var points = 0;
     for (final b in branches) {
       if (b.accepted) points += b.centre.length;
     }
-    if (points == 0) return;
+    if (points == 0) return Int32List(0);
+    final width = this.width, height = this.height;
     final seed = Int32List(width * height);
     final seedX = Float64List(points), seedY = Float64List(points);
     final seedR = Float64List(points);
@@ -953,10 +1179,13 @@ class _Analysis {
       final p = queue[head];
       final k = seed[p] - 1;
       final sx = seedX[k], sy = seedY[k], r2 = seedR[k];
-      final x = p % width, y = p ~/ width;
+      final y = p ~/ width, x = p - y * width;
+      final inside = x > 0 && y > 0 && x < width - 1 && y < height - 1;
       for (var j = 0; j < 8; j++) {
         final nx = x + _dx[j], ny = y + _dy[j];
-        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+        if (!inside && (nx < 0 || ny < 0 || nx >= width || ny >= height)) {
+          continue;
+        }
         final q = ny * width + nx;
         if (seed[q] != 0) continue;
         final ex = nx + 0.5 - sx, ey = ny + 0.5 - sy;
@@ -966,6 +1195,7 @@ class _Analysis {
         queue[tail++] = q;
       }
     }
+    return Int32List.sublistView(queue, 0, tail);
   }
 
   /// この絵の画素[p]に当たる元の絵の画素のうち、線の芯（いちばん暗い、
@@ -1072,12 +1302,26 @@ class _Analysis {
     final fx = x - 0.5, fy = y - 0.5;
     final px = fx.floor(), py = fy.floor();
     final tx = fx - px, ty = fy - py;
-    double at(int x, int y) => x < 0 || y < 0 || x >= width || y >= height
-        ? 0
-        : ink[y * width + x] * 1.0;
-    return (at(px, py) * (1 - tx) + at(px + 1, py) * tx) * (1 - ty) +
-        (at(px, py + 1) * (1 - tx) + at(px + 1, py + 1) * tx) * ty;
+    final w = width;
+    double a, b, c, d;
+    if (px >= 0 && py >= 0 && px + 1 < w && py + 1 < height) {
+      final ink = this.ink, i = py * w + px;
+      a = ink[i] * 1.0;
+      b = ink[i + 1] * 1.0;
+      c = ink[i + w] * 1.0;
+      d = ink[i + w + 1] * 1.0;
+    } else {
+      a = _inkPixel(px, py);
+      b = _inkPixel(px + 1, py);
+      c = _inkPixel(px, py + 1);
+      d = _inkPixel(px + 1, py + 1);
+    }
+    return (a * (1 - tx) + b * tx) * (1 - ty) + (c * (1 - tx) + d * tx) * ty;
   }
+
+  double _inkPixel(int x, int y) => x < 0 || y < 0 || x >= width || y >= height
+      ? 0
+      : ink[y * width + x] * 1.0;
 
   /// 位置(x, y)を通る、向き(nx, ny)の線の断面：インクの重心までのずれ、
   /// 断面の幅（インクの合計）、いちばん濃い所の画素。隣の線へ入る手前
@@ -1139,11 +1383,14 @@ class _Analysis {
         cores.add(across.core);
         continue;
       }
-      int at(int j) => b.closed
-          ? pixels[(j % count + count) % count]
-          : pixels[j.clamp(0, count - 1)];
-      final dx = _x(at(i + 4)) - _x(at(i - 4));
-      final dy = _y(at(i + 4)) - _y(at(i - 4));
+      final ahead = b.closed
+          ? pixels[((i + 4) % count + count) % count]
+          : pixels[(i + 4).clamp(0, count - 1)];
+      final behind = b.closed
+          ? pixels[((i - 4) % count + count) % count]
+          : pixels[(i - 4).clamp(0, count - 1)];
+      final dx = _x(ahead) - _x(behind);
+      final dy = _y(ahead) - _y(behind);
       final length = math.sqrt(dx * dx + dy * dy);
       if (length < 1e-6) {
         centres.add((x, y));
@@ -1175,41 +1422,36 @@ class _Analysis {
     // 線の芯：芯の画素のうち、はっきりしたもの（薄い線は画素の位置で
     // 芯の濃さが変わるので、濃い側の1割の所）。
     int strength(int p) => math.max(dark[p], solid?[p] ?? 0);
-    final order = List<int>.generate(count, (i) => i)
-      ..sort((a, c) {
-        final ta = strength(cores[a]), tc = strength(cores[c]);
-        return ta != tc ? ta.compareTo(tc) : a.compareTo(c);
-      });
-    final core = cores[order[((count - 1) * 0.9).floor()]];
+    // 芯の強さ（0〜255）の順、同じなら並びの順で、((count - 1) × 0.9)番目。
+    final strengths = Uint8List(count);
+    final histogram = Int32List(256);
+    for (var i = 0; i < count; i++) {
+      final v = strength(cores[i]);
+      strengths[i] = v;
+      histogram[v]++;
+    }
+    var rank = ((count - 1) * 0.9).floor();
+    var level = 0;
+    while (rank >= histogram[level]) {
+      rank -= histogram[level++];
+    }
+    var pickAt = 0;
+    for (var i = 0; i < count; i++) {
+      if (strengths[i] != level) continue;
+      if (rank-- == 0) {
+        pickAt = i;
+        break;
+      }
+    }
+    final core = cores[pickAt];
     final darkLine = dark[core] >= (solid?[core] ?? 0);
 
     // 線とほぼ同じ暗さ（不透明さ）の塗りの面に触れる線は、塗った形の一部
     // （星やはねの先、形の角、形どうしをつなぐ細い部分、同じ色の塗りへ続く
     // 線）：描き直すと形の輪郭が変わり、面とのつなぎ目がずれるので、
     // 今まで通りのドットにする。
-    bool body(double x, double y) {
-      final px = x.floor(), py = y.floor();
-      if (px < 0 || py < 0 || px >= width || py >= height) return false;
-      final q = py * width + px;
-      // 線のインクとして測れない（細い形ではない）所で、その場所の地と線の
-      // 差に比べて線にごく近い暗さ（不透明さ）。
-      if (ink[q] >= 64) return false;
-      if (darkLine) {
-        return (lum[q] - lum[core]) * 4 <=
-            math.max(closed[q] - lum[core], PixelArtLines._minDark);
-      }
-      return (alpha[core] - alpha[q]) * 4 <=
-          math.max(alpha[core] - opened![q], PixelArtLines._minAlpha);
-    }
-
-    bool touches(double x, double y, double radius) {
-      for (var k = 0; k < 8; k++) {
-        if (body(x + _around8x[k] * radius, y + _around8y[k] * radius)) {
-          return true;
-        }
-      }
-      return false;
-    }
+    bool touches(double x, double y, double radius) =>
+        _touches(x, y, radius, darkLine, core);
 
     for (var i = 0; i < count; i++) {
       final (cx, cy) = centres[i];
@@ -1368,6 +1610,37 @@ class _Analysis {
     }
     if (tried == 0 || passed * 2 < tried) return;
     b.accepted = true;
+  }
+
+  /// 位置(x, y)が、芯の画素[core]の線とほぼ同じ暗さ（不透明さ）の塗りの面か：
+  /// 線のインクとして測れない（細い形ではない）所で、その場所の地と線の
+  /// 差に比べて線にごく近い暗さ（不透明さ）。
+  bool _body(double x, double y, bool darkLine, int core) {
+    final px = x.floor(), py = y.floor();
+    if (px < 0 || py < 0 || px >= width || py >= height) return false;
+    final q = py * width + px;
+    if (ink[q] >= 64) return false;
+    if (darkLine) {
+      final l = lum[core];
+      return (lum[q] - l) * 4 <=
+          math.max(closed[q] - l, PixelArtLines._minDark);
+    }
+    final a = alpha[core];
+    return (a - alpha[q]) * 4 <=
+        math.max(a - opened![q], PixelArtLines._minAlpha);
+  }
+
+  /// (x, y)から8方向へ[radius]の所のどれかが[_body]か。
+  bool _touches(double x, double y, double radius, bool darkLine, int core) {
+    const c = 0.7071067811865476;
+    return _body(x + 1.0 * radius, y + 0.0 * radius, darkLine, core) ||
+        _body(x + c * radius, y + c * radius, darkLine, core) ||
+        _body(x + 0.0 * radius, y + 1.0 * radius, darkLine, core) ||
+        _body(x + -c * radius, y + c * radius, darkLine, core) ||
+        _body(x + -1.0 * radius, y + 0.0 * radius, darkLine, core) ||
+        _body(x + -c * radius, y + -c * radius, darkLine, core) ||
+        _body(x + 0.0 * radius, y + -1.0 * radius, darkLine, core) ||
+        _body(x + c * radius, y + -c * radius, darkLine, core);
   }
 
   /// [b]の中心線を、太さ[dots]ドットで描くときの両端にそろえたもの。
@@ -1593,8 +1866,8 @@ class _Analysis {
       // ごく小さな揺れで境目の両側へ行き来しない。
       final fx = (x * scale * 16).round() / 16;
       final fy = (y * scale * 16).round() / 16;
-      final cx = _cellAt(fx, xs, fullWidth, even);
-      final cy = _cellAt(fy, ys, fullHeight, even);
+      final cx = _cellAt(fx, xs, cellOfX, even);
+      final cy = _cellAt(fy, ys, cellOfY, even);
       if (runs.isNotEmpty && runs.last.x == cx && runs.last.y == cy) {
         final run = runs.last;
         run.count++;
@@ -1676,7 +1949,27 @@ class _Analysis {
         runs.removeAt(0);
       }
     }
-    _flattenBumps(runs, b.closed, size / 2);
+    // 境目を少しだけ越えて戻る所の深さ（元の絵の画素）：その間の点が、
+    // 前後のドットの行（列）の境目から、隣の行（列）へ入った最大の距離。
+    double depth(_Run bump, _Run from, bool alongY) {
+      if (even || bump.first > bump.last) return double.infinity;
+      final edges = alongY ? ys : xs;
+      final into = alongY ? bump.y : bump.x, base = alongY ? from.y : from.x;
+      final edge = into < base ? edges[base] : edges[into];
+      var most = 0.0;
+      for (var i = bump.first; i <= bump.last; i++) {
+        final v =
+            ((alongY ? path[i].$2 : path[i].$1) * scale * 16).round() / 16;
+        most = math.max(most, into < base ? edge - v : v - edge);
+      }
+      return most;
+    }
+
+    _flattenBumps(runs, b.closed, size / 2, (bump, from, alongY) {
+      final edges = alongY ? ys : xs, at = alongY ? from.y : from.x;
+      final dot = edges[at + 1] - edges[at];
+      return depth(bump, from, alongY) < PixelArtLines._shallow * dot;
+    });
     _pixelPerfect(runs, b.closed, even ? cellsX + 1 : cellsX);
 
     final cells = <int>[];
@@ -1702,32 +1995,36 @@ class _Analysis {
   }
 
   /// 位置[v]（画素の座標）を含むドット。[vertex]なら最も近い格子の線。
-  static int _cellAt(double v, List<int> edges, int length, bool vertex) {
-    final px = v.floor().clamp(0, length - 1);
-    // edges は単調増加：二分探索で px を含むドットを探す。
-    var lo = 0, hi = edges.length - 2;
-    while (lo < hi) {
-      final mid = (lo + hi + 1) >> 1;
-      if (edges[mid] <= px) {
-        lo = mid;
-      } else {
-        hi = mid - 1;
-      }
-    }
+  static int _cellAt(double v, List<int> edges, Int32List cellOf, bool vertex) {
+    final px = v.floor().clamp(0, cellOf.length - 1);
+    final lo = cellOf[px];
     if (!vertex) return lo;
     return v * 2 >= edges[lo] + edges[lo + 1] ? lo + 1 : lo;
   }
 
   /// 線が隣の行（列）へ半ドットも入らずにすぐ戻る所（境目の近くを通る
   /// 線の小さな揺れ）を、前後と同じ行（列）にそろえる。
-  static void _flattenBumps(List<_Run> runs, bool closed, double enough) {
+  static void _flattenBumps(
+    List<_Run> runs,
+    bool closed,
+    double enough,
+    bool Function(_Run bump, _Run from, bool alongY) shallow,
+  ) {
     final n = runs.length;
     if (n < 3) return;
     for (var i = 0; i < n; i++) {
       if (!closed && (i == 0 || i == n - 1)) continue;
       final a = runs[(i - 1 + n) % n], b = runs[i], c = runs[(i + 1) % n];
-      if (b.count >= enough || b.corner) continue;
-      if (a.y == c.y && b.y != a.y && (b.y - a.y).abs() == 1) {
+      if (b.corner) continue;
+      final rowBump = a.y == c.y && b.y != a.y && (b.y - a.y).abs() == 1;
+      final columnBump = a.x == c.x && b.x != a.x && (b.x - a.x).abs() == 1;
+      // 短いか、境目をほんの少し越えるだけ（線の中心が境目に沿って揺れる）。
+      if (b.count >= enough &&
+          !(rowBump && shallow(b, a, true)) &&
+          !(columnBump && shallow(b, a, false))) {
+        continue;
+      }
+      if (rowBump) {
         runs[i] = _Run(b.x, a.y, b.first)
           ..last = b.last
           ..count = b.count
@@ -1831,43 +2128,81 @@ class _Analysis {
   }
 
   /// Zhang-Suenの細線化（Lü-Wangの補正つき：斜めの線を端から食べない）。
-  void _thinZhangSuen(Uint8List img, List<int> fore) =>
+  void _thinZhangSuen(Uint8List img, Int32List fore) =>
       _thin(img, fore, _zhangSuen);
 
   /// Zhang-Suenが残す2画素の階段を1画素にする（Guo-Hallの細線化）。
-  void _thinGuoHall(Uint8List img, List<int> fore) =>
+  void _thinGuoHall(Uint8List img, Int32List fore) =>
       _thin(img, fore, _guoHall);
 
   /// 2つの段（[tables]の0と1）を、取り除く画素が無くなるまで交互に。
-  void _thin(Uint8List img, List<int> fore, List<Uint8List> tables) {
-    var live = [
-      for (final i in fore)
-        if (img[i] != 0) i,
-    ];
-    final remove = <int>[];
-    var changed = true;
-    while (changed) {
-      changed = false;
-      for (var pass = 0; pass < 2; pass++) {
-        final table = tables[pass];
-        remove.clear();
-        for (final i in live) {
-          if (img[i] == 0) continue;
-          if (table[_around(img, i)] != 0) remove.add(i);
-        }
-        if (remove.isNotEmpty) {
-          changed = true;
-          for (final i in remove) {
-            img[i] = 0;
-          }
-        }
+  /// 各段は、その段で前に確かめてから周りが変わった画素だけを確かめ直す
+  /// （周りが同じなら答えも同じ。段の中では取り除く画素を先にすべて
+  /// 決めてから取り除くので、確かめる順序によらない）。
+  void _thin(Uint8List img, Int32List fore, List<Uint8List> tables) {
+    final n = fore.length;
+    final lists = [Int32List(n), Int32List(n)];
+    final counts = [0, 0];
+    // 画素ごとに、段0（ビット1）・段1（ビット2）で確かめ直すか。
+    final flags = _flags ??= Uint8List(img.length);
+    // 画素ごとの周り8画素の並び（取り除くたびに隣の分を直す）。
+    final masks = _masks ??= Uint8List(img.length);
+    var live = 0;
+    for (var k = 0; k < n; k++) {
+      final i = fore[k];
+      if (img[i] == 0) {
+        flags[i] = 0;
+        continue;
       }
-      if (changed) {
-        live = [
-          for (final i in live)
-            if (img[i] != 0) i,
-        ];
+      flags[i] = 3;
+      masks[i] = _around(img, i);
+      lists[0][live] = i;
+      lists[1][live] = i;
+      live++;
+    }
+    counts[0] = counts[1] = live;
+    final remove = Int32List(n);
+    final o = _offsets;
+    var quiet = 0;
+    for (var pass = 0; quiet < 2; pass ^= 1) {
+      final table = tables[pass], list = lists[pass], bit = 1 << pass;
+      final total = counts[pass];
+      var removed = 0;
+      for (var k = 0; k < total; k++) {
+        final i = list[k];
+        flags[i] &= ~bit;
+        if (img[i] == 0) continue;
+        if (table[masks[i]] != 0) remove[removed++] = i;
       }
+      counts[pass] = 0;
+      if (removed == 0) {
+        quiet++;
+        continue;
+      }
+      quiet = 0;
+      for (var k = 0; k < removed; k++) {
+        img[remove[k]] = 0;
+      }
+      final list0 = lists[0], list1 = lists[1];
+      var n0 = counts[0], n1 = counts[1];
+      for (var k = 0; k < removed; k++) {
+        final i = remove[k];
+        var alive = 0;
+        for (var j = 0; j < 8; j++) {
+          final q = i + o[j];
+          if (img[q] == 0) continue;
+          alive++;
+          masks[q] &= ~(1 << ((j + 4) & 7));
+          final f = flags[q];
+          if (f & 1 == 0) list0[n0++] = q;
+          if (f & 2 == 0) list1[n1++] = q;
+          flags[q] = 3;
+        }
+        // 周りがすべて消えた画素：形がまるごと消えたかもしれない。
+        if (alive == 0) _alone.add(i);
+      }
+      counts[0] = n0;
+      counts[1] = n1;
     }
   }
 
@@ -1926,30 +2261,59 @@ class _Analysis {
   ];
 
   /// 細線化で丸ごと消えた小さな点（目など）に、真ん中の1画素を戻す。
-  void _keepVanishedDots(Uint8List shape, Uint8List skeleton, List<int> fore) {
-    final seen = Uint8List(shape.length);
-    final queue = <int>[];
-    for (final start in fore) {
-      if (seen[start] != 0) continue;
+  /// 丸ごと消えた形の最後の画素は、取り除いたときに周りが残っていない
+  /// （[_alone]）：そこから中心線の画素を探し、無ければその形に戻す。
+  void _keepVanishedDots(Uint8List shape, Uint8List skeleton) {
+    final alone = _alone;
+    if (alone.isEmpty) return;
+    final seen = Uint8List(shape.length), mark = Uint8List(shape.length);
+    final o = _offsets;
+    final search = <int>[], queue = <int>[];
+    for (final from in alone) {
+      if (seen[from] != 0) continue;
+      search
+        ..clear()
+        ..add(from);
+      mark[from] = 1;
+      var centre = skeleton[from] != 0, first = from, found = -1;
+      for (var head = 0; head < search.length && !centre; head++) {
+        final p = search[head];
+        for (var j = 0; j < 8; j++) {
+          final q = p + o[j];
+          if (shape[q] == 0 || mark[q] != 0) continue;
+          if (skeleton[q] != 0) {
+            centre = true;
+            found = q;
+            break;
+          }
+          mark[q] = 1;
+          search.add(q);
+          if (q < first) first = q;
+        }
+      }
+      for (final p in search) {
+        mark[p] = 0;
+      }
+      if (found >= 0) mark[found] = 0;
+      if (centre) continue;
+      // 形の上の行から最初の画素から広げる（同じ距離の画素の選び方を
+      // 決める）。
       queue
         ..clear()
-        ..add(start);
-      seen[start] = 1;
-      var centre = false;
+        ..add(first);
+      seen[first] = 1;
       var sx = 0.0, sy = 0.0;
       for (var head = 0; head < queue.length; head++) {
         final p = queue[head];
-        if (skeleton[p] != 0) centre = true;
         sx += p % lw;
         sy += p ~/ lw;
-        for (final o in _offsets) {
-          final q = p + o;
+        for (var j = 0; j < 8; j++) {
+          final q = p + o[j];
           if (shape[q] == 0 || seen[q] != 0) continue;
           seen[q] = 1;
           queue.add(q);
         }
       }
-      if (centre) continue;
       final cx = sx / queue.length, cy = sy / queue.length;
       var best = queue.first;
       var bestDistance = double.infinity;
@@ -1965,20 +2329,38 @@ class _Analysis {
     }
   }
 
-  /// 周り8画素の並び（[PixelArtLines._ring]の順のビット）。
-  int _around(Uint8List img, int i) {
-    final o = _offsets;
-    var m = 0;
-    if (img[i + o[0]] != 0) m |= 1;
-    if (img[i + o[1]] != 0) m |= 2;
-    if (img[i + o[2]] != 0) m |= 4;
-    if (img[i + o[3]] != 0) m |= 8;
-    if (img[i + o[4]] != 0) m |= 16;
-    if (img[i + o[5]] != 0) m |= 32;
-    if (img[i + o[6]] != 0) m |= 64;
-    if (img[i + o[7]] != 0) m |= 128;
-    return m;
+  /// [pixels]のうち、[img]で残っている画素（順序はそのまま）。
+  static Int32List _kept(Int32List pixels, Uint8List img) {
+    var count = 0;
+    for (final i in pixels) {
+      if (img[i] != 0) count++;
+    }
+    final out = Int32List(count);
+    var k = 0;
+    for (final i in pixels) {
+      if (img[i] != 0) out[k++] = i;
+    }
+    return out;
   }
+
+  /// 周り8画素の並び（[PixelArtLines._ring]の順のビット。[img]は0か1）。
+  int _around(Uint8List img, int i) {
+    final w = lw;
+    return img[i - w] |
+        img[i - w + 1] << 1 |
+        img[i + 1] << 2 |
+        img[i + w + 1] << 3 |
+        img[i + w] << 4 |
+        img[i + w - 1] << 5 |
+        img[i - 1] << 6 |
+        img[i - w - 1] << 7;
+  }
+
+  /// 8ビットの並びごとの、立っているビットの数。
+  static final Uint8List _bits = Uint8List.fromList([
+    for (var m = 0; m < 256; m++)
+      [for (var k = 0; k < 8; k++) (m >> k) & 1].fold(0, (a, b) => a + b),
+  ]);
 
   /// 周り8画素の並びごとに：段の角の余分な画素として取り除けるか（隣が
   /// 2〜3画素で、縦にも横にも隣があり、2×2の塊の一部ではなく、隣どうしが
@@ -2034,57 +2416,92 @@ class _Analysis {
   }
 
   /// 細線化で段の角に残る余分な画素（3画素のL字の角）を取り除き、線の
-  /// どの画素も前後の1画素ずつとだけ隣り合うようにする。
-  void _removeSteps(Uint8List img, List<int> fore) {
-    final live = [
-      for (final i in fore)
-        if (img[i] != 0) i,
-    ];
+  /// どの画素も前後の1画素ずつとだけ隣り合うようにする。[live]（上の行から
+  /// 順の中心線の画素）のうち残った画素を返す。
+  Int32List _removeSteps(Uint8List img, Int32List live) {
+    final table = _stepCorner;
     for (var pass = 0; pass < 8; pass++) {
       var removed = false;
       for (final i in live) {
         if (img[i] == 0) continue;
-        if (_stepCorner[_around(img, i)] == 0) continue;
+        if (table[_around(img, i)] == 0) continue;
         img[i] = 0;
         removed = true;
       }
       if (!removed) break;
+      live = _kept(live, img);
     }
+    return live;
   }
 
   /// 中心線を、分かれ目（3本以上が集まる画素のまとまり）と端の間の線に分ける。
+  /// 線を[first]（[previous]の隣）からたどる（分かれ目[from]から、または
+  /// 端から）。
+  _Branch _walk(
+    Uint8List img,
+    Uint8List degree,
+    Int32List nodeOf,
+    Uint8List visited,
+    int from,
+    int first,
+    int previous,
+  ) {
+    final o = _offsets;
+    final path = <int>[first];
+    visited[first] = 1;
+    var prev = previous, cur = first;
+    var end = -1;
+    while (true) {
+      if (degree[cur] <= 1 && path.length > 1) break;
+      var next = -1, junction = -1;
+      for (var j = 0; j < 8; j++) {
+        final q = cur + o[j];
+        if (img[q] == 0 || q == prev) continue;
+        if (nodeOf[q] >= 0) {
+          if (junction < 0) junction = q;
+          continue;
+        }
+        if (visited[q] != 0) continue;
+        if (next < 0) next = q;
+      }
+      if (next < 0) {
+        if (junction >= 0) end = nodeOf[junction];
+        break;
+      }
+      visited[next] = 1;
+      path.add(next);
+      prev = cur;
+      cur = next;
+    }
+    return _Branch(path, from, end);
+  }
+
   ({List<_Branch> branches, List<List<int>> nodes}) _trace(
     Uint8List img,
-    List<int> fore,
+    Int32List live,
   ) {
-    final live = [
-      for (final i in fore)
-        if (img[i] != 0) i,
-    ];
     // 作業用の配列は、中心線の画素の所だけ使う（毎回作り直さない）。
     final degree = _degree ??= Uint8List(img.length);
     final nodeOf = _nodeOf ??= Int32List(img.length);
     final visited = _visited ??= Uint8List(img.length);
+    final bits = _bits;
+    final o = _offsets;
     for (final i in live) {
-      var m = _around(img, i), count = 0;
-      while (m != 0) {
-        count += m & 1;
-        m >>= 1;
-      }
-      degree[i] = count;
+      if (img[i] == 0) continue;
+      degree[i] = bits[_around(img, i)];
       nodeOf[i] = -1;
       visited[i] = 0;
     }
     final nodes = <List<int>>[];
     for (final i in live) {
-      if (degree[i] < 3 || nodeOf[i] >= 0) continue;
+      if (img[i] == 0 || degree[i] < 3 || nodeOf[i] >= 0) continue;
       final id = nodes.length;
       final members = <int>[i];
       nodeOf[i] = id;
       for (var head = 0; head < members.length; head++) {
         final p = members[head];
-        for (final o in _offsets) {
-          final q = p + o;
+        for (var j = 0; j < 8; j++) {
+          final q = p + o[j];
           if (img[q] == 0 || degree[q] < 3 || nodeOf[q] >= 0) continue;
           nodeOf[q] = id;
           members.add(q);
@@ -2094,69 +2511,40 @@ class _Analysis {
     }
     final branches = <_Branch>[];
 
-    _Branch walk(int from, int first, int previous) {
-      final path = <int>[first];
-      visited[first] = 1;
-      var prev = previous, cur = first;
-      var end = -1;
-      while (true) {
-        if (degree[cur] <= 1 && path.length > 1) break;
-        int? next, junction;
-        for (final o in _offsets) {
-          final q = cur + o;
-          if (img[q] == 0 || q == prev) continue;
-          if (nodeOf[q] >= 0) {
-            junction ??= q;
-            continue;
-          }
-          if (visited[q] != 0) continue;
-          next ??= q;
-        }
-        if (next == null) {
-          if (junction != null) end = nodeOf[junction];
-          break;
-        }
-        visited[next] = 1;
-        path.add(next);
-        prev = cur;
-        cur = next;
-      }
-      return _Branch(path, from, end);
-    }
-
     for (var id = 0; id < nodes.length; id++) {
       for (final j in nodes[id]) {
-        for (final o in _offsets) {
-          final m = j + o;
+        for (var k = 0; k < 8; k++) {
+          final m = j + o[k];
           if (img[m] == 0 || nodeOf[m] >= 0 || visited[m] != 0) continue;
-          branches.add(walk(id, m, j));
+          branches.add(_walk(img, degree, nodeOf, visited, id, m, j));
         }
       }
     }
     for (final i in live) {
+      if (img[i] == 0) continue;
       if (visited[i] != 0 || nodeOf[i] >= 0 || degree[i] > 1) continue;
       if (degree[i] == 0) {
         visited[i] = 1;
         branches.add(_Branch([i], -1, -1));
         continue;
       }
-      branches.add(walk(-1, i, -1));
+      branches.add(_walk(img, degree, nodeOf, visited, -1, i, -1));
     }
     // 残りは分かれ目の無い輪。
     for (final i in live) {
-      if (visited[i] != 0 || nodeOf[i] >= 0) continue;
+      if (img[i] == 0 || visited[i] != 0 || nodeOf[i] >= 0) continue;
       final path = <int>[i];
       visited[i] = 1;
       var prev = -1, cur = i;
       while (true) {
-        int? next;
-        for (final o in _offsets) {
-          final q = cur + o;
+        var next = -1;
+        for (var j = 0; j < 8; j++) {
+          final q = cur + o[j];
           if (img[q] == 0 || q == prev || visited[q] != 0) continue;
           next = q;
           break;
         }
-        if (next == null) break;
+        if (next < 0) break;
         visited[next] = 1;
         path.add(next);
         prev = cur;
@@ -2173,7 +2561,7 @@ class _Analysis {
 class _Slices {
   _Slices._(this.owner, this.pixels, this.ink);
 
-  /// 画素ごと：割り当てた中心線の画素（[pixels]の画素だけ有効）。
+  /// 画素ごと：割り当てた中心線の画素＋1（割り当てていなければ0）。
   final Int32List owner;
 
   /// 割り当てた画素。
@@ -2184,7 +2572,7 @@ class _Slices {
 
   static _Slices of(_Analysis a, List<int> skeleton) {
     final width = a.width, height = a.height;
-    final owner = Int32List(width * height)..fillRange(0, width * height, -1);
+    final owner = Int32List(width * height);
     final k = skeleton.length;
     final ink = Float64List(k);
     // 割り当てる範囲：線の形の外接矩形を、線の縁が入るだけ広げたもの。
@@ -2196,7 +2584,7 @@ class _Slices {
     var tail = 0;
     for (var s = 0; s < k; s++) {
       final p = a._global(skeleton[s]);
-      owner[p] = s;
+      owner[p] = s + 1;
       queue[tail++] = p;
     }
     // 中心線から線の太さの上限の半分までの、インクのある画素（線の縁の
@@ -2211,46 +2599,33 @@ class _Slices {
         if (layer > a.reach) break;
       }
       final p = queue[head];
-      final x = p % width, y = p ~/ width;
+      final y = p ~/ width, x = p - y * width;
       final s = owner[p];
+      if (x > rx0 && y > ry0 && x < rx1 && y < ry1) {
+        for (var j = 0; j < 8; j++) {
+          final q = p + _dy[j] * width + _dx[j];
+          if (owner[q] != 0 || source[q] == 0) continue;
+          owner[q] = s;
+          queue[tail++] = q;
+        }
+        continue;
+      }
       for (var j = 0; j < 8; j++) {
         final nx = x + _dx[j], ny = y + _dy[j];
         if (nx < rx0 || ny < ry0 || nx > rx1 || ny > ry1) continue;
         final q = ny * width + nx;
-        if (owner[q] >= 0 || source[q] == 0) continue;
+        if (owner[q] != 0 || source[q] == 0) continue;
         owner[q] = s;
         queue[tail++] = q;
       }
     }
     for (var i = 0; i < tail; i++) {
       final p = queue[i];
-      ink[owner[p]] += source[p];
+      ink[owner[p] - 1] += source[p];
     }
     return _Slices._(owner, Int32List.sublistView(queue, 0, tail), ink);
   }
 }
-
-/// 8方向の単位ベクトル（45°おき）。
-const _around8x = [
-  1.0,
-  0.7071067811865476,
-  0.0,
-  -0.7071067811865476,
-  -1.0,
-  -0.7071067811865476,
-  0.0,
-  0.7071067811865476,
-];
-const _around8y = [
-  0.0,
-  0.7071067811865476,
-  1.0,
-  0.7071067811865476,
-  0.0,
-  -0.7071067811865476,
-  -1.0,
-  -0.7071067811865476,
-];
 
 /// 8近傍のずれ（[PixelArtLines._ring]と同じ順）。
 const _dx = [0, 1, 1, 1, 0, -1, -1, -1];

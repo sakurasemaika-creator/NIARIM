@@ -563,7 +563,7 @@ void main() {
         'lib/engine/procedural_texture.dart',
       ).readAsStringSync();
       expect(source, contains('redrawLines: false'));
-      final p = _Picture(128, 128);
+      final p = _Picture(128, 128, paper: (255, 255, 255));
       p.paint(_ring(64, 64, 40, 3));
       final engine = FilterEngine();
       expect(
