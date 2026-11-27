@@ -33,6 +33,7 @@ import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/keep_together_text.dart';
 import '../../../widgets/autofill_preset_selection_sheet.dart';
 import '../../../widgets/dispose_on_unmount.dart';
+import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/layer_range_dialog.dart';
@@ -1602,43 +1603,24 @@ class _LayerPanelState extends State<LayerPanel> {
     );
   }
 
+  /// 名前の変更：空白だけの名前は確定させず、前後の空白を除き、Enterでも
+  /// 確定する（NameEntryDialog。以前は自前の欄で、空白だけの名前が通って
+  /// 名前が消え、Enterでは何も起きなかった）。
   void _showRenameDialog(BuildContext context, model.Layer layer) {
     final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController(
-      text: editingLayerLabel(l10n, layer),
-    );
-    showDialog(
+    final projects = context.read<ProjectService>();
+    showDialog<void>(
       context: context,
-      builder: (ctx) => DisposeOnUnmount(
-        controller: nameCtrl,
-        builder: (ctx) => AlertDialog(
-          insetPadding: typingDialogInsetPadding(ctx),
-          title: Text(l10n.commonRename),
-          content: TextField(
-            controller: nameCtrl,
-            autofocus: true,
-            decoration: const InputDecoration(border: OutlineInputBorder()),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (nameCtrl.text.isNotEmpty) {
-                  context.read<ProjectService>().updateLayer(
-                    projectId: widget.projectId,
-                    sceneId: widget.sceneId,
-                    frameIndex: widget.frameIndex,
-                    layer: layer.copyWith(name: nameCtrl.text),
-                  );
-                }
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonChange),
-            ),
-          ],
+      builder: (_) => NameEntryDialog(
+        title: l10n.commonRename,
+        confirmLabel: l10n.commonChange,
+        cancelLabel: l10n.commonCancel,
+        initialName: editingLayerLabel(l10n, layer),
+        onSubmit: (name) async => projects.updateLayer(
+          projectId: widget.projectId,
+          sceneId: widget.sceneId,
+          frameIndex: widget.frameIndex,
+          layer: layer.copyWith(name: name),
         ),
       ),
     );

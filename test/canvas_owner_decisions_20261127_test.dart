@@ -297,6 +297,26 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // 設定/編集メニューの「自由変形・メッシュ変形」から開くと分割数を選べる
+  // （以前は分割数1で始まり、分割数のスライダーは2以上でしか出ず、メッシュに
+  // できなかった）。
+  testWidgets('the edit menu transform can be made a mesh on phones', (
+    tester,
+  ) async {
+    await openCanvas(tester);
+    await tester.tap(find.byIcon(Icons.settings).first);
+    await tester.pumpAndSettle();
+    final entry = find.text(l10n.canvasEditMenuMeshTransform);
+    await tester.ensureVisible(entry);
+    await tester.pumpAndSettle();
+    await tester.tap(entry);
+    await settle(tester, 8);
+    expect(find.text(l10n.meshTransformDensityLabel), findsOneWidget);
+    await tester.tap(find.text(l10n.commonCancel).last);
+    await settle(tester, 4);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('an own brush is renamed in its settings sheet', (tester) async {
     tester.view.physicalSize = const Size(420, 900);
     tester.view.devicePixelRatio = 1;

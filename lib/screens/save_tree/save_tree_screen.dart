@@ -1307,10 +1307,9 @@ class _TreeView extends StatelessWidget {
         Padding(
           padding: EdgeInsets.only(left: (depth + 1) * 24.0),
           child: ListTile(
+            // 選んだ行の地と文字はテーマの選択色と選択色の上の文字色（以前は
+            // 差し色の淡い地に選択色の上の文字色〔白〕で、文字が読めなかった）。
             selected: isSelected,
-            selectedTileColor: Theme.of(
-              context,
-            ).colorScheme.primaryContainer.withValues(alpha: 0.3),
             leading: _SaveNodeThumbnail(node: node, size: 40),
             title: Row(
               children: [

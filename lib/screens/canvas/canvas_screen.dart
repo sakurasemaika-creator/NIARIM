@@ -445,15 +445,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// スライダー値を初期状態へ戻す。
   /// [density]は格子の分割数。1（既定・4隅のみ）が「自由変形」、
   /// 2以上が「メッシュ変形」にあたる（同じ仕組みの分割数違い）。
-  void _openMeshTransformPanel({int density = 1, bool selectionOnly = false}) =>
-      setState(() {
-        _closeAllOverlayPanels();
-        _meshDensity = density;
-        _meshSelectionOnly = selectionOnly;
-        _meshRotateDeg = 0.0;
-        _meshScaleValue = 1.0;
-        _currentTool = DrawingTool.meshTransform;
-      });
+  /// 設定/編集メニューの「自由変形・メッシュ変形」から開いたか（分割数を
+  /// 選べるようにする。選択ツールの「自由変形」「メッシュ変形」は別々）。
+  bool _meshDensityChoosable = false;
+
+  void _openMeshTransformPanel({
+    int density = 1,
+    bool selectionOnly = false,
+    bool chooseDensity = false,
+  }) => setState(() {
+    _closeAllOverlayPanels();
+    _meshDensityChoosable = chooseDensity;
+    _meshDensity = density;
+    _meshSelectionOnly = selectionOnly;
+    _meshRotateDeg = 0.0;
+    _meshScaleValue = 1.0;
+    _currentTool = DrawingTool.meshTransform;
+  });
 
   /// 自由変形・メッシュ変形の確定（コントロールパネルの「適用」ボタン）。
   void _applyMeshTransform() => setState(() {
@@ -1220,7 +1228,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 subtitle: messageText(l10n.canvasEditMenuMeshTransformSubtitle),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _openMeshTransformPanel();
+                  _openMeshTransformPanel(chooseDensity: true);
                 },
               ),
               ListTile(
@@ -2018,7 +2026,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                                           _meshCancelBar(
                                                             context,
                                                           ),
-                                                          if (_meshDensity > 1)
+                                                          // 分割数は、メッシュ変形と、
+                                                          // 設定/編集メニューの「自由変形・
+                                                          // メッシュ変形」から開いたとき
+                                                          // （1×1が自由変形、2以上が
+                                                          // メッシュ。以前は2以上でしか
+                                                          // 出さず、メニューから開くと
+                                                          // メッシュにできなかった）。
+                                                          if (_meshDensity >
+                                                                  1 ||
+                                                              _meshDensityChoosable)
                                                             _meshDensitySlider(
                                                               context,
                                                             ),
