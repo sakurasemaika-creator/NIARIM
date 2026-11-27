@@ -110,12 +110,18 @@ class ToolbarWidget extends StatelessWidget {
               _showBucketToneMenu(context);
             }
           },
-          child: _toolButton(
-            context,
-            Icons.format_color_fill,
-            DrawingTool.bucket,
-            l10n.toolbarBucketTooltip,
-            longPressTooltip: false,
+          // トーンで塗る間は印もトーンにする（以前はベタ塗りと同じ印のままで、
+          // 気づかずにトーンで塗った）。
+          child: Builder(
+            builder: (context) => _toolButton(
+              context,
+              context.select<ToneService, bool>((t) => t.bucketUseTone)
+                  ? Icons.texture
+                  : Icons.format_color_fill,
+              DrawingTool.bucket,
+              l10n.toolbarBucketTooltip,
+              longPressTooltip: false,
+            ),
           ),
         ),
       ),
@@ -446,6 +452,9 @@ class ToolbarWidget extends StatelessWidget {
                         selected: !useTone,
                         onTap: () {
                           toneService.setBucketUseTone(false);
+                          // 選んだ塗り方のバケツに持ち替える（以前は塗り方だけ
+                          // 変わり、ツールは前のままだった）。
+                          onToolSelected(DrawingTool.bucket);
                           Navigator.pop(ctx);
                         },
                       ),
@@ -503,6 +512,7 @@ class ToolbarWidget extends StatelessWidget {
                     onSelected: (tone) {
                       toneService.setBucketUseTone(true);
                       toneService.setLastBucketTone(tone);
+                      onToolSelected(DrawingTool.bucket);
                       Navigator.pop(ctx);
                     },
                   ),
