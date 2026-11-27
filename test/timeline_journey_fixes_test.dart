@@ -15,6 +15,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/layer_keyframe.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
@@ -259,6 +260,45 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(audio().startFrame, 3, reason: 'started at F1, edge moved by 2');
     expect(audio().lengthFrames, 4);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a clip lists only the keyframes inside it', (tester) async {
+    // A right half after a split: its keys at F1 and F12 still shape the
+    // motion, but F1 is before the clip (pasted, it read "F-4").
+    final (:ps, :projectId, :sceneId, :videoId, :l10n) = await openTimeline(
+      tester,
+    );
+    final layer = ps
+        .storedLayersOf(projectId, sceneId, 0)
+        .firstWhere((l) => l.id == videoId);
+    ps.updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: 0,
+      layer: layer.copyWith(
+        rangeStart: 6,
+        rangeEnd: 12,
+        keyframes: const [
+          LayerKeyframe(frameIndex: 0),
+          LayerKeyframe(frameIndex: 11, x: 40),
+        ],
+      ),
+    );
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    final clip = find.byKey(ValueKey('timelineClip-$videoId'));
+    await tester.ensureVisible(clip);
+    await tester.pump();
+    await tester.tapAt(tester.getTopLeft(clip) + const Offset(20, 20));
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    final transform = find.widgetWithIcon(ChoiceChip, Icons.open_with);
+    if (transform.evaluate().isNotEmpty) {
+      await tester.ensureVisible(transform);
+      await tester.tap(transform);
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    }
+    expect(find.widgetWithText(ActionChip, 'F12'), findsOneWidget);
+    expect(find.widgetWithText(ActionChip, 'F1'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

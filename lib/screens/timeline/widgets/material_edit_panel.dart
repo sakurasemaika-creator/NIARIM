@@ -1305,8 +1305,17 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
                 label: Text(l10n.keyframeRetimeTitle),
                 onPressed: () => _retimeKeyframes(layer, home),
               ),
+            // Only the keys inside the clip: after a split or a trim the
+            // others still shape the motion, but their frames are outside it
+            // (pasted earlier in the scene, one read "F-4" and went to
+            // -0.4s).
             if (animated)
-              for (final k in keyframes)
+              for (final k in keyframes.where(
+                (k) =>
+                    k.frameIndex >= materialFirstFrame(layer) &&
+                    (layer.rangeEnd == null ||
+                        k.frameIndex <= layer.rangeEnd! - 1),
+              ))
                 ActionChip(
                   avatar: Icon(
                     Icons.diamond,
