@@ -47,6 +47,33 @@ import '../../../utils/folder_tree.dart';
 import '../../../utils/name_collation.dart';
 import '../../../utils/file_failure_reason.dart';
 
+/// プロジェクトの詳細の行の絵の基準の大きさ（スマホの詳細の中、
+/// [collectionDetailThumbExtent]の`usual`）。
+const double kProjectDetailThumbExtent = 48;
+
+/// プロジェクトの一覧（[ProjectListWidget]）が[viewMode]で作品のサムネイルを
+/// 読むときの画像。カードは保存された大きさのまま、詳細の行は行の絵の
+/// 大きさ×画面の倍率まで縮めて読む（一覧の`Image.file`と同じキーになる）。
+/// 起動画面が先に読んでおくときに使う。
+ImageProvider projectListThumbnailImage(
+  String path, {
+  required ProjectViewMode viewMode,
+  required double screenWidth,
+  required double devicePixelRatio,
+}) => ResizeImage.resizeIfNeeded(
+  viewMode.isDetail
+      ? (collectionDetailThumbExtentFor(
+                  size: viewMode.size,
+                  width: screenWidth,
+                  usual: kProjectDetailThumbExtent,
+                ) *
+                devicePixelRatio)
+            .round()
+      : null,
+  null,
+  FileImage(File(path)),
+);
+
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
 /// 双方から共通で使う（重複実装を避けるためpublicなトップレベル関数として
@@ -758,7 +785,10 @@ class ProjectListWidget extends StatelessWidget {
     final project = entry.project!;
     final isSelected = selectedIds.contains(project.id);
     // 行の先頭の絵の大きさは詳細の大・中・小と画面の幅で決まる。
-    final thumb = collectionDetailThumbExtent(context, 48);
+    final thumb = collectionDetailThumbExtent(
+      context,
+      kProjectDetailThumbExtent,
+    );
     final actionsBelow = _actionsBelowName(context);
     final date = DateLineText(
       [
@@ -1002,112 +1032,127 @@ class ProjectListWidget extends StatelessWidget {
         : onPickProject != null
         ? () => onPickProject!(project.id)
         : () => context.push('/project/${project.id}');
-    return GestureDetector(
-      onSecondaryTapDown: (details) {
-        if (!isSelectionMode && onPickProject == null) {
-          _showProjectSecondaryMenu(context, project, details.globalPosition);
-        }
+    // ダブルタップでキャンバスを開く。星・︙を押した指はダブルタップを
+    // 待たない（CollectionCardDoubleTapRecognizer。待つと星・︙が離してから
+    // 約0.3秒後に働いた）。選ぶ専用画面と選んでいる間はダブルタップを使わない
+    // （誤操作のもとになる）。部品の形はいつも同じにする（変えるとカードの
+    // 中身が作り直され、選んだときの縁の動きが出なくなる）。
+    final openCanvas = (isSelectionMode || onPickProject != null)
+        ? null
+        : () => context.push('/canvas/${project.id}');
+    return RawGestureDetector(
+      excludeFromSemantics: true,
+      gestures: {
+        CollectionCardDoubleTapRecognizer:
+            GestureRecognizerFactoryWithHandlers<
+              CollectionCardDoubleTapRecognizer
+            >(
+              () => CollectionCardDoubleTapRecognizer(debugOwner: this),
+              (recognizer) => recognizer.onDoubleTap = openCanvas,
+            ),
       },
-      onTap: open,
-      // 選ぶ専用画面ではダブルタップでのキャンバス直接起動は不要（誤操作の
-      // もとになる）ため無効化する。
-      onDoubleTap: (isSelectionMode || onPickProject != null)
-          ? null
-          : () => context.push('/canvas/${project.id}'),
-      onLongPress: () => onLongPress(project.id),
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color:
-                  (isSelected
-                          ? selectionColor
-                          : ThemeService.activeColorScheme.onSurface)
-                      .withValues(alpha: isSelected ? 0.28 : 0.12),
-              blurRadius: isSelected ? 14 : 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        // menu-surface: n/a — 絵（用紙の色）の上に印を描くカード。名前は自分でメニューの文字色を読む。
-        child: Card(
-          clipBehavior: Clip.antiAlias,
-          elevation: 0,
-          margin: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
+      child: GestureDetector(
+        onSecondaryTapDown: (details) {
+          if (!isSelectionMode && onPickProject == null) {
+            _showProjectSecondaryMenu(context, project, details.globalPosition);
+          }
+        },
+        onTap: open,
+        onLongPress: () => onLongPress(project.id),
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            side: BorderSide(
-              color: isSelected ? selectionColor : Colors.transparent,
-              width: 2,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: _gridPicture(
-                  context,
-                  cover: _thumbnail(context, project),
-                  isFavorite: project.isFavorite,
-                  selectionMarker: isSelectionMode
-                      ? Positioned(
-                          top: 4,
-                          left: 4,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 120),
-                            padding: const EdgeInsets.all(1),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? selectionColor
-                                  : scheme.surface.withValues(alpha: 0.9),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: selectionColor,
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: ThemeService
-                                      .activeColorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.2),
-                                  blurRadius: 3,
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              isSelected ? Icons.check : null,
-                              size: 16,
-                              color: selectionForeground,
-                            ),
-                          ),
-                        )
-                      : null,
-                ),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    (isSelected
+                            ? selectionColor
+                            : ThemeService.activeColorScheme.onSurface)
+                        .withValues(alpha: isSelected ? 0.28 : 0.12),
+                blurRadius: isSelected ? 14 : 8,
+                offset: const Offset(0, 3),
               ),
-              _gridCaption(context, project.name, project.folderId),
-              if (onPickProject == null)
-                _gridCardActions(
-                  context,
-                  menu: _projectMenu(context, project),
-                  isFavorite: project.isFavorite,
-                  itemId: project.id,
-                  onFavorite: () => runProjectAction(
-                    context,
-                    () => context.read<ProjectService>().toggleFavorite(
-                      project.id,
-                    ),
-                  ),
-                ),
             ],
           ),
+          // menu-surface: n/a — 絵（用紙の色）の上に印を描くカード。名前は自分でメニューの文字色を読む。
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            elevation: 0,
+            margin: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: BorderSide(
+                color: isSelected ? selectionColor : Colors.transparent,
+                width: 2,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _gridPicture(
+                    context,
+                    cover: _thumbnail(context, project),
+                    isFavorite: project.isFavorite,
+                    selectionMarker: isSelectionMode
+                        ? Positioned(
+                            top: 4,
+                            left: 4,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 120),
+                              padding: const EdgeInsets.all(1),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? selectionColor
+                                    : scheme.surface.withValues(alpha: 0.9),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: selectionColor,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: ThemeService
+                                        .activeColorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.2),
+                                    blurRadius: 3,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                isSelected ? Icons.check : null,
+                                size: 16,
+                                color: selectionForeground,
+                              ),
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+                _gridCaption(context, project.name, project.folderId),
+                if (onPickProject == null)
+                  _gridCardActions(
+                    context,
+                    menu: _projectMenu(context, project),
+                    isFavorite: project.isFavorite,
+                    itemId: project.id,
+                    onFavorite: () => runProjectAction(
+                      context,
+                      () => context.read<ProjectService>().toggleFavorite(
+                        project.id,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
+        // カードの本体もTabで止まり、Enterで開き、Spaceで選ぶ（以前は星と︙に
+        // しか止まらず、キーボードだけではカードを開けず、選べなかった）。
       ),
-      // カードの本体もTabで止まり、Enterで開き、Spaceで選ぶ（以前は星と︙に
-      // しか止まらず、キーボードだけではカードを開けず、選べなかった）。
     ).focusableCard(
       onActivate: open,
       onSelect: _selectByKey(project.id),

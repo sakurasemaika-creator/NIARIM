@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/widgets/collection_action_controls.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/home_selection_toolbar.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
@@ -196,8 +197,10 @@ void main() {
               matching: find.byWidgetPredicate(
                 (widget) => switch (widget) {
                   ListTile(:final onLongPress) => onLongPress != null,
-                  GestureDetector(:final onLongPress, :final onDoubleTap) =>
-                    onLongPress != null && onDoubleTap != null,
+                  // 作品のカード（ダブルタップでキャンバスを開く）。
+                  RawGestureDetector(:final gestures) => gestures.containsKey(
+                    CollectionCardDoubleTapRecognizer,
+                  ),
                   _ => false,
                 },
               ),

@@ -1617,7 +1617,11 @@ onTap: ...)`だったために
   デコードされて画像キャッシュに載る。セーブノードのサムネイルは長辺
   200pxで保存しているが、一覧での表示は40〜58px。`cacheWidth:
 (size * MediaQuery.devicePixelRatioOf(context)).round()`のように
-  表示画素数へ落とすこと。
+  表示画素数へ落とすこと。**起動画面の先読み（`_preloadHomeData`）は一覧と同じ
+  画像のキー**で読む（作品は`projectListThumbnailImage`〔カードは保存の大きさ、詳細の行は
+  行の絵×画面の倍率〕、共有は`kSharedCoverCacheWidth`）。一覧の`cacheWidth`を変えたら
+  ここも変えること（キーが違うと先読みは使われずにメモリに残り、一覧は絵が後から出る。
+  `test/splash_thumbnail_precache_test.dart`）。
   また**画像はパスごとにキャッシュされる**ので、作り直す画像を同じファイル名へ
   上書きすると、一覧には古い絵が出続ける（作品一覧のサムネイルが実際にそう
   だった）。作るたびに別の名前で保存し、前のファイルは保存し終えてから、
@@ -1815,7 +1819,13 @@ onTap: ...)`だったために
   （親の箱の外は押せない。縦に積むときは`CollectionActionRow(direction:
   Axis.vertical)`、作品広場もこの形、DISC240）。丸の外側の1pxの輪
   （`CollectionActionFrame.haloColor`、縁と反対のテーマの色）は、作品の用紙の
-  上でも丸を見分けるためのもの（DISC241）。一覧の末尾の余白には下の
+  上でも丸を見分けるためのもの（DISC241）。**丸を載せたカードにダブルタップを
+  付けるときは`CollectionCardDoubleTapRecognizer`**（`RawGestureDetector`で、
+  `GestureDetector(onDoubleTap:)`にしない）：ダブルタップの認識は1回目のタップの後
+  `kDoubleTapTimeout`（300ms）までジェスチャーの決着を止めるので、カードの中の星・︙が
+  離してから約0.3秒後に働いていた。丸は押された指を`CollectionActionFrame.isPressing`で
+  覚え、この認識はその指に加わらない（2026-11-27、`test/home_card_actions_immediate_test.dart`）。
+  一覧の末尾の余白には下の
   帯（`MediaQuery.paddingOf(context).bottom`）を足し、横向きの左右の切り欠き・帯は
   本文を`insideSideSafeArea()`で避ける（Scaffoldは浮かぶボタンの所の余白を外すので、
   浮かぶボタンの行と引き出しの見出しは左右の値を自分で足す）。動きを減らす設定

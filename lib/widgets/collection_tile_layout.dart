@@ -105,9 +105,20 @@ const double kCollectionTileLargeExtent = 240;
 /// 詳細（行）の表示の、行の先頭の絵の大きさ。[usual]はスマホの中（今までの
 /// 大きさ：作品は48・共有・作品一覧は56）。タブレット・PCでは中から大きく
 /// し、大は絵で見分けられる大きさにする。
-double collectionDetailThumbExtent(BuildContext context, double usual) {
-  final size = CollectionDetailSizeScope.sizeOf(context);
-  final width = MediaQuery.sizeOf(context).width;
+double collectionDetailThumbExtent(BuildContext context, double usual) =>
+    collectionDetailThumbExtentFor(
+      size: CollectionDetailSizeScope.sizeOf(context),
+      width: MediaQuery.sizeOf(context).width,
+      usual: usual,
+    );
+
+/// [collectionDetailThumbExtent]を、詳細の大きさ[size]と画面の幅[width]から
+/// 求める（一覧を作る前に、行の絵と同じ大きさで先に読んでおくとき）。
+double collectionDetailThumbExtentFor({
+  required CollectionViewSize size,
+  required double width,
+  required double usual,
+}) {
   final factor = switch ((width >= 1000, width >= 600, size)) {
     (true, _, CollectionViewSize.large) => 2.5,
     (true, _, CollectionViewSize.medium) => 1.5,

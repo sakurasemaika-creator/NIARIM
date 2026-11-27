@@ -9,6 +9,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
@@ -16,6 +18,9 @@ import '../../config/font_fallback.dart';
 import '../../utils/line_break.dart';
 import '../../widgets/responsive.dart';
 import '../../utils/app_error_reporter.dart';
+import '../../utils/tolerant_preferences.dart';
+import '../home/home_screen.dart';
+import '../home/widgets/project_list_widget.dart';
 import '../../widgets/theme_rescue_button.dart';
 import '../../utils/splash_gradient.dart';
 
@@ -110,17 +115,40 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (!mounted) return;
     final projectService = context.read<ProjectService>();
-    final thumbnailPaths = <String>{
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
+    // 一覧が使うのと同じ大きさ・同じキーで読む（詳細の行は行の絵の大きさ、
+    // 共有のタブは[kSharedCoverCacheWidth]）。元の大きさで読むと、一覧は
+    // 別の大きさで読み直し、先に読んだ絵は使われずにメモリに残った。
+    String? savedViewMode;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      savedViewMode = prefs.readString(homeProjectViewModeKey);
+    } catch (error) {
+      debugPrint('Project tile preference could not be read: $error');
+    }
+    if (!mounted) return;
+    final viewMode = homeProjectViewModeFor(savedViewMode, screenWidth);
+    final thumbnails = <ImageProvider>{
       for (final p in projectService.projects)
-        if (p.thumbnailPath != null) p.thumbnailPath!,
+        if (p.thumbnailPath case final path?)
+          projectListThumbnailImage(
+            path,
+            viewMode: viewMode,
+            screenWidth: screenWidth,
+            devicePixelRatio: devicePixelRatio,
+          ),
       for (final p in projectService.shared)
-        if (p.thumbnailPath != null) p.thumbnailPath!,
+        if (p.thumbnailPath case final path?)
+          ResizeImage.resizeIfNeeded(
+            kSharedCoverCacheWidth,
+            null,
+            FileImage(File(path)),
+          ),
     };
-    for (final path in thumbnailPaths) {
+    for (final image in thumbnails) {
       if (!mounted) return;
-      unawaited(
-        precacheImage(FileImage(File(path)), context).catchError((_) {}),
-      );
+      unawaited(precacheImage(image, context).catchError((_) {}));
     }
   }
 

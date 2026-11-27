@@ -507,7 +507,7 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
-  static const _projectViewModeKey = 'home.projectViewMode.v1';
+  static const _projectViewModeKey = homeProjectViewModeKey;
   static const _worksViewModeKey = 'home.worksViewMode.v1';
   ProjectViewMode? _userViewMode;
   // Preserve the existing full-height list cover until a view size is chosen.
@@ -4950,7 +4950,7 @@ Widget _receivedShareProjectTile(
     return Image.file(
       File(thumbnailPath),
       fit: BoxFit.cover,
-      cacheWidth: 320,
+      cacheWidth: kSharedCoverCacheWidth,
       errorBuilder: (context, error, stack) => paper(),
     );
   }
@@ -8573,6 +8573,26 @@ class _WorkPreviewState extends State<_WorkPreview> {
     );
   }
 }
+
+/// ホームの「プロジェクト」の一覧の表示を覚える保存キー。
+const String homeProjectViewModeKey = 'home.projectViewMode.v1';
+
+/// ホームの「プロジェクト」の一覧の表示：保存した[saved]、無い・読めない
+/// ときは画面の幅[width]で決まる表示（ホームが開いたときと同じ決め方）。
+ProjectViewMode homeProjectViewModeFor(String? saved, double width) {
+  for (final mode in ProjectViewMode.values) {
+    if (mode.name == saved) return mode;
+  }
+  return switch (tileScreenClassForWidth(width)) {
+    TileScreenClass.phone => ProjectViewMode.small,
+    TileScreenClass.tablet => ProjectViewMode.medium,
+    TileScreenClass.desktop => ProjectViewMode.large,
+  };
+}
+
+/// 共有のタブのカード・行が作品のサムネイルを読む幅（`Image.file`の
+/// `cacheWidth`。保存されたサムネイルはこれより小さいので、その大きさのまま）。
+const int kSharedCoverCacheWidth = 320;
 
 /// ホームの一覧の表示：サムネイルのタイルか詳細（行）か、と大きさ（大・中・
 /// 小）の組み合わせ。保存は名前で、`detail`は以前からの詳細（中）。

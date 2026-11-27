@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -24,6 +25,13 @@ class CollectionActionFrame extends StatelessWidget {
 
   /// The tap target around the drawn circle ([kMinInteractiveDimension]).
   static const double targetExtent = kMinInteractiveDimension;
+
+  /// Whether [pointer] went down on one of these circles and has not been
+  /// lifted yet. The circle sees the pointer-down before the widgets around
+  /// it (it is deeper in the hit test), so a card around it can ask this when
+  /// the same pointer reaches it ([CollectionCardDoubleTapRecognizer]).
+  static bool isPressing(int pointer) =>
+      _RenderActionTarget._pressing.contains(pointer);
   static const double glyphSize = 16;
 
   final Widget child;
@@ -372,6 +380,18 @@ class _ActionTarget extends SingleChildRenderObjectWidget {
 class _RenderActionTarget extends RenderProxyBox {
   _RenderActionTarget(this._reach);
 
+  /// The pointers that went down on a circle ([CollectionActionFrame.isPressing]).
+  static final Set<int> _pressing = {};
+
+  @override
+  void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
+    if (event is PointerDownEvent) {
+      _pressing.add(event.pointer);
+    } else if (event is PointerUpEvent || event is PointerCancelEvent) {
+      _pressing.remove(event.pointer);
+    }
+  }
+
   EdgeInsets _reach;
   set reach(EdgeInsets value) {
     if (value == _reach) return;
@@ -506,6 +526,25 @@ class _RenderActionRow extends RenderFlex {
     }
     return false;
   }
+}
+
+/// The double tap of a card that holds [CollectionActionFrame]s (the star and
+/// the "⋮" of a project card, whose double tap opens the canvas).
+///
+/// A double-tap recognizer holds its pointer's gesture arena after the first
+/// tap until [kDoubleTapTimeout] has passed, so a tap on a button inside the
+/// card only took effect about 300 ms after it was released. This one does
+/// not join the arena of a pointer that went down on one of the circles: the
+/// button then wins as soon as it is released. Taps elsewhere on the card
+/// (the cover, the name, the band around the circles) still wait for a
+/// possible second tap, and two taps there still open the canvas.
+class CollectionCardDoubleTapRecognizer extends DoubleTapGestureRecognizer {
+  CollectionCardDoubleTapRecognizer({super.debugOwner});
+
+  @override
+  bool isPointerAllowed(PointerDownEvent event) =>
+      !CollectionActionFrame.isPressing(event.pointer) &&
+      super.isPointerAllowed(event);
 }
 
 /// The empty state is a visible, neutral star (the same tone as the save/load
