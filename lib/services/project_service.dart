@@ -3152,11 +3152,19 @@ class ProjectService extends ChangeNotifier {
     final idMap = {
       for (final layer in sourceLayers) layer.id: _nextLayerId(projectId),
     };
+    // 写したレイヤーのキーフレームは、元のコマから新しいコマへ同じだけずらす。
+    final keyOffset = clampedInsertAt - sourceFrameIndex;
     final newLayers = [
       for (final layer in sourceLayers)
         layer.copyWith(
           id: idMap[layer.id]!,
           parentFolderId: idMap[layer.parentFolderId],
+          keyframes: layer.keyframes.isEmpty || keyOffset == 0
+              ? null
+              : [
+                  for (final key in layer.keyframes)
+                    key.copyWith(frameIndex: key.frameIndex + keyOffset),
+                ],
         ),
     ];
 
@@ -3179,18 +3187,50 @@ class ProjectService extends ChangeNotifier {
       layers: newLayers,
       hold: source.hold,
     );
-    final newFrames = List<Frame>.from(targetScene.frames)
-      ..insert(clampedInsertAt, newFrame);
+    // 共通レイヤーの表示範囲（コマの範囲指定）も、足した所から後ろを1つずらす
+    // （範囲の中に足したコマは範囲に入る）。
+    int after(int index) => index >= clampedInsertAt ? index + 1 : index;
+    Layer withShiftedRange(Layer layer) {
+      if (!isRangeLayerType(layer.type) ||
+          layer.rangeMode != LayerRangeMode.frameRange) {
+        return layer;
+      }
+      final start = (layer.rangeStart ?? 1) - 1;
+      final end = (layer.rangeEnd ?? start + 1) - 1;
+      return layer.copyWith(
+        rangeStart: after(start) + 1,
+        rangeEnd: after(end) + 1,
+      );
+    }
+
+    final newFrames = [
+      for (final frame in targetScene.frames)
+        frame.layers.any((l) => isRangeLayerType(l.type))
+            ? frame.copyWith(
+                layers: frame.layers.map(withShiftedRange).toList(),
+              )
+            : frame,
+    ]..insert(clampedInsertAt, newFrame);
     final reindexed = newFrames
         .asMap()
         .entries
         .map((e) => e.value.copyWith(index: e.key))
         .toList();
-    var updatedScene = _remapFrameAnchors(
-      targetScene,
-      reindexed,
-      (index) => index >= clampedInsertAt ? index + 1 : index,
-    );
+    var updatedScene =
+        _remapFrameAnchors(
+          targetScene,
+          reindexed,
+          after,
+          freshFrame: clampedInsertAt,
+        ).copyWith(
+          effectFilters: [
+            for (final effect in targetScene.effectFilters)
+              effect.copyWith(
+                startFrame: after(effect.startFrame),
+                endFrame: after(effect.endFrame),
+              ),
+          ],
+        );
     if (transferFrameAnchors) {
       updatedScene = updatedScene.copyWith(
         markers: [
@@ -3424,15 +3464,45 @@ class ProjectService extends ChangeNotifier {
   Scene _remapFrameAnchors(
     Scene scene,
     List<Frame> frames,
-    int? Function(int) newIndexFor,
-  ) {
+    int? Function(int) newIndexFor, {
+    int? freshFrame,
+  }) {
     int? newIndex(int oldIndex) {
       if (oldIndex < 0 || oldIndex >= scene.frames.length) return null;
       return newIndexFor(oldIndex);
     }
 
+    // レイヤーとグループのキーフレームはコマの番号で持つので、コマが動いたら
+    // 一緒に動かす（消えたコマの分は外す）。[freshFrame]は今足したコマで、
+    // その写したレイヤーのキーフレームは呼び出し側が合わせてある。
+    List<LayerKeyframe> remapKeys(List<LayerKeyframe> keys) => [
+      for (final key in keys)
+        if (newIndex(key.frameIndex) case final int index)
+          key.frameIndex == index ? key : key.copyWith(frameIndex: index),
+    ]..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
+    final remappedFrames = [
+      for (var i = 0; i < frames.length; i++)
+        i == freshFrame ||
+                frames[i].layers.every((layer) => layer.keyframes.isEmpty)
+            ? frames[i]
+            : frames[i].copyWith(
+                layers: [
+                  for (final layer in frames[i].layers)
+                    layer.keyframes.isEmpty
+                        ? layer
+                        : layer.copyWith(keyframes: remapKeys(layer.keyframes)),
+                ],
+              ),
+    ];
+
     return scene.copyWith(
-      frames: frames,
+      frames: remappedFrames,
+      groups: [
+        for (final group in scene.groups)
+          group.keyframes.isEmpty
+              ? group
+              : group.copyWith(keyframes: remapKeys(group.keyframes)),
+      ],
       cameraKeyframes: [
         for (final keyframe in scene.cameraKeyframes)
           if (newIndex(keyframe.frameIndex) case final int index)
