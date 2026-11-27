@@ -406,14 +406,10 @@ void main() {
       await tapEntry(tester, l10n.canvasColorAdjustMenuTitle);
     }
 
-    // フィルターとして残す2つは、パネルの題の右のメニューの中。
+    // フィルターとして残す2つは、パネルの題の右のメニューの中（調整中の窓の
+    // 見出しに出すので、パネルの外にある）。
     Future<void> prompt(String label) async {
-      await tester.tap(
-        find.descendant(
-          of: panel,
-          matching: find.byKey(const ValueKey('color-adjust-save-menu')),
-        ),
-      );
+      await tester.tap(find.byKey(const ValueKey('color-adjust-save-menu')));
       await settle(tester, 3);
       await tester.tap(find.text(label).last);
       await settle(tester, 4);
