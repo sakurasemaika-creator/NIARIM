@@ -225,6 +225,39 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
     });
   }
 
+  Widget _buildMoveDragTarget({
+    required Key key,
+    required Widget child,
+    required double left,
+    required Size expandedSize,
+    required double viewportWidth,
+    required double viewportHeight,
+  }) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.grab,
+      child: GestureDetector(
+        key: key,
+        behavior: HitTestBehavior.opaque,
+        onPanStart: (details) => _startMoving(details, left: left),
+        onPanUpdate: (details) => _moveBy(
+          details,
+          expandedSize: expandedSize,
+          viewportWidth: viewportWidth,
+          viewportHeight: viewportHeight,
+        ),
+        onPanEnd: (_) {
+          _moveStartPosition = null;
+          _moveStartOffset = null;
+        },
+        onPanCancel: () {
+          _moveStartPosition = null;
+          _moveStartOffset = null;
+        },
+        child: child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -353,17 +386,6 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                           builder: (context, _) {
                             final headerMenuBuilder =
                                 _menuController.headerMenuBuilder;
-                            final trailingHeaderWidth =
-                                (headerMenuBuilder == null
-                                    ? 0.0
-                                    : headerControlWidth) +
-                                (widget.onClose == null
-                                    ? 0.0
-                                    : headerControlWidth);
-                            final centerGripOffset =
-                                (trailingHeaderWidth -
-                                    headerControlWidth * 2) /
-                                2;
                             return SizedBox(
                               width: menuWidth,
                               height: _headerHeight,
@@ -446,103 +468,73 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                       onPressed: _toggleMinimized,
                                     ),
                                   ),
-                                  // The title and central grip share one drag area.
+                                  // The title is a wide drag target of its own.
                                   Expanded(
-                                    child: MouseRegion(
-                                      cursor: SystemMouseCursors.grab,
-                                      child: GestureDetector(
-                                        key: const ValueKey(
-                                          'focus-mode-menu-drag-handle',
-                                        ),
-                                        behavior: HitTestBehavior.opaque,
-                                        onPanStart: (details) =>
-                                            _startMoving(details, left: left),
-                                        onPanUpdate: (details) => _moveBy(
-                                          details,
-                                          expandedSize: expandedSize,
-                                          viewportWidth: viewportWidth,
-                                          viewportHeight: viewportHeight,
-                                        ),
-                                        onPanEnd: (_) {
-                                          _moveStartPosition = null;
-                                          _moveStartOffset = null;
-                                        },
-                                        onPanCancel: () {
-                                          _moveStartPosition = null;
-                                          _moveStartOffset = null;
-                                        },
-                                        child: LayoutBuilder(
-                                          builder: (context, constraints) {
-                                            final titleWidth = math.max(
-                                              0.0,
-                                              constraints.maxWidth / 2 -
-                                                  22 +
-                                                  centerGripOffset,
-                                            );
-                                            return Stack(
-                                              fit: StackFit.expand,
-                                              children: [
-                                                if (widget.title.isNotEmpty)
-                                                  Positioned(
-                                                    left: 8,
-                                                    top: 0,
-                                                    bottom: 0,
-                                                    width: titleWidth,
-                                                    child: Align(
-                                                      alignment:
-                                                          Alignment.centerLeft,
-                                                      // Let pointer gestures pass
-                                                      // through the title text to
-                                                      // the shared move-handle
-                                                      // GestureDetector below.
-                                                      child: IgnorePointer(
-                                                        ignoring: true,
-                                                        child: Text(
-                                                          widget.title,
-                                                          key: const ValueKey(
-                                                            'focus-mode-menu-title',
-                                                          ),
-                                                          maxLines: 1,
-                                                          overflow:
-                                                              TextOverflow.ellipsis,
-                                                          style: localizedHeadingStyle(
-                                                            context,
-                                                            TextStyle(
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight.w600,
-                                                              color:
-                                                                  scheme.onSurface,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                Center(
-                                                  child: Transform.translate(
-                                                    offset: Offset(
-                                                      centerGripOffset,
-                                                      0,
-                                                    ),
-                                                    child: Container(
-                                                      key: const ValueKey(
-                                                        'focus-mode-menu-move-grip',
-                                                      ),
-                                                      width: 32,
-                                                      height: 4,
-                                                      decoration: BoxDecoration(
-                                                        color: scheme.onSurfaceVariant
-                                                            .withValues(alpha: 0.48),
-                                                        borderRadius:
-                                                            BorderRadius.circular(8),
-                                                      ),
-                                                    ),
-                                                  ),
+                                    child: _buildMoveDragTarget(
+                                      key: const ValueKey(
+                                        'focus-mode-menu-drag-handle',
+                                      ),
+                                      left: left,
+                                      expandedSize: expandedSize,
+                                      viewportWidth: viewportWidth,
+                                      viewportHeight: viewportHeight,
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                          ),
+                                          // Pointer input passes through the
+                                          // title to the surrounding drag target.
+                                          child: IgnorePointer(
+                                            ignoring: true,
+                                            child: Text(
+                                              widget.title,
+                                              key: const ValueKey(
+                                                'focus-mode-menu-title',
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: localizedHeadingStyle(
+                                                context,
+                                                TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: scheme.onSurface,
                                                 ),
-                                              ],
-                                            );
-                                          },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  // Keep the move grip directly beside the
+                                  // contextual menu, not in the title area.
+                                  SizedBox(
+                                    width: headerControlWidth,
+                                    height: _headerHeight,
+                                    child: _buildMoveDragTarget(
+                                      key: const ValueKey(
+                                        'focus-mode-menu-move-grip-handle',
+                                      ),
+                                      left: left,
+                                      expandedSize: expandedSize,
+                                      viewportWidth: viewportWidth,
+                                      viewportHeight: viewportHeight,
+                                      child: Center(
+                                        child: Container(
+                                          key: const ValueKey(
+                                            'focus-mode-menu-move-grip',
+                                          ),
+                                          width: 32,
+                                          height: 4,
+                                          decoration: BoxDecoration(
+                                            color: scheme.onSurfaceVariant
+                                                .withValues(alpha: 0.48),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
                                         ),
                                       ),
                                     ),
