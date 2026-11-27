@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show compute;
+
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
@@ -157,17 +159,34 @@ class TimelineFrameRenderer {
     return _applyEffects(request, rgba);
   }
 
-  /// The finished frame as an image (what the preview shows).
+  /// The finished frame as an image (what the preview shows). The effect
+  /// filters run off the screen's thread (some take seconds on a big frame,
+  /// and the timeline stopped taking touches meanwhile); a frame no effect
+  /// covers is shown as it was composed (the same picture: no effect changes
+  /// it).
   Future<ui.Image> renderImage(TimelineFrameRequest request) async {
     final image = await compose(request);
-    if (request.effectFilters.isEmpty) return image;
+    final active = [
+      for (final e in request.effectFilters)
+        if (e.enabled &&
+            request.frameIndex >= e.startFrame &&
+            request.frameIndex <= e.endFrame)
+          e,
+    ];
+    if (active.isEmpty) return image;
     final ByteData? data;
     try {
       data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     } finally {
       image.dispose();
     }
-    final filtered = _applyEffects(request, data!.buffer.asUint8List());
+    final filtered = await compute(_applyEffectsApart, (
+      rgba: data!.buffer.asUint8List(),
+      width: request.outputWidth,
+      height: request.outputHeight,
+      effects: active,
+      frameIndex: request.frameIndex,
+    ));
     final completer = Completer<ui.Image>();
     ui.decodeImageFromPixels(
       filtered,
@@ -190,3 +209,22 @@ class TimelineFrameRenderer {
     );
   }
 }
+
+/// [FilterEngine.applyEffectFilters] for a frame of the preview, in a
+/// background isolate.
+Uint8List _applyEffectsApart(
+  ({
+    Uint8List rgba,
+    int width,
+    int height,
+    List<EffectFilterInstance> effects,
+    int frameIndex,
+  })
+  job,
+) => FilterEngine().applyEffectFilters(
+  job.rgba,
+  job.width,
+  job.height,
+  job.effects,
+  job.frameIndex,
+);

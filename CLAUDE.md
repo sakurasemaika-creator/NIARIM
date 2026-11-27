@@ -1190,6 +1190,11 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   動かすまではおすすめ（`signatureFilterIds`）が先、動かした後（`moveInGallery`、保存キー
   `draw_filters_user_order`）は`_filters`の並び。フォルダは`draw_filter_folders`（引き継ぎで移る）。
   `test/filter_organising_j19_test.dart`。
+- **タイムラインのプレビューの演出フィルターは`compute`でかける（2026-11-27、U66）**：
+  `TimelineFrameRenderer.renderImage`は、今のフレームにかかる演出フィルターが無ければ合成した絵をそのまま返し、
+  あれば裏のisolateでかける（墨溜まり・VHS等で値を変えるたびに入力が数秒止まった）。書き出し（`renderRgba`）と
+  同じ絵（`test/engine/timeline_preview_effects_apart_test.dart`）。演出フィルターに、isolateへ送れない物
+  （`ui.Image`等）や画面のisolateの状態を使う処理を足さないこと。
 - **描画・演出フィルターの重い所を、結果を1バイトも変えずに軽くした（2026-11-27）**：ガウスぼかし
   （`_convolveH`・`_convolveV`：重みを`Float64List`で持ち、行の中は端の判定をせず、窓の中が全部同じ画素の
   所は値ごとに1回求めた表を引く）、大きいぼかし・σのぼかし（`_boxPass`：整数の和を列ごとに並べて行の順に
