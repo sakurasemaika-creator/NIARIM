@@ -1,6 +1,7 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:archive/archive.dart';
+import 'package:flutter/foundation.dart';
 
 /// 外部から受け取る .niashare/.niatra ZIP の共通防御。
 ///
@@ -14,6 +15,11 @@ class ArchiveSecurity {
   static const int maxMetadataEntryBytes = 16 * 1024 * 1024;
   static const int maxEntries = 20000;
   static const int maxEntryNameChars = 512;
+
+  /// Measures every compressed entry with the Dart inflater only (tests
+  /// compare it with the platform zlib pass).
+  @visibleForTesting
+  static bool debugDartInflateOnly = false;
 
   static Archive decodeZip(List<int> bytes) {
     if (bytes.length > maxCompressedBytes) {
@@ -119,6 +125,7 @@ class ArchiveSecurity {
         ZipFile.zipCompressionDeflate => _measureDeflated(
           file.rawContent,
           expandedBytes,
+          size,
         ),
         _ => throw const FormatException('未対応のZIP圧縮方式です'),
       };
@@ -132,16 +139,54 @@ class ArchiveSecurity {
     }
   }
 
-  static int _measureDeflated(InputStreamBase? rawContent, int expandedSoFar) {
+  static int _measureDeflated(
+    InputStreamBase? rawContent,
+    int expandedSoFar,
+    int declaredSize,
+  ) {
     if (rawContent == null) throw const FormatException('ZIPエントリの圧縮データがありません');
     final remainingTotal = maxExpandedBytes - expandedSoFar;
-    final sink = _LimitedOutputStream(
-      remainingTotal < maxSingleEntryBytes
-          ? remainingTotal
-          : maxSingleEntryBytes,
-    );
+    final limit = remainingTotal < maxSingleEntryBytes
+        ? remainingTotal
+        : maxSingleEntryBytes;
+    // The entry's bytes are later read with the platform zlib
+    // (ZipFile.content), which expands a stream the same way. When it expands
+    // to exactly the declared size within the limit, the Dart inflater below
+    // gives that size too, so its much slower pass is only needed to tell
+    // what is wrong with an entry that does not.
+    if (!debugDartInflateOnly &&
+        declaredSize <= limit &&
+        _nativeInflatedLength(rawContent.toUint8List(), declaredSize) ==
+            declaredSize) {
+      return declaredSize;
+    }
+    final sink = _LimitedOutputStream(limit);
     Inflate.stream(rawContent, sink);
     return sink.length;
+  }
+
+  /// The length [raw] (a raw deflate stream) expands to with the platform
+  /// zlib, or null when it cannot be expanded or expands past [stopAfter]
+  /// bytes (the expanded bytes are counted, not kept).
+  static int? _nativeInflatedLength(Uint8List raw, int stopAfter) {
+    final filter = RawZLibFilter.inflateFilter(raw: true);
+    var length = 0;
+    try {
+      filter.process(raw, 0, raw.length);
+      for (final end in const [false, true]) {
+        for (
+          var chunk = filter.processed(end: end);
+          chunk != null;
+          chunk = filter.processed(end: end)
+        ) {
+          length += chunk.length;
+          if (length > stopAfter) return null;
+        }
+      }
+    } catch (_) {
+      return null;
+    }
+    return length;
   }
 
   static void _validateEntryName(String name) {

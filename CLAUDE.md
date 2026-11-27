@@ -1285,6 +1285,24 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   `AutosaveService.save`（`skipUnchanged: false`）は今までどおり全部のタイルを書く。見張りは
   `test/autosave_incremental_test.dart`（元のファイルの1タイルを無圧縮にしておき、保存後も無圧縮のまま
   残る＝写したことを確かめる）。
+- **ZIPの項目の大きさを確かめる展開は端末のzlibで行う（2026-11-27）**：`ArchiveSecurity.decodeZip`は、
+  作品を読むたび（起動の一覧づくり・作品を開くとき・自動保存の比べ）に全部の項目を展開して申告の大きさと
+  比べる。以前はpackage:archiveのDartの展開器（1バイトずつ書く`_LimitedOutputStream`）で数えていて、
+  200作品・タイル約4GB分で起動に73秒（AOT）、タイル480枚の作品を開くのに2.3秒かかった。今は端末の
+  zlib（`RawZLibFilter`。中身を読む`ZipFile.content`も同じzlib）で数え、申告どおりの大きさに展開できた
+  項目だけそれを使い、できなかった項目は元のDartの展開器で調べ直す（拒む理由の文も元のまま。
+  `debugDartInflateOnly`で両方を比べる`test/archive_security_native_inflate_test.dart`）。ZIPを読む処理を
+  足すときもDartの展開器で全部を展開しないこと。新しい形式のタイルは展開したバイトをそのまま
+  タイルにする（`_readTilePixels`の`onlyUse`。写すと開く間だけ絵の2倍のメモリを使った）。
+  **展開後の合計の上限（`maxExpandedBytes`＝256MB）は自分の作品ファイルにも効く**ので、描いた
+  タイルが1024枚を超える作品は次の起動で読めず、一覧から消えて「読み込めませんでした」になる（未対応）。
+- **本文の代替フォント列にNoto Serif JPを入れない（2026-11-27）**：書体の代替列に名前がある書体は、
+  その書式で最初に文を並べたときに全部読み込まれ、アプリを閉じるまでメモリに残る（Androidでは
+  APKの中の圧縮を展開する）。白光明朝はNoto Serif JPと収録文字が同じなので、白光明朝が主の文
+  （`bodyFontFallbackFor`）ではNoto Serif JPが描く字は無い。この列から外して起動のたびの13.6MBを
+  読まないようにした（描いた画素が同じことは`test/font_fallback_memory_test.dart`）。本文の書式を受け
+  継いで主フォントだけを別の書体にする文は`fallbackUnderOtherFamily`で元の列に戻す（エラー表示の
+  monospaceが実例。ドロップダウン・一覧の行は見出しの列を受け継ぐので要らない）。
 - **トーンのタイルは模様の間隔で割り切れる大きさ（所有者の依頼、2026-11-25「ストッキング以外もテクスチャ系やトーンは
   つなぎ目がきれいにループするように」）**：トーンは1枚のタイルを縦横に繰り返して貼る。64pxのタイルに間隔6pxの
   ライン・7pxのクロスハッチ・3〜10pxの網目を並べると、継ぎ目だけ間隔が狭くなって64pxごとに筋が出た（タイツは

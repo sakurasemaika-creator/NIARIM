@@ -2,6 +2,7 @@ import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/material.dart';
 
+import '../config/font_fallback.dart';
 import 'app_locale.dart';
 
 /// アプリ内で発生した「画面が壊れる種類のエラー」を握りつぶさず、
@@ -203,10 +204,13 @@ class _AppErrorView extends StatelessWidget {
                 color: const Color(0xFF1A1A1A),
                 child: Text(
                   message,
-                  style: const TextStyle(
-                    color: Color(0xFFFFB4A9),
+                  style: TextStyle(
+                    color: const Color(0xFFFFB4A9),
                     fontSize: 10,
                     fontFamily: 'monospace',
+                    fontFamilyFallback: fallbackUnderOtherFamily(
+                      DefaultTextStyle.of(context).style.fontFamilyFallback,
+                    ),
                   ),
                 ),
               ),

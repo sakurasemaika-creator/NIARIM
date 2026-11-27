@@ -75,8 +75,8 @@ void main() {
   for (final (code, family, fallback) in [
     ('ja', 'Kuramubon', kHeadingFontFallback),
     ('fr', 'Kuramubon', kHeadingFontFallback),
-    ('ko', 'NotoSerifKRSubset', kKoreanBodyFontFallback),
-    ('zh', 'NotoSerifSCSubset', kChineseBodyFontFallback),
+    ('ko', 'NotoSerifKRSubset', bodyFontFallbackFor(const Locale('ko'))),
+    ('zh', 'NotoSerifSCSubset', bodyFontFallbackFor(const Locale('zh'))),
   ]) {
     testWidgets('the rescue button label uses the button face ($code)', (
       tester,

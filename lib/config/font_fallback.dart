@@ -43,6 +43,7 @@
 /// システムフォントが受け持つ（現状と同じ挙動のため後退は無い）。
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// 本文用フォント（白光明朝）の代替フォント列。
@@ -51,7 +52,9 @@ import 'package:flutter/widgets.dart';
 ///   白光明朝が取りこぼす文字はちょうどこの254文字だけなので、先頭に
 ///   置いても「セリフ体で出せる文字がゴシック体になる」ことは起こらない。
 /// - `NotoSerifJP`：白光明朝の改変元。実測では収録文字が完全に一致して
-///   おり補える文字は無いが、将来白光明朝を差し替えた場合の保険として残す。
+///   おり、白光明朝が主フォントの文では補える文字は無い（その文の列
+///   [bodyFontFallbackFor]からは外してある）。主フォントを別の書体にした
+///   文（[fallbackUnderOtherFamily]）と、Noto Serif JPを主にした文の補完に使う。
 /// - `NotoSerifKRSubset` / `NotoSerifSCSubset`：ハングル・簡体字。
 ///   本文と同じSource Han Serif系なので混植しても継ぎ目が出ない。
 const List<String> kBodyFontFallback = <String>[
@@ -118,12 +121,52 @@ String bodyFontFamilyFor(Locale? locale) => switch (locale?.languageCode) {
 };
 
 /// 表示言語[locale]の本文の代替フォント列（[bodyFontFamilyFor]と組で使う）。
+///
+/// 主フォントの白光明朝（中国語・韓国語では列の先頭）はNoto Serif JPと
+/// 収録文字が完全に一致するので、Noto Serif JPが描く字は無い。それでも列に
+/// 名前があると、その列で最初に文を並べたときに書体のデータ（約13.6MB）が
+/// 読み込まれ、アプリを閉じるまでメモリに残る。描く字が変わらないよう、
+/// この列からだけ外してある（`test/font_fallback_memory_test.dart`）。
 List<String> bodyFontFallbackFor(Locale? locale) =>
     switch (locale?.languageCode) {
-      'zh' => kChineseBodyFontFallback,
-      'ko' => kKoreanBodyFontFallback,
-      _ => kBodyFontFallback,
+      'zh' => _chineseBodyFallbackUnderBodyFont,
+      'ko' => _koreanBodyFallbackUnderBodyFont,
+      _ => _bodyFallbackUnderBodyFont,
     };
+
+const List<String> _bodyFallbackUnderBodyFont = <String>[
+  'DelaGothicOne',
+  'NotoSerifKRSubset',
+  'NotoSerifSCSubset',
+];
+
+const List<String> _chineseBodyFallbackUnderBodyFont = <String>[
+  'HakkouMincho',
+  'DelaGothicOne',
+  'NotoSerifKRSubset',
+];
+
+const List<String> _koreanBodyFallbackUnderBodyFont = <String>[
+  'HakkouMincho',
+  'DelaGothicOne',
+  'NotoSerifSCSubset',
+];
+
+/// 本文の書式を受け継いで、主フォントだけを別の書体（monospace等）にした
+/// 文の代替フォント列。[inherited]が[bodyFontFallbackFor]の列なら、外した
+/// Noto Serif JPを戻した元の列（[kBodyFontFallback]等）を返す。別の書体には
+/// 無い字をNoto Serif JPが描くことがあるため。それ以外の列はそのまま返す。
+List<String>? fallbackUnderOtherFamily(List<String>? inherited) {
+  if (inherited == null) return null;
+  for (final (underBody, full) in const [
+    (_bodyFallbackUnderBodyFont, kBodyFontFallback),
+    (_chineseBodyFallbackUnderBodyFont, kChineseBodyFontFallback),
+    (_koreanBodyFallbackUnderBodyFont, kKoreanBodyFontFallback),
+  ]) {
+    if (listEquals(inherited, underBody)) return full;
+  }
+  return inherited;
+}
 
 bool _usesUnifiedHeadingFont(Locale? locale) =>
     locale?.languageCode == 'zh' || locale?.languageCode == 'ko';
@@ -171,7 +214,7 @@ TextStyle userNameStyleFor(Locale? locale, String text, TextStyle style) {
   }
   return style.copyWith(
     fontFamily: 'HakkouMincho',
-    fontFamilyFallback: kBodyFontFallback,
+    fontFamilyFallback: _bodyFallbackUnderBodyFont,
   );
 }
 

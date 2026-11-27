@@ -935,23 +935,61 @@ class NiaproSerializer {
 
   // ─── 読み込み ─────────────────────────────────────────────────────────
 
+  /// [onlyUse]: [file] gives no other tile, so its expanded bytes become the
+  /// tile itself instead of a copy (a work's tiles are then held once while
+  /// it is read, not twice).
   static Uint8List _readTilePixels(
     ArchiveFile file, {
     void Function()? onRepaired,
+    bool onlyUse = false,
   }) {
-    final bytes = Uint8List.fromList(file.content as List<int>);
+    final content = file.content as List<int>;
+    final bytes =
+        onlyUse &&
+            content is Uint8List &&
+            content.offsetInBytes == 0 &&
+            content.lengthInBytes == content.buffer.lengthInBytes
+        ? content
+        : Uint8List.fromList(content);
     // Older paint writers sometimes saved straight RGB in a premultiplied
     // tile. Only pixels that violate RGB <= alpha can be identified safely.
     // Already-valid values are ambiguous in old files and must stay exact.
+    void repair(int i) {
+      final alpha = bytes[i + 3];
+      bytes[i] = (bytes[i] * alpha + 127) ~/ 255;
+      bytes[i + 1] = (bytes[i + 1] * alpha + 127) ~/ 255;
+      bytes[i + 2] = (bytes[i + 2] * alpha + 127) ~/ 255;
+      onRepaired?.call();
+    }
+
+    if (Endian.host == Endian.little && bytes.offsetInBytes % 4 == 0) {
+      // One word per pixel (R in the low byte, A in the high byte). Most
+      // pixels are fully transparent (0) or opaque, which always satisfy
+      // RGB <= alpha.
+      final pixels = bytes.buffer.asUint32List(
+        bytes.offsetInBytes,
+        bytes.length >> 2,
+      );
+      for (var p = 0; p < pixels.length; p++) {
+        final pixel = pixels[p];
+        if (pixel == 0) continue;
+        final alpha = pixel >>> 24;
+        if (alpha == 0xff) continue;
+        if ((pixel & 0xff) <= alpha &&
+            ((pixel >> 8) & 0xff) <= alpha &&
+            ((pixel >> 16) & 0xff) <= alpha) {
+          continue;
+        }
+        repair(p << 2);
+      }
+      return bytes;
+    }
     for (var i = 0; i + 3 < bytes.length; i += 4) {
       final alpha = bytes[i + 3];
       if (bytes[i] <= alpha && bytes[i + 1] <= alpha && bytes[i + 2] <= alpha) {
         continue;
       }
-      bytes[i] = (bytes[i] * alpha + 127) ~/ 255;
-      bytes[i + 1] = (bytes[i + 1] * alpha + 127) ~/ 255;
-      bytes[i + 2] = (bytes[i + 2] * alpha + 127) ~/ 255;
-      onRepaired?.call();
+      repair(i);
     }
     return bytes;
   }
@@ -1077,7 +1115,12 @@ class NiaproSerializer {
     final tileData = <String, Map<String, Uint8List>>{};
     var skippedTiles = 0;
     if (withTiles) {
-      void addTile(String compositeKey, String tileKey, ArchiveFile file) {
+      void addTile(
+        String compositeKey,
+        String tileKey,
+        ArchiveFile file, {
+        bool onlyUse = false,
+      }) {
         // A tile of the wrong size or with a key that is not "x,y" cannot be
         // drawn: one such tile made every composite of its layer throw, so
         // the whole layer vanished from the canvas. Only that tile is left out.
@@ -1090,6 +1133,7 @@ class NiaproSerializer {
         tileData.putIfAbsent(compositeKey, () => {})[tileKey] = _readTilePixels(
           file,
           onRepaired: () => repaired = true,
+          onlyUse: onlyUse,
         );
         final crc = file.crc32;
         if (tileCrcs != null && crc != null && !repaired) {
@@ -1115,7 +1159,12 @@ class NiaproSerializer {
           if (underscoreIdx < 0) continue;
           final layerId = withoutExt.substring(0, underscoreIdx);
           final tileKey = withoutExt.substring(underscoreIdx + 1);
-          addTile(frameLayerKey(sceneId, frameIndex, layerId), tileKey, file);
+          addTile(
+            frameLayerKey(sceneId, frameIndex, layerId),
+            tileKey,
+            file,
+            onlyUse: true,
+          );
         } else {
           final withoutExt = segments.last.replaceAll('.bin', '');
           final underscoreIdx = withoutExt.lastIndexOf('_');
