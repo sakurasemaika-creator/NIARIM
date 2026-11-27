@@ -1,5 +1,7 @@
 name: Focus mode menu verification
 
+# Covers initial placement, drag/resize geometry, collapse layout and editor-state retention.
+
 on:
   push:
     branches: [dev_branch]
