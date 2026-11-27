@@ -464,7 +464,11 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                       builder: (context, constraints) {
                                         final titleWidth = math.max(
                                           0.0,
-                                          constraints.maxWidth / 2 - 22,
+                                          constraints.maxWidth / 2 -
+                                              22 -
+                                              (headerMenuBuilder == null
+                                                  ? headerControlWidth / 2
+                                                  : 0),
                                         );
                                         return Stack(
                                           fit: StackFit.expand,
@@ -500,17 +504,25 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                                 ),
                                               ),
                                             Center(
-                                              child: Container(
-                                                key: const ValueKey(
-                                                  'focus-mode-menu-move-grip',
+                                              child: Transform.translate(
+                                                offset: Offset(
+                                                  headerMenuBuilder == null
+                                                      ? -headerControlWidth / 2
+                                                      : 0,
+                                                  0,
                                                 ),
-                                                width: 32,
-                                                height: 4,
-                                                decoration: BoxDecoration(
-                                                  color: scheme.onSurfaceVariant
-                                                      .withValues(alpha: 0.48),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
+                                                child: Container(
+                                                  key: const ValueKey(
+                                                    'focus-mode-menu-move-grip',
+                                                  ),
+                                                  width: 32,
+                                                  height: 4,
+                                                  decoration: BoxDecoration(
+                                                    color: scheme.onSurfaceVariant
+                                                        .withValues(alpha: 0.48),
+                                                    borderRadius:
+                                                        BorderRadius.circular(8),
+                                                  ),
                                                 ),
                                               ),
                                             ),
