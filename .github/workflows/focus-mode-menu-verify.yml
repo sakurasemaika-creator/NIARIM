@@ -10,6 +10,7 @@ on:
       - "lib/screens/canvas/canvas_screen.dart"
       - "lib/screens/canvas/widgets/focus_mode_menu.dart"
       - "lib/screens/canvas/widgets/color_adjust_sheet.dart"
+      - "lib/screens/canvas/widgets/filter_panel.dart"
       - "test/focus_mode_menu_test.dart"
       - "test/selection_tool_bar_test.dart"
 
@@ -40,6 +41,7 @@ jobs:
           flutter analyze --no-fatal-infos --no-fatal-warnings \
             lib/screens/canvas/widgets/focus_mode_menu.dart \
             lib/screens/canvas/widgets/color_adjust_sheet.dart \
+            lib/screens/canvas/widgets/filter_panel.dart \
             lib/screens/canvas/canvas_screen.dart \
             test/focus_mode_menu_test.dart \
             test/selection_tool_bar_test.dart
