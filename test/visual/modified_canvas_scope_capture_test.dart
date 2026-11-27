@@ -242,6 +242,43 @@ void main() {
         findsOneWidget,
       );
       await shot('06_pc_color_adjust_immersive_canvas');
+
+      final focusSurface = find.byKey(
+        const ValueKey('focus-mode-menu-surface'),
+      );
+      final focusSurfaceBeforeResize = tester.getRect(focusSurface);
+      final resizeHandle = find.byKey(
+        const ValueKey('focus-mode-menu-resize-handle'),
+      );
+      final focusClose = find.descendant(
+        of: focusSurface,
+        matching: find.byIcon(Icons.close),
+      ).first;
+      expect(find.byKey(const ValueKey('color-adjust-save-menu')), findsOneWidget);
+      expect(
+        find.text(
+          AppLocalizations.of(tester.element(find.byType(Scaffold).last))!
+              .canvasColorAdjustTitle,
+        ),
+        findsOneWidget,
+      );
+      expect(tester.getRect(resizeHandle).left,
+          closeTo(focusSurfaceBeforeResize.left, 0.1));
+      expect(tester.getRect(focusClose).right,
+          closeTo(focusSurfaceBeforeResize.right, 0.1));
+      await tester.drag(resizeHandle, const Offset(-28, -20));
+      await tester.pumpAndSettle();
+      final focusSurfaceResized = tester.getRect(focusSurface);
+      expect(focusSurfaceResized.width,
+          closeTo(focusSurfaceBeforeResize.width + 28, 0.1));
+      expect(focusSurfaceResized.height,
+          closeTo(focusSurfaceBeforeResize.height + 20, 0.1));
+      expect(focusSurfaceResized.right,
+          closeTo(focusSurfaceBeforeResize.right, 0.1));
+      expect(focusSurfaceResized.bottom,
+          closeTo(focusSurfaceBeforeResize.bottom, 0.1));
+      await shot('06a_pc_color_adjust_menu_resized');
+
       final sliders = find.descendant(
         of: find.byType(ColorAdjustSheet),
         matching: find.byType(Slider),
@@ -387,6 +424,20 @@ void main() {
       expect(colorAdjustSliders, findsNWidgets(3));
       await tester.drag(colorAdjustSliders.first, const Offset(48, 0));
       await shot('13_mobile_color_adjust_menu_expanded');
+      expect(find.byKey(const ValueKey('color-adjust-save-menu')), findsOneWidget);
+      expect(
+        find.text(mobileL10n.canvasColorAdjustTitle),
+        findsOneWidget,
+      );
+      final mobileFocusSurface = tester.getRect(
+        find.byKey(const ValueKey('focus-mode-menu-surface')),
+      );
+      expect(
+        tester.getRect(
+          find.byKey(const ValueKey('focus-mode-menu-resize-handle')),
+        ).left,
+        closeTo(mobileFocusSurface.left, 0.1),
+      );
       final saturationAfterEdit = tester
           .widget<Slider>(colorAdjustSliders.first)
           .value;
