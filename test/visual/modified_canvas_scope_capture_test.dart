@@ -232,6 +232,26 @@ void main() {
         ),
         findsOneWidget,
       );
+      final filterTitle = tester.getRect(
+        find.byKey(const ValueKey('focus-mode-menu-title')),
+      );
+      final filterGrip = tester.getRect(
+        find.byKey(const ValueKey('focus-mode-menu-move-grip')),
+      );
+      final filterDragArea = tester.getRect(
+        find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
+      );
+      expect(filterGrip.center.dx, closeTo(filterTitle.center.dx, 0.1));
+      expect(filterGrip.top, greaterThan(filterTitle.bottom));
+      expect(
+        filterDragArea.right,
+        closeTo(
+          tester.getRect(
+            find.byKey(const ValueKey('filter-focus-menu-actions')),
+          ).left,
+          0.1,
+        ),
+      );
       await tester.tap(find.byKey(const ValueKey('filter-cancel-button')));
       await settle();
       expect(find.byType(MenuBar), findsNothing);
