@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../config/font_fallback.dart';
+import '../../../widgets/fit_or_hide_title.dart';
 
 /// The current focus-window header can host an action supplied by its child.
 /// The child registers a builder so its action can live in the shared header
@@ -490,14 +491,13 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.stretch,
                                             children: [
-                                              Text(
-                                                widget.title,
+                                              // A title that does not fit is
+                                              // not shown (no ellipsis): it is
+                                              // still read out and on hover.
+                                              DefaultTextStyle.merge(
                                                 key: const ValueKey(
                                                   'focus-mode-menu-title',
                                                 ),
-                                                maxLines: 1,
-                                                overflow:
-                                                    TextOverflow.ellipsis,
                                                 textAlign: TextAlign.center,
                                                 style: localizedHeadingStyle(
                                                   context,
@@ -507,6 +507,9 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                                         FontWeight.w600,
                                                     color: scheme.onSurface,
                                                   ),
+                                                ),
+                                                child: FitOrHideTitle(
+                                                  widget.title,
                                                 ),
                                               ),
                                               const SizedBox(height: 2),

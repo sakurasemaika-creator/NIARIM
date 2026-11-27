@@ -387,6 +387,36 @@ void main() {
       BorderSide.none,
     );
   });
+
+  testWidgets('a title that does not fit is not shown, never cut with …', (
+    tester,
+  ) async {
+    // The selection tool's panel said 「選択ツ…」 over its move grip (U36):
+    // a screen's name that does not fit is not shown.
+    await tester.binding.setSurfaceSize(const Size(400, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    Future<void> show(String title) => tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: FocusModeMenu(
+            title: title,
+            maxWidth: 200,
+            onClose: () {},
+            collapseTooltip: 'Minimize',
+            expandTooltip: 'Expand',
+            child: const SizedBox(width: 120, height: 40),
+          ),
+        ),
+      ),
+    );
+    await show('Tool');
+    expect(find.text('Tool'), findsOneWidget);
+    const long = 'A much longer panel title than the header holds';
+    await show(long);
+    expect(find.text(long), findsNothing);
+    expect(find.bySemanticsLabel(long), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _CounterContent extends StatefulWidget {
