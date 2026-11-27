@@ -103,12 +103,15 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
         return;
       }
       final width = tm.canvasWidth, height = tm.canvasHeight;
+      final keyframes = ps.frameKeyframes(projectId, sceneId, frameIndex);
       final full = await LayerCompositor.composite(
         tm,
         layers,
         (layer) => ps.tileKeyFor(projectId, sceneId, frameIndex, layer.id),
         width,
         height,
+        keyframeOf: keyframes.keyframeOf,
+        groupKeyframeOf: keyframes.groupKeyframeOf,
         paperColor: paper,
       );
       const maxSide = 200;

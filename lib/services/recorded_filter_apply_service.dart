@@ -106,6 +106,12 @@ class RecordedFilterApplyService {
           ),
           tileManager.canvasWidth,
           tileManager.canvasHeight,
+          keyframeOf: projectService
+              .frameKeyframes(projectId, sceneId, frameIndex)
+              .keyframeOf,
+          groupKeyframeOf: projectService
+              .frameKeyframes(projectId, sceneId, frameIndex)
+              .groupKeyframeOf,
           shouldRender: (layer, _) => layer.id != layerId,
         );
         final otherBytes = await otherImage.toByteData(

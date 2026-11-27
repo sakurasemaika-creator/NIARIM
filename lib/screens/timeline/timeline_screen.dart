@@ -978,12 +978,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (w <= 0 || h <= 0) return;
     const size = 48;
     final layers = ps.layersOf(widget.projectId, sceneId, frame.index);
+    final keyframes = ps.frameKeyframes(widget.projectId, sceneId, frame.index);
     final fullImage = await LayerCompositor.composite(
       tileManager,
       layers,
       (l) => ps.tileKeyFor(widget.projectId, sceneId, frame.index, l.id),
       w,
       h,
+      keyframeOf: keyframes.keyframeOf,
+      groupKeyframeOf: keyframes.groupKeyframeOf,
       paperColor: LayerCompositor.paperForBlendModes(
         layers,
         _projectBackgroundOf(ps, widget.projectId),

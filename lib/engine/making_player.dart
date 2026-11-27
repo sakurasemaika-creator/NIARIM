@@ -10,6 +10,7 @@ import '../models/layer.dart';
 import '../models/layer_mask.dart';
 import '../services/making_service.dart';
 import 'layer_compositor.dart';
+import 'layer_keyframe_engine.dart';
 import 'making_log.dart';
 import 'niapro_serializer.dart';
 import 'tile_manager.dart';
@@ -67,6 +68,8 @@ class MakingPlayer {
 
   /// Longest edge of the pictures written for the export.
   static const int maxEdge = 720;
+
+  static final _keyframes = LayerKeyframeEngine();
 
   final Map<String, Map<String, (int, int)>> _refs = {};
   final Map<String, Map<String, (int, int)>> _loaded = {};
@@ -134,12 +137,17 @@ class MakingPlayer {
       for (var i = 0; i < structure.layers.length; i++)
         structure.layers[i].id: structure.keys[i],
     };
+    final frameIndex = steps[stepIndex].frameIndex;
     return LayerCompositor.composite(
       tiles,
       structure.layers,
       (layer) => keyOf[layer.id]!,
       structure.width,
       structure.height,
+      // キーフレーム（倍率・回転等）で動かしたレイヤーは、そのコマの位置で。
+      keyframeOf: (layer) => layer.keyframes.isEmpty
+          ? null
+          : _keyframes.valueAt(layer.keyframes, frameIndex),
       // The paper under the picture, as on the canvas (white when it is
       // transparent: a picture has to have something under it).
       paperColor: (structure.paper >>> 24) == 0xFF

@@ -754,6 +754,11 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
     final exportW = (project?.exportWidth ?? drawW).clamp(1, drawW).toInt();
     final exportH = (project?.exportHeight ?? drawH).clamp(1, drawH).toInt();
     final layers = frame.layers;
+    final keyframes = ps.frameKeyframes(
+      frame.projectId,
+      frame.sceneId,
+      frame.frameIndex,
+    );
     final fullImage = await LayerCompositor.composite(
       tileManager,
       layers,
@@ -761,6 +766,8 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
           ps.tileKeyFor(frame.projectId, frame.sceneId, frame.frameIndex, l.id),
       drawW,
       drawH,
+      keyframeOf: keyframes.keyframeOf,
+      groupKeyframeOf: keyframes.groupKeyframeOf,
       paperColor: LayerCompositor.paperForBlendModes(
         layers,
         frame.backgroundColor,

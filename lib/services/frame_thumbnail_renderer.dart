@@ -60,12 +60,19 @@ Future<ui.Image?> compositeFrameThumbnail(
 
   final frameLayers = projectService.layersOf(projectId, scene.id, position);
   final layers = editLayers?.call(frameLayers) ?? frameLayers;
+  final keyframes = projectService.frameKeyframes(
+    projectId,
+    scene.id,
+    position,
+  );
   final fullImage = await LayerCompositor.composite(
     tileManager,
     layers,
     (l) => projectService.tileKeyFor(projectId, scene.id, position, l.id),
     drawW,
     drawH,
+    keyframeOf: keyframes.keyframeOf,
+    groupKeyframeOf: keyframes.groupKeyframeOf,
     // A picture shown on its own (the home screen widget) carries the
     // work's background colour; previews inside the app lay it underneath
     // instead (FramePreviewBackground), so it follows a background change.

@@ -21,6 +21,8 @@ import '../engine/timeline_stack.dart';
 import '../engine/tile_manager.dart';
 import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
+import '../models/layer_keyframe.dart';
+import '../engine/layer_keyframe_engine.dart';
 import '../models/layer_group.dart';
 import '../models/timeline_marker.dart';
 import '../models/effect_filter_instance.dart';
@@ -3619,6 +3621,35 @@ class ProjectService extends ChangeNotifier {
     return null;
   }
 
+  /// [frameIndex]のコマを合成するときに`LayerCompositor`へ渡す、各レイヤーと
+  /// そのグループのキーフレーム（位置・倍率・回転・不透明度）を引く関数。
+  /// キャンバス以外の合成（フレーム一覧・プレビュー・サムネイル・結合・共通化・
+  /// メイキング・フィルターの元絵など）もこれを渡すこと。渡さないと、
+  /// キーフレームで動かしたレイヤーが元の位置・大きさで描かれる。
+  ({
+    LayerKeyframe? Function(Layer layer) keyframeOf,
+    LayerKeyframe? Function(Layer layer) groupKeyframeOf,
+  })
+  frameKeyframes(String projectId, String sceneId, int frameIndex) {
+    final groups = layerGroupsOf(projectId, sceneId);
+    return (
+      keyframeOf: (layer) => layer.keyframes.isEmpty
+          ? null
+          : _keyframeEngine.valueAt(layer.keyframes, frameIndex),
+      groupKeyframeOf: (layer) {
+        for (final g in groups) {
+          if (!g.memberLayerIds.contains(layer.id)) continue;
+          return g.keyframes.isEmpty
+              ? null
+              : _keyframeEngine.valueAt(g.keyframes, frameIndex);
+        }
+        return null;
+      },
+    );
+  }
+
+  static final _keyframeEngine = LayerKeyframeEngine();
+
   void _updateSceneGroups(
     String projectId,
     String sceneId,
@@ -4183,12 +4214,15 @@ class ProjectService extends ChangeNotifier {
     final tm = _tilesOf(projectId);
     Uint8List? mergedPixels;
     if (tm != null) {
+      // 各レイヤーのキーフレーム（倍率・回転等）は結果の画素へ焼き込み、
+      // 結合後のレイヤーからは外す（外さないと2回かかる）。
       final mergedImage = await LayerCompositor.composite(
         tm,
         selectedLayers,
         (layer) => frameLayerKey(sceneId, frameIndex, layer.id),
         tm.canvasWidth,
         tm.canvasHeight,
+        keyframeOf: frameKeyframes(projectId, sceneId, frameIndex).keyframeOf,
       );
       try {
         final data = await mergedImage.toByteData(
@@ -4235,6 +4269,7 @@ class ProjectService extends ChangeNotifier {
         type: LayerType.normal,
         partId: null,
         needsAutofillUpdate: false,
+        keyframes: mergedPixels == null ? null : const [],
       );
       _applyFrameUpdate(projectId, sceneIdx, frameIndex, latestLayers);
     });
@@ -4290,12 +4325,15 @@ class ProjectService extends ChangeNotifier {
     if (tm == null) return;
     final layers = layersOf(projectId, sceneId, frameIndex);
     if (layers.isEmpty) return;
+    final keyframes = frameKeyframes(projectId, sceneId, frameIndex);
     final flattened = await LayerCompositor.composite(
       tm,
       layers,
       (l) => tileKeyFor(projectId, sceneId, frameIndex, l.id),
       tm.canvasWidth,
       tm.canvasHeight,
+      keyframeOf: keyframes.keyframeOf,
+      groupKeyframeOf: keyframes.groupKeyframeOf,
     );
     final byteData = await flattened.toByteData(
       format: ui.ImageByteFormat.rawRgba,
@@ -5309,12 +5347,15 @@ class ProjectService extends ChangeNotifier {
     final th = (h * scale).round().clamp(1, thumbMax);
 
     final layers = layersOf(projectId, scene.id, position);
+    final keyframes = frameKeyframes(projectId, scene.id, position);
     final fullImage = await LayerCompositor.composite(
       tm,
       layers,
       (l) => tileKeyFor(projectId, scene.id, position, l.id),
       w,
       h,
+      keyframeOf: keyframes.keyframeOf,
+      groupKeyframeOf: keyframes.groupKeyframeOf,
       // 加算・スクリーン等のレイヤーは用紙（背景色）にも効くので、そのときは
       // 背景色を敷いてから合成する（キャンバスと同じ見え方にする）。
       paperColor: LayerCompositor.paperForBlendModes(

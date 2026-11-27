@@ -525,6 +525,12 @@ class _FilterPanelState extends State<FilterPanel> {
       ),
       width,
       height,
+      keyframeOf: ps
+          .frameKeyframes(widget.projectId, widget.sceneId, widget.frameIndex)
+          .keyframeOf,
+      groupKeyframeOf: ps
+          .frameKeyframes(widget.projectId, widget.sceneId, widget.frameIndex)
+          .groupKeyframeOf,
       shouldRender: (layer, _) => layer.id != layerId,
     );
     final backgroundBytes = await _downscaleToBytes(
@@ -3645,6 +3651,12 @@ class _FilterPanelState extends State<FilterPanel> {
           ),
           tm.canvasWidth,
           tm.canvasHeight,
+          keyframeOf: ps
+              .frameKeyframes(widget.projectId, widget.sceneId, frameIndex)
+              .keyframeOf,
+          groupKeyframeOf: ps
+              .frameKeyframes(widget.projectId, widget.sceneId, frameIndex)
+              .groupKeyframeOf,
           shouldRender: (layer, _) => layer.id != layerId,
         );
         final otherData = await otherImage.toByteData(

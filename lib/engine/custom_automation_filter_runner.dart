@@ -161,6 +161,12 @@ class CustomAutomationFilterRunner {
           projectService.tileKeyFor(projectId, sceneId, frameIndex, layer.id),
       tm.canvasWidth,
       tm.canvasHeight,
+      keyframeOf: projectService
+          .frameKeyframes(projectId, sceneId, frameIndex)
+          .keyframeOf,
+      groupKeyframeOf: projectService
+          .frameKeyframes(projectId, sceneId, frameIndex)
+          .groupKeyframeOf,
       shouldRender: (layer, _) =>
           layer.isVisible && layer.id != excludedLayerId,
     );

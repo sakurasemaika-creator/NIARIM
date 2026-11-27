@@ -3705,12 +3705,20 @@ class CanvasAreaState extends State<CanvasArea> {
       widget.sceneId,
       widget.currentFrame,
     );
+    // 見えている位置で（キーフレームで動かしたレイヤーの線もそこで止める）。
+    final keyframes = context.read<ProjectService>().frameKeyframes(
+      project.id,
+      widget.sceneId,
+      widget.currentFrame,
+    );
     final image = await LayerCompositor.composite(
       _tileManager,
       layers,
       (l) => _tileKeyFor(l.id),
       w,
       h,
+      keyframeOf: keyframes.keyframeOf,
+      groupKeyframeOf: keyframes.groupKeyframeOf,
     );
     final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     image.dispose();

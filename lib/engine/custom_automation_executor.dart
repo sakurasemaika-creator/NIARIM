@@ -155,6 +155,12 @@ class CustomAutomationExecutor {
                 ),
                 tm.canvasWidth,
                 tm.canvasHeight,
+                keyframeOf: projectService
+                    .frameKeyframes(projectId, sceneId, frameIndex)
+                    .keyframeOf,
+                groupKeyframeOf: projectService
+                    .frameKeyframes(projectId, sceneId, frameIndex)
+                    .groupKeyframeOf,
               );
               final bytes = await image.toByteData(
                 format: ui.ImageByteFormat.rawRgba,
@@ -213,6 +219,12 @@ class CustomAutomationExecutor {
                 ),
                 tm.canvasWidth,
                 tm.canvasHeight,
+                keyframeOf: projectService
+                    .frameKeyframes(projectId, sceneId, frameIndex)
+                    .keyframeOf,
+                groupKeyframeOf: projectService
+                    .frameKeyframes(projectId, sceneId, frameIndex)
+                    .groupKeyframeOf,
                 shouldRender: (_, i) => i > index,
               );
               final bytes = await image.toByteData(

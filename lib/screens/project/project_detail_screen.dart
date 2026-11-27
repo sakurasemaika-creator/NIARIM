@@ -137,6 +137,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           entry.sceneId,
           entry.frameIndex,
         );
+        final keyframes = ps.frameKeyframes(
+          widget.projectId,
+          entry.sceneId,
+          entry.frameIndex,
+        );
         final img = await LayerCompositor.composite(
           tileManager,
           stacked.layers,
@@ -148,6 +153,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           ),
           tileManager.canvasWidth,
           tileManager.canvasHeight,
+          keyframeOf: keyframes.keyframeOf,
+          groupKeyframeOf: keyframes.groupKeyframeOf,
           paperColor: LayerCompositor.paperForBlendModes(
             stacked.layers,
             ps.projects
