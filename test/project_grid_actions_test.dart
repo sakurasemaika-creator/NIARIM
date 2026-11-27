@@ -90,6 +90,11 @@ Widget _host(
   ),
 );
 
+/// お気に入りの星（お気に入りなら塗り、そうでなければ輪郭だけ）。
+final _anyStar = find.byWidgetPredicate(
+  (w) => w is Icon && (w.icon == Icons.star || w.icon == Icons.star_border),
+);
+
 Finder _card(String name) =>
     find.ancestor(of: find.text(name), matching: find.byType(Card));
 
@@ -149,7 +154,7 @@ void main() {
         await tester.pumpAndSettle();
         for (final id in ['project', 'folder']) {
           expect(find.byKey(Key('collectionFavorite_$id')), findsOneWidget);
-          expect(find.byIcon(Icons.star), findsWidgets);
+          expect(_anyStar, findsWidgets);
         }
         expect(find.byType(PopupMenuButton<String>), findsNWidgets(2));
         await capture('collection_${mode.name}_unselected');
@@ -189,7 +194,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(find.byType(PopupMenuButton<String>), findsNWidgets(2));
-        expect(find.byIcon(Icons.star), findsNWidgets(2));
+        expect(_anyStar, findsNWidgets(2));
         final l10n = AppLocalizations.of(tester.element(_card('Project')))!;
 
         for (final name in ['Project', 'Folder']) {
@@ -230,10 +235,7 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(find.text(l10n.colorPickerFavoriteAdd));
           await tester.pumpAndSettle();
-          final star = find.descendant(
-            of: _card(name),
-            matching: find.byIcon(Icons.star),
-          );
+          final star = find.descendant(of: _card(name), matching: _anyStar);
           expect(star, findsOneWidget);
           // Compact projects can put both actions next to one another.
           expect(
@@ -258,7 +260,7 @@ void main() {
           await tester.tap(find.text(l10n.colorPickerFavoriteRemove));
           await tester.pumpAndSettle();
         }
-        expect(find.byIcon(Icons.star), findsNWidgets(2));
+        expect(_anyStar, findsNWidgets(2));
         expect(service.favoriteCalls, [
           'project',
           'folder',
@@ -330,10 +332,7 @@ void main() {
               ),
             );
             await tester.pumpAndSettle();
-            final star = find.descendant(
-              of: _card(name),
-              matching: find.byIcon(Icons.star),
-            );
+            final star = find.descendant(of: _card(name), matching: _anyStar);
             final cardRect = tester.getRect(_card(name));
             final starRect = tester.getRect(star);
             // お気に入りの星は絵の左下（右上のメニューと離し、名前の帯には
@@ -416,10 +415,7 @@ void main() {
       expect(themeService.current.accentColor, accent);
       expect(themeService.themeData.colorScheme.primary, accent);
       for (final name in ['Project', 'Folder']) {
-        final star = find.descendant(
-          of: _card(name),
-          matching: find.byIcon(Icons.star),
-        );
+        final star = find.descendant(of: _card(name), matching: _anyStar);
         expect(star, findsOneWidget, reason: '$name with $accent');
         expect(
           Theme.of(tester.element(star)).colorScheme.primary,

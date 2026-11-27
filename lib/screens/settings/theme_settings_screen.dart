@@ -936,6 +936,13 @@ class ThemeSettingsScreen extends StatelessWidget {
               isFavorite: false,
             ),
           );
+          // 新しいテーマは一覧の最後（画面の外）に足されるので、保存できた
+          // ことを知らせる（以前はダイアログが閉じるだけだった）。
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.commonSavedAsSnackbar(name))),
+            );
+          }
         },
       ),
     );

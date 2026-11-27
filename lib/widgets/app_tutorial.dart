@@ -340,8 +340,14 @@ class _TutorialPageView extends StatelessWidget {
     // 韓国語は語の途中で折り返さない。日本語は最後の語だけの行（「書き出 /
     // せます」）を作らない。描く文にだけ語結合子を入れ、読み上げ・探す文には
     // 元の文を渡す。
-    Widget words(String text, TextStyle style) =>
-        messageText(text, style: style, keepLastPhrase: true);
+    // かぎ括弧で囲んだ画面の名前（「使い方を見る」）は途中で折らない（以前は
+    // 「使い方を見 / る」と折れた）。
+    Widget words(String text, TextStyle style) => messageText(
+      text,
+      style: style,
+      keepLastPhrase: true,
+      keep: [for (final m in RegExp('「[^」]+」').allMatches(text)) m[0]!],
+    );
     final text = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -174,6 +174,7 @@
   "settingsWatermarkSubtitle": "カスタムウォーターマーク",
   "settingsTransferTitle": "引き継ぎ",
   "settingsTransferSubtitle": "設定・素材・ブラシを他端末へ書き出し/読み込み",
+  "settingsStorageSubtitle": "使っている容量の内訳・整理・全データの削除",
   "settingsFontTitle": "フォント管理",
   "settingsFontSubtitle": "TTF/OTFの追加・検索・削除",
   "settingsNoResults": "該当する設定項目が見つかりません",
@@ -205,6 +206,14 @@
   },
   "commonFavoriteDeleteBlocked": "お気に入り登録中は削除できません。先にお気に入りを解除してください。",
   "commonSave": "保存",
+  "commonSavedAsSnackbar": "「{name}」として保存しました",
+  "@commonSavedAsSnackbar": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "commonRestore": "復元",
   "commonClose": "閉じる",
   "commonRename": "名前変更",
@@ -419,7 +428,7 @@
     }
   },
   "autofillPresetSelectionButton": "使用する自動塗り設定を選択",
-  "autofillPresetSelectionCountLabel": "{count}件を使用",
+  "autofillPresetSelectionCountLabel": "自動塗り設定：{count}件を使用",
   "@autofillPresetSelectionCountLabel": {
     "placeholders": {
       "count": {
@@ -489,6 +498,17 @@
   "shortcutCommandCut": "切り取り",
   "shortcutCommandPaste": "貼り付け",
   "shortcutConflictTitle": "すでに割り当てられています",
+  "shortcutBindingName": "{key}：{action}",
+  "@shortcutBindingName": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      },
+      "action": {
+        "type": "String"
+      }
+    }
+  },
   "shortcutConflictBody": "{combo} には既に「{existingLabel}」が割り当てられています。上書きしますか？",
   "@shortcutConflictBody": {
     "placeholders": {
@@ -611,7 +631,7 @@
   "workspaceResetToolbarDefault": "デフォルトに戻す",
   "workspacePanelLayoutSection": "パネル配置",
   "workspaceLeftHandedMode": "左利きモード",
-  "workspaceLeftHandedSubtitlePc": "パネルを右側に配置",
+  "workspaceLeftHandedSubtitlePc": "パネルの左右を入れ替えて配置",
   "workspaceLeftHandedSubtitleMobile": "PC/DeXモードでのみ設定できます",
   "workspacePcModeSection": "PCモード（DeX）",
   "workspacePcModeHint": "画面幅の広い環境では、パネルを常時表示するプロ向けの画面構成に自動で切り替わります。手動で固定したい場合はここで指定してください。幅600px未満の画面では、PCモードに固定していてもスマホモードの画面構成になります。",
@@ -1039,6 +1059,8 @@
   "creativePanelSearchTooltip": "名前で検索",
   "creativePanelSearchModeKeyword": "キーワード検索中（タップでタグ検索へ）",
   "creativePanelSearchModeTag": "タグ検索中（タップでキーワード検索へ）",
+  "communitySearchModeKeywordLabel": "キーワード",
+  "communitySearchModeTagLabel": "タグ",
   "creativePanelTagSearchHint": "タグで検索",
   "creativePanelTagNoneYet": "まだタグがありません。編集画面から付けられます",
   "creativePanelTagsLabel": "タグ",
@@ -1183,7 +1205,7 @@
   "@themeResetConfirmAction": {
     "description": "テーマのリセットを確定するボタン"
   },
-  "themeUnreadableResetButton": "テーマをもとに戻す",
+  "themeUnreadableResetButton": "既定の配色に戻す",
   "@themeUnreadableResetButton": {
     "description": "読めないテーマになったとき起動画面に出る固定色のリセットボタン"
   },
@@ -2191,8 +2213,8 @@
   "timelineDurationShrinkConfirmBody": "短くすると、範囲外になるフレームとその描画・レイヤーが削除されます。削除しますか？",
   "timelineCanvasSizeDragHint": "枠内をドラッグして位置を、四隅をドラッグしてサイズを変更できます（元のサイズ付近でスナップします）",
   "timelineCanvasSizeAngleLabel": "角度",
-  "saveTreeSaveAsChildHint": "選択中のノードの子として保存します。",
-  "saveTreeSaveAsRootHint": "ルートノードとして保存します。",
+  "saveTreeSaveAsChildHint": "選んでいる保存の続きとして保存します。",
+  "saveTreeSaveAsRootHint": "ツリーのいちばん上に、新しい始まりとして保存します。",
   "saveTreeCommentLabel": "メモ",
   "saveTreeCommentHint": "例：背景完成",
   "saveTreeSizeWarningSnackbar": "セーブツリーの容量が大きくなっています（約{size}）。不要な保存データの削除をおすすめします。",
@@ -2235,7 +2257,7 @@
   "saveTreeRestoreAction": "読み込み",
   "saveTreeTimelineActionChoiceBody": "このセーブへ「上書き保存」するか、「ここから作業を再開」するか選んでください。",
   "saveTreeOverwriteAction": "上書きする",
-  "saveTreeOverwriteConfirmBody": "このときのセーブデータは消えますがよろしいですか？",
+  "saveTreeOverwriteConfirmBody": "この保存データを今の作品で上書きします。前に保存した内容は消えます。よろしいですか？",
   "saveTreeProjectDetailResumeBody": "このセーブデータから作業を再開しますか？\n\n現在の作業は上書きされます。残すには、先に手動でセーブしてください。",
   "saveTreeLoadFailedSnackbar": "保存データの読み込みに失敗しました",
   "saveTreeRestoredSnackbar": "セーブデータを読み込みました（{name}）",
@@ -3459,6 +3481,7 @@
   "communityVisibilityHiddenBadge": "非公開",
   "communityWorkDetailTitle": "作品詳細",
   "communityWorkHiddenByFilterMessage": "表示フィルターの設定により、この作品は非表示になっています",
+  "communityWorkHiddenByMuteMessage": "このユーザーをミュートしているため、この作品は表示されません",
   "communityEditFailed": "変更を保存できませんでした。通信状態を確認して、もう一度お試しください。",
   "communityEditSignInRequired": "変更するにはGoogleアカウントでログインしてください",
   "communityFloatingPreviewDetailButton": "詳細へ",
@@ -4615,6 +4638,14 @@
   "projectListTrashFolderConfirmTitle": "フォルダをゴミ箱へ移動しますか？",
   "homeFolderMovedToTrashSnackbar": "「{name}」をゴミ箱へ移動しました",
   "@homeFolderMovedToTrashSnackbar": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeRestoredFromTrashSnackbar": "「{name}」をゴミ箱から戻しました",
+  "@homeRestoredFromTrashSnackbar": {
     "placeholders": {
       "name": {
         "type": "String"
@@ -6696,6 +6727,7 @@
   "pcTimelineZoomOut": "タイムラインを縮小",
   "communityTagLockedMessage": "このタグはロックされています。編集できるのは投稿者本人です。",
   "communityTagEditPrompt": "このタグを編集しますか？",
+  "communityTagSearchAction": "このタグで探す",
   "communityTagDeleteConfirm": "本当にこのタグを削除しますか？",
   "communityTagLockAction": "ロック",
   "communityTagUnlockAction": "ロック解除",
@@ -6705,6 +6737,7 @@
   "communityPreviewBackward": "5秒戻る",
   "communityPreviewForward": "5秒進む",
   "settingsSupportTitle": "ヘルプ・お問い合わせ",
+  "settingsSupportEmailCopied": "メールアドレスをコピーしました",
   "settingsGroupGeneral": "全般",
   "@settingsGroupGeneral": {
     "description": "設定の一覧で、基本・パフォーマンス・通知などをまとめた欄の見出し。"
@@ -6854,6 +6887,7 @@
   "@makingEmpty": {
     "description": "メイキング・読み上げ：この作品のメイキング記録はありません。新規作成時に記録をONにするか、作品詳細で"
   },
+  "makingEmptyRecordingOn": "記録はオンです。キャンバスで描くと、ここにメイキングが記録されます。",
   "makingLoadFailed": "メイキングの記録を読み込めませんでした",
   "@makingLoadFailed": {
     "description": "メイキング：この作品のメイキング記録を読めなかったときの知らせ（「再試行」と並べる）"

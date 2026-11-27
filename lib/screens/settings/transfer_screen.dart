@@ -78,6 +78,15 @@ class _TransferScreenState extends State<TransferScreen> {
   // ON/OFFひとつのみだが、プロジェクトは複数存在し得るため）。
   final Set<String> _selectedProjectIds = {};
   bool _isBusy = false;
+  // 読み込みの途中か（待ちの印を、押した「読み込み」に出す。以前は書き出しの
+  // ボタンに出た）。
+  bool _importing = false;
+
+  static const Widget _busyMark = SizedBox(
+    width: 16,
+    height: 16,
+    child: CircularProgressIndicator(strokeWidth: 2),
+  );
 
   String _itemLabel(AppLocalizations l10n, String key) => switch (key) {
     '設定' => l10n.transferItemSettings,
@@ -268,9 +277,12 @@ class _TransferScreenState extends State<TransferScreen> {
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    TextButton(
+                    TextButton.icon(
                       onPressed: _isBusy ? null : _import,
-                      child: Text(l10n.transferImport),
+                      icon: _importing
+                          ? _busyMark
+                          : const Icon(Icons.file_download),
+                      label: Text(l10n.transferImport),
                     ),
                     FilledButton.icon(
                       onPressed:
@@ -279,12 +291,8 @@ class _TransferScreenState extends State<TransferScreen> {
                                   selectedProjectIds.isNotEmpty))
                           ? _export
                           : null,
-                      icon: _isBusy
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                      icon: _isBusy && !_importing
+                          ? _busyMark
                           : const Icon(Icons.file_upload),
                       label: Text(l10n.transferExport),
                     ),
@@ -498,7 +506,10 @@ class _TransferScreenState extends State<TransferScreen> {
 
   Future<void> _import() async {
     if (_isBusy) return;
-    setState(() => _isBusy = true);
+    setState(() {
+      _isBusy = true;
+      _importing = true;
+    });
     var currentStep = -1;
     late List<String> steps;
     try {
@@ -685,7 +696,12 @@ class _TransferScreenState extends State<TransferScreen> {
         );
       }
     } finally {
-      if (mounted) setState(() => _isBusy = false);
+      if (mounted) {
+        setState(() {
+          _isBusy = false;
+          _importing = false;
+        });
+      }
     }
   }
 }

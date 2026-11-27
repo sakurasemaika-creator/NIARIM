@@ -73,6 +73,13 @@ void main() {
 
   String location() => appRouter.routerDelegate.currentConfiguration.uri.path;
 
+  // 作品を変える（取り消しの履歴に1手積む）。開いて何も変えずに戻るときは、
+  // 「保存して戻る」を聞かずに一覧へ戻る。
+  Future<void> change(WidgetTester tester, ProjectService service, String id) =>
+      tester
+          .runAsync(() => service.setProjectTags(id, ['changed']))
+          .then((_) {});
+
   Future<({ProjectService service, String id})> open(
     WidgetTester tester, {
     Size size = const Size(390, 844),
@@ -699,6 +706,23 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // 開いて何も変えずに家のボタンを押すと、聞かずに一覧へ戻る（以前は開いて
+  // 閉じただけ・再生しただけでも「保存してから戻りますか？」と聞いた）。
+  for (final path in ['canvas', 'timeline']) {
+    testWidgets('going back from the $path without changes does not ask', (
+      tester,
+    ) async {
+      final s = await open(tester);
+      appRouter.push('/$path/${s.id}');
+      await settleIo(tester, 10);
+      await tester.tap(find.byTooltip('プロジェクト一覧に戻る'));
+      await settleIo(tester, 6);
+      expect(find.text('保存して戻る'), findsNothing);
+      expect(location(), '/home');
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('save-and-return stays on the canvas when nothing was saved', (
     tester,
   ) async {
@@ -706,6 +730,7 @@ void main() {
     appRouter.push('/canvas/${s.id}');
     await settleIo(tester, 10);
     expect(find.byType(CanvasScreen), findsOneWidget);
+    await change(tester, s.service, s.id);
 
     Future<void> chooseSaveAndReturn() async {
       await tester.tap(find.byTooltip('プロジェクト一覧に戻る'));
@@ -754,6 +779,7 @@ void main() {
     appRouter.push('/timeline/${s.id}');
     await settleIo(tester, 10);
     expect(find.byType(TimelineScreen), findsOneWidget);
+    await change(tester, s.service, s.id);
 
     Future<void> chooseSaveAndReturn() async {
       await tester.tap(find.byTooltip('プロジェクト一覧に戻る'));
@@ -831,6 +857,7 @@ void main() {
       appRouter.push('/$path/${s.id}');
       await settleIo(tester, 10);
       expect(find.byType(type), findsOneWidget);
+      await change(tester, s.service, s.id);
 
       await tester.tap(find.byTooltip('プロジェクト一覧に戻る'));
       await settleIo(tester, 3);

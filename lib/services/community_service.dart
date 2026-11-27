@@ -503,14 +503,17 @@ class CommunityService extends ChangeNotifier {
 
   /// Device-local view only. The server's ranking and publication remain intact.
   bool isWorkMuted(CommunityWork work) {
-    if (isAuthorBlocked(work.authorId) || isAuthorMuted(work.authorId)) {
-      return true;
-    }
+    if (isAuthorBlocked(work.authorId)) return true;
+    // 隠れたカードの「この作品を再表示」は、作者のミュートで隠れた作品にも
+    // 効く（以前は作者のミュートを先に見て、押しても隠れたままだった）。
+    // ブロックは作品ごとには外せない。
     if (_temporaryVisibleWorkIds.contains(work.id) ||
         _alwaysVisibleWorkIds.contains(work.id)) {
       return false;
     }
-    return _mutedWorkIds.contains(work.id) || !_passesContentFilters(work);
+    return isAuthorMuted(work.authorId) ||
+        _mutedWorkIds.contains(work.id) ||
+        !_passesContentFilters(work);
   }
 
   Future<void> setWorkMuted(String id) async {

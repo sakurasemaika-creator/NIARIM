@@ -400,7 +400,8 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 height: sectionSpacing,
               ),
               Text(
-                'FPS',
+                // 書き出し・設定と同じ呼び名（仏語は「i/s」）。
+                AppLocalizations.of(context)!.exportFpsLabel,
                 style: localizedHeadingStyle(
                   context,
                   const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),

@@ -5,6 +5,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart' hide MaterialType;
+import 'package:flutter/gestures.dart' show GestureBinding, PointerDownEvent;
+import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -431,6 +433,7 @@ class ProjectListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    _watchPointerDowns();
     final l10n = AppLocalizations.of(context)!;
     final projectService = context.watch<ProjectService>();
     final source = projects ?? projectService.projects;
@@ -871,11 +874,14 @@ class ProjectListWidget extends StatelessWidget {
       trailing: (isSelectionMode || onPickProject != null || actionsBelow)
           ? null
           : actions,
-      onTap: isSelectionMode
-          ? () => onSelectionChanged(project.id)
-          : onPickProject != null
-          ? () => onPickProject!(project.id)
-          : () => context.push('/project/${project.id}'),
+      onTap: _openOrSelect(
+        project.id,
+        isSelectionMode
+            ? () => onSelectionChanged(project.id)
+            : onPickProject != null
+            ? () => onPickProject!(project.id)
+            : () => context.push('/project/${project.id}'),
+      ),
       onLongPress: () => onLongPress(project.id),
       // 行の︙の押せる所は行の右の余白へも届く（ListTileは余白の内側に
       // trailingを置き、その外を押しても届かないため）。
@@ -887,6 +893,37 @@ class ProjectListWidget extends StatelessWidget {
   /// キーボードのSpaceで[id]の項目を選ぶ（長押しと同じ。選んでいる間は
   /// 選ぶ・外すの切り替え）。選ぶ専用画面（[onPickProject]）には選ぶ操作が
   /// 無いので null（SpaceはEnterと同じく開く）。
+  /// PC・DeXのCtrl（⌘）＋クリックは、開かずに選ぶ（長押し・Spaceと同じ）。
+  /// 以前はCtrlを押していても作品詳細が開いた。
+  /// カードは押した後ダブルタップを待ってから決まるので、Ctrlは押した時点で
+  /// 見る（決まる頃には離していることがある）。
+  VoidCallback _openOrSelect(String id, VoidCallback open) => () {
+    final keys = HardwareKeyboard.instance;
+    final withModifier =
+        _selectModifierAtDown || keys.isControlPressed || keys.isMetaPressed;
+    _selectModifierAtDown = false;
+    final select = _selectByKey(id);
+    if (select != null && withModifier) {
+      select();
+      return;
+    }
+    open();
+  };
+
+  static bool _selectModifierAtDown = false;
+  static bool _watchingPointerDowns = false;
+
+  static void _watchPointerDowns() {
+    if (_watchingPointerDowns) return;
+    _watchingPointerDowns = true;
+    GestureBinding.instance.pointerRouter.addGlobalRoute((event) {
+      if (event is PointerDownEvent) {
+        final keys = HardwareKeyboard.instance;
+        _selectModifierAtDown = keys.isControlPressed || keys.isMetaPressed;
+      }
+    });
+  }
+
   VoidCallback? _selectByKey(String id) => onPickProject != null
       ? null
       : () => isSelectionMode ? onSelectionChanged(id) : onLongPress(id);
@@ -986,9 +1023,12 @@ class ProjectListWidget extends StatelessWidget {
           : null,
       // フォルダは選ぶ専用画面でも通常どおり潜れる（[onPickProject]は
       // 作品タップ時のみに関わる）。
-      onTap: isSelectionMode
-          ? () => onSelectionChanged(folder.id)
-          : () => onOpenFolder(folder.id),
+      onTap: _openOrSelect(
+        folder.id,
+        isSelectionMode
+            ? () => onSelectionChanged(folder.id)
+            : () => onOpenFolder(folder.id),
+      ),
       onLongPress: () => onLongPress(folder.id),
     ).withCollectionActionReach().cardKeyboard(
       onSelect: _selectByKey(folder.id),
@@ -1027,11 +1067,14 @@ class ProjectListWidget extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final selectionColor = scheme.secondary;
     final selectionForeground = scheme.onSecondary;
-    final open = isSelectionMode
-        ? () => onSelectionChanged(project.id)
-        : onPickProject != null
-        ? () => onPickProject!(project.id)
-        : () => context.push('/project/${project.id}');
+    final open = _openOrSelect(
+      project.id,
+      isSelectionMode
+          ? () => onSelectionChanged(project.id)
+          : onPickProject != null
+          ? () => onPickProject!(project.id)
+          : () => context.push('/project/${project.id}'),
+    );
     // ダブルタップでキャンバスを開く。星・︙を押した指はダブルタップを
     // 待たない（CollectionCardDoubleTapRecognizer。待つと星・︙が離してから
     // 約0.3秒後に働いた）。選ぶ専用画面と選んでいる間はダブルタップを使わない
@@ -1201,9 +1244,12 @@ class ProjectListWidget extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final selectionColor = scheme.secondary;
     final selectionForeground = scheme.onSecondary;
-    final open = isSelectionMode
-        ? () => onSelectionChanged(folder.id)
-        : () => onOpenFolder(folder.id);
+    final open = _openOrSelect(
+      folder.id,
+      isSelectionMode
+          ? () => onSelectionChanged(folder.id)
+          : () => onOpenFolder(folder.id),
+    );
     return GestureDetector(
       onSecondaryTapDown: (details) {
         if (!isSelectionMode && onPickProject == null) {

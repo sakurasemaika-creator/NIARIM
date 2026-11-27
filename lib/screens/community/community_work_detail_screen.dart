@@ -14,6 +14,7 @@ import 'widgets/community_playback_status_view.dart';
 import 'widgets/community_youtube_player.dart';
 import 'widgets/community_work_description.dart';
 import 'widgets/community_youtube_comments_section.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/grouped_sheet.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
@@ -36,7 +37,7 @@ import 'widgets/community_work_counts.dart';
 /// どちらもこの同一画面へ遷移する。YouTube統計に加えて、投稿元NIARIM
 /// プロジェクトのFPS・フレーム数・制作時間・制作日時・キャンバスサイズも
 /// 同じ画面で確認できる。
-enum _TagAction { edit, delete, toggleLock }
+enum _TagAction { search, edit, delete, toggleLock }
 
 class CommunityWorkDetailScreen extends StatefulWidget {
   final String workId;
@@ -109,41 +110,36 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   /// The external YouTube button is also an action boundary: never open a
   /// cached work without checking NIARIM and YouTube visibility again.
   Future<void> _openYoutubeIfAvailable(String workId) async {
+    // 開けないときも黙らずに知らせる（以前は動画が見られない状態だと、
+    // 押しても何も起きなかった）。
+    void openFailed() {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.communityWorkDetailYoutubeOpenFailed,
+          ),
+        ),
+      );
+    }
+
     if (!CommunityYoutubePlayer.isValidVideoId(workId)) {
+      openFailed();
       return;
     }
     final status = await _checkPlaybackStatus();
-    if (!mounted ||
-        widget.workId != workId ||
-        status != CommunityPlaybackStatus.available) {
+    if (!mounted || widget.workId != workId) return;
+    if (status != CommunityPlaybackStatus.available) {
+      openFailed();
       return;
     }
     final url = Uri.https('www.youtube.com', '/watch', {'v': workId});
     try {
-      if (!await launchUrl(url, mode: LaunchMode.externalApplication) &&
-          mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(
-                context,
-              )!.communityWorkDetailYoutubeOpenFailed,
-            ),
-          ),
-        );
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        openFailed();
       }
     } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(
-                context,
-              )!.communityWorkDetailYoutubeOpenFailed,
-            ),
-          ),
-        );
-      }
+      openFailed();
     }
   }
 
@@ -332,6 +328,13 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
             label: locked && !owner ? l10n.commonOk : l10n.commonCancel,
             icon: locked && !owner ? Icons.check : Icons.close,
           ),
+          // ヘルプ・縦画面の視聴と同じく、タグからそのタグの作品を探せる
+          // （以前はこの画面だけ、編集・削除しか選べなかった）。
+          (
+            value: _TagAction.search,
+            label: l10n.communityTagSearchAction,
+            icon: Icons.search,
+          ),
           if (owner || !locked)
             (
               value: _TagAction.edit,
@@ -425,6 +428,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
       return;
     }
     switch (action) {
+      case _TagAction.search:
+        context.push('/community', extra: tag);
       case _TagAction.toggleLock:
         await _applyTagAction(
           service,
@@ -549,10 +554,36 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
             ? Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text(
-                    l10n.communityWorkHiddenByFilterMessage,
-                    textAlign: TextAlign.center,
-                  ),
+                  child:
+                      communityService.isAuthorMuted(work.authorId) &&
+                          !communityService.isAuthorBlocked(work.authorId)
+                      // 作者をミュートしたので隠れたときは、そう書いてその場で
+                      // 解除できる（以前は「表示フィルター」と書かれ、その
+                      // 画面にミュートは無かった）。
+                      ? Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            messageText(
+                              l10n.communityWorkHiddenByMuteMessage,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            OutlinedButton(
+                              key: const Key('communityWorkHiddenUnmute'),
+                              onPressed: () => confirmCommunityAuthorMute(
+                                context,
+                                communityService,
+                                work.authorId,
+                                mute: false,
+                              ),
+                              child: Text(l10n.communityUnmuteAuthor),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          l10n.communityWorkHiddenByFilterMessage,
+                          textAlign: TextAlign.center,
+                        ),
                 ),
               )
             : CommunityPlaybackStatusView(

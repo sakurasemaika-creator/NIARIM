@@ -192,7 +192,7 @@ void main() {
     await settle();
     expect(find.byType(PopupMenuItem<String>), findsWidgets);
     expect(find.text('プロジェクトを共有'), findsOneWidget);
-    expect(find.text('フォルダへ移動'), findsNothing);
+    expect(find.text('フォルダへ移動'), findsOneWidget);
     await shot('02_projects_menu');
     await closeMenu();
 

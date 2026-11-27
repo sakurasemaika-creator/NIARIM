@@ -868,6 +868,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
             .toList(),
       );
       if (mounted && ModalRoute.of(context)?.isCurrent == true) {
+        _announceSaved(name);
         Navigator.pop(context);
       }
     } catch (error, stack) {
@@ -958,7 +959,21 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
           .map((e) => e.name)
           .toList(),
     );
-    if (mounted) Navigator.pop(context);
+    if (mounted) {
+      _announceSaved(newName.isEmpty ? selected.name : newName);
+      Navigator.pop(context);
+    }
+  }
+
+  // 保存できたことを知らせる（以前はダイアログが閉じるだけだった）。
+  void _announceSaved(String name) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context)!.commonSavedAsSnackbar(name),
+        ),
+      ),
+    );
   }
 
   @override

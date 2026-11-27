@@ -345,6 +345,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Export/import settings, materials, and brushes to another device';
 
   @override
+  String get settingsStorageSubtitle =>
+      'See what uses space, clean up, or erase all data';
+
+  @override
   String get settingsFontTitle => 'Font Management';
 
   @override
@@ -364,7 +368,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Used as the initial value when creating a new project.';
 
   @override
-  String get settingsDrawingAreaWiden => 'Widen drawing area';
+  String get settingsDrawingAreaWiden => 'Expand drawing area';
 
   @override
   String get settingsDrawingAreaScale => 'Scale';
@@ -401,6 +405,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonSave => 'Save';
+
+  @override
+  String commonSavedAsSnackbar(String name) {
+    return 'Saved as “$name”';
+  }
 
   @override
   String get commonRestore => 'Restore';
@@ -828,7 +837,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String autofillPresetSelectionCountLabel(int count) {
-    return '$count selected';
+    return 'Autofill settings: $count selected';
   }
 
   @override
@@ -983,6 +992,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shortcutConflictTitle => 'Already assigned';
+
+  @override
+  String shortcutBindingName(String key, String action) {
+    return '$key: $action';
+  }
 
   @override
   String shortcutConflictBody(String combo, String existingLabel) {
@@ -1211,7 +1225,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumFeatureGifCornerLogo => 'NIARIM Logo in the Corner of GIFs';
 
   @override
-  String get premiumFeatureWatermark => 'Add and edit your own watermark';
+  String get premiumFeatureWatermark => 'Add and Edit Your Own Watermark';
 
   @override
   String get premiumFeatureToneCurve => 'Tone Curve';
@@ -1223,7 +1237,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumFeatureAds => 'Ads';
 
   @override
-  String get premiumFeatureCommunityUpload => 'Work Plaza uploads per day';
+  String get premiumFeatureCommunityUpload => 'Work Plaza Uploads per Day';
 
   @override
   String get premiumValueYes => 'Yes';
@@ -1307,7 +1321,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workspaceLeftHandedMode => 'Left-Handed Mode';
 
   @override
-  String get workspaceLeftHandedSubtitlePc => 'Place panels on the right';
+  String get workspaceLeftHandedSubtitlePc =>
+      'Swap the panels between left and right';
 
   @override
   String get workspaceLeftHandedSubtitleMobile =>
@@ -2622,6 +2637,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Searching by tag (tap for keyword search)';
 
   @override
+  String get communitySearchModeKeywordLabel => 'Keyword';
+
+  @override
+  String get communitySearchModeTagLabel => 'Tag';
+
+  @override
   String get creativePanelTagSearchHint => 'Search by tag';
 
   @override
@@ -2926,7 +2947,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeResetConfirmAction => 'Reset';
 
   @override
-  String get themeUnreadableResetButton => 'Reset theme';
+  String get themeUnreadableResetButton => 'Restore default colors';
 
   @override
   String get themeUnreadableResetDone =>
@@ -4611,10 +4632,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveTreeSaveAsChildHint =>
-      'This will save as a child of the selected node.';
+      'This will be saved as a continuation of the selected save.';
 
   @override
-  String get saveTreeSaveAsRootHint => 'This will save as a root node.';
+  String get saveTreeSaveAsRootHint =>
+      'This will be saved at the top of the tree, as a new starting point.';
 
   @override
   String get saveTreeCommentLabel => 'Memo';
@@ -4670,7 +4692,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveTreeOverwriteConfirmBody =>
-      'The data saved at that point will be lost. Are you sure?';
+      'This save will be replaced with the current project. What was saved before will be lost. Are you sure?';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -7035,6 +7057,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This work is hidden by your display filters';
 
   @override
+  String get communityWorkHiddenByMuteMessage =>
+      'This work is hidden because you muted this creator';
+
+  @override
   String get communityEditFailed =>
       'Couldn’t save the change. Check your connection and try again.';
 
@@ -9291,6 +9317,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String homeRestoredFromTrashSnackbar(String name) {
+    return 'Restored “$name” from the trash';
+  }
+
+  @override
   String homeMoveToTrashFolderContents(String contents) {
     return 'The $contents inside will be moved too.';
   }
@@ -9990,16 +10021,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockEarning => 'Premium members can also earn Opals';
 
   @override
-  String get rewardUnlockHour => 'hours';
+  String get rewardUnlockHour => 'Hours';
 
   @override
-  String get rewardUnlockDay => 'days';
+  String get rewardUnlockDay => 'Days';
 
   @override
-  String get rewardUnlockWeek => 'weeks';
+  String get rewardUnlockWeek => 'Weeks';
 
   @override
-  String get rewardUnlockMonth => 'months';
+  String get rewardUnlockMonth => 'Months';
 
   @override
   String get rewardUnlockEndCardEdit =>
@@ -11681,6 +11712,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityTagEditPrompt => 'Edit this tag?';
 
   @override
+  String get communityTagSearchAction => 'Search this tag';
+
+  @override
   String get communityTagDeleteConfirm => 'Delete this tag?';
 
   @override
@@ -11707,6 +11741,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSupportTitle => 'Help and contact';
+
+  @override
+  String get settingsSupportEmailCopied => 'Email address copied';
 
   @override
   String get settingsGroupGeneral => 'General';
@@ -11959,6 +11996,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get makingEmpty =>
       'There is no making-of history for this project. Turn on recording when you create a new project, or enable it in the project details, and then keep working.';
+
+  @override
+  String get makingEmptyRecordingOn =>
+      'Recording is on. As you draw on the canvas, the making-of is recorded here.';
 
   @override
   String get makingLoadFailed => 'Could not load the making-of history';

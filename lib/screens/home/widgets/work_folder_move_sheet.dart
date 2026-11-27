@@ -110,7 +110,10 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
               semanticsLabel: l10n.folderMoveToTitle,
             ),
           )
-        : Icon(_isCurrent(folderId) ? Icons.check : icon);
+        // 今の場所は印だけで示す（行を差し色で塗りつぶさない）。
+        : _isCurrent(folderId)
+        ? Semantics(selected: true, child: const Icon(Icons.check))
+        : Icon(icon);
     return Semantics(
       namesRoute: true,
       explicitChildNodes: true,
@@ -147,7 +150,6 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
               ),
             ListTile(
               minTileHeight: 48,
-              selected: _isCurrent(null),
               leading: leading(null, Icons.folder_off_outlined),
               title: Text(widget.rootLabel ?? l10n.folderNone),
               onTap: _saving ? null : () => _move(null),
@@ -158,7 +160,6 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
                 contentPadding: widget.depths == null
                     ? null
                     : folderTreeTilePadding(widget.depths![folder.id] ?? 0),
-                selected: _isCurrent(folder.id),
                 leading: leading(folder.id, Icons.folder_outlined),
                 title: Text(folder.name),
                 trailing: widget.onEdit == null

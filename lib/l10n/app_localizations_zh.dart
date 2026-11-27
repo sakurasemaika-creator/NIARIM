@@ -325,6 +325,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsTransferSubtitle => '将设置、素材、画笔导出/导入到其他设备';
 
   @override
+  String get settingsStorageSubtitle => '查看占用空间的内容、清理或删除全部数据';
+
+  @override
   String get settingsFontTitle => '字体管理';
 
   @override
@@ -378,6 +381,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get commonSave => '保存';
+
+  @override
+  String commonSavedAsSnackbar(String name) {
+    return '已保存为“$name”';
+  }
 
   @override
   String get commonRestore => '恢复';
@@ -790,7 +798,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String autofillPresetSelectionCountLabel(int count) {
-    return '已选$count个';
+    return '自动上色设置：已选$count个';
   }
 
   @override
@@ -942,6 +950,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get shortcutConflictTitle => '该按键已被分配';
+
+  @override
+  String shortcutBindingName(String key, String action) {
+    return '$key：$action';
+  }
 
   @override
   String shortcutConflictBody(String combo, String existingLabel) {
@@ -1245,7 +1258,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceLeftHandedMode => '左手模式';
 
   @override
-  String get workspaceLeftHandedSubtitlePc => '将面板放置在右侧';
+  String get workspaceLeftHandedSubtitlePc => '左右互换面板的位置';
 
   @override
   String get workspaceLeftHandedSubtitleMobile => '仅可在PC/DeX模式下设置';
@@ -2485,6 +2498,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creativePanelSearchModeTag => '正在按标签搜索（点按切换到关键词搜索）';
 
   @override
+  String get communitySearchModeKeywordLabel => '关键词';
+
+  @override
+  String get communitySearchModeTagLabel => '标签';
+
+  @override
   String get creativePanelTagSearchHint => '按标签搜索';
 
   @override
@@ -2779,7 +2798,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeResetConfirmAction => '重置';
 
   @override
-  String get themeUnreadableResetButton => '还原主题';
+  String get themeUnreadableResetButton => '还原为默认配色';
 
   @override
   String get themeUnreadableResetDone => '已将主题还原为默认配色。';
@@ -4372,10 +4391,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineCanvasSizeAngleLabel => '角度';
 
   @override
-  String get saveTreeSaveAsChildHint => '将保存为所选节点的子节点。';
+  String get saveTreeSaveAsChildHint => '将作为所选存档的后续保存。';
 
   @override
-  String get saveTreeSaveAsRootHint => '将保存为根节点。';
+  String get saveTreeSaveAsRootHint => '将作为新的起点保存在树的最上方。';
 
   @override
   String get saveTreeCommentLabel => '备注';
@@ -4429,7 +4448,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saveTreeOverwriteAction => '覆盖保存';
 
   @override
-  String get saveTreeOverwriteConfirmBody => '该时间点的存档数据将会消失，确定吗？';
+  String get saveTreeOverwriteConfirmBody => '将用当前作品覆盖此存档。之前保存的内容将会消失，确定吗？';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -6671,6 +6690,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityWorkHiddenByFilterMessage => '该作品已按显示筛选设置隐藏';
 
   @override
+  String get communityWorkHiddenByMuteMessage => '你已隐藏这位用户，因此不显示此作品';
+
+  @override
   String get communityEditFailed => '无法保存更改。请检查连接后重试。';
 
   @override
@@ -8748,6 +8770,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String homeRestoredFromTrashSnackbar(String name) {
+    return '已将“$name”从回收站恢复';
+  }
+
+  @override
   String homeMoveToTrashFolderContents(String contents) {
     return '文件夹中的$contents也将一并移动。';
   }
@@ -10729,6 +10756,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityTagEditPrompt => '要编辑此标签吗？';
 
   @override
+  String get communityTagSearchAction => '搜索此标签';
+
+  @override
   String get communityTagDeleteConfirm => '确定删除此标签吗？';
 
   @override
@@ -10754,6 +10784,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsSupportTitle => '帮助与联系';
+
+  @override
+  String get settingsSupportEmailCopied => '已复制邮箱地址';
 
   @override
   String get settingsGroupGeneral => '常规';
@@ -10987,6 +11020,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get makingEmpty => '此作品没有制作记录。请在作品详情中开启记录后继续编辑。';
+
+  @override
+  String get makingEmptyRecordingOn => '记录已开启。在画布上绘画后，制作过程会记录在这里。';
 
   @override
   String get makingLoadFailed => '无法加载制作记录';
@@ -11466,6 +11502,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settingsTransferSubtitle => '將設定、素材、筆刷匯出/匯入到其他裝置';
 
   @override
+  String get settingsStorageSubtitle => '查看占用空間的內容、清理或刪除全部資料';
+
+  @override
   String get settingsFontTitle => '字型管理';
 
   @override
@@ -11519,6 +11558,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get commonSave => '儲存';
+
+  @override
+  String commonSavedAsSnackbar(String name) {
+    return '已儲存為「$name」';
+  }
 
   @override
   String get commonRestore => '還原';
@@ -11931,7 +11975,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String autofillPresetSelectionCountLabel(int count) {
-    return '已選$count個';
+    return '自動上色設定：已選$count個';
   }
 
   @override
@@ -12083,6 +12127,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get shortcutConflictTitle => '該按鍵已被分配';
+
+  @override
+  String shortcutBindingName(String key, String action) {
+    return '$key：$action';
+  }
 
   @override
   String shortcutConflictBody(String combo, String existingLabel) {
@@ -12387,7 +12436,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceLeftHandedMode => '左手模式';
 
   @override
-  String get workspaceLeftHandedSubtitlePc => '將面板置於右側';
+  String get workspaceLeftHandedSubtitlePc => '左右互換面板的位置';
 
   @override
   String get workspaceLeftHandedSubtitleMobile => '僅可於PC/DeX模式下設定';
@@ -13627,6 +13676,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get creativePanelSearchModeTag => '正在依標籤搜尋（點按切換為關鍵字搜尋）';
 
   @override
+  String get communitySearchModeKeywordLabel => '關鍵字';
+
+  @override
+  String get communitySearchModeTagLabel => '標籤';
+
+  @override
   String get creativePanelTagSearchHint => '依標籤搜尋';
 
   @override
@@ -13921,7 +13976,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get themeResetConfirmAction => '重設';
 
   @override
-  String get themeUnreadableResetButton => '還原主題';
+  String get themeUnreadableResetButton => '還原為預設配色';
 
   @override
   String get themeUnreadableResetDone => '已將主題還原為預設配色。';
@@ -15513,10 +15568,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineCanvasSizeAngleLabel => '角度';
 
   @override
-  String get saveTreeSaveAsChildHint => '將儲存為所選節點的子節點。';
+  String get saveTreeSaveAsChildHint => '將作為所選存檔的後續儲存。';
 
   @override
-  String get saveTreeSaveAsRootHint => '將儲存為根節點。';
+  String get saveTreeSaveAsRootHint => '將作為新的起點儲存在樹的最上方。';
 
   @override
   String get saveTreeCommentLabel => '備註';
@@ -15570,7 +15625,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get saveTreeOverwriteAction => '覆蓋儲存';
 
   @override
-  String get saveTreeOverwriteConfirmBody => '該時間點的存檔資料將會消失，確定嗎？';
+  String get saveTreeOverwriteConfirmBody => '將以目前作品覆蓋此存檔。先前儲存的內容將會消失，確定嗎？';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -17813,6 +17868,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityWorkHiddenByFilterMessage => '該作品已依顯示篩選設定隱藏';
 
   @override
+  String get communityWorkHiddenByMuteMessage => '你已隱藏這位使用者，因此不顯示此作品';
+
+  @override
   String get communityEditFailed => '無法儲存變更。請檢查網路連線後再試一次。';
 
   @override
@@ -19892,6 +19950,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
+  String homeRestoredFromTrashSnackbar(String name) {
+    return '已將「$name」從垃圾桶還原';
+  }
+
+  @override
   String homeMoveToTrashFolderContents(String contents) {
     return '資料夾中的$contents也會一併移動。';
   }
@@ -21873,6 +21936,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityTagEditPrompt => '要編輯此標籤嗎？';
 
   @override
+  String get communityTagSearchAction => '搜尋此標籤';
+
+  @override
   String get communityTagDeleteConfirm => '確定刪除此標籤嗎？';
 
   @override
@@ -21898,6 +21964,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get settingsSupportTitle => '說明與聯絡';
+
+  @override
+  String get settingsSupportEmailCopied => '已複製電子郵件地址';
 
   @override
   String get settingsGroupGeneral => '一般';
@@ -22131,6 +22200,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get makingEmpty => '此作品沒有製作記錄。請在作品詳細資訊中開啟記錄後繼續編輯。';
+
+  @override
+  String get makingEmptyRecordingOn => '記錄已開啟。在畫布上繪畫後，製作過程會記錄在這裡。';
 
   @override
   String get makingLoadFailed => '無法載入製作記錄';

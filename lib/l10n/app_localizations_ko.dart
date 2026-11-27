@@ -330,6 +330,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsTransferSubtitle => '설정·소재·브러시를 다른 기기로 내보내기/가져오기';
 
   @override
+  String get settingsStorageSubtitle => '용량 내역 확인·정리·모든 데이터 삭제';
+
+  @override
   String get settingsFontTitle => '폰트 관리';
 
   @override
@@ -384,6 +387,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get commonSave => '저장';
+
+  @override
+  String commonSavedAsSnackbar(String name) {
+    return '“$name”(으)로 저장했습니다';
+  }
 
   @override
   String get commonRestore => '복원';
@@ -805,7 +813,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String autofillPresetSelectionCountLabel(int count) {
-    return '$count개 선택됨';
+    return '자동 채색 설정: $count개 선택됨';
   }
 
   @override
@@ -958,6 +966,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get shortcutConflictTitle => '이미 할당되어 있습니다';
+
+  @override
+  String shortcutBindingName(String key, String action) {
+    return '$key: $action';
+  }
 
   @override
   String shortcutConflictBody(String combo, String existingLabel) {
@@ -1271,7 +1284,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspaceLeftHandedMode => '왼손잡이 모드';
 
   @override
-  String get workspaceLeftHandedSubtitlePc => '패널을 오른쪽에 배치';
+  String get workspaceLeftHandedSubtitlePc => '패널의 좌우를 바꿔 배치';
 
   @override
   String get workspaceLeftHandedSubtitleMobile => 'PC/DeX 모드에서만 설정할 수 있습니다';
@@ -2521,6 +2534,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get creativePanelSearchModeTag => '태그 검색 중 (탭하면 키워드 검색)';
 
   @override
+  String get communitySearchModeKeywordLabel => '키워드';
+
+  @override
+  String get communitySearchModeTagLabel => '태그';
+
+  @override
   String get creativePanelTagSearchHint => '태그로 검색';
 
   @override
@@ -2818,7 +2837,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeResetConfirmAction => '초기화';
 
   @override
-  String get themeUnreadableResetButton => '테마 되돌리기';
+  String get themeUnreadableResetButton => '기본 색으로 되돌리기';
 
   @override
   String get themeUnreadableResetDone => '테마를 기본 색으로 되돌렸습니다.';
@@ -4431,10 +4450,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineCanvasSizeAngleLabel => '각도';
 
   @override
-  String get saveTreeSaveAsChildHint => '선택 중인 노드의 하위 항목으로 저장합니다.';
+  String get saveTreeSaveAsChildHint => '선택한 세이브 데이터의 다음 단계로 저장합니다.';
 
   @override
-  String get saveTreeSaveAsRootHint => '루트 노드로 저장합니다.';
+  String get saveTreeSaveAsRootHint => '트리의 맨 위에 새로운 시작점으로 저장합니다.';
 
   @override
   String get saveTreeCommentLabel => '메모';
@@ -4489,7 +4508,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get saveTreeOverwriteAction => '덮어쓰기';
 
   @override
-  String get saveTreeOverwriteConfirmBody => '그 시점의 세이브 데이터가 사라집니다. 계속하시겠습니까?';
+  String get saveTreeOverwriteConfirmBody =>
+      '이 세이브 데이터를 현재 작품으로 덮어씁니다. 이전에 저장한 내용은 사라집니다. 계속하시겠습니까?';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -6775,6 +6795,9 @@ class AppLocalizationsKo extends AppLocalizations {
       '표시 필터 설정에 따라 이 작품은 숨겨져 있습니다';
 
   @override
+  String get communityWorkHiddenByMuteMessage => '이 사용자를 숨겨서 이 작품이 표시되지 않습니다';
+
+  @override
   String get communityEditFailed =>
       '변경 사항을 저장하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.';
 
@@ -8903,6 +8926,11 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String homeRestoredFromTrashSnackbar(String name) {
+    return '“$name”을(를) 휴지통에서 복원했습니다';
+  }
+
+  @override
   String homeMoveToTrashFolderContents(String contents) {
     return '폴더 안의 $contents도 함께 이동합니다.';
   }
@@ -10915,6 +10943,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityTagEditPrompt => '이 태그를 편집할까요?';
 
   @override
+  String get communityTagSearchAction => '이 태그로 찾기';
+
+  @override
   String get communityTagDeleteConfirm => '이 태그를 삭제할까요?';
 
   @override
@@ -10940,6 +10971,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsSupportTitle => '도움말 및 문의';
+
+  @override
+  String get settingsSupportEmailCopied => '메일 주소를 복사했습니다';
 
   @override
   String get settingsGroupGeneral => '일반';
@@ -11180,6 +11214,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get makingEmpty => '이 작품의 제작 기록이 없습니다. 작품 상세에서 기록을 켜고 계속 편집하세요.';
+
+  @override
+  String get makingEmptyRecordingOn =>
+      '기록이 켜져 있습니다. 캔버스에서 그리면 여기에 제작 과정이 기록됩니다.';
 
   @override
   String get makingLoadFailed => '제작 기록을 불러오지 못했습니다';

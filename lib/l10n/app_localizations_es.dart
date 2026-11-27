@@ -356,6 +356,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Exportar/importar ajustes, materiales y pinceles a otro dispositivo';
 
   @override
+  String get settingsStorageSubtitle =>
+      'Ver qué ocupa espacio, liberar espacio o borrar todos los datos';
+
+  @override
   String get settingsFontTitle => 'Gestión de fuentes';
 
   @override
@@ -376,7 +380,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Se usa como valor inicial al crear un nuevo proyecto.';
 
   @override
-  String get settingsDrawingAreaWiden => 'Ampliar área de dibujo';
+  String get settingsDrawingAreaWiden => 'Ampliar el área de dibujo';
 
   @override
   String get settingsDrawingAreaScale => 'Escala';
@@ -413,6 +417,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get commonSave => 'Guardar';
+
+  @override
+  String commonSavedAsSnackbar(String name) {
+    return 'Guardado como «$name»';
+  }
 
   @override
   String get commonRestore => 'Restaurar';
@@ -846,7 +855,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String autofillPresetSelectionCountLabel(int count) {
-    return '$count seleccionados';
+    return 'Ajustes de relleno automático: $count seleccionados';
   }
 
   @override
@@ -1008,6 +1017,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get shortcutConflictTitle => 'Ya está asignado';
+
+  @override
+  String shortcutBindingName(String key, String action) {
+    return '$key: $action';
+  }
 
   @override
   String shortcutConflictBody(String combo, String existingLabel) {
@@ -1338,7 +1352,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get workspaceLeftHandedMode => 'Modo zurdo';
 
   @override
-  String get workspaceLeftHandedSubtitlePc => 'Colocar paneles a la derecha';
+  String get workspaceLeftHandedSubtitlePc =>
+      'Intercambiar los paneles de izquierda a derecha';
 
   @override
   String get workspaceLeftHandedSubtitleMobile =>
@@ -2664,6 +2679,12 @@ class AppLocalizationsEs extends AppLocalizations {
       'Buscando por etiqueta (toca para buscar por palabra clave)';
 
   @override
+  String get communitySearchModeKeywordLabel => 'Palabra clave';
+
+  @override
+  String get communitySearchModeTagLabel => 'Etiqueta';
+
+  @override
   String get creativePanelTagSearchHint => 'Buscar por etiqueta';
 
   @override
@@ -2971,7 +2992,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get themeResetConfirmAction => 'Restablecer';
 
   @override
-  String get themeUnreadableResetButton => 'Restablecer tema';
+  String get themeUnreadableResetButton =>
+      'Volver a los colores predeterminados';
 
   @override
   String get themeUnreadableResetDone =>
@@ -4680,10 +4702,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get saveTreeSaveAsChildHint =>
-      'Se guardará como elemento secundario del nodo seleccionado.';
+      'Se guardará como continuación del guardado seleccionado.';
 
   @override
-  String get saveTreeSaveAsRootHint => 'Se guardará como nodo raíz.';
+  String get saveTreeSaveAsRootHint =>
+      'Se guardará en la parte superior del árbol, como nuevo punto de partida.';
 
   @override
   String get saveTreeCommentLabel => 'Nota';
@@ -4740,7 +4763,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get saveTreeOverwriteConfirmBody =>
-      'Se perderán los datos guardados en ese momento. ¿Continuar?';
+      'Este guardado se reemplazará por el proyecto actual. Se perderá lo guardado antes. ¿Continuar?';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -7153,6 +7176,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Esta obra está oculta por tus filtros de visualización';
 
   @override
+  String get communityWorkHiddenByMuteMessage =>
+      'Esta obra no se muestra porque ocultaste a este creador';
+
+  @override
   String get communityEditFailed =>
       'No se pudo guardar el cambio. Comprueba la conexión e inténtalo de nuevo.';
 
@@ -9432,6 +9459,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String homeFolderMovedToTrashSnackbar(String name) {
     return '«$name» movida a la papelera';
+  }
+
+  @override
+  String homeRestoredFromTrashSnackbar(String name) {
+    return 'Se restauró «$name» desde la papelera';
   }
 
   @override
@@ -11850,6 +11882,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityTagEditPrompt => '¿Editar esta etiqueta?';
 
   @override
+  String get communityTagSearchAction => 'Buscar esta etiqueta';
+
+  @override
   String get communityTagDeleteConfirm => '¿Eliminar esta etiqueta?';
 
   @override
@@ -11876,6 +11911,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsSupportTitle => 'Ayuda y contacto';
+
+  @override
+  String get settingsSupportEmailCopied => 'Dirección de correo copiada';
 
   @override
   String get settingsGroupGeneral => 'Aplicación';
@@ -12133,6 +12171,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get makingEmpty =>
       'No hay historial de este proceso. Activa la grabación en los detalles del proyecto y sigue editando.';
+
+  @override
+  String get makingEmptyRecordingOn =>
+      'La grabación está activada. Al dibujar en el lienzo, el proceso se graba aquí.';
 
   @override
   String get makingLoadFailed => 'No se pudo cargar el historial del proceso';

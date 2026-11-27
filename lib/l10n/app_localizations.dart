@@ -695,6 +695,12 @@ abstract class AppLocalizations {
   /// **'設定・素材・ブラシを他端末へ書き出し/読み込み'**
   String get settingsTransferSubtitle;
 
+  /// No description provided for @settingsStorageSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'使っている容量の内訳・整理・全データの削除'**
+  String get settingsStorageSubtitle;
+
   /// No description provided for @settingsFontTitle.
   ///
   /// In ja, this message translates to:
@@ -796,6 +802,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'保存'**
   String get commonSave;
+
+  /// No description provided for @commonSavedAsSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」として保存しました'**
+  String commonSavedAsSnackbar(String name);
 
   /// No description provided for @commonRestore.
   ///
@@ -1518,7 +1530,7 @@ abstract class AppLocalizations {
   /// No description provided for @autofillPresetSelectionCountLabel.
   ///
   /// In ja, this message translates to:
-  /// **'{count}件を使用'**
+  /// **'自動塗り設定：{count}件を使用'**
   String autofillPresetSelectionCountLabel(int count);
 
   /// No description provided for @commonEdit.
@@ -1808,6 +1820,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'すでに割り当てられています'**
   String get shortcutConflictTitle;
+
+  /// No description provided for @shortcutBindingName.
+  ///
+  /// In ja, this message translates to:
+  /// **'{key}：{action}'**
+  String shortcutBindingName(String key, String action);
 
   /// No description provided for @shortcutConflictBody.
   ///
@@ -2400,7 +2418,7 @@ abstract class AppLocalizations {
   /// No description provided for @workspaceLeftHandedSubtitlePc.
   ///
   /// In ja, this message translates to:
-  /// **'パネルを右側に配置'**
+  /// **'パネルの左右を入れ替えて配置'**
   String get workspaceLeftHandedSubtitlePc;
 
   /// No description provided for @workspaceLeftHandedSubtitleMobile.
@@ -4581,6 +4599,18 @@ abstract class AppLocalizations {
   /// **'タグ検索中（タップでキーワード検索へ）'**
   String get creativePanelSearchModeTag;
 
+  /// No description provided for @communitySearchModeKeywordLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーワード'**
+  String get communitySearchModeKeywordLabel;
+
+  /// No description provided for @communitySearchModeTagLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグ'**
+  String get communitySearchModeTagLabel;
+
   /// No description provided for @creativePanelTagSearchHint.
   ///
   /// In ja, this message translates to:
@@ -5154,7 +5184,7 @@ abstract class AppLocalizations {
   /// 読めないテーマになったとき起動画面に出る固定色のリセットボタン
   ///
   /// In ja, this message translates to:
-  /// **'テーマをもとに戻す'**
+  /// **'既定の配色に戻す'**
   String get themeUnreadableResetButton;
 
   /// テーマをリセットしたときの通知
@@ -8010,13 +8040,13 @@ abstract class AppLocalizations {
   /// No description provided for @saveTreeSaveAsChildHint.
   ///
   /// In ja, this message translates to:
-  /// **'選択中のノードの子として保存します。'**
+  /// **'選んでいる保存の続きとして保存します。'**
   String get saveTreeSaveAsChildHint;
 
   /// No description provided for @saveTreeSaveAsRootHint.
   ///
   /// In ja, this message translates to:
-  /// **'ルートノードとして保存します。'**
+  /// **'ツリーのいちばん上に、新しい始まりとして保存します。'**
   String get saveTreeSaveAsRootHint;
 
   /// No description provided for @saveTreeCommentLabel.
@@ -8106,7 +8136,7 @@ abstract class AppLocalizations {
   /// No description provided for @saveTreeOverwriteConfirmBody.
   ///
   /// In ja, this message translates to:
-  /// **'このときのセーブデータは消えますがよろしいですか？'**
+  /// **'この保存データを今の作品で上書きします。前に保存した内容は消えます。よろしいですか？'**
   String get saveTreeOverwriteConfirmBody;
 
   /// No description provided for @saveTreeProjectDetailResumeBody.
@@ -12177,6 +12207,12 @@ abstract class AppLocalizations {
   /// **'表示フィルターの設定により、この作品は非表示になっています'**
   String get communityWorkHiddenByFilterMessage;
 
+  /// No description provided for @communityWorkHiddenByMuteMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーをミュートしているため、この作品は表示されません'**
+  String get communityWorkHiddenByMuteMessage;
+
   /// No description provided for @communityEditFailed.
   ///
   /// In ja, this message translates to:
@@ -15891,6 +15927,12 @@ abstract class AppLocalizations {
   /// **'「{name}」をゴミ箱へ移動しました'**
   String homeFolderMovedToTrashSnackbar(String name);
 
+  /// No description provided for @homeRestoredFromTrashSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」をゴミ箱から戻しました'**
+  String homeRestoredFromTrashSnackbar(String name);
+
   /// No description provided for @homeMoveToTrashFolderContents.
   ///
   /// In ja, this message translates to:
@@ -19077,6 +19119,12 @@ abstract class AppLocalizations {
   /// **'このタグを編集しますか？'**
   String get communityTagEditPrompt;
 
+  /// No description provided for @communityTagSearchAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'このタグで探す'**
+  String get communityTagSearchAction;
+
   /// No description provided for @communityTagDeleteConfirm.
   ///
   /// In ja, this message translates to:
@@ -19130,6 +19178,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ヘルプ・お問い合わせ'**
   String get settingsSupportTitle;
+
+  /// No description provided for @settingsSupportEmailCopied.
+  ///
+  /// In ja, this message translates to:
+  /// **'メールアドレスをコピーしました'**
+  String get settingsSupportEmailCopied;
 
   /// 設定の一覧で、基本・パフォーマンス・通知などをまとめた欄の見出し。
   ///
@@ -19586,6 +19640,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'この作品のメイキング記録はありません。新規作成時に記録をONにするか、作品詳細で記録を有効にしてから制作してください。'**
   String get makingEmpty;
+
+  /// No description provided for @makingEmptyRecordingOn.
+  ///
+  /// In ja, this message translates to:
+  /// **'記録はオンです。キャンバスで描くと、ここにメイキングが記録されます。'**
+  String get makingEmptyRecordingOn;
 
   /// メイキング：この作品のメイキング記録を読めなかったときの知らせ（「再試行」と並べる）
   ///

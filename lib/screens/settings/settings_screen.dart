@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../widgets/icon_notice.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../services/settings_service.dart';
 import '../../services/community_notice.dart';
@@ -70,50 +71,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _showSupport() async {
     final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
+    // 知らせはダイアログの中に出す（下の画面の知らせは、ダイアログの幕の下に
+    // 隠れて読みにくかった）。
+    String? notice;
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.settingsSupportTitle),
-        content: const SelectableText(_supportEmail),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.commonClose),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setNotice) => AlertDialog(
+          title: Text(l10n.settingsSupportTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SelectableText(_supportEmail),
+              if (notice != null) ...[
+                const SizedBox(height: 12),
+                IconNotice(
+                  notice!,
+                  key: const Key('settingsSupportNotice'),
+                  icon: notice == l10n.settingsSupportEmailCopied
+                      ? Icons.check_circle_outline
+                      : Icons.error_outline,
+                  liveRegion: true,
+                ),
+              ],
+            ],
           ),
-          TextButton.icon(
-            icon: const Icon(Icons.copy_outlined),
-            label: Text(l10n.commonCopy),
-            onPressed: () async {
-              await Clipboard.setData(const ClipboardData(text: _supportEmail));
-              if (mounted) {
-                messenger.showSnackBar(
-                  SnackBar(content: Text(l10n.qrShareCopiedSnackbar)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(l10n.commonClose),
+            ),
+            TextButton.icon(
+              icon: const Icon(Icons.copy_outlined),
+              label: Text(l10n.commonCopy),
+              onPressed: () async {
+                await Clipboard.setData(
+                  const ClipboardData(text: _supportEmail),
                 );
-              }
-            },
-          ),
-          FilledButton.icon(
-            icon: const Icon(Icons.open_in_new),
-            label: Text(l10n.settingsSupportForm),
-            onPressed: () async {
-              var opened = false;
-              try {
-                opened = await launchUrl(
-                  Uri.https('niarim.miranima-studio.com', '/contact/'),
-                  mode: LaunchMode.externalApplication,
-                );
-              } catch (_) {
-                // The address stays available in the dialog.
-              }
-              if (!opened && mounted) {
-                messenger.showSnackBar(
-                  SnackBar(content: Text(l10n.settingsSupportLinkFailed)),
-                );
-              }
-            },
-          ),
-        ],
+                if (dialogContext.mounted) {
+                  setNotice(() => notice = l10n.settingsSupportEmailCopied);
+                }
+              },
+            ),
+            FilledButton.icon(
+              icon: const Icon(Icons.open_in_new),
+              label: Text(l10n.settingsSupportForm),
+              onPressed: () async {
+                var opened = false;
+                try {
+                  opened = await launchUrl(
+                    Uri.https('niarim.miranima-studio.com', '/contact/'),
+                    mode: LaunchMode.externalApplication,
+                  );
+                } catch (_) {
+                  // The address stays available in the dialog.
+                }
+                if (!opened && dialogContext.mounted) {
+                  setNotice(() => notice = l10n.settingsSupportLinkFailed);
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -212,7 +232,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: l10n.settingsPenTitle,
         group: _SettingsGroup.drawing,
         subtitle: l10n.settingsPenSubtitle,
-        keywords: '筆圧 傾き ペンボタン 筆圧カーブ pen pressure tilt',
+        keywords:
+            '筆圧 傾き ペンボタン 筆圧カーブ 手ぶれ補正 手振れ 補正 スムージング pen pressure tilt stabilization smoothing',
         onTap: () => context.push('/settings/pen'),
       ),
       (
@@ -280,6 +301,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsTransferSubtitle,
         keywords: '引き継ぎ エクスポート インポート 他端末 niatra transfer export import',
         onTap: () => context.push('/settings/transfer'),
+      ),
+      // 容量削減（以前は引き出しにしか無く、設定で「容量」「初期化」と探しても
+      // 見つからなかった）。
+      (
+        icon: Icons.storage_outlined,
+        title: l10n.storageScreenTitle,
+        group: _SettingsGroup.data,
+        subtitle: l10n.settingsStorageSubtitle,
+        keywords:
+            '容量 空き容量 ストレージ 整理 ゴミ箱を空にする 全データを削除 初期化 リセット storage space erase reset',
+        onTap: () => context.push('/storage'),
       ),
       (
         icon: Icons.font_download_outlined,

@@ -329,6 +329,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsTransferSubtitle => '設定・素材・ブラシを他端末へ書き出し/読み込み';
 
   @override
+  String get settingsStorageSubtitle => '使っている容量の内訳・整理・全データの削除';
+
+  @override
   String get settingsFontTitle => 'フォント管理';
 
   @override
@@ -383,6 +386,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get commonSave => '保存';
+
+  @override
+  String commonSavedAsSnackbar(String name) {
+    return '「$name」として保存しました';
+  }
 
   @override
   String get commonRestore => '復元';
@@ -802,7 +810,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String autofillPresetSelectionCountLabel(int count) {
-    return '$count件を使用';
+    return '自動塗り設定：$count件を使用';
   }
 
   @override
@@ -955,6 +963,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get shortcutConflictTitle => 'すでに割り当てられています';
+
+  @override
+  String shortcutBindingName(String key, String action) {
+    return '$key：$action';
+  }
 
   @override
   String shortcutConflictBody(String combo, String existingLabel) {
@@ -1267,7 +1280,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get workspaceLeftHandedMode => '左利きモード';
 
   @override
-  String get workspaceLeftHandedSubtitlePc => 'パネルを右側に配置';
+  String get workspaceLeftHandedSubtitlePc => 'パネルの左右を入れ替えて配置';
 
   @override
   String get workspaceLeftHandedSubtitleMobile => 'PC/DeXモードでのみ設定できます';
@@ -2511,6 +2524,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get creativePanelSearchModeTag => 'タグ検索中（タップでキーワード検索へ）';
 
   @override
+  String get communitySearchModeKeywordLabel => 'キーワード';
+
+  @override
+  String get communitySearchModeTagLabel => 'タグ';
+
+  @override
   String get creativePanelTagSearchHint => 'タグで検索';
 
   @override
@@ -2807,7 +2826,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeResetConfirmAction => 'リセット';
 
   @override
-  String get themeUnreadableResetButton => 'テーマをもとに戻す';
+  String get themeUnreadableResetButton => '既定の配色に戻す';
 
   @override
   String get themeUnreadableResetDone => 'テーマを既定の配色に戻しました。';
@@ -4406,10 +4425,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineCanvasSizeAngleLabel => '角度';
 
   @override
-  String get saveTreeSaveAsChildHint => '選択中のノードの子として保存します。';
+  String get saveTreeSaveAsChildHint => '選んでいる保存の続きとして保存します。';
 
   @override
-  String get saveTreeSaveAsRootHint => 'ルートノードとして保存します。';
+  String get saveTreeSaveAsRootHint => 'ツリーのいちばん上に、新しい始まりとして保存します。';
 
   @override
   String get saveTreeCommentLabel => 'メモ';
@@ -4463,7 +4482,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveTreeOverwriteAction => '上書きする';
 
   @override
-  String get saveTreeOverwriteConfirmBody => 'このときのセーブデータは消えますがよろしいですか？';
+  String get saveTreeOverwriteConfirmBody =>
+      'この保存データを今の作品で上書きします。前に保存した内容は消えます。よろしいですか？';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -6738,6 +6758,10 @@ class AppLocalizationsJa extends AppLocalizations {
       '表示フィルターの設定により、この作品は非表示になっています';
 
   @override
+  String get communityWorkHiddenByMuteMessage =>
+      'このユーザーをミュートしているため、この作品は表示されません';
+
+  @override
   String get communityEditFailed => '変更を保存できませんでした。通信状態を確認して、もう一度お試しください。';
 
   @override
@@ -8851,6 +8875,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String homeRestoredFromTrashSnackbar(String name) {
+    return '「$name」をゴミ箱から戻しました';
+  }
+
+  @override
   String homeMoveToTrashFolderContents(String contents) {
     return 'フォルダの中の$contentsも一緒に移動します。';
   }
@@ -10853,6 +10882,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityTagEditPrompt => 'このタグを編集しますか？';
 
   @override
+  String get communityTagSearchAction => 'このタグで探す';
+
+  @override
   String get communityTagDeleteConfirm => '本当にこのタグを削除しますか？';
 
   @override
@@ -10879,6 +10911,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsSupportTitle => 'ヘルプ・お問い合わせ';
+
+  @override
+  String get settingsSupportEmailCopied => 'メールアドレスをコピーしました';
 
   @override
   String get settingsGroupGeneral => '全般';
@@ -11119,6 +11154,9 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get makingEmpty =>
       'この作品のメイキング記録はありません。新規作成時に記録をONにするか、作品詳細で記録を有効にしてから制作してください。';
+
+  @override
+  String get makingEmptyRecordingOn => '記録はオンです。キャンバスで描くと、ここにメイキングが記録されます。';
 
   @override
   String get makingLoadFailed => 'メイキングの記録を読み込めませんでした';

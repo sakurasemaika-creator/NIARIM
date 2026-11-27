@@ -137,7 +137,10 @@ class SaveTreeScreen extends StatefulWidget {
 }
 
 class _SaveTreeScreenState extends State<SaveTreeScreen> {
-  String? _selectedNodeId;
+  // 最初は、今の作品が続いている保存（最後に保存・読み込みした保存）を選ぶ。
+  late String? _selectedNodeId = context.read<SaveTreeService>().currentNodeOf(
+    widget.projectId,
+  );
   late bool _showAutosaves = widget.startWithAutosaves;
 
   @override
@@ -172,6 +175,11 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
                 widget.projectId,
                 saveService,
                 _selectedNodeId,
+                // 続けて保存すると、今保存した保存の続きになる（以前は選択が
+                // 前の保存のままで、2つ目の保存が1つ目の兄弟になった）。
+                onSaved: (node) {
+                  if (mounted) setState(() => _selectedNodeId = node.id);
+                },
               ),
             ),
           const SizedBox(width: 8),
@@ -230,8 +238,9 @@ void _showTreeSaveDialog(
   BuildContext context,
   String projectId,
   SaveTreeService service,
-  String? parentId,
-) {
+  String? parentId, {
+  ValueChanged<SaveNode>? onSaved,
+}) {
   final l10n = AppLocalizations.of(context)!;
   final commentController = TextEditingController();
   var saving = false;
@@ -335,7 +344,7 @@ void _showTreeSaveDialog(
                           ps,
                           projectId,
                         );
-                        await service.saveAsChild(
+                        final saved = await service.saveAsChild(
                           projectId: projectId,
                           project: project,
                           scenes: scenes,
@@ -344,6 +353,7 @@ void _showTreeSaveDialog(
                           comment: comment,
                           thumbnailPngBytes: thumb,
                         );
+                        onSaved?.call(saved);
                         // 閉じるのは自分のダイアログが一番上のときだけ（保存中
                         // に戻るで閉じていたら、下の画面を閉じない）。
                         if (ctx.mounted &&
@@ -1379,8 +1389,13 @@ class _TreeView extends StatelessWidget {
           context,
           entryMode,
           node,
-          onOverwrite: () =>
-              _showTreeSaveDialog(context, projectId, saveService, node.id),
+          onOverwrite: () => _showTreeSaveDialog(
+            context,
+            projectId,
+            saveService,
+            node.id,
+            onSaved: (saved) => onNodeSelected(saved.id),
+          ),
           onResume: (data) => _doRestore(context, node, data),
         );
         break;
@@ -1399,6 +1414,7 @@ class _TreeView extends StatelessWidget {
   void _doRestore(BuildContext context, SaveNode node, NiaproData data) {
     final l10n = AppLocalizations.of(context)!;
     context.read<ProjectService>().useSavedVersion(projectId, data);
+    saveService.markCurrentNode(projectId, node.id);
     // 「セーブ・ロードした地点から次の枝が伸びる」という設計上、復元した
     // ノードをそのまま選択状態にする。三点メニューの「復元」は行の
     // タップ（選択トグル）とは独立した導線のため、これを呼ばないと

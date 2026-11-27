@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'community_moderation.dart';
 import '../../config/signal_colors.dart';
 import '../../utils/tolerant_preferences.dart';
@@ -266,6 +267,13 @@ class _CommunityScreenState extends State<CommunityScreen>
           _RankingPeriod.weekly => RankingPeriod.week,
           _RankingPeriod.daily => RankingPeriod.day,
         };
+
+  /// 表示フィルター（投稿日・長さ・再生数・ブックマーク数）で絞っているか。
+  bool get _narrowsByFilters =>
+      _postDateFilter != _PostDateFilter.all ||
+      _durationMode != _DurationFilterMode.all ||
+      _minimumViews > 0 ||
+      _minimumBookmarks > 0;
 
   void _refreshSearchAfterSettingChange() {
     _resetPage(3);
@@ -1167,8 +1175,16 @@ class _CommunityScreenState extends State<CommunityScreen>
         _customPostDateRange = result.dateRange;
         _durationMode = result.durationMode;
         _upToMinutes = result.upToMinutes;
-        _minimumMinutes = result.minimumMinutes;
-        _maximumMinutes = result.maximumMinutes;
+        // 最小と最大を逆に入れたら入れ替える（以前はそのまま保存され、どの
+        // 作品も出なくなった）。
+        _minimumMinutes = math.min(
+          result.minimumMinutes,
+          result.maximumMinutes,
+        );
+        _maximumMinutes = math.max(
+          result.minimumMinutes,
+          result.maximumMinutes,
+        );
         _minimumViews = result.minimumViews;
         _minimumBookmarks = result.minimumBookmarks;
       });
@@ -1533,7 +1549,15 @@ class _CommunityScreenState extends State<CommunityScreen>
               children: [
                 IconButton(
                   key: const Key('communityContentFilterButton'),
-                  icon: const Icon(Icons.tune),
+                  // 絞り込んでいる間は印を付ける（以前は絞り込んでいることが
+                  // 分からず、作品が少ない・無い理由が見えなかった）。
+                  icon: Badge(
+                    key: const Key('communityContentFilterActive'),
+                    isLabelVisible: _narrowsByFilters,
+                    smallSize: 8,
+                    backgroundColor: AccentTextTheme.of(context),
+                    child: const Icon(Icons.tune),
+                  ),
                   tooltip: l10n.communityContentFilterTitle,
                   onPressed: () => _showContentFilters(communityService),
                 ),
@@ -1627,9 +1651,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                 const Spacer(),
                 if (tab == 3) ...[
                   Tooltip(
-                    message:
-                        '${l10n.creativePanelSearchModeKeyword} / '
-                        '${l10n.creativePanelSearchModeTag}',
+                    // 今の探し方だけを言う（以前は2つの状態の文を「/」で
+                    // つないでいた）。
+                    message: _tagSearchMode
+                        ? l10n.creativePanelSearchModeTag
+                        : l10n.creativePanelSearchModeKeyword,
                     triggerMode: TooltipTriggerMode.longPress,
                     child: Material(
                       color: _tagSearchMode
@@ -1641,13 +1667,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                       clipBehavior: Clip.antiAlias,
                       child: InkWell(
                         key: const Key('communitySearchModeToggle'),
+                        // 打った語は残し、同じ語を別の探し方で探し直す
+                        // （以前は切り替えると黙って消えた）。
                         onTap: () {
-                          setState(() {
-                            _tagSearchMode = !_tagSearchMode;
-                            _searchQuery = '';
-                            _draftQuery = '';
-                            _searchController.clear();
-                          });
+                          setState(() => _tagSearchMode = !_tagSearchMode);
                           _refreshSearchAfterSettingChange();
                         },
                         child: SizedBox(
@@ -1673,10 +1696,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        l10n.creativePanelSearchModeKeyword,
+                                        l10n.communitySearchModeKeywordLabel,
                                         maxLines: 1,
                                         style: TextStyle(
-                                          fontSize: 11,
+                                          fontSize: 13,
                                           fontWeight: !_tagSearchMode
                                               ? FontWeight.bold
                                               : FontWeight.normal,
@@ -1697,10 +1720,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                                         ),
                                       ),
                                       Text(
-                                        l10n.creativePanelSearchModeTag,
+                                        l10n.communitySearchModeTagLabel,
                                         maxLines: 1,
                                         style: TextStyle(
-                                          fontSize: 11,
+                                          fontSize: 13,
                                           fontWeight: _tagSearchMode
                                               ? FontWeight.bold
                                               : FontWeight.normal,
@@ -3177,8 +3200,15 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                                     'communityUnmuteAuthorInline-$id',
                                   ),
                                   tooltip: l10n.communityUnmuteAuthor,
-                                  onPressed: () =>
-                                      service.setAuthorMuted(id, false),
+                                  // 下の「ミュートしたユーザー」の一覧と同じく
+                                  // 確かめてから解除する（このダイアログの
+                                  // 「キャンセル」では戻らない操作なので）。
+                                  onPressed: () => confirmCommunityAuthorMute(
+                                    context,
+                                    service,
+                                    id,
+                                    mute: false,
+                                  ),
                                   icon: const Icon(Icons.visibility_outlined),
                                 ),
                               ),

@@ -43,6 +43,11 @@ abstract final class MakingStrings {
   static String makingTitle(BuildContext context) => _l(context).makingTitle;
 
   static String makingEmpty(BuildContext context) => _l(context).makingEmpty;
+
+  /// 記録はオンだがまだ何も記録していないとき（以前は記録がオンでも「記録を
+  /// ONにしてください」と言った）。
+  static String makingEmptyRecordingOn(BuildContext context) =>
+      _l(context).makingEmptyRecordingOn;
   static String loadFailed(BuildContext context) =>
       _l(context).makingLoadFailed;
 

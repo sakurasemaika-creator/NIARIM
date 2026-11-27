@@ -1105,10 +1105,29 @@ class SaveTreeService extends ChangeNotifier {
       }
     }
     _nodesByProject[projectId]!.add(node);
+    _currentNodes[projectId] = nodeId;
     notifyListeners();
     await _persist(projectId);
     _notifySuccessfulManualSave(projectId);
     return node;
+  }
+
+  // ツリーで最後に保存した・読み込んだ保存（今の作品がどこから続いているか）。
+  // アプリを閉じるまで覚える。保存の画面を開き直しても、次の保存はここの
+  // 続きになる（以前は画面を開くたびに何も選んでいない状態に戻り、読み込んだ
+  // 保存の続きを描いて保存しても、ツリーのいちばん上に付いた）。
+  final Map<String, String> _currentNodes = {};
+
+  /// 今の作品が続いている保存（消えていればnull）。
+  String? currentNodeOf(String projectId) {
+    final id = _currentNodes[projectId];
+    if (id == null) return null;
+    return getNodes(projectId).any((node) => node.id == id) ? id : null;
+  }
+
+  /// 保存を読み込んだ（今の作品はこの保存から続く）。
+  void markCurrentNode(String projectId, String nodeId) {
+    _currentNodes[projectId] = nodeId;
   }
 
   /// 保存のサムネイルを書く。書けなかったら（空き容量が無い等）記録して、
@@ -1222,6 +1241,7 @@ class SaveTreeService extends ChangeNotifier {
       slotIndex: -1,
     );
     _nodesByProject[projectId]!.add(node);
+    _currentNodes[projectId] = nodeId;
     notifyListeners();
     await _persist(projectId);
     _notifySuccessfulManualSave(projectId);

@@ -188,8 +188,16 @@ class ShortcutSettingsScreen extends StatelessWidget {
                                         brushes: brushes,
                                       );
                                       // 韓国語の語は、1行に入れば途中で折らない。
-                                      final name = messageText(
+                                      // 日本語の語も途中で折らない（「（キャン /
+                                      // バス）」と折れた）。
+                                      final name = keepTogetherWords(
                                         label,
+                                        keep: const [],
+                                        japaneseWords:
+                                            Localizations.localeOf(
+                                              context,
+                                            ).languageCode ==
+                                            'ja',
                                         style: localizedHeadingStyle(
                                           context,
                                           _nameStyle,
@@ -235,9 +243,15 @@ class ShortcutSettingsScreen extends StatelessWidget {
                                           ).colorScheme.onSurfaceVariant,
                                           tooltip: l10n.commonDelete,
                                           onPressed: () async {
+                                            // キーも書く（ツールの名前だけでは、ツールを
+                                            // 消すように読めた）。
                                             if (!await confirmDelete(
                                               context,
-                                              itemName: label,
+                                              itemName: l10n
+                                                  .shortcutBindingName(
+                                                    b.comboLabel,
+                                                    label,
+                                                  ),
                                             )) {
                                               return;
                                             }
@@ -493,35 +507,50 @@ class ShortcutSettingsScreen extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.auto_fix_high),
                 title: messageText(l10n.quickToolEraser),
-                onTap: () => _saveToolBinding(
-                  context,
-                  service,
-                  captured,
-                  toolKey: 'eraser',
-                  label: l10n.quickToolEraser,
-                ),
+                onTap: () {
+                  // ブラシの行と同じく、選んだらシートを閉じる（以前は開いたまま
+                  // 残り、もう一度押すと「上書きしますか？」と聞かれた）。
+                  Navigator.pop(ctx);
+                  _saveToolBinding(
+                    context,
+                    service,
+                    captured,
+                    toolKey: 'eraser',
+                    label: l10n.quickToolEraser,
+                  );
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.colorize),
                 title: messageText(l10n.quickToolEyedropper),
-                onTap: () => _saveToolBinding(
-                  context,
-                  service,
-                  captured,
-                  toolKey: 'eyedropper',
-                  label: l10n.quickToolEyedropper,
-                ),
+                onTap: () {
+                  // ブラシの行と同じく、選んだらシートを閉じる（以前は開いたまま
+                  // 残り、もう一度押すと「上書きしますか？」と聞かれた）。
+                  Navigator.pop(ctx);
+                  _saveToolBinding(
+                    context,
+                    service,
+                    captured,
+                    toolKey: 'eyedropper',
+                    label: l10n.quickToolEyedropper,
+                  );
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.format_color_fill),
                 title: messageText(l10n.quickToolBucket),
-                onTap: () => _saveToolBinding(
-                  context,
-                  service,
-                  captured,
-                  toolKey: 'bucket',
-                  label: l10n.quickToolBucket,
-                ),
+                onTap: () {
+                  // ブラシの行と同じく、選んだらシートを閉じる（以前は開いたまま
+                  // 残り、もう一度押すと「上書きしますか？」と聞かれた）。
+                  Navigator.pop(ctx);
+                  _saveToolBinding(
+                    context,
+                    service,
+                    captured,
+                    toolKey: 'bucket',
+                    label: l10n.quickToolBucket,
+                  );
+                },
               ),
             ],
           ),

@@ -1182,9 +1182,10 @@ class _HomeScreenState extends State<HomeScreen>
                           icon: Icon(
                             _searchByTag ? Icons.search : Icons.sell_outlined,
                           ),
+                          // 押すとどちらで探すようになるか（印も同じ）。
                           tooltip: _searchByTag
                               ? l10n.homeSearchHint
-                              : l10n.projectDetailTagsQuickAction,
+                              : l10n.creativePanelTagSearchHint,
                           onPressed: () {
                             _changeProjectScope(
                               () => _searchByTag = !_searchByTag,
@@ -1705,7 +1706,8 @@ class _HomeScreenState extends State<HomeScreen>
   /// 検索欄のヒント：開いているタブで何を探すか（以前は作品一覧・共有・
   /// ゴミ箱のタブでも「プロジェクト名で検索」と出た）。
   String _searchHint(AppLocalizations l10n) => switch (_currentTabIndex) {
-    0 when _searchByTag => l10n.projectDetailTagsQuickAction,
+    // 「タグ」の一語ではなく、何をするかを書く（名前のときと同じ形）。
+    0 when _searchByTag => l10n.creativePanelTagSearchHint,
     1 => l10n.homeSearchHintWorks,
     2 => l10n.homeSearchHintShared,
     3 => l10n.homeSearchHintTrash,
@@ -3038,7 +3040,8 @@ class _HomeScreenState extends State<HomeScreen>
           (holdsFavorite(f.id) ? kept : names).add(f.name);
         }
       }
-      if (names.isEmpty && kept.isEmpty) return;
+      // 移す物もお気に入りも無い（元がもうゴミ箱にある・消えた）ときも、
+      // 黙って終えずに貼り付けの結果（見つからない件数）を知らせる。
       if (names.isNotEmpty &&
           (!await _confirmPasteToTrash(names, kept: kept) || !mounted)) {
         return;
@@ -6609,7 +6612,12 @@ class _TrashTabState extends State<_TrashTab> {
       _restoring.add(id);
     });
     try {
-      await runProjectTrashAction(context, () => service.restoreProject(id));
+      if (await runProjectTrashAction(
+        context,
+        () => service.restoreProject(id),
+      )) {
+        _announceRestored(project.name);
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -6633,6 +6641,7 @@ class _TrashTabState extends State<_TrashTab> {
       } else {
         await LocalFileTrashService.restore(entry);
       }
+      _announceRestored(entry.fileName);
       // The exported-work list maintains a cached storage listing.
       StorageInfoService().invalidate();
       if (entry.kind == LocalTrashKind.outgoingShare && mounted) {
@@ -6667,13 +6676,29 @@ class _TrashTabState extends State<_TrashTab> {
     }
     setState(() => _pending.add(id));
     try {
-      await runProjectTrashAction(
+      if (await runProjectTrashAction(
         context,
         () => service.restoreTrashedFolder(id),
-      );
+      )) {
+        _announceRestored(folder.folder.name);
+      }
     } finally {
       if (mounted) setState(() => _pending.remove(id));
     }
+  }
+
+  // 戻したことを知らせる（以前は一覧から黙って消え、戻ったのか分からなかった）。
+  void _announceRestored(String name) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        persist: false,
+        content: copyNameText(
+          AppLocalizations.of(context)!.homeRestoredFromTrashSnackbar(name),
+          name: name,
+        ),
+      ),
+    );
   }
 
   Future<void> _permanentDeleteFolder(String id) async {

@@ -190,6 +190,8 @@ void main() {
     ))!;
     appRouter.push('$route${project.id}');
     await settle(tester, 10);
+    // 作品を変えておく（何も変えずに戻るときは、確かめずに一覧へ戻る）。
+    await tester.runAsync(() => service.setProjectTags(project.id, ['edit']));
   }
 
   Future<void> closeDialog(WidgetTester tester, AppLocalizations l10n) async {

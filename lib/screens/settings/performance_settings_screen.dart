@@ -886,8 +886,16 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
 
 /// 韓国語の語を途中で折らない文（見出しの書体の項目名・ボタン用。読み上げは
 /// 元の文）。
-Text _keepWords(String text, {TextStyle? style}) =>
-    Text(keepKoreanWordsTogether(text), semanticsLabel: text, style: style);
+/// 日本語の語も途中で折らない（「プリセットからコピ / ー」と長音符だけが
+/// 次の行へ落ちた）。
+Widget _keepWords(String text, {TextStyle? style}) => Builder(
+  builder: (context) => keepTogetherWords(
+    text,
+    keep: const [],
+    japaneseWords: Localizations.maybeLocaleOf(context)?.languageCode == 'ja',
+    style: style,
+  ),
+);
 
 /// 項目名とスイッチの行。並べると項目名が語の途中で折れるときは、スイッチを
 /// 項目名の下（行の終わりの側）へ回す。行のどこを押しても切り替わる。

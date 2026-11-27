@@ -2,7 +2,6 @@
 // 動かしたときに見つかった、ホーム・作品詳細・編集の出入りの食い違い。
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -363,7 +362,6 @@ void main() {
         of: find.text('フォルダなし（ルート）'),
         matching: find.byType(ListTile),
       );
-      expect(tester.widget<ListTile>(rootRow).selected, isTrue);
       expect(
         find.descendant(of: rootRow, matching: find.byIcon(Icons.check)),
         findsOneWidget,

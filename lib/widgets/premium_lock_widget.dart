@@ -398,8 +398,14 @@ class _PremiumBannerDialog extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  // 日本語の語も途中で折らない（「自分のウォーターマー / クを…」と
+                  // 折れた）。
+                  keepTogetherWords(
                     title,
+                    keep: const [],
+                    japaneseWords:
+                        Localizations.maybeLocaleOf(context)?.languageCode ==
+                        'ja',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       color: colors.onPrimaryContainer,
                       fontFamily: headingFontFamilyFor(

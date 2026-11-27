@@ -79,7 +79,16 @@ Future<void> confirmCommunityAuthorMute(
   if (!context.mounted) return;
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
+      persist: false,
       content: Text(mute ? l10n.communityMuteDone : l10n.communityUnmuteDone),
+      // ミュートした直後に戻せる（以前は作品の詳細でミュートすると画面が
+      // 「非表示」の文だけになり、戻す道が無かった）。
+      action: mute
+          ? SnackBarAction(
+              label: l10n.commonUndo,
+              onPressed: () => service.setAuthorMuted(authorId, false),
+            )
+          : null,
     ),
   );
 }

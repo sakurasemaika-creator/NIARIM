@@ -422,7 +422,9 @@ class _MakingScreenState extends State<MakingScreen> {
                     const EmptyStateIcon(icon: Icons.movie_outlined),
                     const SizedBox(height: 16),
                     Text(
-                      MakingStrings.makingEmpty(context),
+                      project?.makingEnabled == true
+                          ? MakingStrings.makingEmptyRecordingOn(context)
+                          : MakingStrings.makingEmpty(context),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),

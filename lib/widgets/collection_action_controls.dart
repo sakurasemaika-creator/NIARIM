@@ -585,8 +585,10 @@ class CollectionFavoriteButton extends StatelessWidget {
           width: CollectionActionFrame.extent,
           height: CollectionActionFrame.extent,
         ),
+        // 色だけで見分けさせない：お気に入りでなければ輪郭だけの星（作品詳細と
+        // 同じ。以前はどちらも塗りの星で、違いは色だけだった）。
         icon: Icon(
-          Icons.star,
+          favorite ? Icons.star : Icons.star_border,
           color: favorite
               ? AccentTextTheme.of(context)
               : ink.withValues(alpha: ink.a * 0.7),
