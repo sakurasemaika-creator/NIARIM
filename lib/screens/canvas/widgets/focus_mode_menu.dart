@@ -41,10 +41,10 @@ class FocusModeMenuScope extends InheritedWidget {
 /// A movable, collapsible and resizable control surface used while the canvas
 /// is in a focused editing mode.
 ///
-/// It starts at the bottom-left of its available canvas viewport. The header
-/// has three separate hit targets: minimize at the left, move in the centre,
-/// and resize at the right. The body stays mounted while minimized so live
-/// edits and previews are preserved.
+/// It starts at the bottom-right of its available canvas viewport. A single
+/// header row holds resize, minimize, the title/move grip, an optional panel
+/// menu and close. The body stays mounted while minimized so live edits and
+/// previews are preserved.
 class FocusModeMenu extends StatefulWidget {
   const FocusModeMenu({
     super.key,
