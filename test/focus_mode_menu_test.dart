@@ -130,7 +130,7 @@ void main() {
     final material = tester.widget<Material>(
       find.descendant(of: surface, matching: find.byType(Material)).first,
     );
-    expect(material.elevation, greaterThan(0));
+    expect(material.elevation, 0);
     expect(material.shape, isA<RoundedRectangleBorder>());
     expect(
       (material.shape! as RoundedRectangleBorder).side,

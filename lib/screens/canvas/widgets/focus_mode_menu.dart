@@ -130,7 +130,6 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                 child: Material(
                   key: _surfaceKey,
                   color: scheme.surface,
-                  elevation: 6,
                   surfaceTintColor: Colors.transparent,
                   clipBehavior: Clip.antiAlias,
                   shape: RoundedRectangleBorder(
