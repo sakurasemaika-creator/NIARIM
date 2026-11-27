@@ -34,7 +34,7 @@ void main() {
     expect(find.text('Count: 0'), findsNothing);
     expect(
       tester.getRect(menuSurface).height,
-      closeTo(44, 1),
+      closeTo(48, 1),
       reason: 'minimized mode should collapse the panel to its header only',
     );
 
@@ -84,11 +84,11 @@ void main() {
     );
 
     final before = tester.getRect(surface);
-    await tester.drag(handle, const Offset(100, -100));
+    await tester.drag(handle, const Offset(-100, -100));
     await tester.pumpAndSettle();
     final moved = tester.getRect(surface);
 
-    expect(moved.left, greaterThan(before.left));
+    expect(moved.left, lessThan(before.left));
     expect(moved.top, lessThan(before.top));
 
     await tester.drag(handle, const Offset(2000, -2000));
@@ -114,7 +114,45 @@ void main() {
     expect(restored.right, lessThanOrEqualTo(400));
     expect(restored.top, greaterThanOrEqualTo(0));
   });
-  testWidgets('starts at bottom-left with fixed left, centre and right controls', (
+  testWidgets('header title is shown beside the central move grip', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(400, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: FocusModeMenu(
+            title: '色調調整',
+            collapseTooltip: 'Minimize',
+            expandTooltip: 'Expand',
+            closeTooltip: 'Close',
+            onClose: () {},
+            child: const SizedBox(width: 180, height: 80),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('色調調整'), findsOneWidget);
+    final surface = find.byKey(
+      const ValueKey('focus-mode-menu-surface'),
+    );
+    final move = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
+    );
+    final resize = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-resize-handle')),
+    );
+    final close = tester.getRect(find.byIcon(Icons.close).last);
+
+    expect(move.center.dx, closeTo(tester.getRect(surface).center.dx, 0.1));
+    expect(resize.left, closeTo(tester.getRect(surface).left, 0.1));
+    expect(close.right, closeTo(tester.getRect(surface).right, 0.1));
+  });
+
+  testWidgets('starts at bottom-right with a single-row control header', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(400, 800));
@@ -146,14 +184,14 @@ void main() {
       find.byKey(const ValueKey('focus-mode-menu-resize-handle')),
     );
 
-    expect(rect.left, closeTo(12, 0.1));
+    expect(rect.right, closeTo(388, 0.1));
     expect(rect.bottom, closeTo(788, 0.1));
-    expect(minimize.left, closeTo(rect.left, 0.1));
+    expect(resize.left, closeTo(rect.left, 0.1));
+    expect(minimize.left, closeTo(rect.left + 48, 0.1));
     expect(move.center.dx, closeTo(rect.center.dx, 0.1));
-    expect(resize.right, closeTo(rect.right, 0.1));
   });
 
-  testWidgets('top-right resize handle changes width and height and anchors bottom-left', (
+  testWidgets('top-left resize handle changes width and height and anchors bottom-right', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(500, 900));
@@ -178,21 +216,21 @@ void main() {
       const ValueKey('focus-mode-menu-resize-handle'),
     );
     final before = tester.getRect(surface);
-    await tester.drag(resizeHandle, const Offset(60, -50));
+    await tester.drag(resizeHandle, const Offset(-60, -50));
     await tester.pumpAndSettle();
     final larger = tester.getRect(surface);
 
     expect(larger.width, closeTo(before.width + 60, 0.1));
     expect(larger.height, closeTo(before.height + 50, 0.1));
-    expect(larger.left, closeTo(before.left, 0.1));
+    expect(larger.right, closeTo(before.right, 0.1));
     expect(larger.bottom, closeTo(before.bottom, 0.1));
 
-    await tester.drag(resizeHandle, const Offset(-40, 30));
+    await tester.drag(resizeHandle, const Offset(40, 30));
     await tester.pumpAndSettle();
     final smaller = tester.getRect(surface);
     expect(smaller.width, closeTo(larger.width - 40, 0.1));
     expect(smaller.height, closeTo(larger.height - 30, 0.1));
-    expect(smaller.left, closeTo(before.left, 0.1));
+    expect(smaller.right, closeTo(before.right, 0.1));
     expect(smaller.bottom, closeTo(before.bottom, 0.1));
 
     await tester.tap(find.byKey(const ValueKey('focus-mode-menu-toggle')));
