@@ -1790,7 +1790,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       // 抑えて残りをすべてパネルへ渡す（プレビューは高さを
                       // 使い切らないFlexibleなので、Flexの配分のままだと余りが
                       // 空白になりパネルが細い帯になった）。
-                      if (_isEditPanelOpen)
+                      if (_isEditPanelOpen) ...[
                         ConstrainedBox(
                           constraints: BoxConstraints(
                             maxHeight: outerConstraints.maxHeight * 0.45,
@@ -1798,24 +1798,44 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           child: _buildPreviewWithHandle(
                             outerConstraints.maxHeight,
                           ),
-                        )
-                      else
-                        Flexible(
-                          flex: 3,
-                          fit: FlexFit.loose,
-                          child: _buildPreviewWithHandle(
-                            outerConstraints.maxHeight,
+                        ),
+                        _buildSeekBar(),
+                        _buildPlaybackControls(),
+                        Expanded(child: _buildEditPanel()),
+                      ] else
+                        // プレビューを縮めた分は、下のトラックの一覧へ渡す
+                        // （Flexibleで並べると、プレビューが使わなかった分が
+                        // トラックの下の空白になった）。
+                        Expanded(
+                          child: CustomMultiChildLayout(
+                            delegate: _PhoneTimelineLayout(),
+                            children: [
+                              LayoutId(
+                                id: _PhoneTimelineSlot.preview,
+                                child: _buildPreviewWithHandle(
+                                  outerConstraints.maxHeight,
+                                ),
+                              ),
+                              LayoutId(
+                                id: _PhoneTimelineSlot.fixed,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildSeekBar(),
+                                    _buildPlaybackControls(),
+                                    _buildToolbar(),
+                                    _buildSceneTabs(),
+                                    ..._buildTimelineTrackHeader(l10n),
+                                  ],
+                                ),
+                              ),
+                              LayoutId(
+                                id: _PhoneTimelineSlot.tracks,
+                                child: _buildTimelineTrackRows(l10n),
+                              ),
+                            ],
                           ),
                         ),
-                      _buildSeekBar(),
-                      _buildPlaybackControls(),
-                      if (_isEditPanelOpen)
-                        Expanded(child: _buildEditPanel())
-                      else ...[
-                        _buildToolbar(),
-                        _buildSceneTabs(),
-                        ..._buildTimelineTracks(l10n),
-                      ],
                     ],
                   );
                 },
@@ -1828,6 +1848,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   List<Widget> _buildTimelineTracks(AppLocalizations l10n) => [
+    ..._buildTimelineTrackHeader(l10n),
+    Expanded(child: _buildTimelineTrackRows(l10n)),
+  ];
+
+  /// タイムスタンプの行とフレーム一覧（高さが決まっている部分）。
+  List<Widget> _buildTimelineTrackHeader(AppLocalizations l10n) => [
     if (!_isSceneCursorActive && !_isFrameCursorActive)
       _buildTimestampRow(l10n),
     // ピンチイン・ピンチアウトでフレーム幅（拡大縮小）を
@@ -1843,18 +1869,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
       onPointerSignal: _onTimelinePointerSignal,
       child: _buildFrameList(),
     ),
-    // 各種タイムライン行：デフォルトではプレビュー・
-    // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・
-    // テキスト・画像・動画・音源・カメラキーフレーム・
-    // 演出フィルター）が1つでも追加された行だけを
-    // 表示する。最後の1件を削除すれば、その行だけ最初と同じく
-    // 非表示に戻る。
-    // 表示順：フレーム・シーン・共通レイヤー・テキスト・画像・動画・
-    // 音源・カメラ・演出フィルター・エンドカードの順。
-    // プレビュー欄をドラッグハンドルで縮めた分だけ、この一覧が
-    // スクロールで広く見られるようにExpanded+スクロールにしている。
-    Expanded(
-      child: Listener(
+  ];
+
+  Widget _buildTimelineTrackRows(AppLocalizations l10n) =>
+      // 各種タイムライン行：デフォルトではプレビュー・
+      // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・
+      // テキスト・画像・動画・音源・カメラキーフレーム・
+      // 演出フィルター）が1つでも追加された行だけを
+      // 表示する。最後の1件を削除すれば、その行だけ最初と同じく
+      // 非表示に戻る。
+      // 表示順：フレーム・シーン・共通レイヤー・テキスト・画像・動画・
+      // 音源・カメラ・演出フィルター・エンドカードの順。
+      // プレビュー欄をドラッグハンドルで縮めた分だけ、この一覧が
+      // スクロールで広く見られるように、残りの高さ全部のスクロールにしている。
+      Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: _onTimelinePinchPointerDown,
         onPointerMove: _onTimelinePinchPointerMove,
@@ -1904,9 +1932,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
           ),
         ),
-      ),
-    ),
-  ];
+      );
 
   // ─── PC/DeXモードの作業画面 ───────────────────────────────────────────
 
@@ -13801,4 +13827,44 @@ class _TimestampTriangle extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(_TimestampTriangle oldClipper) => false;
+}
+
+enum _PhoneTimelineSlot { preview, fixed, tracks }
+
+/// スマホのタイムライン：プレビュー・高さの決まった行（シークバーから
+/// フレーム一覧まで）・トラックの一覧を上から並べる。プレビューは
+/// 残りの高さの4分の3までで、使わなかった高さはすべてトラックへ渡す。
+class _PhoneTimelineLayout extends MultiChildLayoutDelegate {
+  _PhoneTimelineLayout();
+
+  @override
+  void performLayout(Size size) {
+    final width = size.width;
+    final fixed = layoutChild(
+      _PhoneTimelineSlot.fixed,
+      BoxConstraints.tightFor(width: width),
+    );
+    final free = math.max(0.0, size.height - fixed.height);
+    final preview = layoutChild(
+      _PhoneTimelineSlot.preview,
+      BoxConstraints(maxWidth: width, maxHeight: free * 0.75),
+    );
+    final tracksHeight = math.max(0.0, free - preview.height);
+    layoutChild(
+      _PhoneTimelineSlot.tracks,
+      BoxConstraints.tight(Size(width, tracksHeight)),
+    );
+    positionChild(
+      _PhoneTimelineSlot.preview,
+      Offset((width - preview.width) / 2, 0),
+    );
+    positionChild(_PhoneTimelineSlot.fixed, Offset(0, preview.height));
+    positionChild(
+      _PhoneTimelineSlot.tracks,
+      Offset(0, preview.height + fixed.height),
+    );
+  }
+
+  @override
+  bool shouldRelayout(_PhoneTimelineLayout oldDelegate) => false;
 }

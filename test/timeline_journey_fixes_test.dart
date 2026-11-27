@@ -5,6 +5,7 @@
 // * 動画の「使用開始F・使用終了F」を数字で打つと、表示と1ずれた（表示はF1から、
 //   打つ数は0から）。
 // * 音声の音量を数字で打つと0〜1で、表示は%（50と打つと断られた）。
+// * スマホでプレビューを縮めると、トラックの一覧は広がらず下に空白が残った。
 import 'dart:io';
 
 import 'package:flutter/material.dart' hide MaterialType;
@@ -36,8 +37,9 @@ void main() {
       AppLocalizations l10n,
     })
   >
-  openTimeline(WidgetTester tester) async {
+  openTimeline(WidgetTester tester, {double previewFraction = 0.42}) async {
     SharedPreferences.setMockInitialValues({
+      'timeline_preview_height_fraction': previewFraction,
       'first_launch': false,
       'language': 'ja',
       'force_pc_mode': 0,
@@ -335,6 +337,40 @@ void main() {
     expect(copy.startFrame, 7);
     final b = clips.singleWhere((c) => c.id == 'b');
     expect(copy.trackRow, isNot(b.trackRow), reason: 'not over clip B');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a smaller preview gives its height to the tracks', (
+    tester,
+  ) async {
+    Rect tracksAt() => tester.getRect(
+      find
+          .descendant(
+            of: find.byType(TimelineScreen),
+            matching: find.byType(SingleChildScrollView),
+          )
+          .last,
+    );
+    double gripTop() => tester
+        .getRect(find.byKey(const Key('timelinePreviewResizeHandle')))
+        .top;
+    await openTimeline(tester, previewFraction: 0.42);
+    final tall = tracksAt();
+    final tallGrip = gripTop();
+    final screenBottom = tester.getRect(find.byType(TimelineScreen)).bottom;
+    expect(tall.bottom, closeTo(screenBottom, 1));
+
+    await tester.pumpWidget(const SizedBox());
+    await openTimeline(tester, previewFraction: 0.18);
+    final small = tracksAt();
+    expect(
+      small.bottom,
+      closeTo(screenBottom, 1),
+      reason: 'no blank band under the tracks',
+    );
+    final shrunk = tallGrip - gripTop();
+    expect(shrunk, greaterThan(100));
+    expect(small.height - tall.height, closeTo(shrunk, 1));
     expect(tester.takeException(), isNull);
   });
 }
