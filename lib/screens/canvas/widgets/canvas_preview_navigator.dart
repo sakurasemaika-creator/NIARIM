@@ -24,6 +24,9 @@ class CanvasPreviewNavigator extends StatefulWidget {
   final VoidCallback onClose;
   final bool showCloseButton;
 
+  /// Dragging the title moves the window (the phone's floating window).
+  final ValueChanged<Offset>? onTitleDrag;
+
   const CanvasPreviewNavigator({
     super.key,
     required this.projectId,
@@ -33,6 +36,7 @@ class CanvasPreviewNavigator extends StatefulWidget {
     required this.onNavigate,
     required this.onClose,
     this.showCloseButton = true,
+    this.onTitleDrag,
   });
 
   @override
@@ -178,40 +182,52 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: [
-          Container(
-            color: theme.menuBgColor,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Row(
-              children: [
-                Icon(Icons.map_outlined, size: 14, color: theme.menuTextColor),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    l10n.canvasPreviewNavigatorTitle,
-                    style: localizedHeadingStyle(
-                      context,
-                      TextStyle(
-                        fontSize: 11,
-                        color: theme.menuTextColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    overflow: TextOverflow.ellipsis,
+          GestureDetector(
+            key: const ValueKey('canvasPreviewNavigatorTitle'),
+            behavior: HitTestBehavior.opaque,
+            onPanUpdate: widget.onTitleDrag == null
+                ? null
+                : (details) => widget.onTitleDrag!(details.delta),
+            child: Container(
+              color: theme.menuBgColor,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.map_outlined,
+                    size: 14,
+                    color: theme.menuTextColor,
                   ),
-                ),
-                if (widget.showCloseButton)
-                  Tooltip(
-                    message: l10n.commonClose,
-                    child: InkWell(
-                      onTap: widget.onClose,
-                      child: Icon(
-                        Icons.close,
-                        size: 16,
-                        color: theme.menuTextColor,
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      l10n.canvasPreviewNavigatorTitle,
+                      style: localizedHeadingStyle(
+                        context,
+                        TextStyle(
+                          fontSize: 11,
+                          color: theme.menuTextColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-              ],
+                  if (widget.showCloseButton)
+                    Tooltip(
+                      message: l10n.commonClose,
+                      child: InkWell(
+                        key: const ValueKey('canvasPreviewNavigatorClose'),
+                        onTap: widget.onClose,
+                        child: Icon(
+                          Icons.close,
+                          size: 16,
+                          color: theme.menuTextColor,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           Expanded(child: Center(child: preview)),
@@ -310,4 +326,75 @@ class _ViewportBorder extends CustomPainter {
   @override
   bool shouldRepaint(_ViewportBorder old) =>
       viewport != old.viewport || color != old.color;
+}
+
+/// The canvas preview as a small window over the phone's canvas: drag its
+/// title to move it (like the reference window). It starts at the top right
+/// and stays on the screen.
+class FloatingCanvasPreview extends StatefulWidget {
+  const FloatingCanvasPreview({
+    super.key,
+    required this.projectId,
+    required this.sceneId,
+    required this.frameIndex,
+    required this.viewport,
+    required this.onNavigate,
+    required this.onClose,
+  });
+
+  final String projectId;
+  final String sceneId;
+  final int frameIndex;
+  final ValueListenable<Rect?> viewport;
+  final ValueChanged<Offset> onNavigate;
+  final VoidCallback onClose;
+
+  static const Size size = Size(180, 170);
+
+  @override
+  State<FloatingCanvasPreview> createState() => _FloatingCanvasPreviewState();
+}
+
+class _FloatingCanvasPreviewState extends State<FloatingCanvasPreview> {
+  Offset? _position;
+
+  @override
+  Widget build(BuildContext context) {
+    const size = FloatingCanvasPreview.size;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxX = (constraints.maxWidth - size.width).clamp(
+          0.0,
+          double.infinity,
+        );
+        final maxY = (constraints.maxHeight - size.height).clamp(
+          0.0,
+          double.infinity,
+        );
+        final at = _position ?? Offset(maxX - 16, 72);
+        final position = Offset(at.dx.clamp(0.0, maxX), at.dy.clamp(0.0, maxY));
+        return Stack(
+          children: [
+            Positioned(
+              key: const ValueKey('canvasPreviewFloatingWindow'),
+              left: position.dx,
+              top: position.dy,
+              width: size.width,
+              height: size.height,
+              child: CanvasPreviewNavigator(
+                projectId: widget.projectId,
+                sceneId: widget.sceneId,
+                frameIndex: widget.frameIndex,
+                viewport: widget.viewport,
+                onNavigate: widget.onNavigate,
+                onClose: widget.onClose,
+                onTitleDrag: (delta) =>
+                    setState(() => _position = position + delta),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

@@ -5361,6 +5361,18 @@ abstract class AppLocalizations {
   /// **'不透明度'**
   String get onionSkinOpacityLabel;
 
+  /// オニオンスキンの色選び：決まった色のほかに自由な色を選ぶボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'ほかの色'**
+  String get onionSkinMoreColors;
+
+  /// オニオンスキンの表示枚数が品質設定で固定のときの、枚数を変える場所の案内
+  ///
+  /// In ja, this message translates to:
+  /// **'表示枚数は設定の「パフォーマンス」で品質を「カスタム」にすると変えられます。'**
+  String get onionSkinFrameCountHint;
+
   /// No description provided for @exportScreenTitle.
   ///
   /// In ja, this message translates to:

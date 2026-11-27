@@ -91,6 +91,7 @@ import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/premium_lock_widget.dart';
+import '../../widgets/project_duration_limit_dialog.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/docked_panel_scope.dart';
 import '../../widgets/menu_surface.dart';
@@ -1013,25 +1014,25 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   );
                 },
               ),
-              // キャンバスプレビュー（ナビゲーター）：PC/DeXモード専用。
-              // ドッキング表示のためスマホ版では意味を持たない。
-              if (isWideScreen(context))
-                ListTile(
-                  leading: Icon(
-                    _showCanvasPreviewPanel ? Icons.map : Icons.map_outlined,
-                  ),
-                  title: messageText(l10n.canvasEditMenuPreviewNavigator),
-                  subtitle: messageText(
-                    l10n.canvasEditMenuPreviewNavigatorSubtitle,
-                  ),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _setDesktopPanelVisible(
-                      CanvasDockPanel.canvasPreview,
-                      !_showCanvasPreviewPanel,
-                    );
-                  },
+              // キャンバスプレビュー（ナビゲーター）：PC/DeXモードはドックの窓、
+              // スマホは動かせる小窓（所有者の判断、2026-11-27）。
+              ListTile(
+                key: const ValueKey('canvasEditMenuPreviewNavigator'),
+                leading: Icon(
+                  _showCanvasPreviewPanel ? Icons.map : Icons.map_outlined,
                 ),
+                title: messageText(l10n.canvasEditMenuPreviewNavigator),
+                subtitle: messageText(
+                  l10n.canvasEditMenuPreviewNavigatorSubtitle,
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _setDesktopPanelVisible(
+                    CanvasDockPanel.canvasPreview,
+                    !_showCanvasPreviewPanel,
+                  );
+                },
+              ),
               ListTile(
                 leading: Icon(
                   _canvasBackground == CanvasBackground.white
@@ -2502,6 +2503,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 // デスクトップは横に並ぶので従来どおりパネルを出す。
                 if (!isDesktop && _showReferenceWindow && !immersiveAdjusting)
                   _referenceWindow(),
+                if (!isDesktop &&
+                    _showCanvasPreviewPanel &&
+                    !immersiveAdjusting)
+                  Positioned.fill(
+                    child: FloatingCanvasPreview(
+                      projectId: widget.projectId,
+                      sceneId: _currentSceneId,
+                      frameIndex: _currentFrame,
+                      viewport: _navigatorViewport,
+                      onNavigate: _navigateTo,
+                      onClose: () => _setDesktopPanelVisible(
+                        CanvasDockPanel.canvasPreview,
+                        false,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -2756,19 +2773,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
       sceneId: _currentSceneId,
       frameIndex: _currentFrame,
       viewport: _navigatorViewport,
-      onNavigate: (target) => setState(() {
-        _navigatorViewRequest = CanvasViewRequest(
-          (_navigatorViewRequest?.serial ?? 0) + 1,
-          CanvasViewAction.centerOn,
-          normalizedCenter: target,
-        );
-      }),
+      onNavigate: _navigateTo,
       onClose: () =>
           _setDesktopPanelVisible(CanvasDockPanel.canvasPreview, false),
       showCloseButton: false,
     ),
     CanvasDockPanel.reference => _referenceWindow(),
   };
+
+  /// Centres the canvas view on [target] (0–1 across the picture), from the
+  /// canvas preview.
+  void _navigateTo(Offset target) => setState(() {
+    _navigatorViewRequest = CanvasViewRequest(
+      (_navigatorViewRequest?.serial ?? 0) + 1,
+      CanvasViewAction.centerOn,
+      normalizedCenter: target,
+    );
+  });
 
   Widget _referenceWindow() => ReferenceWindow(
     controller: _referenceImage,
@@ -4441,6 +4462,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _selectedFrameIndices = {};
       _filterBulkFrames = null;
     });
+    // The chosen frames duplicated (each copy right after its frame) or
+    // removed, as one undo step (the owner's choice, 2026-11-27; before, the
+    // only thing to do with them was to apply a filter).
+    final VoidCallback? duplicate = _selectedFrameIndices.isEmpty
+        ? null
+        : _duplicateSelectedFrames;
+    final VoidCallback? remove =
+        _selectedFrameIndices.isEmpty || _selectedFrameIndices.length >= total
+        ? null
+        : _removeSelectedFrames;
     final close = IconButton(
       icon: const Icon(Icons.close, size: 18),
       tooltip: l10n.commonCancel,
@@ -4456,6 +4487,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
         TextButton(
           onPressed: deselectAll,
           child: Text(l10n.canvasDeselectAllButton, style: labelStyle),
+        ),
+        TextButton.icon(
+          key: const ValueKey('frameMultiSelectDuplicate'),
+          onPressed: duplicate,
+          icon: const Icon(Icons.copy, size: 14),
+          label: Text(l10n.commonDuplicate, style: labelStyle),
+        ),
+        TextButton.icon(
+          key: const ValueKey('frameMultiSelectDelete'),
+          onPressed: remove,
+          icon: const Icon(Icons.delete_outline, size: 14),
+          label: Text(l10n.commonDelete, style: labelStyle),
         ),
         FilledButton.icon(
           onPressed: applyFilter,
@@ -4481,6 +4524,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
           icon: const Icon(Icons.deselect, size: 20),
           tooltip: l10n.canvasDeselectAllButton,
           onPressed: deselectAll,
+        ),
+        IconButton(
+          key: const ValueKey('frameMultiSelectDuplicateIcon'),
+          icon: const Icon(Icons.copy, size: 20),
+          tooltip: l10n.commonDuplicate,
+          onPressed: duplicate,
+        ),
+        IconButton(
+          key: const ValueKey('frameMultiSelectDeleteIcon'),
+          icon: const Icon(Icons.delete_outline, size: 20),
+          tooltip: l10n.commonDelete,
+          onPressed: remove,
         ),
         IconButton.filled(
           icon: const Icon(Icons.blur_on, size: 20),
@@ -4515,6 +4570,61 @@ class _CanvasScreenState extends State<CanvasScreen> {
         ],
       ),
     );
+  }
+
+  /// Duplicates the chosen frames, each copy right after its frame, as one
+  /// undo step; the choice then covers the copies too (a frame's copy sits
+  /// after it, so the frames chosen move along).
+  void _duplicateSelectedFrames() {
+    final ps = context.read<ProjectService>();
+    final chosen = _selectedFrameIndices.toList()..sort();
+    if (chosen.isEmpty) return;
+    final premium = context.read<PremiumService>();
+    if (ps.projectedDurationSeconds(
+          widget.projectId,
+          frameDelta: chosen.length,
+        ) >
+        premium.maxProjectDurationSeconds) {
+      showProjectDurationLimit(
+        context,
+        hasUnlimitedDuration: premium.isFeatureAvailable(
+          PremiumFeature.unlimitedDuration,
+        ),
+      );
+      return;
+    }
+    ps.editTimeline(widget.projectId, 'Duplicate frames', () {
+      for (final index in chosen.reversed) {
+        ps.duplicateFrame(widget.projectId, _currentSceneId, index);
+      }
+    });
+    setState(() {
+      _frameMultiSelectMode = false;
+      _selectedFrameIndices = {};
+    });
+  }
+
+  /// Removes the chosen frames as one undo step (one frame always stays; the
+  /// button is off when every frame is chosen).
+  void _removeSelectedFrames() {
+    final ps = context.read<ProjectService>();
+    final chosen = _selectedFrameIndices.toList()..sort();
+    if (chosen.isEmpty) return;
+    ps.editTimeline(widget.projectId, 'Delete frames', () {
+      for (final index in chosen.reversed) {
+        ps.removeFrame(widget.projectId, _currentSceneId, index);
+      }
+    });
+    final left = ps.frameCount(widget.projectId, _currentSceneId);
+    // The frame shown: the same one, or (when it was removed) the first one
+    // left after it.
+    final before = chosen.where((i) => i < _currentFrame).length;
+    final next = (_currentFrame - before).clamp(0, left - 1);
+    setState(() {
+      _frameMultiSelectMode = false;
+      _selectedFrameIndices = {};
+      _currentFrame = next;
+    });
   }
 
   /// 指ツール長押し時のサブツールメニュー（歪み／ガウスぼかし／モザイク）

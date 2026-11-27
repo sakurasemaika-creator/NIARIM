@@ -927,6 +927,8 @@
   "onionSkinFrameCountFixed": "{count}帧（固定）",
   "onionSkinColorLabel": "颜色",
   "onionSkinOpacityLabel": "不透明度",
+  "onionSkinMoreColors": "更多颜色",
+  "onionSkinFrameCountHint": "在设置的“性能”中将画质设为“自定义”，即可更改显示帧数。",
   "exportScreenTitle": "导出",
   "exportPresetSection": "预设",
   "exportPresetStandard": "标准",

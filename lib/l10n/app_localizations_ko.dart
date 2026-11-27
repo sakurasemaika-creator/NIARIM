@@ -2938,6 +2938,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get onionSkinOpacityLabel => '불투명도';
 
   @override
+  String get onionSkinMoreColors => '다른 색상';
+
+  @override
+  String get onionSkinFrameCountHint =>
+      '표시 매수는 설정의 “성능”에서 화질을 “사용자 지정”으로 하면 바꿀 수 있습니다.';
+
+  @override
   String get exportScreenTitle => '내보내기';
 
   @override

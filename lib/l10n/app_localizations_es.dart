@@ -3097,6 +3097,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get onionSkinOpacityLabel => 'Opacidad';
 
   @override
+  String get onionSkinMoreColors => 'Más colores';
+
+  @override
+  String get onionSkinFrameCountHint =>
+      'Para cambiar el número de fotogramas, elige la calidad «Personalizada» en los ajustes de Rendimiento.';
+
+  @override
   String get exportScreenTitle => 'Exportar';
 
   @override

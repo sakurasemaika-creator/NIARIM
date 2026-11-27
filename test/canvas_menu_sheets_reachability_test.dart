@@ -142,13 +142,15 @@ void main() {
         of: find.byType(BottomSheet),
         matching: find.text(l10n.canvasEditMenuReferenceWindow),
       );
-      // スマホの表示では「資料ウィンドウ」が最後の項目。
+      // スマホの表示にも「キャンバスプレビュー」がある（所有者の判断、
+      // 2026-11-27。以前はPCだけで、スマホでは「資料ウィンドウ」が表示の
+      // まとまりの最後だった）。
       expect(
         find.descendant(
           of: find.byType(BottomSheet),
           matching: find.text(l10n.canvasEditMenuPreviewNavigator),
         ),
-        findsNothing,
+        findsOneWidget,
       );
       final lastTile = find.ancestor(of: last, matching: find.byType(ListTile));
       final problems = <String>[];

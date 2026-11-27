@@ -3051,6 +3051,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onionSkinOpacityLabel => 'Opacity';
 
   @override
+  String get onionSkinMoreColors => 'More colors';
+
+  @override
+  String get onionSkinFrameCountHint =>
+      'To change the frame count, choose “Custom” quality in Performance settings.';
+
+  @override
   String get exportScreenTitle => 'Export';
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -7,6 +8,8 @@ import '../../../services/performance_service.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/docked_panel_scope.dart';
 import '../../../widgets/list_ink_clip.dart';
+import '../../../widgets/typing_dialog_inset.dart';
+import 'color_picker_panel.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
@@ -167,6 +170,31 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                         onShowColorPicker: _showColorPicker,
                       ),
                       const Divider(),
+                      // 枚数が品質の設定で決まっているときは、変える場所を
+                      // 案内する（所有者の判断、2026-11-27）。
+                      if (!isCustom) ...[
+                        Text(
+                          l10n.onionSkinFrameCountHint,
+                          key: const ValueKey('onionSkinFrameCountHint'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: TextButton.icon(
+                            key: const ValueKey('onionSkinOpenPerformance'),
+                            onPressed: () =>
+                                context.push('/settings/performance'),
+                            icon: const Icon(Icons.chevron_right, size: 18),
+                            label: Text(l10n.perfSettingsScreenTitle),
+                          ),
+                        ),
+                        const Divider(),
+                      ],
                       // ── 共通設定 ──
                       Text(
                         l10n.onionSkinFrameInterval,
@@ -261,11 +289,39 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
               .toList(),
         ),
         actions: [
+          // Any colour, in the app's colour picker (the owner's choice,
+          // 2026-11-27; before, only the eight above).
+          TextButton.icon(
+            key: const ValueKey('onionSkinMoreColors'),
+            icon: const Icon(Icons.palette_outlined, size: 18),
+            label: Text(l10n.onionSkinMoreColors),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _showFreeColorPicker(current, onChanged);
+            },
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(l10n.commonCancel),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showFreeColorPicker(Color current, ValueChanged<Color> onChanged) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        insetPadding: typingDialogInsetPadding(ctx),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520, maxHeight: 720),
+          child: ColorPickerPanel(
+            currentColor: current,
+            onColorChanged: onChanged,
+            onClose: () => Navigator.of(ctx).pop(),
+          ),
+        ),
       ),
     );
   }

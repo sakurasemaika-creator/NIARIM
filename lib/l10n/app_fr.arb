@@ -927,6 +927,8 @@
   "onionSkinFrameCountFixed": "{count} image(s) (fixe)",
   "onionSkinColorLabel": "Couleur",
   "onionSkinOpacityLabel": "Opacité",
+  "onionSkinMoreColors": "Plus de couleurs",
+  "onionSkinFrameCountHint": "Pour changer le nombre d’images, choisissez la qualité « Personnalisé » dans les paramètres Performances.",
   "exportScreenTitle": "Export",
   "exportPresetSection": "Préréglage",
   "exportPresetStandard": "Standard",

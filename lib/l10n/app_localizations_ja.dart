@@ -2926,6 +2926,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onionSkinOpacityLabel => '不透明度';
 
   @override
+  String get onionSkinMoreColors => 'ほかの色';
+
+  @override
+  String get onionSkinFrameCountHint =>
+      '表示枚数は設定の「パフォーマンス」で品質を「カスタム」にすると変えられます。';
+
+  @override
   String get exportScreenTitle => '書き出し';
 
   @override

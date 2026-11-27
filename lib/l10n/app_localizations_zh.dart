@@ -2898,6 +2898,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onionSkinOpacityLabel => '不透明度';
 
   @override
+  String get onionSkinMoreColors => '更多颜色';
+
+  @override
+  String get onionSkinFrameCountHint => '在设置的“性能”中将画质设为“自定义”，即可更改显示帧数。';
+
+  @override
   String get exportScreenTitle => '导出';
 
   @override
@@ -14074,6 +14080,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get onionSkinOpacityLabel => '不透明度';
+
+  @override
+  String get onionSkinMoreColors => '更多顏色';
+
+  @override
+  String get onionSkinFrameCountHint => '在設定的「效能」中將畫質設為「自訂」，即可變更顯示張數。';
 
   @override
   String get exportScreenTitle => '匯出';

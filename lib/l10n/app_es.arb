@@ -927,6 +927,8 @@
   "onionSkinFrameCountFixed": "{count} fotograma(s) (fijo)",
   "onionSkinColorLabel": "Color",
   "onionSkinOpacityLabel": "Opacidad",
+  "onionSkinMoreColors": "Más colores",
+  "onionSkinFrameCountHint": "Para cambiar el número de fotogramas, elige la calidad «Personalizada» en los ajustes de Rendimiento.",
   "exportScreenTitle": "Exportar",
   "exportPresetSection": "Preajuste",
   "exportPresetStandard": "Estándar",

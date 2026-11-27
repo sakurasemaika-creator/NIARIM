@@ -929,6 +929,8 @@
   "onionSkinFrameCountFixed": "{count} frame(s) (Fixed)",
   "onionSkinColorLabel": "Color",
   "onionSkinOpacityLabel": "Opacity",
+  "onionSkinMoreColors": "More colors",
+  "onionSkinFrameCountHint": "To change the frame count, choose “Custom” quality in Performance settings.",
   "exportScreenTitle": "Export",
   "exportPresetSection": "Preset",
   "exportPresetStandard": "Standard",

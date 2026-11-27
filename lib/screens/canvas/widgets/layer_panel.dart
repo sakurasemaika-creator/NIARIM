@@ -1591,6 +1591,60 @@ class _LayerPanelState extends State<LayerPanel> {
                   _showRenameDialog(context, layer);
                 },
               ),
+            // A common layer's keyframes, here as well as on the timeline
+            // (the owner's choice, 2026-11-27). They count this scene's
+            // frames, as when the layer is drawn.
+            if (isCommon)
+              ListTile(
+                key: const ValueKey('commonLayerKeyframes'),
+                leading: const Icon(Icons.animation_outlined),
+                title: Text(l10n.layerPanelKeyframeLabel),
+                trailing: layer.keyframes.isEmpty
+                    ? null
+                    : Icon(
+                        Icons.diamond,
+                        size: 14,
+                        color: AccentTextTheme.of(context),
+                      ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  final projects = context.read<ProjectService>();
+                  final tm = projects.tileManagerOf(widget.projectId);
+                  showLayerKeyframeSheet(
+                    context,
+                    layer: layer,
+                    projects: projects,
+                    projectId: widget.projectId,
+                    sceneId: widget.sceneId,
+                    currentFrame: widget.frameIndex,
+                    totalFrames: projects.frameCount(
+                      widget.projectId,
+                      widget.sceneId,
+                    ),
+                    canvasWidth: tm.canvasWidth,
+                    canvasHeight: tm.canvasHeight,
+                    onChanged: (keyframes) {
+                      // The layer as stored at its home frame.
+                      final home = projects.homeOf(widget.projectId, layer.id);
+                      final latest = projects
+                          .storedLayersOf(
+                            widget.projectId,
+                            home?.sceneId ?? widget.sceneId,
+                            home?.frameIndex ?? widget.frameIndex,
+                          )
+                          .where((l) => l.id == layer.id)
+                          .firstOrNull;
+                      if (latest == null) return;
+                      projects.updateLayer(
+                        projectId: widget.projectId,
+                        sceneId: widget.sceneId,
+                        frameIndex: widget.frameIndex,
+                        layer: latest.copyWith(keyframes: keyframes),
+                      );
+                    },
+                  );
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.delete_outline),
               title: Text(l10n.commonDelete),
