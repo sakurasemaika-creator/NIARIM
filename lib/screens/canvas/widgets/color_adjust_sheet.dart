@@ -17,6 +17,7 @@ import '../../../utils/filter_display_name.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/name_entry_dialog.dart';
 import '../../../config/font_fallback.dart';
+import 'focus_mode_menu.dart';
 
 /// 色調調整はスマホ・PC共通の画面下部コントロールバーを使う。
 /// 別の正方形プレビューは作らず、変更中の画像を実際のキャンバスへ渡す。
@@ -64,10 +65,30 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
   bool _applying = false;
   bool _naming = false;
 
+  FocusModeMenuController? _focusMenuController;
+
   @override
   void initState() {
     super.initState();
     unawaited(_loadPreviewBase());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final controller = widget.bottomBar
+        ? FocusModeMenuScope.maybeOf(context)
+        : null;
+    if (identical(controller, _focusMenuController)) return;
+    _focusMenuController = controller;
+    if (controller != null) {
+      // Publish after this child finishes building; the shared header listens
+      // and rebuilds only its menu slot, keeping the editor state untouched.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !identical(_focusMenuController, controller)) return;
+        controller.setHeaderMenuBuilder(_buildHeaderMenu);
+      });
+    }
   }
 
   @override
@@ -329,6 +350,29 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
     );
   }
 
+  Widget _buildHeaderMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return PopupMenuButton<bool>(
+      key: const ValueKey('color-adjust-save-menu'),
+      icon: const Icon(Icons.more_vert, size: 20),
+      padding: EdgeInsets.zero,
+      enabled: !_naming,
+      onSelected: (effect) =>
+          effect ? _addToEffectFilter() : _addToDrawFilter(),
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: false,
+          child: Text(l10n.canvasColorAdjustAddToDrawFilter),
+        ),
+        PopupMenuItem(
+          value: true,
+          enabled: widget.totalFrames > 0,
+          child: Text(l10n.canvasColorAdjustAddToEffectFilter),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -349,24 +393,7 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
         // 調整をフィルターとして残す2つは、題の右のメニューにまとめる
         // （下の操作の行は取り消し・適用の1行だけにして、スライダーの場所を
         // 取らない）。
-        PopupMenuButton<bool>(
-          key: const ValueKey('color-adjust-save-menu'),
-          icon: const Icon(Icons.more_vert, size: 20),
-          enabled: !_naming,
-          onSelected: (effect) =>
-              effect ? _addToEffectFilter() : _addToDrawFilter(),
-          itemBuilder: (_) => [
-            PopupMenuItem(
-              value: false,
-              child: Text(l10n.canvasColorAdjustAddToDrawFilter),
-            ),
-            PopupMenuItem(
-              value: true,
-              enabled: widget.totalFrames > 0,
-              child: Text(l10n.canvasColorAdjustAddToEffectFilter),
-            ),
-          ],
-        ),
+        _buildHeaderMenu(context),
         IconButton(
           icon: const Icon(Icons.close, size: 18),
           tooltip: l10n.commonCancel,
@@ -407,7 +434,7 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                header,
+                if (!widget.bottomBar) header,
                 Flexible(
                   child: SingleChildScrollView(
                     child: Column(
