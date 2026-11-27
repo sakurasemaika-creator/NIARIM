@@ -232,14 +232,18 @@ void main() {
       expect(menuSheet(), findsNothing);
       expect(canvasIsOnTop(tester), !covers);
       if (label == '色調調整') {
-        // No separate 120x120 preview popup: the entire available width is
-        // a bottom controls bar and the real canvas remains the preview.
+        // The common focus menu owns the bounded floating surface; the
+        // real canvas remains the preview instead of a separate image popup.
+        expect(
+          find.byKey(const ValueKey('color-adjust-focus-menu')),
+          findsOneWidget,
+        );
         expect(
           find.byKey(const ValueKey('color-adjust-bottom-bar')),
           findsOneWidget,
         );
         final panel = tester.getRect(find.byType(ColorAdjustSheet));
-        expect(panel.width, closeTo(390, 1));
+        expect(panel.width, closeTo(360, 1));
         expect(find.widgetWithText(FilledButton, '適用'), findsOneWidget);
         expect(find.widgetWithText(TextButton, 'キャンセル'), findsOneWidget);
       }
