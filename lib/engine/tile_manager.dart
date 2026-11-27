@@ -297,12 +297,22 @@ class TileManager {
        tilesY = (canvasHeight / tileSize).ceil(),
        // 既定はキャンバス2枚ぶんのタイル数（合成キャッシュの上限に連動させず、
        // 「今描いているレイヤーと直前のレイヤー」が丸ごと載る程度）に収める。
+       // ただし128枚で頭打ちにすると、それより多いタイルのレイヤー（3840×2160は
+       // 135枚）は合成のたびに古い順に追い出し合い、描く1回ごとに全部のタイルを
+       // デコードし直した。少なくともレイヤー1枚の全部のタイル（と8枚）は残す
+       // （7680×4320の510枚まで。それより大きいキャンバスでは画像だけで
+       // 130MBを超えるので、前と同じく追い出し合う）。
        tileImageCacheMax =
            tileImageCacheMax ??
-           ((canvasWidth / tileSize).ceil() *
-                   (canvasHeight / tileSize).ceil() *
-                   2)
-               .clamp(8, 128);
+           _defaultTileImageCacheMax(
+             (canvasWidth / tileSize).ceil() * (canvasHeight / tileSize).ceil(),
+           );
+
+  static int _defaultTileImageCacheMax(int tiles) {
+    final twoLayers = (tiles * 2).clamp(8, 128);
+    final oneLayer = tiles + 8 < 518 ? tiles + 8 : 518;
+    return twoLayers > oneLayer ? twoLayers : oneLayer;
+  }
 
   String _tileKey(int tx, int ty) => '$tx,$ty';
 
@@ -689,18 +699,29 @@ class TileManager {
     return handle;
   }
 
+  /// How many tile images were decoded, by every tile manager (for tests:
+  /// a repeated composite of an unchanged layer decodes none).
+  static int debugTileImageDecodes = 0;
+
   Future<ui.Image> _tileToImage(Uint8List pixels) async {
-    final codec = await ui.ImageDescriptor.raw(
-      await ui.ImmutableBuffer.fromUint8List(pixels),
+    debugTileImageDecodes++;
+    final buffer = await ui.ImmutableBuffer.fromUint8List(pixels);
+    final descriptor = ui.ImageDescriptor.raw(
+      buffer,
       width: tileSize,
       height: tileSize,
       pixelFormat: ui.PixelFormat.rgba8888,
-    ).instantiateCodec();
+    );
+    final codec = await descriptor.instantiateCodec();
     final frame = await codec.getNextFrame();
     // Codecはネイティブ資源を持つ。フレームを取り出したら必ず解放する
     // （ここはタイルキャッシュが外れるたびにタイル枚数ぶん通る最も熱い経路で、
-    // 取り出したframe.imageはCodecを破棄しても有効なまま）。
+    // 取り出したframe.imageはCodecを破棄しても有効なまま）。画素の写し
+    // （buffer、1枚256KB）とdescriptorも、ガベージコレクションを待たずに
+    // 放す（dart:uiのdecodeImageFromPixelsと同じ）。
     codec.dispose();
+    descriptor.dispose();
+    buffer.dispose();
     return frame.image;
   }
 

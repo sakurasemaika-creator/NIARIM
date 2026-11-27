@@ -789,14 +789,20 @@ class LayerCompositor {
       out[i + 3] = (ao * 255).round().clamp(0, 255);
     }
 
-    final codec = await ui.ImageDescriptor.raw(
-      await ui.ImmutableBuffer.fromUint8List(_rgba8ToFloat32(out)),
+    final buffer = await ui.ImmutableBuffer.fromUint8List(_rgba8ToFloat32(out));
+    final descriptor = ui.ImageDescriptor.raw(
+      buffer,
       width: width,
       height: height,
       pixelFormat: ui.PixelFormat.rgbaFloat32,
-    ).instantiateCodec();
+    );
+    final codec = await descriptor.instantiateCodec();
     final frame = await codec.getNextFrame();
+    // The pixels' copy (4 floats a pixel) goes now, not at a garbage
+    // collection.
     codec.dispose();
+    descriptor.dispose();
+    buffer.dispose();
     return frame.image;
   }
 }

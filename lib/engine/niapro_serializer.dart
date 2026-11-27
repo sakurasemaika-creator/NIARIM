@@ -29,6 +29,7 @@ import '../models/text_object.dart';
 import 'filter_engine.dart' show EffectFilterType;
 import 'tile_manager.dart';
 import 'archive_security.dart';
+import 'fast_crc32.dart';
 
 /// .niapro ファイルの保存・読み込み。
 /// 形式：ZIP アーカイブ
@@ -525,7 +526,7 @@ class NiaproSerializer {
           encoder.addArchiveFile(
             copy != null && !changed(layerEntry.key, tileEntry.key)
                 ? _storedAsIs(copy)
-                : ArchiveFile(name, 0, tileEntry.value),
+                : _tileEntry(name, tileEntry.value),
           );
         }
       }
@@ -736,9 +737,8 @@ class NiaproSerializer {
         if (!used(layerEntry.key)) continue;
         for (final tileEntry in layerEntry.value.entries) {
           encoder.addArchiveFile(
-            ArchiveFile(
+            _tileEntry(
               _tilePath(layerEntry.key, tileEntry.key),
-              0,
               tileEntry.value,
             ),
           );
@@ -881,7 +881,7 @@ class NiaproSerializer {
           final oldEntry = oldFilesByName[entryName];
           if (dirtyTiles.containsKey(tileKey) || oldEntry == null) {
             // 変更あり、または旧ファイルに存在しない（新規タイル・旧形式からの移行）→再書き込み
-            encoder.addArchiveFile(ArchiveFile(entryName, 0, tileEntry.value));
+            encoder.addArchiveFile(_tileEntry(entryName, tileEntry.value));
           } else {
             // 未変更タイル：前回保存分を圧縮されたまま引き継ぐ（展開して
             // 圧縮し直すと、保存のたびに全タイルを圧縮し直すことになった）。
@@ -897,6 +897,24 @@ class NiaproSerializer {
   /// again). Its date is the one it was stored with (see [_storedModTime]).
   static ArchiveFile _storedAsIs(ArchiveFile entry) =>
       entry..lastModTime = _storedModTime(entry);
+
+  /// A tile's zip entry, compressed already (raw DEFLATE at the level the
+  /// zip encoder uses, 6) by the platform's zlib, with its checksum: the
+  /// encoder writes a compressed entry as it is, and without the checksum it
+  /// would inflate the entry again to count it. The encoder's own Dart
+  /// deflate and CRC took about 7 ms a tile; any inflater reads either back
+  /// to the same pixels.
+  static ArchiveFile _tileEntry(String name, Uint8List pixels) {
+    final compressed = _tileDeflate.encode(pixels);
+    return ArchiveFile(
+      name,
+      pixels.length,
+      InputStream(compressed),
+      ArchiveFile.DEFLATE,
+    )..crc32 = crc32Of(pixels);
+  }
+
+  static final ZLibCodec _tileDeflate = ZLibCodec(raw: true, level: 6);
 
   static void _addManifestAndScenes(
     ZipFileEncoder encoder,
