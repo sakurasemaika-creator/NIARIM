@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// A movable, collapsible and resizable control surface used while the canvas
 /// is in a focused editing mode.
@@ -401,13 +402,15 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                       _resizeStartSize = null;
                                     },
                                     child: Center(
-                                      child: Transform.rotate(
-                                        angle: -math.pi / 4,
-                                        child: Icon(
-                                          Icons.drag_handle,
-                                          size: 18,
-                                          color: scheme.onSurfaceVariant
-                                              .withValues(alpha: 0.62),
+                                      child: SvgPicture.string(
+                                        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 19H5v-6"/><path d="M13 5h6v6"/><path d="M19 5 5 19"/></svg>',
+                                        width: 18,
+                                        height: 18,
+                                        colorFilter: ColorFilter.mode(
+                                          scheme.onSurfaceVariant.withValues(
+                                            alpha: 0.62,
+                                          ),
+                                          BlendMode.srcIn,
                                         ),
                                       ),
                                     ),
