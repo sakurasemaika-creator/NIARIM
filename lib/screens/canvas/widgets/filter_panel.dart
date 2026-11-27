@@ -3346,9 +3346,9 @@ class _FilterPanelState extends State<FilterPanel> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           EditableSliderValue(
-            text: AppLocalizations.of(
-              context,
-            )!.commonLabelWithValue(label, valueLabel),
+            text: AppLocalizations.of(context)!
+                .commonLabelWithValue(label, valueLabel),
+            title: label,
             style: const TextStyle(fontSize: 11),
             value: safeValue,
             min: min,

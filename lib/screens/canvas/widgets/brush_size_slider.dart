@@ -143,6 +143,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           width: 47,
                           child: EditableSliderValue(
                             text: '${widget.brushSize.round()}',
+                            title: l10n.brushSettingsSizeLabel,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 11,
@@ -179,6 +180,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           width: 47,
                           child: EditableSliderValue(
                             text: '${widget.opacity}%',
+                            title: l10n.brushSettingsOpacityLabel,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 11,

@@ -106,7 +106,7 @@ class _GameStyleSlotScreenState extends State<_GameStyleSlotScreen> {
               : l10n.saveTreeScreenTitleSlot,
         ),
         actions: [
-          HelpButton(topic: _showAutosaves ? '自動保存' : 'セーブツリー'),
+          HelpButton(topic: _showAutosaves ? '自動保存' : 'セーブスロット'),
           const SizedBox(width: 8),
         ],
       ),

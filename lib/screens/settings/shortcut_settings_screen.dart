@@ -558,6 +558,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
                   alignment: AlignmentDirectional.centerEnd,
                   child: EditableSliderValue(
                     text: '${size.round()}px',
+                    title: AppLocalizations.of(context)!.brushSettingsSizeLabel,
                     textAlign: TextAlign.right,
                     value: size,
                     min: 1,

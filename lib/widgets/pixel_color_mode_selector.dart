@@ -100,6 +100,7 @@ class PixelColorModeSelector extends StatelessWidget {
           const SizedBox(height: 8),
           EditableSliderValue(
             text: l10n.pixelColorLevelsLabel(colorLevels),
+            title: l10n.filterColorLevels,
             style: const TextStyle(fontSize: 11),
             value: colorLevels,
             min: 1,

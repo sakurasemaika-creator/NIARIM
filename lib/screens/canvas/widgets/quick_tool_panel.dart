@@ -374,6 +374,8 @@ class QuickToolPanel extends StatelessWidget {
                     padding: const EdgeInsetsDirectional.only(end: 14),
                     child: EditableSliderValue(
                       text: '${size.round()}px',
+                      title: AppLocalizations.of(context)!
+                          .brushSettingsSizeLabel,
                       textAlign: TextAlign.right,
                       value: size,
                       min: 1,

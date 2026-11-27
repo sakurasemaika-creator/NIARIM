@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../../engine/undo_manager.dart' as app_undo;
 import '../../../l10n/app_localizations.dart';
 import '../../../models/color_palette.dart';
 import '../../../services/export_share_service.dart';
@@ -66,7 +67,14 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   late double _value;
   late double _alpha; // 0.0〜1.0（カラーピッカーは常に透明色も選択できる）
   late int _r, _g, _b;
-  bool _showHsvSliders = true;
+  // HSV／RGBのどちらのスライダーを出すか（アプリを閉じるまで覚える）。
+  static bool _lastShowHsvSliders = true;
+  bool _showHsvSliders = _lastShowHsvSliders;
+  // つまみ・スライダーの調整で「最近使った色」へ入れた色。同じ調整の続き
+  // （描く・別の色を選ぶまで）は、足さずにこの色を置き換える（以前は
+  // スライダーを離すたびに足され、ほとんど同じ色で埋まった）。
+  int? _adjustingRecent;
+  int _adjustingUndoCount = -1;
   final _hexController = TextEditingController();
   // パレットを共有できなかった理由。このパネルはダイアログの中にも出るので、
   // SnackBar（ダイアログの幕の下に隠れる）ではなくパネルの中に出す。
@@ -160,8 +168,18 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
 
   /// 色の確定操作（スライダーの操作終了・HEX確定・スウォッチ選択）時に
   /// 「最近使った色」履歴へ登録する（直近10色）。
-  void _commitToRecent() {
-    context.read<PaletteService>().addRecentColor(_currentColor.toARGB32());
+  void _commitToRecent({bool adjusting = false}) {
+    final argb = _currentColor.toARGB32();
+    final undoCount = context.read<app_undo.UndoManager?>()?.undoCount ?? 0;
+    final replacing =
+        adjusting &&
+            _adjustingRecent != null &&
+            undoCount == _adjustingUndoCount
+        ? _adjustingRecent
+        : null;
+    context.read<PaletteService>().addRecentColor(argb, replacing: replacing);
+    _adjustingRecent = adjusting ? argb : null;
+    _adjustingUndoCount = undoCount;
   }
 
   @override
@@ -263,12 +281,13 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                             _value = v;
                             _applyHsv();
                           },
-                          onChangeEnd: _commitToRecent,
+                          onChangeEnd: () => _commitToRecent(adjusting: true),
                           isTransparent: _alpha == 0,
                           onToggleTransparent: _toggleTransparent,
                           showHsvSliders: _showHsvSliders,
-                          onSliderModeChanged: (hsv) =>
-                              setState(() => _showHsvSliders = hsv),
+                          onSliderModeChanged: (hsv) => setState(
+                            () => _showHsvSliders = _lastShowHsvSliders = hsv,
+                          ),
                         ),
                       ),
                     ),
@@ -277,7 +296,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       _slider('H', _hue.roundToDouble(), 0, 360, (v) {
                         _hue = v.roundToDouble();
                         _applyHsv();
-                      }, (_) => _commitToRecent()),
+                      }, (_) => _commitToRecent(adjusting: true)),
                       _slider(
                         'S',
                         (_saturation * 100).roundToDouble(),
@@ -287,25 +306,25 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                           _saturation = v.round() / 100;
                           _applyHsv();
                         },
-                        (_) => _commitToRecent(),
+                        (_) => _commitToRecent(adjusting: true),
                       ),
                       _slider('V', (_value * 100).roundToDouble(), 0, 100, (v) {
                         _value = v.round() / 100;
                         _applyHsv();
-                      }, (_) => _commitToRecent()),
+                      }, (_) => _commitToRecent(adjusting: true)),
                     ] else ...[
                       _slider('R', _r.toDouble(), 0, 255, (v) {
                         _r = v.round();
                         _applyRgb();
-                      }, (_) => _commitToRecent()),
+                      }, (_) => _commitToRecent(adjusting: true)),
                       _slider('G', _g.toDouble(), 0, 255, (v) {
                         _g = v.round();
                         _applyRgb();
-                      }, (_) => _commitToRecent()),
+                      }, (_) => _commitToRecent(adjusting: true)),
                       _slider('B', _b.toDouble(), 0, 255, (v) {
                         _b = v.round();
                         _applyRgb();
-                      }, (_) => _commitToRecent()),
+                      }, (_) => _commitToRecent(adjusting: true)),
                     ],
                     const SizedBox(height: 4),
                     // 不透明度スライダー（カラーピッカーは常に透明色も選択
@@ -330,7 +349,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                         _alpha = v / 100;
                         _applyAlpha();
                       },
-                      onChangeEnd: (_) => _commitToRecent(),
+                      onChangeEnd: (_) => _commitToRecent(adjusting: true),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -430,7 +449,11 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                         children: paletteService.recentColors.map((argb) {
                           final color = Color(argb);
                           return GestureDetector(
-                            onTap: () => _applyColor(color),
+                            // 押した色を先頭へ移す。
+                            onTap: () {
+                              _applyColor(color);
+                              _commitToRecent();
+                            },
                             child: Container(
                               width: 24,
                               height: 24,

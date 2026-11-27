@@ -98,8 +98,10 @@ class PaletteService extends ChangeNotifier {
   }
 
   /// 色を「最近使った色」の先頭へ追加する（重複は既存分を削除してから先頭へ）。
-  /// 直近10色を超える分は末尾から破棄する。
-  Future<void> addRecentColor(int argb) async {
+  /// 直近10色を超える分は末尾から破棄する。[replacing]があれば、その色を
+  /// 置き換える（同じ色を続けて調整している間は1つの色として持つ）。
+  Future<void> addRecentColor(int argb, {int? replacing}) async {
+    if (replacing != null) _recentColors.remove(replacing);
     _recentColors.remove(argb);
     _recentColors.insert(0, argb);
     if (_recentColors.length > _maxRecent) {
