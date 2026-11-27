@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 
 import '../../../config/signal_colors.dart';
 import '../../../engine/autofill_engine.dart'
-    show AutofillCheckMode, applyAutofillCheckColor, autofillCheckColor;
+    show AutofillCheckMode, autofillCheckColor;
 import '../../../engine/filter_lens_mask.dart';
 import '../../../engine/filter_selection.dart';
 import '../../../engine/bucket_fill_engine.dart';
@@ -743,6 +743,10 @@ class CanvasAreaState extends State<CanvasArea> {
 
   ui.Image? _compositeImage;
   ui.Image? _belowImage;
+
+  /// The autofill check colours the surroundings were drawn with (empty in
+  /// the normal view); the current layer takes its own from here.
+  Map<String, int> _checkTints = const {};
   // The layers above the current one as drawing commands, so each blends
   // with its own mode onto what is drawn below it (a picture of their own
   // composite would blend them only with each other).
@@ -4718,6 +4722,24 @@ class CanvasAreaState extends State<CanvasArea> {
     });
   }
 
+  /// The autofill check colour of each autofill layer in [layers] (empty in
+  /// the normal view): numbered from the bottom, as the parts are, so a
+  /// layer keeps its colour whichever layer is selected.
+  Map<String, int> _autofillCheckTints(List<Layer> layers) {
+    final checkMode = widget.autofillCheckMode;
+    if (checkMode == AutofillCheckMode.normal) return const {};
+    final byId = {for (final layer in layers) layer.id: layer};
+    final tints = <String, int>{};
+    var partIndex = 0;
+    for (var i = layers.length - 1; i >= 0; i--) {
+      final layer = layers[i];
+      if (layer.type != LayerType.autoFill) continue;
+      if (inheritedLayerOpacity(layer, byId) == 0) continue;
+      tints[layer.id] = autofillCheckColor(checkMode, partIndex++);
+    }
+    return tints;
+  }
+
   /// 現在レイヤーより手前（above）／奥（below）にあるレイヤー群を、
   /// 不透明度・ブレンドモード・クリッピングを反映して合成しておく
   /// ドラッグ中の移動・変形プレビューでは現在レイヤーの画像
@@ -4728,67 +4750,6 @@ class CanvasAreaState extends State<CanvasArea> {
   /// ProjectServiceを経由するため、[force]がfalseの場合は直前に取得した
   /// レイヤー一覧と参照が変わっていない限り再合成をスキップする（低スペック
   /// 端末対策）。
-  Future<ui.Image> _autofillCheckImage(ui.Image source, int argb) async {
-    final data = await source.toByteData(
-      format: ui.ImageByteFormat.rawStraightRgba,
-    );
-    if (data == null) return source.clone();
-    final recolored = applyAutofillCheckColor(data.buffer.asUint8List(), argb);
-    final buffer = await ui.ImmutableBuffer.fromUint8List(recolored);
-    final descriptor = ui.ImageDescriptor.raw(
-      buffer,
-      width: source.width,
-      height: source.height,
-      pixelFormat: ui.PixelFormat.rgba8888,
-    );
-    final codec = await descriptor.instantiateCodec();
-    final frame = await codec.getNextFrame();
-    codec.dispose();
-    descriptor.dispose();
-    buffer.dispose();
-    return frame.image;
-  }
-
-  Future<ui.Image> _composeAutofillCheckLayers(
-    TileManager manager,
-    List<Layer> layers,
-    String Function(Layer) keyOf,
-    AutofillCheckMode checkMode,
-  ) async {
-    final w = manager.canvasWidth;
-    final h = manager.canvasHeight;
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    // 確認の表示でも、オニオンスキンは塗りの下。
-    _paintOnionUnderlay(
-      canvas,
-      Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
-    );
-    var partIndex = 0;
-    final byId = {for (final layer in layers) layer.id: layer};
-    for (var i = layers.length - 1; i >= 0; i--) {
-      final layer = layers[i];
-      if (layer.type != LayerType.autoFill) continue;
-      final effectiveOpacity = inheritedLayerOpacity(layer, byId);
-      if (effectiveOpacity == 0) continue;
-      final raw = await manager.compositeLayerToImage(keyOf(layer));
-      final color = autofillCheckColor(checkMode, partIndex++);
-      final preview = await _autofillCheckImage(raw, color);
-      raw.dispose();
-      final opacity = (effectiveOpacity * 255 / 100).round();
-      canvas.drawImage(
-        preview,
-        ui.Offset.zero,
-        ui.Paint()..color = ui.Color.fromARGB(opacity, 255, 255, 255),
-      );
-      preview.dispose();
-    }
-    final picture = recorder.endRecording();
-    final image = await picture.toImage(w, h);
-    picture.dispose();
-    return image;
-  }
-
   Future<void> _recomposeSurroundings({bool force = false}) async {
     final project = widget.project;
     if (project == null) return;
@@ -4826,25 +4787,28 @@ class CanvasAreaState extends State<CanvasArea> {
     LayerKeyframe? groupKf(Layer layer) =>
         _groupKeyframeOf(ps, project.id, sceneId, frame, layer);
 
-    final checkMode = widget.autofillCheckMode;
-    final belowImg = checkMode == AutofillCheckMode.normal
-        ? await LayerCompositor.composite(
-            manager,
-            layers,
-            keyOf,
-            w,
-            h,
-            shouldRender: (_, i) => i > idx,
-            keyframeOf: (l) => _keyframeOf(l, frame),
-            groupKeyframeOf: groupKf,
-            // The paper takes part in the blending, as in the export.
-            paperColor: _paperColor,
-            // オニオンスキンは紙のすぐ上・今のコマのすべてのレイヤーの下
-            // （表示だけ。レイヤーの絵と、紙の上での合成モードの効き方は
-            // オニオンスキンを切ったときと同じ）。
-            underlay: _paintOnionUnderlay,
-          )
-        : await _composeAutofillCheckLayers(manager, layers, keyOf, checkMode);
+    // 自動塗り確認表示：どのレイヤーを選んでいても、自動塗りレイヤーは
+    // すべて確認の色（重なり順はそのまま。表示だけ）。
+    final checkTints = _autofillCheckTints(layers);
+    _checkTints = checkTints;
+    int? tintOf(Layer layer) => checkTints[layer.id];
+    final belowImg = await LayerCompositor.composite(
+      manager,
+      layers,
+      keyOf,
+      w,
+      h,
+      shouldRender: (_, i) => i > idx,
+      keyframeOf: (l) => _keyframeOf(l, frame),
+      groupKeyframeOf: groupKf,
+      // The paper takes part in the blending, as in the export.
+      paperColor: _paperColor,
+      // オニオンスキンは紙のすぐ上・今のコマのすべてのレイヤーの下
+      // （表示だけ。レイヤーの絵と、紙の上での合成モードの効き方は
+      // オニオンスキンを切ったときと同じ）。
+      underlay: _paintOnionUnderlay,
+      tintOf: tintOf,
+    );
     if (!mounted) {
       belowImg.dispose();
       _isComposingSurroundings = false;
@@ -4861,6 +4825,7 @@ class CanvasAreaState extends State<CanvasArea> {
       shouldRender: (_, i) => i < idx,
       keyframeOf: (l) => _keyframeOf(l, frame),
       groupKeyframeOf: groupKf,
+      tintOf: tintOf,
     );
     if (!mounted) {
       belowImg.dispose();
@@ -4947,6 +4912,7 @@ class CanvasAreaState extends State<CanvasArea> {
       keyframeOf: (l) => _keyframeOf(l, frame),
       groupKeyframeOf: (l) =>
           _groupKeyframeOf(ps, project.id, sceneId, frame, l),
+      tintOf: (l) => _checkTints[l.id],
     );
     _refreshingAbove = false;
     if (!mounted ||
@@ -4981,12 +4947,21 @@ class CanvasAreaState extends State<CanvasArea> {
 
   /// The blend mode the current layer is shown with: the filter preview's
   /// own while one is shown, otherwise the layer's.
-  LayerBlendMode get _currentDisplayBlendMode =>
-      (widget.currentLayerPreview != null
-          ? widget.currentLayerPreviewBlendMode
-          : null) ??
-      _layers.where((l) => l.id == _layerId).firstOrNull?.blendMode ??
-      LayerBlendMode.normal;
+  LayerBlendMode get _currentDisplayBlendMode {
+    // 自動塗り確認表示の色は、普通の合成で重ねる（ほかの自動塗りと同じ）。
+    if (_currentCheckTint != null) return LayerBlendMode.normal;
+    return (widget.currentLayerPreview != null
+            ? widget.currentLayerPreviewBlendMode
+            : null) ??
+        _layers.where((l) => l.id == _layerId).firstOrNull?.blendMode ??
+        LayerBlendMode.normal;
+  }
+
+  /// The autofill check colour of the current layer, or null.
+  int? get _currentCheckTint =>
+      widget.autofillCheckMode == AutofillCheckMode.normal
+      ? null
+      : _checkTints[_layerId];
 
   int get _currentDisplayOpacity {
     final layer = _layers.where((l) => l.id == _layerId).firstOrNull;
@@ -5374,6 +5349,7 @@ class CanvasAreaState extends State<CanvasArea> {
                         ? _exactBlend
                         : null,
                     currentLayerOpacity: _currentDisplayOpacity,
+                    currentLayerTint: _currentCheckTint,
                     currentLayerBlendMode:
                         (widget.currentLayerPreview != null
                             ? widget.currentLayerPreviewBlendMode
@@ -5592,6 +5568,10 @@ class _CanvasPainter extends CustomPainter {
   // blend mode), drawn in place of both when present.
   final ui.Image? exactCurrentBlend;
   final int currentLayerOpacity;
+
+  /// A display-only colour every drawn pixel of the current layer takes
+  /// (the autofill check), or null.
+  final int? currentLayerTint;
   final LayerBlendMode currentLayerBlendMode;
   final Map<int, ui.Image> onionImages;
   final OnionSkinSettings onionSettings;
@@ -5677,6 +5657,7 @@ class _CanvasPainter extends CustomPainter {
     this.abovePicture,
     this.exactCurrentBlend,
     this.currentLayerOpacity = 100,
+    this.currentLayerTint,
     this.currentLayerBlendMode = LayerBlendMode.normal,
     this.selectionStart,
     this.selectionEnd,
@@ -5712,6 +5693,11 @@ class _CanvasPainter extends CustomPainter {
     this.filterGizmoReachAngle,
     this.filterGizmoReachAngleFixed = false,
   });
+
+  ColorFilter? get _currentTintFilter {
+    final tint = currentLayerTint;
+    return tint == null ? null : ColorFilter.mode(Color(tint), BlendMode.srcIn);
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -5750,7 +5736,8 @@ class _CanvasPainter extends CustomPainter {
           255,
           255,
         )
-        ..blendMode = LayerCompositor.displayBlendMode(currentLayerBlendMode);
+        ..blendMode = LayerCompositor.displayBlendMode(currentLayerBlendMode)
+        ..colorFilter = _currentTintFilter;
       final sx = drawingRect.width / meshSourceImage!.width;
       final sy = drawingRect.height / meshSourceImage!.height;
       canvas.saveLayer(drawingRect, meshCurrentPaint);
@@ -5778,7 +5765,8 @@ class _CanvasPainter extends CustomPainter {
           255,
           255,
         )
-        ..blendMode = LayerCompositor.displayBlendMode(currentLayerBlendMode);
+        ..blendMode = LayerCompositor.displayBlendMode(currentLayerBlendMode)
+        ..colorFilter = _currentTintFilter;
       final sx = drawingRect.width / compositeImage!.width;
       final sy = drawingRect.height / compositeImage!.height;
       if (floatingSelectionImage != null && selectionTransformLive != null) {
@@ -6495,6 +6483,7 @@ class _CanvasPainter extends CustomPainter {
       old.abovePicture != abovePicture ||
       old.exactCurrentBlend != exactCurrentBlend ||
       old.currentLayerOpacity != currentLayerOpacity ||
+      old.currentLayerTint != currentLayerTint ||
       old.currentLayerBlendMode != currentLayerBlendMode ||
       old.background != background ||
       // project.backgroundColorの変更がキャンバスへ反映されない不具合の

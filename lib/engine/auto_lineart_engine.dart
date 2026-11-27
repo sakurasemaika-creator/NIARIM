@@ -473,11 +473,25 @@ class AutoLineartEngine {
     AutoLineartGraph baseline,
     AutoLineartGraph edited,
     AutoLineartGraph target,
+  ) => transferControlEditsWithBaseline(baseline, edited, target).graph;
+
+  /// [transferControlEdits], with the automatic graph the result is an edit
+  /// of: path by path, [target]'s path where the edits were carried over as
+  /// offsets, and the old automatic path where a hand-reshaped path (points
+  /// added or deleted) was kept as it is. The next refresh transfers from
+  /// this pair, so a kept path is kept again rather than read as offsets
+  /// from an unrelated automatic path (which threw its points across the
+  /// canvas when the two happened to have as many points).
+  static ({AutoLineartGraph graph, AutoLineartGraph baseline})
+  transferControlEditsWithBaseline(
+    AutoLineartGraph baseline,
+    AutoLineartGraph edited,
+    AutoLineartGraph target,
   ) {
     if (baseline.paths.isEmpty ||
         edited.paths.isEmpty ||
         target.paths.isEmpty) {
-      return target;
+      return (graph: target, baseline: target);
     }
     final diagonal = math.sqrt(
       target.width.toDouble() * target.width +
@@ -486,6 +500,7 @@ class AutoLineartEngine {
     final maxMatch = math.max(8.0, diagonal * 0.18);
     final used = <int>{};
     final out = <AutoLineartPath>[];
+    final outBaseline = <AutoLineartPath>[];
 
     for (final targetPath in target.paths) {
       var bestIndex = -1;
@@ -532,6 +547,7 @@ class AutoLineartEngine {
 
       if (bestIndex < 0 || bestCost > maxMatch * 2) {
         out.add(targetPath);
+        outBaseline.add(targetPath);
         continue;
       }
       used.add(bestIndex);
@@ -552,6 +568,7 @@ class AutoLineartEngine {
             dotRadius: editedPath.dotRadius,
           ),
         );
+        outBaseline.add(basePath);
         continue;
       }
 
@@ -609,15 +626,17 @@ class AutoLineartEngine {
           dotRadius: targetPath.dotRadius,
         ),
       );
+      outBaseline.add(targetPath);
     }
 
-    return AutoLineartGraph(
+    AutoLineartGraph graphOf(List<AutoLineartPath> paths) => AutoLineartGraph(
       width: target.width,
       height: target.height,
-      paths: out,
+      paths: paths,
       analysisWidth: target.analysisWidth,
       analysisHeight: target.analysisHeight,
     );
+    return (graph: graphOf(out), baseline: graphOf(outBaseline));
   }
 
   /// Moves exactly one preview control point. Each editable control is

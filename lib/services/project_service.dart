@@ -2850,21 +2850,18 @@ class ProjectService extends ChangeNotifier {
         for (int fi = 0; fi < scene.frames.length; fi++) {
           final layers = scene.frames[fi].layers;
           for (int li = 0; li < layers.length; li++) {
-            final lineart = layers[li];
-            if (lineart.type != LayerType.autoFillLineart ||
-                lineart.partId != partId) {
-              continue;
-            }
-            if (li + 1 >= layers.length ||
-                layers[li + 1].type != LayerType.autoFill) {
-              continue;
-            }
-            final autofillLayer = layers[li + 1];
+            final autofillLayer = layers[li];
+            if (autofillLayer.type != LayerType.autoFill) continue;
+            // 線画の下の塗りは線画のパーツで、線画を消して残った塗りは
+            // 自分のパーツで見る（残った塗りも最新の色で塗り直せる）。
+            final above = li > 0 ? layers[li - 1] : null;
+            final partOf = above?.type == LayerType.autoFillLineart
+                ? above!.partId
+                : autofillLayer.partId;
+            if (partOf != partId) continue;
             if (autofillLayer.needsAutofillUpdate) continue;
             final newLayers = List<Layer>.from(layers);
-            newLayers[li + 1] = autofillLayer.copyWith(
-              needsAutofillUpdate: true,
-            );
+            newLayers[li] = autofillLayer.copyWith(needsAutofillUpdate: true);
             final newFrames = List<Frame>.from(scene.frames);
             newFrames[fi] = scene.frames[fi].copyWith(layers: newLayers);
             scenes[si] = scene.copyWith(frames: newFrames);

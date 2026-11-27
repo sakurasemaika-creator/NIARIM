@@ -73,6 +73,14 @@ enum _FocusFilterMenuAction {
   toggleCollapse,
 }
 
+/// Auto line art's control points, the automatic graph they are an edit of,
+/// and whether they were edited by hand.
+typedef _AutoLineartEditState = ({
+  AutoLineartGraph? graph,
+  AutoLineartGraph? baseline,
+  bool manual,
+});
+
 class FilterPanel extends StatefulWidget {
   final String projectId;
   final String sceneId;
@@ -353,18 +361,22 @@ class _FilterPanelState extends State<FilterPanel> {
   }
 
   // Auto line art's control points as they were before the touch (or the
-  // confirmed delete) now editing them by hand; null when none is pending.
-  ({AutoLineartGraph? graph, bool manual})? _autoLineartBeforeHandEdit;
+  // confirmed delete) now editing them by hand, with the automatic graph
+  // they are an edit of; null when none is pending.
+  _AutoLineartEditState? _autoLineartBeforeHandEdit;
+
+  _AutoLineartEditState get _autoLineartEditState => (
+    graph: _autoLineartPreviewGraph,
+    baseline: _autoLineartEditBaselineGraph,
+    manual: _autoLineartManualEdited,
+  );
 
   void _moveAutoLineartPoint(
     int pathIndex,
     int pointIndex,
     AutoLineartPoint point,
   ) {
-    _autoLineartBeforeHandEdit ??= (
-      graph: _autoLineartPreviewGraph,
-      manual: _autoLineartManualEdited,
-    );
+    _autoLineartBeforeHandEdit ??= _autoLineartEditState;
     _autoLineartPreviewGraph = AutoLineartEngine.moveControlPoint(
       _autoLineartPreviewGraph!,
       pathIndex: pathIndex,
@@ -376,10 +388,7 @@ class _FilterPanelState extends State<FilterPanel> {
   }
 
   void _replaceAutoLineartGraph(AutoLineartGraph graph) {
-    _autoLineartBeforeHandEdit ??= (
-      graph: _autoLineartPreviewGraph,
-      manual: _autoLineartManualEdited,
-    );
+    _autoLineartBeforeHandEdit ??= _autoLineartEditState;
     _autoLineartPreviewGraph = graph;
     _autoLineartManualEdited = true;
     _scheduleAutoLineartPreviewUpdate();
@@ -396,14 +405,12 @@ class _FilterPanelState extends State<FilterPanel> {
     if (before == null || identical(before.graph, _autoLineartPreviewGraph)) {
       return;
     }
-    final after = (
-      graph: _autoLineartPreviewGraph,
-      manual: _autoLineartManualEdited,
-    );
-    void restore(({AutoLineartGraph? graph, bool manual}) state) {
+    final after = _autoLineartEditState;
+    void restore(_AutoLineartEditState state) {
       if (!mounted) return;
       setState(() {
         _autoLineartPreviewGraph = state.graph;
+        _autoLineartEditBaselineGraph = state.baseline;
         _autoLineartManualEdited = state.manual;
       });
       _scheduleAutoLineartPreviewUpdate();
@@ -685,14 +692,15 @@ class _FilterPanelState extends State<FilterPanel> {
           _autoLineartBaseGraph!,
           smoothingLevel: smoothingLevel,
         );
-        _autoLineartPreviewGraph = preserveManual
-            ? AutoLineartEngine.transferControlEdits(
+        final transferred = preserveManual
+            ? AutoLineartEngine.transferControlEditsWithBaseline(
                 previousBaseline,
                 previousEdited,
                 prepared,
               )
-            : prepared;
-        _autoLineartEditBaselineGraph = prepared;
+            : (graph: prepared, baseline: prepared);
+        _autoLineartPreviewGraph = transferred.graph;
+        _autoLineartEditBaselineGraph = transferred.baseline;
         _autoLineartPreviewSmoothingLevel = smoothingLevel;
         _autoLineartManualEdited = preserveManual;
       }

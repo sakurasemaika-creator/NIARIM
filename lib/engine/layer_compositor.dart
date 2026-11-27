@@ -187,6 +187,7 @@ class LayerCompositor {
     ui.Size? rasterSize,
     LayerPixelSource? pixelsOf,
     void Function(ui.Canvas canvas, ui.Rect bounds)? underlay,
+    int? Function(Layer layer)? tintOf,
   }) async {
     final rasterWidth = rasterSize?.width.toInt() ?? width;
     final rasterHeight = rasterSize?.height.toInt() ?? height;
@@ -216,9 +217,8 @@ class LayerCompositor {
       if (shouldRender != null && !shouldRender(original, i)) continue;
       final opacity = inheritedLayerOpacity(original, byId);
       if (opacity == 0) continue;
-      final layer = opacity == original.opacity
-          ? original
-          : original.copyWith(opacity: opacity);
+      final tint = tintOf?.call(original);
+      final layer = _shownLayer(original, opacity, tint);
       masking.enter(canvas, layer);
 
       if (_requiresCpuBlend(layer.blendMode) && !masking.isOpen) {
@@ -282,6 +282,7 @@ class LayerCompositor {
         blendModeOverride: masking.isOpen && _requiresCpuBlend(layer.blendMode)
             ? displayBlendMode(layer.blendMode)
             : null,
+        colorFilter: _tintFilter(tint),
       );
     }
     masking.close(canvas);
@@ -310,6 +311,7 @@ class LayerCompositor {
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
     List<LayerMaskGroup> maskGroups = const [],
     LayerPixelSource? pixelsOf,
+    int? Function(Layer layer)? tintOf,
   }) async {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
@@ -323,9 +325,8 @@ class LayerCompositor {
       if (shouldRender != null && !shouldRender(original, i)) continue;
       final opacity = inheritedLayerOpacity(original, byId);
       if (opacity == 0) continue;
-      final layer = opacity == original.opacity
-          ? original
-          : original.copyWith(opacity: opacity);
+      final tint = tintOf?.call(original);
+      final layer = _shownLayer(original, opacity, tint);
       masking.enter(canvas, layer);
       await _drawLayer(
         canvas,
@@ -340,11 +341,27 @@ class LayerCompositor {
         groupKeyframeOf,
         blendModeOverride: displayBlendMode(layer.blendMode),
         pixelsOf: pixelsOf,
+        colorFilter: _tintFilter(tint),
       );
     }
     masking.close(canvas);
     return recorder.endRecording();
   }
+
+  /// [layer] as it is drawn: at its inherited [opacity], and with a [tint]
+  /// (a display-only recolouring such as the autofill check) in the normal
+  /// blend mode.
+  static Layer _shownLayer(Layer layer, int opacity, int? tint) {
+    if (tint != null) {
+      return layer.copyWith(opacity: opacity, blendMode: LayerBlendMode.normal);
+    }
+    return opacity == layer.opacity ? layer : layer.copyWith(opacity: opacity);
+  }
+
+  /// Paints every drawn pixel of a layer in [tint], keeping its coverage.
+  static ui.ColorFilter? _tintFilter(int? tint) => tint == null
+      ? null
+      : ui.ColorFilter.mode(ui.Color(tint), ui.BlendMode.srcIn);
 
   /// Whether [mode] has no GPU blend mode and is composited on the CPU.
   static bool requiresCpuBlend(LayerBlendMode mode) => _requiresCpuBlend(mode);
@@ -471,6 +488,7 @@ class LayerCompositor {
     ui.BlendMode? blendModeOverride,
     ui.Size? rasterSize,
     LayerPixelSource? pixelsOf,
+    ui.ColorFilter? colorFilter,
   }) async {
     final img = await _layerImage(
       tileManager,
@@ -483,7 +501,8 @@ class LayerCompositor {
     final opacityByte = (layer.opacity.clamp(0, 100) * 255 / 100).round();
     final layerPaint = ui.Paint()
       ..color = ui.Color.fromARGB(opacityByte, 255, 255, 255)
-      ..blendMode = blendModeOverride ?? mapLayerBlendMode(layer.blendMode);
+      ..blendMode = blendModeOverride ?? mapLayerBlendMode(layer.blendMode)
+      ..colorFilter = colorFilter;
 
     final groupKf = groupKeyframeOf?.call(layer);
     final kf = keyframeOf?.call(layer);

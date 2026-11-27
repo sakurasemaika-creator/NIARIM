@@ -1998,6 +1998,30 @@ class _LayerPanelState extends State<LayerPanel> {
                     _showLayerFolderPicker(layer);
                   },
                 ),
+              // 線画レイヤーを消して残った自動塗りレイヤー：最新の色で
+              // 塗り直す（以前はタイムラインの︙にだけあり、自動塗りレイヤーの
+              // ︙で開くこのシートからは選べなかった）。
+              if (isOrphanedAutofillLayer(
+                context.read<ProjectService>().layersOf(
+                  widget.projectId,
+                  widget.sceneId,
+                  widget.frameIndex,
+                ),
+                layer,
+              ))
+                ListTile(
+                  key: const ValueKey('layerOptionsOrphanFill'),
+                  leading: const Icon(Icons.format_color_fill),
+                  title: Text(l10n.layerPanelMenuOrphanFill),
+                  subtitle: Text(
+                    l10n.layerPanelMenuOrphanFillSubtitle,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _runOrphanedAutofill(context, layer);
+                  },
+                ),
               // 不透明度スライダー
               StatefulBuilder(
                 builder: (ctx, setS) => LabeledSlider(
