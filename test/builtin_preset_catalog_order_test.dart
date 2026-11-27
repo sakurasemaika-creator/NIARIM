@@ -58,7 +58,7 @@ void main() {
       ),
       isTrue,
     );
-    expect(stamps.stamps, hasLength(24));
+    expect(stamps.stamps, hasLength(29));
     expect(stamps.stamps.take(4).map((stamp) => stamp.id), [
       'Stamp0001',
       'Stamp0009',

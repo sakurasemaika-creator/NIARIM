@@ -131,7 +131,18 @@ class ToneService extends ChangeNotifier {
     'Tone0043',
     'Tone0044',
     'Tone0045',
+    // Paper and canvas textures.
+    'Tone0066',
+    'Tone0067',
+    'Tone0068',
+    // Japanese patterns.
+    'Tone0069',
+    'Tone0070',
+    'Tone0071',
+    'Tone0072',
     // Fabric patterns.
+    'Tone0073',
+    'Tone0074',
     'Tone0010',
     'Tone0011',
     'Tone0012',
@@ -534,6 +545,55 @@ class ToneService extends ChangeNotifier {
       id: 'Tone0065',
       name: 'ピクセル斜め格子（1px）',
       tags: [AssetTagKeys.pixelArt],
+    ),
+    // 紙・布の質感：凸に色が乗る濃淡のあるトーン。塗った色に紙の目・
+    // 織り目を付ける。タイルは96〜128pxで、64pxより繰り返しが目立たない。
+    const Tone(
+      id: 'Tone0066',
+      name: '水彩紙',
+      tags: [AssetTagKeys.texture, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0067',
+      name: '画用紙',
+      tags: [AssetTagKeys.texture, AssetTagKeys.analog],
+    ),
+    const Tone(
+      id: 'Tone0068',
+      name: 'キャンバス地',
+      tags: [AssetTagKeys.texture, AssetTagKeys.analog],
+    ),
+    // 和柄：着物・小物・背景の定番の文様（輪つなぎ＝七宝つなぎ、うろこ＝鱗文様）。
+    const Tone(
+      id: 'Tone0069',
+      name: '青海波',
+      tags: [AssetTagKeys.pattern, AssetTagKeys.background],
+    ),
+    const Tone(
+      id: 'Tone0070',
+      name: '麻の葉',
+      tags: [AssetTagKeys.pattern, AssetTagKeys.background],
+    ),
+    const Tone(
+      id: 'Tone0071',
+      name: '輪つなぎ',
+      tags: [AssetTagKeys.pattern, AssetTagKeys.background],
+    ),
+    const Tone(
+      id: 'Tone0072',
+      name: 'うろこ',
+      tags: [AssetTagKeys.pattern, AssetTagKeys.background],
+    ),
+    // 布柄：服の柄（チェック柄＝ギンガムチェック、ハウンドトゥース＝千鳥格子）。
+    const Tone(
+      id: 'Tone0073',
+      name: 'チェック柄',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.pattern],
+    ),
+    const Tone(
+      id: 'Tone0074',
+      name: 'ハウンドトゥース',
+      tags: [AssetTagKeys.clothing, AssetTagKeys.pattern],
     ),
   ];
 

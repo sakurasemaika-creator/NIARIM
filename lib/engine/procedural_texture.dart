@@ -57,7 +57,8 @@ String _toneCacheKey(String path, int size, bool pixelMode) =>
 const int defaultToneTileSize = 64;
 
 /// 組み込みのトーンの画像（`assets/tones/<id>.png`）のうち、模様の繰り返しの
-/// 間隔が64pxで割り切れないため、間隔の倍数の大きさで作ってあるもの。
+/// 間隔が64pxで割り切れないため、間隔の倍数の大きさで作ってあるもの（紙・布の
+/// 質感は、繰り返しが目立たないよう64pxより大きな間隔で作ってある）。
 /// 64pxのタイルに間隔6pxの線を並べると、タイルの継ぎ目だけ間隔が4pxになり、
 /// 並べたトーンに64pxごとの筋が出る。値は[toneTileSizeForPattern]と同じ。
 const Map<String, int> builtInToneTileSizes = {
@@ -78,6 +79,13 @@ const Map<String, int> builtInToneTileSizes = {
   'Tone0039': 70,
   'Tone0042': 66,
   'Tone0050': 66,
+  'Tone0066': 128,
+  'Tone0067': 128,
+  'Tone0068': 96,
+  'Tone0070': 112,
+  'Tone0071': 72,
+  'Tone0072': 112,
+  'Tone0074': 72,
 };
 
 final RegExp _builtInTonePath = RegExp(r'^assets/tones/(Tone\d+)\.png$');
@@ -134,10 +142,19 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int? size}) {
     final cached = _toneImageCache[_toneCacheKey(path, tile, tone.pixelMode)];
     if (cached != null) return cached;
   }
-  final data = Uint8List(tile * tile * 4);
-  _tonePatternFor(tone.patternName ?? tone.name).fill(data, tile);
-  return data;
+  final name = tone.patternName ?? tone.name;
+  // Patterns with antialiased edges take a few milliseconds to compute and
+  // the bucket asks again for every position it fills during a drag.
+  return _tonePatternCache['$name#$tile'] ??= () {
+    final data = Uint8List(tile * tile * 4);
+    _tonePatternFor(name).fill(data, tile);
+    return data;
+  }();
 }
+
+/// 名前から作った模様（`名前#大きさ`をキーにする）。返した配列は書き換えない
+/// こと（画像のキャッシュと同じ）。
+final Map<String, Uint8List> _tonePatternCache = {};
 
 /// 名前から作る模様：繰り返しの間隔（px、縦横とも）と塗り方。
 typedef _TonePattern = ({int period, void Function(Uint8List, int) fill});
@@ -149,6 +166,9 @@ _TonePattern _tonePatternFor(String name) {
   // 新しいトーンを足すときは、既存の判定語（網点・ライン・市松・格子・
   // 散らし・砂目・レンガ・方眼・クロスハッチ等）を部分文字列として
   // 含まない名前にするか、この並びの適切な位置へ差し込むこと。
+  // 紙・布の質感と和柄・布柄は先に判定する。
+  final surface = _surfacePatternFor(name);
+  if (surface != null) return surface;
   if (name.contains('ピクセルディザ')) {
     final percent =
         int.tryParse(RegExp(r'(\d+)%').firstMatch(name)?.group(1) ?? '50') ??
@@ -307,6 +327,354 @@ _TonePattern _tonePatternFor(String name) {
     period: _dotCell,
     fill: (data, size) => _fillDotPattern(data, size, 0.3),
   );
+}
+
+/// 紙・布の質感（大きなタイルで繰り返す、濃淡のある模様）と、和柄・布柄。
+/// どれも縦横とも[period]pxで繰り返すように作ってある。
+_TonePattern? _surfacePatternFor(String name) {
+  if (name.contains('水彩紙')) {
+    return (period: _paperPeriod, fill: _fillWatercolourPaper);
+  } else if (name.contains('画用紙')) {
+    return (period: _paperPeriod, fill: _fillDrawingPaper);
+  } else if (name.contains('キャンバス地')) {
+    return (period: _canvasPeriod, fill: _fillCanvasWeave);
+  } else if (name.contains('青海波')) {
+    return (period: _seigaihaPeriod, fill: _fillSeigaiha);
+  } else if (name.contains('麻の葉')) {
+    return (period: _asanohaPeriod, fill: _fillAsanoha);
+  } else if (name.contains('輪つなぎ')) {
+    return (period: _shippoPeriod, fill: _fillShippo);
+  } else if (name.contains('うろこ')) {
+    return (period: _urokoPeriod, fill: _fillUroko);
+  } else if (name.contains('チェック柄')) {
+    return (period: _ginghamPeriod, fill: _fillGingham);
+  } else if (name.contains('ハウンドトゥース')) {
+    return (period: _houndstoothPeriod, fill: _fillHoundstooth);
+  }
+  return null;
+}
+
+// ─── 紙・布の質感 ───────────────────────────────────────────────
+
+/// 紙の質感の繰り返しの間隔（px）。64pxでは同じ凹凸の並びが目立つ。
+const int _paperPeriod = 128;
+
+/// キャンバス地の繰り返しの間隔（px）。織り目（12px）の倍数。
+const int _canvasPeriod = 96;
+
+/// 32bitの整数ハッシュ（座標と種から、いつも同じ値を返す）。
+int _hash32(int x, int y, int seed) {
+  var h = (x * 374761393 + y * 668265263 + seed * 1442695041) & 0xffffffff;
+  h = ((h ^ (h >> 13)) * 1274126177) & 0xffffffff;
+  return (h ^ (h >> 16)) & 0xffffffff;
+}
+
+/// [period]pxで繰り返すグラディエントノイズ（おおよそ-1〜1）。格子の間隔は
+/// [cell]px（[period]は[cell]の倍数）。格子点の番号を[period]÷[cell]で回す
+/// ので、タイルの右端と左端・下端と上端の値がつながる。
+double _tileNoise(double x, double y, int cell, int period, int seed) {
+  final n = period ~/ cell;
+  final fx = x / cell, fy = y / cell;
+  final ix = fx.floor(), iy = fy.floor();
+  final tx = fx - ix, ty = fy - iy;
+  double corner(int gx, int gy, double dx, double dy) {
+    final h = _hash32(gx % n, gy % n, seed);
+    final angle = h / 4294967296 * 2 * math.pi;
+    return math.cos(angle) * dx + math.sin(angle) * dy;
+  }
+
+  double fade(double t) => t * t * t * (t * (t * 6 - 15) + 10);
+  final u = fade(tx), v = fade(ty);
+  final a = corner(ix, iy, tx, ty);
+  final b = corner(ix + 1, iy, tx - 1, ty);
+  final c = corner(ix, iy + 1, tx, ty - 1);
+  final d = corner(ix + 1, iy + 1, tx - 1, ty - 1);
+  final top = a + (b - a) * u;
+  final bottom = c + (d - c) * u;
+  return (top + (bottom - top) * v) * 1.41;
+}
+
+/// 0〜1の値を[from]〜[to]でなめらかに0〜1へ移す。
+double _smoothstep(double from, double to, double v) {
+  final t = ((v - from) / (to - from)).clamp(0.0, 1.0);
+  return t * t * (3 - 2 * t);
+}
+
+/// 凹凸の高さ[height]を左上から照らしたときの影の強さ（右下を向いた斜面ほど
+/// 大きい）。紙の質感の写真を斜めの光で撮ったときと同じ見え方になり、
+/// 塗った色に紙の凹凸の陰影が付く。
+double _relief(double Function(double x, double y) height, double x, double y) {
+  const d = 0.75;
+  return height(x + d, y + d) - height(x - d, y - d);
+}
+
+/// 水彩紙（中目）：丸みのある大小の凸がうねるコットンの水彩紙の目。凸の
+/// 影の側に色が乗る。
+void _fillWatercolourPaper(Uint8List data, int size) {
+  const p = _paperPeriod;
+  double height(double x, double y) =>
+      0.45 * (1 - _tileNoise(x, y, 16, p, 11).abs()) +
+      0.35 * (1 - _tileNoise(x, y, 8, p, 12).abs()) +
+      0.20 * (1 - _tileNoise(x, y, 4, p, 13).abs());
+  final tile = Uint8List(p * p);
+  for (var y = 0; y < p; y++) {
+    for (var x = 0; x < p; x++) {
+      final shade = _relief(height, x + 0.5, y + 0.5);
+      tile[y * p + x] = (_smoothstep(0.02, 0.26, shade) * 215).round();
+    }
+  }
+  _repeat(data, size, tile, p, p);
+}
+
+/// 画用紙：水彩紙より細かくそろった浅い紙の目。
+void _fillDrawingPaper(Uint8List data, int size) {
+  const p = _paperPeriod;
+  double height(double x, double y) =>
+      0.55 * (1 - _tileNoise(x, y, 4, p, 21).abs()) +
+      0.30 * _tileNoise(x, y, 2, p, 22) +
+      0.15 * _tileNoise(x, y, 8, p, 23);
+  final tile = Uint8List(p * p);
+  for (var y = 0; y < p; y++) {
+    for (var x = 0; x < p; x++) {
+      final shade = _relief(height, x + 0.5, y + 0.5);
+      tile[y * p + x] = (_smoothstep(0.04, 0.4, shade) * 170).round();
+    }
+  }
+  _repeat(data, size, tile, p, p);
+}
+
+/// キャンバス地（平織り）：縦糸と横糸が1本ずつ交互に上下になる。上に出た
+/// 糸の丸い盛り上がりの影の側と、糸の間のくぼみに色が乗る。糸の太さと
+/// 盛り上がりは少しずつ揃わない（織りむら）。
+void _fillCanvasWeave(Uint8List data, int size) {
+  const p = _canvasPeriod, pitch = 6;
+  double height(double x, double y) {
+    final i = (x / pitch).floor(), j = (y / pitch).floor();
+    final warpUp = (i + j).isEven;
+    // -1…1 across the thread on top, and along it.
+    final across = ((warpUp ? x : y) % pitch) / pitch * 2 - 1;
+    final along = ((warpUp ? y : x) % pitch) / pitch * 2 - 1;
+    final slub =
+        0.6 * _tileNoise(x, y, 12, p, 31) + 0.4 * _tileNoise(x, y, 6, p, 32);
+    // A rounded crown that dips where the thread passes under the next.
+    return math.cos(across * math.pi / 2) *
+        (1 - 0.5 * along * along) *
+        (0.85 + 0.2 * slub);
+  }
+
+  final tile = Uint8List(p * p);
+  for (var y = 0; y < p; y++) {
+    for (var x = 0; x < p; x++) {
+      final px = x + 0.5, py = y + 0.5;
+      final shade =
+          0.7 * _smoothstep(0.0, 0.5, _relief(height, px, py)) +
+          0.5 * _smoothstep(0.55, 0.05, height(px, py));
+      tile[y * p + x] = (shade.clamp(0.0, 1.0) * 190).round();
+    }
+  }
+  _repeat(data, size, tile, p, p);
+}
+
+// ─── 和柄・布柄 ────────────────────────────────────────────────
+
+/// 線の太さ（px）。和柄の線は細い線で、なめらかな縁で描く。
+const double _patternLine = 1.3;
+
+const int _seigaihaRadius = 16;
+const int _seigaihaPeriod = 64;
+
+/// 青海波：半径の同じ扇（同心円の上半分）を、半径の2倍の間隔で並べ、
+/// 行ごとに半径だけ横へずらして半径の半分ずつ重ねる。下の行の扇が前に来る。
+void _fillSeigaiha(Uint8List data, int size) {
+  const p = _seigaihaPeriod;
+  const r = _seigaihaRadius * 1.0;
+  const rows = r / 2; // vertical step between rows
+  const rings = 4;
+  final tile = Uint8List(p * p);
+  for (var y = 0; y < p; y++) {
+    for (var x = 0; x < p; x++) {
+      tile[y * p + x] = _coverage(x, y, (px, py) {
+        // The front-most fan holding the point: rows nearer the bottom are
+        // in front, so test the lowest candidate rows first.
+        final row = (py / rows).floor();
+        for (var j = row + 2; j >= row - 1; j--) {
+          final cy = j * rows;
+          final shift = j.isOdd ? r : 0.0;
+          final i = ((px - shift) / (2 * r)).round();
+          final cx = i * 2 * r + shift;
+          final d = math.sqrt((px - cx) * (px - cx) + (py - cy) * (py - cy));
+          if (d > r || py > cy) continue;
+          // Concentric arcs, the outer one at the fan's edge.
+          final ring = (r - d) / (r / rings);
+          final nearest = ring.roundToDouble();
+          return (ring - nearest).abs() * (r / rings) < _patternLine / 2 &&
+              nearest < rings;
+        }
+        return false;
+      });
+    }
+  }
+  _repeat(data, size, tile, p, p);
+}
+
+/// 麻の葉の三角形の一辺（px）と、繰り返しの間隔。正三角形の高さ
+/// 16×√3÷2＝13.9pxは14pxに丸める（縦へ1%伸びる。整数の間隔にしないと
+/// タイルの継ぎ目で線がずれる）。
+const int _asanohaSide = 16;
+const int _asanohaHeight = 14;
+const int _asanohaPeriod = 112;
+
+/// 麻の葉：正三角形の格子の辺と、各三角形の重心から3つの頂点へ引いた線。
+/// 6枚の菱形の葉が集まった星が並ぶ。
+void _fillAsanoha(Uint8List data, int size) {
+  const s = _asanohaSide * 1.0, h = _asanohaHeight * 1.0;
+  // Segments around one lattice period (s × 2h): rows j = -1…2 and lattice
+  // points i = -1…2, so a point of the period sees every line near it.
+  final segments = <List<double>>[];
+  for (var j = -1; j <= 2; j++) {
+    final y0 = j * h, y1 = y0 + h;
+    final top = j.isEven ? 0.0 : s / 2;
+    for (var i = -1; i <= 2; i++) {
+      final a = top + i * s;
+      segments
+        ..add([a, y0, a + s, y0])
+        ..add([a, y0, a + s / 2, y1])
+        ..add([a, y0, a - s / 2, y1]);
+      // The triangle pointing down from this edge and the one pointing up
+      // beside it: lines from the centroid to the three corners.
+      for (final tri in [
+        [a, y0, a + s, y0, a + s / 2, y1],
+        [a + s / 2, y1, a + 1.5 * s, y1, a + s, y0],
+      ]) {
+        final cx = (tri[0] + tri[2] + tri[4]) / 3;
+        final cy = (tri[1] + tri[3] + tri[5]) / 3;
+        for (var k = 0; k < 6; k += 2) {
+          segments.add([cx, cy, tri[k], tri[k + 1]]);
+        }
+      }
+    }
+  }
+  const w = _asanohaSide, hh = 2 * _asanohaHeight;
+  final tile = Uint8List(w * hh);
+  for (var y = 0; y < hh; y++) {
+    for (var x = 0; x < w; x++) {
+      tile[y * w + x] = _coverage(x, y, (px, py) {
+        for (final g in segments) {
+          if (_segmentDistance(px, py, g) < _patternLine / 2) return true;
+        }
+        return false;
+      });
+    }
+  }
+  _repeat(data, size, tile, w, hh);
+}
+
+/// 点(px, py)から線分[g]（x0, y0, x1, y1）までの距離。
+double _segmentDistance(double px, double py, List<double> g) {
+  final dx = g[2] - g[0], dy = g[3] - g[1];
+  final length = dx * dx + dy * dy;
+  var t = length == 0 ? 0.0 : ((px - g[0]) * dx + (py - g[1]) * dy) / length;
+  t = t.clamp(0.0, 1.0);
+  final ex = g[0] + t * dx - px, ey = g[1] + t * dy - py;
+  return math.sqrt(ex * ex + ey * ey);
+}
+
+const int _shippoRadius = 12;
+const int _shippoPeriod = 2 * _shippoRadius;
+
+/// 輪つなぎ（七宝つなぎ）：同じ大きさの円を、上下左右に接し斜めに重なるように並べる。重なった
+/// 所が花びらの形になる。
+void _fillShippo(Uint8List data, int size) {
+  const p = _shippoPeriod;
+  const r = _shippoRadius * 1.0;
+  final tile = Uint8List(p * p);
+  for (var y = 0; y < p; y++) {
+    for (var x = 0; x < p; x++) {
+      tile[y * p + x] = _coverage(x, y, (px, py) {
+        // Circles at the tile corners and at its centre.
+        for (final (cx, cy) in [
+          (0.0, 0.0),
+          (2 * r, 0.0),
+          (0.0, 2 * r),
+          (2 * r, 2 * r),
+          (r, r),
+        ]) {
+          final d = math.sqrt((px - cx) * (px - cx) + (py - cy) * (py - cy));
+          if ((d - r).abs() < _patternLine / 2) return true;
+        }
+        return false;
+      });
+    }
+  }
+  _repeat(data, size, tile, p, p);
+}
+
+/// うろこの三角形の底辺と高さ（px、正三角形に近い14px）。
+const int _urokoBase = 16;
+const int _urokoHeight = 14;
+const int _urokoPeriod = 112;
+
+/// うろこ（鱗文様）：上向きの三角形を塗り、行ごとに半分ずらして敷き詰める（下向きの
+/// 三角形は紙のまま）。
+void _fillUroko(Uint8List data, int size) {
+  const p = _urokoPeriod;
+  const b = _urokoBase * 1.0, hgt = _urokoHeight * 1.0;
+  final tile = Uint8List(p * p);
+  for (var y = 0; y < p; y++) {
+    for (var x = 0; x < p; x++) {
+      tile[y * p + x] = _coverage(x, y, (px, py) {
+        final row = (py / hgt).floor();
+        final shift = row.isOdd ? b / 2 : 0.0;
+        // 0 at the base (bottom of the row), 1 at the apex.
+        final up = 1 - (py - row * hgt) / hgt;
+        final across = ((px - shift) % b) / b - 0.5;
+        return across.abs() < (1 - up) / 2;
+      });
+    }
+  }
+  _repeat(data, size, tile, p, p);
+}
+
+const int _ginghamStripe = 8;
+const int _ginghamPeriod = 2 * _ginghamStripe;
+
+/// チェック柄（ギンガムチェック）：同じ幅の縦縞と横縞を重ねる。縞だけの所は半分の濃さ、
+/// 縦縞と横縞が重なる所は全部の濃さ、どちらも無い所は紙。
+void _fillGingham(Uint8List data, int size) {
+  const p = _ginghamPeriod;
+  final tile = Uint8List(p * p);
+  for (var y = 0; y < p; y++) {
+    for (var x = 0; x < p; x++) {
+      final vertical = x < _ginghamStripe ? 1 : 0;
+      final horizontal = y < _ginghamStripe ? 1 : 0;
+      tile[y * p + x] = const [0, 128, 255][vertical + horizontal];
+    }
+  }
+  _repeat(data, size, tile, p, p);
+}
+
+const int _houndstoothCheck = 12;
+const int _houndstoothPeriod = 2 * _houndstoothCheck;
+
+/// ハウンドトゥース（千鳥格子）：市松の濃い升と淡い升の間の2つの升に、斜めの縞を入れる。縞が
+/// 濃い升の角から伸びる歯になり、鳥の形がつながって並ぶ。
+void _fillHoundstooth(Uint8List data, int size) {
+  const p = _houndstoothPeriod;
+  const c = _houndstoothCheck * 1.0;
+  const stripe = c / 2;
+  final tile = Uint8List(p * p);
+  for (var y = 0; y < p; y++) {
+    for (var x = 0; x < p; x++) {
+      tile[y * p + x] = _coverage(x, y, (px, py) {
+        final right = px >= c, lower = py >= c;
+        if (!right && !lower) return true; // the dark check
+        if (right && lower) return false; // the light check
+        // The two mixed checks: stripes running down to the left.
+        return ((px + py) % (2 * stripe)) < stripe;
+      });
+    }
+  }
+  _repeat(data, size, tile, p, p);
 }
 
 /// 1ピクセルごとの市松模様（チェッカー柄）：(x+y)が偶数の画素のみインクあり。
@@ -550,37 +918,47 @@ void _fillBrickPattern(
 ///
 /// 画素の中心（x + 0.5）で中心からの距離を測るので、タイルの縁の左右・上下の
 /// 画素は中心から同じ距離になる。並べると隣のタイルのリングと縁を挟んで
-/// 鏡に映したように出会い、継ぎ目で1画素ずれない。
+/// 鏡に映したように出会い、継ぎ目で1画素ずれない。リングは画素の中の
+/// 覆う割合で描く（縁がなめらか。左右・上下で対称な点で数えるので、鏡に
+/// 映した画素は同じ値になる）。
 void _fillConcentricCirclePattern(Uint8List data, int size) {
-  final cx = size / 2, cy = size / 2;
-  const spacing = 6, thickness = 2;
+  final c = size / 2;
+  const spacing = 6.0, thickness = 2.0;
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
-      final dx = x + 0.5 - cx, dy = y + 0.5 - cy;
-      final r = math.sqrt(dx * dx + dy * dy);
-      if (r % spacing < thickness) data[(y * size + x) * 4 + 3] = 255;
+      data[(y * size + x) * 4 + 3] = _coverage(x, y, (px, py) {
+        final dx = px - c, dy = py - c;
+        return math.sqrt(dx * dx + dy * dy) % spacing < thickness;
+      });
     }
   }
 }
 
 const int _wavePeriod = 16;
 
-/// 波線（横方向へ進むサインカーブを等間隔で重ねたもの）。タイルの上下の
-/// 縁をまたぐ線は反対側の縁へ回して描くので、並べても線が途切れない
-/// （[size]は[_wavePeriod]の倍数）。
+/// 波線（横方向へ進むサインカーブを等間隔で重ねたもの）。縦の間隔
+/// （[_waveSpacing]）で回すので、並べても線が途切れない（[size]は
+/// [_wavePeriod]の倍数）。線は曲線からの距離で、傾いた所も同じ太さ
+/// （2px）になるように描き、画素の中の覆う割合で縁をなめらかにする。
 void _fillWavePattern(Uint8List data, int size) {
-  const spacing = 8, amplitude = 3.0;
-  for (int x = 0; x < size; x++) {
-    final shift = amplitude * math.sin(2 * math.pi * x / _wavePeriod);
-    for (int baseY = 0; baseY < size; baseY += spacing) {
-      final y = (baseY + shift).round();
-      // 1pxだと拡大時に途切れて見えるため2px幅にする。
-      for (final row in [y, y + 1]) {
-        data[((row % size) * size + x) * 4 + 3] = 255;
-      }
+  const amplitude = 3.0, halfWidth = 1.0;
+  const k = 2 * math.pi / _wavePeriod;
+  final tile = Uint8List(_wavePeriod * _waveSpacing);
+  for (var y = 0; y < _waveSpacing; y++) {
+    for (var x = 0; x < _wavePeriod; x++) {
+      tile[y * _wavePeriod + x] = _coverage(x, y, (px, py) {
+        final slope = amplitude * k * math.cos(k * px);
+        // Vertical offset from the nearest line, measured across the curve.
+        final m = (py - 1 - amplitude * math.sin(k * px)) % _waveSpacing;
+        final vertical = math.min(m, _waveSpacing - m);
+        return vertical / math.sqrt(1 + slope * slope) < halfWidth;
+      });
     }
   }
+  _repeat(data, size, tile, _wavePeriod, _waveSpacing);
 }
+
+const int _waveSpacing = 8;
 
 /// 砂目（ランダムな粒）。[density]の割合の画素へインクを置く。
 ///
@@ -610,41 +988,154 @@ void _fillNoisePattern(
   }
 }
 
-/// 網点（ハーフトーン）。[density]（0.0〜1.0）が、インクで覆われる面積の
-/// 割合になるように点の半径を決める。
+/// 網点（ハーフトーン）。[density]（0.0〜1.0）が濃いほど点が大きい。
 ///
-/// 半径は密度の**平方根**に比例させる。円の面積は半径の2乗に比例するため、
-/// 半径を密度に正比例させると「10%」と「20%」で面積が4倍違ってしまい、
-/// 名前の数字と見た目が一致しない。
+/// 点はセルの真ん中に置いた円で、縁は画素の中の覆う割合で描く（以前は
+/// 画素の角で円の内外を決めた2値で、点が半画素ずれて左右非対称なうえ、
+/// 縁が段になっていた）。インクの量は以前の2値の点と同じにする（すでに
+/// 描いた網点の隣に描き足しても濃さが変わらない）：[_dotRadiusFor]。
 ///
-/// セルは16px。以前は8pxだったが、1セル64画素では表現できる濃さの段階が
-/// 粗すぎて、10%と20%、40%と50%がそれぞれ同じ見た目（点1個ぶんの差も
-/// 出ない）になっていた。16pxなら1セル256画素あり、10%刻みの9段階すべてが
-/// 異なる濃さになる（test/builtin_presets_test.dartが単調増加を検証）。
+/// セルは16px。1セル256画素あり、10%刻みの9段階すべてが異なる濃さになる
+/// （test/builtin_presets_test.dartが単調増加を検証）。
 const int _dotCell = 16;
 
 void _fillDotPattern(Uint8List data, int size, double density) {
   const cell = _dotCell;
-  final maxR = cell / 2.2;
-  final radius = maxR * math.sqrt(density.clamp(0.0, 1.0));
-  for (int y = 0; y < size; y++) {
-    final cy = (y ~/ cell) * cell + cell / 2;
-    for (int x = 0; x < size; x++) {
-      final cx = (x ~/ cell) * cell + cell / 2;
-      final dx = x - cx;
-      final dy = y - cy;
-      final idx = (y * size + x) * 4;
-      if ((dx * dx + dy * dy) <= radius * radius) {
-        data[idx + 3] = 255; // 色はRGB=0（黒）のまま・alphaのみ立てる
-      }
+  final radius = _dotRadiusFor(density.clamp(0.0, 1.0));
+  final r2 = radius * radius;
+  const centre = cell / 2;
+  final tile = Uint8List(cell * cell);
+  for (var y = 0; y < cell; y++) {
+    for (var x = 0; x < cell; x++) {
+      tile[y * cell + x] = _coverage(x, y, (px, py) {
+        final dx = px - centre, dy = py - centre;
+        return dx * dx + dy * dy <= r2;
+      });
+    }
+  }
+  _repeat(data, size, tile, cell, cell);
+}
+
+/// 網点の点の半径：以前の2値の点（半径＝セル÷2.2×√割合、画素の角が円の
+/// 内側なら塗る）が塗った画素の数と、同じ面積の円の半径。以前の式の半径を
+/// そのまま使うと、縁をなめらかにしたぶんインクが1.5〜2.3ポイント減る
+/// （角で数えた2値は円の面積より多く塗っていた）。点はセルの内側に収まり
+/// （90%でも半径約6.8px）、隣の点とはつながらない。
+double _dotRadiusFor(double density) {
+  const cell = _dotCell;
+  final old = cell / 2.2 * math.sqrt(density);
+  var inked = 0;
+  for (var y = 0; y < cell; y++) {
+    for (var x = 0; x < cell; x++) {
+      final dx = x - cell / 2, dy = y - cell / 2;
+      if (dx * dx + dy * dy <= old * old) inked++;
+    }
+  }
+  return math.sqrt(inked / math.pi);
+}
+
+/// 画素(x, y)のうち[inside]が真になる割合（0〜255）。画素の中を
+/// [samples]×[samples]の点で数える。
+int _coverage(
+  int x,
+  int y,
+  bool Function(double px, double py) inside, {
+  int samples = 8,
+}) {
+  final n = samples;
+  var hits = 0;
+  for (var j = 0; j < n; j++) {
+    final py = y + (j + 0.5) / n;
+    for (var i = 0; i < n; i++) {
+      if (inside(x + (i + 0.5) / n, py)) hits++;
+    }
+  }
+  return (hits * 255 / (n * n)).round();
+}
+
+/// [tile]（[w]×[h]のインクの濃さ）を[size]四方へ並べ、[data]のalphaへ書く。
+void _repeat(Uint8List data, int size, Uint8List tile, int w, int h) {
+  for (var y = 0; y < size; y++) {
+    final row = (y % h) * w;
+    for (var x = 0; x < size; x++) {
+      data[(y * size + x) * 4 + 3] = tile[row + x % w];
     }
   }
 }
 
-/// スタンプのテクスチャを取得する。自作スタンプ（[Stamp.imagePath]が
-/// 設定済み）の場合はその画像をそのまま（RGBA・自身の色情報を保持したまま）
-/// 使用し、それ以外は組み込みスタンプ向けの簡易図形（三角形・五角形・
-/// 六角形・星・ハート・吹き出し・矢印）を固定色（黒）でラスタライズする
+/// スタンプを描くテクスチャの基準の大きさ（px）。組み込みの画像の大きさ。
+const int baseStampTextureSize = 128;
+
+/// スタンプを描くテクスチャの最大の大きさ（px）。
+const int maxStampTextureSize = 512;
+
+/// [stamp]を描いた大きさ[renderedSize]（キャンバスのpx）に合うテクスチャの
+/// 大きさ。描く大きさが基準より大きければその大きさ（最大
+/// [maxStampTextureSize]）で作り、拡大でぼやけたり角が段になったりしない
+/// ようにする。ドット絵にするスタンプは基準の大きさで粗くするので変えない。
+int stampTextureSizeFor(Stamp stamp, double renderedSize) {
+  if (stamp.pixelMode) return baseStampTextureSize;
+  return renderedSize.ceil().clamp(baseStampTextureSize, maxStampTextureSize);
+}
+
+final RegExp _builtInStampPath = RegExp(r'^assets/stamps/(Stamp\d+)\.png$');
+
+const String _leafClusterShape = '\u{0}leaf cluster';
+const String _grassClusterShape = '\u{0}grass cluster';
+const String _petalClusterShape = '\u{0}petal cluster';
+
+/// 組み込みのスタンプの画像（`assets/stamps/<id>.png`）と、その画像を描いた
+/// 形。画像はこのファイルの形を[baseStampTextureSize]で描いたもので、
+/// 大きく描くときは形から描き直す。
+const Map<String, String> builtInStampShapes = {
+  'Stamp0001': '三角形',
+  'Stamp0002': '五角形',
+  'Stamp0003': '六角形',
+  'Stamp0004': '星',
+  'Stamp0005': 'ハート',
+  'Stamp0006': '吹き出し',
+  'Stamp0007': '矢印',
+  'Stamp0008': '円',
+  'Stamp0009': '四角形',
+  'Stamp0010': '丸角四角',
+  'Stamp0011': '菱形',
+  'Stamp0012': '八角形',
+  'Stamp0013': 'ドーナツ',
+  'Stamp0015': '四芒星',
+  'Stamp0018': 'キラキラ',
+  'Stamp0020': '雲',
+  'Stamp0021': '稲妻',
+  'Stamp0022': '花',
+  'Stamp0023': 'チェックマーク',
+  'Stamp0024': '両矢印',
+  'Stamp0025': _leafClusterShape,
+  'Stamp0026': _grassClusterShape,
+  'Stamp0029': 'しずく',
+  'Stamp0030': '青筋マーク',
+  'Stamp0031': '音符',
+  'Stamp0032': 'スノーフレーク',
+  'Stamp0033': _petalClusterShape,
+};
+
+/// [shape]（[builtInStampShapes]の値、または名前）を[s]px四方に描く。
+void _drawStampShape(ui.Canvas canvas, String shape, double s) {
+  if (shape == _leafClusterShape) {
+    _drawLeafCluster(canvas, s);
+  } else if (shape == _grassClusterShape) {
+    _drawGrassCluster(canvas, s);
+  } else if (shape == _petalClusterShape) {
+    _drawPetalCluster(canvas, s);
+  } else {
+    final paint = ui.Paint()..color = const ui.Color(0xFF222222);
+    canvas.drawPath(_shapePathForName(shape, s), paint);
+  }
+}
+
+/// スタンプのテクスチャ（[size]px四方、乗算済みのRGBA）を取得する。自作
+/// スタンプ（[Stamp.imagePath]が設定済み）の場合はその画像をそのまま
+/// （自身の色情報を保持したまま）[size]pxで読み、組み込みの画像
+/// （[builtInStampShapes]）と画像の無い古いスタンプは、形（図形は固定色の
+/// 濃い灰色、葉っぱ・草・花びらは自身の色）を[size]pxで描く
 /// （スタンプは現在色を使わず自身の色情報を保持する）。
 /// [Stamp.pixelMode]がONの場合は、最後にFilterEngine.applyPixelate()で
 /// モザイク低解像度化＋色数削減を行い、ドット絵風に加工する（ユーザー
@@ -655,26 +1146,33 @@ void _fillDotPattern(Uint8List data, int size, double density) {
 /// （テクスチャサイズが小さく負荷は軽微なため）。
 Future<Uint8List> generateBuiltInStampTexture(
   Stamp stamp, {
-  int size = 128,
+  int size = baseStampTextureSize,
   double? renderedSize,
   ui.Color color = const ui.Color(0xff000000),
 }) async {
   final path = stamp.imagePath;
+  final bundled = path == null
+      ? null
+      : _builtInStampPath.firstMatch(path)?.group(1);
+  // The bundled images are this file's shapes drawn at 128px, so a bundled
+  // shape is drawn again at the size it is needed instead of enlarging the
+  // 128px image (which softened and stair-stepped large stamps).
+  final bundledShape = bundled == null ? null : builtInStampShapes[bundled];
   Uint8List? texture;
-  if (path != null) {
+  if (path != null && bundledShape == null) {
     texture = await _loadImageRgba(path, size);
   }
   if (texture == null) {
+    final shape =
+        bundledShape ??
+        (stamp.id == 'Stamp0025' || stamp.name.contains('葉っぱ（背景）')
+            ? _leafClusterShape
+            : stamp.id == 'Stamp0026' || stamp.name.contains('草（背景）')
+            ? _grassClusterShape
+            : stamp.name);
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
-    if (stamp.id == 'Stamp0025' || stamp.name.contains('葉っぱ（背景）')) {
-      _drawLeafCluster(canvas, size.toDouble());
-    } else if (stamp.id == 'Stamp0026' || stamp.name.contains('草（背景）')) {
-      _drawGrassCluster(canvas, size.toDouble());
-    } else {
-      final paint = ui.Paint()..color = const ui.Color(0xFF222222);
-      canvas.drawPath(_shapePathForName(stamp.name, size.toDouble()), paint);
-    }
+    _drawStampShape(canvas, shape, size.toDouble());
     final picture = recorder.endRecording();
     final img = await picture.toImage(size, size);
     final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
@@ -833,12 +1331,65 @@ void _drawGrassCluster(ui.Canvas canvas, double s) {
   }
 }
 
+/// 花びら（桜）：先に切れ込みのある花びらを、大きさ・向き・色を変えて散らす。
+void _drawPetalCluster(ui.Canvas canvas, double s) {
+  final rng = math.Random(33033);
+  const colors = <ui.Color>[
+    ui.Color(0xFFF9D9E1),
+    ui.Color(0xFFF5C1CE),
+    ui.Color(0xFFF0A9BB),
+    ui.Color(0xFFEA93A9),
+    ui.Color(0xFFFBE6EB),
+  ];
+  for (var i = 0; i < 7; i++) {
+    final cx = s * (0.2 + rng.nextDouble() * 0.6);
+    final cy = s * (0.2 + rng.nextDouble() * 0.6);
+    final length = s * (0.2 + rng.nextDouble() * 0.12);
+    final width = length * (0.58 + rng.nextDouble() * 0.14);
+    final angle = rng.nextDouble() * math.pi * 2;
+    canvas.save();
+    canvas.translate(cx, cy);
+    canvas.rotate(angle);
+    canvas.translate(-length / 2, 0);
+    final petal = ui.Path()
+      ..moveTo(0, 0)
+      ..cubicTo(
+        length * 0.28,
+        -width * 0.62,
+        length * 0.86,
+        -width * 0.66,
+        length,
+        -width * 0.2,
+      )
+      ..lineTo(length * 0.86, 0)
+      ..lineTo(length, width * 0.2)
+      ..cubicTo(length * 0.86, width * 0.66, length * 0.28, width * 0.62, 0, 0)
+      ..close();
+    canvas.drawPath(petal, ui.Paint()..color = colors[i % colors.length]);
+    // A deeper pink at the base, where the petal joined the flower.
+    canvas.drawPath(
+      petal,
+      ui.Paint()
+        ..shader = ui.Gradient.linear(
+          ui.Offset.zero,
+          ui.Offset(length * 0.55, 0),
+          const [ui.Color(0x66D9667F), ui.Color(0x00D9667F)],
+        ),
+    );
+    canvas.restore();
+  }
+}
+
 ui.Path _shapePathForName(String name, double s) {
   final c = ui.Offset(s / 2, s / 2);
   final r = s * 0.42;
   // トーンと同様、**判定の順序が仕様**になっている。「両矢印」は「矢印」を、
   // 「四芒星」「六芒星」「八芒星」は「星」を含むため、限定的な名前から先に
   // 判定する。新しい図形を足すときはこの並びの適切な位置へ差し込むこと。
+  if (name.contains('しずく')) return _sweatDrop(c, r);
+  if (name.contains('青筋マーク')) return _angerMark(c, r);
+  if (name.contains('音符')) return _musicNote(c, r);
+  if (name.contains('スノーフレーク')) return _snowflake(c, r);
   if (name.contains('三角')) {
     return _regularPolygon(c, r, 3, rotation: -math.pi / 2);
   }
@@ -908,6 +1459,171 @@ ui.Path _shapePathForName(String name, double s) {
   if (name.contains('両矢印')) return _doubleArrow(c, r);
   if (name.contains('矢印')) return _arrow(c, r);
   return ui.Path()..addOval(ui.Rect.fromCircle(center: c, radius: r));
+}
+
+/// しずく（汗の漫符）：上がとがった水滴。左上に光の抜きを入れる。
+ui.Path _sweatDrop(ui.Offset c, double r) {
+  final centre = ui.Offset(c.dx, c.dy + r * 0.3);
+  final radius = r * 0.6;
+  final tip = ui.Offset(c.dx, c.dy - r);
+  // Where the lines from the tip touch the round bottom.
+  final toTip = (tip - centre).distance;
+  final spread = math.acos(radius / toTip);
+  const up = -math.pi / 2;
+  ui.Offset onCircle(double a) => ui.Offset(
+    centre.dx + radius * math.cos(a),
+    centre.dy + radius * math.sin(a),
+  );
+  final left = onCircle(up - spread);
+  final right = onCircle(up + spread);
+  final drop = ui.Path()
+    ..moveTo(tip.dx, tip.dy)
+    ..quadraticBezierTo(
+      (tip.dx + left.dx) / 2 - r * 0.06,
+      (tip.dy + left.dy) / 2,
+      left.dx,
+      left.dy,
+    )
+    ..arcTo(
+      ui.Rect.fromCircle(center: centre, radius: radius),
+      up - spread,
+      -(2 * math.pi - 2 * spread),
+      false,
+    )
+    ..lineTo(right.dx, right.dy)
+    ..quadraticBezierTo(
+      (tip.dx + right.dx) / 2 + r * 0.06,
+      (tip.dy + right.dy) / 2,
+      tip.dx,
+      tip.dy,
+    )
+    ..close();
+  final shine = ui.Path()
+    ..addOval(
+      ui.Rect.fromCenter(
+        center: ui.Offset(centre.dx - radius * 0.42, centre.dy - radius * 0.1),
+        width: radius * 0.28,
+        height: radius * 0.62,
+      ),
+    );
+  return ui.Path.combine(ui.PathOperation.difference, drop, shine);
+}
+
+/// 青筋マーク（怒りの漫符）：4つの弧を十字に置く。どの弧も中心へ向かってふくらみ、
+/// 両端がとがる。
+ui.Path _angerMark(ui.Offset c, double r) {
+  var mark = ui.Path();
+  for (final (sx, sy) in [(1.0, 1.0), (-1.0, 1.0), (1.0, -1.0), (-1.0, -1.0)]) {
+    ui.Offset at(double x, double y) =>
+        ui.Offset(c.dx + sx * x * r, c.dy + sy * y * r);
+    final a = at(0.22, 0.95);
+    final b = at(0.95, 0.22);
+    final inner = at(0.2, 0.2);
+    final outer = at(0.52, 0.52);
+    final arc = ui.Path()
+      ..moveTo(a.dx, a.dy)
+      ..quadraticBezierTo(inner.dx, inner.dy, b.dx, b.dy)
+      ..quadraticBezierTo(outer.dx, outer.dy, a.dx, a.dy)
+      ..close();
+    mark = ui.Path.combine(ui.PathOperation.union, mark, arc);
+  }
+  return mark;
+}
+
+/// 音符（八分音符）：傾いた楕円の玉、右側の棒、棒の上から下りる旗。
+ui.Path _musicNote(ui.Offset c, double r) {
+  final head = ui.Path()
+    ..addOval(
+      ui.Rect.fromCenter(
+        center: ui.Offset.zero,
+        width: r * 0.78,
+        height: r * 0.56,
+      ),
+    );
+  final headCentre = ui.Offset(c.dx - r * 0.25, c.dy + r * 0.62);
+  final placed = head.transform(_rotationAbout(-0.42, 0, 0)).shift(headCentre);
+  final stemX = headCentre.dx + r * 0.3;
+  final stemW = r * 0.12;
+  final top = c.dy - r * 0.95;
+  final stem = ui.Path()
+    ..addRect(
+      ui.Rect.fromLTRB(stemX, top, stemX + stemW, headCentre.dy - r * 0.05),
+    );
+  final flag = ui.Path()
+    ..moveTo(stemX + stemW, top)
+    ..cubicTo(
+      stemX + stemW + r * 0.05,
+      top + r * 0.35,
+      stemX + r * 0.75,
+      top + r * 0.42,
+      stemX + r * 0.58,
+      top + r * 1.02,
+    )
+    ..cubicTo(
+      stemX + r * 0.6,
+      top + r * 0.62,
+      stemX + stemW + r * 0.05,
+      top + r * 0.55,
+      stemX + stemW,
+      top + r * 0.48,
+    )
+    ..close();
+  return ui.Path.combine(
+    ui.PathOperation.union,
+    ui.Path.combine(ui.PathOperation.union, placed, stem),
+    flag,
+  );
+}
+
+/// スノーフレーク（雪の結晶）：中心から6本の腕を出し、腕ごとに外向きの枝を2組付ける。
+ui.Path _snowflake(ui.Offset c, double r) {
+  final arm = r * 0.11;
+  var flake = ui.Path()
+    ..addPolygon([
+      for (var k = 0; k < 6; k++)
+        ui.Offset(
+          c.dx + r * 0.2 * math.cos(k * math.pi / 3),
+          c.dy + r * 0.2 * math.sin(k * math.pi / 3),
+        ),
+    ], true);
+  // One arm pointing up from the origin with its branches, then turned
+  // into place around the centre.
+  final pieces = <ui.Path>[
+    ui.Path()..addRect(ui.Rect.fromLTRB(-arm / 2, -r, arm / 2, 0)),
+    for (final (along, length) in const [(0.5, 0.36), (0.76, 0.24)])
+      for (final side in const [-1.0, 1.0])
+        (ui.Path()..addRect(
+              ui.Rect.fromLTRB(
+                -arm / 2,
+                -r * along - r * length,
+                arm / 2,
+                -r * along,
+              ),
+            ))
+            .transform(_rotationAbout(side * math.pi / 3, 0, -r * along)),
+  ];
+  for (var k = 0; k < 6; k++) {
+    final turn = _rotationAbout(k * math.pi / 3, 0, 0);
+    for (final piece in pieces) {
+      flake = ui.Path.combine(
+        ui.PathOperation.union,
+        flake,
+        piece.transform(turn).shift(c),
+      );
+    }
+  }
+  return flake;
+}
+
+/// ([px], [py])を中心に[angle]だけ回す変換（`Path.transform`の行列）。
+Float64List _rotationAbout(double angle, double px, double py) {
+  final cosA = math.cos(angle), sinA = math.sin(angle);
+  return Float64List.fromList([
+    cosA, sinA, 0, 0, //
+    -sinA, cosA, 0, 0, //
+    0, 0, 1, 0, //
+    px - cosA * px + sinA * py, py - sinA * px - cosA * py, 0, 1, //
+  ]);
 }
 
 /// チェックマーク（レ点）。折れ線を太らせた多角形として作る。

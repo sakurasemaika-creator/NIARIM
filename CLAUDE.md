@@ -1332,6 +1332,12 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   省けばこの値）。模様を足す・間隔を変えるときは`_tonePatternFor`の`period`も変え、`assets/tones`の画像を
   同じ大きさで作り直す（`test/tone_seamless_tiling_test.dart`が全組み込みのトーンの継ぎ目と、画像と名前から
   作る模様が同じことを見張る。20デニールの画像だけはわざとぼかしてある）。
+  組み込みのトーン・スタンプの画像は手で描かず、`flutter test tool/build_builtin_tone_images_test.dart`・
+  `tool/build_builtin_stamp_images_test.dart`で模様・形から作る（違う画像だけ書き直す）。**組み込みのスタンプを
+  足したら`builtInStampShapes`（`procedural_texture.dart`）にも足すこと**：大きく描くときは画像を読まず形から
+  描き直すので、足さないと128pxの画像を引き伸ばした段が出る（`stamp_filtered_sampling_test`が見張る）。
+  組み込みの日本語の名前（保存する名前）の字も中国語の本文のサブセットフォントに要る（`font_coverage_test`。
+  2026-11-27は七・宝・鱗・千・鳥・汗・怒・雪・桜・ギが無く、「輪つなぎ」「しずく」などで付けた）。
 - **`TileManager`のタイル画像のキャッシュは複製（clone）を返す**：本体を
   返すと、受け取ってから描くまで（awaitの続き）の間に同時に走る別の合成が
   追い出して破棄し、破棄済みの画像を描いた（小さいキャンバスで油彩風の

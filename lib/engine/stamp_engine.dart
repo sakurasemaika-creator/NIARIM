@@ -17,6 +17,7 @@ Uint8List runStampStrokeInIsolate(
     double scatter,
     double density,
     int opacity,
+    bool smooth,
   })
   args,
 ) {
@@ -33,6 +34,7 @@ Uint8List runStampStrokeInIsolate(
     density: args.density,
     opacity: args.opacity,
     premultiplied: true,
+    smooth: args.smooth,
   );
 }
 
@@ -49,6 +51,14 @@ class StampEngine {
   /// 入力イベント数によって見た目が変わらないよう、OSから届いた各点へ直接
   /// スタンプするのではなく、パス長に沿った一定距離で再サンプリングする。
   /// Pass [premultiplied] for canvas tiles and decoded preset textures.
+  ///
+  /// [smooth] samples the texture with filtering: when the stamp is drawn
+  /// smaller than the texture, the texture is first averaged down to the
+  /// drawn size (each output texel is the area average of the texels it
+  /// covers, so thin spikes fade instead of breaking into dashes), then each
+  /// canvas pixel centre reads the texture bilinearly and the square edge of
+  /// the stamp is antialiased. Without it every canvas pixel copies the
+  /// nearest texel, which keeps pixel-art stamps crisp.
   Uint8List stampAlongPath({
     required Uint8List canvasData,
     required int width,
@@ -63,9 +73,13 @@ class StampEngine {
     int opacity = 100,
     int seed = 0,
     bool premultiplied = false,
+    bool smooth = true,
   }) {
     final result = Uint8List.fromList(canvasData);
     if (points.isEmpty || stampSize <= 0) return result;
+    final source = smooth
+        ? _FilteredStamp.prepare(texture, texSize, stampSize, premultiplied)
+        : null;
 
     final safeDensity = density.clamp(0.1, 5.0).toDouble();
     final spacing = math.max(1.0, stampSize * 0.6 / safeDensity);
@@ -87,19 +101,33 @@ class StampEngine {
         ox += math.cos(normal) * off;
         oy += math.sin(normal) * off;
       }
-      _blitStamp(
-        result,
-        width,
-        height,
-        texture,
-        texSize,
-        ox,
-        oy,
-        stampSize,
-        stampAngle,
-        opacity,
-        premultiplied,
-      );
+      if (source != null) {
+        source.blit(
+          result,
+          width,
+          height,
+          ox,
+          oy,
+          stampSize,
+          stampAngle,
+          opacity,
+          premultiplied,
+        );
+      } else {
+        _blitStamp(
+          result,
+          width,
+          height,
+          texture,
+          texSize,
+          ox,
+          oy,
+          stampSize,
+          stampAngle,
+          opacity,
+          premultiplied,
+        );
+      }
     }
     return result;
   }
@@ -227,5 +255,245 @@ class StampEngine {
         dst[dIdx + 3] = (outA * 255).round().clamp(0, 255);
       }
     }
+  }
+}
+
+/// A stamp texture made ready for filtered sampling: premultiplied colour as
+/// floats, averaged down to about the drawn size when the stamp is smaller
+/// than the texture.
+class _FilteredStamp {
+  _FilteredStamp._(this.texels, this.size)
+    : _inkLeft = _inkEdge(texels, size, horizontal: true, first: true),
+      _inkRight = _inkEdge(texels, size, horizontal: true, first: false),
+      _inkTop = _inkEdge(texels, size, horizontal: false, first: true),
+      _inkBottom = _inkEdge(texels, size, horizontal: false, first: false);
+
+  /// Premultiplied RGBA, 0–255 per channel, [size]×[size].
+  final Float32List texels;
+  final int size;
+
+  /// The texel box that has any ink, one texel larger on each side (the
+  /// bilinear reach). Canvas pixels that read outside it are skipped.
+  final double _inkLeft, _inkRight, _inkTop, _inkBottom;
+
+  static double _inkEdge(
+    Float32List texels,
+    int size, {
+    required bool horizontal,
+    required bool first,
+  }) {
+    for (var k = 0; k < size; k++) {
+      final line = first ? k : size - 1 - k;
+      for (var j = 0; j < size; j++) {
+        final x = horizontal ? line : j;
+        final y = horizontal ? j : line;
+        if (texels[(y * size + x) * 4 + 3] > 0) {
+          return first ? line - 1.0 : line + 1.0;
+        }
+      }
+    }
+    // No ink: an empty box.
+    return first ? size.toDouble() : -1.0;
+  }
+
+  static _FilteredStamp prepare(
+    Uint8List texture,
+    int texSize,
+    double stampSize,
+    bool premultiplied,
+  ) {
+    final count = texSize * texSize;
+    var texels = Float32List(count * 4);
+    for (var p = 0, i = 0; p < count; p++, i += 4) {
+      final a = texture[i + 3];
+      final f = premultiplied ? 1.0 : a / 255;
+      texels[i] = texture[i] * f;
+      texels[i + 1] = texture[i + 1] * f;
+      texels[i + 2] = texture[i + 2] * f;
+      texels[i + 3] = a.toDouble();
+    }
+    var size = texSize;
+    // Bilinear sampling alone skips texels when the stamp is drawn smaller
+    // than the texture: thin parts alias into dashes and small stamps
+    // shimmer from one dab to the next.
+    final target = stampSize.ceil().clamp(1, texSize);
+    if (target < texSize) {
+      texels = _areaAverage(texels, texSize, target);
+      size = target;
+    }
+    return _FilteredStamp._(texels, size);
+  }
+
+  /// Box-filters [src] ([n]×[n]) down to [m]×[m], weighting each source
+  /// texel by how much of it falls inside the output texel.
+  static Float32List _areaAverage(Float32List src, int n, int m) {
+    final scale = n / m;
+    final starts = Int32List(m);
+    final ends = Int32List(m);
+    final weights = <Float64List>[];
+    for (var o = 0; o < m; o++) {
+      final a = o * scale, b = (o + 1) * scale;
+      final first = a.floor();
+      final last = math.min(n, b.ceil());
+      starts[o] = first;
+      ends[o] = last;
+      final w = Float64List(last - first);
+      for (var j = first; j < last; j++) {
+        w[j - first] =
+            (math.min(b, j + 1.0) - math.max(a, j.toDouble())) / scale;
+      }
+      weights.add(w);
+    }
+    // Rows first (n rows of m texels), then columns.
+    final rows = Float64List(n * m * 4);
+    for (var y = 0; y < n; y++) {
+      final srcRow = y * n * 4;
+      final dstRow = y * m * 4;
+      for (var o = 0; o < m; o++) {
+        final w = weights[o];
+        var r = 0.0, g = 0.0, bl = 0.0, al = 0.0;
+        for (var j = starts[o]; j < ends[o]; j++) {
+          final k = w[j - starts[o]];
+          final i = srcRow + j * 4;
+          r += src[i] * k;
+          g += src[i + 1] * k;
+          bl += src[i + 2] * k;
+          al += src[i + 3] * k;
+        }
+        final d = dstRow + o * 4;
+        rows[d] = r;
+        rows[d + 1] = g;
+        rows[d + 2] = bl;
+        rows[d + 3] = al;
+      }
+    }
+    final out = Float32List(m * m * 4);
+    for (var x = 0; x < m; x++) {
+      for (var o = 0; o < m; o++) {
+        final w = weights[o];
+        var r = 0.0, g = 0.0, bl = 0.0, al = 0.0;
+        for (var j = starts[o]; j < ends[o]; j++) {
+          final k = w[j - starts[o]];
+          final i = (j * m + x) * 4;
+          r += rows[i] * k;
+          g += rows[i + 1] * k;
+          bl += rows[i + 2] * k;
+          al += rows[i + 3] * k;
+        }
+        final d = (o * m + x) * 4;
+        out[d] = r;
+        out[d + 1] = g;
+        out[d + 2] = bl;
+        out[d + 3] = al;
+      }
+    }
+    return out;
+  }
+
+  /// Composites one dab centred at ([cx], [cy]) onto [dst] (source-over).
+  void blit(
+    Uint8List dst,
+    int w,
+    int h,
+    double cx,
+    double cy,
+    double drawn,
+    double angle,
+    int opacity,
+    bool premultipliedDst,
+  ) {
+    if (drawn <= 0) return;
+    final half = drawn / 2;
+    final cosA = math.cos(-angle);
+    final sinA = math.sin(-angle);
+    // One more pixel than the square reaches: its antialiased edge.
+    final extent = half * (cosA.abs() + sinA.abs()) + 1;
+    final minX = (cx - extent).floor().clamp(0, w - 1);
+    final maxX = (cx + extent).ceil().clamp(0, w - 1);
+    final minY = (cy - extent).floor().clamp(0, h - 1);
+    final maxY = (cy + extent).ceil().clamp(0, h - 1);
+    final texelsPerPixel = size / drawn;
+    final strength = opacity.clamp(1, 100) / 100;
+    final last = size - 1;
+    final t = texels;
+    final row = size * 4;
+    for (var y = minY; y <= maxY; y++) {
+      final dy = y + 0.5 - cy;
+      for (var x = minX; x <= maxX; x++) {
+        final dx = x + 0.5 - cx;
+        final rx = dx * cosA - dy * sinA;
+        final ry = dx * sinA + dy * cosA;
+        // Pixel-area coverage of the square the stamp is drawn in.
+        var coverX = half + 0.5 - rx.abs();
+        if (coverX <= 0) continue;
+        var coverY = half + 0.5 - ry.abs();
+        if (coverY <= 0) continue;
+        if (coverX > 1) coverX = 1;
+        if (coverY > 1) coverY = 1;
+        var u = (rx + half) * texelsPerPixel - 0.5;
+        if (u <= _inkLeft || u >= _inkRight) continue;
+        var v = (ry + half) * texelsPerPixel - 0.5;
+        if (v <= _inkTop || v >= _inkBottom) continue;
+        if (u < 0) u = 0;
+        if (v < 0) v = 0;
+        if (u > last) u = last.toDouble();
+        if (v > last) v = last.toDouble();
+        final x0 = u.floor();
+        final y0 = v.floor();
+        final fx = u - x0;
+        final fy = v - y0;
+        final x1 = x0 < last ? x0 + 1 : x0;
+        final y1 = y0 < last ? y0 + 1 : y0;
+        final i00 = y0 * row + x0 * 4;
+        final i10 = y0 * row + x1 * 4;
+        final i01 = y1 * row + x0 * 4;
+        final i11 = y1 * row + x1 * 4;
+        final w00 = (1 - fx) * (1 - fy);
+        final w10 = fx * (1 - fy);
+        final w01 = (1 - fx) * fy;
+        final w11 = fx * fy;
+        final alpha =
+            t[i00 + 3] * w00 +
+            t[i10 + 3] * w10 +
+            t[i01 + 3] * w01 +
+            t[i11 + 3] * w11;
+        if (alpha <= 0) continue;
+        final k = strength * coverX * coverY;
+        final srcA = alpha * k / 255;
+        if (srcA <= 0) continue;
+        final d = (y * w + x) * 4;
+        final keep = 1 - srcA;
+        if (premultipliedDst) {
+          for (var c = 0; c < 3; c++) {
+            final s =
+                (t[i00 + c] * w00 +
+                    t[i10 + c] * w10 +
+                    t[i01 + c] * w01 +
+                    t[i11 + c] * w11) *
+                k;
+            dst[d + c] = _byte(s + dst[d + c] * keep);
+          }
+          dst[d + 3] = _byte(srcA * 255 + dst[d + 3] * keep);
+        } else {
+          final dstA = dst[d + 3] / 255;
+          final outA = srcA + dstA * keep;
+          for (var c = 0; c < 3; c++) {
+            final s =
+                (t[i00 + c] * w00 +
+                    t[i10 + c] * w10 +
+                    t[i01 + c] * w01 +
+                    t[i11 + c] * w11) *
+                k;
+            dst[d + c] = _byte((s + dst[d + c] * dstA * keep) / outA);
+          }
+          dst[d + 3] = _byte(outA * 255);
+        }
+      }
+    }
+  }
+
+  static int _byte(double v) {
+    final r = v.round();
+    return r < 0 ? 0 : (r > 255 ? 255 : r);
   }
 }

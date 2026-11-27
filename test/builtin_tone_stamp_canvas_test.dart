@@ -106,8 +106,8 @@ void main() {
       }
     }
 
-    expect(tones.tones, hasLength(63));
-    expect(stamps.stamps, hasLength(24));
+    expect(tones.tones, hasLength(72));
+    expect(stamps.stamps, hasLength(29));
     brushes.updateCurrentBrushSize(76, remember: false);
     brushes.setCurrentColor(const Color(0xFF172639));
     for (final (id, name, tool) in [

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -48,6 +49,43 @@ void main() {
       }
     }
     return true;
+  }
+
+  /// 紙・布の質感（タイルの中では繰り返さない模様）の継ぎ目：タイルの右端の
+  /// 列と左端の列（下端の行と上端の行）の濃さの相関が、タイルの中の隣り合う
+  /// 列・行の相関の平均の半分以上ある（継ぎ目で模様が途切れていれば、端どうし
+  /// はほとんど相関しない。凹凸の細かい紙では差の大きさでは見分けられない）。
+  ({double seam, double inside}) seamAndInside(Uint8List rgba, int size) {
+    double alpha(int x, int y) => rgba[(y * size + x) * 4 + 3].toDouble();
+    double correlation(double Function(int k) a, double Function(int k) b) {
+      var ma = 0.0, mb = 0.0;
+      for (var k = 0; k < size; k++) {
+        ma += a(k);
+        mb += b(k);
+      }
+      ma /= size;
+      mb /= size;
+      var ab = 0.0, aa = 0.0, bb = 0.0;
+      for (var k = 0; k < size; k++) {
+        final da = a(k) - ma, db = b(k) - mb;
+        ab += da * db;
+        aa += da * da;
+        bb += db * db;
+      }
+      return aa == 0 || bb == 0 ? 1 : ab / math.sqrt(aa * bb);
+    }
+
+    double columns(int i, int j) =>
+        correlation((k) => alpha(i, k), (k) => alpha(j, k));
+    double rows(int i, int j) =>
+        correlation((k) => alpha(k, i), (k) => alpha(k, j));
+    var inside = 0.0;
+    for (var j = 0; j < size - 1; j++) {
+      inside += columns(j, j + 1) + rows(j, j + 1);
+    }
+    inside /= 2 * (size - 1);
+    final seam = math.min(columns(size - 1, 0), rows(size - 1, 0));
+    return (seam: seam, inside: inside);
   }
 
   late List<Tone> builtIns;
@@ -104,6 +142,18 @@ void main() {
         continue;
       }
       final p = periods(rgba, size);
+      if (p.x == null && p.y == null) {
+        // A paper or canvas texture: one tile is one period of its relief.
+        expect(size, greaterThanOrEqualTo(96), reason: name);
+        final edges = seamAndInside(rgba, size);
+        expect(edges.inside, greaterThan(0.2), reason: name);
+        expect(
+          edges.seam,
+          greaterThanOrEqualTo(edges.inside / 2),
+          reason: '$name: seam ${edges.seam} vs inside ${edges.inside}',
+        );
+        continue;
+      }
       expect(p.x, isNotNull, reason: '$name repeats across');
       expect(p.y, isNotNull, reason: '$name repeats down');
       expect(size % p.x!, 0, reason: '$name: period ${p.x} in a $size tile');

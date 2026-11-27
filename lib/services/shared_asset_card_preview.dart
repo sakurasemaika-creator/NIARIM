@@ -203,6 +203,7 @@ class SharedAssetCardPreview {
       // The source texture has already had its opacity applied.
       opacity: 100,
       premultiplied: true,
+      smooth: !activeStamp.pixelMode,
       seed: 0,
     );
     return _decode(result);

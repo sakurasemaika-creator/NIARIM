@@ -82,6 +82,9 @@ class StampService extends ChangeNotifier {
     'Stamp0013',
     // Comic and annotation symbols.
     'Stamp0006',
+    'Stamp0029',
+    'Stamp0030',
+    'Stamp0031',
     'Stamp0007',
     'Stamp0024',
     'Stamp0023',
@@ -91,6 +94,7 @@ class StampService extends ChangeNotifier {
     'Stamp0018',
     'Stamp0005',
     'Stamp0022',
+    'Stamp0032',
     'Stamp0021',
     // Scenery.
     'Stamp0020',
@@ -98,6 +102,7 @@ class StampService extends ChangeNotifier {
     'Stamp0027',
     'Stamp0026',
     'Stamp0028',
+    'Stamp0033',
   ];
   static const _retiredBuiltInIds = {
     'Stamp0014',
@@ -208,6 +213,42 @@ class StampService extends ChangeNotifier {
       scatter: 0.18,
       opacity: 96,
       tags: [AssetTagKeys.background, AssetTagKeys.texture],
+    ),
+    // 漫符と飾り。どれもprocedural_texture.dartの形を描いた画像で、大きく描く
+    // ときは形から描き直す。
+    Stamp(
+      id: 'Stamp0029',
+      name: 'しずく',
+      tags: [AssetTagKeys.symbol, AssetTagKeys.manga],
+    ),
+    Stamp(
+      id: 'Stamp0030',
+      name: '青筋マーク',
+      tags: [AssetTagKeys.symbol, AssetTagKeys.manga],
+    ),
+    Stamp(
+      id: 'Stamp0031',
+      name: '音符',
+      tags: [AssetTagKeys.symbol, AssetTagKeys.decoration],
+    ),
+    Stamp(
+      id: 'Stamp0032',
+      name: 'スノーフレーク',
+      tags: [AssetTagKeys.decoration, AssetTagKeys.background],
+    ),
+    // 舞う花びらを1本のストロークで散らす。画像は色の違う花びらの小さな
+    // まとまり（葉っぱと同じ作り）。
+    Stamp(
+      id: 'Stamp0033',
+      name: '花びら',
+      rotation: true,
+      density: 0.9,
+      scatter: 0.55,
+      tags: [
+        AssetTagKeys.background,
+        AssetTagKeys.decoration,
+        AssetTagKeys.texture,
+      ],
     ),
   ];
 
