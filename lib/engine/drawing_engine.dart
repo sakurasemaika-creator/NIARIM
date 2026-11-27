@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import '../models/brush.dart';
 import '../models/brush_pressure_resolver.dart';
+import 'bristle_marks.dart';
 import 'brush_texture_cache.dart';
 import 'texture_silhouette.dart';
 import 'brush_texture_selector.dart';
@@ -12,12 +13,11 @@ import 'brush_stroke_geometry.dart';
 import 'hair_fold_raster.dart';
 import 'oil_paint.dart';
 import 'outline_accent.dart';
+import 'paper_tooth.dart';
 import 'perceptual_color_mixer.dart';
 import 'pixel_line_path.dart';
 import 'tile_manager.dart';
 import 'watercolor_wash.dart';
-
-final _jitterRng = math.Random();
 
 class DrawingEngine {
   final TileManager tileManager;
@@ -79,6 +79,9 @@ class DrawingEngine {
   final Map<int, AnalogPaintMixer> _oilMixers = {};
   // 油彩風：このストロークで筆の毛が運んでいる絵の具と、塗る前のタイル。
   OilStroke? _oil;
+
+  /// The bristle marks of the stroke being drawn ([BristleMarks]).
+  BristleMarks? _bristleMarks;
   // 水彩風：このストロークの水彩の状態（ペンを離すと乾かす）。
   WatercolorStroke? _watercolor;
   // ピクセルモードの格子に置く線（_beginPixelStroke）。散布するブラシでは
@@ -137,6 +140,9 @@ class DrawingEngine {
     _foldRaster = null;
     _oil = null;
     _watercolor = null;
+    _bristleMarks = null;
+    _lastSegmentAngle = null;
+    _bristleSeed = (point.x * 7919 + point.y * 104729).round();
     _smoothed = point;
     final effective = _replayingFinalStroke
         ? point
@@ -167,7 +173,8 @@ class DrawingEngine {
     );
     if (_beginPixelStroke(effective, layerId)) return;
     final needsDirection =
-        brush != null && (brush.rotation || brush.scatter > 0.0);
+        brush != null &&
+        (brush.rotation || brush.scatter > 0.0 || _hasBristleMarks(brush));
     if (!needsDirection) {
       _stampBrush(
         effective.x,
@@ -489,6 +496,7 @@ class DrawingEngine {
     if (!cancel) _watercolor?.finish(tileManager);
     _watercolor = null;
     _oil = null;
+    _bristleMarks = null;
     _currentStroke.clear();
     _strokeDistance = 0;
     _strokeCoverageByTile.clear();
@@ -722,7 +730,8 @@ class DrawingEngine {
       endStroke();
       return;
     }
-    final needsDirection = brush.rotation || brush.scatter > 0.0;
+    final needsDirection =
+        brush.rotation || brush.scatter > 0.0 || _hasBristleMarks(brush);
     if (!needsDirection) {
       _stampBrush(
         first.x,
@@ -761,6 +770,23 @@ class DrawingEngine {
     final safeDensity = brush.density.clamp(0.1, 5.0).toDouble();
     final spacing = _brushStampSpacing(brush, safeDensity);
     final pathAngle = math.atan2(to.y - from.y, to.x - from.x);
+    // A painting brush turns smoothly along the segment from the direction
+    // of the last one, so a turning stroke sweeps instead of stepping at
+    // every input point (its tip and its bristle marks follow the turn).
+    final turnFrom = _hasBristleMarks(brush) ? _lastSegmentAngle : null;
+    _lastSegmentAngle = pathAngle;
+    var turn = 0.0;
+    if (turnFrom != null) {
+      turn = pathAngle - turnFrom;
+      while (turn > math.pi) {
+        turn -= 2 * math.pi;
+      }
+      while (turn < -math.pi) {
+        turn += 2 * math.pi;
+      }
+      // A sharp reversal is a new direction, not a turn.
+      if (turn.abs() > math.pi * 0.75) turn = 0;
+    }
     // この区間より前に実際に進んだ距離。各補間スタンプでは
     // base + consumed を使うため、1回の大きなmoveでも多数の小さなmoveでも
     // フェード/ストローク減衰が同じ距離位置で同じ値になる。
@@ -803,7 +829,7 @@ class DrawingEngine {
         tiltY,
         layerId,
         strokeLengthOverride: baseStrokeLength + consumed,
-        pathAngle: pathAngle,
+        pathAngle: turn == 0 ? pathAngle : pathAngle - turn * (1 - t),
         hasPathDirection: true,
       );
       _distanceSinceLastBrushStamp = 0.0;
@@ -1568,6 +1594,8 @@ class DrawingEngine {
     final brush = currentBrush!;
 
     final resolvedPressure = _resolvePressure(brush, pressure);
+    // How firmly a dry medium is pressed into the paper tooth.
+    final grainPressure = pressureEnabled ? pressure : 1.0;
     var size = brush.size * resolvedPressure.sizeScale;
     // 縁取りペンの筆圧は全体の形だけを変え、不透明度には効かせない。
     var opacity =
@@ -1764,6 +1792,7 @@ class DrawingEngine {
           0,
           null,
           grainStrength: brush.grainStrength,
+          grainPressure: grainPressure,
           mixingMode: resolvedPressure.mixingMode,
           mixingRate: resolvedPressure.mixingRate,
           mixingBrightnessCorrection:
@@ -1787,6 +1816,7 @@ class DrawingEngine {
           0,
           null,
           grainStrength: brush.grainStrength,
+          grainPressure: grainPressure,
           mixingMode: resolvedPressure.mixingMode,
           mixingRate: resolvedPressure.mixingRate,
           mixingBrightnessCorrection:
@@ -1798,6 +1828,26 @@ class DrawingEngine {
       }
       return;
     }
+
+    // 毛のすじ・かすれ: where each pixel lies on the stroke sets its marks.
+    final bristles = _hasBristleMarks(brush) && !isEraser
+        ? (_bristleMarks ??= BristleMarks(
+            streaks: brush.bristleStreaks,
+            dryness: brush.dryBrush,
+            brushSize: brush.size,
+            seed: _bristleSeed,
+          ))
+        : null;
+    bristles?.aim(
+      stampX,
+      stampY,
+      size / 2,
+      strokeLength,
+      // A dab without a direction (a tap) is pressed down where it is.
+      hasPathDirection ? math.cos(pathAngle) : 0.0,
+      hasPathDirection ? math.sin(pathAngle) : 0.0,
+      grainPressure,
+    );
 
     // グリッターペンは大きな六角形フレークとして描画する。粒ごとに向きを
     // ランダム化し、同じ向きの六角形が機械的に並ぶ見た目を避ける。
@@ -1883,6 +1933,7 @@ class DrawingEngine {
           customTexture,
           stylusTiltMagnitude: stylusTiltMagnitude,
           grainStrength: brush.grainStrength,
+          grainPressure: grainPressure,
           edgeJitter: resolvedPressure.edgeJitterEnabled,
           edgeJitterStrength: resolvedPressure.edgeJitterStrength,
           mixingMode: resolvedPressure.mixingMode,
@@ -1922,6 +1973,7 @@ class DrawingEngine {
           customTexture,
           stylusTiltMagnitude: stylusTiltMagnitude,
           grainStrength: brush.grainStrength,
+          grainPressure: grainPressure,
           edgeJitter: resolvedPressure.edgeJitterEnabled,
           edgeJitterStrength: resolvedPressure.edgeJitterStrength,
           mixingMode: resolvedPressure.mixingMode,
@@ -1938,6 +1990,7 @@ class DrawingEngine {
           hollowSquareInnerRatio: extensionPlan.hollowSquareInnerRatio,
           coverageNamespace: usesExtensionRaster ? 'fill' : 'legacy',
           fadeAlong: fadeAlong,
+          bristles: bristles,
         );
       }
     }
@@ -2037,6 +2090,7 @@ class DrawingEngine {
     Uint8List? customTexture, {
     double stylusTiltMagnitude = 0.0,
     int grainStrength = 0,
+    double grainPressure = 1.0,
     bool edgeJitter = false,
     int edgeJitterStrength = 50,
     BrushMixingMode mixingMode = BrushMixingMode.off,
@@ -2058,6 +2112,7 @@ class DrawingEngine {
     double silhouetteOutlineWidth = 0,
     PixelMask? pixelMask,
     _FadeAlong? fadeAlong,
+    BristleMarks? bristles,
   }) {
     final paintColor = colorOverride ?? currentColor;
     final r = paintColor.r;
@@ -2230,8 +2285,10 @@ class DrawingEngine {
         // No dab lays more than [alpha] on a pixel, so a pixel this stroke
         // already covered that far takes nothing more (as found below once
         // its alpha is worked out). Oil paint is laid again as the brush
-        // passes, and edge jitter draws a random number for each pixel.
-        final skipCovered = oil == null && !edgeJitter && !debugEveryDabPixel;
+        // passes. (Edge jitter, paper tooth and bristle marks depend only on
+        // where the pixel is and never raise a pixel above [alpha].)
+        final skipCovered = oil == null && !debugEveryDabPixel;
+        final skipCoveredOil = oil != null && !debugEveryDabPixel;
 
         // タイル内の影響ピクセル範囲
         final localMinX = pixelMask != null
@@ -2296,6 +2353,21 @@ class DrawingEngine {
                 coverage[py * TileManager.tileSize + px] >= alpha) {
               continue;
             }
+            // Oil paint is laid again only as the brush's centre passes: a
+            // pixel already covered as far as this dab can, that it does not
+            // pass, takes nothing (as found below once its alpha is worked
+            // out).
+            if (skipCoveredOil &&
+                coverage[py * TileManager.tileSize + px] >= alpha &&
+                !(carries &&
+                    oil.passes(
+                      tileOriginX + px + 0.5,
+                      tileOriginY + py + 0.5,
+                      cx,
+                      cy,
+                    ))) {
+              continue;
+            }
             // 格子に置く形は、その形の画素だけを塗る（外の画素は何もしない）。
             if (pixelMask != null &&
                 !pixelMask.contains(tileOriginX + px, tileOriginY + py)) {
@@ -2344,9 +2416,12 @@ class DrawingEngine {
                     edgeJitter &&
                     dist > radius - 1.5 &&
                     dist > 0) {
-                  final maxJitter = edgeJitterStrength / 100.0 * 2.5;
-                  final jitter =
-                      (_jitterRng.nextDouble() - 0.5) * maxJitter * 2;
+                  final jitter = _edgeJitter(
+                    tileOriginX + px,
+                    tileOriginY + py,
+                    edgeJitterStrength,
+                    radius,
+                  );
                   final scale = math.max(0.0, (dist - jitter) / dist);
                   maskX *= scale;
                   maskY *= scale;
@@ -2490,28 +2565,33 @@ class DrawingEngine {
                 // 通常ブラシ／ボールチェーン：アンチエイリアス。ボールチェーンは
                 // 円形そのものを保ち、専用spacingで粒がつながり過ぎないようにする。
                 if (edgeJitter && dist > radius - 1.5) {
-                  final maxJitter = edgeJitterStrength / 100.0 * 2.5;
-                  final jitter =
-                      (_jitterRng.nextDouble() - 0.5) * maxJitter * 2;
+                  final jitter = _edgeJitter(
+                    tileOriginX + px,
+                    tileOriginY + py,
+                    edgeJitterStrength,
+                    radius,
+                  );
                   pixelAlpha = _unit(radius + 0.5 - dist + jitter);
                 } else {
                   pixelAlpha = _unit(radius + 0.5 - dist);
                 }
               }
 
-              // Reproducible paper tooth for graphite, charcoal, gouache and
-              // pastel. World-coordinate hash keeps the same grain across
-              // overlapping dabs, zoom levels, and exported raster frames.
-              // Built-in smooth brushes and legacy files pass zero and retain
-              // exactly the previous pixels.
+              // Paper tooth for graphite, charcoal, gouache and pastel, fixed
+              // to the canvas ([paperToothCover]): the hollows stay bare and
+              // the bumps take the chosen colour. Brushes without grain pass
+              // zero and keep exactly the previous pixels.
               if (grainStrength > 0 && pixelAlpha > 0) {
-                var grain =
-                    ((tileOriginX + px) * 73856093) ^
-                    ((tileOriginY + py) * 19349663);
-                grain = (grain ^ (grain >> 13)) * 1274126177;
-                final noise = (grain & 255) / 255.0;
-                final grit = grainStrength / 100.0;
-                pixelAlpha *= 1.0 - grit * (0.15 + 0.82 * noise);
+                pixelAlpha *= paperToothCover(
+                  tileOriginX + px,
+                  tileOriginY + py,
+                  grainStrength,
+                  grainPressure,
+                  edge: radius > 0 ? (dist / radius - 0.55) / 0.45 : 0,
+                );
+              }
+              if (bristles != null && pixelAlpha > 0) {
+                pixelAlpha *= bristles.at(worldX, worldY);
               }
 
               if (pixelAlpha > coverageCap) pixelAlpha = coverageCap;
@@ -2693,6 +2773,32 @@ class DrawingEngine {
   }
 
   // ─── ユーティリティ ───────────────────────────────────────────────────
+
+  /// How far (canvas px) the edge of a dab moves out (+) or in (−) at
+  /// canvas pixel ([x], [y]) for ふち滲み of [strength] (0–100): it follows
+  /// the paper tooth, so the edge is ragged the same way under every dab of
+  /// the stroke (and every time it is drawn). A fine tip moves less than its
+  /// own radius, and the edge leans out a little, so a thin line keeps its
+  /// weight.
+  static double _edgeJitter(int x, int y, int strength, double radius) {
+    var reach = strength / 100.0 * 2.5;
+    final most = radius * 0.4 + 0.2;
+    if (reach > most) reach = most;
+    return (paperToothAt(x, y) / 255 - 0.4) * reach * 2;
+  }
+
+  /// Whether [brush] leaves bristle marks (毛のすじ・かすれ) on its strokes.
+  static bool _hasBristleMarks(Brush brush) =>
+      (brush.bristleStreaks > 0 || brush.dryBrush > 0) &&
+      !brush.pixelMode &&
+      !brush.outlineEnabled;
+
+  /// Picks the bristle marks of the stroke: the same start, the same marks.
+  int _bristleSeed = 0;
+
+  /// The direction of the last segment of the stroke (painting brushes turn
+  /// smoothly from it).
+  double? _lastSegmentAngle;
 
   /// `value.clamp(0, 255)`（整数どうしなので比べるだけ）。
   static int _byte(int value) => value < 0 ? 0 : (value > 255 ? 255 : value);

@@ -14,6 +14,7 @@ import '../engine/brush_texture_cache.dart';
 import '../models/asset_tags.dart';
 import '../models/brush.dart';
 import '../models/brush_presets_extension.dart';
+import '../models/brush_presets_paint.dart';
 import '../utils/built_in_preset_order.dart';
 import '../utils/creative_image_source.dart';
 import '../utils/duplicate_name.dart';
@@ -121,6 +122,9 @@ class BrushService extends ChangeNotifier {
     'Brush0010',
     'Brush0027',
     'Brush0004',
+    'Brush0042',
+    'Brush0043',
+    'Brush0044',
     // Airbrush and blending.
     'Brush0003',
     'Brush0011',
@@ -465,7 +469,9 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       tags: [AssetTagKeys.lineArt, AssetTagKeys.mainLine],
     ),
-    // 平筆：縦長の画像ペン先。画像のアルファで縁を柔らかく描く。
+    // 平筆：毛の束を平らにそろえた筆。ペン先の向きは変えない（横へ引くと
+    // 太く、縦へ引くと細い）。毛のすじが線に沿って走り、線の終わりに向かって
+    // 少し乾いて、外側の毛からかすれる。
     const Brush(
       id: 'Brush0009',
       name: '平筆',
@@ -498,8 +504,10 @@ class BrushService extends ChangeNotifier {
       ),
       fadeMode: FadeMode.off,
       strokeDecay: false,
-      customImagePaths: ['assets/brushes/flat_brush_tip.png'],
+      customImagePaths: ['assets/brushes/flat_bristle_tip.png'],
       imageInkMode: BrushImageInkMode.alpha,
+      bristleStreaks: 55,
+      dryBrush: 40,
       tags: [AssetTagKeys.paint, AssetTagKeys.analog],
     ),
     // 水彩：水彩風混色。透明な絵の具が重なるほど深くなり、乾くと紙の目が
@@ -950,6 +958,7 @@ class BrushService extends ChangeNotifier {
       tags: [AssetTagKeys.decoration, AssetTagKeys.clothing],
     ),
     ...brushExtensionPresets(),
+    ...paintBrushPresets(),
   ];
 
   Future<void> init() async {

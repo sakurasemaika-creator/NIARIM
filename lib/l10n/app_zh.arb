@@ -3974,6 +3974,8 @@
   "fontCategoryMonospace": "等宽",
   "fontCatalogEntrySubtitle": "{category} · {license}",
   "brushSettingsPaperGrain": "纸纹与颗粒",
+  "brushSettingsBristleStreaks": "笔毛纹路",
+  "brushSettingsDryBrush": "干笔",
   "colorPickerCurrentColorLabel": "当前颜色",
   "helpShortcutSettingsDesc": "可以为键盘或左手设备的按键分配工具（可细到具体画笔和粗细），或撤销、重做、播放、逐帧移动、全选、复制、剪切、粘贴等操作。画布和时间轴中都可以使用。如果要分配的组合键已用于其他操作，会先确认是否替换。",
   "themePreviewCardTitle": "界面预览",

@@ -10472,6 +10472,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsPaperGrain => '纸纹与颗粒';
 
   @override
+  String get brushSettingsBristleStreaks => '笔毛纹路';
+
+  @override
+  String get brushSettingsDryBrush => '干笔';
+
+  @override
   String get colorPickerCurrentColorLabel => '当前颜色';
 
   @override
@@ -21561,6 +21567,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushSettingsPaperGrain => '紙紋與顆粒';
+
+  @override
+  String get brushSettingsBristleStreaks => '筆毛紋路';
+
+  @override
+  String get brushSettingsDryBrush => '乾筆';
 
   @override
   String get colorPickerCurrentColorLabel => '目前的顏色';

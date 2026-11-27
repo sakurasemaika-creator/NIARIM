@@ -169,7 +169,7 @@ void main() {
     // these brushes were also see-through.
     final types = <String, int>{
       'Brush0026': 55,
-      'Brush0027': 18,
+      'Brush0027': 10,
       'Brush0028': 35,
       'Brush0029': 45,
     };

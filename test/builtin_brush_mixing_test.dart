@@ -1,5 +1,5 @@
 // 組み込みブラシのうち、絵の具として混ざるもの（混色ブラシ・平筆・水彩・
-// ガッシュ）だけが混色オン（所有者の依頼、2026-11-27「プリセットのガッシュ系の
+// ガッシュ・油彩筆・かすれ筆・ペインティングナイフ）だけが混色オン（所有者の依頼、2026-11-27「プリセットのガッシュ系の
 // ブラシなど、混色すべきブラシは混色ONにしておいてください」）。ガッシュは
 // 不透明な絵の具なので油彩風混色（下を覆い、引いた所だけ混ぜる）で、混色
 // ブラシより控えめに拾い、色延びも短い。マーカーペンは油性マーカーのように
@@ -18,6 +18,9 @@ void main() {
     'Brush0009': BrushMixingMode.oil, // 平筆
     'Brush0010': BrushMixingMode.watercolor, // 水彩
     'Brush0027': BrushMixingMode.oil, // ガッシュ（不透明水彩）
+    'Brush0042': BrushMixingMode.oil, // 油彩筆
+    'Brush0043': BrushMixingMode.oil, // かすれ筆
+    'Brush0044': BrushMixingMode.oil, // ペインティングナイフ
   };
   final brushes = {for (final b in BrushService.builtInBrushes) b.id: b};
 

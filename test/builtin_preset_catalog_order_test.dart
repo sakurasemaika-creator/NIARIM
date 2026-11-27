@@ -23,7 +23,15 @@ void main() {
     await stamps.init();
 
     final brushIds = brushes.brushes.map((brush) => brush.id).toList();
-    expect(brushIds.sublist(23), [
+    // The painting brushes with bristle marks follow the other paint.
+    expect(brushIds.sublist(13, 18), [
+      'Brush0027',
+      'Brush0004',
+      'Brush0042',
+      'Brush0043',
+      'Brush0044',
+    ]);
+    expect(brushIds.sublist(26), [
       'Brush0021',
       'Brush0022',
       'Brush0025',

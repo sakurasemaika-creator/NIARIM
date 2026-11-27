@@ -3974,6 +3974,8 @@
   "fontCategoryMonospace": "等寬",
   "fontCatalogEntrySubtitle": "{category} · {license}",
   "brushSettingsPaperGrain": "紙紋與顆粒",
+  "brushSettingsBristleStreaks": "筆毛紋路",
+  "brushSettingsDryBrush": "乾筆",
   "colorPickerCurrentColorLabel": "目前的顏色",
   "helpShortcutSettingsDesc": "可以為鍵盤或左手裝置的按鍵分配工具（可細到具體筆刷和粗細），或復原、取消復原、播放、逐格移動、全選、複製、剪下、貼上等操作。畫布和時間軸中都可以使用。如果要分配的組合鍵已用於其他操作，會先確認是否替換。",
   "themePreviewCardTitle": "畫面預覽",

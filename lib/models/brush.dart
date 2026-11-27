@@ -27,6 +27,11 @@ int _wholeNumber(Object? value) {
   throw FormatException('Expected a whole number, found ${value.runtimeType}');
 }
 
+/// A saved 0–100 setting added in a later version: 0 when it is missing or
+/// not a number.
+int _percentOrZero(Object? value) =>
+    value is num && value.isFinite ? value.round().clamp(0, 100) : 0;
+
 /// Built-in brushes the app no longer ships (the spray). Saved data that
 /// still names one (the brush list, the brush in use, quick tools,
 /// shortcuts, a workspace, a received .niatra) drops it as it is read.
@@ -124,6 +129,15 @@ class Brush {
   final double yBranchEndTaperRatio;
   final BrushTipShape tipShape;
 
+  /// 毛のすじ (0–100): streaks along the stroke where the bristles of a
+  /// loaded brush run; the paint thins between them.
+  final int bristleStreaks;
+
+  /// かすれ (0–100): how dry the brush gets along a stroke. A dry brush
+  /// leaves paint only where a bristle still holds enough, breaking into
+  /// scratchy streaks from the edges in.
+  final int dryBrush;
+
   const Brush({
     required this.id,
     required this.name,
@@ -185,6 +199,8 @@ class Brush {
     this.yBranchWidthRatio = 0.08,
     this.yBranchEndTaperRatio = 0.4,
     this.tipShape = BrushTipShape.round,
+    this.bristleStreaks = 0,
+    this.dryBrush = 0,
   });
 
   List<String> get resolvedCustomImagePaths {
@@ -281,6 +297,8 @@ class Brush {
     double? yBranchWidthRatio,
     double? yBranchEndTaperRatio,
     BrushTipShape? tipShape,
+    int? bristleStreaks,
+    int? dryBrush,
   }) => Brush(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -367,6 +385,8 @@ class Brush {
     yBranchWidthRatio: yBranchWidthRatio ?? this.yBranchWidthRatio,
     yBranchEndTaperRatio: yBranchEndTaperRatio ?? this.yBranchEndTaperRatio,
     tipShape: tipShape ?? this.tipShape,
+    bristleStreaks: (bristleStreaks ?? this.bristleStreaks).clamp(0, 100),
+    dryBrush: (dryBrush ?? this.dryBrush).clamp(0, 100),
   );
 
   /// Whether the ends' width comes from the fade fields: an outline pen
@@ -458,6 +478,9 @@ class Brush {
     'taperMode': taperMode.name,
     'taperIn': taperIn.toJson(),
     'taperOut': taperOut.toJson(),
+    // After 入り抜き for the same reason: older QR codes end before these.
+    'bristleStreaks': bristleStreaks,
+    'dryBrush': dryBrush,
   };
 
   factory Brush.fromJson(Map<String, dynamic> j) {
@@ -595,6 +618,8 @@ class Brush {
         (e) => e.name == j['tipShape'],
         orElse: () => BrushTipShape.round,
       ),
+      bristleStreaks: _percentOrZero(j['bristleStreaks']),
+      dryBrush: _percentOrZero(j['dryBrush']),
     );
   }
 }

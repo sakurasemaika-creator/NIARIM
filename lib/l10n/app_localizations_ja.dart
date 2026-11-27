@@ -10595,6 +10595,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsPaperGrain => '紙目・粒子';
 
   @override
+  String get brushSettingsBristleStreaks => '毛のすじ';
+
+  @override
+  String get brushSettingsDryBrush => 'かすれ';
+
+  @override
   String get colorPickerCurrentColorLabel => '現在の色';
 
   @override

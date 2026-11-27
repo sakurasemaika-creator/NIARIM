@@ -4004,6 +4004,8 @@
   "fontCategoryMonospace": "Monospace",
   "fontCatalogEntrySubtitle": "{category} · {license}",
   "brushSettingsPaperGrain": "Paper grain",
+  "brushSettingsBristleStreaks": "Bristle streaks",
+  "brushSettingsDryBrush": "Dry brush",
   "colorPickerCurrentColorLabel": "Current color",
   "helpShortcutSettingsDesc": "Assign keys on a keyboard or shortcut device (such as a left-hand keypad) to tools (down to a specific brush and size) or to actions such as undo, redo, play, frame stepping, select all, copy, cut and paste. Shortcuts work in both Canvas and Timeline. If a key combination is already used by another action, you’re asked before it’s replaced.",
   "themePreviewCardTitle": "Screen preview",

@@ -11575,6 +11575,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get brushSettingsPaperGrain => 'Grain du papier';
 
   @override
+  String get brushSettingsBristleStreaks => 'Traces de poils';
+
+  @override
+  String get brushSettingsDryBrush => 'Pinceau sec';
+
+  @override
   String get colorPickerCurrentColorLabel => 'Couleur actuelle';
 
   @override

@@ -3974,6 +3974,8 @@
   "fontCategoryMonospace": "Chasse fixe",
   "fontCatalogEntrySubtitle": "{category} · {license}",
   "brushSettingsPaperGrain": "Grain du papier",
+  "brushSettingsBristleStreaks": "Traces de poils",
+  "brushSettingsDryBrush": "Pinceau sec",
   "colorPickerCurrentColorLabel": "Couleur actuelle",
   "helpShortcutSettingsDesc": "Attribuez des touches du clavier ou d’un périphérique main gauche à des outils (jusqu’à un pinceau et une taille précis) ou à des actions comme annuler, rétablir, lire, avancer image par image, tout sélectionner, copier, couper et coller. Les raccourcis fonctionnent sur le canevas comme dans la timeline. Si une combinaison est déjà utilisée par une autre action, une confirmation vous est demandée avant de la remplacer.",
   "themePreviewCardTitle": "Aperçu des écrans",

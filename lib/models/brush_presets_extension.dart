@@ -195,6 +195,7 @@ List<Brush> brushExtensionPresets() => <Brush>[
   ),
   // ガッシュは不透明な水性の絵の具：油彩風混色で下を覆い、引いた所だけ下の
   // 色を拾って混ぜる。拾い方は油彩（混色ブラシ）より控えめで、色延びも短い。
+  // 筆の毛のすじはかすかで、線の終わりに少しかすれる。
   const Brush(
     id: 'Brush0027',
     name: 'ガッシュ（不透明水彩）',
@@ -204,7 +205,9 @@ List<Brush> brushExtensionPresets() => <Brush>[
     stabilization: false,
     stabilizationStrength: 0,
     pixelMode: false,
-    grainStrength: 18,
+    grainStrength: 10,
+    bristleStreaks: 25,
+    dryBrush: 20,
     density: 1.1,
     scatter: .035,
     pressureOn: BrushPressureOnSettings(

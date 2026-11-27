@@ -10655,6 +10655,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsPaperGrain => '종이 결·입자';
 
   @override
+  String get brushSettingsBristleStreaks => '붓털 자국';
+
+  @override
+  String get brushSettingsDryBrush => '마른 붓';
+
+  @override
   String get colorPickerCurrentColorLabel => '현재 색상';
 
   @override

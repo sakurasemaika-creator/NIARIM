@@ -120,8 +120,8 @@ void main() {
     }
   });
 
-  // Brushes whose edge jitter draws random numbers are left out: the two
-  // drawings would not draw the same ones.
+  // Edge jitter, paper tooth and bristle marks depend only on where the
+  // pixel is, so the dry media and the bristle brushes are in too.
   final cases = <String, Brush Function()>{
     'pen 5': () => builtIns['Brush0001']!,
     'pen 30': () => builtIns['Brush0001']!.copyWith(size: 30),
@@ -136,6 +136,17 @@ void main() {
     'flat brush (oil)': () => builtIns['Brush0009']!,
     'watercolor': () => builtIns['Brush0010']!,
     'mixing brush': () => builtIns['Brush0004']!,
+    'pencil': () => builtIns['Brush0007']!,
+    'pencil 4B': () => builtIns['Brush0028']!,
+    'chalk': () => builtIns['Brush0012']!,
+    'charcoal': () => builtIns['Brush0026']!,
+    'pastel': () => builtIns['Brush0029']!,
+    'gouache': () => builtIns['Brush0027']!,
+    'oil brush': () => builtIns['Brush0042']!,
+    'dry brush': () => builtIns['Brush0043']!,
+    'palette knife': () => builtIns['Brush0044']!,
+    'palette knife, light': () =>
+        builtIns['Brush0044']!.copyWith(size: 30, dryBrush: 80),
   };
   for (final entry in cases.entries) {
     for (final tilt in [false, true]) {

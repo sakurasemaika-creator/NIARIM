@@ -18591,6 +18591,18 @@ abstract class AppLocalizations {
   /// **'紙目・粒子'**
   String get brushSettingsPaperGrain;
 
+  /// ブラシの設定：毛のすじ（線に沿って残る筆の毛の跡）の強さを決めるスライダー
+  ///
+  /// In ja, this message translates to:
+  /// **'毛のすじ'**
+  String get brushSettingsBristleStreaks;
+
+  /// ブラシの設定：かすれ（線を進むほど筆が乾き、毛のすじに沿って絵の具が途切れる度合い）を決めるスライダー
+  ///
+  /// In ja, this message translates to:
+  /// **'かすれ'**
+  String get brushSettingsDryBrush;
+
   /// PC/DeXの色の窓の見出しにある、いまの色の見本（読み上げ）
   ///
   /// In ja, this message translates to:

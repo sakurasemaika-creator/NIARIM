@@ -6468,6 +6468,14 @@
   "@brushSettingsPaperGrain": {
     "description": "ブラシの設定：紙の目・粒子の強さのスライダー"
   },
+  "brushSettingsBristleStreaks": "毛のすじ",
+  "@brushSettingsBristleStreaks": {
+    "description": "ブラシの設定：毛のすじ（線に沿って残る筆の毛の跡）の強さを決めるスライダー"
+  },
+  "brushSettingsDryBrush": "かすれ",
+  "@brushSettingsDryBrush": {
+    "description": "ブラシの設定：かすれ（線を進むほど筆が乾き、毛のすじに沿って絵の具が途切れる度合い）を決めるスライダー"
+  },
   "colorPickerCurrentColorLabel": "現在の色",
   "@colorPickerCurrentColorLabel": {
     "description": "PC/DeXの色の窓の見出しにある、いまの色の見本（読み上げ）"

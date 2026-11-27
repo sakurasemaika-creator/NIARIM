@@ -156,10 +156,14 @@ void main() {
     Object? pack(Object? value, Object? schema) => schema is Map && value is Map
         ? [for (final key in schema.keys) pack(value[key], schema[key])]
         : value;
+    // Settings added after 入り抜き (bristle marks) were not in the code
+    // either.
     final schema = BrushService.builtInBrushes.first.toJson()
       ..remove('taperMode')
       ..remove('taperIn')
-      ..remove('taperOut');
+      ..remove('taperOut')
+      ..remove('bristleStreaks')
+      ..remove('dryBrush');
     final payload =
         '${BrushService.brushQrPrefix}${base64UrlEncode(gzip.encode(utf8.encode(jsonEncode(pack(json, schema)))))}';
     final imported = service.importBrushQrPayload(payload);

@@ -896,6 +896,32 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               () => _brush = _brush.copyWith(grainStrength: value.round()),
             ),
           ),
+          LabeledSlider(
+            key: const ValueKey('brush-bristle-streaks'),
+            label: l10n.brushSettingsBristleStreaks,
+            value: _brush.bristleStreaks.toDouble(),
+            min: 0,
+            max: 100,
+            divisions: 100,
+            padding: _sliderPadding,
+            valueText: '${_brush.bristleStreaks}%',
+            onChanged: (value) => setState(
+              () => _brush = _brush.copyWith(bristleStreaks: value.round()),
+            ),
+          ),
+          LabeledSlider(
+            key: const ValueKey('brush-dry-brush'),
+            label: l10n.brushSettingsDryBrush,
+            value: _brush.dryBrush.toDouble(),
+            min: 0,
+            max: 100,
+            divisions: 100,
+            padding: _sliderPadding,
+            valueText: '${_brush.dryBrush}%',
+            onChanged: (value) => setState(
+              () => _brush = _brush.copyWith(dryBrush: value.round()),
+            ),
+          ),
           SwitchListTile(
             title: Text(l10n.brushSettingsStrokeDecayTitle),
             subtitle: Text(
