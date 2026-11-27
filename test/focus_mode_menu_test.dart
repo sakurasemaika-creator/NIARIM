@@ -145,7 +145,9 @@ void main() {
     final resize = tester.getRect(
       find.byKey(const ValueKey('focus-mode-menu-resize-handle')),
     );
-    final close = tester.getRect(find.byIcon(Icons.close).last);
+    final close = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-close')),
+    );
 
     expect(move.center.dx, closeTo(tester.getRect(surface).center.dx, 0.1));
     expect(resize.left, closeTo(tester.getRect(surface).left, 0.1));
@@ -244,6 +246,47 @@ void main() {
     final restored = tester.getRect(surface);
     expect(restored.height, closeTo(smaller.height + 45, 0.1));
     expect(restored.bottom, closeTo(smaller.bottom, 0.1));
+  });
+
+
+  testWidgets('narrowing keeps all header controls inside the window', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(400, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: FocusModeMenu(
+            collapseTooltip: 'Minimize',
+            expandTooltip: 'Expand',
+            child: SizedBox(width: 180, height: 80),
+          ),
+        ),
+      ),
+    );
+
+    final surface = find.byKey(
+      const ValueKey('focus-mode-menu-surface'),
+    );
+    final resize = find.byKey(
+      const ValueKey('focus-mode-menu-resize-handle'),
+    );
+    final before = tester.getRect(surface);
+    await tester.drag(resize, const Offset(1000, 0));
+    await tester.pumpAndSettle();
+
+    final narrowed = tester.getRect(surface);
+    expect(narrowed.width, closeTo(180, 0.1));
+    expect(narrowed.right, closeTo(before.right, 0.1));
+    expect(
+      tester.getRect(
+        find.byKey(const ValueKey('focus-mode-menu-close')),
+      ).right,
+      closeTo(narrowed.right, 0.1),
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('menu keeps its raised surface without a heavy outline', (
