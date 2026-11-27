@@ -12499,7 +12499,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpAutoFillDesc =>
-      '在自動上色專用線稿圖層下方建立自動上色圖層，並依據預先製作的「自動上色設定」（各部件的顏色、網點組合）自動進行上色的功能。由於可以在畫完線稿後一次性上色，能大幅減少需要反覆繪製同一角色的手繪動畫中的上色工作量。重新繪製線稿後，時間軸和圖層面板會顯示更新標記，提示需要重新執行自動上色。在時間軸畫面的三點選單中選擇「執行自動上色」，即可一次性重新計算所有帶有更新標記的自動上色圖層，省去重新繪製線稿後逐個圖層在圖層面板中執行的麻煩。自動上色設定的每個部件都有關於如何處理線稿顏色的設定（「指定顏色」「與填色相同」「顏色描線、與線稿融合」）。選擇「顏色描線、與線稿融合」後，線稿顏色會按HSL偏移以符合填充色，使線條不顯突兀、自然融合。設定越積越多，分配部件時顯示的清單就會變長、難以瀏覽。可以在專案設定（或圖層面板的部件分配對話框）中，將清單篩選為只顯示本專案使用的設定，讓清單更簡潔、更易於挑選。「填補線稿與填色之間的縫隙」調大後，會填色到線條較淡的邊緣下方，外框或線稿顏色與填充色相同時可見的線稿與填色之間的縫隙會變小。';
+      '在自動上色專用線稿圖層下方建立自動上色圖層，並依據預先製作的「自動上色設定」（各部件的顏色、網點組合）自動進行上色的功能。由於可以在畫完線稿後一次性上色，能大幅減少需要反覆繪製同一角色的手繪動畫中的上色工作量。重新繪製線稿後，時間軸和圖層面板會顯示更新標記，提示需要重新執行自動上色。在時間軸畫面的三點選單中選擇「執行自動上色」，即可一次性重新計算所有帶有更新標記的自動上色圖層，省去重新繪製線稿後逐個圖層在圖層面板中執行的麻煩。自動上色設定的每個部件都有關於如何處理線稿顏色的設定（「指定顏色」「與填色相同」「顏色描線、與線稿融合」）。選擇「顏色描線、與線稿融合」後，線稿顏色會按HSL偏移以符合填充色，使線條不顯突兀、自然融合。設定越積越多，分配部件時顯示的清單就會變長、難以瀏覽。可以在專案設定（或圖層面板的部件分配對話框）中，將清單篩選為只顯示本專案使用的設定，讓清單更簡潔、更易於挑選。「填補線稿與填色之間的縫隙」調大後，會填色到線條較淡的邊緣下方，描邊或線稿顏色與填充色相同時可見的線稿與填色之間的縫隙會變小。';
 
   @override
   String get helpOnionSkinTitle => '洋蔥皮';
@@ -12569,14 +12569,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpEffectFilterDesc =>
-      '可套用於場景或影格的畫面效果（模糊、色調校正、光暈、像素畫等）。在不改變手繪畫面本身的前提下，作為演出手段調整整個畫面觀感時使用。繪圖濾鏡中的色調曲線（預設與強度）、色階、銳化、USM銳化、暗角（顏色、範圍、濃度）、水彩邊界也收錄在演出濾鏡中，可以一次對多個影格套用相同的效果。像素畫也可以選擇配色方式（不指定顏色、指定顏色、指定顏色數、從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動）來接近原色，這種排列在影格之間不會移動；輪廓處保持清晰。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。 演出濾鏡可以疊加套用多個，其套用順序依照時間軸上的排列順序。拖曳濾鏡清單重新排序後，實際反映到畫面上的順序也會隨之改變。 一種演出濾鏡，會逐影格改變類似膠片顆粒感的雜訊。可以用滑桿調整強度、數量（雜訊出現的密度）和顆粒大小。回到同一影格時雜訊形態相同（拖曳時不會閃爍），播放時顆粒則會呈現出跳動的效果。 用來表現畫面中降雨的演出濾鏡。可以用滑桿調整降雨強度（雨滴數量）、速度、雨滴大小和風向角度。每滴雨都會隨著影格數推進以固定速度持續落下，呈現自然的降雨效果。';
+      '可套用於場景或影格的畫面效果（模糊、色調校正、光暈、像素畫等）。在不改變手繪畫面本身的前提下，作為演出手段調整整個畫面觀感時使用。繪圖濾鏡中的色調曲線（預設與強度）、色階、銳化、USM銳化、暗角（顏色、範圍、濃度）、水彩邊界也收錄在演出濾鏡中，可以一次對多個影格套用相同的效果。像素畫也可以選擇配色方式（不指定顏色、指定顏色、指定顏色數、從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動）來接近原色；輪廓處不混色，保持清晰。指定顏色數時，會從佔畫面大部分的顏色中選取。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。 演出濾鏡可以疊加套用多個，其套用順序依照時間軸上的排列順序。拖曳濾鏡清單重新排序後，實際反映到畫面上的順序也會隨之改變。 一種演出濾鏡，會逐影格改變類似膠片顆粒感的雜訊。可以用滑桿調整強度、數量（雜訊出現的密度）和顆粒大小。回到同一影格時雜訊形態相同（拖曳時不會閃爍），播放時顆粒則會呈現出跳動的效果。 用來表現畫面中降雨的演出濾鏡。可以用滑桿調整降雨強度（雨滴數量）、速度、雨滴大小和風向角度。每滴雨都會隨著影格數推進以固定速度持續落下，呈現自然的降雨效果。';
 
   @override
   String get helpEndCardTitle => '片尾標記';
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 片尾標記是 MP4、WebM 和 AVI 末尾的 5 秒標誌，製作過程影片也會加上。GIF 則在角落加入小的 NIARIM 圖示和應用程式名稱。權益有效時可依作品切換顯示。到期後仍保留設定。';
+      'NIARIM 片尾標記是 MP4、WebM 和 AVI 末尾的 5 秒標誌，製作過程影片也會加上。GIF 不會加上片尾標記，而是在角落加入小的 NIARIM 圖示和應用程式名稱。片尾標記權益有效時，可依作品切換顯示。到期後仍保留作品的設定。';
 
   @override
   String get helpAutoSaveTitle => '自動儲存';
@@ -12830,7 +12830,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpBrushFavoriteDesc =>
-      '點擊筆刷清單中筆刷上的星形圖示即可加入或移出我的最愛（與應用程式內其他我的最愛功能——自動上色設定、印章、字型、繪圖濾鏡等——操作方式相同）。清單頂部的星形圖示還可以篩選為僅顯示我的最愛。已加入我的最愛的筆刷不會被誤刪。';
+      '點擊筆刷清單中筆刷上的星形圖示即可加入或移出我的最愛（與應用程式內其他我的最愛功能——自動上色設定、印章、字型、繪圖濾鏡等——操作方式相同）。清單頂部的星形圖示還可以篩選為僅顯示我的最愛。為避免誤刪，已加入我的最愛的筆刷無法刪除。';
 
   @override
   String get helpCustomBrushTitle => '自訂筆刷';
@@ -12998,7 +12998,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsBrushFavoriteDesc =>
-      '點擊清單中常用筆刷的星形圖示，即可加入我的最愛。清單頂端的星形圖示可以篩選為只顯示我的最愛，減少尋找的麻煩。已加入我的最愛的筆刷無法被誤刪。';
+      '點擊清單中常用筆刷的星形圖示，即可加入我的最愛。清單頂端的星形圖示可以篩選為只顯示我的最愛，減少尋找的麻煩。為避免誤刪，已加入我的最愛的筆刷無法刪除。';
 
   @override
   String get tipsPressureCurveTitle => '把筆壓曲線調整成適合自己的手感';
@@ -13229,7 +13229,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsHomeWidgetDesc =>
-      '在設定的「主畫面小工具」中選擇作品後，選中的那一格會以靜態圖片顯示在手機主畫面上。「選擇作品」畫面可以使用與作品列表分頁相同的排序、搜尋與我的最愛篩選；在選擇影格的畫面中，還能用與時間軸相同的播放與拖曳控制項，找到自己滿意的那一格。同時放置「創作作品」與「作品廣場」小工具，就能從主畫面一鍵進入創作或瀏覽已發布的作品。';
+      '在設定的「主畫面小工具」中選擇作品後，選中的那一格會以靜態圖片顯示在手機主畫面上。「選擇作品」畫面可以使用與「專案」分頁相同的排序、搜尋與我的最愛篩選；在選擇影格的畫面中，還能用與時間軸相同的播放與拖曳控制項，找到自己滿意的那一格。同時放置「創作作品」與「作品廣場」小工具，就能從主畫面一鍵進入創作或瀏覽已發布的作品。';
 
   @override
   String get tipsAutofillTransparentFixTitle => '自動上色溢出的部分用透明色油漆桶擦掉';
@@ -14590,7 +14590,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String perfSettingsTrashApplyConfirm(int count) {
-    return '套用此設定將立即永久刪除垃圾桶中 $count 個已到期的項目。';
+    return '套用此設定將立即永久刪除垃圾桶中 $count 個已到期的項目。刪除的項目無法還原。';
   }
 
   @override
@@ -15080,7 +15080,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get autofillPresetSearchHint => '搜尋設定';
 
   @override
-  String get autofillPresetEmptyFavorites => '沒有加入我的最愛的設定';
+  String get autofillPresetEmptyFavorites => '我的最愛中沒有設定';
 
   @override
   String get autofillPresetEmpty => '沒有設定';
@@ -17999,7 +17999,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpWidgetSettingsDesc =>
-      '可放在手機主畫面上的三種小工具（啟動頁的作品單格畫面／「創作作品」／「作品廣場」）設定。小工具本身需要長按主畫面才能加入，App 內沒有加入按鈕。「選擇作品」會使用與作品列表分頁相同的排序、顯示方式、搜尋與我的最愛篩選，選好作品後還能在附播放控制項的預覽中選擇要顯示的確切影格。「創作作品」與「作品廣場」小工具可以選擇背景色要跟隨 App 主題，或自行指定顏色。';
+      '可放在手機主畫面上的三種小工具（作品的一格畫面／「創作作品」／「作品廣場」）設定。小工具本身需要長按主畫面才能加入，App 內沒有加入按鈕。「選擇作品」會使用與「專案」分頁相同的排序、顯示方式、搜尋與我的最愛篩選，選好作品後還能在附播放控制項的預覽中選擇要顯示的確切影格。「創作作品」與「作品廣場」小工具可以選擇背景色要跟隨 App 主題，或自行指定顏色。';
 
   @override
   String get colorPickerImportPaletteTooltip => '匯入調色盤';
@@ -18282,7 +18282,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      '官方預設包括「線稿製作（數位）」（自動線稿→積墨）、「線稿擷取（類比）」（色調調整→二值化→依明度透明化）以及「線稿顏色描線」（在線稿圖層上執行：把下方的填色取到剪裁到線稿的新圖層→模糊、複製與合併→顏色描線調整，使線條成為相鄰填色更深的顏色）。重新錄製會追加支援錄製的操作。在確認畫面中可以調整步驟順序或刪除步驟。若希望輕鬆恢復原始設定，可在編輯前先匯出一份。';
+      '「線稿製作（數位）」是將自動線稿到積墨的處理整合在一起的預設。\n在確認畫面中可以調整步驟順序或刪除步驟，重新錄製時可以追加操作。\n編輯前先匯出設定，就能放心地恢復原始狀態。\n「線稿擷取（類比）」會依色調調整→二值化→依明度透明化的順序處理。\n「線稿顏色描線」會把下方的填色取到線稿中，再透過模糊、複製、合併和顏色描線調整，讓線條融入比相鄰填色更深的顏色。';
 
   @override
   String get tipsTexturePrismVhsTitle => '在複製圖層上嘗試質感、稜鏡和VHS';
@@ -19858,14 +19858,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityPostVisibilityUnlistedHelp =>
-      '在 NIARIM 作品廣場顯示，並可參與收藏排行榜。';
+      '※在 YouTube 上會設為「不公開列出」。可參與 NIARIM 的收藏排行榜。';
 
   @override
   String get communityPostVisibilityPublicTitle => '同時公開至 YouTube';
 
   @override
   String get communityPostVisibilityPublicHelp =>
-      '可能出現在 YouTube 搜尋及推薦中，也可參與 NIARIM 收藏排行榜。';
+      '※在 YouTube 上會公開發布。也可參與 NIARIM 的收藏排行榜。';
 
   @override
   String get communityPostVisibilityUnlistedDisclosure =>
@@ -20404,7 +20404,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockCustomAutomation => '自訂自動操作（操作錄製）';
 
   @override
-  String get rewardUnlockCommunityPostQuota => '作品廣場每日1件→3件';
+  String get rewardUnlockCommunityPostQuota => '作品廣場投稿上限（每日1件→3件）';
 
   @override
   String get rewardUnlockProjectListAds => '專案列表無廣告';
@@ -21619,7 +21619,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushNibWidthRatio => '筆尖寬度（相對高度）';
 
   @override
-  String get brushFoldEndTaper => '折疊末端收尖';
+  String get brushFoldEndTaper => '折返線末端收尖';
 
   @override
   String get timelineSelectionScenes => '場景';
