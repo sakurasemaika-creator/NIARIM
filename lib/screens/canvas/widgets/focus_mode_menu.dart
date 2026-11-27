@@ -3,6 +3,39 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+/// The current focus-window header can host an action supplied by its child.
+/// The child registers a builder so its action can live in the shared header
+/// without moving its editing state out of the panel.
+class FocusModeMenuController extends ChangeNotifier {
+  WidgetBuilder? _headerMenuBuilder;
+
+  WidgetBuilder? get headerMenuBuilder => _headerMenuBuilder;
+
+  void setHeaderMenuBuilder(WidgetBuilder? builder) {
+    if (identical(_headerMenuBuilder, builder)) return;
+    _headerMenuBuilder = builder;
+    notifyListeners();
+  }
+}
+
+/// Exposes the shared header controller to the panel hosted inside the window.
+class FocusModeMenuScope extends InheritedWidget {
+  const FocusModeMenuScope({
+    super.key,
+    required this.controller,
+    required super.child,
+  });
+
+  final FocusModeMenuController controller;
+
+  static FocusModeMenuController? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<FocusModeMenuScope>()?.controller;
+
+  @override
+  bool updateShouldNotify(FocusModeMenuScope oldWidget) =>
+      !identical(controller, oldWidget.controller);
+}
+
 /// A movable, collapsible and resizable control surface used while the canvas
 /// is in a focused editing mode.
 ///
@@ -16,6 +49,9 @@ class FocusModeMenu extends StatefulWidget {
     required this.child,
     required this.collapseTooltip,
     required this.expandTooltip,
+    this.title = '',
+    this.onClose,
+    this.closeTooltip,
     this.maxWidth = 360,
     this.fillWidth = false,
     this.scrollBodyOnResize = true,
@@ -24,6 +60,9 @@ class FocusModeMenu extends StatefulWidget {
   final Widget child;
   final String collapseTooltip;
   final String expandTooltip;
+  final String title;
+  final VoidCallback? onClose;
+  final String? closeTooltip;
 
   /// Initial width. The resize handle can grow the menu up to the viewport.
   final double maxWidth;
@@ -42,14 +81,14 @@ class FocusModeMenu extends StatefulWidget {
 
 class _FocusModeMenuState extends State<FocusModeMenu> {
   static const double _edgeInset = 12;
-  static const double _headerHeight = 44;
+  static const double _headerHeight = 48;
   static const double _minMenuWidth = 180;
   static const double _minMenuHeight = 124;
   static const double _maxMenuWidth = 640;
 
   final GlobalKey _surfaceKey = GlobalKey();
   final GlobalKey _contentKey = GlobalKey();
-  double _left = _edgeInset;
+  double? _left;
   double _bottom = _edgeInset;
   double? _menuWidth;
   double? _menuHeight;
@@ -58,6 +97,9 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
   Offset? _moveStartOffset;
   Offset? _resizeStartPosition;
   Size? _resizeStartSize;
+  double? _resizeStartLeft;
+  double? _resizeStartBottom;
+  final FocusModeMenuController _menuController = FocusModeMenuController();
 
   Size? get _measuredSurfaceSize {
     final renderObject = _surfaceKey.currentContext?.findRenderObject();
@@ -80,9 +122,9 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
     });
   }
 
-  void _startMoving(DragStartDetails details) {
+  void _startMoving(DragStartDetails details, {required double left}) {
     _moveStartPosition = details.globalPosition;
-    _moveStartOffset = Offset(_left, _bottom);
+    _moveStartOffset = Offset(left, _bottom);
   }
 
   void _moveBy(
@@ -121,7 +163,11 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
     });
   }
 
-  void _startResizing(DragStartDetails details, Size expandedSize) {
+  void _startResizing(
+    DragStartDetails details,
+    Size expandedSize, {
+    required double left,
+  }) {
     _resizeStartPosition = details.globalPosition;
     // Read the live laid-out size at gesture start. The size calculated during
     // build may still be the provisional fallback on a first frame.
@@ -130,59 +176,50 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
       _menuWidth ?? measured.width,
       _menuHeight ?? measured.height,
     );
+    _resizeStartLeft = left;
+    _resizeStartBottom = _bottom;
   }
 
   void _resizeBy(
     DragUpdateDetails details, {
-    required double viewportWidth,
     required double viewportHeight,
   }) {
     final startPosition = _resizeStartPosition;
     final startSize = _resizeStartSize;
-    if (startPosition == null || startSize == null) return;
+    final startLeft = _resizeStartLeft;
+    final startBottom = _resizeStartBottom;
+    if (startPosition == null ||
+        startSize == null ||
+        startLeft == null ||
+        startBottom == null) {
+      return;
+    }
+
     final pointerDelta = details.globalPosition - startPosition;
-    // Full pointer displacement keeps resizing one-to-one after touch slop.
-    final delta = Offset(pointerDelta.dx, -pointerDelta.dy);
+    // The top-left grip is mirrored: drag left/up to grow. The bottom-right
+    // corner stays anchored, so the window's left/top edges move with the grip.
+    final maxRight = startLeft + startSize.width;
     final maxWidth = math
-        .max(
-          0.0,
-          math.min(_maxMenuWidth, viewportWidth - _edgeInset * 2),
-        )
+        .max(0.0, math.min(_maxMenuWidth, maxRight - _edgeInset))
         .toDouble();
     final minWidth = math.min(_minMenuWidth, maxWidth).toDouble();
-    final maxHeight = math
-        .max(0.0, viewportHeight - _edgeInset * 2)
-        .toDouble();
+    final bottomScreen = viewportHeight - startBottom;
+    final maxHeight = math.max(0.0, bottomScreen - _edgeInset).toDouble();
     final minHeight = math.min(_minMenuHeight, maxHeight).toDouble();
 
-    final nextWidth = (startSize.width + delta.dx)
+    final nextWidth = (startSize.width - pointerDelta.dx)
         .clamp(minWidth, maxWidth)
         .toDouble();
-    // Dragging the top-right grip upward increases the window height.
-    final nextHeight = (startSize.height + delta.dy)
+    final nextHeight = (startSize.height - pointerDelta.dy)
         .clamp(minHeight, maxHeight)
         .toDouble();
-
-    final maxLeft = math
-        .max(
-          _edgeInset,
-          viewportWidth - nextWidth - _edgeInset,
-        )
-        .toDouble();
-    final maxBottom = math
-        .max(
-          _edgeInset,
-          viewportHeight - nextHeight - _edgeInset,
-        )
-        .toDouble();
+    final nextLeft = maxRight - nextWidth;
 
     setState(() {
       _menuWidth = nextWidth;
       _menuHeight = nextHeight;
-      // Resizing from the top-right keeps the bottom-left corner fixed unless
-      // the viewport boundary requires the menu to move back inside.
-      _left = _left.clamp(_edgeInset, maxLeft).toDouble();
-      _bottom = _bottom.clamp(_edgeInset, maxBottom).toDouble();
+      _left = nextLeft;
+      _bottom = startBottom;
     });
   }
 
@@ -190,8 +227,10 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
+    return FocusModeMenuScope(
+      controller: _menuController,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
         if (!constraints.hasBoundedWidth || !constraints.hasBoundedHeight) {
           return const SizedBox.shrink();
         }
@@ -238,7 +277,12 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
               viewportHeight - expandedSize.height - _edgeInset,
             )
             .toDouble();
-        final left = _left.clamp(_edgeInset, maxLeft).toDouble();
+        final initialLeft = math
+            .max(_edgeInset, viewportWidth - expandedSize.width - _edgeInset)
+            .toDouble();
+        final left = (_left ?? initialLeft)
+            .clamp(_edgeInset, maxLeft)
+            .toDouble();
         final bottom = _bottom.clamp(_edgeInset, maxBottom).toDouble();
 
         final bodyHeight = _menuHeight == null
@@ -298,14 +342,87 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                         SizedBox(
                           width: menuWidth,
                           height: _headerHeight,
-                          child: Stack(
+                          child: Row(
                             children: [
-                              // Only the centred grip moves the window.
-                              Positioned(
-                                left: _headerHeight,
-                                right: _headerHeight,
-                                top: 0,
-                                bottom: 0,
+                              // Top-left resize handle: drag left/up to grow.
+                              SizedBox(
+                                width: _headerHeight,
+                                height: _headerHeight,
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.resizeUpLeft,
+                                  child: GestureDetector(
+                                    key: const ValueKey(
+                                      'focus-mode-menu-resize-handle',
+                                    ),
+                                    behavior: HitTestBehavior.opaque,
+                                    onPanStart: (details) => _startResizing(
+                                      details,
+                                      expandedSize,
+                                      left: left,
+                                    ),
+                                    onPanUpdate: (details) => _resizeBy(
+                                      details,
+                                      viewportHeight: viewportHeight,
+                                    ),
+                                    onPanEnd: (_) {
+                                      _resizeStartPosition = null;
+                                      _resizeStartSize = null;
+                                      _resizeStartLeft = null;
+                                      _resizeStartBottom = null;
+                                    },
+                                    onPanCancel: () {
+                                      _resizeStartPosition = null;
+                                      _resizeStartSize = null;
+                                      _resizeStartLeft = null;
+                                      _resizeStartBottom = null;
+                                    },
+                                    child: Center(
+                                      child: SvgPicture.string(
+                                        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 19h6v-6"/><path d="M11 5H5v6"/><path d="M5 5 19 19"/></svg>',
+                                        key: const ValueKey(
+                                          'focus-mode-menu-resize-handle-icon',
+                                        ),
+                                        width: 18,
+                                        height: 18,
+                                        colorFilter: ColorFilter.mode(
+                                          scheme.onSurfaceVariant.withValues(
+                                            alpha: 0.62,
+                                          ),
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Minimize/restore sits immediately beside resize.
+                              SizedBox(
+                                width: _headerHeight,
+                                height: _headerHeight,
+                                child: IconButton(
+                                  key: const ValueKey(
+                                    'focus-mode-menu-toggle',
+                                  ),
+                                  tooltip: _minimized
+                                      ? widget.expandTooltip
+                                      : widget.collapseTooltip,
+                                  visualDensity: VisualDensity.compact,
+                                  constraints: BoxConstraints.tightFor(
+                                    width: _headerHeight,
+                                    height: _headerHeight,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  icon: Icon(
+                                    _minimized
+                                        ? Icons.expand_more
+                                        : Icons.expand_less,
+                                    size: 20,
+                                  ),
+                                  onPressed: _toggleMinimized,
+                                ),
+                              ),
+                              // The title and central grip share one drag area.
+                              Expanded(
                                 child: MouseRegion(
                                   cursor: SystemMouseCursors.grab,
                                   child: GestureDetector(
@@ -313,7 +430,8 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                       'focus-mode-menu-drag-handle',
                                     ),
                                     behavior: HitTestBehavior.opaque,
-                                    onPanStart: _startMoving,
+                                    onPanStart: (details) =>
+                                        _startMoving(details, left: left),
                                     onPanUpdate: (details) => _moveBy(
                                       details,
                                       expandedSize: expandedSize,
@@ -328,95 +446,93 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                       _moveStartPosition = null;
                                       _moveStartOffset = null;
                                     },
-                                    child: Center(
-                                      child: Container(
-                                        width: 38,
-                                        height: 4,
-                                        decoration: BoxDecoration(
-                                          color: scheme.onSurfaceVariant
-                                              .withValues(alpha: 0.48),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                      ),
+                                    child: LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        final titleWidth = math.max(
+                                          0.0,
+                                          constraints.maxWidth / 2 - 22,
+                                        );
+                                        return Stack(
+                                          fit: StackFit.expand,
+                                          children: [
+                                            if (widget.title.isNotEmpty)
+                                              Positioned(
+                                                left: 8,
+                                                top: 0,
+                                                bottom: 0,
+                                                width: titleWidth,
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Text(
+                                                    widget.title,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: localizedHeadingStyle(
+                                                      context,
+                                                      TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color:
+                                                            scheme.onSurface,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            Center(
+                                              child: Container(
+                                                width: 32,
+                                                height: 4,
+                                                decoration: BoxDecoration(
+                                                  color: scheme.onSurfaceVariant
+                                                      .withValues(alpha: 0.48),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),
                               ),
-                              // Minimize/restore stays fixed at the top-left.
-                              Positioned(
-                                left: 0,
-                                top: 0,
-                                bottom: 0,
-                                width: _headerHeight,
-                                child: IconButton(
-                                  key: const ValueKey(
-                                    'focus-mode-menu-toggle',
-                                  ),
-                                  tooltip: _minimized
-                                      ? widget.expandTooltip
-                                      : widget.collapseTooltip,
-                                  visualDensity: VisualDensity.compact,
-                                  constraints: const BoxConstraints.tightFor(
+                              // The panel contributes its own context-sensitive menu.
+                              ListenableBuilder(
+                                listenable: _menuController,
+                                builder: (context, _) {
+                                  final builder =
+                                      _menuController.headerMenuBuilder;
+                                  if (builder == null) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return SizedBox(
                                     width: _headerHeight,
                                     height: _headerHeight,
-                                  ),
-                                  padding: EdgeInsets.zero,
-                                  icon: Icon(
-                                    _minimized
-                                        ? Icons.expand_more
-                                        : Icons.expand_less,
-                                    size: 20,
-                                  ),
-                                  onPressed: _toggleMinimized,
-                                ),
+                                    child: builder(context),
+                                  );
+                                },
                               ),
-                              // Drag right/down to widen/shorten; drag left/up
-                              // to narrow/tall. The bottom-left corner anchors.
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                bottom: 0,
-                                width: _headerHeight,
-                                child: MouseRegion(
-                                  cursor: SystemMouseCursors.resizeUpRight,
-                                  child: GestureDetector(
-                                    key: const ValueKey(
-                                      'focus-mode-menu-resize-handle',
+                              if (widget.onClose != null)
+                                SizedBox(
+                                  width: _headerHeight,
+                                  height: _headerHeight,
+                                  child: IconButton(
+                                    tooltip: widget.closeTooltip ?? '',
+                                    visualDensity: VisualDensity.compact,
+                                    constraints: BoxConstraints.tightFor(
+                                      width: _headerHeight,
+                                      height: _headerHeight,
                                     ),
-                                    behavior: HitTestBehavior.opaque,
-                                    onPanStart: (details) =>
-                                        _startResizing(details, expandedSize),
-                                    onPanUpdate: (details) => _resizeBy(
-                                      details,
-                                      viewportWidth: viewportWidth,
-                                      viewportHeight: viewportHeight,
-                                    ),
-                                    onPanEnd: (_) {
-                                      _resizeStartPosition = null;
-                                      _resizeStartSize = null;
-                                    },
-                                    onPanCancel: () {
-                                      _resizeStartPosition = null;
-                                      _resizeStartSize = null;
-                                    },
-                                    child: Center(
-                                      child: SvgPicture.string(
-                                        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 19H5v-6"/><path d="M13 5h6v6"/><path d="M19 5 5 19"/></svg>',
-                                        width: 18,
-                                        height: 18,
-                                        colorFilter: ColorFilter.mode(
-                                          scheme.onSurfaceVariant.withValues(
-                                            alpha: 0.62,
-                                          ),
-                                          BlendMode.srcIn,
-                                        ),
-                                      ),
-                                    ),
+                                    padding: EdgeInsets.zero,
+                                    icon: const Icon(Icons.close, size: 18),
+                                    onPressed: widget.onClose,
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
@@ -443,7 +559,14 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
             ),
           ],
         );
-      },
+        },
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    _menuController.dispose();
+    super.dispose();
   }
 }
