@@ -220,11 +220,11 @@ void main() {
     );
     await settleIo(tester, 2);
     expect(
-      find.text('選択中のノードの子として保存します。'),
+      find.text('選んでいる保存の続きとして保存します。'),
       findsNothing,
       reason: 'the dialog still saves under the deleted save',
     );
-    expect(find.text('ルートノードとして保存します。'), findsOneWidget);
+    expect(find.text('ツリーのいちばん上に、新しい始まりとして保存します。'), findsOneWidget);
     await tester.enterText(
       find.descendant(
         of: find.byType(AlertDialog),
