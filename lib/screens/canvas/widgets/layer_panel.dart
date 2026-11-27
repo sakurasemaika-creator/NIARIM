@@ -987,6 +987,8 @@ class _LayerPanelState extends State<LayerPanel> {
       targetSceneId: widget.sceneId,
       targetFrameIndex: widget.frameIndex,
       beforeLayerId: target.id,
+      copyName: (name, taken) =>
+          numberedCopyName(AppLocalizations.of(context)!, name, taken),
     );
     if (pasted == null) return;
     final refreshed = _visibleLayers(

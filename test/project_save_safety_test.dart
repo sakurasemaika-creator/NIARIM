@@ -23,6 +23,12 @@ const _scenes = [
         index: 0,
         layers: [Layer(id: 'Layer0001', name: 'Ink', type: LayerType.normal)],
       ),
+      // [_otherLayer]'s frame: a save writes only the tiles of layers in a
+      // frame.
+      Frame(
+        index: 1,
+        layers: [Layer(id: 'Layer0001', name: 'Ink', type: LayerType.normal)],
+      ),
     ],
   ),
 ];

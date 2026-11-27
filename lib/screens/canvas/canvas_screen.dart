@@ -50,6 +50,7 @@ import '../../engine/undo_manager.dart';
 import '../../engine/custom_automation_executor.dart';
 import '../../engine/filter_lens_mask.dart';
 import '../../l10n/app_localizations.dart';
+import '../../utils/duplicate_name.dart';
 import '../../models/bundled_fonts.dart';
 import '../../models/filter_canvas_gizmo.dart';
 import '../../models/filter_def.dart';
@@ -1387,6 +1388,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
   PerformanceService? _perf;
 
   String? _currentLayerId;
+
+  /// Where [_currentLayerId] was in the frame's layer list (from the top):
+  /// when a frame does not have that layer, the one at this place is used.
+  int _currentLayerPosition = 0;
   // dispose()内でcontext.read<T>()を呼ぶと、画面が他のウィジェットツリーの
   // 一括破棄に巻き込まれた際（例：GoRouterのgo()によるスタック置き換えで
   // 前の画面がまとめて破棄されるケース）に「破棄済みウィジェットの祖先を
@@ -1650,15 +1655,34 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final drawingLayers = layers.where(
       (layer) => layer.type != model.LayerType.folder,
     );
-    if (!drawingLayers.any((layer) => layer.id == _currentLayerId)) {
-      // A timeline material (text, image, video) is edited in the timeline,
-      // so a layer to draw on comes first when there is one.
-      _currentLayerId =
-          (drawingLayers
-                      .where((l) => !model.isTimelineMaterialLayerType(l.type))
-                      .firstOrNull ??
-                  drawingLayers.firstOrNull)
-              ?.id;
+    final position = layers.indexWhere((l) => l.id == _currentLayerId);
+    if (position >= 0 && drawingLayers.any((l) => l.id == _currentLayerId)) {
+      _currentLayerPosition = position;
+    } else {
+      // The layer at the same place from the top as before (the owner's
+      // choice, 2026-11-27): the first layer was picked, and drawing went
+      // under the opaque layer above it. A timeline material (text, image,
+      // video) is edited in the timeline, so a layer to draw on is taken
+      // when there is one.
+      final drawable = [
+        for (var i = 0; i < layers.length; i++)
+          if (layers[i].type != model.LayerType.folder &&
+              !model.isTimelineMaterialLayerType(layers[i].type))
+            i,
+      ];
+      if (drawable.isEmpty) {
+        _currentLayerId = drawingLayers.firstOrNull?.id;
+      } else {
+        var nearest = drawable.first;
+        for (final i in drawable) {
+          if ((i - _currentLayerPosition).abs() <
+              (nearest - _currentLayerPosition).abs()) {
+            nearest = i;
+          }
+        }
+        _currentLayerId = layers[nearest].id;
+        _currentLayerPosition = nearest;
+      }
     }
     // 使うブラシ・その太さ・不透明度が変わったら（一覧で選ぶ・早替えツール）
     // この画面を作り直し、太さ・不透明度の欄をそのブラシの値へ合わせる
@@ -3598,6 +3622,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
       targetSceneId: _currentSceneId,
       targetFrameIndex: _currentFrame,
       beforeLayerId: targetId,
+      copyName: (name, taken) =>
+          numberedCopyName(AppLocalizations.of(context)!, name, taken),
     );
     if (copy == null) return;
     setState(() => _currentLayerId = copy.id);

@@ -81,12 +81,16 @@ class LayerClipboardService {
     return true;
   }
 
+  /// [copyName] names the pasted layer when the frame already has a layer
+  /// of its name (the copy mark of the app's language, `numberedCopyName`):
+  /// two layers of one name were side by side in the layer panel.
   Layer? pasteBefore({
     required ProjectService projectService,
     required String projectId,
     required String targetSceneId,
     required int targetFrameIndex,
     required String beforeLayerId,
+    String Function(String name, Set<String> taken)? copyName,
   }) {
     final snapshot = _snapshot;
     if (snapshot == null || snapshot.sourceProjectId != projectId) return null;
@@ -114,13 +118,26 @@ class LayerClipboardService {
         ? candidateParent
         : null;
 
-    final relocated = _relocateRangeForPaste(
+    var relocated = _relocateRangeForPaste(
       snapshot.layer,
       sourceFrameIndex: snapshot.sourceFrameIndex,
       targetSceneFrameCount: scene.frames.length,
       targetSceneId: targetSceneId,
       targetFrameIndex: targetFrameIndex,
     );
+    if (copyName != null) {
+      final taken = {
+        for (final layer in projectService.layersOf(
+          projectId,
+          targetSceneId,
+          targetFrameIndex,
+        ))
+          layer.name,
+      };
+      if (taken.contains(relocated.name)) {
+        relocated = relocated.copyWith(name: copyName(relocated.name, taken));
+      }
+    }
 
     return projectService.insertLayerSnapshot(
       projectId: projectId,
