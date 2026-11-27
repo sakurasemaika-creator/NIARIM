@@ -23,6 +23,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/cut_controls.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
@@ -292,6 +293,10 @@ void main() {
           final name =
               '${routeName}__${shot.toString().padLeft(2, '0')}_'
               '${sanitize(label)}';
+          // 開いたダイアログ・シート・メニューのボタン・チップが切れていない。
+          for (final cut in cutControls(tester)) {
+            failures.add('$name: cut: $cut');
+          }
           if (await capture(name)) {
             index.add('$routeName\t$label\t$name.png');
           } else {

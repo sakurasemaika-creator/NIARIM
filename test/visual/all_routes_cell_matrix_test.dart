@@ -27,6 +27,7 @@ import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../helpers/cut_controls.dart';
 import '../helpers/first_use_tooltips.dart';
 import '../helpers/load_app_fonts.dart';
 
@@ -266,6 +267,11 @@ void main() {
               // the overflow is looked up in every cell.
               for (final flex in _overflowing()) {
                 problems.putIfAbsent(cell, () => []).add(flex);
+              }
+              // Buttons and chips a clipping box cuts part of (所有者の依頼、
+              // 2026-11-27「どの画面でも起きないように」).
+              for (final cut in cutControls(tester)) {
+                problems.putIfAbsent(cell, () => []).add('cut: $cut');
               }
               final found = problems[cell] ?? const <String>[];
               results.add({

@@ -14,8 +14,11 @@
 // * PCの「詳細」は題が作品名なのに、総フレーム数・秒数は選んでいるシーンの数
 //   だった。
 // * 「長さ変更」のスライダーが1〜43万コマで、少し動かすと数千コマ跳んだ。
+// * 素材の編集の「配置・長さ調整…」のチップの上下が切れていた（デスクトップの
+//   既定で押せる所が縮み、外側に描く縁取り線を横スクロールの欄が切った）。
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -34,6 +37,7 @@ import 'package:niarim/widgets/stepped_slider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/cut_controls.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/pump_real_async.dart';
 
@@ -545,4 +549,27 @@ void main() {
     expect(tester.widget<SteppedSlider>(slider).value, 5000);
     expect(tester.takeException(), isNull);
   });
+
+  for (final platform in [TargetPlatform.android, TargetPlatform.linux]) {
+    testWidgets('the material panel\'s buttons are not cut ($platform)', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = platform;
+      try {
+        final (ps: _, projectId: _, sceneId: _, :videoId, l10n: _) =
+            await openTimeline(tester);
+        expect(cutControls(tester), isEmpty, reason: 'the timeline');
+        final clip = find.byKey(ValueKey('timelineClip-$videoId'));
+        await tester.ensureVisible(clip);
+        await tester.pump();
+        await tester.tapAt(tester.getTopLeft(clip) + const Offset(20, 10));
+        await pumpRealAsync(tester, const Duration(milliseconds: 400));
+        expect(find.byType(ChoiceChip), findsWidgets);
+        expect(cutControls(tester), isEmpty, reason: 'the material panel');
+        expect(tester.takeException(), isNull);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    });
+  }
 }

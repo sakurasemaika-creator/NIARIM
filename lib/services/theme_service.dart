@@ -1091,6 +1091,14 @@ class ThemeService extends ChangeNotifier {
 
     return ThemeData(
       useMaterial3: true,
+      // 押せる所の大きさ（48px）と部品の密度は、どの端末でもスマホ（Android）と
+      // 同じにする。Flutterの既定ではデスクトップ（Linux・Windows・macOS）だけ
+      // 押せる所を縮め、密度も詰めるので、チップの箱が絵と同じ高さになり、
+      // 外側に描く縁取り線（chipTheme.side）が横スクロールの欄に切られた
+      // （タイムラインの素材の編集の「配置・長さ調整…」の上下）。PC/DeXの
+      // 実機はAndroidなので、見た目はスマホと同じのまま。
+      materialTapTargetSize: MaterialTapTargetSize.padded,
+      visualDensity: VisualDensity.standard,
       brightness: brightness,
       colorScheme: scheme,
       fontFamily: bodyFont,

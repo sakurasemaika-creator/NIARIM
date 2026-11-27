@@ -15,6 +15,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/cut_controls.dart';
 import 'helpers/load_app_fonts.dart';
 
 class _FakeFilePicker extends FilePicker {
@@ -122,6 +123,11 @@ void main() {
       }
       final exception = tester.takeException();
       if (exception != null) failures.add('$name: $exception');
+      // ボタン・チップの上下（や左右）が切る欄に一部だけ切られていない
+      // （所有者の依頼、2026-11-27「どの画面でも起きないように」）。
+      for (final cut in cutControls(tester)) {
+        failures.add('$name: cut: $cut');
+      }
       final boundary =
           boundaryKey.currentContext?.findRenderObject()
               as RenderRepaintBoundary?;

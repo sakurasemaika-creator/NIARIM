@@ -5001,8 +5001,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Widget _buildSceneTabs() {
     final projectService = context.watch<ProjectService>();
     final scenes = projectService.scenesOf(widget.projectId);
+    // 帯の高さは、シーンの名前（11px）が文字の大きさの設定で大きくなった分
+    // だけ広げる（36pxに固定していて、文字2倍でチップの上下が切れた）。
+    final grown = MediaQuery.textScalerOf(context).scale(11) - 11;
+    final tabsHeight = 36 + math.max(0.0, grown) * 1.6;
     return SizedBox(
-      height: _isSceneCursorActive ? 92 : 36,
+      height: _isSceneCursorActive ? tabsHeight + 56 : tabsHeight,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -5010,7 +5014,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            height: 36,
+            height: tabsHeight,
             child: Row(
               children: [
                 Expanded(

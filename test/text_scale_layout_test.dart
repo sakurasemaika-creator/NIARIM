@@ -21,6 +21,8 @@ import 'package:niarim/router.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/cut_controls.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -132,6 +134,11 @@ void main() {
         appRouter.go(route);
         await tester.pump(const Duration(milliseconds: 400));
         await tester.pump(const Duration(milliseconds: 400));
+        // 大きな文字でも、ボタン・チップの上下（や左右）が切る欄に一部だけ
+        // 切られていない（所有者の依頼、2026-11-27）。
+        for (final cut in cutControls(tester)) {
+          problems.add('$route 切れたボタン: $cut');
+        }
         if (route == '/project/$projectId') {
           final fullscreen = find.byKey(
             const Key('projectDetailFullscreenButton'),
