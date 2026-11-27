@@ -5602,10 +5602,14 @@ class _CanvasPainter extends CustomPainter {
         : null;
     _drawFrameImage(canvas, drawingRect, exact ?? belowImage, Paint());
 
-    // オニオンスキン（前フレーム）
-    for (final entry in onionImages.entries) {
-      if (entry.key >= 0) continue;
-      _drawOnionFrame(canvas, drawingRect, entry.value, entry.key);
+    // オニオンスキン：前のコマも後のコマも、今描いているレイヤーの下に透かして
+    // 出す（前後は色で見分ける。後のコマを上に重ねると描いている線にかぶって
+    // 見づらい、所有者の指定、2026-11-27）。遠いコマから順に描き、近いコマを上に。
+    final onionOrder = onionImages.keys.toList()
+      ..sort((a, b) => b.abs().compareTo(a.abs()));
+    for (final key in onionOrder) {
+      if (key == 0) continue;
+      _drawOnionFrame(canvas, drawingRect, onionImages[key]!, key);
     }
 
     // 現在レイヤー（不透明度・ブレンドモードを反映）
@@ -5678,12 +5682,6 @@ class _CanvasPainter extends CustomPainter {
         );
         canvas.drawImageRect(compositeImage!, src, drawingRect, currentPaint);
       }
-    }
-
-    // オニオンスキン（後フレーム）
-    for (final entry in onionImages.entries) {
-      if (entry.key <= 0) continue;
-      _drawOnionFrame(canvas, drawingRect, entry.value, entry.key);
     }
 
     // 現在レイヤーより手前（前面）のレイヤー群。描画命令のまま再生するので、

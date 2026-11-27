@@ -180,6 +180,130 @@ void main() {
       () => File('${out.path}/onion_canvas_real.png').writeAsBytes(on.png),
     );
   });
+  // 前のコマも後のコマも、今描いているレイヤーの下に透かして出す（所有者の
+  // 指定、2026-11-27）。後のコマの影が今のコマの塗った所にかぶらない。
+  testWidgets('後のコマのオニオンスキンも今のレイヤーの下に出る', (tester) async {
+    tester.view.physicalSize = const Size(480, 360);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final ps = ProjectService();
+    await tester.runAsync(() => ps.init());
+    final undo = app_undo.UndoManager();
+    ps.setUndoManager(undo);
+    final p = await ps.createProject(
+      name: 'onion-under',
+      fps: 3,
+      durationSeconds: 1,
+      backgroundColor: 0xFFFFFFFF,
+      exportWidth: 96,
+      exportHeight: 80,
+    );
+    final sceneId = ps.scenesOf(p.id).first.id;
+    // 今のコマ（F2）は緑の四角、後のコマ（F3）は今の四角に重なる所と
+    // 重ならない所にまたがる白い帯。
+    final shapes = <int, List<({int x0, int x1, int r, int g, int b})>>{
+      1: [(x0: 40, x1: 56, r: 30, g: 220, b: 70)],
+      2: [(x0: 44, x1: 84, r: 255, g: 255, b: 255)],
+    };
+    for (final entry in shapes.entries) {
+      final layer = ps.layersOf(p.id, sceneId, entry.key).first;
+      final key = ps.tileKeyFor(p.id, sceneId, entry.key, layer.id);
+      final rgba = Uint8List(96 * 80 * 4);
+      for (final q in entry.value) {
+        for (var y = 25; y < 41; y++) {
+          for (var x = q.x0; x < q.x1; x++) {
+            final i = (y * 96 + x) * 4;
+            rgba[i] = q.r;
+            rgba[i + 1] = q.g;
+            rgba[i + 2] = q.b;
+            rgba[i + 3] = 255;
+          }
+        }
+      }
+      ps.tileManagerOf(p.id).replaceLayerPixels(key, rgba);
+    }
+    final currentLayer = ps.layersOf(p.id, sceneId, 1).first;
+    final providers = await tester.runAsync(buildAppProviders);
+    final boundaryKey = GlobalKey();
+    var settings = const OnionSkinSettings(enabled: false);
+    StateSetter? hostSetState;
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ...providers!,
+          ChangeNotifierProvider<ProjectService>.value(value: ps),
+          ChangeNotifierProvider<app_undo.UndoManager>.value(value: undo),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  hostSetState = setState;
+                  return RepaintBoundary(
+                    key: boundaryKey,
+                    child: SizedBox(
+                      width: 288,
+                      height: 240,
+                      child: CanvasArea(
+                        project: p,
+                        currentLayerId: currentLayer.id,
+                        currentTool: DrawingTool.pen,
+                        currentFrame: 1,
+                        sceneId: sceneId,
+                        onionSkinSettings: settings,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 250));
+    await _captureWhen(
+      tester,
+      boundaryKey,
+      _hasAnyNonWhitePixel,
+      reason: '今のコマが描画されること',
+    );
+    hostSetState!(() {
+      settings = const OnionSkinSettings(
+        enabled: true,
+        showPrev: true,
+        showNext: true,
+        prevFrames: 1,
+        nextFrames: 1,
+        frameInterval: 1,
+        prevColor: Color(0xFFFF0000),
+        nextColor: Color(0xFF0000FF),
+        prevOpacity: 0.8,
+        nextOpacity: 0.8,
+        fadeByDistance: false,
+      );
+    });
+    await tester.pump();
+    final on = await _captureWhen(
+      tester,
+      boundaryKey,
+      (c) => !_isWhite(_pixel(c.rgba, c.width, 76 * 3, 33 * 3)),
+      reason: '後のコマのオニオンスキンが描画されること',
+    );
+    // 今のコマの塗りが無い所には、後のコマの影（青）が透けて見える。
+    final next = _pixel(on.rgba, on.width, 76 * 3, 33 * 3);
+    expect(next[2], greaterThan(next[0]));
+    // 今のコマの塗った所は今の色のまま（後のコマの影が上にかぶらない）。
+    final current = _pixel(on.rgba, on.width, 50 * 3, 33 * 3);
+    expect(current.sublist(0, 3), orderedEquals([30, 220, 70]));
+    await tester.runAsync(
+      () =>
+          File('${out.path}/onion_next_under_current.png').writeAsBytes(on.png),
+    );
+  });
 }
 
 /// [predicate]を満たす撮影が得られるまで、実時間とWidgetのfake-asyncを
