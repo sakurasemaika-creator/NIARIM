@@ -114,7 +114,7 @@ void main() {
     expect(restored.right, lessThanOrEqualTo(400));
     expect(restored.top, greaterThanOrEqualTo(0));
   });
-  testWidgets('header title stays draggable and move grip is beside trailing actions', (
+  testWidgets('header title and move grip are centered in one row; title stays draggable', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(400, 800));
