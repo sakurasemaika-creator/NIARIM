@@ -26,9 +26,16 @@ import '../../widgets/icon_notice.dart';
 import '../../widgets/menu_surface.dart';
 
 class MakingScreen extends StatefulWidget {
-  const MakingScreen({super.key, required this.projectId});
+  const MakingScreen({
+    super.key,
+    required this.projectId,
+    this.playOnOpen = false,
+  });
 
   final String projectId;
+
+  /// Opened with 「メイキング再生」: play the recording as soon as it is read.
+  final bool playOnOpen;
 
   @override
   State<MakingScreen> createState() => _MakingScreenState();
@@ -75,6 +82,7 @@ class _MakingScreenState extends State<MakingScreen> {
         _loading = false;
         _loadFailed = false;
       });
+      if (widget.playOnOpen && !_playing) _togglePlayback();
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (!mounted) return;

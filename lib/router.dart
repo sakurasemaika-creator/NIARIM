@@ -123,7 +123,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/making/:id',
       builder: (context, state) => AdMockPageFrame(
-        child: MakingScreen(projectId: state.pathParameters['id']!),
+        child: MakingScreen(
+          projectId: state.pathParameters['id']!,
+          playOnOpen: state.uri.queryParameters['play'] == '1',
+        ),
       ),
     ),
     GoRoute(

@@ -38,8 +38,7 @@ abstract final class MakingStrings {
   static String startFrame(BuildContext context) =>
       _l(context).makingStartFrame;
 
-  static String viewMaking(BuildContext context) =>
-      _l(context).makingViewMaking;
+  static String playMaking(BuildContext context) => _l(context).makingPlay;
 
   static String makingTitle(BuildContext context) => _l(context).makingTitle;
 

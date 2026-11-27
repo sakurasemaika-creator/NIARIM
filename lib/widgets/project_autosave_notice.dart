@@ -11,19 +11,19 @@ import '../services/project_service.dart';
 import 'keep_together_text.dart' show messageText;
 import 'typing_dialog_inset.dart' show dialogInsetPadding;
 
-enum _RecoveredChoice { backToList, chooseData, keep }
+enum _RecoveredChoice { cancel, chooseData, keep }
 
 /// What the first screen that opens a work (its details, the canvas or the
 /// timeline) does after it is shown:
 ///
 /// - The work file was damaged or missing at start-up, so the work was
 ///   restored from its newest automatic save: a dialog says so, and offers
-///   to go back to the project list, to choose another save to load, or to
-///   go on with what was restored.
+///   to cancel (back to the screen the work was opened from), to choose
+///   another save to load, or to go on with what was restored.
 /// - The app closed before the work file got the last changes, and an
 ///   automatic save from that launch is newer and different: the work opens
-///   with it at once, without asking, and a notice says so. Undo goes back
-///   to the work file.
+///   with it at once, without asking or telling (the newest content is what
+///   anyone expects to see). Undo goes back to the work file.
 ///
 /// [saveEntry] is how the save screen opened from the dialog loads a save
 /// (`entry` of `/save-tree/:id`). [onRestored] runs after the newer automatic
@@ -51,10 +51,10 @@ Future<void> settleOpenedWork(
         ),
         actions: [
           TextButton(
-            key: const ValueKey('autosaveRecoveredBackToList'),
+            key: const ValueKey('autosaveRecoveredCancel'),
             onPressed: () =>
-                Navigator.pop(dialogContext, _RecoveredChoice.backToList),
-            child: Text(l10n.autosaveRecoveryBackToList),
+                Navigator.pop(dialogContext, _RecoveredChoice.cancel),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             key: const ValueKey('autosaveRecoveredChooseData'),
@@ -73,9 +73,14 @@ Future<void> settleOpenedWork(
     );
     if (!context.mounted) return;
     switch (choice) {
-      case _RecoveredChoice.backToList:
-        // Leaving the work for the list ends this flow: nothing to go back to.
-        context.go('/home');
+      case _RecoveredChoice.cancel:
+        // Back to where the work was opened from (the list, or the work's
+        // details for the canvas). Opened with nothing behind it, the list.
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/home');
+        }
       case _RecoveredChoice.chooseData:
         context.push('/save-tree/$projectId?entry=$saveEntry&source=autosave');
       case _RecoveredChoice.keep || null:
@@ -107,15 +112,4 @@ Future<void> settleOpenedWork(
   }
   projects.useSavedVersion(projectId, newer.data);
   onRestored?.call();
-  ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-    SnackBar(
-      key: const ValueKey('autosaveNewerOpenedNotice'),
-      content: Text(
-        l10n.autosaveNewerOpenedNotice(
-          formatSaveTime(newer.savedAt, l10n.localeName),
-        ),
-      ),
-      duration: const Duration(seconds: 5),
-    ),
-  );
 }

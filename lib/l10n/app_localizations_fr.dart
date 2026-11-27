@@ -1629,14 +1629,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get projectAutosaveRecoveredContinue => 'Continuer avec cette version';
 
   @override
-  String autosaveNewerOpenedNotice(String time) {
-    return 'La dernière fois, l’app s’est fermée avant que les modifications soient enregistrées dans le fichier du projet. Le projet a donc été ouvert depuis la sauvegarde automatique ($time).';
-  }
-
-  @override
-  String get autosaveRecoveryBackToList => 'Retour à la liste des projets';
-
-  @override
   String get autosaveRecoveryChooseData => 'Choisir les données à charger';
 
   @override
@@ -12051,7 +12043,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get makingStartFrame => 'Image de début';
 
   @override
-  String get makingViewMaking => 'Voir le making-of';
+  String get makingPlay => 'Lire le making-of';
 
   @override
   String get makingTitle => 'Making-of';
@@ -12072,7 +12064,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get makingFormatWebm => 'WebM';
 
   @override
-  String get makingExportLabel => 'Exporter la vidéo';
+  String get makingExportLabel => 'Exporter le making-of';
 
   @override
   String get makingExportComplete => 'Vidéo du making-of exportée.';

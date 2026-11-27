@@ -1600,14 +1600,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get projectAutosaveRecoveredContinue => 'Continue with this version';
 
   @override
-  String autosaveNewerOpenedNotice(String time) {
-    return 'Last time, the app closed before your changes were saved to the project file, so the project was opened from the autosave ($time).';
-  }
-
-  @override
-  String get autosaveRecoveryBackToList => 'Back to project list';
-
-  @override
   String get autosaveRecoveryChooseData => 'Choose data to load';
 
   @override
@@ -11866,7 +11858,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get makingStartFrame => 'Start frame';
 
   @override
-  String get makingViewMaking => 'View making';
+  String get makingPlay => 'Play making';
 
   @override
   String get makingTitle => 'Making';
@@ -11886,7 +11878,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get makingFormatWebm => 'WebM';
 
   @override
-  String get makingExportLabel => 'Export video';
+  String get makingExportLabel => 'Export making';
 
   @override
   String get makingExportComplete => 'Making video exported.';

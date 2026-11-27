@@ -403,26 +403,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   minimumSize: const Size.fromHeight(48),
                 ),
               ),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                key: const Key('projectDetailViewMaking'),
-                onPressed: () => context.push('/making/${widget.projectId}'),
-                icon: const Icon(Icons.movie_outlined),
-                label: Text(MakingStrings.viewMaking(context)),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(46),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                key: const Key('projectDetailMakingEnabled'),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                title: Text(MakingStrings.recordProject(context)),
-                subtitle: Text(MakingStrings.recordProjectHint(context)),
-                value: project.makingEnabled,
-                onChanged: (value) =>
-                    projectService.setMakingEnabled(project.id, value),
-              ),
               const SizedBox(height: 16),
               // フォルダ・タグ・お気に入り・共有・ループのクイックアクセス
               _QuickActionsRow(
@@ -559,6 +539,31 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     ],
                   );
                 },
+              ),
+              const SizedBox(height: 24),
+              // メイキングは記録の入切と、その下に記録を再生する行（再生の画面
+              // から書き出せる）。いつも使う操作ではないので、編集の操作より
+              // 下に置く（所有者の指定、2026-11-27）。
+              GroupedSheet(
+                key: const Key('projectDetailMakingSheet'),
+                title: MakingStrings.makingTitle(context),
+                children: [
+                  SwitchListTile(
+                    key: const Key('projectDetailMakingEnabled'),
+                    title: Text(MakingStrings.recordProject(context)),
+                    subtitle: Text(MakingStrings.recordProjectHint(context)),
+                    value: project.makingEnabled,
+                    onChanged: (value) =>
+                        projectService.setMakingEnabled(project.id, value),
+                  ),
+                  SheetRow(
+                    key: const Key('projectDetailPlayMaking'),
+                    icon: Icons.play_circle_outline,
+                    title: MakingStrings.playMaking(context),
+                    onTap: () =>
+                        context.push('/making/${widget.projectId}?play=1'),
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
               // 作品の情報は項目ごとに細い線で区切った1枚の面に並べる。

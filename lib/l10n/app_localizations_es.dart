@@ -1636,14 +1636,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get projectAutosaveRecoveredContinue => 'Continuar con esta versión';
 
   @override
-  String autosaveNewerOpenedNotice(String time) {
-    return 'La última vez, la app se cerró antes de guardar los cambios en el archivo del proyecto, así que se abrió desde el guardado automático ($time).';
-  }
-
-  @override
-  String get autosaveRecoveryBackToList => 'Volver a la lista de proyectos';
-
-  @override
   String get autosaveRecoveryChooseData => 'Elegir datos para cargar';
 
   @override
@@ -12040,7 +12032,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get makingStartFrame => 'Fotograma inicial';
 
   @override
-  String get makingViewMaking => 'Ver el proceso';
+  String get makingPlay => 'Reproducir el proceso';
 
   @override
   String get makingTitle => 'Proceso';
@@ -12060,7 +12052,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get makingFormatWebm => 'WebM';
 
   @override
-  String get makingExportLabel => 'Exportar vídeo';
+  String get makingExportLabel => 'Exportar el proceso';
 
   @override
   String get makingExportComplete => 'Vídeo del proceso exportado.';

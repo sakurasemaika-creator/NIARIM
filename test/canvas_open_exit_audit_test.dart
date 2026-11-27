@@ -262,12 +262,11 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('DISC574: opening uses the newer autosave without asking, '
-      'once per launch, and says so', (tester) async {
+  testWidgets('DISC574: opening uses the newer autosave without asking or '
+      'telling, once per launch', (tester) async {
     final (service: projects, :id) = await open(tester);
     final home = tester.element(find.byType(HomeScreen));
     final autosaves = home.read<AutosaveService>();
-    final l10n = AppLocalizations.of(home)!;
     final scene = projects.scenesOf(id).single;
     final key = projects.tileKeyFor(
       id,
@@ -289,10 +288,9 @@ void main() {
     await settleIo(tester);
     expect(find.byType(AlertDialog), findsNothing);
     expect(tiles.getTile(key, 0, 0)?.take(4), drawn);
-    expect(
-      find.textContaining(l10n.autosaveNewerOpenedNotice('').split('（').first),
-      findsOneWidget,
-    );
+    // The newest content is what anyone expects: no notice about it (owner's
+    // request, 2026-11-27).
+    expect(find.byType(SnackBar), findsNothing);
     // Looked for once per launch: a later change is not taken back.
     tiles.importAll(const {});
     appRouter.go('/home');
@@ -332,10 +330,6 @@ void main() {
     tiles.getOrCreateTile(key, 0, 0).setRange(0, 4, drawn);
     await settleIo(tester);
     expect(tiles.getTile(key, 0, 0)?.take(4), drawn);
-    expect(
-      find.byKey(const ValueKey('autosaveNewerOpenedNotice')),
-      findsNothing,
-    );
     expect(tester.takeException(), isNull);
   });
 
@@ -365,10 +359,6 @@ void main() {
     appRouter.go('/canvas/$id');
     await settleIo(tester);
     expect(tiles.getTile(key, 0, 0)?.take(4), [30, 60, 220, 255]);
-    expect(
-      find.byKey(const ValueKey('autosaveNewerOpenedNotice')),
-      findsNothing,
-    );
     expect(tester.takeException(), isNull);
   });
 
@@ -395,10 +385,6 @@ void main() {
     appRouter.go('/canvas/$id');
     await settleIo(tester);
     expect(tiles.getTile(key, 0, 0), isNull);
-    expect(
-      find.byKey(const ValueKey('autosaveNewerOpenedNotice')),
-      findsNothing,
-    );
     expect(tester.takeException(), isNull);
   });
 

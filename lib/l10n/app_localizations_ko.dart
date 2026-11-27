@@ -1560,14 +1560,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectAutosaveRecoveredContinue => '이 내용으로 계속';
 
   @override
-  String autosaveNewerOpenedNotice(String time) {
-    return '지난번에 작품 파일에 저장되기 전에 앱이 종료되어 자동 저장본($time)의 내용으로 열었습니다.';
-  }
-
-  @override
-  String get autosaveRecoveryBackToList => '프로젝트 목록으로 돌아가기';
-
-  @override
   String get autosaveRecoveryChooseData => '불러올 데이터 선택';
 
   @override
@@ -11091,7 +11083,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get makingStartFrame => '시작 프레임';
 
   @override
-  String get makingViewMaking => '메이킹 보기';
+  String get makingPlay => '메이킹 재생';
 
   @override
   String get makingTitle => '메이킹';
@@ -11110,7 +11102,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get makingFormatWebm => 'WebM';
 
   @override
-  String get makingExportLabel => '동영상 내보내기';
+  String get makingExportLabel => '메이킹 내보내기';
 
   @override
   String get makingExportComplete => '메이킹 동영상을 내보냈습니다.';

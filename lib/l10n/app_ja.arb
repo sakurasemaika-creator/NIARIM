@@ -708,12 +708,6 @@
   },
   "projectAutosaveRecoveredTitle": "作品ファイルを読み込めませんでした",
   "projectAutosaveRecoveredContinue": "この内容で続ける",
-  "autosaveNewerOpenedNotice": "前回、作品ファイルに保存される前にアプリが終了したため、自動保存（{time}）の内容で開きました。",
-  "@autosaveNewerOpenedNotice": {
-    "description": "Notice shown when a work is opened from an autosave of the last launch that is newer than the work file. {time} is the autosave date and time.",
-    "placeholders": { "time": { "type": "String" } }
-  },
-  "autosaveRecoveryBackToList": "プロジェクト一覧に戻る",
   "autosaveRecoveryChooseData": "読み込むデータを選ぶ",
   "helpSaveSlotTitle": "セーブスロット",
   "helpSaveSlotDesc": "決まった数の保存枠（スロット）に、自分で保存先を選びながら保存する方式です。スロット数は設定（低品質5件・中品質10件）で決まります。上書きしたい枠を毎回自分で選ぶため、「このタイミングの状態は残しておきたい」という管理がしやすい方式です。",
@@ -6793,9 +6787,9 @@
   "@makingStartFrame": {
     "description": "メイキング・読み上げ：開始フレーム"
   },
-  "makingViewMaking": "メイキングを見る",
-  "@makingViewMaking": {
-    "description": "メイキング・読み上げ：メイキングを見る"
+  "makingPlay": "メイキング再生",
+  "@makingPlay": {
+    "description": "メイキング・読み上げ：記録したメイキングを再生する画面を開く"
   },
   "makingTitle": "メイキング",
   "@makingTitle": {
@@ -6817,9 +6811,9 @@
   "@makingFormatWebm": {
     "description": "メイキング・読み上げ：WebM"
   },
-  "makingExportLabel": "動画を書き出す",
+  "makingExportLabel": "メイキングを書き出す",
   "@makingExportLabel": {
-    "description": "メイキング・読み上げ：動画を書き出す"
+    "description": "メイキング・読み上げ：メイキングを書き出す"
   },
   "makingExportComplete": "メイキング動画を書き出しました。",
   "@makingExportComplete": {

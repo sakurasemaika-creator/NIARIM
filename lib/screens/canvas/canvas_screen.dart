@@ -42,6 +42,7 @@ import '../../utils/immersive_mode.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/custom_automation_labels.dart';
 import '../../utils/filter_display_name.dart';
+import '../../utils/making_strings.dart';
 import '../../engine/autofill_engine.dart' show AutofillCheckMode;
 import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
@@ -1295,6 +1296,29 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   Navigator.pop(ctx);
                   _runAutomationBlockedAction(
                     () => context.push('/settings/pen'),
+                  );
+                },
+              ),
+              // メイキングの記録の入切（作品詳細と同じ設定）。メニューは
+              // キャンバスとは別のルートなので、ここで設定を見て作り直す。
+              Builder(
+                builder: (ctx) {
+                  final recording = ctx.select<ProjectService, bool>(
+                    (projects) =>
+                        projects.projects
+                            .where((p) => p.id == widget.projectId)
+                            .firstOrNull
+                            ?.makingEnabled ??
+                        false,
+                  );
+                  return SwitchListTile(
+                    key: const Key('canvasEditMenuMakingSwitch'),
+                    secondary: const Icon(Icons.movie_outlined),
+                    title: messageText(MakingStrings.recordProject(ctx)),
+                    value: recording,
+                    onChanged: (value) => ctx
+                        .read<ProjectService>()
+                        .setMakingEnabled(widget.projectId, value),
                   );
                 },
               ),

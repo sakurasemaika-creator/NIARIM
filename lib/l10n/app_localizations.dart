@@ -2913,18 +2913,6 @@ abstract class AppLocalizations {
   /// **'この内容で続ける'**
   String get projectAutosaveRecoveredContinue;
 
-  /// Notice shown when a work is opened from an autosave of the last launch that is newer than the work file. {time} is the autosave date and time.
-  ///
-  /// In ja, this message translates to:
-  /// **'前回、作品ファイルに保存される前にアプリが終了したため、自動保存（{time}）の内容で開きました。'**
-  String autosaveNewerOpenedNotice(String time);
-
-  /// No description provided for @autosaveRecoveryBackToList.
-  ///
-  /// In ja, this message translates to:
-  /// **'プロジェクト一覧に戻る'**
-  String get autosaveRecoveryBackToList;
-
   /// No description provided for @autosaveRecoveryChooseData.
   ///
   /// In ja, this message translates to:
@@ -19419,11 +19407,11 @@ abstract class AppLocalizations {
   /// **'開始フレーム'**
   String get makingStartFrame;
 
-  /// メイキング・読み上げ：メイキングを見る
+  /// メイキング・読み上げ：記録したメイキングを再生する画面を開く
   ///
   /// In ja, this message translates to:
-  /// **'メイキングを見る'**
-  String get makingViewMaking;
+  /// **'メイキング再生'**
+  String get makingPlay;
 
   /// メイキング・読み上げ：メイキング
   ///
@@ -19455,10 +19443,10 @@ abstract class AppLocalizations {
   /// **'WebM'**
   String get makingFormatWebm;
 
-  /// メイキング・読み上げ：動画を書き出す
+  /// メイキング・読み上げ：メイキングを書き出す
   ///
   /// In ja, this message translates to:
-  /// **'動画を書き出す'**
+  /// **'メイキングを書き出す'**
   String get makingExportLabel;
 
   /// メイキング・読み上げ：メイキング動画を書き出しました。

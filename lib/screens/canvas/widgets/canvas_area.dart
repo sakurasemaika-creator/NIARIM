@@ -1207,6 +1207,7 @@ class CanvasAreaState extends State<CanvasArea> {
     }
     _bucketGesture = null;
     _holdEyedropperTimer?.cancel();
+    _makingTrailingCapture?.cancel();
     meshSourceImage?.dispose();
     _meshBaseImage?.dispose();
     _transformController.removeListener(_publishViewInfo);
@@ -2349,6 +2350,12 @@ class CanvasAreaState extends State<CanvasArea> {
   bool _makingCaptureInFlight = false;
   bool _makingLimitNoticeShown = false;
 
+  /// A capture held back by the one-per-second limit, taken when the limit
+  /// allows. Without it the last edits of a quick run (several strokes within
+  /// a second, then a pause) never reached the making.
+  Timer? _makingTrailingCapture;
+  ({String sceneId, int frameIndex})? _makingPendingTarget;
+
   /// 描画操作（ストローク・バケツ・投げ縄塗り・トーン・スタンプ・移動・
   /// 変形・図形）の直前に呼び、現在のレイヤーへのタイル変更差分の記録を開始する。
   /// [paints]は絵を描き加える操作か（移動・変形は偽）。描き加える操作は、
@@ -2452,18 +2459,40 @@ class CanvasAreaState extends State<CanvasArea> {
   /// Queue a lightweight making snapshot after a real canvas edit.
   /// Captures are throttled to at most one per second and stored outside the
   /// editable project archive.
-  void _queueMakingSnapshot(Project project) {
+  void _queueMakingSnapshot(
+    Project project, [
+    ({String sceneId, int frameIndex})? target,
+  ]) {
+    if (!project.makingEnabled) return;
+    // The frame that was edited, fixed now: a capture held back for a moment
+    // still records it after a switch to another frame.
+    target ??= (sceneId: widget.sceneId, frameIndex: widget.currentFrame);
     final now = DateTime.now();
     final last = _lastMakingCaptureAt;
-    if (!project.makingEnabled ||
-        (last != null && now.difference(last) < const Duration(seconds: 1))) {
+    final wait = last == null
+        ? Duration.zero
+        : const Duration(seconds: 1) - now.difference(last);
+    if (wait > Duration.zero || _makingCaptureInFlight) {
+      _makingPendingTarget = target;
+      _makingTrailingCapture ??= Timer(
+        wait > Duration.zero ? wait : const Duration(milliseconds: 250),
+        () {
+          _makingTrailingCapture = null;
+          final pending = _makingPendingTarget;
+          _makingPendingTarget = null;
+          final current = widget.project;
+          if (!mounted || pending == null || current?.id != project.id) {
+            return;
+          }
+          _queueMakingSnapshot(current!, pending);
+        },
+      );
       return;
     }
-    if (_makingCaptureInFlight) return;
     _lastMakingCaptureAt = now;
     _makingCaptureInFlight = true;
     unawaited(
-      _captureMakingSnapshot(project)
+      _captureMakingSnapshot(project, target)
           .catchError((Object error, StackTrace stack) {
             AppErrorReporter.record(error, stack);
           })
@@ -2471,16 +2500,17 @@ class CanvasAreaState extends State<CanvasArea> {
     );
   }
 
-  Future<void> _captureMakingSnapshot(Project project) async {
+  Future<void> _captureMakingSnapshot(
+    Project project,
+    ({String sceneId, int frameIndex}) target,
+  ) async {
     if (!mounted ||
         widget.project?.id != project.id ||
         widget.project?.makingEnabled != true) {
       return;
     }
-    // Freeze the target before any asynchronous work so a quick frame switch
-    // cannot attach the captured pixels to the wrong frame in the manifest.
-    final sceneId = widget.sceneId;
-    final frameIndex = widget.currentFrame;
+    final sceneId = target.sceneId;
+    final frameIndex = target.frameIndex;
     final scene = _projects.sceneOf(project.id, sceneId);
     if (scene == null || frameIndex < 0 || frameIndex >= scene.frames.length) {
       return;

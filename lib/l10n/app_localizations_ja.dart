@@ -1556,14 +1556,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectAutosaveRecoveredContinue => 'この内容で続ける';
 
   @override
-  String autosaveNewerOpenedNotice(String time) {
-    return '前回、作品ファイルに保存される前にアプリが終了したため、自動保存（$time）の内容で開きました。';
-  }
-
-  @override
-  String get autosaveRecoveryBackToList => 'プロジェクト一覧に戻る';
-
-  @override
   String get autosaveRecoveryChooseData => '読み込むデータを選ぶ';
 
   @override
@@ -11030,7 +11022,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get makingStartFrame => '開始フレーム';
 
   @override
-  String get makingViewMaking => 'メイキングを見る';
+  String get makingPlay => 'メイキング再生';
 
   @override
   String get makingTitle => 'メイキング';
@@ -11050,7 +11042,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get makingFormatWebm => 'WebM';
 
   @override
-  String get makingExportLabel => '動画を書き出す';
+  String get makingExportLabel => 'メイキングを書き出す';
 
   @override
   String get makingExportComplete => 'メイキング動画を書き出しました。';

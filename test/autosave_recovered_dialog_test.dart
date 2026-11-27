@@ -1,6 +1,9 @@
 // 作品ファイルが壊れていた（見つからなかった）ため、起動時に最新の自動保存から
 // 復元した作品を開くと、何が起きたかと日時をダイアログで説明し、
-// 「プロジェクト一覧に戻る」「読み込むデータを選ぶ」「この内容で続ける」を選べる。
+// 「キャンセル」「読み込むデータを選ぶ」「この内容で続ける」を選べる。
+// 「キャンセル」は作品を開いた元の画面へ戻る（作品詳細から開いたキャンバスなら
+// 作品詳細。以前の「プロジェクト一覧に戻る」は作品詳細から開いたときに合わな
+// かった。所有者の指摘、2026-11-27）。
 //
 // 以前は「作品ファイルを読み込めなかったため、自動保存から復旧しました。」の
 // 短い知らせが出るだけで、いつの自動保存か・ほかの保存を選べることが
@@ -48,13 +51,21 @@ class _OpenedState extends State<_Opened> {
 }
 
 void main() {
-  Future<GoRouter> show(WidgetTester tester, ProjectService projects) async {
+  Future<GoRouter> show(
+    WidgetTester tester,
+    ProjectService projects, {
+    String initialLocation = '/project/p1',
+  }) async {
     final router = GoRouter(
-      initialLocation: '/project/p1',
+      initialLocation: initialLocation,
       routes: [
         GoRoute(
           path: '/home',
           builder: (_, _) => const Scaffold(body: Text('一覧')),
+        ),
+        GoRoute(
+          path: '/before',
+          builder: (_, _) => const Scaffold(body: Text('前の画面')),
         ),
         GoRoute(path: '/project/:id', builder: (_, _) => const _Opened()),
         GoRoute(
@@ -96,7 +107,7 @@ void main() {
       find.textContaining('最新の自動保存（2026/11/27 1:03）から復元しました'),
       findsOneWidget,
     );
-    expect(find.text('プロジェクト一覧に戻る'), findsOneWidget);
+    expect(find.text('キャンセル'), findsOneWidget);
     expect(find.text('読み込むデータを選ぶ'), findsOneWidget);
     expect(find.text('この内容で続ける'), findsOneWidget);
     // Tapping outside does not close it.
@@ -110,11 +121,27 @@ void main() {
     expect(find.text('作品の詳細'), findsOneWidget);
   });
 
-  testWidgets('「プロジェクト一覧に戻る」 goes to the list', (tester) async {
+  testWidgets('「キャンセル」 goes back to the screen the work was opened '
+      'from', (tester) async {
+    final projects = _RecoveredProjects(null);
+    addTearDown(projects.dispose);
+    final router = await show(tester, projects, initialLocation: '/before');
+    projects.recoveredAt = recoveredAt;
+    router.push('/project/p1');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('autosaveRecoveredCancel')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('前の画面'), findsOneWidget);
+  });
+
+  testWidgets('「キャンセル」 with nothing to go back to goes to the list', (
+    tester,
+  ) async {
     final projects = _RecoveredProjects(recoveredAt);
     addTearDown(projects.dispose);
     await show(tester, projects);
-    await tester.tap(find.byKey(const ValueKey('autosaveRecoveredBackToList')));
+    await tester.tap(find.byKey(const ValueKey('autosaveRecoveredCancel')));
     await tester.pumpAndSettle();
     expect(find.text('一覧'), findsOneWidget);
   });

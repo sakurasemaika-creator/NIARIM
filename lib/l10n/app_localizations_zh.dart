@@ -1534,14 +1534,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectAutosaveRecoveredContinue => '以此内容继续';
 
   @override
-  String autosaveNewerOpenedNotice(String time) {
-    return '上次在保存到作品文件之前应用已关闭，因此已用自动保存（$time）的内容打开。';
-  }
-
-  @override
-  String get autosaveRecoveryBackToList => '返回项目列表';
-
-  @override
   String get autosaveRecoveryChooseData => '选择要读取的数据';
 
   @override
@@ -10896,7 +10888,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get makingStartFrame => '开始帧';
 
   @override
-  String get makingViewMaking => '查看制作过程';
+  String get makingPlay => '播放制作过程';
 
   @override
   String get makingTitle => '制作过程';
@@ -10914,7 +10906,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get makingFormatWebm => 'WebM';
 
   @override
-  String get makingExportLabel => '导出视频';
+  String get makingExportLabel => '导出制作过程';
 
   @override
   String get makingExportComplete => '制作视频已导出。';
@@ -12590,14 +12582,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get projectAutosaveRecoveredContinue => '以此內容繼續';
-
-  @override
-  String autosaveNewerOpenedNotice(String time) {
-    return '上次在儲存到作品檔案之前應用程式已關閉，因此已用自動儲存（$time）的內容開啟。';
-  }
-
-  @override
-  String get autosaveRecoveryBackToList => '返回專案列表';
 
   @override
   String get autosaveRecoveryChooseData => '選擇要讀取的資料';
@@ -21956,7 +21940,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get makingStartFrame => '開始影格';
 
   @override
-  String get makingViewMaking => '查看製作過程';
+  String get makingPlay => '播放製作過程';
 
   @override
   String get makingTitle => '製作過程';
@@ -21974,7 +21958,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get makingFormatWebm => 'WebM';
 
   @override
-  String get makingExportLabel => '匯出影片';
+  String get makingExportLabel => '匯出製作過程';
 
   @override
   String get makingExportComplete => '製作影片已匯出。';
