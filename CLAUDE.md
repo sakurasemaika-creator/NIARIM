@@ -1722,7 +1722,7 @@ onTap: ...)`だったために
   1回読む。同時に配れるプレゼントは20件まで）。API：`GET /me/gifts`・`POST /me/gifts/presents/{id}/claim`・
   `POST /me/gifts/coupons/redeem`、運営は`/admin/gifts/coupons`・`/admin/gifts/presents`（作る・一覧・
   `…/deactivate`、管理ページと同じ認証。使い方と`curl`の例は`backend/README.md`の「オパールのクーポン・
-  プレゼント」）。Webの管理ページ（`niarim-web`の`/admin/`）の画面はまだ無い。アプリは「オパール・特典」の
+  プレゼント」）。Webの管理ページ（`niarim-web`の`/admin/`）の「クーポン」「プレゼント」のタブで作る・一覧・止めるができる（作った後に中身は変えられない）。アプリは「オパール・特典」の
   残高の欄（貯める・特典交換のタブ）に、残高の更新・履歴と並べてクーポンコードの入力とプレゼントボックス
   （受け取っていない数の印）を置き（`OpalGiftActions`、`lib/screens/rewards/opal_gifts.dart`。上部バーに置くと
   画面名が入らなくなる〔`reward_opal_titles_layout_test`〕）、受け取ったら`opalWalletRevision`で残高を読み直す。作品広場の
