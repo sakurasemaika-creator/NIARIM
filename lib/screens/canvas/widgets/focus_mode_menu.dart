@@ -484,24 +484,19 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 8,
                                           ),
-                                          // Pointer input passes through the
-                                          // title to the surrounding drag target.
-                                          child: IgnorePointer(
-                                            ignoring: true,
-                                            child: Text(
-                                              widget.title,
-                                              key: const ValueKey(
-                                                'focus-mode-menu-title',
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: localizedHeadingStyle(
-                                                context,
-                                                TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: scheme.onSurface,
-                                                ),
+                                          child: Text(
+                                            widget.title,
+                                            key: const ValueKey(
+                                              'focus-mode-menu-title',
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: localizedHeadingStyle(
+                                              context,
+                                              TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: scheme.onSurface,
                                               ),
                                             ),
                                           ),
