@@ -5488,6 +5488,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineAddMaterialTooltip => 'Ajouter un matériau';
 
   @override
+  String get timelineAddSceneTooltip => 'Ajouter une scène';
+
+  @override
   String get timelineMaterialRowLabel => 'Piste';
 
   @override

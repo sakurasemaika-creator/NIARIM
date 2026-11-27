@@ -4978,11 +4978,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         }
                       } else {
                         if (index == scenes.length) {
-                          return TextButton(
+                          // An icon, not a "＋" in the button font: the
+                          // heading font draws that character empty.
+                          return IconButton(
+                            key: const ValueKey('timelineAddScene'),
+                            tooltip: AppLocalizations.of(context)!
+                                .timelineAddSceneTooltip,
+                            icon: const Icon(Icons.add),
                             onPressed: () => context
                                 .read<ProjectService>()
                                 .addScene(widget.projectId),
-                            child: const Text('＋'),
                           );
                         }
                         final scene = scenes[index];
@@ -5074,10 +5079,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                       _selectTimelineScene(scene);
                                       return;
                                     }
+                                    // Each tap adds or removes the scene, as
+                                    // for frames; the mode ends from its bar
+                                    // (it starts with none chosen).
                                     setState(() {
-                                      _selectedSceneIds.remove(scene.id);
-                                      if (_selectedSceneIds.isEmpty) {
-                                        _isSceneMultiSelect = false;
+                                      if (!_selectedSceneIds.remove(scene.id)) {
+                                        _selectedSceneIds.add(scene.id);
                                       }
                                     });
                                   },
@@ -13244,18 +13251,19 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     },
                   ),
                   const Divider(height: 24),
+                  // In percent, as shown (and as the video's volume): a
+                  // number typed in is the percentage.
                   _row(
                     l10n.timelineClipVolumeLabel,
-                    _c.volume,
+                    _c.volume * 100,
                     0,
-                    1,
+                    100,
                     100,
                     (v) {
-                      _c.volume = v;
+                      _c.volume = v / 100;
                       _notify();
                     },
                     '${(_c.volume * 100).round()}%',
-                    step: 0.01,
                   ),
                   // The sound's pitch, on its own: the speed keeps it.
                   PitchControl(

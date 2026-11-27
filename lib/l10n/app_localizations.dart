@@ -9333,6 +9333,12 @@ abstract class AppLocalizations {
   /// **'素材を追加'**
   String get timelineAddMaterialTooltip;
 
+  /// タイムラインのシーンの並びの最後の、シーンを足すボタンの吹き出しと読み上げ
+  ///
+  /// In ja, this message translates to:
+  /// **'シーンを追加'**
+  String get timelineAddSceneTooltip;
+
   /// No description provided for @timelineMaterialRowLabel.
   ///
   /// In ja, this message translates to:

@@ -1498,28 +1498,33 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
           },
         ),
         if (last > 0) ...[
+          // Counted from F1 as shown, so a number typed in is the frame
+          // shown (the stored frames count from 0).
           LabeledSlider(
             label: l10n.timelineClipUseStartLabel,
-            value: useStart.toDouble(),
-            min: 0,
-            max: last.toDouble(),
+            value: (useStart + 1).toDouble(),
+            min: 1,
+            max: (last + 1).toDouble(),
             divisions: last,
             valueText: 'F${useStart + 1}',
             onChanged: (v) => _update(
-              (l) => l.copyWith(sourceTrimStart: v.round().clamp(0, useEnd)),
+              (l) =>
+                  l.copyWith(sourceTrimStart: (v.round() - 1).clamp(0, useEnd)),
               preview: true,
             ),
             onChangeEnd: _finishSliderDrag,
           ),
           LabeledSlider(
             label: l10n.timelineClipUseEndLabel,
-            value: useEnd.toDouble(),
-            min: 0,
-            max: last.toDouble(),
+            value: (useEnd + 1).toDouble(),
+            min: 1,
+            max: (last + 1).toDouble(),
             divisions: last,
             valueText: 'F${useEnd + 1}',
             onChanged: (v) => _update(
-              (l) => l.copyWith(sourceTrimEnd: v.round().clamp(useStart, last)),
+              (l) => l.copyWith(
+                sourceTrimEnd: (v.round() - 1).clamp(useStart, last),
+              ),
               preview: true,
             ),
             onChangeEnd: _finishSliderDrag,

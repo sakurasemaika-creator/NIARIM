@@ -2657,6 +2657,10 @@
   },
   "timelineStackRangeDelete": "この範囲を削除",
   "timelineAddMaterialTooltip": "素材を追加",
+  "timelineAddSceneTooltip": "シーンを追加",
+  "@timelineAddSceneTooltip": {
+    "description": "タイムラインのシーンの並びの最後の、シーンを足すボタンの吹き出しと読み上げ"
+  },
   "timelineMaterialRowLabel": "置く列",
   "timelineMaterialNewRow": "新しい列",
   "timelineAddTextTooltip": "+ テキスト",

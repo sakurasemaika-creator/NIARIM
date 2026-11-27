@@ -5110,6 +5110,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineAddMaterialTooltip => '添加素材';
 
   @override
+  String get timelineAddSceneTooltip => '添加场景';
+
+  @override
   String get timelineMaterialRowLabel => '所在行';
 
   @override
@@ -16194,6 +16197,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineAddMaterialTooltip => '新增素材';
+
+  @override
+  String get timelineAddSceneTooltip => '新增場景';
 
   @override
   String get timelineMaterialRowLabel => '所在列';

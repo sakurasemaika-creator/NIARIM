@@ -5480,6 +5480,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineAddMaterialTooltip => 'Añadir material';
 
   @override
+  String get timelineAddSceneTooltip => 'Añadir escena';
+
+  @override
   String get timelineMaterialRowLabel => 'Fila';
 
   @override

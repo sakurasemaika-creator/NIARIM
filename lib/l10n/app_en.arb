@@ -2130,6 +2130,7 @@
   },
   "timelineStackRangeDelete": "Delete this range",
   "timelineAddMaterialTooltip": "Add material",
+  "timelineAddSceneTooltip": "Add scene",
   "timelineMaterialRowLabel": "Row",
   "timelineMaterialNewRow": "New row",
   "timelineAddTextTooltip": "+ Text",

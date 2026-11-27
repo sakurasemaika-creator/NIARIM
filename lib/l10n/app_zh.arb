@@ -2107,6 +2107,7 @@
   },
   "timelineStackRangeDelete": "删除此范围",
   "timelineAddMaterialTooltip": "添加素材",
+  "timelineAddSceneTooltip": "添加场景",
   "timelineMaterialRowLabel": "所在行",
   "timelineMaterialNewRow": "新行",
   "timelineAddTextTooltip": "+ 文字",

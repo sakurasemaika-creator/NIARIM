@@ -5163,6 +5163,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineAddMaterialTooltip => '素材を追加';
 
   @override
+  String get timelineAddSceneTooltip => 'シーンを追加';
+
+  @override
   String get timelineMaterialRowLabel => '置く列';
 
   @override
