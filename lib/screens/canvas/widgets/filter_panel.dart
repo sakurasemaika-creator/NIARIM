@@ -974,24 +974,32 @@ class _FilterPanelState extends State<FilterPanel> {
         switch (action) {
           case _FocusFilterMenuAction.toggleFavoritesOnly:
             setState(() => _showFavoritesOnly = !_showFavoritesOnly);
+            break;
           case _FocusFilterMenuAction.toggleSearch:
             _setSearchShown(!_showSearch);
+            break;
           case _FocusFilterMenuAction.importFilter:
-            _importFilterCard();
+            unawaited(_importFilterCard());
+            break;
           case _FocusFilterMenuAction.backToList:
             _cancelPreview();
+            break;
           case _FocusFilterMenuAction.exportFilter:
             final selected = service.currentFilter;
             if (selected != null) {
-              SharedAssetCardService.exportSettings(
-                context,
-                kind: 'filter',
-                name: filterDisplayName(l10n, selected),
-                settings: selected.toJson(),
+              unawaited(
+                SharedAssetCardService.exportSettings(
+                  context,
+                  kind: 'filter',
+                  name: filterDisplayName(l10n, selected),
+                  settings: selected.toJson(),
+                ),
               );
             }
+            break;
           case _FocusFilterMenuAction.toggleCollapse:
             setState(() => _collapsed = !_collapsed);
+            break;
         }
       },
     );
