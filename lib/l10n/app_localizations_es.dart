@@ -920,7 +920,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get quickToolEraser => 'Goma de borrar';
 
   @override
-  String get quickToolEyedropper => 'Cuentagotas';
+  String get quickToolEyedropper => 'Gotero';
 
   @override
   String get quickToolBucket => 'Bote de pintura';
@@ -9837,7 +9837,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardNavigationExchange => 'Canjear ventajas';
 
   @override
-  String get rewardNavigationHub => 'Ópalos y ventajas';
+  String get rewardNavigationHub => 'Ópalos y premios';
 
   @override
   String get rewardNavigationEarnTab => 'Ver anuncios por ópalos';
