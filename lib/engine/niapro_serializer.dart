@@ -459,15 +459,69 @@ class NiaproSerializer {
     required List<Scene> scenes,
     required TileManager tileManager,
     required int slotIndex,
-  }) async {
+  }) => saveAutosaveFrom(
+    project: project,
+    scenes: scenes,
+    tileManager: tileManager,
+    slotIndex: slotIndex,
+    base: null,
+  );
+
+  /// The automatic save of an open work, written from [base] (the work's
+  /// last automatic save of this session, or its work file; null for none):
+  /// the tiles not changed since [base] are copied from it as stored, the
+  /// others are compressed anew. Without a readable [base] every tile is
+  /// written. Compressing every tile of a large work took seconds on the
+  /// screen's thread and stopped the pen each time the drawing paused.
+  ///
+  /// Queued with the work file's saves: a save of the work file between
+  /// reading [base] and writing would leave the changed tiles counted from a
+  /// different file.
+  static Future<File> saveAutosaveFrom({
+    required Project project,
+    required List<Scene> scenes,
+    required TileManager tileManager,
+    required int slotIndex,
+    required AutosaveBase? base,
+  }) => _queueSave(project.id, () async {
     final dir = await _autosaveDir(project.id);
-    return _writeArchive(
-      '$dir/slot_$slotIndex.niapro',
-      project,
-      scenes,
-      tileManager,
-    );
-  }
+    final path = '$dir/slot_$slotIndex.niapro';
+    final baseSlot = base?.slotIndex;
+    final basePath = base == null
+        ? null
+        : baseSlot == null
+        ? '${(await _projectDir(project.id)).path}/${project.id}.niapro'
+        : '$dir/slot_$baseSlot.niapro';
+    Map<String, ArchiveFile>? stored;
+    if (basePath != null) {
+      try {
+        final bytes = await File(basePath).readAsBytes();
+        stored = {
+          for (final f in ZipDecoder().decodeBytes(bytes).files)
+            if (f.isFile) f.name: f,
+        };
+      } catch (_) {
+        stored = null; // Missing or unreadable: write every tile.
+      }
+    }
+    final changed = baseSlot == null
+        ? tileManager.isTileDirty
+        : tileManager.isTileAutosaveDirty;
+    return _writeArchiveAtomically(path, (encoder) {
+      _addManifestAndScenes(encoder, project, scenes);
+      for (final layerEntry in tileManager.exportAll().entries) {
+        for (final tileEntry in layerEntry.value.entries) {
+          final name = _tilePath(layerEntry.key, tileEntry.key);
+          final copy = stored?[name];
+          encoder.addArchiveFile(
+            copy != null && !changed(layerEntry.key, tileEntry.key)
+                ? _storedAsIs(copy)
+                : ArchiveFile(name, 0, tileEntry.value),
+          );
+        }
+      }
+    }, onWritten: tileManager.consumeAutosaveDirtyTiles);
+  });
 
   static Future<NiaproData> loadAutosave(
     String projectId,
@@ -777,9 +831,7 @@ class NiaproSerializer {
               _isScenesEntry(entry.name)) {
             continue;
           }
-          encoder.addArchiveFile(
-            ArchiveFile(entry.name, 0, entry.content as List<int>),
-          );
+          encoder.addArchiveFile(_storedAsIs(entry));
         }
         return;
       }
@@ -796,14 +848,42 @@ class NiaproSerializer {
             // 変更あり、または旧ファイルに存在しない（新規タイル・旧形式からの移行）→再書き込み
             encoder.addArchiveFile(ArchiveFile(entryName, 0, tileEntry.value));
           } else {
-            // 未変更タイル：前回保存分をそのまま引き継ぐ
-            encoder.addArchiveFile(
-              ArchiveFile(entryName, 0, oldEntry.content as List<int>),
-            );
+            // 未変更タイル：前回保存分を圧縮されたまま引き継ぐ（展開して
+            // 圧縮し直すと、保存のたびに全タイルを圧縮し直すことになった）。
+            encoder.addArchiveFile(_storedAsIs(oldEntry));
           }
         }
       }
     }, savedTiles: keepStoredTiles ? null : tileManager);
+  }
+
+  /// An entry read from a saved archive, to be written again as it is stored
+  /// (still compressed, with its checksum: nothing is expanded or compressed
+  /// again). Its date is the one it was stored with (see [_storedModTime]).
+  static ArchiveFile _storedAsIs(ArchiveFile entry) =>
+      entry..lastModTime = _storedModTime(entry);
+
+  static void _addManifestAndScenes(
+    ZipFileEncoder encoder,
+    Project project,
+    List<Scene> scenes,
+  ) {
+    encoder.addArchiveFile(
+      ArchiveFile(
+        _manifestFile,
+        0,
+        utf8.encode(jsonEncode(_serializeManifest(project))),
+      ),
+    );
+    for (final scene in scenes) {
+      encoder.addArchiveFile(
+        ArchiveFile(
+          'Scene/${scene.id}/$_framesFile',
+          0,
+          utf8.encode(jsonEncode(_serializeScene(scene))),
+        ),
+      );
+    }
   }
 
   /// Whether [name] is a scene's frame list (`Scene/{sceneId}/frames.json`).
@@ -825,6 +905,7 @@ class NiaproSerializer {
     void Function(ZipFileEncoder encoder) write, {
     TileManager? savedTiles,
     DateTime? modified,
+    void Function()? onWritten,
   }) {
     final temporary = File(filePath).parent.createTempSync('.niarim-save-');
     try {
@@ -839,6 +920,7 @@ class NiaproSerializer {
       // Same-filesystem replacement; never delete the destination beforehand.
       final result = staging.renameSync(filePath);
       savedTiles?.consumeDirtyTiles();
+      onWritten?.call();
       return result;
     } finally {
       try {
@@ -1105,28 +1187,49 @@ class NiaproSerializer {
 
   // ─── シリアライズ ─────────────────────────────────────────────────────
 
+  /// The work's settings and scenes as [sameContent] compares them (all of
+  /// the content but the picture tiles).
+  static String contentSignature(Project project, List<Scene> scenes) =>
+      jsonEncode({
+        'fps': project.fps,
+        'durationSeconds': project.durationSeconds,
+        'backgroundColor': project.backgroundColor,
+        'exportWidth': project.exportWidth,
+        'exportHeight': project.exportHeight,
+        'drawingAreaScale': project.drawingAreaScale,
+        'enabledAutofillPresetIds': project.enabledAutofillPresetIds,
+        'makingEnabled': project.makingEnabled,
+        if (project.hideEndCard != null) 'hideEndCard': project.hideEndCard,
+        'scenes': [
+          for (final scene in [
+            ...scenes,
+          ]..sort((x, y) => x.index.compareTo(y.index)))
+            {'id': scene.id, ..._serializeScene(scene)},
+        ],
+      });
+
+  /// [contentSignature] of the work file of [projectId] (its settings and
+  /// scenes; the tiles are not read). Null when the file cannot be read.
+  static Future<String?> workFileContentSignature(String projectId) async {
+    try {
+      final dir = await _projectDir(projectId);
+      final data = await load(
+        '${dir.path}/$projectId.niapro',
+        withTiles: false,
+      );
+      return contentSignature(data.project, data.scenes);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// 2つの作品の中身（作品の設定・シーン・絵）が同じか。名前・ID・日時・
   /// 整理（お気に入り・フォルダ・タグ・共有の印・サムネイル）・制作時間・
   /// 同梱素材・フォントは比べない（引き継ぎで、同じ作品をもう一度足さない
   /// ために使う）。
   static bool sameContent(NiaproData a, NiaproData b) {
-    String settingsAndScenes(NiaproData d) => jsonEncode({
-      'fps': d.project.fps,
-      'durationSeconds': d.project.durationSeconds,
-      'backgroundColor': d.project.backgroundColor,
-      'exportWidth': d.project.exportWidth,
-      'exportHeight': d.project.exportHeight,
-      'drawingAreaScale': d.project.drawingAreaScale,
-      'enabledAutofillPresetIds': d.project.enabledAutofillPresetIds,
-      'makingEnabled': d.project.makingEnabled,
-      if (d.project.hideEndCard != null) 'hideEndCard': d.project.hideEndCard,
-      'scenes': [
-        for (final scene in [
-          ...d.scenes,
-        ]..sort((x, y) => x.index.compareTo(y.index)))
-          {'id': scene.id, ..._serializeScene(scene)},
-      ],
-    });
+    String settingsAndScenes(NiaproData d) =>
+        contentSignature(d.project, d.scenes);
     if (settingsAndScenes(a) != settingsAndScenes(b)) return false;
     // 絵の無いレイヤー（タイルが空）は保存に書かれないので数えない。
     Map<String, Map<String, Uint8List>> painted(
@@ -1637,6 +1740,19 @@ class NiaproSerializer {
     final base = await getApplicationDocumentsDirectory();
     return '${base.path}/niarim/projects';
   }
+}
+
+/// Where an automatic save copies its unchanged tiles from
+/// ([NiaproSerializer.saveAutosaveFrom]).
+class AutosaveBase {
+  const AutosaveBase.slot(int this.slotIndex);
+  const AutosaveBase._workFile() : slotIndex = null;
+
+  /// The work file (its tiles are the ones not changed since it was saved).
+  static const workFile = AutosaveBase._workFile();
+
+  /// The automatic save slot copied from; null for the work file.
+  final int? slotIndex;
 }
 
 class NiaproData {

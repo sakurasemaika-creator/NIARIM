@@ -1126,6 +1126,19 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   移す前）は`save(keepStoredTiles: true)`でファイルの絵をそのまま残す。開いたときに絵を
   読めなかった作品（`tilesUnreadable`）は保存・自動保存をしない（空の絵でファイルや
   良い自動保存を上書きしない）。`test/project_tiles_on_open_test.dart`が見張る。
+- **作品の保存と自動保存は、変わった印の付いたタイルだけを圧縮し、ほかは前の保存から圧縮されたまま写す
+  （実際に使ってみて発見、2026-11-27）**：以前の自動保存（描くのを止めて5秒後）は画面の処理と同じ所で
+  「前回の自動保存を全部展開して比べる→全部のタイルを圧縮し直す」をしていて、描き込んだタイル200枚で約4秒
+  画面が止まり、止まっている間のペンの点が落ちた（Linuxでは円の後半が直線になった）。今は、作品ファイルの
+  保存（`_writeArchiveDiff`）は印（`TileManager`の`_dirtyTiles`）の無いタイルを前のファイルの項目のまま写し
+  （`_storedAsIs`）、自動保存（`saveAutosaveFrom`）はこの起動で前に書いた自動保存（印は`_autosaveDirtyTiles`）か
+  作品ファイル（印は`_dirtyTiles`）から同じように写す。作品を開いたとき（`_tilesOf`）は作品ファイルのタイルを
+  `importAll(asStoredInWorkFile: true)`で読み、印を付けない。**タイルの画素を書き換える処理は必ず
+  `getOrCreateTile`・`invalidateTile`/`markDirty`・`replaceLayerPixels`等の印を付ける入口を通すこと**
+  （`getTile`で受け取ったバッファを直に書き換えて印を付けないと、その変更は保存されない）。明示的に呼ぶ
+  `AutosaveService.save`（`skipUnchanged: false`）は今までどおり全部のタイルを書く。見張りは
+  `test/autosave_incremental_test.dart`（元のファイルの1タイルを無圧縮にしておき、保存後も無圧縮のまま
+  残る＝写したことを確かめる）。
 - **トーンのタイルは模様の間隔で割り切れる大きさ（所有者の依頼、2026-11-25「ストッキング以外もテクスチャ系やトーンは
   つなぎ目がきれいにループするように」）**：トーンは1枚のタイルを縦横に繰り返して貼る。64pxのタイルに間隔6pxの
   ライン・7pxのクロスハッチ・3〜10pxの網目を並べると、継ぎ目だけ間隔が狭くなって64pxごとに筋が出た（タイツは

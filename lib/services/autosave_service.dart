@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../engine/niapro_serializer.dart';
+import '../engine/tile_manager.dart';
 import '../engine/undo_manager.dart';
 import 'project_service.dart';
 import '../utils/tolerant_preferences.dart';
@@ -124,6 +125,12 @@ class AutosaveService extends ChangeNotifier {
     });
   }
 
+  /// The automatic save this session wrote last for each work, with the
+  /// tiles and content it holds: the next one copies the unchanged tiles from
+  /// it instead of compressing every tile again.
+  final Map<String, ({AutosaveSlot slot, TileManager tiles, String content})>
+  _writtenThisLaunch = {};
+
   Future<void> _writeSlot(
     String projectId,
     ProjectService projectService,
@@ -133,51 +140,78 @@ class AutosaveService extends ChangeNotifier {
     // A work whose picture could not be read would be saved empty and push
     // the last good automatic saves out.
     if (projectService.tilesUnreadable(projectId)) return;
-    final lastSlot = skipUnchanged
-        ? slotsForProject(projectId).firstOrNull
-        : null;
-    final previous = lastSlot == null ? null : await _loadSlot(lastSlot);
     final project = projectService.projects
         .where((p) => p.id == projectId)
         .firstOrNull;
     if (project == null) return;
     final scenes = projectService.scenesOf(projectId);
     final tileManager = projectService.tileManagerOf(projectId);
-    if (previous != null &&
-        NiaproSerializer.sameContent(
-          previous,
-          NiaproData(
-            project: project,
-            scenes: scenes,
-            tileData: tileManager.exportAll(),
-          ),
-        )) {
-      return;
-    }
+    final content = NiaproSerializer.contentSignature(project, scenes);
+    final last = _writtenThisLaunch[projectId];
+    // This session's last automatic save of the work, still in its slot and
+    // made from the same tiles.
+    final follows =
+        last != null &&
+        identical(last.tiles, tileManager) &&
+        _slots.contains(last.slot);
+    final fromWorkFile =
+        !follows && projectService.workFileMatchesUnchangedTiles(projectId);
 
     final slotIndex = _nextSlotIndex % maxSlots;
     try {
-      await NiaproSerializer.saveAutosave(
-        project: project,
-        scenes: scenes,
-        tileManager: tileManager,
-        slotIndex: slotIndex,
-      );
+      if (!skipUnchanged) {
+        // Asked for explicitly: every tile is written as it is now.
+        await NiaproSerializer.saveAutosave(
+          project: project,
+          scenes: scenes,
+          tileManager: tileManager,
+          slotIndex: slotIndex,
+        );
+      } else {
+        // Nothing changed since the last automatic save, or since the work
+        // file was saved: the work is already kept.
+        if (follows) {
+          if (!tileManager.hasAutosaveDirtyTiles && last.content == content) {
+            return;
+          }
+        } else if (fromWorkFile &&
+            !tileManager.hasDirtyTiles &&
+            await NiaproSerializer.workFileContentSignature(projectId) ==
+                content) {
+          return;
+        }
+        if (_disposed) return;
+        await NiaproSerializer.saveAutosaveFrom(
+          project: project,
+          scenes: scenes,
+          tileManager: tileManager,
+          slotIndex: slotIndex,
+          base: follows
+              ? AutosaveBase.slot(last.slot.slotIndex)
+              : fromWorkFile
+              ? AutosaveBase.workFile
+              : null,
+        );
+      }
     } catch (_) {
       return; // 保存失敗はサイレントに無視（自動保存は補助機能のため）
     }
     _nextSlotIndex++;
     _slots.removeWhere((s) => s.slotIndex == slotIndex);
-    _slots.add(
-      AutosaveSlot(
-        projectId: projectId,
-        savedAt: DateTime.now(),
-        slotIndex: slotIndex,
-      ),
+    final written = AutosaveSlot(
+      projectId: projectId,
+      savedAt: DateTime.now(),
+      slotIndex: slotIndex,
     );
+    _slots.add(written);
     while (_slots.length > maxSlots) {
       _slots.removeAt(0);
     }
+    _writtenThisLaunch[projectId] = (
+      slot: written,
+      tiles: tileManager,
+      content: content,
+    );
     await _persist();
     if (!_disposed) notifyListeners();
   }

@@ -300,6 +300,12 @@ class ProjectService extends ChangeNotifier {
   bool tilesUnreadable(String projectId) =>
       _unreadableTiles.contains(projectId);
 
+  /// Whether the work file of [projectId] holds the tiles its [TileManager]
+  /// does not mark as changed (false while the file still needs a full
+  /// rewrite, e.g. after it was recovered or migrated).
+  bool workFileMatchesUnchangedTiles(String projectId) =>
+      !_needsArchiveRewrite.contains(projectId);
+
   /// Whether the picture tiles of [projectId] are in memory (false while the
   /// work has not been opened since it was listed).
   @visibleForTesting
@@ -312,7 +318,12 @@ class ProjectService extends ChangeNotifier {
     final tiles = _tileManagers[projectId];
     if (path != null && tiles != null) {
       try {
-        tiles.importAll(NiaproSerializer.loadTilesSync(path));
+        // The tiles are the work file's: the next save of the work file
+        // copies them as stored and writes only the ones changed meanwhile.
+        tiles.importAll(
+          NiaproSerializer.loadTilesSync(path),
+          asStoredInWorkFile: true,
+        );
       } catch (error, stackTrace) {
         AppErrorReporter.record(error, stackTrace);
         _unreadableTiles.add(projectId);

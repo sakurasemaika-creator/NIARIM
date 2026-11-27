@@ -43,7 +43,19 @@ class TileManager {
 
   // layerId → tileKey → ARGB8888 ピクセルバッファ (tileSize*tileSize*4 bytes)
   final Map<String, Map<String, Uint8List>> _tiles = {};
+  // Tiles changed since the work file was last written (the work file's
+  // save rewrites these and copies the rest from the file as stored).
   final Set<String> _dirtyTiles = {};
+  // Tiles changed since the last automatic save of this session (the next
+  // one rewrites these and copies the rest from that save as stored).
+  final Set<String> _autosaveDirtyTiles = {};
+
+  /// Marks the tile under the composite key [key] (`layerId:tileKey`) as
+  /// changed for both the work file and the automatic save.
+  void _markTileChanged(String key) {
+    _dirtyTiles.add(key);
+    _autosaveDirtyTiles.add(key);
+  }
 
   // タイルキャッシュ：compositeLayerToImage()の合成結果（レイヤー1枚分の
   // ui.Image、キャンバス全体サイズ）をlayerIdごとにキャッシュし、そのレイヤーの
@@ -242,7 +254,7 @@ class TileManager {
   /// ここで初めて複製し、以後はこのレイヤー専用のバッファとして書き込む。
   Uint8List getOrCreateTile(String layerId, int tx, int ty) {
     final key = _tileKey(tx, ty);
-    _dirtyTiles.add('$layerId:$key');
+    _markTileChanged('$layerId:$key');
     _recordBeforeIfNeeded(layerId, key);
     // 呼び出し規約上、getOrCreateTileは必ず書き込み目的で呼ばれる
     // （返したバッファへ直後にblendPixel/erasePixelで書き込まれる）ため、
@@ -308,7 +320,7 @@ class TileManager {
   }
 
   void markDirty(String layerId, int tx, int ty) {
-    _dirtyTiles.add('$layerId:${_tileKey(tx, ty)}');
+    _markTileChanged('$layerId:${_tileKey(tx, ty)}');
   }
 
   Set<String> consumeDirtyTiles() {
@@ -316,6 +328,26 @@ class TileManager {
     _dirtyTiles.clear();
     return dirty;
   }
+
+  /// Whether any tile changed since the work file was last written.
+  bool get hasDirtyTiles => _dirtyTiles.isNotEmpty;
+
+  /// Whether the tile under [layerId] / [tileKey] changed since the work
+  /// file was last written.
+  bool isTileDirty(String layerId, String tileKey) =>
+      _dirtyTiles.contains('$layerId:$tileKey');
+
+  /// Whether any tile changed since [consumeAutosaveDirtyTiles] (the last
+  /// automatic save of this session).
+  bool get hasAutosaveDirtyTiles => _autosaveDirtyTiles.isNotEmpty;
+
+  /// Whether the tile under [layerId] / [tileKey] changed since the last
+  /// automatic save of this session.
+  bool isTileAutosaveDirty(String layerId, String tileKey) =>
+      _autosaveDirtyTiles.contains('$layerId:$tileKey');
+
+  /// An automatic save now holds every tile as it is.
+  void consumeAutosaveDirtyTiles() => _autosaveDirtyTiles.clear();
 
   // ─── ピクセル操作 ─────────────────────────────────────────────────────
 
@@ -587,7 +619,7 @@ class TileManager {
     for (final e in source.entries) {
       _sharedTiles[e.value] = true;
       target[e.key] = e.value;
-      _dirtyTiles.add('$targetLayerId:${e.key}');
+      _markTileChanged('$targetLayerId:${e.key}');
     }
     _tiles[targetLayerId] = target;
     _invalidateCache(targetLayerId);
@@ -755,7 +787,7 @@ class TileManager {
             : oldTile != null;
         if (changed && recording) _recordBeforeIfNeeded(layerId, key);
         if (hasContent) newLayerTiles[key] = changed ? tile : oldTile!;
-        if (changed) _dirtyTiles.add('$layerId:$key');
+        if (changed) _markTileChanged('$layerId:$key');
       }
     }
     _tiles[layerId] = newLayerTiles;
@@ -818,16 +850,18 @@ class TileManager {
       _tiles[newKey] = tiles;
       // A saved destination may contain different pixels under these same keys.
       for (final tileKey in tiles.keys) {
-        _dirtyTiles.add('$newKey:$tileKey');
+        _markTileChanged('$newKey:$tileKey');
       }
     }
     _invalidateCache(oldKey);
     _invalidateCache(newKey);
     final prefix = '$oldKey:';
-    final toRename = _dirtyTiles.where((d) => d.startsWith(prefix)).toList();
-    for (final d in toRename) {
-      _dirtyTiles.remove(d);
-      _dirtyTiles.add('$newKey:${d.substring(prefix.length)}');
+    for (final set in [_dirtyTiles, _autosaveDirtyTiles]) {
+      final toRename = set.where((d) => d.startsWith(prefix)).toList();
+      for (final d in toRename) {
+        set.remove(d);
+        set.add('$newKey:${d.substring(prefix.length)}');
+      }
     }
   }
 
@@ -1041,7 +1075,7 @@ class TileManager {
           : before != null && _tileBytesEqual(before, locked)) {
         unchanged.add(entry.key);
       }
-      _dirtyTiles.add('$layerId:${entry.key}');
+      _markTileChanged('$layerId:${entry.key}');
     }
     for (final key in unchanged) {
       _undoBefore.remove(key);
@@ -1078,7 +1112,7 @@ class TileManager {
       } else {
         layerMap[entry.key] = Uint8List.fromList(entry.value!);
       }
-      _dirtyTiles.add('$layerId:${entry.key}');
+      _markTileChanged('$layerId:${entry.key}');
     }
     if (layerMap.isEmpty) _tiles.remove(layerId);
     _invalidateCache(layerId);
@@ -1089,7 +1123,7 @@ class TileManager {
   void markAllTilesDirty() {
     for (final layer in _tiles.entries) {
       for (final tileKey in layer.value.keys) {
-        _dirtyTiles.add('${layer.key}:$tileKey');
+        _markTileChanged('${layer.key}:$tileKey');
       }
     }
   }
@@ -1136,7 +1170,7 @@ class TileManager {
       }
       _tiles[entry.key] = Map.of(tiles);
       for (final key in tiles.keys) {
-        _dirtyTiles.add('${entry.key}:$key');
+        _markTileChanged('${entry.key}:$key');
       }
       _invalidateCache(entry.key);
     }
@@ -1146,21 +1180,38 @@ class TileManager {
   Map<String, Map<String, Uint8List>> exportAll() => Map.unmodifiable(_tiles);
 
   /// シリアライズデータから復元（読み込み用）
-  void importAll(Map<String, Map<String, Uint8List>> data) {
+  ///
+  /// [asStoredInWorkFile]: the tiles were just read from the work file (the
+  /// work is opened), so they are what the file holds: none needs to be
+  /// written again at the next save of the work file (the save copies them
+  /// as stored). The buffers are fresh from the reader and are kept as they
+  /// are. Otherwise (restoring an automatic or manual save) every tile is
+  /// written at the next save.
+  void importAll(
+    Map<String, Map<String, Uint8List>> data, {
+    bool asStoredInWorkFile = false,
+  }) {
     // 前にあったレイヤーと読み込んだレイヤーの両方が「まとめて変わった」。
     final changed = {..._tiles.keys, ...data.keys};
     _tiles.clear();
     _dirtyTiles.clear();
+    _autosaveDirtyTiles.clear();
     _sharedTiles = Expando<bool>();
     for (final layerEntry in data.entries) {
-      _tiles[layerEntry.key] = {
-        for (final tileEntry in layerEntry.value.entries)
-          tileEntry.key: Uint8List.fromList(tileEntry.value),
-      };
-      // Restoring an autosave can replace tiles at paths already present in the
-      // normal archive. Every restored tile must participate in the next save.
+      _tiles[layerEntry.key] = asStoredInWorkFile
+          ? Map.of(layerEntry.value)
+          : {
+              for (final tileEntry in layerEntry.value.entries)
+                tileEntry.key: Uint8List.fromList(tileEntry.value),
+            };
       for (final tileKey in layerEntry.value.keys) {
-        _dirtyTiles.add('${layerEntry.key}:$tileKey');
+        final key = '${layerEntry.key}:$tileKey';
+        // No automatic save of this session holds these tiles yet.
+        _autosaveDirtyTiles.add(key);
+        // Restoring an autosave can replace tiles at paths already present
+        // in the normal archive. Every restored tile must participate in the
+        // next save.
+        if (!asStoredInWorkFile) _dirtyTiles.add(key);
       }
     }
     _invalidateCacheAll();
