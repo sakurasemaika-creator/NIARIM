@@ -1670,6 +1670,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // visible while editing, on desktop as well as on phones. Do not change
     // the saved dock/toolbar configuration; it returns when editing ends.
     final immersiveAdjusting = filterAdjusting || colorAdjusting;
+    final focusControlsActive =
+        _isSelectionToolActive || _currentTool == DrawingTool.meshTransform;
     final selectionEditingHidden =
         _selectionEditingGivesWay(isDesktop) || colorAdjusting;
     final settings = context.watch<SettingsService>();
@@ -1986,6 +1988,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                             'selection-focus-menu',
                                           ),
                                           maxWidth: 336,
+                                          scrollBodyOnResize: true,
                                           collapseTooltip: AppLocalizations.of(
                                             context,
                                           )!.filterPanelCollapse,
@@ -2017,7 +2020,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                                       )
                                               : _buildSelectionControls(
                                                   context,
-                                                  dockRowConstraints.maxHeight,
                                                 ),
                                         ),
                                       ),
@@ -2030,6 +2032,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                         ),
                                         maxWidth: 360,
                                         fillWidth: true,
+                                        scrollBodyOnResize: true,
                                         collapseTooltip: AppLocalizations.of(
                                           context,
                                         )!.filterPanelCollapse,
@@ -2047,6 +2050,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                         ),
                                         maxWidth: 360,
                                         fillWidth: true,
+                                        scrollBodyOnResize: false,
                                         collapseTooltip: AppLocalizations.of(
                                           context,
                                         )!.filterPanelCollapse,
@@ -2111,7 +2115,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     if (!immersiveAdjusting)
                       Visibility(
                         visible: _usesBrushSize(_currentTool),
-                        maintainSize: true,
+                        maintainSize: !focusControlsActive,
                         maintainAnimation: true,
                         maintainState: true,
                         child: BrushSizeSlider(
@@ -2154,8 +2158,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 誤タップしにくくなる範囲での妥協値としている。
                     if (!isDesktop && !immersiveAdjusting)
                       Visibility(
-                        visible: !_isSelectionToolActive,
-                        maintainSize: true,
+                        visible: !focusControlsActive,
+                        maintainSize: false,
                         maintainAnimation: true,
                         maintainState: true,
                         child: Tooltip(
@@ -2189,13 +2193,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 表示するため、下部の横並びバーはモバイルレイアウトのみで表示する。
                     if (_showToolbar && !isDesktop && !immersiveAdjusting)
                       Visibility(
-                        visible: !_isSelectionToolActive,
-                        maintainSize: true,
+                        visible: !focusControlsActive,
+                        maintainSize: false,
                         maintainAnimation: true,
                         maintainState: true,
                         child: _buildToolbarWidget(vertical: false),
                       ),
-                    if (_frameMultiSelectMode && !immersiveAdjusting)
+                    if (_frameMultiSelectMode &&
+                        !immersiveAdjusting &&
+                        !focusControlsActive)
                       _buildFrameMultiSelectBar(),
                     // フレーム一覧の折りたたみ用ハンドル（描画領域を
                     // できるだけ広げるため、任意のタイミングで開閉できるようにする）。
@@ -2206,8 +2212,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // ツールバー・フレーム一覧ごと畳む（開閉ハンドルも隠す）。
                     if (!immersiveAdjusting)
                       Visibility(
-                        visible: !_isSelectionToolActive,
-                        maintainSize: true,
+                        visible: !focusControlsActive,
+                        maintainSize: false,
                         maintainAnimation: true,
                         maintainState: true,
                         child: Tooltip(
@@ -2242,8 +2248,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     if (_showFrameStrip && !immersiveAdjusting)
                       Visibility(
-                        visible: !_isSelectionToolActive,
-                        maintainSize: true,
+                        visible: !focusControlsActive,
+                        maintainSize: false,
                         maintainAnimation: true,
                         maintainState: true,
                         child: FrameStripWidget(
@@ -3665,7 +3671,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// The space between the top bar's buttons, against mis-taps.
   static const double _topBarGap = 10;
 
-  Widget _buildSelectionControls(BuildContext context, double canvasHeight) {
+  Widget _buildSelectionControls(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3675,10 +3681,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(8),
             child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: 320,
-                maxHeight: canvasHeight / 3,
-              ),
+              constraints: const BoxConstraints(maxWidth: 320),
               child: SelectionTransformSliders(
                 moveX: _selectionMoveX,
                 moveY: _selectionMoveY,
@@ -3704,6 +3707,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
           ),
+        if (_hasActiveSelection) const SizedBox(height: 8),
         _selectionToolBar(context),
       ],
     );

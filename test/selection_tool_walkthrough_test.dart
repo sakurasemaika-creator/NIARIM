@@ -330,6 +330,29 @@ void main() {
     // ── 全選択 ────────────────────────────────────────────────────────
     await tester.tap(find.text(l10n.canvasSelectAllButton));
     await settle();
+    final focusMenuRect = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-surface')),
+    );
+    final transformSliderRect = tester.getRect(
+      find.byType(SelectionTransformSliders),
+    );
+    final selectionActionsRect = tester.getRect(
+      find.byKey(const ValueKey('selection-tool-action-bar')),
+    );
+    final canvasScreenHeight = MediaQuery.sizeOf(
+      tester.element(find.byType(CanvasScreen)),
+    ).height;
+    expect(focusMenuRect.left, closeTo(12, 2));
+    expect(
+      focusMenuRect.bottom,
+      greaterThan(canvasScreenHeight - 40),
+      reason: 'selection focus menu should sit at the bottom of the canvas screen',
+    );
+    expect(
+      selectionActionsRect.top,
+      greaterThanOrEqualTo(transformSliderRect.bottom + 6),
+      reason: 'selection actions must sit below the sliders without overlap',
+    );
     await capture('select_all');
 
     // ── 自由変形：四隅のハンドルと左下のキャンセル／適用だけになる ────

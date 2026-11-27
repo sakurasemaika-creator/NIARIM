@@ -49,7 +49,7 @@ class MeshTransformPanel extends StatelessWidget {
       width: 240,
       embedded: embedded,
       child: SizedBox(
-        width: 240,
+        width: embedded ? double.infinity : 240,
         child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

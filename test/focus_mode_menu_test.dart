@@ -106,6 +106,98 @@ void main() {
     expect(restored.right, lessThanOrEqualTo(400));
     expect(restored.top, greaterThanOrEqualTo(0));
   });
+  testWidgets('starts at bottom-left with fixed left, centre and right controls', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(400, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: FocusModeMenu(
+            collapseTooltip: 'Minimize',
+            expandTooltip: 'Expand',
+            child: SizedBox(width: 180, height: 120),
+          ),
+        ),
+      ),
+    );
+
+    final surface = find.byKey(
+      const ValueKey('focus-mode-menu-surface'),
+    );
+    final rect = tester.getRect(surface);
+    final minimize = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-toggle')),
+    );
+    final move = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
+    );
+    final resize = tester.getRect(
+      find.byKey(const ValueKey('focus-mode-menu-resize-handle')),
+    );
+
+    expect(rect.left, closeTo(12, 0.1));
+    expect(rect.bottom, closeTo(788, 0.1));
+    expect(minimize.left, closeTo(rect.left, 0.1));
+    expect(move.center.dx, closeTo(rect.center.dx, 0.1));
+    expect(resize.right, closeTo(rect.right, 0.1));
+  });
+
+  testWidgets('top-right resize handle changes width and height and anchors bottom-left', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(500, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: FocusModeMenu(
+            collapseTooltip: 'Minimize',
+            expandTooltip: 'Expand',
+            child: SizedBox(width: 220, height: 140),
+          ),
+        ),
+      ),
+    );
+
+    final surface = find.byKey(
+      const ValueKey('focus-mode-menu-surface'),
+    );
+    final resizeHandle = find.byKey(
+      const ValueKey('focus-mode-menu-resize-handle'),
+    );
+    final before = tester.getRect(surface);
+    await tester.drag(resizeHandle, const Offset(60, -50));
+    await tester.pumpAndSettle();
+    final larger = tester.getRect(surface);
+
+    expect(larger.width, closeTo(before.width + 60, 0.1));
+    expect(larger.height, closeTo(before.height + 50, 0.1));
+    expect(larger.left, closeTo(before.left, 0.1));
+    expect(larger.bottom, closeTo(before.bottom, 0.1));
+
+    await tester.drag(resizeHandle, const Offset(-40, 30));
+    await tester.pumpAndSettle();
+    final smaller = tester.getRect(surface);
+    expect(smaller.width, closeTo(larger.width - 40, 0.1));
+    expect(smaller.height, closeTo(larger.height - 30, 0.1));
+    expect(smaller.left, closeTo(before.left, 0.1));
+    expect(smaller.bottom, closeTo(before.bottom, 0.1));
+
+    await tester.tap(find.byKey(const ValueKey('focus-mode-menu-toggle')));
+    await tester.pumpAndSettle();
+    await tester.drag(resizeHandle, const Offset(0, -45));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('focus-mode-menu-toggle')));
+    await tester.pumpAndSettle();
+    final restored = tester.getRect(surface);
+    expect(restored.height, closeTo(smaller.height + 45, 0.1));
+    expect(restored.bottom, closeTo(smaller.bottom, 0.1));
+  });
+
   testWidgets('menu keeps its raised surface without a heavy outline', (
     tester,
   ) async {
