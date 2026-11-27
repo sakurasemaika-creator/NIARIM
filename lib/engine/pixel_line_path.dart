@@ -19,6 +19,14 @@ const int kPixelRunWindow = 16;
 /// 画素の格子点（太さが奇数の線は画素、偶数の線は画素の角）。
 typedef PixelPoint = ({int x, int y});
 
+/// `t.clamp(0.0, 1.0)`と同じ値（-0.0は0.0、NaNは1.0）を、比べるだけで
+/// 求める（1画素ごとに呼ぶので、汎用のclampを通さない）。
+double _clampUnit(double t) {
+  if (t < 0.0 || (t == 0.0 && t.isNegative)) return 0.0;
+  if (t > 1.0 || t.isNaN) return 1.0;
+  return t;
+}
+
 /// ピクセルモードの線が通る格子点を、ペン先の動きからたどる。
 ///
 /// 格子の境目を遊び（[hysteresis]）だけ越えたときに隣へ移るので、通る点は
@@ -79,11 +87,11 @@ class PixelLineWalker {
   double? _crossing(double from, double delta, double to, int cell, int last) {
     if (delta > 0) {
       final edge = cell + 1 + (last < 0 ? reverseHysteresis : hysteresis);
-      return to > edge ? ((edge - from) / delta).clamp(0.0, 1.0) : null;
+      return to > edge ? _clampUnit((edge - from) / delta) : null;
     }
     if (delta < 0) {
       final edge = cell - (last > 0 ? reverseHysteresis : hysteresis);
-      return to < edge ? ((edge - from) / delta).clamp(0.0, 1.0) : null;
+      return to < edge ? _clampUnit((edge - from) / delta) : null;
     }
     return null;
   }
@@ -234,8 +242,23 @@ class PixelRunRegularizer<T> {
     bool trimLoop = false,
   }) {
     final offset = math.max(0, _frozen - _context);
-    final points = _points.sublist(offset);
-    final data = _data.sublist(offset);
+    // 整える点の写し（入れ物は使い回す。空にすると入れ物ごと捨てられるので、
+    // 上書きして長さを合わせる）。
+    final points = _scratchPoints, data = _scratchData;
+    final count = _points.length - offset;
+    if (points.length > count) {
+      points.length = count;
+      data.length = count;
+    }
+    for (var i = 0; i < count; i++) {
+      if (i < points.length) {
+        points[i] = _points[offset + i];
+        data[i] = _data[offset + i];
+      } else {
+        points.add(_points[offset + i]);
+        data.add(_data[offset + i]);
+      }
+    }
     var frozen = _frozen;
     for (final cell in tail) {
       frozen = _push(points, data, offset, frozen, (
@@ -249,10 +272,46 @@ class PixelRunRegularizer<T> {
         (i) => i < offset ? _points[i] : points[i - offset],
         frozen,
         length,
+        _frozenHead,
       );
     }
-    return PixelChain<T>._(_points, _data, offset, points, data, length);
+    // 確定した点（[_frozen]より前）は整えても変わらないので、並びには
+    // そこから先だけを写す。
+    final cut = _frozen - offset;
+    return PixelChain<T>._(
+      _points,
+      _data,
+      _frozen,
+      points.sublist(cut),
+      data.sublist(cut),
+      length,
+    );
   }
+
+  /// 前に[resolve]で返した[previous]と同じ点の並びで、続きの点の値だけを
+  /// [tail]のものにした並び（[resolve]の後に点を足していなくて、[tail]の
+  /// 位置が前と同じとき、[resolve]と同じ並びになる）。
+  PixelChain<T> withTailData(
+    PixelChain<T> previous,
+    List<({int x, int y, T data})> tail,
+  ) {
+    final data = List<T>.of(previous._tailData);
+    final start = _points.length - previous._split;
+    for (var j = 0; j < tail.length; j++) {
+      data[start + j] = tail[j].data;
+    }
+    return PixelChain<T>._(
+      _points,
+      _data,
+      previous._split,
+      previous._tail,
+      data,
+      previous.length,
+    );
+  }
+
+  final List<PixelPoint> _scratchPoints = [];
+  final List<T> _scratchData = [];
 
   /// [tail]を足して線を終える。返す並びはどれも確定した点。
   PixelChain<T> finish(
@@ -263,7 +322,9 @@ class PixelRunRegularizer<T> {
       add(cell.x, cell.y, cell.data);
     }
     var length = _points.length;
-    if (trimLoop) length = _trimmedLength((i) => _points[i], _frozen, length);
+    if (trimLoop) {
+      length = _trimmedLength((i) => _points[i], _frozen, length, _frozenHead);
+    }
     _points.length = length;
     _data.length = length;
     _frozen = length;
@@ -290,10 +351,11 @@ class PixelRunRegularizer<T> {
     var next = math.max(frozen, length - window);
     if (holdLoops) {
       PixelPoint at(int i) => i < offset ? _points[i] : points[i - offset];
+      final head = _frozenHead;
       for (var i = frozen; i < next; i++) {
         // 長く沿って進む線は、待ちきれないので確定する。
         if (length - i > window + _head) continue;
-        if (_hugsHead(at, i)) {
+        if (_hugsHead(at, i, head)) {
           next = i;
           break;
         }
@@ -305,11 +367,41 @@ class PixelRunRegularizer<T> {
   // 書き始めの何点に沿って並ぶ線を、輪のはみ出しとみなすか。
   static const int _head = 64;
 
+  // 書き始めの[_head]点を囲む四角（左・上・右・下）。それらの点が確定して
+  // からは変わらない。
+  (int, int, int, int)? _headBounds;
+
+  /// 確定した書き始めの[_head]点を囲む四角（まだ確定していなければnull）。
+  (int, int, int, int)? get _frozenHead {
+    if (_headBounds != null || _frozen < _head) return _headBounds;
+    var left = _points[0].x, right = left;
+    var top = _points[0].y, bottom = top;
+    for (var i = 1; i < _head; i++) {
+      final p = _points[i];
+      left = math.min(left, p.x);
+      right = math.max(right, p.x);
+      top = math.min(top, p.y);
+      bottom = math.max(bottom, p.y);
+    }
+    return _headBounds = (left, top, right, bottom);
+  }
+
   /// [index]番目の点が、輪を閉じて書き始めの線（最初の[_head]点）の隣を
   /// 同じ向きに進む点か。逆向きに沿う線（往復して塗る線）は含めない。
-  static bool _hugsHead(PixelPoint Function(int i) at, int index) {
+  /// [head]は書き始めの点を囲む四角（[_frozenHead]、その外の点は隣に
+  /// 来ないので調べない）。
+  static bool _hugsHead(
+    PixelPoint Function(int i) at,
+    int index,
+    (int, int, int, int)? head,
+  ) {
     if (index < 40) return false;
     final p = at(index);
+    if (head != null) {
+      final (left, top, right, bottom) = head;
+      if (p.x < left - 1 || p.x > right + 1) return false;
+      if (p.y < top - 1 || p.y > bottom + 1) return false;
+    }
     final back = at(index - 3);
     final ux = p.x - back.x, uy = p.y - back.y;
     for (var i = 0; i < _head && i < index - 24; i++) {
@@ -328,150 +420,218 @@ class PixelRunRegularizer<T> {
     PixelPoint Function(int i) at,
     int frozen,
     int length,
+    (int, int, int, int)? head,
   ) {
     if (length < 40) return length;
     final floor = math.max(math.max(frozen, length ~/ 2), 1);
     while (length - 1 >= floor &&
-        _hugsHead(at, length - 1) &&
-        _hugsHead(at, length - 2)) {
+        _hugsHead(at, length - 1, head) &&
+        _hugsHead(at, length - 2, head)) {
       length--;
     }
     return length;
   }
 
   /// [points]の[from]から先で、[modifiable]より前の点を変えずにランを整える。
+  ///
+  /// 歩み（隣の点への向き）は最初に一度だけ数え、入れ替えた2歩だけを
+  /// 書き換える（ペンが動くたびに呼ばれるので、作り直さない）。
   static void _regularize(List<PixelPoint> points, int from, int modifiable) {
+    final n = points.length;
+    if (n - from < 6) return;
+    final count = n - 1 - from;
+    if (_stepX.length < count) {
+      final size = math.max(count, 2 * _stepX.length);
+      _stepX = Int32List(size);
+      _stepY = Int32List(size);
+      _separators = Int32List(size);
+      _axisSeparators = Int32List(size);
+    }
+    final sx = _stepX, sy = _stepY, directions = _directions;
+    directions.fillRange(0, 9, 0);
+    for (var i = 0; i < count; i++) {
+      final a = points[from + i], b = points[from + i + 1];
+      final dx = b.x - a.x, dy = b.y - a.y;
+      sx[i] = dx;
+      sy[i] = dy;
+      if (dx.abs() <= 1 && dy.abs() <= 1) directions[(dx + 1) * 3 + dy + 1]++;
+    }
     for (var guard = 0; guard < 64; guard++) {
-      if (!_fixOne(points, from, modifiable)) return;
+      final fix = _findFix(count, from, modifiable);
+      if (fix < 0) return;
+      // 隣り合う2歩を入れ替える：その間の点が1画素ずれる。
+      final ax = sx[fix], ay = sy[fix];
+      final bx = sx[fix + 1], by = sy[fix + 1];
+      final at = from + fix + 1;
+      points[at] = (x: points[at - 1].x + bx, y: points[at - 1].y + by);
+      assert(
+        points[at].x + ax == points[at + 1].x &&
+            points[at].y + ay == points[at + 1].y,
+      );
+      sx[fix] = bx;
+      sy[fix] = by;
+      sx[fix + 1] = ax;
+      sy[fix + 1] = ay;
     }
   }
 
-  // 斜めの1歩と、それと同じ向きに進む縦横の1歩の組（8通り）。
-  static const List<(int, int, int, int)> _pairs = [
-    (1, 0, 1, 1),
-    (1, 0, 1, -1),
-    (-1, 0, -1, 1),
-    (-1, 0, -1, -1),
-    (0, 1, 1, 1),
-    (0, 1, -1, 1),
-    (0, -1, 1, -1),
-    (0, -1, -1, -1),
+  // 歩み（[_regularize]が数える、隣の点への縦横の差）と、区切りの位置。
+  static Int32List _stepX = Int32List(128);
+  static Int32List _stepY = Int32List(128);
+  static Int32List _separators = Int32List(128);
+  static Int32List _axisSeparators = Int32List(128);
+  // 向きごとの歩みの数（入れ替えても変わらない）。
+  static final Int32List _directions = Int32List(9);
+
+  // 斜めの1歩と、それと同じ向きに進む縦横の1歩の組（8通り。縦横の歩みの
+  // x・y、斜めの歩みのx・yの順）。
+  static const List<int> _pairs = [
+    1, 0, 1, 1, //
+    1, 0, 1, -1,
+    -1, 0, -1, 1,
+    -1, 0, -1, -1,
+    0, 1, 1, 1,
+    0, 1, -1, 1,
+    0, -1, 1, -1,
+    0, -1, -1, -1,
   ];
 
-  static bool _fixOne(List<PixelPoint> points, int from, int modifiable) {
-    final n = points.length;
-    if (n - from < 6) return false;
-    final steps = <(int, int)>[
-      for (var i = from; i < n - 1; i++)
-        (points[i + 1].x - points[i].x, points[i + 1].y - points[i].y),
-    ];
-    for (final (ax, ay, dx, dy) in _pairs) {
-      bool inPair((int, int) s) =>
-          (s.$1 == ax && s.$2 == ay) || (s.$1 == dx && s.$2 == dy);
+  /// [count]歩のうち、入れ替える2歩の前の方の位置（無ければ-1）。組ごとに、
+  /// その組の歩みだけが続く区間を前から見る。
+  static int _findFix(int count, int from, int modifiable) {
+    final sx = _stepX, sy = _stepY;
+    for (var pair = 0; pair < _pairs.length; pair += 4) {
+      final ax = _pairs[pair], ay = _pairs[pair + 1];
+      final dx = _pairs[pair + 2], dy = _pairs[pair + 3];
+      // ランを整えるには、区切りが2つ以上と、2歩以上のランが要る（縦横・
+      // 斜めの歩みがどちらも2つ以上）。
+      if (_directions[(ax + 1) * 3 + ay + 1] < 2 ||
+          _directions[(dx + 1) * 3 + dy + 1] < 2) {
+        continue;
+      }
       var s = 0;
-      while (s < steps.length) {
-        if (!inPair(steps[s])) {
+      while (s < count) {
+        if (!((sx[s] == ax && sy[s] == ay) || (sx[s] == dx && sy[s] == dy))) {
           s++;
           continue;
         }
         var e = s;
-        while (e < steps.length && inPair(steps[e])) {
+        while (e < count &&
+            ((sx[e] == ax && sy[e] == ay) || (sx[e] == dx && sy[e] == dy))) {
           e++;
         }
-        for (final runIsAxis in const [true, false]) {
-          final fix = _findJag(
-            steps,
-            s,
-            e,
-            (s) => runIsAxis
-                ? (s.$1 == dx && s.$2 == dy)
-                : !(s.$1 == dx && s.$2 == dy),
-            from,
-            modifiable,
-          );
-          if (fix != null) {
-            // 隣り合う2歩を入れ替える：その間の点が1画素ずれる。
-            final a = steps[fix], b = steps[fix + 1];
-            final at = from + fix + 1;
-            points[at] = (
-              x: points[at - 1].x + b.$1,
-              y: points[at - 1].y + b.$2,
-            );
-            assert(
-              points[at].x + a.$1 == points[at + 1].x &&
-                  points[at].y + a.$2 == points[at + 1].y,
-            );
-            return true;
-          }
+        // 区間の中の点がどれも確定していれば、動かせる点が無い。
+        if (from + e < modifiable) {
+          s = e;
+          continue;
         }
+        final fix = _findJag(count, s, e, dx, dy, from, modifiable);
+        if (fix >= 0) return fix;
         s = e;
       }
     }
-    return false;
+    return -1;
   }
 
-  /// 区間[s, e)の歩みで、区切り（[isSeparator]）の間のランに、両隣より2以上
-  /// 短い・長いものがあれば、入れ替える2歩の前の方の位置を返す。
-  static int? _findJag(
-    List<(int, int)> steps,
+  /// 区間[s, e)の歩みで、区切りの間のランに、両隣より2以上短い・長いものが
+  /// あれば、入れ替える2歩の前の方の位置を返す（無ければ-1）。縦横の歩みの
+  /// ラン（斜めの歩み（[dx]・[dy]）が区切り）、斜めの歩みのラン（縦横の
+  /// 歩みが区切り）の順に見る。区切りは1度に数える。
+  static int _findJag(
+    int count,
     int s,
     int e,
-    bool Function((int, int)) isSeparator,
+    int dx,
+    int dy,
     int from,
     int modifiable,
   ) {
-    final separators = [
-      for (var i = s; i < e; i++)
-        if (isSeparator(steps[i])) i,
-    ];
-    if (separators.length < 2) return null;
-    // ラン：区切りの前・間・後。端のランは、線の始まり・並びの端で切れて
-    // いれば長さが分からないので比べない。
-    final runs = <({int length, bool bounded})>[
-      (length: separators.first - s, bounded: s > 0),
-      for (var j = 0; j + 1 < separators.length; j++)
-        (length: separators[j + 1] - separators[j] - 1, bounded: true),
-      (length: e - separators.last - 1, bounded: e < steps.length),
-    ];
-    // 入れ替えた後も、前後の歩みとL字の角（横の1歩と縦の1歩が続く）を
-    // 作らないこと。
-    bool lCorner((int, int) a, (int, int) b) =>
-        (a.$2 == 0 && b.$1 == 0) || (a.$1 == 0 && b.$2 == 0);
-    bool movable(int pointIndex) {
-      if (from + pointIndex < modifiable) return false;
-      final q = pointIndex - 1; // 入れ替える2歩の前の方
-      if (q < 0 || q + 1 >= steps.length) return false;
-      if (q == 0 && from > 0) return false;
-      if (q > 0 && lCorner(steps[q - 1], steps[q + 1])) return false;
-      if (q + 2 < steps.length && lCorner(steps[q], steps[q + 2])) {
-        return false;
+    final sx = _stepX, sy = _stepY;
+    final diagonals = _separators, axes = _axisSeparators;
+    var diagonal = 0, axis = 0;
+    for (var i = s; i < e; i++) {
+      if (sx[i] == dx && sy[i] == dy) {
+        diagonals[diagonal++] = i;
+      } else {
+        axes[axis++] = i;
       }
-      return true;
     }
+    if (diagonal >= 2) {
+      final fix = _findJagBetween(
+        diagonals,
+        diagonal,
+        count,
+        s,
+        e,
+        from,
+        modifiable,
+      );
+      if (fix >= 0) return fix;
+    }
+    if (axis >= 2) {
+      return _findJagBetween(axes, axis, count, s, e, from, modifiable);
+    }
+    return -1;
+  }
 
-    for (var j = 1; j + 1 < runs.length; j++) {
-      final a = runs[j - 1], b = runs[j], c = runs[j + 1];
-      if (!a.bounded || !c.bounded) continue;
+  /// 区間[s, e)の歩みを、[m]個の区切り[separators]で分けたランに、両隣より
+  /// 2以上短い・長いものがあれば、入れ替える2歩の前の方の位置を返す（無け
+  /// れば-1）。
+  static int _findJagBetween(
+    Int32List separators,
+    int m,
+    int count,
+    int s,
+    int e,
+    int from,
+    int modifiable,
+  ) {
+    // ラン：区切りの前・間・後（j番目、0〜m）。端のランは、線の始まり・
+    // 並びの端で切れていれば長さが分からないので比べない。動かす点は
+    // bの後の区切りの次の点までなので、それが確定している所は見ない。
+    var first = 1;
+    while (first < m && from + separators[first] + 1 < modifiable) {
+      first++;
+    }
+    for (var j = first; j < m; j++) {
+      if ((j - 1 == 0 && s <= 0) || (j + 1 == m && e >= count)) continue;
       final before = separators[j - 1]; // bの前の区切り
       final after = separators[j]; // bの後の区切り
-      if (b.length <= math.min(a.length, c.length) - 2) {
+      final a = j - 1 == 0 ? before - s : before - separators[j - 2] - 1;
+      final b = after - before - 1;
+      final c = j + 1 == m ? e - after - 1 : separators[j + 1] - after - 1;
+      if (b <= math.min(a, c) - 2) {
         // 短いラン：長い方の隣から1歩もらう。
-        final fromC = movable(after + 1);
-        final fromA = movable(before);
-        if (c.length >= a.length && fromC) return after;
-        if (fromA) return before - 1;
+        final fromC = _movable(count, from, modifiable, after + 1);
+        if (c >= a && fromC) return after;
+        if (_movable(count, from, modifiable, before)) return before - 1;
         if (fromC) return after;
-      } else if (b.length >= math.max(a.length, c.length) + 2) {
+      } else if (b >= math.max(a, c) + 2) {
         // 長いラン：短い方の隣へ1歩渡す。
-        final toC = movable(after);
-        final toA = movable(before + 1);
-        if (c.length <= a.length && toC) return after - 1;
-        if (toA) return before;
+        final toC = _movable(count, from, modifiable, after);
+        if (c <= a && toC) return after - 1;
+        if (_movable(count, from, modifiable, before + 1)) return before;
         if (toC) return after - 1;
       }
     }
-    return null;
+    return -1;
   }
+
+  /// [pointIndex]番目の点（入れ替える2歩の間の点）を動かしてよいか：確定
+  /// していない点で、入れ替えた後も前後の歩みとL字の角（横の1歩と縦の1歩が
+  /// 続く）を作らないこと。
+  static bool _movable(int count, int from, int modifiable, int pointIndex) {
+    if (from + pointIndex < modifiable) return false;
+    final q = pointIndex - 1; // 入れ替える2歩の前の方
+    if (q < 0 || q + 1 >= count) return false;
+    if (q == 0 && from > 0) return false;
+    if (q > 0 && _lCorner(q - 1, q + 1)) return false;
+    if (q + 2 < count && _lCorner(q, q + 2)) return false;
+    return true;
+  }
+
+  static bool _lCorner(int a, int b) =>
+      (_stepY[a] == 0 && _stepX[b] == 0) || (_stepX[a] == 0 && _stepY[b] == 0);
 }
 
 /// 1画素の線の点の並び（確定した前半と、まだ変わりうる後半）。
@@ -555,16 +715,22 @@ class PixelLineTracer<T> {
   Offset _pen;
   T _penData;
 
+  // たどって移った点の数（移るたびに[_path]・[_runs]が変わりうる）と、前に
+  // [resolve]したときのその数・続きの点・返した並び。
+  int _cells = 0;
+  int _resolvedCells = -1;
+  List<({int x, int y, T data})> _resolvedTail = const [];
+  PixelChain<T>? _resolved;
+
   /// 確定した点の数（これより前の点は、この先もペンを離しても変わらない）。
   int get frozen => _runs.frozen;
 
   void walk(Offset from, Offset to, T Function(double t) dataAt) {
     final shift = Offset(corners ? 0.5 : 0, corners ? 0.5 : 0);
-    _walker.walk(
-      from + shift,
-      to + shift,
-      (x, y, t) => _path.add(x, y, dataAt(t), _runs.add),
-    );
+    _walker.walk(from + shift, to + shift, (x, y, t) {
+      _cells++;
+      _path.add(x, y, dataAt(t), _runs.add);
+    });
     _pen = to;
     _penData = dataAt(1);
     _trail.add(to);
@@ -579,7 +745,32 @@ class PixelLineTracer<T> {
       (x, y, data) => tail.add((x: x, y: y, data: data)),
       live: true,
     );
-    return _runs.resolve(tail, trimLoop: trimLoop);
+    final previous = _resolved;
+    final PixelChain<T> chain;
+    if (previous != null &&
+        _resolvedCells == _cells &&
+        _sameCells(tail, _resolvedTail)) {
+      // 前から点が増えていなくて、ペンの下までの続きの点の位置も同じなら、
+      // 整えた並びも同じ（ペンの値だけが新しい）。
+      chain = _runs.withTailData(previous, tail);
+    } else {
+      chain = _runs.resolve(tail, trimLoop: trimLoop);
+    }
+    _resolvedCells = _cells;
+    _resolvedTail = tail;
+    _resolved = chain;
+    return chain;
+  }
+
+  static bool _sameCells(
+    List<({int x, int y, Object? data})> a,
+    List<({int x, int y, Object? data})> b,
+  ) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].x != b[i].x || a[i].y != b[i].y) return false;
+    }
+    return true;
   }
 
   /// 線を終える。
@@ -660,6 +851,21 @@ class PixelMask {
 
   bool get isEmpty => !_bits.any((b) => b != 0);
 
+  /// [other]と同じ範囲で、同じ画素を塗るか。
+  bool sameAs(PixelMask other) {
+    if (left != other.left ||
+        top != other.top ||
+        width != other.width ||
+        height != other.height) {
+      return false;
+    }
+    if (identical(_bits, other._bits)) return true;
+    for (var i = 0; i < _bits.length; i++) {
+      if (_bits[i] != other._bits[i]) return false;
+    }
+    return true;
+  }
+
   /// 塗る画素。
   Iterable<PixelPoint> get pixels sync* {
     for (var j = 0; j < height; j++) {
@@ -696,22 +902,27 @@ class PixelMask {
   PixelMask dilate(int radius) {
     if (radius <= 0) return this;
     final d = 2 * radius + 1;
-    final offsets = <(int, int)>[
-      for (var j = 0; j < d; j++)
-        for (var i = 0; i < d; i++)
-          if (pixelDotCovers(d, i, j)) (i - radius, j - radius),
-    ];
+    final dot = _dotBits(d);
+    final outWidth = width + 2 * radius;
     final out = PixelMask.empty(
       left - radius,
       top - radius,
-      width + 2 * radius,
+      outWidth,
       height + 2 * radius,
     );
+    // ドットの画素の、広げた形の中での位置のずれ（広げる前の画素が左上）。
+    final offsets = <int>[
+      for (var j = 0; j < d; j++)
+        for (var i = 0; i < d; i++)
+          if (dot[j * d + i] != 0) j * outWidth + i,
+    ];
+    final bits = out._bits;
     for (var j = 0; j < height; j++) {
       for (var i = 0; i < width; i++) {
         if (_bits[j * width + i] == 0) continue;
-        for (final (ox, oy) in offsets) {
-          out._set(left + i + ox, top + j + oy);
+        final at = j * outWidth + i;
+        for (var o = 0; o < offsets.length; o++) {
+          bits[at + offsets[o]] = 1;
         }
       }
     }
@@ -721,19 +932,35 @@ class PixelMask {
   /// 格子点[point]を中心にした太さ[diameter]のドット（[pixelDotCovers]）。
   static PixelMask dot(PixelPoint point, int diameter) {
     final d = math.max(1, diameter);
-    final out = PixelMask.empty(
+    // 形は太さごとに同じなので、画素は作り置きを使う（形は作った後に
+    // 書き換えない）。
+    return PixelMask._(
       pixelDotOrigin(point.x, d),
       pixelDotOrigin(point.y, d),
       d,
       d,
+      _dotBits(d),
     );
+  }
+
+  /// 太さ[d]のドットの画素（[pixelDotCovers]、[d]×[d]）。細いドットは
+  /// 作り置く。
+  static Uint8List _dotBits(int d) {
+    if (d < _dots.length) return _dots[d] ??= _newDotBits(d);
+    return _newDotBits(d);
+  }
+
+  static Uint8List _newDotBits(int d) {
+    final bits = Uint8List(d * d);
     for (var j = 0; j < d; j++) {
       for (var i = 0; i < d; i++) {
-        if (pixelDotCovers(d, i, j)) out._bits[j * d + i] = 1;
+        if (pixelDotCovers(d, i, j)) bits[j * d + i] = 1;
       }
     }
-    return out;
+    return bits;
   }
+
+  static final List<Uint8List?> _dots = List.filled(65, null);
 
   /// 格子点[point]を中心にした[diameter]四方の四角（四角形の角）。
   static PixelMask square(PixelPoint point, int diameter) {
@@ -776,8 +1003,8 @@ PixelMask pixelLineMask(
   if (!closed && k == 0) ends.add(PixelMask.dot(p, d));
   if (!closed && k == n - 1) return PixelMask.dot(p, d);
   final smoothing = squareCorners ? 0 : _smoothing;
-  final a = _smoothedCentre(chain, k, closed, corners, d, smoothing);
-  final b = _smoothedCentre(chain, k + 1, closed, corners, d, smoothing);
+  final a = _centreOf(chain, k, closed, corners, d, smoothing);
+  final b = _centreOf(chain, k + 1, closed, corners, d, smoothing);
   final r = d / 2;
   final reach = r.ceil() + 1;
   final left = (math.min(a.dx, b.dx) - reach).floor();
@@ -796,7 +1023,7 @@ PixelMask pixelLineMask(
       final px = x + 0.5 - a.dx, py = y + 0.5 - a.dy;
       var t = vv == 0 ? 0.0 : (px * vx + py * vy) / vv;
       if ((cutStart && t < 0) || (cutEnd && t > 1)) continue;
-      t = t.clamp(0.0, 1.0);
+      t = _clampUnit(t);
       final ex = px - vx * t, ey = py - vy * t;
       if (ex * ex + ey * ey < rr) band._set(x, y);
     }
@@ -818,6 +1045,73 @@ PixelMask pixelLineMask(
   return PixelMask.union(masks);
 }
 
+/// [_smoothedCentre]（続けて描く点どうしは同じ点の中心を使うので、最後に
+/// 求めた2つを覚えておく。点の並びは作った後に変わらない）。
+Offset _centreOf(
+  PixelChain<Object?> chain,
+  int k,
+  bool closed,
+  bool corners,
+  int diameter,
+  int smoothing,
+) {
+  for (var i = 0; i < _centres.length; i++) {
+    final c = _centres[i];
+    if (c != null &&
+        identical(c.chain, chain) &&
+        c.k == k &&
+        c.closed == closed &&
+        c.corners == corners &&
+        c.diameter == diameter &&
+        c.smoothing == smoothing) {
+      return c.centre;
+    }
+  }
+  final centre = _smoothedCentre(
+    chain,
+    k,
+    closed,
+    corners,
+    diameter,
+    smoothing,
+  );
+  _centres[_nextCentre] = _Centre(
+    chain,
+    k,
+    closed,
+    corners,
+    diameter,
+    smoothing,
+    centre,
+  );
+  _nextCentre = 1 - _nextCentre;
+  return centre;
+}
+
+/// [_centreOf]が覚えた中心。
+final class _Centre {
+  const _Centre(
+    this.chain,
+    this.k,
+    this.closed,
+    this.corners,
+    this.diameter,
+    this.smoothing,
+    this.centre,
+  );
+
+  final PixelChain<Object?> chain;
+  final int k;
+  final bool closed;
+  final bool corners;
+  final int diameter;
+  final int smoothing;
+  final Offset centre;
+}
+
+final List<_Centre?> _centres = List.filled(2, null);
+var _nextCentre = 0;
+
 /// 線の太さを決める中心線のならし幅（前後の点の数）。
 const int _smoothing = 3;
 
@@ -838,12 +1132,13 @@ Offset _smoothedCentre(
   int smoothing,
 ) {
   final n = chain.length;
-  PixelPoint at(int i) => chain[((i % n) + n) % n];
+  // 閉じていない線の窓は並びの中に収まる。
+  PixelPoint at(int i) => chain[closed ? ((i % n) + n) % n : i];
   var s = smoothing;
   if (!closed) s = math.min(s, math.min(k, n - 1 - k));
   var sx = 0, sy = 0;
   for (var i = k - s; i <= k + s; i++) {
-    final q = at(i);
+    final q = chain[closed ? ((i % n) + n) % n : i];
     sx += q.x;
     sy += q.y;
   }
@@ -865,7 +1160,7 @@ Offset _smoothedCentre(
           ) *
           180 /
           math.pi;
-      final amount = 0.5 / math.sqrt2 * ((angle - 38) / 5).clamp(0.0, 1.0);
+      final amount = 0.5 / math.sqrt2 * _clampUnit((angle - 38) / 5);
       cx += dy / length * amount;
       cy -= dx / length * amount;
     }
@@ -874,8 +1169,17 @@ Offset _smoothedCentre(
 }
 
 /// 太さ[diameter]の45°の線で、1列の画素の数を偶数（中心を半画素ずらす）に
-/// した方が、太さ×√2に近いか。
+/// した方が、太さ×√2に近いか（細い太さは作り置く）。
 bool _prefersHalfDiagonalPhase(int diameter) {
+  if (diameter < 0 || diameter >= _halfDiagonalPhases.length) {
+    return _computeHalfDiagonalPhase(diameter);
+  }
+  return _halfDiagonalPhases[diameter] ??= _computeHalfDiagonalPhase(diameter);
+}
+
+final List<bool?> _halfDiagonalPhases = List.filled(65, null);
+
+bool _computeHalfDiagonalPhase(int diameter) {
   final half = diameter / math.sqrt2;
   final odd = 2 * (half - 1e-9).ceil() - 1;
   final even = 2 * (half + 0.5).floor();
