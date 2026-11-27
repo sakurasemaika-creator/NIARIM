@@ -1497,6 +1497,7 @@ class NiaproSerializer {
             'y': k.y,
             'zoom': k.zoom,
             'rotation': k.rotation,
+            if (k.easing != LayerKeyframeEasing.linear) 'easing': k.easing.name,
             if (k.exactFrame case final exact?
                 when exact.isFinite && exact != k.frameIndex)
               'exactFrame': exact,
@@ -1729,6 +1730,10 @@ class NiaproSerializer {
               y: (j['y'] as num?)?.toDouble() ?? 0,
               zoom: (j['zoom'] as num?)?.toDouble() ?? 1.0,
               rotation: (j['rotation'] as num?)?.toDouble() ?? 0,
+              easing: LayerKeyframeEasing.values.firstWhere(
+                (e) => e.name == j['easing'],
+                orElse: () => LayerKeyframeEasing.linear,
+              ),
               exactFrame: switch (j['exactFrame']) {
                 final num exact when exact.isFinite => exact.toDouble(),
                 _ => null,

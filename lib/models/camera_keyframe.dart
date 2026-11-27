@@ -1,9 +1,15 @@
+import 'layer_keyframe.dart';
+
 class CameraKeyframe {
   final int frameIndex;
   final double x;
   final double y;
   final double zoom;
   final double rotation;
+
+  /// How the camera goes on to the next keyframe (the same five curves as a
+  /// layer's keyframes).
+  final LayerKeyframeEasing easing;
 
   /// The key's time before it was rounded to [frameIndex], kept when its
   /// range is retimed so retiming again starts from it (a range sped up and
@@ -17,6 +23,7 @@ class CameraKeyframe {
     this.y = 0,
     this.zoom = 1.0,
     this.rotation = 0,
+    this.easing = LayerKeyframeEasing.linear,
     this.exactFrame,
   });
 
@@ -35,6 +42,7 @@ class CameraKeyframe {
     double? y,
     double? zoom,
     double? rotation,
+    LayerKeyframeEasing? easing,
     Object? exactFrame = _keepExact,
   }) {
     final next = frameIndex ?? this.frameIndex;
@@ -51,6 +59,7 @@ class CameraKeyframe {
       y: y ?? this.y,
       zoom: zoom ?? this.zoom,
       rotation: rotation ?? this.rotation,
+      easing: easing ?? this.easing,
     );
   }
 

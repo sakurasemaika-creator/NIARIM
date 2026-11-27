@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import '../models/camera_keyframe.dart';
+import 'layer_keyframe_engine.dart';
 
 /// カメラのXY移動・拡大・回転をキーフレーム間で補間し、表示へ適用する
 /// エンジン。カメラは表示のみを変更し、レイヤー自体の座標は
@@ -22,7 +23,8 @@ class CameraEngine {
       if (frame >= a.frameIndex && frame <= b.frameIndex) {
         final span = b.frameIndex - a.frameIndex;
         final t = span == 0 ? 0.0 : (frame - a.frameIndex) / span;
-        return CameraKeyframe.lerp(a, b, t);
+        // The start key's easing shapes the way to the next one.
+        return CameraKeyframe.lerp(a, b, LayerKeyframeEngine.ease(a.easing, t));
       }
     }
     return sorted.last;

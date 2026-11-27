@@ -24,6 +24,51 @@ String layerKeyframeEasingLabel(
   LayerKeyframeEasing.bounceOut => l10n.layerKeyframeEasingBounceOut,
 };
 
+/// "How it goes on to the next keyframe": the five curves as chips. Layers,
+/// materials and the camera choose it the same way.
+class KeyframeEasingChoices extends StatelessWidget {
+  final LayerKeyframeEasing easing;
+  final ValueChanged<LayerKeyframeEasing> onChanged;
+
+  const KeyframeEasingChoices({
+    super.key,
+    required this.easing,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          l10n.layerKeyframeEasingLabel,
+          style: const TextStyle(fontSize: 12),
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (final choice in LayerKeyframeEasing.values)
+              ChoiceChip(
+                key: ValueKey('keyframeEasing-${choice.name}'),
+                label: Text(
+                  layerKeyframeEasingLabel(l10n, choice),
+                  style: const TextStyle(fontSize: 11),
+                ),
+                selected: easing == choice,
+                onSelected: (_) => onChanged(choice),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 /// レイヤー単位の位置・拡大縮小・回転キーフレーム（パーツ単位アニメーション）を
 /// 一覧・追加・編集・削除するシート。カメラキーフレームと違い専用のタイムライン
 /// トラックは持たせず、レイヤーパネルの「詳細設定」から開く一覧形式にすることで、
@@ -501,25 +546,10 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
                   '${_kf.rotation.round()}°',
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  l10n.layerKeyframeEasingLabel,
-                  style: const TextStyle(fontSize: 12),
-                ),
-                const SizedBox(height: 4),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: LayerKeyframeEasing.values.map((easing) {
-                    return ChoiceChip(
-                      label: Text(
-                        layerKeyframeEasingLabel(l10n, easing),
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                      selected: _kf.easing == easing,
-                      onSelected: (_) =>
-                          setState(() => _kf = _kf.copyWith(easing: easing)),
-                    );
-                  }).toList(),
+                KeyframeEasingChoices(
+                  easing: _kf.easing,
+                  onChanged: (easing) =>
+                      setState(() => _kf = _kf.copyWith(easing: easing)),
                 ),
               ],
             ),

@@ -28,7 +28,7 @@ class LayerKeyframeEngine {
         // どうつながるか」を決める（layer_keyframe.dartのLayerKeyframeEasing
         // ドキュメントコメント参照）。tを歪めてから線形補間することで、
         // 補間対象の値（x/y/scale/rotation）を問わず同じカーブを適用できる。
-        return LayerKeyframe.lerp(a, b, _ease(a.easing, t));
+        return LayerKeyframe.lerp(a, b, ease(a.easing, t));
       }
     }
     return sorted.last;
@@ -37,7 +37,8 @@ class LayerKeyframeEngine {
   /// イージングカーブに沿って[t]（0〜1、区間内の等速の進み具合）を歪める。
   /// 戻り値は必ずしも0〜1に収まらない（bounceOutは終端付近で1を僅かに
   /// 超えるオーバーシュートを含む）。
-  double _ease(LayerKeyframeEasing easing, double t) {
+  /// The camera's keyframes use the same curves.
+  static double ease(LayerKeyframeEasing easing, double t) {
     final clamped = t.clamp(0.0, 1.0);
     return switch (easing) {
       LayerKeyframeEasing.linear => clamped,
@@ -52,7 +53,7 @@ class LayerKeyframeEngine {
   }
 
   /// 標準的な"bounce out"イージング（終端で2回弾んでから収まる）。
-  double _bounceOut(double t) {
+  static double _bounceOut(double t) {
     const n1 = 7.5625;
     const d1 = 2.75;
     if (t < 1 / d1) {

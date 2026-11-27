@@ -26,6 +26,8 @@ import 'clip_speed_control.dart';
 import 'clip_time_range_control.dart';
 import 'pitch_control.dart';
 import 'material_region_controller.dart';
+import '../../canvas/widgets/layer_keyframe_sheet.dart'
+    show KeyframeEasingChoices;
 import 'keyframe_retime_dialog.dart';
 import '../../../widgets/layer_mask_editor.dart';
 import '../../canvas/widgets/color_picker_panel.dart';
@@ -1338,6 +1340,23 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
             style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
           ),
         ),
+        // The way from this keyframe to the next (a later one exists).
+        if (atFrame && keyframes.any((k) => k.frameIndex > frame))
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: KeyframeEasingChoices(
+              key: const ValueKey('materialKfEasing'),
+              easing: materialKeyframeAt(layer, frame)!.easing,
+              onChanged: (easing) => _update(
+                (l) => l.copyWith(
+                  keyframes: [
+                    for (final k in l.keyframes)
+                      k.frameIndex == frame ? k.copyWith(easing: easing) : k,
+                  ],
+                ),
+              ),
+            ),
+          ),
         LabeledSlider(
           label: l10n.timelineCameraMoveXLabel,
           value: kf.x.clamp(-w, w),

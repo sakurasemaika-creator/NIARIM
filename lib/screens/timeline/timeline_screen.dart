@@ -45,6 +45,7 @@ import '../../engine/export_engine.dart';
 import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/layer_keyframe_engine.dart';
+import '../../models/layer_keyframe.dart' show LayerKeyframeEasing;
 import '../../engine/layer_range_resolver.dart';
 import '../../engine/watermark_render.dart';
 import '../../engine/tile_manager.dart';
@@ -90,6 +91,7 @@ import '../../services/theme_service.dart';
 import '../../services/tone_service.dart';
 import '../../services/watermark_service.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
+import '../canvas/widgets/layer_keyframe_sheet.dart' show KeyframeEasingChoices;
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/keep_together_text.dart';
@@ -500,10 +502,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// choice, 2026-11-27). None: every clip at the playhead, as before.
   final Set<String> _splitTargetIds = {};
   // クリップのクリップボード。貼り付け先は常に選択中シーンの現在地
-  // （赤枠がついている_currentFrameの位置）で、コピー元シーンが選択中の
-  // シーンと異なる場合は貼り付けを行わない（クリップ一覧はシーンごとに
-  // 読み込まれるため）。コピー・切り取りした時点の素材のレイヤー・絵・音を
-  // 控えるので、切り取りで消えたクリップも何度でも貼り付けられる。
+  // （赤枠がついている_currentFrameの位置）で、別のシーンへも貼り付けられる
+  // （所有者の判断、2026-11-27）。コピー・切り取りした時点の素材のレイヤー・
+  // 絵・音を控えるので、切り取りで消えたクリップも何度でも貼り付けられる。
   ({String sourceSceneId, List<_CopiedClip> clips})? _clipClipboardValue;
   int _pastedAudioSerial = 0;
 
@@ -5618,6 +5619,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 三点メニュー（シーン名変更・複製・削除）
   void _showSceneMenu(Scene scene, List<Scene> scenes) {
     final l10n = AppLocalizations.of(context)!;
+    final ps = context.read<ProjectService>();
+    final fps = _projectFps(ps);
+    final frames = ps.frameCount(widget.projectId, scene.id);
+    // "Length: 12 frames (1.0 s) · 12 fps": the scene's length at the
+    // work's frame rate.
+    final sceneLength =
+        '${l10n.timelineDurationLength(frames, (frames / fps).toStringAsFixed(1))}'
+        ' · ${l10n.pcStatusFps(fps)}';
     showModalBottomSheet(
       context: context,
       builder: (ctx) => ScrollableSheetBody(
@@ -5630,6 +5639,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
               onTap: () {
                 Navigator.pop(ctx);
                 _showRenameSceneDialog(scene);
+              },
+            ),
+            ListTile(
+              key: ValueKey('sceneMenuDuration-${scene.id}'),
+              leading: const Icon(Icons.timer_outlined),
+              title: Text(l10n.timelineDurationChangeMenuItem),
+              subtitle: Text(sceneLength),
+              onTap: () {
+                Navigator.pop(ctx);
+                _showDurationChangeDialog(scene.id);
               },
             ),
             ListTile(
@@ -7316,8 +7335,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   bool get _canPasteTimelineSelection =>
       _sceneClipboard != null ||
       (_frameClipboard != null && _selectedSceneId != null) ||
-      (_clipClipboard != null &&
-          _clipClipboard!.sourceSceneId == _selectedSceneId);
+      (_clipClipboard != null && _selectedSceneId != null);
 
   Widget _timelineContextBar({
     required String title,
@@ -8612,7 +8630,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
     final projects = context.read<ProjectService>();
-    final frame = marker?.frameIndex ?? _currentFrame;
+    // The timestamp can be moved to another frame here (the owner's choice,
+    // 2026-11-27; before, it had to be deleted and made again).
+    var frame = marker?.frameIndex ?? _currentFrame;
+    final totalFrames = _totalFrames;
     final ctrl = TextEditingController(text: marker?.comment);
     final scheme = Theme.of(context).colorScheme;
     final colors = <int?>[
@@ -8638,66 +8659,82 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ? l10n.timelineMarkerAddDialogTitle(frame + 1)
                   : l10n.timelineMarkerEditDialogTitle(frame + 1),
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: ctrl,
-                  autofocus: true,
-                  minLines: 1,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    hintText: l10n.timelineMarkerCommentHint,
+            content: SizedBox(
+              width: 480,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: ctrl,
+                    autofocus: true,
+                    minLines: 1,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: l10n.timelineMarkerCommentHint,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(l10n.timelineColorLabel),
-                // 色は1行に並べる（48pxずつ並べていて、4色と2色の2行になった）。
-                // 押せる所は38×48（ダイアログは中身の固有の幅で決まるので、
-                // LayoutBuilderで幅に合わせることはできない）。
-                Wrap(
-                  children: [
-                    for (final swatch in colors)
-                      Semantics(
-                        selected: swatch == color,
-                        child: IconButton(
-                          key: ValueKey('timelineTimestampColor-$swatch'),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints.tightFor(
-                            width: 38,
-                            height: kMinInteractiveDimension,
-                          ),
-                          // 押せる所を48へ広げない（広げると1行に入らない）。
-                          style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          tooltip: swatch == null
-                              ? l10n.widgetColorFollowTheme
-                              : '#${(swatch & 0xffffff).toRadixString(16).padLeft(6, '0').toUpperCase()}',
-                          onPressed: () => update(() => color = swatch),
-                          icon: CircleAvatar(
-                            radius: 13,
-                            backgroundColor: swatch == null
-                                ? scheme.primary
-                                : Color(swatch),
-                            foregroundColor:
-                                (swatch == null
-                                            ? scheme.primary
-                                            : Color(swatch))
-                                        .computeLuminance() >
-                                    .4
-                                ? Colors.black
-                                : Colors.white,
-                            child: swatch == color
-                                ? const Icon(Icons.check, size: 16)
-                                : null,
+                  if (totalFrames > 1) ...[
+                    const SizedBox(height: 12),
+                    LabeledSlider(
+                      key: const ValueKey('timelineTimestampFrame'),
+                      label: l10n.timelineFrameTrackLabel,
+                      value: (frame.clamp(0, totalFrames - 1) + 1).toDouble(),
+                      min: 1,
+                      max: totalFrames.toDouble(),
+                      divisions: totalFrames - 1,
+                      valueText: 'F${frame + 1}',
+                      onChanged: (v) => update(() => frame = v.round() - 1),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Text(l10n.timelineColorLabel),
+                  // 色は1行に並べる（48pxずつ並べていて、4色と2色の2行になった）。
+                  // 押せる所は38×48（ダイアログは中身の固有の幅で決まるので、
+                  // LayoutBuilderで幅に合わせることはできない）。
+                  Wrap(
+                    children: [
+                      for (final swatch in colors)
+                        Semantics(
+                          selected: swatch == color,
+                          child: IconButton(
+                            key: ValueKey('timelineTimestampColor-$swatch'),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 38,
+                              height: kMinInteractiveDimension,
+                            ),
+                            // 押せる所を48へ広げない（広げると1行に入らない）。
+                            style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            tooltip: swatch == null
+                                ? l10n.widgetColorFollowTheme
+                                : '#${(swatch & 0xffffff).toRadixString(16).padLeft(6, '0').toUpperCase()}',
+                            onPressed: () => update(() => color = swatch),
+                            icon: CircleAvatar(
+                              radius: 13,
+                              backgroundColor: swatch == null
+                                  ? scheme.primary
+                                  : Color(swatch),
+                              foregroundColor:
+                                  (swatch == null
+                                              ? scheme.primary
+                                              : Color(swatch))
+                                          .computeLuminance() >
+                                      .4
+                                  ? Colors.black
+                                  : Colors.white,
+                              child: swatch == color
+                                  ? const Icon(Icons.check, size: 16)
+                                  : null,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
             actions: [
               if (marker != null)
@@ -8731,7 +8768,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       sceneId,
                       TimelineMarker(
                         id: marker.id,
-                        frameIndex: marker.frameIndex,
+                        frameIndex: frame,
                         comment: ctrl.text,
                         color: color,
                       ),
@@ -9138,9 +9175,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _showEditCameraKfDialog(existing);
       return;
     }
+    // A key made between two others carries on the way the one before it
+    // went on (as a material's keyframes do).
+    final before = keys
+        .where((key) => key.frameIndex < _currentFrame)
+        .fold<CameraKeyframe?>(
+          null,
+          (best, key) =>
+              best == null || key.frameIndex > best.frameIndex ? key : best,
+        );
     final draft = CameraEngine()
         .valueAt(keys, _currentFrame)
-        .copyWith(frameIndex: _currentFrame);
+        .copyWith(
+          frameIndex: _currentFrame,
+          easing: before?.easing ?? LayerKeyframeEasing.linear,
+        );
     _showEditCameraKfDialog(draft, isNew: true);
   }
 
@@ -10122,9 +10171,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final clipboard = _clipClipboard;
     final sceneId = _selectedSceneId;
     if (clipboard == null || sceneId == null) return;
-    // クリップの一覧はシーンごとにロードされるため、コピー元と異なる
-    // シーンを見ている間は貼り付けを行わない（ボタン側でも無効化する）。
-    if (clipboard.sourceSceneId != sceneId) return;
 
     final copied = [for (final copy in clipboard.clips) copy.clip];
     final anchor = copied
@@ -10209,6 +10255,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
           }
         }
 
+        // Pasted into another scene, a clip keeps its row: make the rows it
+        // needs there (rows past the scene's last one are not shown).
+        if (clipboard.sourceSceneId != sceneId) {
+          final ps = context.read<ProjectService>();
+          for (final c in copied) {
+            if (c.isReadAloud || newRowForClipId.containsKey(c.id)) continue;
+            final kind = _rowKindOf(c.trackType);
+            while (ps.rowNamesOf(widget.projectId, sceneId, kind).length <=
+                c.trackRow) {
+              ps.addTrackRow(widget.projectId, sceneId, kind);
+            }
+          }
+        }
         for (final copy in clipboard.clips) {
           final c = copy.clip;
           var start = targets[c.id]!;
@@ -10998,10 +11057,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 秒数のどちらからでも一括変更できるダイアログ（タイムライン三点メニュー
   /// 「長さ変更」）。1コマずつの＋／－操作の手間を省く。fps自体は変更しない
   /// （fpsは基本設定・プロジェクト作成時に決めるものとして扱う）。
-  void _showDurationChangeDialog() {
+  void _showDurationChangeDialog([String? forScene]) {
     final l10n = AppLocalizations.of(context)!;
     final ps = context.read<ProjectService>();
-    final sceneId = _selectedSceneId;
+    // From a scene's ︙ menu, that scene; otherwise the one shown.
+    final sceneId = forScene ?? _selectedSceneId;
     if (sceneId == null) return;
     final project = ps.projects
         .where((p) => p.id == widget.projectId)
@@ -11029,7 +11089,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
               title: Text(l10n.timelineDurationChangeMenuItem),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // The frame rate the seconds are counted at (the work's).
+                  Text(
+                    l10n.pcStatusFps(fps),
+                    key: const ValueKey('durationDialogFps'),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                   SteppedSlider(
                     value: frames.toDouble(),
                     min: 1,
@@ -11131,10 +11201,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         frames - ps.frameCount(widget.projectId, sceneId);
                     if (added > 0 && !_canAddFrames(added)) return;
                     ps.setSceneFrameCount(widget.projectId, sceneId, frames);
-                    setState(() {
-                      _currentFrame = _currentFrame.clamp(0, frames - 1);
-                      _selectedFrameIndices.removeWhere((i) => i >= frames);
-                    });
+                    if (sceneId == _selectedSceneId) {
+                      setState(() {
+                        _currentFrame = _currentFrame.clamp(0, frames - 1);
+                        _selectedFrameIndices.removeWhere((i) => i >= frames);
+                      });
+                    }
                     if (ctx.mounted) Navigator.pop(ctx);
                   },
                   child: Text(l10n.commonOk),
@@ -13976,7 +14048,8 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
         _kf.x != widget.kf.x ||
         _kf.y != widget.kf.y ||
         _kf.zoom != widget.kf.zoom ||
-        _kf.rotation != widget.kf.rotation;
+        _kf.rotation != widget.kf.rotation ||
+        _kf.easing != widget.kf.easing;
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.91,
@@ -14114,6 +14187,12 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                     l10n.timelineCameraFrameAlreadyHasKeyframe,
                     liveRegion: true,
                   ),
+                const SizedBox(height: 8),
+                KeyframeEasingChoices(
+                  key: const ValueKey('cameraKfEasing'),
+                  easing: _kf.easing,
+                  onChanged: (easing) => _update(_kf.copyWith(easing: easing)),
+                ),
               ],
             ),
           ),
