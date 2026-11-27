@@ -989,7 +989,9 @@ class CanvasAreaState extends State<CanvasArea> {
       });
     }
     if (oldWidget.background != widget.background ||
-        oldWidget.project?.backgroundColor != widget.project?.backgroundColor) {
+        oldWidget.project?.backgroundColor != widget.project?.backgroundColor ||
+        oldWidget.onionSkinSettings.enabled !=
+            widget.onionSkinSettings.enabled) {
       _recomposeSurroundings(force: true);
     }
     if (oldWidget.activeRuler != widget.activeRuler) {
@@ -4877,7 +4879,12 @@ class CanvasAreaState extends State<CanvasArea> {
   /// the transparency checkerboard) and it is opaque; null otherwise.
   int? get _paperColor {
     final project = widget.project;
-    if (project == null || widget.background != CanvasBackground.white) {
+    // オニオンスキンを出している間は、紙を下のレイヤーの合成に入れない（紙は
+    // ペインターが敷き、その上にオニオンスキン、その上に今のコマの全レイヤー）。
+    // その間だけ、下のレイヤーの合成モードは紙ではなく透明の上で効く。
+    if (project == null ||
+        widget.background != CanvasBackground.white ||
+        widget.onionSkinSettings.enabled) {
       return null;
     }
     return (project.backgroundColor >>> 24) == 0xFF
@@ -5605,20 +5612,22 @@ class _CanvasPainter extends CustomPainter {
 
     // 現在レイヤーより奥（背面）のレイヤー群。現在レイヤーがGPUで描けない
     // 合成モードのときは、下のレイヤーと現在レイヤーを正確に合成した1枚。
-    final exact = moveDelta == null && meshSourceImage == null
-        ? exactCurrentBlend
-        : null;
-    _drawFrameImage(canvas, drawingRect, exact ?? belowImage, Paint());
-
-    // オニオンスキン：前のコマも後のコマも、今描いているレイヤーの下に透かして
-    // 出す（前後は色で見分ける。後のコマを上に重ねると描いている線にかぶって
-    // 見づらい、所有者の指定、2026-11-27）。遠いコマから順に描き、近いコマを上に。
+    // オニオンスキン：前のコマも後のコマも、紙のすぐ上・今のコマのすべての
+    // レイヤーの下に透かして出す（前後は色で見分ける。上に重ねると描いている
+    // 線にかぶって見づらい、所有者の指定、2026-11-27）。オニオンスキンを
+    // 出している間は、下のレイヤーの合成に紙を入れていない（_paperColor）。
+    // 遠いコマから順に描き、近いコマを上に。
     final onionOrder = onionImages.keys.toList()
       ..sort((a, b) => b.abs().compareTo(a.abs()));
     for (final key in onionOrder) {
       if (key == 0) continue;
       _drawOnionFrame(canvas, drawingRect, onionImages[key]!, key);
     }
+
+    final exact = moveDelta == null && meshSourceImage == null
+        ? exactCurrentBlend
+        : null;
+    _drawFrameImage(canvas, drawingRect, exact ?? belowImage, Paint());
 
     // 現在レイヤー（不透明度・ブレンドモードを反映）
     if (meshSourceImage != null && meshControlPoints != null) {

@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
+import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/onion_skin_settings.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart' show DrawingTool;
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
@@ -180,9 +181,9 @@ void main() {
       () => File('${out.path}/onion_canvas_real.png').writeAsBytes(on.png),
     );
   });
-  // 前のコマも後のコマも、今描いているレイヤーの下に透かして出す（所有者の
-  // 指定、2026-11-27）。後のコマの影が今のコマの塗った所にかぶらない。
-  testWidgets('後のコマのオニオンスキンも今のレイヤーの下に出る', (tester) async {
+  // 前のコマも後のコマも、紙のすぐ上・今のコマのすべてのレイヤーの下に透かして
+  // 出す（所有者の指定、2026-11-27）。影が今のコマの絵にかぶらない。
+  testWidgets('前後のオニオンスキンは今のコマのすべてのレイヤーの下（紙の上）に出る', (tester) async {
     tester.view.physicalSize = const Size(480, 360);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -225,6 +226,29 @@ void main() {
       ps.tileManagerOf(p.id).replaceLayerPixels(key, rgba);
     }
     final currentLayer = ps.layersOf(p.id, sceneId, 1).first;
+    // 今のコマの、今のレイヤーより下のレイヤー：灰色の四角（64..72）。
+    final lower = ps.addLayer(
+      projectId: p.id,
+      sceneId: sceneId,
+      frameIndex: 1,
+      type: LayerType.normal,
+      name: 'lower',
+      insertIndex: 1,
+    );
+    final grey = Uint8List(96 * 80 * 4);
+    for (var y = 25; y < 41; y++) {
+      for (var x = 64; x < 72; x++) {
+        final i = (y * 96 + x) * 4;
+        grey[i] = 120;
+        grey[i + 1] = 120;
+        grey[i + 2] = 120;
+        grey[i + 3] = 255;
+      }
+    }
+    ps
+        .tileManagerOf(p.id)
+        .replaceLayerPixels(ps.tileKeyFor(p.id, sceneId, 1, lower.id), grey);
+    expect(ps.layersOf(p.id, sceneId, 1).first.id, currentLayer.id);
     final providers = await tester.runAsync(buildAppProviders);
     final boundaryKey = GlobalKey();
     var settings = const OnionSkinSettings(enabled: false);
@@ -299,6 +323,9 @@ void main() {
     // 今のコマの塗った所は今の色のまま（後のコマの影が上にかぶらない）。
     final current = _pixel(on.rgba, on.width, 50 * 3, 33 * 3);
     expect(current.sublist(0, 3), orderedEquals([30, 220, 70]));
+    // 今のレイヤーより下のレイヤーの上にもかぶらない（紙のすぐ上に出る）。
+    final lowerPixel = _pixel(on.rgba, on.width, 68 * 3, 33 * 3);
+    expect(lowerPixel.sublist(0, 3), orderedEquals([120, 120, 120]));
     await tester.runAsync(
       () =>
           File('${out.path}/onion_next_under_current.png').writeAsBytes(on.png),
