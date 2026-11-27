@@ -348,11 +348,16 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: menuWidth,
-                          height: _headerHeight,
-                          child: Row(
-                            children: [
+                        ListenableBuilder(
+                          listenable: _menuController,
+                          builder: (context, _) {
+                            final headerMenuBuilder =
+                                _menuController.headerMenuBuilder;
+                            return SizedBox(
+                              width: menuWidth,
+                              height: _headerHeight,
+                              child: Row(
+                                children: [
                               // Top-left resize handle: drag left/up to grow.
                               SizedBox(
                                 width: headerControlWidth,
@@ -496,6 +501,9 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                               ),
                                             Center(
                                               child: Container(
+                                                key: const ValueKey(
+                                                  'focus-mode-menu-move-grip',
+                                                ),
                                                 width: 32,
                                                 height: 4,
                                                 decoration: BoxDecoration(
@@ -513,24 +521,14 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                   ),
                                 ),
                               ),
-                              // The panel contributes its own context-sensitive menu.
-                              ListenableBuilder(
-                                listenable: _menuController,
-                                builder: (context, _) {
-                                  final builder =
-                                      _menuController.headerMenuBuilder;
-                                  if (builder == null) {
-                                    // Do not leave an empty menu-sized gap on
-                                    // panels that have no contextual actions.
-                                    return const SizedBox.shrink();
-                                  }
-                                  return SizedBox(
-                                    width: headerControlWidth,
-                                    height: _headerHeight,
-                                    child: builder(context),
-                                  );
-                                },
-                              ),
+                              // Panels without contextual actions omit this
+                              // slot entirely, keeping the close button adjacent.
+                              if (headerMenuBuilder != null)
+                                SizedBox(
+                                  width: headerControlWidth,
+                                  height: _headerHeight,
+                                  child: headerMenuBuilder(context),
+                                ),
                               if (widget.onClose != null)
                                 SizedBox(
                                   width: headerControlWidth,
@@ -550,8 +548,10 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                     onPressed: widget.onClose,
                                   ),
                                 ),
-                            ],
-                          ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                         ConstrainedBox(
                           constraints: BoxConstraints(
