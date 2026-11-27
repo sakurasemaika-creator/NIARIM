@@ -1,4 +1,4 @@
-import 'dart:collection' show UnmodifiableMapView;
+import 'dart:collection' show HashSet, UnmodifiableMapView;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -351,12 +351,27 @@ class TileManager {
 
   /// 指定タイルのピクセルバッファを読み取り用に返す。
   ///
-  /// 返るのはキャッシュ本体ではなく実バッファそのものなので、**書き換えた
-  /// 場合は必ず[invalidateTile]を呼ぶこと**。呼ばないと、そのタイルの
-  /// デコード済み画像・レイヤーの合成結果が古いまま再利用され、変更が
-  /// 画面に出ない。
-  Uint8List? getTile(String layerId, int tx, int ty) =>
-      _tiles[layerId]?[_tileKey(tx, ty)];
+  /// 返るのはキャッシュ本体ではなく実バッファそのもの。書き換えるときは
+  /// [getOrCreateTile]で受け取ったバッファに書くこと：このバッファはほかの
+  /// タイル（複製したレイヤー・コマ）と共有していることがあり（Copy-on-Write）、
+  /// 書くとそのタイルの絵も変わる。アサーションの入ったビルドでは、共有して
+  /// いるバッファは読み取り専用のビューで返るので、書き込むと例外になる。
+  /// 共有していないバッファを直接書き換えたときは必ず[invalidateTile]を
+  /// 呼ぶこと（呼ばないと、そのタイルのデコード済み画像・レイヤーの合成結果が
+  /// 古いまま再利用され、変更が画面に出ない）。
+  Uint8List? getTile(String layerId, int tx, int ty) {
+    final tile = _tiles[layerId]?[_tileKey(tx, ty)];
+    if (_guardsSharedTiles && tile != null && _sharedTiles[tile] == true) {
+      return tile.asUnmodifiableView();
+    }
+    return tile;
+  }
+
+  static final bool _guardsSharedTiles = () {
+    var guards = false;
+    assert(guards = true);
+    return guards;
+  }();
 
   /// Reads a pixel by canvas coordinates without creating a tile or invalidating
   /// drawing caches. Returns null when the pixel is outside the canvas or fully
@@ -365,7 +380,7 @@ class TileManager {
     if (x < 0 || y < 0 || x >= canvasWidth || y >= canvasHeight) return null;
     final tx = x ~/ tileSize;
     final ty = y ~/ tileSize;
-    final tile = getTile(layerId, tx, ty);
+    final tile = _tiles[layerId]?[_tileKey(tx, ty)];
     if (tile == null) return null;
     final localX = x % tileSize;
     final localY = y % tileSize;
@@ -1396,9 +1411,10 @@ class TileManager {
   /// work is opened), so they are what the file holds: none needs to be
   /// written again at the next save of the work file (the save copies them
   /// as stored). The buffers are fresh from the reader and are kept as they
-  /// are. Otherwise (restoring an automatic or manual save) every tile is
-  /// written at the next save. [storedCrcs] (`layerId:tileKey` → CRC-32) are
-  /// the work file's checksums of those tiles, kept for the making recorder.
+  /// are; one given under several keys is shared copy-on-write. Otherwise
+  /// (restoring an automatic or manual save) every tile is written at the
+  /// next save. [storedCrcs] (`layerId:tileKey` → CRC-32) are the work
+  /// file's checksums of those tiles, kept for the making recorder.
   void importAll(
     Map<String, Map<String, Uint8List>> data, {
     bool asStoredInWorkFile = false,
@@ -1420,6 +1436,10 @@ class TileManager {
     _dirtyTiles.clear();
     _autosaveDirtyTiles.clear();
     _sharedTiles = Expando<bool>();
+    // A buffer the reader gave under more than one key (identical tiles of
+    // copied frames) is shared copy-on-write, like the tiles of a copied
+    // layer.
+    final kept = asStoredInWorkFile ? HashSet<Uint8List>.identity() : null;
     for (final layerEntry in data.entries) {
       _tiles[layerEntry.key] = asStoredInWorkFile
           ? Map.of(layerEntry.value)
@@ -1427,6 +1447,11 @@ class TileManager {
               for (final tileEntry in layerEntry.value.entries)
                 tileEntry.key: Uint8List.fromList(tileEntry.value),
             };
+      if (kept != null) {
+        for (final tile in layerEntry.value.values) {
+          if (!kept.add(tile)) _sharedTiles[tile] = true;
+        }
+      }
       for (final tileKey in layerEntry.value.keys) {
         final key = '${layerEntry.key}:$tileKey';
         // No automatic save of this session holds these tiles yet.

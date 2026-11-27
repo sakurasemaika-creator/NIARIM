@@ -3,9 +3,13 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:flutter/foundation.dart';
 
+import 'same_bytes.dart';
+
 /// How large a ZIP may be. Every compressed entry is still inflated once
-/// (counted, not kept) to check that it expands to the size it declares, so
-/// a forged size cannot get a ZIP bomb or a damaged entry past the check.
+/// (counted, not kept; an entry stored as the same bytes as an earlier one
+/// expands to the same size) to check that it expands to the size it
+/// declares, so a forged size cannot get a ZIP bomb or a damaged entry past
+/// the check.
 class ArchiveLimits {
   const ArchiveLimits._({
     required this.compressedBytes,
@@ -203,6 +207,7 @@ class ArchiveSecurity {
 
     var expandedBytes = 0;
     final names = <String>{};
+    final expandedAlike = <(int, int), List<Uint8List>>{};
     for (final header in headers) {
       final name = header.filename.replaceAll('\\', '/');
       _validateEntryName(name);
@@ -236,6 +241,7 @@ class ArchiveSecurity {
           expandedBytes,
           size,
           limits,
+          expandedAlike,
         ),
         _ => throw const FormatException('未対応のZIP圧縮方式です'),
       };
@@ -249,11 +255,18 @@ class ArchiveSecurity {
     }
   }
 
+  static const _alikeKept = 4;
+
+  /// [expandedAlike] holds the raw deflate streams (by their length and
+  /// declared size) already seen to expand to their declared size: the same
+  /// stream expands to the same bytes, so an entry with the same stream
+  /// (copied frames keep many identical tiles) is not expanded again.
   static int _measureDeflated(
     InputStreamBase? rawContent,
     int expandedSoFar,
     int declaredSize,
     ArchiveLimits limits,
+    Map<(int, int), List<Uint8List>> expandedAlike,
   ) {
     if (rawContent == null) throw const FormatException('ZIPエントリの圧縮データがありません');
     final remainingTotal = limits.expandedBytes - expandedSoFar;
@@ -265,11 +278,20 @@ class ArchiveSecurity {
     // to exactly the declared size within the limit, the Dart inflater below
     // gives that size too, so its much slower pass is only needed to tell
     // what is wrong with an entry that does not.
-    if (!debugDartInflateOnly &&
-        declaredSize <= limit &&
-        _nativeInflatedLength(rawContent.toUint8List(), declaredSize) ==
-            declaredSize) {
-      return declaredSize;
+    if (!debugDartInflateOnly && declaredSize <= limit) {
+      final raw = rawContent.toUint8List();
+      final alike = expandedAlike[(raw.length, declaredSize)];
+      if (alike != null && alike.any((seen) => sameBytes(seen, raw))) {
+        return declaredSize;
+      }
+      if (_nativeInflatedLength(raw, declaredSize) == declaredSize) {
+        // A few per length are enough for copies; more would let a crafted
+        // archive of many different streams of one length cost a comparison
+        // with every earlier one.
+        final seen = expandedAlike[(raw.length, declaredSize)] ??= [];
+        if (seen.length < _alikeKept) seen.add(raw);
+        return declaredSize;
+      }
     }
     final sink = _LimitedOutputStream(limit);
     Inflate.stream(rawContent, sink);

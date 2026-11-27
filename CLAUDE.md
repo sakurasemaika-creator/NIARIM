@@ -1354,10 +1354,25 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   作品ファイル（印は`_dirtyTiles`）から同じように写す。作品を開いたとき（`_tilesOf`）は作品ファイルのタイルを
   `importAll(asStoredInWorkFile: true)`で読み、印を付けない。**タイルの画素を書き換える処理は必ず
   `getOrCreateTile`・`invalidateTile`/`markDirty`・`replaceLayerPixels`等の印を付ける入口を通すこと**
-  （`getTile`で受け取ったバッファを直に書き換えて印を付けないと、その変更は保存されない）。明示的に呼ぶ
+  （`getTile`で受け取ったバッファを直に書き換えて印を付けないと、その変更は保存されない。共有している
+  タイルでは別のコマの絵まで変わるので、書き換えは`getOrCreateTile`のバッファに行う。下の段落）。明示的に呼ぶ
   `AutosaveService.save`（`skipUnchanged: false`）は今までどおり全部のタイルを書く。見張りは
   `test/autosave_incremental_test.dart`（元のファイルの1タイルを無圧縮にしておき、保存後も無圧縮のまま
   残る＝写したことを確かめる）。
+- **作品を開くとき、同じ画素のタイルは1回だけ展開して1つのバッファで持つ（2026-11-27）**：コマ・シーンを
+  複製して一部を描き直す作品は同じタイルを何百枚も持つ（1080×1080・12コマでコマを複製して2割を描き直した
+  作品はタイル556枚のうち453枚）。`_tilesOf`の`NiaproSerializer.loadTilesSync`は、CRC-32と保存された
+  バイト列が前の項目と同じ項目は展開せずにそのバッファを使い、CRC-32だけが同じ項目は展開して画素を比べて
+  から使う（`shareIdenticalTiles`）。`importAll(asStoredInWorkFile: true)`は2つ以上のキーにあるバッファを
+  `_sharedTiles`（Copy-on-Write）にし、`getOrCreateTile`が書く前に写す。`ArchiveSecurity.decodeZip`の大きさの
+  確かめも、申告どおりに展開できた圧縮のバイト列と同じ項目は展開しない（起動の一覧づくりも速くなる）。
+  開いたときのタイルのメモリは139→26MiB、読む時間は690→140ms（JIT）。**`getTile`のバッファに書き込まない
+  こと**：アサーションの入ったビルド（デバッグ・test）では共有しているタイルは読み取り専用のビューで返り、
+  書き込むと`UnsupportedError`になる（リリースでは黙ってほかのコマの絵が変わる）。共有のバッファを返す
+  読み込みは`loadTilesSync`だけ（自動保存・手動の保存からの復元・受け取った作品は今までどおり1枚ずつ）。
+  `test/work_open_shared_tiles_test.dart`が、描く・取り消す・コマの複製と削除・保存・自動保存・書き出し・
+  .niashareの結果が1枚ずつ持ったとき（`NiaproSerializer.debugShareIdenticalTiles = false`）と1バイトも
+  変わらないことを見張る。
 - **ZIPの項目の大きさを確かめる展開は端末のzlibで行う（2026-11-27）**：`ArchiveSecurity.decodeZip`は、
   作品を読むたび（起動の一覧づくり・作品を開くとき・自動保存の比べ）に全部の項目を展開して申告の大きさと
   比べる。以前はpackage:archiveのDartの展開器（1バイトずつ書く`_LimitedOutputStream`）で数えていて、

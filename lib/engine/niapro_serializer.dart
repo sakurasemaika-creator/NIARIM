@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'dart:ui' show Color, Offset, TextAlign;
 
 import 'package:archive/archive_io.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, visibleForTesting;
 import 'package:image/image.dart' as thumbnail_image;
 import 'package:path_provider/path_provider.dart';
 
@@ -30,6 +30,7 @@ import 'filter_engine.dart' show EffectFilterType;
 import 'tile_manager.dart';
 import 'archive_security.dart';
 import 'fast_crc32.dart';
+import 'same_bytes.dart';
 
 /// .niapro ファイルの保存・読み込み。
 /// 形式：ZIP アーカイブ
@@ -1047,6 +1048,54 @@ class NiaproSerializer {
     return bytes;
   }
 
+  static _ReadTile _readTile(ArchiveFile file, {bool onlyUse = false}) {
+    var repaired = false;
+    final pixels = _readTilePixels(
+      file,
+      onRepaired: () => repaired = true,
+      onlyUse: onlyUse,
+    );
+    return _ReadTile(file, pixels, repaired);
+  }
+
+  /// The pixels of [file] as [_readTile] gives them, as the buffer of an
+  /// identical tile read before when there is one ([read] holds the tiles
+  /// read so far by their CRC-32 [crc]). The same stored bytes (and way of
+  /// storing) expand to the same pixels, so such an entry is not expanded.
+  static _ReadTile _readSharedTile(
+    ArchiveFile file,
+    int crc,
+    Map<int, List<_ReadTile>> read, {
+    bool onlyUse = false,
+  }) {
+    final same = read[crc];
+    if (same != null) {
+      final stored = file.rawContent?.toUint8List();
+      if (stored != null) {
+        for (final earlier in same) {
+          if (earlier.file.compressionType != file.compressionType) continue;
+          final earlierStored = earlier.file.rawContent?.toUint8List();
+          if (earlierStored != null && sameBytes(earlierStored, stored)) {
+            return earlier;
+          }
+        }
+      }
+    }
+    final fresh = _readTile(file, onlyUse: onlyUse);
+    if (same != null) {
+      for (final earlier in same) {
+        if (sameBytes(earlier.pixels, fresh.pixels)) {
+          return _ReadTile(file, earlier.pixels, fresh.repaired);
+        }
+      }
+    }
+    // Tiles that differ but share a CRC-32 are rare; keeping only a few
+    // bounds the comparisons each later tile makes.
+    final kept = read[crc] ??= [];
+    if (kept.length < 4) kept.add(fresh);
+    return fresh;
+  }
+
   /// [withTiles] false leaves the picture tiles in the file (the returned
   /// data has no tiles and [NiaproData.tilesLeftIn] is [filePath]); read them
   /// with [loadTilesSync] when the work is opened.
@@ -1072,6 +1121,10 @@ class NiaproSerializer {
   /// listed with `withTiles: false` is opened).
   /// [crcs] receives the archive's CRC-32 of each tile read as stored
   /// (`layerKey:tileKey`; not tiles repaired on reading).
+  /// Tiles with the same pixels come back as one shared buffer (see
+  /// [loadFromBytes]'s `shareIdenticalTiles`): the result is only for
+  /// [TileManager.importAll] with `asStoredInWorkFile`, which keeps shared
+  /// buffers copy-on-write.
   static Map<String, Map<String, Uint8List>> loadTilesSync(
     String filePath, {
     Map<String, int>? crcs,
@@ -1081,14 +1134,28 @@ class NiaproSerializer {
       File(filePath).readAsBytesSync(),
       tileCrcs: crcs,
       limits: ArchiveLimits.ownWork,
+      shareIdenticalTiles: debugShareIdenticalTiles,
     ).tileData;
   }
 
+  /// False reads every tile of [loadTilesSync] into a buffer of its own (the
+  /// way every other load reads them), to compare the two in tests.
+  @visibleForTesting
+  static bool debugShareIdenticalTiles = true;
+
+  /// [shareIdenticalTiles]: tile entries with the same pixels give one
+  /// buffer, put under each of their keys (copied frames and scenes keep
+  /// many identical tiles: they are expanded once and held once). An entry
+  /// whose CRC-32 and stored bytes are those of an entry read before is not
+  /// expanded at all; one with the same CRC-32 but other stored bytes is
+  /// expanded and shares only when its pixels are the same. Only for a
+  /// caller that never writes into the buffers in place.
   static NiaproData loadFromBytes(
     List<int> bytes, {
     bool withTiles = true,
     Map<String, int>? tileCrcs,
     ArchiveLimits limits = ArchiveLimits.received,
+    bool shareIdenticalTiles = false,
   }) {
     final archive = ArchiveSecurity.decodeZip(bytes, limits: limits);
 
@@ -1177,6 +1244,7 @@ class NiaproSerializer {
     final tileData = <String, Map<String, Uint8List>>{};
     var skippedTiles = 0;
     if (withTiles) {
+      final readByCrc = <int, List<_ReadTile>>{};
       void addTile(
         String compositeKey,
         String tileKey,
@@ -1191,14 +1259,12 @@ class NiaproSerializer {
           skippedTiles++;
           return;
         }
-        var repaired = false;
-        tileData.putIfAbsent(compositeKey, () => {})[tileKey] = _readTilePixels(
-          file,
-          onRepaired: () => repaired = true,
-          onlyUse: onlyUse,
-        );
         final crc = file.crc32;
-        if (tileCrcs != null && crc != null && !repaired) {
+        final read = shareIdenticalTiles && crc != null
+            ? _readSharedTile(file, crc, readByCrc, onlyUse: onlyUse)
+            : _readTile(file, onlyUse: onlyUse);
+        tileData.putIfAbsent(compositeKey, () => {})[tileKey] = read.pixels;
+        if (tileCrcs != null && crc != null && !read.repaired) {
           tileCrcs['$compositeKey:$tileKey'] = crc;
         }
       }
@@ -1893,6 +1959,16 @@ class AutosaveBase {
 
   /// The automatic save slot copied from; null for the work file.
   final int? slotIndex;
+}
+
+/// A tile entry read from a work file: its pixels and whether reading them
+/// had to repair them.
+class _ReadTile {
+  const _ReadTile(this.file, this.pixels, this.repaired);
+
+  final ArchiveFile file;
+  final Uint8List pixels;
+  final bool repaired;
 }
 
 class NiaproData {
