@@ -3805,17 +3805,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 // 自由変形とメッシュ変形は同じ仕組みの分割数違い
-                // （4隅だけか、格子状に細かく分けるか）。
+                // （4隅だけか、格子状に細かく分けるか）。選択範囲があれば
+                // その中、無ければレイヤー全体（メニューの項目と同じ）を
+                // 変形する（以前は選択範囲が無いと何も出なかった）。
                 chip(
                   icon: Icons.crop_free,
                   label: l10n.canvasSelectionFreeTransform,
-                  onTap: () => _openMeshTransformPanel(selectionOnly: true),
+                  onTap: () => _openMeshTransformPanel(
+                    selectionOnly: _hasActiveSelection,
+                  ),
                 ),
                 chip(
                   icon: Icons.grid_on,
                   label: l10n.canvasSelectionMeshTransform,
-                  onTap: () =>
-                      _openMeshTransformPanel(density: 3, selectionOnly: true),
+                  onTap: () => _openMeshTransformPanel(
+                    density: 3,
+                    selectionOnly: _hasActiveSelection,
+                  ),
                 ),
                 // 変形を取り消して選択ツールごと抜ける。アイコンは、
                 // 隣の「適用」がチェックなのと対になるよう×にしている。
