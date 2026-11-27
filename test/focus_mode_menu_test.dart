@@ -151,6 +151,8 @@ void main() {
 
     expect(move.center.dx, closeTo(tester.getRect(surface).center.dx, 0.1));
     expect(resize.left, closeTo(tester.getRect(surface).left, 0.1));
+    expect(move.right, closeTo(close.left, 0.1),
+        reason: 'panels without contextual actions must not reserve an empty menu slot');
     expect(close.right, closeTo(tester.getRect(surface).right, 0.1));
   });
 
