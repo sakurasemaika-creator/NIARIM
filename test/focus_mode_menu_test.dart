@@ -94,6 +94,17 @@ void main() {
     final returned = tester.getRect(surface);
     expect(returned.left, greaterThanOrEqualTo(0));
     expect(returned.bottom, lessThanOrEqualTo(800));
+
+    // A minimized handle must still use the expanded panel's bounds.
+    await tester.tap(find.byKey(const ValueKey('focus-mode-menu-toggle')));
+    await tester.pumpAndSettle();
+    await tester.drag(handle, const Offset(2000, -2000));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('focus-mode-menu-toggle')));
+    await tester.pumpAndSettle();
+    final restored = tester.getRect(surface);
+    expect(restored.right, lessThanOrEqualTo(400));
+    expect(restored.top, greaterThanOrEqualTo(0));
   });
 }
 
