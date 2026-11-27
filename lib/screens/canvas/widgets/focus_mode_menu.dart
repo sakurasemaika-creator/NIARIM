@@ -509,13 +509,11 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                 builder: (context, _) {
                                   final builder =
                                       _menuController.headerMenuBuilder;
-                                  if (builder == null) {
-                                    return const SizedBox.shrink();
-                                  }
                                   return SizedBox(
                                     width: _headerHeight,
                                     height: _headerHeight,
-                                    child: builder(context),
+                                    child: builder?.call(context) ??
+                                        const SizedBox.shrink(),
                                   );
                                 },
                               ),
