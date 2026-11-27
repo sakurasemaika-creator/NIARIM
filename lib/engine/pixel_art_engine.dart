@@ -38,7 +38,11 @@ import 'pixel_art_lines.dart';
 /// （ピクセルパーフェクトな）線にする。描き直した線のインクはほかのドットの
 /// 色から外す。細い線の無い絵では何も変わらない。
 class PixelArtEngine {
-  const PixelArtEngine();
+  const PixelArtEngine({this.halfResolutionLines = false});
+
+  /// 4〜7画素のドットでも、細い線を縦横半分に縮めた絵で探す（速いが、線の
+  /// 位置が元の細かさで探すときと少し変わることがある）。既定は切。
+  final bool halfResolutionLines;
 
   Uint8List convert(
     Uint8List data,
@@ -65,7 +69,15 @@ class PixelArtEngine {
     // 細い線を描き直す（ブラシのピクセルモードのように色だけ変えるときと、
     // 1画素のドットでは描き直さない）。
     final lines = squareBlocks && redrawLines
-        ? PixelArtLines.find(data, width, height, xs, ys, size)
+        ? PixelArtLines.find(
+            data,
+            width,
+            height,
+            xs,
+            ys,
+            size,
+            halfResolution: halfResolutionLines,
+          )
         : null;
     final inked = lines?.inked;
     final rawColors = List<int?>.filled(cellCount, null);
@@ -76,26 +88,32 @@ class PixelArtEngine {
     // stroke), 2 = along y (an upright one), 0 = neither (a dot, a diagonal).
     final orientation = Uint8List(cellCount);
     final even = Uint8List(cellCount);
+    // 線のインクも含めた、ドットの画素の不透明度の合計（線を描き直すとき）。
+    final whole = inked == null ? null : Int32List(cellCount);
 
     final edgeX = Int32List.fromList(xs), edgeY = Int32List.fromList(ys);
+    final words = _pixelWords(data, width * height);
     for (var cy = 0; cy < cellsY; cy++) {
       final y0 = edgeY[cy], h = edgeY[cy + 1] - y0;
       for (var cx = 0; cx < cellsX; cx++) {
         final x0 = edgeX[cx], w = edgeX[cx + 1] - x0;
-        var wr = 0, wg = 0, wb = 0, aw = 0, top = 0, n = 0;
+        var wr = 0, wg = 0, wb = 0, aw = 0, top = 0, n = 0, all = 0;
         var sx = 0, sy = 0, sxx = 0, syy = 0, squares = 0;
         for (var dy = 0; dy < h; dy++) {
           final row = (y0 + dy) * width + x0;
           for (var dx = 0; dx < w; dx++) {
             final p = row + dx;
+            final v = words[p];
+            final a = v >> 24;
             // 描き直す線のインクは、そのドットの地の色に数えない。
-            if (inked != null && inked[p] != 0) continue;
+            if (inked != null && inked[p] != 0) {
+              all += a;
+              continue;
+            }
             n++;
-            final i = p * 4;
-            final a = data[i + 3];
             if (a == 0) continue;
             // Premultiplied channels are the colour already weighted by alpha.
-            final d0 = data[i], d1 = data[i + 1], d2 = data[i + 2];
+            final d0 = v & 0xff, d1 = (v >> 8) & 0xff, d2 = (v >> 16) & 0xff;
             wr += d0;
             wg += d1;
             wb += d2;
@@ -111,6 +129,7 @@ class PixelArtEngine {
         final c = cy * cellsX + cx;
         pixels[c] = n;
         alphaSum[c] = aw;
+        if (whole != null) whole[c] = all + aw;
         alphaMax[c] = top;
         if (aw == 0) continue;
         final mx = sx / aw, my = sy / aw;
@@ -167,6 +186,19 @@ class PixelArtEngine {
           borrowedRing,
         );
       }
+      if (lines != null) {
+        _fillBesideLines(
+          cellsX,
+          cellsY,
+          edgeX,
+          edgeY,
+          lines.line,
+          whole!,
+          kept,
+          rawColors,
+          settled!,
+        );
+      }
       blockAlpha = _bridgeGaps(data, width, size, xs, ys, alphaMax, kept);
     }
     if (blockAlpha != null) {
@@ -198,6 +230,9 @@ class PixelArtEngine {
       );
     }
     final lineCell = lines?.line;
+    if (lines != null && blockAlpha != null) {
+      _closeHolesBesideLines(cellsX, cellsY, lines.line, rawColors, blockAlpha);
+    }
 
     final countPalette = colorMode == PixelColorMode.count
         ? _buildCountPalette(rawColors.whereType<int>().toList(), colorLevels)
@@ -432,6 +467,7 @@ class PixelArtEngine {
       cellH = math.max(cellH, edgeY[cy + 1] - edgeY[cy]);
     }
     final cell = _CellPaint(cellW * cellH);
+    final words = _pixelWords(data, data.length ~/ 4);
     final pr = cell.r, pg = cell.g, pb = cell.b, pw = cell.w, pa = cell.a;
     final keys = cell._key;
     // 隣のドットの、色を決め直す前の色。
@@ -453,12 +489,13 @@ class PixelArtEngine {
         for (var y = edgeY[cy]; y < edgeY[cy + 1]; y++) {
           for (var x = x0, p = y * width + x0; x < x1; x++, p++) {
             if (inked != null && inked[p] != 0) continue;
-            final i = p * 4;
-            final a = data[i + 3];
+            final v = words[p];
+            final a = v >> 24;
             if (a == 0) continue;
-            final r = data[i] * 255 / a;
-            final g = data[i + 1] * 255 / a;
-            final b = data[i + 2] * 255 / a;
+            final d0 = v & 0xff, d1 = (v >> 8) & 0xff, d2 = (v >> 16) & 0xff;
+            final r = d0 * 255 / a;
+            final g = d1 * 255 / a;
+            final b = d2 * 255 / a;
             final dr = r - ar, dg = g - ag, db = b - ab;
             final far = math.sqrt(dr * dr + dg * dg + db * db) / span;
             final w = far * a;
@@ -466,7 +503,6 @@ class PixelArtEngine {
             wg += g * w;
             wb += b * w;
             total += w;
-            final d0 = data[i], d1 = data[i + 1], d2 = data[i + 2];
             pr[n] = r;
             pg[n] = g;
             pb[n] = b;
@@ -495,6 +531,160 @@ class PixelArtEngine {
           c,
         );
       }
+    }
+  }
+
+  /// 乗算済みRGBAの画素を1つずつ32ビットで読む（RGBAは下の桁から：
+  /// R＝`v & 0xff`、G＝`(v >> 8) & 0xff`、B＝`(v >> 16) & 0xff`、A＝`v >> 24`）。
+  /// 4バイト境界にない・ビッグエンディアンの端末では、並べ直した写し。
+  static Uint32List _pixelWords(Uint8List data, int count) {
+    if (Endian.host == Endian.little && data.offsetInBytes % 4 == 0) {
+      return data.buffer.asUint32List(data.offsetInBytes, count);
+    }
+    final out = Uint32List(count);
+    for (var p = 0, i = 0; p < count; p++, i += 4) {
+      out[p] =
+          data[i] | data[i + 1] << 8 | data[i + 2] << 16 | data[i + 3] << 24;
+    }
+    return out;
+  }
+
+  /// 描き直した線と塗りの間で、線のインクを外した残りが少なく消えたドット
+  /// （線が斜めにかかるドットの、塗りの側の残り）は、塗りの側の隣と同じ
+  /// 不透明度と色で残す（消すと、線と塗りの間に透明な穴が開いた）。線のインクも
+  /// 含めて半分以上が不透明なドットで、上下か左右の一方が線、もう一方が
+  /// 残したドットのときだけ。
+  static void _fillBesideLines(
+    int cellsX,
+    int cellsY,
+    Int32List edgeX,
+    Int32List edgeY,
+    Uint8List line,
+    Int32List whole,
+    Uint8List kept,
+    List<int?> rawColors,
+    Uint8List settled,
+  ) {
+    final count = cellsX * cellsY;
+    final fill = <(int, int)>[];
+    final seen = Uint8List(count);
+    for (var k = 0; k < count; k++) {
+      if (line[k] == 0) continue;
+      final kx = k % cellsX, ky = k ~/ cellsX;
+      for (final (sx, sy) in const [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
+        final cx = kx + sx, cy = ky + sy;
+        if (cx < 0 || cy < 0 || cx >= cellsX || cy >= cellsY) continue;
+        final c = cy * cellsX + cx;
+        if (line[c] != 0 || kept[c] != 0 || seen[c] != 0) continue;
+        seen[c] = 1;
+        final area = (edgeX[cx + 1] - edgeX[cx]) * (edgeY[cy + 1] - edgeY[cy]);
+        if (whole[c] * 2 < area * 255) continue;
+        for (final (dx, dy) in const [(1, 0), (0, 1)]) {
+          final ax = cx - dx, ay = cy - dy, bx = cx + dx, by = cy + dy;
+          if (ax < 0 || ay < 0 || bx >= cellsX || by >= cellsY) continue;
+          final a = ay * cellsX + ax, b = by * cellsX + bx;
+          final int other;
+          if (line[a] != 0 && line[b] == 0) {
+            other = b;
+          } else if (line[b] != 0 && line[a] == 0) {
+            other = a;
+          } else {
+            continue;
+          }
+          if (kept[other] >= 192 && rawColors[other] != null) {
+            fill.add((c, other));
+            break;
+          }
+        }
+      }
+    }
+    // 色も塗りの側の隣から（残りは線の縁の色なので）。
+    for (final (c, other) in fill) {
+      kept[c] = kept[other];
+      rawColors[c] = rawColors[other];
+      settled[c] = 1;
+    }
+  }
+
+  /// 描き直した線の内側のドットに、線の外側の色（紙・透明）が残ったもの
+  /// （階段に描いた線の内側の角のドットに、元の線の外側の縁が入っていた）
+  /// は、内側の隣の色にする：上下か左右で、一方の隣が線、その線の先の
+  /// ドットと同じ色で、反対の隣（線でない）とは違う色のドット。線と塗りの
+  /// 間に本当にある細い塗り（前髪の下の肌の影）は、線の先の色と違うので
+  /// そのまま。
+  static void _closeHolesBesideLines(
+    int cellsX,
+    int cellsY,
+    Uint8List line,
+    List<int?> colors,
+    Uint8List alpha,
+  ) {
+    bool alike(int? a, int? b) {
+      if (a == null || b == null) return a == b;
+      final dr = ((a >> 16) & 0xff) - ((b >> 16) & 0xff);
+      final dg = ((a >> 8) & 0xff) - ((b >> 8) & 0xff);
+      final db = (a & 0xff) - (b & 0xff);
+      return dr * dr + dg * dg + db * db < 24 * 24;
+    }
+
+    final changes = <(int, int)>[];
+    final count = cellsX * cellsY;
+    final seen = Uint8List(count);
+    for (var k = 0; k < count; k++) {
+      if (line[k] == 0) continue;
+      final kx = k % cellsX, ky = k ~/ cellsX;
+      // 線のドットの上下左右の、線でないドット。
+      for (final (sx, sy) in const [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
+        final cx = kx + sx, cy = ky + sy;
+        if (cx < 0 || cy < 0 || cx >= cellsX || cy >= cellsY) continue;
+        final c = cy * cellsX + cx;
+        if (line[c] != 0 || seen[c] != 0) continue;
+        seen[c] = 1;
+        // 線の先のドットと同じ色か（線の外側の色が残った）。
+        var leaked = false, best = -1;
+        for (final (dx, dy) in const [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
+          final lx = cx + dx, ly = cy + dy;
+          final bx = cx + 2 * dx, by = cy + 2 * dy;
+          if (bx < 0 || by < 0 || bx >= cellsX || by >= cellsY) continue;
+          final l = ly * cellsX + lx, b = by * cellsX + bx;
+          if (line[l] == 0 || line[b] != 0) continue;
+          if (!alike(colors[c], colors[b])) continue;
+          leaked = true;
+          // その線の反対側の隣（線でない）を優先する。
+          final ox = cx - dx, oy = cy - dy;
+          if (ox >= 0 && oy >= 0 && ox < cellsX && oy < cellsY) {
+            final o = oy * cellsX + ox;
+            if (line[o] == 0 &&
+                colors[o] != null &&
+                alpha[o] != 0 &&
+                !alike(colors[c], colors[o])) {
+              best = o;
+            }
+          }
+          if (best >= 0) break;
+        }
+        if (!leaked) continue;
+        if (best < 0) {
+          // 反対側も線なら（線に囲まれたドット）、線でない隣のどれか。
+          for (final (dx, dy) in const [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
+            final ox = cx + dx, oy = cy + dy;
+            if (ox < 0 || oy < 0 || ox >= cellsX || oy >= cellsY) continue;
+            final o = oy * cellsX + ox;
+            if (line[o] != 0 || colors[o] == null || alpha[o] == 0) continue;
+            if (alike(colors[c], colors[o])) {
+              // 線の外側の色と同じ隣がある：外側につながったドット。
+              best = -1;
+              break;
+            }
+            if (best < 0) best = o;
+          }
+        }
+        if (best >= 0) changes.add((c, best));
+      }
+    }
+    for (final (c, o) in changes) {
+      colors[c] = colors[o];
+      alpha[c] = alpha[o];
     }
   }
 
