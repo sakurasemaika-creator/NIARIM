@@ -10,7 +10,7 @@ the Kuramubon font, and Noto Sans KR/SC Black subsets for Korean and Chinese).
 | `feature-graphic/<locale>.png` | Feature graphic (per store language) | 1024×500            |
 
 Taglines: ja-JP「描いて、動かす。」, en-US "Draw it. Bring it to life.", fr-FR
-"Dessinez. Animez.", es-ES "Dibuja. Dale vida.", ko-KR「그리고, 움직이다.」, zh-CN
+"Dessinez. Animez.", es-ES "Dibuja. Dale vida.", ko-KR「그리다, 움직이다.」, zh-CN
 「画出来，动起来。」, zh-TW「畫出來，動起來。」.
 
 Still to be made by a person before release: phone and tablet screenshots that show
