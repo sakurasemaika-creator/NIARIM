@@ -600,9 +600,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   void _onTimelinePointerSignal(PointerSignalEvent event) {
     if (event is! PointerScrollEvent || _timelineDragStartX != null) return;
     final keyboard = HardwareKeyboard.instance;
+    // Ctrl (⌘) + wheel zooms the frames on the phone layout too (a mouse on
+    // a phone or tablet; the owner's choice, 2026-11-27).
     if ((keyboard.isControlPressed || keyboard.isMetaPressed) &&
-        event.scrollDelta.dy != 0 &&
-        isWideScreen(context, listen: false)) {
+        event.scrollDelta.dy != 0) {
       GestureBinding.instance.pointerSignalResolver.register(event, (_) {
         _zoomTimeline(event.scrollDelta.dy > 0 ? 1 / 1.1 : 1.1);
       });
@@ -787,6 +788,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   ({String layerId, String? sceneId, int start, int end})? _commonDragRange;
+
+  /// An effect filter bar being dragged (moved or one end moved), shown
+  /// until it is saved when the drag ends.
+  ({
+    String id,
+    String sceneId,
+    _ClipDragMode mode,
+    int fromStart,
+    int fromEnd,
+    int start,
+    int end,
+  })?
+  _effectDrag;
 
   // シーン複数選択モード（「選択」ボタンで開始）
   bool _isSceneMultiSelect = false;
@@ -5308,6 +5322,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _draggingCameraKfOriginalFrame = null;
       _draggingCameraKfLiveFrame = null;
       _commonDragRange = null;
+      _effectDrag = null;
       _setTimelineSelection(null);
       _clipsLoadedForSceneId = null;
       _audioClips.clear();
@@ -8782,28 +8797,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   final scrollOffset = controller.hasClients
                                       ? controller.offset
                                       : 0.0;
-                                  final left =
-                                      padding +
-                                      e.startFrame * _cellW -
-                                      scrollOffset;
-                                  final width =
-                                      (e.endFrame - e.startFrame + 1) * _cellW;
-                                  return Positioned(
-                                    left: left,
-                                    top: 6,
-                                    child: Container(
-                                      width: width,
-                                      height: 20,
-                                      decoration: BoxDecoration(
-                                        color: ThemeService
-                                            .activeColorScheme
-                                            .secondary
-                                            .withValues(
-                                              alpha: e.enabled ? 0.8 : 0.3,
-                                            ),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ),
+                                  return _buildEffectBar(
+                                    l10n,
+                                    e,
+                                    padding - scrollOffset,
+                                    total,
                                   );
                                 },
                               ),
@@ -8817,6 +8815,207 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  /// The bar of effect filter [e] on its row, [origin] the x of frame 0.
+  /// Tap opens the effect sheet; a long press drags the bar to move it and
+  /// the end handles change its range (the owner's choice, 2026-11-27).
+  /// The drag is drawn from [_effectDrag] and saved once when it ends (one
+  /// undo step).
+  Widget _buildEffectBar(
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+    double origin,
+    int total,
+  ) {
+    final sceneId = _selectedSceneId;
+    final draft = _effectDrag;
+    final dragging = draft != null && draft.id == e.id;
+    final start = dragging ? draft.start : e.startFrame;
+    final end = dragging ? draft.end : e.endFrame;
+    const handleW = 8.0;
+    final scheme = ThemeService.activeColorScheme;
+    final fill = scheme.secondary.withValues(alpha: e.enabled ? 0.8 : 0.3);
+    final opaqueFill = opaqueOver(fill, scheme.surfaceContainerLow);
+    final ink =
+        contrastRatio(scheme.onSurface, opaqueFill) >=
+            contrastRatio(scheme.surface, opaqueFill)
+        ? scheme.onSurface
+        : scheme.surface;
+
+    void begin(_ClipDragMode mode, double globalX) {
+      if (sceneId == null) return;
+      _startTimelineDrag(globalX);
+      setState(() {
+        _effectDrag = (
+          id: e.id,
+          sceneId: sceneId,
+          mode: mode,
+          fromStart: e.startFrame,
+          fromEnd: e.endFrame,
+          start: e.startFrame,
+          end: e.endFrame,
+        );
+      });
+    }
+
+    void apply(double globalX) {
+      final current = _effectDrag;
+      if (current == null || current.id != e.id) return;
+      final delta = (_timelineDragDistance(globalX) / _cellW).round();
+      final last = math.max(0, total - 1);
+      var newStart = current.fromStart;
+      var newEnd = current.fromEnd;
+      switch (current.mode) {
+        case _ClipDragMode.move:
+          final length = current.fromEnd - current.fromStart;
+          newStart = (current.fromStart + delta).clamp(
+            0,
+            math.max(0, last - length),
+          );
+          newEnd = newStart + length;
+        case _ClipDragMode.resizeLeft:
+          newStart = (current.fromStart + delta).clamp(0, current.fromEnd);
+        case _ClipDragMode.resizeRight:
+          newEnd = (current.fromEnd + delta).clamp(
+            current.fromStart,
+            math.max(current.fromStart, last),
+          );
+      }
+      if (newStart == current.start && newEnd == current.end) return;
+      setState(() {
+        _effectDrag = (
+          id: current.id,
+          sceneId: current.sceneId,
+          mode: current.mode,
+          fromStart: current.fromStart,
+          fromEnd: current.fromEnd,
+          start: newStart,
+          end: newEnd,
+        );
+      });
+    }
+
+    void update(double globalX) {
+      final current = _effectDrag;
+      if (current == null || current.id != e.id) return;
+      apply(globalX);
+      _updateTimelineDragScroll(
+        globalX,
+        onScroll: () => apply(globalX),
+        nearEdges: current.mode != _ClipDragMode.move,
+      );
+    }
+
+    void finish({required bool commit}) {
+      final result = _effectDrag;
+      if (result == null || result.id != e.id) return;
+      _stopTimelineDrag();
+      setState(() => _effectDrag = null);
+      if (!commit ||
+          (result.start == result.fromStart && result.end == result.fromEnd)) {
+        return;
+      }
+      final ps = context.read<ProjectService>();
+      final latest = ps
+          .effectFiltersOf(widget.projectId, result.sceneId)
+          .where((f) => f.id == result.id)
+          .firstOrNull;
+      if (latest == null) return;
+      ps.updateEffectFilter(
+        widget.projectId,
+        result.sceneId,
+        latest.copyWith(startFrame: result.start, endFrame: result.end),
+      );
+    }
+
+    Widget handle({required bool isLeft}) {
+      final mode = isLeft
+          ? _ClipDragMode.resizeLeft
+          : _ClipDragMode.resizeRight;
+      return Positioned(
+        left: isLeft ? 0 : null,
+        right: isLeft ? null : 0,
+        top: 0,
+        bottom: 0,
+        width: handleW,
+        child: GestureDetector(
+          key: ValueKey(
+            'timelineEffectBarEdge-${isLeft ? 'start' : 'end'}-${e.id}',
+          ),
+          behavior: HitTestBehavior.opaque,
+          dragStartBehavior: DragStartBehavior.down,
+          onHorizontalDragStart: (d) => begin(mode, d.globalPosition.dx),
+          onHorizontalDragUpdate: (d) => update(d.globalPosition.dx),
+          onHorizontalDragEnd: (_) => finish(commit: true),
+          onHorizontalDragCancel: () => finish(commit: false),
+          child: MouseRegion(
+            cursor: SystemMouseCursors.resizeLeftRight,
+            child: Container(
+              color: scheme.onSurface.withValues(alpha: 0.25),
+              alignment: Alignment.center,
+              child: Container(
+                width: 2,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: scheme.onSurface.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(1),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final width = (end - start + 1) * _cellW;
+    return Positioned(
+      left: origin + start * _cellW,
+      top: 5,
+      width: math.max(width, handleW * 2 + 4),
+      height: 22,
+      child: Listener(
+        onPointerCancel: (_) => finish(commit: false),
+        child: GestureDetector(
+          key: ValueKey('timelineEffectBar-${e.id}'),
+          onTap: _showEffectFilterDialog,
+          onLongPressStart: (d) =>
+              begin(_ClipDragMode.move, d.globalPosition.dx),
+          onLongPressMoveUpdate: (d) => update(d.globalPosition.dx),
+          onLongPressEnd: (_) => finish(commit: true),
+          onLongPressCancel: () => finish(commit: false),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: dragging ? scheme.secondary : fill,
+                    borderRadius: BorderRadius.circular(4),
+                    border: dragging
+                        ? Border.all(color: scheme.onSurface, width: 1.5)
+                        : null,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: handleW + 2),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _EffectFilterSheet._displayName(l10n, e),
+                    key: ValueKey('timelineEffectBarName-${e.id}'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: localizedHeadingStyle(
+                      context,
+                      TextStyle(fontSize: 10, height: 1.2, color: ink),
+                    ),
+                  ),
+                ),
+              ),
+              handle(isLeft: true),
+              handle(isLeft: false),
+            ],
+          ),
+        ),
       ),
     );
   }

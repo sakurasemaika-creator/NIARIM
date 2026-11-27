@@ -239,37 +239,48 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Ctrl + wheel zooms the timeline, the wheel alone scrolls', (
-    tester,
-  ) async {
-    await openTimeline(tester, size: const Size(1280, 800));
-    final frame = find.byKey(const ValueKey('timelineFrameCell0'));
-    final at = tester.getCenter(frame);
-    double frameWidth() => tester.getSize(frame).width;
-    final before = frameWidth();
-    Future<void> scroll(Offset delta, {LogicalKeyboardKey? holding}) async {
-      if (holding != null) await tester.sendKeyDownEvent(holding);
-      final pointer = TestPointer(1, PointerDeviceKind.mouse);
-      await tester.sendEventToBinding(pointer.hover(at));
-      await tester.sendEventToBinding(pointer.scroll(delta));
-      if (holding != null) await tester.sendKeyUpEvent(holding);
-      await settle(tester, 2);
-    }
+  for (final (layout, size) in const [
+    ('PC', Size(1280, 800)),
+    // The phone layout (a mouse on a phone or tablet), the owner's choice
+    // on 2026-11-27: it zoomed only on the PC workspace.
+    ('phone', Size(390, 844)),
+  ]) {
+    testWidgets(
+      '$layout: Ctrl + wheel zooms the timeline, the wheel alone scrolls',
+      (tester) async {
+        await openTimeline(tester, size: size);
+        final frame = find.byKey(const ValueKey('timelineFrameCell0'));
+        final at = tester.getCenter(frame);
+        double frameWidth() => tester.getSize(frame).width;
+        final before = frameWidth();
+        Future<void> scroll(Offset delta, {LogicalKeyboardKey? holding}) async {
+          if (holding != null) await tester.sendKeyDownEvent(holding);
+          final pointer = TestPointer(1, PointerDeviceKind.mouse);
+          await tester.sendEventToBinding(pointer.hover(at));
+          await tester.sendEventToBinding(pointer.scroll(delta));
+          if (holding != null) await tester.sendKeyUpEvent(holding);
+          await settle(tester, 2);
+        }
 
-    await scroll(
-      const Offset(0, -100),
-      holding: LogicalKeyboardKey.controlLeft,
+        await scroll(
+          const Offset(0, -100),
+          holding: LogicalKeyboardKey.controlLeft,
+        );
+        final zoomed = frameWidth();
+        expect(zoomed, greaterThan(before));
+        await scroll(
+          const Offset(0, 100),
+          holding: LogicalKeyboardKey.controlLeft,
+        );
+        expect(frameWidth(), lessThan(zoomed));
+        // Ctrlを押さないホイールでは大きさは変わらない。
+        final unchanged = frameWidth();
+        await scroll(const Offset(0, 100));
+        expect(frameWidth(), unchanged);
+        expect(tester.takeException(), isNull);
+      },
     );
-    final zoomed = frameWidth();
-    expect(zoomed, greaterThan(before));
-    await scroll(const Offset(0, 100), holding: LogicalKeyboardKey.controlLeft);
-    expect(frameWidth(), lessThan(zoomed));
-    // Ctrlを押さないホイールでは大きさは変わらない。
-    final unchanged = frameWidth();
-    await scroll(const Offset(0, 100));
-    expect(frameWidth(), unchanged);
-    expect(tester.takeException(), isNull);
-  });
+  }
 
   for (final (name, size, language) in [
     ('narrow_1024x700', const Size(1024, 700), 'ja'),
