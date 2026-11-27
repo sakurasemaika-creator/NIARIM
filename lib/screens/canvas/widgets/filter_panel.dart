@@ -928,12 +928,14 @@ class _FilterPanelState extends State<FilterPanel> {
   Widget _buildFocusHeaderMenu(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<FilterService>();
-    final current = service.currentFilter;
     return PopupMenuButton<_FocusFilterMenuAction>(
       key: const ValueKey('filter-focus-menu-actions'),
       icon: const Icon(Icons.more_vert, size: 20),
       padding: EdgeInsets.zero,
       itemBuilder: (_) {
+        // Read the current mode when the menu opens rather than when the
+        // focus window first builds; the child may switch list/edit mode later.
+        final current = service.currentFilter;
         if (current == null) {
           return [
             PopupMenuItem(
