@@ -104,6 +104,9 @@ class MainActivity : FlutterActivity() {
                         val height = call.argument<Int>("height")
                         val outputPath = call.argument<String>("outputPath")
                         val audioPath = call.argument<String>("audioPath")
+                        val bitsPerPixel =
+                            call.argument<Double>("bitsPerPixel")
+                                ?: HardwareVideoEncoder.DEFAULT_BITS_PER_PIXEL
                         if (
                             framePaths == null ||
                                 fps == null ||
@@ -128,6 +131,7 @@ class MainActivity : FlutterActivity() {
                                         height,
                                         outputPath,
                                         audioPath,
+                                        bitsPerPixel,
                                     )
                                 mainHandler.post { result.success(audioIncluded) }
                             } catch (e: Exception) {

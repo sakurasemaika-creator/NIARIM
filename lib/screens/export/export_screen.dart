@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -9,7 +10,10 @@ import '../../widgets/premium_lock_widget.dart';
 import '../../engine/export_audio.dart';
 import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/project.dart';
+import '../../models/scene.dart';
 import '../../services/material_service.dart';
+import '../../services/work_folder_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
@@ -57,6 +61,41 @@ class _ExportScreenState extends State<ExportScreen> {
   // 「カスタム」選択時のみ編集可能なFPS（「カスタム」タップで
   // アコーディオン展開して詳細設定を表示する）
   int _customFps = 30;
+
+  // What to export, how large and how clean (the owner's choice,
+  // 2026-11-27): one scene and a span of its frames (null: every scene),
+  // the size as a share of the work's, and the encoder's quality.
+  String? _rangeSceneId;
+  RangeValues? _frameSpan;
+  double _sizeShare = 1;
+  ExportQuality _quality = ExportQuality.standard;
+  static const List<double> _sizeShares = [1, 2 / 3, 1 / 2];
+  bool _exportingSequence = false;
+
+  /// The work's export size times [share], in even pixels (video encoders
+  /// need even sides).
+  static ({int width, int height}) _sizeAt(Project project, double share) {
+    int even(double v) => math.max(2, (v / 2).round() * 2);
+    if (share == 1) {
+      return (width: project.exportWidth, height: project.exportHeight);
+    }
+    return (
+      width: even(project.exportWidth * share),
+      height: even(project.exportHeight * share),
+    );
+  }
+
+  /// The chosen scene and frames, or null for the whole work. A scene that
+  /// no longer exists falls back to the whole work.
+  ExportWindow? _windowFor(List<Scene> scenes) {
+    final scene = scenes.where((s) => s.id == _rangeSceneId).firstOrNull;
+    if (scene == null || scene.frames.isEmpty) return null;
+    final last = scene.frames.length - 1;
+    final span = _frameSpan;
+    final start = (span?.start.round() ?? 0).clamp(0, last);
+    final end = (span?.end.round() ?? last).clamp(start, last);
+    return ExportWindow(sceneId: scene.id, start: start, end: end);
+  }
 
   /// 書き出しの設定（形式・プリセット・FPS）を変える。前の書き出しの失敗の
   /// 文は、その設定での失敗なので消す（残すと、変えた設定でも失敗するように
@@ -154,13 +193,20 @@ class _ExportScreenState extends State<ExportScreen> {
         .firstOrNull;
     final scenes = projects.scenesOf(widget.projectId);
     final sourceFps = project?.fps ?? _fps;
+    final window = _windowFor(scenes);
     final needsLongExport =
-        ExportTiming.sourceFrames(scenes) > 90 * sourceFps &&
+        ExportTiming(
+              sourceFps: sourceFps,
+              outputFps: sourceFps,
+              window: window,
+            ).framesIn(scenes) >
+            90 * sourceFps &&
         !premium.isFeatureAvailable(PremiumFeature.unlimitedDuration);
     final timing = ExportTiming(
       sourceFps: sourceFps,
       outputFps: _fps,
       maxSeconds: needsLongExport ? 90 : null,
+      window: window,
     );
     final wholeSeconds = timing.outputFrames(scenes) ~/ _fps;
     final duration = clockDurationLabel(
@@ -308,6 +354,152 @@ class _ExportScreenState extends State<ExportScreen> {
         ),
       ),
     ];
+    final rangeScene = scenes.where((s) => s.id == _rangeSceneId).firstOrNull;
+    Widget chips<T>(
+      List<(T, String, Key)> options,
+      T value,
+      void Function(T) on,
+    ) => Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final (option, label, key) in options)
+          ChoiceChip(
+            key: key,
+            label: Text(label),
+            selected: value == option,
+            onSelected: _isExporting
+                ? null
+                : (_) => _changeSettings(() => on(option)),
+          ),
+      ],
+    );
+    final rangeSection = <Widget>[
+      GroupedSheet(
+        title: l10n.exportRangeSection,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                chips<String?>(
+                  [
+                    (
+                      null,
+                      l10n.exportRangeAllScenes,
+                      const ValueKey('exportRangeAll'),
+                    ),
+                    for (final scene in scenes)
+                      (
+                        scene.id,
+                        scene.displayName,
+                        ValueKey('exportRangeScene-${scene.id}'),
+                      ),
+                  ],
+                  _rangeSceneId,
+                  (id) {
+                    _rangeSceneId = id;
+                    _frameSpan = null;
+                  },
+                ),
+                if (rangeScene != null && rangeScene.frames.length > 1) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.exportRangeFrames(
+                      (window?.start ?? 0) + 1,
+                      (window?.end ?? 0) + 1,
+                    ),
+                    key: const ValueKey('exportRangeFramesText'),
+                  ),
+                  RangeSlider(
+                    key: const ValueKey('exportRangeFrames'),
+                    min: 0,
+                    max: (rangeScene.frames.length - 1).toDouble(),
+                    divisions: rangeScene.frames.length - 1,
+                    values: RangeValues(
+                      (window?.start ?? 0).toDouble(),
+                      (window?.end ?? rangeScene.frames.length - 1).toDouble(),
+                    ),
+                    labels: RangeLabels(
+                      'F${(window?.start ?? 0) + 1}',
+                      'F${(window?.end ?? 0) + 1}',
+                    ),
+                    onChanged: _isExporting
+                        ? null
+                        : (v) => _changeSettings(() => _frameSpan = v),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 20),
+      GroupedSheet(
+        title: l10n.exportSizeQualitySection,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (project != null)
+                  chips<double>(
+                    [
+                      for (final share in _sizeShares)
+                        (
+                          share,
+                          '${_sizeAt(project, share).width} × ${_sizeAt(project, share).height}',
+                          ValueKey('exportSize-${share.toStringAsFixed(2)}'),
+                        ),
+                    ],
+                    _sizeShare,
+                    (share) => _sizeShare = share,
+                  ),
+                // A GIF has no quality setting (its colours are its own).
+                if (_format != ExportFormat.gif) ...[
+                  const SizedBox(height: 12),
+                  chips<ExportQuality>(
+                    [
+                      (
+                        ExportQuality.small,
+                        l10n.exportQualitySmall,
+                        const ValueKey('exportQuality-small'),
+                      ),
+                      (
+                        ExportQuality.standard,
+                        l10n.exportPresetStandard,
+                        const ValueKey('exportQuality-standard'),
+                      ),
+                      (
+                        ExportQuality.high,
+                        l10n.exportQualityHigh,
+                        const ValueKey('exportQuality-high'),
+                      ),
+                    ],
+                    _quality,
+                    (quality) => _quality = quality,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: TextButton.icon(
+          key: const ValueKey('exportFrameSequence'),
+          onPressed: _isExporting || _startingExport || project == null
+              ? null
+              : () => _exportFrameSequence(project),
+          icon: const Icon(Icons.burst_mode_outlined),
+          label: Text(l10n.exportSequenceButton),
+        ),
+      ),
+    ];
     final outputDetails = <Widget>[
       DefaultTextStyle.merge(
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -320,7 +512,7 @@ class _ExportScreenState extends State<ExportScreen> {
           children: [
             if (project != null)
               Text(
-                '${project.exportWidth} × ${project.exportHeight} px · ${l10n.pcStatusFps(_fps)}',
+                '${_sizeAt(project, _sizeShare).width} × ${_sizeAt(project, _sizeShare).height} px · ${l10n.pcStatusFps(_fps)}',
                 style: TextStyle(
                   color: colors.onSurface,
                   fontWeight: FontWeight.w700,
@@ -444,7 +636,11 @@ class _ExportScreenState extends State<ExportScreen> {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: formatSection,
+                          children: [
+                            ...formatSection,
+                            const SizedBox(height: 20),
+                            ...rangeSection,
+                          ],
                         ),
                       ),
                     ],
@@ -455,6 +651,8 @@ class _ExportScreenState extends State<ExportScreen> {
                       ...presetSection,
                       const SizedBox(height: 24),
                       ...formatSection,
+                      const SizedBox(height: 20),
+                      ...rangeSection,
                       const SizedBox(height: 20),
                       ...outputDetails,
                     ],
@@ -517,8 +715,16 @@ class _ExportScreenState extends State<ExportScreen> {
       return;
     }
     final scenes = projectService.scenesOf(widget.projectId);
+    final window = _windowFor(scenes);
+    final size = _sizeAt(project, _sizeShare);
+    final quality = _quality;
     final needsLongExport =
-        ExportTiming.sourceFrames(scenes) > 90 * project.fps &&
+        ExportTiming(
+              sourceFps: project.fps,
+              outputFps: project.fps,
+              window: window,
+            ).framesIn(scenes) >
+            90 * project.fps &&
         !premiumService.isFeatureAvailable(PremiumFeature.unlimitedDuration);
     if (needsLongExport) {
       setState(() => _startingExport = true);
@@ -556,6 +762,7 @@ class _ExportScreenState extends State<ExportScreen> {
         sourceFps: project.fps,
         outputFps: fps,
         maxSeconds: maxSeconds,
+        window: window,
       ).outputFrames(scenes);
 
       void onProgress(int current, int total) {
@@ -581,6 +788,7 @@ class _ExportScreenState extends State<ExportScreen> {
               scenes: scenes,
               sourceFps: project.fps,
               maxSeconds: maxSeconds,
+              window: window,
               pathOf: (id) => materials.pathOf(widget.projectId, id),
             );
       // The video materials this job reads, fixed before the first frame so
@@ -597,12 +805,14 @@ class _ExportScreenState extends State<ExportScreen> {
             fps: fps,
             sourceFps: project.fps,
             maxSeconds: maxSeconds,
+            window: window,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
-            width: project.exportWidth,
-            height: project.exportHeight,
+            width: size.width,
+            height: size.height,
             backgroundColor: project.backgroundColor,
             appendEndCard: shouldAppendEndCard,
+            quality: quality,
             audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
@@ -616,10 +826,11 @@ class _ExportScreenState extends State<ExportScreen> {
             fps: fps,
             sourceFps: project.fps,
             maxSeconds: maxSeconds,
+            window: window,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
-            width: project.exportWidth,
-            height: project.exportHeight,
+            width: size.width,
+            height: size.height,
             backgroundColor: project.backgroundColor,
             cornerLogo: officialMark,
             onProgress: onProgress,
@@ -634,12 +845,14 @@ class _ExportScreenState extends State<ExportScreen> {
             fps: fps,
             sourceFps: project.fps,
             maxSeconds: maxSeconds,
+            window: window,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
-            width: project.exportWidth,
-            height: project.exportHeight,
+            width: size.width,
+            height: size.height,
             backgroundColor: project.backgroundColor,
             appendEndCard: shouldAppendEndCard,
+            quality: quality,
             audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
@@ -653,12 +866,14 @@ class _ExportScreenState extends State<ExportScreen> {
             fps: fps,
             sourceFps: project.fps,
             maxSeconds: maxSeconds,
+            window: window,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
-            width: project.exportWidth,
-            height: project.exportHeight,
+            width: size.width,
+            height: size.height,
             backgroundColor: project.backgroundColor,
             appendEndCard: shouldAppendEndCard,
+            quality: quality,
             audio: audio,
             onProgress: onProgress,
             cancelToken: cancelToken,
@@ -713,6 +928,91 @@ class _ExportScreenState extends State<ExportScreen> {
     }
   }
 
+  /// Every exported frame (the chosen scene and frames, or all of them) as
+  /// numbered PNGs at the chosen size, gathered in a folder of their own in
+  /// the works list (the owner's choice, 2026-11-27).
+  Future<void> _exportFrameSequence(Project project) async {
+    final l10n = AppLocalizations.of(context)!;
+    final projectService = context.read<ProjectService>();
+    final folders = context.read<WorkFolderService>();
+    final materials = context.read<MaterialService>();
+    final scenes = projectService.scenesOf(widget.projectId);
+    final window = _windowFor(scenes);
+    final size = _sizeAt(project, _sizeShare);
+    final cancelToken = ExportCancelToken();
+    _cancelToken = cancelToken;
+    setState(() {
+      _isExporting = true;
+      _exportingSequence = true;
+      _error = null;
+      _progress = 0;
+    });
+    _showProgressDialog();
+    try {
+      final paths = await ExportEngine().exportFrameSequence(
+        projectName: project.name,
+        scenes: scenes,
+        tileManager: projectService.tileManagerOf(widget.projectId),
+        drawingWidth: project.drawingWidth,
+        drawingHeight: project.drawingHeight,
+        width: size.width,
+        height: size.height,
+        backgroundColor: project.backgroundColor,
+        window: window,
+        sourceFps: project.fps,
+        cancelToken: cancelToken,
+        videoMaterials: await materials.videoSnapshotOf(widget.projectId),
+        onProgress: (current, total) {
+          if (!mounted) return;
+          _progress = current / total;
+          _refreshProgressDialog?.call();
+        },
+      );
+      final folder = await folders.createFolder(
+        l10n.exportSequenceFolderName(project.name),
+      );
+      await folders.moveFilesToFolder([
+        for (final path in paths) path.split(Platform.pathSeparator).last,
+      ], folder.id);
+      _closeProgressDialog();
+      if (!mounted) return;
+      setState(() {
+        _isExporting = false;
+        _exportingSequence = false;
+        _cancelToken = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.exportSequenceDone(paths.length, folder.name)),
+          action: SnackBarAction(
+            label: l10n.exportOpenWorks,
+            onPressed: () => context.go('/home?tab=works'),
+          ),
+          persist: false,
+        ),
+      );
+    } on ExportCancelledException {
+      _closeProgressDialog();
+      if (!mounted) return;
+      setState(() {
+        _isExporting = false;
+        _exportingSequence = false;
+        _cancelToken = null;
+      });
+      _showCancelledSnackBar();
+    } catch (e) {
+      _closeProgressDialog();
+      if (!mounted) return;
+      setState(() {
+        _isExporting = false;
+        _exportingSequence = false;
+        _cancelToken = null;
+        _error = l10n.exportFailedError(fileFailureReason(l10n, e));
+      });
+      _revealError();
+    }
+  }
+
   /// 処理中ダイアログ（動画書き出し・GIF生成・透過WebM生成時に
   /// プログレスバー下部へ正方形広告を表示、処理完了時に自動消去）。
   void _showProgressDialog() {
@@ -732,7 +1032,9 @@ class _ExportScreenState extends State<ExportScreen> {
             child: ProgressDialog(
               title: l10n.exportInProgressTitle,
               progress: _progress,
-              subtitle: _format == ExportFormat.gif && _progress >= 1
+              subtitle: _exportingSequence
+                  ? 'PNG'
+                  : _format == ExportFormat.gif && _progress >= 1
                   ? l10n.exportGifEncoding
                   : _format.name.toUpperCase(),
               onCancel: () {

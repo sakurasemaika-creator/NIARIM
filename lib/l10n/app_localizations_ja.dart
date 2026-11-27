@@ -2972,6 +2972,39 @@ class AppLocalizationsJa extends AppLocalizations {
   String get exportFormatSection => '形式';
 
   @override
+  String get exportRangeSection => '書き出す範囲';
+
+  @override
+  String get exportRangeAllScenes => 'すべてのシーン';
+
+  @override
+  String exportRangeFrames(int start, int end) {
+    return 'フレーム F$start〜F$end';
+  }
+
+  @override
+  String get exportSizeQualitySection => '大きさ・画質';
+
+  @override
+  String get exportQualitySmall => 'ファイルを小さく';
+
+  @override
+  String get exportQualityHigh => 'きれいに';
+
+  @override
+  String get exportSequenceButton => '全部のフレームを連番の画像（PNG）で書き出す';
+
+  @override
+  String exportSequenceFolderName(String name) {
+    return '$name（連番）';
+  }
+
+  @override
+  String exportSequenceDone(int count, String folder) {
+    return '連番の画像を$count枚書き出しました（作品一覧の「$folder」）。';
+  }
+
+  @override
   String get exportFormatMp4 => 'MP4';
 
   @override

@@ -2943,6 +2943,39 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportFormatSection => '格式';
 
   @override
+  String get exportRangeSection => '导出范围';
+
+  @override
+  String get exportRangeAllScenes => '所有场景';
+
+  @override
+  String exportRangeFrames(int start, int end) {
+    return '帧 F$start–F$end';
+  }
+
+  @override
+  String get exportSizeQualitySection => '尺寸与画质';
+
+  @override
+  String get exportQualitySmall => '文件更小';
+
+  @override
+  String get exportQualityHigh => '画面更清晰';
+
+  @override
+  String get exportSequenceButton => '将所有帧导出为编号图片（PNG）';
+
+  @override
+  String exportSequenceFolderName(String name) {
+    return '$name（序列）';
+  }
+
+  @override
+  String exportSequenceDone(int count, String folder) {
+    return '已导出 $count 张编号图片（作品列表的“$folder”）。';
+  }
+
+  @override
   String get exportFormatMp4 => 'MP4';
 
   @override
@@ -14144,6 +14177,39 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get exportFormatSection => '格式';
+
+  @override
+  String get exportRangeSection => '匯出範圍';
+
+  @override
+  String get exportRangeAllScenes => '所有場景';
+
+  @override
+  String exportRangeFrames(int start, int end) {
+    return '影格 F$start–F$end';
+  }
+
+  @override
+  String get exportSizeQualitySection => '尺寸與畫質';
+
+  @override
+  String get exportQualitySmall => '檔案更小';
+
+  @override
+  String get exportQualityHigh => '畫面更清晰';
+
+  @override
+  String get exportSequenceButton => '將所有影格匯出為編號圖片（PNG）';
+
+  @override
+  String exportSequenceFolderName(String name) {
+    return '$name（序列）';
+  }
+
+  @override
+  String exportSequenceDone(int count, String folder) {
+    return '已匯出 $count 張編號圖片（作品列表的「$folder」）。';
+  }
 
   @override
   String get exportFormatMp4 => 'MP4';

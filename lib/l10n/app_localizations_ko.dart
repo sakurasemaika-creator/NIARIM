@@ -2984,6 +2984,39 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportFormatSection => '형식';
 
   @override
+  String get exportRangeSection => '내보낼 범위';
+
+  @override
+  String get exportRangeAllScenes => '모든 장면';
+
+  @override
+  String exportRangeFrames(int start, int end) {
+    return '프레임 F$start~F$end';
+  }
+
+  @override
+  String get exportSizeQualitySection => '크기·화질';
+
+  @override
+  String get exportQualitySmall => '파일 작게';
+
+  @override
+  String get exportQualityHigh => '더 선명하게';
+
+  @override
+  String get exportSequenceButton => '모든 프레임을 번호 붙은 이미지(PNG)로 내보내기';
+
+  @override
+  String exportSequenceFolderName(String name) {
+    return '$name(연번)';
+  }
+
+  @override
+  String exportSequenceDone(int count, String folder) {
+    return '번호 붙은 이미지 $count장을 내보냈습니다(작품 목록의 “$folder”).';
+  }
+
+  @override
   String get exportFormatMp4 => 'MP4';
 
   @override

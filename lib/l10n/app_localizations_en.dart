@@ -3097,6 +3097,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportFormatSection => 'Format';
 
   @override
+  String get exportRangeSection => 'What to export';
+
+  @override
+  String get exportRangeAllScenes => 'All scenes';
+
+  @override
+  String exportRangeFrames(int start, int end) {
+    return 'Frames F$start–F$end';
+  }
+
+  @override
+  String get exportSizeQualitySection => 'Size and quality';
+
+  @override
+  String get exportQualitySmall => 'Smaller file';
+
+  @override
+  String get exportQualityHigh => 'Cleaner picture';
+
+  @override
+  String get exportSequenceButton =>
+      'Export every frame as numbered pictures (PNG)';
+
+  @override
+  String exportSequenceFolderName(String name) {
+    return '$name (frames)';
+  }
+
+  @override
+  String exportSequenceDone(int count, String folder) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Exported $count numbered pictures',
+      one: 'Exported 1 numbered picture',
+    );
+    return '$_temp0 (in “$folder” in Works).';
+  }
+
+  @override
   String get exportFormatMp4 => 'MP4';
 
   @override

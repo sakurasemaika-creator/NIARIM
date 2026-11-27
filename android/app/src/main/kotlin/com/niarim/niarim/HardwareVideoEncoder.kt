@@ -34,6 +34,9 @@ object HardwareVideoEncoder {
     private const val TIMEOUT_US = 10_000L
     private const val I_FRAME_INTERVAL = 2
 
+    /** 書き出しの画質「標準」のビットレート（1画素あたりのビット数）。 */
+    const val DEFAULT_BITS_PER_PIXEL = 0.1
+
     /**
      * [audioPath]は書き出しの音（FFmpegでまぜた16bit PCMのWAV）で、端末のAACエンコーダーで音声トラックにしてMP4へ入れる。
      *
@@ -46,6 +49,7 @@ object HardwareVideoEncoder {
         height: Int,
         outputPath: String,
         audioPath: String? = null,
+        bitsPerPixel: Double = DEFAULT_BITS_PER_PIXEL,
     ): Boolean {
         if (framePaths.isEmpty()) throw IllegalArgumentException("framePaths is empty")
         if (fps <= 0) throw IllegalArgumentException("fps must be positive")
@@ -70,7 +74,10 @@ object HardwareVideoEncoder {
                     MediaFormat.KEY_COLOR_FORMAT,
                     MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible,
                 )
-                setInteger(MediaFormat.KEY_BIT_RATE, estimateBitRate(encWidth, encHeight, fps))
+                setInteger(
+                    MediaFormat.KEY_BIT_RATE,
+                    estimateBitRate(encWidth, encHeight, fps, bitsPerPixel),
+                )
                 setInteger(MediaFormat.KEY_FRAME_RATE, fps)
                 setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
             }
@@ -373,9 +380,10 @@ object HardwareVideoEncoder {
     }
 
     /** ビットレートの簡易見積り（画素数×fps×経験的係数、H.264の一般的な 目安である0.1 bit/pixelを採用）。書き出し品質と容量のバランスを取る。 */
-    private fun estimateBitRate(width: Int, height: Int, fps: Int): Int {
+    private fun estimateBitRate(width: Int, height: Int, fps: Int, bitsPerPixel: Double): Int {
         val pixelsPerSecond = width.toLong() * height.toLong() * fps
-        return (pixelsPerSecond * 0.1)
+        val rate = if (bitsPerPixel.isFinite() && bitsPerPixel > 0) bitsPerPixel else 0.1
+        return (pixelsPerSecond * rate)
             .toLong()
             .coerceAtLeast(1_000_000L)
             .coerceAtMost(Int.MAX_VALUE.toLong())

@@ -92,9 +92,10 @@ const _warningAllowed = <String, int>{
   'lib/screens/project/canvas_size_preset_manage_screen.dart': 1,
   // 自動塗りのプリセット：メニューの削除・プリセットとサムネイルの削除。
   'lib/screens/autofill/autofill_preset_screen.dart': 3,
-  // 素材の削除（1件・使っていない素材）・タイムラインのレイヤーの削除。
+  // 素材の削除（1件・使っていない素材）・タイムラインのレイヤーの削除・
+  // 共通レイヤーの削除（このフレームだけ／すべてのフレーム）。
   'lib/screens/materials/material_list_screen.dart': 2,
-  'lib/screens/canvas/widgets/layer_panel.dart': 1,
+  'lib/screens/canvas/widgets/layer_panel.dart': 2,
 };
 
 /// 注意色の知らせ（`IconNotice.caution`）を使ってよい所と数。

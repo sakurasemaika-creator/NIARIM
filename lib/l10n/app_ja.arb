@@ -1322,6 +1322,45 @@
     }
   },
   "exportFormatSection": "形式",
+  "exportRangeSection": "書き出す範囲",
+  "exportRangeAllScenes": "すべてのシーン",
+  "exportRangeFrames": "フレーム F{start}〜F{end}",
+  "@exportRangeFrames": {
+    "description": "書き出しの範囲：選んだシーンのフレームの範囲",
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "exportSizeQualitySection": "大きさ・画質",
+  "exportQualitySmall": "ファイルを小さく",
+  "exportQualityHigh": "きれいに",
+  "exportSequenceButton": "全部のフレームを連番の画像（PNG）で書き出す",
+  "exportSequenceFolderName": "{name}（連番）",
+  "@exportSequenceFolderName": {
+    "description": "連番の画像を入れる作品一覧のフォルダの名前",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exportSequenceDone": "連番の画像を{count}枚書き出しました（作品一覧の「{folder}」）。",
+  "@exportSequenceDone": {
+    "description": "連番の画像を書き出した知らせ",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
   "exportFormatMp4": "MP4",
   "exportFormatMp4Subtitle": "完成した動画を投稿・共有する",
   "exportFormatGif": "GIF",

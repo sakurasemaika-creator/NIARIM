@@ -1174,6 +1174,14 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   合成した絵をそのまま渡す（出力の枠へもう1回描き写さない。`debugAlwaysDrawViewport`で比べる
   `test/engine/timeline_viewport_copy_test.dart`）。演出に新しく乱数を使うときは、種を決めるか
   `_drawsAnewEachTime`に足すこと。
+- **書き出しの範囲・大きさ・画質（所有者の判断、2026-11-27、判断カードJ20）**：書き出す範囲は
+  `ExportWindow`（`lib/engine/export_window.dart`、シーン1つとその中のフレームの位置、nullは全部）で、
+  `ExportTiming(window:)`・MP4/WebM/AVI/GIFの書き出し・`buildExportAudioPlan(window:)`・連番の
+  `exportFrameSequence`に同じものを渡す（音だけ・映像だけに渡すと音がずれる）。90秒の判断も範囲で数える。
+  画質（`ExportQuality`）の「標準」は以前の書き出しと1バイトも同じにしてある（WebMはlibvpx-vp9の既定＝
+  CRF 32、AVIは`-q:v 3`、MP4は0.1bit/画素）。標準の値を変えないこと。連番の画像はPNGの圧縮を`compute`で
+  行い、作品一覧のフォルダへは`WorkFolderService.moveFilesToFolder`で1回の保存で入れる
+  （`test/export_card_j20_test.dart`）。
 - **描画・演出フィルターの重い所を、結果を1バイトも変えずに軽くした（2026-11-27）**：ガウスぼかし
   （`_convolveH`・`_convolveV`：重みを`Float64List`で持ち、行の中は端の判定をせず、窓の中が全部同じ画素の
   所は値ごとに1回求めた表を引く）、大きいぼかし・σのぼかし（`_boxPass`：整数の和を列ごとに並べて行の順に

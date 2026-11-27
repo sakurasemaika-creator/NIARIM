@@ -5439,6 +5439,60 @@ abstract class AppLocalizations {
   /// **'形式'**
   String get exportFormatSection;
 
+  /// No description provided for @exportRangeSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出す範囲'**
+  String get exportRangeSection;
+
+  /// No description provided for @exportRangeAllScenes.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべてのシーン'**
+  String get exportRangeAllScenes;
+
+  /// 書き出しの範囲：選んだシーンのフレームの範囲
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム F{start}〜F{end}'**
+  String exportRangeFrames(int start, int end);
+
+  /// No description provided for @exportSizeQualitySection.
+  ///
+  /// In ja, this message translates to:
+  /// **'大きさ・画質'**
+  String get exportSizeQualitySection;
+
+  /// No description provided for @exportQualitySmall.
+  ///
+  /// In ja, this message translates to:
+  /// **'ファイルを小さく'**
+  String get exportQualitySmall;
+
+  /// No description provided for @exportQualityHigh.
+  ///
+  /// In ja, this message translates to:
+  /// **'きれいに'**
+  String get exportQualityHigh;
+
+  /// No description provided for @exportSequenceButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'全部のフレームを連番の画像（PNG）で書き出す'**
+  String get exportSequenceButton;
+
+  /// 連番の画像を入れる作品一覧のフォルダの名前
+  ///
+  /// In ja, this message translates to:
+  /// **'{name}（連番）'**
+  String exportSequenceFolderName(String name);
+
+  /// 連番の画像を書き出した知らせ
+  ///
+  /// In ja, this message translates to:
+  /// **'連番の画像を{count}枚書き出しました（作品一覧の「{folder}」）。'**
+  String exportSequenceDone(int count, String folder);
+
   /// No description provided for @exportFormatMp4.
   ///
   /// In ja, this message translates to:

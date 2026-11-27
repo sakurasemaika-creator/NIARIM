@@ -7,6 +7,7 @@ import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
 import '../models/layer.dart';
 import '../models/scene.dart';
 import 'clip_speed.dart';
+import 'export_window.dart';
 import 'timeline_video_time.dart';
 
 /// One sound in an exported video: a stretch of an audio file (a clip on an
@@ -72,11 +73,24 @@ Future<ExportAudioPlan> buildExportAudioPlan({
   required List<Scene> scenes,
   required int sourceFps,
   int? maxSeconds,
+  ExportWindow? window,
   required Future<String?> Function(String materialId) pathOf,
 }) async {
   if (sourceFps <= 0) return ExportAudioPlan.empty;
   final fps = sourceFps.toDouble();
-  final totalFrames = scenes.fold<int>(0, (n, s) => n + s.frames.length);
+  // Frames [start, end] of one scene, when only those are exported.
+  int framesOf(Scene scene) {
+    final range = window;
+    if (range == null) return scene.frames.length;
+    if (range.sceneId != scene.id) return 0;
+    final last = range.end < scene.frames.length - 1
+        ? range.end
+        : scene.frames.length - 1;
+    final first = range.start < 0 ? 0 : range.start;
+    return last < first ? 0 : last - first + 1;
+  }
+
+  final totalFrames = scenes.fold<int>(0, (n, s) => n + framesOf(s));
   final limitFrames = maxSeconds == null
       ? totalFrames
       : math.min(totalFrames, maxSeconds * sourceFps);
@@ -144,11 +158,16 @@ Future<ExportAudioPlan> buildExportAudioPlan({
 
   for (final scene in scenes) {
     if (sceneStart >= limitFrames) break;
-    final sceneFrames = scene.frames.length;
+    if (window != null && window.sceneId != scene.id) continue;
+    final sceneFrames = framesOf(scene);
+    // Positions in the scene count from the first exported frame (a sound
+    // that began before it starts part-way through).
+    final first = window?.start ?? 0;
+    final offset = first < 0 ? 0 : first;
     for (final clip in scene.audioClips) {
       await add(
         materialId: clip.materialId,
-        startFrame: clip.startFrame,
+        startFrame: clip.startFrame - offset,
         lengthFrames: clip.lengthFrames,
         sourceFrame: clip.sourceStartFrame,
         sceneFrames: sceneFrames,
@@ -171,7 +190,7 @@ Future<ExportAudioPlan> buildExportAudioPlan({
         final end = layer.rangeEnd ?? (start + 1);
         await add(
           materialId: layer.materialId,
-          startFrame: start,
+          startFrame: start - offset,
           lengthFrames: end - start,
           sourceFrame: layer.sourceTrimStart ?? 0,
           sceneFrames: sceneFrames,

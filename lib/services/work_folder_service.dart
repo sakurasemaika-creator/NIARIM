@@ -336,6 +336,29 @@ class WorkFolderService extends ChangeNotifier {
         _notify();
       });
 
+  /// Puts every one of [fileNames] in [folderId] (null: out of any folder)
+  /// with one save; a numbered sequence is hundreds of files, and one save
+  /// each would write the list as many times.
+  Future<void> moveFilesToFolder(
+    Iterable<String> fileNames,
+    String? folderId,
+  ) => _enqueue(() async {
+    final next = Map<String, String>.from(_fileFolder);
+    for (final name in fileNames) {
+      if (folderId == null) {
+        next.remove(name);
+      } else {
+        next[name] = folderId;
+      }
+    }
+    if (mapEquals(next, _fileFolder)) return;
+    await _save({_fileFolderPrefsKey: jsonEncode(next)});
+    _fileFolder
+      ..clear()
+      ..addAll(next);
+    _notify();
+  });
+
   /// Carries a renamed exported file's folder and cover over to its new
   /// name ([fromPath] → [toPath], full paths; folders are kept by name).
   Future<void> renameFile(String fromPath, String toPath) => _enqueue(() async {

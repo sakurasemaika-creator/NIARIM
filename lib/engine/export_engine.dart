@@ -1,3 +1,5 @@
+export 'export_window.dart';
+
 import 'dart:math' as math;
 import 'dart:io';
 import 'dart:typed_data';
@@ -12,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'corner_logo.dart';
 import 'export_audio.dart';
+import 'export_window.dart';
 import 'export_filename.dart';
 import 'filter_engine.dart' show EffectFilterType;
 import 'frame_png.dart';
@@ -67,22 +70,43 @@ class ExportedFileListing {
 
 /// Samples the existing timeline at the output frame rate. Frame indices used
 /// for effects and the camera always belong to the original scene.
+/// How much the encoder keeps (the owner's choice, 2026-11-27): a smaller
+/// file, the usual, or a cleaner picture. A GIF has no such setting.
+enum ExportQuality { small, standard, high }
+
 class ExportTiming {
   const ExportTiming({
     required this.sourceFps,
     required this.outputFps,
     this.maxSeconds,
+    this.window,
   });
 
   final int sourceFps;
   final int outputFps;
   final int? maxSeconds;
 
+  /// Only these frames are exported (null: all of them).
+  final ExportWindow? window;
+
   static int sourceFrames(List<Scene> scenes) =>
       scenes.fold(0, (total, scene) => total + scene.frames.length);
 
+  /// The source frames exported: those of [window], or all of them.
+  int framesIn(List<Scene> scenes) {
+    final range = window;
+    if (range == null) return sourceFrames(scenes);
+    final scene = scenes.where((s) => s.id == range.sceneId).firstOrNull;
+    if (scene == null || scene.frames.isEmpty) return 0;
+    final last = range.end < scene.frames.length - 1
+        ? range.end
+        : scene.frames.length - 1;
+    final first = range.start < 0 ? 0 : range.start;
+    return last < first ? 0 : last - first + 1;
+  }
+
   int outputFrames(List<Scene> scenes) {
-    final total = sourceFrames(scenes);
+    final total = framesIn(scenes);
     final limit = maxSeconds;
     final capped = limit == null ? total : math.min(total, limit * sourceFps);
     return capped == 0
@@ -102,10 +126,12 @@ class ExportTiming {
 
   Iterable<({Scene scene, Frame frame})> samples(List<Scene> scenes) sync* {
     final count = outputFrames(scenes);
+    final range = window;
     var outputIndex = 0;
     var end = 0;
     for (final scene in scenes) {
-      for (final frame in scene.frames) {
+      for (final (position, frame) in scene.frames.indexed) {
+        if (range != null && !range.covers(scene.id, position)) continue;
         end++;
         while (outputIndex < count &&
             outputIndex * sourceFps < end * outputFps) {
@@ -137,6 +163,19 @@ class ExportTiming {
 /// and [ExportGifWriter] writes the file the image package's `GifEncoder`
 /// writes for those palette frames, byte for byte.
 ExportGifWriter newExportGifEncoder() => ExportGifWriter();
+
+/// One frame of a numbered sequence as a PNG (the image package's encoder,
+/// like a single still picture), run off the screen's thread.
+Uint8List _encodeSequencePng(({Uint8List rgba, int width, int height}) job) =>
+    img.encodePng(
+      img.Image.fromBytes(
+        width: job.width,
+        height: job.height,
+        bytes: job.rgba.buffer,
+        bytesOffset: job.rgba.offsetInBytes,
+        numChannels: 4,
+      ),
+    );
 
 Uint8List _encodeGifFrames(
   ({
@@ -427,6 +466,123 @@ class ExportEngine {
     );
   }
 
+  /// Every exported frame (those of [window], or of every scene), once each,
+  /// as a PNG in the exports folder, numbered in order ("Title F001 …",
+  /// "Title F002 …") with one date and time (the owner's choice, 2026-11-27).
+  /// The paths in order; nothing is left when it fails or is cancelled.
+  Future<List<String>> exportFrameSequence({
+    String? projectName,
+    required List<Scene> scenes,
+    required TileManager tileManager,
+    required int drawingWidth,
+    required int drawingHeight,
+    required int width,
+    required int height,
+    required int backgroundColor,
+    ExportWindow? window,
+    int? sourceFps,
+    ExportProgressCallback? onProgress,
+    ExportCancelToken? cancelToken,
+    VideoMaterialSnapshot? videoMaterials,
+  }) async {
+    return _withVideoFrames(
+      materials: videoMaterials,
+      framesPerSecond: sourceFps,
+      drawingWidth: drawingWidth,
+      drawingHeight: drawingHeight,
+      cancelToken: cancelToken,
+      body: (video) async {
+        final layerHomes = buildLayerHomeIndex(scenes);
+        final picked = [
+          for (final scene in scenes)
+            for (final (position, frame) in scene.frames.indexed)
+              if (window == null || window.covers(scene.id, position))
+                (scene: scene, frame: frame),
+        ];
+        final dir = await ExportEngine.exportsDir();
+        final time = DateTime.now();
+        final paths = <String>[];
+        // A frame's PNG is compressed off the screen's thread while the next
+        // frame is drawn; one is written at a time, in order.
+        Future<void>? writing;
+        Object? failure;
+        StackTrace? failureStack;
+        Future<void> written() async {
+          await writing;
+          if (failure != null) {
+            Error.throwWithStackTrace(failure!, failureStack!);
+          }
+        }
+
+        try {
+          for (final (number, (:scene, :frame)) in picked.indexed) {
+            if (cancelToken?.isCancelled == true) {
+              throw const ExportCancelledException();
+            }
+            final rgba = await renderFrame(
+              layers: resolveFrameLayers(
+                scenes,
+                layerHomes,
+                scene.id,
+                frame.index,
+                frame.layers,
+              ),
+              tileManager: tileManager,
+              sceneId: scene.id,
+              scene: scene,
+              frameIndex: frame.index,
+              drawingWidth: drawingWidth,
+              drawingHeight: drawingHeight,
+              width: width,
+              height: height,
+              backgroundColor: backgroundColor,
+              cameraKeyframes: scene.cameraKeyframes,
+              effectFilters: scene.effectFilters,
+              layerHomes: layerHomes,
+              groups: scene.groups,
+              videoPixels: video,
+            );
+            _straightenPngPixels(rgba);
+            final path = _freshOutputPath(
+              dir,
+              projectName,
+              'png',
+              frameIndex: number,
+              time: time,
+            );
+            final encoded = compute(_encodeSequencePng, (
+              rgba: rgba,
+              width: width,
+              height: height,
+            ));
+            await written();
+            writing = encoded
+                .then((bytes) async {
+                  await _publishImageExport(path, bytes);
+                  paths.add(path);
+                  onProgress?.call(number + 1, picked.length);
+                })
+                .catchError((Object error, StackTrace stack) {
+                  failure ??= error;
+                  failureStack ??= stack;
+                });
+          }
+          await written();
+        } catch (_) {
+          await writing;
+          for (final path in paths) {
+            try {
+              File(path).deleteSync();
+            } catch (_) {}
+          }
+          ExportStorage.invalidate();
+          rethrow;
+        }
+        return paths;
+      },
+    );
+  }
+
   /// 無料版のエンドカード（中央にアプリアイコン、下にアプリタイトルロゴ、
   /// 約5秒）のフレーム画像をPNGとして生成する。ロゴ・タイトルロゴとも
   /// SVGをvector_graphicsで直接ui.Pictureへデコードし、Canvas上へ合成する
@@ -552,10 +708,11 @@ class ExportEngine {
     String extension, {
     int? frameIndex,
     bool making = false,
+    DateTime? time,
   }) {
     final stem = exportFilenameStem(
       projectName,
-      DateTime.now(),
+      time ?? DateTime.now(),
       frameIndex: frameIndex,
       making: making,
     );
@@ -728,6 +885,8 @@ class ExportEngine {
     required int fps,
     int? sourceFps,
     int? maxSeconds,
+    ExportWindow? window,
+    ExportQuality quality = ExportQuality.standard,
     required int drawingWidth,
     required int drawingHeight,
     required int width,
@@ -756,6 +915,7 @@ class ExportEngine {
             sourceFps: sourceFps ?? fps,
             outputFps: fps,
             maxSeconds: maxSeconds,
+            window: window,
           );
           final totalFrames = timing.outputFrames(scenes);
           // 共通・タイムライン素材・ウォーターマークレイヤーの表示範囲を反映するため、
@@ -841,6 +1001,11 @@ class ExportEngine {
             height: height,
             outputPath: outputPath,
             audioPath: sound.path,
+            bitsPerPixel: switch (quality) {
+              ExportQuality.small => 0.05,
+              ExportQuality.standard => 0.1,
+              ExportQuality.high => 0.2,
+            },
           );
           if (sound.path != null && !audioIncluded) {
             // The device could not encode the sound: the video is kept without it.
@@ -866,6 +1031,7 @@ class ExportEngine {
     required int fps,
     int? sourceFps,
     int? maxSeconds,
+    ExportWindow? window,
     required int drawingWidth,
     required int drawingHeight,
     required int width,
@@ -887,6 +1053,7 @@ class ExportEngine {
           sourceFps: sourceFps ?? fps,
           outputFps: fps,
           maxSeconds: maxSeconds,
+          window: window,
         );
         final totalFrames = timing.outputFrames(scenes);
         if (totalFrames == 0) {
@@ -1100,6 +1267,8 @@ class ExportEngine {
     required int fps,
     int? sourceFps,
     int? maxSeconds,
+    ExportWindow? window,
+    ExportQuality quality = ExportQuality.standard,
     required int drawingWidth,
     required int drawingHeight,
     required int width,
@@ -1128,6 +1297,7 @@ class ExportEngine {
             sourceFps: sourceFps ?? fps,
             outputFps: fps,
             maxSeconds: maxSeconds,
+            window: window,
           );
           final totalFrames = timing.outputFrames(scenes);
           final layerHomes = buildLayerHomeIndex(scenes);
@@ -1207,7 +1377,20 @@ class ExportEngine {
               '-i',
               '${framesDir.path}/frame_%06d.png',
             ],
-            codecs: ['-c:v', 'libvpx-vp9', '-pix_fmt', 'yuva420p'],
+            codecs: [
+              '-c:v',
+              'libvpx-vp9',
+              '-pix_fmt',
+              'yuva420p',
+              // With no bitrate, libvpx-vp9 keeps a constant quality of 32
+              // (the usual, as before); a smaller file or a cleaner picture
+              // moves it.
+              ...switch (quality) {
+                ExportQuality.small => ['-crf', '40', '-b:v', '0'],
+                ExportQuality.standard => const <String>[],
+                ExportQuality.high => ['-crf', '24', '-b:v', '0'],
+              },
+            ],
             // WebM carries Opus. The app's FFmpeg has no libopus, so its own
             // Opus encoder is used (marked experimental by FFmpeg).
             soundCodec: ['-c:a', 'opus', '-strict', '-2', '-b:a', '128k'],
@@ -1244,6 +1427,8 @@ class ExportEngine {
     required int fps,
     int? sourceFps,
     int? maxSeconds,
+    ExportWindow? window,
+    ExportQuality quality = ExportQuality.standard,
     required int drawingWidth,
     required int drawingHeight,
     required int width,
@@ -1272,6 +1457,7 @@ class ExportEngine {
             sourceFps: sourceFps ?? fps,
             outputFps: fps,
             maxSeconds: maxSeconds,
+            window: window,
           );
           final totalFrames = timing.outputFrames(scenes);
           final layerHomes = buildLayerHomeIndex(scenes);
@@ -1353,7 +1539,18 @@ class ExportEngine {
               '-i',
               '${framesDir.path}/frame_%06d.png',
             ],
-            codecs: ['-c:v', 'mjpeg', '-pix_fmt', 'yuvj420p', '-q:v', '3'],
+            codecs: [
+              '-c:v',
+              'mjpeg',
+              '-pix_fmt',
+              'yuvj420p',
+              '-q:v',
+              switch (quality) {
+                ExportQuality.small => '6',
+                ExportQuality.standard => '3',
+                ExportQuality.high => '2',
+              },
+            ],
             // Uncompressed PCM: the usual sound of an MJPEG AVI for editing.
             soundCodec: ['-c:a', 'pcm_s16le'],
             sound: sound,

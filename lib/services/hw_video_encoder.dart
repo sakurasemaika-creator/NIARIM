@@ -21,6 +21,7 @@ class HardwareVideoEncoder {
     required int height,
     required String outputPath,
     String? audioPath,
+    double bitsPerPixel = 0.1,
   }) async {
     final audioIncluded = await _channel.invokeMethod<bool>('encodeMp4', {
       'framePaths': framePaths,
@@ -29,6 +30,7 @@ class HardwareVideoEncoder {
       'height': height,
       'outputPath': outputPath,
       'audioPath': ?audioPath,
+      'bitsPerPixel': bitsPerPixel,
     });
     return audioIncluded == true;
   }
