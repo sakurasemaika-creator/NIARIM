@@ -32,6 +32,24 @@ import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 import 'helpers/text_fit_problems.dart';
 
+/// Removes the documents folder a test opened the app on. Writes the app
+/// started (settings, the work list) can still be finishing on real I/O when
+/// the screen is taken down and add a file while the folder is deleted (CI
+/// once failed with "Directory not empty"): try again once they finish.
+Future<void> _removeFolder(WidgetTester tester, Directory dir) async {
+  for (var attempt = 0; ; attempt++) {
+    try {
+      if (dir.existsSync()) dir.deleteSync(recursive: true);
+      return;
+    } on FileSystemException {
+      if (attempt >= 4) rethrow;
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 200)),
+      );
+    }
+  }
+}
+
 void main() {
   const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
 
@@ -135,7 +153,7 @@ void main() {
             appRouter.go('/home');
             await tester.pumpWidget(const SizedBox());
             await tester.pump(const Duration(milliseconds: 300));
-            if (dir.existsSync()) dir.deleteSync(recursive: true);
+            await _removeFolder(tester, dir);
           }
         }
       }
@@ -207,7 +225,7 @@ void main() {
     appRouter.go('/home');
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(milliseconds: 300));
-    if (dir.existsSync()) dir.deleteSync(recursive: true);
+    await _removeFolder(tester, dir);
   }
 
   testWidgets('中国語（簡体字・繁体字）×320/360/412px×文字1.0/1.3/2.0で、保存の'
