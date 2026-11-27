@@ -61,6 +61,7 @@ import 'widgets/canvas_icon_button.dart';
 import 'widgets/toolbar_widget.dart';
 import 'widgets/frame_strip_widget.dart';
 import 'widgets/selection_transform_sliders.dart';
+import 'widgets/focus_mode_menu.dart';
 import 'widgets/brush_size_slider.dart';
 import 'widgets/layer_panel.dart';
 import 'widgets/color_adjust_sheet.dart';
@@ -1999,31 +2000,55 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     ),
                                   if (_isSelectionToolActive ||
                                       _currentTool == DrawingTool.meshTransform)
-                                    Positioned(
-                                      left: 12,
-                                      bottom: 12,
-                                      right: 12,
-                                      // Out of the way while a filter is
-                                      // adjusted: the selection stays as it is
-                                      // (the filter keeps to it) and the
-                                      // canvas shows the preview. Hidden, not
-                                      // removed, so the Stack keeps its order.
+                                    Positioned.fill(
                                       child: Visibility(
                                         visible: !selectionEditingHidden,
-                                        child: SafeArea(
-                                          child: Align(
-                                            alignment: Alignment.bottomLeft,
-                                            child:
-                                                _currentTool ==
-                                                    DrawingTool.meshTransform
-                                                ? _meshCancelBar(context)
-                                                : _buildSelectionControls(
-                                                    context,
-                                                    dockRowConstraints
-                                                        .maxHeight,
-                                                  ),
+                                        // Keep the menu's drag position and
+                                        // minimized state while a filter is
+                                        // temporarily taking focus.
+                                        maintainState: true,
+                                        maintainAnimation: true,
+                                        child: FocusModeMenu(
+                                          key: const ValueKey(
+                                            'selection-focus-menu',
                                           ),
+                                          maxWidth: 336,
+                                          collapseTooltip:
+                                              AppLocalizations.of(
+                                                context,
+                                              )!.filterPanelCollapse,
+                                          expandTooltip:
+                                              AppLocalizations.of(
+                                                context,
+                                              )!.filterPanelExpand,
+                                          child:
+                                              _currentTool ==
+                                                  DrawingTool.meshTransform
+                                              ? _meshCancelBar(context)
+                                              : _buildSelectionControls(
+                                                  context,
+                                                  dockRowConstraints.maxHeight,
+                                                ),
                                         ),
+                                      ),
+                                    ),
+                                  if (filterAdjusting)
+                                    Positioned.fill(
+                                      child: FocusModeMenu(
+                                        key: const ValueKey(
+                                          'filter-focus-menu',
+                                        ),
+                                        maxWidth: 360,
+                                        fillWidth: true,
+                                        collapseTooltip:
+                                            AppLocalizations.of(
+                                              context,
+                                            )!.filterPanelCollapse,
+                                        expandTooltip:
+                                            AppLocalizations.of(
+                                              context,
+                                            )!.filterPanelExpand,
+                                        child: _filterPanel(bottomBar: true),
                                       ),
                                     ),
                                   // ツールオプション系フローティングパネル（ブラシ・トーン・
@@ -2078,9 +2103,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // brush row or temporarily folds the lower rails.
                     if (colorAdjusting)
                       _colorAdjustPanel(bottomBar: true)
-                    else if (filterAdjusting)
-                      _filterPanel(bottomBar: true)
-                    else
+                    else if (!filterAdjusting)
                       Visibility(
                         visible: _usesBrushSize(_currentTool),
                         maintainSize: true,
@@ -3144,9 +3167,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// Whether the filter panel is working on the canvas — always, while it is
   /// open: the canvas shows the filter's preview, and a touch there moves
   /// the filter's handles (sphere shading's light, the fisheye's centre) or
-  /// picks a colour. Touches must reach the canvas, so the barrier that
-  /// closes panels on a tap outside them is left out (on phones the panel
-  /// is a bar under the canvas with its own close button).
+  /// picks a colour. Touches must reach the canvas, so the outside-tap
+  /// barrier is left transparent to input while the floating focus menu
+  /// handles its own controls.
   bool _filterPanelUsesCanvas() => _showFilterPanel;
 
   /// Undo from the keyboard or a two-finger tap: while a filter is being
@@ -3294,8 +3317,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
     activeCanvasEyedropperTarget: _filterColorEyedropperTarget,
     onStartCanvasEyedropper: _toggleFilterColorEyedropper,
     bottomBar: bottomBar,
-    preserveCurrentFilterOnMount:
-        bottomBar && isWideScreen(context, listen: false),
+    // The immersive menu is reparented from the dock/bottom row into the
+    // canvas overlay. Preserve the active filter across that widget move on
+    // both phone and desktop layouts.
+    preserveCurrentFilterOnMount: bottomBar,
     onCanvasPreviewChanged: _setFilterCanvasPreview,
     selectionMask: _canvasSelectionMask,
     lensMask: _filterLensMask,
