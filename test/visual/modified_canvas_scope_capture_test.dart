@@ -268,17 +268,29 @@ void main() {
         ),
       ).first;
       expect(find.byKey(const ValueKey('color-adjust-save-menu')), findsOneWidget);
+      final colorTitle = tester.getRect(
+        find.byKey(const ValueKey('focus-mode-menu-title')),
+      );
+      final colorGrip = tester.getRect(
+        find.byKey(const ValueKey('focus-mode-menu-move-grip')),
+      );
+      final colorDragArea = tester.getRect(
+        find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
+      );
       expect(
-        tester.getRect(
-          find.byKey(const ValueKey('focus-mode-menu-move-grip-handle')),
-        ).right,
+        colorGrip.center.dx,
+        closeTo(colorTitle.center.dx, 0.1),
+        reason: 'color-adjust title and move grip are centered in a vertical stack',
+      );
+      expect(
+        colorDragArea.right,
         closeTo(
           tester.getRect(
             find.byKey(const ValueKey('color-adjust-save-menu')),
           ).left,
           0.1,
         ),
-        reason: 'the move grip must sit immediately left of the color-adjust menu',
+        reason: 'the color-adjust title/grip stack uses the central header area',
       );
       expect(
         find.text(
@@ -352,9 +364,20 @@ void main() {
           reason: 'the embedded panel must use the shared header title only');
       expect(find.text(meshL10n.meshTransformPanelHint), findsNothing,
           reason: 'mesh editing should be self-explanatory without a hint paragraph');
+      final meshTitle = tester.getRect(
+        find.byKey(const ValueKey('focus-mode-menu-title')),
+      );
+      final meshGrip = tester.getRect(
+        find.byKey(const ValueKey('focus-mode-menu-move-grip')),
+      );
+      expect(
+        meshGrip.center.dx,
+        closeTo(meshTitle.center.dx, 0.1),
+        reason: 'mesh-transform title and move grip are centered in a vertical stack',
+      );
       expect(
         tester.getRect(
-          find.byKey(const ValueKey('focus-mode-menu-move-grip-handle')),
+          find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
         ).right,
         closeTo(
           tester.getRect(
@@ -362,7 +385,7 @@ void main() {
           ).left,
           0.1,
         ),
-        reason: 'without a contextual menu the move grip sits beside close',
+        reason: 'the mesh-transform title/grip stack uses the central header area',
       );
       final meshFocusSurface = find.byKey(
         const ValueKey('focus-mode-menu-surface'),
