@@ -5220,26 +5220,22 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ce matériau sera supprimé de toutes les images de sa plage d’affichage.';
 
   @override
-  String layerPanelCommonRemoveFrame(String name) {
-    return 'Masquer « $name » sur cette image ?';
+  String layerCommonDeleteThisFrameOnly(int n) {
+    return 'Retirer de cette image (F$n) uniquement';
   }
 
   @override
-  String layerPanelCommonDeleteMidDialogTitle(String name) {
-    return 'Modifier la plage d’affichage de $name ?';
+  String get layerCommonDeleteThisFrameOnlyDesc =>
+      'Les autres images le gardent.';
+
+  @override
+  String layerCommonDuplicateThisFrameOnly(int n) {
+    return 'Dupliquer dans cette image (F$n) uniquement';
   }
 
   @override
-  String get layerPanelCommonDeleteMidDialogBody =>
-      'La plage d’affichage d’un calque commun ne peut être qu’une seule plage continue, elle ne peut donc pas être supprimée depuis une image au milieu de cette plage. Choisissez plutôt de conserver la partie avant ou après cette image.';
-
-  @override
-  String get layerPanelCommonDeleteKeepBeforeButton =>
-      'Conserver avant cette image';
-
-  @override
-  String get layerPanelCommonDeleteKeepAfterButton =>
-      'Conserver après cette image';
+  String get layerCommonDuplicateThisFrameOnlyDesc =>
+      'Le copie dans cette image uniquement, comme calque normal.';
 
   @override
   String get layerPanelRangeDialogTitle => 'Plage d’affichage';

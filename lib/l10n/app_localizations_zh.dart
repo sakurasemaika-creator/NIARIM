@@ -4874,24 +4874,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelDeleteConfirmBody => '将从该素材显示范围内的所有帧中删除。';
 
   @override
-  String layerPanelCommonRemoveFrame(String name) {
-    return '要在此帧隐藏“$name”吗？';
+  String layerCommonDeleteThisFrameOnly(int n) {
+    return '仅从此帧（F$n）移除';
   }
 
   @override
-  String layerPanelCommonDeleteMidDialogTitle(String name) {
-    return '要更改“$name”的显示范围吗？';
+  String get layerCommonDeleteThisFrameOnlyDesc => '其他帧仍会保留。';
+
+  @override
+  String layerCommonDuplicateThisFrameOnly(int n) {
+    return '仅复制到此帧（F$n）';
   }
 
   @override
-  String get layerPanelCommonDeleteMidDialogBody =>
-      '公共图层的显示范围只能设置为一个连续区间，因此无法在范围中间的某一帧删除。请选择要保留此帧之前还是之后的部分。';
-
-  @override
-  String get layerPanelCommonDeleteKeepBeforeButton => '保留此帧之前';
-
-  @override
-  String get layerPanelCommonDeleteKeepAfterButton => '保留此帧之后';
+  String get layerCommonDuplicateThisFrameOnlyDesc => '作为普通图层，只复制到此帧。';
 
   @override
   String get layerPanelRangeDialogTitle => '显示范围';
@@ -16080,24 +16076,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get layerPanelDeleteConfirmBody => '將從此素材顯示範圍內的所有影格中刪除。';
 
   @override
-  String layerPanelCommonRemoveFrame(String name) {
-    return '要在此影格隱藏「$name」嗎？';
+  String layerCommonDeleteThisFrameOnly(int n) {
+    return '僅從此影格（F$n）移除';
   }
 
   @override
-  String layerPanelCommonDeleteMidDialogTitle(String name) {
-    return '要變更「$name」的顯示範圍嗎？';
+  String get layerCommonDeleteThisFrameOnlyDesc => '其他影格仍會保留。';
+
+  @override
+  String layerCommonDuplicateThisFrameOnly(int n) {
+    return '僅複製到此影格（F$n）';
   }
 
   @override
-  String get layerPanelCommonDeleteMidDialogBody =>
-      '共用圖層的顯示範圍只能設定為一個連續區間，因此無法在範圍中間的某一影格刪除。請選擇要保留此影格之前還是之後的部分。';
-
-  @override
-  String get layerPanelCommonDeleteKeepBeforeButton => '保留此影格之前';
-
-  @override
-  String get layerPanelCommonDeleteKeepAfterButton => '保留此影格之後';
+  String get layerCommonDuplicateThisFrameOnlyDesc => '作為一般圖層，只複製到此影格。';
 
   @override
   String get layerPanelRangeDialogTitle => '顯示範圍';

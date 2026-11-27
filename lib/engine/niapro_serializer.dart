@@ -1566,6 +1566,9 @@ class NiaproSerializer {
         (f) => {
           'index': f.index,
           'layers': f.layers.map(_serializeLayer).toList(),
+          if (f.commonSlots.isNotEmpty) 'commonSlots': f.commonSlots,
+          if (f.hiddenCommon.isNotEmpty)
+            'hiddenCommon': f.hiddenCommon.toList()..sort(),
         },
       )
       .toList();
@@ -1615,6 +1618,7 @@ class NiaproSerializer {
     if (l.watermarkSource case final source?)
       'watermarkSource': source.toJson(),
     'trackRow': l.trackRow,
+    if (l.commonSlot != null) 'commonSlot': l.commonSlot,
     if (l.keyframes.isNotEmpty)
       'keyframes': l.keyframes.map((k) => k.toJson()).toList(),
     if (l.textObject != null) 'textObject': _serializeTextObject(l.textObject!),
@@ -1844,6 +1848,16 @@ class NiaproSerializer {
       layers: (map['layers'] as List<dynamic>)
           .map((l) => _deserializeLayer(l as Map<String, dynamic>))
           .toList(),
+      commonSlots: {
+        if (map['commonSlots'] case final Map<String, dynamic> slots)
+          for (final MapEntry(:key, :value) in slots.entries)
+            if (value is num && value.isFinite) key: value.toInt(),
+      },
+      hiddenCommon: {
+        if (map['hiddenCommon'] case final List<dynamic> hidden)
+          for (final id in hidden)
+            if (id is String) id,
+      },
     );
   }).toList();
 
@@ -1892,6 +1906,10 @@ class NiaproSerializer {
     watermarkScale: (j['watermarkScale'] as num?)?.toDouble() ?? 0.25,
     watermarkSource: PlacedWatermarkSource.fromJson(j['watermarkSource']),
     trackRow: j['trackRow'] as int? ?? 0,
+    commonSlot: switch (j['commonSlot']) {
+      final num slot when slot.isFinite && slot >= 0 => slot.toInt(),
+      _ => null,
+    },
     keyframes: (j['keyframes'] as List<dynamic>? ?? const [])
         .map((k) => LayerKeyframe.fromJson(k as Map<String, dynamic>))
         .toList(),

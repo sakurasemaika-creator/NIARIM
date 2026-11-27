@@ -1984,18 +1984,10 @@
     }
   },
   "layerPanelDeleteConfirmBody": "将从该素材显示范围内的所有帧中删除。",
-  "layerPanelCommonRemoveFrame": "要在此帧隐藏“{name}”吗？",
-  "layerPanelCommonDeleteMidDialogTitle": "要更改“{name}”的显示范围吗？",
-  "@layerPanelCommonDeleteMidDialogTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "layerPanelCommonDeleteMidDialogBody": "公共图层的显示范围只能设置为一个连续区间，因此无法在范围中间的某一帧删除。请选择要保留此帧之前还是之后的部分。",
-  "layerPanelCommonDeleteKeepBeforeButton": "保留此帧之前",
-  "layerPanelCommonDeleteKeepAfterButton": "保留此帧之后",
+  "layerCommonDeleteThisFrameOnly": "仅从此帧（F{n}）移除",
+  "layerCommonDeleteThisFrameOnlyDesc": "其他帧仍会保留。",
+  "layerCommonDuplicateThisFrameOnly": "仅复制到此帧（F{n}）",
+  "layerCommonDuplicateThisFrameOnlyDesc": "作为普通图层，只复制到此帧。",
   "layerPanelRangeDialogTitle": "显示范围",
   "layerPanelRangeStartFrameLabel": "起始帧",
   "layerPanelRangeEndFrameLabel": "结束帧",

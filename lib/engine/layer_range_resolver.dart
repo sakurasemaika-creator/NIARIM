@@ -64,15 +64,25 @@ List<Layer> resolveFrameLayers(
   int frameIndex,
   List<Layer> ownLayers,
 ) {
+  // This frame's own placing of the range layers kept in other frames, and
+  // the common layers taken out of this frame only.
+  final scene = scenes.where((s) => s.id == sceneId).firstOrNull;
+  final frame =
+      scene != null && frameIndex >= 0 && frameIndex < scene.frames.length
+      ? scene.frames[frameIndex]
+      : null;
+  final slots = frame?.commonSlots ?? const <String, int>{};
+  final hidden = frame?.hiddenCommon ?? const <String>{};
   final visibleOwn = ownLayers.where((layer) {
     if (!isRangeLayerType(layer.type)) return true;
+    if (hidden.contains(layer.id)) return false;
     final homeSceneId = homes[layer.id]?.sceneId ?? sceneId;
     return rangeAppliesToFrame(layer, homeSceneId, sceneId, frameIndex);
   }).toList();
   final ownIds = ownLayers.map((l) => l.id).toSet();
   final extra = <Layer>[];
   for (final entry in homes.entries) {
-    if (ownIds.contains(entry.key)) continue;
+    if (ownIds.contains(entry.key) || hidden.contains(entry.key)) continue;
     final home = entry.value;
     if (home.sceneId == sceneId && home.frameIndex == frameIndex) continue;
     final layer = _layerAtHome(scenes, home, entry.key);
@@ -82,7 +92,32 @@ List<Layer> resolveFrameLayers(
     }
   }
   if (extra.isEmpty && visibleOwn.length == ownLayers.length) return ownLayers;
-  return [...visibleOwn, ...extra];
+  // A range layer with a place goes there (counted from the top, nearest
+  // first); one without goes below the frame's own layers, as before.
+  final placed = <({int slot, Layer layer})>[];
+  final below = <Layer>[];
+  for (final layer in extra) {
+    final slot = slots[layer.id] ?? layer.commonSlot;
+    if (slot == null) {
+      below.add(layer);
+    } else {
+      placed.add((slot: slot, layer: layer));
+    }
+  }
+  if (placed.isEmpty) return [...visibleOwn, ...extra];
+  // Stable: two layers at the same place keep their order.
+  final ordered =
+      [for (var i = 0; i < placed.length; i++) (i: i, entry: placed[i])]
+        ..sort((a, b) {
+          final bySlot = a.entry.slot.compareTo(b.entry.slot);
+          return bySlot != 0 ? bySlot : a.i.compareTo(b.i);
+        });
+  final result = [...visibleOwn];
+  for (final item in ordered) {
+    final at = item.entry.slot.clamp(0, result.length);
+    result.insert(at, item.entry.layer);
+  }
+  return [...result, ...below];
 }
 
 /// レイヤーのTileManager合成キーを解決する。表示範囲レイヤーは表示中の

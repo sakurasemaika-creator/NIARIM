@@ -1984,18 +1984,10 @@
     }
   },
   "layerPanelDeleteConfirmBody": "Ce matériau sera supprimé de toutes les images de sa plage d’affichage.",
-  "layerPanelCommonRemoveFrame": "Masquer « {name} » sur cette image ?",
-  "layerPanelCommonDeleteMidDialogTitle": "Modifier la plage d’affichage de {name} ?",
-  "@layerPanelCommonDeleteMidDialogTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "layerPanelCommonDeleteMidDialogBody": "La plage d’affichage d’un calque commun ne peut être qu’une seule plage continue, elle ne peut donc pas être supprimée depuis une image au milieu de cette plage. Choisissez plutôt de conserver la partie avant ou après cette image.",
-  "layerPanelCommonDeleteKeepBeforeButton": "Conserver avant cette image",
-  "layerPanelCommonDeleteKeepAfterButton": "Conserver après cette image",
+  "layerCommonDeleteThisFrameOnly": "Retirer de cette image (F{n}) uniquement",
+  "layerCommonDeleteThisFrameOnlyDesc": "Les autres images le gardent.",
+  "layerCommonDuplicateThisFrameOnly": "Dupliquer dans cette image (F{n}) uniquement",
+  "layerCommonDuplicateThisFrameOnlyDesc": "Le copie dans cette image uniquement, comme calque normal.",
   "layerPanelRangeDialogTitle": "Plage d’affichage",
   "layerPanelRangeStartFrameLabel": "Image de début",
   "layerPanelRangeEndFrameLabel": "Image de fin",

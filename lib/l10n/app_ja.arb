@@ -2545,25 +2545,26 @@
     }
   },
   "layerPanelDeleteConfirmBody": "この素材の表示範囲内のすべてのフレームから削除されます。",
-  "layerPanelCommonRemoveFrame": "このフレームで「{name}」を非表示にしますか？",
-  "@layerPanelCommonRemoveFrame": {
+  "layerCommonDeleteThisFrameOnly": "このフレーム（F{n}）だけから消す",
+  "@layerCommonDeleteThisFrameOnly": {
+    "description": "共通レイヤーの削除・複製の確かめ：今のフレームだけにするチェックボックス。nはフレームの番号",
     "placeholders": {
-      "name": {
-        "type": "String"
+      "n": {
+        "type": "int"
       }
     }
   },
-  "layerPanelCommonDeleteMidDialogTitle": "{name}の表示範囲を変更しますか？",
-  "@layerPanelCommonDeleteMidDialogTitle": {
+  "layerCommonDeleteThisFrameOnlyDesc": "ほかのフレームには残ります。",
+  "layerCommonDuplicateThisFrameOnly": "このフレーム（F{n}）だけに複製する",
+  "@layerCommonDuplicateThisFrameOnly": {
+    "description": "共通レイヤーの削除・複製の確かめ：今のフレームだけにするチェックボックス。nはフレームの番号",
     "placeholders": {
-      "name": {
-        "type": "String"
+      "n": {
+        "type": "int"
       }
     }
   },
-  "layerPanelCommonDeleteMidDialogBody": "共通レイヤーの表示範囲は連続した1区間でしか設定できないため、範囲の途中のフレームでは削除できません。代わりに、このフレームより前と後のどちらを残すか選んでください。",
-  "layerPanelCommonDeleteKeepBeforeButton": "これより前を残す",
-  "layerPanelCommonDeleteKeepAfterButton": "これより後を残す",
+  "layerCommonDuplicateThisFrameOnlyDesc": "通常のレイヤーとして、このフレームにだけ写します。",
   "layerPanelRangeDialogTitle": "表示範囲",
   "layerPanelRangeStartFrameLabel": "開始フレーム",
   "layerPanelRangeEndFrameLabel": "終了フレーム",

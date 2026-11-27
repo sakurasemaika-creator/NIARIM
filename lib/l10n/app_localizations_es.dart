@@ -5217,24 +5217,22 @@ class AppLocalizationsEs extends AppLocalizations {
       'Este material se eliminará de todos los fotogramas dentro de su rango de visualización.';
 
   @override
-  String layerPanelCommonRemoveFrame(String name) {
-    return '¿Ocultar «$name» en este fotograma?';
+  String layerCommonDeleteThisFrameOnly(int n) {
+    return 'Quitar solo de este fotograma (F$n)';
   }
 
   @override
-  String layerPanelCommonDeleteMidDialogTitle(String name) {
-    return '¿Cambiar el rango de visualización de $name?';
+  String get layerCommonDeleteThisFrameOnlyDesc =>
+      'Los demás fotogramas la conservan.';
+
+  @override
+  String layerCommonDuplicateThisFrameOnly(int n) {
+    return 'Duplicar solo en este fotograma (F$n)';
   }
 
   @override
-  String get layerPanelCommonDeleteMidDialogBody =>
-      'El rango de visualización de una capa compartida solo puede ser un único intervalo continuo, por lo que no se puede eliminar desde un fotograma intermedio de ese rango. Elige si quieres conservar la parte anterior o posterior a este fotograma.';
-
-  @override
-  String get layerPanelCommonDeleteKeepBeforeButton => 'Conservar lo anterior';
-
-  @override
-  String get layerPanelCommonDeleteKeepAfterButton => 'Conservar lo posterior';
+  String get layerCommonDuplicateThisFrameOnlyDesc =>
+      'La copia solo en este fotograma, como capa normal.';
 
   @override
   String get layerPanelRangeDialogTitle => 'Rango de visualización';

@@ -4915,24 +4915,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get layerPanelDeleteConfirmBody => 'この素材の表示範囲内のすべてのフレームから削除されます。';
 
   @override
-  String layerPanelCommonRemoveFrame(String name) {
-    return 'このフレームで「$name」を非表示にしますか？';
+  String layerCommonDeleteThisFrameOnly(int n) {
+    return 'このフレーム（F$n）だけから消す';
   }
 
   @override
-  String layerPanelCommonDeleteMidDialogTitle(String name) {
-    return '$nameの表示範囲を変更しますか？';
+  String get layerCommonDeleteThisFrameOnlyDesc => 'ほかのフレームには残ります。';
+
+  @override
+  String layerCommonDuplicateThisFrameOnly(int n) {
+    return 'このフレーム（F$n）だけに複製する';
   }
 
   @override
-  String get layerPanelCommonDeleteMidDialogBody =>
-      '共通レイヤーの表示範囲は連続した1区間でしか設定できないため、範囲の途中のフレームでは削除できません。代わりに、このフレームより前と後のどちらを残すか選んでください。';
-
-  @override
-  String get layerPanelCommonDeleteKeepBeforeButton => 'これより前を残す';
-
-  @override
-  String get layerPanelCommonDeleteKeepAfterButton => 'これより後を残す';
+  String get layerCommonDuplicateThisFrameOnlyDesc =>
+      '通常のレイヤーとして、このフレームにだけ写します。';
 
   @override
   String get layerPanelRangeDialogTitle => '表示範囲';

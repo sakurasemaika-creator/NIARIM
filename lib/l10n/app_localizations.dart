@@ -8907,35 +8907,29 @@ abstract class AppLocalizations {
   /// **'この素材の表示範囲内のすべてのフレームから削除されます。'**
   String get layerPanelDeleteConfirmBody;
 
-  /// No description provided for @layerPanelCommonRemoveFrame.
+  /// 共通レイヤーの削除・複製の確かめ：今のフレームだけにするチェックボックス。nはフレームの番号
   ///
   /// In ja, this message translates to:
-  /// **'このフレームで「{name}」を非表示にしますか？'**
-  String layerPanelCommonRemoveFrame(String name);
+  /// **'このフレーム（F{n}）だけから消す'**
+  String layerCommonDeleteThisFrameOnly(int n);
 
-  /// No description provided for @layerPanelCommonDeleteMidDialogTitle.
+  /// No description provided for @layerCommonDeleteThisFrameOnlyDesc.
   ///
   /// In ja, this message translates to:
-  /// **'{name}の表示範囲を変更しますか？'**
-  String layerPanelCommonDeleteMidDialogTitle(String name);
+  /// **'ほかのフレームには残ります。'**
+  String get layerCommonDeleteThisFrameOnlyDesc;
 
-  /// No description provided for @layerPanelCommonDeleteMidDialogBody.
+  /// 共通レイヤーの削除・複製の確かめ：今のフレームだけにするチェックボックス。nはフレームの番号
   ///
   /// In ja, this message translates to:
-  /// **'共通レイヤーの表示範囲は連続した1区間でしか設定できないため、範囲の途中のフレームでは削除できません。代わりに、このフレームより前と後のどちらを残すか選んでください。'**
-  String get layerPanelCommonDeleteMidDialogBody;
+  /// **'このフレーム（F{n}）だけに複製する'**
+  String layerCommonDuplicateThisFrameOnly(int n);
 
-  /// No description provided for @layerPanelCommonDeleteKeepBeforeButton.
+  /// No description provided for @layerCommonDuplicateThisFrameOnlyDesc.
   ///
   /// In ja, this message translates to:
-  /// **'これより前を残す'**
-  String get layerPanelCommonDeleteKeepBeforeButton;
-
-  /// No description provided for @layerPanelCommonDeleteKeepAfterButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'これより後を残す'**
-  String get layerPanelCommonDeleteKeepAfterButton;
+  /// **'通常のレイヤーとして、このフレームにだけ写します。'**
+  String get layerCommonDuplicateThisFrameOnlyDesc;
 
   /// No description provided for @layerPanelRangeDialogTitle.
   ///

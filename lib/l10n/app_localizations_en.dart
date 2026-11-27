@@ -5139,24 +5139,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'This material will be removed from every frame within its display range.';
 
   @override
-  String layerPanelCommonRemoveFrame(String name) {
-    return 'Hide “$name” on this frame?';
+  String layerCommonDeleteThisFrameOnly(int n) {
+    return 'Remove from this frame (F$n) only';
   }
 
   @override
-  String layerPanelCommonDeleteMidDialogTitle(String name) {
-    return 'Change the display range of $name?';
+  String get layerCommonDeleteThisFrameOnlyDesc => 'The other frames keep it.';
+
+  @override
+  String layerCommonDuplicateThisFrameOnly(int n) {
+    return 'Duplicate into this frame (F$n) only';
   }
 
   @override
-  String get layerPanelCommonDeleteMidDialogBody =>
-      'A common layer’s display range can only be a single continuous span, so it can’t be deleted from a frame in the middle of that range. Choose whether to keep the part before or after this frame instead.';
-
-  @override
-  String get layerPanelCommonDeleteKeepBeforeButton => 'Keep before this frame';
-
-  @override
-  String get layerPanelCommonDeleteKeepAfterButton => 'Keep after this frame';
+  String get layerCommonDuplicateThisFrameOnlyDesc =>
+      'Copies it into this frame only, as a normal layer.';
 
   @override
   String get layerPanelRangeDialogTitle => 'Display range';

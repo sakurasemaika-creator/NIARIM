@@ -258,6 +258,83 @@ class _LayerPanelState extends State<LayerPanel> {
         .toList();
   }
 
+  /// A reorder in which the dragged layer or the one it is dropped on is a
+  /// common layer kept in another frame: this frame's own layers take the
+  /// new order and every such layer takes its new place in this frame only
+  /// (the owner's choice, 2026-11-27: "後から各フレームごとに個別でレイヤー順を
+  /// 入れ替えられる"). Before, the drag did nothing. One undo step. False when
+  /// both are this frame's own layers.
+  bool _reorderWithCommonLayers(
+    ProjectService projects,
+    model.Layer source,
+    model.Layer drop, {
+    required bool after,
+  }) {
+    final own = {
+      for (final l in projects.storedLayersOf(
+        widget.projectId,
+        widget.sceneId,
+        widget.frameIndex,
+      ))
+        l.id,
+    };
+    if (own.contains(source.id) && own.contains(drop.id)) return false;
+    final order = [
+      ...projects.layersOf(widget.projectId, widget.sceneId, widget.frameIndex),
+    ]..removeWhere((l) => l.id == source.id);
+    var at = order.indexWhere((l) => l.id == drop.id);
+    if (at < 0) return false;
+    if (after) at++;
+    order.insert(at, source);
+    projects.editTimeline(widget.projectId, 'Reorder layers', () {
+      if (own.contains(source.id)) {
+        // Beside its new neighbour among this frame's own layers.
+        final mine = [
+          for (final l in order)
+            if (own.contains(l.id)) l,
+        ];
+        final i = mine.indexWhere((l) => l.id == source.id);
+        model.Layer? below;
+        for (final l in mine.skip(i + 1)) {
+          if (l.parentFolderId == source.parentFolderId) {
+            below = l;
+            break;
+          }
+        }
+        model.Layer? above;
+        for (final l in mine.take(i).toList().reversed) {
+          if (l.parentFolderId == source.parentFolderId) {
+            above = l;
+            break;
+          }
+        }
+        final sibling = below ?? above;
+        if (sibling != null) {
+          projects.reorderLayerRelative(
+            projectId: widget.projectId,
+            sceneId: widget.sceneId,
+            frameIndex: widget.frameIndex,
+            layerId: source.id,
+            siblingId: sibling.id,
+            after: below == null,
+          );
+        }
+      }
+      for (final (index, layer) in order.indexed) {
+        if (own.contains(layer.id)) continue;
+        projects.setCommonLayerSlot(
+          projectId: widget.projectId,
+          sceneId: widget.sceneId,
+          frameIndex: widget.frameIndex,
+          layerId: layer.id,
+          slot: index,
+        );
+      }
+    }, changesTiles: false);
+    setState(() {});
+    return true;
+  }
+
   /// A dragged layer dropped among another folder's layers goes into that
   /// folder, and one dropped among the layers outside its folder comes out
   /// (the owner's choice, 2026-11-27; before, a drag only reordered within
@@ -635,6 +712,14 @@ class _LayerPanelState extends State<LayerPanel> {
                     final byId = {
                       for (final layer in allLayers) layer.id: layer,
                     };
+                    if (_reorderWithCommonLayers(
+                      projectService,
+                      source,
+                      layers[newIdx],
+                      after: newIdx > oldIdx,
+                    )) {
+                      return;
+                    }
                     if (_dropIntoOrOutOfFolder(
                       projectService,
                       source,
@@ -1305,7 +1390,7 @@ class _LayerPanelState extends State<LayerPanel> {
       return;
     }
     if (layer.type == model.LayerType.common) {
-      await _deleteCommonLayerAtCurrentFrame(context, layer);
+      _showCommonDeleteDialog(context, layer, thisFrameOnly: true);
       return;
     }
     final l10n = AppLocalizations.of(context)!;
@@ -1332,113 +1417,200 @@ class _LayerPanelState extends State<LayerPanel> {
     });
   }
 
-  /// 共通レイヤーの「このフレームだけ削除」（タスク#148）。共通レイヤーは
-  /// 単一の連続した表示範囲（rangeStart〜rangeEnd）でしか表せないため、
-  /// 現在表示中のフレームが範囲の端（先頭・末尾）ならその1フレーム分だけ
-  /// 範囲を狭め、範囲が1フレームしかなければ通常通りレイヤー自体を削除する。
-  /// 範囲の途中のフレームでは、連続区間を保てなくなるため「ここより前を
-  /// 残す」「ここより後を残す」をユーザーに選ばせる。
-  Future<void> _deleteCommonLayerAtCurrentFrame(
+  /// Deleting a common layer: from every frame, or (the box ticked) from
+  /// this frame only (the owner's choice, 2026-11-27). The row's bin starts
+  /// with the box ticked, as it used to delete from this frame; the menu's
+  /// "Delete" starts with it clear.
+  void _showCommonDeleteDialog(
     BuildContext context,
-    model.Layer layer,
-  ) async {
+    model.Layer layer, {
+    required bool thisFrameOnly,
+  }) {
     final l10n = AppLocalizations.of(context)!;
+    var onlyHere = thisFrameOnly;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialog) => AlertDialog(
+          insetPadding: dialogInsetPadding(ctx),
+          title: Text(
+            l10n.layerPanelDeleteConfirmTitle(editingLayerLabel(l10n, layer)),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!onlyHere) messageText(l10n.layerPanelDeleteConfirmBody),
+              CheckboxListTile(
+                key: const ValueKey('commonDeleteThisFrameOnly'),
+                contentPadding: EdgeInsets.zero,
+                value: onlyHere,
+                onChanged: (v) => setDialog(() => onlyHere = v ?? false),
+                title: Text(
+                  l10n.layerCommonDeleteThisFrameOnly(widget.frameIndex + 1),
+                ),
+                subtitle: messageText(l10n.layerCommonDeleteThisFrameOnlyDesc),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              key: const ValueKey('commonDeleteConfirm'),
+              style: warningFilledButtonStyle(ctx),
+              onPressed: () {
+                Navigator.pop(ctx);
+                if (onlyHere) {
+                  _removeCommonFromThisFrame(layer);
+                } else {
+                  context.read<ProjectService>().removeLayer(
+                    projectId: widget.projectId,
+                    sceneId: widget.sceneId,
+                    frameIndex: widget.frameIndex,
+                    layerId: layer.id,
+                  );
+                }
+                setState(() => _selectedIndex = 0);
+              },
+              child: Text(l10n.commonDelete),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Takes a common layer out of this frame. At either end of a frame range
+  /// the range gets one frame shorter (the timeline's bar shortens with it);
+  /// in the middle, or for a layer over whole scenes, the frame alone drops
+  /// it. A range of one frame deletes the layer.
+  void _removeCommonFromThisFrame(model.Layer layer) {
+    final projects = context.read<ProjectService>();
     final range = _effectiveCommonRange(layer);
     final current = widget.frameIndex;
-    final projectService = context.read<ProjectService>();
-
-    void applyRange(({int start, int end}) r) {
-      projectService.updateLayer(
-        projectId: widget.projectId,
-        sceneId: widget.sceneId,
-        frameIndex: widget.frameIndex,
-        layer: layer.copyWith(
-          rangeMode: model.LayerRangeMode.frameRange,
-          rangeStart: r.start + 1,
-          rangeEnd: r.end + 1,
-          rangeSceneId: null,
-        ),
-      );
-    }
-
-    Future<void> deleteEntirely() async {
-      if (!await confirmDelete(
-        context,
-        message: l10n.layerPanelDeleteConfirmTitle(
-          editingLayerLabel(l10n, layer),
-        ),
-      )) {
+    if (layer.rangeMode == model.LayerRangeMode.frameRange) {
+      if (range.start >= range.end) {
+        projects.removeLayer(
+          projectId: widget.projectId,
+          sceneId: widget.sceneId,
+          frameIndex: widget.frameIndex,
+          layerId: layer.id,
+        );
         return;
       }
-      if (!context.mounted) return;
-      projectService.removeLayer(
-        projectId: widget.projectId,
+      final trimmed = model.trimCommonLayerRange(
+        start: range.start,
+        end: range.end,
+        frameIndex: current,
+      );
+      if (trimmed != null) {
+        projects.updateLayer(
+          projectId: widget.projectId,
+          sceneId: widget.sceneId,
+          frameIndex: widget.frameIndex,
+          layer: layer.copyWith(
+            rangeStart: trimmed.start + 1,
+            rangeEnd: trimmed.end + 1,
+            rangeSceneId: null,
+          ),
+        );
+        return;
+      }
+    }
+    projects.hideCommonLayerInFrame(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: current,
+      layerId: layer.id,
+    );
+  }
+
+  /// Duplicating a common layer: as another common layer (every frame), or
+  /// (the box ticked) as a normal layer in this frame only (the owner's
+  /// choice, 2026-11-27).
+  void _showCommonDuplicateDialog(BuildContext context, model.Layer layer) {
+    final l10n = AppLocalizations.of(context)!;
+    var onlyHere = false;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialog) => AlertDialog(
+          insetPadding: dialogInsetPadding(ctx),
+          title: Text(l10n.themeDuplicateAction),
+          content: CheckboxListTile(
+            key: const ValueKey('commonDuplicateThisFrameOnly'),
+            contentPadding: EdgeInsets.zero,
+            value: onlyHere,
+            onChanged: (v) => setDialog(() => onlyHere = v ?? false),
+            title: Text(
+              l10n.layerCommonDuplicateThisFrameOnly(widget.frameIndex + 1),
+            ),
+            subtitle: messageText(l10n.layerCommonDuplicateThisFrameOnlyDesc),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              key: const ValueKey('commonDuplicateConfirm'),
+              onPressed: () {
+                Navigator.pop(ctx);
+                _duplicateCommonLayer(context, layer, thisFrameOnly: onlyHere);
+              },
+              child: Text(l10n.themeDuplicateAction),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _duplicateCommonLayer(
+    BuildContext context,
+    model.Layer layer, {
+    required bool thisFrameOnly,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final projects = context.read<ProjectService>();
+    final projectId = widget.projectId;
+    if (thisFrameOnly) {
+      projects.duplicateCommonIntoFrame(
+        projectId: projectId,
         sceneId: widget.sceneId,
         frameIndex: widget.frameIndex,
         layerId: layer.id,
+        name: numberedEditorCopyName(l10n, layer.name, {
+          for (final other in projects.layersOf(
+            projectId,
+            widget.sceneId,
+            widget.frameIndex,
+          ))
+            other.name,
+        }),
       );
-    }
-
-    // このフレームが範囲外（通常はここへ来ないはずだが念のため）の場合も、
-    // レイヤー自体を通常削除する。
-    if (current < range.start || current > range.end) {
-      await deleteEntirely();
       return;
     }
-
-    final trimmed = model.trimCommonLayerRange(
-      start: range.start,
-      end: range.end,
-      frameIndex: current,
-    );
-    // 範囲が1フレームのみ（trimCommonLayerRangeがnullを返す境界ケース）。
-    if (range.start >= range.end) {
-      await deleteEntirely();
-      return;
-    }
-    if (trimmed != null) {
-      // 先頭または末尾フレーム：一意に範囲が縮む。
-      if (!await confirmDelete(
-        context,
-        message: l10n.layerPanelCommonRemoveFrame(layer.name),
-      )) {
-        return;
-      }
-      if (!context.mounted) return;
-      applyRange(trimmed);
-      return;
-    }
-
-    // 範囲の途中：連続区間を保てないため、どちらを残すか選ばせる。
-    final choice = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.layerPanelCommonDeleteMidDialogTitle(layer.name)),
-        content: messageText(l10n.layerPanelCommonDeleteMidDialogBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, 'keepBefore'),
-            child: Text(l10n.layerPanelCommonDeleteKeepBeforeButton),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, 'keepAfter'),
-            child: Text(l10n.layerPanelCommonDeleteKeepAfterButton),
-          ),
-        ],
-      ),
-    );
-    if (choice == null || !context.mounted) return;
-    final resolved = model.trimCommonLayerRange(
-      start: range.start,
-      end: range.end,
-      frameIndex: current,
-      keepBefore: choice == 'keepBefore',
-    );
-    if (resolved != null) applyRange(resolved);
+    final home = projects.homeOf(projectId, layer.id);
+    final sceneId = home?.sceneId ?? widget.sceneId;
+    final frameIndex = home?.frameIndex ?? widget.frameIndex;
+    final name = numberedEditorCopyName(l10n, layer.name, {
+      for (final other in projects.layersOf(projectId, sceneId, frameIndex))
+        other.name,
+      for (final entry in projects.commonLayersOf(projectId)) entry.layer.name,
+    });
+    projects.editTimeline(projectId, 'Duplicate layer', () {
+      projects.duplicateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layerId: layer.id,
+        nameOverride: name,
+      );
+    });
   }
 
   void _showTimelineDeleteConfirm(BuildContext context, model.Layer layer) {
@@ -1607,34 +1779,12 @@ class _LayerPanelState extends State<LayerPanel> {
               ),
             if (isCommon)
               ListTile(
+                key: const ValueKey('commonLayerDuplicate'),
                 leading: const Icon(Icons.copy),
                 title: Text(l10n.themeDuplicateAction),
                 onTap: () {
                   Navigator.pop(ctx);
-                  final projects = context.read<ProjectService>();
-                  final projectId = widget.projectId;
-                  final home = projects.homeOf(projectId, layer.id);
-                  final sceneId = home?.sceneId ?? widget.sceneId;
-                  final frameIndex = home?.frameIndex ?? widget.frameIndex;
-                  final name = numberedEditorCopyName(l10n, layer.name, {
-                    for (final other in projects.layersOf(
-                      projectId,
-                      sceneId,
-                      frameIndex,
-                    ))
-                      other.name,
-                    for (final entry in projects.commonLayersOf(projectId))
-                      entry.layer.name,
-                  });
-                  projects.editTimeline(projectId, 'Duplicate layer', () {
-                    projects.duplicateLayer(
-                      projectId: projectId,
-                      sceneId: sceneId,
-                      frameIndex: frameIndex,
-                      layerId: layer.id,
-                      nameOverride: name,
-                    );
-                  });
+                  _showCommonDuplicateDialog(context, layer);
                 },
               ),
             if (isCommon)
@@ -1705,7 +1855,11 @@ class _LayerPanelState extends State<LayerPanel> {
               title: Text(l10n.commonDelete),
               onTap: () {
                 Navigator.pop(ctx);
-                _showTimelineDeleteConfirm(context, layer);
+                if (isCommon) {
+                  _showCommonDeleteDialog(context, layer, thisFrameOnly: false);
+                } else {
+                  _showTimelineDeleteConfirm(context, layer);
+                }
               },
             ),
           ],

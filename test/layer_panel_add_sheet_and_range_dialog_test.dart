@@ -392,6 +392,10 @@ void main() {
       await tester.ensureVisible(action);
       await tester.tap(action);
       await tester.pumpAndSettle();
+      // The common layer's duplicate asks whether it is for this frame
+      // only (judgement card J1); left clear, it is a common layer again.
+      await tester.tap(find.byKey(const ValueKey('commonDuplicateConfirm')));
+      await tester.pumpAndSettle();
       final copy = projects
           .layersOf(projectId, sceneId, 0)
           .singleWhere((item) => item.name == name);

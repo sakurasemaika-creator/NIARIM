@@ -2227,15 +2227,19 @@ class ProjectService extends ChangeNotifier {
             (layer) =>
                 layer.id == parentFolderId && layer.type == LayerType.folder,
           );
+    final targetIndex = folderIndex >= 0
+        ? folderIndex + 1
+        : insertIndex.clamp(0, ownLayers.length);
     final layer = Layer(
       id: layerId,
       name: name,
       type: type,
       parentFolderId: folderIndex >= 0 ? parentFolderId : null,
+      // A common layer starts at the same place from the top in every frame
+      // it shows in (the owner's choice, 2026-11-27; before, below the other
+      // frames' own layers).
+      commonSlot: type == LayerType.common ? targetIndex : null,
     );
-    final targetIndex = folderIndex >= 0
-        ? folderIndex + 1
-        : insertIndex.clamp(0, ownLayers.length);
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, targetIndex);
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
 
@@ -2706,6 +2710,125 @@ class ProjectService extends ChangeNotifier {
       changesTiles: false,
     );
     return true;
+  }
+
+  /// Puts the range layer [layerId], kept in another frame, at [slot] from
+  /// the top in [frameIndex] only (the other frames keep their places): a
+  /// common layer reordered in a frame it is not kept in. One undo step.
+  void setCommonLayerSlot({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+    required int slot,
+  }) => _editFrame(projectId, sceneId, frameIndex, 'Move common layer', (f) {
+    return f.copyWith(commonSlots: {...f.commonSlots, layerId: slot});
+  });
+
+  /// Takes the common layer [layerId] out of [frameIndex] only; the other
+  /// frames of its range keep it ("delete from this frame"). One undo step.
+  void hideCommonLayerInFrame({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+  }) => _editFrame(
+    projectId,
+    sceneId,
+    frameIndex,
+    'Remove common layer from '
+    'frame',
+    (f) => f.copyWith(hiddenCommon: {...f.hiddenCommon, layerId}),
+  );
+
+  void _editFrame(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String description,
+    Frame Function(Frame frame) change,
+  ) {
+    editTimeline(projectId, description, () {
+      final scenes = _scenes[projectId];
+      if (scenes == null) return;
+      final sceneIndex = scenes.indexWhere((scene) => scene.id == sceneId);
+      if (sceneIndex < 0) return;
+      final frames = scenes[sceneIndex].frames;
+      if (frameIndex < 0 || frameIndex >= frames.length) return;
+      final updated = List<Frame>.of(frames)
+        ..[frameIndex] = change(frames[frameIndex]);
+      scenes[sceneIndex] = scenes[sceneIndex].copyWith(frames: updated);
+      _saveAsync(projectId);
+      notifyListeners();
+    }, changesTiles: false);
+  }
+
+  /// A normal layer in [frameIndex] only with the picture of the common
+  /// layer [layerId] (kept in another frame or this one), just above where
+  /// the common layer shows: "duplicate in this frame only". One undo step.
+  Layer? duplicateCommonIntoFrame({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+    required String name,
+  }) {
+    final visible = layersOf(projectId, sceneId, frameIndex);
+    final index = visible.indexWhere((l) => l.id == layerId);
+    if (index < 0) return null;
+    final source = visible[index];
+    // Its place among this frame's own layers: right above the common layer
+    // when this frame keeps it, otherwise above the first own layer below it
+    // (and the common layer then moves one down here, under the copy).
+    final own = storedLayersOf(projectId, sceneId, frameIndex);
+    final keptHere = own.indexWhere((l) => l.id == layerId);
+    var insertAt = keptHere >= 0 ? keptHere : own.length;
+    if (keptHere < 0) {
+      for (final below in visible.skip(index + 1)) {
+        final at = own.indexWhere((l) => l.id == below.id);
+        if (at >= 0) {
+          insertAt = at;
+          break;
+        }
+      }
+    }
+    return editTimeline(projectId, 'Duplicate common layer into frame', () {
+      final copy = addLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        type: LayerType.normal,
+        name: name,
+        insertIndex: insertAt,
+      );
+      final tm = tileManagerOf(projectId);
+      tm.copyLayer(
+        tileKeyFor(projectId, sceneId, frameIndex, layerId),
+        tileKeyFor(projectId, sceneId, frameIndex, copy.id),
+      );
+      final kept = copy.copyWith(
+        opacity: source.opacity,
+        blendMode: source.blendMode,
+        isVisible: source.isVisible,
+        keyframes: List.of(source.keyframes),
+      );
+      updateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layer: kept,
+      );
+      if (keptHere < 0) {
+        setCommonLayerSlot(
+          projectId: projectId,
+          sceneId: sceneId,
+          frameIndex: frameIndex,
+          layerId: layerId,
+          slot: index + 1,
+        );
+      }
+      return kept;
+    });
   }
 
   /// .niashare を複製して通常プロジェクトとして追加する（共有フロー）。
@@ -3224,6 +3347,9 @@ class ProjectService extends ChangeNotifier {
       index: clampedInsertAt,
       layers: newLayers,
       hold: source.hold,
+      // The copy places common layers as the frame it was made from does.
+      commonSlots: source.commonSlots,
+      hiddenCommon: source.hiddenCommon,
     );
     // 共通レイヤーの表示範囲（コマの範囲指定）も、足した所から後ろを1つずらす
     // （範囲の中に足したコマは範囲に入る）。
@@ -4434,6 +4560,12 @@ class ProjectService extends ChangeNotifier {
           rangeStart: rangeStart,
           rangeEnd: rangeEnd,
           rangeSceneId: rangeSceneId,
+          // Where it is now, in every frame it shows in.
+          commonSlot: layersOf(
+            projectId,
+            sceneId,
+            frameIndex,
+          ).indexWhere((l) => l.id == layer.id).clamp(0, 1 << 20),
         ),
       );
       (_layerHomes[projectId] ??= {})[layer.id] = (

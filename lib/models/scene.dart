@@ -115,13 +115,36 @@ class Frame {
   /// 保持セル数（1=保持なし、2以上=このフレームをn枚分保持）
   final int hold;
 
-  const Frame({required this.index, this.layers = const [], this.hold = 1});
+  /// Where this frame puts common layers kept in other frames, counted from
+  /// the top (a layer not listed uses its [Layer.commonSlot]). Set when the
+  /// layer is moved in this frame.
+  final Map<String, int> commonSlots;
 
-  Frame copyWith({int? index, List<Layer>? layers, int? hold}) {
+  /// Common layers taken out of this frame only ("delete from this frame"):
+  /// they still show in the other frames of their range.
+  final Set<String> hiddenCommon;
+
+  const Frame({
+    required this.index,
+    this.layers = const [],
+    this.hold = 1,
+    this.commonSlots = const {},
+    this.hiddenCommon = const {},
+  });
+
+  Frame copyWith({
+    int? index,
+    List<Layer>? layers,
+    int? hold,
+    Map<String, int>? commonSlots,
+    Set<String>? hiddenCommon,
+  }) {
     return Frame(
       index: index ?? this.index,
       layers: layers ?? this.layers,
       hold: hold ?? this.hold,
+      commonSlots: commonSlots ?? this.commonSlots,
+      hiddenCommon: hiddenCommon ?? this.hiddenCommon,
     );
   }
 }

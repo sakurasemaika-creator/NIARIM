@@ -2007,18 +2007,10 @@
     }
   },
   "layerPanelDeleteConfirmBody": "This material will be removed from every frame within its display range.",
-  "layerPanelCommonRemoveFrame": "Hide “{name}” on this frame?",
-  "layerPanelCommonDeleteMidDialogTitle": "Change the display range of {name}?",
-  "@layerPanelCommonDeleteMidDialogTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "layerPanelCommonDeleteMidDialogBody": "A common layer’s display range can only be a single continuous span, so it can’t be deleted from a frame in the middle of that range. Choose whether to keep the part before or after this frame instead.",
-  "layerPanelCommonDeleteKeepBeforeButton": "Keep before this frame",
-  "layerPanelCommonDeleteKeepAfterButton": "Keep after this frame",
+  "layerCommonDeleteThisFrameOnly": "Remove from this frame (F{n}) only",
+  "layerCommonDeleteThisFrameOnlyDesc": "The other frames keep it.",
+  "layerCommonDuplicateThisFrameOnly": "Duplicate into this frame (F{n}) only",
+  "layerCommonDuplicateThisFrameOnlyDesc": "Copies it into this frame only, as a normal layer.",
   "layerPanelRangeDialogTitle": "Display range",
   "layerPanelRangeStartFrameLabel": "Start frame",
   "layerPanelRangeEndFrameLabel": "End frame",

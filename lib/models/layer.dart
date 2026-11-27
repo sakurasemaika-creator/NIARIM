@@ -70,6 +70,13 @@ class Layer {
   /// and before its position, scale, turn and mask.
   final List<LayerRegionEdit> regionEdits;
 
+  /// A common layer's place counted from the top in each frame it shows in
+  /// (its own frame keeps it where it is in that frame's list). Set when it
+  /// is made, so it starts at the same place in every frame; a frame can
+  /// move it ([Frame.commonSlots]). Null: below the frame's own layers, as
+  /// before.
+  final int? commonSlot;
+
   const Layer({
     required this.id,
     required this.name,
@@ -107,6 +114,7 @@ class Layer {
     this.mask,
     this.crop,
     this.regionEdits = const [],
+    this.commonSlot,
   });
 
   Layer copyWith({
@@ -145,6 +153,7 @@ class Layer {
     Object? mask = _sentinel,
     Object? crop = _sentinel,
     List<LayerRegionEdit>? regionEdits,
+    Object? commonSlot = _sentinel,
   }) {
     return Layer(
       id: id ?? this.id,
@@ -201,6 +210,9 @@ class Layer {
       mask: mask == _sentinel ? this.mask : mask as LayerMask?,
       crop: crop == _sentinel ? this.crop : crop as LayerCrop?,
       regionEdits: regionEdits ?? this.regionEdits,
+      commonSlot: commonSlot == _sentinel
+          ? this.commonSlot
+          : commonSlot as int?,
     );
   }
 }
