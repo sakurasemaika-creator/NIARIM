@@ -54,16 +54,19 @@ class MeshTransformPanel extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PanelHeaderRow(
-            onClose: onClose,
-            title: Text(
-              l10n.meshTransformPanelTitle,
-              style: localizedHeadingStyle(
-                context,
-                const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          // FocusModeMenu supplies the one-line title and close control
+          // when this panel is embedded in the immersive canvas window.
+          if (!embedded)
+            PanelHeaderRow(
+              onClose: onClose,
+              title: Text(
+                l10n.meshTransformPanelTitle,
+                style: localizedHeadingStyle(
+                  context,
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
               ),
             ),
-          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
