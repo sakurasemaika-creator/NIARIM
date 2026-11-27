@@ -6,7 +6,16 @@ import '../../../widgets/icon_notice.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/export_share_feedback.dart';
 
-enum ExportDestination { works, projects, canvas }
+/// Where the export complete dialog leads. Null (the dialog's ×, Esc, the
+/// back button): it closes and the export screen stays.
+enum ExportDestination {
+  works,
+  projects,
+  timeline,
+
+  /// The export screen, back at its settings to export another one.
+  again,
+}
 
 class ExportCompleteDialog extends StatefulWidget {
   const ExportCompleteDialog({
@@ -59,7 +68,19 @@ class _ExportCompleteDialogState extends State<ExportCompleteDialog> {
       insetPadding: MediaQuery.sizeOf(context).height < 360
           ? const EdgeInsets.symmetric(horizontal: 24, vertical: 12)
           : null,
-      title: Text(l10n.exportCompleteTitle),
+      // The × closes the dialog (the export screen stays). It is in the
+      // title row: AlertDialog.icon would centre the title.
+      title: Row(
+        children: [
+          Expanded(child: Text(l10n.exportCompleteTitle)),
+          IconButton(
+            key: const ValueKey('exportCompleteClose'),
+            tooltip: l10n.commonClose,
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close),
+          ),
+        ],
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -141,13 +162,24 @@ class _ExportCompleteDialogState extends State<ExportCompleteDialog> {
                     Navigator.pop(context, ExportDestination.projects),
                 child: Text(l10n.exportBackToProjectsButton),
               ),
+              // The export screen opens from the timeline.
               TextButton(
+                key: const ValueKey('exportCompleteTimeline'),
                 style: TextButton.styleFrom(
                   foregroundColor: theme.colorScheme.onSurfaceVariant,
                 ),
                 onPressed: () =>
-                    Navigator.pop(context, ExportDestination.canvas),
-                child: Text(l10n.exportBackToCanvasButton),
+                    Navigator.pop(context, ExportDestination.timeline),
+                child: Text(l10n.exportBackToTimelineButton),
+              ),
+              TextButton(
+                key: const ValueKey('exportCompleteAgain'),
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.onSurfaceVariant,
+                ),
+                onPressed: () =>
+                    Navigator.pop(context, ExportDestination.again),
+                child: Text(l10n.exportAnotherButton),
               ),
             ],
           ),

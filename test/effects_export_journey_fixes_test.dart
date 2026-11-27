@@ -6,6 +6,8 @@
 // * 作品詳細の再生に演出フィルターとカメラが出ず、書き出しと違った。
 // * 名前の無い演出フィルターを複製すると、同じ名前が2つ並んだ。
 // * 書き出しが失敗した文が、形式・プリセットを変えても残った。
+// * 書き出し完了の画面は、タイムラインから開いても「キャンバスへ戻る」で、
+//   閉じる・続けて書き出すが無かった（所有者の判断、判断カードJ13）。
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -19,6 +21,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/effect_filter_instance.dart';
 import 'package:niarim/models/pixel_color_mode.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/export/export_screen.dart';
 import 'package:niarim/screens/project/project_detail_screen.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/pixel_art_palette_service.dart';
@@ -274,6 +277,64 @@ void main() {
     await tester.tap(gif);
     await tester.pump();
     expect(failed, findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('export complete: close, export again, back to the timeline', (
+    tester,
+  ) async {
+    final (ps: _, :projectId, sceneId: _) = await openApp(tester);
+    appRouter.go('/timeline/$projectId');
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(TimelineScreen)),
+    )!;
+    final completed = find.text(l10n.exportCompleteTitle);
+
+    Future<void> exportGif() async {
+      final gif = find.text(l10n.exportFormatGif);
+      await tester.ensureVisible(gif);
+      await tester.tap(gif);
+      await tester.pump();
+      final start = find.text(l10n.exportStartButton);
+      await tester.ensureVisible(start);
+      await tester.tap(start);
+      for (var i = 0; i < 80 && completed.evaluate().isEmpty; i++) {
+        await pumpRealAsync(tester, const Duration(milliseconds: 250));
+      }
+      expect(completed, findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('exportCompleteTimeline')),
+        findsOneWidget,
+      );
+    }
+
+    await tester.tap(find.byKey(const Key('timelineExportButton')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    expect(find.byType(ExportScreen), findsOneWidget);
+
+    // × closes and the export screen stays.
+    await exportGif();
+    await tester.tap(find.byKey(const ValueKey('exportCompleteClose')));
+    await tester.pumpAndSettle();
+    expect(completed, findsNothing);
+    expect(find.byType(ExportScreen), findsOneWidget);
+
+    // Export again: back at the settings, at the top.
+    await exportGif();
+    await tester.tap(find.byKey(const ValueKey('exportCompleteAgain')));
+    await tester.pumpAndSettle();
+    expect(completed, findsNothing);
+    expect(find.byType(ExportScreen), findsOneWidget);
+    final presets = find.text(l10n.exportPresetSection);
+    expect(presets.hitTestable(), findsOneWidget);
+
+    // Back to the timeline it was opened from.
+    await exportGif();
+    await tester.tap(find.byKey(const ValueKey('exportCompleteTimeline')));
+    await tester.pumpAndSettle();
+    expect(find.byType(ExportScreen), findsNothing);
+    expect(find.byType(TimelineScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

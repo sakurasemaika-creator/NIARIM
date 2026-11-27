@@ -46,6 +46,7 @@ class _ExportScreenState extends State<ExportScreen> {
   double _progress = 0;
   String? _error;
   final _errorKey = GlobalKey();
+  final _settingsKey = GlobalKey();
   DialogRoute<void>? _progressRoute;
   VoidCallback? _refreshProgressDialog;
   // 誤タップ対応のキャンセルボタン。フレーム生成中のみ
@@ -206,7 +207,10 @@ class _ExportScreenState extends State<ExportScreen> {
       ),
     );
     final presetSection = <Widget>[
-      sectionLabel(l10n.exportPresetSection),
+      KeyedSubtree(
+        key: _settingsKey,
+        child: sectionLabel(l10n.exportPresetSection),
+      ),
       ExportPresetSelector(
         value: _preset,
         onChanged: (value) => _changeSettings(() => _preset = value),
@@ -459,6 +463,20 @@ class _ExportScreenState extends State<ExportScreen> {
         },
       ),
     );
+  }
+
+  /// Scrolls the settings (the presets, at the top) into view, to choose
+  /// them for another export.
+  void _revealSettings() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final target = _settingsKey.currentContext;
+      if (target != null && target.mounted) {
+        Scrollable.ensureVisible(
+          target,
+          duration: const Duration(milliseconds: 200),
+        );
+      }
+    });
   }
 
   void _revealError() {
@@ -799,8 +817,16 @@ class _ExportScreenState extends State<ExportScreen> {
         context.go('/home?tab=works');
       case ExportDestination.projects:
         context.go('/home');
-      case ExportDestination.canvas:
-        context.go('/canvas/${widget.projectId}');
+      case ExportDestination.timeline:
+        // The export screen is pushed from the timeline: going back keeps
+        // the timeline's place and its Back.
+        if (GoRouter.of(context).canPop()) {
+          context.pop();
+        } else {
+          context.go('/timeline/${widget.projectId}');
+        }
+      case ExportDestination.again:
+        _revealSettings();
     }
   }
 }

@@ -3076,7 +3076,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportBackToProjectsButton => '返回项目列表';
 
   @override
-  String get exportBackToCanvasButton => '返回画布';
+  String get exportBackToTimelineButton => '返回时间轴';
+
+  @override
+  String get exportAnotherButton => '继续导出';
 
   @override
   String get newProjectScreenTitle => '新建项目';
@@ -14187,7 +14190,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get exportBackToProjectsButton => '返回專案列表';
 
   @override
-  String get exportBackToCanvasButton => '返回畫布';
+  String get exportBackToTimelineButton => '返回時間軸';
+
+  @override
+  String get exportAnotherButton => '繼續匯出';
 
   @override
   String get newProjectScreenTitle => '新增專案';

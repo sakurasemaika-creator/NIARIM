@@ -3107,7 +3107,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get exportBackToProjectsButton => 'プロジェクト一覧へ戻る';
 
   @override
-  String get exportBackToCanvasButton => 'キャンバスへ戻る';
+  String get exportBackToTimelineButton => 'タイムラインへ戻る';
+
+  @override
+  String get exportAnotherButton => '続けて書き出す';
 
   @override
   String get newProjectScreenTitle => '新規プロジェクト';

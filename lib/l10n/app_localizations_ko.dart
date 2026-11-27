@@ -3122,7 +3122,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportBackToProjectsButton => '프로젝트 목록으로 돌아가기';
 
   @override
-  String get exportBackToCanvasButton => '캔버스로 돌아가기';
+  String get exportBackToTimelineButton => '타임라인으로 돌아가기';
+
+  @override
+  String get exportAnotherButton => '이어서 내보내기';
 
   @override
   String get newProjectScreenTitle => '새 프로젝트';

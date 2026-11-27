@@ -5661,11 +5661,17 @@ abstract class AppLocalizations {
   /// **'プロジェクト一覧へ戻る'**
   String get exportBackToProjectsButton;
 
-  /// No description provided for @exportBackToCanvasButton.
+  /// No description provided for @exportBackToTimelineButton.
   ///
   /// In ja, this message translates to:
-  /// **'キャンバスへ戻る'**
-  String get exportBackToCanvasButton;
+  /// **'タイムラインへ戻る'**
+  String get exportBackToTimelineButton;
+
+  /// No description provided for @exportAnotherButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'続けて書き出す'**
+  String get exportAnotherButton;
 
   /// No description provided for @newProjectScreenTitle.
   ///

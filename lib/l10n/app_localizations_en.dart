@@ -3244,7 +3244,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportBackToProjectsButton => 'Back to Projects';
 
   @override
-  String get exportBackToCanvasButton => 'Back to Canvas';
+  String get exportBackToTimelineButton => 'Back to Timeline';
+
+  @override
+  String get exportAnotherButton => 'Export Again';
 
   @override
   String get newProjectScreenTitle => 'New Project';

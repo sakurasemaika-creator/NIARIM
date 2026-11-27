@@ -3293,7 +3293,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exportBackToProjectsButton => 'Retour aux projets';
 
   @override
-  String get exportBackToCanvasButton => 'Retour au canevas';
+  String get exportBackToTimelineButton => 'Retour à la timeline';
+
+  @override
+  String get exportAnotherButton => 'Exporter à nouveau';
 
   @override
   String get newProjectScreenTitle => 'Nouveau projet';
