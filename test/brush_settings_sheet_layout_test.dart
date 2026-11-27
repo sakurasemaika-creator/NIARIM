@@ -111,6 +111,8 @@ void main() {
           ? 'brush-settings-pressure-off'
           : 'brush-settings-pressure-on';
       final order = [
+        // 自作のブラシは一番上に名前の欄（2026-11-27）。
+        'brush-settings-name',
         'brush-settings-stroke',
         inUse,
         'brush-settings-effects',

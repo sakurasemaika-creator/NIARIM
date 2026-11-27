@@ -6,6 +6,7 @@ import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/services/tone_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,6 +28,9 @@ void main() {
       final themes = ThemeService();
       await themes.init();
       addTearDown(themes.dispose);
+      // バケツの印はトーンで塗る間トーンの印になる（ToneServiceを見る）。
+      final tones = ToneService();
+      addTearDown(tones.dispose);
 
       for (final vertical in [false, true]) {
         for (var level = 1; level <= 5; level++) {
@@ -36,6 +40,7 @@ void main() {
               providers: [
                 ChangeNotifierProvider<SettingsService>.value(value: settings),
                 ChangeNotifierProvider<ThemeService>.value(value: themes),
+                ChangeNotifierProvider<ToneService>.value(value: tones),
               ],
               child: MaterialApp(
                 locale: const Locale('ja'),

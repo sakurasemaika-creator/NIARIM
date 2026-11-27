@@ -714,10 +714,20 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
 
   late Brush _brush;
 
+  /// 自作のブラシの名前（組み込みのブラシの名前は変えない）。
+  late final TextEditingController _nameController;
+
   @override
   void initState() {
     super.initState();
     _brush = widget.brush;
+    _nameController = TextEditingController(text: widget.brush.name);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
   }
 
   /// 今の設定で描いた線の見本の色（キャンバスで選んでいる色）。
@@ -725,7 +735,12 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
 
   Future<void> _save() async {
     final service = context.read<BrushService>();
-    final brush = await service.prepareBrushTip(_brush);
+    // 名前は前後の空白を除き、空なら元の名前のまま。
+    final typed = _nameController.text.trim();
+    final named = service.isBuiltIn(_brush.id) || typed.isEmpty
+        ? _brush.copyWith(name: widget.brush.name)
+        : _brush.copyWith(name: typed);
+    final brush = await service.prepareBrushTip(named);
     if (!mounted) return;
     service.updateBrush(brush);
     Navigator.pop(context);
@@ -993,11 +1008,11 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             child: ActionBesideOrBelow(
               text: Text(
                 // 組み込みのブラシは一覧と同じく今の言語の名前。
-                creativePresetLabel(
-                  l10n,
-                  _brush.name,
-                  builtIn: context.read<BrushService>().isBuiltIn(_brush.id),
-                ),
+                context.read<BrushService>().isBuiltIn(_brush.id)
+                    ? creativePresetLabel(l10n, _brush.name, builtIn: true)
+                    : (_nameController.text.trim().isEmpty
+                          ? _brush.name
+                          : _nameController.text.trim()),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: localizedHeadingStyle(
@@ -1032,6 +1047,20 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 24 + MediaQuery.paddingOf(context).bottom,
               ),
               children: [
+                // 自作のブラシは名前を変えられる（トーン・スタンプの「編集」と
+                // 同じ欄）。組み込みのブラシは名前を変えない。
+                if (!context.read<BrushService>().isBuiltIn(_brush.id)) ...[
+                  TextField(
+                    key: const Key('brush-settings-name'),
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: l10n.creativeAssetNameLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 for (var i = 0; i < sections.length; i++) ...[
                   if (i > 0) const SizedBox(height: 12),
                   sections[i],

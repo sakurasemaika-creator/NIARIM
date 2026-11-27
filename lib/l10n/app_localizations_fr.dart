@@ -543,6 +543,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pressureTryDrawClear => 'Effacer';
 
   @override
+  String get penSettingsStabilizationSection => 'Stabilisation';
+
+  @override
+  String get penSettingsStabilizationStrength => 'Intensité';
+
+  @override
+  String get penSettingsStabilizationHint =>
+      'Atténue les petits tremblements de la pointe du stylet pour lisser les traits. Plus elle est forte, moins il reste de tremblements, mais le trait suit la pointe avec un léger retard. À 0, aucun lissage n’est appliqué. La même intensité s’applique à tous les pinceaux.';
+
+  @override
   String get penSettingsTitle => 'Réglages de saisie au stylet';
 
   @override
@@ -1481,7 +1491,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpTextToolDesc =>
-      'Place du texte sur le canevas. Vous pouvez choisir la police, la taille, la couleur et le sens d’écriture vertical/horizontal. L’écriture verticale prend en charge la rotation automatique des caractères alphanumériques demi-chasse, le tate-chu-yoko (garder les nombres à l’horizontale dans un texte vertical) et le rubi (furigana). Le texte placé est également gravé en pixels lors de l’export. Un écran où vous pouvez ajouter, rechercher et supprimer des polices disponibles dans l’outil texte. Les polices gratuites supplémentaires au-delà de celles fournies par défaut sont téléchargées à la demande depuis ici, afin de réduire la taille d’installation initiale.';
+      'Place du texte sur le canevas. Vous pouvez choisir la police, la taille, la couleur et le sens d’écriture vertical/horizontal. L’écriture verticale prend en charge la rotation automatique des caractères alphanumériques demi-chasse, le tate-chu-yoko (garder les nombres à l’horizontale dans un texte vertical) et le rubi (furigana). Le texte placé est également gravé en pixels lors de l’export. Avec l’outil texte, touchez un texte placé pour le modifier, ou faites-le glisser pour le déplacer. Un nouveau texte reprend la mise en forme du dernier texte validé. Un écran où vous pouvez ajouter, rechercher et supprimer des polices disponibles dans l’outil texte. Les polices gratuites supplémentaires au-delà de celles fournies par défaut sont téléchargées à la demande depuis ici, afin de réduire la taille d’installation initiale.';
 
   @override
   String get helpQuickToolTitle => 'Outil rapide';
@@ -1795,7 +1805,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpPenSettingsDesc =>
-      'En plus de la courbe de pression pour tablettes et écrans à stylet, cet écran permet d’associer des actions — comme basculer la gomme ou la pipette — aux boutons latéraux d’un stylet compatible.';
+      'En plus de la courbe de pression pour tablettes et écrans à stylet, cet écran permet d’associer des actions — comme basculer la gomme ou la pipette — aux boutons latéraux d’un stylet compatible. Vous pouvez aussi y régler l’intensité de la stabilisation, qui s’applique de la même façon à tous les pinceaux.';
 
   @override
   String get helpMaterialListTitle => 'Liste des matériels';
@@ -1809,7 +1819,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpFrameOperationsDesc =>
-      'Dans la liste des fotogrammes, vous pouvez ajouter, dupliquer et supprimer des fotogrammes, et en mode sélection multiple en déplacer, dupliquer ou supprimer plusieurs à la fois. Augmenter le nombre de maintien garde un même fotogramme affiché sur plusieurs cellules (un « maintien »), économisant du travail de dessin sur les plans avec peu de mouvement.';
+      'Dans la liste des fotogrammes, vous pouvez ajouter, dupliquer et supprimer des fotogrammes, et en mode sélection multiple en déplacer, dupliquer ou supprimer plusieurs à la fois. Augmenter le nombre de maintien garde un même fotogramme affiché sur plusieurs cellules (un « maintien »), économisant du travail de dessin sur les plans avec peu de mouvement. Dans la liste des images du canevas, appuyez longuement sur une image pour la dupliquer, la supprimer ou changer ses images de maintien.';
 
   @override
   String get helpSceneOperationsTitle => 'Opérations sur les scènes';
@@ -4830,7 +4840,8 @@ class AppLocalizationsFr extends AppLocalizations {
       'Pour les traitements par lot (ex. appliquer un filtre à plusieurs images)';
 
   @override
-  String get canvasEditMenuPressureCurve => 'Courbe de pression';
+  String get canvasEditMenuPressureCurve =>
+      'Courbe de pression et stabilisation';
 
   @override
   String get canvasEditMenuPressureCurveSubtitle =>
@@ -6175,6 +6186,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n images de maintien';
   }
+
+  @override
+  String get frameStripHoldMenuItem => 'Images de maintien';
 
   @override
   String get frameStripTimelineModeLabel => 'Timeline';
@@ -11997,11 +12011,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterSettingsSaved => 'Réglages du filtre enregistrés';
 
   @override
-  String get makingRecordProject => 'Enregistrer le processus de ce projet';
+  String get makingRecordProject => 'Capturer le processus de ce projet';
 
   @override
   String get makingRecordProjectHint =>
-      'Désactivé par défaut. Les instantanés du canevas sont enregistrés séparément.';
+      'Désactivé par défaut. Une fois activé, seules les parties modifiées sont enregistrées à chaque trait, annulation ou rétablissement. Utilise le stockage de l’appareil.';
 
   @override
   String get makingReadAloud => 'Synthèse vocale';

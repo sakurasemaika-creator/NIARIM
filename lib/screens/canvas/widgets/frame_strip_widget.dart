@@ -18,6 +18,7 @@ import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/frame_preview_background.dart';
+import '../../../widgets/menu_action_label.dart';
 import '../../../config/accent_text_theme.dart';
 import '../../../widgets/typing_dialog_inset.dart';
 
@@ -303,6 +304,81 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     );
   }
 
+  /// コマの長押しのメニュー：そのコマを今のコマにして、複製・削除・保持セル数を
+  /// 選べる（所有者の指定、2026-11-27「フレーム一覧の長押しで現在表示中の
+  /// フレームを複製、削除、保持セル数変更できるようにします」）。並べ替えは
+  /// タイムラインで行う（横のスクロールとぶつかるため）。複製・削除は取り
+  /// 消せる。
+  Future<void> _showFrameMenu(ProjectService service, int index) async {
+    if (index != widget.currentFrame) widget.onFrameSelected(index);
+    final l10n = AppLocalizations.of(context)!;
+    final box = context.findRenderObject() as RenderBox?;
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (box == null || overlay == null) return;
+    // 押したコマは真ん中（今のコマの枠）へ送られるので、そこへ出す。
+    final cell = Rect.fromCenter(
+      center: box.localToGlobal(
+        box.size.center(Offset.zero),
+        ancestor: overlay,
+      ),
+      width: _itemExtent,
+      height: _itemExtent,
+    );
+    final total = service.frameCount(widget.projectId, widget.sceneId);
+    final choice = await showMenu<_FrameMenuAction>(
+      context: context,
+      position: RelativeRect.fromRect(cell, Offset.zero & overlay.size),
+      items: [
+        PopupMenuItem(
+          key: const Key('frameStripMenuDuplicate'),
+          value: _FrameMenuAction.duplicate,
+          child: MenuActionLabel(
+            icon: Icons.copy_all_outlined,
+            label: l10n.commonDuplicate,
+          ),
+        ),
+        PopupMenuItem(
+          key: const Key('frameStripMenuDelete'),
+          value: _FrameMenuAction.delete,
+          // 最後の1コマは消せない（ProjectService.removeFrameも残す）。
+          enabled: total > 1,
+          child: MenuActionLabel(
+            icon: Icons.delete_outline,
+            label: l10n.commonDelete,
+          ),
+        ),
+        PopupMenuItem(
+          key: const Key('frameStripMenuHold'),
+          value: _FrameMenuAction.hold,
+          child: MenuActionLabel(
+            icon: Icons.timer_outlined,
+            label: l10n.frameStripHoldMenuItem,
+          ),
+        ),
+      ],
+    );
+    if (!mounted || choice == null) return;
+    switch (choice) {
+      case _FrameMenuAction.duplicate:
+        if (!_canAddFrames(context, service, 1)) return;
+        service.duplicateFrame(widget.projectId, widget.sceneId, index);
+        // 写したコマ（すぐ後ろ）へ移って、そのまま描き直せるようにする。
+        widget.onFrameSelected(index + 1);
+      case _FrameMenuAction.delete:
+        service.removeFrame(widget.projectId, widget.sceneId, index);
+        final left = service.frameCount(widget.projectId, widget.sceneId);
+        widget.onFrameSelected(index.clamp(0, left - 1));
+      case _FrameMenuAction.hold:
+        _showHoldDialog(
+          context,
+          service,
+          index,
+          service.frameHold(widget.projectId, widget.sceneId, index),
+        );
+    }
+  }
+
   void _showHoldDialog(
     BuildContext context,
     ProjectService service,
@@ -408,12 +484,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                             : () => widget.onFrameSelected(index),
                         onLongPress: widget.multiSelectMode
                             ? null
-                            : () => _showHoldDialog(
-                                context,
-                                service,
-                                index,
-                                hold,
-                              ),
+                            : () => _showFrameMenu(service, index),
                         child: Container(
                           width: 50,
                           height: 50,
@@ -588,6 +659,8 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     );
   }
 }
+
+enum _FrameMenuAction { duplicate, delete, hold }
 
 class _FrameThumbnail extends StatefulWidget {
   final String projectId;

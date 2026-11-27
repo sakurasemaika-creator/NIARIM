@@ -262,6 +262,9 @@
   "gestureActionNoneShort": "なし",
   "pressureTryDrawHint": "この設定で試し書きできます（ペンの場合、実際の筆圧が反映されます）",
   "pressureTryDrawClear": "クリア",
+  "penSettingsStabilizationSection": "手ぶれ補正",
+  "penSettingsStabilizationStrength": "強さ",
+  "penSettingsStabilizationHint": "ペン先の細かな揺れをならして、線をなめらかにします。強くするほど揺れは減りますが、線がペン先から少し遅れてついてきます。0にすると補正しません。どのブラシにも同じ強さで効きます。",
   "penSettingsTitle": "ペン入力設定",
   "penSettingsPalmRejectionTitle": "パームリジェクション",
   "penSettingsPalmRejectionHint": "ペン使用中の1本指タッチによる誤操作を防ぎます。2本指以上のジェスチャーは引き続き使用できます。",
@@ -662,7 +665,7 @@
   "helpShapeToolTitle": "図形ツール",
   "helpShapeToolDesc": "直線・四角形・円といった正確な図形をワンタップで描くためのツールです。ドラッグで始点から終点まで動かすとその場でプレビューされ、指を離すと確定します。フリーハンドでは描きにくい直線や正円が必要な時に便利です。",
   "helpTextToolTitle": "テキストツール",
-  "helpTextToolDesc": "キャンバス上に文字を配置するツールです。フォント・サイズ・色・縦書き/横書きを選べます。縦書きでは半角英数字の自動回転・縦中横（数字を横向きのまま並べる表記）・ルビ（ふりがな）にも対応しています。配置したテキストは書き出し時にもピクセルとして焼き込まれます。 テキストツールで使えるフォントを追加・検索・削除できる画面です。初期同梱フォント以外の追加フリーフォントは、初期インストール容量を抑えるためここからオンデマンドでダウンロードする方式になっています。",
+  "helpTextToolDesc": "キャンバス上に文字を配置するツールです。フォント・サイズ・色・縦書き/横書きを選べます。縦書きでは半角英数字の自動回転・縦中横（数字を横向きのまま並べる表記）・ルビ（ふりがな）にも対応しています。配置したテキストは書き出し時にもピクセルとして焼き込まれます。置いた文字はテキストツールで押すと編集でき、つかんで動かすと移動できます。新しい文字は最後に確定した文字と同じ書式で始まります。 テキストツールで使えるフォントを追加・検索・削除できる画面です。初期同梱フォント以外の追加フリーフォントは、初期インストール容量を抑えるためここからオンデマンドでダウンロードする方式になっています。",
   "helpQuickToolTitle": "早替えツール",
   "helpQuickToolDesc": "よく使うブラシ・ツールの組み合わせをあらかじめ登録しておき、ボタン一つで順番に切り替えられる機能です。キャンバス上の「ツール早替え」ボタン（円形の矢印）を長押しまたは上スワイプすると、登録・並べ替え・削除ができる管理ポップアップが開きます。ドラッグで並び順を変更できます。",
   "helpLayerTitle": "レイヤー",
@@ -755,11 +758,11 @@
   "helpWorkspaceSettingsTitle": "ワークスペース設定",
   "helpWorkspaceSettingsDesc": "左利きモード（ドッキングパネルを左右反転）、PC/DeXモードの手動切替、手のひらツールの表示条件などをまとめて設定できる画面です。使用端末や利き手に合わせて作業しやすいレイアウトに調整できます。",
   "helpPenSettingsTitle": "ペン設定",
-  "helpPenSettingsDesc": "板タブ・液晶タブレットの筆圧カーブに加えて、ペン側面のボタン（対応スタイラス使用時）に消しゴム切替やスポイトなどの操作を割り当てられる設定画面です。",
+  "helpPenSettingsDesc": "板タブ・液晶タブレットの筆圧カーブに加えて、ペン側面のボタン（対応スタイラス使用時）に消しゴム切替やスポイトなどの操作を割り当てられる設定画面です。手ぶれ補正の強さ（どのブラシにも同じ強さで効きます）もここで変えられます。",
   "helpMaterialListTitle": "素材一覧",
   "helpMaterialListDesc": "プロジェクトで使用している画像・動画・音声素材をまとめて確認できる画面です。タイムラインへ配置した素材の元ファイルがここに集約されます。",
   "helpFrameOperationsTitle": "フレーム操作",
-  "helpFrameOperationsDesc": "フレーム一覧では新規追加・複製・削除に加えて、複数選択モードで複数フレームをまとめて移動・複製・削除できます。保持セル数を増やすと同じフレームを複数コマ分表示させ続けられる（いわゆる「止め」）ので、動きの少ないカットで枚数を節約できます。",
+  "helpFrameOperationsDesc": "フレーム一覧では新規追加・複製・削除に加えて、複数選択モードで複数フレームをまとめて移動・複製・削除できます。保持セル数を増やすと同じフレームを複数コマ分表示させ続けられる（いわゆる「止め」）ので、動きの少ないカットで枚数を節約できます。キャンバスのフレーム一覧でコマを長押しすると、そのコマの複製・削除・保持セル数を選べます。",
   "helpSceneOperationsTitle": "シーン操作",
   "helpSceneOperationsDesc": "タイムラインのシーンタブでは、シーンの追加・複製・削除・名前変更・並び替えができます。複数選択モードにすると複数シーンをまとめて移動・複製・削除することも可能です。",
   "helpQuickToolManagementTitle": "早替えツール管理",
@@ -2308,7 +2311,7 @@
   "canvasEditMenuFilterSubtitle": "ぼかし・トーンカーブなどを適用",
   "canvasEditMenuFrameMultiSelect": "フレーム複数選択",
   "canvasEditMenuFrameMultiSelectSubtitle": "大量処理（フィルター一括適用など）に使用",
-  "canvasEditMenuPressureCurve": "筆圧カーブ",
+  "canvasEditMenuPressureCurve": "筆圧カーブ・手ぶれ補正",
   "canvasEditMenuPressureCurveSubtitle": "ペン入力設定を開く（設定画面と共通）",
   "canvasEditMenuMeshTransform": "自由変形・メッシュ変形",
   "canvasEditMenuMeshTransformSubtitle": "レイヤー全体を選択せずに変形する",
@@ -3066,6 +3069,10 @@
         "type": "int"
       }
     }
+  },
+  "frameStripHoldMenuItem": "保持セル数",
+  "@frameStripHoldMenuItem": {
+    "description": "キャンバスのフレーム一覧でコマを長押ししたメニューの項目：そのコマの保持セル数を変える"
   },
   "frameStripTimelineModeLabel": "タイムライン",
   "frameStripBulkAddTitle": "フレームを一括追加",
@@ -6741,7 +6748,7 @@
   "@makingRecordProject": {
     "description": "メイキング・読み上げ：この作品のメイキングを記録"
   },
-  "makingRecordProjectHint": "OFFが初期設定です。ONにすると制作中のキャンバス画像を別保存領域へ記録します。容量を使用します。",
+  "makingRecordProjectHint": "OFFが初期設定です。ONにすると、描く・取り消す・やり直すたびに、変わった所だけを記録します。端末の容量を使います。",
   "@makingRecordProjectHint": {
     "description": "メイキング・読み上げ：OFFが初期設定です。ONにすると制作中のキャンバス画像を別保存領域へ記録します"
   },

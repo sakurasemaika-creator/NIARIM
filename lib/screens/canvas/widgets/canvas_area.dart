@@ -418,7 +418,18 @@ Rect exportWarningRectFor(Rect drawingRect, Project? project) {
 }
 
 class CanvasArea extends StatefulWidget {
+  /// テキストツールでキャンバスを押して（動かさずに）離した位置（キャンバスの
+  /// 画素）。既にある文字の上なら編集、何も無い所なら新しい文字。
   final ValueChanged<Offset>? onTapForText;
+
+  /// テキストツールで、押した位置にある文字の範囲（キャンバスの画素）。文字が
+  /// 無ければnull。押した文字をつかんでドラッグできるかを決め、ドラッグの間は
+  /// この枠を指に合わせて動かして見せる。
+  final Rect? Function(Offset canvasPos)? textBoundsAt;
+
+  /// テキストツールで文字をつかんで動かし、離したとき：押した位置[from]の
+  /// 文字を[delta]（キャンバスの画素）だけ動かす。
+  final void Function(Offset from, Offset delta)? onMoveText;
   final ValueChanged<Color>? onEyedropper;
   final bool filterEyedropperActive;
 
@@ -552,6 +563,8 @@ class CanvasArea extends StatefulWidget {
   const CanvasArea({
     super.key,
     this.onTapForText,
+    this.textBoundsAt,
+    this.onMoveText,
     this.onEyedropper,
     this.filterEyedropperActive = false,
     this.filterGizmo,
@@ -661,6 +674,13 @@ class CanvasAreaState extends State<CanvasArea> {
   // 対応するonPointerUpも同じポインターのみ委譲する（変形操作用に握り
   // つぶしたポインターのUpをツール側の「描画終了」として誤処理しない）。
   final Set<int> _toolHandledPointers = {};
+
+  // テキストツール：押している指・押した位置・つかんだ文字の範囲と動かした量。
+  int? _textPointer;
+  Offset? _textDownCanvas;
+  Offset? _textDownLocal;
+  Rect? _textGrabbed;
+  Offset? _textDragDelta;
   final MultiTouchTapTracker _multiTouchTapTracker = MultiTouchTapTracker();
   // ロック中のレイヤーで断った指。描けない知らせは、この指が1本のまま
   // 動いた（線を描こうとした）・離れた（点を打とうとした）ときに出す。
@@ -1160,6 +1180,15 @@ class CanvasAreaState extends State<CanvasArea> {
     return canvasDrawingRectFor(size, widget.project).width / canvas.width;
   }
 
+  /// 画面の[screenPixels]が、いまの表示（倍率・ピンチ込み）でキャンバスの
+  /// 何画素にあたるか（指で押す当たりの広さを決めるのに使う）。
+  double canvasPixelsForScreen(double screenPixels) {
+    final size = context.size;
+    if (size == null || size.isEmpty) return screenPixels;
+    final zoom = _fitZoom(size) * canvasViewScaleOf(_transformController.value);
+    return zoom > 0 ? screenPixels / zoom : screenPixels;
+  }
+
   void _publishViewInfo() {
     if (!mounted ||
         (widget.viewInfo == null && widget.navigatorViewport == null)) {
@@ -1551,6 +1580,7 @@ class CanvasAreaState extends State<CanvasArea> {
           )
         : brush;
     _drawingEngine.pressureEnabled = settings.penPressureEnabled;
+    _drawingEngine.stabilizationStrength = settings.strokeStabilization;
     final c = bs.currentColor;
     _drawingEngine.currentColor = ui.Color.fromARGB(
       (c.a * 255).round().clamp(0, 255),
@@ -1849,7 +1879,13 @@ class CanvasAreaState extends State<CanvasArea> {
     }
 
     if (widget.currentTool == DrawingTool.text && widget.onTapForText != null) {
-      widget.onTapForText!(canvasPos);
+      // 押した時点では決めず、離したときに「動かさずに離した＝編集・新しい
+      // 文字」か「つかんで動かした＝移動」かを決める。
+      _textPointer = event.pointer;
+      _textDownCanvas = canvasPos;
+      _textDownLocal = event.localPosition;
+      _textGrabbed = widget.textBoundsAt?.call(canvasPos);
+      _textDragDelta = null;
       return;
     }
     if (widget.currentTool == DrawingTool.eyedropper) {
@@ -2007,6 +2043,10 @@ class CanvasAreaState extends State<CanvasArea> {
       _middleClickLastScreenPos = event.localPosition;
       return;
     }
+    if (event.pointer == _textPointer) {
+      _dragText(event);
+      return;
+    }
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
     if (event.pointer == _gizmoPointer) {
@@ -2157,6 +2197,10 @@ class CanvasAreaState extends State<CanvasArea> {
     }
     if (event.pointer == _lensPointer) {
       _endLensMaskEdit();
+      return;
+    }
+    if (event.pointer == _textPointer) {
+      _finishText();
       return;
     }
     final type = _inputHandler.classifyInput(event);
@@ -3296,7 +3340,51 @@ class CanvasAreaState extends State<CanvasArea> {
   /// PointerCancel）。その指で描いていたものは丸ごと取りやめ、途中までを
   /// 残さない（残すと次の操作の記録に混ざって取り消せなくなる）。選択範囲の
   /// 変形・メッシュ変形は確定の操作が別にあるのでここでは触らない。
+  /// テキストツールの指が動いた：つかんだ文字があり、少し（タッチの遊び）
+  /// 以上動いたら移動として、枠を指に合わせて動かす。
+  void _dragText(PointerEvent event) {
+    final down = _textDownCanvas;
+    final downLocal = _textDownLocal;
+    if (down == null || downLocal == null || _textGrabbed == null) return;
+    if (_textDragDelta == null &&
+        (event.localPosition - downLocal).distance <= kTouchSlop) {
+      return;
+    }
+    setState(
+      () => _textDragDelta = _canvasPosition(event.localPosition) - down,
+    );
+  }
+
+  /// テキストツールの指を離した：動かしていなければ押した位置を親へ渡し
+  /// （編集・新しい文字）、つかんで動かしていればその分だけ文字を動かす。
+  void _finishText() {
+    final down = _textDownCanvas;
+    final delta = _textDragDelta;
+    _clearTextGesture();
+    if (down == null) return;
+    if (delta != null) {
+      if (delta != Offset.zero) widget.onMoveText?.call(down, delta);
+      return;
+    }
+    widget.onTapForText?.call(down);
+  }
+
+  void _clearTextGesture() {
+    final dragging = _textDragDelta != null;
+    _textPointer = null;
+    _textDownCanvas = null;
+    _textDownLocal = null;
+    _textGrabbed = null;
+    _textDragDelta = null;
+    if (dragging && mounted) setState(() {});
+  }
+
   void _cancelToolPointer(int pointer) {
+    if (pointer == _textPointer) {
+      // 2本目の指（拡大・移動）やOSの取り上げ：文字は動かさず、何も開かない。
+      _clearTextGesture();
+      return;
+    }
     if (pointer == _bucketGesture?.pointer) {
       _cancelBucket();
       return;
@@ -5187,6 +5275,9 @@ class CanvasAreaState extends State<CanvasArea> {
                     shapeStart: _shapeStart,
                     shapeEnd: _shapeEnd,
                     moveDelta: _moveStart == null ? null : _moveDelta,
+                    textDragRect: _textDragDelta == null
+                        ? null
+                        : _textGrabbed?.shift(_textDragDelta!),
                     floatingSelectionImage: _showSelectionPreview
                         ? _floatingSelectionImage
                         : null,
@@ -5399,6 +5490,10 @@ class _CanvasPainter extends CustomPainter {
   final Offset? shapeStart;
   final Offset? shapeEnd;
   final Offset? moveDelta;
+
+  /// テキストツールで文字をつかんで動かしている間の、文字の行き先の枠
+  /// （キャンバスの画素）。
+  final Rect? textDragRect;
   // 選択ツールの移動・回転・拡大縮小：ドラッグ中は選択範囲の
   // 中身を切り取った「浮動画像」をコミット前のプレビューとして表示する。
   final ui.Image? floatingSelectionImage;
@@ -5465,6 +5560,7 @@ class _CanvasPainter extends CustomPainter {
     this.shapeStart,
     this.shapeEnd,
     this.moveDelta,
+    this.textDragRect,
     this.floatingSelectionImage,
     this.selectionTransformLive,
     this.selectionTransformBounds,
@@ -5643,6 +5739,28 @@ class _CanvasPainter extends CustomPainter {
             Offset(selectionEnd!.dx * sx, selectionEnd!.dy * sy),
       );
       canvas.drawRect(r, Paint()..color = handleColor.withValues(alpha: 0.2));
+      canvas.drawRect(
+        r,
+        Paint()
+          ..color = handleColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0,
+      );
+    }
+
+    // テキストツールで動かしている文字の行き先
+    final textRect = textDragRect;
+    if (textRect != null) {
+      final canvasPx = canvasPixelSizeOf(project);
+      final sx = drawingRect.width / canvasPx.width;
+      final sy = drawingRect.height / canvasPx.height;
+      final r = Rect.fromLTRB(
+        drawingRect.left + textRect.left * sx,
+        drawingRect.top + textRect.top * sy,
+        drawingRect.left + textRect.right * sx,
+        drawingRect.top + textRect.bottom * sy,
+      );
+      canvas.drawRect(r, Paint()..color = handleColor.withValues(alpha: 0.15));
       canvas.drawRect(
         r,
         Paint()
@@ -6304,6 +6422,7 @@ class _CanvasPainter extends CustomPainter {
       old.shapeStart != shapeStart ||
       old.shapeEnd != shapeEnd ||
       old.moveDelta != moveDelta ||
+      old.textDragRect != textDragRect ||
       old.floatingSelectionImage != floatingSelectionImage ||
       old.selectionTransformLive != selectionTransformLive ||
       old.selectionTransformBounds != selectionTransformBounds ||

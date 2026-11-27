@@ -1031,6 +1031,24 @@ abstract class AppLocalizations {
   /// **'クリア'**
   String get pressureTryDrawClear;
 
+  /// No description provided for @penSettingsStabilizationSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'手ぶれ補正'**
+  String get penSettingsStabilizationSection;
+
+  /// No description provided for @penSettingsStabilizationStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'強さ'**
+  String get penSettingsStabilizationStrength;
+
+  /// No description provided for @penSettingsStabilizationHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン先の細かな揺れをならして、線をなめらかにします。強くするほど揺れは減りますが、線がペン先から少し遅れてついてきます。0にすると補正しません。どのブラシにも同じ強さで効きます。'**
+  String get penSettingsStabilizationHint;
+
   /// No description provided for @penSettingsTitle.
   ///
   /// In ja, this message translates to:
@@ -2664,7 +2682,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpTextToolDesc.
   ///
   /// In ja, this message translates to:
-  /// **'キャンバス上に文字を配置するツールです。フォント・サイズ・色・縦書き/横書きを選べます。縦書きでは半角英数字の自動回転・縦中横（数字を横向きのまま並べる表記）・ルビ（ふりがな）にも対応しています。配置したテキストは書き出し時にもピクセルとして焼き込まれます。 テキストツールで使えるフォントを追加・検索・削除できる画面です。初期同梱フォント以外の追加フリーフォントは、初期インストール容量を抑えるためここからオンデマンドでダウンロードする方式になっています。'**
+  /// **'キャンバス上に文字を配置するツールです。フォント・サイズ・色・縦書き/横書きを選べます。縦書きでは半角英数字の自動回転・縦中横（数字を横向きのまま並べる表記）・ルビ（ふりがな）にも対応しています。配置したテキストは書き出し時にもピクセルとして焼き込まれます。置いた文字はテキストツールで押すと編集でき、つかんで動かすと移動できます。新しい文字は最後に確定した文字と同じ書式で始まります。 テキストツールで使えるフォントを追加・検索・削除できる画面です。初期同梱フォント以外の追加フリーフォントは、初期インストール容量を抑えるためここからオンデマンドでダウンロードする方式になっています。'**
   String get helpTextToolDesc;
 
   /// No description provided for @helpQuickToolTitle.
@@ -3198,7 +3216,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpPenSettingsDesc.
   ///
   /// In ja, this message translates to:
-  /// **'板タブ・液晶タブレットの筆圧カーブに加えて、ペン側面のボタン（対応スタイラス使用時）に消しゴム切替やスポイトなどの操作を割り当てられる設定画面です。'**
+  /// **'板タブ・液晶タブレットの筆圧カーブに加えて、ペン側面のボタン（対応スタイラス使用時）に消しゴム切替やスポイトなどの操作を割り当てられる設定画面です。手ぶれ補正の強さ（どのブラシにも同じ強さで効きます）もここで変えられます。'**
   String get helpPenSettingsDesc;
 
   /// No description provided for @helpMaterialListTitle.
@@ -3222,7 +3240,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpFrameOperationsDesc.
   ///
   /// In ja, this message translates to:
-  /// **'フレーム一覧では新規追加・複製・削除に加えて、複数選択モードで複数フレームをまとめて移動・複製・削除できます。保持セル数を増やすと同じフレームを複数コマ分表示させ続けられる（いわゆる「止め」）ので、動きの少ないカットで枚数を節約できます。'**
+  /// **'フレーム一覧では新規追加・複製・削除に加えて、複数選択モードで複数フレームをまとめて移動・複製・削除できます。保持セル数を増やすと同じフレームを複数コマ分表示させ続けられる（いわゆる「止め」）ので、動きの少ないカットで枚数を節約できます。キャンバスのフレーム一覧でコマを長押しすると、そのコマの複製・削除・保持セル数を選べます。'**
   String get helpFrameOperationsDesc;
 
   /// No description provided for @helpSceneOperationsTitle.
@@ -8232,7 +8250,7 @@ abstract class AppLocalizations {
   /// No description provided for @canvasEditMenuPressureCurve.
   ///
   /// In ja, this message translates to:
-  /// **'筆圧カーブ'**
+  /// **'筆圧カーブ・手ぶれ補正'**
   String get canvasEditMenuPressureCurve;
 
   /// No description provided for @canvasEditMenuPressureCurveSubtitle.
@@ -10502,6 +10520,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'F{n} 保持セル数'**
   String frameStripHoldDialogTitle(int n);
+
+  /// キャンバスのフレーム一覧でコマを長押ししたメニューの項目：そのコマの保持セル数を変える
+  ///
+  /// In ja, this message translates to:
+  /// **'保持セル数'**
+  String get frameStripHoldMenuItem;
 
   /// No description provided for @frameStripTimelineModeLabel.
   ///
@@ -19332,7 +19356,7 @@ abstract class AppLocalizations {
   /// メイキング・読み上げ：OFFが初期設定です。ONにすると制作中のキャンバス画像を別保存領域へ記録します
   ///
   /// In ja, this message translates to:
-  /// **'OFFが初期設定です。ONにすると制作中のキャンバス画像を別保存領域へ記録します。容量を使用します。'**
+  /// **'OFFが初期設定です。ONにすると、描く・取り消す・やり直すたびに、変わった所だけを記録します。端末の容量を使います。'**
   String get makingRecordProjectHint;
 
   /// メイキング・読み上げ：読み上げ

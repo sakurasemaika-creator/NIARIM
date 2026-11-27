@@ -508,6 +508,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pressureTryDrawClear => 'クリア';
 
   @override
+  String get penSettingsStabilizationSection => '手ぶれ補正';
+
+  @override
+  String get penSettingsStabilizationStrength => '強さ';
+
+  @override
+  String get penSettingsStabilizationHint =>
+      'ペン先の細かな揺れをならして、線をなめらかにします。強くするほど揺れは減りますが、線がペン先から少し遅れてついてきます。0にすると補正しません。どのブラシにも同じ強さで効きます。';
+
+  @override
   String get penSettingsTitle => 'ペン入力設定';
 
   @override
@@ -1410,7 +1420,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpTextToolDesc =>
-      'キャンバス上に文字を配置するツールです。フォント・サイズ・色・縦書き/横書きを選べます。縦書きでは半角英数字の自動回転・縦中横（数字を横向きのまま並べる表記）・ルビ（ふりがな）にも対応しています。配置したテキストは書き出し時にもピクセルとして焼き込まれます。 テキストツールで使えるフォントを追加・検索・削除できる画面です。初期同梱フォント以外の追加フリーフォントは、初期インストール容量を抑えるためここからオンデマンドでダウンロードする方式になっています。';
+      'キャンバス上に文字を配置するツールです。フォント・サイズ・色・縦書き/横書きを選べます。縦書きでは半角英数字の自動回転・縦中横（数字を横向きのまま並べる表記）・ルビ（ふりがな）にも対応しています。配置したテキストは書き出し時にもピクセルとして焼き込まれます。置いた文字はテキストツールで押すと編集でき、つかんで動かすと移動できます。新しい文字は最後に確定した文字と同じ書式で始まります。 テキストツールで使えるフォントを追加・検索・削除できる画面です。初期同梱フォント以外の追加フリーフォントは、初期インストール容量を抑えるためここからオンデマンドでダウンロードする方式になっています。';
 
   @override
   String get helpQuickToolTitle => '早替えツール';
@@ -1720,7 +1730,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpPenSettingsDesc =>
-      '板タブ・液晶タブレットの筆圧カーブに加えて、ペン側面のボタン（対応スタイラス使用時）に消しゴム切替やスポイトなどの操作を割り当てられる設定画面です。';
+      '板タブ・液晶タブレットの筆圧カーブに加えて、ペン側面のボタン（対応スタイラス使用時）に消しゴム切替やスポイトなどの操作を割り当てられる設定画面です。手ぶれ補正の強さ（どのブラシにも同じ強さで効きます）もここで変えられます。';
 
   @override
   String get helpMaterialListTitle => '素材一覧';
@@ -1734,7 +1744,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpFrameOperationsDesc =>
-      'フレーム一覧では新規追加・複製・削除に加えて、複数選択モードで複数フレームをまとめて移動・複製・削除できます。保持セル数を増やすと同じフレームを複数コマ分表示させ続けられる（いわゆる「止め」）ので、動きの少ないカットで枚数を節約できます。';
+      'フレーム一覧では新規追加・複製・削除に加えて、複数選択モードで複数フレームをまとめて移動・複製・削除できます。保持セル数を増やすと同じフレームを複数コマ分表示させ続けられる（いわゆる「止め」）ので、動きの少ないカットで枚数を節約できます。キャンバスのフレーム一覧でコマを長押しすると、そのコマの複製・削除・保持セル数を選べます。';
 
   @override
   String get helpSceneOperationsTitle => 'シーン操作';
@@ -4541,7 +4551,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasEditMenuFrameMultiSelectSubtitle => '大量処理（フィルター一括適用など）に使用';
 
   @override
-  String get canvasEditMenuPressureCurve => '筆圧カーブ';
+  String get canvasEditMenuPressureCurve => '筆圧カーブ・手ぶれ補正';
 
   @override
   String get canvasEditMenuPressureCurveSubtitle => 'ペン入力設定を開く（設定画面と共通）';
@@ -5819,6 +5829,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n 保持セル数';
   }
+
+  @override
+  String get frameStripHoldMenuItem => '保持セル数';
 
   @override
   String get frameStripTimelineModeLabel => 'タイムライン';
@@ -10981,7 +10994,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get makingRecordProjectHint =>
-      'OFFが初期設定です。ONにすると制作中のキャンバス画像を別保存領域へ記録します。容量を使用します。';
+      'OFFが初期設定です。ONにすると、描く・取り消す・やり直すたびに、変わった所だけを記録します。端末の容量を使います。';
 
   @override
   String get makingReadAloud => '読み上げ';

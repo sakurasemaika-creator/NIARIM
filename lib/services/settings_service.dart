@@ -738,11 +738,15 @@ class SettingsService extends ChangeNotifier {
   // this flag selects which profile is active while drawing.
   bool _penPressureEnabled = true;
   PenPressureCurve _penPressureCurve = PenPressureCurve.normal;
+  // 手ぶれ補正の強さ（0〜100、0で補正しない）。ブラシごとではなくアプリの
+  // すべてのブラシに同じ強さで効く（所有者の指定、2026-11-27）。
+  int _strokeStabilization = 0;
   GestureAction _penButton1 = GestureAction.eraserToggle;
   GestureAction _penButton2 = GestureAction.eyedropper;
 
   bool get palmRejectionEnabled => _palmRejectionEnabled;
   bool get penPressureEnabled => _penPressureEnabled;
+  int get strokeStabilization => _strokeStabilization;
   PenPressureCurve get penPressureCurve => _penPressureCurve;
   GestureAction get penButton1 => _penButton1;
   GestureAction get penButton2 => _penButton2;
@@ -799,6 +803,19 @@ class SettingsService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('palm_rejection_enabled', value);
     notifyListeners();
+  }
+
+  /// スライダーを動かしている間は[save]をfalseにして画面だけ合わせ、離した
+  /// ときに保存する（動かしている間に何十回も書かない）。
+  Future<void> setStrokeStabilization(int value, {bool save = true}) async {
+    final next = value.clamp(0, 100);
+    if (next != _strokeStabilization) {
+      _strokeStabilization = next;
+      notifyListeners();
+    }
+    if (!save) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('stroke_stabilization', next);
   }
 
   Future<void> setPenPressureEnabled(bool value) async {
@@ -1104,6 +1121,10 @@ class SettingsService extends ChangeNotifier {
     );
     _palmRejectionEnabled = prefs.readBool('palm_rejection_enabled') ?? true;
     _penPressureEnabled = prefs.readBool('pen_pressure_enabled') ?? true;
+    _strokeStabilization = (prefs.readInt('stroke_stabilization') ?? 0).clamp(
+      0,
+      100,
+    );
     _penPressureCurve =
         PenPressureCurve.values.asNameMap()[prefs.readString(
           'pen_pressure_curve',

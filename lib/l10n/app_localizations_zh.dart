@@ -502,6 +502,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pressureTryDrawClear => '清除';
 
   @override
+  String get penSettingsStabilizationSection => '防抖';
+
+  @override
+  String get penSettingsStabilizationStrength => '强度';
+
+  @override
+  String get penSettingsStabilizationHint =>
+      '减轻笔尖的细小抖动，让线条更流畅。强度越高抖动越少，但线条会稍微落后于笔尖。设为0时不进行修正。所有画笔都使用相同的强度。';
+
+  @override
   String get penSettingsTitle => '笔输入设置';
 
   @override
@@ -1388,7 +1398,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpTextToolDesc =>
-      '在画布上放置文字的工具。可选择字体、大小、颜色、竖排/横排。竖排时还支持半角字母数字的自动旋转、纵中横（数字保持横向排列的表记）、注音标注（类似日语振假名的读音标注）。放置的文字在导出时也会作为像素烧录进画面。 可添加、搜索、删除文字工具可用字体的画面。除初始内置字体外的其他免费字体，为控制初始安装容量，需从此处按需下载。';
+      '在画布上放置文字的工具。可选择字体、大小、颜色、竖排/横排。竖排时还支持半角字母数字的自动旋转、纵中横（数字保持横向排列的表记）、注音标注（类似日语振假名的读音标注）。放置的文字在导出时也会作为像素烧录进画面。使用文字工具时，点击已放置的文字即可编辑，拖动即可移动。新的文字会沿用上次确定的文字格式。 可添加、搜索、删除文字工具可用字体的画面。除初始内置字体外的其他免费字体，为控制初始安装容量，需从此处按需下载。';
 
   @override
   String get helpQuickToolTitle => '快捷工具';
@@ -1698,7 +1708,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpPenSettingsDesc =>
-      '除了数位板、数位屏的压感曲线外，这个设置画面还能把切换橡皮擦、取色器等操作分配给支持的触控笔侧面按键。';
+      '除了数位板、数位屏的压感曲线外，这个设置画面还能把切换橡皮擦、取色器等操作分配给支持的触控笔侧面按键。防抖的强度也可以在这里调整，所有画笔都使用相同的强度。';
 
   @override
   String get helpMaterialListTitle => '素材列表';
@@ -1712,7 +1722,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpFrameOperationsDesc =>
-      '在帧列表中，除了新增、复制、删除之外，还可以在多选模式下一次性移动、复制、删除多个帧。增加保留格数可以让同一帧持续显示多个格子（即所谓的“停格”），从而在动作较少的镜头中节省作画张数。';
+      '在帧列表中，除了新增、复制、删除之外，还可以在多选模式下一次性移动、复制、删除多个帧。增加保留格数可以让同一帧持续显示多个格子（即所谓的“停格”），从而在动作较少的镜头中节省作画张数。在画布的帧列表中长按某一帧，即可复制、删除该帧或更改其保持格数。';
 
   @override
   String get helpSceneOperationsTitle => '场景操作';
@@ -4503,7 +4513,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasEditMenuFrameMultiSelectSubtitle => '用于批量处理（如批量应用滤镜等）';
 
   @override
-  String get canvasEditMenuPressureCurve => '笔压曲线';
+  String get canvasEditMenuPressureCurve => '笔压曲线·防抖';
 
   @override
   String get canvasEditMenuPressureCurveSubtitle => '打开钢笔输入设置（与设置画面共用）';
@@ -5754,6 +5764,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n 保持格数';
   }
+
+  @override
+  String get frameStripHoldMenuItem => '保持格数';
 
   @override
   String get frameStripTimelineModeLabel => '时间轴';
@@ -10849,7 +10862,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get makingRecordProject => '记录此作品的制作过程';
 
   @override
-  String get makingRecordProjectHint => '默认关闭。开启后会在独立位置保存画布快照。';
+  String get makingRecordProjectHint =>
+      '默认关闭。开启后，每次绘制、撤销或重做时只记录变化的部分。会占用设备存储空间。';
 
   @override
   String get makingReadAloud => '文字转语音';
@@ -11543,6 +11557,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get pressureTryDrawClear => '清除';
+
+  @override
+  String get penSettingsStabilizationSection => '防手震';
+
+  @override
+  String get penSettingsStabilizationStrength => '強度';
+
+  @override
+  String get penSettingsStabilizationHint =>
+      '減輕筆尖的細小抖動，讓線條更流暢。強度越高抖動越少，但線條會稍微落後於筆尖。設為0時不進行修正。所有筆刷都使用相同的強度。';
 
   @override
   String get penSettingsTitle => '筆輸入設定';
@@ -12432,7 +12456,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpTextToolDesc =>
-      '在畫布上放置文字的工具。可選擇字型、大小、顏色、直排/橫排。直排時還支援半形英數字的自動旋轉、縱中橫（數字保持橫向排列的表記）、注音標示（類似日文振假名的讀音標示）。放置的文字在匯出時也會作為像素燒錄進畫面。 可新增、搜尋、刪除文字工具可用字型的畫面。除初始內建字型外的其他免費字型，為控制初始安裝容量，需從此處按需下載。';
+      '在畫布上放置文字的工具。可選擇字型、大小、顏色、直排/橫排。直排時還支援半形英數字的自動旋轉、縱中橫（數字保持橫向排列的表記）、注音標示（類似日文振假名的讀音標示）。放置的文字在匯出時也會作為像素燒錄進畫面。使用文字工具時，點擊已放置的文字即可編輯，拖曳即可移動。新的文字會沿用上次確定的文字格式。 可新增、搜尋、刪除文字工具可用字型的畫面。除初始內建字型外的其他免費字型，為控制初始安裝容量，需從此處按需下載。';
 
   @override
   String get helpQuickToolTitle => '快速切換工具';
@@ -12742,7 +12766,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpPenSettingsDesc =>
-      '除了數位板、數位螢幕的筆壓曲線外，這個設定畫面還能把切換橡皮擦、取色器等操作指派給支援的觸控筆側邊按鍵。';
+      '除了數位板、數位螢幕的筆壓曲線外，這個設定畫面還能把切換橡皮擦、取色器等操作指派給支援的觸控筆側邊按鍵。防手震的強度也可以在這裡調整，所有筆刷都使用相同的強度。';
 
   @override
   String get helpMaterialListTitle => '素材清單';
@@ -12756,7 +12780,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpFrameOperationsDesc =>
-      '在影格清單中，除了新增、複製、刪除之外，還可以在多選模式下一次移動、複製、刪除多個影格。增加保留格數可以讓同一影格持續顯示多個格子（即所謂的「停格」），從而在動作較少的鏡頭中節省作畫張數。';
+      '在影格清單中，除了新增、複製、刪除之外，還可以在多選模式下一次移動、複製、刪除多個影格。增加保留格數可以讓同一影格持續顯示多個格子（即所謂的「停格」），從而在動作較少的鏡頭中節省作畫張數。在畫布的影格清單中長按某一影格，即可複製、刪除該影格或變更其保持格數。';
 
   @override
   String get helpSceneOperationsTitle => '場景操作';
@@ -15546,7 +15570,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasEditMenuFrameMultiSelectSubtitle => '用於批次處理（如批次套用濾鏡等）';
 
   @override
-  String get canvasEditMenuPressureCurve => '筆壓曲線';
+  String get canvasEditMenuPressureCurve => '筆壓曲線·防手震';
 
   @override
   String get canvasEditMenuPressureCurveSubtitle => '開啟畫筆輸入設定（與設定畫面共用）';
@@ -16798,6 +16822,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n 保持格數';
   }
+
+  @override
+  String get frameStripHoldMenuItem => '保持格數';
 
   @override
   String get frameStripTimelineModeLabel => '時間軸';
@@ -21895,7 +21922,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get makingRecordProject => '記錄此作品的製作過程';
 
   @override
-  String get makingRecordProjectHint => '預設關閉。開啟後會在獨立位置儲存畫布快照。';
+  String get makingRecordProjectHint =>
+      '預設關閉。開啟後，每次繪製、復原或取消復原時只記錄變化的部分。會佔用裝置儲存空間。';
 
   @override
   String get makingReadAloud => '文字轉語音';

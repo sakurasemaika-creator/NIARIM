@@ -1685,6 +1685,121 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // 描画する手の側にパネルが重ならないようにする。
     final leftHanded = settings.isLeftHanded;
 
+    // キャンバス本体。スマホでは画面いっぱい（上部バー・広告の下〜画面の下端）に
+    // 縦横比を保って収め、上部バー・太さの段・ツールバー・フレーム一覧はその上に
+    // 浮かべる（所有者の指定、2026-11-27「キャンバスはデフォルトでは画面いっぱいに
+    // 表示（画面からははみ出さない）」）。バーの段が出入りしても紙は動かない。
+    // 広告のバナーはこの画面の外（上）に置かれるので、紙はバナーに重ならない。
+    final canvasView = Listener(
+      // 入力欄はマウス・ペンで外を押されると自分で
+      // フォーカスを手放す（同じ押下の処理の中で、
+      // ここより後に動く）。その後で戻す。
+      onPointerDown: (_) => scheduleMicrotask(() {
+        if (mounted && !_screenFocus.hasPrimaryFocus) {
+          _screenFocus.requestFocus();
+        }
+      }),
+      child: CanvasArea(
+        key: _canvasAreaKey,
+        viewRequest: _navigatorViewRequest,
+        navigatorViewport: _navigatorViewport,
+        onTapForText: _currentTool == DrawingTool.text
+            ? onCanvasTapForText
+            : null,
+        textBoundsAt: _currentTool == DrawingTool.text ? _textBoundsAt : null,
+        onMoveText: _currentTool == DrawingTool.text ? _moveTextAt : null,
+        onEyedropper: _handleCanvasEyedropper,
+        autofillCheckMode: _autofillCheckMode,
+        filterEyedropperActive:
+            _filterColorEyedropperTarget != null ||
+            _textColorEyedropperTarget != null ||
+            _brushOutlineEyedropperActive,
+        filterGizmo: _filterCanvasGizmo(project),
+        currentLayerPreview: _showColorAdjustPanel
+            ? _colorAdjustCanvasPreview
+            : _filterCanvasPreviewShown(),
+        currentLayerPreviewBlendMode: _filterCanvasPreviewBlendMode(),
+        contentRevision: _canvasContentRevision,
+        lockToolInput: selectionEditingHidden || colorAdjusting,
+        onFilterGizmoChanged: (gizmo) => _moveFilterGizmo(project, gizmo),
+        onFilterGizmoDragStart: () =>
+            context.read<FilterService>().beginFilterEditGroup(),
+        onFilterGizmoDragEnd: () =>
+            context.read<FilterService>().endFilterEditGroup(),
+        project: project,
+        background: _canvasBackground,
+        currentLayerId: _currentLayerId,
+        isEraser: _currentTool == DrawingTool.eraser,
+        currentTool: _currentTool,
+        currentSubTool: _currentSubTool,
+        toolBrushSize: _toolBrushSize,
+        toolBrushOpacity: _toolBrushOpacity,
+        lassoFillEnclosedMode: context.select<ToneService, bool>(
+          (tones) => tones.lassoEnclosed,
+        ),
+        onionSkinSettings: _onionSkinSettings,
+        currentFrame: _currentFrame,
+        sceneId: _currentSceneId,
+        activeRuler: _activeRuler,
+        onRulerChanged: _setActiveRulerLive,
+        shapeKind: _shapeKind,
+        onGestureToolChange: (tool) => setState(() => _currentTool = tool),
+        onGestureToggleTool: _handleGestureToggleTool,
+        onNextQuickTool: _applyNextQuickTool,
+        onToggleOnionSkin: () => setState(
+          () => _onionSkinSettings = _onionSkinSettings.copyWith(
+            enabled: !_onionSkinSettings.enabled,
+          ),
+        ),
+        meshDensity: _meshDensity,
+        meshSelectionOnly: _meshSelectionOnly,
+        meshRotateDeg: _meshRotateDeg,
+        meshScaleValue: _meshScaleValue,
+        meshCommitToken: _meshCommitToken,
+        meshCancelToken: _meshCancelToken,
+        onNextFrame: _goToNextFrame,
+        onPreviousFrame: _goToPreviousFrame,
+        invertSelectionToken: _invertSelectionToken,
+        selectAllSelectionToken: _selectAllSelectionToken,
+        clearSelectionToken: _clearSelectionToken,
+        selectionReferenceAllVisible: context
+            .watch<SettingsService>()
+            .selectionReferenceAllVisible,
+        lassoSnapToLines: context.watch<SettingsService>().lassoSnapToLines,
+        lassoGapTolerancePx: context
+            .watch<SettingsService>()
+            .lassoGapTolerancePx,
+        onSelectionActiveChanged: (v) {
+          if (_hasActiveSelection == v) return;
+          setState(() {
+            _hasActiveSelection = v;
+            // 選択範囲を作り直した／解除したら、
+            // 「変更キャンセル」で戻せる範囲も
+            // そこで区切る。
+            _resetSelectionSliders();
+          });
+        },
+        onSelectionMaskChanged: (mask) {
+          if (identical(_canvasSelectionMask, mask)) {
+            return;
+          }
+          setState(() => _canvasSelectionMask = mask);
+        },
+        filterLensMask: _filterLensMaskShown(),
+        onUndoGesture: _undo,
+        onRedoGesture: _redo,
+        onFilterLensMaskEdited: _editFilterLensMask,
+        selectionMoveX: _selectionMoveX,
+        selectionMoveY: _selectionMoveY,
+        selectionScale: _selectionScale,
+        selectionRotateDeg: _selectionRotateDeg,
+        selectionTransformCommitToken: _selectionTransformCommitToken,
+        selectionTransformCommitValues: _selectionTransformCommitValues,
+        selectionTransformCancelToken: _selectionTransformCancelToken,
+        onLockedLayerEdit: _showLockedLayerNotice,
+      ),
+    );
+
     // DeXモード・マウス/キーボード入力・左手デバイス：設定画面
     // 「ショートカット設定」で割り当てたキーで、ツール切替やUndo/Redo
     // などの主要操作を行えるようにする。
@@ -1716,6 +1831,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
             // 閉じられる。
             child: Stack(
               children: [
+                // スマホ：キャンバスは画面いっぱいの一番下の層。上のColumnの
+                // バーはその上に浮かび、バーの何も無い所の押下はキャンバスへ届く。
+                if (!isDesktop) ...[
+                  Positioned.fill(
+                    child: ColoredBox(color: kCanvasOutsideColor),
+                  ),
+                  Positioned.fill(child: canvasView),
+                ],
                 Column(
                   children: [
                     // フィルターの調整中（スマホ）は、上部バー・ツールバー・
@@ -1783,142 +1906,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   // 同じ色の「枠外」塗りを重ねて二重に背景を持たせて
                                   // いたため、縮小時に背景まで一緒に縮んで見た目が
                                   // ちぐはぐになる不具合があった）。
-                                  Container(color: kCanvasOutsideColor),
-                                  Listener(
-                                    // 入力欄はマウス・ペンで外を押されると自分で
-                                    // フォーカスを手放す（同じ押下の処理の中で、
-                                    // ここより後に動く）。その後で戻す。
-                                    onPointerDown: (_) => scheduleMicrotask(() {
-                                      if (mounted &&
-                                          !_screenFocus.hasPrimaryFocus) {
-                                        _screenFocus.requestFocus();
-                                      }
-                                    }),
-                                    child: CanvasArea(
-                                      key: _canvasAreaKey,
-                                      viewRequest: _navigatorViewRequest,
-                                      navigatorViewport: _navigatorViewport,
-                                      onTapForText:
-                                          _currentTool == DrawingTool.text
-                                          ? onCanvasTapForText
-                                          : null,
-                                      onEyedropper: _handleCanvasEyedropper,
-                                      autofillCheckMode: _autofillCheckMode,
-                                      filterEyedropperActive:
-                                          _filterColorEyedropperTarget !=
-                                              null ||
-                                          _textColorEyedropperTarget != null ||
-                                          _brushOutlineEyedropperActive,
-                                      filterGizmo: _filterCanvasGizmo(project),
-                                      currentLayerPreview: _showColorAdjustPanel
-                                          ? _colorAdjustCanvasPreview
-                                          : _filterCanvasPreviewShown(),
-                                      currentLayerPreviewBlendMode:
-                                          _filterCanvasPreviewBlendMode(),
-                                      contentRevision: _canvasContentRevision,
-                                      lockToolInput:
-                                          selectionEditingHidden ||
-                                          colorAdjusting,
-                                      onFilterGizmoChanged: (gizmo) =>
-                                          _moveFilterGizmo(project, gizmo),
-                                      onFilterGizmoDragStart: () => context
-                                          .read<FilterService>()
-                                          .beginFilterEditGroup(),
-                                      onFilterGizmoDragEnd: () => context
-                                          .read<FilterService>()
-                                          .endFilterEditGroup(),
-                                      project: project,
-                                      background: _canvasBackground,
-                                      currentLayerId: _currentLayerId,
-                                      isEraser:
-                                          _currentTool == DrawingTool.eraser,
-                                      currentTool: _currentTool,
-                                      currentSubTool: _currentSubTool,
-                                      toolBrushSize: _toolBrushSize,
-                                      toolBrushOpacity: _toolBrushOpacity,
-                                      lassoFillEnclosedMode: context
-                                          .select<ToneService, bool>(
-                                            (tones) => tones.lassoEnclosed,
-                                          ),
-                                      onionSkinSettings: _onionSkinSettings,
-                                      currentFrame: _currentFrame,
-                                      sceneId: _currentSceneId,
-                                      activeRuler: _activeRuler,
-                                      onRulerChanged: _setActiveRulerLive,
-                                      shapeKind: _shapeKind,
-                                      onGestureToolChange: (tool) =>
-                                          setState(() => _currentTool = tool),
-                                      onGestureToggleTool:
-                                          _handleGestureToggleTool,
-                                      onNextQuickTool: _applyNextQuickTool,
-                                      onToggleOnionSkin: () => setState(
-                                        () => _onionSkinSettings =
-                                            _onionSkinSettings.copyWith(
-                                              enabled:
-                                                  !_onionSkinSettings.enabled,
-                                            ),
-                                      ),
-                                      meshDensity: _meshDensity,
-                                      meshSelectionOnly: _meshSelectionOnly,
-                                      meshRotateDeg: _meshRotateDeg,
-                                      meshScaleValue: _meshScaleValue,
-                                      meshCommitToken: _meshCommitToken,
-                                      meshCancelToken: _meshCancelToken,
-                                      onNextFrame: _goToNextFrame,
-                                      onPreviousFrame: _goToPreviousFrame,
-                                      invertSelectionToken:
-                                          _invertSelectionToken,
-                                      selectAllSelectionToken:
-                                          _selectAllSelectionToken,
-                                      clearSelectionToken: _clearSelectionToken,
-                                      selectionReferenceAllVisible: context
-                                          .watch<SettingsService>()
-                                          .selectionReferenceAllVisible,
-                                      lassoSnapToLines: context
-                                          .watch<SettingsService>()
-                                          .lassoSnapToLines,
-                                      lassoGapTolerancePx: context
-                                          .watch<SettingsService>()
-                                          .lassoGapTolerancePx,
-                                      onSelectionActiveChanged: (v) {
-                                        if (_hasActiveSelection == v) return;
-                                        setState(() {
-                                          _hasActiveSelection = v;
-                                          // 選択範囲を作り直した／解除したら、
-                                          // 「変更キャンセル」で戻せる範囲も
-                                          // そこで区切る。
-                                          _resetSelectionSliders();
-                                        });
-                                      },
-                                      onSelectionMaskChanged: (mask) {
-                                        if (identical(
-                                          _canvasSelectionMask,
-                                          mask,
-                                        )) {
-                                          return;
-                                        }
-                                        setState(
-                                          () => _canvasSelectionMask = mask,
-                                        );
-                                      },
-                                      filterLensMask: _filterLensMaskShown(),
-                                      onUndoGesture: _undo,
-                                      onRedoGesture: _redo,
-                                      onFilterLensMaskEdited:
-                                          _editFilterLensMask,
-                                      selectionMoveX: _selectionMoveX,
-                                      selectionMoveY: _selectionMoveY,
-                                      selectionScale: _selectionScale,
-                                      selectionRotateDeg: _selectionRotateDeg,
-                                      selectionTransformCommitToken:
-                                          _selectionTransformCommitToken,
-                                      selectionTransformCommitValues:
-                                          _selectionTransformCommitValues,
-                                      selectionTransformCancelToken:
-                                          _selectionTransformCancelToken,
-                                      onLockedLayerEdit: _showLockedLayerNotice,
-                                    ),
-                                  ),
+                                  // スマホでは、キャンバスを画面いっぱいの一番下の層に置く
+                                  // （一番外側のStack）。ここはPC/DeXの作業画面だけ。
+                                  if (isDesktop) ...[
+                                    Container(color: kCanvasOutsideColor),
+                                    canvasView,
+                                  ],
                                   if (_filterColorEyedropperTarget != null ||
                                       _textColorEyedropperTarget != null ||
                                       _brushOutlineEyedropperActive)
@@ -4559,17 +4552,98 @@ class _CanvasScreenState extends State<CanvasScreen> {
     return projects.scenesOf(widget.projectId).firstOrNull?.id ?? 'Scene0001';
   }
 
-  /// テキストツール選択中にキャンバスタップで呼び出す。
-  /// テキスト入力ダイアログを表示し、OK時にテキストレイヤーを自動生成する。
+  /// 最後に確定した文字の書式（新しい文字の入力欄の最初の値）。アプリを
+  /// 閉じるまで、作品をまたいで覚える。
+  static model.TextObject? _lastTextFormat;
+
+  /// テキストツールで押した位置にある文字のレイヤー（上のレイヤーから探す）。
+  /// 文字の描かれた範囲の少し外（指の太さ）まで当たりにする。
+  ({model.Layer layer, Rect bounds})? _textLayerAt(Offset canvasPos) {
+    final ps = context.read<ProjectService>();
+    final tiles = ps.tileManagerOf(widget.projectId);
+    final sceneId = _currentSceneId;
+    final layers = ps.layersOf(widget.projectId, sceneId, _currentFrame);
+    // 画面の約12px（指の太さの半分ほど）をキャンバスの画素へ。
+    final reach =
+        _canvasAreaKey.currentState?.canvasPixelsForScreen(12) ?? 12.0;
+    for (final layer in layers.reversed) {
+      if (layer.textObject == null || !layer.isVisible) continue;
+      final bounds = tiles.contentBounds(
+        ps.tileKeyFor(widget.projectId, sceneId, _currentFrame, layer.id),
+      );
+      if (bounds == null) continue;
+      if (bounds.inflate(reach).contains(canvasPos)) {
+        return (layer: layer, bounds: bounds);
+      }
+    }
+    return null;
+  }
+
+  Rect? _textBoundsAt(Offset canvasPos) => _textLayerAt(canvasPos)?.bounds;
+
+  /// テキストツール選択中にキャンバスを押して離したときに呼び出す。既にある
+  /// 文字の上なら、その文字の編集を開く。何も無い所なら新しい文字の入力を
+  /// 開き、OKでテキストレイヤーを作る。
   void onCanvasTapForText(Offset position) {
     if (_currentTool != DrawingTool.text) return;
+    final hit = _textLayerAt(position);
+    if (hit != null) {
+      if (hit.layer.isLocked) {
+        _showLockedLayerNotice();
+        return;
+      }
+      setState(() => _currentLayerId = hit.layer.id);
+      editTextLayer(hit.layer.id, hit.layer.textObject!);
+      return;
+    }
     _showTextInputDialog(position);
   }
 
-  /// レイヤーパネルからテキストレイヤーをタップした時に呼び出す編集入口
-  /// （既存テキストをタップすると編集開始。本実装ではレイヤー
-  /// パネル経由とする。キャンバス上でのテキストボックス当たり判定による
-  /// 直接タップ編集は対象外）。
+  /// テキストツールで文字をつかんで動かした：その文字を[delta]だけ動かして
+  /// 描き直す（1回の取り消しで戻る）。
+  Future<void> _moveTextAt(Offset from, Offset delta) async {
+    final hit = _textLayerAt(from);
+    if (hit == null) return;
+    if (hit.layer.isLocked) {
+      _showLockedLayerNotice();
+      return;
+    }
+    final ps = context.read<ProjectService>();
+    final fontService = context.read<FontService>();
+    final sceneId = _currentSceneId;
+    final frameIndex = _currentFrame;
+    final layer = hit.layer;
+    final text = layer.textObject!;
+    final moved = text.copyWith(position: text.position + delta);
+    final tiles = ps.tileManagerOf(widget.projectId);
+    final selection = _canvasSelectionMask;
+    final bytes = await rasterizeTextObject(
+      moved,
+      tiles.canvasWidth,
+      tiles.canvasHeight,
+      pixelMode: fontService.pixelModeForFamily(moved.fontFamily),
+    );
+    if (!mounted ||
+        bytes == null ||
+        !identical(tiles, ps.tileManagerOf(widget.projectId)) ||
+        frameIndex >= ps.frameCount(widget.projectId, sceneId) ||
+        !ps.layersOf(widget.projectId, sceneId, frameIndex).contains(layer)) {
+      return;
+    }
+    ps.replaceLayerPixels(
+      projectId: widget.projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      layerId: layer.id,
+      pixels: bytes,
+      selection: selection,
+      updatedLayer: layer.copyWith(textObject: moved),
+    );
+    setState(() => _currentLayerId = layer.id);
+  }
+
+  /// テキストレイヤーの編集を開く（キャンバスで文字を押したとき・レイヤー
+  /// パネルでテキストレイヤーを押したとき）。
   void editTextLayer(String layerId, model.TextObject text) {
     _showTextInputDialog(
       text.position,
@@ -4601,19 +4675,21 @@ class _CanvasScreenState extends State<CanvasScreen> {
     model.TextObject? existing,
   }) {
     final controller = TextEditingController(text: existing?.text ?? '');
-    double fontSize = existing?.fontSize ?? 24;
-    int color = existing?.color.toARGB32() ?? 0xFF000000;
-    bool isBold = existing?.isBold ?? false;
-    bool isItalic = existing?.isItalic ?? false;
-    String fontFamily = existing?.fontFamily ?? 'Roboto';
-    double lineHeight = existing?.lineHeight ?? 1.2;
-    double letterSpacing = existing?.letterSpacing ?? 0;
-    TextAlign textAlign = existing?.align ?? TextAlign.left;
-    bool outlineEnabled = existing?.outline?.enabled ?? false;
-    int outlineColor = existing?.outline?.color.toARGB32() ?? 0xFF000000;
-    double outlineWidth = existing?.outline?.width ?? 3;
+    // 新しい文字は、最後に確定した文字と同じ書式で始める。
+    final format = existing ?? _lastTextFormat;
+    double fontSize = format?.fontSize ?? 24;
+    int color = format?.color.toARGB32() ?? 0xFF000000;
+    bool isBold = format?.isBold ?? false;
+    bool isItalic = format?.isItalic ?? false;
+    String fontFamily = format?.fontFamily ?? 'Roboto';
+    double lineHeight = format?.lineHeight ?? 1.2;
+    double letterSpacing = format?.letterSpacing ?? 0;
+    TextAlign textAlign = format?.align ?? TextAlign.left;
+    bool outlineEnabled = format?.outline?.enabled ?? false;
+    int outlineColor = format?.outline?.color.toARGB32() ?? 0xFF000000;
+    double outlineWidth = format?.outline?.width ?? 3;
     model.TextWritingDirection direction =
-        existing?.direction ?? model.TextWritingDirection.horizontal;
+        format?.direction ?? model.TextWritingDirection.horizontal;
     final fontService = context.read<FontService>();
     final l10n = AppLocalizations.of(context)!;
 
@@ -5061,6 +5137,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       );
                     });
                   }
+                  _lastTextFormat = textObject;
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
                 child: Text(l10n.commonOk),

@@ -528,6 +528,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pressureTryDrawClear => 'Clear';
 
   @override
+  String get penSettingsStabilizationSection => 'Stabilization';
+
+  @override
+  String get penSettingsStabilizationStrength => 'Strength';
+
+  @override
+  String get penSettingsStabilizationHint =>
+      'Smooths out small shakes of the pen tip so lines come out smooth. The stronger it is, the less shake remains, but the line trails slightly behind the pen tip. At 0 there is no smoothing. The same strength applies to every brush.';
+
+  @override
   String get penSettingsTitle => 'Pen Input Settings';
 
   @override
@@ -1453,7 +1463,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTextToolDesc =>
-      'Places text on the canvas. You can choose the font, size, color, and vertical/horizontal writing direction. Vertical writing supports automatic rotation of half-width alphanumerics, tate-chu-yoko (keeping numbers horizontal within vertical text), and ruby (furigana). Placed text is baked in as pixels when exported as well. A screen where you can add, search, and remove fonts available in the text tool. Additional free fonts beyond the bundled defaults are downloaded on demand from here, in order to keep the initial install size down.';
+      'Places text on the canvas. You can choose the font, size, color, and vertical/horizontal writing direction. Vertical writing supports automatic rotation of half-width alphanumerics, tate-chu-yoko (keeping numbers horizontal within vertical text), and ruby (furigana). Placed text is baked in as pixels when exported as well. With the text tool, tap placed text to edit it, or drag it to move it. New text starts with the format of the last text you confirmed. A screen where you can add, search, and remove fonts available in the text tool. Additional free fonts beyond the bundled defaults are downloaded on demand from here, in order to keep the initial install size down.';
 
   @override
   String get helpQuickToolTitle => 'Quick Tool';
@@ -1765,7 +1775,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpPenSettingsDesc =>
-      'Along with the pressure curve for tablets and pen displays, this screen lets you assign actions — such as toggling the eraser or the eyedropper — to the side buttons of a supported stylus.';
+      'Along with the pressure curve for tablets and pen displays, this screen lets you assign actions — such as toggling the eraser or the eyedropper — to the side buttons of a supported stylus. You can also set the stabilization strength here; the same strength applies to every brush.';
 
   @override
   String get helpMaterialListTitle => 'Materials list';
@@ -1779,7 +1789,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpFrameOperationsDesc =>
-      'In the frame list, you can add, duplicate, and delete frames, and in multi-select mode move, duplicate, or delete several frames at once. Increasing the hold count keeps a single frame displayed across several cells (a “hold”), saving you drawing time on cuts with little motion.';
+      'In the frame list, you can add, duplicate, and delete frames, and in multi-select mode move, duplicate, or delete several frames at once. Increasing the hold count keeps a single frame displayed across several cells (a “hold”), saving you drawing time on cuts with little motion. In the canvas frame list, long-press a frame to duplicate it, delete it, or change its hold cells.';
 
   @override
   String get helpSceneOperationsTitle => 'Scene operations';
@@ -4755,7 +4765,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'For bulk operations (e.g. applying a filter to many frames)';
 
   @override
-  String get canvasEditMenuPressureCurve => 'Pressure Curve';
+  String get canvasEditMenuPressureCurve => 'Pressure Curve & Stabilization';
 
   @override
   String get canvasEditMenuPressureCurveSubtitle =>
@@ -6077,6 +6087,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n hold cells';
   }
+
+  @override
+  String get frameStripHoldMenuItem => 'Hold cells';
 
   @override
   String get frameStripTimelineModeLabel => 'Timeline';
@@ -11817,7 +11830,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get makingRecordProjectHint =>
-      'Off by default. When enabled, canvas snapshots are stored separately and use device storage.';
+      'Off by default. When on, only the parts that changed are recorded each time you draw, undo or redo. Uses device storage.';
 
   @override
   String get makingReadAloud => 'Text to speech';

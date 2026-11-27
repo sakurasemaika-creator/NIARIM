@@ -510,6 +510,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pressureTryDrawClear => '지우기';
 
   @override
+  String get penSettingsStabilizationSection => '손떨림 보정';
+
+  @override
+  String get penSettingsStabilizationStrength => '강도';
+
+  @override
+  String get penSettingsStabilizationHint =>
+      '펜 끝의 작은 떨림을 줄여 선을 매끄럽게 만듭니다. 강할수록 떨림은 줄지만 선이 펜 끝보다 조금 늦게 따라옵니다. 0이면 보정하지 않습니다. 모든 브러시에 같은 강도로 적용됩니다.';
+
+  @override
   String get penSettingsTitle => '펜 입력 설정';
 
   @override
@@ -1414,7 +1424,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpTextToolDesc =>
-      '캔버스 위에 문자를 배치하는 도구입니다. 글꼴·크기·색·세로쓰기/가로쓰기를 선택할 수 있습니다. 세로쓰기에서는 반각 영숫자의 자동 회전·다테추요코（숫자를 가로 방향 그대로 나열하는 표기）·루비（후리가나）에도 대응합니다. 배치한 텍스트는 내보내기 시에도 픽셀로 구워집니다. 텍스트 도구에서 사용할 폰트를 추가·검색·삭제할 수 있는 화면입니다. 기본 내장 폰트 외의 추가 무료 폰트는, 초기 설치 용량을 줄이기 위해 이곳에서 필요할 때 다운로드하는 방식으로 되어 있습니다.';
+      '캔버스 위에 문자를 배치하는 도구입니다. 글꼴·크기·색·세로쓰기/가로쓰기를 선택할 수 있습니다. 세로쓰기에서는 반각 영숫자의 자동 회전·다테추요코（숫자를 가로 방향 그대로 나열하는 표기）·루비（후리가나）에도 대응합니다. 배치한 텍스트는 내보내기 시에도 픽셀로 구워집니다. 텍스트 도구로 배치한 문자를 탭하면 편집하고, 끌면 이동할 수 있습니다. 새 문자는 마지막으로 확정한 문자와 같은 서식으로 시작합니다. 텍스트 도구에서 사용할 폰트를 추가·검색·삭제할 수 있는 화면입니다. 기본 내장 폰트 외의 추가 무료 폰트는, 초기 설치 용량을 줄이기 위해 이곳에서 필요할 때 다운로드하는 방식으로 되어 있습니다.';
 
   @override
   String get helpQuickToolTitle => '빠른 도구';
@@ -1724,7 +1734,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpPenSettingsDesc =>
-      '타블렛·액정 타블렛의 필압 곡선과 더불어, 펜 옆면 버튼（지원 스타일러스 사용 시）에 지우개 전환이나 스포이트 등의 동작을 할당할 수 있는 설정 화면입니다.';
+      '타블렛·액정 타블렛의 필압 곡선과 더불어, 펜 옆면 버튼（지원 스타일러스 사용 시）에 지우개 전환이나 스포이트 등의 동작을 할당할 수 있는 설정 화면입니다. 손떨림 보정의 강도도 여기서 바꿀 수 있으며, 모든 브러시에 같은 강도로 적용됩니다.';
 
   @override
   String get helpMaterialListTitle => '소재 목록';
@@ -1738,7 +1748,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpFrameOperationsDesc =>
-      '프레임 목록에서는 새로 추가·복제·삭제할 수 있고, 다중 선택 모드에서는 여러 프레임을 한꺼번에 이동·복제·삭제할 수 있습니다. 보유 셀 수를 늘리면 같은 프레임을 여러 칸에 걸쳐 계속 표시할 수 있어（이른바 「멈춤」）, 움직임이 적은 컷에서 매수를 절약할 수 있습니다.';
+      '프레임 목록에서는 새로 추가·복제·삭제할 수 있고, 다중 선택 모드에서는 여러 프레임을 한꺼번에 이동·복제·삭제할 수 있습니다. 보유 셀 수를 늘리면 같은 프레임을 여러 칸에 걸쳐 계속 표시할 수 있어（이른바 「멈춤」）, 움직임이 적은 컷에서 매수를 절약할 수 있습니다. 캔버스의 프레임 목록에서 프레임을 길게 누르면 그 프레임의 복제·삭제·유지 셀 수를 선택할 수 있습니다.';
 
   @override
   String get helpSceneOperationsTitle => '장면 조작';
@@ -4567,7 +4577,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasEditMenuFrameMultiSelectSubtitle => '대량 처리(필터 일괄 적용 등)에 사용';
 
   @override
-  String get canvasEditMenuPressureCurve => '필압 곡선';
+  String get canvasEditMenuPressureCurve => '필압 곡선·손떨림 보정';
 
   @override
   String get canvasEditMenuPressureCurveSubtitle => '펜 입력 설정 열기(설정 화면과 공용)';
@@ -5853,6 +5863,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n 유지 셀 수';
   }
+
+  @override
+  String get frameStripHoldMenuItem => '유지 셀 수';
 
   @override
   String get frameStripTimelineModeLabel => '타임라인';
@@ -11042,7 +11055,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get makingRecordProject => '이 작품의 제작 과정 기록';
 
   @override
-  String get makingRecordProjectHint => '기본값은 꺼짐입니다. 켜면 캔버스 스냅샷을 별도 영역에 저장합니다.';
+  String get makingRecordProjectHint =>
+      '기본값은 꺼짐입니다. 켜면 그리기·실행 취소·다시 실행할 때마다 바뀐 부분만 기록합니다. 기기 저장 공간을 사용합니다.';
 
   @override
   String get makingReadAloud => '음성 읽기';

@@ -543,6 +543,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pressureTryDrawClear => 'Borrar';
 
   @override
+  String get penSettingsStabilizationSection => 'Estabilización';
+
+  @override
+  String get penSettingsStabilizationStrength => 'Intensidad';
+
+  @override
+  String get penSettingsStabilizationHint =>
+      'Suaviza los pequeños temblores de la punta del lápiz para que las líneas salgan suaves. Cuanto más intensa, menos temblor queda, pero la línea sigue a la punta con un ligero retraso. Con 0 no se suaviza. La misma intensidad se aplica a todos los pinceles.';
+
+  @override
   String get penSettingsTitle => 'Ajustes de entrada de lápiz';
 
   @override
@@ -1488,7 +1498,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpTextToolDesc =>
-      'Coloca texto en el lienzo. Puedes elegir la fuente, el tamaño, el color y la dirección de escritura vertical/horizontal. La escritura vertical admite la rotación automática de caracteres alfanuméricos de medio ancho, el tate-chu-yoko (mantener los números en horizontal dentro de texto vertical) y el rubi (furigana). El texto colocado también se graba como píxeles al exportar. Una pantalla donde puedes añadir, buscar y eliminar fuentes disponibles en la herramienta de texto. Las fuentes gratuitas adicionales más allá de las incluidas por defecto se descargan bajo demanda desde aquí, para mantener reducido el tamaño de instalación inicial.';
+      'Coloca texto en el lienzo. Puedes elegir la fuente, el tamaño, el color y la dirección de escritura vertical/horizontal. La escritura vertical admite la rotación automática de caracteres alfanuméricos de medio ancho, el tate-chu-yoko (mantener los números en horizontal dentro de texto vertical) y el rubi (furigana). El texto colocado también se graba como píxeles al exportar. Con la herramienta de texto, toca un texto colocado para editarlo o arrástralo para moverlo. El texto nuevo empieza con el formato del último texto que confirmaste. Una pantalla donde puedes añadir, buscar y eliminar fuentes disponibles en la herramienta de texto. Las fuentes gratuitas adicionales más allá de las incluidas por defecto se descargan bajo demanda desde aquí, para mantener reducido el tamaño de instalación inicial.';
 
   @override
   String get helpQuickToolTitle => 'Herramienta rápida';
@@ -1803,7 +1813,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpPenSettingsDesc =>
-      'Junto con la curva de presión para tabletas y pantallas con lápiz, esta pantalla permite asignar acciones —como alternar el borrador o el cuentagotas— a los botones laterales de un lápiz compatible.';
+      'Junto con la curva de presión para tabletas y pantallas con lápiz, esta pantalla permite asignar acciones —como alternar el borrador o el cuentagotas— a los botones laterales de un lápiz compatible. Aquí también puedes ajustar la intensidad de la estabilización; la misma intensidad se aplica a todos los pinceles.';
 
   @override
   String get helpMaterialListTitle => 'Lista de materiales';
@@ -1817,7 +1827,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpFrameOperationsDesc =>
-      'En la lista de fotogramas puedes añadir, duplicar y eliminar fotogramas, y en modo de selección múltiple mover, duplicar o eliminar varios a la vez. Aumentar el número de retención mantiene un mismo fotograma mostrado durante varias celdas (una «retención»), ahorrando trabajo de dibujo en planos con poco movimiento.';
+      'En la lista de fotogramas puedes añadir, duplicar y eliminar fotogramas, y en modo de selección múltiple mover, duplicar o eliminar varios a la vez. Aumentar el número de retención mantiene un mismo fotograma mostrado durante varias celdas (una «retención»), ahorrando trabajo de dibujo en planos con poco movimiento. En la lista de fotogramas del lienzo, mantén pulsado un fotograma para duplicarlo, eliminarlo o cambiar sus fotogramas de espera.';
 
   @override
   String get helpSceneOperationsTitle => 'Operaciones con escenas';
@@ -4830,7 +4840,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Para procesos por lotes (p. ej., aplicar un filtro a varios fotogramas)';
 
   @override
-  String get canvasEditMenuPressureCurve => 'Curva de presión';
+  String get canvasEditMenuPressureCurve => 'Curva de presión y estabilización';
 
   @override
   String get canvasEditMenuPressureCurveSubtitle =>
@@ -6168,6 +6178,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String frameStripHoldDialogTitle(int n) {
     return 'F$n fotogramas de espera';
   }
+
+  @override
+  String get frameStripHoldMenuItem => 'Fotogramas de espera';
 
   @override
   String get frameStripTimelineModeLabel => 'Línea de tiempo';
@@ -11990,7 +12003,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get makingRecordProjectHint =>
-      'Desactivado por defecto. Al activarlo, se guardan capturas del lienzo en un área separada.';
+      'Desactivado por defecto. Al activarlo, se guardan solo las partes que cambian cada vez que dibujas, deshaces o rehaces. Usa el almacenamiento del dispositivo.';
 
   @override
   String get makingReadAloud => 'Texto a voz';

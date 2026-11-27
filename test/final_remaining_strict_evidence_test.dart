@@ -64,9 +64,9 @@ void main() {
         ),
       );
     final drawing = DrawingEngine(tileManager: manager)
-      ..currentBrush = _brush(
-        size: 5,
-      ).copyWith(stabilization: true, stabilizationStrength: 50)
+      ..currentBrush = _brush(size: 5)
+      // 手ぶれ補正はアプリの設定（どのブラシにも同じ強さ）。
+      ..stabilizationStrength = 50
       ..pointConstraint = ruler.snapToRuler
       ..curveBetween = ruler.arcBetween;
     ui.Offset onGuide(double angle) {

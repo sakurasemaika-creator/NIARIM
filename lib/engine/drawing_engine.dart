@@ -439,16 +439,19 @@ class DrawingEngine {
     );
   }
 
+  /// 手ぶれ補正の強さ（0〜100、0で補正しない）。アプリの設定の値で、どの
+  /// ブラシにも同じ強さで効く（ブラシの`stabilization`は使わない）。
+  int stabilizationStrength = 0;
+
   /// 手ブレ補正：入力座標を直近の平滑化済み座標へ指数移動平均で追従させる。
   /// strengthが高いほど追従を遅くし、線が滑らかになる（軽量・毎ピクセル計算なし）。
   StrokePoint _applyStabilization(StrokePoint raw) {
-    final brush = currentBrush;
-    if (brush == null || !brush.stabilization) {
+    if (currentBrush == null || stabilizationStrength <= 0) {
       _smoothed = raw;
       return raw;
     }
     final prev = _smoothed ?? raw;
-    final strength = brush.stabilizationStrength.clamp(0, 100) / 100.0;
+    final strength = stabilizationStrength.clamp(0, 100) / 100.0;
     final factor = (1.0 - strength * 0.85).clamp(0.05, 1.0);
     final smoothedPoint = StrokePoint(
       x: prev.x + (raw.x - prev.x) * factor,

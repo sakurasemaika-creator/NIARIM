@@ -235,6 +235,7 @@ class NiatraSerializer {
     'pen_button_1',
     'pen_button_2',
     'pen_pressure_enabled',
+    'stroke_stabilization',
     'pen_pressure_curve',
     'pen_pressure_custom_exponent',
     'palm_rejection_enabled',

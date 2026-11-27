@@ -163,11 +163,14 @@ void main() {
     expect(canvasBounds.left, closeTo(canvasBoundsBeforeSelection.left, 0.1));
     expect(canvasBounds.right, closeTo(canvasBoundsBeforeSelection.right, 0.1));
     expect(canvasBounds.bottom, closeTo(canvasScreenHeight, 1));
+    // スマホのキャンバスは画面いっぱいの層で、ツールバー・フレーム一覧は
+    // その上に浮かぶ。畳んでもキャンバスは動かない（2026-11-27）。
     expect(
-      canvasBounds.height,
-      greaterThan(canvasBoundsBeforeSelection.height),
-      reason: 'selection focus mode reclaims the hidden toolbar and frame-strip space',
+      canvasBounds,
+      rectMoreOrLessEquals(canvasBoundsBeforeSelection, epsilon: 0.1),
+      reason: 'the canvas fills the screen and stays put as the bars fold',
     );
+    expect(canvasBoundsBeforeSelection.bottom, closeTo(canvasScreenHeight, 1));
     final selectAll = find.text(l10n.canvasSelectAllButton);
     final selectAllBounds = tester.getRect(selectAll);
 

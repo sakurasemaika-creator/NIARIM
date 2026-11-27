@@ -29,20 +29,33 @@ void main() {
     final source = File(
       'lib/screens/canvas/canvas_screen.dart',
     ).readAsStringSync();
-    const backdrop = 'Container(color: kCanvasOutsideColor),';
-    const canvasArea = 'CanvasArea(';
-    final backdropIndex = source.indexOf(backdrop);
-    final canvasIndex = source.indexOf(
-      canvasArea,
-      backdropIndex + backdrop.length,
-    );
-    expect(backdropIndex, greaterThanOrEqualTo(0));
-    expect(canvasIndex, greaterThan(backdropIndex));
-    final between = source.substring(backdropIndex, canvasIndex);
+    // キャンバス本体は`canvasView`として作り、スマホでは画面いっぱいの層、
+    // PC/DeXではドックの間に、どちらも固定背景の兄弟として上へ置く。
+    for (final backdrop in [
+      'ColoredBox(color: kCanvasOutsideColor)',
+      'Container(color: kCanvasOutsideColor),',
+    ]) {
+      final backdropIndex = source.indexOf(backdrop);
+      final canvasIndex = source.indexOf(
+        'canvasView',
+        backdropIndex + backdrop.length,
+      );
+      expect(backdropIndex, greaterThanOrEqualTo(0), reason: backdrop);
+      expect(canvasIndex, greaterThan(backdropIndex));
+      final between = source.substring(backdropIndex, canvasIndex);
+      expect(
+        between.contains('Transform('),
+        isFalse,
+        reason: '背景をキャンバスの回転・縮小Transform内へ入れてはいけない',
+      );
+    }
+    final view = source.indexOf('final canvasView = Listener(');
+    expect(view, greaterThanOrEqualTo(0));
+    final area = source.indexOf('CanvasArea(', view);
     expect(
-      between.contains('Transform('),
+      source.substring(view, area).contains('Transform('),
       isFalse,
-      reason: '背景をキャンバスの回転・縮小Transform内へ入れてはいけない',
+      reason: 'CanvasAreaの外にTransformを挟まない',
     );
   });
 }

@@ -161,7 +161,10 @@ void main() {
       final undo = context.read<UndoManager>();
       final l10n = AppLocalizations.of(context)!;
       final frame = find.byKey(const ValueKey('frameStripCell1'));
+      // 長押しはメニュー（複製・削除・保持セル数）。保持セル数を選ぶ。
       await tester.longPress(frame);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('frameStripMenuHold')));
       await tester.pumpAndSettle();
       final dialog = find.byType(AlertDialog);
       expect(find.text(l10n.frameStripHoldDialogTitle(2)), findsOneWidget);

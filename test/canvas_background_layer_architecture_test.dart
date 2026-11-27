@@ -12,10 +12,24 @@ void main() {
     expect(screen, contains('color: kCanvasOutsideColor'));
     expect(screen, contains('CanvasArea('));
 
-    final colorIndex = screen.indexOf('color: kCanvasOutsideColor');
-    final canvasIndex = screen.indexOf('CanvasArea(', colorIndex);
-    expect(colorIndex, greaterThanOrEqualTo(0));
-    expect(canvasIndex, greaterThan(colorIndex));
+    // キャンバス本体（CanvasArea）は`canvasView`として1度だけ作り、スマホでは
+    // 画面いっぱいの層、PC/DeXではドックの間に、どちらも固定背景の上へ置く
+    // （2026-11-27、スマホのキャンバスを画面いっぱいにした）。
+    expect(screen, contains('final canvasView = Listener('));
+    final viewIndex = screen.indexOf('final canvasView = Listener(');
+    expect(screen.indexOf('CanvasArea(', viewIndex), greaterThan(viewIndex));
+    for (final background in [
+      'ColoredBox(color: kCanvasOutsideColor)',
+      'Container(color: kCanvasOutsideColor)',
+    ]) {
+      final colorIndex = screen.indexOf(background);
+      expect(colorIndex, greaterThanOrEqualTo(0), reason: background);
+      expect(
+        screen.indexOf('canvasView', colorIndex),
+        greaterThan(colorIndex),
+        reason: 'the canvas is placed on top of $background',
+      );
+    }
   });
 
   test('CanvasAreaは固定背景を二重描画せず、描画矩形だけをTransform内で描く', () {
