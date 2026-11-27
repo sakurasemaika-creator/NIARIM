@@ -2402,6 +2402,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
     final fps = _projectFps(ps);
+    final scenes = ps.scenesOf(widget.projectId);
+    final projectFrames = scenes.fold<int>(
+      0,
+      (sum, s) => sum + ps.frameCount(widget.projectId, s.id),
+    );
+    final scene = scenes.where((s) => s.id == _selectedSceneId).firstOrNull;
     final labelStyle = TextStyle(fontSize: 12, color: colors.mutedOnPane);
     final valueStyle = TextStyle(fontSize: 13, color: colors.onPane);
     Widget row(String label, String value) => Padding(
@@ -2444,11 +2450,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
             '${project.exportWidth}×${project.exportHeight}',
           ),
         row(l10n.exportFpsLabel, '$fps'),
-        row(l10n.projectDetailInfoTotalFrames, '$_totalFrames'),
+        // 作品名の下は作品全体（全シーン）の数。選んでいるシーンの数は、
+        // その下にシーンの名前と並べる（「長さ変更」が変えるのはこちら）。
+        row(l10n.projectDetailInfoTotalFrames, '$projectFrames'),
         row(
           l10n.timelineDurationSecondsLabel,
-          '${(_totalFrames / fps).toStringAsFixed(1)}s',
+          '${(projectFrames / fps).toStringAsFixed(1)}s',
         ),
+        if (scene != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            scene.displayName,
+            key: const ValueKey('pcInspectorSceneName'),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: localizedHeadingStyle(
+              context,
+              TextStyle(fontSize: 13, color: colors.onPane),
+            ),
+          ),
+          const SizedBox(height: 4),
+          row(l10n.timelineDurationFramesLabel, '$_totalFrames'),
+          row(
+            l10n.timelineDurationSecondsLabel,
+            '${(_totalFrames / fps).toStringAsFixed(1)}s',
+          ),
+        ],
         const SizedBox(height: 10),
         Wrap(
           spacing: 6,

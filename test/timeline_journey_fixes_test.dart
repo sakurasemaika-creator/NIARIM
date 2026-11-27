@@ -11,6 +11,8 @@
 // * 分割のボタンの吹き出しと分割モードの文が、日本語と英語の手書きだった。
 // * 選んでいる素材の枠とつまみが、全画面表示にも出て、プレビューの外（上部
 //   バー・シークバー）にもはみ出していた。
+// * PCの「詳細」は題が作品名なのに、総フレーム数・秒数は選んでいるシーンの数
+//   だった。
 import 'dart:io';
 
 import 'package:flutter/material.dart' hide MaterialType;
@@ -48,12 +50,13 @@ void main() {
     double previewFraction = 0.42,
     String language = 'ja',
     List<String> unseenTips = const [],
+    bool pc = false,
   }) async {
     SharedPreferences.setMockInitialValues({
       'timeline_preview_height_fraction': previewFraction,
       'first_launch': false,
       'language': language,
-      'force_pc_mode': 0,
+      'force_pc_mode': pc ? 1 : 0,
       firstUseTooltipsSeenKey: [
         for (final key in kAllFirstUseTooltipKeys)
           if (!unseenTips.contains(key)) key,
@@ -68,7 +71,9 @@ void main() {
       messenger.setMockMethodCallHandler(channel, null);
       if (directory.existsSync()) directory.deleteSync(recursive: true);
     });
-    tester.view.physicalSize = const Size(390, 844);
+    tester.view.physicalSize = pc
+        ? const Size(1280, 800)
+        : const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     appRouter.go('/');
@@ -450,6 +455,53 @@ void main() {
     await tester.tap(find.byIcon(Icons.fullscreen_exit));
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(gizmo, findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the PC details give the work\'s totals and the scene\'s own', (
+    tester,
+  ) async {
+    final (:ps, :projectId, :sceneId, videoId: _, :l10n) = await openTimeline(
+      tester,
+      pc: true,
+    );
+    // A second scene: the work has more frames than the chosen scene.
+    await tester.runAsync(() async {
+      ps.addScene(projectId);
+    });
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    final details = find.byKey(const ValueKey('pcInspectorProject'));
+    expect(details, findsOneWidget);
+    String valueOf(String label, {int at = 0}) {
+      final row = find
+          .ancestor(
+            of: find.descendant(of: details, matching: find.text(label)).at(at),
+            matching: find.byType(Row),
+          )
+          .first;
+      final texts = tester
+          .widgetList<Text>(
+            find.descendant(of: row, matching: find.byType(Text)),
+          )
+          .map((t) => t.data)
+          .toList();
+      return texts.last!;
+    }
+
+    final sceneFrames = ps.frameCount(projectId, sceneId);
+    final allFrames = ps
+        .scenesOf(projectId)
+        .fold<int>(0, (n, s) => n + ps.frameCount(projectId, s.id));
+    expect(allFrames, greaterThan(sceneFrames));
+    expect(valueOf(l10n.projectDetailInfoTotalFrames), '$allFrames');
+    expect(
+      find.descendant(
+        of: details,
+        matching: find.byKey(const ValueKey('pcInspectorSceneName')),
+      ),
+      findsOneWidget,
+    );
+    expect(valueOf(l10n.timelineDurationFramesLabel), '$sceneFrames');
     expect(tester.takeException(), isNull);
   });
 }
