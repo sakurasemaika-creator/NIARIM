@@ -259,11 +259,23 @@ void main() {
       reason: 'minimizing the menu uncovers the paper above it',
     );
     expect(tester.getRect(canvas), canvasBounds);
+    await tester.runAsync(
+      () => _capture(rootKey, '${out.path}/21_selection_menu_minimized.png'),
+    );
 
     await tester.tap(focusMenuToggle);
     await tester.pumpAndSettle();
     expect(find.byType(SelectionTransformSliders), findsOneWidget);
     expect(tester.getRect(selectAll), selectAllBounds);
+
+    final focusMenuDragHandle = find.byKey(
+      const ValueKey('focus-mode-menu-drag-handle'),
+    );
+    await tester.drag(focusMenuDragHandle, const Offset(18, -64));
+    await tester.pumpAndSettle();
+    await tester.runAsync(
+      () => _capture(rootKey, '${out.path}/22_selection_menu_moved.png'),
+    );
 
     // 全解除でスライダーが引っ込む。
     await tester.tap(find.text(l10n.canvasDeselectAllButton));

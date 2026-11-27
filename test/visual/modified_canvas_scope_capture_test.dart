@@ -285,6 +285,18 @@ void main() {
       expect(find.byType(ToolbarWidget), findsNothing);
       expect(find.byKey(const ValueKey('filter-bottom-bar')), findsOneWidget);
       await shot('10_mobile_filter_immersive_live_preview');
+      final focusMenuToggle = find.byKey(
+        const ValueKey('focus-mode-menu-toggle'),
+      );
+      await tester.tap(focusMenuToggle);
+      await shot('11_mobile_filter_menu_minimized');
+      await tester.tap(focusMenuToggle);
+      await settle();
+      await tester.drag(
+        find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
+        const Offset(0, -84),
+      );
+      await shot('12_mobile_filter_menu_moved');
     },
   );
 }
