@@ -3924,8 +3924,11 @@
   "communityMyWorksDeleteConfirmTitle": "この作品を削除しますか？",
   "communityMyWorksDeleteConfirmBody": "NIARIM内の作品を完全に削除します。YouTube上の動画は削除されません。この操作は取り消せません。",
   "communityMyWorksOpenYoutubeStudio": "YouTube Studioで動画を管理する",
-  "communityMyWorksYoutubeStudioHelp": "YouTube側の公開状態や動画設定はYouTube Studioで管理します。NIARIM内の公開設定とは独立しています。",
+  "communityMyWorksYoutubeStudioHelp": "YouTube側の公開状態や動画設定の変更、動画の削除はYouTube Studioで行います。NIARIM内の公開設定とは独立しています。",
   "communityMyWorksYoutubeOpenFailed": "YouTube Studioを開けませんでした",
+  "communityMyWorksDeletedTitle": "作品広場から削除しました",
+  "communityMyWorksDeletedYoutubeBody": "YouTube上の動画は残っています。動画も削除するときは、YouTube Studioで削除してください。",
+  "communityMyWorksDeletedOpenStudio": "YouTube Studioを開く",
   "communityMyWorksOperationFailed": "操作に失敗しました。{reason}",
   "@communityMyWorksOperationFailed": {
     "placeholders": {

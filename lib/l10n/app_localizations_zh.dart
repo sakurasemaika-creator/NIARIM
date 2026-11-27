@@ -7652,10 +7652,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityMyWorksYoutubeStudioHelp =>
-      'YouTube 的可见性和视频设置请在 YouTube Studio 中管理，与 NIARIM 设置相互独立。';
+      'YouTube 的可见性和视频设置的更改以及视频的删除，请在 YouTube Studio 中进行，与 NIARIM 设置相互独立。';
 
   @override
   String get communityMyWorksYoutubeOpenFailed => '无法打开 YouTube Studio';
+
+  @override
+  String get communityMyWorksDeletedTitle => '已从作品广场删除';
+
+  @override
+  String get communityMyWorksDeletedYoutubeBody =>
+      'YouTube 上的视频仍然保留。如需一并删除视频，请在 YouTube Studio 中删除。';
+
+  @override
+  String get communityMyWorksDeletedOpenStudio => '打开 YouTube Studio';
 
   @override
   String communityMyWorksOperationFailed(String reason) {
@@ -18754,10 +18764,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityMyWorksYoutubeStudioHelp =>
-      'YouTube 的公開狀態與影片設定請在 YouTube Studio 中管理，與 NIARIM 設定相互獨立。';
+      'YouTube 的公開狀態與影片設定的變更，以及影片的刪除，請在 YouTube Studio 中進行，與 NIARIM 設定相互獨立。';
 
   @override
   String get communityMyWorksYoutubeOpenFailed => '無法開啟 YouTube Studio';
+
+  @override
+  String get communityMyWorksDeletedTitle => '已從作品廣場刪除';
+
+  @override
+  String get communityMyWorksDeletedYoutubeBody =>
+      'YouTube 上的影片仍會保留。若要一併刪除影片，請在 YouTube Studio 中刪除。';
+
+  @override
+  String get communityMyWorksDeletedOpenStudio => '開啟 YouTube Studio';
 
   @override
   String communityMyWorksOperationFailed(String reason) {

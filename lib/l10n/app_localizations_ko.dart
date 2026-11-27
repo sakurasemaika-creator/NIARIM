@@ -7771,10 +7771,20 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityMyWorksYoutubeStudioHelp =>
-      'YouTube 공개 상태와 설정은 YouTube Studio에서 관리합니다. NIARIM 공개 설정과 별개입니다.';
+      'YouTube 공개 상태와 설정 변경, 동영상 삭제는 YouTube Studio에서 합니다. NIARIM 공개 설정과 별개입니다.';
 
   @override
   String get communityMyWorksYoutubeOpenFailed => 'YouTube Studio를 열 수 없습니다';
+
+  @override
+  String get communityMyWorksDeletedTitle => '작품 광장에서 삭제했습니다';
+
+  @override
+  String get communityMyWorksDeletedYoutubeBody =>
+      'YouTube 동영상은 그대로 남아 있습니다. 동영상도 삭제하려면 YouTube Studio에서 삭제하세요.';
+
+  @override
+  String get communityMyWorksDeletedOpenStudio => 'YouTube Studio 열기';
 
   @override
   String communityMyWorksOperationFailed(String reason) {

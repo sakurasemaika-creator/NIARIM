@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/community_work.dart';
@@ -255,8 +256,60 @@ void main() {
       find.byKey(const Key('communityWorkSettingsConfirmDelete')),
     );
     await tester.pumpAndSettle();
-    expect(find.byType(CommunityWorkSettingsScreen), findsNothing);
+    // The post is gone; the YouTube video stays, so the owner is pointed to
+    // YouTube Studio before the settings screen closes.
     expect(service.byId(work.id), isNull);
+    expect(find.text('作品広場から削除しました'), findsOneWidget);
+    expect(
+      find.byKey(const Key('communityWorkDeletedOpenStudio')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('communityWorkDeletedClose')));
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityWorkSettingsScreen), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('after deleting a post, YouTube Studio opens on that video', (
+    tester,
+  ) async {
+    final launched = <String>[];
+    const channel = MethodChannel('plugins.flutter.io/url_launcher');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method == 'launch') {
+        launched.add((call.arguments as Map)['url'] as String);
+        return true;
+      }
+      return null;
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+    final (service, _) = await setup(tester);
+    final work = service
+        .worksByAuthor(kDummySelfAuthorId, includeHidden: true)
+        .first;
+    await tester.tap(
+      find.byKey(ValueKey('communityMyWorksSettings-${work.id}')),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('communityWorkSettingsDelete')),
+      160,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.byKey(const Key('communityWorkSettingsDelete')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const Key('communityWorkSettingsConfirmDelete')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('communityWorkDeletedOpenStudio')));
+    await tester.pumpAndSettle();
+    expect(launched, [
+      'https://studio.youtube.com/video/${Uri.encodeComponent(work.id)}/edit',
+    ]);
+    expect(find.byType(CommunityWorkSettingsScreen), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

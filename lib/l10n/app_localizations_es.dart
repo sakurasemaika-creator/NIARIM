@@ -8195,11 +8195,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityMyWorksYoutubeStudioHelp =>
-      'Gestiona la visibilidad y los ajustes de YouTube desde YouTube Studio, de forma independiente de NIARIM.';
+      'Cambia la visibilidad y los ajustes de YouTube, o elimina el vídeo, desde YouTube Studio, de forma independiente de NIARIM.';
 
   @override
   String get communityMyWorksYoutubeOpenFailed =>
       'No se pudo abrir YouTube Studio';
+
+  @override
+  String get communityMyWorksDeletedTitle => 'Se eliminó de la Plaza de Obras';
+
+  @override
+  String get communityMyWorksDeletedYoutubeBody =>
+      'El vídeo sigue en YouTube. Si también quieres eliminarlo, hazlo en YouTube Studio.';
+
+  @override
+  String get communityMyWorksDeletedOpenStudio => 'Abrir YouTube Studio';
 
   @override
   String communityMyWorksOperationFailed(String reason) {

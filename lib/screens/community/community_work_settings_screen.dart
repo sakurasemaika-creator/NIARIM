@@ -380,9 +380,10 @@ class _CommunityWorkSettingsScreenState
     );
     if (confirmed != true || !mounted) return;
     setState(() => _busy = true);
+    var deleted = false;
     try {
       await context.read<CommunityService>().deleteOwnWork(work.id);
-      if (mounted) Navigator.pop(context, true);
+      deleted = true;
     } on CommunityAccountChangedException {
       if (mounted) Navigator.pop(context);
     } catch (error) {
@@ -390,6 +391,33 @@ class _CommunityWorkSettingsScreenState
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+    if (!deleted || !mounted) return;
+    // Deleting a post never touches the YouTube video (the app only holds the
+    // upload scope). Point the owner to YouTube Studio, where they can delete
+    // the video themselves.
+    final openStudio = await _showOwnerDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.communityMyWorksDeletedTitle),
+        content: messageText(l10n.communityMyWorksDeletedYoutubeBody),
+        actions: [
+          TextButton(
+            key: const Key('communityWorkDeletedClose'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.commonClose),
+          ),
+          FilledButton.icon(
+            key: const Key('communityWorkDeletedOpenStudio'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            icon: const Icon(Icons.open_in_new),
+            label: Text(l10n.communityMyWorksDeletedOpenStudio),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (openStudio == true) await _openYoutubeStudio(work.id);
+    if (mounted) Navigator.pop(context, true);
   }
 
   Future<void> _openYoutubeStudio(String videoId) async {

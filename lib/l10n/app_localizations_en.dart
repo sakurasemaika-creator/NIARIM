@@ -8070,11 +8070,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityMyWorksYoutubeStudioHelp =>
-      'Manage YouTube visibility and video settings in YouTube Studio. These are separate from NIARIM visibility.';
+      'Change YouTube visibility and video settings, or delete the video, in YouTube Studio. These are separate from NIARIM visibility.';
 
   @override
   String get communityMyWorksYoutubeOpenFailed =>
       'Could not open YouTube Studio';
+
+  @override
+  String get communityMyWorksDeletedTitle => 'Removed from the Work Plaza';
+
+  @override
+  String get communityMyWorksDeletedYoutubeBody =>
+      'The video is still on YouTube. To delete it too, delete it in YouTube Studio.';
+
+  @override
+  String get communityMyWorksDeletedOpenStudio => 'Open YouTube Studio';
 
   @override
   String communityMyWorksOperationFailed(String reason) {

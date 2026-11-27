@@ -14028,7 +14028,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityMyWorksYoutubeStudioHelp.
   ///
   /// In ja, this message translates to:
-  /// **'YouTube側の公開状態や動画設定はYouTube Studioで管理します。NIARIM内の公開設定とは独立しています。'**
+  /// **'YouTube側の公開状態や動画設定の変更、動画の削除はYouTube Studioで行います。NIARIM内の公開設定とは独立しています。'**
   String get communityMyWorksYoutubeStudioHelp;
 
   /// No description provided for @communityMyWorksYoutubeOpenFailed.
@@ -14036,6 +14036,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'YouTube Studioを開けませんでした'**
   String get communityMyWorksYoutubeOpenFailed;
+
+  /// No description provided for @communityMyWorksDeletedTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場から削除しました'**
+  String get communityMyWorksDeletedTitle;
+
+  /// No description provided for @communityMyWorksDeletedYoutubeBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube上の動画は残っています。動画も削除するときは、YouTube Studioで削除してください。'**
+  String get communityMyWorksDeletedYoutubeBody;
+
+  /// No description provided for @communityMyWorksDeletedOpenStudio.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube Studioを開く'**
+  String get communityMyWorksDeletedOpenStudio;
 
   /// No description provided for @communityMyWorksOperationFailed.
   ///
