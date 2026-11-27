@@ -1990,14 +1990,17 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                               _currentTool ==
                                                   DrawingTool.meshTransform
                                               ? Column(
-                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     _meshCancelBar(context),
                                                     if (!isDesktop &&
                                                         _meshDensity > 1)
-                                                      _meshDensitySlider(context),
+                                                      _meshDensitySlider(
+                                                        context,
+                                                      ),
                                                   ],
                                                 )
                                               : _buildSelectionControls(
