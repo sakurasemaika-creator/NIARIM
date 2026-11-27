@@ -1,6 +1,7 @@
 // メイキングの操作（所有者の指定、2026-11-27）：
 // - 作品詳細では、記録の入切を編集の操作より下の「メイキング」の欄に置き、
-//   その下に「メイキング再生」（押すと再生の画面を開いてすぐ再生する）。
+//   その下に「メイキング再生」（押すと再生の画面を開いてすぐ再生する。記録を
+//   切っている間は薄く描き、押せない）。
 // - キャンバスの設定/編集メニューからも記録を入切できる（作品詳細と同じ設定）。
 // - 1秒以内に続けて描いた最後の線も記録に残る（以前は1秒に1枚に抑えたまま
 //   後から撮り直さず、素早く続けた最後の線がメイキングに入らなかった）。
@@ -19,6 +20,7 @@ import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/project/making_screen.dart';
 import 'package:niarim/services/making_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/grouped_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -116,10 +118,26 @@ void main() {
     );
     expect(find.text(l10n.makingPlay), findsOneWidget);
 
+    // While the making is not recorded, 「メイキング再生」 is greyed out and
+    // does nothing.
     expect(recording(projects, id), isFalse);
+    expect(tester.widget<SheetRow>(play).enabled, isFalse);
+    expect(
+      tester
+          .widget<Opacity>(
+            find.descendant(of: play, matching: find.byType(Opacity)).first,
+          )
+          .opacity,
+      lessThan(1),
+    );
+    await tester.tap(play, warnIfMissed: false);
+    await settleIo(tester, 2);
+    expect(find.byType(MakingScreen), findsNothing);
+
     await tester.tap(makingSwitch);
     await settleIo(tester, 2);
     expect(recording(projects, id), isTrue);
+    expect(tester.widget<SheetRow>(play).enabled, isTrue);
 
     await tester.tap(play);
     await settleIo(tester, 4);

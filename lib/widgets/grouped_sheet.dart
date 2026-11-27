@@ -135,6 +135,7 @@ class SheetRow extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.showChevron,
+    this.enabled = true,
   });
 
   final IconData? icon;
@@ -149,6 +150,10 @@ class SheetRow extends StatelessWidget {
   /// 末尾の矢印。省略すると「押せて、[trailing]が無い」ときだけ出す。
   final bool? showChevron;
 
+  /// 偽なら押せない行として薄く描く（Materialの使えない部品と同じ38%）。
+  /// 矢印は残し、押せるようになれば先へ進む行だと分かるようにする。
+  final bool enabled;
+
   static const double _iconBox = 24;
   static const double _iconGap = 16;
 
@@ -162,6 +167,7 @@ class SheetRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final chevron = showChevron ?? (onTap != null && trailing == null);
+    final tap = enabled ? onTap : null;
     return LayoutBuilder(
       builder: (context, constraints) {
         final textScale = MediaQuery.textScalerOf(context).scale(15) / 15;
@@ -169,8 +175,8 @@ class SheetRow extends StatelessWidget {
         // 折れるより、印が無い方が読める）。
         final showLeading =
             _hasLeading && constraints.maxWidth / textScale >= 232;
-        return InkWell(
-          onTap: onTap,
+        final row = InkWell(
+          onTap: tap,
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: subtitle == null ? 56 : 68),
             child: Padding(
@@ -241,6 +247,11 @@ class SheetRow extends StatelessWidget {
               ),
             ),
           ),
+        );
+        if (enabled) return row;
+        return Semantics(
+          enabled: false,
+          child: Opacity(opacity: 0.38, child: row),
         );
       },
     );

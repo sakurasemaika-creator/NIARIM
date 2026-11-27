@@ -556,10 +556,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     onChanged: (value) =>
                         projectService.setMakingEnabled(project.id, value),
                   ),
+                  // 記録を切っている間は押せない（所有者の指定、2026-11-27）。
                   SheetRow(
                     key: const Key('projectDetailPlayMaking'),
                     icon: Icons.play_circle_outline,
                     title: MakingStrings.playMaking(context),
+                    enabled: project.makingEnabled,
                     onTap: () =>
                         context.push('/making/${widget.projectId}?play=1'),
                   ),
