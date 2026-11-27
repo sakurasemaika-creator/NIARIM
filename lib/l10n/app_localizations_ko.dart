@@ -4839,6 +4839,24 @@ class AppLocalizationsKo extends AppLocalizations {
   String get layerPanelImportImageButton => '이미지 불러오기';
 
   @override
+  String get layerImportFit => '이미지 전체 넣기';
+
+  @override
+  String get layerImportFitDesc => '이미지 전체가 캔버스에 들어갑니다.';
+
+  @override
+  String get layerImportFill => '캔버스 가득 채우기';
+
+  @override
+  String get layerImportFillDesc => '캔버스 밖으로 나간 부분은 잘립니다.';
+
+  @override
+  String get layerImportReplace => '현재 레이어 바꾸기';
+
+  @override
+  String get layerImportReplaceDesc => '새 레이어를 만들지 않고 현재 레이어의 그림을 이미지로 바꿉니다.';
+
+  @override
   String layerPanelDefaultLayerName(int n) {
     return '레이어$n';
   }
@@ -5906,6 +5924,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get layerKeyframeRotationLabel => '회전';
+
+  @override
+  String layerTransformWholeHint(String menu) {
+    return '레이어 전체에 같은 크기와 각도가 쓰입니다. 움직이려면 “$menu”에서 설정하세요.';
+  }
 
   @override
   String get layerKeyframeEasingLabel => '다음 키프레임으로 이어지는 방식';

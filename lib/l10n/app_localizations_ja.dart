@@ -4813,6 +4813,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get layerPanelImportImageButton => '画像読み込み';
 
   @override
+  String get layerImportFit => '全体を入れる';
+
+  @override
+  String get layerImportFitDesc => '画像の全部がキャンバスに収まります。';
+
+  @override
+  String get layerImportFill => 'キャンバスいっぱいに広げる';
+
+  @override
+  String get layerImportFillDesc => 'キャンバスからはみ出す所は切れます。';
+
+  @override
+  String get layerImportReplace => '今のレイヤーを差し替える';
+
+  @override
+  String get layerImportReplaceDesc => '新しいレイヤーを作らず、今のレイヤーの絵を画像に替えます。';
+
+  @override
   String layerPanelDefaultLayerName(int n) {
     return 'レイヤー$n';
   }
@@ -5872,6 +5890,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get layerKeyframeRotationLabel => '回転';
+
+  @override
+  String layerTransformWholeHint(String menu) {
+    return 'レイヤー全体に同じ大きさと角度が使われます。動かすときは「$menu」で設定してください。';
+  }
 
   @override
   String get layerKeyframeEasingLabel => '次のキーフレームへのつなぎ方';

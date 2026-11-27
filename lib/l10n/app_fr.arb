@@ -1897,6 +1897,12 @@
   "layerPanelNewLayerButton": "Calque normal",
   "layerPanelNewFolderButton": "Nouveau dossier",
   "layerPanelImportImageButton": "Importer une image",
+  "layerImportFit": "Faire tenir toute l’image",
+  "layerImportFitDesc": "Toute l’image tient sur le canevas.",
+  "layerImportFill": "Remplir le canevas",
+  "layerImportFillDesc": "Les parties hors du canevas sont coupées.",
+  "layerImportReplace": "Remplacer le calque actuel",
+  "layerImportReplaceDesc": "Place l’image sur le calque actuel au lieu d’un nouveau calque.",
   "layerPanelDefaultLayerName": "Calque {n}",
   "@layerPanelDefaultLayerName": {
     "placeholders": {
@@ -2442,6 +2448,7 @@
   "layerKeyframeFrameLabel": "Image",
   "layerKeyframeScaleLabel": "Échelle",
   "layerKeyframeRotationLabel": "Rotation",
+  "layerTransformWholeHint": "La même taille et le même angle s’appliquent à tout le calque. Pour l’animer, utilisez « {menu} ».",
   "layerKeyframeEasingLabel": "Transition vers l’image clé suivante",
   "layerKeyframeEasingLinear": "Uniforme",
   "layerKeyframeEasingEaseIn": "Entrée douce (démarre lentement)",

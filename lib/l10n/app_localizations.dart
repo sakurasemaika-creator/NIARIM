@@ -8739,6 +8739,42 @@ abstract class AppLocalizations {
   /// **'画像読み込み'**
   String get layerPanelImportImageButton;
 
+  /// 画像の読み込み：画像の全部をキャンバスに収める読み込み方
+  ///
+  /// In ja, this message translates to:
+  /// **'全体を入れる'**
+  String get layerImportFit;
+
+  /// 画像の読み込み：全体を入れるの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'画像の全部がキャンバスに収まります。'**
+  String get layerImportFitDesc;
+
+  /// 画像の読み込み：キャンバスいっぱいに広げる読み込み方
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスいっぱいに広げる'**
+  String get layerImportFill;
+
+  /// 画像の読み込み：キャンバスいっぱいに広げるの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスからはみ出す所は切れます。'**
+  String get layerImportFillDesc;
+
+  /// 画像の読み込み：新しいレイヤーを作らず今のレイヤーを差し替える
+  ///
+  /// In ja, this message translates to:
+  /// **'今のレイヤーを差し替える'**
+  String get layerImportReplace;
+
+  /// 画像の読み込み：今のレイヤーを差し替えるの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'新しいレイヤーを作らず、今のレイヤーの絵を画像に替えます。'**
+  String get layerImportReplaceDesc;
+
   /// No description provided for @layerPanelDefaultLayerName.
   ///
   /// In ja, this message translates to:
@@ -10592,6 +10628,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'回転'**
   String get layerKeyframeRotationLabel;
+
+  /// レイヤーの詳細設定：キーフレームが1つ以下のとき、拡大縮小・回転がレイヤー全体に効くことの案内。menuはキーフレームの項目名
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤー全体に同じ大きさと角度が使われます。動かすときは「{menu}」で設定してください。'**
+  String layerTransformWholeHint(String menu);
 
   /// No description provided for @layerKeyframeEasingLabel.
   ///

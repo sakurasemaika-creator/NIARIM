@@ -181,6 +181,15 @@ void main() {
             .evaluate()
             .firstOrNull;
         if (scrollableElement == null) continue;
+        // A row that is not pressed itself (its choice is in a control at
+        // the end, as the canvas menu's autofill check view) shows no colour
+        // when pressed: try the next one.
+        final tile = rowElement.widget;
+        if (tile is ListTile &&
+            tile.onTap == null &&
+            tile.onLongPress == null) {
+          continue;
+        }
         final position =
             ((scrollableElement as StatefulElement).state as ScrollableState)
                 .position;

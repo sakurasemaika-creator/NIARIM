@@ -5115,6 +5115,25 @@ class AppLocalizationsFr extends AppLocalizations {
   String get layerPanelImportImageButton => 'Importer une image';
 
   @override
+  String get layerImportFit => 'Faire tenir toute l’image';
+
+  @override
+  String get layerImportFitDesc => 'Toute l’image tient sur le canevas.';
+
+  @override
+  String get layerImportFill => 'Remplir le canevas';
+
+  @override
+  String get layerImportFillDesc => 'Les parties hors du canevas sont coupées.';
+
+  @override
+  String get layerImportReplace => 'Remplacer le calque actuel';
+
+  @override
+  String get layerImportReplaceDesc =>
+      'Place l’image sur le calque actuel au lieu d’un nouveau calque.';
+
+  @override
   String layerPanelDefaultLayerName(int n) {
     return 'Calque $n';
   }
@@ -6230,6 +6249,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get layerKeyframeRotationLabel => 'Rotation';
+
+  @override
+  String layerTransformWholeHint(String menu) {
+    return 'La même taille et le même angle s’appliquent à tout le calque. Pour l’animer, utilisez « $menu ».';
+  }
 
   @override
   String get layerKeyframeEasingLabel => 'Transition vers l’image clé suivante';

@@ -1920,6 +1920,12 @@
   "layerPanelNewLayerButton": "Normal layer",
   "layerPanelNewFolderButton": "New folder",
   "layerPanelImportImageButton": "Import image",
+  "layerImportFit": "Fit the whole image",
+  "layerImportFitDesc": "The whole image fits on the canvas.",
+  "layerImportFill": "Fill the canvas",
+  "layerImportFillDesc": "Parts outside the canvas are cut off.",
+  "layerImportReplace": "Replace the current layer",
+  "layerImportReplaceDesc": "Puts the image on the current layer instead of a new one.",
   "layerPanelDefaultLayerName": "Layer {n}",
   "@layerPanelDefaultLayerName": {
     "placeholders": {
@@ -2465,6 +2471,7 @@
   "layerKeyframeFrameLabel": "Frame",
   "layerKeyframeScaleLabel": "Scale",
   "layerKeyframeRotationLabel": "Rotation",
+  "layerTransformWholeHint": "The same size and angle are used for the whole layer. To animate it, use “{menu}”.",
   "layerKeyframeEasingLabel": "Transition to next keyframe",
   "layerKeyframeEasingLinear": "Linear",
   "layerKeyframeEasingEaseIn": "Ease in (starts slow)",

@@ -4774,6 +4774,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelImportImageButton => '导入图片';
 
   @override
+  String get layerImportFit => '放入整张图片';
+
+  @override
+  String get layerImportFitDesc => '整张图片都放在画布内。';
+
+  @override
+  String get layerImportFill => '填满画布';
+
+  @override
+  String get layerImportFillDesc => '超出画布的部分会被裁掉。';
+
+  @override
+  String get layerImportReplace => '替换当前图层';
+
+  @override
+  String get layerImportReplaceDesc => '不新建图层，把当前图层的画替换为图片。';
+
+  @override
   String layerPanelDefaultLayerName(int n) {
     return '图层$n';
   }
@@ -5806,6 +5824,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get layerKeyframeRotationLabel => '旋转';
+
+  @override
+  String layerTransformWholeHint(String menu) {
+    return '整个图层使用相同的大小和角度。要让它动起来，请在“$menu”中设置。';
+  }
 
   @override
   String get layerKeyframeEasingLabel => '过渡到下一关键帧的方式';
@@ -15957,6 +15980,24 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get layerPanelImportImageButton => '匯入圖片';
 
   @override
+  String get layerImportFit => '放入整張圖片';
+
+  @override
+  String get layerImportFitDesc => '整張圖片都放在畫布內。';
+
+  @override
+  String get layerImportFill => '填滿畫布';
+
+  @override
+  String get layerImportFillDesc => '超出畫布的部分會被裁掉。';
+
+  @override
+  String get layerImportReplace => '替換目前圖層';
+
+  @override
+  String get layerImportReplaceDesc => '不新增圖層，把目前圖層的畫替換為圖片。';
+
+  @override
   String layerPanelDefaultLayerName(int n) {
     return '圖層$n';
   }
@@ -16990,6 +17031,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get layerKeyframeRotationLabel => '旋轉';
+
+  @override
+  String layerTransformWholeHint(String menu) {
+    return '整個圖層使用相同的大小和角度。要讓它動起來，請在「$menu」中設定。';
+  }
 
   @override
   String get layerKeyframeEasingLabel => '過渡到下一關鍵影格的方式';

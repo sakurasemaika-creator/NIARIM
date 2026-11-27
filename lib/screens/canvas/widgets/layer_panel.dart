@@ -258,6 +258,53 @@ class _LayerPanelState extends State<LayerPanel> {
         .toList();
   }
 
+  /// A dragged layer dropped among another folder's layers goes into that
+  /// folder, and one dropped among the layers outside its folder comes out
+  /// (the owner's choice, 2026-11-27; before, a drag only reordered within
+  /// the same folder, and moving went through the menu). Dropped [after] an
+  /// open folder's row, it goes to the top inside that folder. One undo
+  /// step. False when the layer stays in its folder (an ordinary reorder).
+  bool _dropIntoOrOutOfFolder(
+    ProjectService projects,
+    model.Layer source,
+    model.Layer drop, {
+    required bool after,
+  }) {
+    if (drop.id == source.id || model.isRangeLayerType(source.type)) {
+      return false;
+    }
+    final intoOpenFolder =
+        after &&
+        drop.type == model.LayerType.folder &&
+        projects.isLayerFolderExpanded(widget.projectId, drop);
+    final folderId = intoOpenFolder ? drop.id : drop.parentFolderId;
+    if (folderId == source.parentFolderId) return false;
+    var moved = false;
+    projects.editTimeline(widget.projectId, 'Move layer to folder', () {
+      moved = projects.moveLayerToFolder(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: widget.frameIndex,
+        layerId: source.id,
+        folderId: folderId,
+      );
+      // Then beside the row it was dropped on (the top of an open folder is
+      // where moving into it puts it).
+      if (moved && !intoOpenFolder) {
+        projects.reorderLayerRelative(
+          projectId: widget.projectId,
+          sceneId: widget.sceneId,
+          frameIndex: widget.frameIndex,
+          layerId: source.id,
+          siblingId: drop.id,
+          after: after,
+        );
+      }
+    }, changesTiles: false);
+    if (moved) setState(() {});
+    return moved;
+  }
+
   /// フォルダの折りたたみ状態に基づき、祖先フォルダが折りたたまれている場合はtrue
   bool _isHiddenByCollapsedFolder(model.Layer layer, List<model.Layer> all) {
     final byId = {for (final l in all) l.id: l};
@@ -487,7 +534,7 @@ class _LayerPanelState extends State<LayerPanel> {
           (
             icon: Icons.photo,
             label: l10n.layerPanelImportImageButton,
-            onPressed: () => _importImage(context),
+            onPressed: () => _showImportImageMenu(context),
           ),
         ]),
       ),
@@ -588,6 +635,14 @@ class _LayerPanelState extends State<LayerPanel> {
                     final byId = {
                       for (final layer in allLayers) layer.id: layer,
                     };
+                    if (_dropIntoOrOutOfFolder(
+                      projectService,
+                      source,
+                      layers[newIdx],
+                      after: newIdx > oldIdx,
+                    )) {
+                      return;
+                    }
                     final visited = <String>{};
                     model.Layer? target = layers[newIdx];
                     while (target != null &&
@@ -1991,6 +2046,16 @@ class _LayerPanelState extends State<LayerPanel> {
     int frameIndex,
     LayerKeyframe Function(LayerKeyframe base) modifier,
   ) {
+    // With one keyframe or none the layer does not move: the change is for
+    // the whole layer and keeps that keyframe where it is (as a material's
+    // placement does). Before, changing the size on another frame quietly
+    // made a second keyframe and the layer started to move.
+    if (keyframes.length <= 1) {
+      final base = keyframes.isEmpty
+          ? LayerKeyframe(frameIndex: frameIndex)
+          : keyframes.single;
+      return [modifier(base).copyWith(frameIndex: base.frameIndex)];
+    }
     final base = LayerKeyframeEngine()
         .valueAt(keyframes, frameIndex)
         .copyWith(frameIndex: frameIndex);
@@ -2043,6 +2108,42 @@ class _LayerPanelState extends State<LayerPanel> {
                     const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
+              ),
+              // A normal layer's name and a copy of it, as for a common
+              // layer (the owner's choice, 2026-11-27; before, only by
+              // copy and paste).
+              ListTile(
+                key: const ValueKey('layerOptionsRename'),
+                leading: const Icon(Icons.edit),
+                title: Text(l10n.commonRename),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showRenameDialog(context, latest);
+                },
+              ),
+              ListTile(
+                key: const ValueKey('layerOptionsDuplicate'),
+                leading: const Icon(Icons.copy),
+                title: Text(l10n.themeDuplicateAction),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  final projects = context.read<ProjectService>();
+                  final name = numberedEditorCopyName(l10n, latest.name, {
+                    for (final other in projects.layersOf(
+                      widget.projectId,
+                      widget.sceneId,
+                      widget.frameIndex,
+                    ))
+                      other.name,
+                  });
+                  projects.duplicateLayer(
+                    projectId: widget.projectId,
+                    sceneId: widget.sceneId,
+                    frameIndex: widget.frameIndex,
+                    layerId: latest.id,
+                    nameOverride: name,
+                  );
+                },
               ),
               if (layer.parentFolderId != null ||
                   _layerFolderChoices(layer).isNotEmpty)
@@ -2120,6 +2221,9 @@ class _LayerPanelState extends State<LayerPanel> {
                     max: 3.0,
                     divisions: 29,
                     sliderLabel: current.toStringAsFixed(2),
+                    // The number shows and can be typed (before, only the
+                    // slider: no way to set an exact size).
+                    valueText: '×${current.toStringAsFixed(2)}',
                     onChanged: (v) {
                       setS(() {});
                       update(
@@ -2152,6 +2256,7 @@ class _LayerPanelState extends State<LayerPanel> {
                     max: 180,
                     divisions: 360,
                     sliderLabel: '${current.round()}°',
+                    valueText: '${current.round()}°',
                     onChanged: (v) {
                       setS(() {});
                       update(
@@ -2166,6 +2271,28 @@ class _LayerPanelState extends State<LayerPanel> {
                     },
                   );
                 },
+              ),
+              // Whether the size and angle are the whole layer's or this
+              // frame's keyframe.
+              StatefulBuilder(
+                builder: (ctx, setS) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    latest.keyframes.length >= 2
+                        ? l10n.timelineKeyframeAnimHint(
+                            latest.keyframes.length,
+                            widget.frameIndex + 1,
+                          )
+                        : l10n.layerTransformWholeHint(
+                            l10n.layerPanelKeyframeLabel,
+                          ),
+                    key: const ValueKey('layerTransformHint'),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
               ),
               // ブレンドモード
               ListTile(
@@ -2994,7 +3121,91 @@ class _LayerPanelState extends State<LayerPanel> {
     );
   }
 
-  Future<void> _importImage(BuildContext context) async {
+  /// How to bring in an image: the whole of it on the canvas or the canvas
+  /// filled with it, on a new layer or in place of the current normal layer
+  /// (the owner's choice, 2026-11-27; before, it always went whole onto a new
+  /// layer at the top).
+  void _showImportImageMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final current = context
+        .read<ProjectService>()
+        .layersOf(widget.projectId, widget.sceneId, widget.frameIndex)
+        .where((l) => l.id == widget.currentLayerId)
+        .firstOrNull;
+    final canReplace =
+        current != null &&
+        current.type == model.LayerType.normal &&
+        !current.isLocked;
+    var replace = false;
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) => ScrollableSheetBody(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  l10n.layerPanelImportImageButton,
+                  style: localizedHeadingStyle(
+                    context,
+                    const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              if (canReplace)
+                CheckboxListTile(
+                  key: const ValueKey('layerImportReplace'),
+                  value: replace,
+                  onChanged: (v) => setSheet(() => replace = v ?? false),
+                  title: Text(l10n.layerImportReplace),
+                  subtitle: messageText(l10n.layerImportReplaceDesc),
+                ),
+              ListTile(
+                key: const ValueKey('layerImportFit'),
+                leading: const Icon(Icons.fit_screen_outlined),
+                title: Text(l10n.layerImportFit),
+                subtitle: messageText(l10n.layerImportFitDesc),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _importImage(
+                    context,
+                    fill: false,
+                    replaceLayerId: replace ? current?.id : null,
+                  );
+                },
+              ),
+              ListTile(
+                key: const ValueKey('layerImportFill'),
+                leading: const Icon(Icons.crop_free),
+                title: Text(l10n.layerImportFill),
+                subtitle: messageText(l10n.layerImportFillDesc),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _importImage(
+                    context,
+                    fill: true,
+                    replaceLayerId: replace ? current?.id : null,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Reads an image the person picks onto the canvas: [fill] covers the
+  /// canvas (the parts outside are cut off), otherwise the whole image fits.
+  /// With [replaceLayerId] it becomes that layer's picture (one undo step);
+  /// otherwise a new layer.
+  Future<void> _importImage(
+    BuildContext context, {
+    bool fill = false,
+    String? replaceLayerId,
+  }) async {
     final selection = widget.selectionMask;
     final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(
@@ -3022,7 +3233,9 @@ class _LayerPanelState extends State<LayerPanel> {
     final w = tileManager.canvasWidth;
     final h = tileManager.canvasHeight;
 
-    final scale = math.min(w / image.width, h / image.height);
+    final scale = fill
+        ? math.max(w / image.width, h / image.height)
+        : math.min(w / image.width, h / image.height);
     final drawW = image.width * scale;
     final drawH = image.height * scale;
     final dx = (w - drawW) / 2;
@@ -3049,6 +3262,24 @@ class _LayerPanelState extends State<LayerPanel> {
       tileManager,
       projectService.tileManagerOf(widget.projectId),
     )) {
+      return;
+    }
+    if (replaceLayerId != null) {
+      projectService.replaceLayerPixels(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: widget.frameIndex,
+        layerId: replaceLayerId,
+        pixels: byteData.buffer.asUint8List(),
+        selection: selection,
+      );
+      projectService.refreshDrawingHistory(widget.projectId);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.layerPanelImportImageSuccessSnackbar(name)),
+        ),
+      );
       return;
     }
     projectService.editTimeline(widget.projectId, 'Import image layer', () {

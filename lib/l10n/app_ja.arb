@@ -2440,6 +2440,30 @@
   "layerPanelNewLayerButton": "通常レイヤー",
   "layerPanelNewFolderButton": "新規フォルダ",
   "layerPanelImportImageButton": "画像読み込み",
+  "layerImportFit": "全体を入れる",
+  "@layerImportFit": {
+    "description": "画像の読み込み：画像の全部をキャンバスに収める読み込み方"
+  },
+  "layerImportFitDesc": "画像の全部がキャンバスに収まります。",
+  "@layerImportFitDesc": {
+    "description": "画像の読み込み：全体を入れるの説明"
+  },
+  "layerImportFill": "キャンバスいっぱいに広げる",
+  "@layerImportFill": {
+    "description": "画像の読み込み：キャンバスいっぱいに広げる読み込み方"
+  },
+  "layerImportFillDesc": "キャンバスからはみ出す所は切れます。",
+  "@layerImportFillDesc": {
+    "description": "画像の読み込み：キャンバスいっぱいに広げるの説明"
+  },
+  "layerImportReplace": "今のレイヤーを差し替える",
+  "@layerImportReplace": {
+    "description": "画像の読み込み：新しいレイヤーを作らず今のレイヤーを差し替える"
+  },
+  "layerImportReplaceDesc": "新しいレイヤーを作らず、今のレイヤーの絵を画像に替えます。",
+  "@layerImportReplaceDesc": {
+    "description": "画像の読み込み：今のレイヤーを差し替えるの説明"
+  },
   "layerPanelDefaultLayerName": "レイヤー{n}",
   "@layerPanelDefaultLayerName": {
     "placeholders": {
@@ -3110,6 +3134,15 @@
   "layerKeyframeFrameLabel": "フレーム",
   "layerKeyframeScaleLabel": "拡大縮小",
   "layerKeyframeRotationLabel": "回転",
+  "layerTransformWholeHint": "レイヤー全体に同じ大きさと角度が使われます。動かすときは「{menu}」で設定してください。",
+  "@layerTransformWholeHint": {
+    "description": "レイヤーの詳細設定：キーフレームが1つ以下のとき、拡大縮小・回転がレイヤー全体に効くことの案内。menuはキーフレームの項目名",
+    "placeholders": {
+      "menu": {
+        "type": "String"
+      }
+    }
+  },
   "layerKeyframeEasingLabel": "次のキーフレームへのつなぎ方",
   "layerKeyframeEasingLinear": "等速",
   "layerKeyframeEasingEaseIn": "ゆっくり始まる",

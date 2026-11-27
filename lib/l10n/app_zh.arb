@@ -1897,6 +1897,12 @@
   "layerPanelNewLayerButton": "普通图层",
   "layerPanelNewFolderButton": "新建文件夹",
   "layerPanelImportImageButton": "导入图片",
+  "layerImportFit": "放入整张图片",
+  "layerImportFitDesc": "整张图片都放在画布内。",
+  "layerImportFill": "填满画布",
+  "layerImportFillDesc": "超出画布的部分会被裁掉。",
+  "layerImportReplace": "替换当前图层",
+  "layerImportReplaceDesc": "不新建图层，把当前图层的画替换为图片。",
   "layerPanelDefaultLayerName": "图层{n}",
   "@layerPanelDefaultLayerName": {
     "placeholders": {
@@ -2442,6 +2448,7 @@
   "layerKeyframeFrameLabel": "帧",
   "layerKeyframeScaleLabel": "缩放",
   "layerKeyframeRotationLabel": "旋转",
+  "layerTransformWholeHint": "整个图层使用相同的大小和角度。要让它动起来，请在“{menu}”中设置。",
   "layerKeyframeEasingLabel": "过渡到下一关键帧的方式",
   "layerKeyframeEasingLinear": "匀速",
   "layerKeyframeEasingEaseIn": "缓入（开始慢）",

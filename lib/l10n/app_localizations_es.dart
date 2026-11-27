@@ -5112,6 +5112,26 @@ class AppLocalizationsEs extends AppLocalizations {
   String get layerPanelImportImageButton => 'Importar imagen';
 
   @override
+  String get layerImportFit => 'Encajar la imagen entera';
+
+  @override
+  String get layerImportFitDesc => 'La imagen entera cabe en el lienzo.';
+
+  @override
+  String get layerImportFill => 'Llenar el lienzo';
+
+  @override
+  String get layerImportFillDesc =>
+      'Se recortan las partes que quedan fuera del lienzo.';
+
+  @override
+  String get layerImportReplace => 'Reemplazar la capa actual';
+
+  @override
+  String get layerImportReplaceDesc =>
+      'Pone la imagen en la capa actual en lugar de en una nueva.';
+
+  @override
   String layerPanelDefaultLayerName(int n) {
     return 'Capa $n';
   }
@@ -6223,6 +6243,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get layerKeyframeRotationLabel => 'Rotación';
+
+  @override
+  String layerTransformWholeHint(String menu) {
+    return 'Se usan el mismo tamaño y ángulo en toda la capa. Para animarla, usa «$menu».';
+  }
 
   @override
   String get layerKeyframeEasingLabel =>

@@ -1897,6 +1897,12 @@
   "layerPanelNewLayerButton": "Capa normal",
   "layerPanelNewFolderButton": "Nueva carpeta",
   "layerPanelImportImageButton": "Importar imagen",
+  "layerImportFit": "Encajar la imagen entera",
+  "layerImportFitDesc": "La imagen entera cabe en el lienzo.",
+  "layerImportFill": "Llenar el lienzo",
+  "layerImportFillDesc": "Se recortan las partes que quedan fuera del lienzo.",
+  "layerImportReplace": "Reemplazar la capa actual",
+  "layerImportReplaceDesc": "Pone la imagen en la capa actual en lugar de en una nueva.",
   "layerPanelDefaultLayerName": "Capa {n}",
   "@layerPanelDefaultLayerName": {
     "placeholders": {
@@ -2442,6 +2448,7 @@
   "layerKeyframeFrameLabel": "Fotograma",
   "layerKeyframeScaleLabel": "Escala",
   "layerKeyframeRotationLabel": "Rotación",
+  "layerTransformWholeHint": "Se usan el mismo tamaño y ángulo en toda la capa. Para animarla, usa «{menu}».",
   "layerKeyframeEasingLabel": "Transición al siguiente fotograma clave",
   "layerKeyframeEasingLinear": "Uniforme",
   "layerKeyframeEasingEaseIn": "Entrada suave (empieza lento)",

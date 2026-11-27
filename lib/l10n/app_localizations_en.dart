@@ -5035,6 +5035,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get layerPanelImportImageButton => 'Import image';
 
   @override
+  String get layerImportFit => 'Fit the whole image';
+
+  @override
+  String get layerImportFitDesc => 'The whole image fits on the canvas.';
+
+  @override
+  String get layerImportFill => 'Fill the canvas';
+
+  @override
+  String get layerImportFillDesc => 'Parts outside the canvas are cut off.';
+
+  @override
+  String get layerImportReplace => 'Replace the current layer';
+
+  @override
+  String get layerImportReplaceDesc =>
+      'Puts the image on the current layer instead of a new one.';
+
+  @override
   String layerPanelDefaultLayerName(int n) {
     return 'Layer $n';
   }
@@ -6134,6 +6153,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerKeyframeRotationLabel => 'Rotation';
+
+  @override
+  String layerTransformWholeHint(String menu) {
+    return 'The same size and angle are used for the whole layer. To animate it, use “$menu”.';
+  }
 
   @override
   String get layerKeyframeEasingLabel => 'Transition to next keyframe';

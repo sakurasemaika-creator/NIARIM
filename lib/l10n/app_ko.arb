@@ -1897,6 +1897,12 @@
   "layerPanelNewLayerButton": "일반 레이어",
   "layerPanelNewFolderButton": "새 폴더",
   "layerPanelImportImageButton": "이미지 불러오기",
+  "layerImportFit": "이미지 전체 넣기",
+  "layerImportFitDesc": "이미지 전체가 캔버스에 들어갑니다.",
+  "layerImportFill": "캔버스 가득 채우기",
+  "layerImportFillDesc": "캔버스 밖으로 나간 부분은 잘립니다.",
+  "layerImportReplace": "현재 레이어 바꾸기",
+  "layerImportReplaceDesc": "새 레이어를 만들지 않고 현재 레이어의 그림을 이미지로 바꿉니다.",
   "layerPanelDefaultLayerName": "레이어{n}",
   "@layerPanelDefaultLayerName": {
     "placeholders": {
@@ -2442,6 +2448,7 @@
   "layerKeyframeFrameLabel": "프레임",
   "layerKeyframeScaleLabel": "확대축소",
   "layerKeyframeRotationLabel": "회전",
+  "layerTransformWholeHint": "레이어 전체에 같은 크기와 각도가 쓰입니다. 움직이려면 “{menu}”에서 설정하세요.",
   "layerKeyframeEasingLabel": "다음 키프레임으로 이어지는 방식",
   "layerKeyframeEasingLinear": "등속",
   "layerKeyframeEasingEaseIn": "천천히 시작",
