@@ -375,14 +375,17 @@ class NiaproSerializer {
       final bytes = utf8.encode(encodedNames);
       cleaned.addFile(ArchiveFile(manifestPath, bytes.length, bytes));
     }
-    ArchiveSecurity.validateExport(cleaned);
+    // The rewritten share is received elsewhere as a work.
+    final limits = ArchiveLimits.receivedWork;
+    ArchiveSecurity.validateExport(cleaned, limits: limits);
     final bytes = Uint8List.fromList(ZipEncoder().encode(cleaned)!);
-    ArchiveSecurity.validateFileSize(bytes.length);
+    ArchiveSecurity.validateFileSize(bytes.length, limits: limits);
     return bytes;
   }
 
   /// .niashare を読み込む（.niaproと同一形式なので load() をそのまま利用できる）。
-  static Future<NiaproData> loadShare(String filePath) => load(filePath);
+  static Future<NiaproData> loadShare(String filePath) =>
+      load(filePath, limits: ArchiveLimits.receivedWork);
 
   /// .niashareに同梱された素材ファイルを、新規プロジェクトのMaterials/フォルダへ
   /// 書き出す（共有時の素材同梱）。同梱がない場合は何もしない。
@@ -1325,6 +1328,7 @@ class NiaproSerializer {
       final data = await load(
         '${dir.path}/$projectId.niapro',
         withTiles: false,
+        limits: ArchiveLimits.ownWork,
       );
       return contentSignature(data.project, data.scenes);
     } catch (_) {

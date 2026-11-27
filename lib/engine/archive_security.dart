@@ -45,6 +45,27 @@ class ArchiveLimits {
     entries: _unbounded,
   );
 
+  /// A work received from outside (a .niashare, a .niatra and the works in
+  /// it). Importing holds the whole work in memory, so how large it may
+  /// expand is tied to what this device can hold
+  /// ([ArchiveSecurity.receivedWorkBudget], a quarter of its memory), never
+  /// less than [received]: a work the size its author could paint and open
+  /// on a phone like this one is read, a ZIP bomb expands past it and is
+  /// refused with the same messages as before.
+  static ArchiveLimits get receivedWork {
+    final budget = ArchiveSecurity.receivedWorkBudget();
+    int atLeast(int floor) => budget > floor ? budget : floor;
+    return ArchiveLimits._(
+      compressedBytes: atLeast(received.compressedBytes),
+      expandedBytes: atLeast(received.expandedBytes),
+      singleEntryBytes: atLeast(received.singleEntryBytes),
+      metadataEntryBytes: budget ~/ 8 > received.metadataEntryBytes
+          ? budget ~/ 8
+          : received.metadataEntryBytes,
+      entries: received.entries,
+    );
+  }
+
   static const int _unbounded = 1 << 62;
 }
 
@@ -66,6 +87,38 @@ class ArchiveSecurity {
   /// compare it with the platform zlib pass).
   @visibleForTesting
   static bool debugDartInflateOnly = false;
+
+  /// The largest [receivedWorkBudget].
+  static const int maxReceivedWorkBudget = 4 * 1024 * 1024 * 1024;
+
+  /// Replaces [receivedWorkBudget] (tests).
+  @visibleForTesting
+  static int? debugReceivedWorkBudget;
+
+  static int? _deviceBudget;
+
+  /// How large a received work may expand ([ArchiveLimits.receivedWork]): a
+  /// quarter of this device's memory (`MemTotal` in `/proc/meminfo`), between
+  /// [maxExpandedBytes] and [maxReceivedWorkBudget]; [maxExpandedBytes] when
+  /// the memory cannot be read.
+  static int receivedWorkBudget() =>
+      debugReceivedWorkBudget ?? (_deviceBudget ??= _budgetFromMemory());
+
+  static int _budgetFromMemory() {
+    try {
+      for (final line in File('/proc/meminfo').readAsLinesSync()) {
+        final match = RegExp(r'^MemTotal:\s+(\d+)\s+kB').firstMatch(line);
+        if (match == null) continue;
+        final quarter = int.parse(match.group(1)!) * 1024 ~/ 4;
+        if (quarter < maxExpandedBytes) return maxExpandedBytes;
+        if (quarter > maxReceivedWorkBudget) return maxReceivedWorkBudget;
+        return quarter;
+      }
+    } catch (_) {
+      // Not readable on this platform: the fixed limit.
+    }
+    return maxExpandedBytes;
+  }
 
   static Archive decodeZip(
     List<int> bytes, {
@@ -104,18 +157,22 @@ class ArchiveSecurity {
 
   /// Validates the sizes of an archive produced by this app before encoding.
   /// The writer supplies the uncompressed contents, so there is no need to
-  /// decompress them a second time.
-  static void validateExport(Archive archive) {
-    if (archive.files.length > maxEntries) {
+  /// decompress them a second time. [limits] are those the archive will be
+  /// read with where it is received.
+  static void validateExport(
+    Archive archive, {
+    ArchiveLimits limits = ArchiveLimits.received,
+  }) {
+    if (archive.files.length > limits.entries) {
       throw const FormatException('アーカイブ内のファイル数が上限を超えています');
     }
     var expandedBytes = 0;
     for (final file in archive.files) {
       final name = file.name.replaceAll('\\', '/');
       _validateEntryName(name);
-      _validateEntrySize(name, file.size, ArchiveLimits.received);
+      _validateEntrySize(name, file.size, limits);
       expandedBytes += file.size;
-      if (expandedBytes > maxExpandedBytes) {
+      if (expandedBytes > limits.expandedBytes) {
         throw const FormatException('アーカイブの展開後サイズが上限を超えています');
       }
     }

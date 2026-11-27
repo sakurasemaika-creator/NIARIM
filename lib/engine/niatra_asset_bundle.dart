@@ -55,7 +55,8 @@ class NiatraAssetBundle {
     WatermarkService? watermarks,
     String? restoreBasePath,
   }) async {
-    final sourceArchive = ArchiveSecurity.decodeZip(original);
+    final limits = ArchiveLimits.receivedWork;
+    final sourceArchive = ArchiveSecurity.decodeZip(original, limits: limits);
     final dataFile = sourceArchive.findFile(_dataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
     final data =
@@ -179,10 +180,10 @@ class NiatraAssetBundle {
 
     final jsonBytes = utf8.encode(jsonEncode(data));
     output.addFile(ArchiveFile(_dataFile, jsonBytes.length, jsonBytes));
-    ArchiveSecurity.validateExport(output);
+    ArchiveSecurity.validateExport(output, limits: limits);
     final encoded = ZipEncoder().encode(output);
     if (encoded == null) throw const FormatException('ZIP encoding failed');
-    ArchiveSecurity.validateFileSize(encoded.length);
+    ArchiveSecurity.validateFileSize(encoded.length, limits: limits);
     return Uint8List.fromList(encoded);
   }
 

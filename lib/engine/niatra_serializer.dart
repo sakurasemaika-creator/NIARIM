@@ -426,17 +426,22 @@ class NiatraSerializer {
 
     final jsonBytes = utf8.encode(jsonEncode(data));
     archive.addFile(ArchiveFile(_dataFile, jsonBytes.length, jsonBytes));
-    ArchiveSecurity.validateExport(archive);
+    // A transfer holds whole works, and is read like a received work.
+    final limits = ArchiveLimits.receivedWork;
+    ArchiveSecurity.validateExport(archive, limits: limits);
     final zipBytes = ZipEncoder().encode(archive);
     if (zipBytes == null) throw const FormatException('ZIP encoding failed');
-    ArchiveSecurity.validateFileSize(zipBytes.length);
+    ArchiveSecurity.validateFileSize(zipBytes.length, limits: limits);
     return Uint8List.fromList(zipBytes);
   }
 
   /// バイト列から読み込む（Web版でファイル選択ダイアログがパスではなく
   /// バイト列のみを返す場合もこちらを使う）。
   static NiatraData loadFromBytes(List<int> bytes) {
-    final archive = ArchiveSecurity.decodeZip(bytes);
+    final archive = ArchiveSecurity.decodeZip(
+      bytes,
+      limits: ArchiveLimits.receivedWork,
+    );
     final dataFile = archive.findFile(_dataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
     final data =
@@ -448,7 +453,10 @@ class NiatraSerializer {
   /// ローカルファイルパスから読み込む（デスクトップ/モバイル用）。
   static Future<NiatraData> load(String filePath) async {
     final file = File(filePath);
-    ArchiveSecurity.validateFileSize(await file.length());
+    ArchiveSecurity.validateFileSize(
+      await file.length(),
+      limits: ArchiveLimits.receivedWork,
+    );
     final bytes = await file.readAsBytes();
     return loadFromBytes(bytes);
   }
@@ -1166,7 +1174,10 @@ class NiatraSerializer {
         'A project in the transfer archive is missing',
       );
     }
-    return NiaproSerializer.loadFromBytes(entry.content as List<int>);
+    return NiaproSerializer.loadFromBytes(
+      entry.content as List<int>,
+      limits: ArchiveLimits.receivedWork,
+    );
   }
 
   /// ファイルの作品[incoming]（i番目。[candidates]のi番目がこの端末の同じ

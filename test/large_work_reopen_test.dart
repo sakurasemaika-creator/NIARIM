@@ -103,9 +103,20 @@ void main() {
       () => ArchiveSecurity.decodeZip(bytes),
       throwsA(isA<FormatException>()),
     );
+    // A received work may be as large as this device can hold: on a device
+    // whose budget is the fixed limit it is refused, on one that holds it
+    // the share is read.
+    addTearDown(() => ArchiveSecurity.debugReceivedWorkBudget = null);
+    ArchiveSecurity.debugReceivedWorkBudget = ArchiveSecurity.maxExpandedBytes;
     await expectLater(
       NiaproSerializer.loadShare(file.path),
       throwsA(isA<FormatException>()),
+    );
+    ArchiveSecurity.debugReceivedWorkBudget = 512 * 1024 * 1024;
+    final shared = await NiaproSerializer.loadShare(file.path);
+    expect(
+      shared.tileData[frameLayerKey(scene.id, 0, layer.id)]?['0,0'],
+      painted,
     );
   });
 }

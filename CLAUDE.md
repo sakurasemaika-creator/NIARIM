@@ -1290,7 +1290,14 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   `ArchiveSecurity`の既定（`ArchiveLimits.received`：128 MiB・展開後256 MiB・20000項目）は外から受け取る
   .niashare・.niatra・カードのためのもの。作品・自動保存・手動の保存にこれを当てると、大きな作品（1080×1080で
   約40コマ）は保存できるのに起動し直すと一覧から消えた。作品のファイルを読む所を足すときは
-  `limits: ArchiveLimits.ownWork`を渡し、受け取ったファイルには渡さないこと（`large_work_reopen_test`）。
+  `limits: ArchiveLimits.ownWork`を渡し、受け取ったファイルには渡さないこと（`large_work_reopen_test`。
+  作品との比べ〔`workFileContentSignature`〕も同じで、受け取る上限で読むと大きな作品はいつも「違う」に
+  なり、何も変えていなくても自動保存を書いて前の自動保存を押し出した）。**受け取った作品**（.niashare・
+  .niatraとその中の作品）は`ArchiveLimits.receivedWork`：取り込むと作品を丸ごとメモリに持つので、展開後の
+  上限をこの端末のメモリの4分の1（`/proc/meminfo`の`MemTotal`、256 MiB〜4 GiB、読めなければ256 MiB。
+  `ArchiveSecurity.receivedWorkBudget`）にしてある。固定の上限より狭くはならず、断る文も同じ。爆弾は
+  それを超えて断られる（`large_work_storage_test`）。共有の受け取り口（OSの共有から開く）の128 MBの
+  上限（`maxShareIntentBytes`とMainActivity、画面の文にも128 MB）は別で、変えていない。
 - **作品の保存と自動保存は、変わった印の付いたタイルだけを圧縮し、ほかは前の保存から圧縮されたまま写す
   （実際に使ってみて発見、2026-11-27）**：以前の自動保存（描くのを止めて5秒後）は画面の処理と同じ所で
   「前回の自動保存を全部展開して比べる→全部のタイルを圧縮し直す」をしていて、描き込んだタイル200枚で約4秒
@@ -1313,8 +1320,8 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   `debugDartInflateOnly`で両方を比べる`test/archive_security_native_inflate_test.dart`）。ZIPを読む処理を
   足すときもDartの展開器で全部を展開しないこと。新しい形式のタイルは展開したバイトをそのまま
   タイルにする（`_readTilePixels`の`onlyUse`。写すと開く間だけ絵の2倍のメモリを使った）。
-  **展開後の合計の上限（`maxExpandedBytes`＝256MB）は自分の作品ファイルにも効く**ので、描いた
-  タイルが1024枚を超える作品は次の起動で読めず、一覧から消えて「読み込めませんでした」になる（未対応）。
+  展開後の上限は、自分の作品ファイルには掛けない（下の`ArchiveLimits.ownWork`。2026-11-27に直した。
+  それまでは描いたタイルが1024枚を超える作品が次の起動で一覧から消えた）。
 - **本文の代替フォント列にNoto Serif JPを入れない（2026-11-27）**：書体の代替列に名前がある書体は、
   その書式で最初に文を並べたときに全部読み込まれ、アプリを閉じるまでメモリに残る（Androidでは
   APKの中の圧縮を展開する）。白光明朝はNoto Serif JPと収録文字が同じなので、白光明朝が主の文

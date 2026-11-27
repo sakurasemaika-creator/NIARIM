@@ -509,7 +509,10 @@ class _TransferScreenState extends State<TransferScreen> {
       );
       if (result == null || result.files.isEmpty || !mounted) return;
       final picked = result.files.first;
-      ArchiveSecurity.validateFileSize(picked.size);
+      ArchiveSecurity.validateFileSize(
+        picked.size,
+        limits: ArchiveLimits.receivedWork,
+      );
       if (picked.path == null && picked.bytes == null) return;
       final data = picked.bytes != null
           ? NiatraSerializer.loadFromBytes(picked.bytes!)
