@@ -39,7 +39,9 @@ void main() {
     );
 
     for (final expected in <String>[
-      'widget.onTapForText!(canvasPos);',
+      // The text tool decides on release (edit or move) from where it was
+      // pressed.
+      '_textDownCanvas = canvasPos;',
       '_pickColor(canvasPos);',
       '_beginSelectionTransformIfHit(canvasPos)',
       '_selectionStart = canvasPos;',

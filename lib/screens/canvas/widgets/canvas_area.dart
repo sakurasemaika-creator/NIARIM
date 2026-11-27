@@ -3349,10 +3349,6 @@ class CanvasAreaState extends State<CanvasArea> {
     return mode;
   }
 
-  /// OSが指を取り上げた（システムのジェスチャー・手のひらと判定された等、
-  /// PointerCancel）。その指で描いていたものは丸ごと取りやめ、途中までを
-  /// 残さない（残すと次の操作の記録に混ざって取り消せなくなる）。選択範囲の
-  /// 変形・メッシュ変形は確定の操作が別にあるのでここでは触らない。
   /// テキストツールの指が動いた：つかんだ文字があり、少し（タッチの遊び）
   /// 以上動いたら移動として、枠を指に合わせて動かす。
   void _dragText(PointerEvent event) {
@@ -3392,6 +3388,10 @@ class CanvasAreaState extends State<CanvasArea> {
     if (dragging && mounted) setState(() {});
   }
 
+  /// OSが指を取り上げた（システムのジェスチャー・手のひらと判定された等、
+  /// PointerCancel）。その指で描いていたものは丸ごと取りやめ、途中までを
+  /// 残さない（残すと次の操作の記録に混ざって取り消せなくなる）。選択範囲の
+  /// 変形・メッシュ変形は確定の操作が別にあるのでここでは触らない。
   void _cancelToolPointer(int pointer) {
     if (pointer == _textPointer) {
       // 2本目の指（拡大・移動）やOSの取り上げ：文字は動かさず、何も開かない。
