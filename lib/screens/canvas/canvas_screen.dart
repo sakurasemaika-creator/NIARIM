@@ -211,10 +211,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // （meshCommitToken等と同じトークン方式）。
   bool _hasActiveSelection = false;
 
-  /// The selection's move / scale / rotate sliders can be folded so the
-  /// window does not hide the corner of the paper under it (it sits on the
-  /// paper's bottom-left and cannot be moved). Kept for this screen.
-  bool _selectionSlidersFolded = false;
   // 画面下部のスライダーで指定する変形量。いずれも「いまの状態が0」で、
   // 右へ動かすとプラス・左へ動かすとマイナス。指を離した時点で実画素へ
   // 確定し、ここを0（拡大縮小だけは1.0＝等倍）へ戻す。
@@ -3678,18 +3674,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_hasActiveSelection && _selectionSlidersFolded)
-          Material(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(8),
-            child: IconButton(
-              key: const ValueKey('selectionSlidersExpand'),
-              icon: const Icon(Icons.expand_less),
-              tooltip: AppLocalizations.of(context)!.filterPanelExpand,
-              onPressed: () => setState(() => _selectionSlidersFolded = false),
-            ),
-          ),
-        if (_hasActiveSelection && !_selectionSlidersFolded)
+        if (_hasActiveSelection)
           Material(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(8),
@@ -3698,46 +3683,30 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 maxWidth: 320,
                 maxHeight: canvasHeight / 3,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  IconButton(
-                    key: const ValueKey('selectionSlidersFold'),
-                    icon: const Icon(Icons.expand_more),
-                    tooltip: AppLocalizations.of(context)!.filterPanelCollapse,
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () =>
-                        setState(() => _selectionSlidersFolded = true),
-                  ),
-                  Flexible(
-                    child: SelectionTransformSliders(
-                      moveX: _selectionMoveX,
-                      moveY: _selectionMoveY,
-                      scale: _selectionScale,
-                      rotateDeg: _selectionRotateDeg,
-                      maxMove: _selectionSliderMaxMove(context),
-                      onChanged: ({moveX, moveY, scale, rotateDeg}) =>
-                          setState(() {
-                            _selectionMoveX = moveX ?? _selectionMoveX;
-                            _selectionMoveY = moveY ?? _selectionMoveY;
-                            _selectionScale = scale ?? _selectionScale;
-                            _selectionRotateDeg =
-                                rotateDeg ?? _selectionRotateDeg;
-                          }),
-                      onCommit: () => setState(() {
-                        _selectionTransformCommitValues = (
-                          moveX: _selectionMoveX,
-                          moveY: _selectionMoveY,
-                          scale: _selectionScale,
-                          rotateDeg: _selectionRotateDeg,
-                        );
-                        _selectionTransformCommitToken++;
-                        _resetSelectionSliders();
-                      }),
-                    ),
-                  ),
-                ],
+              child: SelectionTransformSliders(
+                moveX: _selectionMoveX,
+                moveY: _selectionMoveY,
+                scale: _selectionScale,
+                rotateDeg: _selectionRotateDeg,
+                maxMove: _selectionSliderMaxMove(context),
+                onChanged: ({moveX, moveY, scale, rotateDeg}) =>
+                    setState(() {
+                      _selectionMoveX = moveX ?? _selectionMoveX;
+                      _selectionMoveY = moveY ?? _selectionMoveY;
+                      _selectionScale = scale ?? _selectionScale;
+                      _selectionRotateDeg =
+                          rotateDeg ?? _selectionRotateDeg;
+                    }),
+                onCommit: () => setState(() {
+                  _selectionTransformCommitValues = (
+                    moveX: _selectionMoveX,
+                    moveY: _selectionMoveY,
+                    scale: _selectionScale,
+                    rotateDeg: _selectionRotateDeg,
+                  );
+                  _selectionTransformCommitToken++;
+                  _resetSelectionSliders();
+                }),
               ),
             ),
           ),
