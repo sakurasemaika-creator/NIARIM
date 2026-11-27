@@ -50,6 +50,7 @@ import 'auto_lineart_control_overlay.dart';
 import 'canvas_icon_button.dart';
 import 'color_picker_panel.dart';
 import 'panel_close_bar.dart';
+import 'focus_mode_menu.dart';
 import '../../../engine/premultiplied.dart';
 import '../../../engine/tone_curve.dart';
 import '../../../config/accent_text_theme.dart';
@@ -62,6 +63,15 @@ import '../../../widgets/icon_notice.dart';
 enum FilterColorEyedropperTarget { inkPool, outline }
 
 enum _FilterCardAction { duplicate, rename, delete }
+
+enum _FocusFilterMenuAction {
+  toggleFavoritesOnly,
+  toggleSearch,
+  importFilter,
+  backToList,
+  exportFilter,
+  toggleCollapse,
+}
 
 class FilterPanel extends StatefulWidget {
   final String projectId;
@@ -181,6 +191,7 @@ class _FilterPanelState extends State<FilterPanel> {
   FilterDef? _previewRequestedFor;
   final Set<int> _editPointers = {};
   FilterService? _editGroupService;
+  FocusModeMenuController? _focusMenuController;
 
   // Filter0025 is a one-tap color inversion. Its engine intentionally
   // reuses the tone-curve inversion preset, but must not expose the general
@@ -202,6 +213,22 @@ class _FilterPanelState extends State<FilterPanel> {
     });
     widget.lensMask?.addListener(_onLensMaskChanged);
     _loadPreviewBase();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final controller = widget.bottomBar
+        ? FocusModeMenuScope.maybeOf(context)
+        : null;
+    if (identical(controller, _focusMenuController)) return;
+    _focusMenuController = controller;
+    if (controller != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !identical(_focusMenuController, controller)) return;
+        controller.setHeaderMenuBuilder(_buildFocusHeaderMenu);
+      });
+    }
   }
 
   @override
@@ -871,7 +898,6 @@ class _FilterPanelState extends State<FilterPanel> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (current == null) ...[
-                _listTitleRow(l10n, withClose: true),
                 if (_showSearch) _searchField(l10n, service),
                 SizedBox(
                   height: math.min(228.0, screenHeight * 0.30),
@@ -883,13 +909,6 @@ class _FilterPanelState extends State<FilterPanel> {
                     child: Text(l10n.filterEmpty, textAlign: TextAlign.center),
                   ),
               ] else ...[
-                _editHeader(
-                  l10n,
-                  service,
-                  current,
-                  collapsed,
-                  withClose: false,
-                ),
                 if (!collapsed && !_isInstantColorInvert(current))
                   ConstrainedBox(
                     constraints: BoxConstraints(maxHeight: maxControls),
@@ -903,6 +922,78 @@ class _FilterPanelState extends State<FilterPanel> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFocusHeaderMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<FilterService>();
+    final current = service.currentFilter;
+    return PopupMenuButton<_FocusFilterMenuAction>(
+      key: const ValueKey('filter-focus-menu-actions'),
+      icon: const Icon(Icons.more_vert, size: 20),
+      padding: EdgeInsets.zero,
+      itemBuilder: (_) {
+        if (current == null) {
+          return [
+            PopupMenuItem(
+              value: _FocusFilterMenuAction.toggleFavoritesOnly,
+              child: Text(l10n.creativePanelFavoritesOnlyTooltip),
+            ),
+            PopupMenuItem(
+              value: _FocusFilterMenuAction.toggleSearch,
+              child: Text(l10n.creativePanelSearchTooltip),
+            ),
+            PopupMenuItem(
+              value: _FocusFilterMenuAction.importFilter,
+              child: Text(l10n.creativePanelImportButton),
+            ),
+          ];
+        }
+        return [
+          PopupMenuItem(
+            value: _FocusFilterMenuAction.backToList,
+            child: Text(l10n.filterBackToList),
+          ),
+          PopupMenuItem(
+            value: _FocusFilterMenuAction.exportFilter,
+            child: Text(l10n.shareCardExportMenu),
+          ),
+          if (!_isInstantColorInvert(current))
+            PopupMenuItem(
+              value: _FocusFilterMenuAction.toggleCollapse,
+              child: Text(
+                _collapsed
+                    ? l10n.filterPanelExpand
+                    : l10n.filterPanelCollapse,
+              ),
+            ),
+        ];
+      },
+      onSelected: (action) {
+        switch (action) {
+          case _FocusFilterMenuAction.toggleFavoritesOnly:
+            setState(() => _showFavoritesOnly = !_showFavoritesOnly);
+          case _FocusFilterMenuAction.toggleSearch:
+            _setSearchShown(!_showSearch);
+          case _FocusFilterMenuAction.importFilter:
+            _importFilterCard();
+          case _FocusFilterMenuAction.backToList:
+            _cancelPreview();
+          case _FocusFilterMenuAction.exportFilter:
+            final selected = service.currentFilter;
+            if (selected != null) {
+              SharedAssetCardService.exportSettings(
+                context,
+                kind: 'filter',
+                name: filterDisplayName(l10n, selected),
+                settings: selected.toJson(),
+              );
+            }
+          case _FocusFilterMenuAction.toggleCollapse:
+            setState(() => _collapsed = !_collapsed);
+        }
+      },
     );
   }
 
