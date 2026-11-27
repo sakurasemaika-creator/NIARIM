@@ -149,6 +149,24 @@ void main() {
     await chooseOnCell(1, const Key('frameStripMenuDelete'));
     expect(ps.frameCount(project.id, scene), before);
 
+    // 今のコマでないコマを長押しすると、そのコマが今のコマになる。
+    await chooseOnCell(1, const Key('frameStripMenuHold'));
+    expect(
+      tester
+          .widget<FrameStripWidget>(find.byType(FrameStripWidget))
+          .currentFrame,
+      1,
+    );
+    await tester.tap(find.text(l10n.commonCancel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('frameStripCell0')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<FrameStripWidget>(find.byType(FrameStripWidget))
+          .currentFrame,
+      0,
+    );
     await chooseOnCell(0, const Key('frameStripMenuHold'));
     expect(find.text(l10n.frameStripHoldDialogTitle(1)), findsOneWidget);
     await tester.tap(find.byIcon(Icons.add).last);
