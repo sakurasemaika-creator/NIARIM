@@ -8826,7 +8826,7 @@ abstract class AppLocalizations {
   /// No description provided for @layerPanelRangeUseCurrentButton.
   ///
   /// In ja, this message translates to:
-  /// **'現在範囲を使用'**
+  /// **'最初から最後のフレームまで'**
   String get layerPanelRangeUseCurrentButton;
 
   /// No description provided for @layerPanelRangeNumberError.

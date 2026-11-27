@@ -93,7 +93,8 @@ class _LayerRangeDialogState extends State<LayerRangeDialog> {
               labelText: label,
               border: const OutlineInputBorder(),
             ),
-            onChanged: (_) => setState(() {}),
+            // 番号はフレーム範囲指定のときだけ使う。打ったらその指定にする。
+            onChanged: (_) => setState(() => _mode = LayerRangeMode.frameRange),
           ),
         );
     return AlertDialog(
@@ -126,6 +127,7 @@ class _LayerRangeDialogState extends State<LayerRangeDialog> {
                 onPressed: () => setState(() {
                   _start.text = '1';
                   _end.text = _lastFrame.toString();
+                  _mode = LayerRangeMode.frameRange;
                 }),
                 child: Text(l10n.layerPanelRangeUseCurrentButton),
               ),

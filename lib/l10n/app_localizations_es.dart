@@ -5168,7 +5168,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get layerPanelRangeTilde => '–';
 
   @override
-  String get layerPanelRangeUseCurrentButton => 'Usar rango actual';
+  String get layerPanelRangeUseCurrentButton =>
+      'Del primer al último fotograma';
 
   @override
   String layerPanelRangeNumberError(int count) {

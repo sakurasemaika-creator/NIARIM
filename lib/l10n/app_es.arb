@@ -1977,7 +1977,7 @@
   "layerPanelRangeStartFrameLabel": "Fotograma inicial",
   "layerPanelRangeEndFrameLabel": "Fotograma final",
   "layerPanelRangeTilde": "–",
-  "layerPanelRangeUseCurrentButton": "Usar rango actual",
+  "layerPanelRangeUseCurrentButton": "Del primer al último fotograma",
   "layerPanelRangeNumberError": "Introduce fotogramas de inicio y fin entre 1 y {count}.",
   "layerPanelRangeOrderError": "El fotograma final debe ser igual o posterior al inicial.",
   "layerPanelRangeTargetSceneLabel": "Escena objetivo",

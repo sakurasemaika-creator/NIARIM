@@ -1977,7 +1977,7 @@
   "layerPanelRangeStartFrameLabel": "Image de début",
   "layerPanelRangeEndFrameLabel": "Image de fin",
   "layerPanelRangeTilde": "–",
-  "layerPanelRangeUseCurrentButton": "Utiliser la plage actuelle",
+  "layerPanelRangeUseCurrentButton": "De la première à la dernière image",
   "layerPanelRangeNumberError": "Saisissez des images de début et de fin comprises entre 1 et {count}.",
   "layerPanelRangeOrderError": "L’image de fin doit être la même que l’image de début ou venir après.",
   "layerPanelRangeTargetSceneLabel": "Scène cible",

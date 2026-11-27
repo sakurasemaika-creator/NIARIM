@@ -1977,7 +1977,7 @@
   "layerPanelRangeStartFrameLabel": "시작 프레임",
   "layerPanelRangeEndFrameLabel": "종료 프레임",
   "layerPanelRangeTilde": "~",
-  "layerPanelRangeUseCurrentButton": "현재 범위 사용",
+  "layerPanelRangeUseCurrentButton": "처음부터 마지막 프레임까지",
   "layerPanelRangeNumberError": "시작 프레임과 종료 프레임을 1부터 {count} 사이의 값으로 입력하세요.",
   "layerPanelRangeOrderError": "종료 프레임은 시작 프레임과 같거나 그 이후여야 합니다.",
   "layerPanelRangeTargetSceneLabel": "대상 씬",

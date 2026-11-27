@@ -2497,7 +2497,7 @@
   "layerPanelRangeStartFrameLabel": "開始フレーム",
   "layerPanelRangeEndFrameLabel": "終了フレーム",
   "layerPanelRangeTilde": "〜",
-  "layerPanelRangeUseCurrentButton": "現在範囲を使用",
+  "layerPanelRangeUseCurrentButton": "最初から最後のフレームまで",
   "layerPanelRangeNumberError": "開始フレームと終了フレームを1〜{count}の範囲で入力してください。",
   "layerPanelRangeOrderError": "終了フレームは開始フレーム以降にしてください。",
   "@layerPanelRangeNumberError": {

@@ -4894,7 +4894,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get layerPanelRangeTilde => '~';
 
   @override
-  String get layerPanelRangeUseCurrentButton => '현재 범위 사용';
+  String get layerPanelRangeUseCurrentButton => '처음부터 마지막 프레임까지';
 
   @override
   String layerPanelRangeNumberError(int count) {

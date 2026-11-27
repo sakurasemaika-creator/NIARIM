@@ -5090,7 +5090,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get layerPanelRangeTilde => '–';
 
   @override
-  String get layerPanelRangeUseCurrentButton => 'Use current range';
+  String get layerPanelRangeUseCurrentButton => 'First to last frame';
 
   @override
   String layerPanelRangeNumberError(int count) {

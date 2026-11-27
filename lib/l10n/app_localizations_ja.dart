@@ -4868,7 +4868,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get layerPanelRangeTilde => '〜';
 
   @override
-  String get layerPanelRangeUseCurrentButton => '現在範囲を使用';
+  String get layerPanelRangeUseCurrentButton => '最初から最後のフレームまで';
 
   @override
   String layerPanelRangeNumberError(int count) {

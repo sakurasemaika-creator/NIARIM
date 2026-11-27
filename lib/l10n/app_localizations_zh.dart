@@ -4827,7 +4827,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelRangeTilde => '～';
 
   @override
-  String get layerPanelRangeUseCurrentButton => '使用当前范围';
+  String get layerPanelRangeUseCurrentButton => '从第一帧到最后一帧';
 
   @override
   String layerPanelRangeNumberError(int count) {
@@ -15884,7 +15884,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get layerPanelRangeTilde => '～';
 
   @override
-  String get layerPanelRangeUseCurrentButton => '使用目前範圍';
+  String get layerPanelRangeUseCurrentButton => '從第一個影格到最後一個影格';
 
   @override
   String layerPanelRangeNumberError(int count) {

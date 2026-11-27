@@ -5174,7 +5174,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get layerPanelRangeTilde => '–';
 
   @override
-  String get layerPanelRangeUseCurrentButton => 'Utiliser la plage actuelle';
+  String get layerPanelRangeUseCurrentButton =>
+      'De la première à la dernière image';
 
   @override
   String layerPanelRangeNumberError(int count) {
