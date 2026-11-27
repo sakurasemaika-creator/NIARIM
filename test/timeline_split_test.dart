@@ -404,4 +404,79 @@ void main() {
       closeTo(soundBefore.single.durationSeconds, 1e-9),
     );
   });
+
+  testWidgets('in split mode a tapped clip is the only one split', (
+    tester,
+  ) async {
+    // The owner's choice (2026-11-27): only the chosen clip is cut; with
+    // none chosen, every clip at the playhead is, as before.
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ja',
+      'force_pc_mode': 0,
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final directory = Directory.systemTemp.createTempSync('timeline-split-');
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (_) async => directory.path);
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(channel, null);
+      if (directory.existsSync()) directory.deleteSync(recursive: true);
+    });
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    appRouter.go('/');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    final ps = tester
+        .element(find.byType(MaterialApp).first)
+        .read<ProjectService>();
+    late String sceneId;
+    final projectId = (await tester.runAsync(() async {
+      final project = await ps.createProject(
+        name: 'split one',
+        fps: 10,
+        durationSeconds: 3,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 160,
+        exportHeight: 90,
+      );
+      sceneId = ps.scenesOf(project.id).first.id;
+      for (final id in ['a', 'b']) {
+        ps.addAudioClip(
+          project.id,
+          sceneId,
+          AudioClip(id: id, label: id, startFrame: 0, lengthFrames: 10),
+        );
+      }
+      return project.id;
+    }))!;
+    appRouter.go('/timeline/$projectId?frame=4');
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    await tester.tap(find.byKey(const Key('timelineSplitModeButton')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 200));
+    // Tapping a clip in split mode chooses it (its settings do not open).
+    final clipB = find.byKey(const ValueKey('timelineClip-b'));
+    await tester.ensureVisible(clipB);
+    await tester.tap(clipB);
+    await pumpRealAsync(tester, const Duration(milliseconds: 200));
+    expect(find.byKey(const Key('timelineSplitApplyButton')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('timelineSplitApplyButton')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    final clips = ps.audioClipsOf(projectId, sceneId).toList();
+    expect(clips.where((c) => c.label == 'a'), hasLength(1));
+    expect(clips.where((c) => c.label == 'b'), hasLength(2));
+    expect(
+      clips.singleWhere((c) => c.id == 'a').lengthFrames,
+      10,
+      reason: 'the clip not chosen stays whole',
+    );
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -5423,7 +5423,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineSplitModeHint =>
-      'Scinder les clips à la position de lecture';
+      'Scinder les clips touchés à la position de lecture (tous si aucun)';
 
   @override
   String get timelinePreviewFullscreenTooltip =>

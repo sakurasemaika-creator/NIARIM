@@ -5049,7 +5049,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineSplitTooltip => '分割';
 
   @override
-  String get timelineSplitModeHint => '在播放位置分割片段';
+  String get timelineSplitModeHint => '在播放位置分割点选的片段（未选则全部）';
 
   @override
   String get timelinePreviewFullscreenTooltip => '全屏显示预览';
@@ -16164,7 +16164,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineSplitTooltip => '分割';
 
   @override
-  String get timelineSplitModeHint => '在播放位置分割片段';
+  String get timelineSplitModeHint => '在播放位置分割點選的片段（未選則全部）';
 
   @override
   String get timelinePreviewFullscreenTooltip => '全螢幕顯示預覽';

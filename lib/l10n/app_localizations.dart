@@ -9228,7 +9228,7 @@ abstract class AppLocalizations {
   /// 分割モードのバーの説明。再生位置にかかるクリップを全部分割する
   ///
   /// In ja, this message translates to:
-  /// **'再生位置でクリップを分割します'**
+  /// **'押して選んだクリップを再生位置で分割します（選ばなければ全部）'**
   String get timelineSplitModeHint;
 
   /// No description provided for @timelinePreviewFullscreenTooltip.

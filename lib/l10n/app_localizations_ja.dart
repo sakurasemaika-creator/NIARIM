@@ -5099,7 +5099,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineSplitTooltip => '分割';
 
   @override
-  String get timelineSplitModeHint => '再生位置でクリップを分割します';
+  String get timelineSplitModeHint => '押して選んだクリップを再生位置で分割します（選ばなければ全部）';
 
   @override
   String get timelinePreviewFullscreenTooltip => 'プレビューを全画面表示';

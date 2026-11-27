@@ -5415,7 +5415,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timelineSplitModeHint =>
-      'Divide los clips en la posición de reproducción';
+      'Divide los clips que toques en la posición de reproducción (todos si no eliges ninguno)';
 
   @override
   String get timelinePreviewFullscreenTooltip =>

@@ -2065,7 +2065,7 @@
   "timelinePreviewPlaceholder": "预览",
   "timelinePreviewFullscreenTip": "点击可全屏显示预览，便于确认成品效果。",
   "timelineSplitTooltip": "分割",
-  "timelineSplitModeHint": "在播放位置分割片段",
+  "timelineSplitModeHint": "在播放位置分割点选的片段（未选则全部）",
   "timelinePreviewFullscreenTooltip": "全屏显示预览",
   "timelineAddVideoTooltip": "+ 视频",
   "timelineAddAudioTooltip": "+ 音源",

@@ -5128,7 +5128,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineSplitTooltip => '분할';
 
   @override
-  String get timelineSplitModeHint => '재생 위치에서 클립을 분할합니다';
+  String get timelineSplitModeHint => '누른 클립을 재생 위치에서 분할합니다(선택하지 않으면 전부)';
 
   @override
   String get timelinePreviewFullscreenTooltip => '미리보기 전체 화면으로 보기';

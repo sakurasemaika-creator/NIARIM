@@ -2088,7 +2088,7 @@
   "timelinePreviewPlaceholder": "Preview",
   "timelinePreviewFullscreenTip": "Tap to show the preview fullscreen. Handy for checking the finished result.",
   "timelineSplitTooltip": "Split",
-  "timelineSplitModeHint": "Split the clips at the playback position",
+  "timelineSplitModeHint": "Split the clips you tap at the playback position (all if none)",
   "timelinePreviewFullscreenTooltip": "Show preview fullscreen",
   "timelineAddVideoTooltip": "+ Video",
   "timelineAddAudioTooltip": "+ Audio",

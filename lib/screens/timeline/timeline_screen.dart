@@ -495,6 +495,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 既に移動ドラッグに使っているため、専用の「選択」ボタンで切り替える。
   bool _isClipMultiSelect = false;
   final Set<String> _selectedClipIds = {};
+
+  /// The clips tapped in split mode: only these are split (the owner's
+  /// choice, 2026-11-27). None: every clip at the playhead, as before.
+  final Set<String> _splitTargetIds = {};
   // クリップのクリップボード。貼り付け先は常に選択中シーンの現在地
   // （赤枠がついている_currentFrameの位置）で、コピー元シーンが選択中の
   // シーンと異なる場合は貼り付けを行わない（クリップ一覧はシーンごとに
@@ -4203,7 +4207,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
         icon: const Icon(Icons.call_split, size: 20),
         onPressed: () {
           if (_isPlaying) _togglePlay();
-          setState(() => _isSplitMode = true);
+          setState(() {
+            _isSplitMode = true;
+            _splitTargetIds.clear();
+          });
         },
         tooltip: l10n.timelineSplitTooltip,
       ),
@@ -4274,15 +4281,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  /// The clips split at [frame]: the tapped ones, or all when none is.
+  List<_TrackClip> _splitTargetsAt(int frame) => [
+    for (final clip in _allClips)
+      if (frame > clip.startFrame &&
+          frame < clip.startFrame + clip.lengthFrames &&
+          (_splitTargetIds.isEmpty || _splitTargetIds.contains(clip.id)))
+        clip,
+  ];
+
   Widget _buildSplitToolbar(AppLocalizations l10n) {
-    final targets = _allClips.where(
-      (clip) =>
-          _currentFrame > clip.startFrame &&
-          _currentFrame < clip.startFrame + clip.lengthFrames,
-    );
-    final canApply = targets.isNotEmpty;
+    final canApply = _splitTargetsAt(_currentFrame).isNotEmpty;
     return Container(
-      height: 50,
+      // Taller when the two-line hint needs it (large text).
+      constraints: const BoxConstraints(minHeight: 50),
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         border: Border(
@@ -4297,7 +4309,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           Expanded(
             child: Text(
               l10n.timelineSplitModeHint,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -4310,7 +4322,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
           IconButton(
             key: const Key('timelineSplitCancelButton'),
             tooltip: l10n.commonCancel,
-            onPressed: () => setState(() => _isSplitMode = false),
+            onPressed: () => setState(() {
+              _isSplitMode = false;
+              _splitTargetIds.clear();
+            }),
             icon: const Icon(Icons.close),
           ),
         ],
@@ -6729,7 +6744,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         }
         const handleW = 8.0;
         const rowPadding = 3.0;
-        final isSelected = _selectedClipIds.contains(clip.id);
+        final isSelected =
+            _selectedClipIds.contains(clip.id) ||
+            (_isSplitMode && _splitTargetIds.contains(clip.id));
         return Positioned(
           left: left,
           top: rowPadding,
@@ -6740,7 +6757,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: GestureDetector(
               key: ValueKey('timelineClip-${clip.id}'),
               onTap: () {
-                if (_isClipMultiSelect) {
+                if (_isSplitMode) {
+                  setState(() {
+                    if (!_splitTargetIds.remove(clip.id)) {
+                      _splitTargetIds.add(clip.id);
+                    }
+                  });
+                } else if (_isClipMultiSelect) {
                   setState(() {
                     if (isSelected) {
                       _selectedClipIds.remove(clip.id);
@@ -9996,13 +10019,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
     final splitFrame = _currentFrame;
-    final targets = _allClips
-        .where(
-          (clip) =>
-              splitFrame > clip.startFrame &&
-              splitFrame < clip.startFrame + clip.lengthFrames,
-        )
-        .toList();
+    final targets = _splitTargetsAt(splitFrame);
     if (targets.isEmpty) return;
 
     final projectService = context.read<ProjectService>();
@@ -10216,6 +10233,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         _clipsOfType(clip.trackType).add(clip);
       }
       _isSplitMode = false;
+      _splitTargetIds.clear();
       _selectedClipIds.clear();
     });
     _syncMediaPlayback();

@@ -2065,7 +2065,7 @@
   "timelinePreviewPlaceholder": "Vista previa",
   "timelinePreviewFullscreenTip": "Toca para ver la vista previa a pantalla completa. Útil para comprobar el resultado final.",
   "timelineSplitTooltip": "Dividir",
-  "timelineSplitModeHint": "Divide los clips en la posición de reproducción",
+  "timelineSplitModeHint": "Divide los clips que toques en la posición de reproducción (todos si no eliges ninguno)",
   "timelinePreviewFullscreenTooltip": "Ver la vista previa a pantalla completa",
   "timelineAddVideoTooltip": "+ Vídeo",
   "timelineAddAudioTooltip": "+ Audio",

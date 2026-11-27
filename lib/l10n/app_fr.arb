@@ -2065,7 +2065,7 @@
   "timelinePreviewPlaceholder": "Aperçu",
   "timelinePreviewFullscreenTip": "Touchez pour afficher l’aperçu en plein écran. Pratique pour vérifier le rendu final.",
   "timelineSplitTooltip": "Scinder",
-  "timelineSplitModeHint": "Scinder les clips à la position de lecture",
+  "timelineSplitModeHint": "Scinder les clips touchés à la position de lecture (tous si aucun)",
   "timelinePreviewFullscreenTooltip": "Afficher l’aperçu en plein écran",
   "timelineAddVideoTooltip": "+ Vidéo",
   "timelineAddAudioTooltip": "+ Audio",
