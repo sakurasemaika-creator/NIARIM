@@ -1186,6 +1186,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumFeatureEndLogo => 'Official End Mark';
 
   @override
+  String get premiumFeatureMakingEndLogo =>
+      'Official End Mark on Making Videos';
+
+  @override
   String get premiumFeatureWatermark => 'Add and edit your own watermark';
 
   @override
@@ -1565,7 +1569,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'The NIARIM end mark is a five-second logo appended to MP4, WebM, and AVI exports. While the benefit is active, you can show or hide it per project. Project preferences are kept after expiry. GIFs do not include it.';
+      'The NIARIM end mark is a five-second logo appended to MP4, WebM, and AVI exports, including making videos. While the benefit is active, you can show or hide it per project. Project preferences are kept after expiry. GIFs do not include it.';
 
   @override
   String get helpAutoSaveTitle => 'Auto Save';
@@ -3086,7 +3090,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      'Premium membership or the end mark editing benefit lets you show or hide the official end mark.';
+      'Premium membership or the end mark editing benefit lets you show or hide the official end mark. Making videos use the same setting.';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -9898,7 +9902,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockMonth => 'months';
 
   @override
-  String get rewardUnlockEndCardEdit => 'Edit / remove end mark';
+  String get rewardUnlockEndCardEdit =>
+      'Edit / remove end mark (including making videos)';
 
   @override
   String get rewardUnlockWatermark => 'Add and edit your own watermark';

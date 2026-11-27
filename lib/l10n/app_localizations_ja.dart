@@ -1149,6 +1149,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumFeatureEndLogo => '公式エンドマーク';
 
   @override
+  String get premiumFeatureMakingEndLogo => 'メイキング動画の公式エンドマーク';
+
+  @override
   String get premiumFeatureWatermark => '自分のウォーターマークを追加・編集';
 
   @override
@@ -1523,7 +1526,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'NIARIMのエンドマークは、MP4・WebM・AVIの本編末尾に付く5秒のロゴです。エンドマーク特典が有効な間は、作品ごとに表示を切り替えられます。期限後も作品の設定は保存されます。GIFには付きません。';
+      'NIARIMのエンドマークは、MP4・WebM・AVIの本編末尾に付く5秒のロゴで、メイキング動画にも付きます。エンドマーク特典が有効な間は、作品ごとに表示を切り替えられます。期限後も作品の設定は保存されます。GIFには付きません。';
 
   @override
   String get helpAutoSaveTitle => '自動保存';
@@ -2959,7 +2962,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      '公式エンドマークの表示・非表示は、プレミアム会員またはエンドマーク編集の特典を利用中に設定できます。';
+      '公式エンドマークの表示・非表示は、プレミアム会員またはエンドマーク編集の特典を利用中に設定できます。メイキング動画にも同じ設定が使われます。';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -9417,7 +9420,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockMonth => 'か月';
 
   @override
-  String get rewardUnlockEndCardEdit => 'エンドマーク編集・削除';
+  String get rewardUnlockEndCardEdit => 'エンドマーク編集・削除（メイキング動画を含む）';
 
   @override
   String get rewardUnlockWatermark => '自分のウォーターマークを追加・編集';

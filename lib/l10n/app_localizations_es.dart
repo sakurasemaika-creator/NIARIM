@@ -1215,6 +1215,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get premiumFeatureEndLogo => 'Marca final oficial';
 
   @override
+  String get premiumFeatureMakingEndLogo =>
+      'Marca final oficial en los vídeos del proceso';
+
+  @override
   String get premiumFeatureWatermark =>
       'Añadir y editar tu propia marca de agua';
 
@@ -1599,7 +1603,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'La marca final de NIARIM dura cinco segundos y se añade a MP4, WebM y AVI. Puedes ocultarla por proyecto mientras el beneficio esté activo. El ajuste se conserva al caducar. Los GIF no la incluyen.';
+      'La marca final de NIARIM dura cinco segundos y se añade a MP4, WebM y AVI, también en los vídeos del proceso. Puedes ocultarla por proyecto mientras el beneficio esté activo. El ajuste se conserva al caducar. Los GIF no la incluyen.';
 
   @override
   String get helpAutoSaveTitle => 'Guardado automático';
@@ -3134,7 +3138,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      'La suscripción Premium o el beneficio de edición de la marca final permite mostrar u ocultar la marca final oficial.';
+      'La suscripción Premium o el beneficio de edición de la marca final permite mostrar u ocultar la marca final oficial. Los vídeos del proceso usan el mismo ajuste.';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -10047,7 +10051,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockMonth => 'meses';
 
   @override
-  String get rewardUnlockEndCardEdit => 'Editar o quitar la marca final';
+  String get rewardUnlockEndCardEdit =>
+      'Editar o quitar la marca final (también en los vídeos del proceso)';
 
   @override
   String get rewardUnlockWatermark => 'Añadir y editar tu propia marca de agua';

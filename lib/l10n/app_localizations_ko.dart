@@ -1152,6 +1152,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumFeatureEndLogo => '공식 엔드마크';
 
   @override
+  String get premiumFeatureMakingEndLogo => '메이킹 동영상의 공식 엔드마크';
+
+  @override
   String get premiumFeatureWatermark => '내 워터마크 추가 및 편집';
 
   @override
@@ -1527,7 +1530,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 엔드마크는 MP4, WebM, AVI 끝에 붙는 5초 로고입니다. 혜택이 유효하면 작품별로 표시 여부를 바꿀 수 있습니다. 만료 후에도 설정이 저장되며 GIF에는 붙지 않습니다.';
+      'NIARIM 엔드마크는 MP4, WebM, AVI 끝에 붙는 5초 로고이며, 메이킹 동영상에도 붙습니다. 혜택이 유효하면 작품별로 표시 여부를 바꿀 수 있습니다. 만료 후에도 설정이 저장되며 GIF에는 붙지 않습니다.';
 
   @override
   String get helpAutoSaveTitle => '자동 저장';
@@ -2973,7 +2976,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      '프리미엄 또는 엔드마크 편집 혜택을 이용하면 공식 엔드마크를 표시하거나 숨길 수 있습니다.';
+      '프리미엄 또는 엔드마크 편집 혜택을 이용하면 공식 엔드마크를 표시하거나 숨길 수 있습니다. 메이킹 동영상에도 같은 설정이 적용됩니다.';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -9470,7 +9473,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockMonth => '개월';
 
   @override
-  String get rewardUnlockEndCardEdit => '엔드마크 편집 및 삭제';
+  String get rewardUnlockEndCardEdit => '엔드마크 편집 및 삭제(메이킹 동영상 포함)';
 
   @override
   String get rewardUnlockWatermark => '내 워터마크 추가 및 편집';

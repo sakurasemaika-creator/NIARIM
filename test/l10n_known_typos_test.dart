@@ -55,6 +55,7 @@ const _endMarkTerms = {
 const _endMarkLabels = [
   'premiumHeroHighlightWatermark',
   'premiumFeatureEndLogo',
+  'premiumFeatureMakingEndLogo',
   'premiumBannerEndCardBody',
   'helpEndCardTitle',
   'helpEndCardDesc',

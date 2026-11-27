@@ -424,6 +424,16 @@ class ExportEngine {
   /// 使わずvg.loadPictureを直接呼ぶ）。タイトルロゴは以前まで
   /// ParagraphBuilderで「NIARIM」の文字を仮描画していたが、完成した
   /// アプリタイトルロゴ（assets/logo/title_logo.svg）に差し替えた。
+  /// 公式エンドマークの長さ（秒）。書き出しのfpsでこの秒数ぶんのコマを足す。
+  static const int officialEndCardSeconds = 5;
+
+  /// 公式エンドマークの1コマ（[width]×[height]のPNG）。作品の書き出しと
+  /// メイキング動画の書き出しが同じ絵を使う。
+  Future<Uint8List> renderOfficialEndCardPng({
+    required int width,
+    required int height,
+  }) => _renderEndCardPng(width: width, height: height);
+
   Future<Uint8List> _renderEndCardPng({
     required int width,
     required int height,
@@ -835,7 +845,7 @@ class ExportEngine {
             );
             final endCardFile = File('${framesDir.path}/endcard.png');
             await endCardFile.writeAsBytes(endCardBytes);
-            for (int i = 0; i < fps * 5; i++) {
+            for (int i = 0; i < fps * officialEndCardSeconds; i++) {
               framePaths.add(endCardFile.path);
             }
           }
@@ -1097,7 +1107,7 @@ class ExportEngine {
               width: width,
               height: height,
             );
-            for (int i = 0; i < fps * 5; i++) {
+            for (int i = 0; i < fps * officialEndCardSeconds; i++) {
               final file = File(
                 '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
               );
@@ -1248,7 +1258,7 @@ class ExportEngine {
               width: width,
               height: height,
             );
-            for (int i = 0; i < fps * 5; i++) {
+            for (int i = 0; i < fps * officialEndCardSeconds; i++) {
               final file = File(
                 '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
               );

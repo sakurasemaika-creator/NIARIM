@@ -1128,6 +1128,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumFeatureEndLogo => '官方片尾标记';
 
   @override
+  String get premiumFeatureMakingEndLogo => '制作视频的官方片尾标记';
+
+  @override
   String get premiumFeatureWatermark => '添加和编辑自定义水印';
 
   @override
@@ -1501,7 +1504,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 片尾标记是 MP4、WebM 和 AVI 末尾的 5 秒标志。权益有效时可按作品切换显示。到期后仍保留设置。GIF 不添加标志。';
+      'NIARIM 片尾标记是 MP4、WebM 和 AVI 末尾的 5 秒标志，制作视频也会添加。权益有效时可按作品切换显示。到期后仍保留设置。GIF 不添加标志。';
 
   @override
   String get helpAutoSaveTitle => '自动保存';
@@ -2930,7 +2933,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumBannerFullExportTitle => '导出完整作品';
 
   @override
-  String get premiumBannerEndCardBody => '使用高级会员或片尾标记编辑权益时，可以显示或隐藏官方片尾标记。';
+  String get premiumBannerEndCardBody =>
+      '使用高级会员或片尾标记编辑权益时，可以显示或隐藏官方片尾标记。制作视频也使用相同的设置。';
 
   @override
   String get premiumBannerWatermarkBody => '高级会员或水印权益可以添加和编辑自定义水印。';
@@ -9296,7 +9300,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockMonth => '个月';
 
   @override
-  String get rewardUnlockEndCardEdit => '编辑或移除片尾标记';
+  String get rewardUnlockEndCardEdit => '编辑或移除片尾标记（含制作视频）';
 
   @override
   String get rewardUnlockWatermark => '添加和编辑自定义水印';
@@ -12039,6 +12043,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumFeatureEndLogo => '官方片尾標記';
 
   @override
+  String get premiumFeatureMakingEndLogo => '製作影片的官方片尾標記';
+
+  @override
   String get premiumFeatureWatermark => '新增和編輯自訂浮水印';
 
   @override
@@ -12412,7 +12419,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpEndCardDesc =>
-      'NIARIM 片尾標記是 MP4、WebM 和 AVI 末尾的 5 秒標誌。權益有效時可依作品切換顯示。到期後仍保留設定。GIF 不會加上標誌。';
+      'NIARIM 片尾標記是 MP4、WebM 和 AVI 末尾的 5 秒標誌，製作影片也會加上。權益有效時可依作品切換顯示。到期後仍保留設定。GIF 不會加上標誌。';
 
   @override
   String get helpAutoSaveTitle => '自動儲存';
@@ -13841,7 +13848,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumBannerFullExportTitle => '匯出完整作品';
 
   @override
-  String get premiumBannerEndCardBody => '使用進階會員或片尾標記編輯權益時，可以顯示或隱藏官方片尾標記。';
+  String get premiumBannerEndCardBody =>
+      '使用進階會員或片尾標記編輯權益時，可以顯示或隱藏官方片尾標記。製作影片也使用相同的設定。';
 
   @override
   String get premiumBannerWatermarkBody => '進階會員或浮水印權益可以新增和編輯自訂浮水印。';
@@ -20209,7 +20217,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockMonth => '個月';
 
   @override
-  String get rewardUnlockEndCardEdit => '編輯或移除片尾標記';
+  String get rewardUnlockEndCardEdit => '編輯或移除片尾標記（含製作影片）';
 
   @override
   String get rewardUnlockWatermark => '新增和編輯自訂浮水印';

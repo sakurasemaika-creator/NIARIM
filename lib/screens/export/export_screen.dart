@@ -25,6 +25,7 @@ import 'widgets/export_preset_selector.dart';
 import '../../models/export_preset.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/grouped_sheet.dart';
+import '../../utils/clock_duration_label.dart';
 import '../../utils/file_failure_reason.dart';
 import '../../widgets/icon_notice.dart';
 export '../../models/export_preset.dart';
@@ -153,12 +154,10 @@ class _ExportScreenState extends State<ExportScreen> {
       maxSeconds: needsLongExport ? 90 : null,
     );
     final wholeSeconds = timing.outputFrames(scenes) ~/ _fps;
-    final time = MaterialLocalizations.of(context);
-    final duration = [
-      if (wholeSeconds >= 3600) time.formatDecimal(wholeSeconds ~/ 3600),
-      time.formatDecimal(wholeSeconds ~/ 60 % 60).padLeft(2, '0'),
-      time.formatDecimal(wholeSeconds % 60).padLeft(2, '0'),
-    ].join(':');
+    final duration = clockDurationLabel(
+      MaterialLocalizations.of(context),
+      wholeSeconds,
+    );
     final appendEndCard = _appendEndCard(
       premium,
       project?.hideEndCard,

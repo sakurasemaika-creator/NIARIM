@@ -2169,6 +2169,12 @@ abstract class AppLocalizations {
   /// **'公式エンドマーク'**
   String get premiumFeatureEndLogo;
 
+  /// No description provided for @premiumFeatureMakingEndLogo.
+  ///
+  /// In ja, this message translates to:
+  /// **'メイキング動画の公式エンドマーク'**
+  String get premiumFeatureMakingEndLogo;
+
   /// No description provided for @premiumFeatureWatermark.
   ///
   /// In ja, this message translates to:
@@ -2856,7 +2862,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpEndCardDesc.
   ///
   /// In ja, this message translates to:
-  /// **'NIARIMのエンドマークは、MP4・WebM・AVIの本編末尾に付く5秒のロゴです。エンドマーク特典が有効な間は、作品ごとに表示を切り替えられます。期限後も作品の設定は保存されます。GIFには付きません。'**
+  /// **'NIARIMのエンドマークは、MP4・WebM・AVIの本編末尾に付く5秒のロゴで、メイキング動画にも付きます。エンドマーク特典が有効な間は、作品ごとに表示を切り替えられます。期限後も作品の設定は保存されます。GIFには付きません。'**
   String get helpEndCardDesc;
 
   /// No description provided for @helpAutoSaveTitle.
@@ -5436,7 +5442,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumBannerEndCardBody.
   ///
   /// In ja, this message translates to:
-  /// **'公式エンドマークの表示・非表示は、プレミアム会員またはエンドマーク編集の特典を利用中に設定できます。'**
+  /// **'公式エンドマークの表示・非表示は、プレミアム会員またはエンドマーク編集の特典を利用中に設定できます。メイキング動画にも同じ設定が使われます。'**
   String get premiumBannerEndCardBody;
 
   /// No description provided for @premiumBannerWatermarkBody.
@@ -16890,7 +16896,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockEndCardEdit.
   ///
   /// In ja, this message translates to:
-  /// **'エンドマーク編集・削除'**
+  /// **'エンドマーク編集・削除（メイキング動画を含む）'**
   String get rewardUnlockEndCardEdit;
 
   /// No description provided for @rewardUnlockWatermark.

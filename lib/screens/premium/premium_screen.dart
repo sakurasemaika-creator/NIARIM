@@ -480,6 +480,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
         l10n.premiumValueYes,
         l10n.premiumValueRemovable,
       ),
+      (
+        l10n.premiumFeatureMakingEndLogo,
+        l10n.premiumValueYes,
+        l10n.premiumValueRemovable,
+      ),
       (l10n.premiumFeatureWatermark, '×', '○'),
       (l10n.premiumFeatureToneCurve, '×', '○'),
       (l10n.premiumFeatureLevelCorrection, '×', '○'),

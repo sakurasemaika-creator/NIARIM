@@ -1,31 +1,27 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math' as math;
 
-import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as img;
 import 'package:provider/provider.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../config/signal_colors.dart';
 import '../../engine/export_engine.dart';
+import '../../engine/making_export.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/project.dart';
 import '../../services/export_storage.dart';
-import '../../services/hw_video_encoder.dart';
 import '../../services/making_service.dart';
+import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
+import '../../services/settings_service.dart';
 import '../../utils/app_error_reporter.dart';
+import '../../utils/clock_duration_label.dart';
 import '../../utils/file_size_label.dart';
 import '../../utils/making_strings.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/icon_notice.dart';
 import '../../widgets/menu_surface.dart';
-
-/// 書き出しの形式。名前（[Enum.name]）がそのままファイルの拡張子。
-enum _MakingFormat { mp4, gif, webm, avi }
 
 class MakingScreen extends StatefulWidget {
   const MakingScreen({super.key, required this.projectId});
@@ -46,13 +42,19 @@ class _MakingScreenState extends State<MakingScreen> {
   bool _playing = false;
   bool _exporting = false;
   int _index = 0;
-  _MakingFormat _format = _MakingFormat.mp4;
+  MakingExportFormat _format = MakingExportFormat.mp4;
   Timer? _playTimer;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // The end mark follows the verified benefits, like the work's export.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final premium = context.read<PremiumService?>();
+      if (premium != null) unawaited(premium.refreshBenefits());
+    });
   }
 
   @override
@@ -159,133 +161,52 @@ class _MakingScreenState extends State<MakingScreen> {
     }
   }
 
+  /// この書き出しに公式エンドマークを付けるか。作品の書き出しと同じ決まり
+  /// （プレミアム会員・エンドマークの特典を使っている間は作品の設定と既定の
+  /// 設定に従い、それ以外は付ける。GIFには付けない）。
+  bool _appendsEndCard(
+    PremiumService? premium,
+    Project? project,
+    SettingsService? settings,
+  ) {
+    if (!MakingExport.carriesOfficialEndCard(_format)) return false;
+    if (premium == null) return true;
+    return premium.shouldAppendOfficialEndCard(
+      projectHidden: project?.hideEndCard,
+      defaultHidden: settings?.endCardDefaultHiddenForPremium ?? true,
+    );
+  }
+
+  Project? _project(ProjectService projects) =>
+      projects.projects.where((p) => p.id == widget.projectId).firstOrNull;
+
   Future<void> _export() async {
     final snapshots = _history?.snapshots ?? const <MakingSnapshot>[];
     if (snapshots.length < 2 || _exporting) return;
+    // The output conditions are fixed before the first frame is encoded.
+    final appendEndCard = _appendsEndCard(
+      context.read<PremiumService?>(),
+      _project(context.read<ProjectService>()),
+      context.read<SettingsService?>(),
+    );
+    final format = _format;
     setState(() {
       _exporting = true;
       _playing = false;
     });
     _playTimer?.cancel();
-    Directory? staging;
     String? partialOutput;
     try {
-      final firstBytes = await File(snapshots.first.path).readAsBytes();
-      final firstImage = img.decodeImage(firstBytes);
-      if (firstImage == null) {
-        throw StateError('Making snapshot image is unreadable.');
-      }
-      final width = firstImage.width;
-      final height = firstImage.height;
-      const fps = 8;
       final exportDirectory = await ExportEngine.exportsDir();
       final outputPath =
-          '${exportDirectory.path}/Making_${widget.projectId}_${DateTime.now().millisecondsSinceEpoch}.${_format.name}';
+          '${exportDirectory.path}/Making_${widget.projectId}_${DateTime.now().millisecondsSinceEpoch}.${format.name}';
       partialOutput = outputPath;
-
-      switch (_format) {
-        case _MakingFormat.mp4:
-          await HardwareVideoEncoder.encodeMp4(
-            framePaths: snapshots.map((snapshot) => snapshot.path).toList(),
-            fps: fps,
-            width: width,
-            height: height,
-            outputPath: outputPath,
-          );
-        case _MakingFormat.gif:
-          final encoder = newExportGifEncoder();
-          // GIF palette frames remain resident in the encoder. Downsample and
-          // cap this format to keep export memory bounded on phones.
-          final step = (snapshots.length / 50)
-              .ceil()
-              .clamp(1, snapshots.length)
-              .toInt();
-          for (var i = 0; i < snapshots.length; i += step) {
-            final bytes = await File(snapshots[i].path).readAsBytes();
-            final decoded = img.decodeImage(bytes);
-            if (decoded == null) continue;
-            final maxSide = math.max(decoded.width, decoded.height);
-            final gifFrame = maxSide > 360
-                ? img.copyResize(
-                    decoded,
-                    width: (decoded.width * 360 / maxSide)
-                        .round()
-                        .clamp(1, 360)
-                        .toInt(),
-                    height: (decoded.height * 360 / maxSide)
-                        .round()
-                        .clamp(1, 360)
-                        .toInt(),
-                  )
-                : decoded;
-            encoder.addFrame(gifFrame, duration: 100 ~/ fps);
-          }
-          final lastBytes = await File(snapshots.last.path).readAsBytes();
-          final lastDecoded = img.decodeImage(lastBytes);
-          if (lastDecoded != null && (snapshots.length - 1) % step != 0) {
-            final maxSide = math.max(lastDecoded.width, lastDecoded.height);
-            final finalFrame = maxSide > 360
-                ? img.copyResize(
-                    lastDecoded,
-                    width: (lastDecoded.width * 360 / maxSide)
-                        .round()
-                        .clamp(1, 360)
-                        .toInt(),
-                    height: (lastDecoded.height * 360 / maxSide)
-                        .round()
-                        .clamp(1, 360)
-                        .toInt(),
-                  )
-                : lastDecoded;
-            encoder.addFrame(finalFrame, duration: 100 ~/ fps);
-          }
-          final gif = encoder.finish();
-          if (gif == null || gif.isEmpty) {
-            throw StateError('GIF encoder returned no data.');
-          }
-          await File(outputPath).writeAsBytes(gif, flush: true);
-        case _MakingFormat.webm:
-        case _MakingFormat.avi:
-          final temp = await getTemporaryDirectory();
-          staging = Directory(
-            '${temp.path}/niarim_making_export_${DateTime.now().microsecondsSinceEpoch}',
-          );
-          await staging.create(recursive: true);
-          for (var i = 0; i < snapshots.length; i++) {
-            final target = File(
-              '${staging.path}/frame_${i.toString().padLeft(6, '0')}.jpg',
-            );
-            await File(snapshots[i].path).copy(target.path);
-          }
-          final args = <String>[
-            '-y',
-            '-framerate',
-            fps.toString(),
-            '-i',
-            '${staging.path}/frame_%06d.jpg',
-          ];
-          // YUV 4:2:0 encoders need even dimensions on some devices.
-          args.addAll(['-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2']);
-          if (_format == _MakingFormat.webm) {
-            args.addAll([
-              '-c:v',
-              'libvpx-vp9',
-              '-pix_fmt',
-              'yuv420p',
-              '-b:v',
-              '2M',
-            ]);
-          } else {
-            args.addAll(['-c:v', 'mjpeg', '-q:v', '3', '-pix_fmt', 'yuvj420p']);
-          }
-          args.add(outputPath);
-          final session = await FFmpegKit.executeWithArguments(args);
-          if (!ReturnCode.isSuccess(await session.getReturnCode())) {
-            throw StateError(
-              'Video encoder failed: ${await session.getOutput() ?? ''}',
-            );
-          }
-      }
+      await MakingExport.export(
+        snapshotPaths: [for (final snapshot in snapshots) snapshot.path],
+        format: format,
+        outputPath: outputPath,
+        appendEndCard: appendEndCard,
+      );
 
       final outputFile = File(outputPath);
       if (!await outputFile.exists() || await outputFile.length() == 0) {
@@ -313,35 +234,36 @@ class _MakingScreenState extends State<MakingScreen> {
         SnackBar(content: Text(MakingStrings.exportFailed(context))),
       );
     } finally {
-      if (staging != null) {
-        try {
-          if (await staging.exists()) await staging.delete(recursive: true);
-        } catch (cleanupError) {
-          debugPrint(
-            'Could not remove making export staging files: $cleanupError',
-          );
-        }
-      }
       if (mounted) setState(() => _exporting = false);
     }
   }
 
-  String _formatName(AppLocalizations l10n, _MakingFormat format) =>
+  /// 書き出す動画の長さと、公式エンドマークが付くか（作品の書き出しの画面と
+  /// 同じ文）。
+  String _outputSummary(AppLocalizations l10n, int count, bool endCard) {
+    final duration = clockDurationLabel(
+      MaterialLocalizations.of(context),
+      MakingExport.bodySeconds(count, _format),
+    );
+    return endCard
+        ? l10n.exportOutputWithEndCard(duration)
+        : l10n.exportOutputWithoutEndCard(duration);
+  }
+
+  String _formatName(AppLocalizations l10n, MakingExportFormat format) =>
       switch (format) {
-        _MakingFormat.mp4 => l10n.exportFormatMp4,
-        _MakingFormat.gif => l10n.exportFormatGif,
-        _MakingFormat.webm => MakingStrings.formatWebm(context),
-        _MakingFormat.avi => l10n.exportFormatAvi,
+        MakingExportFormat.mp4 => l10n.exportFormatMp4,
+        MakingExportFormat.gif => l10n.exportFormatGif,
+        MakingExportFormat.webm => MakingStrings.formatWebm(context),
+        MakingExportFormat.avi => l10n.exportFormatAvi,
       };
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final project = context
-        .watch<ProjectService>()
-        .projects
-        .where((p) => p.id == widget.projectId)
-        .firstOrNull;
+    final project = _project(context.watch<ProjectService>());
+    final premium = context.watch<PremiumService?>();
+    final settings = context.watch<SettingsService?>();
     final snapshots = _history?.snapshots ?? const <MakingSnapshot>[];
     return Scaffold(
       appBar: AppBar(title: FitOrHideTitle(MakingStrings.makingTitle(context))),
@@ -462,6 +384,26 @@ class _MakingScreenState extends State<MakingScreen> {
                           Text(fileSizeLabel(l10n, _history!.sizeBytes)),
                         ],
                       ),
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            _outputSummary(
+                              l10n,
+                              snapshots.length,
+                              _appendsEndCard(premium, project, settings),
+                            ),
+                            key: const Key('makingExportOutputSummary'),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ),
+                      ),
                       if (_history?.limitReached == true)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
@@ -477,28 +419,32 @@ class _MakingScreenState extends State<MakingScreen> {
                             // 塗った欄の下地はメニューの背景色なので、選んだ値も
                             // メニューの文字色で描く。
                             child: MenuSurface(
-                              child: DropdownButtonFormField<_MakingFormat>(
-                                initialValue: _format,
-                                isExpanded: true,
-                                decoration: InputDecoration(
-                                  labelText: l10n.exportFormatSection,
-                                  border: const OutlineInputBorder(),
-                                ),
-                                items: [
-                                  for (final format in _MakingFormat.values)
-                                    DropdownMenuItem(
-                                      value: format,
-                                      child: Text(_formatName(l10n, format)),
+                              child:
+                                  DropdownButtonFormField<MakingExportFormat>(
+                                    initialValue: _format,
+                                    isExpanded: true,
+                                    decoration: InputDecoration(
+                                      labelText: l10n.exportFormatSection,
+                                      border: const OutlineInputBorder(),
                                     ),
-                                ],
-                                onChanged: _exporting
-                                    ? null
-                                    : (value) {
-                                        if (value != null) {
-                                          setState(() => _format = value);
-                                        }
-                                      },
-                              ),
+                                    items: [
+                                      for (final format
+                                          in MakingExportFormat.values)
+                                        DropdownMenuItem(
+                                          value: format,
+                                          child: Text(
+                                            _formatName(l10n, format),
+                                          ),
+                                        ),
+                                    ],
+                                    onChanged: _exporting
+                                        ? null
+                                        : (value) {
+                                            if (value != null) {
+                                              setState(() => _format = value);
+                                            }
+                                          },
+                                  ),
                             ),
                           ),
                           const SizedBox(width: 12),

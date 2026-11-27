@@ -1211,6 +1211,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get premiumFeatureEndLogo => 'Marque de fin officielle';
 
   @override
+  String get premiumFeatureMakingEndLogo =>
+      'Marque de fin officielle des vidéos du making-of';
+
+  @override
   String get premiumFeatureWatermark =>
       'Ajouter et modifier votre propre filigrane';
 
@@ -1593,7 +1597,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'La marque de fin NIARIM de cinq secondes est ajoutée aux exports MP4, WebM et AVI. Vous pouvez la masquer par projet tant que l’avantage est actif. Le réglage est conservé après expiration. Les GIF sont exclus.';
+      'La marque de fin NIARIM de cinq secondes est ajoutée aux exports MP4, WebM et AVI, vidéos du making-of comprises. Vous pouvez la masquer par projet tant que l’avantage est actif. Le réglage est conservé après expiration. Les GIF sont exclus.';
 
   @override
   String get helpAutoSaveTitle => 'Enregistrement automatique';
@@ -3132,7 +3136,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      'L’abonnement Premium ou l’avantage de modification de la marque de fin permet d’afficher ou de masquer la marque de fin officielle.';
+      'L’abonnement Premium ou l’avantage de modification de la marque de fin permet d’afficher ou de masquer la marque de fin officielle. Les vidéos du making-of suivent le même réglage.';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -10074,7 +10078,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockMonth => 'mois';
 
   @override
-  String get rewardUnlockEndCardEdit => 'Modifier / retirer la marque de fin';
+  String get rewardUnlockEndCardEdit =>
+      'Modifier / retirer la marque de fin (vidéos du making-of incluses)';
 
   @override
   String get rewardUnlockWatermark =>

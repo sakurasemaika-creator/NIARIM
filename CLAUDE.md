@@ -1031,6 +1031,20 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   FFmpegで音を作らない）。音の無い動画素材・無い素材は入れずに映像は書き、完了の画面で
   件数を知らせる（`audioLeftOut`）。GIFは音なし。MP4の音は実機でしか確かめられない。
   `test/export_audio_test.dart`が本物のffmpegで音の位置まで見張る。
+- **メイキング動画の書き出しにも公式エンドマーク（NIARIMのロゴ、5秒）を付ける（所有者の依頼、
+  2026-11-27「メイキング動画の出力時も無料会員はNIARIMロゴをつけるようにしましょう。プレミアム会員と
+  特典にこのメイキングのロゴ削除も追加してください」）**：付けるかどうかは作品の書き出しと同じ決まり
+  （`PremiumService.shouldAppendOfficialEndCard`＝プレミアム会員・エンドマーク編集・削除の特典
+  〔`endCardEdit`〕を使っている間は作品の設定〔`hideEndCard`〕と既定の設定に従い、それ以外は付ける。
+  GIFには付けない〔`MakingExport.carriesOfficialEndCard`〕）。絵も同じ（`ExportEngine.
+  renderOfficialEndCardPng`、長さは`ExportEngine.officialEndCardSeconds`）。書き出しは
+  `lib/engine/making_export.dart`の`MakingExport.export`（MP4は端末のエンコーダーへ記録のJPEGの後に
+  エンドマークのPNGを、WebM・AVIはFFmpegの連番へJPEGにして足す）。特典は新しく作らず、今の
+  `endCardEdit`がメイキング動画も外す（価格・サーバーの特典の種類は変えていない）。利用者に見える
+  所：特典の名前「エンドマーク編集・削除（メイキング動画を含む）」、プレミアムの比較表の行
+  「メイキング動画の公式エンドマーク」（`premiumFeatureMakingEndLogo`）、案内の文
+  （`premiumBannerEndCardBody`・`helpEndCardDesc`）、メイキングの画面の「本編 … + NIARIMエンド
+  マーク（5秒）」（作品の書き出しの画面と同じ文）。`test/making_export_end_card_test.dart`が見張る。
 - **数と単位をコードでつなげない（ARBのICU pluralにする）**：特典交換の期間は
   `'${amount}$unit'`でつないでいて、英語「1hours」・スペイン語「1horas」・
   フランス語「1heures」と出ていた。`rewardDurationHours`等（`{count, plural,
