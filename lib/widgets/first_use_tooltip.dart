@@ -30,11 +30,17 @@ class FirstUseTooltip extends StatefulWidget {
   final String message;
   final Widget child;
 
+  /// カードに共通の操作ガイド（キャンバスのツールバーの使い方）を載せるか。
+  /// ツールバーの外（タイムラインの全画面表示のボタン）では、その画面に
+  /// 無い操作の説明になるので載せない。
+  final bool toolbarGuide;
+
   const FirstUseTooltip({
     super.key,
     required this.tooltipKey,
     required this.message,
     required this.child,
+    this.toolbarGuide = true,
   });
 
   @override
@@ -88,6 +94,7 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
     // ボタン等）このウィジェットは無くなるが、説明はそれでも出す
     // （以前は出せずに終わり、表示済みにもならなかった）。
     final message = widget.message;
+    final toolbarGuide = widget.toolbarGuide;
     final barrierColor = Theme.of(
       context,
     ).colorScheme.scrim.withValues(alpha: 0.45);
@@ -116,7 +123,8 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
         transitionDuration: const Duration(milliseconds: 150),
         transitionBuilder: (context, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
-        pageBuilder: (context, _, _) => _FirstUseCard(message: message),
+        pageBuilder: (context, _, _) =>
+            _FirstUseCard(message: message, toolbarGuide: toolbarGuide),
       );
       _showing[key] = (navigator: navigator, route: route);
       navigator.push(route).whenComplete(() {
@@ -191,9 +199,10 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
 /// 初回の説明カード。カード自体・右下の「閉じる」・カードの外のタップ・
 /// 戻る操作・Escで閉じる。
 class _FirstUseCard extends StatelessWidget {
-  const _FirstUseCard({required this.message});
+  const _FirstUseCard({required this.message, required this.toolbarGuide});
 
   final String message;
+  final bool toolbarGuide;
 
   @override
   Widget build(BuildContext context) {
@@ -208,7 +217,7 @@ class _FirstUseCard extends StatelessWidget {
         scopesRoute: true,
         namesRoute: true,
         explicitChildNodes: true,
-        label: l10n.firstUseTipOperationGuideTitle,
+        label: toolbarGuide ? l10n.firstUseTipOperationGuideTitle : message,
         child: Material(
           color: Colors.transparent,
           child: GestureDetector(
@@ -249,34 +258,36 @@ class _FirstUseCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Divider(
-                      height: 1,
-                      color: scheme.onPrimary.withValues(alpha: 0.35),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.firstUseTipOperationGuideTitle,
-                      style: localizedHeadingStyle(
-                        context,
-                        TextStyle(color: scheme.onPrimary, fontSize: 14),
+                    if (toolbarGuide) ...[
+                      const SizedBox(height: 14),
+                      Divider(
+                        height: 1,
+                        color: scheme.onPrimary.withValues(alpha: 0.35),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      l10n.firstUseTipOperationGuideBody,
-                      style: TextStyle(
-                        color: scheme.onPrimary.withValues(alpha: 0.92),
-                        fontSize: 15,
-                        height: 1.5,
-                        fontFamily: bodyFontFamilyFor(
-                          Localizations.maybeLocaleOf(context),
-                        ),
-                        fontFamilyFallback: bodyFontFallbackFor(
-                          Localizations.maybeLocaleOf(context),
+                      const SizedBox(height: 12),
+                      Text(
+                        l10n.firstUseTipOperationGuideTitle,
+                        style: localizedHeadingStyle(
+                          context,
+                          TextStyle(color: scheme.onPrimary, fontSize: 14),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 6),
+                      Text(
+                        l10n.firstUseTipOperationGuideBody,
+                        style: TextStyle(
+                          color: scheme.onPrimary.withValues(alpha: 0.92),
+                          fontSize: 15,
+                          height: 1.5,
+                          fontFamily: bodyFontFamilyFor(
+                            Localizations.maybeLocaleOf(context),
+                          ),
+                          fontFamilyFallback: bodyFontFallbackFor(
+                            Localizations.maybeLocaleOf(context),
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 14),
                     Align(
                       alignment: Alignment.centerRight,

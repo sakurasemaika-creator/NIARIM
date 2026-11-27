@@ -9213,6 +9213,18 @@ abstract class AppLocalizations {
   /// **'タップするとプレビューを全画面表示できます。仕上がりの確認に便利です。'**
   String get timelinePreviewFullscreenTip;
 
+  /// タイムラインの分割モードを始めるボタンの吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'分割'**
+  String get timelineSplitTooltip;
+
+  /// 分割モードのバーの説明。再生位置にかかるクリップを全部分割する
+  ///
+  /// In ja, this message translates to:
+  /// **'再生位置でクリップを分割します'**
+  String get timelineSplitModeHint;
+
   /// No description provided for @timelinePreviewFullscreenTooltip.
   ///
   /// In ja, this message translates to:

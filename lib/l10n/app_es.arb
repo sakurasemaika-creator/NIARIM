@@ -2063,6 +2063,8 @@
   "timelineDefaultProjectName": "Nombre del proyecto",
   "timelinePreviewPlaceholder": "Vista previa",
   "timelinePreviewFullscreenTip": "Toca para ver la vista previa a pantalla completa. Útil para comprobar el resultado final.",
+  "timelineSplitTooltip": "Dividir",
+  "timelineSplitModeHint": "Divide los clips en la posición de reproducción",
   "timelinePreviewFullscreenTooltip": "Ver la vista previa a pantalla completa",
   "timelineAddVideoTooltip": "+ Vídeo",
   "timelineAddAudioTooltip": "+ Audio",

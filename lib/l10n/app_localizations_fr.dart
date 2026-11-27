@@ -5416,6 +5416,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Touchez pour afficher l’aperçu en plein écran. Pratique pour vérifier le rendu final.';
 
   @override
+  String get timelineSplitTooltip => 'Scinder';
+
+  @override
+  String get timelineSplitModeHint =>
+      'Scinder les clips à la position de lecture';
+
+  @override
   String get timelinePreviewFullscreenTooltip =>
       'Afficher l’aperçu en plein écran';
 

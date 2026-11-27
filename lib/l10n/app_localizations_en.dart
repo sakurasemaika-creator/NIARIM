@@ -5328,6 +5328,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap to show the preview fullscreen. Handy for checking the finished result.';
 
   @override
+  String get timelineSplitTooltip => 'Split';
+
+  @override
+  String get timelineSplitModeHint =>
+      'Split the clips at the playback position';
+
+  @override
   String get timelinePreviewFullscreenTooltip => 'Show preview fullscreen';
 
   @override

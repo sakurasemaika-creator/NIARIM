@@ -5408,6 +5408,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Toca para ver la vista previa a pantalla completa. Útil para comprobar el resultado final.';
 
   @override
+  String get timelineSplitTooltip => 'Dividir';
+
+  @override
+  String get timelineSplitModeHint =>
+      'Divide los clips en la posición de reproducción';
+
+  @override
   String get timelinePreviewFullscreenTooltip =>
       'Ver la vista previa a pantalla completa';
 

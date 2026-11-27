@@ -5122,6 +5122,12 @@ class AppLocalizationsKo extends AppLocalizations {
       '탭하면 미리보기를 전체 화면으로 볼 수 있습니다. 완성도 확인에 편리합니다.';
 
   @override
+  String get timelineSplitTooltip => '분할';
+
+  @override
+  String get timelineSplitModeHint => '재생 위치에서 클립을 분할합니다';
+
+  @override
   String get timelinePreviewFullscreenTooltip => '미리보기 전체 화면으로 보기';
 
   @override

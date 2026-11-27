@@ -5093,6 +5093,12 @@ class AppLocalizationsJa extends AppLocalizations {
       'タップするとプレビューを全画面表示できます。仕上がりの確認に便利です。';
 
   @override
+  String get timelineSplitTooltip => '分割';
+
+  @override
+  String get timelineSplitModeHint => '再生位置でクリップを分割します';
+
+  @override
   String get timelinePreviewFullscreenTooltip => 'プレビューを全画面表示';
 
   @override

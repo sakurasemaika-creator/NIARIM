@@ -3708,6 +3708,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 child: FirstUseTooltip(
                   tooltipKey: 'timeline_preview_fullscreen',
                   message: l10n.timelinePreviewFullscreenTip,
+                  toolbarGuide: false,
                   child: IconButton(
                     key: const Key('timelinePreviewFullscreenButton'),
                     padding: EdgeInsets.zero,
@@ -4161,9 +4162,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           if (_isPlaying) _togglePlay();
           setState(() => _isSplitMode = true);
         },
-        tooltip: Localizations.localeOf(context).languageCode == 'ja'
-            ? '分割'
-            : 'Split',
+        tooltip: l10n.timelineSplitTooltip,
       ),
       IconButton(
         icon: const Icon(Icons.movie_filter, size: 20),
@@ -4233,7 +4232,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Widget _buildSplitToolbar(AppLocalizations l10n) {
-    final isJapanese = Localizations.localeOf(context).languageCode == 'ja';
     final targets = _allClips.where(
       (clip) =>
           _currentFrame > clip.startFrame &&
@@ -4255,9 +4253,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         children: [
           Expanded(
             child: Text(
-              isJapanese
-                  ? '分割モード：再生ヘッド位置で分割'
-                  : 'Split mode: split at the playhead',
+              l10n.timelineSplitModeHint,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

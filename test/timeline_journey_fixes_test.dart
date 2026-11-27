@@ -6,6 +6,9 @@
 //   打つ数は0から）。
 // * 音声の音量を数字で打つと0〜1で、表示は%（50と打つと断られた）。
 // * スマホでプレビューを縮めると、トラックの一覧は広がらず下に空白が残った。
+// * 全画面表示のボタンの最初の説明に、キャンバスのツールバーの「基本の操作」が
+//   付いていた。
+// * 分割のボタンの吹き出しと分割モードの文が、日本語と英語の手書きだった。
 import 'dart:io';
 
 import 'package:flutter/material.dart' hide MaterialType;
@@ -37,13 +40,21 @@ void main() {
       AppLocalizations l10n,
     })
   >
-  openTimeline(WidgetTester tester, {double previewFraction = 0.42}) async {
+  openTimeline(
+    WidgetTester tester, {
+    double previewFraction = 0.42,
+    String language = 'ja',
+    List<String> unseenTips = const [],
+  }) async {
     SharedPreferences.setMockInitialValues({
       'timeline_preview_height_fraction': previewFraction,
       'first_launch': false,
-      'language': 'ja',
+      'language': language,
       'force_pc_mode': 0,
-      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      firstUseTooltipsSeenKey: [
+        for (final key in kAllFirstUseTooltipKeys)
+          if (!unseenTips.contains(key)) key,
+      ],
     });
     final directory = Directory.systemTemp.createTempSync('timeline-fixes-');
     const channel = MethodChannel('plugins.flutter.io/path_provider');
@@ -371,6 +382,40 @@ void main() {
     final shrunk = tallGrip - gripTop();
     expect(shrunk, greaterThan(100));
     expect(small.height - tall.height, closeTo(shrunk, 1));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the fullscreen button explains only the preview', (
+    tester,
+  ) async {
+    final (
+      ps: _,
+      projectId: _,
+      sceneId: _,
+      videoId: _,
+      :l10n,
+    ) = await openTimeline(
+      tester,
+      unseenTips: const ['timeline_preview_fullscreen'],
+    );
+    await tester.tap(find.byKey(const Key('timelinePreviewFullscreenButton')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text(l10n.timelinePreviewFullscreenTip), findsOneWidget);
+    expect(find.text(l10n.firstUseTipOperationGuideTitle), findsNothing);
+    expect(find.text(l10n.firstUseTipOperationGuideBody), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('split is named in the chosen language', (tester) async {
+    final (ps: _, projectId: _, sceneId: _, videoId: _, :l10n) =
+        await openTimeline(tester, language: 'fr');
+    expect(l10n.timelineSplitTooltip, 'Scinder');
+    final split = find.byKey(const Key('timelineSplitModeButton'));
+    expect(tester.widget<IconButton>(split).tooltip, 'Scinder');
+    await tester.tap(split);
+    await tester.pump();
+    expect(find.text(l10n.timelineSplitModeHint), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

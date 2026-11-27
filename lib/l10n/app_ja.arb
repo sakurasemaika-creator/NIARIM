@@ -2613,6 +2613,14 @@
   "timelineDefaultProjectName": "プロジェクト名",
   "timelinePreviewPlaceholder": "プレビュー",
   "timelinePreviewFullscreenTip": "タップするとプレビューを全画面表示できます。仕上がりの確認に便利です。",
+  "timelineSplitTooltip": "分割",
+  "@timelineSplitTooltip": {
+    "description": "タイムラインの分割モードを始めるボタンの吹き出し"
+  },
+  "timelineSplitModeHint": "再生位置でクリップを分割します",
+  "@timelineSplitModeHint": {
+    "description": "分割モードのバーの説明。再生位置にかかるクリップを全部分割する"
+  },
   "timelinePreviewFullscreenTooltip": "プレビューを全画面表示",
   "timelineAddVideoTooltip": "+ 動画",
   "timelineAddAudioTooltip": "+ 音源",

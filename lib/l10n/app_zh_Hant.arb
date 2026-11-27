@@ -2063,6 +2063,8 @@
   "timelineDefaultProjectName": "專案名稱",
   "timelinePreviewPlaceholder": "預覽",
   "timelinePreviewFullscreenTip": "點一下即可全螢幕顯示預覽，方便確認成品效果。",
+  "timelineSplitTooltip": "分割",
+  "timelineSplitModeHint": "在播放位置分割片段",
   "timelinePreviewFullscreenTooltip": "全螢幕顯示預覽",
   "timelineAddVideoTooltip": "+ 影片",
   "timelineAddAudioTooltip": "+ 音源",
