@@ -2417,18 +2417,19 @@ class HairFoldRaster {
               cover *= kept;
             }
             final rest = 1.0 - mix;
-            final alpha = (255 * cover * unit(fillA * rest + lineA * mix))
-                .round()
-                .clamp(0, 255);
+            final alpha = _roundWithin(
+              255 * cover * unit(fillA * rest + lineA * mix),
+              255,
+            );
             if (alpha == 0) continue;
             // TileManager.blendPixel, inline: this runs per pixel.
-            final r = (unit(fillR * rest + lineR * mix) * 255).round();
-            final g = (unit(fillG * rest + lineG * mix) * 255).round();
-            final b = (unit(fillB * rest + lineB * mix) * 255).round();
+            final r = roundHalfAway(unit(fillR * rest + lineR * mix) * 255);
+            final g = roundHalfAway(unit(fillG * rest + lineG * mix) * 255);
+            final b = roundHalfAway(unit(fillB * rest + lineB * mix) * 255);
             final i = p * 4, ig = i + 1, ib = i + 2, ia = i + 3;
             final srcA = alpha / 255.0;
             final keep = 1.0 - srcA;
-            final outA = (alpha + target[ia] * keep).round().clamp(0, 255);
+            final outA = _roundWithin(alpha + target[ia] * keep, 255);
             target[i] = _over(r, target[i], srcA, keep, outA);
             target[ig] = _over(g, target[ig], srcA, keep, outA);
             target[ib] = _over(b, target[ib], srcA, keep, outA);
@@ -2443,7 +2444,7 @@ class HairFoldRaster {
   /// One channel of [TileManager.blendPixel]: [c] (straight) over [under]
   /// (premultiplied, as the tiles are).
   static int _over(int c, int under, double srcA, double keep, int outA) =>
-      (c * srcA + under * keep).round().clamp(0, outA);
+      _roundWithin(c * srcA + under * keep, outA);
 
   /// The fill and outer radii come from each end's width and scale
   /// ([outlinedStrokeRadii]); being linear in both, they are interpolated
@@ -2942,80 +2943,73 @@ class HairFoldRaster {
         0,
         tiles.canvasHeight - 1,
       );
+      final smoothRim = crescent && nibAngle == null && !brush.pixelMode;
+      // The mask of the last pixel's tile, if it has one yet.
+      var maskKey = -1;
+      _MaskTile? lastMask;
       for (var y = top; y <= bottom; y++) {
         for (var x = left; x <= right; x++) {
+          final key = (y ~/ _size) * tiles.tilesX + x ~/ _size;
+          if (key != maskKey) {
+            lastMask = masks[key];
+            maskKey = key;
+          }
+          final p = (y % _size) * _size + x % _size;
+          final known = lastMask;
+          // No coverage is more than full: a pixel already full, inside and
+          // out, at least this opaque, keeps its values whatever this dab
+          // covers.
+          if (known != null &&
+              known.fill[p] >= 1 &&
+              known.outer[p] >= 1 &&
+              known.opacity[p] >= opacity) {
+            continue;
+          }
           final dx = x + .5 - center.dx, dy = y + .5 - center.dy;
           final u = (dx * cosA - dy * sinA) * tipProjection / nibRatio;
           final v = (dx * sinA + dy * cosA) * tipProjection;
           final distSquared = u * u + v * v;
-          double coverage(double r) {
-            if (r <= 0) return 0;
-            if (followsCrescent) {
-              final clip = (r + .5 - math.sqrt(distSquared)).clamp(0.0, 1.0);
-              if (clip <= 0) return 0;
-              return _textureAlpha(
-                    texture,
-                    leftTexel + ((u / r + 1) / 2) * (rightTexel - leftTexel),
-                    ((v / r + 1) / 2) * (brushTextureSize - 1),
-                  ) *
-                  clip;
-            }
-            if (rectangle != null) {
-              // Measure the pixel footprint against the four straight edges
-              // in canvas units. A 128-texel tip can be much smaller on the
-              // canvas, so filtering only in texel space still leaves steps.
-              return _intervalCoverage(
-                    u,
-                    rectangle.left * r,
-                    rectangle.right * r,
-                    pixelSpan / nibRatio,
-                  ) *
-                  _intervalCoverage(
-                    v,
-                    rectangle.top * r,
-                    rectangle.bottom * r,
-                    pixelSpan,
-                  );
-            }
-            if (crescent && nibAngle == null && !brush.pixelMode) {
-              // A crescent's ordinary strand, still shaped by the tip image,
-              // with its rim smoothed over the pixel as where it follows the
-              // crescent: sampled by pixel centres, the round tip's rim
-              // stepped along a curve (where a reversed curl runs into its
-              // stem).
-              final clip = (r + .5 - math.sqrt(distSquared)).clamp(0.0, 1.0);
-              if (clip <= 0) return 0;
-              return _textureAlpha(
-                    texture,
-                    ((u / r + 1) / 2) * (brushTextureSize - 1),
-                    ((v / r + 1) / 2) * (brushTextureSize - 1),
-                  ) *
-                  clip;
-            }
-            if (distSquared > r * r) return 0;
-            final tx = (((u / r + 1) / 2) * (brushTextureSize - 1))
-                .round()
-                .clamp(0, brushTextureSize - 1);
-            final ty = (((v / r + 1) / 2) * (brushTextureSize - 1))
-                .round()
-                .clamp(0, brushTextureSize - 1);
-            return texture[(ty * brushTextureSize + tx) * 4 + 3] / 255;
-          }
-
-          final fill = coverage(radius);
-          final outer = math.max(fill, coverage(outerRadius));
+          final fill = _segmentCoverage(
+            radius,
+            u,
+            v,
+            distSquared,
+            followsCrescent,
+            rectangle,
+            smoothRim,
+            texture,
+            leftTexel,
+            rightTexel,
+            pixelSpan,
+            nibRatio,
+          );
+          final outer = _maxOf(
+            fill,
+            _segmentCoverage(
+              outerRadius,
+              u,
+              v,
+              distSquared,
+              followsCrescent,
+              rectangle,
+              smoothRim,
+              texture,
+              leftTexel,
+              rightTexel,
+              pixelSpan,
+              nibRatio,
+            ),
+          );
           if (outer <= 0) continue;
-          final key = (y ~/ _size) * tiles.tilesX + x ~/ _size;
-          final mask = masks.putIfAbsent(key, _blankMask);
-          final p = (y % _size) * _size + x % _size;
+          final mask = known ?? (lastMask = masks.putIfAbsent(key, _blankMask));
           if (mask.outer[p] <= 0) mask.include(p);
           if (fill > mask.fill[p]) {
             mask.opacity[p] = opacity;
           } else if (fill == mask.fill[p]) {
-            mask.opacity[p] = math.max(mask.opacity[p], opacity);
+            mask.opacity[p] = _maxOf(mask.opacity[p], opacity);
           }
-          mask.fill[p] = math.max(mask.fill[p], fill);
-          mask.outer[p] = math.max(mask.outer[p], outer);
+          mask.fill[p] = _maxOf(mask.fill[p], fill);
+          mask.outer[p] = _maxOf(mask.outer[p], outer);
         }
       }
     }
@@ -3661,21 +3655,128 @@ class _FoldTipMask {
 double _intervalCoverage(double at, double low, double high, double span) {
   final half = span / 2;
   final overlap = math.min(high, at + half) - math.max(low, at - half);
-  return (overlap / span).clamp(0.0, 1.0);
+  return _clampUnit(overlap / span);
+}
+
+/// How much of the pixel at ([u], [v]) (in the tip's frame; [distSquared] is
+/// `u² + v²`) a tip of radius [r] covers in [HairFoldRaster._texturedSegment]:
+/// along a crescent, [followsCrescent] (the image between [leftTexel] and
+/// [rightTexel]), a tip with a straight-edged opaque [rectangle], a
+/// crescent's ordinary strand ([smoothRim]) or the round tip image.
+double _segmentCoverage(
+  double r,
+  double u,
+  double v,
+  double distSquared,
+  bool followsCrescent,
+  Rect? rectangle,
+  bool smoothRim,
+  Uint8List texture,
+  double leftTexel,
+  double rightTexel,
+  double pixelSpan,
+  double nibRatio,
+) {
+  if (r <= 0) return 0;
+  if (followsCrescent) {
+    final clip = _clampUnit(r + .5 - math.sqrt(distSquared));
+    if (clip <= 0) return 0;
+    return _textureAlpha(
+          texture,
+          leftTexel + ((u / r + 1) / 2) * (rightTexel - leftTexel),
+          ((v / r + 1) / 2) * (brushTextureSize - 1),
+        ) *
+        clip;
+  }
+  if (rectangle != null) {
+    // Measure the pixel footprint against the four straight edges in canvas
+    // units. A 128-texel tip can be much smaller on the canvas, so filtering
+    // only in texel space still leaves steps.
+    return _intervalCoverage(
+          u,
+          rectangle.left * r,
+          rectangle.right * r,
+          pixelSpan / nibRatio,
+        ) *
+        _intervalCoverage(
+          v,
+          rectangle.top * r,
+          rectangle.bottom * r,
+          pixelSpan,
+        );
+  }
+  if (smoothRim) {
+    // A crescent's ordinary strand, still shaped by the tip image, with its
+    // rim smoothed over the pixel as where it follows the crescent: sampled
+    // by pixel centres, the round tip's rim stepped along a curve (where a
+    // reversed curl runs into its stem).
+    final clip = _clampUnit(r + .5 - math.sqrt(distSquared));
+    if (clip <= 0) return 0;
+    return _textureAlpha(
+          texture,
+          ((u / r + 1) / 2) * (brushTextureSize - 1),
+          ((v / r + 1) / 2) * (brushTextureSize - 1),
+        ) *
+        clip;
+  }
+  if (distSquared > r * r) return 0;
+  final tx = _texelIndex(((u / r + 1) / 2) * (brushTextureSize - 1));
+  final ty = _texelIndex(((v / r + 1) / 2) * (brushTextureSize - 1));
+  return texture[(ty * brushTextureSize + tx) * 4 + 3] / 255;
+}
+
+/// `value.round().clamp(0, brushTextureSize - 1)` (without the native
+/// rounding call and the generic clamp).
+@pragma('vm:prefer-inline')
+int _texelIndex(double value) => _roundWithin(value, brushTextureSize - 1);
+
+/// `value.round().clamp(0, upper)` for `upper ≥ 0`, likewise.
+@pragma('vm:prefer-inline')
+int _roundWithin(double value, int upper) {
+  final n = roundHalfAway(value);
+  return n < 0 ? 0 : (n > upper ? upper : n);
+}
+
+/// `value.clamp(0.0, 1.0)` without the generic [num.clamp] (the same value
+/// for every input, NaN and −0.0 included).
+@pragma('vm:prefer-inline')
+double _clampUnit(double value) {
+  if (value > 0.0) return value <= 1.0 ? value : 1.0;
+  return value <= 0.0 ? 0.0 : 1.0;
+}
+
+/// `value.clamp(0.0, brushTextureSize - 1.0)`, likewise.
+@pragma('vm:prefer-inline')
+double _clampTexel(double value) {
+  const last = brushTextureSize - 1.0;
+  if (value > 0.0) return value <= last ? value : last;
+  return value <= 0.0 ? 0.0 : last;
+}
+
+/// [math.max] of two doubles (the same value, NaN and −0.0 included).
+@pragma('vm:prefer-inline')
+double _maxOf(double a, double b) {
+  if (a > b) return a;
+  if (a < b) return b;
+  if (a == 0.0) return a + b;
+  if (b.isNaN) return b;
+  return a;
 }
 
 // Bilinear alpha avoids stair-stepping when a tip rotates through a curve.
 double _textureAlpha(Uint8List texture, double x, double y) {
-  final fx = x.clamp(0.0, brushTextureSize - 1.0);
-  final fy = y.clamp(0.0, brushTextureSize - 1.0);
+  final fx = _clampTexel(x);
+  final fy = _clampTexel(y);
   final x0 = fx.floor(), y0 = fy.floor();
   final x1 = math.min(x0 + 1, brushTextureSize - 1);
   final y1 = math.min(y0 + 1, brushTextureSize - 1);
   final u = fx - x0, v = fy - y0;
-  double alpha(int x, int y) =>
-      texture[(y * brushTextureSize + x) * 4 + 3] / 255;
-  return (alpha(x0, y0) * (1 - u) + alpha(x1, y0) * u) * (1 - v) +
-      (alpha(x0, y1) * (1 - u) + alpha(x1, y1) * u) * v;
+  return (texture[(y0 * brushTextureSize + x0) * 4 + 3] / 255 * (1 - u) +
+              texture[(y0 * brushTextureSize + x1) * 4 + 3] / 255 * u) *
+          (1 - v) +
+      (texture[(y1 * brushTextureSize + x0) * 4 + 3] / 255 * (1 - u) +
+              texture[(y1 * brushTextureSize + x1) * 4 + 3] / 255 * u) *
+          v;
 }
 
 /// [reversals] without those a hand's wobble makes along a curl: a reversal

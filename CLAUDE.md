@@ -672,6 +672,20 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   `hair_fold_raster_test`の「1点ずつ描いた結果が一度に描いた結果と一致する」が
   見張っている。速さを確かめるときは同じ処理を一度空回ししてから計ること
   （デバッグ実行は初回にコンパイルが入り、最初の折り返しが10倍近く重く見える）。
+  `_texturedSegment`は、すでに塗り・外径とも1でこの点以上の不透明度の画素を
+  計算しない（どの被覆も1を超えない前提。超える被覆を足すなら外すこと）。
+- **スタンプの近道（`DrawingEngine._renderCircleStamp`、2026-11-27）は出力を変えない
+  前提の上にある**：（1）ペン先の画像の透明な外側・不透明な内側は画像を引かずに0・1
+  （`_TipSupport`。`_sampleTipAlpha`が読む画素は落ちる所から縦横1.5画素以内、が
+  `texelReach`の前提）、（2）行ごとに画像が届く所だけを回る（傾けたペンの楕円も。
+  縁のぶれが乱数を引くときは絞らない）、（3）この線がすでに`alpha`以上覆った画素は
+  計算しない（どの画素の値も`alpha`を超えない前提。油彩風と縁のぶれは除く）。
+  `_sampleTipAlpha`の読み方を変える・画素に1より大きい倍率を掛ける・画素ごとに
+  乱数を引く処理を足すときは、ここも直すこと。`DrawingEngine.debugEveryDabPixel`で
+  近道を外した結果と1バイトも違わないことを`test/engine/dab_shortcuts_identity_test.dart`が
+  見張る。画素ごとの処理では`double.round()`（1回ごとにCの関数を呼ぶ）・汎用の
+  `clamp`・`math.max`を使わず、`tile_manager.dart`の`roundHalfAway`（同じ値）と
+  比べるだけの形にする（`test/engine/tile_pixel_rounding_test.dart`）。
 - **カスタムの入り抜きは直線ではなく`_taperShoulder`の曲線**
   （`drawing_engine.dart`、`p + p²(1 − p)`）：直線だと抜きの始まる所で
   輪郭が角を作った（髪の毛プリセットの抜き80pxで目視）。先端の傾きは直線と

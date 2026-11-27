@@ -1951,29 +1951,40 @@ class DrawingEngine {
   ) {
     if (x.abs() > 1 || y.abs() > 1) return 0;
     const last = brushTextureSize - 1;
-    final tx = ((x + 1) * brushTextureSize / 2 - 0.5).clamp(
-      0.0,
-      last.toDouble(),
-    );
-    final ty = ((y + 1) * brushTextureSize / 2 - 0.5).clamp(
-      0.0,
-      last.toDouble(),
-    );
+    final tx = _clampTexel((x + 1) * brushTextureSize / 2 - 0.5);
+    final ty = _clampTexel((y + 1) * brushTextureSize / 2 - 0.5);
     if (pixelMode) {
       final alpha =
-          texture[(ty.round() * brushTextureSize + tx.round()) * 4 + 3];
+          texture[(roundHalfAway(ty) * brushTextureSize + roundHalfAway(tx)) *
+                  4 +
+              3];
       return alpha >= 128 ? 1.0 : 0.0;
     }
-    final left = tx.floor(), top = ty.floor();
-    final right = math.min(left + 1, last), bottom = math.min(top + 1, last);
-    final fx = tx - left, fy = ty - top;
-    final topLeft = texture[(top * brushTextureSize + left) * 4 + 3];
-    final topRight = texture[(top * brushTextureSize + right) * 4 + 3];
-    final bottomLeft = texture[(bottom * brushTextureSize + left) * 4 + 3];
-    final bottomRight = texture[(bottom * brushTextureSize + right) * 4 + 3];
+    // The texels as doubles (looked up, the same values as converted).
+    final leftEdge = tx.floorToDouble(), topEdge = ty.floorToDouble();
+    final left = leftEdge.toInt(), top = topEdge.toInt();
+    final right = left + 1 > last ? last : left + 1;
+    final bottom = top + 1 > last ? last : top + 1;
+    final fx = tx - leftEdge, fy = ty - topEdge;
+    final bytes = byteDoubles;
+    final topLeft = bytes[texture[(top * brushTextureSize + left) * 4 + 3]];
+    final topRight = bytes[texture[(top * brushTextureSize + right) * 4 + 3]];
+    final bottomLeft =
+        bytes[texture[(bottom * brushTextureSize + left) * 4 + 3]];
+    final bottomRight =
+        bytes[texture[(bottom * brushTextureSize + right) * 4 + 3]];
     final upper = topLeft + (topRight - topLeft) * fx;
     final lower = bottomLeft + (bottomRight - bottomLeft) * fx;
-    return (upper + (lower - upper) * fy) / 255;
+    return (upper + (lower - upper) * fy) / 255.0;
+  }
+
+  /// `v.clamp(0.0, brushTextureSize - 1.0)` without the generic [num.clamp]
+  /// (the same value for every input, NaN and −0.0 included).
+  @pragma('vm:prefer-inline')
+  static double _clampTexel(double v) {
+    const last = brushTextureSize - 1.0;
+    if (v > 0.0) return v <= last ? v : last;
+    return v <= 0.0 ? 0.0 : last;
   }
 
   /// [resolveBrushPressure]（同じブラシ・同じ筆圧が続くことが多いので、
@@ -2007,6 +2018,12 @@ class DrawingEngine {
     ResolvedBrushPressure resolved,
   })?
   _lastResolvedPressure;
+
+  /// Tests only: works out every pixel of a dab's box the long way, without
+  /// the shortcuts that give the same pixels (the tip image's transparent
+  /// outside and opaque inside, the rows only within its reach, the pixels
+  /// the stroke already covered at the dab's opacity).
+  static bool debugEveryDabPixel = false;
 
   void _renderCircleStamp(
     double cx,
@@ -2072,6 +2089,46 @@ class DrawingEngine {
         : 0.0;
     final hardShare = 1.0 - softnessMix;
     final blurReach = radius + blur;
+    // A tip image's transparent outside and opaque inside need no sampling
+    // ([_TipSupport]). A small dab's samples are spread this far (in texels)
+    // around where the pixel falls on the image.
+    final tipImageRadius = radius + (pixelMode ? 0 : blur);
+    final tipSupport =
+        customTexture != null && tipImageRadius > 0 && !debugEveryDabPixel
+        ? _TipSupport.of(customTexture)
+        : null;
+    final tipSampleSpread = !pixelMode && tipImageRadius < brushTextureSize / 2
+        ? 0.35 / tipImageRadius * (brushTextureSize / 2)
+        : 0.0;
+    // When a pixel's place on the tip image is only turned (not stretched or
+    // jittered) from its place on the canvas, a pixel further from the dab
+    // centre than this (in px, with a pixel to spare for rounding) reads
+    // only transparent texels: the rows are drawn only within it.
+    var tipExtent = 0.0;
+    var tipRowA = 0.0, tipRowB = 0.0, tipRowC = 0.0;
+    if (tipSupport != null &&
+        cx.isFinite &&
+        cy.isFinite &&
+        silhouetteDistanceMap == null &&
+        pixelMask == null &&
+        tilt.scaleY == 1.0 &&
+        tilt.scaleX > 0 &&
+        tilt.scaleX.isFinite &&
+        (pixelMode || blur > 0 || !edgeJitter)) {
+      // The pixels within it on a row are those whose offset dx from the
+      // centre (the row's dy) solves A·dx² + B·dy·dx + C·dy² ≤ extent².
+      final stretch = 1 / (tilt.scaleX * tilt.scaleX);
+      tipRowA = cosA * cosA * stretch + sinA * sinA;
+      tipRowB = 2 * sinA * cosA * (1 - stretch);
+      tipRowC = sinA * sinA * stretch + cosA * cosA;
+      if (tipRowA > 1e-9) {
+        tipExtent =
+            (tipSupport.outer + tipSampleSpread) /
+                (brushTextureSize / 2) *
+                tipImageRadius +
+            1.0;
+      }
+    }
 
     // ピクセルモードの格子に置く形（[pixelMask]の画素だけを塗る）。
     final minTx = pixelMask != null
@@ -2170,6 +2227,11 @@ class DrawingEngine {
             ? (_oil ??= OilStroke(layerId: layerId, bristles: 0, seed: 0))
             : null;
         oil?.touchTile(tx, ty, tile);
+        // No dab lays more than [alpha] on a pixel, so a pixel this stroke
+        // already covered that far takes nothing more (as found below once
+        // its alpha is worked out). Oil paint is laid again as the brush
+        // passes, and edge jitter draws a random number for each pixel.
+        final skipCovered = oil == null && !edgeJitter && !debugEveryDabPixel;
 
         // タイル内の影響ピクセル範囲
         final localMinX = pixelMask != null
@@ -2208,9 +2270,30 @@ class DrawingEngine {
               continue;
             }
           }
-          for (int px = localMinX; px <= localMaxX; px++) {
+          var rowMinX = localMinX;
+          var rowMaxX = localMaxX;
+          if (tipExtent > 0) {
+            // Only where the tip image can have any alpha (by distance), with
+            // two pixels to spare on each side.
+            final dy = tileOriginY + py + 0.5 - cy;
+            final rowB = tipRowB * dy;
+            final rowC = tipRowC * dy * dy - tipExtent * tipExtent;
+            final discriminant = rowB * rowB - 4 * tipRowA * rowC;
+            if (discriminant < 0) continue;
+            final root = math.sqrt(discriminant);
+            final centre = cx - tileOriginX - 0.5;
+            final fromX = (centre + (-rowB - root) / (2 * tipRowA) - 2).floor();
+            final toX = (centre + (-rowB + root) / (2 * tipRowA) + 2).ceil();
+            if (fromX > rowMinX) rowMinX = fromX;
+            if (toX < rowMaxX) rowMaxX = toX;
+          }
+          for (int px = rowMinX; px <= rowMaxX; px++) {
             if (clip && rowCells & 1 << (px >> _cellShift) == 0) {
               px |= (1 << _cellShift) - 1;
+              continue;
+            }
+            if (skipCovered &&
+                coverage[py * TileManager.tileSize + px] >= alpha) {
               continue;
             }
             // 格子に置く形は、その形の画素だけを塗る（外の画素は何もしない）。
@@ -2251,10 +2334,7 @@ class DrawingEngine {
                       maskY * texelScale + texelCenter,
                     ) /
                     texelScale;
-                pixelAlpha = (silhouetteOutlineWidth + .5 - distance).clamp(
-                  0.0,
-                  1.0,
-                );
+                pixelAlpha = _unit(silhouetteOutlineWidth + .5 - distance);
               } else if (customTexture != null) {
                 final imageRadius = radius + (pixelMode ? 0 : blur);
                 var maskX = ux * cosParticle - uy * sinParticle;
@@ -2273,10 +2353,40 @@ class DrawingEngine {
                 }
                 final nx = maskX / imageRadius;
                 final ny = maskY / imageRadius;
-                pixelAlpha = _sampleTipAlpha(customTexture, nx, ny, pixelMode);
+                // Where every texel the samples below read is transparent
+                // (or every one is opaque), they come to exactly 0 (or 1):
+                // only the tip's soft rim is sampled.
+                var sampled = true;
+                if (tipSupport != null) {
+                  final reach =
+                      math.sqrt(nx * nx + ny * ny) * (brushTextureSize / 2);
+                  if (reach - tipSampleSpread > tipSupport.outer) {
+                    pixelAlpha = 0.0;
+                    sampled = false;
+                  } else if (reach + tipSampleSpread < tipSupport.inner) {
+                    pixelAlpha = 1.0;
+                    sampled = false;
+                  } else {
+                    pixelAlpha = _sampleTipAlpha(
+                      customTexture,
+                      nx,
+                      ny,
+                      pixelMode,
+                    );
+                  }
+                } else {
+                  pixelAlpha = _sampleTipAlpha(
+                    customTexture,
+                    nx,
+                    ny,
+                    pixelMode,
+                  );
+                }
                 // Small dabs cover fractions of a canvas pixel even when the
                 // source PNG edge spans less than a texel at canvas scale.
-                if (!pixelMode && imageRadius < brushTextureSize / 2) {
+                if (sampled &&
+                    !pixelMode &&
+                    imageRadius < brushTextureSize / 2) {
                   final offset = 0.35 / imageRadius;
                   pixelAlpha =
                       (_sampleTipAlpha(customTexture, nx - offset, ny, false) +
@@ -2318,11 +2428,8 @@ class DrawingEngine {
                 final outerDistance = math.max(ux.abs(), uy.abs());
                 final innerRadius =
                     radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
-                final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
-                final innerAa = (outerDistance - innerRadius + 0.5).clamp(
-                  0.0,
-                  1.0,
-                );
+                final outerAa = _unit(radius + 0.5 - outerDistance);
+                final innerAa = _unit(outerDistance - innerRadius + 0.5);
                 pixelAlpha = math.min(outerAa, innerAa);
               } else if (chainLink) {
                 // 中抜き楕円リンク。接線座標へ揃えたあと、リンク固有の交互角度
@@ -2341,8 +2448,8 @@ class DrawingEngine {
                 final innerD = math.sqrt(
                   (lx * lx) / (innerX * innerX) + (ly * ly) / (innerY * innerY),
                 );
-                final outerAa = ((1.0 - outerD) * radius + 0.7).clamp(0.0, 1.0);
-                final innerAa = ((innerD - 1.0) * radius + 0.7).clamp(0.0, 1.0);
+                final outerAa = _unit((1.0 - outerD) * radius + 0.7);
+                final innerAa = _unit((innerD - 1.0) * radius + 0.7);
                 pixelAlpha = math.min(outerAa, innerAa);
               } else if (hexagon) {
                 // グリッターフレーク：正六角形。傾き変形後のローカル座標を
@@ -2356,7 +2463,7 @@ class DrawingEngine {
                   ay / (sqrt3 / 2.0),
                   (sqrt3 * ax + ay) / sqrt3,
                 );
-                pixelAlpha = (radius + 0.5 - hexDist).clamp(0.0, 1.0);
+                pixelAlpha = _unit(radius + 0.5 - hexDist);
               } else if (pixelMode) {
                 // ピクセルモード：エッジをシャープに（アンチエイリアス無し）
                 pixelAlpha = dist <= radius ? 1.0 : 0.0;
@@ -2386,9 +2493,9 @@ class DrawingEngine {
                   final maxJitter = edgeJitterStrength / 100.0 * 2.5;
                   final jitter =
                       (_jitterRng.nextDouble() - 0.5) * maxJitter * 2;
-                  pixelAlpha = (radius + 0.5 - dist + jitter).clamp(0.0, 1.0);
+                  pixelAlpha = _unit(radius + 0.5 - dist + jitter);
                 } else {
-                  pixelAlpha = (radius + 0.5 - dist).clamp(0.0, 1.0);
+                  pixelAlpha = _unit(radius + 0.5 - dist);
                 }
               }
 
@@ -2415,20 +2522,23 @@ class DrawingEngine {
               // 元の円座標ux/radiusに沿って緩やかな線形濃度勾配を掛ける。
               // カリグラフィー固定角度ではスタイラス傾きではないため適用しない。
               if (stylusTiltMagnitude > 0.0001 && radius > 0) {
-                final alongTilt = (ux / radius).clamp(-1.0, 1.0);
+                final alongTilt = _clampWithin(ux / radius, -1.0, 1.0);
                 final shadeStrength = 0.40 * stylusTiltMagnitude;
-                final shade = (1.0 + alongTilt * shadeStrength).clamp(
+                final shade = _clampWithin(
+                  1.0 + alongTilt * shadeStrength,
                   0.45,
                   1.0,
                 );
                 pixelAlpha *= shade;
               }
 
-              desiredAlpha = _byte((alpha * pixelAlpha).round());
+              desiredAlpha = _byte(roundHalfAway(alpha * pixelAlpha));
             }
             if (fadeAlong != null && desiredAlpha > 0) {
               desiredAlpha = _byte(
-                (desiredAlpha * fadeAlong.at(worldX, worldY, cx, cy)).round(),
+                roundHalfAway(
+                  desiredAlpha * fadeAlong.at(worldX, worldY, cx, cy),
+                ),
               );
             }
             if (desiredAlpha <= 0) continue;
@@ -2483,8 +2593,10 @@ class DrawingEngine {
             var incrementalAlpha = oldCoverage >= 255
                 ? 0
                 : _byte(
-                    (((desiredAlpha - oldCoverage) * 255) / (255 - oldCoverage))
-                        .round(),
+                    roundHalfAway(
+                      ((desiredAlpha - oldCoverage) * 255) /
+                          (255 - oldCoverage),
+                    ),
                   );
             coverage[coveragePos] = desiredAlpha;
             if (watercolor != null) {
@@ -2584,6 +2696,22 @@ class DrawingEngine {
 
   /// `value.clamp(0, 255)`（整数どうしなので比べるだけ）。
   static int _byte(int value) => value < 0 ? 0 : (value > 255 ? 255 : value);
+
+  /// `value.clamp(0.0, 1.0)` without the generic [num.clamp] (the same value
+  /// for every input, NaN and −0.0 included).
+  @pragma('vm:prefer-inline')
+  static double _unit(double value) {
+    if (value > 0.0) return value <= 1.0 ? value : 1.0;
+    return value <= 0.0 ? 0.0 : 1.0;
+  }
+
+  /// `value.clamp(lower, upper)` for `lower < upper`, neither NaN nor −0.0,
+  /// without the generic [num.clamp] (the same value for every [value]).
+  @pragma('vm:prefer-inline')
+  static double _clampWithin(double value, double lower, double upper) {
+    if (value > lower) return value <= upper ? value : upper;
+    return value <= lower ? lower : upper;
+  }
 
   double _distance(StrokePoint a, StrokePoint b) {
     final dx = a.x - b.x;
@@ -2716,6 +2844,53 @@ class DrawingEngine {
     final stretch = 1.0 + tiltMag * 2.0;
     final angle = (tiltX != 0 || tiltY != 0) ? math.atan2(tiltY, tiltX) : 0.0;
     return (scaleX: stretch, scaleY: 1.0, angle: angle);
+  }
+}
+
+/// Where a tip image ([brushTextureSize] square) is fully transparent and
+/// fully opaque, as distances in texels from its centre: no texel further
+/// than [outer] has any alpha, and every texel nearer than [inner] has full
+/// alpha (each less [texelReach], so that a pixel's samples, which read
+/// texels around where they fall, can be judged by where the pixel falls).
+final class _TipSupport {
+  _TipSupport._(this.inner, this.outer);
+
+  final double inner;
+  final double outer;
+
+  /// How far (in texels) a texel a sample reads can be from where the
+  /// sample falls on the image: the bilinear neighbours are up to 1 texel
+  /// away on each axis and the sample's position is clamped to the image by
+  /// up to half a texel (1.5 × √2, with room for rounding).
+  static const double texelReach = 2.2;
+
+  static final Expando<_TipSupport> _cache = Expando();
+
+  /// The support of [texture] (RGBA, alpha in every 4th byte). The cached
+  /// tip images are not changed once made.
+  static _TipSupport of(Uint8List texture) =>
+      _cache[texture] ??= _measure(texture);
+
+  static _TipSupport _measure(Uint8List texture) {
+    const size = brushTextureSize;
+    const centre = (size - 1) / 2;
+    var nearestNotOpaque = double.infinity;
+    var furthestInked = double.negativeInfinity;
+    for (var j = 0; j < size; j++) {
+      for (var i = 0; i < size; i++) {
+        final alpha = texture[(j * size + i) * 4 + 3];
+        final d = math.sqrt(
+          (i - centre) * (i - centre) + (j - centre) * (j - centre),
+        );
+        if (alpha < 255 && d < nearestNotOpaque) nearestNotOpaque = d;
+        if (alpha > 0 && d > furthestInked) furthestInked = d;
+      }
+    }
+    // Inside also needs every sample on the image (a sample off it is 0).
+    return _TipSupport._(
+      math.min(nearestNotOpaque, size / 2) - texelReach,
+      furthestInked + texelReach,
+    );
   }
 }
 

@@ -8,6 +8,24 @@ import 'brightness_alpha_engine.dart';
 import 'filter_engine.dart';
 import 'mesh_warp_engine.dart';
 
+/// `value.round()` (the nearest integer, halves away from zero) without the
+/// native call [double.round] makes: the same integer for every finite
+/// [value] in the integer range, and the same error for NaN and infinity.
+@pragma('vm:prefer-inline')
+int roundHalfAway(double value) {
+  final whole = value.truncateToDouble();
+  final rest = value - whole;
+  final n = whole.toInt();
+  if (rest >= 0.5) return n + 1;
+  if (rest <= -0.5) return n - 1;
+  return n;
+}
+
+/// `i.toDouble()` for every byte `i` (looked up rather than converted).
+final Float64List byteDoubles = Float64List.fromList([
+  for (var i = 0; i < 256; i++) i.toDouble(),
+]);
+
 /// シーンID・フレームIndex・レイヤーIDから、TileManager内部で使用する
 /// 合成キーを生成する。
 ///
@@ -408,12 +426,30 @@ class TileManager {
     final idx = (py * tileSize + px) * 4;
     final srcA = a / 255.0;
     final keep = 1.0 - srcA;
-    final outA = (a + tile[idx + 3] * keep).round().clamp(0, 255);
-    tile[idx] = (r * srcA + tile[idx] * keep).round().clamp(0, outA);
-    tile[idx + 1] = (g * srcA + tile[idx + 1] * keep).round().clamp(0, outA);
-    tile[idx + 2] = (b * srcA + tile[idx + 2] * keep).round().clamp(0, outA);
+    final bytes = byteDoubles;
+    final outA = _atMost(
+      roundHalfAway(a.toDouble() + bytes[tile[idx + 3]] * keep),
+      255,
+    );
+    tile[idx] = _atMost(
+      roundHalfAway(r.toDouble() * srcA + bytes[tile[idx]] * keep),
+      outA,
+    );
+    tile[idx + 1] = _atMost(
+      roundHalfAway(g.toDouble() * srcA + bytes[tile[idx + 1]] * keep),
+      outA,
+    );
+    tile[idx + 2] = _atMost(
+      roundHalfAway(b.toDouble() * srcA + bytes[tile[idx + 2]] * keep),
+      outA,
+    );
     tile[idx + 3] = outA;
   }
+
+  /// `value.clamp(0, upper)` for `upper ≥ 0` (integers: compared only).
+  @pragma('vm:prefer-inline')
+  static int _atMost(int value, int upper) =>
+      value < 0 ? 0 : (value > upper ? upper : value);
 
   /// [blendPixel]の、重ねる色が乗算済み（r, g, b ≤ a）のもの。
   void blendPremultipliedPixel(
@@ -429,10 +465,22 @@ class TileManager {
     if (a <= 0) return;
     final idx = (py * tileSize + px) * 4;
     final keep = 1.0 - a / 255.0;
-    final outA = (a + tile[idx + 3] * keep).round().clamp(0, 255);
-    tile[idx] = (r + tile[idx] * keep).round().clamp(0, outA);
-    tile[idx + 1] = (g + tile[idx + 1] * keep).round().clamp(0, outA);
-    tile[idx + 2] = (b + tile[idx + 2] * keep).round().clamp(0, outA);
+    final outA = _atMost(
+      roundHalfAway(a.toDouble() + tile[idx + 3].toDouble() * keep),
+      255,
+    );
+    tile[idx] = _atMost(
+      roundHalfAway(r.toDouble() + tile[idx].toDouble() * keep),
+      outA,
+    );
+    tile[idx + 1] = _atMost(
+      roundHalfAway(g.toDouble() + tile[idx + 1].toDouble() * keep),
+      outA,
+    );
+    tile[idx + 2] = _atMost(
+      roundHalfAway(b.toDouble() + tile[idx + 2].toDouble() * keep),
+      outA,
+    );
     tile[idx + 3] = outA;
   }
 
@@ -441,13 +489,19 @@ class TileManager {
     if (px < 0 || px >= tileSize || py < 0 || py >= tileSize) return;
     final idx = (py * tileSize + px) * 4;
     final keep = 1.0 - a / 255.0;
-    final newA = (tile[idx + 3] * keep).round().clamp(0, 255);
+    final newA = _atMost(roundHalfAway(tile[idx + 3].toDouble() * keep), 255);
     tile[idx + 3] = newA;
     // 乗算済みなので色も同じ割合で薄くする（不透明度だけ下げると、色が
     // 不透明度より大きい不正な画素になり、消した縁が光って見える）。
-    tile[idx] = (tile[idx] * keep).round().clamp(0, newA);
-    tile[idx + 1] = (tile[idx + 1] * keep).round().clamp(0, newA);
-    tile[idx + 2] = (tile[idx + 2] * keep).round().clamp(0, newA);
+    tile[idx] = _atMost(roundHalfAway(tile[idx].toDouble() * keep), newA);
+    tile[idx + 1] = _atMost(
+      roundHalfAway(tile[idx + 1].toDouble() * keep),
+      newA,
+    );
+    tile[idx + 2] = _atMost(
+      roundHalfAway(tile[idx + 2].toDouble() * keep),
+      newA,
+    );
   }
 
   /// タイル内の (px, py) をRGBA値でそのまま上書きする（アルファブレンドしない）。
