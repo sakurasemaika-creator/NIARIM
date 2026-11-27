@@ -116,6 +116,7 @@ class _GameStyleSlotScreenState extends State<_GameStyleSlotScreen> {
             showAutosaves: _showAutosaves,
             onChanged: (show) => setState(() => _showAutosaves = show),
           ),
+          if (!_showAutosaves) const SaveModeMenu(isTreeMode: false),
           // 保存の一覧を読めなかった：空に見えるスロットにも保存があるかも
           // しれない（「保存データなし」とは言わない）。
           if (!_showAutosaves && saveService.saveListUnreadable(projectId))

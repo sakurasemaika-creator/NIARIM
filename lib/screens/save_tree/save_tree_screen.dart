@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import '../../config/signal_colors.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
+import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
@@ -182,6 +183,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
             showAutosaves: _showAutosaves,
             onChanged: (show) => setState(() => _showAutosaves = show),
           ),
+          if (!_showAutosaves) SaveModeMenu(isTreeMode: isTreeMode),
           // 保存の一覧を読めなかった：空に見えるスロット・ツリーにも保存が
           // あるかもしれない（「保存データなし」とは言わない）。
           if (!_showAutosaves &&
@@ -1505,6 +1507,85 @@ Future<bool> showSaveModeChangeFlowIfNeeded({
 );
 
 typedef _SaveModeChoice = ({List<String> keepIds, bool archive});
+
+/// The slot or tree way of saving, chosen on the save screens too (the
+/// owner's choice, 2026-11-27): it was only in the performance settings.
+/// The saves are arranged for the new way as the performance settings do,
+/// and a quality preset becomes カスタム with the same values, so nothing
+/// else changes.
+class SaveModeMenu extends StatelessWidget {
+  const SaveModeMenu({super.key, required this.isTreeMode});
+
+  final bool isTreeMode;
+
+  Future<void> _change(BuildContext context, SaveMode mode) async {
+    final perf = context.read<PerformanceService>();
+    if (perf.saveMode == mode) return;
+    final custom = perf.qualityLevel == QualityLevel.custom;
+    final slotMax = custom || perf.slotCount > 0 ? perf.slotCount : 10;
+    final ok = await showSaveModeChangeFlows(
+      context: context,
+      projects: {
+        for (final project in context.read<ProjectService>().projects)
+          project.id: project.name,
+      },
+      saveService: context.read<SaveTreeService>(),
+      newIsTreeMode: mode == SaveMode.tree,
+      newSlotMax: mode == SaveMode.slot ? slotMax : null,
+    );
+    if (!ok) return;
+    if (!custom) {
+      perf
+        ..copyPresetToCustom(perf.qualityLevel)
+        ..setQualityLevel(QualityLevel.custom);
+    }
+    perf.setCustomSaveMode(mode);
+    if (mode == SaveMode.slot) perf.setCustomSlotCount(slotMax);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final current = isTreeMode
+        ? l10n.perfSettingsSaveModeTree
+        : l10n.perfSettingsSaveModeSlot;
+    // Under the manual/auto chips (not in the top bar, whose room the Save
+    // button needs on a narrow phone).
+    return PopupMenuButton<SaveMode>(
+      key: const ValueKey('saveModeMenu'),
+      tooltip: l10n.perfSettingsSaveModeLabel,
+      onSelected: (mode) => _change(context, mode),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.swap_horiz, size: 18),
+            const SizedBox(width: 6),
+            Flexible(child: Text(current)),
+            const Icon(Icons.arrow_drop_down),
+          ],
+        ),
+      ),
+      itemBuilder: (context) => [
+        PopupMenuItem<SaveMode>(
+          enabled: false,
+          child: Text(l10n.perfSettingsSaveModeLabel),
+        ),
+        for (final (mode, label) in [
+          (SaveMode.slot, l10n.perfSettingsSaveModeSlot),
+          (SaveMode.tree, l10n.perfSettingsSaveModeTree),
+        ])
+          CheckedPopupMenuItem<SaveMode>(
+            key: ValueKey('saveModeMenu-${mode.name}'),
+            value: mode,
+            checked: (mode == SaveMode.tree) == isTreeMode,
+            child: Text(label),
+          ),
+      ],
+    );
+  }
+}
 
 Future<bool> showSaveModeChangeFlows({
   required BuildContext context,
