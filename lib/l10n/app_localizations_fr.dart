@@ -5243,6 +5243,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ce calque est verrouillé : impossible de le modifier. Désactivez « Verrouiller » dans les réglages du calque.';
 
   @override
+  String get canvasMaterialLayerNotice =>
+      'Ce calque est un matériau de la timeline : impossible de le modifier sur le canevas. Modifiez le matériau dans la timeline et dessinez sur un autre calque.';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return 'Supprimer « $name » ?';
   }

@@ -278,6 +278,14 @@ enum LayerType {
   timelineText,
 }
 
+/// A timeline material (text, image or video): its pixels are made from the
+/// material (the text, the image file, the video frame) and made again when
+/// it changes, so it is edited in the timeline, not drawn on.
+bool isTimelineMaterialLayerType(LayerType type) =>
+    type == LayerType.timelineImage ||
+    type == LayerType.timelineVideo ||
+    type == LayerType.timelineText;
+
 bool isRangeLayerType(LayerType type) =>
     type == LayerType.common ||
     type == LayerType.timelineImage ||

@@ -8949,6 +8949,12 @@ abstract class AppLocalizations {
   /// **'このレイヤーはロック中のため編集できません。レイヤーの設定で「ロック」をオフにしてください。'**
   String get canvasLayerLockedNotice;
 
+  /// タイムラインの素材（文字・画像・動画）のレイヤーへキャンバスで描こうとしたときの通知
+  ///
+  /// In ja, this message translates to:
+  /// **'このレイヤーはタイムラインの素材のため、キャンバスでは編集できません。素材はタイムラインで編集し、絵はほかのレイヤーに描いてください。'**
+  String get canvasMaterialLayerNotice;
+
   /// No description provided for @brushPanelDeleteConfirmTitle.
   ///
   /// In ja, this message translates to:

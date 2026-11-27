@@ -4895,6 +4895,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasLayerLockedNotice => '此图层已锁定，无法编辑。请在图层设置中关闭“锁定”。';
 
   @override
+  String get canvasMaterialLayerNotice =>
+      '此图层是时间轴的素材，无法在画布上编辑。请在时间轴中编辑素材，并在其他图层上绘画。';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return '要删除“$name”吗？';
   }
@@ -15974,6 +15978,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasLayerLockedNotice => '此圖層已鎖定，無法編輯。請在圖層設定中關閉「鎖定」。';
+
+  @override
+  String get canvasMaterialLayerNotice =>
+      '此圖層是時間軸的素材，無法在畫布上編輯。請在時間軸中編輯素材，並在其他圖層上繪畫。';
 
   @override
   String brushPanelDeleteConfirmTitle(String name) {

@@ -2528,6 +2528,10 @@
   "@canvasLayerLockedNotice": {
     "description": "ロックしたレイヤーへ描こうとしたときのキャンバスの通知"
   },
+  "canvasMaterialLayerNotice": "このレイヤーはタイムラインの素材のため、キャンバスでは編集できません。素材はタイムラインで編集し、絵はほかのレイヤーに描いてください。",
+  "@canvasMaterialLayerNotice": {
+    "description": "タイムラインの素材（文字・画像・動画）のレイヤーへキャンバスで描こうとしたときの通知"
+  },
   "brushPanelDeleteConfirmTitle": "「{name}」を削除しますか？",
   "@brushPanelDeleteConfirmTitle": {
     "placeholders": {

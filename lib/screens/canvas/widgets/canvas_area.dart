@@ -560,6 +560,10 @@ class CanvasArea extends StatefulWidget {
   /// ロックしたレイヤーへ描こうとした（描かずにここを呼ぶ）。
   final VoidCallback? onLockedLayerEdit;
 
+  /// タイムラインの素材（文字・画像・動画）のレイヤーへ描こうとした（描かずに
+  /// ここを呼ぶ。素材の絵は素材から作り直すので、描いても素材を直すと消えた）。
+  final VoidCallback? onMaterialLayerEdit;
+
   const CanvasArea({
     super.key,
     this.onTapForText,
@@ -626,6 +630,7 @@ class CanvasArea extends StatefulWidget {
     this.viewInfo,
     this.navigatorViewport,
     this.onLockedLayerEdit,
+    this.onMaterialLayerEdit,
   });
 
   @override
@@ -688,6 +693,7 @@ class CanvasAreaState extends State<CanvasArea> {
   // 指が来たら描く操作ではないので出さない。
   int? _lockedNoticePointer;
   Offset? _lockedNoticeDownPosition;
+  bool _lockedNoticeForMaterial = false;
 
   // ─── 長押しスポイト（設定画面でON/OFF・保持秒数を設定可能、既定ON） ─────
   // ペン（トーン/スタンプサブツールを除く）・消しゴムで描画中、指を動かさず
@@ -3461,7 +3467,9 @@ class CanvasAreaState extends State<CanvasArea> {
       if (event != null) _toolHandledPointers.remove(event.pointer);
       return true;
     }
-    if (!layer.isLocked) return false;
+    final material = isTimelineMaterialLayerType(layer.type);
+    if (!layer.isLocked && !material) return false;
+    _lockedNoticeForMaterial = material;
     if (event != null) {
       _toolHandledPointers.remove(event.pointer);
       // 右クリック等、描くボタン以外のマウスの押下は描く操作ではない。
@@ -3491,7 +3499,9 @@ class CanvasAreaState extends State<CanvasArea> {
   }
 
   void _notifyLockedLayer() {
-    final notify = widget.onLockedLayerEdit;
+    final notify = _lockedNoticeForMaterial
+        ? widget.onMaterialLayerEdit
+        : widget.onLockedLayerEdit;
     if (notify == null) return;
     // スライダーの変形はビルド中（didUpdateWidget）に来る。そこから親の
     // SnackBarを出すと例外になるので、フレームの後へ回す。

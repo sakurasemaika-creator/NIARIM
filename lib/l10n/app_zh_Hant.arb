@@ -1998,6 +1998,7 @@
   "layerPanelLockLabel": "鎖定",
   "layerPanelOpacityLockLabel": "鎖定不透明度",
   "canvasLayerLockedNotice": "此圖層已鎖定，無法編輯。請在圖層設定中關閉「鎖定」。",
+  "canvasMaterialLayerNotice": "此圖層是時間軸的素材，無法在畫布上編輯。請在時間軸中編輯素材，並在其他圖層上繪畫。",
   "brushPanelDeleteConfirmTitle": "要刪除「{name}」嗎？",
   "brushPanelDeleteConfirmBody": "刪除的筆刷無法復原。",
   "brushPanelResetRememberedValues": "將粗細和不透明度恢復為預設值",

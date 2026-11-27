@@ -5158,6 +5158,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This layer is locked, so you can’t edit it. Turn off “Lock” in the layer settings.';
 
   @override
+  String get canvasMaterialLayerNotice =>
+      'This layer is timeline material, so you can’t edit it on the canvas. Edit the material in the timeline, and draw on another layer.';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return 'Delete “$name”?';
   }

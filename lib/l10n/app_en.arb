@@ -2021,6 +2021,7 @@
   "layerPanelLockLabel": "Lock",
   "layerPanelOpacityLockLabel": "Lock opacity",
   "canvasLayerLockedNotice": "This layer is locked, so you can’t edit it. Turn off “Lock” in the layer settings.",
+  "canvasMaterialLayerNotice": "This layer is timeline material, so you can’t edit it on the canvas. Edit the material in the timeline, and draw on another layer.",
   "brushPanelDeleteConfirmTitle": "Delete “{name}”?",
   "brushPanelDeleteConfirmBody": "A deleted brush can’t be restored.",
   "brushPanelResetRememberedValues": "Reset thickness and opacity to default",

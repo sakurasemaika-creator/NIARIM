@@ -9,7 +9,10 @@ class _LayerLockedNoticeKey extends UniqueKey {}
 /// filtered. The previous one of these notices is withdrawn first (shown or
 /// waiting), but another feature's notice (an "Undo" and the like) is left
 /// alone.
-void showLayerLockedNotice(BuildContext context) {
+///
+/// With [material] it says instead that a timeline material's layer is
+/// edited in the timeline.
+void showLayerLockedNotice(BuildContext context, {bool material = false}) {
   final messenger = ScaffoldMessenger.of(context);
   if (messenger is AppToastMessengerState) {
     messenger.withdrawSnackBars(
@@ -19,7 +22,11 @@ void showLayerLockedNotice(BuildContext context) {
   messenger.showSnackBar(
     SnackBar(
       key: _LayerLockedNoticeKey(),
-      content: Text(AppLocalizations.of(context)!.canvasLayerLockedNotice),
+      content: Text(
+        material
+            ? AppLocalizations.of(context)!.canvasMaterialLayerNotice
+            : AppLocalizations.of(context)!.canvasLayerLockedNotice,
+      ),
       duration: const Duration(seconds: 3),
     ),
   );

@@ -4935,6 +4935,10 @@ class AppLocalizationsJa extends AppLocalizations {
       'このレイヤーはロック中のため編集できません。レイヤーの設定で「ロック」をオフにしてください。';
 
   @override
+  String get canvasMaterialLayerNotice =>
+      'このレイヤーはタイムラインの素材のため、キャンバスでは編集できません。素材はタイムラインで編集し、絵はほかのレイヤーに描いてください。';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return '「$name」を削除しますか？';
   }

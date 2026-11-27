@@ -4961,6 +4961,10 @@ class AppLocalizationsKo extends AppLocalizations {
       '이 레이어는 잠겨 있어 편집할 수 없습니다. 레이어 설정에서 “잠금”을 끄세요.';
 
   @override
+  String get canvasMaterialLayerNotice =>
+      '이 레이어는 타임라인의 소재라서 캔버스에서 편집할 수 없습니다. 소재는 타임라인에서 편집하고, 그림은 다른 레이어에 그리세요.';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return '“$name”을(를) 삭제할까요?';
   }

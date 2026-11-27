@@ -1998,6 +1998,7 @@
   "layerPanelLockLabel": "Verrouiller",
   "layerPanelOpacityLockLabel": "Verrouiller l’opacité",
   "canvasLayerLockedNotice": "Ce calque est verrouillé : impossible de le modifier. Désactivez « Verrouiller » dans les réglages du calque.",
+  "canvasMaterialLayerNotice": "Ce calque est un matériau de la timeline : impossible de le modifier sur le canevas. Modifiez le matériau dans la timeline et dessinez sur un autre calque.",
   "brushPanelDeleteConfirmTitle": "Supprimer « {name} » ?",
   "brushPanelDeleteConfirmBody": "Un pinceau supprimé ne peut pas être restauré.",
   "brushPanelResetRememberedValues": "Rétablir l’épaisseur et l’opacité par défaut",

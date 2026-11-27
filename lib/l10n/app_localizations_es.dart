@@ -5236,6 +5236,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Esta capa está bloqueada y no se puede editar. Desactiva «Bloquear» en los ajustes de la capa.';
 
   @override
+  String get canvasMaterialLayerNotice =>
+      'Esta capa es material de la línea de tiempo y no se puede editar en el lienzo. Edita el material en la línea de tiempo y dibuja en otra capa.';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return '¿Eliminar «$name»?';
   }

@@ -1585,6 +1585,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
     showLayerLockedNotice(context);
   }
 
+  void _showMaterialLayerNotice() {
+    if (!mounted) return;
+    showLayerLockedNotice(context, material: true);
+  }
+
   void _onPerfChanged() => _syncOnionFromPerf();
 
   void _syncOnionFromPerf() {
@@ -1646,7 +1651,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
       (layer) => layer.type != model.LayerType.folder,
     );
     if (!drawingLayers.any((layer) => layer.id == _currentLayerId)) {
-      _currentLayerId = drawingLayers.firstOrNull?.id;
+      // A timeline material (text, image, video) is edited in the timeline,
+      // so a layer to draw on comes first when there is one.
+      _currentLayerId =
+          (drawingLayers
+                      .where((l) => !model.isTimelineMaterialLayerType(l.type))
+                      .firstOrNull ??
+                  drawingLayers.firstOrNull)
+              ?.id;
     }
     // 使うブラシ・その太さ・不透明度が変わったら（一覧で選ぶ・早替えツール）
     // この画面を作り直し、太さ・不透明度の欄をそのブラシの値へ合わせる
@@ -1805,6 +1817,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         selectionTransformCommitValues: _selectionTransformCommitValues,
         selectionTransformCancelToken: _selectionTransformCancelToken,
         onLockedLayerEdit: _showLockedLayerNotice,
+        onMaterialLayerEdit: _showMaterialLayerNotice,
       ),
     );
 

@@ -1998,6 +1998,7 @@
   "layerPanelLockLabel": "잠금",
   "layerPanelOpacityLockLabel": "불투명도 잠금",
   "canvasLayerLockedNotice": "이 레이어는 잠겨 있어 편집할 수 없습니다. 레이어 설정에서 “잠금”을 끄세요.",
+  "canvasMaterialLayerNotice": "이 레이어는 타임라인의 소재라서 캔버스에서 편집할 수 없습니다. 소재는 타임라인에서 편집하고, 그림은 다른 레이어에 그리세요.",
   "brushPanelDeleteConfirmTitle": "“{name}”을(를) 삭제할까요?",
   "brushPanelDeleteConfirmBody": "삭제한 브러시는 되돌릴 수 없습니다.",
   "brushPanelResetRememberedValues": "굵기·불투명도를 기본값으로 되돌리기",
