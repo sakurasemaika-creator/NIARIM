@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../lib/screens/canvas/widgets/focus_mode_menu.dart';
+import 'package:niarim/screens/canvas/widgets/focus_mode_menu.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
