@@ -4578,9 +4578,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasInvertSelectionTooltip => '選択範囲を反転';
 
   @override
-  String get canvasTapToEnterTextLabel => 'キャンバスをタップしてテキストを入力';
-
-  @override
   String get canvasRulerFirstUseTip => '定規を使うとまっすぐな線や綺麗な図形が描けます。';
 
   @override

@@ -4604,9 +4604,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasInvertSelectionTooltip => '선택 영역 반전';
 
   @override
-  String get canvasTapToEnterTextLabel => '캔버스를 탭하여 텍스트 입력';
-
-  @override
   String get canvasRulerFirstUseTip => '자를 사용하면 곧은 선이나 깔끔한 도형을 그릴 수 있습니다.';
 
   @override

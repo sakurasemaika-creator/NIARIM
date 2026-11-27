@@ -4539,9 +4539,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasInvertSelectionTooltip => '反转选区';
 
   @override
-  String get canvasTapToEnterTextLabel => '点击画布输入文字';
-
-  @override
   String get canvasRulerFirstUseTip => '使用尺子可以画出笔直的线条和整齐的图形。';
 
   @override
@@ -15583,9 +15580,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasInvertSelectionTooltip => '反轉選取範圍';
-
-  @override
-  String get canvasTapToEnterTextLabel => '點擊畫布輸入文字';
 
   @override
   String get canvasRulerFirstUseTip => '使用尺規可以畫出筆直的線條和整齊的圖形。';

@@ -69,6 +69,8 @@ class ToneService extends ChangeNotifier {
   Tone? _lastLassoTone;
   // 投げ縄塗り：ベタ塗り／トーンの選択状態
   bool _lassoUseTone = false;
+  // 投げ縄塗り：囲んだ中の、線で閉じた所だけを塗るか（「囲って塗る」）
+  bool _lassoEnclosed = false;
   // バケツ塗り：ベタ塗り／トーンの選択状態
   bool _bucketUseTone = false;
 
@@ -78,10 +80,17 @@ class ToneService extends ChangeNotifier {
   Tone? get lastBucketTone => _lastBucketTone;
   Tone? get lastLassoTone => _lastLassoTone;
   bool get lassoUseTone => _lassoUseTone;
+  bool get lassoEnclosed => _lassoEnclosed;
   bool get bucketUseTone => _bucketUseTone;
 
   void setLassoUseTone(bool value) {
     _lassoUseTone = value;
+    notifyListeners();
+  }
+
+  void setLassoEnclosed(bool value) {
+    if (_lassoEnclosed == value) return;
+    _lassoEnclosed = value;
     notifyListeners();
   }
 

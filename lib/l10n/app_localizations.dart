@@ -8301,12 +8301,6 @@ abstract class AppLocalizations {
   /// **'選択範囲を反転'**
   String get canvasInvertSelectionTooltip;
 
-  /// No description provided for @canvasTapToEnterTextLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'キャンバスをタップしてテキストを入力'**
-  String get canvasTapToEnterTextLabel;
-
   /// No description provided for @canvasRulerFirstUseTip.
   ///
   /// In ja, this message translates to:

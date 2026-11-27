@@ -206,7 +206,22 @@ class LassoFillToneSheet extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ベタ塗りボタン（一番上）
+        // 「囲って塗る」（囲んだ中の、線で閉じた所だけを塗る）。以前は上部
+        // バーに出していたが、狭い画面ではバーが2段になり紙が下がった。
+        // 切り替えてもシートは閉じない（続けて塗り方を選べる）。
+        SwitchListTile(
+          key: const Key('lassoFillEnclosedSwitch'),
+          dense: true,
+          secondary: const Icon(Icons.gesture, size: 18),
+          title: Text(
+            l10n.canvasLassoEnclosedLabel,
+            style: const TextStyle(fontSize: 13),
+          ),
+          value: toneService.lassoEnclosed,
+          onChanged: toneService.setLassoEnclosed,
+        ),
+        const Divider(height: 1),
+        // ベタ塗りボタン
         ListTile(
           dense: true,
           leading: const Icon(Icons.format_color_fill, size: 18),

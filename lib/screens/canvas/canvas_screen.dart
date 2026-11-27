@@ -26,6 +26,7 @@ import '../../services/recorded_filter_apply_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/shortcut_service.dart';
+import '../../services/tone_service.dart';
 import '../../models/shortcut_binding.dart';
 import '../../models/custom_automation.dart';
 import '../../widgets/action_beside_or_below.dart';
@@ -1370,9 +1371,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // キャンバス背景（白 / 透過）
   CanvasBackground _canvasBackground = CanvasBackground.white;
 
-  // 投げ縄塗り：囲って塗るモード
-  bool _lassoFillEnclosedMode = false;
-
   // 図形ツール：現在選択中の種別（OFF/線/四角形/円）
   ShapeKind _shapeKind = ShapeKind.off;
 
@@ -1838,8 +1836,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       currentSubTool: _currentSubTool,
                                       toolBrushSize: _toolBrushSize,
                                       toolBrushOpacity: _toolBrushOpacity,
-                                      lassoFillEnclosedMode:
-                                          _lassoFillEnclosedMode,
+                                      lassoFillEnclosedMode: context
+                                          .select<ToneService, bool>(
+                                            (tones) => tones.lassoEnclosed,
+                                          ),
                                       onionSkinSettings: _onionSkinSettings,
                                       currentFrame: _currentFrame,
                                       sceneId: _currentSceneId,
@@ -4126,56 +4126,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
     final desktop = isWideScreen(context);
-    final showsEnclosedMode =
-        _currentTool == DrawingTool.lasso &&
-        _currentSubTool == PenSubTool.lassoFill;
-    final showsTextHint = _currentTool == DrawingTool.text;
-    final hasToolActions = showsEnclosedMode || showsTextHint;
-    final toolActions = Align(
-      alignment: AlignmentDirectional.centerStart,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 投げ縄塗り選択中：囲って塗るモードスイッチ
-            if (showsEnclosedMode) ...[
-              const SizedBox(width: 8),
-              Text(
-                l10n.canvasLassoEnclosedLabel,
-                style: TextStyle(
-                  fontSize: 12,
-                  shadows: CanvasIconButton.foregroundShadows(
-                    Theme.of(context).colorScheme.onSurface,
-                    Theme.of(context).colorScheme,
-                  ),
-                ),
-              ),
-              Switch(
-                value: _lassoFillEnclosedMode,
-                onChanged: (v) => setState(() => _lassoFillEnclosedMode = v),
-              ),
-            ],
-            // テキストツール選択中：キャンバスタップでテキスト入力ダイアログを表示する旨を示すラベル
-            if (showsTextHint)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  l10n.canvasTapToEnterTextLabel,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.primary,
-                    shadows: CanvasIconButton.foregroundShadows(
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
     final history = <Widget>[
       // プロジェクト一覧へ戻るボタンはタイムラインモード側へ移した。
       // キャンバスモードの画面左上（元は戻るボタンの
@@ -4308,7 +4258,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [...history, ...tools],
                 ),
-                toolActions,
               ],
             ),
           );
@@ -4316,17 +4265,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
         final remaining = constraints.maxWidth - controlsWidth;
         final inset = remaining >= 46 ? 8.0 : 4.0;
         final gap = math.min(_topBarGap, (remaining - inset * 2) / 3);
-        final textScale = MediaQuery.textScalerOf(context).scale(12) / 12;
-        final toolActionsBelow =
-            hasToolActions && remaining - inset * 2 - gap * 3 < 160 * textScale;
         final toolbar = Row(
           children: [
             history[0],
             SizedBox(width: gap),
             history[1],
-            Expanded(
-              child: toolActionsBelow ? const SizedBox.shrink() : toolActions,
-            ),
+            const Spacer(),
             for (var i = 0; i < tools.length; i++) ...[
               if (i > 0 && i >= tools.length - 2) SizedBox(width: gap),
               tools[i],
@@ -4335,9 +4279,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         );
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: inset, vertical: 2),
-          child: toolActionsBelow
-              ? Column(children: [toolbar, toolActions])
-              : toolbar,
+          child: toolbar,
         );
       },
     );

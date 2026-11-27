@@ -4871,10 +4871,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get canvasInvertSelectionTooltip => 'Invertir selección';
 
   @override
-  String get canvasTapToEnterTextLabel =>
-      'Toca el lienzo para introducir texto';
-
-  @override
   String get canvasRulerFirstUseTip =>
       'La regla te permite dibujar líneas rectas y formas limpias.';
 

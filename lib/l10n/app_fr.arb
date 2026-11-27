@@ -1807,7 +1807,6 @@
   "meshTransformApplyButton": "Appliquer",
   "canvasLassoEnclosedLabel": "Remplir la zone fermée",
   "canvasInvertSelectionTooltip": "Inverser la sélection",
-  "canvasTapToEnterTextLabel": "Touchez le canevas pour saisir du texte",
   "canvasRulerFirstUseTip": "La règle permet de tracer des lignes droites et des formes nettes.",
   "canvasRulerTooltip": "Règle",
   "commonUndo": "Annuler",
