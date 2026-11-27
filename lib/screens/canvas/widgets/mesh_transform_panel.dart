@@ -67,16 +67,6 @@ class MeshTransformPanel extends StatelessWidget {
                 ),
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              l10n.meshTransformPanelHint,
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
           const Divider(height: 12),
           LabeledSlider(
             padding: _sliderPadding,
