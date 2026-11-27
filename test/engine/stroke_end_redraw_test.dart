@@ -226,6 +226,15 @@ void main() {
       size: 26,
       fade: FadeMode.strong,
     ).copyWith(calligraphyAngle: 30, nibWidthRatio: .3),
+    // Bristle marks lift off as the pressure falls and the tip narrows,
+    // against the firmest press of the stroke: every dab counts it, also
+    // one not drawn again.
+    'bristles and かすれ, pressure, taper': _brush(
+      size: 30,
+      taper: FadeMode.custom,
+      taperOut: custom.$2,
+      pressure: true,
+    ).copyWith(bristleStreaks: 60, dryBrush: 40),
     'glitter flakes, taper': _brush(
       size: 18,
       taper: FadeMode.custom,

@@ -471,7 +471,8 @@ class BrushService extends ChangeNotifier {
     ),
     // 平筆：毛の束を平らにそろえた筆。ペン先の向きは変えない（横へ引くと
     // 太く、縦へ引くと細い）。毛のすじが線に沿って走り、線の終わりに向かって
-    // 少し乾いて、外側の毛からかすれる。
+    // 少し乾いて、外側の毛からかすれる。筆圧は色を薄くせず、軽いほど少し
+    // 細くなり、離すときは毛のすじにかすれて抜ける。下の色を拾って引きずる。
     const Brush(
       id: 'Brush0009',
       name: '平筆',
@@ -482,15 +483,16 @@ class BrushService extends ChangeNotifier {
       stabilizationStrength: 0,
       pixelMode: false,
       pressureOn: BrushPressureOnSettings(
-        size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
-        opacity: PressureRangeSetting(enabled: true, weak: 70, strong: 100),
+        size: PressureRangeSetting(enabled: true, weak: 75, strong: 100),
+        opacity: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: true,
           mode: BrushMixingMode.oil,
-          weakRate: 25,
-          strongRate: 25,
+          weakRate: 45,
+          strongRate: 45,
+          stretch: 50,
         ),
       ),
       pressureOff: BrushPressureOffSettings(
@@ -499,7 +501,8 @@ class BrushService extends ChangeNotifier {
         mixing: PressureMixingOffSetting(
           enabled: true,
           mode: BrushMixingMode.oil,
-          rate: 25,
+          rate: 45,
+          stretch: 50,
         ),
       ),
       fadeMode: FadeMode.off,

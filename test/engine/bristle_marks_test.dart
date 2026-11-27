@@ -8,6 +8,15 @@
 // - かすれは線の始めでは無く、線を進むほど増え、外側の毛から先にかすれる。
 // - 同じ線は何度描いても同じ（ふち滲みも紙の目に沿う。乱数で毎回変わらない）。
 // - 紙の目はキャンバスに固定され、強く押すほど凹みまで埋まる。
+// - 筆を離すとき（その線でいちばん強く押した時より筆圧が下がる・入り抜き）は、
+//   外側の毛から1本ずつ紙を離れ、毛のすじにかすれて抜ける（ずっと軽く描いた
+//   線は抜けない）。絵の具の乗った所は選んだ色のまま。
+// - 絵の具の含みは線に沿って変わる（含みの少ない所ほど細い毛のすじが多い）が、
+//   線を薄くしない。
+// - 毛のある筆で軽く押した跡は、ペン先の形によらず丸く、真ん中は密で、縁は
+//   毛先が細かく広がる。
+// - ナイフは刃の両側へ絵の具を寄せる：縁のすぐ内側にかすかな溝の線が走る。
+// - ガッシュはいつもの筆圧で塗った中に白い点を残さない。
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -69,6 +78,29 @@ Map<String, Uint8List> _draw(
   engine.beginStroke(StrokePoint(x: 20, y: y, pressure: pressure), _layer);
   for (var x = 22.0; x <= end; x += 2) {
     engine.continueStroke(StrokePoint(x: x, y: y, pressure: pressure), _layer);
+  }
+  engine.endStroke();
+  final out = <String, Uint8List>{
+    for (var tx = 0; tx * TileManager.tileSize < 700; tx++)
+      for (var ty = 0; ty * TileManager.tileSize < 220; ty++)
+        if (tiles.getTile(_layer, tx, ty) case final tile?)
+          '$tx:$ty': Uint8List.fromList(tile),
+  };
+  tiles.dispose();
+  return out;
+}
+
+/// Draws [points] with [brush] (pen pressure on) and returns the layer's
+/// tiles by tile key.
+Map<String, Uint8List> _drawPoints(Brush brush, List<StrokePoint> points) {
+  final tiles = TileManager(canvasWidth: 700, canvasHeight: 220);
+  final engine = DrawingEngine(tileManager: tiles)
+    ..currentBrush = brush
+    ..currentColor = const ui.Color(_blue)
+    ..pressureEnabled = true;
+  engine.beginStroke(points.first, _layer);
+  for (final p in points.skip(1)) {
+    engine.continueStroke(p, _layer);
   }
   engine.endStroke();
   final out = <String, Uint8List>{
@@ -249,6 +281,188 @@ void main() {
       expect(inner / innerAll, greaterThan(0.95));
       expect(rim / rimAll, lessThan(0.8));
       expect(rim / rimAll, greaterThan(0.1));
+    },
+  );
+
+  test(
+    'lifting off, the hairs leave the paper one by one: the stroke breaks '
+    'into streaks and thins away, and the paint left is the chosen colour',
+    () {
+      // Pressed firmly, then lifted off over the last 200 px.
+      List<StrokePoint> lifting(double firm) => [
+        for (var x = 20.0; x <= 600; x += 2)
+          StrokePoint(
+            x: x,
+            y: 100,
+            pressure: x <= 400 ? firm : firm - (x - 400) / 200 * (firm - 0.1),
+          ),
+      ];
+      final tiles = _drawPoints(_brush(streaks: 60), lifting(1));
+      final body = _covered(tiles, 150, 350, 84, 116);
+      final lifted = _covered(tiles, 520, 560, 84, 116);
+      final tip = _covered(tiles, 580, 610, 84, 116);
+      expect(body, greaterThan(0.85));
+      expect(lifted, lessThan(body - 0.15));
+      expect(tip, lessThan(lifted));
+      expect(tip, lessThan(0.35));
+      // Streaks, not paleness: most of the paint left is the chosen colour,
+      // and the marks run along the stroke.
+      var painted = 0, full = 0;
+      var acrossChange = 0, alongChange = 0;
+      for (var y = 84; y <= 116; y++) {
+        for (var x = 470; x <= 600; x++) {
+          final a = _alpha(tiles, x, y);
+          if (a > 16) painted++;
+          if (a > 200) full++;
+          alongChange += (a - _alpha(tiles, x + 1, y)).abs();
+          acrossChange += (a - _alpha(tiles, x, y + 1)).abs();
+        }
+      }
+      expect(full, greaterThan(painted * 0.6));
+      expect(acrossChange, greaterThan(alongChange * 2));
+      // A stroke drawn lightly all along (its firmest press is light) does
+      // not lift off: its end is as full as its body.
+      final light = _drawPoints(_brush(streaks: 60), [
+        for (var x = 20.0; x <= 600; x += 2)
+          StrokePoint(x: x, y: 100, pressure: 0.3),
+      ]);
+      expect(
+        _covered(light, 540, 580, 84, 116),
+        greaterThan(_covered(light, 150, 350, 84, 116) - 0.08),
+      );
+      // A brush without hair streaks or かすれ is not touched.
+      final plain = _drawPoints(_brush(), lifting(1));
+      expect(_covered(plain, 570, 600, 84, 116), greaterThan(0.95));
+    },
+  );
+
+  test('the load varies along the stroke: more thin hairs where it runs thin, '
+      'without paling the stroke', () {
+    final tiles = _drawPoints(_brush(streaks: 60), [
+      for (var x = 20.0; x <= 680; x += 2) StrokePoint(x: x, y: 100),
+    ]);
+    final thinHairs = <int>[];
+    final means = <double>[];
+    for (var x0 = 40; x0 + 80 <= 680; x0 += 80) {
+      var thin = 0, sum = 0, all = 0;
+      for (var y = 86; y <= 114; y++) {
+        for (var x = x0; x < x0 + 80; x++) {
+          final a = _alpha(tiles, x, y);
+          if (a < 235) thin++;
+          sum += a;
+          all++;
+        }
+      }
+      thinHairs.add(thin);
+      means.add(sum / all);
+    }
+    // Loaded stretches are nearly solid, thin ones streakier: the stretches
+    // differ more than the hairs alone make them (about 8 of 255 without
+    // the load), but none is pale.
+    final fewest = thinHairs.reduce(math.min);
+    final most = thinHairs.reduce(math.max);
+    expect(most, greaterThan(fewest * 6), reason: '$thinHairs');
+    final palest = means.reduce(math.min);
+    expect(means.reduce(math.max) - palest, greaterThan(12), reason: '$means');
+    expect(palest, greaterThan(0.85 * 255), reason: '$means');
+  });
+
+  test('a tap of a bristle brush is round whatever its tip: dense in the '
+      'middle, the hair ends splayed at the rim', () async {
+    final flat = BrushService.builtInBrushes.singleWhere(
+      (b) => b.id == 'Brush0009',
+    );
+    await preloadBrushTextures(
+      flat.resolvedCustomImagePaths,
+      mode: flat.imageInkMode,
+    );
+    expect(
+      getCachedBrushTexture(
+        flat.resolvedCustomImagePaths.single,
+        mode: flat.imageInkMode,
+      ),
+      isNotNull,
+    );
+    final tiles = _drawPoints(flat.copyWith(size: 80), [
+      const StrokePoint(x: 300, y: 110),
+    ]);
+    int extent(int dx, int dy) {
+      var reach = 0;
+      for (var r = 0; r < 60; r++) {
+        if (_alpha(tiles, 300 + dx * r, 110 + dy * r) > 127) reach = r;
+      }
+      return reach;
+    }
+
+    final wide = (extent(1, 0) + extent(-1, 0)) / 2;
+    final tall = (extent(0, 1) + extent(0, -1)) / 2;
+    expect(wide, greaterThan(28));
+    expect(wide / tall, inInclusiveRange(0.85, 1.18));
+    var dense = 0, denseAll = 0, rim = 0, rimAll = 0;
+    for (var y = 60; y <= 160; y++) {
+      for (var x = 250; x <= 350; x++) {
+        final r = math.sqrt(
+          (x + 0.5 - 300) * (x + 0.5 - 300) + (y + 0.5 - 110) * (y + 0.5 - 110),
+        );
+        if (r < 16) {
+          denseAll++;
+          if (_alpha(tiles, x, y) >= 250) dense++;
+        } else if (r > 37 && r < 39.5) {
+          rimAll++;
+          if (_alpha(tiles, x, y) > 127) rim++;
+        }
+      }
+    }
+    expect(dense, denseAll);
+    expect(rim / rimAll, inInclusiveRange(0.15, 0.9));
+  });
+
+  test('a knife pushes paint to the sides of its blade: a faint groove runs '
+      'just inside each edge, the body flat and full', () {
+    final tiles = _draw(_brush(dry: 35, size: 60), pressure: 1);
+    // Rows by their distance inside the top and the bottom edge (alpha
+    // over half), averaged along the stroke.
+    final byDepth = List<double>.filled(12, 0);
+    final counts = List<int>.filled(12, 0);
+    for (var x = 120; x <= 520; x++) {
+      var top = -1, bottom = -1;
+      for (var y = 50; y <= 150; y++) {
+        if (_alpha(tiles, x, y) > 127) {
+          if (top < 0) top = y;
+          bottom = y;
+        }
+      }
+      for (var d = 0; d < 12; d++) {
+        byDepth[d] += _alpha(tiles, x, top + d) + _alpha(tiles, x, bottom - d);
+        counts[d] += 2;
+      }
+    }
+    final mean = [for (var d = 0; d < 12; d++) byDepth[d] / counts[d]];
+    final groove = mean.sublist(1, 6).reduce(math.min);
+    expect(groove, lessThan(mean[10] - 12), reason: '$mean');
+    expect(groove, greaterThan(150), reason: 'faint, not a gap: $mean');
+    expect(mean[10], greaterThan(253));
+    expect(_covered(tiles, 150, 500, 88, 112), 1.0);
+  });
+
+  test(
+    'gouache at a usual pen pressure leaves no flecks inside the paint',
+    () async {
+      final gouache = BrushService.builtInBrushes.singleWhere(
+        (b) => b.id == 'Brush0027',
+      );
+      // (Its faint bristle marks only make a few hairs a little thinner.)
+      for (final pressure in [0.6, 1.0]) {
+        final tiles = _draw(gouache, pressure: pressure);
+        var flecks = 0;
+        // The middle 70% of the stroke's width at a pressure of 0.6.
+        for (var y = 96; y <= 104; y++) {
+          for (var x = 60; x <= 560; x++) {
+            if (_alpha(tiles, x, y) < 215) flecks++;
+          }
+        }
+        expect(flecks, 0, reason: 'pressure $pressure');
+      }
     },
   );
 

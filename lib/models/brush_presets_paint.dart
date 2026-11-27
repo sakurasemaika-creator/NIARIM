@@ -7,7 +7,7 @@ import 'brush.dart';
 /// tool/gen_paint_brush_tips.py.
 List<Brush> paintBrushPresets() => const [
   // 油彩筆：フィルバート（楕円の平筆）。毛のすじが線に沿って走り、下の色を
-  // 拾って引きずる。乾くのは控えめで、線の終わりがかすれる程度。
+  // よく拾って長く引きずる。乾くのは控えめで、線の終わりがかすれる程度。
   Brush(
     id: 'Brush0042',
     name: '油彩筆',
@@ -25,9 +25,9 @@ List<Brush> paintBrushPresets() => const [
       mixing: PressureMixingOnSetting(
         enabled: true,
         mode: BrushMixingMode.oil,
-        weakRate: 40,
-        strongRate: 40,
-        stretch: 35,
+        weakRate: 55,
+        strongRate: 55,
+        stretch: 55,
       ),
     ),
     pressureOff: BrushPressureOffSettings(
@@ -36,8 +36,8 @@ List<Brush> paintBrushPresets() => const [
       mixing: PressureMixingOffSetting(
         enabled: true,
         mode: BrushMixingMode.oil,
-        rate: 40,
-        stretch: 35,
+        rate: 55,
+        stretch: 55,
       ),
     ),
     fadeMode: FadeMode.off,

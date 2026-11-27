@@ -142,6 +142,7 @@ class DrawingEngine {
     _watercolor = null;
     _bristleMarks = null;
     _lastSegmentAngle = null;
+    _firmestPressure = 0;
     _bristleSeed = (point.x * 7919 + point.y * 104729).round();
     _smoothed = point;
     final effective = _replayingFinalStroke
@@ -1604,6 +1605,10 @@ class DrawingEngine {
 
     final strokeLength = strokeLengthOverride ?? _strokeDistance;
     _stampLength = strokeLength;
+    // How fully a bristle brush touches: against the firmest press of the
+    // stroke so far (every dab counts, also one only drawn again).
+    if (grainPressure > _firmestPressure) _firmestPressure = grainPressure;
+    var contact = _firmestPressure > 0 ? grainPressure / _firmestPressure : 1.0;
 
     // 入り抜きは線の始点と終点に向かって太さだけを細くする（色・不透明度は
     // 変えない）。縁取りペンでは、入り抜き・筆圧は縁取りを含む全体の形だけを
@@ -1616,6 +1621,7 @@ class DrawingEngine {
       ).at(strokeLength);
       size *= taper;
       if (taper <= 0) return;
+      contact *= taper;
     }
     // Drawing only the end again: a dab that reaches none of those tiles
     // draws nothing in them and changes nothing a later dab uses (no
@@ -1838,16 +1844,10 @@ class DrawingEngine {
             seed: _bristleSeed,
           ))
         : null;
-    bristles?.aim(
-      stampX,
-      stampY,
-      size / 2,
-      strokeLength,
-      // A dab without a direction (a tap) is pressed down where it is.
-      hasPathDirection ? math.cos(pathAngle) : 0.0,
-      hasPathDirection ? math.sin(pathAngle) : 0.0,
-      grainPressure,
-    );
+    // A tap of a hairy brush presses its hairs down into a round dab,
+    // whatever the shape of its tip.
+    final roundTap =
+        bristles != null && !hasPathDirection && brush.bristleStreaks > 0;
 
     // グリッターペンは大きな六角形フレークとして描画する。粒ごとに向きを
     // ランダム化し、同じ向きの六角形が機械的に並ぶ見た目を避ける。
@@ -1896,9 +1896,37 @@ class DrawingEngine {
     // 事前読み込み済みの場合はその形状を、それ以外は円形（またはピクセル
     // モード）でスタンプする。
     final texturePath = _brushTextureSelector.nextDabPath();
-    final customTexture = texturePath != null
+    final customTexture = texturePath != null && !roundTap
         ? getCachedBrushTexture(texturePath, mode: brush.imageInkMode)
         : null;
+    if (bristles != null) {
+      final dx = hasPathDirection ? math.cos(pathAngle) : 0.0;
+      final dy = hasPathDirection ? math.sin(pathAngle) : 0.0;
+      var reachLeft = 1.0, reachRight = 1.0;
+      if (customTexture != null && hasPathDirection) {
+        // The left of the way, seen on the tip image.
+        final cosT = math.cos(-tilt.angle), sinT = math.sin(-tilt.angle);
+        final lx = -dy * cosT - dx * sinT;
+        final ly = -dy * sinT + dx * cosT;
+        final side = math.atan2(ly, lx);
+        final reach = _TipReach.of(customTexture);
+        reachLeft = reach.at(side);
+        reachRight = reach.at(side + math.pi);
+      }
+      bristles.aim(
+        stampX,
+        stampY,
+        size / 2,
+        strokeLength,
+        // A dab without a direction (a tap) is pressed down where it is.
+        dx,
+        dy,
+        grainPressure,
+        contact: contact,
+        reachLeft: reachLeft,
+        reachRight: reachRight,
+      );
+    }
     final silhouetteDistanceMap =
         texturePath != null &&
             brush.imageInkMode == BrushImageInkMode.silhouette
@@ -2796,6 +2824,9 @@ class DrawingEngine {
   /// Picks the bristle marks of the stroke: the same start, the same marks.
   int _bristleSeed = 0;
 
+  /// The firmest pressure of the stroke so far.
+  double _firmestPressure = 0;
+
   /// The direction of the last segment of the stroke (painting brushes turn
   /// smoothly from it).
   double? _lastSegmentAngle;
@@ -2950,6 +2981,57 @@ class DrawingEngine {
     final stretch = 1.0 + tiltMag * 2.0;
     final angle = (tiltX != 0 || tiltY != 0) ? math.atan2(tiltY, tiltX) : 0.0;
     return (scaleX: stretch, scaleY: 1.0, angle: angle);
+  }
+}
+
+/// How far a tip image's paint reaches from its centre in each direction
+/// (its support function, as a share of the image's half width): the half
+/// width of the band it sweeps going across that direction.
+final class _TipReach {
+  _TipReach._(this._reach);
+
+  static const int _angles = 64;
+  final Float32List _reach;
+
+  static final Expando<_TipReach> _cache = Expando();
+
+  /// The reach of [texture] (RGBA, alpha in every 4th byte). The cached
+  /// tip images are not changed once made.
+  static _TipReach of(Uint8List texture) =>
+      _cache[texture] ??= _measure(texture);
+
+  static _TipReach _measure(Uint8List texture) {
+    const size = brushTextureSize;
+    const half = size / 2;
+    final reach = Float32List(_angles);
+    final cosines = [
+      for (var a = 0; a < _angles; a++) math.cos(a * 2 * math.pi / _angles),
+    ];
+    final sines = [
+      for (var a = 0; a < _angles; a++) math.sin(a * 2 * math.pi / _angles),
+    ];
+    for (var j = 0; j < size; j++) {
+      final y = (j + 0.5) / half - 1;
+      for (var i = 0; i < size; i++) {
+        if (texture[(j * size + i) * 4 + 3] < 128) continue;
+        final x = (i + 0.5) / half - 1;
+        for (var a = 0; a < _angles; a++) {
+          final d = x * cosines[a] + y * sines[a];
+          if (d > reach[a]) reach[a] = d;
+        }
+      }
+    }
+    return _TipReach._(reach);
+  }
+
+  /// The reach towards [angle] (radians, on the image).
+  double at(double angle) {
+    var t = angle / (2 * math.pi) * _angles;
+    t -= (t / _angles).floor() * _angles;
+    final i = t.floor() % _angles;
+    final f = t - t.floor();
+    final a = _reach[i];
+    return a + (_reach[(i + 1) % _angles] - a) * f;
   }
 }
 

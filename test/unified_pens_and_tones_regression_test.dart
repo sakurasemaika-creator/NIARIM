@@ -106,7 +106,10 @@ void main() {
     }
     for (final id in ['Brush0026', 'Brush0027', 'Brush0028', 'Brush0029']) {
       final brush = brushes[id]!;
-      expect(brush.grainStrength, greaterThan(0), reason: brush.name);
+      // Gouache is opaque and matte: no paper tooth inside its paint.
+      if (id != 'Brush0027') {
+        expect(brush.grainStrength, greaterThan(0), reason: brush.name);
+      }
       final copy = brush.copyWith(
         id: '$id-user',
         name: 'My mixed brush',

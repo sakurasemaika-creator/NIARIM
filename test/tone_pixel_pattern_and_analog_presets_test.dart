@@ -166,10 +166,12 @@ void main() {
     final brushes = {for (final b in BrushService.builtInBrushes) b.id: b};
     // Grain leaves paper between the pigment; where pigment lands it is the
     // chosen colour (opacity 100), so the grain is lighter than it was when
-    // these brushes were also see-through.
+    // these brushes were also see-through. Gouache is an opaque, matte
+    // paint: no paper shows inside it at a usual pressure (only its edge
+    // is a little dry, from its edge jitter and bristle marks).
     final types = <String, int>{
       'Brush0026': 55,
-      'Brush0027': 10,
+      'Brush0027': 0,
       'Brush0028': 35,
       'Brush0029': 45,
     };

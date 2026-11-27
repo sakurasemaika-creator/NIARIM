@@ -195,7 +195,9 @@ List<Brush> brushExtensionPresets() => <Brush>[
   ),
   // ガッシュは不透明な水性の絵の具：油彩風混色で下を覆い、引いた所だけ下の
   // 色を拾って混ぜる。拾い方は油彩（混色ブラシ）より控えめで、色延びも短い。
-  // 筆の毛のすじはかすかで、線の終わりに少しかすれる。
+  // 筆の毛のすじはかすかで、線の終わりに少しかすれる。不透明でつや消しの
+  // 絵の具なので、紙の目は出さない（塗った中に白い点を残さない）。縁は少し
+  // だけ乾いた感じに揺れる。
   const Brush(
     id: 'Brush0027',
     name: 'ガッシュ（不透明水彩）',
@@ -205,16 +207,15 @@ List<Brush> brushExtensionPresets() => <Brush>[
     stabilization: false,
     stabilizationStrength: 0,
     pixelMode: false,
-    grainStrength: 10,
     bristleStreaks: 25,
-    dryBrush: 20,
+    dryBrush: 12,
     density: 1.1,
     scatter: .035,
     pressureOn: BrushPressureOnSettings(
       size: PressureRangeSetting(enabled: true, weak: 50, strong: 100),
       opacity: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
       blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
-      edgeJitter: PressureRangeSetting(enabled: true, weak: 65, strong: 65),
+      edgeJitter: PressureRangeSetting(enabled: true, weak: 35, strong: 35),
       mixing: PressureMixingOnSetting(
         enabled: true,
         mode: BrushMixingMode.oil,
@@ -225,7 +226,7 @@ List<Brush> brushExtensionPresets() => <Brush>[
     ),
     pressureOff: BrushPressureOffSettings(
       blur: FixedBrushSetting(enabled: false, value: 0),
-      edgeJitter: FixedBrushSetting(enabled: true, value: 65),
+      edgeJitter: FixedBrushSetting(enabled: true, value: 35),
       mixing: PressureMixingOffSetting(
         enabled: true,
         mode: BrushMixingMode.oil,

@@ -170,6 +170,17 @@ void main() {
     }
   }
 
+  test('a tap of a bristle brush (a round dab with splayed hair ends): the '
+      'same as every pixel', () {
+    for (final id in ['Brush0009', 'Brush0042', 'Brush0043', 'Brush0027']) {
+      final points = [const StrokePoint(x: 200, y: 120, pressure: 0.8)];
+      final quick = _draw(builtIns[id]!, points, everyPixel: false);
+      final slow = _draw(builtIns[id]!, points, everyPixel: true);
+      _expectSame(quick.tiles, slow.tiles, '$id tap tiles');
+      _expectSame(quick.before, slow.before, '$id tap undo');
+    }
+  });
+
   test('eraser and a mouse line: the same as every pixel', () {
     for (final id in ['Brush0001', 'Brush0003', 'Brush0005']) {
       final brush = builtIns[id]!.copyWith(size: 40);
