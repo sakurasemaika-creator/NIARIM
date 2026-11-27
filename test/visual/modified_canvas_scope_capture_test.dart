@@ -15,6 +15,7 @@ import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
 import 'package:niarim/screens/canvas/widgets/hsv_color_wheel.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
+import 'package:niarim/screens/canvas/widgets/mesh_transform_panel.dart';
 import 'package:niarim/screens/canvas/widgets/pen_sub_tool_panel.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/filter_service.dart';
@@ -271,6 +272,46 @@ void main() {
         const Offset(34, -42),
       );
       await shot('09_pc_color_adjust_menu_moved');
+
+      await navigate('/home');
+      await navigate('/canvas/${demo.id}');
+      await tester.tap(find.byIcon(Icons.settings).first);
+      await settle();
+      final meshL10n = AppLocalizations.of(
+        tester.element(find.byType(Scaffold).last),
+      )!;
+      await tester.tap(
+        find.text(meshL10n.canvasEditMenuMeshTransform).last,
+      );
+      await settle();
+      expect(find.byType(MeshTransformPanel), findsOneWidget);
+      final focusSurface = find.byKey(
+        const ValueKey('focus-mode-menu-surface'),
+      );
+      expect(
+        find.descendant(
+          of: focusSurface,
+          matching: find.byType(MeshTransformPanel),
+        ),
+        findsOneWidget,
+        reason: 'PC/DeX mesh-transform controls must live inside FocusModeMenu',
+      );
+      await shot('10_pc_mesh_transform_focus_menu_expanded');
+      final meshMenuToggle = find.byKey(
+        const ValueKey('focus-mode-menu-toggle'),
+      );
+      await tester.tap(meshMenuToggle);
+      await tester.pumpAndSettle();
+      expect(find.byType(MeshTransformPanel), findsNothing);
+      await shot('11_pc_mesh_transform_focus_menu_minimized');
+      await tester.tap(meshMenuToggle);
+      await tester.pumpAndSettle();
+      expect(find.byType(MeshTransformPanel), findsOneWidget);
+      await tester.drag(
+        find.byKey(const ValueKey('focus-mode-menu-drag-handle')),
+        const Offset(24, -40),
+      );
+      await shot('12_pc_mesh_transform_focus_menu_moved');
 
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;

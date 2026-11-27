@@ -24,6 +24,7 @@ class MeshTransformPanel extends StatelessWidget {
   final VoidCallback onApply;
   final VoidCallback onCancel;
   final VoidCallback onClose;
+  final bool embedded;
 
   const MeshTransformPanel({
     super.key,
@@ -36,6 +37,7 @@ class MeshTransformPanel extends StatelessWidget {
     required this.onApply,
     required this.onCancel,
     required this.onClose,
+    this.embedded = false,
   });
 
   @override
@@ -45,7 +47,10 @@ class MeshTransformPanel extends StatelessWidget {
     // （以前はこのパネルだけ灰色の面・角8で、×だけの行が題の上にあった）。
     return PanelSurface(
       width: 240,
-      child: Column(
+      embedded: embedded,
+      child: SizedBox(
+        width: 240,
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -124,6 +129,7 @@ class MeshTransformPanel extends StatelessWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }

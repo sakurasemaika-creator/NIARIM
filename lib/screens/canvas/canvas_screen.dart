@@ -195,7 +195,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // ここでは分割数・回転・拡大縮小の現在値と、確定／キャンセルの
   // トークン（増加するたびにCanvasArea側の対応する処理を1回起動する）
   // だけを持つ（RulerPanel等と同様、パネルの主導権はこの画面側）。
-  bool _showMeshTransformPanel = false;
   int _meshDensity = 1;
   bool _meshSelectionOnly = false;
   double _meshRotateDeg = 0.0;
@@ -261,9 +260,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   DesktopDockLayout _fitDesktopDock(
     SettingsService settings,
     List<CanvasDockPanel> visible,
-    double availableHeight, {
-    double extraFixedHeight = 0,
-  }) => DesktopDockColumnFit.layout(
+    double availableHeight,
+  ) => DesktopDockColumnFit.layout(
     availableHeight: availableHeight,
     visible: visible,
     isManuallyCollapsed: settings.isDesktopDockCollapsed,
@@ -272,7 +270,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
     autoCollapseEnabled: settings.desktopDockAutoCollapseEnabled,
     lastUsed: _dockLastUsed,
     activePanel: _activeDockPanel,
-    extraFixedHeight: extraFixedHeight,
   );
   // A fully empty column normally disappears. During panel dragging,
   // its temporary drop zone lets users recreate it without a menu.
@@ -294,9 +291,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // Only pristine defaults are mirrored by the service.
   bool _physicalDockSideIsRight(bool physicalRight) => physicalRight;
 
-  bool _meshDockOnRight(SettingsService settings) =>
-      settings.rightDockOrder.contains(CanvasDockPanel.penSubTool);
-
   List<CanvasDockPanel> _physicalDockOrder(
     SettingsService settings, {
     required bool right,
@@ -307,12 +301,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _hasPhysicalDockPanels(
     SettingsService settings, {
     required bool right,
-  }) =>
-      _physicalDockOrder(
-        settings,
-        right: right,
-      ).any((panel) => _visibleInDock(settings, panel)) ||
-      (right == _meshDockOnRight(settings) && _showMeshTransformPanel);
+  }) => _physicalDockOrder(
+    settings,
+    right: right,
+  ).any((panel) => _visibleInDock(settings, panel));
 
   void _resizePhysicalDockColumn({
     required bool right,
@@ -357,19 +349,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
       settings,
       right: right,
     ).where((panel) => _visibleInDock(settings, panel)).toList();
-    if (visible.isEmpty &&
-        (right != _meshDockOnRight(settings) || !_showMeshTransformPanel)) {
+    if (visible.isEmpty) {
       return _desktopDockDragActive ? 52.0 : 0.0;
     }
-    if (visible.isNotEmpty &&
-        (right != _meshDockOnRight(settings) || !_showMeshTransformPanel)) {
-      final fitted = _fitDesktopDock(settings, visible, availableHeight);
-      if (visible.every(
-        (panel) =>
-            fitted.isCollapsed(panel, settings.isDesktopDockCollapsed(panel)),
-      )) {
-        return 52.0;
-      }
+    final fitted = _fitDesktopDock(settings, visible, availableHeight);
+    if (visible.every(
+      (panel) =>
+          fitted.isCollapsed(panel, settings.isDesktopDockCollapsed(panel)),
+    )) {
+      return 52.0;
     }
     return storedRight
         ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
@@ -443,12 +431,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     }
     // 他のパネルを開く操作で自由変形/メッシュ変形パネルが押し出される場合は、
     // 未確定のワーププレビューを残さないようキャンセル扱いにする。
-    if (_showMeshTransformPanel) {
-      _showMeshTransformPanel = false;
+    if (_currentTool == DrawingTool.meshTransform) {
       _meshCancelToken++;
-      if (_currentTool == DrawingTool.meshTransform) {
-        _currentTool = DrawingTool.pen;
-      }
+      _currentTool = DrawingTool.pen;
     }
   }
 
@@ -461,7 +446,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   void _openMeshTransformPanel({int density = 1, bool selectionOnly = false}) =>
       setState(() {
         _closeAllOverlayPanels();
-        _showMeshTransformPanel = true;
         _meshDensity = density;
         _meshSelectionOnly = selectionOnly;
         _meshRotateDeg = 0.0;
@@ -472,7 +456,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// 自由変形・メッシュ変形の確定（コントロールパネルの「適用」ボタン）。
   void _applyMeshTransform() => setState(() {
     _meshCommitToken++;
-    _showMeshTransformPanel = false;
     _currentTool = DrawingTool.pen;
   });
 
@@ -1989,20 +1972,26 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           child:
                                               _currentTool ==
                                                   DrawingTool.meshTransform
-                                              ? Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    _meshCancelBar(context),
-                                                    if (!isDesktop &&
-                                                        _meshDensity > 1)
-                                                      _meshDensitySlider(
-                                                        context,
-                                                      ),
-                                                  ],
-                                                )
+                                              ? isDesktop
+                                                    ? _meshTransformPanel(
+                                                        embedded: true,
+                                                      )
+                                                    : Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          _meshCancelBar(
+                                                            context,
+                                                          ),
+                                                          if (_meshDensity > 1)
+                                                            _meshDensitySlider(
+                                                              context,
+                                                            ),
+                                                        ],
+                                                      )
                                               : _buildSelectionControls(
                                                   context,
                                                   dockRowConstraints.maxHeight,
@@ -3034,13 +3023,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
         settings,
         right: right,
       ).where((panel) => _visibleInDock(settings, panel)).toList();
-      final hasMesh =
-          right == _meshDockOnRight(settings) && _showMeshTransformPanel;
       final fitted = _fitDesktopDock(
         settings,
         visible,
         constraints.maxHeight,
-        extraFixedHeight: hasMesh ? 320 : 0,
       );
       final heights = fitted.bodyHeights;
       return ClipRect(
@@ -3062,11 +3048,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     automaticallyCollapsed: fitted.automaticallyCollapsed
                         .contains(visible[i]),
                   ),
-                ],
-                if (hasMesh) ...[
-                  if (visible.isNotEmpty)
-                    const SizedBox(height: DesktopDockColumnFit.gap),
-                  _meshTransformPanel(),
                 ],
               ],
             ),
@@ -3336,7 +3317,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   );
 
   /// レイヤー全体の自由変形・メッシュ変形パネル。
-  Widget _meshTransformPanel() => MeshTransformPanel(
+  Widget _meshTransformPanel({bool embedded = false}) => MeshTransformPanel(
+    embedded: embedded,
     density: _meshDensity,
     rotateDeg: _meshRotateDeg,
     scaleValue: _meshScaleValue,
