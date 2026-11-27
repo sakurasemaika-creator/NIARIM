@@ -174,10 +174,10 @@ void main() {
     // The visible title is itself an easy-to-hit move target; users do not
     // need to aim precisely at the tiny central grip.
     final beforeTitleDrag = tester.getRect(surface);
-    await tester.drag(find.text('色調調整'), const Offset(54, -36));
+    await tester.drag(find.text('色調調整'), const Offset(-10, -36));
     await tester.pumpAndSettle();
     final afterTitleDrag = tester.getRect(surface);
-    expect(afterTitleDrag.left, closeTo(beforeTitleDrag.left + 54, 0.1));
+    expect(afterTitleDrag.left, closeTo(beforeTitleDrag.left - 10, 0.1));
     expect(afterTitleDrag.top, closeTo(beforeTitleDrag.top - 36, 0.1));
   });
 
