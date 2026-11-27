@@ -6,7 +6,6 @@
 // （layersOf）で合成していて、素材の前後（重なり順、Scene.stack）とマスクを
 // 見ていなかったので、素材を足したコマだけ新しい素材が手前に描かれた。
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
